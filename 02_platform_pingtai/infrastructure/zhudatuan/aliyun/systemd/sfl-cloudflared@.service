@@ -1,8 +1,7 @@
 [Unit]
 Description=SFL node-owned Cloudflare Tunnel (%i)
-Requires=sfl-api-gateway@%i.service
 After=network-online.target sfl-api-gateway@%i.service
-Wants=network-online.target
+Wants=network-online.target sfl-api-gateway@%i.service
 ConditionPathExists=/opt/sfl/nodes/%i/runtime/cloudflared.yml
 ConditionPathExists=/opt/sfl/nodes/%i/tunnel/credentials.json
 

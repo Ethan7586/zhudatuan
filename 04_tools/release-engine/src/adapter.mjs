@@ -1,0 +1,80 @@
+import { readFile } from 'node:fs/promises';
+import { dirname, isAbsolute, resolve } from 'node:path';
+
+import { invariant } from './errors.mjs';
+
+export const ADAPTER_SCHEMA = 'ai.delivery.project.v1';
+export const LANES = Object.freeze(['A0', 'A1', 'A2', 'A3']);
+
+export async function loadAdapter(adapterPath, invocationRoot = process.cwd()) {
+  const absolutePath = isAbsolute(adapterPath) ? adapterPath : resolve(invocationRoot, adapterPath);
+  const adapter = JSON.parse(await readFile(absolutePath, 'utf8'));
+  validateAdapter(adapter);
+  const configuredRoot = adapter.projectRoot ?? '../../..';
+  const projectRoot = resolve(dirname(absolutePath), configuredRoot);
+  return Object.freeze({ ...adapter, adapterPath: absolutePath, projectRoot });
+}
+
+export function validateAdapter(adapter) {
+  invariant(adapter?.schema === ADAPTER_SCHEMA, 'ADAPTER_SCHEMA_INVALID', `Adapter schema must be ${ADAPTER_SCHEMA}`);
+  invariant(safeIdentifier(adapter.project), 'ADAPTER_PROJECT_INVALID', 'Adapter project must be a safe identifier');
+  invariant(typeof adapter.stateDirectory === 'string' && adapter.stateDirectory.length > 0, 'ADAPTER_STATE_INVALID', 'Adapter stateDirectory is required');
+  invariant(adapter.targets && typeof adapter.targets === 'object', 'ADAPTER_TARGETS_INVALID', 'Adapter targets are required');
+  invariant(typeof adapter.fallbackTarget === 'string' && adapter.targets[adapter.fallbackTarget]?.kind === 'core', 'ADAPTER_FALLBACK_TARGET_INVALID', 'Adapter requires a core fallbackTarget');
+  invariant(Array.isArray(adapter.rules) && adapter.rules.length > 0, 'ADAPTER_RULES_INVALID', 'Adapter classification rules are required');
+  invariant(adapter.nodes && typeof adapter.nodes === 'object', 'ADAPTER_NODES_INVALID', 'Adapter nodes are required');
+  validateCommands(adapter.buildPreflight, adapter.project, 'buildPreflight');
+  for (const [resolverId, resolver] of Object.entries(adapter.impactResolvers ?? {})) {
+    invariant(typeof resolver?.module === 'string' && resolver.module.length > 0, 'ADAPTER_IMPACT_RESOLVER_INVALID', `Impact resolver ${resolverId} needs a module`);
+  }
+
+  for (const [targetId, target] of Object.entries(adapter.targets)) {
+    invariant(safeIdentifier(targetId), 'ADAPTER_TARGET_ID_INVALID', `Target id is unsafe: ${targetId}`);
+    invariant(target?.id === targetId, 'ADAPTER_TARGET_ID_MISMATCH', `Target ${targetId} must repeat its id`);
+    invariant(LANES.includes(target.lane), 'ADAPTER_TARGET_LANE_INVALID', `Target ${targetId} has invalid lane`);
+    invariant(['content', 'frontend', 'service', 'core'].includes(target.kind), 'ADAPTER_TARGET_KIND_INVALID', `Target ${targetId} has invalid kind`);
+    invariant(Array.isArray(target.artifactInputs), 'ADAPTER_TARGET_INPUTS_INVALID', `Target ${targetId} artifactInputs must be an array`);
+    validateCommands(target.tests, targetId, 'tests');
+    validateCommands(target.typecheck, targetId, 'typecheck');
+    validateCommands(target.build, targetId, 'build');
+  }
+
+  for (const rule of adapter.rules) {
+    invariant(typeof rule.id === 'string' && rule.id.length > 0, 'ADAPTER_RULE_ID_INVALID', 'Every rule needs an id');
+    invariant(Array.isArray(rule.include) && rule.include.length > 0, 'ADAPTER_RULE_INCLUDE_INVALID', `Rule ${rule.id} needs include patterns`);
+    invariant(rule.lane === 'NONE' || LANES.includes(rule.lane), 'ADAPTER_RULE_LANE_INVALID', `Rule ${rule.id} has invalid lane`);
+    invariant((rule.touches ?? []).every((touch) => typeof touch === 'string' && touch.length > 0), 'ADAPTER_RULE_TOUCH_INVALID', `Rule ${rule.id} touches must be strings`);
+    if (rule.dynamicImpact) invariant(Boolean(adapter.impactResolvers?.[rule.dynamicImpact]), 'ADAPTER_RULE_IMPACT_UNKNOWN', `Rule ${rule.id} references unknown impact resolver ${rule.dynamicImpact}`);
+    for (const targetId of rule.targets ?? []) {
+      invariant(Boolean(adapter.targets[targetId]), 'ADAPTER_RULE_TARGET_UNKNOWN', `Rule ${rule.id} references unknown target ${targetId}`);
+    }
+  }
+
+  for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
+    invariant(safeIdentifier(nodeKey), 'ADAPTER_NODE_KEY_INVALID', `Node key is unsafe: ${nodeKey}`);
+    invariant(node?.key === nodeKey, 'ADAPTER_NODE_KEY_MISMATCH', `Node ${nodeKey} must repeat its key`);
+    invariant(typeof node.nodeId === 'string' && node.nodeId.length > 0, 'ADAPTER_NODE_ID_INVALID', `Node ${nodeKey} needs nodeId`);
+    invariant(node.deployments && typeof node.deployments === 'object', 'ADAPTER_NODE_DEPLOYMENTS_INVALID', `Node ${nodeKey} needs deployments`);
+    for (const [targetId, deployment] of Object.entries(node.deployments)) {
+      invariant(Boolean(adapter.targets[targetId]), 'ADAPTER_NODE_TARGET_UNKNOWN', `Node ${nodeKey} references unknown target ${targetId}`);
+      invariant(typeof deployment.pointerRoot === 'string' && deployment.pointerRoot.startsWith('/'), 'ADAPTER_POINTER_INVALID', `${nodeKey}/${targetId} needs an absolute pointerRoot`);
+      invariant(typeof deployment.service === 'string' && deployment.service.length > 0, 'ADAPTER_SERVICE_INVALID', `${nodeKey}/${targetId} needs a service`);
+      invariant(deployment.productionEnabled === undefined || typeof deployment.productionEnabled === 'boolean', 'ADAPTER_PRODUCTION_FLAG_INVALID', `${nodeKey}/${targetId} productionEnabled must be boolean`);
+      if (deployment.productionEnabled === false) invariant(typeof deployment.productionDisabledReason === 'string' && deployment.productionDisabledReason.length > 0, 'ADAPTER_PRODUCTION_REASON_REQUIRED', `${nodeKey}/${targetId} needs a productionDisabledReason`);
+    }
+  }
+  return adapter;
+}
+
+function safeIdentifier(value) {
+  return typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(value);
+}
+
+function validateCommands(commands = [], targetId, phase) {
+  invariant(Array.isArray(commands), 'ADAPTER_COMMANDS_INVALID', `${targetId}.${phase} must be an array`);
+  for (const command of commands) {
+    invariant(typeof command?.name === 'string' && command.name.length > 0, 'ADAPTER_COMMAND_NAME_INVALID', `${targetId}.${phase} command needs a name`);
+    invariant(Array.isArray(command.argv) && command.argv.length > 0, 'ADAPTER_COMMAND_ARGV_INVALID', `${targetId}.${phase}.${command.name} needs argv`);
+    invariant(command.argv.every((entry) => typeof entry === 'string' && entry.length > 0), 'ADAPTER_COMMAND_ARG_INVALID', `${targetId}.${phase}.${command.name} argv must be strings`);
+  }
+}

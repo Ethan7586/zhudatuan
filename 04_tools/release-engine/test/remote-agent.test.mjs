@@ -1,0 +1,679 @@
+import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
+import { chmod, lstat, mkdir, mkdtemp, readFile, readlink, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
+import { promisify } from 'node:util';
+import test from 'node:test';
+
+import { packageTarget, treeEvidence } from '../src/artifact.mjs';
+import { digest } from '../src/stable.mjs';
+
+const execFileAsync = promisify(execFile);
+const agent = new URL('../remote/agent.mjs', import.meta.url).pathname;
+
+test('stages, activates, rolls back and reports status with immutable releases', async () => {
+  const fixture = await createFixture();
+  const first = await createArtifact(fixture, 'first', 'a'.repeat(40));
+  const staged = await invoke(fixture, 'stage', first);
+  assert.ok(staged.result.timings.total >= 0);
+  assert.equal((await lstat(staged.result.release)).mode & 0o777, 0o755);
+  const activated = await invoke(fixture, 'activate', first);
+  assert.ok(activated.result.timings.health >= 0);
+  assert.ok(activated.result.timings.total >= activated.result.timings.cutover);
+  assert.equal(activated.result.restart.commandCount, 0);
+  const firstCurrent = await readlink(join(fixture.pointerRoot, 'current'));
+  assert.match(firstCurrent, new RegExp(first.treeDigest.slice(7)));
+
+  const second = await createArtifact(fixture, 'second', 'b'.repeat(40));
+  await invoke(fixture, 'stage', second);
+  await invoke(fixture, 'activate', second);
+  assert.match(await readlink(join(fixture.pointerRoot, 'current')), new RegExp(second.treeDigest.slice(7)));
+
+  const rolledBack = await invoke(fixture, 'rollback', second);
+  assert.equal(rolledBack.result.restart.commandCount, 0);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), firstCurrent);
+
+  await mkdir(join(fixture.pointerRoot, 'runtime'));
+  const status = await invoke(fixture, 'status', second);
+  assert.equal(status.result.current, firstCurrent);
+  assert.equal(status.result.runtime, null);
+  const verified = await invoke(fixture, 'verify', second);
+  assert.equal(verified.result.current, firstCurrent);
+  assert.equal(verified.result.checks.length, 1);
+});
+
+test('repairs DynamicUser traversal modes for stage, activation and rollback without widening artifact files', async () => {
+  const fixture = await createFixture();
+  await mkdir(fixture.pointerRoot, { recursive: true });
+  await chmod(dirname(fixture.pointerRoot), 0o700);
+  await chmod(fixture.pointerRoot, 0o700);
+
+  const first = await createArtifact(fixture, 'traversable-first', '9'.repeat(40));
+  const staged = await invoke(fixture, 'stage', first);
+  await assertTraversable(fixture);
+  assert.equal((await lstat(join(staged.result.release, 'app.txt'))).mode & 0o022, 0);
+  assert.equal((await lstat(join(staged.result.release, 'AI_DELIVERY_ARTIFACT.json'))).mode & 0o777, 0o444);
+
+  await chmod(dirname(fixture.pointerRoot), 0o700);
+  await chmod(fixture.pointerRoot, 0o700);
+  await invoke(fixture, 'activate', first);
+  await assertTraversable(fixture);
+
+  const second = await createArtifact(fixture, 'traversable-second', '8'.repeat(40));
+  await invoke(fixture, 'stage', second);
+  await invoke(fixture, 'activate', second);
+  await chmod(dirname(fixture.pointerRoot), 0o700);
+  await chmod(fixture.pointerRoot, 0o700);
+  await invoke(fixture, 'rollback', second);
+  await assertTraversable(fixture);
+});
+
+test('looks up and reuses an immutable artifact without uploading it again', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'deduplicated', '0'.repeat(40));
+  const miss = await invoke(fixture, 'lookup', artifact);
+  assert.equal(miss.result.status, 'miss');
+  assert.equal(miss.result.exists, false);
+
+  await invoke(fixture, 'stage', artifact);
+  const hit = await invoke(fixture, 'lookup', artifact);
+  assert.equal(hit.result.status, 'hit_candidate');
+  assert.equal(hit.result.uploadedBytes, 0);
+  assert.equal(hit.result.reusedBytes, artifact.archive.bytes);
+
+  const reused = await invoke(fixture, 'reuse', artifact);
+  assert.equal(reused.result.cacheStatus, 'hit_candidate');
+  assert.equal(reused.result.uploadedBytes, 0);
+});
+
+test('stops safely when current changes after artifact lookup', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'compare-and-swap', 'a'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+  await assert.rejects(() => invoke(fixture, 'activate', artifact, null, 'local', '/unexpected/current'), (error) => {
+    assert.match(error.stderr, /CURRENT_POINTER_CHANGED/);
+    return true;
+  });
+  await assert.rejects(() => readlink(join(fixture.pointerRoot, 'current')), { code: 'ENOENT' });
+});
+
+test('an exact current artifact switches to verify-only without restart or pointer movement', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'already-current', 'b'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+  await invoke(fixture, 'activate', artifact);
+  const before = await readlink(join(fixture.pointerRoot, 'current'));
+  const verified = await invoke(fixture, 'activate', artifact);
+  assert.equal(verified.result.mode, 'verify-only');
+  assert.equal(verified.result.alreadyCurrent, true);
+  assert.equal(verified.result.readiness.status, 'ready');
+  assert.deepEqual(verified.result.restart, { kind: 'none', target: 'none', commandCount: 0, commands: [] });
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), before);
+});
+
+test('waits for a service that becomes ready after two seconds', async () => {
+  const fixture = await createFixture();
+  const readyAt = join(fixture.root, 'ready-at');
+  fixture.policy.readiness = { timeoutMs: 3_000, intervalMs: 100, attemptTimeoutMs: 200, hardFailureGraceMs: 500 };
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{
+    argv: [process.execPath, '-e', "const fs=require('node:fs');process.exit(Date.now()>=Number(fs.readFileSync(process.argv[1],'utf8'))?0:75)", readyAt],
+  }];
+  await writeFile(readyAt, String(Date.now() + 2_000));
+  await writePolicy(fixture);
+  const artifact = await createArtifact(fixture, 'delayed-ready', 'a'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+  const activated = await invoke(fixture, 'activate', artifact);
+  assert.equal(activated.result.readiness.status, 'ready');
+  assert.ok(activated.result.readiness.durationMs >= 1_700, activated.result.readiness);
+  assert.ok(activated.result.readiness.durationMs < 3_000, activated.result.readiness);
+  assert.ok(activated.result.readiness.attempts > 1);
+});
+
+test('retries transient HTTP 503 failures until the fourth attempt succeeds', async () => {
+  const fixture = await createFixture();
+  const counter = join(fixture.root, 'health-attempts');
+  await writeFile(counter, '0');
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{
+    argv: [process.execPath, '-e', "const fs=require('node:fs');const p=process.argv[1];const n=Number(fs.readFileSync(p,'utf8'))+1;fs.writeFileSync(p,String(n));if(n<4){process.stderr.write('HTTP 503');process.exit(22)}", counter],
+  }];
+  await writePolicy(fixture);
+  const artifact = await createArtifact(fixture, 'transient-503', 'b'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+  const activated = await invoke(fixture, 'activate', artifact);
+  assert.equal(activated.result.readiness.status, 'ready');
+  assert.equal(activated.result.readiness.attempts, 4);
+  assert.match(activated.result.readiness.lastError.details.outputTail, /HTTP 503/);
+});
+
+test('systemd dependency-isolated mode is used for activation and rollback', async () => {
+  const fixture = await createFixture();
+  const bin = join(fixture.root, 'bin');
+  const pidFile = join(fixture.root, 'systemd.pid');
+  const logFile = join(fixture.root, 'systemd.log');
+  await mkdir(bin);
+  await writeFile(pidFile, '100\n');
+  const systemctl = join(bin, 'systemctl');
+  await writeFile(systemctl, `#!/bin/sh
+if [ "$1" = "show" ]; then
+  value=$(cat "$AI_TEST_PID_FILE")
+  case " $* " in
+    *" --value "*) printf '%s\\n' "$value" ;;
+    *) printf 'ActiveState=active\\nSubState=running\\nResult=success\\nMainPID=%s\\n' "$value" ;;
+  esac
+  exit 0
+fi
+printf '%s\\n' "$*" >> "$AI_TEST_LOG_FILE"
+value=$(cat "$AI_TEST_PID_FILE")
+expr "$value" + 1 > "$AI_TEST_PID_FILE"
+`);
+  await chmod(systemctl, 0o755);
+  fixture.environment = { PATH: `${bin}:${process.env.PATH}`, AI_TEST_PID_FILE: pidFile, AI_TEST_LOG_FILE: logFile };
+  fixture.policy.nodes.local.deployments.app.restart = { kind: 'systemd', name: 'fixture.service', jobMode: 'ignore-dependencies' };
+  await writePolicy(fixture);
+
+  const first = await createArtifact(fixture, 'systemd-first', 'c'.repeat(40));
+  await invoke(fixture, 'stage', first);
+  const firstActivated = await invoke(fixture, 'activate', first);
+  assert.equal(firstActivated.result.restart.commandCount, 1);
+  assert.equal(firstActivated.result.restart.target, 'fixture.service');
+  const second = await createArtifact(fixture, 'systemd-second', 'd'.repeat(40));
+  await invoke(fixture, 'stage', second);
+  const secondActivated = await invoke(fixture, 'activate', second);
+  assert.equal(secondActivated.result.restart.commandCount, 1);
+  assert.deepEqual(secondActivated.result.restart.commands, [['systemctl', '--job-mode=ignore-dependencies', 'restart', 'fixture.service']]);
+  const rolledBack = await invoke(fixture, 'rollback', second);
+  assert.equal(rolledBack.result.restart.commandCount, 1);
+  assert.equal(rolledBack.result.restart.target, 'fixture.service');
+  const commands = await readFile(logFile, 'utf8');
+  assert.equal(commands.match(/--job-mode=ignore-dependencies restart fixture\.service/g)?.length, 3);
+});
+
+test('a systemd hard failure starts pointer recovery within three seconds', async () => {
+  const fixture = await createFixture();
+  const bin = join(fixture.root, 'hard-failure-bin');
+  const restartFile = join(fixture.root, 'hard-failure-restarts');
+  const commandLog = join(fixture.root, 'hard-failure-systemd.log');
+  await mkdir(bin);
+  await writeFile(restartFile, '0\n');
+  await writeFile(commandLog, '');
+  const systemctl = join(bin, 'systemctl');
+  await writeFile(systemctl, `#!/bin/sh
+value=$(cat "$AI_TEST_RESTART_FILE")
+if [ "$1" = "show" ]; then
+  case " $* " in
+    *" --value "*)
+      if [ "$value" -eq 2 ]; then printf '0\n'; else expr "$value" + 100; fi
+      ;;
+    *)
+      if [ "$value" -eq 2 ]; then
+        printf 'ActiveState=failed\nSubState=failed\nResult=exit-code\nMainPID=0\n'
+      else
+        printf 'ActiveState=active\nSubState=running\nResult=success\nMainPID=%s\n' "$(expr "$value" + 100)"
+      fi
+      ;;
+  esac
+  exit 0
+fi
+printf '%s\n' "$*" >> "$AI_TEST_COMMAND_LOG"
+expr "$value" + 1 > "$AI_TEST_RESTART_FILE"
+`);
+  await chmod(systemctl, 0o755);
+  fixture.environment = { PATH: `${bin}:${process.env.PATH}`, AI_TEST_RESTART_FILE: restartFile, AI_TEST_COMMAND_LOG: commandLog };
+  fixture.policy.nodes.local.deployments.app.restart = { kind: 'systemd', name: 'fixture.service', jobMode: 'ignore-dependencies' };
+  await writePolicy(fixture);
+
+  const first = await createArtifact(fixture, 'hard-failure-baseline', 'c'.repeat(40));
+  await invoke(fixture, 'stage', first);
+  await invoke(fixture, 'activate', first);
+  const baseline = await readlink(join(fixture.pointerRoot, 'current'));
+  const second = await createArtifact(fixture, 'hard-failure-candidate', 'd'.repeat(40));
+  await invoke(fixture, 'stage', second);
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{ argv: [process.execPath, '-e', `process.exit(process.argv[1].includes('${second.sourceSha}')?7:0)`, '{{currentDir}}'] }];
+  await writePolicy(fixture);
+  const failed = await captureAgentFailure(() => invoke(fixture, 'activate', second));
+  assert.equal(failed.code, 'CUTOVER_FAILED_AND_ROLLED_BACK');
+  assert.equal(failed.details.candidateFailure.code, 'READINESS_HARD_FAILURE');
+  assert.match(failed.details.candidateFailure.details.failureConfirmedAt, /Z$/);
+  assert.match(failed.details.failureConfirmedAt, /Z$/);
+  assert.match(failed.details.rollback.startedAt, /Z$/);
+  assert.ok(failed.details.rollback.triggerDelayMs <= 3_000, failed.details.rollback);
+  assert.equal(failed.details.rollback.triggeredWithinMs, true);
+  assert.equal(failed.details.rollback.finalCurrent, baseline);
+  assert.equal(failed.details.restartCommands.total, 2);
+  assert.equal(failed.details.restartCommands.candidate.target, 'fixture.service');
+  assert.equal(failed.details.restartCommands.rollback.target, 'fixture.service');
+  const commands = await readFile(commandLog, 'utf8');
+  const resetIndex = commands.indexOf('reset-failed fixture.service');
+  assert.ok(resetIndex >= 0, commands);
+  assert.ok(commands.lastIndexOf('--job-mode=ignore-dependencies restart fixture.service') < resetIndex, commands);
+  assert.deepEqual(failed.details.protectedProcesses.after, failed.details.protectedProcesses.before);
+});
+
+test('readiness timeout restores both current and runtime before reporting rollback success', async () => {
+  const fixture = await createFixture();
+  await writeFile(join(fixture.root, 'package-lock.json'), '{"lockfileVersion":3,"version":"old"}\n');
+  const layerConfig = {
+    strategy: 'shared-content-addressed',
+    runtime: 'node22-linux-x64-test',
+    keyFiles: ['package-lock.json'],
+    productionRoot: join(fixture.root, 'layers'),
+  };
+  const first = await createArtifact(fixture, 'healthy', 'e'.repeat(40), layerConfig);
+  const oldLayer = await materializeLayer(fixture, first, layerConfig);
+  await invoke(fixture, 'stage', first);
+  await invoke(fixture, 'activate', first);
+  const before = await readlink(join(fixture.pointerRoot, 'current'));
+
+  await writeFile(join(fixture.root, 'package-lock.json'), '{"lockfileVersion":3,"version":"new"}\n');
+  const second = await createArtifact(fixture, 'unhealthy', 'f'.repeat(40), layerConfig);
+  await materializeLayer(fixture, second, layerConfig);
+  await invoke(fixture, 'stage', second);
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{ argv: [process.execPath, '-e', `process.exit(process.argv[1].includes('${second.sourceSha}')?7:0)`, '{{currentDir}}'] }];
+  await writePolicy(fixture);
+  const failed = await captureAgentFailure(() => invoke(fixture, 'activate', second));
+  assert.equal(failed.code, 'CUTOVER_FAILED_AND_ROLLED_BACK');
+  assert.equal(failed.details.candidateFailure.code, 'READINESS_TIMEOUT');
+  assert.equal(failed.details.rollback.readiness.status, 'ready');
+  assert.equal(failed.details.rollback.triggeredWithinMs, true);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), before);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'runtime')), oldLayer);
+});
+
+test('fails with the exact protected service name when a non-target PID changes', async () => {
+  const fixture = await createFixture();
+  const bin = join(fixture.root, 'protected-change-bin');
+  const targetPid = join(fixture.root, 'target.pid');
+  const protectedPid = join(fixture.root, 'protected.pid');
+  const mutateProtected = join(fixture.root, 'mutate-protected');
+  await mkdir(bin);
+  await writeFile(targetPid, '100\n');
+  await writeFile(protectedPid, '900\n');
+  await writeFile(mutateProtected, '0\n');
+  const systemctl = join(bin, 'systemctl');
+  await writeFile(systemctl, `#!/bin/sh
+last=''
+for argument in "$@"; do last="$argument"; done
+if [ "$1" = "show" ]; then
+  if [ "$last" = "sentinel.service" ]; then value=$(cat "$AI_TEST_PROTECTED_PID"); else value=$(cat "$AI_TEST_TARGET_PID"); fi
+  case " $* " in
+    *" --value "*) printf '%s\\n' "$value" ;;
+    *) printf 'ActiveState=active\\nSubState=running\\nResult=success\\nMainPID=%s\\n' "$value" ;;
+  esac
+  exit 0
+fi
+case " $* " in
+  *" restart fixture.service ")
+    value=$(cat "$AI_TEST_TARGET_PID")
+    expr "$value" + 1 > "$AI_TEST_TARGET_PID"
+    if [ "$(cat "$AI_TEST_MUTATE_PROTECTED")" = "1" ]; then
+      value=$(cat "$AI_TEST_PROTECTED_PID")
+      expr "$value" + 1 > "$AI_TEST_PROTECTED_PID"
+    fi
+    ;;
+esac
+`);
+  await chmod(systemctl, 0o755);
+  fixture.environment = {
+    PATH: `${bin}:${process.env.PATH}`,
+    AI_TEST_TARGET_PID: targetPid,
+    AI_TEST_PROTECTED_PID: protectedPid,
+    AI_TEST_MUTATE_PROTECTED: mutateProtected,
+  };
+  fixture.policy.protectedProcesses = [{ kind: 'systemd', name: 'sentinel.service' }];
+  fixture.policy.nodes.local.deployments.app.restart = { kind: 'systemd', name: 'fixture.service', jobMode: 'ignore-dependencies' };
+  await writePolicy(fixture);
+
+  const baseline = await createArtifact(fixture, 'protected-baseline', '7'.repeat(40));
+  await invoke(fixture, 'stage', baseline);
+  await invoke(fixture, 'activate', baseline);
+  const candidate = await createArtifact(fixture, 'protected-candidate', '8'.repeat(40));
+  await invoke(fixture, 'stage', candidate);
+  await writeFile(mutateProtected, '1\n');
+  const failed = await captureAgentFailure(() => invoke(fixture, 'activate', candidate));
+  assert.equal(failed.code, 'CUTOVER_FAILED_ROLLBACK_UNHEALTHY');
+  assert.equal(failed.details.candidateFailure.code, 'PROTECTED_PROCESS_CHANGED');
+  assert.equal(failed.details.candidateFailure.details.process, 'systemd:sentinel.service');
+  assert.equal(failed.details.restartCommands.total, 2);
+});
+
+test('rollback waits for the previous service to become ready', async () => {
+  const fixture = await createFixture();
+  const first = await createArtifact(fixture, 'rollback-ready-baseline', '1'.repeat(40));
+  await invoke(fixture, 'stage', first);
+  await invoke(fixture, 'activate', first);
+  const second = await createArtifact(fixture, 'rollback-ready-candidate', '2'.repeat(40));
+  await invoke(fixture, 'stage', second);
+  const stateFile = join(fixture.root, 'rollback-health-state');
+  const healthScript = `const fs=require('node:fs');const current=process.argv[1];const state=process.argv[2];if(current.includes('${second.sourceSha}')){fs.writeFileSync(state,'0');process.exit(7)}const n=Number(fs.readFileSync(state,'utf8'))+1;fs.writeFileSync(state,String(n));process.exit(n>=3?0:75)`;
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{ argv: [process.execPath, '-e', healthScript, '{{currentDir}}', stateFile] }];
+  fixture.policy.readiness.timeoutMs = 1_000;
+  await writePolicy(fixture);
+  const failed = await captureAgentFailure(() => invoke(fixture, 'activate', second));
+  assert.equal(failed.code, 'CUTOVER_FAILED_AND_ROLLED_BACK');
+  assert.equal(failed.details.rollback.readiness.status, 'ready');
+  assert.ok(failed.details.rollback.readiness.attempts >= 3);
+  assert.ok(failed.details.rollback.readinessMs > 0);
+});
+
+test('preserves candidate and rollback failure evidence when the previous service stays unhealthy', async () => {
+  const fixture = await createFixture();
+  const first = await createArtifact(fixture, 'rollback-failure-baseline', '3'.repeat(40));
+  await invoke(fixture, 'stage', first);
+  await invoke(fixture, 'activate', first);
+  const second = await createArtifact(fixture, 'rollback-failure-candidate', '4'.repeat(40));
+  await invoke(fixture, 'stage', second);
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{ argv: [process.execPath, '-e', 'process.exit(7)'] }];
+  await writePolicy(fixture);
+  const failed = await captureAgentFailure(() => invoke(fixture, 'activate', second));
+  assert.equal(failed.code, 'CUTOVER_FAILED_ROLLBACK_UNHEALTHY');
+  assert.equal(failed.details.candidateFailure.code, 'READINESS_TIMEOUT');
+  assert.equal(failed.details.rollbackFailure.code, 'READINESS_TIMEOUT');
+  assert.match(failed.details.rollback.finalCurrent, new RegExp(first.sourceSha));
+});
+
+test('rejects a tampered archive before creating a candidate', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'original', 'e'.repeat(40));
+  await writeFile(artifact.archive.path, 'tampered');
+  await assert.rejects(() => invoke(fixture, 'stage', artifact), (error) => {
+    assert.match(error.stderr, /ARTIFACT_ARCHIVE_HASH_MISMATCH/);
+    return true;
+  });
+});
+
+test('rejects a manifest that names a forbidden dependency directory', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'forbidden-manifest', 'e'.repeat(40));
+  const manifest = JSON.parse(await readFile(artifact.manifestPath, 'utf8'));
+  manifest.entries.push({ path: 'node_modules/', type: 'directory', mode: 0o755 });
+  manifest.fileCount = manifest.entries.length;
+  manifest.treeDigest = digest(manifest.entries);
+  delete manifest.manifestDigest;
+  manifest.manifestDigest = digest(manifest);
+  await writeFile(artifact.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  artifact.treeDigest = manifest.treeDigest;
+  artifact.manifestDigest = manifest.manifestDigest;
+  await assert.rejects(() => invoke(fixture, 'stage', artifact), (error) => {
+    assert.match(error.stderr, /ARTIFACT_FORBIDDEN_PATH/);
+    return true;
+  });
+});
+
+test('rejects an unsafe digest before deriving a release path', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'unsafe-digest', '9'.repeat(40));
+  const manifest = JSON.parse(await readFile(artifact.manifestPath, 'utf8'));
+  manifest.treeDigest = 'sha256:../../outside';
+  delete manifest.manifestDigest;
+  manifest.manifestDigest = digest(manifest);
+  await writeFile(artifact.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  artifact.treeDigest = manifest.treeDigest;
+  await assert.rejects(() => invoke(fixture, 'stage', artifact), (error) => {
+    assert.match(error.stderr, /ARTIFACT_TREE_DIGEST_INVALID/);
+    return true;
+  });
+});
+
+test('candidate failure never moves the candidate or current pointer', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'candidate-failure', 'f'.repeat(40));
+  fixture.policy.nodes.local.deployments.app.candidateChecks = [{ argv: [process.execPath, '-e', 'process.exit(9)'] }];
+  await writePolicy(fixture);
+  await assert.rejects(() => invoke(fixture, 'stage', artifact), (error) => {
+    assert.match(error.stderr, /REMOTE_COMMAND_FAILED/);
+    return true;
+  });
+  const audit = (await readFile(join(fixture.root, 'audit', 'fixture.jsonl'), 'utf8'))
+    .trim().split('\n').map((line) => JSON.parse(line));
+  assert.ok(audit.some((record) => record.action === 'stage' && record.error?.code === 'REMOTE_COMMAND_FAILED'));
+  await assert.rejects(() => readlink(join(fixture.pointerRoot, 'candidate')), { code: 'ENOENT' });
+  await assert.rejects(() => readlink(join(fixture.pointerRoot, 'current')), { code: 'ENOENT' });
+});
+
+test('activation candidate checks run once and never enter health polling', async () => {
+  const fixture = await createFixture();
+  const first = await createArtifact(fixture, 'candidate-check-baseline', '5'.repeat(40));
+  await invoke(fixture, 'stage', first);
+  await invoke(fixture, 'activate', first);
+  const baseline = await readlink(join(fixture.pointerRoot, 'current'));
+  const second = await createArtifact(fixture, 'candidate-check-failure', '6'.repeat(40));
+  await invoke(fixture, 'stage', second);
+  const candidateCounter = join(fixture.root, 'candidate-check-count');
+  const healthCounter = join(fixture.root, 'health-check-count');
+  await writeFile(candidateCounter, '0');
+  await writeFile(healthCounter, '0');
+  const increment = "const fs=require('node:fs');const p=process.argv[1];fs.writeFileSync(p,String(Number(fs.readFileSync(p,'utf8'))+1));process.exit(Number(process.argv[2]))";
+  fixture.policy.nodes.local.deployments.app.candidateChecks = [{ argv: [process.execPath, '-e', increment, candidateCounter, '9'] }];
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{ argv: [process.execPath, '-e', increment, healthCounter, '0'] }];
+  await writePolicy(fixture);
+  const failed = await captureAgentFailure(() => invoke(fixture, 'activate', second));
+  assert.equal(failed.code, 'REMOTE_COMMAND_FAILED');
+  assert.equal(await readFile(candidateCounter, 'utf8'), '1');
+  assert.equal(await readFile(healthCounter, 'utf8'), '0');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), baseline);
+});
+
+test('production activation requires the exact source approval', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'approval', '1'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+  await assert.rejects(() => invoke(fixture, 'activate', artifact, 'fixture:wrong'), (error) => {
+    assert.match(error.stderr, /PRODUCTION_APPROVAL_INVALID/);
+    return true;
+  });
+  await assert.rejects(() => readlink(join(fixture.pointerRoot, 'current')), { code: 'ENOENT' });
+});
+
+test('requires and binds a declared dependency layer', async () => {
+  const fixture = await createFixture();
+  await writeFile(join(fixture.root, 'package-lock.json'), '{"lockfileVersion":3}\n');
+  const layerConfig = {
+    strategy: 'shared-content-addressed',
+    runtime: 'node22-linux-x64-test',
+    keyFiles: ['package-lock.json'],
+    productionRoot: join(fixture.root, 'layers'),
+  };
+  const artifact = await createArtifact(fixture, 'layered', '2'.repeat(40), layerConfig);
+  await assert.rejects(() => invoke(fixture, 'stage', artifact), (error) => {
+    assert.match(error.stderr, /DEPENDENCY_LAYER_MISSING/);
+    return true;
+  });
+  const layer = join(layerConfig.productionRoot, artifact.dependencyLayer.digest.slice(7));
+  await mkdir(layer, { recursive: true });
+  await writeFile(join(layer, 'AI_DELIVERY_LAYER.json'), `${JSON.stringify({
+    schema: 'ai.delivery.dependency-layer.v1',
+    digest: artifact.dependencyLayer.digest,
+    runtime: layerConfig.runtime,
+  })}\n`);
+  await invoke(fixture, 'stage', artifact);
+  await invoke(fixture, 'activate', artifact);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'runtime')), layer);
+});
+
+test('keeps source provenance distinct when two commits produce the same tree', async () => {
+  const fixture = await createFixture();
+  const first = await createArtifact(fixture, 'same-output', '7'.repeat(40));
+  await invoke(fixture, 'stage', first);
+  await invoke(fixture, 'activate', first);
+  const firstCurrent = await readlink(join(fixture.pointerRoot, 'current'));
+
+  const second = await createArtifact(fixture, 'same-output', '8'.repeat(40));
+  assert.equal(second.treeDigest, first.treeDigest);
+  await invoke(fixture, 'stage', second);
+  await invoke(fixture, 'activate', second);
+  const secondCurrent = await readlink(join(fixture.pointerRoot, 'current'));
+  assert.notEqual(secondCurrent, firstCurrent);
+  assert.match(secondCurrent, /8{40}-/);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'previous')), firstCurrent);
+});
+
+test('seeds the immutable rollback baseline once without activating a candidate', async () => {
+  const fixture = await createFixture();
+  const sourceSha = '3'.repeat(40);
+  fixture.policy.nodes.local.deployments.app.allowFirstActivation = false;
+  fixture.policy.nodes.local.deployments.app.seedDependencyLayer = {
+    source: 'node_modules',
+    runtime: 'node22-linux-x64-test',
+    keyFiles: ['package-lock.json'],
+    productionRoot: join(fixture.root, 'layers'),
+  };
+  await writeFile(join(fixture.policy.nodes.local.legacyRoot, 'package-lock.json'), '{"lockfileVersion":3}\n');
+  await mkdir(join(fixture.policy.nodes.local.legacyRoot, 'node_modules', 'fixture'), { recursive: true });
+  await writeFile(join(fixture.policy.nodes.local.legacyRoot, 'node_modules', 'fixture', 'index.js'), 'export {};\n');
+  await writePolicy(fixture);
+  const seeded = await invoke(fixture, 'seed', { sourceSha }, `fixture:seed-layout:${sourceSha}`);
+  assert.equal(seeded.result.seeded, true);
+  assert.match(await readlink(join(fixture.pointerRoot, 'current')), /seed-/);
+  assert.match(await readlink(join(fixture.pointerRoot, 'runtime')), /\/layers\/[a-f0-9]{64}$/);
+  await assert.rejects(() => invoke(fixture, 'seed', { sourceSha }, `fixture:seed-layout:${sourceSha}`), (error) => {
+    assert.match(error.stderr, /CURRENT_POINTER_ALREADY_EXISTS/);
+    return true;
+  });
+});
+
+test('remote policy can block production while still accepting a candidate', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'candidate-only', '4'.repeat(40));
+  fixture.policy.nodes.local.deployments.app.productionEnabled = false;
+  fixture.policy.nodes.local.deployments.app.productionDisabledReason = 'external A3 required';
+  await writePolicy(fixture);
+  await invoke(fixture, 'stage', artifact);
+  await assert.rejects(() => invoke(fixture, 'activate', artifact), (error) => {
+    assert.match(error.stderr, /PRODUCTION_ACTIVATION_DISABLED/);
+    return true;
+  });
+});
+
+test('L0 and L1 target pointers remain independent in both directions', async () => {
+  const fixture = await createFixture();
+  const l0 = await createArtifact(fixture, 'l0', '5'.repeat(40));
+  await invoke(fixture, 'stage', l0, null, 'local');
+  await invoke(fixture, 'activate', l0, null, 'local');
+  const l0Current = await readlink(join(fixture.pointerRoot, 'current'));
+  await assert.rejects(() => readlink(join(fixture.peerPointerRoot, 'current')), { code: 'ENOENT' });
+
+  const l1 = await createArtifact(fixture, 'l1', '6'.repeat(40));
+  await invoke(fixture, 'stage', l1, null, 'peer');
+  await invoke(fixture, 'activate', l1, null, 'peer');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), l0Current);
+  assert.match(await readlink(join(fixture.peerPointerRoot, 'current')), new RegExp(l1.treeDigest.slice(7)));
+});
+
+async function createFixture() {
+  const root = await mkdtemp(join(tmpdir(), 'ai-delivery-remote-'));
+  const policyRoot = join(root, 'policy');
+  const pointerRoot = join(root, 'deployments', 'app');
+  const peerPointerRoot = join(root, 'deployments', 'peer');
+  const legacyRoot = join(root, 'legacy');
+  await mkdir(legacyRoot, { recursive: true });
+  await writeFile(join(legacyRoot, 'app.txt'), 'legacy');
+  const fixture = {
+    root,
+    policyRoot,
+    pointerRoot,
+    peerPointerRoot,
+    policy: {
+      schema: 'ai.delivery.remote-policy.v1',
+      project: 'fixture',
+      allowedRoots: [root],
+      incomingRoot: root,
+      lockRoot: join(root, 'locks'),
+      auditRoot: join(root, 'audit'),
+      readiness: { timeoutMs: 200, intervalMs: 10, attemptTimeoutMs: 50, hardFailureGraceMs: 20 },
+      allowedDependencyRoots: [join(root, 'layers')],
+      protectedProcesses: [],
+      nodes: {
+        local: {
+          legacyRoot,
+          deployments: {
+            app: {
+              pointerRoot,
+              allowFirstActivation: true,
+              seedInputs: [{ source: 'app.txt', destination: 'app.txt' }],
+              restart: { kind: 'none', name: 'none' },
+              candidateChecks: [{ argv: ['test', '-f', '{{candidateDir}}/app.txt'] }],
+              healthChecks: [{ argv: [process.execPath, '-e', 'process.exit(0)'] }],
+            },
+          },
+        },
+        peer: {
+          deployments: {
+            app: {
+              pointerRoot: peerPointerRoot,
+              allowFirstActivation: true,
+              restart: { kind: 'none', name: 'none' },
+              candidateChecks: [{ argv: ['test', '-f', '{{candidateDir}}/app.txt'] }],
+              healthChecks: [{ argv: [process.execPath, '-e', 'process.exit(0)'] }],
+            },
+          },
+        },
+      },
+    },
+  };
+  await writePolicy(fixture);
+  return fixture;
+}
+
+async function assertTraversable(fixture) {
+  assert.equal((await lstat(dirname(fixture.pointerRoot))).mode & 0o777, 0o755);
+  assert.equal((await lstat(fixture.pointerRoot)).mode & 0o777, 0o755);
+}
+
+async function writePolicy(fixture) {
+  await mkdir(fixture.policyRoot, { recursive: true });
+  await writeFile(join(fixture.policyRoot, 'fixture.json'), `${JSON.stringify(fixture.policy, null, 2)}\n`);
+}
+
+async function createArtifact(fixture, contents, sourceSha, dependencyLayer = null) {
+  const directory = join(fixture.root, 'sources', sourceSha);
+  await mkdir(directory, { recursive: true });
+  await writeFile(join(directory, 'app.txt'), contents);
+  const evidence = { target: 'app', directory, deletions: [], ...(await treeEvidence(directory, ['app.txt'])) };
+  const adapter = { project: 'fixture', projectRoot: fixture.root, targets: { app: { kind: 'frontend', criticalFiles: ['app.txt'], dependencyLayer } } };
+  const plan = { lane: 'A1', to: { sha: sourceSha }, planDigest: digest({ sourceSha }) };
+  return packageTarget(adapter, plan, evidence, join(fixture.root, 'runs', sourceSha), join(fixture.root, 'artifacts'));
+}
+
+async function materializeLayer(fixture, artifact, layerConfig) {
+  const layer = join(layerConfig.productionRoot, artifact.dependencyLayer.digest.slice(7));
+  await mkdir(layer, { recursive: true });
+  await writeFile(join(layer, 'AI_DELIVERY_LAYER.json'), `${JSON.stringify({
+    schema: 'ai.delivery.dependency-layer.v1',
+    digest: artifact.dependencyLayer.digest,
+    runtime: layerConfig.runtime,
+  })}\n`);
+  return layer;
+}
+
+async function captureAgentFailure(action) {
+  try {
+    await action();
+  } catch (error) {
+    return JSON.parse(error.stderr).error;
+  }
+  assert.fail('Expected remote agent action to fail');
+}
+
+async function invoke(fixture, action, artifact, approval = null, node = 'local', expectedCurrent = undefined) {
+  const args = [agent, action, '--project', 'fixture', '--node', node, '--target', 'app'];
+  if (action === 'stage') {
+    args.push('--archive', artifact.archive.path, '--manifest', artifact.manifestPath, '--sha256', artifact.archive.sha256.slice(7), '--tree-digest', artifact.treeDigest);
+  } else if (action === 'lookup' || action === 'reuse') {
+    args.push('--source-sha', artifact.sourceSha, '--sha256', artifact.archive.sha256.slice(7), '--tree-digest', artifact.treeDigest, '--manifest-digest', artifact.manifestDigest);
+  } else if (action === 'activate') {
+    let current = expectedCurrent;
+    if (current === undefined) {
+      try { current = await readlink(join(node === 'local' ? fixture.pointerRoot : fixture.peerPointerRoot, 'current')); }
+      catch (error) { if (error?.code === 'ENOENT') current = 'none'; else throw error; }
+    }
+    args.push('--approval', approval ?? `fixture:${artifact.sourceSha}`, '--expected-current', current);
+  } else if (action === 'seed') {
+    args.push('--source-sha', artifact.sourceSha, '--approval', approval ?? `fixture:seed-layout:${artifact.sourceSha}`);
+  }
+  const result = await execFileAsync(process.execPath, args, {
+    env: { ...process.env, ...(fixture.environment ?? {}), AI_DELIVERY_POLICY_ROOT: fixture.policyRoot },
+    maxBuffer: 1024 * 1024,
+  });
+  return JSON.parse(result.stdout);
+}

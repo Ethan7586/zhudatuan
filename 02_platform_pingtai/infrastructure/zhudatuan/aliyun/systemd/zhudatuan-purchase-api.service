@@ -2,15 +2,15 @@
 Description=Zhudatuan selected-operation Purchase API
 Requires=zhudatuan-internal-runtime.service docker.service
 After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service docker.service
-ConditionPathExists=/opt/zhudatuan/current/01_core_hexin/services/commerce/dist/PurchaseApiMain.js
-ConditionPathExists=/opt/zhudatuan/current/01_core_hexin/services/commerce/dist/PurchaseApiReadyMain.js
+ConditionPathExists=/opt/zhudatuan/targets/purchase-api/current/service/PurchaseApiMain.js
+ConditionPathExists=/opt/zhudatuan/targets/purchase-api/current/service/PurchaseApiReadyMain.js
 ConditionPathExists=/opt/zhudatuan/shared/purchase-api.env
 
 [Service]
 Type=simple
 User=zhudatuan
 Group=zhudatuan
-WorkingDirectory=/opt/zhudatuan/current
+WorkingDirectory=/opt/zhudatuan/targets/purchase-api/current
 Environment=NODE_ENV=production
 Environment=PURCHASE_API_PROFILE=purchase-only
 Environment=API_PORT=4323
@@ -18,8 +18,8 @@ Environment=API_BIND_HOST=127.0.0.1
 EnvironmentFile=/opt/zhudatuan/shared/purchase-api.env
 # Repeat the immutable boundary after EnvironmentFile loading so mutable
 # deployment input cannot move the listener or widen the runtime profile.
-ExecStart=/usr/bin/env PURCHASE_API_PROFILE=purchase-only API_PORT=4323 API_BIND_HOST=127.0.0.1 /usr/bin/node 01_core_hexin/services/commerce/dist/PurchaseApiMain.js
-ExecStartPost=/usr/bin/env PURCHASE_API_PROFILE=purchase-only API_PORT=4323 API_BIND_HOST=127.0.0.1 /usr/bin/node 01_core_hexin/services/commerce/dist/PurchaseApiReadyMain.js
+ExecStart=/usr/bin/env PURCHASE_API_PROFILE=purchase-only API_PORT=4323 API_BIND_HOST=127.0.0.1 /usr/bin/node service/PurchaseApiMain.js
+ExecStartPost=/usr/bin/env PURCHASE_API_PROFILE=purchase-only API_PORT=4323 API_BIND_HOST=127.0.0.1 /usr/bin/node service/PurchaseApiReadyMain.js
 Restart=on-failure
 RestartSec=3
 TimeoutStopSec=45
@@ -41,7 +41,7 @@ LockPersonality=true
 CapabilityBoundingSet=
 SystemCallArchitectures=native
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-ReadOnlyPaths=/opt/zhudatuan/current /opt/zhudatuan/shared
+ReadOnlyPaths=/opt/zhudatuan/targets/purchase-api /opt/zhudatuan/shared
 InaccessiblePaths=-/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
 
 [Install]

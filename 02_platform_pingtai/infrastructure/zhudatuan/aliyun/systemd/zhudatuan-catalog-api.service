@@ -1,20 +1,21 @@
 [Unit]
-Description=SFL node-bound catalog API (%i)
-Requires=zhudatuan-internal-runtime.service sfl-catalog-object-store@%i.service
-After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service sfl-catalog-object-store@%i.service
-ConditionPathExists=/opt/sfl/nodes/%i/targets/catalog-api/current/service/CatalogOperatorApiMain.js
-ConditionPathExists=/opt/sfl/nodes/%i/targets/catalog-api/current/service/CatalogOperatorApiReadyMain.js
-ConditionPathExists=/opt/sfl/nodes/%i/runtime/catalog-api.env
+Description=Zhudatuan isolated catalog API
+Requires=zhudatuan-internal-runtime.service zhudatuan-object-store.service
+After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service zhudatuan-object-store.service
+ConditionPathExists=/opt/zhudatuan/targets/catalog-api/current/service/CatalogOperatorApiMain.js
+ConditionPathExists=/opt/zhudatuan/targets/catalog-api/current/service/CatalogOperatorApiReadyMain.js
+ConditionPathExists=/opt/zhudatuan/shared/catalog-api.env
 
 [Service]
 Type=simple
 User=zhudatuan
 Group=zhudatuan
-WorkingDirectory=/opt/sfl/nodes/%i/targets/catalog-api/current
+WorkingDirectory=/opt/zhudatuan/targets/catalog-api/current
 Environment=NODE_ENV=production
 Environment=CATALOG_OPERATOR_API_PROFILE=catalog-operator-only
+Environment=API_PORT=4324
 Environment=API_BIND_HOST=127.0.0.1
-EnvironmentFile=/opt/sfl/nodes/%i/runtime/catalog-api.env
+EnvironmentFile=/opt/zhudatuan/shared/catalog-api.env
 ExecStart=/usr/bin/node service/CatalogOperatorApiMain.js
 ExecStartPost=/usr/bin/node service/CatalogOperatorApiReadyMain.js
 Restart=on-failure
@@ -39,7 +40,8 @@ LockPersonality=true
 CapabilityBoundingSet=
 SystemCallArchitectures=native
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-ReadOnlyPaths=/opt/sfl/nodes/%i /opt/zhudatuan/shared
+ReadOnlyPaths=/opt/zhudatuan/targets/catalog-api /opt/zhudatuan/shared
+InaccessiblePaths=-/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
 
 [Install]
 WantedBy=multi-user.target

@@ -2,19 +2,19 @@
 Description=SFL node-bound storefront (%i)
 After=network-online.target
 Wants=network-online.target
-ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/apps/storefront-web/dist/server/index.js
-ConditionPathExists=/opt/sfl/nodes/%i/current/node_modules/vinext/dist/cli.js
+ConditionPathExists=/opt/sfl/nodes/%i/targets/storefront/current/app/dist/server/index.js
+ConditionPathExists=/opt/sfl/nodes/%i/targets/storefront/runtime/node_modules/vinext/dist/cli.js
 ConditionPathExists=/opt/sfl/nodes/%i/runtime/storefront.env
 
 [Service]
 Type=simple
 DynamicUser=yes
-WorkingDirectory=/opt/sfl/nodes/%i/current/01_core_hexin/apps/storefront-web
+WorkingDirectory=/opt/sfl/nodes/%i/targets/storefront/current/app
 Environment=NODE_ENV=production
 Environment=APP_ENV=production
 Environment=AUTH_MODE=membership
 EnvironmentFile=/opt/sfl/nodes/%i/runtime/storefront.env
-ExecStart=/usr/bin/node /opt/sfl/nodes/%i/current/node_modules/vinext/dist/cli.js start --hostname 127.0.0.1 --port ${STOREFRONT_PORT}
+ExecStart=/usr/bin/node /opt/sfl/nodes/%i/targets/storefront/runtime/node_modules/vinext/dist/cli.js start --hostname 127.0.0.1 --port ${STOREFRONT_PORT}
 Restart=on-failure
 RestartSec=3
 TimeoutStartSec=30

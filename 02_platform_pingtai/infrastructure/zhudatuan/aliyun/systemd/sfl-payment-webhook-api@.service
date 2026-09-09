@@ -2,21 +2,21 @@
 Description=SFL node-bound payment webhook API (%i)
 Requires=zhudatuan-internal-runtime.service
 After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service
-ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/PaymentWebhookApiMain.js
-ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/PaymentWebhookApiReadyMain.js
+ConditionPathExists=/opt/sfl/nodes/%i/targets/payment-webhook-api/current/service/PaymentWebhookApiMain.js
+ConditionPathExists=/opt/sfl/nodes/%i/targets/payment-webhook-api/current/service/PaymentWebhookApiReadyMain.js
 ConditionPathExists=/opt/sfl/nodes/%i/runtime/payment-webhook-api.env
 
 [Service]
 Type=simple
 User=zhudatuan
 Group=zhudatuan
-WorkingDirectory=/opt/sfl/nodes/%i/current
+WorkingDirectory=/opt/sfl/nodes/%i/targets/payment-webhook-api/current
 Environment=NODE_ENV=production
 Environment=PAYMENT_WEBHOOK_API_PROFILE=payment-webhook-only
 Environment=API_BIND_HOST=127.0.0.1
 EnvironmentFile=/opt/sfl/nodes/%i/runtime/payment-webhook-api.env
-ExecStart=/usr/bin/node 01_core_hexin/services/commerce/dist/PaymentWebhookApiMain.js
-ExecStartPost=/usr/bin/node 01_core_hexin/services/commerce/dist/PaymentWebhookApiReadyMain.js
+ExecStart=/usr/bin/node service/PaymentWebhookApiMain.js
+ExecStartPost=/usr/bin/node service/PaymentWebhookApiReadyMain.js
 Restart=on-failure
 RestartSec=3
 TimeoutStartSec=30

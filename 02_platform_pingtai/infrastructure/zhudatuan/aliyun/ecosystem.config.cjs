@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'zhudatuan-storefront',
-      cwd: '/opt/zhudatuan/current/01_core_hexin/apps/storefront-web',
-      script: '/opt/zhudatuan/current/node_modules/vinext/dist/cli.js',
+      cwd: '/opt/zhudatuan/targets/storefront/current/app',
+      script: '/opt/zhudatuan/targets/storefront/runtime/node_modules/vinext/dist/cli.js',
       args: 'start',
       node_args: ['--env-file=/opt/zhudatuan/shared/.env.production'],
       interpreter: '/usr/bin/node',

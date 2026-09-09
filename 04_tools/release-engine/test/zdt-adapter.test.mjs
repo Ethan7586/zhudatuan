@@ -1,0 +1,146 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import test from 'node:test';
+
+const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const systemdRoot = join(projectRoot, '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd');
+const adapter = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8'));
+const policy = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8'));
+
+test('build and remote adapters agree on every pointer and process', () => {
+  for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
+    for (const [target, deployment] of Object.entries(node.deployments)) {
+      const remote = policy.nodes[nodeKey]?.deployments?.[target];
+      assert.ok(remote, `missing remote deployment ${nodeKey}/${target}`);
+      assert.equal(remote.pointerRoot, deployment.pointerRoot, `${nodeKey}/${target} pointer`);
+      assert.equal(remote.restart.name, deployment.service, `${nodeKey}/${target} service`);
+      assert.equal(remote.productionEnabled ?? true, deployment.productionEnabled ?? true, `${nodeKey}/${target} production state`);
+    }
+  }
+});
+
+test('every restartable fast target has a one-time legacy seed and production rollback baseline', () => {
+  for (const [nodeKey, node] of Object.entries(policy.nodes)) {
+    assert.match(node.legacyRoot, /^\/opt\//, `${nodeKey} legacy root`);
+    for (const [target, deployment] of Object.entries(node.deployments)) {
+      if (target === 'core' || deployment.restart.kind === 'none') continue;
+      assert.ok(Array.isArray(deployment.seedInputs) && deployment.seedInputs.length > 0, `${nodeKey}/${target} seed inputs`);
+      assert.notEqual(deployment.allowFirstActivation, true, `${nodeKey}/${target} cannot skip a rollback baseline`);
+    }
+  }
+});
+
+test('every A1/A2 systemd target owns exactly one dependency-isolated restart unit', () => {
+  for (const [nodeKey, node] of Object.entries(policy.nodes)) {
+    const owners = new Set();
+    for (const [target, deployment] of Object.entries(node.deployments)) {
+      if (target === 'core' || deployment.restart.kind !== 'systemd') continue;
+      assert.match(deployment.restart.name, /^[^\s]+\.service$/, `${nodeKey}/${target} restart unit`);
+      assert.equal(deployment.restart.jobMode, 'ignore-dependencies', `${nodeKey}/${target} restart job mode`);
+      assert.ok(!owners.has(deployment.restart.name), `${nodeKey}/${target} uniquely owns ${deployment.restart.name}`);
+      owners.add(deployment.restart.name);
+    }
+  }
+});
+
+test('gateway and tunnel templates keep ordering without lifecycle propagation', async () => {
+  const cases = [
+    ['sfl-api-gateway@.service', 'sfl-storefront@%i.service'],
+    ['sfl-cloudflared@.service', 'sfl-api-gateway@%i.service'],
+  ];
+  for (const [name, orderedUnit] of cases) {
+    const source = await readFile(join(systemdRoot, name), 'utf8');
+    assert.doesNotMatch(source, /^(Requires|Requisite|BindsTo|PartOf|ConsistsOf|PropagatesReloadTo|PropagatesReloadFrom)=/m, name);
+    assert.match(source, new RegExp(`^Wants=.*${orderedUnit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'm'), `${name} soft dependency`);
+    assert.match(source, new RegExp(`^After=.*${orderedUnit.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'm'), `${name} startup ordering`);
+  }
+});
+
+test('every fast target has node-scoped independent pointers', () => {
+  for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
+    const pointers = [];
+    for (const [target, deployment] of Object.entries(node.deployments)) {
+      if (target === 'core') continue;
+      assert.match(deployment.pointerRoot, new RegExp(`/${target.replaceAll('-', '\\-')}$`));
+      assert.ok(!deployment.pointerRoot.endsWith('/current'), `${nodeKey}/${target} owns a pointer root, not a shared current`);
+      pointers.push(deployment.pointerRoot);
+    }
+    assert.equal(new Set(pointers).size, pointers.length, `${nodeKey} target pointers are unique`);
+  }
+  const l0 = new Set(Object.values(adapter.nodes['zhudatuan-l0'].deployments).map((item) => item.pointerRoot));
+  for (const item of Object.values(adapter.nodes['hbbtzn-l1'].deployments)) assert.ok(!l0.has(item.pointerRoot), `L1 pointer is isolated: ${item.pointerRoot}`);
+});
+
+test('artifacts never carry the repository node_modules tree', () => {
+  for (const target of Object.values(adapter.targets)) {
+    for (const input of target.artifactInputs) assert.doesNotMatch(input.source, /(^|\/)node_modules(\/|$)/);
+  }
+});
+
+test('service definitions use target pointers instead of node-wide code pointers', async () => {
+  const units = {
+    'sfl-identity-api@.service': 'identity-api',
+    'sfl-purchase-api@.service': 'purchase-api',
+    'sfl-web-api@.service': 'web-api',
+    'sfl-catalog-api@.service': 'catalog-api',
+    'sfl-catalog-jobs@.service': 'catalog-jobs',
+    'sfl-payment-webhook-api@.service': 'payment-webhook-api',
+    'sfl-payment-jobs@.service': 'payment-jobs',
+    'sfl-storefront@.service': 'storefront',
+  };
+  for (const [name, target] of Object.entries(units)) {
+    const source = await readFile(join(systemdRoot, name), 'utf8');
+    assert.doesNotMatch(source, /\/opt\/sfl\/nodes\/%i\/current\//, name);
+    assert.match(source, new RegExp(`/opt/sfl/nodes/%i/targets/${target}/current`), name);
+  }
+
+  const l0Units = {
+    'zhudatuan-api.service': 'identity-api',
+    'zhudatuan-purchase-api.service': 'purchase-api',
+    'zhudatuan-web-api.service': 'web-api',
+    'zhudatuan-catalog-api.service': 'catalog-api',
+    'zhudatuan-catalog-jobs.service': 'catalog-jobs',
+    'zhudatuan-payment-webhook-api.service': 'payment-webhook-api',
+    'zhudatuan-payment-jobs.service': 'payment-jobs',
+  };
+  for (const [name, target] of Object.entries(l0Units)) {
+    const source = await readFile(join(systemdRoot, name), 'utf8');
+    assert.doesNotMatch(source, /WorkingDirectory=\/opt\/zhudatuan\/current/, name);
+    assert.match(source, new RegExp(`/opt/zhudatuan/targets/${target}/current`), name);
+    assert.match(source, new RegExp(`ReadOnlyPaths=/opt/zhudatuan/targets/${target}`), name);
+  }
+});
+
+test('storefront seed dependency identity matches the build adapter', () => {
+  const expected = adapter.targets.storefront.dependencyLayer;
+  const storefrontHosts = { 'zhudatuan-l0': 'zhudatuan.com', 'hbbtzn-l1': 'hbbtzn.com' };
+  assert.deepEqual(adapter.targets.storefront.criticalFiles, ['app/dist/server/index.js']);
+  for (const [nodeKey, node] of Object.entries(policy.nodes)) {
+    assert.deepEqual(node.deployments.storefront.seedInputs, [{ source: '01_core_hexin/apps/storefront-web/dist', destination: 'app/dist' }]);
+    assert.ok(node.deployments.storefront.candidateChecks.some((check) => check.argv.includes('{{candidateDir}}/app/dist/server/index.js')));
+    const healthArgv = node.deployments.storefront.healthChecks[0].argv;
+    assert.ok(healthArgv.includes(`Host: ${storefrontHosts[nodeKey]}`), `${nodeKey} health check carries the real Host boundary`);
+    assert.ok(healthArgv.includes(`X-Forwarded-Host: ${storefrontHosts[nodeKey]}`), `${nodeKey} health check carries the forwarded Host boundary`);
+    const seeded = node.deployments.storefront.seedDependencyLayer;
+    assert.equal(seeded.runtime, expected.runtime);
+    assert.deepEqual(seeded.keyFiles, expected.keyFiles);
+    assert.equal(seeded.productionRoot, expected.productionRoot);
+  }
+  assert.equal(policy.nodes['hbbtzn-l1'].deployments.storefront.restart.jobMode, 'ignore-dependencies');
+  assert.deepEqual(policy.readiness, { timeoutMs: 30000, intervalMs: 500, attemptTimeoutMs: 3000, hardFailureGraceMs: 1000 });
+});
+
+test('runtime installer cannot restart or cut over a service', async () => {
+  const source = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh'), 'utf8');
+  assert.doesNotMatch(source, /systemctl\s+(restart|start|reload)\b/);
+  assert.doesNotMatch(source, /pm2\s+(restart|start|reload|startOrReload)\b/);
+  assert.match(source, /systemctl daemon-reload/);
+  assert.match(source, /i-2zeewhay0farxq8lucrd/);
+  assert.match(source, /latest\/meta-data\/instance-id/);
+  assert.match(source, /node_scope.*hbbtzn-l1/);
+  assert.match(source, /node_scope.*zhudatuan-l0/);
+  assert.match(source, /target_root="\$\{pointer%\/\*\}"/);
+  assert.match(source, /chmod 0755 "\$target_parent" "\$target_root"/);
+});

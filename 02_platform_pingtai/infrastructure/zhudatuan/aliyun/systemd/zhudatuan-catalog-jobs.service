@@ -2,19 +2,19 @@
 Description=Zhudatuan catalog import worker
 Requires=zhudatuan-internal-runtime.service zhudatuan-object-store.service
 After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service zhudatuan-object-store.service
-ConditionPathExists=/opt/zhudatuan/current/01_core_hexin/services/commerce/dist/CatalogJobsMain.js
-ConditionPathExists=/opt/zhudatuan/current/01_core_hexin/services/commerce/dist/CatalogJobsReadyMain.js
+ConditionPathExists=/opt/zhudatuan/targets/catalog-jobs/current/service/CatalogJobsMain.js
+ConditionPathExists=/opt/zhudatuan/targets/catalog-jobs/current/service/CatalogJobsReadyMain.js
 ConditionPathExists=/opt/zhudatuan/shared/catalog-jobs.env
 
 [Service]
 Type=simple
 User=zhudatuan
 Group=zhudatuan
-WorkingDirectory=/opt/zhudatuan/current
+WorkingDirectory=/opt/zhudatuan/targets/catalog-jobs/current
 Environment=NODE_ENV=production
 EnvironmentFile=/opt/zhudatuan/shared/catalog-jobs.env
-ExecStartPre=/usr/bin/node 01_core_hexin/services/commerce/dist/CatalogJobsReadyMain.js
-ExecStart=/usr/bin/node 01_core_hexin/services/commerce/dist/CatalogJobsMain.js
+ExecStartPre=/usr/bin/node service/CatalogJobsReadyMain.js
+ExecStart=/usr/bin/node service/CatalogJobsMain.js
 Restart=on-failure
 RestartSec=3
 TimeoutStartSec=30
@@ -37,7 +37,7 @@ LockPersonality=true
 CapabilityBoundingSet=
 SystemCallArchitectures=native
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-ReadOnlyPaths=/opt/zhudatuan/current /opt/zhudatuan/shared
+ReadOnlyPaths=/opt/zhudatuan/targets/catalog-jobs /opt/zhudatuan/shared
 InaccessiblePaths=-/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
 
 [Install]

@@ -2,21 +2,21 @@
 Description=SFL node-bound purchase API (%i)
 Requires=zhudatuan-internal-runtime.service
 After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service
-ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/PurchaseApiMain.js
-ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/PurchaseApiReadyMain.js
+ConditionPathExists=/opt/sfl/nodes/%i/targets/purchase-api/current/service/PurchaseApiMain.js
+ConditionPathExists=/opt/sfl/nodes/%i/targets/purchase-api/current/service/PurchaseApiReadyMain.js
 ConditionPathExists=/opt/sfl/nodes/%i/runtime/purchase-api.env
 
 [Service]
 Type=simple
 User=zhudatuan
 Group=zhudatuan
-WorkingDirectory=/opt/sfl/nodes/%i/current
+WorkingDirectory=/opt/sfl/nodes/%i/targets/purchase-api/current
 Environment=NODE_ENV=production
 Environment=PURCHASE_API_PROFILE=purchase-only
 Environment=API_BIND_HOST=127.0.0.1
 EnvironmentFile=/opt/sfl/nodes/%i/runtime/purchase-api.env
-ExecStart=/usr/bin/node 01_core_hexin/services/commerce/dist/PurchaseApiMain.js
-ExecStartPost=/usr/bin/node 01_core_hexin/services/commerce/dist/PurchaseApiReadyMain.js
+ExecStart=/usr/bin/node service/PurchaseApiMain.js
+ExecStartPost=/usr/bin/node service/PurchaseApiReadyMain.js
 Restart=on-failure
 RestartSec=3
 TimeoutStartSec=30

@@ -2,20 +2,20 @@
 Description=Zhudatuan payment query and refund workers
 Requires=zhudatuan-internal-runtime.service docker.service
 After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service docker.service
-ConditionPathExists=/opt/zhudatuan/current/01_core_hexin/services/commerce/dist/PaymentJobsOnlyMain.js
-ConditionPathExists=/opt/zhudatuan/current/01_core_hexin/services/commerce/dist/PaymentJobsReadyMain.js
+ConditionPathExists=/opt/zhudatuan/targets/payment-jobs/current/service/PaymentJobsOnlyMain.js
+ConditionPathExists=/opt/zhudatuan/targets/payment-jobs/current/service/PaymentJobsReadyMain.js
 ConditionPathExists=/opt/zhudatuan/shared/payment-jobs.env
 
 [Service]
 Type=simple
 User=zhudatuan
 Group=zhudatuan
-WorkingDirectory=/opt/zhudatuan/current
+WorkingDirectory=/opt/zhudatuan/targets/payment-jobs/current
 Environment=NODE_ENV=production
 Environment=JOB_RUNTIME_PROFILE=payment-only
 EnvironmentFile=/opt/zhudatuan/shared/payment-jobs.env
-ExecStartPre=/usr/bin/node 01_core_hexin/services/commerce/dist/PaymentJobsReadyMain.js
-ExecStart=/usr/bin/node 01_core_hexin/services/commerce/dist/PaymentJobsOnlyMain.js
+ExecStartPre=/usr/bin/node service/PaymentJobsReadyMain.js
+ExecStart=/usr/bin/node service/PaymentJobsOnlyMain.js
 Restart=on-failure
 RestartSec=3
 TimeoutStartSec=30
@@ -38,7 +38,7 @@ LockPersonality=true
 CapabilityBoundingSet=
 SystemCallArchitectures=native
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-ReadOnlyPaths=/opt/zhudatuan/current /opt/zhudatuan/shared
+ReadOnlyPaths=/opt/zhudatuan/targets/payment-jobs /opt/zhudatuan/shared
 InaccessiblePaths=-/opt/smart-wing -/opt/smart-wiston -/opt/shop-test
 
 [Install]

@@ -154,3 +154,7 @@ printf 'GET %s HTTP/1.1\r\nHost: %s\r\nx-contract-version: 1.0.0\r\nConnection: 
 完整 SHA：<仅在首次验收、合并或严格核对时提供>
 本版完成：<一句话说明>
 ```
+
+## 八、统一 AI 发布入口
+
+所有发布、候选、验证、回滚与状态查询必须遵守根目录 `AI-DELIVERY.md`，并通过 `npm run release -- <command>` 执行。禁止临时拼装生产部署命令；生产切流仍须 Ethan 明确回复“开始部署”。

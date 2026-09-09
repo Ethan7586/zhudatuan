@@ -1,0 +1,1182 @@
+#!/usr/bin/env node
+import { createHash } from 'node:crypto';
+import { createReadStream } from 'node:fs';
+import { appendFile, chmod, copyFile, cp, link, lstat, mkdir, readFile, readlink, readdir, rename, rm, symlink, writeFile } from 'node:fs/promises';
+import { hostname } from 'node:os';
+import { basename, dirname, join, relative, resolve } from 'node:path';
+import { spawn } from 'node:child_process';
+import { performance } from 'node:perf_hooks';
+import { setTimeout as delay } from 'node:timers/promises';
+
+let actionName = 'unknown';
+let loadedPolicy = null;
+let loadedContext = null;
+
+const FORBIDDEN_DIRECTORIES = new Set([
+  '.git', '.npm', '.nyc_output', '.turbo', '_cacache',
+  'coverage', 'logs', 'node_modules', 'playwright-report',
+  'releases', 'test-results', 'tmp', 'temp',
+]);
+const MAX_ARTIFACT_BYTES = 150_000_000;
+const DEFAULT_READINESS = Object.freeze({
+  timeoutMs: 30_000,
+  intervalMs: 500,
+  attemptTimeoutMs: 3_000,
+  hardFailureGraceMs: 1_000,
+});
+
+try {
+  const [action, ...tokens] = process.argv.slice(2);
+  actionName = action ?? 'unknown';
+  const options = parseOptions(tokens);
+  const policyRoot = process.env.AI_DELIVERY_POLICY_ROOT ?? '/etc/ai-delivery/projects';
+  const project = safeName(required(options.project, 'PROJECT_REQUIRED'));
+  const policy = JSON.parse(await readFile(join(policyRoot, `${project}.json`), 'utf8'));
+  loadedPolicy = policy;
+  validatePolicy(policy, project);
+  const nodeKey = safeName(required(options.node, 'NODE_REQUIRED'));
+  const targetId = safeName(required(options.target, 'TARGET_REQUIRED'));
+  const nodePolicy = policy.nodes?.[nodeKey];
+  const deployment = nodePolicy?.deployments?.[targetId];
+  assert(deployment, 'DEPLOYMENT_NOT_ALLOWED');
+  const context = { project, node: nodeKey, target: targetId, deployment, nodePolicy, policy };
+  loadedContext = context;
+
+  let result;
+  if (action === 'lookup') result = await lookup(context, options);
+  else if (action === 'reuse') result = await withLocks(context, false, () => reuse(context, options), { version: options.treeDigest, operation: 'reuse-artifact' });
+  else if (action === 'stage') result = await withLocks(context, false, () => stage(context, options), { version: options.treeDigest });
+  else if (action === 'seed') result = await withLocks(context, true, () => seed(context, options), { version: options.sourceSha, operation: 'seed-layout' });
+  else if (action === 'activate') result = await withLocks(context, true, () => activate(context, options), { version: options.approval?.split(':').at(-1) });
+  else if (action === 'rollback') result = await withLocks(context, true, () => rollback(context), { operation: 'rollback' });
+  else if (action === 'verify') result = await withLocks(context, false, () => verifyCurrent(context), { operation: 'verify' });
+  else if (action === 'status') result = await status(context);
+  else throw failure('ACTION_UNKNOWN', { action });
+
+  await audit(policy, { action, ...contextSummary(context), result, completedAt: new Date().toISOString() });
+  process.stdout.write(`${JSON.stringify({ ok: true, action, result }, null, 2)}\n`);
+} catch (error) {
+  if (loadedPolicy && loadedContext) {
+    try {
+      await audit(loadedPolicy, {
+        action: actionName,
+        ...contextSummary(loadedContext),
+        error: { code: error.code ?? 'REMOTE_AGENT_FAILED', message: error.message, details: error.details ?? {} },
+        failedAt: new Date().toISOString(),
+      });
+    } catch {}
+  }
+  process.stderr.write(`${JSON.stringify({ ok: false, error: { code: error.code ?? 'REMOTE_AGENT_FAILED', message: error.message, details: error.details ?? {} } }, null, 2)}\n`);
+  process.exitCode = 1;
+}
+
+async function seed(context, options) {
+  const sourceSha = required(options.sourceSha, 'SEED_SOURCE_SHA_REQUIRED');
+  assert(/^[a-f0-9]{40}$/.test(sourceSha), 'SEED_SOURCE_SHA_INVALID');
+  assert(options.approval === `${context.project}:seed-layout:${sourceSha}`, 'SEED_APPROVAL_INVALID');
+  const inputs = context.deployment.seedInputs;
+  assert(Array.isArray(inputs) && inputs.length > 0, 'SEED_INPUTS_NOT_CONFIGURED');
+  const legacyRoot = required(context.nodePolicy.legacyRoot, 'SEED_LEGACY_ROOT_NOT_CONFIGURED');
+  assertAllowedRoot(context.policy, legacyRoot);
+  const root = context.deployment.pointerRoot;
+  assertAllowedRoot(context.policy, root);
+  assert(!(await pointer(root, 'current')), 'CURRENT_POINTER_ALREADY_EXISTS', { root });
+  await ensureTraversablePointerRoot(context);
+  const protectedBefore = await protectedProcessSnapshot(context);
+  const temporary = join(root, 'candidates', `.seed-${process.pid}-${Date.now()}`);
+  await mkdir(temporary, { recursive: true, mode: 0o755 });
+  try {
+    for (const input of inputs) {
+      const source = resolve(legacyRoot, input.source);
+      const destination = resolve(temporary, input.destination);
+      assert(source.startsWith(`${resolve(legacyRoot)}/`), 'SEED_SOURCE_UNSAFE', { source });
+      assert(destination.startsWith(`${resolve(temporary)}/`), 'SEED_DESTINATION_UNSAFE', { destination });
+      await mkdir(dirname(destination), { recursive: true });
+      await cp(source, destination, { recursive: true, dereference: false, errorOnExist: true });
+    }
+    const evidence = await treeEvidence(temporary);
+    await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: temporary, currentDir: '', ...contextSummary(context) });
+    const dependencyLayer = await seedDependencyLayer(context);
+    const manifest = {
+      schema: 'ai.delivery.artifact.v1',
+      engineVersion: 1,
+      artifactId: `${context.project}-${context.target}-seed-${evidence.treeDigest.slice(7, 19)}`,
+      project: context.project,
+      target: context.target,
+      targetKind: 'seed',
+      lane: 'A3',
+      sourceSha,
+      treeDigest: evidence.treeDigest,
+      fileCount: evidence.fileCount,
+      criticalFiles: [],
+      dependencyLayer,
+      seededAt: new Date().toISOString(),
+    };
+    manifest.manifestDigest = digest(manifest);
+    await writeFile(join(temporary, 'AI_DELIVERY_ARTIFACT.json'), `${JSON.stringify(manifest, null, 2)}\n`, { mode: 0o444 });
+    const release = join(root, 'releases', `seed-${evidence.treeDigest.slice(7)}`);
+    await mkdir(dirname(release), { recursive: true });
+    if (!(await exists(release))) await rename(temporary, release);
+    await chmod(release, 0o755);
+    await atomicPointer(join(root, 'current'), release);
+    if (dependencyLayer) await atomicPointer(join(root, 'runtime'), dependencyLayer.path);
+    await assertProtectedUnchanged(context, protectedBefore);
+    return { seeded: true, current: release, runtime: dependencyLayer?.path ?? null, sourceSha, treeDigest: evidence.treeDigest };
+  } finally {
+    await rm(temporary, { recursive: true, force: true });
+  }
+}
+
+async function seedDependencyLayer(context) {
+  const definition = context.deployment.seedDependencyLayer;
+  if (!definition) return null;
+  const productionRoot = required(definition.productionRoot, 'SEED_LAYER_ROOT_REQUIRED');
+  assert((context.policy.allowedDependencyRoots ?? []).includes(productionRoot), 'DEPENDENCY_LAYER_ROOT_NOT_ALLOWED', { productionRoot });
+  const legacyRoot = resolve(context.nodePolicy.legacyRoot);
+  const keyFiles = [];
+  for (const relative of definition.keyFiles ?? []) {
+    assert(safeRelative(relative), 'SEED_LAYER_KEY_UNSAFE', { relative });
+    const absolute = resolve(legacyRoot, relative);
+    assert(absolute.startsWith(`${legacyRoot}/`), 'SEED_LAYER_KEY_UNSAFE', { relative });
+    const stats = await lstat(absolute);
+    assert(stats.isFile(), 'SEED_LAYER_KEY_INVALID', { relative });
+    keyFiles.push({ path: relative, bytes: stats.size, sha256: `sha256:${await hashFile(absolute)}` });
+  }
+  const layerDigest = digest({ runtime: definition.runtime, keyFiles });
+  const destination = join(productionRoot, layerDigest.slice(7));
+  if (!(await exists(destination))) {
+    const source = resolve(legacyRoot, required(definition.source, 'SEED_LAYER_SOURCE_REQUIRED'));
+    assert(source.startsWith(`${legacyRoot}/`), 'SEED_LAYER_SOURCE_UNSAFE', { source });
+    const temporary = join(productionRoot, `.seed-${layerDigest.slice(7)}-${process.pid}`);
+    await mkdir(temporary, { recursive: true, mode: 0o755 });
+    try {
+      await cloneTree(source, join(temporary, 'node_modules'));
+      await writeFile(join(temporary, 'AI_DELIVERY_LAYER.json'), `${JSON.stringify({
+        schema: 'ai.delivery.dependency-layer.v1',
+        project: context.project,
+        digest: layerDigest,
+        runtime: definition.runtime,
+        keyFiles,
+        seededFrom: source,
+        createdAt: new Date().toISOString(),
+      }, null, 2)}\n`, { mode: 0o444 });
+      await mkdir(productionRoot, { recursive: true });
+      await rename(temporary, destination);
+    } finally {
+      await rm(temporary, { recursive: true, force: true });
+    }
+  }
+  const manifest = JSON.parse(await readFile(join(destination, 'AI_DELIVERY_LAYER.json'), 'utf8'));
+  assert(manifest.digest === layerDigest && manifest.runtime === definition.runtime, 'SEED_LAYER_EXISTING_MISMATCH', { destination });
+  return { strategy: 'shared-content-addressed', runtime: definition.runtime, digest: layerDigest, keyFiles, productionRoot, path: destination };
+}
+
+async function cloneTree(source, destination) {
+  const stats = await lstat(source);
+  if (stats.isDirectory()) {
+    await mkdir(destination, { recursive: true, mode: stats.mode & 0o777 });
+    for (const name of await readdir(source)) await cloneTree(join(source, name), join(destination, name));
+    return;
+  }
+  if (stats.isSymbolicLink()) {
+    await symlink(await readlink(source), destination);
+    return;
+  }
+  assert(stats.isFile(), 'SEED_LAYER_ENTRY_INVALID', { source });
+  try {
+    await link(source, destination);
+  } catch (error) {
+    if (error?.code !== 'EXDEV') throw error;
+    await copyFile(source, destination);
+  }
+}
+
+async function stage(context, options) {
+  const started = Date.now();
+  const timings = { validation: 0, materialize: 0, candidateChecks: 0, pointer: 0, cleanup: 0 };
+  const validationStarted = Date.now();
+  const archive = required(options.archive, 'ARCHIVE_REQUIRED');
+  const manifestPath = required(options.manifest, 'MANIFEST_REQUIRED');
+  assertIncomingPath(context.policy, archive);
+  assertIncomingPath(context.policy, manifestPath);
+  const archiveStats = await lstat(archive);
+  assert(archiveStats.isFile() && archiveStats.size <= MAX_ARTIFACT_BYTES, 'ARTIFACT_ARCHIVE_SIZE_INVALID', { bytes: archiveStats.size, limitBytes: MAX_ARTIFACT_BYTES });
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  assert(manifest.schema === 'ai.delivery.artifact.v1', 'ARTIFACT_MANIFEST_SCHEMA_INVALID');
+  assert(manifest.engineVersion === 2, 'ARTIFACT_ENGINE_VERSION_INVALID');
+  assert(manifest.project === context.project && manifest.target === context.target, 'ARTIFACT_SCOPE_MISMATCH');
+  assert(/^[a-f0-9]{40}$/.test(manifest.sourceSha), 'ARTIFACT_SOURCE_SHA_INVALID');
+  assert(/^sha256:[a-f0-9]{64}$/.test(manifest.treeDigest), 'ARTIFACT_TREE_DIGEST_INVALID');
+  assert(/^sha256:[a-f0-9]{64}$/.test(manifest.manifestDigest), 'ARTIFACT_MANIFEST_DIGEST_INVALID');
+  assert(/^sha256:[a-f0-9]{64}$/.test(manifest.archive?.sha256), 'ARTIFACT_ARCHIVE_DIGEST_INVALID');
+  assert(manifest.totalBytes <= MAX_ARTIFACT_BYTES, 'ARTIFACT_SIZE_INVALID', { archiveBytes: archiveStats.size, totalBytes: manifest.totalBytes, limitBytes: MAX_ARTIFACT_BYTES });
+  assert(/^[a-f0-9]{64}$/.test(options.sha256), 'ARTIFACT_DECLARED_HASH_INVALID');
+  assert(manifest.archive?.sha256 === `sha256:${await hashFile(archive)}`, 'ARTIFACT_ARCHIVE_HASH_MISMATCH');
+  assert(manifest.archive?.bytes === archiveStats.size, 'ARTIFACT_ARCHIVE_BYTES_MISMATCH', { expected: manifest.archive?.bytes, actual: archiveStats.size });
+  assert(options.sha256 === manifest.archive.sha256.slice(7), 'ARTIFACT_DECLARED_HASH_MISMATCH');
+  assert(options.treeDigest === manifest.treeDigest, 'ARTIFACT_DECLARED_TREE_MISMATCH');
+  assertManifestEntries(manifest);
+  const claimedDigest = manifest.manifestDigest;
+  const unsigned = { ...manifest };
+  delete unsigned.manifestDigest;
+  delete unsigned.manifestPath;
+  assert(claimedDigest === digest(unsigned), 'ARTIFACT_MANIFEST_DIGEST_MISMATCH');
+  const dependencyLayer = await verifyDependencyLayer(context, manifest.dependencyLayer);
+  timings.validation = Date.now() - validationStarted;
+
+  const root = context.deployment.pointerRoot;
+  assertAllowedRoot(context.policy, root);
+  await ensureTraversablePointerRoot(context);
+  const releases = join(root, 'releases');
+  const candidates = join(root, 'candidates');
+  const release = join(releases, `${manifest.sourceSha}-${manifest.treeDigest.slice(7)}-${claimedDigest.slice(7)}`);
+  await mkdir(releases, { recursive: true, mode: 0o755 });
+  await mkdir(candidates, { recursive: true, mode: 0o700 });
+  const materializeStarted = Date.now();
+  if (!(await exists(release))) {
+    const temporary = join(candidates, `.extract-${process.pid}-${Date.now()}`);
+    await mkdir(temporary, { recursive: true, mode: 0o755 });
+    try {
+      await verifyArchiveEntries(archive);
+      await command(['tar', '-xzf', archive, '-C', temporary], { timeoutMs: 600_000 });
+      const evidence = await treeEvidence(temporary);
+      assert(evidence.treeDigest === manifest.treeDigest, 'ARTIFACT_TREE_HASH_MISMATCH', evidence);
+      assertTreeMatchesManifest(evidence, manifest);
+      await verifyCriticalFiles(temporary, manifest.criticalFiles ?? []);
+      await writeFile(join(temporary, 'AI_DELIVERY_ARTIFACT.json'), `${JSON.stringify(manifest, null, 2)}\n`, { mode: 0o444 });
+      await rename(temporary, release);
+    } finally {
+      await rm(temporary, { recursive: true, force: true });
+    }
+  } else {
+    const evidence = await treeEvidence(release, new Set(['AI_DELIVERY_ARTIFACT.json']));
+    assert(evidence.treeDigest === manifest.treeDigest, 'EXISTING_RELEASE_TREE_MISMATCH', evidence);
+    assertTreeMatchesManifest(evidence, manifest);
+  }
+  timings.materialize = Date.now() - materializeStarted;
+  const checksStarted = Date.now();
+  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: release, currentDir: await pointer(context.deployment.pointerRoot, 'current') ?? '', ...contextSummary(context) });
+  timings.candidateChecks = Date.now() - checksStarted;
+  const pointerStarted = Date.now();
+  await atomicPointer(join(root, 'candidate'), release);
+  timings.pointer = Date.now() - pointerStarted;
+  const cleanupStarted = Date.now();
+  await Promise.all([rm(archive, { force: true }), rm(manifestPath, { force: true })]);
+  timings.cleanup = Date.now() - cleanupStarted;
+  timings.total = Date.now() - started;
+  return {
+    release,
+    candidate: release,
+    sourceSha: manifest.sourceSha,
+    treeDigest: manifest.treeDigest,
+    dependencyLayer,
+    cacheStatus: 'miss',
+    artifactBytes: manifest.archive.bytes,
+    uploadedBytes: manifest.archive.bytes,
+    reusedBytes: 0,
+    timings,
+  };
+}
+
+async function verifyArchiveEntries(archive) {
+  const listing = await command(['tar', '-tzf', archive], { timeoutMs: 60_000 });
+  for (const entry of listing.stdout.split('\n').filter(Boolean)) {
+    const normalized = entry.replace(/^\.\//, '');
+    assert(!normalized.startsWith('/') && !normalized.split('/').includes('..'), 'ARTIFACT_ARCHIVE_PATH_UNSAFE', { entry });
+    if (normalized) assertArtifactPath(normalized);
+  }
+}
+
+async function lookup(context, options) {
+  const started = Date.now();
+  const identity = artifactIdentity(context, options);
+  const release = releasePath(context, identity);
+  const candidate = await pointer(context.deployment.pointerRoot, 'candidate');
+  const current = await pointer(context.deployment.pointerRoot, 'current');
+  if (!(await exists(release))) {
+    return { status: 'miss', exists: false, release, candidate, current, artifactLookupMs: Date.now() - started };
+  }
+  const manifest = await verifyStoredRelease(context, release, identity);
+  const status = candidate === release ? 'hit_candidate' : current === release ? 'hit_current' : 'hit_release';
+  return {
+    status,
+    exists: true,
+    release,
+    candidate,
+    current,
+    sourceSha: manifest.sourceSha,
+    treeDigest: manifest.treeDigest,
+    artifactBytes: manifest.archive.bytes,
+    uploadedBytes: 0,
+    reusedBytes: manifest.archive.bytes,
+    artifactLookupMs: Date.now() - started,
+  };
+}
+
+async function reuse(context, options) {
+  const started = Date.now();
+  const found = await lookup(context, options);
+  assert(found.exists, 'ARTIFACT_REUSE_MISSING', found);
+  const checksStarted = Date.now();
+  await runChecks(context.deployment.candidateChecks ?? [], {
+    candidateDir: found.release,
+    currentDir: found.current ?? '',
+    ...contextSummary(context),
+  });
+  const candidateChecks = Date.now() - checksStarted;
+  await ensureTraversablePointerRoot(context);
+  const pointerStarted = Date.now();
+  if (found.candidate !== found.release) await atomicPointer(join(context.deployment.pointerRoot, 'candidate'), found.release);
+  const pointerMs = Date.now() - pointerStarted;
+  return {
+    ...found,
+    status: found.candidate === found.release ? 'hit_candidate' : 'hit_release',
+    candidate: found.release,
+    cacheStatus: found.status,
+    timings: { artifactLookup: found.artifactLookupMs, candidateChecks, pointer: pointerMs, total: Date.now() - started },
+  };
+}
+
+async function activate(context, options) {
+  const started = Date.now();
+  const timings = { candidate: 0, snapshot: 0, cutover: 0, restart: 0, health: 0, isolation: 0 };
+  assert(context.deployment.productionEnabled !== false, 'PRODUCTION_ACTIVATION_DISABLED', {
+    reason: context.deployment.productionDisabledReason ?? 'target requires an external A3 procedure',
+  });
+  const root = context.deployment.pointerRoot;
+  assertAllowedRoot(context.policy, root);
+  const candidate = await pointer(root, 'candidate');
+  assert(candidate, 'CANDIDATE_MISSING');
+  const manifest = JSON.parse(await readFile(join(candidate, 'AI_DELIVERY_ARTIFACT.json'), 'utf8'));
+  const expectedApproval = `${context.project}:${manifest.sourceSha}`;
+  assert(options.approval === expectedApproval, 'PRODUCTION_APPROVAL_INVALID', { expectedApproval });
+  const candidateStarted = Date.now();
+  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: candidate, currentDir: await pointer(root, 'current') ?? '', ...contextSummary(context) });
+  await chmod(candidate, 0o755);
+  timings.candidate = Date.now() - candidateStarted;
+  const snapshotStarted = Date.now();
+  const protectedBefore = await protectedProcessSnapshot(context);
+  const previousCurrent = await pointer(root, 'current');
+  const expectedCurrent = options.expectedCurrent === 'none' ? null : required(options.expectedCurrent, 'EXPECTED_CURRENT_REQUIRED');
+  assert(previousCurrent === expectedCurrent, 'CURRENT_POINTER_CHANGED', { expected: expectedCurrent, actual: previousCurrent });
+  assert(previousCurrent || context.deployment.allowFirstActivation === true, 'CURRENT_POINTER_REQUIRED_FOR_ROLLBACK', { root });
+  const targetProcessBefore = await processId(context.deployment.restart);
+  const previousRuntime = await pointer(root, 'runtime');
+  const candidateRuntime = await dependencyLayerPath(context, manifest.dependencyLayer);
+  await ensureTraversablePointerRoot(context);
+  timings.snapshot = Date.now() - snapshotStarted;
+  let activationRestart = restartEvidence(context.deployment.restart, false);
+  if (previousCurrent === candidate) {
+    const readiness = await waitForReadiness(context, { candidateDir: candidate, currentDir: candidate, ...contextSummary(context) });
+    timings.health = readiness.durationMs;
+    const isolationStarted = Date.now();
+    const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+    timings.isolation = Date.now() - isolationStarted;
+    timings.total = Date.now() - started;
+    return {
+      mode: 'verify-only',
+      alreadyCurrent: true,
+      current: candidate,
+      runtime: await pointer(root, 'runtime'),
+      previous: await pointer(root, 'previous'),
+      service: context.deployment.restart,
+      restart: activationRestart,
+      readiness,
+      targetProcess: { before: targetProcessBefore, after: await processId(context.deployment.restart) },
+      cutoverMs: timings.health + timings.isolation,
+      timings,
+      protectedProcesses: { before: protectedBefore, after: protectedAfter },
+    };
+  }
+  let readiness;
+  let protectedAfter = null;
+  try {
+    const cutoverStarted = Date.now();
+    if (previousCurrent) await atomicPointer(join(root, 'previous'), previousCurrent);
+    if (previousRuntime) await atomicPointer(join(root, 'previous-runtime'), previousRuntime);
+    if (candidateRuntime) await atomicPointer(join(root, 'runtime'), candidateRuntime);
+    await atomicPointer(join(root, 'current'), candidate);
+    timings.cutover = Date.now() - cutoverStarted;
+    const restartStarted = Date.now();
+    activationRestart = await restart(context.deployment.restart);
+    timings.restart = Date.now() - restartStarted;
+    readiness = await waitForReadiness(context, { candidateDir: candidate, currentDir: candidate, ...contextSummary(context) });
+    timings.health = readiness.durationMs;
+    const targetProcessAfter = await processId(context.deployment.restart);
+    if (context.deployment.restart?.kind !== 'none') {
+      assert(targetProcessAfter !== '0' && targetProcessAfter !== targetProcessBefore, 'TARGET_PROCESS_NOT_RESTARTED', { before: targetProcessBefore, after: targetProcessAfter });
+    }
+    const isolationStarted = Date.now();
+    protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+    timings.isolation = Date.now() - isolationStarted;
+  } catch (candidateError) {
+    activationRestart = candidateError?.details?.restart ?? activationRestart;
+    timings.health = candidateError?.details?.durationMs ?? 0;
+    const failureConfirmedAt = new Date().toISOString();
+    const failureDetectedAt = performance.now();
+    const rollbackStarted = performance.now();
+    const rollback = {
+      triggerDelayMs: null,
+      startedAt: null,
+      pointerRestoreMs: 0,
+      failureResetMs: 0,
+      restartMs: 0,
+      restart: restartEvidence(context.deployment.restart, false),
+      readinessMs: 0,
+      totalMs: 0,
+      finalCurrent: null,
+      finalRuntime: null,
+    };
+    let rollbackFailure = null;
+    try {
+      assert(previousCurrent, 'ROLLBACK_BASELINE_MISSING', { root });
+      await chmod(previousCurrent, 0o755);
+      const pointerStarted = performance.now();
+      rollback.startedAt = new Date().toISOString();
+      rollback.triggerDelayMs = elapsedMs(failureDetectedAt);
+      await atomicPointer(join(root, 'current'), previousCurrent);
+      await restoreOptionalPointer(join(root, 'runtime'), previousRuntime);
+      rollback.pointerRestoreMs = elapsedMs(pointerStarted);
+      const restartStarted = performance.now();
+      rollback.restart = await restart(context.deployment.restart);
+      rollback.restartMs = elapsedMs(restartStarted);
+      const failureResetStarted = performance.now();
+      await resetFailureState(context.deployment.restart);
+      rollback.failureResetMs = elapsedMs(failureResetStarted);
+      const rollbackReadiness = await waitForReadiness(context, { candidateDir: previousCurrent, currentDir: previousCurrent, ...contextSummary(context) });
+      rollback.readiness = rollbackReadiness;
+      rollback.readinessMs = rollbackReadiness.durationMs;
+      protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+      rollback.finalCurrent = await pointer(root, 'current');
+      rollback.finalRuntime = await pointer(root, 'runtime');
+    } catch (error) {
+      rollback.restart = error?.details?.restart ?? rollback.restart;
+      rollbackFailure = errorEvidence(error);
+      rollback.finalCurrent = await pointer(root, 'current');
+      rollback.finalRuntime = await pointer(root, 'runtime');
+    }
+    rollback.totalMs = elapsedMs(rollbackStarted);
+    rollback.triggeredWithinMs = Number.isFinite(rollback.triggerDelayMs) && rollback.triggerDelayMs <= 3_000;
+    if (!protectedAfter) {
+      protectedAfter = await protectedProcessSnapshot(context).catch((error) => ({ captureError: errorEvidence(error) }));
+    }
+    timings.rollback = rollback.totalMs;
+    timings.total = Date.now() - started;
+    const details = {
+      candidateFailure: errorEvidence(candidateError),
+      failureConfirmedAt,
+      rollback,
+      rollbackFailure,
+      previousCurrent,
+      timings,
+      targetProcess: { before: targetProcessBefore, after: await processId(context.deployment.restart) },
+      protectedProcesses: { before: protectedBefore, after: protectedAfter },
+      restartCommands: {
+        candidate: activationRestart,
+        rollback: rollback.restart,
+        total: activationRestart.commandCount + rollback.restart.commandCount,
+      },
+    };
+    if (rollbackFailure) throw failure('CUTOVER_FAILED_ROLLBACK_UNHEALTHY', details);
+    throw failure('CUTOVER_FAILED_AND_ROLLED_BACK', details);
+  }
+  timings.total = Date.now() - started;
+  return {
+    mode: 'activated',
+    alreadyCurrent: false,
+    current: candidate,
+    runtime: await pointer(root, 'runtime'),
+    previous: previousCurrent,
+    service: context.deployment.restart,
+    restart: activationRestart,
+    readiness,
+    cutoverMs: timings.cutover + timings.restart + timings.health + timings.isolation,
+    timings,
+    targetProcess: { before: targetProcessBefore, after: await processId(context.deployment.restart) },
+    protectedProcesses: { before: protectedBefore, after: protectedAfter },
+  };
+}
+
+async function rollback(context) {
+  const root = context.deployment.pointerRoot;
+  assertAllowedRoot(context.policy, root);
+  const [current, previous, currentRuntime, previousRuntime] = await Promise.all([
+    pointer(root, 'current'),
+    pointer(root, 'previous'),
+    pointer(root, 'runtime'),
+    pointer(root, 'previous-runtime'),
+  ]);
+  assert(previous, 'ROLLBACK_POINTER_MISSING');
+  await ensureTraversablePointerRoot(context);
+  const protectedBefore = await protectedProcessSnapshot(context);
+  const started = performance.now();
+  const timings = { pointer: 0, restart: 0, readiness: 0, isolation: 0, total: 0 };
+  await chmod(previous, 0o755);
+  const pointerStarted = performance.now();
+  await atomicPointer(join(root, 'current'), previous);
+  if (current) await atomicPointer(join(root, 'previous'), current);
+  await restoreOptionalPointer(join(root, 'runtime'), previousRuntime);
+  await restoreOptionalPointer(join(root, 'previous-runtime'), currentRuntime);
+  timings.pointer = elapsedMs(pointerStarted);
+  const restartStarted = performance.now();
+  const restartOperation = await restart(context.deployment.restart);
+  timings.restart = elapsedMs(restartStarted);
+  const readiness = await waitForReadiness(context, { candidateDir: previous, currentDir: previous, ...contextSummary(context) });
+  timings.readiness = readiness.durationMs;
+  const isolationStarted = performance.now();
+  const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+  timings.isolation = elapsedMs(isolationStarted);
+  timings.total = elapsedMs(started);
+  return { current: previous, previous: current, runtime: previousRuntime, restart: restartOperation, readiness, timings, rollbackMs: timings.total, protectedProcesses: { before: protectedBefore, after: protectedAfter } };
+}
+
+async function status(context) {
+  const root = context.deployment.pointerRoot;
+  const lockRoot = context.policy.lockRoot ?? '/run/lock/ai-delivery';
+  return {
+    pointerRoot: root,
+    candidate: await statusPointer(root, 'candidate'),
+    current: await statusPointer(root, 'current'),
+    previous: await statusPointer(root, 'previous'),
+    runtime: await statusPointer(root, 'runtime'),
+    previousRuntime: await statusPointer(root, 'previous-runtime'),
+    restart: context.deployment.restart,
+    locks: {
+      production: await readLock(join(lockRoot, 'production.lock')),
+      node: await readLock(join(lockRoot, 'nodes', `${safeName(context.node)}.lock`)),
+      target: await readLock(join(lockRoot, 'targets', `${safeName(context.node)}--${safeName(context.target)}.lock`)),
+    },
+  };
+}
+
+async function verifyCurrent(context) {
+  const root = context.deployment.pointerRoot;
+  const current = await pointer(root, 'current');
+  assert(current, 'CURRENT_POINTER_MISSING', { root });
+  const readiness = await waitForReadiness(context, { candidateDir: '', currentDir: current, ...contextSummary(context) });
+  const protectedProcesses = {};
+  for (const definition of context.policy.protectedProcesses ?? []) {
+    protectedProcesses[`${definition.kind}:${definition.name}`] = await processId(definition);
+  }
+  return {
+    current,
+    currentArtifact: await readJson(join(current, 'AI_DELIVERY_ARTIFACT.json')),
+    targetProcess: await processId(context.deployment.restart),
+    checks: readiness.checks,
+    readiness,
+    protectedProcesses,
+  };
+}
+
+async function verifyDependencyLayer(context, layer) {
+  const path = await dependencyLayerPath(context, layer);
+  if (!path) return null;
+  const ready = JSON.parse(await readFile(join(path, 'AI_DELIVERY_LAYER.json'), 'utf8'));
+  assert(ready.schema === 'ai.delivery.dependency-layer.v1', 'DEPENDENCY_LAYER_MANIFEST_INVALID');
+  assert(ready.digest === layer.digest && ready.runtime === layer.runtime, 'DEPENDENCY_LAYER_IDENTITY_MISMATCH');
+  return path;
+}
+
+async function dependencyLayerPath(context, layer) {
+  if (!layer) return null;
+  const root = required(layer.productionRoot, 'DEPENDENCY_LAYER_ROOT_REQUIRED');
+  assert((context.policy.allowedDependencyRoots ?? []).includes(root), 'DEPENDENCY_LAYER_ROOT_NOT_ALLOWED', { root });
+  assert(/^sha256:[a-f0-9]{64}$/.test(layer.digest), 'DEPENDENCY_LAYER_DIGEST_INVALID');
+  const path = join(root, layer.digest.slice(7));
+  assert(await exists(path), 'DEPENDENCY_LAYER_MISSING', { path, digest: layer.digest });
+  return path;
+}
+
+async function withLocks(context, production, work, details = {}) {
+  const lockRoot = context.policy.lockRoot ?? '/run/lock/ai-delivery';
+  const paths = [
+    ...(production ? [join(lockRoot, 'production.lock')] : []),
+    join(lockRoot, 'nodes', `${safeName(context.node)}.lock`),
+    join(lockRoot, 'targets', `${safeName(context.node)}--${safeName(context.target)}.lock`),
+  ];
+  const releases = [];
+  try {
+    for (const path of paths) releases.push(await acquireDirectoryLock(path, context, context.policy.staleLockSeconds ?? 3600, details));
+    return await work();
+  } finally {
+    for (const release of releases.reverse()) await release();
+  }
+}
+
+async function acquireDirectoryLock(path, context, staleSeconds, details) {
+  await mkdir(dirname(path), { recursive: true });
+  try {
+    await mkdir(path);
+  } catch (error) {
+    if (error?.code !== 'EEXIST') throw error;
+    const owner = await readJson(join(path, 'owner.json'));
+    const age = owner?.startedAt ? (Date.now() - Date.parse(owner.startedAt)) / 1000 : 0;
+    if (owner?.host === hostname() && age > staleSeconds && !isAlive(owner.pid)) {
+      await rm(path, { recursive: true, force: true });
+      await mkdir(path);
+    } else {
+      throw failure('DELIVERY_LOCKED', { path, owner });
+    }
+  }
+  await writeFile(join(path, 'owner.json'), `${JSON.stringify({
+    schema: 'ai.delivery.lock.v1',
+    pid: process.pid,
+    host: hostname(),
+    publisher: process.env.AI_DELIVERY_ACTOR ?? process.env.SUDO_USER ?? process.env.USER ?? 'unknown',
+    startedAt: new Date().toISOString(),
+    service: context.deployment.restart?.name ?? 'none',
+    ...contextSummary(context),
+    ...details,
+  }, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
+  return () => rm(path, { recursive: true, force: true });
+}
+
+async function protectedProcessSnapshot(context) {
+  const own = context.deployment.restart;
+  const protectedProcesses = (context.policy.protectedProcesses ?? []).filter((item) => !(own && item.kind === own.kind && item.name === own.name));
+  return Object.fromEntries(await Promise.all(protectedProcesses.map(async (item) => [`${item.kind}:${item.name}`, await processId(item)])));
+}
+
+async function assertProtectedUnchanged(context, before) {
+  const after = {};
+  for (const [key, oldPid] of Object.entries(before)) {
+    const [kind, ...name] = key.split(':');
+    const newPid = await processId({ kind, name: name.join(':') });
+    after[key] = newPid;
+    assert(newPid === oldPid, 'PROTECTED_PROCESS_CHANGED', { process: key, before: oldPid, after: newPid });
+  }
+  return after;
+}
+
+async function processId(processDefinition) {
+  if (processDefinition.kind === 'systemd') {
+    const result = await command(['systemctl', 'show', '--property=MainPID', '--value', processDefinition.name], { acceptExitCodes: [0, 3] });
+    return result.stdout.trim() || '0';
+  }
+  if (processDefinition.kind === 'pm2') {
+    const result = await command(['pm2', 'pid', processDefinition.name], { acceptExitCodes: [0, 1] });
+    return result.stdout.trim() || '0';
+  }
+  if (processDefinition.kind === 'none') return 'none';
+  throw failure('PROCESS_KIND_INVALID', processDefinition);
+}
+
+function restartEvidence(definition = { kind: 'none', name: 'none' }, executed = false) {
+  const normalized = definition ?? { kind: 'none', name: 'none' };
+  let argv = [];
+  if (normalized.kind === 'systemd') argv = ['systemctl', `--job-mode=${normalized.jobMode ?? 'replace'}`, 'restart', normalized.name];
+  else if (normalized.kind === 'pm2') argv = ['pm2', 'restart', normalized.name, '--update-env'];
+  else if (normalized.kind !== 'none') throw failure('RESTART_KIND_INVALID', normalized);
+  return {
+    kind: normalized.kind,
+    target: normalized.name,
+    commandCount: executed && argv.length > 0 ? 1 : 0,
+    commands: executed && argv.length > 0 ? [argv] : [],
+  };
+}
+
+async function restart(definition = { kind: 'none', name: 'none' }) {
+  const evidence = restartEvidence(definition, true);
+  if (evidence.commandCount === 0) return evidence;
+  try {
+    await command(evidence.commands[0], { timeoutMs: 45_000 });
+  } catch (error) {
+    throw failure('RESTART_COMMAND_FAILED', { restart: evidence, cause: errorEvidence(error) });
+  }
+  return evidence;
+}
+
+async function resetFailureState(definition = { kind: 'none', name: 'none' }) {
+  if (definition?.kind === 'systemd') {
+    await command(['systemctl', 'reset-failed', definition.name], { timeoutMs: 10_000 });
+  }
+}
+
+async function runChecks(checks, values) {
+  for (const check of checks) {
+    assert(Array.isArray(check.argv) && check.argv.length > 0, 'CHECK_COMMAND_INVALID', check);
+    const argv = check.argv.map((entry) => expand(entry, values));
+    await command(argv, { timeoutMs: check.timeoutMs ?? 30_000 });
+  }
+}
+
+async function waitForReadiness(context, values) {
+  const checks = context.deployment.healthChecks ?? [];
+  const settings = readinessSettings(context);
+  const started = performance.now();
+  if (checks.length === 0) {
+    return { status: 'ready', attempts: 0, durationMs: 0, timeoutMs: settings.timeoutMs, intervalMs: settings.intervalMs, lastError: null, checks: [] };
+  }
+  const deadline = started + settings.timeoutMs;
+  let attempts = 0;
+  let lastError = null;
+  let lastProcessState = null;
+  let zeroPidSince = null;
+  const ensureProcessViable = async () => {
+    const observedAt = performance.now();
+    lastProcessState = await processState(context.deployment.restart);
+    if (lastProcessState.pid === '0') zeroPidSince ??= observedAt;
+    else zeroPidSince = null;
+    const explicitFailure = lastProcessState.activeState === 'failed';
+    const missingProcess = zeroPidSince !== null && observedAt - zeroPidSince >= settings.hardFailureGraceMs;
+    if (explicitFailure || missingProcess) {
+      lastError = {
+        code: explicitFailure ? 'READINESS_PROCESS_FAILED' : 'READINESS_PROCESS_MISSING',
+        message: explicitFailure ? 'READINESS_PROCESS_FAILED' : 'READINESS_PROCESS_MISSING',
+        details: { processState: lastProcessState },
+      };
+      const evidence = readinessEvidence('hard-failure', attempts, started, settings, lastError, lastProcessState, []);
+      confirmReadinessFailure(evidence, true);
+      throw failure('READINESS_HARD_FAILURE', evidence);
+    }
+    return lastProcessState.pid !== '0';
+  };
+  while (true) {
+    if (attempts > 0 && performance.now() >= deadline) {
+      const evidence = readinessEvidence('timeout', attempts, started, settings, lastError, lastProcessState, []);
+      confirmReadinessFailure(evidence);
+      throw failure('READINESS_TIMEOUT', evidence);
+    }
+    attempts += 1;
+    const processAvailable = await ensureProcessViable();
+    let successfulChecks = null;
+    if (processAvailable) {
+      try {
+        successfulChecks = await runReadinessAttempt(checks, values, settings, deadline);
+      } catch (error) {
+        lastError = errorEvidence(error);
+      }
+    } else {
+      lastError = { code: 'READINESS_PROCESS_STARTING', message: 'READINESS_PROCESS_STARTING', details: { processState: lastProcessState } };
+    }
+    if (successfulChecks) {
+      const processStillAvailable = await ensureProcessViable();
+      if (processStillAvailable) {
+        return {
+          status: 'ready',
+          attempts,
+          durationMs: elapsedMs(started),
+          timeoutMs: settings.timeoutMs,
+          intervalMs: settings.intervalMs,
+          lastError,
+          processState: lastProcessState,
+          checks: successfulChecks,
+        };
+      }
+    }
+    await ensureProcessViable();
+    const observedAt = performance.now();
+    if (observedAt >= deadline) {
+      const evidence = readinessEvidence('timeout', attempts, started, settings, lastError, lastProcessState, []);
+      confirmReadinessFailure(evidence);
+      throw failure('READINESS_TIMEOUT', evidence);
+    }
+    await delay(Math.max(1, Math.min(settings.intervalMs, deadline - observedAt)));
+  }
+}
+
+async function runReadinessAttempt(checks, values, settings, deadline) {
+  const results = [];
+  for (const check of checks) {
+    const remainingMs = Math.floor(deadline - performance.now());
+    assert(remainingMs > 0, 'READINESS_ATTEMPT_DEADLINE');
+    const argv = check.argv.map((entry) => expand(entry, values));
+    const result = await command(argv, { timeoutMs: Math.max(1, Math.min(check.timeoutMs ?? settings.attemptTimeoutMs, remainingMs)) });
+    results.push({ argv, durationMs: result.durationMs });
+  }
+  return results;
+}
+
+async function processState(definition = { kind: 'none', name: 'none' }) {
+  if (!definition || definition.kind === 'none') return { kind: 'none', name: 'none', pid: 'none', activeState: 'unmonitored' };
+  if (definition.kind === 'pm2') {
+    const pid = await processId(definition);
+    return { kind: 'pm2', name: definition.name, pid, activeState: pid === '0' ? 'inactive' : 'active' };
+  }
+  if (definition.kind === 'systemd') {
+    const result = await command([
+      'systemctl', 'show',
+      '--property=ActiveState',
+      '--property=SubState',
+      '--property=Result',
+      '--property=MainPID',
+      definition.name,
+    ], { acceptExitCodes: [0, 3], timeoutMs: 2_000 });
+    const properties = Object.fromEntries(result.stdout.split('\n').filter((line) => line.includes('=')).map((line) => line.split(/=(.*)/s).slice(0, 2)));
+    return {
+      kind: 'systemd',
+      name: definition.name,
+      pid: properties.MainPID || '0',
+      activeState: properties.ActiveState || 'unknown',
+      subState: properties.SubState || 'unknown',
+      result: properties.Result || 'unknown',
+    };
+  }
+  throw failure('PROCESS_KIND_INVALID', definition);
+}
+
+function readinessSettings(context) {
+  return { ...DEFAULT_READINESS, ...(context.policy.readiness ?? {}), ...(context.deployment.readiness ?? {}) };
+}
+
+function readinessEvidence(status, attempts, started, settings, lastError, lastProcessState, checks) {
+  return {
+    status,
+    attempts,
+    durationMs: elapsedMs(started),
+    timeoutMs: settings.timeoutMs,
+    intervalMs: settings.intervalMs,
+    lastError,
+    processState: lastProcessState,
+    checks,
+  };
+}
+
+function confirmReadinessFailure(evidence, hardFailure = false) {
+  evidence.failureConfirmedAt = new Date().toISOString();
+  evidence.failureConfirmedMs = evidence.durationMs;
+  if (hardFailure) evidence.hardFailureDetectedMs = evidence.durationMs;
+}
+
+function errorEvidence(error) {
+  return { code: error?.code ?? 'REMOTE_COMMAND_FAILED', message: error?.message ?? String(error), details: error?.details ?? {} };
+}
+
+function elapsedMs(started) {
+  return Math.max(0, Math.round(performance.now() - started));
+}
+
+async function command(argv, options = {}) {
+  const started = Date.now();
+  const chunks = [];
+  const result = await new Promise((resolvePromise, reject) => {
+    const child = spawn(argv[0], argv.slice(1), { shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
+    child.stdout.on('data', (chunk) => chunks.push(chunk));
+    child.stderr.on('data', (chunk) => chunks.push(chunk));
+    child.on('error', reject);
+    const timer = setTimeout(() => child.kill('SIGKILL'), options.timeoutMs ?? 30_000);
+    child.on('close', (code, signal) => {
+      clearTimeout(timer);
+      resolvePromise({ code, signal });
+    });
+  });
+  const stdout = Buffer.concat(chunks).toString('utf8');
+  const accepted = options.acceptExitCodes ?? [0];
+  assert(accepted.includes(result.code), 'REMOTE_COMMAND_FAILED', { argv, code: result.code, signal: result.signal, outputTail: stdout.slice(-3000) });
+  return { stdout, durationMs: Date.now() - started };
+}
+
+async function treeEvidence(root, ignored = new Set()) {
+  const entries = [];
+  await walk(root, '', entries, ignored);
+  return {
+    treeDigest: digest(entries),
+    fileCount: entries.filter((entry) => entry.type === 'file').length,
+    entryCount: entries.length,
+    totalBytes: entries.filter((entry) => entry.type === 'file').reduce((total, entry) => total + entry.bytes, 0),
+    entries,
+  };
+}
+
+async function walk(root, path, entries, ignored) {
+  const names = await readdir(join(root, path));
+  names.sort();
+  for (const name of names) {
+    const child = path ? `${path}/${name}` : name;
+    if (ignored.has(child)) continue;
+    assertArtifactPath(child);
+    const absolute = join(root, child);
+    const stats = await lstat(absolute);
+    if (stats.isDirectory()) {
+      entries.push({ path: `${child}/`, type: 'directory', mode: stats.mode & 0o777 });
+      await walk(root, child, entries, ignored);
+    } else if (stats.isSymbolicLink()) {
+      const target = await readlink(absolute);
+      const resolvedTarget = resolve(dirname(absolute), target);
+      assert(resolvedTarget === resolve(root) || resolvedTarget.startsWith(`${resolve(root)}/`), 'ARTIFACT_SYMLINK_UNSAFE', { child, target });
+      entries.push({ path: child, type: 'symlink', target });
+    } else if (stats.isFile()) {
+      entries.push({ path: child, type: 'file', bytes: stats.size, mode: stats.mode & 0o777, sha256: await hashFile(absolute) });
+    }
+  }
+}
+
+function artifactIdentity(context, options) {
+  const sourceSha = required(options.sourceSha, 'LOOKUP_SOURCE_SHA_REQUIRED');
+  const treeDigest = required(options.treeDigest, 'LOOKUP_TREE_DIGEST_REQUIRED');
+  const manifestDigest = required(options.manifestDigest, 'LOOKUP_MANIFEST_DIGEST_REQUIRED');
+  const archiveSha256 = required(options.sha256, 'LOOKUP_ARCHIVE_DIGEST_REQUIRED');
+  assert(/^[a-f0-9]{40}$/.test(sourceSha), 'LOOKUP_SOURCE_SHA_INVALID');
+  assert(/^sha256:[a-f0-9]{64}$/.test(treeDigest), 'LOOKUP_TREE_DIGEST_INVALID');
+  assert(/^sha256:[a-f0-9]{64}$/.test(manifestDigest), 'LOOKUP_MANIFEST_DIGEST_INVALID');
+  assert(/^[a-f0-9]{64}$/.test(archiveSha256), 'LOOKUP_ARCHIVE_DIGEST_INVALID');
+  return { project: context.project, target: context.target, sourceSha, treeDigest, manifestDigest, archiveSha256 };
+}
+
+function releasePath(context, identity) {
+  return join(context.deployment.pointerRoot, 'releases', `${identity.sourceSha}-${identity.treeDigest.slice(7)}-${identity.manifestDigest.slice(7)}`);
+}
+
+async function verifyStoredRelease(context, release, identity) {
+  const manifest = await readJson(join(release, 'AI_DELIVERY_ARTIFACT.json'));
+  assert(manifest?.schema === 'ai.delivery.artifact.v1' && manifest.engineVersion === 2, 'EXISTING_RELEASE_MANIFEST_INVALID', { release });
+  assert(manifest.project === identity.project && manifest.target === identity.target, 'EXISTING_RELEASE_SCOPE_MISMATCH', { release });
+  assert(manifest.sourceSha === identity.sourceSha && manifest.treeDigest === identity.treeDigest && manifest.manifestDigest === identity.manifestDigest, 'EXISTING_RELEASE_IDENTITY_MISMATCH', { release });
+  assert(manifest.archive?.sha256 === `sha256:${identity.archiveSha256}`, 'EXISTING_RELEASE_ARCHIVE_MISMATCH', { release });
+  const claimedDigest = manifest.manifestDigest;
+  const unsigned = { ...manifest };
+  delete unsigned.manifestDigest;
+  assert(claimedDigest === digest(unsigned), 'EXISTING_RELEASE_MANIFEST_DIGEST_MISMATCH', { release });
+  assertManifestEntries(manifest);
+  const evidence = await treeEvidence(release, new Set(['AI_DELIVERY_ARTIFACT.json']));
+  assertTreeMatchesManifest(evidence, manifest);
+  await verifyCriticalFiles(release, manifest.criticalFiles ?? []);
+  return manifest;
+}
+
+function assertManifestEntries(manifest) {
+  assert(Array.isArray(manifest.entries), 'ARTIFACT_FILE_LIST_REQUIRED');
+  for (const entry of manifest.entries) {
+    assert(entry && typeof entry.path === 'string' && ['directory', 'file', 'symlink'].includes(entry.type), 'ARTIFACT_FILE_LIST_INVALID', { entry });
+    assertArtifactPath(entry.path);
+  }
+  assert(digest(manifest.entries) === manifest.treeDigest, 'ARTIFACT_FILE_LIST_DIGEST_MISMATCH');
+  assert(manifest.entryCount === manifest.entries.length, 'ARTIFACT_ENTRY_COUNT_MISMATCH');
+  assert(manifest.fileCount === manifest.entries.filter((entry) => entry.type === 'file').length, 'ARTIFACT_FILE_COUNT_MISMATCH');
+  const totalBytes = manifest.entries.filter((entry) => entry.type === 'file').reduce((total, entry) => total + entry.bytes, 0);
+  assert(manifest.totalBytes === totalBytes, 'ARTIFACT_TOTAL_BYTES_MISMATCH', { expected: manifest.totalBytes, actual: totalBytes });
+}
+
+function assertTreeMatchesManifest(evidence, manifest) {
+  assert(evidence.treeDigest === manifest.treeDigest, 'ARTIFACT_TREE_HASH_MISMATCH', evidence);
+  assert(evidence.fileCount === manifest.fileCount && evidence.entryCount === manifest.entryCount && evidence.totalBytes === manifest.totalBytes, 'ARTIFACT_TREE_SIZE_MISMATCH', evidence);
+  assert(stableJson(evidence.entries) === stableJson(manifest.entries), 'ARTIFACT_FILE_LIST_MISMATCH');
+}
+
+function assertArtifactPath(path) {
+  const normalized = path.replace(/\/+$/, '');
+  const segments = normalized.split('/').filter(Boolean);
+  const forbiddenDirectory = segments.find((segment) => FORBIDDEN_DIRECTORIES.has(segment));
+  assert(!forbiddenDirectory, 'ARTIFACT_FORBIDDEN_PATH', { path, forbiddenDirectory });
+  assert(!segments.some((segment, index) => segment === '.next' && segments[index + 1] === 'cache'), 'ARTIFACT_FORBIDDEN_PATH', { path, forbiddenDirectory: '.next/cache' });
+  const leaf = segments.at(-1) ?? '';
+  assert(!/\.(?:log|tmp|swp)$/i.test(leaf), 'ARTIFACT_FORBIDDEN_PATH', { path });
+}
+
+async function verifyCriticalFiles(root, criticalFiles) {
+  for (const expected of criticalFiles) {
+    const path = resolve(root, expected.path);
+    assert(path.startsWith(`${resolve(root)}/`), 'CRITICAL_FILE_PATH_UNSAFE', expected);
+    const stats = await lstat(path);
+    assert(stats.isFile() && stats.size === expected.bytes && `sha256:${await hashFile(path)}` === expected.sha256, 'CRITICAL_FILE_INVALID', expected);
+  }
+}
+
+async function hashFile(path) {
+  const hash = createHash('sha256');
+  for await (const chunk of createReadStream(path)) hash.update(chunk);
+  return hash.digest('hex');
+}
+
+function digest(value) {
+  return `sha256:${createHash('sha256').update(stableJson(value)).digest('hex')}`;
+}
+
+function stableJson(value) {
+  return JSON.stringify(sortValue(value));
+}
+
+function sortValue(value) {
+  if (Array.isArray(value)) return value.map(sortValue);
+  if (value && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+    return Object.fromEntries(Object.keys(value).sort().map((key) => [key, sortValue(value[key])]));
+  }
+  return value;
+}
+
+async function atomicPointer(link, target) {
+  const temporary = join(dirname(link), `.${basename(link)}.${process.pid}.${Date.now()}`);
+  await mkdir(dirname(link), { recursive: true });
+  await symlink(target, temporary);
+  await rename(temporary, link);
+}
+
+async function restoreOptionalPointer(link, target) {
+  if (target) await atomicPointer(link, target);
+  else await rm(link, { force: true });
+}
+
+async function ensureTraversablePointerRoot(context) {
+  const root = resolve(context.deployment.pointerRoot);
+  const anchor = [...(context.policy.allowedRoots ?? [])]
+    .map((entry) => resolve(entry))
+    .filter((entry) => root === entry || root.startsWith(`${entry}/`))
+    .sort((left, right) => right.length - left.length)[0];
+  assert(anchor, 'POINTER_ROOT_NOT_ALLOWED', { root });
+  const suffix = relative(anchor, root);
+  assert(suffix !== '..' && !suffix.startsWith('../') && !suffix.startsWith('..\\'), 'POINTER_ROOT_NOT_ALLOWED', { root });
+  let directory = anchor;
+  for (const segment of suffix.split(/[\\/]/).filter(Boolean)) {
+    directory = join(directory, segment);
+    await mkdir(directory, { recursive: true, mode: 0o755 });
+    const stats = await lstat(directory);
+    assert(stats.isDirectory(), 'POINTER_DIRECTORY_INVALID', { directory });
+    await chmod(directory, 0o755);
+  }
+}
+
+async function pointer(root, name) {
+  try {
+    return await readlink(join(root, name));
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+async function statusPointer(root, name) {
+  const path = join(root, name);
+  try {
+    if (!(await lstat(path)).isSymbolicLink()) return null;
+    return await readlink(path);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+function assertAllowedRoot(policy, path) {
+  assert(path.startsWith('/') && path !== '/', 'POINTER_ROOT_UNSAFE', { path });
+  assert((policy.allowedRoots ?? []).some((root) => path === root || path.startsWith(`${root}/`)), 'POINTER_ROOT_NOT_ALLOWED', { path });
+}
+
+function assertIncomingPath(policy, path) {
+  const root = required(policy.incomingRoot, 'INCOMING_ROOT_REQUIRED');
+  assert(path.startsWith(`${root}/`) && !path.includes('/../'), 'INCOMING_PATH_NOT_ALLOWED', { path, root });
+}
+
+function validatePolicy(policy, project) {
+  assert(policy?.schema === 'ai.delivery.remote-policy.v1' && policy.project === project, 'POLICY_INVALID');
+  assert(Array.isArray(policy.allowedRoots) && policy.allowedRoots.length > 0, 'POLICY_ALLOWED_ROOTS_REQUIRED');
+  for (const root of policy.allowedRoots) assert(typeof root === 'string' && root.startsWith('/') && root !== '/', 'POLICY_ALLOWED_ROOT_INVALID', { root });
+  assert(typeof policy.incomingRoot === 'string' && policy.incomingRoot.startsWith('/'), 'POLICY_INCOMING_ROOT_INVALID');
+  validateReadiness(policy.readiness, 'policy');
+  assert(policy.nodes && typeof policy.nodes === 'object', 'POLICY_NODES_REQUIRED');
+  const pointerRoots = new Set();
+  for (const [node, nodePolicy] of Object.entries(policy.nodes)) {
+    assert(nodePolicy?.deployments && typeof nodePolicy.deployments === 'object', 'POLICY_DEPLOYMENTS_REQUIRED', { node });
+    for (const [target, deployment] of Object.entries(nodePolicy.deployments)) {
+      assert(typeof deployment.pointerRoot === 'string', 'POLICY_POINTER_ROOT_REQUIRED', { node, target });
+      assertAllowedRoot(policy, deployment.pointerRoot);
+      assert(!pointerRoots.has(deployment.pointerRoot), 'POLICY_POINTER_ROOT_DUPLICATE', { node, target, pointerRoot: deployment.pointerRoot });
+      pointerRoots.add(deployment.pointerRoot);
+      assert(['none', 'systemd', 'pm2'].includes(deployment.restart?.kind), 'POLICY_RESTART_INVALID', { node, target });
+      assert(typeof deployment.restart?.name === 'string', 'POLICY_RESTART_NAME_REQUIRED', { node, target });
+      if (deployment.restart?.kind === 'systemd') {
+        assert(['replace', 'ignore-dependencies'].includes(deployment.restart.jobMode ?? 'replace'), 'POLICY_RESTART_JOB_MODE_INVALID', { node, target });
+      } else {
+        assert(deployment.restart?.jobMode === undefined, 'POLICY_RESTART_JOB_MODE_UNSUPPORTED', { node, target });
+      }
+      if (deployment.productionEnabled === false) assert(typeof deployment.productionDisabledReason === 'string' && deployment.productionDisabledReason.length > 0, 'POLICY_PRODUCTION_REASON_REQUIRED', { node, target });
+      for (const input of deployment.seedInputs ?? []) {
+        assert(safeRelative(input.source) && safeRelative(input.destination), 'POLICY_SEED_PATH_INVALID', { node, target, input });
+      }
+      if (deployment.seedDependencyLayer) {
+        const layer = deployment.seedDependencyLayer;
+        assert(safeRelative(layer.source) && typeof layer.runtime === 'string' && layer.runtime.length > 0, 'POLICY_SEED_LAYER_INVALID', { node, target });
+        assert(Array.isArray(layer.keyFiles) && layer.keyFiles.length > 0 && layer.keyFiles.every(safeRelative), 'POLICY_SEED_LAYER_KEYS_INVALID', { node, target });
+        assert((policy.allowedDependencyRoots ?? []).includes(layer.productionRoot), 'POLICY_SEED_LAYER_ROOT_INVALID', { node, target });
+      }
+      if ((deployment.seedInputs ?? []).length > 0) {
+        assert(typeof nodePolicy.legacyRoot === 'string', 'POLICY_LEGACY_ROOT_REQUIRED', { node, target });
+        assertAllowedRoot(policy, nodePolicy.legacyRoot);
+      }
+      validateReadiness(deployment.readiness, `${node}/${target}`);
+      for (const check of [...(deployment.candidateChecks ?? []), ...(deployment.healthChecks ?? [])]) {
+        assert(Array.isArray(check.argv) && check.argv.length > 0 && check.argv.every((value) => typeof value === 'string' && value.length > 0), 'POLICY_CHECK_INVALID', { node, target });
+      }
+    }
+  }
+}
+
+function validateReadiness(readiness, scope) {
+  if (readiness === undefined) return;
+  assert(readiness && typeof readiness === 'object' && !Array.isArray(readiness), 'POLICY_READINESS_INVALID', { scope });
+  const settings = { ...DEFAULT_READINESS, ...readiness };
+  for (const key of ['timeoutMs', 'intervalMs', 'attemptTimeoutMs']) {
+    assert(Number.isInteger(settings[key]) && settings[key] > 0, 'POLICY_READINESS_VALUE_INVALID', { scope, key, value: settings[key] });
+  }
+  assert(Number.isInteger(settings.hardFailureGraceMs) && settings.hardFailureGraceMs >= 0, 'POLICY_READINESS_VALUE_INVALID', { scope, key: 'hardFailureGraceMs', value: settings.hardFailureGraceMs });
+  assert(settings.intervalMs <= settings.timeoutMs && settings.attemptTimeoutMs <= settings.timeoutMs && settings.hardFailureGraceMs <= settings.timeoutMs, 'POLICY_READINESS_WINDOW_INVALID', { scope, settings });
+}
+
+function safeRelative(value) {
+  return typeof value === 'string' && value.length > 0 && !value.startsWith('/') && !value.split('/').includes('..');
+}
+
+function parseOptions(tokens) {
+  const result = {};
+  for (let index = 0; index < tokens.length; index += 2) {
+    const token = tokens[index];
+    const value = tokens[index + 1];
+    assert(token?.startsWith('--') && value !== undefined, 'OPTION_INVALID', { token });
+    result[token.slice(2).replace(/-([a-z])/g, (_, character) => character.toUpperCase())] = value;
+  }
+  return result;
+}
+
+function contextSummary(context) {
+  return { project: context.project, node: context.node, target: context.target };
+}
+
+function expand(value, values) {
+  return String(value).replace(/\{\{([A-Za-z][A-Za-z0-9]*)\}\}/g, (_, key) => {
+    assert(key in values, 'CHECK_TEMPLATE_UNKNOWN', { key });
+    return String(values[key]);
+  });
+}
+
+async function audit(policy, record) {
+  const auditRoot = policy.auditRoot ?? '/var/log/ai-delivery';
+  await mkdir(auditRoot, { recursive: true });
+  await appendFile(join(auditRoot, `${safeName(policy.project)}.jsonl`), `${JSON.stringify(record)}\n`, { mode: 0o600 });
+}
+
+async function readJson(path) {
+  try { return JSON.parse(await readFile(path, 'utf8')); } catch { return null; }
+}
+
+async function readLock(path) {
+  if (!(await exists(path))) return null;
+  return { path, owner: await readJson(join(path, 'owner.json')) };
+}
+
+async function exists(path) {
+  try { await lstat(path); return true; } catch (error) { if (error?.code === 'ENOENT') return false; throw error; }
+}
+
+function isAlive(pid) {
+  if (!Number.isInteger(pid)) return false;
+  try { process.kill(pid, 0); return true; } catch { return false; }
+}
+
+function safeName(value) {
+  assert(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(value), 'IDENTIFIER_UNSAFE', { value });
+  return value;
+}
+
+function required(value, code) {
+  if (!value) throw failure(code);
+  return value;
+}
+
+function assert(condition, code, details = {}) {
+  if (!condition) throw failure(code, details);
+}
+
+function failure(code, details = {}) {
+  const error = new Error(code);
+  error.code = code;
+  error.details = details;
+  return error;
+}

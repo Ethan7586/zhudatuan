@@ -2,20 +2,20 @@
 Description=SFL node-scoped payment query and refund workers (%i)
 Requires=zhudatuan-internal-runtime.service
 After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service
-ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/PaymentJobsOnlyMain.js
-ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/PaymentJobsReadyMain.js
+ConditionPathExists=/opt/sfl/nodes/%i/targets/payment-jobs/current/service/PaymentJobsOnlyMain.js
+ConditionPathExists=/opt/sfl/nodes/%i/targets/payment-jobs/current/service/PaymentJobsReadyMain.js
 ConditionPathExists=/opt/sfl/nodes/%i/runtime/payment-jobs.env
 
 [Service]
 Type=simple
 User=zhudatuan
 Group=zhudatuan
-WorkingDirectory=/opt/sfl/nodes/%i/current
+WorkingDirectory=/opt/sfl/nodes/%i/targets/payment-jobs/current
 Environment=NODE_ENV=production
 Environment=JOB_RUNTIME_PROFILE=payment-only
 EnvironmentFile=/opt/sfl/nodes/%i/runtime/payment-jobs.env
-ExecStartPre=/usr/bin/node 01_core_hexin/services/commerce/dist/PaymentJobsReadyMain.js
-ExecStart=/usr/bin/node 01_core_hexin/services/commerce/dist/PaymentJobsOnlyMain.js
+ExecStartPre=/usr/bin/node service/PaymentJobsReadyMain.js
+ExecStart=/usr/bin/node service/PaymentJobsOnlyMain.js
 Restart=on-failure
 RestartSec=3
 TimeoutStartSec=30

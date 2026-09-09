@@ -2,21 +2,21 @@
 Description=SFL node-bound identity API (%i)
 Requires=zhudatuan-internal-runtime.service sfl-catalog-object-store@%i.service
 After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service sfl-catalog-object-store@%i.service
-ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/IdentityRegistrationApiMain.js
-ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/IdentityRegistrationApiReadyMain.js
+ConditionPathExists=/opt/sfl/nodes/%i/targets/identity-api/current/service/IdentityRegistrationApiMain.js
+ConditionPathExists=/opt/sfl/nodes/%i/targets/identity-api/current/service/IdentityRegistrationApiReadyMain.js
 ConditionPathExists=/opt/sfl/nodes/%i/runtime/identity-api.env
 
 [Service]
 Type=simple
 User=zhudatuan
 Group=zhudatuan
-WorkingDirectory=/opt/sfl/nodes/%i/current
+WorkingDirectory=/opt/sfl/nodes/%i/targets/identity-api/current
 Environment=NODE_ENV=production
 Environment=IDENTITY_REGISTRATION_API_PROFILE=registration-only
 Environment=API_BIND_HOST=127.0.0.1
 EnvironmentFile=/opt/sfl/nodes/%i/runtime/identity-api.env
-ExecStart=/usr/bin/node 01_core_hexin/services/commerce/dist/IdentityRegistrationApiMain.js
-ExecStartPost=/usr/bin/node 01_core_hexin/services/commerce/dist/IdentityRegistrationApiReadyMain.js
+ExecStart=/usr/bin/node service/IdentityRegistrationApiMain.js
+ExecStartPost=/usr/bin/node service/IdentityRegistrationApiReadyMain.js
 Restart=on-failure
 RestartSec=3
 TimeoutStartSec=30

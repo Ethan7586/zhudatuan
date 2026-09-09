@@ -1,0 +1,245 @@
+import { createReadStream } from 'node:fs';
+import { cp, lstat, mkdir, readFile, readdir, readlink, rename, rm, writeFile } from 'node:fs/promises';
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+
+import { invariant } from './errors.mjs';
+import { digest, prettyStableJson } from './stable.mjs';
+import { runCommand } from './runner.mjs';
+
+const MAX_ARTIFACT_BYTES = 150_000_000;
+const FORBIDDEN_DIRECTORIES = new Set([
+  '.git', '.npm', '.nyc_output', '.turbo', '_cacache',
+  'coverage', 'logs', 'node_modules', 'playwright-report',
+  'releases', 'test-results', 'tmp', 'temp',
+]);
+
+export async function materializeTarget(adapter, targetId, runDirectory, changes = []) {
+  const target = adapter.targets[targetId];
+  const destination = join(runDirectory, 'build', targetId);
+  await rm(destination, { recursive: true, force: true });
+  await mkdir(destination, { recursive: true });
+  for (const input of target.artifactInputs) {
+    const source = safeProjectPath(adapter.projectRoot, input.source);
+    if (input.changedOnly) {
+      const prefix = `${input.source.replace(/\/$/, '')}/`;
+      const selected = changes.filter((change) => change.path === input.source || change.path.startsWith(prefix));
+      for (const change of selected.filter((item) => !item.status.startsWith('D'))) {
+        const { path } = change;
+        const relativePath = path === input.source ? basename(path) : path.slice(prefix.length);
+        const selectedSource = safeProjectPath(adapter.projectRoot, path);
+        const output = resolve(destination, input.destination ?? '', relativePath);
+        invariant(output.startsWith(`${destination}/`), 'ARTIFACT_DESTINATION_UNSAFE', `Unsafe destination for ${targetId}`);
+        await mkdir(dirname(output), { recursive: true });
+        await cp(selectedSource, output, { recursive: true, dereference: false, force: false, errorOnExist: true });
+      }
+    } else {
+      const output = resolve(destination, input.destination ?? basename(input.source));
+      invariant(output === destination || output.startsWith(`${destination}/`), 'ARTIFACT_DESTINATION_UNSAFE', `Unsafe destination for ${targetId}`);
+      await mkdir(dirname(output), { recursive: true });
+      await cp(source, output, { recursive: true, dereference: false, force: false, errorOnExist: true });
+    }
+  }
+  const deletions = changes
+    .filter((change) => change.status.startsWith('D') || change.status.startsWith('R'))
+    .flatMap((change) => target.artifactInputs
+      .filter((input) => input.changedOnly)
+      .map((input) => deletionForInput(input, change.sourcePath ?? change.path))
+      .filter(Boolean));
+  return { target: targetId, directory: destination, deletions: [...new Set(deletions)].sort(), ...(await treeEvidence(destination, target.criticalFiles ?? [])) };
+}
+
+export async function packageTarget(adapter, plan, buildEvidence, runDirectory, artifactRoot) {
+  const targetId = buildEvidence.target;
+  const target = adapter.targets[targetId];
+  const content = await treeEvidence(buildEvidence.directory, target.criticalFiles ?? []);
+  assertArtifactSize(plan.lane, targetId, content.totalBytes, content.entries);
+  const artifactId = `${adapter.project}-${targetId}-${content.treeDigest.slice(7, 19)}`;
+  const directory = join(artifactRoot, targetId, content.treeDigest.slice(7), plan.to.sha, plan.planDigest.slice(7), 'v2');
+  const archive = join(directory, `${targetId}.tar.gz`);
+  const manifestPath = join(directory, `${targetId}.artifact.json`);
+  const existing = await existingArtifact(manifestPath, archive, { adapter, plan, targetId, content });
+  if (existing) return { ...existing, packageCache: 'hit_local' };
+
+  const temporary = `${directory}.candidate-${process.pid}-${Date.now()}`;
+  await mkdir(temporary, { recursive: true });
+  const temporaryArchive = join(temporary, `${targetId}.tar.gz`);
+  const command = await runCommand({ name: `package:${targetId}`, argv: ['tar', '-czf', temporaryArchive, '-C', buildEvidence.directory, '.'], timeoutMs: 10 * 60_000 }, {
+    projectRoot: adapter.projectRoot,
+    environment: {},
+    changedFiles: [],
+    logPath: join(runDirectory, 'logs', `package-${targetId}.log`),
+  });
+  const archiveSha256 = await hashFile(temporaryArchive);
+  const archiveBytes = (await lstat(temporaryArchive)).size;
+  assertArtifactSize(plan.lane, targetId, archiveBytes, content.entries, 'archive');
+  const dependencyLayer = await dependencyLayerEvidence(adapter, target.dependencyLayer);
+  const manifest = {
+    schema: 'ai.delivery.artifact.v1',
+    engineVersion: 2,
+    artifactId,
+    project: adapter.project,
+    target: targetId,
+    targetKind: target.kind,
+    lane: plan.lane,
+    sourceSha: plan.to.sha,
+    planDigest: plan.planDigest,
+    treeDigest: content.treeDigest,
+    fileCount: content.fileCount,
+    entryCount: content.entryCount,
+    totalBytes: content.totalBytes,
+    entries: content.entries,
+    criticalFiles: content.criticalFiles,
+    deletions: buildEvidence.deletions ?? [],
+    dependencyLayer,
+    archive: { sha256: `sha256:${archiveSha256}`, bytes: archiveBytes },
+    packagedAt: new Date().toISOString(),
+    packageDurationMs: command.durationMs,
+  };
+  manifest.manifestDigest = digest(manifest);
+  const temporaryManifest = join(temporary, `${targetId}.artifact.json`);
+  await writeFile(temporaryManifest, prettyStableJson(manifest), { flag: 'wx' });
+  await mkdir(dirname(directory), { recursive: true });
+  try {
+    await rename(temporary, directory);
+  } catch (error) {
+    if (!['EEXIST', 'ENOTEMPTY'].includes(error?.code)) throw error;
+  } finally {
+    await rm(temporary, { recursive: true, force: true });
+  }
+  const committed = await existingArtifact(manifestPath, archive, { adapter, plan, targetId, content });
+  invariant(Boolean(committed), 'ARTIFACT_IMMUTABLE_COMMIT_FAILED', `Artifact was not committed: ${targetId}`);
+  return { ...committed, packageCache: 'miss' };
+}
+
+async function existingArtifact(manifestPath, archivePath, expected) {
+  try {
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    invariant(manifest.project === expected.adapter.project, 'ARTIFACT_EXISTING_PROJECT_MISMATCH', 'Existing artifact belongs to another project');
+    invariant(manifest.target === expected.targetId, 'ARTIFACT_EXISTING_TARGET_MISMATCH', 'Existing artifact belongs to another target');
+    invariant(manifest.sourceSha === expected.plan.to.sha && manifest.planDigest === expected.plan.planDigest, 'ARTIFACT_EXISTING_PROVENANCE_MISMATCH', 'Existing artifact provenance differs');
+    invariant(manifest.treeDigest === expected.content.treeDigest, 'ARTIFACT_EXISTING_TREE_MISMATCH', 'Existing artifact tree differs');
+    invariant(Array.isArray(manifest.entries) && digest(manifest.entries) === manifest.treeDigest, 'ARTIFACT_EXISTING_ENTRIES_INVALID', 'Existing artifact file list differs');
+    const stats = await lstat(archivePath);
+    invariant(stats.isFile() && stats.size === manifest.archive.bytes, 'ARTIFACT_EXISTING_ARCHIVE_INVALID', 'Existing artifact archive size differs');
+    invariant(`sha256:${await hashFile(archivePath)}` === manifest.archive.sha256, 'ARTIFACT_EXISTING_ARCHIVE_INVALID', 'Existing artifact archive hash differs');
+    const unsigned = { ...manifest };
+    delete unsigned.manifestDigest;
+    invariant(digest(unsigned) === manifest.manifestDigest, 'ARTIFACT_EXISTING_MANIFEST_INVALID', 'Existing artifact manifest hash differs');
+    return { ...manifest, archive: { ...manifest.archive, path: archivePath }, manifestPath };
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+export async function dependencyLayerEvidence(adapter, layer) {
+  if (!layer) return null;
+  const keyFiles = [];
+  for (const path of layer.keyFiles ?? []) {
+    const absolute = safeProjectPath(adapter.projectRoot, path);
+    const stats = await lstat(absolute);
+    invariant(stats.isFile(), 'DEPENDENCY_LAYER_KEY_INVALID', `Dependency layer key is not a file: ${path}`);
+    keyFiles.push({ path, bytes: stats.size, sha256: `sha256:${await hashFile(absolute)}` });
+  }
+  const identity = { runtime: layer.runtime, keyFiles };
+  return {
+    strategy: layer.strategy,
+    runtime: layer.runtime,
+    digest: digest(identity),
+    keyFiles,
+    productionRoot: layer.productionRoot,
+  };
+}
+
+export async function treeEvidence(root, criticalFiles = []) {
+  const entries = [];
+  let totalBytes = 0;
+  await walk(root, '', entries, (size) => { totalBytes += size; });
+  const treeDigest = digest(entries);
+  const critical = [];
+  for (const path of criticalFiles) {
+    const absolute = resolve(root, path);
+    invariant(absolute.startsWith(`${resolve(root)}/`), 'CRITICAL_FILE_UNSAFE', `Unsafe critical file ${path}`);
+    const stats = await lstat(absolute);
+    invariant(stats.isFile(), 'CRITICAL_FILE_MISSING', `Critical file missing: ${path}`);
+    critical.push({ path, sha256: `sha256:${await hashFile(absolute)}`, bytes: stats.size });
+  }
+  return {
+    treeDigest,
+    fileCount: entries.filter((entry) => entry.type === 'file').length,
+    entryCount: entries.length,
+    totalBytes,
+    entries,
+    criticalFiles: critical,
+  };
+}
+
+async function walk(root, path, entries, onBytes) {
+  const directory = join(root, path);
+  const names = await readdir(directory);
+  names.sort();
+  for (const name of names) {
+    const childPath = path ? `${path}/${name}` : name;
+    assertArtifactPath(childPath);
+    const absolute = join(root, childPath);
+    const stats = await lstat(absolute);
+    if (stats.isDirectory()) {
+      entries.push({ path: `${childPath}/`, type: 'directory', mode: stats.mode & 0o777 });
+      await walk(root, childPath, entries, onBytes);
+    } else if (stats.isSymbolicLink()) {
+      const target = await readlink(absolute);
+      const resolvedTarget = resolve(dirname(absolute), target);
+      invariant(resolvedTarget === resolve(root) || resolvedTarget.startsWith(`${resolve(root)}/`), 'ARTIFACT_SYMLINK_UNSAFE', `Symlink escapes artifact root: ${childPath}`);
+      entries.push({ path: childPath, type: 'symlink', target });
+    } else if (stats.isFile()) {
+      onBytes(stats.size);
+      entries.push({ path: childPath, type: 'file', bytes: stats.size, mode: stats.mode & 0o777, sha256: await hashFile(absolute) });
+    }
+  }
+}
+
+function assertArtifactPath(path) {
+  const normalized = path.replace(/\/+$/, '');
+  const segments = normalized.split('/').filter(Boolean);
+  const forbiddenDirectory = segments.find((segment) => FORBIDDEN_DIRECTORIES.has(segment));
+  invariant(!forbiddenDirectory, 'ARTIFACT_FORBIDDEN_PATH', `Forbidden artifact path: ${path}`, { path, forbiddenDirectory });
+  invariant(!segments.some((segment, index) => segment === '.next' && segments[index + 1] === 'cache'), 'ARTIFACT_FORBIDDEN_PATH', `Forbidden artifact path: ${path}`, { path, forbiddenDirectory: '.next/cache' });
+  const leaf = segments.at(-1) ?? '';
+  invariant(!/\.(?:log|tmp|swp)$/i.test(leaf), 'ARTIFACT_FORBIDDEN_PATH', `Forbidden artifact file: ${path}`, { path });
+}
+
+function assertArtifactSize(lane, target, bytes, entries, kind = 'uncompressed') {
+  invariant(bytes <= MAX_ARTIFACT_BYTES, 'ARTIFACT_SIZE_LIMIT_EXCEEDED', `${lane} artifact exceeds 150 MiB: ${target}`, {
+    lane,
+    target,
+    kind,
+    bytes,
+    limitBytes: MAX_ARTIFACT_BYTES,
+    largestFiles: entries
+      .filter((entry) => entry.type === 'file')
+      .sort((left, right) => right.bytes - left.bytes)
+      .slice(0, 20)
+      .map(({ path, bytes: fileBytes }) => ({ path, bytes: fileBytes })),
+  });
+}
+
+async function hashFile(path) {
+  const hash = createHash('sha256');
+  for await (const chunk of createReadStream(path)) hash.update(chunk);
+  return hash.digest('hex');
+}
+
+function safeProjectPath(projectRoot, path) {
+  invariant(!isAbsolute(path), 'ARTIFACT_SOURCE_ABSOLUTE', `Artifact source must be project-relative: ${path}`);
+  const absolute = resolve(projectRoot, path);
+  invariant(absolute.startsWith(`${resolve(projectRoot)}/`), 'ARTIFACT_SOURCE_UNSAFE', `Unsafe artifact source: ${path}`);
+  return absolute;
+}
+
+function deletionForInput(input, path) {
+  const prefix = `${input.source.replace(/\/$/, '')}/`;
+  if (path === input.source) return input.destination ?? basename(path);
+  if (!path.startsWith(prefix)) return null;
+  return join(input.destination ?? '', path.slice(prefix.length)).replaceAll('\\', '/');
+}

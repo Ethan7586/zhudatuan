@@ -40,5 +40,8 @@ gitpointer.broken.txt
 .codex-preview-*.png
 .codex-xlsx/
 
+# Local state, logs and immutable artifacts produced by the unified AI delivery engine.
+.ai-delivery/
+
 # Payment certificates and private keys belong in Secret Manager, never the workspace.
 02_platform_pingtai/config/payment/
