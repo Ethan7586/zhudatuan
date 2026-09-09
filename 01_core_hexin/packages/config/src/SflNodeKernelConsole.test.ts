@@ -7,7 +7,9 @@ import {
   materializeSflConsoleArtifact,
   normalizeConsoleClientVersion,
   parseSflConsoleArtifact,
+  parseSflConsoleNodeRuntime,
   resolveConsoleAppConfig,
+  resolveConsoleNodeRuntimeConfig,
   type SflConsoleArtifact,
 } from './SflNodeKernelConsole';
 import {
@@ -120,6 +122,34 @@ describe('SFL Console runtime adapter', () => {
       expect(manifest.payment_binding_refs).toHaveLength(1);
       expect(manifest.callback_binding_refs).toHaveLength(1);
     }
+  });
+
+  it('loads one newly provisioned node from runtime data without rebuilding the shared registry', async () => {
+    const manifest = artifact.node_manifest_registry.manifests.find((entry) => entry.signed_level === 'L1')!;
+    const binding = artifact.runtime_bindings.find((entry) =>
+      entry.resource_binding_set_ref.ref === manifest.resource_binding_set_ref.ref)!;
+    const consoleHost = manifest.domain_bindings.find((entry) => entry.surface_ref === 'surface:console')!.host;
+    const runtime = await parseSflConsoleNodeRuntime({
+      schema_version: 'sfl.console-node-runtime.v1',
+      source_sha: artifact.source_sha,
+      build_id: artifact.build_id,
+      build_count: 1,
+      source_tree: artifact.source_tree,
+      client_version: artifact.client_version,
+      immutable_artifact_digest: artifact.immutable_artifact_digest,
+      node_manifest: manifest,
+      runtime_binding: binding,
+    });
+
+    expect(resolveConsoleNodeRuntimeConfig(runtime, consoleHost)).toMatchObject({
+      apiBaseUrl: binding.api_base_url,
+      nodeContext: { node_id: manifest.node_id },
+      sourceSha,
+      buildCount: 1,
+      immutableArtifactDigest: artifactDigest,
+    });
+    await expect(parseSflConsoleNodeRuntime({ ...runtime, build_count: 2 }))
+      .rejects.toThrow('SFL_CONSOLE_ARTIFACT_BUILD_COUNT_INVALID');
   });
 
   it('resolves L0 and L1 by exact Console Host with independent API, Identity, Scope, and NodeContext', () => {

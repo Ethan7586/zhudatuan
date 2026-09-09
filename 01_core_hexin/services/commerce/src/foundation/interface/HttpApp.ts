@@ -1,9 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { CONTRACT_VERSION, OperationCatalog, type OperationGateDeclaration } from '@shop/contract';
-import { IDENTITY_NODE_MANIFEST } from '@shop/config/identity-node-manifest';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
-import type { NodeContextResolver } from '@shop/config/sfl-node-kernel';
-import { identityEntryHost } from '@shop/config/server';
+import type { NodeContextResolver, ResolvedNodeContext } from '@shop/config/sfl-node-kernel';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { Deadline } from '../performance/Deadline';
 import { bindRequestNodeContext, requestNodeContext } from '../security/AccessContext';
@@ -41,6 +39,7 @@ export class HttpApp {
     let observedStatus = 500;
     let observedError: string | undefined;
     let observedPhase = 'routing';
+    let observedNodeContext: ResolvedNodeContext | undefined;
     try {
       if (origin && !this.origins.has(origin)) return secure(403, { code: 'ORIGIN_DENIED', requestId }, requestId);
       if (request.method === 'OPTIONS') return preflight(request, requestId, origin);
@@ -63,6 +62,7 @@ export class HttpApp {
       const nodeContext = route.operation.startsWith('runtime.health.')
         ? undefined
         : requestNodeContext(request.headers) ?? this.nodeContexts?.resolve(request.headers.get('host') ?? url.host);
+      observedNodeContext = nodeContext;
       const payload = await parseBody(request);
       deadline.throwIfExpired();
       const requestHeaders = Object.freeze(Object.fromEntries(request.headers.entries()));
@@ -87,24 +87,20 @@ export class HttpApp {
     } finally {
       if (observedOperation) this.metrics?.observe({ requestId, traceId,
         operation: observedOperation, version: CONTRACT_VERSION, phase: observedPhase,
-        ...identityRealmObservation(request, observedOperation) }, observedStatus, performance.now()-started, observedError);
+        ...identityRealmObservation(observedOperation, observedNodeContext) }, observedStatus, performance.now()-started, observedError);
       deadline.dispose();
     }
   }
 }
 
-function identityRealmObservation(request: Request, operation: string): Readonly<{ nodeId?: string; realmId?: string }> {
+function identityRealmObservation(
+  operation: string,
+  nodeContext: ResolvedNodeContext | undefined,
+): Readonly<{ nodeId?: string; realmId?: string }> {
   if (!operation.startsWith('identity.')) return {};
-  try {
-    const host = identityEntryHost(request.headers.get('host') ?? new URL(request.url).host);
-    const node = IDENTITY_NODE_MANIFEST.nodes.find((candidate) => candidate.status === 'active'
-      && candidate.entries.some((entry) => entry.status === 'active' && entry.host === host));
-    return node === undefined
-      ? { nodeId: 'unresolved', realmId: 'unresolved' }
-      : { nodeId: node.nodeId, realmId: node.realmId };
-  } catch {
-    return { nodeId: 'unresolved', realmId: 'unresolved' };
-  }
+  return nodeContext === undefined
+    ? { nodeId: 'unresolved', realmId: 'unresolved' }
+    : { nodeId: nodeContext.node_id, realmId: nodeContext.manifest.realm_ref.ref };
 }
 
 function internalErrorCode(cause: unknown): string | undefined {

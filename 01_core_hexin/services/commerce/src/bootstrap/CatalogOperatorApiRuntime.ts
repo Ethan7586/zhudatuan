@@ -31,8 +31,8 @@ import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persiste
 import { RiskCheckAdapter } from '../modules/risk';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import type { Container } from './Container';
-import { ExtensionRegistry } from './ExtensionRegistry';
 import { bindServerNodeManifestRegistry, singleNodeManifestRegistry } from './ApiBootstrap';
+import { ExtensionRegistry } from './ExtensionRegistry';
 import { NODE_DATABASE_ROLE, NODE_MANIFEST } from './NodeRuntime';
 
 interface CompatibilityRow {

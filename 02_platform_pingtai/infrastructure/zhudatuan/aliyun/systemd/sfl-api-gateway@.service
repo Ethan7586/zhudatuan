@@ -1,7 +1,7 @@
 [Unit]
 Description=SFL node-local TLS API gateway (%i)
-Requires=sfl-storefront@%i.service sfl-catalog-api@%i.service sfl-web-api@%i.service sfl-identity-api@%i.service sfl-purchase-api@%i.service sfl-payment-webhook-api@%i.service
-After=network-online.target sfl-storefront@%i.service sfl-catalog-api@%i.service sfl-web-api@%i.service sfl-identity-api@%i.service sfl-purchase-api@%i.service sfl-payment-webhook-api@%i.service
+Requires=sfl-storefront@%i.service sfl-catalog-api@%i.service sfl-web-api@%i.service sfl-identity-api@%i.service sfl-purchase-api@%i.service
+After=network-online.target sfl-storefront@%i.service sfl-catalog-api@%i.service sfl-web-api@%i.service sfl-identity-api@%i.service sfl-purchase-api@%i.service
 ConditionPathExists=/opt/sfl/nodes/%i/runtime/api-gateway.Caddyfile
 ConditionPathExists=/opt/sfl/nodes/%i/runtime/tls/origin.crt
 ConditionPathExists=/opt/sfl/nodes/%i/runtime/tls/origin.key

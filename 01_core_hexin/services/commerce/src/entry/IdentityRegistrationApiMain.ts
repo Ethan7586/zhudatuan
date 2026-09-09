@@ -8,8 +8,14 @@ import { CHANNEL_OPERATOR_READ_OPERATION_IDS } from '../modules/channel/ChannelR
 import { IdentityOperatorChannelModule } from '../modules/channel/IdentityOperatorChannelModule';
 import { EXPERIENCE_OPERATOR_OPERATION_IDS } from '../modules/experience/ExperienceOperatorOperations';
 import { IdentityOperatorExperienceModule } from '../modules/experience/IdentityOperatorExperienceModule';
-import { IdentityRegistrationModule } from '../modules/identity/05_interface_jieru/IdentityRegistrationModule';
-import { IDENTITY_REGISTRATION_OPERATION_IDS } from '../modules/identity/05_interface_jieru/http/IdentityOperations';
+import {
+  IdentityRegistrationCoreModule,
+  IdentityRegistrationModule,
+} from '../modules/identity/05_interface_jieru/IdentityRegistrationModule';
+import {
+  IDENTITY_REGISTRATION_CORE_OPERATION_IDS,
+  IDENTITY_REGISTRATION_OPERATION_IDS,
+} from '../modules/identity/05_interface_jieru/http/IdentityOperations';
 import { FINANCE_OPERATOR_READ_OPERATION_IDS } from '../modules/finance/FinanceReadOperations';
 import { IdentityOperatorFinanceModule } from '../modules/finance/IdentityOperatorFinanceModule';
 import { MEMBER_OPERATOR_READ_OPERATION_IDS } from '../modules/member/03_application_yingyong/MemberReadOperations';
@@ -31,9 +37,12 @@ import { VOUCHER_OPERATOR_READ_OPERATION_IDS } from '../modules/voucher/03_appli
 
 const environment = identityRegistrationApiEnvironment();
 const runtime = await createIdentityRegistrationApiRuntime(environment);
+const identityOperationIds = runtime.wechatIdentityEnabled
+  ? IDENTITY_REGISTRATION_OPERATION_IDS
+  : IDENTITY_REGISTRATION_CORE_OPERATION_IDS;
 const operationIds = Object.freeze([
   ...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS,
-  ...IDENTITY_REGISTRATION_OPERATION_IDS,
+  ...identityOperationIds,
   ...MEMBER_OPERATOR_READ_OPERATION_IDS,
   ...ACCESS_OPERATOR_READ_OPERATION_IDS,
   ...FINANCE_OPERATOR_READ_OPERATION_IDS,
@@ -48,7 +57,7 @@ const operationIds = Object.freeze([
 const bootstrapped = await bootstrapApi({
   modules: [
     IdentityRegistrationRuntimeModule,
-    IdentityRegistrationModule,
+    runtime.wechatIdentityEnabled ? IdentityRegistrationModule : IdentityRegistrationCoreModule,
     IdentityOperatorMemberModule,
     IdentityOperatorAccessModule,
     IdentityOperatorFinanceModule,

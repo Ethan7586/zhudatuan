@@ -4,7 +4,10 @@ import { resolveStorefrontAuthOrigin, storefrontAuthHref } from './storefrontAut
 import { resolveStorefrontApplication, resolveStorefrontNode, resolveStorefrontPresentationIdentity } from './storefrontIdentity';
 
 describe('storefront auth origin boundary', () => {
-  afterEach(() => vi.unstubAllEnvs());
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
 
   it('uses only the account origin owned by the selected production node', () => {
     const l1 = resolveStorefrontNode('hbbtzn.com');
@@ -70,5 +73,30 @@ describe('storefront auth origin boundary', () => {
     expect(Object.fromEntries(target.searchParams)).toEqual({
       target: 'storefront', surface: 'web', application: 'l11-storefront',
     });
+  });
+
+  it('reads a generated node registry injected by the runtime server instead of the build', () => {
+    vi.stubGlobal('window', {
+      location: { hostname: 'store.generated.invalid' },
+      __SFL_STOREFRONT_IDENTITY_NODE_REGISTRY__: {
+        version: 2,
+        nodes: [{
+          nodeId: 'node:generated:l1',
+          nodeProfile: 'operating_mall',
+          mallId: 'mall:generated',
+          displayName: '生成商城',
+          accountsOrigin: 'https://accounts.generated.invalid',
+          apiOrigin: 'https://api.generated.invalid',
+          consumerApiOrigin: 'https://api.generated.invalid',
+          adminOrigin: 'https://console.generated.invalid',
+          storefrontOrigin: 'https://store.generated.invalid',
+          adminTarget: 'console',
+          consumerTarget: 'storefront',
+          consumerApplication: 'generated-storefront',
+        }],
+      },
+    });
+    expect(resolveStorefrontNode()).toMatchObject({ nodeId: 'node:generated:l1', mallId: 'mall:generated' });
+    expect(resolveStorefrontApplication()).toBe('generated-storefront');
   });
 });

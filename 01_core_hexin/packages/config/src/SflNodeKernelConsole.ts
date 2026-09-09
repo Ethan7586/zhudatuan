@@ -1,6 +1,7 @@
 import {
   generateNodeManifestRegistry,
   nodeContextOf,
+  parseNodeManifest,
   parseNodeManifestRegistry,
   resolveNodeDomainBindingByHost,
   resolveNodeManifestByHost,
@@ -15,6 +16,7 @@ import {
 
 export const SFL_CONSOLE_ARTIFACT_SCHEMA_VERSION = 'sfl.console-artifact.v1' as const;
 export const SFL_CONSOLE_RELEASE_DECLARATION_SCHEMA_VERSION = 'sfl.console-release-declaration.v1' as const;
+export const SFL_CONSOLE_NODE_RUNTIME_SCHEMA_VERSION = 'sfl.console-node-runtime.v1' as const;
 
 export type ConsoleScopeKind = 'platform' | 'mall';
 export type ConsoleSourceTree = 'clean' | 'dirty';
@@ -46,6 +48,18 @@ export interface SflConsoleReleaseDescriptor {
   readonly immutable_artifact_digest: ManifestDigest;
 }
 
+export interface SflConsoleNodeRuntime {
+  readonly schema_version: typeof SFL_CONSOLE_NODE_RUNTIME_SCHEMA_VERSION;
+  readonly source_sha: string;
+  readonly build_id: string;
+  readonly build_count: 1;
+  readonly source_tree: ConsoleSourceTree;
+  readonly client_version: string;
+  readonly immutable_artifact_digest: ManifestDigest;
+  readonly node_manifest: NodeManifest;
+  readonly runtime_binding: ConsoleRuntimeBinding;
+}
+
 export interface ConsoleAppConfig {
   readonly apiBaseUrl: string;
   readonly identityOrigin: string;
@@ -72,6 +86,17 @@ const ARTIFACT_KEYS = [
   'immutable_artifact_digest',
   'node_manifest_registry',
   'runtime_bindings',
+] as const;
+const NODE_RUNTIME_KEYS = [
+  'schema_version',
+  'source_sha',
+  'build_id',
+  'build_count',
+  'source_tree',
+  'client_version',
+  'immutable_artifact_digest',
+  'node_manifest',
+  'runtime_binding',
 ] as const;
 const RELEASE_DESCRIPTOR_KEYS = [
   'source_sha',
@@ -186,6 +211,37 @@ export async function parseSflConsoleArtifact(value: unknown): Promise<SflConsol
   });
 }
 
+export async function parseSflConsoleNodeRuntime(value: unknown): Promise<SflConsoleNodeRuntime> {
+  const source = exactRecord(value, NODE_RUNTIME_KEYS, 'SFL_CONSOLE_NODE_RUNTIME_INVALID');
+  if (source.schema_version !== SFL_CONSOLE_NODE_RUNTIME_SCHEMA_VERSION) {
+    throw new Error('SFL_CONSOLE_NODE_RUNTIME_SCHEMA_INVALID');
+  }
+  const sourceSha = sourceShaValue(source.source_sha);
+  const buildId = requiredText(source.build_id, 'SFL_CONSOLE_ARTIFACT_BUILD_ID_INVALID');
+  if (source.build_count !== 1) throw new Error('SFL_CONSOLE_ARTIFACT_BUILD_COUNT_INVALID');
+  const sourceTree = source.source_tree;
+  if (sourceTree !== 'clean' && sourceTree !== 'dirty') throw new Error('SFL_CONSOLE_ARTIFACT_SOURCE_TREE_INVALID');
+  const clientVersion = normalizeConsoleClientVersion(source.client_version);
+  const immutableArtifactDigest = digestValue(
+    source.immutable_artifact_digest,
+    'SFL_CONSOLE_ARTIFACT_DIGEST_INVALID',
+  );
+  const nodeManifest = await parseNodeManifest(source.node_manifest);
+  const runtimeBinding = parseRuntimeBindings([source.runtime_binding])[0]!;
+  validateNodeRuntimeReferences(nodeManifest, runtimeBinding, sourceSha, buildId, immutableArtifactDigest);
+  return Object.freeze({
+    schema_version: SFL_CONSOLE_NODE_RUNTIME_SCHEMA_VERSION,
+    source_sha: sourceSha,
+    build_id: buildId,
+    build_count: 1,
+    source_tree: sourceTree,
+    client_version: clientVersion,
+    immutable_artifact_digest: immutableArtifactDigest,
+    node_manifest: nodeManifest,
+    runtime_binding: runtimeBinding,
+  });
+}
+
 export function resolveConsoleAppConfig(artifact: SflConsoleArtifact, hostname: string): ConsoleAppConfig {
   const manifest = resolveNodeManifestByHost(artifact.node_manifest_registry, hostname);
   const domainBinding = resolveNodeDomainBindingByHost(manifest, hostname);
@@ -216,6 +272,33 @@ export function resolveConsoleAppConfig(artifact: SflConsoleArtifact, hostname: 
     buildId: artifact.build_id,
     buildCount: artifact.build_count,
     immutableArtifactDigest: artifact.immutable_artifact_digest,
+  });
+}
+
+export function resolveConsoleNodeRuntimeConfig(runtime: SflConsoleNodeRuntime, hostname: string): ConsoleAppConfig {
+  const manifest = runtime.node_manifest;
+  const domainBinding = resolveNodeDomainBindingByHost(manifest, hostname);
+  if (domainBinding.surface_ref !== CONSOLE_SURFACE_REF) {
+    throw new Error(`SFL_CONSOLE_HOST_SURFACE_INVALID:${domainBinding.host}`);
+  }
+  const binding = runtime.runtime_binding;
+  if (!sameReference(binding.resource_binding_set_ref, manifest.resource_binding_set_ref)) {
+    throw new Error(`SFL_CONSOLE_RUNTIME_BINDING_INVALID:${manifest.node_id}`);
+  }
+  return Object.freeze({
+    apiBaseUrl: binding.api_base_url,
+    identityOrigin: new URL(binding.identity_entry_url).origin,
+    identityEntryUrl: binding.identity_entry_url,
+    consoleOrigin: `https://${domainBinding.host}`,
+    clientVersion: runtime.client_version,
+    scope: Object.freeze({ kind: binding.scope_kind, id: manifest.data_scope_ref.ref }),
+    nodeManifest: manifest,
+    nodeContext: nodeContextOf(manifest),
+    domainBinding,
+    sourceSha: runtime.source_sha,
+    buildId: runtime.build_id,
+    buildCount: runtime.build_count,
+    immutableArtifactDigest: runtime.immutable_artifact_digest,
   });
 }
 
@@ -279,26 +362,39 @@ function validateArtifactReferences(
 ): void {
   if (registry.manifests.length === 0) throw new Error('SFL_CONSOLE_NODE_MANIFESTS_MISSING');
   for (const manifest of registry.manifests) {
-    const consoleBindings = manifest.domain_bindings.filter((binding) => binding.surface_ref === CONSOLE_SURFACE_REF);
-    if (consoleBindings.length !== 1) throw new Error(`SFL_CONSOLE_DOMAIN_BINDING_INVALID:${manifest.node_id}`);
-    const pointer = manifest.release_pointer_ref;
-    if (pointer.source_sha !== sourceSha) throw new Error(`SFL_CONSOLE_SOURCE_SHA_MISMATCH:${manifest.node_id}`);
-    if (pointer.build_id !== buildId || pointer.build_count !== 1) {
-      throw new Error(`SFL_CONSOLE_BUILD_REFERENCE_MISMATCH:${manifest.node_id}`);
-    }
-    if (pointer.immutable_artifact_digest !== immutableArtifactDigest) {
-      throw new Error(`SFL_CONSOLE_ARTIFACT_DIGEST_MISMATCH:${manifest.node_id}`);
-    }
     const bindings = runtimeBindings.filter((binding) =>
       sameReference(binding.resource_binding_set_ref, manifest.resource_binding_set_ref));
     if (bindings.length !== 1) throw new Error(`SFL_CONSOLE_RUNTIME_BINDING_INVALID:${manifest.node_id}`);
-    const expectedScope = manifest.signed_level === 'L0' ? 'platform' : 'mall';
-    if (bindings[0]!.scope_kind !== expectedScope) {
-      throw new Error(`SFL_CONSOLE_RUNTIME_SCOPE_MISMATCH:${manifest.node_id}`);
-    }
+    validateNodeRuntimeReferences(manifest, bindings[0]!, sourceSha, buildId, immutableArtifactDigest);
   }
   if (runtimeBindings.length !== registry.manifests.length) {
     throw new Error('SFL_CONSOLE_RUNTIME_BINDING_ORPHANED');
+  }
+}
+
+function validateNodeRuntimeReferences(
+  manifest: NodeManifest,
+  runtimeBinding: ConsoleRuntimeBinding,
+  sourceSha: string,
+  buildId: string,
+  immutableArtifactDigest: ManifestDigest,
+): void {
+  const consoleBindings = manifest.domain_bindings.filter((binding) => binding.surface_ref === CONSOLE_SURFACE_REF);
+  if (consoleBindings.length !== 1) throw new Error(`SFL_CONSOLE_DOMAIN_BINDING_INVALID:${manifest.node_id}`);
+  const pointer = manifest.release_pointer_ref;
+  if (pointer.source_sha !== sourceSha) throw new Error(`SFL_CONSOLE_SOURCE_SHA_MISMATCH:${manifest.node_id}`);
+  if (pointer.build_id !== buildId || pointer.build_count !== 1) {
+    throw new Error(`SFL_CONSOLE_BUILD_REFERENCE_MISMATCH:${manifest.node_id}`);
+  }
+  if (pointer.immutable_artifact_digest !== immutableArtifactDigest) {
+    throw new Error(`SFL_CONSOLE_ARTIFACT_DIGEST_MISMATCH:${manifest.node_id}`);
+  }
+  if (!sameReference(runtimeBinding.resource_binding_set_ref, manifest.resource_binding_set_ref)) {
+    throw new Error(`SFL_CONSOLE_RUNTIME_BINDING_INVALID:${manifest.node_id}`);
+  }
+  const expectedScope = manifest.signed_level === 'L0' ? 'platform' : 'mall';
+  if (runtimeBinding.scope_kind !== expectedScope) {
+    throw new Error(`SFL_CONSOLE_RUNTIME_SCOPE_MISMATCH:${manifest.node_id}`);
   }
 }
 

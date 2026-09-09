@@ -70,10 +70,12 @@ describe('web business API environment', () => {
       .toThrow('WEB_BUSINESS_API_KEY_FORBIDDEN:SESSION_KEY_REF');
     expect(() => webBusinessApiEnvironment({ ...valid(), API_BIND_HOST: '0.0.0.0' }))
       .toThrow('WEB_BUSINESS_API_BIND_HOST_INVALID');
-    expect(() => webBusinessApiEnvironment({ ...valid(), API_PORT: '3001' }))
-      .toThrow('WEB_BUSINESS_API_PORT_INVALID');
+    expect(() => webBusinessApiEnvironment({ ...valid(), API_PORT: '0' }))
+      .toThrow('API_PORT_INVALID');
+    expect(webBusinessApiPort(webBusinessApiEnvironment({ ...valid(), API_PORT: '21872' })))
+      .toBe(21872);
     expect(() => webBusinessApiEnvironment({ ...valid(), API_ALLOWED_ORIGINS: 'http://hbbtzn.com' }))
-      .toThrow('WEB_BUSINESS_API_ORIGINS_INVALID');
+      .toThrow('API_ALLOWED_ORIGINS_INVALID');
     expect(() => webBusinessApiEnvironment({ ...valid(), PUBLIC_MALL_SLUG: 'INVALID' }))
       .toThrow('PUBLIC_MALL_SLUG_INVALID');
     expect(() => webBusinessApiEnvironment({ ...valid(), KMS_BEARER_TOKEN: secretStoreBearerToken }))

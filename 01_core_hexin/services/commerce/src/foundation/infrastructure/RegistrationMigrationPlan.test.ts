@@ -114,6 +114,8 @@ describe('registration migration execution plan', () => {
     ['20260905013000_registration_invite_role_projection.sql', 'ab03873df52391ea3abb2b2376705166b9742471d3087a09bd144a6d2ec852d7'],
     ['20260905014000_bind_storefront_browse_scope.sql', '591b42a51455418e8c9224972453fc05e523fde7132e565aedfca4fe03a0dacf'],
     ['20260905203000_provision_zhudatuan_storefront_application.sql', 'eccaa52b4f52f7f66d6c5f64a7e8ad9541bd1781dcae55f176e2214e19af3da6'],
+    ['20260909010000_bind_published_listings_to_storefront_pool.sql', 'e879110631a0dd4323218743c392240a398bb4f235d5972313d8d00eabf5b08b'],
+    ['20260909061000_add_checkout_address_default.sql', '5caaab79f8e3159cfe410bde4a1dc86b9d355380ee5afb7fe64971ec4ea28f75'],
   ])('accepts legacy generic ledger row %s only for its immutable source', async (file, sourceDigest) => {
     const source = await readFile(migration(file), 'utf8');
     const execution = registrationMigrationExecution(file, source);

@@ -22,6 +22,12 @@ describe('identity registration API runtime', () => {
       WECHAT_IDENTITY_CONFIG_REF: 'hbbtzn/nodes/l1/identity/wechat',
     };
     expect(() => assertIdentityRegistrationNodeManifest(manifest, environment)).not.toThrow();
+    const {
+      WECHAT_APPLICATION_CONFIG_REF: _wechatApplications,
+      WECHAT_IDENTITY_CONFIG_REF: _wechatIdentity,
+      ...environmentWithoutWechat
+    } = environment;
+    expect(() => assertIdentityRegistrationNodeManifest(manifest, environmentWithoutWechat)).not.toThrow();
     expect(() => assertIdentityRegistrationNodeManifest(manifest, {
       ...environment, API_ALLOWED_ORIGINS: `${environment.API_ALLOWED_ORIGINS},https://zhudatuan.com`,
     })).toThrow('IDENTITY_NODE_ORIGIN_MISMATCH');

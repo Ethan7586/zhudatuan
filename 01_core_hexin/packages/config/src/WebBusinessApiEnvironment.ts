@@ -85,7 +85,7 @@ export function validateWebBusinessApiEnvironment(source: EnvironmentSource): vo
   if (!/^sha256:[0-9a-f]{64}$/.test(requiredValue(source.NODE_MANIFEST_DIGEST, 'NODE_MANIFEST_DIGEST_INVALID'))) {
     throw new Error('NODE_MANIFEST_DIGEST_INVALID');
   }
-  if (![4322, 4422, 4432].includes(webBusinessApiPort(source))) throw new Error('WEB_BUSINESS_API_PORT_INVALID');
+  webBusinessApiPort(source);
   if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(source.PUBLIC_MALL_SLUG!)) throw new Error('PUBLIC_MALL_SLUG_INVALID');
 }
 

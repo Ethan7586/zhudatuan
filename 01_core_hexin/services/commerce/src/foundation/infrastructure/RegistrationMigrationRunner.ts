@@ -43,9 +43,11 @@ interface LedgerRecord {
 }
 
 const BACKFILL = '20260821026000_backfill_domain_data.sql';
-const REGISTRATION_TARGET_VERSION = '20260908013000';
-const REGISTRATION_TARGET_CHECKSUM = '6c0e5cd69b82934cf6d5609ce540ec4d07f9906c78a53fb985f4f5cd75ec625a';
-const REGISTRATION_TARGET_FILE = '20260908013000_generalize_storefront_roles.sql';
+const REGISTRATION_TARGET_VERSION = '20260909063000';
+const REGISTRATION_TARGET_CHECKSUM = '3db05bef6312ad2f2508a64f788b254329ab0448ec7c11c443e3273356529090';
+const REGISTRATION_TARGET_FILE = '20260909063000_reprovision_disabled_autonode_identity_realm.sql';
+const AUTONODE_IDENTITY_VERSION = '20260909062000';
+const AUTONODE_IDENTITY_CHECKSUM = '3fd8550c8331373bce69345128c464f331fcc0ca57d873621091905641c1e638';
 const REGISTRATION_DATABASE = 'zhudatuan_registration';
 const REGISTRATION_MIGRATION_ROLE = 'shopmigration';
 const MIGRATION_FILE = /^\d{14}_[a-z0-9_]+\.sql$/;
@@ -88,6 +90,8 @@ export class RegistrationMigrationRunner {
           this.assertLedgerRecord(existing, execution, file);
           continue;
         }
+        if (version === AUTONODE_IDENTITY_VERSION
+          && await this.deferMissingAutonodeIdentityLedgerToManagedRepair(client)) continue;
         if (file === BACKFILL) await this.stageSecrets(client);
         if (execution.sql !== null) await client.query(execution.sql);
         await client.query(
@@ -149,6 +153,34 @@ export class RegistrationMigrationRunner {
     if (!registrationMigrationLedgerMatches(file, record.name ?? '', record.statements, execution)) {
       throw new Error(`REGISTRATION_MIGRATION_LEDGER_DRIFT:${file}`);
     }
+  }
+
+  private async deferMissingAutonodeIdentityLedgerToManagedRepair(client: PoolClient): Promise<boolean> {
+    const result = await client.query<{
+      readonly marker_exact: boolean;
+      readonly marker_present: boolean;
+      readonly recoverable: boolean;
+    }>(`select
+      exists(select 1 from runtime.schemaversion where version=$1) marker_present,
+      exists(select 1 from runtime.schemaversion where version=$1 and checksum=$2) marker_exact,
+      not exists(select 1 from runtime.schemaversion where version>$1)
+        and to_regclass('identity.nodeprovisioning') is not null
+        and to_regprocedure('identity.provision_node_realm(jsonb)') is not null
+        and to_regprocedure('identity.disable_node_realm(text)') is not null
+        and not has_function_privilege('public','identity.provision_node_realm(jsonb)','execute')
+        and not has_function_privilege('public','identity.disable_node_realm(text)','execute')
+        and has_function_privilege('zhudatuanprovisioningapi','identity.provision_node_realm(jsonb)','execute')
+        and has_function_privilege('zhudatuanprovisioningapi','identity.disable_node_realm(text)','execute')
+        and not has_table_privilege('zhudatuanprovisioningapi','identity.nodeprovisioning','select,insert,update,delete')
+        and exists(select 1 from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
+          where namespace.nspname='identity' and relation.relname='nodeprovisioning' and relation.relrowsecurity)
+        recoverable`, [AUTONODE_IDENTITY_VERSION, AUTONODE_IDENTITY_CHECKSUM]);
+    const state = result.rows[0];
+    if (state?.marker_present !== true) return false;
+    if (state.marker_exact !== true || state.recoverable !== true) {
+      throw new Error('REGISTRATION_MIGRATION_AUTONODE_LEDGER_RECOVERY_INVALID');
+    }
+    return true;
   }
 
   private async assertHistory(files: readonly string[]): Promise<void> {

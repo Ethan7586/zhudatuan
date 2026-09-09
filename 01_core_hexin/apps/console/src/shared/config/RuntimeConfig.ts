@@ -1,7 +1,9 @@
 import {
   normalizeConsoleClientVersion,
   parseSflConsoleArtifact,
+  parseSflConsoleNodeRuntime,
   resolveConsoleAppConfig,
+  resolveConsoleNodeRuntimeConfig,
   type ConsoleAppConfig,
 } from '@shop/config/sfl-console-runtime';
 import {
@@ -28,6 +30,20 @@ export function requireConsoleRuntimeConfig(): ConsoleAppConfig {
 }
 
 async function loadProductionConfig(hostname: string): Promise<ConsoleAppConfig> {
+  const nodeResponse = await fetch('/console-runtime.json', {
+    cache: 'no-store',
+    credentials: 'same-origin',
+    headers: { accept: 'application/json' },
+    redirect: 'error',
+  });
+  const contentType = nodeResponse.headers.get('content-type')?.toLowerCase() ?? '';
+  if (nodeResponse.ok && contentType.includes('json')) {
+    const runtime = await parseSflConsoleNodeRuntime(await nodeResponse.json());
+    return install(resolveConsoleNodeRuntimeConfig(runtime, hostname));
+  }
+  if (!nodeResponse.ok && nodeResponse.status !== 404) {
+    throw new Error(`CONSOLE_NODE_RUNTIME_CONFIG_HTTP_${nodeResponse.status}`);
+  }
   const response = await fetch('/console-build.json', {
     cache: 'no-store',
     credentials: 'same-origin',

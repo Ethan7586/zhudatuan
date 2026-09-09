@@ -77,7 +77,7 @@ export function validatePaymentWebhookApiEnvironment(source: EnvironmentSource):
     throw new Error('PAYMENT_WEBHOOK_API_SECRET_STORE_ENDPOINT_INVALID');
   }
   bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
-  if (![4326, 4426, 4436].includes(paymentWebhookApiPort(source))) throw new Error('PAYMENT_WEBHOOK_API_PORT_INVALID');
+  paymentWebhookApiPort(source);
 }
 
 export function paymentWebhookApiPort(environment: PaymentWebhookApiEnvironment): number {

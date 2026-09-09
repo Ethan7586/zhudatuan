@@ -167,6 +167,9 @@ const REPAIR_FILES = [
   '20260908013000_generalize_storefront_roles.sql',
   '20260909010000_bind_published_listings_to_storefront_pool.sql',
   '20260909061000_add_checkout_address_default.sql',
+  '20260909062000_provision_autonode_identity_realm.sql',
+  '20260909062500_reconcile_autonode_identity_migration_ledger.sql',
+  '20260909063000_reprovision_disabled_autonode_identity_realm.sql',
   '20260909160000_route_identity_notifications_by_node.sql',
 ];
 

@@ -11,7 +11,9 @@ describe('console bootstrap document', () => {
   it('loads the Host-bound NodeManifest before API prefetch or application modules', () => {
     expect(index).not.toContain('%VITE_API_BASE_URL%');
     expect(index).not.toContain('%VITE_CLIENT_VERSION%');
+    expect(runtime).toContain("fetch('/console-runtime.json'");
     expect(runtime).toContain("fetch('/console-build.json'");
+    expect(runtime.indexOf("fetch('/console-runtime.json'")).toBeLessThan(runtime.indexOf("fetch('/console-build.json'"));
     expect(prefetch).toContain('fetch(`${appConfig.apiBaseUrl}${path}`');
     expect(prefetch).toContain("'x-client-version': appConfig.clientVersion");
     expect(main.indexOf('loadConsoleRuntimeConfig()')).toBeLessThan(main.indexOf("import('./app/providers')"));

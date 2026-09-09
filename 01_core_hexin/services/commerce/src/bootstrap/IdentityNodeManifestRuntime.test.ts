@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { PRODUCTION_IDENTITY_NODE_REGISTRY } from '@shop/sdk/identity-node';
 import type { DatabasePool } from '../foundation/persistence/Pool';
+import { SERVER_NODE_MANIFEST_REGISTRY } from './ApiBootstrap';
 import {
   assertIdentityNodeManifestRuntime,
   expectedIdentityNodeDatabaseManifest,
@@ -18,11 +20,13 @@ describe('identity node manifest runtime parity', () => {
     }))).rejects.toThrow('IDENTITY_NODE_MANIFEST_RUNTIME_DRIFT');
   });
 
-  it('checks only the bound node when another provisioned node exists', async () => {
-    const expected = expectedIdentityNodeDatabaseManifest();
-    const nodeId = 'node:hbbtzn:l1';
+  it('checks only the generated runtime node when another provisioned node exists', async () => {
+    const manifest = SERVER_NODE_MANIFEST_REGISTRY.manifests[1]!;
+    const node = PRODUCTION_IDENTITY_NODE_REGISTRY.nodes.find((candidate) => candidate.nodeId === manifest.node_id)!;
+    const expected = expectedIdentityNodeDatabaseManifest(manifest, node);
     const realmId = 'realm:provisioned:future';
-    await expect(assertIdentityNodeManifestRuntime(pool({
+    const statements: string[] = [];
+    const database = pool({
       realms: [...expected.realms, {
         id: realmId,
         node_id: 'node:provisioned:future',
@@ -43,13 +47,17 @@ describe('identity node manifest runtime parity', () => {
         return_origin: 'https://future.invalid',
         node_profile: 'operating_mall',
       }],
-    }), nodeId)).resolves.toBeUndefined();
+    }, statements);
+    await expect(assertIdentityNodeManifestRuntime(database, manifest, node)).resolves.toBeUndefined();
+    expect(statements).toHaveLength(3);
+    expect(statements.every((statement) => statement.includes('where') && statement.includes('$1'))).toBe(true);
   });
 });
 
-function pool(manifest: IdentityNodeDatabaseManifest): DatabasePool {
+function pool(manifest: IdentityNodeDatabaseManifest, statements: string[] = []): DatabasePool {
   return {
     query: async (statement: string, parameters?: readonly unknown[]) => {
+      statements.push(statement);
       if (statement.includes('from identity.realmentry')) {
         const rows = parameters === undefined ? manifest.entries : manifest.entries.filter((row) => row.realm_id === parameters[0]);
         return result(rows);
@@ -59,7 +67,7 @@ function pool(manifest: IdentityNodeDatabaseManifest): DatabasePool {
         return result(rows);
       }
       if (statement.includes('from identity.realm')) {
-        const rows = parameters === undefined ? manifest.realms : manifest.realms.filter((row) => row.node_id === parameters[0]);
+        const rows = parameters === undefined ? manifest.realms : manifest.realms.filter((row) => row.id === parameters[0]);
         return result(rows);
       }
       throw new Error(`UNEXPECTED_QUERY:${statement}`);

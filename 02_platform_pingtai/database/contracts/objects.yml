@@ -696,6 +696,11 @@ objects:
     callers:
       - 01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RegistrationOperations.ts
       - 01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/SessionTicketOperations.ts
+  - id: identity.disable_node_realm
+    kind: function
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260909062000_provision_autonode_identity_realm.sql
+    operationalOwner: identity
   - id: identity.ensure_imported_principal
     kind: function
     owner: identity
@@ -726,6 +731,11 @@ objects:
     kind: function
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
+    operationalOwner: identity
+  - id: identity.provision_node_realm
+    kind: function
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260909062000_provision_autonode_identity_realm.sql
     operationalOwner: identity
   - id: identity.resolve_session
     kind: function
@@ -19567,6 +19577,22 @@ objects:
     objectType: function
     target: capability.membership_operations(text)
     privilege: execute
+  - id: zhudatuanprovisioningapi:function:identity.disable_node_realm(text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260909062000_provision_autonode_identity_realm.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: identity.disable_node_realm(text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:identity.provision_node_realm(jsonb):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260909062000_provision_autonode_identity_realm.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: identity.provision_node_realm(jsonb)
+    privilege: execute
   - id: zhudatuanprovisioningapi:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
@@ -26245,6 +26271,11 @@ objects:
     kind: table
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql
+    rls: true
+  - id: identity.nodeprovisioning
+    kind: table
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260909062000_provision_autonode_identity_realm.sql
     rls: true
   - id: identity.principal
     kind: table

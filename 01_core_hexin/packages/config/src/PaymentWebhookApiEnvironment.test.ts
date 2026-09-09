@@ -60,14 +60,15 @@ describe('payment webhook API environment', () => {
     expect(() => paymentWebhookApiEnvironment(missing)).toThrow('WECHAT_PAYMENT_CONFIG_REF_MISSING');
   });
 
-  it('pins the production profile, host, port, secret store, and token shape', () => {
+  it('pins the production profile, host, secret store, and token shape', () => {
     for (const [key, value, code] of [
       ['PAYMENT_WEBHOOK_API_PROFILE', 'full', 'PAYMENT_WEBHOOK_API_PROFILE_INVALID'],
       ['API_BIND_HOST', '0.0.0.0', 'PAYMENT_WEBHOOK_API_BIND_HOST_INVALID'],
-      ['API_PORT', '4323', 'PAYMENT_WEBHOOK_API_PORT_INVALID'],
+      ['API_PORT', '0', 'API_PORT_INVALID'],
       ['SECRET_STORE_ENDPOINT', 'http://127.0.0.1:8543', 'SECRET_STORE_ENDPOINT_INVALID'],
       ['SECRET_STORE_ENDPOINT', 'https://secrets.invalid', 'PAYMENT_WEBHOOK_API_SECRET_STORE_ENDPOINT_INVALID'],
       ['SECRET_STORE_BEARER_TOKEN', 'short', 'SECRET_STORE_BEARER_TOKEN_INVALID'],
     ] as const) expect(() => paymentWebhookApiEnvironment({ ...valid(), [key]: value })).toThrow(code);
+    expect(paymentWebhookApiPort(paymentWebhookApiEnvironment({ ...valid(), API_PORT: '21876' }))).toBe(21876);
   });
 });

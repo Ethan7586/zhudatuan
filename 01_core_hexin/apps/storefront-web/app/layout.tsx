@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
+export const dynamic = 'force-dynamic';
+
 const firstPaintGuardCss = `
   html {
     min-width: 320px;
@@ -162,11 +164,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nodeRegistry = process.env.SFL_STOREFRONT_IDENTITY_NODE_REGISTRY
+    ?? process.env.NEXT_PUBLIC_IDENTITY_NODE_REGISTRY;
+  const nodeRuntimeScript = nodeRegistry?.trim()
+    ? `window.__SFL_STOREFRONT_IDENTITY_NODE_REGISTRY__=${escapeInlineJson(nodeRegistry)};`
+    : '';
   return (
     <html lang="zh-CN">
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <style id="sw-first-paint-guard" dangerouslySetInnerHTML={{ __html: firstPaintGuardCss }} />
+        <script id="sw-node-runtime" dangerouslySetInnerHTML={{ __html: nodeRuntimeScript }} />
         <script id="sw-public-catalog-bootstrap" dangerouslySetInnerHTML={{ __html: publicCatalogBootstrapScript }} />
       </head>
       <body>
@@ -183,4 +191,12 @@ export default function RootLayout({
       </body>
     </html>
   );
+}
+
+function escapeInlineJson(source: string): string {
+  try {
+    return JSON.stringify(JSON.parse(source)).replaceAll('<', '\\u003c');
+  } catch {
+    return 'null';
+  }
 }

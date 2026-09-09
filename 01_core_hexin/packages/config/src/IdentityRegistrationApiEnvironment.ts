@@ -1,6 +1,5 @@
 import { bearerToken, distinctValues, enumValue, integerValue, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 import { apiAllowedOrigins } from './ApiEnvironment';
-import { nodeManifestDeclarationByManifestId } from './SflNodeRegistry';
 
 export const IDENTITY_REGISTRATION_API_PROFILE = 'registration-only' as const;
 
@@ -27,6 +26,7 @@ export const IDENTITY_REGISTRATION_API_ENVIRONMENT_KEYS = Object.freeze([
   'NODE_MANIFEST_PATH',
   'NODE_MANIFEST_ID',
   'NODE_MANIFEST_DIGEST',
+  'NODE_IDENTITY_RUNTIME_PATH',
   'NODE_RUNTIME_INSTANCE_ID',
   'NODE_RUNTIME_CONFIG_REF',
   'NODE_RESOURCE_BINDING_VERSION',
@@ -58,7 +58,7 @@ export function validateIdentityRegistrationApiEnvironment(source: EnvironmentSo
   }
   if (requiredValue(source.IDENTITY_REGISTRATION_API_PROFILE, 'IDENTITY_REGISTRATION_API_PROFILE_INVALID')
     !== IDENTITY_REGISTRATION_API_PROFILE) throw new Error('IDENTITY_REGISTRATION_API_PROFILE_INVALID');
-  const app = enumValue(source.APP_ENV, ['development', 'test', 'production'], 'APP_ENV_INVALID');
+  enumValue(source.APP_ENV, ['development', 'test', 'production'], 'APP_ENV_INVALID');
   if (enumValue(source.AUTH_MODE, ['membership'], 'AUTH_MODE_INVALID') !== 'membership') throw new Error('AUTH_MODE_INVALID');
   for (const [key, code] of [
     ['SERVICE_VERSION', 'SERVICE_VERSION_MISSING'],
@@ -67,8 +67,6 @@ export function validateIdentityRegistrationApiEnvironment(source: EnvironmentSo
     ['DATABASE_API_ROLE', 'DATABASE_API_ROLE_MISSING'],
     ['SESSION_KEY_REF', 'SESSION_KEY_REF_MISSING'],
     ['IDENTITY_KEY_REF', 'IDENTITY_KEY_REF_MISSING'],
-    ['WECHAT_APPLICATION_CONFIG_REF', 'WECHAT_APPLICATION_CONFIG_REF_MISSING'],
-    ['WECHAT_IDENTITY_CONFIG_REF', 'WECHAT_IDENTITY_CONFIG_REF_MISSING'],
     ['KMS_ENDPOINT', 'KMS_ENDPOINT_MISSING'],
     ['OBJECT_STORE_ENDPOINT', 'OBJECT_STORE_ENDPOINT_MISSING'],
     ['SECRET_STORE_ENDPOINT', 'SECRET_STORE_ENDPOINT_MISSING'],
@@ -79,6 +77,7 @@ export function validateIdentityRegistrationApiEnvironment(source: EnvironmentSo
     ['NODE_RESOURCE_BINDING_VERSION', 'NODE_RESOURCE_BINDING_VERSION_MISSING'],
     ['NODE_RELEASE_POINTER_REF', 'NODE_RELEASE_POINTER_REF_MISSING'],
   ] as const) requiredValue(source[key], code);
+  identityRegistrationWechatEnabled(source);
   if (!/^sha256:[0-9a-f]{64}$/.test(requiredValue(source.NODE_MANIFEST_DIGEST, 'NODE_MANIFEST_DIGEST_INVALID'))) {
     throw new Error('NODE_MANIFEST_DIGEST_INVALID');
   }
@@ -90,15 +89,7 @@ export function validateIdentityRegistrationApiEnvironment(source: EnvironmentSo
   const kmsBearer = bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
   const secretStoreBearer = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearer, secretStoreBearer, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
-  const origins = apiAllowedOrigins(source);
-  const manifest = nodeManifestDeclarationByManifestId(source.NODE_MANIFEST_ID!);
-  const expectedOrigins = manifest.domain_bindings
-    .filter((binding) => binding.surface_ref !== 'surface:api')
-    .map((binding) => `https://${binding.host}`)
-    .sort();
-  if (app === 'production' && [...origins].sort().join(',') !== expectedOrigins.join(',')) {
-    throw new Error('IDENTITY_REGISTRATION_API_ORIGINS_INVALID');
-  }
+  apiAllowedOrigins(source);
   identityRegistrationApiPort(source);
 }
 
@@ -108,6 +99,14 @@ export function identityRegistrationApiPort(environment: IdentityRegistrationApi
 
 export function identityRegistrationApiAllowedOrigins(environment: IdentityRegistrationApiEnvironment): readonly string[] {
   return apiAllowedOrigins(environment);
+}
+
+export function identityRegistrationWechatEnabled(source: EnvironmentSource): boolean {
+  const configured = [source.WECHAT_APPLICATION_CONFIG_REF, source.WECHAT_IDENTITY_CONFIG_REF]
+    .filter((value) => value?.trim()).length;
+  if (configured === 0) return false;
+  if (configured !== 2) throw new Error('IDENTITY_WECHAT_CONFIGURATION_PARTIAL');
+  return true;
 }
 
 function secureEndpoint(value: string | undefined, code: string): void {

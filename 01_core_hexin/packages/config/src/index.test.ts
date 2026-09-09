@@ -135,6 +135,16 @@ describe('runtime configuration schema', () => {
       NODE_RELEASE_POINTER_REF: '/opt/sfl/nodes/zhudatuan-l0/current',
     };
     expect(identityRegistrationApiEnvironment(registration).IDENTITY_REGISTRATION_API_PROFILE).toBe('registration-only');
+    const {
+      WECHAT_APPLICATION_CONFIG_REF: _wechatApplications,
+      WECHAT_IDENTITY_CONFIG_REF: _wechatIdentity,
+      ...withoutWechat
+    } = registration;
+    expect(identityRegistrationApiEnvironment(withoutWechat).WECHAT_APPLICATION_CONFIG_REF).toBeUndefined();
+    expect(() => identityRegistrationApiEnvironment({
+      ...withoutWechat,
+      WECHAT_APPLICATION_CONFIG_REF: registration.WECHAT_APPLICATION_CONFIG_REF,
+    })).toThrow('IDENTITY_WECHAT_CONFIGURATION_PARTIAL');
     expect(() => identityRegistrationApiEnvironment({ ...registration, IDENTITY_REGISTRATION_API_PROFILE: 'full' }))
       .toThrow('IDENTITY_REGISTRATION_API_PROFILE_INVALID');
     expect(() => identityRegistrationApiEnvironment({ ...registration, REDIS_CONNECTION_REF: 'legacy/redis' }))
@@ -144,15 +154,12 @@ describe('runtime configuration schema', () => {
     expect(() => identityRegistrationApiEnvironment({ ...registration, API_BIND_HOST: '0.0.0.0' }))
       .toThrow('IDENTITY_REGISTRATION_API_BIND_HOST_INVALID');
     expect(identityRegistrationApiEnvironment(registration).API_ALLOWED_ORIGINS).toContain('https://zhudatuan.com');
+    expect(identityRegistrationApiEnvironment({ ...registration,
+      API_ALLOWED_ORIGINS: 'https://accounts.example.com,https://console.example.com' }).API_ALLOWED_ORIGINS)
+      .toContain('https://accounts.example.com');
     expect(() => identityRegistrationApiEnvironment({ ...registration,
-      API_ALLOWED_ORIGINS: 'https://accounts.zhudatuan.com,https://console.zhudatuan.com' }))
-      .toThrow('IDENTITY_REGISTRATION_API_ORIGINS_INVALID');
-    expect(() => identityRegistrationApiEnvironment({ ...registration,
-      API_ALLOWED_ORIGINS: `${registration.API_ALLOWED_ORIGINS},https://preview.zhudatuan.com` }))
-      .toThrow('IDENTITY_REGISTRATION_API_ORIGINS_INVALID');
-    expect(() => identityRegistrationApiEnvironment({ ...registration,
-      API_ALLOWED_ORIGINS: `${registration.API_ALLOWED_ORIGINS},https://evil.example.com` }))
-      .toThrow('IDENTITY_REGISTRATION_API_ORIGINS_INVALID');
+      API_ALLOWED_ORIGINS: `${registration.API_ALLOWED_ORIGINS},not-an-origin` }))
+      .toThrow('API_ALLOWED_ORIGINS_INVALID');
     expect(() => identityRegistrationApiEnvironment({ ...registration, AUTH_RETURN_TARGETS: '{}' }))
       .toThrow('IDENTITY_REGISTRATION_API_KEY_FORBIDDEN:AUTH_RETURN_TARGETS');
     expect(() => identityRegistrationApiEnvironment({ ...registration, KMS_BEARER_TOKEN: secretStoreBearerToken }))

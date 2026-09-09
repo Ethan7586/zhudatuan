@@ -7,7 +7,6 @@ import {
   type EnvironmentSource,
 } from './Environment';
 import { apiAllowedOrigins } from './ApiEnvironment';
-import { nodeManifestDeclarationByManifestId } from './SflNodeRegistry';
 
 export const PURCHASE_API_PROFILE = 'purchase-only' as const;
 
@@ -86,23 +85,15 @@ export function validatePurchaseApiEnvironment(source: EnvironmentSource): void 
   }
   const paymentProviderEnabled = purchasePaymentProviderEnabled(source);
   if (source.API_BIND_HOST !== undefined && source.API_BIND_HOST !== '127.0.0.1') throw new Error('PURCHASE_API_BIND_HOST_INVALID');
-  secureEndpoint(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_INVALID');
+  const secretStoreEndpoint = secureEndpoint(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_INVALID');
   if (paymentProviderEnabled) secureEndpoint(source.KMS_ENDPOINT, 'KMS_ENDPOINT_INVALID');
-  if (app === 'production' && source.SECRET_STORE_ENDPOINT !== 'https://127.0.0.1:8543') {
+  if (app === 'production' && secretStoreEndpoint.hostname !== '127.0.0.1') {
     throw new Error('PURCHASE_API_SECRET_STORE_ENDPOINT_INVALID');
   }
   bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   if (paymentProviderEnabled) bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
-  const origins = apiAllowedOrigins(source);
-  const manifest = nodeManifestDeclarationByManifestId(source.NODE_MANIFEST_ID!);
-  const expectedOrigins = manifest.domain_bindings
-    .filter((binding) => binding.surface_ref === 'surface:storefront')
-    .map((binding) => `https://${binding.host}`)
-    .sort();
-  if (app === 'production' && [...origins].sort().join(',') !== expectedOrigins.join(',')) {
-    throw new Error('PURCHASE_API_ORIGINS_INVALID');
-  }
-  if (![4323, 4423, 4434].includes(purchaseApiPort(source))) throw new Error('PURCHASE_API_PORT_INVALID');
+  apiAllowedOrigins(source);
+  purchaseApiPort(source);
 }
 
 export function purchasePaymentProviderEnabled(source: EnvironmentSource): boolean {
@@ -120,9 +111,10 @@ export function purchaseApiAllowedOrigins(environment: PurchaseApiEnvironment): 
   return apiAllowedOrigins(environment);
 }
 
-function secureEndpoint(value: string | undefined, code: string): void {
+function secureEndpoint(value: string | undefined, code: string): URL {
   const endpoint = requiredValue(value, code);
   let parsed: URL;
   try { parsed = new URL(endpoint); } catch { throw new Error(code); }
   if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.hash || parsed.search) throw new Error(code);
+  return parsed;
 }

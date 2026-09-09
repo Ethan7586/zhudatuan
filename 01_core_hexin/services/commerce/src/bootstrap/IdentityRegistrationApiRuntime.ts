@@ -1,11 +1,13 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
 import type { OperationId } from '@shop/contract';
+import type { IdentityNodeDefinition } from '@shop/sdk/identity-node';
 import {
   CONTRACT_SCHEMA_HEAD,
   RUNTIME_CONTRACT_CHECKSUM,
   TARGET_SCHEMA_HEAD,
   WechatApplicationCatalog,
+  identityRegistrationWechatEnabled,
   loadNodeManifest,
   nodeManifestHasFeature,
   nodeManifestHasSurface,
@@ -35,7 +37,7 @@ import type { Container } from './Container';
 import { bindServerNodeManifestRegistry, singleNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import { assertIdentityRuntimeDatabaseBoundary } from './LiveDatabaseBoundary';
-import { assertIdentityNodeManifestRuntime } from './IdentityNodeManifestRuntime';
+import { assertIdentityNodeManifestRuntime, loadIdentityNodeRuntimeDefinition } from './IdentityNodeManifestRuntime';
 import { NODE_DATABASE_ROLE, NODE_MANIFEST } from './NodeRuntime';
 
 interface CompatibilityRow {
@@ -54,6 +56,7 @@ export interface IdentityRegistrationApiRuntime {
   readonly manifest: NodeManifest;
   readonly extensions: ExtensionRegistry;
   readonly telemetry: Telemetry;
+  readonly wechatIdentityEnabled: boolean;
   readonly configure: (container: Container) => void;
   close(): Promise<void>;
 }
@@ -70,20 +73,25 @@ export async function createIdentityRegistrationApiRuntime(
     releasePointerRef: required(environment.NODE_RELEASE_POINTER_REF, 'NODE_RELEASE_POINTER_REF_MISSING'),
   });
   assertIdentityRegistrationNodeManifest(manifest, environment);
+  const identityNode = await loadIdentityNodeRuntimeDefinition(environment.NODE_IDENTITY_RUNTIME_PATH, manifest);
   const secrets = new WorkloadSecretStore(
     required(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'),
     required(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'),
   );
-  const [connection, sessionKey, identityKey, applicationSource, wechatIdentitySource] = await Promise.all([
+  const [connection, sessionKey, identityKey] = await Promise.all([
     secrets.read(required(environment.DATABASE_API_CONNECTION_REF, 'DATABASE_API_CONNECTION_REF_MISSING')),
     secrets.read(required(environment.SESSION_KEY_REF, 'SESSION_KEY_REF_MISSING')),
     secrets.read(required(environment.IDENTITY_KEY_REF, 'IDENTITY_KEY_REF_MISSING')),
+  ]);
+  const wechatIdentityEnabled = identityRegistrationWechatEnabled(environment);
+  const wechatSources = wechatIdentityEnabled ? await Promise.all([
     secrets.read(required(environment.WECHAT_APPLICATION_CONFIG_REF, 'WECHAT_APPLICATION_CONFIG_REF_MISSING')),
     secrets.read(required(environment.WECHAT_IDENTITY_CONFIG_REF, 'WECHAT_IDENTITY_CONFIG_REF_MISSING')),
-  ]);
-  const applications = WechatApplicationCatalog.parse(parseSecret(applicationSource, 'WECHAT_APPLICATION_CONFIG_INVALID'));
-  const wechatIdentity = new WechatIdentityGateway(applications,
-    parseSecret(wechatIdentitySource, 'WECHAT_IDENTITY_CONFIG_INVALID') as unknown as WechatIdentityConfiguration);
+  ]) : null;
+  const wechatIdentity = wechatSources === null ? null : new WechatIdentityGateway(
+    WechatApplicationCatalog.parse(parseSecret(wechatSources[0], 'WECHAT_APPLICATION_CONFIG_INVALID')),
+    parseSecret(wechatSources[1], 'WECHAT_IDENTITY_CONFIG_INVALID') as unknown as WechatIdentityConfiguration,
+  );
   const pool = createPool(connection, 'api');
   const objects = new HttpObjectStore(
     required(environment.OBJECT_STORE_ENDPOINT, 'OBJECT_STORE_ENDPOINT_MISSING'),
@@ -91,7 +99,7 @@ export async function createIdentityRegistrationApiRuntime(
   );
   const databaseRole = required(environment.DATABASE_API_ROLE, 'DATABASE_API_ROLE_MISSING');
   try {
-    await assertIdentityRegistrationRuntimeCompatibility(pool, databaseRole, manifest.node_id);
+    await assertIdentityRegistrationRuntimeCompatibility(pool, databaseRole, manifest, identityNode);
     await objects.find('catalog/readiness-probe');
   } catch (cause) {
     await pool.end();
@@ -120,6 +128,7 @@ export async function createIdentityRegistrationApiRuntime(
     manifest,
     extensions,
     telemetry,
+    wechatIdentityEnabled,
     configure(container: Container) {
       bindServerNodeManifestRegistry(container, singleNodeManifestRegistry(manifest));
       container.bind(OPERATION_HANDLERS, handlers);
@@ -134,7 +143,7 @@ export async function createIdentityRegistrationApiRuntime(
         required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING'),
       ));
       container.bind(OBJECT_STORE, objects);
-      container.bind(WECHAT_IDENTITY, wechatIdentity);
+      if (wechatIdentity !== null) container.bind(WECHAT_IDENTITY, wechatIdentity);
       container.bind(NODE_MANIFEST, manifest);
       container.bind(NODE_DATABASE_ROLE, databaseRole);
     },
@@ -178,14 +187,15 @@ export async function identityRegistrationRuntimeCompatibility(
 export async function assertIdentityRegistrationRuntimeCompatibility(
   pool: DatabasePool,
   expectedRole = 'zhudatuanidentityapi',
-  nodeId?: string,
+  manifest?: NodeManifest,
+  identityNode?: IdentityNodeDefinition,
 ): Promise<void> {
   await identityRegistrationRuntimeCompatibility(pool, expectedRole);
   await assertIdentityRuntimeDatabaseBoundary(
     pool,
     expectedRole as 'zhudatuanidentityapi' | 'zhudatuanidentityjob',
   );
-  await assertIdentityNodeManifestRuntime(pool, nodeId);
+  await assertIdentityNodeManifestRuntime(pool, manifest, identityNode);
 }
 
 export function assertIdentityRegistrationNodeManifest(
@@ -202,13 +212,16 @@ export function assertIdentityRegistrationNodeManifest(
   const actualOrigins = required(environment.API_ALLOWED_ORIGINS, 'API_ALLOWED_ORIGINS_MISSING')
     .split(',').map((origin) => origin.trim()).filter(Boolean).sort();
   if (expectedOrigins.join(',') !== actualOrigins.join(',')) throw new Error('IDENTITY_NODE_ORIGIN_MISMATCH');
-  assertSecretReferences(manifest, [
+  const references = [
     environment.DATABASE_API_CONNECTION_REF,
     environment.SESSION_KEY_REF,
     environment.IDENTITY_KEY_REF,
+  ];
+  if (identityRegistrationWechatEnabled(environment)) references.push(
     environment.WECHAT_APPLICATION_CONFIG_REF,
     environment.WECHAT_IDENTITY_CONFIG_REF,
-  ]);
+  );
+  assertSecretReferences(manifest, references);
   if (environment.APP_ENV === 'production' && manifest.lifecycle_status !== 'active') throw new Error('IDENTITY_NODE_NOT_ACTIVE');
 }
 

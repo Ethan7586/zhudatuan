@@ -83,7 +83,7 @@ describe('purchase API environment', () => {
     expect(purchaseApiAllowedOrigins(environment)).not.toContain('https://zhudatuan.com');
   });
 
-  it('fails closed on full-runtime dependencies, public binds, and non-purchase origins', () => {
+  it('fails closed on full-runtime dependencies, public binds, and invalid ports', () => {
     for (const [key, value] of [
       ['PAYMENT_CONFIG_REF', 'legacy/payment'],
       ['REDIS_CONNECTION_REF', 'legacy/redis'],
@@ -98,10 +98,15 @@ describe('purchase API environment', () => {
     }
     expect(() => purchaseApiEnvironment({ ...valid(), API_BIND_HOST: '0.0.0.0' }))
       .toThrow('PURCHASE_API_BIND_HOST_INVALID');
-    expect(() => purchaseApiEnvironment({ ...valid(), API_PORT: '4322' }))
-      .toThrow('PURCHASE_API_PORT_INVALID');
-    expect(() => purchaseApiEnvironment({ ...valid(), API_ALLOWED_ORIGINS: 'https://console.zhudatuan.com' }))
-      .toThrow('PURCHASE_API_ORIGINS_INVALID');
+    expect(() => purchaseApiEnvironment({ ...valid(), API_PORT: '0' }))
+      .toThrow('API_PORT_INVALID');
+    const generated = purchaseApiEnvironment({
+      ...valid(),
+      API_PORT: '21873',
+      API_ALLOWED_ORIGINS: 'https://storefront.generated.invalid',
+    });
+    expect(purchaseApiPort(generated)).toBe(21873);
+    expect(purchaseApiAllowedOrigins(generated)).toEqual(['https://storefront.generated.invalid']);
   });
 
   it('requires the exact profile, membership auth, and a TLS secret-store dependency', () => {
@@ -113,6 +118,8 @@ describe('purchase API environment', () => {
       .toThrow('SECRET_STORE_ENDPOINT_INVALID');
     expect(() => purchaseApiEnvironment({ ...valid(), SECRET_STORE_ENDPOINT: 'https://secrets.attacker.invalid' }))
       .toThrow('PURCHASE_API_SECRET_STORE_ENDPOINT_INVALID');
+    expect(purchaseApiEnvironment({ ...valid(), SECRET_STORE_ENDPOINT: 'https://127.0.0.1:59253' }).SECRET_STORE_ENDPOINT)
+      .toBe('https://127.0.0.1:59253');
     expect(() => purchaseApiEnvironment({ ...valid(), SECRET_STORE_BEARER_TOKEN: 'short' }))
       .toThrow('SECRET_STORE_BEARER_TOKEN_INVALID');
     expect(() => purchaseApiEnvironment({ ...valid(), KMS_ENDPOINT: 'http://127.0.0.1:8544' }))

@@ -34,7 +34,7 @@ export const IDENTITY_CORE_OPERATION_IDS = Object.freeze([
   'identity.stepup.complete',
 ] as const satisfies readonly OperationId[]);
 
-const IDENTITY_REGISTRATION_CORE_OPERATION_IDS = Object.freeze([
+export const IDENTITY_REGISTRATION_CORE_OPERATION_IDS = Object.freeze([
   'identity.sessions.create',
   'identity.loginintents.create',
   'identity.tickets.exchange',
