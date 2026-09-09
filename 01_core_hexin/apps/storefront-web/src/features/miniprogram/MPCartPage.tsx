@@ -3,6 +3,7 @@ import { CheckCircle2, Circle, CreditCard, ShoppingBag, Store } from 'lucide-rea
 import { MobileInventoryBadge } from '../../components/mobile/MobileInventoryBadge';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { useMall } from '../../context/MallContext';
+import { loadPaymentResultPage } from '../../components/mobile/miniProgramPageLoaders';
 import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 import { requestWechatDeliveryAddress, WechatAddressRequestError } from '../../services/wechatDeliveryAddress';
 import { MPCartInvoiceDisclosure } from './MPCartInvoiceDisclosure';
@@ -40,12 +41,13 @@ export const MPCartPage: React.FC = () => {
   const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0];
 
   const handleCheckout = async () => {
+    void loadPaymentResultPage();
     if (selectedItems.length === 0) return;
     if (addresses.length === 0) {
       setMpPage('address');
       return;
     }
-    if (await checkoutSelectedCart()) setMpPage('profile');
+    await checkoutSelectedCart();
   };
 
   const handleRemoveSelected = () => {

@@ -1,7 +1,7 @@
 import { canonicalCall, canonicalClient, anonymousContext, anonymousIdempotentContext, clearCanonicalSession, rememberCanonicalSession, sessionContext } from './canonicalApiClient';
 import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { createSecureId } from '@shop/sdk/context';
-import { checkoutWithCanonicalPayment } from './canonicalCheckout';
+import { checkoutWithCanonicalPayment, continueWithCanonicalPayment } from './canonicalCheckout';
 import { readCanonicalPaymentResult } from './canonicalPaymentResult';
 import { mapCanonicalProductPage } from './canonicalCatalogMapper';
 import { mapCanonicalAccounts, mapCanonicalCart, mapCanonicalLedgers, mapCanonicalOrders } from './canonicalCommerceMapper';
@@ -281,5 +281,6 @@ export const productionApi = {
   },
 
   checkout: checkoutWithCanonicalPayment,
+  continuePayment: continueWithCanonicalPayment,
   readPaymentResult: readCanonicalPaymentResult,
 };

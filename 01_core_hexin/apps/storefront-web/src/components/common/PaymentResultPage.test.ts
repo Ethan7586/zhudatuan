@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ProductionApiError, type ApiPaymentResult, type ApiPaymentResultState } from '../../services/productionApi';
-import { paymentResultReadFailure, selectPaymentResult } from './PaymentResultPage';
+import { paymentDisplayStage, paymentResultReadFailure, selectPaymentResult } from './PaymentResultPage';
+import type { PaymentRecoveryRecord } from '../../services/paymentRecovery';
 
 describe('payment result polling', () => {
   it('treats a short-lived missing result as background synchronization', () => {
@@ -23,11 +24,24 @@ describe('payment result polling', () => {
     const recovery = paymentResult('recovery');
     expect(selectPaymentResult(recovery, paymentResult('pending'))).toBe(recovery);
   });
+
+  it('keeps a user cancellation visible until the server returns a final state', () => {
+    expect(paymentDisplayStage(paymentSession('cancelled'), paymentResult('pending'))).toBe('cancelled');
+    expect(paymentDisplayStage(paymentSession('cancelled'), paymentResult('captured'))).toBe('captured');
+  });
 });
 
 function paymentResult(state: ApiPaymentResultState): ApiPaymentResult {
   return {
     intentId: 'intent:one', orderId: 'order:one', paymentId: 'payment:one', state, paymentState: state,
     amountMinor: 100, currency: 'CNY', action: null, expiresAt: '2026-09-07T12:00:00.000Z', retryAfter: 0,
+  };
+}
+
+function paymentSession(stage: PaymentRecoveryRecord['stage']): PaymentRecoveryRecord {
+  return {
+    schema: 'storefront.payment-recovery.v1', scope: 'member:one:mall:one', orderId: 'order:one', paymentId: 'intent:one',
+    amountMinor: 100, currency: 'CNY', mallName: '宏泰甄选', createdAt: '2026-09-09T05:00:00.000Z', updatedAt: '2026-09-09T05:00:00.000Z',
+    idempotencyKey: 'checkout:one', cartFingerprint: 'cart:one', cartItemIds: ['cart:one'], stage, retryCount: 0,
   };
 }

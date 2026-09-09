@@ -273,6 +273,7 @@ describe('canonical storefront production API', () => {
   it('creates the external-payment order, invokes WeChat once, and reports authorizing without claiming paid', async () => {
     const fetcher = apiFetch({ personalMinor: 100 });
     const invoke = wechatBridge('get_brand_wcpay_request:ok');
+    const onPaymentProgress = vi.fn();
     vi.stubGlobal('fetch', fetcher);
     const { productionApi } = await import('./productionApi');
     await productionApi.getHomeSnapshot();
@@ -281,13 +282,20 @@ describe('canonical storefront production API', () => {
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:external',
-    })).resolves.toEqual({ orderId: 'order:one', paymentId: 'intent:one', paymentState: 'authorizing' });
+      onPaymentProgress,
+    })).resolves.toEqual({
+      orderId: 'order:one', paymentId: 'intent:one', paymentState: 'authorizing',
+      wechatOutcome: { status: 'returned', errMsg: 'get_brand_wcpay_request:ok', code: 'WECHAT_PAYMENT_RETURNED' },
+    });
     const postOrder = fetcher.mock.calls.find(([url, init]) => new URL(String(url)).pathname === '/api/v1/orders' && init?.method === 'POST');
     expect(postOrder).toBeTruthy();
     expect(invoke).toHaveBeenCalledOnce();
     expect(invoke).toHaveBeenCalledWith('getBrandWCPayRequest', expect.objectContaining({
       appId: 'wx-public-mall', package: 'prepay_id=public-mall', paySign: 'signed',
     }), expect.any(Function));
+    expect(onPaymentProgress.mock.calls.map(([progress]) => progress.stage)).toEqual([
+      'creating-payment', 'opening-wechat', 'wechat-active',
+    ]);
   });
 
   it('reports reconciling without reopening WeChat when the server is already querying an uncertain result', async () => {
@@ -326,8 +334,28 @@ describe('canonical storefront production API', () => {
       addressId: 'address:one',
       items: [{ listingId: 'listing:one', quantity: 1 }],
       idempotencyKey: 'checkout:cancelled',
-    })).rejects.toMatchObject({ code: 'PAYMENT_CANCELLED' });
+    })).resolves.toEqual({
+      orderId: 'order:one', paymentId: 'intent:one', paymentState: 'authorizing',
+      wechatOutcome: { status: 'cancelled', errMsg: 'get_brand_wcpay_request:cancel', code: 'PAYMENT_CANCELLED' },
+    });
     expect(requestInit(fetcher, '/api/v1/orders', 'POST')).toBeTruthy();
+  });
+
+  it('restarts payment for the original order without creating another order', async () => {
+    const fetcher = apiFetch({ personalMinor: 100 });
+    wechatBridge('get_brand_wcpay_request:ok');
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+    await productionApi.getHomeSnapshot();
+
+    await expect(productionApi.continuePayment({
+      orderId: 'order:one', amountMinor: 100, currency: 'CNY', idempotencyKey: 'checkout:one:retry:1',
+    })).resolves.toMatchObject({ orderId: 'order:one', paymentId: 'intent:one', paymentState: 'authorizing' });
+
+    expect(requestPaths(fetcher).filter((path) => path === '/api/v1/orders')).toEqual(['/api/v1/orders']);
+    expect(requestPaths(fetcher).filter((path) => path === '/api/v1/checkouts/quotes')).toEqual([]);
+    const retry = requestInit(fetcher, '/api/v1/payments/intents', 'POST');
+    expect(new Headers(retry.headers).get('idempotency-key')).toBe('checkout:one:retry:1');
   });
 });
 
@@ -391,7 +419,11 @@ function wechatBridge(message: string) {
   const invoke = vi.fn((_operation: string, _parameters: Record<string, string>, callback: (result: Record<string, string>) => void) => {
     callback({ err_msg: message });
   });
-  vi.stubGlobal('window', { WeixinJSBridge: { invoke } });
+  vi.stubGlobal('window', {
+    WeixinJSBridge: { invoke },
+    setTimeout: globalThis.setTimeout.bind(globalThis),
+    clearTimeout: globalThis.clearTimeout.bind(globalThis),
+  });
   return invoke;
 }
 

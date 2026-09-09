@@ -7,6 +7,7 @@ export const loadMPDetailPage = () => import('../../features/miniprogram/MPDetai
 export const loadMPProfilePage = () => import('../../features/miniprogram/MPProfilePage');
 export const loadMPWelfarePage = () => import('../../features/miniprogram/MPWelfarePage');
 export const loadMobileOrdersPage = () => import('./MobileOrdersPage');
+export const loadPaymentResultPage = () => import('../common/PaymentResultPage');
 
 const PRIMARY_PAGE_LOADERS: Partial<Record<MiniProgramPage, () => Promise<unknown>>> = {
   category: loadMPCategoryPage,
@@ -20,7 +21,7 @@ const PRIMARY_PAGE_LOADERS: Partial<Record<MiniProgramPage, () => Promise<unknow
 export function preloadMiniProgramPage(page: MiniProgramPage): void {
   const pageLoad = PRIMARY_PAGE_LOADERS[page]?.();
   void pageLoad;
-  if (page === 'cart') void pageLoad?.then(() => loadMPAddressPage());
+  if (page === 'cart') void pageLoad?.then(() => Promise.all([loadMPAddressPage(), loadPaymentResultPage()]));
   if (page === 'profile') void loadMobileOrdersPage();
 }
 

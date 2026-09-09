@@ -1,18 +1,36 @@
 import { canonicalCall, canonicalClient, sessionContext } from './canonicalApiClient';
 import { nonNegativeInteger, record, records, text, version } from './canonicalShape';
 import { ProductionApiError } from './productionApi.error';
-import { requestWechatJsapiPayment } from './wechatJsapiPayment';
+import { requestWechatJsapiPayment, type WechatJsapiPaymentOutcome } from './wechatJsapiPayment';
+
+export interface CanonicalPaymentProgress {
+  readonly stage: 'creating-payment' | 'opening-wechat' | 'wechat-active' | 'verifying' | 'recovery' | 'captured';
+  readonly orderId: string;
+  readonly paymentId: string | null;
+  readonly amountMinor: number;
+  readonly currency: string;
+}
 
 export interface CanonicalCheckoutInput {
   readonly addressId: string;
   readonly items: readonly Readonly<{ listingId: string; quantity: number }>[];
   readonly idempotencyKey: string;
+  readonly onPaymentProgress?: (progress: CanonicalPaymentProgress) => void | Promise<void>;
 }
 
 export interface CanonicalCheckoutResult {
   readonly orderId: string;
   readonly paymentId: string;
   readonly paymentState: 'captured' | 'authorizing' | 'reconciling';
+  readonly wechatOutcome?: WechatJsapiPaymentOutcome;
+}
+
+export interface CanonicalPaymentContinuationInput {
+  readonly orderId: string;
+  readonly amountMinor: number;
+  readonly currency: string;
+  readonly idempotencyKey: string;
+  readonly onPaymentProgress?: CanonicalCheckoutInput['onPaymentProgress'];
 }
 
 export async function checkoutWithCanonicalPayment(input: CanonicalCheckoutInput): Promise<CanonicalCheckoutResult> {
@@ -45,22 +63,62 @@ export async function checkoutWithCanonicalPayment(input: CanonicalCheckoutInput
     throw new ProductionApiError('订单支付计划与报价不一致，请刷新后重试', 409, 'PAYMENT_PLAN_CHANGED');
   }
   const orderId = text(order.id, 'order.create.id');
+  await notify(input.onPaymentProgress, { stage: 'creating-payment', orderId, paymentId: null, amountMinor: personalMinor, currency: 'CNY' });
   const paymentValue = await canonicalCall(() => client.payment.intentsCreate({ body: { order: orderId, scene: 'jsapi' } }, sessionContext({
     write: true,
     idempotencyKey: `${input.idempotencyKey}:payment`,
   })));
+  return resolvePaymentIntent(paymentValue, {
+    orderId, amountMinor: personalMinor, currency: 'CNY', onPaymentProgress: input.onPaymentProgress,
+  });
+}
+
+export async function continueWithCanonicalPayment(input: CanonicalPaymentContinuationInput): Promise<CanonicalCheckoutResult> {
+  const paymentValue = await canonicalCall(() => canonicalClient().payment.intentsCreate({
+    body: { order: input.orderId, scene: 'jsapi' },
+  }, sessionContext({ write: true, idempotencyKey: input.idempotencyKey })));
+  return resolvePaymentIntent(paymentValue, input);
+}
+
+async function resolvePaymentIntent(
+  paymentValue: unknown,
+  input: Readonly<{
+    orderId: string;
+    amountMinor: number;
+    currency: string;
+    onPaymentProgress?: CanonicalCheckoutInput['onPaymentProgress'];
+  }>,
+): Promise<CanonicalCheckoutResult> {
   const payment = record(paymentValue, 'payment.intent');
   const paymentId = text(payment.intent, 'payment.intent.id');
-  if (payment.state === 'captured') return Object.freeze({ orderId, paymentId, paymentState: 'captured' });
+  if (payment.state === 'captured') {
+    await notify(input.onPaymentProgress, { ...input, stage: 'captured', paymentId });
+    return Object.freeze({ orderId: input.orderId, paymentId, paymentState: 'captured' });
+  }
   if (payment.parameters !== undefined) {
-    await requestWechatJsapiPayment(payment.parameters);
-    return Object.freeze({ orderId, paymentId, paymentState: 'authorizing' });
+    await notify(input.onPaymentProgress, { ...input, stage: 'opening-wechat', paymentId });
+    const wechatOutcome = await requestWechatJsapiPayment(payment.parameters, {
+      onInvoked: () => notify(input.onPaymentProgress, { ...input, stage: 'wechat-active', paymentId }),
+    });
+    return Object.freeze({ orderId: input.orderId, paymentId, paymentState: 'authorizing', wechatOutcome });
   }
   if (payment.state === 'authorizing' || payment.state === 'reconciling') {
-    return Object.freeze({ orderId, paymentId, paymentState: payment.state });
+    await notify(input.onPaymentProgress, {
+      ...input,
+      stage: payment.state === 'reconciling' ? 'recovery' : 'verifying',
+      paymentId,
+    });
+    return Object.freeze({ orderId: input.orderId, paymentId, paymentState: payment.state });
   }
   const state = typeof payment.state === 'string' ? payment.state : 'unknown';
   throw new ProductionApiError(`支付未完成，服务端状态为 ${state}`, 409, 'PAYMENT_NOT_STARTED');
+}
+
+async function notify(
+  listener: CanonicalCheckoutInput['onPaymentProgress'],
+  progress: CanonicalPaymentProgress,
+): Promise<void> {
+  await listener?.(Object.freeze(progress));
 }
 
 function assertCartMatches(serverItems: readonly Record<string, unknown>[], expectedItems: CanonicalCheckoutInput['items']): void {

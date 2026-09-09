@@ -1,6 +1,8 @@
 import type { Dispatch, SetStateAction } from 'react';
 import type { AccountLog, CartItem, DeliveryAddress, EnterpriseMall, Order, OrderStatus, Product, ProductItemType, UserProfile } from '../types';
 import type { FrontendCategory, FrontendOrder, FrontendProduct } from '../adapters/frontendData';
+import type { ApiPaymentResult } from '../services/productionApi.types';
+import type { PaymentRecoveryRecord } from '../services/paymentRecovery';
 
 export type SessionStatus = 'checking' | 'guest' | 'authenticated';
 export type CatalogSyncStatus = 'idle' | 'syncing' | 'ready' | 'error';
@@ -90,7 +92,10 @@ export interface MallContextType {
   refreshProductionData: () => Promise<void>;
   isSubmittingOrder: boolean;
   activePaymentId: string | null;
+  activePaymentSession: PaymentRecoveryRecord | null;
   closePaymentResult: () => void;
+  continueActivePayment: () => Promise<void>;
+  recordPaymentResult: (result: ApiPaymentResult) => void;
   checkoutSelectedCart: () => Promise<boolean>;
   cart: CartItem[];
   cartCount: number;

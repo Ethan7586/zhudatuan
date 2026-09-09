@@ -1,8 +1,9 @@
 import React from 'react';
+import { PaymentExperienceBoundary, PaymentStableCarrier } from '../common/PaymentExperienceBoundary';
 import { useMall, type MiniProgramPage } from '../../context/MallContext';
 import { MPHomePage } from '../../features/miniprogram/MPHomePage';
 import { WeChatTabBar } from './WeChatTabBar';
-import { loadMobileOrdersPage, loadMPAddressPage, loadMPCartPage, loadMPCategoryPage, loadMPDetailPage, loadMPProfilePage, loadMPWelfarePage, preloadPrimaryMiniProgramPages } from './miniProgramPageLoaders';
+import { loadMobileOrdersPage, loadMPAddressPage, loadMPCartPage, loadMPCategoryPage, loadMPDetailPage, loadMPProfilePage, loadMPWelfarePage, loadPaymentResultPage, preloadPrimaryMiniProgramPages } from './miniProgramPageLoaders';
 
 const MPCartPage = React.lazy(() => loadMPCartPage().then(({ MPCartPage }) => ({ default: MPCartPage })));
 const MPCategoryPage = React.lazy(() => loadMPCategoryPage().then(({ MPCategoryPage }) => ({ default: MPCategoryPage })));
@@ -11,16 +12,19 @@ const MPProfilePage = React.lazy(() => loadMPProfilePage().then(({ MPProfilePage
 const MPWelfarePage = React.lazy(() => loadMPWelfarePage().then(({ MPWelfarePage }) => ({ default: MPWelfarePage })));
 const MPAddressPage = React.lazy(() => loadMPAddressPage().then(({ MPAddressPage }) => ({ default: MPAddressPage })));
 const MobileOrdersPage = React.lazy(() => loadMobileOrdersPage().then(({ MobileOrdersPage }) => ({ default: MobileOrdersPage })));
-const PaymentResultPage = React.lazy(() => import('../common/PaymentResultPage').then(({ PaymentResultPage }) => ({ default: PaymentResultPage })));
+const PaymentResultPage = React.lazy(() => loadPaymentResultPage().then(({ PaymentResultPage }) => ({ default: PaymentResultPage })));
 const PendingInterfaceModal = React.lazy(() => import('./PendingInterfaceModal').then(({ PendingInterfaceModal }) => ({ default: PendingInterfaceModal })));
 const ToastContainer = React.lazy(() => import('../common/ToastContainer').then(({ ToastContainer }) => ({ default: ToastContainer })));
 
 /** Production phone storefront shown after an L6 consumer opens the mall. */
 export function ProductionMobileFrame() {
-  const { mpPage, activePaymentId, pendingFeature, toasts } = useMall();
+  const {
+    mpPage, activePaymentId, activePaymentSession, closePaymentResult, navigateTo, pendingFeature,
+    setAndroidPage, setLaptopPage, setMpPage, setTabletPage, toasts,
+  } = useMall();
   const visitedPages = React.useRef(new Set<KeepAlivePage>(['home']));
   const [warmedPages, setWarmedPages] = React.useState<WarmedPageComponents>({});
-  const activeKeepAlivePage = !activePaymentId && isKeepAlivePage(mpPage) ? mpPage : null;
+  const activeKeepAlivePage = !activePaymentSession && isKeepAlivePage(mpPage) ? mpPage : null;
 
   React.useEffect(() => {
     let cancelled = false;
@@ -54,13 +58,32 @@ export function ProductionMobileFrame() {
   }, []);
 
   React.useEffect(() => {
-    if (mpPage === 'cart') void loadMPAddressPage();
+    if (mpPage === 'cart') void Promise.all([loadMPAddressPage(), loadPaymentResultPage()]);
     if (mpPage === 'profile') void loadMobileOrdersPage();
   }, [mpPage]);
 
   if (activeKeepAlivePage) visitedPages.current.add(activeKeepAlivePage);
 
-  const transientPage = activePaymentId ? deferredPage(<PaymentResultPage paymentId={activePaymentId} />) : renderTransientPage(mpPage);
+  const viewPaymentOrder = React.useCallback(() => {
+    setMpPage('orders');
+    setAndroidPage('orders');
+    setTabletPage('orders');
+    setLaptopPage('orders');
+    navigateTo('orders');
+    closePaymentResult();
+  }, [closePaymentResult, navigateTo, setAndroidPage, setLaptopPage, setMpPage, setTabletPage]);
+  const recoverPayment = React.useCallback(() => window.location.reload(), []);
+  const transientPage = activePaymentSession ? (
+    <PaymentExperienceBoundary
+      paymentId={activePaymentId ?? activePaymentSession.idempotencyKey}
+      onRecover={recoverPayment}
+      onViewOrders={viewPaymentOrder}
+    >
+      <React.Suspense fallback={<PaymentStableCarrier session={activePaymentSession} />}>
+        <PaymentResultPage session={activePaymentSession} />
+      </React.Suspense>
+    </PaymentExperienceBoundary>
+  ) : renderTransientPage(mpPage);
 
   return (
     <div data-storefront-surface="h5" className="h-[100dvh] overflow-hidden bg-[#F5F7FA] text-gray-800">
@@ -80,7 +103,7 @@ export function ProductionMobileFrame() {
           ))}
           {activeKeepAlivePage === null ? (
             <div
-              data-storefront-mobile-page={activePaymentId ? 'payment-result' : mpPage}
+              data-storefront-mobile-page={activePaymentSession ? 'payment-result' : mpPage}
               data-storefront-mobile-scroll
               className="h-full overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch]"
             >

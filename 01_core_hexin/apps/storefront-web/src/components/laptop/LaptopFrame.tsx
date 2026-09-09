@@ -21,7 +21,7 @@ type StorefrontWebFrameProps = {
 };
 
 export const StorefrontWebFrame: React.FC<StorefrontWebFrameProps> = ({ surface = 'laptop', navigationBoundary = 'showcase' }) => {
-  const { laptopPage, setLaptopPage, activePaymentId } = useMall();
+  const { laptopPage, setLaptopPage, activePaymentId, activePaymentSession } = useMall();
 
   const handleSelectTab = (tab: LaptopPage) => {
     setLaptopPage(tab);
@@ -29,6 +29,7 @@ export const StorefrontWebFrame: React.FC<StorefrontWebFrameProps> = ({ surface 
   };
 
   const renderLaptopContent = () => {
+    if (activePaymentSession) return <PaymentResultPage session={activePaymentSession} />;
     if (activePaymentId) return <PaymentResultPage paymentId={activePaymentId} />;
     switch (laptopPage) {
       case 'home-1366':

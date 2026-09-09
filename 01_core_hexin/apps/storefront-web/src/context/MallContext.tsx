@@ -5,7 +5,7 @@ import { loadProductionApi } from '../services/productionApiLoader';
 import { toFrontendCategories, toFrontendOrders, toFrontendProducts } from '../adapters/frontendData';
 import type { AndroidAppPage, AppMode, LaptopPage, LoginCredentials, MallContextType, MiniProgramPage, MobileFulfillmentStage, PageRoute, PendingFeatureInfo, RouteParams, SessionStatus, TabletOrientation, TabletPage, ViewportMode } from './MallContext.types';
 import { useDeviceNavigation } from './useDeviceNavigation';
-import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired } from './checkoutSelectedCart';
+import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired, prepareCheckoutSelection } from './checkoutSelectedCart';
 import { useProductionSync } from './useProductionSync';
 import { useToasts } from './useToasts';
 import { mapApiCartItems } from './mallMappers';
@@ -13,6 +13,22 @@ import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
 import { createCartQuantitySync, type CartQuantitySync } from './cartQuantitySync';
 import { switchDefaultAddressOptimistically } from './addressDefaultState';
+import type { ApiPaymentResult } from '../services/productionApi.types';
+import type { CanonicalPaymentProgress } from '../services/canonicalCheckout';
+import type { WechatJsapiPaymentOutcome } from '../services/wechatJsapiPayment';
+import {
+  beginPaymentRecovery,
+  clearPaymentRecovery,
+  finishPaymentSubmission,
+  isPaymentRecoveryPending,
+  loadPaymentRecovery,
+  paymentCartFingerprint,
+  paymentRecoveryScope,
+  paymentRetryIdempotencyKey,
+  tryBeginPaymentSubmission,
+  updatePaymentRecovery,
+  type PaymentRecoveryRecord,
+} from '../services/paymentRecovery';
 export type * from './MallContext.types';
 const MallContext = createContext<MallContextType | undefined>(undefined);
 const PaymentPhoneVerificationModal = React.lazy(() => import('../components/mobile/PaymentPhoneVerificationModal').then(({ PaymentPhoneVerificationModal }) => ({ default: PaymentPhoneVerificationModal })));
@@ -63,11 +79,16 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const [sessionError, setSessionError] = useState<string | null>(null);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [paymentPhoneVerificationOpen, setPaymentPhoneVerificationOpen] = useState(false);
-  const [activePaymentId, setActivePaymentId] = useState<string | null>(null);
+  const [activePaymentSession, setActivePaymentSession] = useState<PaymentRecoveryRecord | null>(null);
+  const activePaymentId = activePaymentSession?.paymentId ?? null;
   const [favorites, setFavorites] = useState<string[]>(() => (showcaseService ? showcaseService.getFavorites() : []));
   const [addresses, setAddresses] = useState<DeliveryAddress[]>(() => (showcaseService ? showcaseService.getAddresses() : []));
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const sessionGenerationRef = useRef(0);
+  const activePaymentSessionRef = useRef<PaymentRecoveryRecord | null>(null);
+  const paymentInFlightRef = useRef(false);
+  const dismissedPaymentKeyRef = useRef<string | null>(null);
+  const capturedPaymentsRef = useRef(new Set<string>());
   const { toasts, showToast, removeToast } = useToasts();
   const showToastRef = useRef(showToast);
   const refreshServerCartRef = useRef<() => Promise<void>>(async () => undefined);
@@ -75,9 +96,23 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const productsRef = useRef(products);
   showToastRef.current = showToast;
   productsRef.current = products;
+  activePaymentSessionRef.current = activePaymentSession;
   const presentationProducts = useMemo(() => toFrontendProducts(products), [products]);
   const presentationOrders = useMemo(() => toFrontendOrders(orders, presentationProducts), [orders, presentationProducts]);
   const presentationCategories = useMemo(() => toFrontendCategories(products), [products]);
+  const currentPaymentScope = useMemo(() => paymentRecoveryScope(user.id, currentMall.id), [currentMall.id, user.id]);
+  const activatePaymentSession = useCallback((record: PaymentRecoveryRecord | null) => {
+    activePaymentSessionRef.current = record;
+    setActivePaymentSession(record);
+  }, []);
+  const patchActivePaymentSession = useCallback((patch: Parameters<typeof updatePaymentRecovery>[1]) => {
+    const current = activePaymentSessionRef.current;
+    if (!current) return null;
+    const next = updatePaymentRecovery(current, patch);
+    activePaymentSessionRef.current = next;
+    setActivePaymentSession(next);
+    return next;
+  }, []);
 
   const refreshServerCart = useCallback(async () => {
     const sessionGeneration = sessionGenerationRef.current;
@@ -137,6 +172,37 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }, 1_500);
     return () => window.clearTimeout(timer);
   }, [sessionStatus, refreshServerCart, refreshServerAddresses, showToast]);
+  useEffect(() => {
+    if (sessionStatus !== 'authenticated') {
+      activatePaymentSession(null);
+      return;
+    }
+    const recovered = loadPaymentRecovery(currentPaymentScope);
+    if (isPaymentRecoveryPending(recovered) && dismissedPaymentKeyRef.current !== recovered.idempotencyKey) {
+      activatePaymentSession(recovered);
+    }
+  }, [activatePaymentSession, currentPaymentScope, sessionStatus]);
+  useEffect(() => {
+    if (sessionStatus !== 'authenticated') return;
+    const restore = () => {
+      if (document.visibilityState === 'hidden') return;
+      const recovered = loadPaymentRecovery(currentPaymentScope);
+      if (isPaymentRecoveryPending(recovered) && dismissedPaymentKeyRef.current !== recovered.idempotencyKey) {
+        activatePaymentSession(recovered);
+      }
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') restore();
+    };
+    window.addEventListener('pageshow', restore);
+    window.addEventListener('focus', restore);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.removeEventListener('pageshow', restore);
+      window.removeEventListener('focus', restore);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [activatePaymentSession, currentPaymentScope, sessionStatus]);
   const refreshUserData = () => {
     if (sessionStatus === 'authenticated') {
       void refreshProductionData().catch(() => {
@@ -192,6 +258,8 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     setFavorites([]);
     setAddresses([]);
     setQuickViewProduct(null);
+    activatePaymentSession(null);
+    dismissedPaymentKeyRef.current = null;
     navigation.navigateTo('home');
     showToast('已退出登录，服务器会话正在安全撤销', 'info');
     try {
@@ -317,34 +385,185 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
   };
 
+  const completeCapturedPayment = useCallback((paymentId: string) => {
+    const current = activePaymentSessionRef.current;
+    if (!current || capturedPaymentsRef.current.has(paymentId)) return;
+    capturedPaymentsRef.current.add(paymentId);
+    const captured = updatePaymentRecovery(current, { stage: 'captured', paymentId });
+    activePaymentSessionRef.current = captured;
+    setActivePaymentSession(captured);
+    clearPaymentRecovery(captured.scope);
+    const completedCartItems = new Set(captured.cartItemIds);
+    setCart((items) => items.filter((item) => !completedCartItems.has(item.id)));
+    showToastRef.current('支付成功，订单已为你保留', 'success');
+    void loadProductionApi().then(async (productionApi) => {
+      await Promise.allSettled(captured.cartItemIds.map((itemId) => productionApi.deleteCartItem(itemId)));
+      await Promise.allSettled([refreshServerCartRef.current(), refreshProductionData()]);
+    }).catch(() => undefined);
+  }, [refreshProductionData]);
+
+  const recordPaymentResult = useCallback((result: ApiPaymentResult) => {
+    const current = activePaymentSessionRef.current;
+    if (!current || (current.paymentId !== null && current.paymentId !== result.intentId)) return;
+    if (result.state === 'captured') {
+      completeCapturedPayment(result.intentId);
+      return;
+    }
+    if (result.state === 'failed' || result.state === 'expired') {
+      patchActivePaymentSession({ stage: result.state, paymentId: result.intentId, amountMinor: result.amountMinor, currency: result.currency });
+      return;
+    }
+    if (current.stage === 'cancelled') return;
+    patchActivePaymentSession({
+      stage: result.state === 'recovery' ? 'recovery' : 'verifying',
+      paymentId: result.intentId,
+      amountMinor: result.amountMinor,
+      currency: result.currency,
+    });
+  }, [completeCapturedPayment, patchActivePaymentSession]);
+
+  const applyWechatOutcome = async (outcome: WechatJsapiPaymentOutcome | undefined, paymentId?: string) => {
+    if (!outcome) return;
+    if (outcome.status === 'returned') {
+      patchActivePaymentSession({ stage: 'verifying' });
+      if (paymentId) {
+        try {
+          const productionApi = await loadProductionApi();
+          recordPaymentResult(await productionApi.readPaymentResult(paymentId));
+        } catch {
+          patchActivePaymentSession({ stage: 'recovery' });
+        }
+      }
+    }
+    else if (outcome.status === 'cancelled') patchActivePaymentSession({ stage: 'cancelled' });
+    else if (outcome.status === 'failed') {
+      patchActivePaymentSession({ stage: 'failed' });
+      if (outcome.code === 'WECHAT_CLIENT_REQUIRED') showToast('请在微信中打开商城后继续付款', 'info');
+    }
+    else patchActivePaymentSession({ stage: 'recovery' });
+  };
+
+  const paymentProgress = async (progress: CanonicalPaymentProgress) => {
+    patchActivePaymentSession({
+      stage: progress.stage,
+      orderId: progress.orderId,
+      paymentId: progress.paymentId,
+      amountMinor: progress.amountMinor,
+      currency: progress.currency,
+    });
+    if (progress.stage === 'opening-wechat') await afterPaymentCarrierPaint();
+  };
+
   const submitSelectedCart = async (checkoutUser: UserProfile): Promise<boolean> => {
     if (sessionStatus !== 'authenticated') {
       showToast('请先登录账户，再提交订单', 'warning');
       return false;
     }
+    if (!tryBeginPaymentSubmission(paymentInFlightRef)) return activePaymentSessionRef.current !== null;
     setIsSubmittingOrder(true);
     try {
+      const selection = prepareCheckoutSelection(cart, addresses, checkoutUser);
+      const fingerprint = paymentCartFingerprint(selection.address.id, selection.selectedItems.map((item) => ({
+        cartItemId: item.id, listingId: item.product.id, quantity: item.quantity,
+      })));
+      let recovery = loadPaymentRecovery(currentPaymentScope);
+      if (recovery?.orderId && isPaymentRecoveryPending(recovery)) {
+        dismissedPaymentKeyRef.current = null;
+        activatePaymentSession(recovery);
+        return true;
+      }
+      if (recovery && recovery.orderId === null && recovery.cartFingerprint !== fingerprint) {
+        clearPaymentRecovery(currentPaymentScope);
+        recovery = null;
+      }
+      recovery ??= beginPaymentRecovery({
+        scope: currentPaymentScope,
+        amountMinor: selection.amountMinor,
+        currency: 'CNY',
+        mallName: currentMall.mallName,
+        cartFingerprint: fingerprint,
+        cartItemIds: selection.selectedItems.map((item) => item.id),
+      });
+      dismissedPaymentKeyRef.current = null;
+      activatePaymentSession(recovery);
+      await afterPaymentCarrierPaint();
       await cartQuantitySyncRef.current?.flush();
-      const checkout = await checkoutSelectedCartRequest(cart, addresses, checkoutUser);
-      const { selectedItems } = checkout;
-      setActivePaymentId(checkout.paymentId);
-      const productionApi = await loadProductionApi();
-      await Promise.all(selectedItems.map((item) => productionApi.deleteCartItem(item.id)));
-      await refreshServerCart();
-      await refreshProductionData();
-      if (checkout.paymentState === 'captured') showToast('订单已写入数据库并完成支付', 'success');
-      else if (checkout.paymentState === 'reconciling') showToast('订单已创建，支付渠道结果正在自动核验', 'info');
-      else showToast('微信支付已提交，订单正在确认到账', 'info');
+      patchActivePaymentSession({ stage: 'creating-order' });
+      const checkout = await checkoutSelectedCartRequest(cart, addresses, checkoutUser, {
+        idempotencyKey: recovery.idempotencyKey,
+        onPaymentProgress: paymentProgress,
+      });
+      if (checkout.paymentState === 'captured') completeCapturedPayment(checkout.paymentId);
+      else if (checkout.paymentState === 'reconciling') patchActivePaymentSession({ stage: 'recovery' });
+      else await applyWechatOutcome(checkout.wechatOutcome, checkout.paymentId);
       return true;
     } catch (error) {
       if (error instanceof PaymentPhoneVerificationRequired) {
+        activatePaymentSession(null);
+        clearPaymentRecovery(currentPaymentScope);
         setPaymentPhoneVerificationOpen(true);
         return false;
       }
+      const current = activePaymentSessionRef.current;
+      if (current) patchActivePaymentSession({ stage: current.orderId ? 'recovery' : 'failed' });
       const message = error instanceof Error ? error.message : '订单服务暂时不可用';
-      showToast(`订单提交失败：${message}`, 'error');
+      showToast(current?.orderId ? `支付状态需要确认：${message}` : `订单暂未创建：${message}`, current?.orderId ? 'warning' : 'error');
       return false;
     } finally {
+      finishPaymentSubmission(paymentInFlightRef);
+      setIsSubmittingOrder(false);
+    }
+  };
+
+  const continueActivePayment = async (): Promise<void> => {
+    const current = activePaymentSessionRef.current;
+    if (!current) return;
+    if (!current.orderId) {
+      await submitSelectedCart(user);
+      return;
+    }
+    if (!tryBeginPaymentSubmission(paymentInFlightRef)) return;
+    setIsSubmittingOrder(true);
+    try {
+      const productionApi = await loadProductionApi();
+      if (current.paymentId) {
+        const result = await productionApi.readPaymentResult(current.paymentId);
+        recordPaymentResult(result);
+        if (result.state === 'captured') return;
+        if (result.action) {
+          patchActivePaymentSession({ stage: 'opening-wechat' });
+          await afterPaymentCarrierPaint();
+          const { requestWechatJsapiPayment } = await import('../services/wechatJsapiPayment');
+          await applyWechatOutcome(await requestWechatJsapiPayment(result.action, {
+            onInvoked: () => { patchActivePaymentSession({ stage: 'wechat-active' }); },
+          }), result.intentId);
+          return;
+        }
+        if (result.state !== 'failed' && result.state !== 'expired') {
+          patchActivePaymentSession({ stage: 'recovery' });
+          return;
+        }
+      }
+      const retryCount = current.stage === 'failed' || current.stage === 'expired' || current.stage === 'cancelled'
+        ? current.retryCount + 1
+        : Math.max(current.retryCount, 1);
+      const retryIdempotencyKey = paymentRetryIdempotencyKey(current);
+      patchActivePaymentSession({ stage: 'creating-payment', retryCount });
+      const checkout = await productionApi.continuePayment({
+        orderId: current.orderId,
+        amountMinor: current.amountMinor,
+        currency: current.currency,
+        idempotencyKey: retryIdempotencyKey,
+        onPaymentProgress: paymentProgress,
+      });
+      if (checkout.paymentState === 'captured') completeCapturedPayment(checkout.paymentId);
+      else if (checkout.paymentState === 'reconciling') patchActivePaymentSession({ stage: 'recovery' });
+      else await applyWechatOutcome(checkout.wechatOutcome, checkout.paymentId);
+    } catch (error) {
+      patchActivePaymentSession({ stage: 'recovery' });
+      showToast(error instanceof Error ? error.message : '支付状态暂时无法确认', 'warning');
+    } finally {
+      finishPaymentSubmission(paymentInFlightRef);
       setIsSubmittingOrder(false);
     }
   };
@@ -452,7 +671,13 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
         refreshProductionData,
         isSubmittingOrder,
         activePaymentId,
-        closePaymentResult: () => setActivePaymentId(null),
+        activePaymentSession,
+        closePaymentResult: () => {
+          dismissedPaymentKeyRef.current = activePaymentSessionRef.current?.idempotencyKey ?? null;
+          activatePaymentSession(null);
+        },
+        continueActivePayment,
+        recordPaymentResult,
         checkoutSelectedCart,
         cart,
         cartCount,
@@ -486,6 +711,11 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     </MallContext.Provider>
   );
 };
+
+function afterPaymentCarrierPaint(): Promise<void> {
+  if (typeof window === 'undefined' || typeof window.requestAnimationFrame !== 'function') return Promise.resolve();
+  return new Promise((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve())));
+}
 
 export const useMall = () => {
   const context = useContext(MallContext);
