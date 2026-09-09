@@ -30,7 +30,7 @@ export function OrderPage({ title, viewmodel }: Readonly<{ title: string; viewmo
         <details className="orderfilterdisclosure">
           <summary>
             <span>筛选与查找</span>
-            <small>{activeFilterCount(filter) === 0 ? '按订单、状态、商城或更多条件查找' : `已启用 ${activeFilterCount(filter)} 个条件`}</small>
+            <small>{activeFilterCount(filter) === 0 ? '按订单、状态或商城查找' : `已启用 ${activeFilterCount(filter)} 个条件`}</small>
           </summary>
           <OrderFilterForm value={filter} malls={malls} onApply={actions.applyFilter} onColumns={actions.toggleColumns} columnsOpen={columnsopen} />
         </details>

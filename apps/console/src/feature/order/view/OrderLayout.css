@@ -66,6 +66,8 @@
 .orderpageactions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--sw-space-1);
 }
 
@@ -86,6 +88,7 @@
   color: var(--sw-text-secondary);
   padding: 0 var(--sw-space-2);
   font-size: var(--sw-font-size-body-sm);
+  white-space: nowrap;
 }
 
 .orderpageactions button:last-child {
