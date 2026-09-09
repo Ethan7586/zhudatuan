@@ -82,7 +82,7 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
             </p>
           )}
           {viewmodel.permissionReason === undefined ? null : (
-            <p role="alert" className="productflowerror">
+            <p id="productactionpermission" role="alert" className="productflowerror">
               {viewmodel.permissionReason}
             </p>
           )}
@@ -91,7 +91,7 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
           <Button onPress={onClose} isDisabled={viewmodel.submitting}>
             取消
           </Button>
-          <Button tone="primary" type="submit" isDisabled={viewmodel.submitting || !viewmodel.allowed} title={viewmodel.permissionReason}>
+          <Button tone="primary" type="submit" isDisabled={viewmodel.submitting || !viewmodel.allowed} {...(viewmodel.permissionReason === undefined ? {} : { 'aria-describedby': 'productactionpermission' })}>
             {viewmodel.submitting ? '正在提交…' : presentProductAction(action.operation).submit}
           </Button>
         </footer>
