@@ -1,4 +1,4 @@
-@media (max-width: 47.9375rem) {
+@media (max-width: 48rem) {
   .ordertablewrap {
     overflow: visible;
     padding: var(--sw-space-1);
@@ -50,6 +50,9 @@
   .ordertable tbody td:last-child {
     border-bottom: 0;
   }
+  .ordertable tbody td[data-label='操作'] {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .ordertable .orderamountcolumn,
   .ordertable .orderstatuscolumn {
     text-align: left;
@@ -68,6 +71,12 @@
     white-space: normal;
   }
   .orderrowactions button {
+    width: 100%;
+    min-width: 2.75rem;
     min-height: 2.75rem;
+  }
+  .orderrowactions {
+    display: grid;
+    width: 100%;
   }
 }

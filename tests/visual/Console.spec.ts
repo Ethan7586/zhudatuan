@@ -178,6 +178,24 @@ test('Console 商品治理台在桌面、平板和手机保持清晰布局与触
   }
 });
 
+test('Console 订单列表在平板和手机转为完整可触控卡片', async ({ page }) => {
+  test.slow();
+  await prepareVisual(page, { width: 768, height: 1024 });
+  await signInConsole(page);
+  for (const viewport of [
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleorders, 'enterprise')}`);
+    await expectUsable(page);
+    await expect(page.locator('.ordertable tbody tr').first()).toHaveCSS('display', 'grid');
+    await expect.poll(() => page.locator('.ordertablewrap').evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+    await expect.poll(() => minimumHeight(page, '.orderrowactions button')).toBeGreaterThanOrEqual(44);
+    await expect.poll(() => minimumWidth(page, '.orderrowactions button')).toBeGreaterThanOrEqual(44);
+  }
+});
+
 test('Console 数据报表在桌面、平板和手机保持可读且无需横向拖动', async ({ page }) => {
   test.slow();
   await prepareVisual(page, { width: 1366, height: 768 });
