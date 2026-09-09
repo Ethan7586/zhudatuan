@@ -9,6 +9,7 @@ test('visual integrity accepts semantic card tables and explicit scroll regions'
       <table><thead style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)"><tr><th>无障碍表头</th></tr></thead></table>
       <details><summary style="width:80px;height:44px">更多</summary><button style="width:20px;height:20px">隐藏操作</button></details>
       <button style="width:88px;height:44px">正常操作</button>
+      <button data-visual-copy="multiline" style="width:200px;min-height:50px"><span style="display:grid;line-height:1.2"><strong style="font-size:20px">智慧翼</strong><small style="font-size:12px">福利商城</small></span></button>
     </main>
   `);
 

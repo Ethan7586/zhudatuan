@@ -144,8 +144,8 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
           });
         }
       }
-      const copyOverflowX = text.length > 0 && isControl && (copyOwners.some((owner) => owner.scrollWidth > owner.clientWidth + 1) || copyRects.some((copy) => copy.left < rect.left - 1 || copy.right > rect.right + 1));
-      const copyOverflowY = text.length > 0 && isControl && (copyOwners.some((owner) => owner.scrollHeight > owner.clientHeight + 1) || copyRects.some((copy) => copy.top < rect.top - 1 || copy.bottom > rect.bottom + 1));
+      const copyOverflowX = text.length > 0 && isControl && copyRects.some((copy) => copy.left < rect.left - 1 || copy.right > rect.right + 1);
+      const copyOverflowY = text.length > 0 && isControl && copyRects.some((copy) => copy.top < rect.top - 1 || copy.bottom > rect.bottom + 1);
       if ((copyOverflowX || copyOverflowY) && !clippedX && !clippedY) {
         issues.push({
           kind: 'controlcopyoverflow',
