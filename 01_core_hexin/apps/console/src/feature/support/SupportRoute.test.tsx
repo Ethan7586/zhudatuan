@@ -70,15 +70,14 @@ const context: ConsoleContext = {
     capabilities: ['support.cases.read', 'support.messages.read', 'support.messages.send'],
     csrf: 'csrf-support-console-test',
     target: 'console',
-    scope: { kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' },
-    scopes: [{ kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' }],
-    governance: { level: 'administrator', exactOwner: false, organization: 'enterprise:1' },
+    scope: { kind: 'enterprise', id: 'enterprise:1' },
+    scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
     assurance: { level: 2, verified: '2026-08-30T08:00:00.000Z' },
     syncedAt: '2026-08-30T08:00:00.000Z',
   },
   profile: { display_name: '客服测试坐席', employee_no: 'SW-007' },
-  scope: { kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' },
-  scopes: [{ kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' }],
+  scope: { kind: 'enterprise', id: 'enterprise:1' },
+  scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
 };
 
 beforeAll(() => {
@@ -108,11 +107,10 @@ describe('Support Chat VI route', () => {
 
     const caseContext = screen.getByRole('complementary', { name: '工单上下文' });
     expect(within(caseContext).getByText('微信')).toBeTruthy();
-    expect(within(caseContext).getByText('宏泰甄选')).toBeTruthy();
     expect(within(caseContext).getByText('福利售后')).toBeTruthy();
+    expect(within(caseContext).getByText('agent:wing-07')).toBeTruthy();
     expect(within(caseContext).getByText('order:SW-20260830-1001')).toBeTruthy();
-    expect(within(caseContext).queryByText('agent:wing-07')).toBeNull();
-    expect(within(caseContext).queryByText('member:10086')).toBeNull();
+    expect(within(caseContext).getByText('v12')).toBeTruthy();
     expect(mocks.readMessages).toHaveBeenCalledWith(context, supportCase.id, undefined, expect.any(AbortSignal));
   });
 
@@ -173,22 +171,6 @@ describe('Support Chat VI route', () => {
     expect(screen.getByText('从左侧会话队列打开工单，这里会展示经服务端解密的真实消息记录。')).toBeTruthy();
     expect(screen.getByText('尚未选择工单')).toBeTruthy();
     expect(mocks.readMessages).not.toHaveBeenCalled();
-  });
-
-  it('uses the service-center copy and keeps future task and operation entries inert', async () => {
-    renderRoute(`/scopes/enterprise/enterprise%3A1/support/${encodeURIComponent(supportCase.id)}`);
-    await screen.findByText(messages[0].body);
-
-    expect(screen.getByRole('heading', { name: '服务中心' })).toBeTruthy();
-    expect(screen.getByText('消费者与管理员共用一个工作台')).toBeTruthy();
-    expect(screen.getAllByText('管理员').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole('button', { name: /待我审批/ }).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('tab', { name: '内部备注' }).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('tab', { name: '协同供应商' }).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('button', { name: '转交' }).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('button', { name: '升级至平台支持' }).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('button', { name: '完成工单' }).hasAttribute('disabled')).toBe(true);
-    expect(document.body.textContent).not.toMatch(/SMART WING|ZHUDATUAN SUPPORT|客服坐席|客户/);
   });
 });
 

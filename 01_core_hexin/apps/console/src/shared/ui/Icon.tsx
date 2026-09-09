@@ -11,7 +11,7 @@ const paths: Readonly<Record<IconName, readonly string[]>> = Object.freeze({
   application: ['M4 4h7v7H4z', 'M13 4h7v7h-7z', 'M4 13h7v7H4z', 'M13 13h7v7h-7z'],
   voucher: ['M3 6h18v12H3z', 'M8 6v12', 'M8 10h2', 'M8 14h2'],
   report: ['M4 20V10', 'M10 20V4', 'M16 20v-7', 'M22 20H2'],
-  support: ['M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7l-4.5 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z', 'm8 11 2.2 2.2L16 8'],
+  support: ['M4 13a8 8 0 0 1 16 0', 'M4 13v5h3v-5', 'M20 13v5h-3v-5', 'M17 20h-5'],
   channel: ['M5 12h14', 'm15 8 4 4-4 4', 'M9 5H5v14h4'],
   import: ['M12 3v12', 'm7 10 5 5 5-5', 'M4 19h16'],
   access: ['M12 2a5 5 0 0 0-5 5v3', 'M6 10h12v12H6z', 'M12 14v4'],
