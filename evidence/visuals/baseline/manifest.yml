@@ -1,0 +1,41 @@
+version: 1
+source:
+  repository: zhudatuan_li
+  commit: b763b7a12c9aa825c532a35c3cce06da4455ed98
+references:
+  - id: designsystemdesktop
+    path: docs/evidence/vi/2026-08-28/zhudatuan-vi-1.1-desktop.png
+    sha256: ade77f65154fa217219206e7adfadbf2243a491cc6d27fbadcd3d9bda96cbee9
+  - id: designsystemmobile
+    path: docs/evidence/vi/2026-08-28/zhudatuan-vi-1.1-mobile.png
+    sha256: de9dbad55322a1593cb01c7689ccfe032cf088d12d31458a67978d71902fdc6a
+  - id: designsystemboard
+    path: docs/brand/design-previews/zhudatuan-design-system-vi-1.1.png
+    sha256: b1482d7957888a4df36f013035822f8e2c474afe9bed9f9e36bb714760a81013
+  - id: unifiedmobile
+    path: docs/brand/design-previews/smart-wing-unified-mobile-vi-1.0.png
+    sha256: a87fb9d9ed6458722dc8186d896b8e879f532fdc86867aee2d0551419c9db71e
+  - id: storefrontjourney
+    path: docs/mobile/design-previews/smart-wing-mobile-v1-full-board.png
+    sha256: df29990e5a66bc0247fd12bc4354a18482e630304038d450023d11bbf2a6346f
+  - id: storefrontbrowse
+    path: docs/mobile/design-previews/smart-wing-unified-mall-01-browse-v2-cart-restored.png
+    sha256: 339ea2104afc6cb1e7efac98889c7dc896b85903120f6ce7fae0b0a43a15d92d
+  - id: storefrontbrowseoriginal
+    path: docs/mobile/design-previews/smart-wing-unified-mall-01-browse.png
+    sha256: 7baa0a1f6a0c712e75d6c9d8340c2a1eca3af3cfd1e84f4161b3aa949323e173
+  - id: storefrontcheckout
+    path: docs/mobile/design-previews/smart-wing-unified-mall-02-checkout-payment.png
+    sha256: 56bd81640284bf98137b712e22a45cd9dea8be032b8b2857a6e9ea01c2eaa05e
+  - id: storefrontwingcode
+    path: docs/mobile/design-previews/smart-wing-unified-mall-03-wing-code-assets-ai.png
+    sha256: c656d1a76a44457c74f9282a9190c15a344262f769683ec99af6f6ea5ec0a6d8
+  - id: storefrontorders
+    path: docs/mobile/design-previews/smart-wing-unified-mall-04-orders-after-sales.png
+    sha256: d06047b5c4abd1236d35c9ec9e99af6cf42dab8ca23760e4274da848f9b2b981
+  - id: storefrontprofile
+    path: docs/mobile/design-previews/smart-wing-unified-mall-05-profile-security.png
+    sha256: 5310e5d5e129a4f231c2cf556d352ff5ce03343fe446491449bfe666fb2ac7ac
+  - id: storefrontauth
+    path: docs/mobile/design-previews/smart-wing-unified-mall-06-auth-states.png
+    sha256: 7b36f0294c5b0abee704081b52568ef6524b0b4bcfe655c5c52de1490c6c5e54

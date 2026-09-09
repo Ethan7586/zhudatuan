@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import YAML from 'yaml';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
@@ -11,6 +12,24 @@ assert(visuals.version === 2, 'VISUAL_AUTHORITY_VERSION_INVALID');
 assert(visuals.authority?.policy?.preserveLayout === true, 'VISUAL_LAYOUT_NOT_LOCKED');
 assert(visuals.authority?.policy?.preserveInteraction === true, 'VISUAL_INTERACTION_NOT_LOCKED');
 assert(visuals.authority?.policy?.preserveNavigationTitles === true, 'NAVIGATION_TITLES_NOT_LOCKED');
+const baselineRoot = join(repositoryRoot, visuals.authority?.source ?? '');
+assert(visuals.authority?.source && existsSync(baselineRoot) && statSync(baselineRoot).isDirectory(), 'VISUAL_BASELINE_DIRECTORY_MISSING');
+const baselineManifestPath = join(baselineRoot, 'manifest.yml');
+assert(existsSync(baselineManifestPath), 'VISUAL_BASELINE_MANIFEST_MISSING');
+const baselineManifest = YAML.parse(readFileSync(baselineManifestPath, 'utf8'));
+assert(baselineManifest.version === 1, 'VISUAL_BASELINE_MANIFEST_VERSION_INVALID');
+assert(baselineManifest.source?.repository === 'zhudatuan_li' && /^[0-9a-f]{40}$/.test(baselineManifest.source?.commit ?? ''), 'VISUAL_BASELINE_SOURCE_INVALID');
+assert(Array.isArray(baselineManifest.references) && baselineManifest.references.length >= 12, 'VISUAL_BASELINE_REFERENCE_SET_INCOMPLETE');
+const baselineIds = new Set();
+for (const reference of baselineManifest.references) {
+  assert(typeof reference.id === 'string' && /^[a-z][a-z0-9]*$/.test(reference.id) && !baselineIds.has(reference.id), `VISUAL_BASELINE_ID_INVALID:${reference.id ?? 'missing'}`);
+  baselineIds.add(reference.id);
+  assert(typeof reference.path === 'string' && reference.path.startsWith('docs/') && !reference.path.includes('..'), `VISUAL_BASELINE_PATH_INVALID:${reference.id}`);
+  assert(typeof reference.sha256 === 'string' && /^[0-9a-f]{64}$/.test(reference.sha256), `VISUAL_BASELINE_HASH_INVALID:${reference.id}`);
+  const referencePath = join(repositoryRoot, reference.path);
+  assert(existsSync(referencePath) && statSync(referencePath).isFile(), `VISUAL_BASELINE_FILE_MISSING:${reference.id}`);
+  assert(createHash('sha256').update(readFileSync(referencePath)).digest('hex') === reference.sha256, `VISUAL_BASELINE_FILE_DRIFT:${reference.id}`);
+}
 assert(visuals.defaults?.theme === 'light', 'VISUAL_THEME_MISSING');
 assert(visuals.defaults?.locale === 'zh-CN', 'VISUAL_LOCALE_MISSING');
 assert(visuals.defaults?.data === 'deterministic', 'VISUAL_DATA_NOT_DETERMINISTIC');
@@ -32,7 +51,10 @@ const authCss = files(authRoot).filter((file) => file.endsWith('.css'));
 assert(authCss.length > 0 && authCss.every((file) => file.startsWith(`${authStyleRoot}/`)), 'AUTH_STYLE_OUTSIDE_OWNER');
 const authStyle = authCss.map((file) => readFileSync(file, 'utf8')).join('\n');
 assert(!/(?:#[0-9a-f]{3,8}|rgba?\(|hsla?\()/i.test(authStyle), 'AUTH_PRIVATE_COLOR_VALUE');
-assert([...authStyle.matchAll(/font-family:\s*([^;]+);/gi)].every((match) => match[1]?.trim().startsWith('var(')), 'AUTH_PRIVATE_FONT_VALUE');
+assert(
+  [...authStyle.matchAll(/font-family:\s*([^;]+);/gi)].every((match) => match[1]?.trim().startsWith('var(')),
+  'AUTH_PRIVATE_FONT_VALUE'
+);
 assert((authStyle.match(/^\s*\.authinput\s*\{/gm) ?? []).length === 1, 'AUTH_INPUT_STYLE_DUPLICATE');
 assert((authStyle.match(/^\s*\.authfield\s*\{/gm) ?? []).length === 1, 'AUTH_FIELD_STYLE_DUPLICATE');
 assert(authStyle.includes('@media (prefers-reduced-motion: reduce)'), 'AUTH_REDUCED_MOTION_MISSING');
@@ -89,26 +111,13 @@ for (const surface of surfaces) {
   assert(JSON.stringify(visualRoutes) === JSON.stringify(declaredRoutes), `VISUAL_ROUTE_DRIFT:${surface}`);
 }
 const coveredAuthStates = new Set(visuals.surfaces.auth.routes.flatMap(({ states = [] }) => states));
-assert(expectedStates.every((state) => coveredAuthStates.has(state)), 'AUTH_VISUAL_STATE_COVERAGE_MISSING');
+assert(
+  expectedStates.every((state) => coveredAuthStates.has(state)),
+  'AUTH_VISUAL_STATE_COVERAGE_MISSING'
+);
 
 const expectedTitles = new Set(flattenStrings(visuals.navigationTitles));
-for (const title of [
-  '经营驾驶舱',
-  '智慧翼中控台',
-  '商品治理台',
-  '订单管理系统',
-  '财务与对账台',
-  '築店 · 商城管理',
-  '卡券治理台',
-  '数据报表',
-  '客服中心',
-  '渠道管理',
-  '分销与返佣',
-  '权限中心',
-  '成员管理',
-  '通知管理',
-  '首页',
-]) {
+for (const title of ['经营驾驶舱', '智慧翼中控台', '商品治理台', '订单管理系统', '财务与对账台', '築店 · 商城管理', '卡券治理台', '数据报表', '客服中心', '渠道管理', '分销与返佣', '权限中心', '成员管理', '通知管理', '首页']) {
   assert(expectedTitles.has(title), `VISUAL_TITLE_AUTHORITY_MISSING:${title}`);
   assert(
     navigation.nodes.some((node) => node.title === title),
