@@ -15,21 +15,15 @@ export class OrderGateway implements OrderPort {
     private readonly context: RequestContextFactory
   ) {}
   async orders(session: StorefrontSession, mall: EnterpriseMall, signal?: AbortSignal): Promise<readonly Order[]> {
-    const pages = await readCursorPages(
-      (cursor) => this.orderClient.ordersRead({ query: { limit: 50, ...(cursor ? { cursor } : {}) } }, this.context(session, { signal })),
-      signal
-    );
-    return Object.freeze(pages.flatMap((page) => mapOrders(page, mall)));
+    const pages = await readCursorPages((cursor) => this.orderClient.ordersRead({ query: { limit: 50, ...(cursor ? { cursor } : {}) } }, this.context(session, { signal })), signal);
+    return Object.freeze(pages.flatMap((page) => mapOrders(page)));
   }
 
   async order(session: StorefrontSession, mall: EnterpriseMall, orderId: string, signal?: AbortSignal): Promise<Order | null> {
     const context = this.context(session, { signal });
-    const [detail, tracking] = await Promise.allSettled([
-      this.orderClient.detailRead({ path: { orderid: orderId } }, context),
-      this.fulfillmentClient.trackingRead({ query: { order: orderId } }, context),
-    ]);
+    const [detail, tracking] = await Promise.allSettled([this.orderClient.detailRead({ path: { orderid: orderId } }, context), this.fulfillmentClient.trackingRead({ query: { order: orderId } }, context)]);
     if (detail.status === 'rejected') throw detail.reason;
-    return mapOrderDetail(detail.value, mall, tracking.status === 'fulfilled' ? tracking.value : null);
+    return mapOrderDetail(detail.value, tracking.status === 'fulfilled' ? tracking.value : null);
   }
 
   async receive(session: StorefrontSession, orderId: string, expectedVersion: number, idempotencyKey: string): Promise<void> {

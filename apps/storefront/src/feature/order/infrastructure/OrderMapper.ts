@@ -1,5 +1,4 @@
 import type { OperationOutputFor } from '@shop/contract';
-import type { EnterpriseMall } from '../../account';
 import type { Order, OrderStatus } from '../model/Order';
 import type { Timeline } from '../model/Timeline';
 import { mapProductKind } from '../../../entity/product';
@@ -7,15 +6,15 @@ import { mapProductKind } from '../../../entity/product';
 type OrderDto = OperationOutputFor<'order.orders.read'>['items'][number];
 type OrderDetailDto = OperationOutputFor<'order.detail.read'>;
 
-export function mapOrder(item: OrderDto, mall: EnterpriseMall, timeline: readonly Timeline[] = []): Order {
+export function mapOrder(item: OrderDto, timeline: readonly Timeline[] = []): Order {
   const fulfillmentTimeline = item.fulfillments.flatMap((value) => value.milestones.map(mapMilestone));
   return Object.freeze({
     id: item.id,
     orderNo: item.order_number,
-    enterpriseId: mall.enterpriseId,
-    enterpriseName: mall.enterpriseName,
+    enterpriseId: item.scope_id,
+    enterpriseName: item.scope_name,
     mallId: item.mall_id,
-    mallName: mall.mallName,
+    mallName: item.mall_name,
     status: mapStatus(item.lifecycle_state, item.aftersale_state),
     createdAt: item.created_at,
     updatedAt: item.updated_at,
@@ -37,7 +36,7 @@ export function mapOrder(item: OrderDto, mall: EnterpriseMall, timeline: readonl
   });
 }
 
-export function mapOrderDetail(value: OrderDetailDto, mall: EnterpriseMall, tracking: OperationOutputFor<'fulfillment.tracking.read'> | null = null): Order {
+export function mapOrderDetail(value: OrderDetailDto, tracking: OperationOutputFor<'fulfillment.tracking.read'> | null = null): Order {
   const lines = value.products.state === 'ready' ? value.products.data : [];
   const payment = value.payment.state === 'ready' ? value.payment.data : undefined;
   const fulfillments = value.fulfillment.state === 'ready' ? value.fulfillment.data : [];
@@ -46,10 +45,10 @@ export function mapOrderDetail(value: OrderDetailDto, mall: EnterpriseMall, trac
   return Object.freeze({
     id: value.summary.id,
     orderNo: value.summary.orderNumber,
-    enterpriseId: mall.enterpriseId,
-    enterpriseName: mall.enterpriseName,
+    enterpriseId: value.summary.scopeId,
+    enterpriseName: value.summary.scopeName,
     mallId: value.summary.mallId,
-    mallName: mall.mallName,
+    mallName: value.summary.mallName,
     status: mapStatus(value.summary.lifecycleState, value.summary.aftersaleState),
     createdAt: value.summary.createdAt,
     updatedAt: value.summary.updatedAt,
@@ -80,8 +79,8 @@ export function mapOrderDetail(value: OrderDetailDto, mall: EnterpriseMall, trac
   });
 }
 
-export function mapOrders(value: OperationOutputFor<'order.orders.read'>, mall: EnterpriseMall): readonly Order[] {
-  return Object.freeze(value.items.map((item) => mapOrder(item, mall)));
+export function mapOrders(value: OperationOutputFor<'order.orders.read'>): readonly Order[] {
+  return Object.freeze(value.items.map((item) => mapOrder(item)));
 }
 
 export function mapTimeline(value: OperationOutputFor<'fulfillment.tracking.read'>): readonly Timeline[] {
