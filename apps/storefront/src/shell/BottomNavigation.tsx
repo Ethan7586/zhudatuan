@@ -27,14 +27,14 @@ export function BottomNavigation({ actions, pathname, navigate }: Readonly<{ act
               aria-current={active ? 'page' : undefined}
               aria-label={action.kind === 'membercode' ? '打开会员码' : action.label}
               onClick={() => navigate(action.path)}
-              className={`group relative flex min-h-14 min-w-14 flex-1 flex-col items-center justify-end gap-0.5 rounded-2xl px-1 text-[10px] font-bold ${active ? 'text-brand' : 'text-muted hover:text-content'}`}
+              className={`group relative flex min-h-16 min-w-14 flex-1 flex-col items-center justify-end gap-0.5 rounded-2xl px-1 pb-0.5 pt-1 text-[11px] font-bold ${active ? 'text-brand' : 'text-muted hover:text-content'}`}
             >
               <span
                 className={`${featured ? '-mt-5 grid h-12 w-12 place-items-center rounded-2xl bg-brand text-inverse shadow-[0_8px_22px_rgba(31,94,255,.28)]' : `grid h-8 w-12 place-items-center rounded-full ${active ? 'bg-brand-light' : ''}`}`}
               >
                 <Icon size={featured ? 23 : 20} strokeWidth={active || featured ? 2.5 : 2} aria-hidden="true" />
               </span>
-              <span className="max-w-full truncate leading-4">{action.label}</span>
+              <span className="flex h-5 max-w-full items-center justify-center whitespace-nowrap leading-5">{action.label}</span>
             </button>
           );
         })}
