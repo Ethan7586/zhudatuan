@@ -45,7 +45,12 @@ describe('report snapshot', () => {
       .mockResolvedValueOnce([metric, { ...metric, cursorId: 'sales.amount:next' }])
       .mockResolvedValueOnce([]);
     const waterline = vi.fn().mockResolvedValue(watermark);
-    const reader = new MetricReader({ metrics, watermark: waterline, cockpit: vi.fn() } as never, { present: async (_context: unknown, _scope: string, rows: readonly unknown[]) => rows } as never);
+    const reader = new MetricReader(
+      { metrics, watermark: waterline, cockpit: vi.fn() } as never,
+      {
+        resolve: async (_context: unknown, _scope: string, rows: readonly unknown[]) => ({ metrics: rows, categoryNames: new Map() }),
+      } as never
+    );
     const context = { operation: 'reporting.sales.read', transaction: {}, security: { kind: 'session', access: { scope: { id: 'mall:one' } } } } as never;
 
     const first = await reader.read('reporting.sales.read', { query: { limit: 1, period: '30days' } } as never, context, 'sales');
