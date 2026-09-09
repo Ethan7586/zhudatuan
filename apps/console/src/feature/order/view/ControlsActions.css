@@ -127,11 +127,21 @@
   gap: var(--sw-space-1);
 }
 .orderactionconfirm {
+  min-height: var(--sw-control-touch-target);
   grid-template-columns: auto 1fr !important;
-  align-items: start;
+  align-items: center;
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-1) var(--sw-space-1-5);
   font-weight: 400 !important;
+  line-height: var(--sw-line-height-body-sm);
+  cursor: pointer;
 }
 .orderactionconfirm input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
   accent-color: var(--sw-brand);
 }
 .ordersnapshot,
