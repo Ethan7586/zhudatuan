@@ -1,5 +1,6 @@
 import type { OperationOutputFor } from '@shop/contract';
 import type { PresentedProduct, Product, ProductKind, ProductSku } from '../model/Product';
+import { categoryName } from '../../../shared/format/CategoryName';
 export type ProductDto = OperationOutputFor<'storefront.catalog.read'>['items'][number];
 export function mapProduct(item: ProductDto): Product {
   const priceMinor = item.price?.amountMinor ?? 0;
@@ -41,7 +42,7 @@ export function mapProduct(item: ProductDto): Product {
     priceWelfareMinor: priceMinor,
     currency: item.price?.currency ?? 'CNY',
     categoryId: item.category.id,
-    categoryName: item.category.name,
+    categoryName: categoryName(item.category.name, item.category.code),
     brand: text(detail.brandName ?? item.attributes.brandName) ?? '',
     tags: Object.freeze(unique([...texts(item.attributes.tags), ...texts(detail.tags)])),
     supplierId: item.supplierId ?? '',

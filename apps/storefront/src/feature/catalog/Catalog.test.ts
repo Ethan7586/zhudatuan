@@ -54,6 +54,16 @@ describe('storefront catalog mapping', () => {
     expect(toFrontendCategories(page.categories)).toEqual([{ id: 'category:food', code: 'cat_food', name: '食品饮料', count: 1, iconName: 'UtensilsCrossed', description: '1 件可见商品' }]);
   });
 
+  it('never exposes a technical category code as customer-facing copy', () => {
+    const value = catalog();
+    value.items[0]!.category = { id: 'category:card', code: 'virtual-card', name: 'virtual-card' };
+    value.categories = [{ id: 'category:card', code: 'virtual-card', name: 'virtual-card', count: 1 }];
+    const page = mapCatalog(value);
+
+    expect(page.items[0]?.product.categoryName).toBe('电子卡券');
+    expect(toFrontendCategories(page.categories)[0]?.name).toBe('电子卡券');
+  });
+
   it('aggregates every listing SKU and switches all authoritative availability fields together', () => {
     const first = catalog().items[0];
     const blocked = {

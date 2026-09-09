@@ -1,6 +1,7 @@
 import { presentProduct, type PresentedProduct, type Product } from '../../../entity/product';
 import type { CatalogCategory } from '../model/CatalogCategory';
 import type { CatalogPage } from '../model/CatalogPage';
+import { categoryName } from '../../../shared/format/CategoryName';
 
 export type FrontendProduct = PresentedProduct;
 export type FrontendCategory = CatalogCategory;
@@ -23,7 +24,5 @@ const CATEGORY_ICONS: Readonly<Record<string, string>> = Object.freeze({
 });
 
 export function toFrontendCategories(categories: CatalogPage['categories']): readonly FrontendCategory[] {
-  return Object.freeze(
-    categories.map((category) => Object.freeze({ ...category, iconName: CATEGORY_ICONS[category.code] ?? 'Gift', description: `${category.count} 件可见商品` }))
-  );
+  return Object.freeze(categories.map((category) => Object.freeze({ ...category, name: categoryName(category.name, category.code), iconName: CATEGORY_ICONS[category.code] ?? 'Gift', description: `${category.count} 件可见商品` })));
 }
