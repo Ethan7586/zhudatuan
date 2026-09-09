@@ -109,7 +109,10 @@ describe('Product route', () => {
     expect(screen.getByText('办公福利礼盒')).toBeTruthy();
     expect(screen.queryByText(/^商品编号\b/)).toBeNull();
     expect(screen.getByRole('columnheader', { name: '分类 / 来源' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: 'SKU 摘要' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: '商品规格' })).toBeTruthy();
+    expect(screen.getByText('1 个规格')).toBeTruthy();
+    expect(screen.getByText('全部可用')).toBeTruthy();
+    expect(screen.queryByText('SKU001')).toBeNull();
     expect(screen.getByRole('columnheader', { name: '商城覆盖' })).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: '有效售价' })).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: '可售库存' })).toBeTruthy();

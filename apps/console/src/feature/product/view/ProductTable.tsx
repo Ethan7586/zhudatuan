@@ -38,7 +38,7 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
               </th>
               <th>商品信息</th>
               {visibleColumns.has('category') ? <th>分类 / 来源</th> : null}
-              {visibleColumns.has('sku') ? <th>SKU 摘要</th> : null}
+              {visibleColumns.has('sku') ? <th>商品规格</th> : null}
               {visibleColumns.has('malls') ? <th>商城覆盖</th> : null}
               {visibleColumns.has('price') ? <th>有效售价</th> : null}
               {visibleColumns.has('stock') ? <th>可售库存</th> : null}
@@ -73,7 +73,7 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                   ) : null}
                   {visibleColumns.has('sku') ? (
                     <td data-label="规格摘要">
-                      <CellPair primary={`${formatCount(row.sku_count)} / ${formatCount(row.sku_total)}`} secondary={row.code ?? '规格待映射'} />
+                      <CellPair {...presentSkuSummary(row)} />
                     </td>
                   ) : null}
                   {visibleColumns.has('malls') ? (
@@ -169,6 +169,14 @@ function formatMoney(cents: number, currency: string | null): string {
 
 function formatCount(value: number): string {
   return new Intl.NumberFormat('zh-CN').format(value);
+}
+
+function presentSkuSummary(row: Listing): Readonly<{ primary: string; secondary: string }> {
+  const total = Math.max(0, row.sku_total);
+  const ready = Math.min(total, Math.max(0, row.sku_count));
+  if (total === 0) return { primary: '尚未配置规格', secondary: '请进入详情完善' };
+  if (ready === total) return { primary: `${formatCount(total)} 个规格`, secondary: '全部可用' };
+  return { primary: `${formatCount(ready)} 个可用规格`, secondary: `共 ${formatCount(total)} 个，${formatCount(total - ready)} 个待完善` };
 }
 
 function formatTime(value: string | undefined): string {
