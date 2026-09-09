@@ -97,6 +97,7 @@ describe('contract truth', () => {
   it('publishes customer and member segmentation as a strict sales dimension preset', () => {
     const input = OPERATION_SCHEMAS['reporting.sales.read'].input;
     const output = OPERATION_SCHEMAS['reporting.sales.read'].output;
+    const dimensionsOutput = OPERATION_SCHEMAS['reporting.dimensions.read'].output;
     const report = {
       items: [],
       count: 0,
@@ -106,21 +107,28 @@ describe('contract truth', () => {
         generatedAt: '2026-09-05T00:00:01.000Z',
         generationVersion: 1,
       },
-      preset: {
-        code: 'customermember',
-        name: '客户 / 会员分层',
-        description: '当前客户范围内的会员购买分层',
-        dimensions: ['customer', 'member'],
-        privacy: 'masked',
-        version: 1,
-        owner: 'reporting',
-      },
+    } as const;
+    const dimensions = {
+      definitions: [],
+      applications: [],
+      presets: [
+        {
+          code: 'customermember',
+          name: '客户 / 会员分层',
+          description: '当前客户范围内的会员购买分层',
+          dimensions: ['customer', 'member'],
+          privacy: 'masked',
+          version: 1,
+          owner: 'reporting',
+        },
+      ],
     } as const;
 
     expect(input.parse({ query: { dimensionpreset: 'customermember', period: '30days' } })).toEqual({ query: { dimensionpreset: 'customermember', period: '30days' } });
     expect(output.parse(report)).toEqual(report);
+    expect(dimensionsOutput.parse(dimensions)).toEqual(dimensions);
     expect(() => input.parse({ query: { dimensionpreset: 'powderclass' } })).toThrow();
-    expect(() => output.parse({ ...report, preset: { ...report.preset, privacy: 'raw' } })).toThrow();
+    expect(() => dimensionsOutput.parse({ ...dimensions, presets: [{ ...dimensions.presets[0], privacy: 'raw' }] })).toThrow();
   });
 
   it('requires metric exports to carry the exact displayed frozen query snapshot', () => {
