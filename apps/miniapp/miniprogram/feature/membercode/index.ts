@@ -1,0 +1,1 @@
+export { MemberCodeManifest } from './Manifest';

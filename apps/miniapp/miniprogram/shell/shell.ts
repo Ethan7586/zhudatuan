@@ -18,6 +18,7 @@ Component({
     commanding: { type: Boolean, value: false },
     commandMessage: { type: String, value: '' },
     commandError: { type: String, value: '' },
+    custom: { type: Boolean, value: false },
   },
   methods: {
     retry() { this.triggerEvent('retry'); },

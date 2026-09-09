@@ -14,6 +14,7 @@ import { createFetchReferral } from '@shop/sdk/referral';
 import { createFetchStorefront } from '@shop/sdk/storefront';
 import { createFetchSupport } from '@shop/sdk/support';
 import { createFetchVoucher } from '@shop/sdk/voucher';
+import { createFetchVerification } from '@shop/sdk/verification';
 import { createStorefrontContext } from '../shared/api/RequestContext';
 import { BrowserShareAdapter } from '../shared/platform/BrowserShareAdapter';
 import type { SharePort } from '../shared/platform/SharePort';
@@ -36,6 +37,7 @@ import { SecurityGateway } from '../feature/security/infrastructure/SecurityGate
 import { StepupGateway } from '../feature/security/infrastructure/StepupGateway';
 import { SupportGateway } from '../feature/support/infrastructure/SupportGateway';
 import { VoucherGateway } from '../feature/voucher/infrastructure/VoucherGateway';
+import { MemberCodeGateway } from '../feature/membercode/infrastructure/MemberCodeGateway';
 
 export interface Dependencies {
   readonly session: SessionGateway;
@@ -57,6 +59,7 @@ export interface Dependencies {
   readonly stepup: StepupGateway;
   readonly support: SupportGateway;
   readonly voucher: VoucherGateway;
+  readonly membercode: MemberCodeGateway;
 }
 
 export function createDependencies(handle: StorefrontHandle): Dependencies {
@@ -78,6 +81,7 @@ export function createDependencies(handle: StorefrontHandle): Dependencies {
     storefront: createFetchStorefront(origin),
     support: createFetchSupport(origin),
     voucher: createFetchVoucher(origin),
+    verification: createFetchVerification(origin),
   });
   return Object.freeze({
     session: new SessionGateway(api.identity, context),
@@ -99,5 +103,6 @@ export function createDependencies(handle: StorefrontHandle): Dependencies {
     stepup: new StepupGateway(api.identity, context),
     support: new SupportGateway(api.support, context),
     voucher: new VoucherGateway(api.voucher, context),
+    membercode: new MemberCodeGateway(api.verification, context),
   });
 }

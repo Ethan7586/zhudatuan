@@ -12,6 +12,7 @@ export async function miniappContext(
     signal?: AbortSignal | undefined;
     csrf?: string | undefined;
     command?: boolean | undefined;
+    idempotencyKey?: string | undefined;
     expectedVersion?: number | undefined;
     includeScope?: boolean | undefined;
   }> = {}
@@ -26,7 +27,7 @@ export async function miniappContext(
     ...(options.signal === undefined ? {} : { signal: options.signal }),
     ...(options.csrf === undefined ? {} : { csrfToken: options.csrf }),
     ...(options.expectedVersion === undefined ? {} : { expectedVersion: options.expectedVersion }),
-    ...(options.command ? { idempotencyKey: await randomToken(32) } : {}),
+    ...(options.command ? { idempotencyKey: options.idempotencyKey ?? (await randomToken(32)) } : {}),
   });
 }
 

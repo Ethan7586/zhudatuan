@@ -78,7 +78,7 @@ navigation:
   logicalSource: RepositoryAuthority config/navigation.yml
   repositoryRelativePath: config/navigation.yml
   version: 3
-  sha256: 5bf50f5f037799a4696a15bbe9414f53550dd7fe25420a54b1b7a9727eebcecd
+  sha256: 05c55ccb4450eaf8bdc78227406db61cc575c9905406aa0ea7f0e179dfbc12e1
   generator: tools/navigationgen
   outputs:
     - services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog.ts

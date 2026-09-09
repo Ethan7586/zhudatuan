@@ -22,6 +22,12 @@
       ]
     },
     {
+      "root": "feature/membercode",
+      "pages": [
+        "page"
+      ]
+    },
+    {
       "root": "feature/notification",
       "pages": [
         "page"

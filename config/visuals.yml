@@ -348,6 +348,10 @@ surfaces:
         baseline: storefrontvouchers
         responsive: true
         states: *a1
+      - routeid: storemembercode
+        baseline: storefrontmembercode
+        responsive: true
+        states: *a1
       - routeid: storebenefits
         baseline: storefrontbenefits
         responsive: true
@@ -385,6 +389,7 @@ surfaces:
       - { routeid: miniapporder, baseline: miniapporder, responsive: true, states: *a1 }
       - { routeid: miniappaftersale, baseline: miniappaftersale, responsive: true, states: *a1 }
       - { routeid: miniappvouchers, baseline: miniappvouchers, responsive: true, states: *a1 }
+      - { routeid: miniappmembercode, baseline: miniappmembercode, responsive: true, states: *a1 }
       - { routeid: miniappbenefits, baseline: miniappbenefits, responsive: true, states: *a1 }
       - { routeid: miniappprofile, baseline: miniappprofile, responsive: true, states: *a1 }
       - { routeid: miniappsecurity, baseline: miniappsecurity, responsive: true, states: *a1 }

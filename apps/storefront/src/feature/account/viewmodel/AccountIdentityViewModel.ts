@@ -1,59 +1,22 @@
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from '../../../entity/session/viewmodel/SessionContext';
 import { StorefrontQuery } from '../../../shared/api/Query';
 import { storefrontAuthHref } from '../../../config/storefrontAuth';
-import { benefitBalances } from '../../benefit/public/index';
-import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from '../model/ProfileDefaults';
-import { ReadProfile } from '../application/ReadProfile';
-import { SwitchMembership } from '../application/SwitchMembership';
 import { ChangeFavorite } from '../application/ChangeFavorite';
 import { ChangeAddress } from '../application/ChangeAddress';
 import type { AddressDraft } from '../model/Address';
-import { presentCurrentMall, presentMembershipMall } from '../model/MallPresentation';
 import { useDependencies } from '../../../app/DependencyContext';
 import { presentError } from '@shop/presentation';
+import { useMemberIdentity } from './MemberIdentityViewModel';
 
 export function useAccountIdentity() {
   const session = useSession();
   const dependencies = useDependencies();
   const client = useQueryClient();
-  const profileReader = useRef(new ReadProfile(dependencies.account));
-  const membershipCommand = useRef(new SwitchMembership(dependencies.account));
+  const identity = useMemberIdentity();
   const favoriteCommand = useRef(new ChangeFavorite(dependencies.account));
   const addressCommand = useRef(new ChangeAddress(dependencies.account));
-  const membershipQuery = useQuery({
-    queryKey: StorefrontQuery.memberships(session.query.scoped),
-    queryFn: ({ signal }) => dependencies.account.memberships(session.session!, signal),
-    enabled: session.status === 'authenticated',
-  });
-  const currentMembership = membershipQuery.data?.find(({ current }) => current);
-  const mall = useMemo(() => (session.scope ? presentCurrentMall(session.scope, currentMembership) : UNRESOLVED_MALL), [currentMembership, session.scope]);
-  const malls = useMemo(
-    () =>
-      Object.freeze(
-        (membershipQuery.data ?? []).map(presentMembershipMall)
-      ),
-    [membershipQuery.data]
-  );
-  const profileQuery = useQuery({
-    queryKey: StorefrontQuery.profile(session.query.scoped),
-    queryFn: async ({ signal }) => profileReader.current.execute(session.session!, benefitBalances(await dependencies.benefit.accounts(session.session!, signal)), signal),
-    enabled: session.status === 'authenticated',
-  });
-  const user = useMemo(
-    () =>
-      profileQuery.data
-        ? Object.freeze({
-            ...profileQuery.data,
-            enterpriseId: mall.enterpriseId,
-            enterpriseName: mall.enterpriseName,
-            department: mall.enterpriseName,
-            currentMallId: mall.id,
-          })
-        : EMPTY_GUEST_PROFILE,
-    [mall, profileQuery.data]
-  );
   const addressQuery = useQuery({
     queryKey: StorefrontQuery.addresses(session.query.scoped),
     queryFn: ({ signal }) => dependencies.account.addresses(session.session!, signal),
@@ -66,17 +29,6 @@ export function useAccountIdentity() {
   });
   const favoriteItems = favoriteQuery.data ?? Object.freeze([]);
   const favorites = Object.freeze(favoriteItems.map(({ listingId }) => listingId));
-  const switchMall = (membershipId: string) => {
-    if (!session.session || membershipId === session.session.membership) return;
-    void membershipCommand.current
-      .execute(session.session, membershipId)
-      .then(async () => {
-        await client.cancelQueries();
-        client.clear();
-        window.location.assign('/');
-      })
-      .catch(() => session.showToast('商城切换失败，请重新验证身份后重试', 'error'));
-  };
   const toggleFavorite = (listingId: string) => {
     if (!session.session) return void window.location.assign(storefrontAuthHref());
     void favoriteCommand.current
@@ -95,28 +47,17 @@ export function useAccountIdentity() {
     await client.invalidateQueries({ queryKey: StorefrontQuery.addresses(session.query.scoped) });
   };
   return Object.freeze({
-    user,
-    currentMall: mall,
-    malls,
+    ...identity,
     addresses: addressQuery.data ?? Object.freeze([]),
     favorites,
     favoriteItems,
-    profileState: profileQuery.isPending ? ('loading' as const) : profileQuery.isError ? ('failed' as const) : ('ready' as const),
-    membershipState: membershipQuery.isPending ? ('loading' as const) : membershipQuery.isError ? ('failed' as const) : ('ready' as const),
     addressState: addressQuery.isPending ? ('loading' as const) : addressQuery.isError ? ('failed' as const) : addressQuery.data?.length === 0 ? ('empty' as const) : ('ready' as const),
     favoriteState: favoriteQuery.isPending ? ('loading' as const) : favoriteQuery.isError ? ('failed' as const) : favoriteItems.length === 0 ? ('empty' as const) : ('ready' as const),
-    profileMessage: profileQuery.isError ? presentError(profileQuery.error).message : null,
-    membershipMessage: membershipQuery.isError ? presentError(membershipQuery.error).message : null,
     addressMessage: addressQuery.isError ? presentError(addressQuery.error).message : null,
     favoriteMessage: favoriteQuery.isError ? presentError(favoriteQuery.error).message : null,
-    switchMall,
     toggleFavorite,
     saveAddress,
     removeAddress,
-    logout: session.logout,
-    showToast: session.showToast,
-    retryProfile: profileQuery.refetch,
-    retryMemberships: membershipQuery.refetch,
     retryAddresses: addressQuery.refetch,
     retryFavorites: favoriteQuery.refetch,
   });

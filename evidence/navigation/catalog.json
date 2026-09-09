@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "hash": "5651699e2d2208f73571b9aa8b527fe2ccf89b46c7e5fe1839cb5ef24ba1c08c",
+  "hash": "b09829c6b6da59cd97705b8e7df536dcad6e7990cd89df31037e905dbf7cc690",
   "routes": [
     {
       "id": "authlogin",
@@ -548,6 +548,17 @@
       ]
     },
     {
+      "id": "miniappmembercode",
+      "surface": "miniapp",
+      "path": "/member-code",
+      "feature": "membercode",
+      "group": null,
+      "default": false,
+      "requirements": [
+        "MVPIDENTITY"
+      ]
+    },
+    {
       "id": "miniappnotifications",
       "surface": "miniapp",
       "path": "/notifications",
@@ -865,6 +876,17 @@
       "default": false,
       "requirements": [
         "MVPMALLORDER"
+      ]
+    },
+    {
+      "id": "storemembercode",
+      "surface": "storefront",
+      "path": "/member-code",
+      "feature": "membercode",
+      "group": null,
+      "default": false,
+      "requirements": [
+        "MVPIDENTITY"
       ]
     },
     {
@@ -3365,6 +3387,29 @@
       }
     },
     {
+      "key": "miniappmembercode",
+      "surface": "miniapp",
+      "scope": "mall",
+      "parent": null,
+      "title": "会员码",
+      "order": 60,
+      "operation": "verification.membercodes.issue",
+      "owner": "verification",
+      "permission": "verification.issue",
+      "capability": "verification.membercodes.issue",
+      "featureFlags": [
+        "MVPIDENTITY"
+      ],
+      "experience": {
+        "icon": "verification",
+        "routeKey": "miniappmembercode",
+        "route": "/member-code",
+        "component": "membercode",
+        "placement": "primary",
+        "empty": "showdisabled"
+      }
+    },
+    {
       "key": "miniapppayment",
       "surface": "miniapp",
       "scope": "mall",
@@ -3498,7 +3543,7 @@
         "routeKey": "miniappbenefits",
         "route": "/benefits",
         "component": "benefit",
-        "placement": "primary",
+        "placement": "secondary",
         "empty": "showdisabled"
       }
     },
@@ -4032,6 +4077,29 @@
       }
     },
     {
+      "key": "storemembercode",
+      "surface": "storefront",
+      "scope": "mall",
+      "parent": null,
+      "title": "会员码",
+      "order": 60,
+      "operation": "verification.membercodes.issue",
+      "owner": "verification",
+      "permission": "verification.issue",
+      "capability": "verification.membercodes.issue",
+      "featureFlags": [
+        "MVPIDENTITY"
+      ],
+      "experience": {
+        "icon": "verification",
+        "routeKey": "storemembercode",
+        "route": "/member-code",
+        "component": "membercode",
+        "placement": "primary",
+        "empty": "hide"
+      }
+    },
+    {
       "key": "storepayment",
       "surface": "storefront",
       "scope": "mall",
@@ -4142,7 +4210,7 @@
         "routeKey": "storevouchers",
         "route": "/vouchers",
         "component": "voucher",
-        "placement": "primary",
+        "placement": "secondary",
         "empty": "hide"
       }
     },
@@ -4165,7 +4233,7 @@
         "routeKey": "storebenefits",
         "route": "/benefits",
         "component": "benefit",
-        "placement": "primary",
+        "placement": "secondary",
         "empty": "hide"
       }
     },

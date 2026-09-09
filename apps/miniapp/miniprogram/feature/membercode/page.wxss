@@ -1,0 +1,45 @@
+.membercode { width: 100%; }
+.statecard { display: flex; align-items: center; flex-direction: column; gap: 20rpx; min-height: 520rpx; padding: 64rpx 36rpx; text-align: center; background: var(--shop-surface); border-radius: 36rpx; box-shadow: var(--shop-shadow-raised); }
+.statetitle { color: var(--shop-text); font-size: 36rpx; font-weight: 700; line-height: 48rpx; }
+.statecopy { max-width: 560rpx; color: var(--shop-text-secondary); font-size: 26rpx; line-height: 42rpx; }
+.stateicon { display: flex; align-items: center; justify-content: center; width: 88rpx; height: 88rpx; color: var(--shop-brand); background: var(--shop-brand-light); border-radius: 28rpx; font-size: 32rpx; font-weight: 700; }
+.stateicon.calm { color: var(--shop-text-secondary); background: var(--shop-surface-subtle); }
+.stateicon.danger { color: var(--shop-danger); background: var(--shop-danger-surface); }
+.spinner { width: 64rpx; height: 64rpx; border: 6rpx solid var(--shop-brand-light); border-top-color: var(--shop-brand); border-radius: 50%; animation: spin .8s linear infinite; }
+.primary, .secondary { box-sizing: border-box; min-height: 88rpx; margin: 12rpx 0 0; padding: 20rpx 32rpx; white-space: nowrap; border-radius: 24rpx; font-size: 28rpx; font-weight: 700; line-height: 40rpx; }
+.primary { color: var(--shop-text-inverse); background: var(--shop-brand); }
+.secondary { color: var(--shop-brand); background: var(--shop-brand-light); }
+.choice { display: flex; align-items: flex-start; flex-direction: column; box-sizing: border-box; min-height: 96rpx; width: 100%; margin: 0; padding: 22rpx 24rpx; text-align: left; background: var(--shop-surface-subtle); border-radius: 24rpx; }
+.choicetitle { overflow: hidden; width: 100%; color: var(--shop-text); font-size: 28rpx; font-weight: 700; line-height: 40rpx; text-overflow: ellipsis; white-space: nowrap; }
+.choicedetail { overflow: hidden; width: 100%; margin-top: 6rpx; color: var(--shop-text-secondary); font-size: 24rpx; line-height: 34rpx; text-overflow: ellipsis; white-space: nowrap; }
+.verification { justify-content: center; }
+.codeform { width: 100%; }
+.codeinput { box-sizing: border-box; min-height: 96rpx; width: 100%; padding: 20rpx; text-align: center; color: var(--shop-text); background: var(--shop-surface-subtle); border-radius: 24rpx; font-size: 38rpx; font-weight: 700; letter-spacing: 12rpx; }
+.buttonrow { display: grid; grid-template-columns: 1fr 1fr; gap: 16rpx; }
+.buttonrow button { min-width: 0; width: 100%; padding-right: 12rpx; padding-left: 12rpx; }
+.error { width: 100%; padding: 18rpx 20rpx; color: var(--shop-danger); background: var(--shop-danger-surface); border-radius: 20rpx; font-size: 24rpx; line-height: 36rpx; }
+.codecard { overflow: hidden; background: var(--shop-surface); border-radius: 40rpx; box-shadow: var(--shop-shadow-raised); }
+.cardhead { display: flex; align-items: center; justify-content: space-between; gap: 24rpx; padding: 36rpx; color: var(--shop-text-inverse); background: linear-gradient(135deg, var(--shop-brand-dark), var(--shop-brand)); }
+.identity { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.mall, .member { overflow: hidden; width: 100%; text-overflow: ellipsis; white-space: nowrap; }
+.mall { font-size: 30rpx; font-weight: 700; line-height: 42rpx; }
+.member { margin-top: 8rpx; color: var(--shop-inverse-label); font-size: 24rpx; line-height: 34rpx; }
+.wingcode { width: 80rpx; height: 80rpx; flex: 0 0 auto; }
+.cardbody { padding: 36rpx; background: var(--shop-surface-subtle); transition: background .2s ease; }
+.bright .cardbody { background: var(--shop-surface); }
+.qrsurface { box-sizing: border-box; width: 100%; max-width: 520rpx; margin: 0 auto; padding: 28rpx; background: var(--shop-surface); border-radius: 32rpx; }
+.qrmatrix { display: grid; box-sizing: border-box; width: 100%; aspect-ratio: 1; padding: 16rpx; background: var(--shop-surface); }
+.qrmodule { width: 100%; height: 100%; background: var(--shop-surface); }
+.qrmodule.dark { background: var(--shop-brand-ink); }
+.countdown { display: flex; justify-content: space-between; gap: 20rpx; margin-top: 28rpx; color: var(--shop-text-secondary); font-size: 24rpx; line-height: 34rpx; }
+.countdown text:last-child { flex: 0 0 auto; color: var(--shop-text-muted); }
+.track { overflow: hidden; height: 10rpx; margin-top: 14rpx; background: var(--shop-brand-light); border-radius: 10rpx; }
+.progress { height: 100%; background: var(--shop-brand); border-radius: 10rpx; transition: width .5s linear; }
+.cardactions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; padding: 20rpx; background: var(--shop-surface); }
+.soft { box-sizing: border-box; min-height: 88rpx; min-width: 0; margin: 0; padding: 16rpx 8rpx; overflow: hidden; color: var(--shop-brand); background: var(--shop-brand-light); border-radius: 20rpx; font-size: 22rpx; font-weight: 700; line-height: 34rpx; text-overflow: ellipsis; white-space: nowrap; }
+.inlineerror { display: block; margin: 0 20rpx 20rpx; padding: 16rpx 20rpx; color: var(--shop-danger); background: var(--shop-danger-surface); border-radius: 20rpx; font-size: 24rpx; line-height: 36rpx; }
+.summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12rpx; padding: 0 20rpx 24rpx; }
+.summary view { display: flex; flex-direction: column; min-width: 0; gap: 8rpx; padding: 18rpx 12rpx; background: var(--shop-surface-subtle); border-radius: 20rpx; text-align: center; }
+.summary text:first-child { color: var(--shop-text-muted); font-size: 20rpx; line-height: 28rpx; }
+.summary text:last-child { overflow: hidden; color: var(--shop-text); font-size: 24rpx; font-weight: 700; line-height: 34rpx; text-overflow: ellipsis; white-space: nowrap; }
+@keyframes spin { to { transform: rotate(360deg); } }

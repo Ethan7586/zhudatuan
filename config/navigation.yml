@@ -354,6 +354,12 @@ routes:
     feature: voucher
     requirements:
       - MVPMALLVOUCHER
+  - id: storemembercode
+    surface: storefront
+    path: /member-code
+    feature: membercode
+    requirements:
+      - MVPIDENTITY
   - id: storebenefits
     surface: storefront
     path: /benefits
@@ -479,6 +485,12 @@ routes:
     feature: voucher
     requirements:
       - MVPMALLVOUCHER
+  - id: miniappmembercode
+    surface: miniapp
+    path: /member-code
+    feature: membercode
+    requirements:
+      - MVPIDENTITY
   - id: miniappbenefits
     surface: miniapp
     path: /benefits
@@ -1356,6 +1368,17 @@ nodes:
     entry: voucher.search.read
     empty: hide
     routeid: storevouchers
+    placement: secondary
+  - id: storemembercode
+    surface: storefront
+    scope: mall
+    parent: null
+    title: 会员码
+    icon: verification
+    order: 60
+    entry: verification.membercodes.issue
+    empty: hide
+    routeid: storemembercode
     placement: primary
   - id: storebenefits
     surface: storefront
@@ -1367,7 +1390,7 @@ nodes:
     entry: benefit.accounts.read
     empty: hide
     routeid: storebenefits
-    placement: primary
+    placement: secondary
   - id: storeprofile
     surface: storefront
     scope: mall
@@ -1577,6 +1600,17 @@ nodes:
     empty: showdisabled
     routeid: miniappvouchers
     placement: secondary
+  - id: miniappmembercode
+    surface: miniapp
+    scope: mall
+    parent: null
+    title: 会员码
+    icon: verification
+    order: 60
+    entry: verification.membercodes.issue
+    empty: showdisabled
+    routeid: miniappmembercode
+    placement: primary
   - id: miniappbenefits
     surface: miniapp
     scope: mall
@@ -1587,7 +1621,7 @@ nodes:
     entry: benefit.accounts.read
     empty: showdisabled
     routeid: miniappbenefits
-    placement: primary
+    placement: secondary
   - id: miniappreferral
     surface: miniapp
     scope: mall

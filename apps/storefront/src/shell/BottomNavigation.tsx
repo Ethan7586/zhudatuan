@@ -1,11 +1,12 @@
-import { Gift, Home, LayoutGrid, ReceiptText, UserRound } from 'lucide-react';
+import { Home, LayoutGrid, ReceiptText, UserRound } from 'lucide-react';
+import { WingCodeIcon } from '@shop/design';
 import type { ShellMobileAction } from './ShellNavigation';
 import { shellPathActive } from './ShellNavigation';
 
 const ICONS = Object.freeze({
   home: Home,
   catalog: LayoutGrid,
-  benefit: Gift,
+  membercode: WingCodeIcon,
   orders: ReceiptText,
   account: UserRound,
 });
@@ -18,13 +19,13 @@ export function BottomNavigation({ actions, pathname, navigate }: Readonly<{ act
         {actions.map((action) => {
           const Icon = ICONS[action.kind];
           const active = shellPathActive(pathname, action.path);
-          const featured = action.kind === 'benefit';
+          const featured = action.kind === 'membercode';
           return (
             <button
               type="button"
               key={action.id}
               aria-current={active ? 'page' : undefined}
-              aria-label={action.kind === 'benefit' ? '打开福利账户' : action.label}
+              aria-label={action.kind === 'membercode' ? '打开会员码' : action.label}
               onClick={() => navigate(action.path)}
               className={`group relative flex min-h-14 min-w-14 flex-1 flex-col items-center justify-end gap-0.5 rounded-2xl px-1 text-[10px] font-bold ${active ? 'text-brand' : 'text-muted hover:text-content'}`}
             >

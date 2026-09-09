@@ -1,0 +1,94 @@
+<shop-shell custom title="{{title}}" description="{{description}}" state="{{state}}" authenticated="{{authenticated}}" navigation="{{navigation}}" memberships="{{memberships}}" bind:signin="onSignIn" bind:signout="onSignOut" bind:selectmembership="onSelectMembership" bind:navigate="onNavigate">
+  <view slot="content" class="membercode">
+    <view wx:if="{{state === 'loading'}}" class="statecard">
+      <view class="spinner"></view>
+      <text class="statetitle">正在生成安全会员码</text>
+      <text class="statecopy">正在确认会员身份，请稍候。</text>
+    </view>
+
+    <view wx:elif="{{state === 'expired'}}" class="statecard">
+      <text class="stateicon">翼</text>
+      <text class="statetitle">登录后使用会员码</text>
+      <text class="statecopy">微信登录后，即可生成当前福利身份的动态会员码。</text>
+      <button class="primary" bindtap="onSignIn">微信登录</button>
+    </view>
+
+    <view wx:elif="{{state === 'selection'}}" class="statecard">
+      <text class="statetitle">选择要进入的福利身份</text>
+      <text class="statecopy">你有多个可用身份，请确认本次使用哪一个。</text>
+      <button wx:for="{{memberships}}" wx:key="id" class="choice" data-id="{{item.id}}" bindtap="onSelectMembership">
+        <text class="choicetitle">{{item.title}}</text>
+        <text class="choicedetail">{{item.detail}}</text>
+      </button>
+    </view>
+
+    <view wx:elif="{{state === 'needsmobile'}}" class="statecard">
+      <text class="stateicon">盾</text>
+      <text class="statetitle">先认证手机号</text>
+      <text class="statecopy">为防止会员权益被冒用，首次使用会员码前需要完成手机号认证。</text>
+      <button class="primary" bindtap="onOpenSecurity">前往安全中心</button>
+    </view>
+
+    <view wx:elif="{{state === 'verification'}}" class="statecard verification">
+      <text class="stateicon">验</text>
+      <text class="statetitle">确认是你本人操作</text>
+      <text class="statecopy">验证码将发送到当前账号绑定的手机{{phoneMasked ? ' ' + phoneMasked : ''}}。</text>
+      <button wx:if="{{!challengeSent}}" class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="onSendCode">发送验证码</button>
+      <view wx:else class="codeform">
+        <input class="codeinput" type="number" maxlength="6" value="{{code}}" placeholder="请输入 6 位验证码" bindinput="onCodeInput" />
+        <view class="buttonrow">
+          <button class="secondary" loading="{{busy}}" disabled="{{busy}}" bindtap="onSendCode">重新发送</button>
+          <button class="primary" loading="{{busy}}" disabled="{{busy || code.length !== 6}}" bindtap="onVerify">确认验证</button>
+        </view>
+      </view>
+      <text wx:if="{{error}}" class="error" role="alert">{{error}}</text>
+    </view>
+
+    <view wx:elif="{{state === 'hidden'}}" class="statecard">
+      <text class="stateicon calm">隐</text>
+      <text class="statetitle">会员码已隐藏</text>
+      <text class="statecopy">上一张会员码已经失效，需要使用时再生成新码。</text>
+      <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="onShow">重新显示会员码</button>
+    </view>
+
+    <view wx:elif="{{state === 'error'}}" class="statecard">
+      <text class="stateicon danger">!</text>
+      <text class="statetitle">会员码暂时不可用</text>
+      <text class="statecopy" role="alert">{{error}}</text>
+      <button class="primary" loading="{{busy}}" disabled="{{busy}}" bindtap="onRetry">重新加载</button>
+    </view>
+
+    <view wx:else class="codecard {{bright ? 'bright' : ''}}">
+      <view class="cardhead">
+        <view class="identity">
+          <text class="mall">当前企业福利商城</text>
+          <text class="member">{{name}} · 企业成员</text>
+        </view>
+        <image class="wingcode" src="/assets/wingcode.svg" mode="aspectFit" />
+      </view>
+      <view class="cardbody">
+        <view class="qrsurface">
+          <view class="qrmatrix" style="grid-template-columns: repeat({{matrixSize}}, 1fr);">
+            <view wx:for="{{modules}}" wx:key="key" class="qrmodule {{item.dark ? 'dark' : ''}}"></view>
+          </view>
+        </view>
+        <view class="countdown">
+          <text>{{remaining > 0 ? remaining + ' 秒后自动更新' : '正在安全更新…'}}</text>
+          <text>无需手动输入</text>
+        </view>
+        <view class="track"><view class="progress" style="width: {{progress}}%;"></view></view>
+      </view>
+      <view class="cardactions">
+        <button class="soft" disabled="{{busy || refreshWait > 0}}" bindtap="onRefresh">{{refreshWait > 0 ? refreshWait + ' 秒' : '立即刷新'}}</button>
+        <button class="soft" bindtap="onToggleBrightness">{{bright ? '标准显示' : '高亮显示'}}</button>
+        <button class="soft" disabled="{{busy}}" bindtap="onHide">暂时隐藏</button>
+      </view>
+      <text wx:if="{{error}}" class="inlineerror" role="alert">{{error}} 请重试刚才的操作。</text>
+      <view class="summary">
+        <view><text>身份状态</text><text>{{mobileState}}</text></view>
+        <view><text>福利余额</text><text>{{welfare}}</text></view>
+        <view><text>餐补余额</text><text>{{meal}}</text></view>
+      </view>
+    </view>
+  </view>
+</shop-shell>

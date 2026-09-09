@@ -15,20 +15,20 @@ describe('shellNavigation', () => {
         node('cart', '购物车', '/cart', 'secondary', 50),
         node('notification', '消息通知', '/notifications', 'secondary', 60),
         node('account', '我的', '/profile', 'primary', 70),
-        node('benefit', '福利账户', '/benefits', 'primary', 80),
+        node('membercode', '会员码', '/member-code', 'primary', 80),
         node('orders', '我的订单', '/orders', 'primary', 90),
         node('disabled', '不可用入口', '/disabled', 'primary', 80, true),
       ],
       experience()
     );
 
-    expect(result.primary.map(({ label }) => label)).toEqual(['企业福利专区', '首页', '福利账户', '我的订单']);
+    expect(result.primary.map(({ label }) => label)).toEqual(['企业福利专区', '首页', '会员码', '我的订单']);
     expect(result.published).toEqual([{ id: 'nav:festival', label: '员工关怀', path: '/pages/festival' }]);
     expect(result.quick.map(({ kind }) => kind)).toEqual(['support', 'notification', 'cart', 'account']);
     expect(result.mobile.map(({ kind, label }) => ({ kind, label }))).toEqual([
       { kind: 'home', label: '首页' },
       { kind: 'catalog', label: '分类' },
-      { kind: 'benefit', label: '福利' },
+      { kind: 'membercode', label: '会员码' },
       { kind: 'orders', label: '订单' },
       { kind: 'account', label: '我的' },
     ]);

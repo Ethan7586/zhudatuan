@@ -27,6 +27,7 @@
     "./openapi.json": "./openapi.json",
     "./order": "./src/OrderContract.ts",
     "./voucher": "./src/VoucherCredential.ts",
+    "./verification": "./src/VerificationContract.ts",
     "./vocabulary": "./src/Vocabulary.ts",
     "./events.json": "./events.json",
     "./catalog-taxonomy.json": "./src/catalog-taxonomy.json"

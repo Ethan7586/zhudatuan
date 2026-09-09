@@ -12,7 +12,7 @@ export interface ShellLink {
 }
 
 export type ShellQuickAction = ShellLink & Readonly<{ kind: 'support' | 'notification' | 'cart' | 'account' }>;
-export type ShellMobileAction = ShellLink & Readonly<{ kind: 'home' | 'catalog' | 'benefit' | 'orders' | 'account' }>;
+export type ShellMobileAction = ShellLink & Readonly<{ kind: 'home' | 'catalog' | 'membercode' | 'orders' | 'account' }>;
 
 const QUICK_ACTIONS = Object.freeze([
   Object.freeze({ kind: 'support' as const, path: ROUTES.storesupport }),
@@ -24,7 +24,7 @@ const QUICK_ACTIONS = Object.freeze([
 const MOBILE_ACTIONS = Object.freeze([
   Object.freeze({ kind: 'home' as const, path: ROUTES.storehome, label: '首页' }),
   Object.freeze({ kind: 'catalog' as const, path: ROUTES.storecatalog, label: '分类' }),
-  Object.freeze({ kind: 'benefit' as const, path: ROUTES.storebenefits, label: '福利' }),
+  Object.freeze({ kind: 'membercode' as const, path: ROUTES.storemembercode, label: '会员码' }),
   Object.freeze({ kind: 'orders' as const, path: ROUTES.storeorders, label: '订单' }),
   Object.freeze({ kind: 'account' as const, path: ROUTES.storeprofile, label: '我的' }),
 ]);

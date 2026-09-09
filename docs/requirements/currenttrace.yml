@@ -12588,7 +12588,7 @@ records:
         source: apps/storefront/src/feature/home/route/HomeRoute.tsx
         manifest: apps/storefront/src/feature/home/Manifest.ts
         viewmodel: apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
-        test: apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+        test: apps/storefront/src/feature/home/view/HomePage.test.tsx
       - id: storecatalog
         surface: storefront
         path: /products
@@ -12658,7 +12658,7 @@ records:
       - apps/storefront/src/feature/catalog/viewmodel/CatalogViewModel.ts
       - apps/storefront/src/feature/home/Manifest.ts
       - apps/storefront/src/feature/home/route/HomeRoute.tsx
-      - apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+      - apps/storefront/src/feature/home/view/HomePage.test.tsx
       - apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
       - database/migrations/20260821017000_create_catalog_pricing.sql
       - database/migrations/20260821021000_create_payment_voucher_benefit.sql
@@ -12740,7 +12740,7 @@ records:
         source: apps/storefront/src/feature/home/route/HomeRoute.tsx
         manifest: apps/storefront/src/feature/home/Manifest.ts
         viewmodel: apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
-        test: apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+        test: apps/storefront/src/feature/home/view/HomePage.test.tsx
       - id: storecatalog
         surface: storefront
         path: /products
@@ -12794,7 +12794,7 @@ records:
       - apps/storefront/src/feature/catalog/viewmodel/CatalogViewModel.ts
       - apps/storefront/src/feature/home/Manifest.ts
       - apps/storefront/src/feature/home/route/HomeRoute.tsx
-      - apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+      - apps/storefront/src/feature/home/view/HomePage.test.tsx
       - apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
       - database/migrations/20260821017000_create_catalog_pricing.sql
       - docs/operations/mallentry.md
@@ -12875,7 +12875,7 @@ records:
         source: apps/storefront/src/feature/home/route/HomeRoute.tsx
         manifest: apps/storefront/src/feature/home/Manifest.ts
         viewmodel: apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
-        test: apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+        test: apps/storefront/src/feature/home/view/HomePage.test.tsx
       - id: storecatalog
         surface: storefront
         path: /products
@@ -12929,7 +12929,7 @@ records:
       - apps/storefront/src/feature/catalog/viewmodel/CatalogViewModel.ts
       - apps/storefront/src/feature/home/Manifest.ts
       - apps/storefront/src/feature/home/route/HomeRoute.tsx
-      - apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+      - apps/storefront/src/feature/home/view/HomePage.test.tsx
       - apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
       - database/migrations/20260821017000_create_catalog_pricing.sql
       - docs/operations/mallentry.md
@@ -13010,7 +13010,7 @@ records:
         source: apps/storefront/src/feature/home/route/HomeRoute.tsx
         manifest: apps/storefront/src/feature/home/Manifest.ts
         viewmodel: apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
-        test: apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+        test: apps/storefront/src/feature/home/view/HomePage.test.tsx
       - id: storecatalog
         surface: storefront
         path: /products
@@ -13065,7 +13065,7 @@ records:
       - apps/storefront/src/feature/catalog/viewmodel/CatalogViewModel.ts
       - apps/storefront/src/feature/home/Manifest.ts
       - apps/storefront/src/feature/home/route/HomeRoute.tsx
-      - apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+      - apps/storefront/src/feature/home/view/HomePage.test.tsx
       - apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
       - database/migrations/20260821017000_create_catalog_pricing.sql
       - database/migrations/20260821021000_create_payment_voucher_benefit.sql
@@ -13147,7 +13147,7 @@ records:
         source: apps/storefront/src/feature/home/route/HomeRoute.tsx
         manifest: apps/storefront/src/feature/home/Manifest.ts
         viewmodel: apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
-        test: apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+        test: apps/storefront/src/feature/home/view/HomePage.test.tsx
       - id: storecatalog
         surface: storefront
         path: /products
@@ -13201,7 +13201,7 @@ records:
       - apps/storefront/src/feature/catalog/viewmodel/CatalogViewModel.ts
       - apps/storefront/src/feature/home/Manifest.ts
       - apps/storefront/src/feature/home/route/HomeRoute.tsx
-      - apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+      - apps/storefront/src/feature/home/view/HomePage.test.tsx
       - apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
       - database/migrations/20260821017000_create_catalog_pricing.sql
       - docs/operations/mallentry.md
@@ -37160,6 +37160,8 @@ records:
     primaryHandler: services/commerce/src/modules/verification/application/handler/ChallengesIssueHandler.ts
     operations:
       - verification.challenges.issue
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - verification.challenges.verify
       - verification.history.read
@@ -37174,6 +37176,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsGetHandler.ts
@@ -37253,6 +37257,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/verification/public/index.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
@@ -37277,6 +37283,8 @@ records:
     primaryHandler: services/commerce/src/modules/verification/application/handler/ChallengesIssueHandler.ts
     operations:
       - verification.challenges.issue
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - verification.challenges.verify
       - verification.history.read
@@ -37291,6 +37299,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsGetHandler.ts
@@ -37360,6 +37370,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/verification/public/index.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
@@ -37384,6 +37396,8 @@ records:
     primaryHandler: services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
     operations:
       - verification.challenges.issue
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - verification.challenges.verify
       - verification.history.read
@@ -37398,6 +37412,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsGetHandler.ts
@@ -37470,6 +37486,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/verification/public/index.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
@@ -37494,6 +37512,8 @@ records:
     primaryHandler: services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
     operations:
       - verification.challenges.issue
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - verification.challenges.verify
       - verification.history.read
@@ -37508,6 +37528,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsGetHandler.ts
@@ -37575,6 +37597,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/verification/public/index.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
@@ -37599,6 +37623,8 @@ records:
     primaryHandler: services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
     operations:
       - verification.challenges.issue
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - verification.challenges.verify
       - verification.history.read
@@ -37613,6 +37639,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsGetHandler.ts
@@ -37681,6 +37709,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/verification/public/index.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
@@ -37705,6 +37735,8 @@ records:
     primaryHandler: services/commerce/src/modules/verification/application/handler/ChallengesIssueHandler.ts
     operations:
       - verification.challenges.issue
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - verification.challenges.verify
       - verification.history.read
@@ -37719,6 +37751,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsGetHandler.ts
@@ -37788,6 +37822,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/verification/public/index.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
@@ -37812,6 +37848,8 @@ records:
     primaryHandler: services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
     operations:
       - verification.challenges.issue
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - verification.challenges.verify
       - verification.history.read
@@ -37826,6 +37864,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsGetHandler.ts
@@ -37893,6 +37933,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/verification/public/index.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
@@ -37917,6 +37959,8 @@ records:
     primaryHandler: services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
     operations:
       - verification.challenges.issue
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - verification.challenges.verify
       - verification.history.read
@@ -37931,6 +37975,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsGetHandler.ts
@@ -37998,6 +38044,8 @@ records:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/verification/public/index.ts
       - services/commerce/src/modules/voucher/application/handler/RedemptionsCreateHandler.ts
@@ -67628,7 +67676,7 @@ records:
         source: apps/storefront/src/feature/home/route/HomeRoute.tsx
         manifest: apps/storefront/src/feature/home/Manifest.ts
         viewmodel: apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
-        test: apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+        test: apps/storefront/src/feature/home/view/HomePage.test.tsx
       - id: miniapphome
         surface: miniapp
         path: /
@@ -67657,7 +67705,7 @@ records:
       - apps/miniapp/miniprogram/feature/home/viewmodel/HomeViewModel.ts
       - apps/storefront/src/feature/home/Manifest.ts
       - apps/storefront/src/feature/home/route/HomeRoute.tsx
-      - apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+      - apps/storefront/src/feature/home/view/HomePage.test.tsx
       - apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
       - docs/operations/deployment.md
       - packages/contract/src/EventSerializer.ts

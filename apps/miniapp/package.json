@@ -18,7 +18,8 @@
     "@shop/contract": "1.0.0",
     "@shop/presentation": "1.0.0",
     "@shop/sdk": "1.0.0",
-    "esbuild": "0.28.1"
+    "esbuild": "0.28.1",
+    "qrcode-generator": "1.4.4"
   },
   "devDependencies": {
     "tsx": "4.23.12",

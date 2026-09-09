@@ -74,7 +74,7 @@ function model(overrides: Record<string, unknown> = {}) {
       mobile: [
         { id: 'home', label: '首页', path: '/', kind: 'home' },
         { id: 'catalog', label: '分类', path: '/products', kind: 'catalog' },
-        { id: 'benefit', label: '福利', path: '/benefits', kind: 'benefit' },
+        { id: 'membercode', label: '会员码', path: '/member-code', kind: 'membercode' },
         { id: 'orders', label: '订单', path: '/orders', kind: 'orders' },
         { id: 'account', label: '我的', path: '/profile', kind: 'account' },
       ],

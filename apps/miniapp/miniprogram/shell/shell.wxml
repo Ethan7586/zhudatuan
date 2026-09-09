@@ -17,7 +17,9 @@
   <view wx:if="{{stale}}" class="notice">网络暂不可用，以下为最近一次成功加载的数据。</view>
 
   <view class="content">
-    <view wx:if="{{state === 'loading'}}" class="panel loading" aria-label="正在加载">
+    <slot wx:if="{{custom}}" name="content"></slot>
+
+    <view wx:elif="{{state === 'loading'}}" class="panel loading" aria-label="正在加载">
       <view class="skeleton wide"></view>
       <view class="skeleton"></view>
       <view class="skeleton short"></view>

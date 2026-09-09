@@ -7,7 +7,7 @@ const sourceRoot = dirname(fileURLToPath(import.meta.url));
 const blockedSegments = ['/mock/', '/services/mallService', '/services/mallState', '/services/mallCatalogCart', '/services/mallOrders', '/screens/', '/components/home/', '/components/security/', '/features/architecture/'];
 const retiredSourcePath = /(?:^|\/)(?:mock|showcase|demo|desktop|laptop|tablet|mobile|miniprogram|android)(?:\/|[A-Z.])/i;
 const retiredSourceMarker = /PendingInterfaceModal|接口待接入|高保真交互预览|navigationBoundary\s*=\s*['"]showcase['"]/;
-const features = ['account', 'aftersale', 'benefit', 'cart', 'catalog', 'checkout', 'home', 'notification', 'order', 'payment', 'product', 'referral', 'security', 'support', 'voucher'];
+const features = ['account', 'aftersale', 'benefit', 'cart', 'catalog', 'checkout', 'home', 'membercode', 'notification', 'order', 'payment', 'product', 'referral', 'security', 'support', 'voucher'];
 
 function resolveSourceImport(importer: string, specifier: string) {
   if (!specifier.startsWith('.')) return null;

@@ -1,6 +1,7 @@
 import { compactFailure } from '@shop/presentation/compact';
 import { projectRecords, type DisplayCollection } from '@shop/presentation/records';
 import type { OperationExecutor } from '@shop/sdk';
+import type { RequestContext } from '@shop/sdk';
 import type { OperationOutputFor } from '@shop/contract';
 import { readMiniappEnvironment, type MiniappRuntimeEnvironment } from '../config/Environment';
 import type { RouteMatch } from '../generated/RouteBinding';
@@ -16,6 +17,7 @@ import { validateActionInput } from '@shop/presentation/actions';
 import type { MiniappFeatureViewModel } from '../shared/FeatureViewModel';
 import { createMiniappCore, type MiniappCoreClient } from './CoreClient';
 import { IdentityRuntime, type SignInResult } from './IdentityRuntime';
+import type { AuthorizedRuntime } from './AuthorizedRuntime';
 
 export type { MembershipChoice, SignInResult } from './IdentityRuntime';
 
@@ -39,7 +41,7 @@ export interface MiniappCommandOutcome extends MiniappCommandResult {
   readonly snapshot?: MiniappSnapshot;
 }
 
-export class MiniappRuntime {
+export class MiniappRuntime implements AuthorizedRuntime {
   private readonly cache = new MiniappCache();
   private readonly privacy = new PrivacyBridge();
   private readonly values = new Map<string, unknown>();
@@ -132,6 +134,33 @@ export class MiniappRuntime {
     await this.identity.signOut(signal);
     this.cache.clear();
     this.clearBootstrap();
+  }
+
+  async authorizedRead<T>(
+    run: (executor: OperationExecutor, context: RequestContext) => Promise<T>,
+    options: Readonly<{ signal?: AbortSignal; includeScope?: boolean }> = {}
+  ): Promise<T> {
+    const session = await this.identity.require(options.signal);
+    return run(this.executor, await miniappContext(this.environment, session, { signal: options.signal, includeScope: options.includeScope }));
+  }
+
+  async authorizedWrite<T>(
+    run: (executor: OperationExecutor, context: RequestContext) => Promise<T>,
+    options: Readonly<{ idempotencyKey: string; signal?: AbortSignal; expectedVersion?: number; includeScope?: boolean }>
+  ): Promise<T> {
+    const session = await this.identity.require(options.signal);
+    await this.privacy.ensure();
+    return run(
+      this.executor,
+      await miniappContext(this.environment, session, {
+        signal: options.signal,
+        csrf: session.csrf,
+        command: true,
+        idempotencyKey: options.idempotencyKey,
+        expectedVersion: options.expectedVersion,
+        includeScope: options.includeScope,
+      })
+    );
   }
 
   private snapshot(
