@@ -16,7 +16,13 @@ export function ProductPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
   if (state === 'failed')
     return (
       <div role="alert" className="grid min-h-[60dvh] place-items-center text-center">
-        <div><h1 className="font-black">商品信息读取失败</h1><p className="mt-2 text-sm text-muted">请检查网络后重试，价格和库存不会使用本地旧值。</p><button type="button" onClick={actions.retry} className="mt-4 rounded-full bg-brand px-5 py-2 text-inverse">重新读取</button></div>
+        <div>
+          <h1 className="font-black">商品信息读取失败</h1>
+          <p className="mt-2 text-sm text-muted">请检查网络后重试，价格和库存不会使用本地旧值。</p>
+          <button type="button" onClick={actions.retry} className="mt-4 min-h-11 whitespace-nowrap rounded-full bg-brand px-5 text-inverse">
+            重新读取
+          </button>
+        </div>
       </div>
     );
   if (!product)
@@ -24,7 +30,7 @@ export function ProductPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
       <div className="grid min-h-[60dvh] place-items-center text-center">
         <div>
           <h1 className="font-black">商品暂不可查看</h1>
-          <button type="button" onClick={actions.back} className="mt-4 rounded-full bg-brand px-5 py-2 text-inverse">
+          <button type="button" onClick={actions.back} className="mt-4 min-h-11 whitespace-nowrap rounded-full bg-brand px-5 text-inverse">
             返回商品列表
           </button>
         </div>
@@ -32,18 +38,18 @@ export function ProductPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
     );
   const availability = productAvailability(product);
   return (
-    <div className="min-h-[80dvh] bg-[var(--sw-background)] px-3 py-4 sm:px-5">
+    <div className="min-h-[80dvh] bg-[var(--sw-background)] px-3 pb-40 pt-3 sm:px-5 md:py-4">
       <div className="mx-auto max-w-[1240px] space-y-4">
         <button type="button" onClick={actions.back} className="flex min-h-11 items-center gap-2 text-sm font-bold text-brand">
           <ArrowLeft size={17} />
           返回商品列表
         </button>
-        <section className="grid gap-6 rounded-3xl border border-edge bg-surface p-4 shadow-sm md:grid-cols-2 md:p-6">
-          <div className="relative overflow-hidden rounded-2xl bg-subtle">
-            <ProductMedia source={product.image} alt={product.title} className="aspect-square h-full w-full object-contain p-5" emptyClassName="grid aspect-square place-items-center text-muted" />
+        <section className="grid gap-4 bg-surface md:grid-cols-2 md:gap-6 md:rounded-3xl md:border md:border-edge md:p-6 md:shadow-sm">
+          <div className="relative -mx-3 overflow-hidden bg-subtle sm:mx-0 sm:rounded-2xl">
+            <ProductMedia source={product.image} alt={product.title} className="aspect-[4/3] h-full w-full object-contain p-4 md:aspect-square md:p-5" emptyClassName="grid aspect-[4/3] place-items-center text-muted md:aspect-square" />
             <span className="absolute left-3 top-3 rounded-full bg-danger px-3 py-1 text-xs font-black text-inverse">商城当前价</span>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col px-1 md:px-0">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold text-brand">{product.categoryName}</p>
@@ -83,41 +89,62 @@ export function ProductPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
                 <b className="text-sm">选择规格</b>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {product.skus.map((sku, index) => (
-                    <button type="button" key={sku.id} onClick={() => actions.selectSku(sku.id)} className={`min-h-11 rounded-xl border px-3 text-left text-xs ${selectedSkuId === sku.id ? 'border-brand bg-brand-light font-bold text-brand' : ''}`}>
+                    <button
+                      type="button"
+                      key={sku.id}
+                      onClick={() => actions.selectSku(sku.id)}
+                      className={`min-h-11 rounded-xl border px-3 text-left text-xs ${selectedSkuId === sku.id ? 'border-brand bg-brand-light font-bold text-brand' : ''}`}
+                    >
                       <span className="block">{skuName(sku.specifications, index)}</span>
-                      <span className="mt-0.5 block text-[10px] text-muted">¥{formatMinor(sku.priceMinor)} · {sku.saleability.state === 'saleable' ? `可售 ${sku.available} 件` : productAvailability({ saleability: sku.saleability, stock: sku.available }).actionButtonStateText}</span>
+                      <span className="mt-0.5 block text-[10px] text-muted">
+                        ¥{formatMinor(sku.priceMinor)} · {sku.saleability.state === 'saleable' ? `可售 ${sku.available} 件` : productAvailability({ saleability: sku.saleability, stock: sku.available }).actionButtonStateText}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
             ) : null}
-            {!availability.canPurchase ? <div role="status" className="mt-4 rounded-xl border border-warning bg-warning-surface p-3 text-xs font-bold text-warning-strong">{availability.availabilityText}<p className="mt-1 font-normal">可切换其他规格，或稍后刷新商品信息。</p></div> : null}
+            {!availability.canPurchase ? (
+              <div role="status" className="mt-4 rounded-xl border border-warning bg-warning-surface p-3 text-xs font-bold text-warning-strong">
+                {availability.availabilityText}
+                <p className="mt-1 font-normal">可切换其他规格，或稍后刷新商品信息。</p>
+              </div>
+            ) : null}
             <div className="mt-auto pt-5">
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <span className="text-sm font-bold">{availability.availabilityText}</span>
                 <div className="flex overflow-hidden rounded-xl border">
                   <button type="button" disabled={quantity <= 1} onClick={() => actions.changeQuantity(quantity - 1)} aria-label={`减少${product.title}数量`} className="grid h-11 w-11 place-items-center disabled:opacity-40">
                     <Minus size={15} />
                   </button>
                   <span className="grid min-w-12 place-items-center border-x font-bold">{quantity}</span>
-                  <button type="button" disabled={!availability.canPurchase || quantity >= product.stock} onClick={() => actions.changeQuantity(quantity + 1)} aria-label={`增加${product.title}数量`} className="grid h-11 w-11 place-items-center disabled:opacity-40">
+                  <button
+                    type="button"
+                    disabled={!availability.canPurchase || quantity >= product.stock}
+                    onClick={() => actions.changeQuantity(quantity + 1)}
+                    aria-label={`增加${product.title}数量`}
+                    className="grid h-11 w-11 place-items-center disabled:opacity-40"
+                  >
                     <Plus size={15} />
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <button type="button" disabled={!availability.canPurchase} onClick={actions.add} className="min-h-12 rounded-2xl border border-brand font-black text-brand disabled:opacity-40">
+              <div
+                data-product-actions
+                className="fixed inset-x-0 bottom-[68px] z-20 grid grid-cols-2 gap-2 border-t border-edge bg-surface/95 px-3 py-3 shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur md:static md:mx-0 md:gap-3 md:border-0 md:bg-transparent md:p-0 md:shadow-none"
+              >
+                <button type="button" disabled={!availability.canPurchase} onClick={actions.add} className="min-h-12 whitespace-nowrap rounded-2xl border border-brand font-black text-brand disabled:opacity-40">
                   <ShoppingCart size={18} className="mr-2 inline" />
                   加入购物车
                 </button>
-                <button type="button" disabled={!availability.canPurchase} onClick={actions.buy} className="min-h-12 rounded-2xl bg-brand font-black text-inverse disabled:bg-disabled">
+                <button type="button" disabled={!availability.canPurchase} onClick={actions.buy} className="min-h-12 whitespace-nowrap rounded-2xl bg-brand font-black text-inverse disabled:bg-disabled">
                   立即购买
                 </button>
               </div>
             </div>
           </div>
         </section>
-        <section className="rounded-3xl border border-edge bg-surface p-5">
+        <section className="rounded-3xl border border-edge bg-surface p-4 md:p-5">
           <div className="flex border-b">
             {(['detail', 'spec', 'aftersale'] as const).map((value) => (
               <button type="button" key={value} onClick={() => actions.selectTab(value)} className={`min-h-11 flex-1 border-b-2 text-sm font-bold ${tab === value ? 'border-brand text-brand' : 'border-transparent text-muted'}`}>

@@ -78,10 +78,23 @@ for (const width of [390, 360]) {
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     }
   });
+
+  test(`Storefront 商品详情在 ${width}px 延续设计稿并保持购买操作可达`, async ({ page }) => {
+    await prepareVisual(page, { width, height: 844 });
+    await signInStorefront(page, '/products/product:visual:care');
+    await expectUsable(page);
+    await expect(page.getByRole('img', { name: '暖心生活关怀礼盒' })).toBeVisible();
+    const actions = page.locator('[data-product-actions]');
+    await actions.scrollIntoViewIfNeeded();
+    await expect(actions.getByRole('button', { name: '加入购物车' })).toBeVisible();
+    await expect(actions.getByRole('button', { name: '立即购买' })).toBeVisible();
+    const box = await actions.boundingBox();
+    expect((box?.y ?? Number.POSITIVE_INFINITY) + (box?.height ?? 0)).toBeLessThanOrEqual(844 - 68 + 1);
+  });
 }
 
 function url(template: string): string {
-  return `${LOCAL_STOREFRONT_ORIGIN}/s/zhudatuan-local${fillRoute(template, { productId: 'listing:mall-zhudatuan:sku:visual:care', orderId: 'order:visual:missing', paymentId: 'payment:visual:missing', caseId: 'case:visual:missing' })}`;
+  return `${LOCAL_STOREFRONT_ORIGIN}/s/zhudatuan-local${fillRoute(template, { productId: 'product:visual:care', orderId: 'order:visual:missing', paymentId: 'payment:visual:missing', caseId: 'case:visual:missing' })}`;
 }
 
 async function expectMobileHomePattern(page: import('@playwright/test').Page) {
