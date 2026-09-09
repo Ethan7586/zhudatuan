@@ -7,7 +7,18 @@ begin
   if not exists(select 1 from runtime.schemaversion
       where version='20260909061000'
         and checksum='c991df2e1432618d6f39763476e8473588891269231fe01373877422e3a7c6ba')
-    or exists(select 1 from runtime.schemaversion where version>'20260909061000') then
+    or (select count(*) from runtime.schemaversion
+          where version>'20260909061000' and version<'20260909160000') not in (0,3)
+    or ((select count(*) from runtime.schemaversion
+          where version>'20260909061000' and version<'20260909160000')=3
+      and not (
+        exists(select 1 from runtime.schemaversion where version='20260909062000'
+          and checksum='3fd8550c8331373bce69345128c464f331fcc0ca57d873621091905641c1e638')
+        and exists(select 1 from runtime.schemaversion where version='20260909062500'
+          and checksum='1dac0e1d1a329ea966975df812bffbe076155c9aa7d8f9da88d3350f23604ed3')
+        and exists(select 1 from runtime.schemaversion where version='20260909063000'
+          and checksum='3db05bef6312ad2f2508a64f788b254329ab0448ec7c11c443e3273356529090')))
+    or exists(select 1 from runtime.schemaversion where version>'20260909160000') then
     raise exception 'IDENTITY_NOTIFICATION_NODE_ROUTING_PREDECESSOR_INVALID';
   end if;
 end
@@ -40,7 +51,7 @@ revoke all on function runtime.claim_identity_notification_job(text,integer,inte
 grant execute on function runtime.claim_identity_notification_job(text,integer,integer) to zhudatuanidentityjob;
 
 insert into runtime.schemaversion(version,checksum)
-values('20260909160000','df4d4ababaae25423beace3342453ac88443d051f7415d605956438cf94e66b8');
+values('20260909160000','dcb84951a9c0087ec12c6bf09e67285b3cb66995b3144df2d6ed3f4315553f82');
 
 do $assert$
 begin
@@ -48,7 +59,7 @@ begin
     or not has_function_privilege('zhudatuanidentityjob','runtime.claim_identity_notification_job(text,integer,integer)','EXECUTE')
     or not exists(select 1 from runtime.schemaversion
       where version='20260909160000'
-        and checksum='df4d4ababaae25423beace3342453ac88443d051f7415d605956438cf94e66b8') then
+        and checksum='dcb84951a9c0087ec12c6bf09e67285b3cb66995b3144df2d6ed3f4315553f82') then
     raise exception 'IDENTITY_NOTIFICATION_NODE_ROUTING_MIGRATION_INCOMPLETE';
   end if;
 end
