@@ -7,7 +7,6 @@ import { OrderPreviewAction } from './OrderPreviewAction';
 
 export interface OrderFilterProps {
   readonly value: OrderListFilter;
-  readonly previewEnabled: boolean;
   readonly onApply: (value: OrderListFilter) => void;
   readonly onColumns: () => void;
   readonly columnsOpen: boolean;
@@ -22,7 +21,7 @@ export const emptyOrderFilter: OrderListFilter = Object.freeze({
   mall: '',
 });
 
-export function OrderFilterForm({ value, previewEnabled, onApply, onColumns, columnsOpen }: OrderFilterProps) {
+export function OrderFilterForm({ value, onApply, onColumns, columnsOpen }: OrderFilterProps) {
   const form = useForm<OrderListFilter>({ resolver: zodResolver(OrderListFilterSchema), values: value });
   const reset = () => {
     form.reset(emptyOrderFilter);
@@ -44,15 +43,14 @@ export function OrderFilterForm({ value, previewEnabled, onApply, onColumns, col
       <TextField className="ordersearchfield">
         <Label className="sr-only">订单搜索</Label>
         <OrderIcon name="search" />
-        <Input {...form.register('order')} aria-describedby="orderfilterboundary" placeholder={previewEnabled ? '搜索订单号、商品、会员或手机号后四位' : '精确输入内部订单 ID'} />
+        <Input {...form.register('order')} aria-describedby="orderfilterboundary" placeholder="输入订单号或内部订单 ID" />
         <button className="ordersearchsubmit" type="submit" aria-label="筛选订单">
           <OrderIcon name="arrowRight" />
         </button>
       </TextField>
 
-      <PreviewSelect
+      <FilterSelect
         label="下单时间"
-        disabled={!previewEnabled}
         registration={form.register('placed')}
         options={[
           ['today', '今天'],
@@ -60,9 +58,8 @@ export function OrderFilterForm({ value, previewEnabled, onApply, onColumns, col
           ['30days', '近 30 天'],
         ]}
       />
-      <PreviewSelect
+      <FilterSelect
         label="订单状态"
-        disabled={!previewEnabled}
         registration={form.register('lifecycle')}
         options={[
           ['created', '已创建'],
@@ -72,9 +69,8 @@ export function OrderFilterForm({ value, previewEnabled, onApply, onColumns, col
           ['closed', '已关闭'],
         ]}
       />
-      <PreviewSelect
+      <FilterSelect
         label="支付状态"
-        disabled={!previewEnabled}
         registration={form.register('payment')}
         options={[
           ['unpaid', '待付款'],
@@ -84,9 +80,8 @@ export function OrderFilterForm({ value, previewEnabled, onApply, onColumns, col
           ['failed', '支付失败'],
         ]}
       />
-      <PreviewSelect
+      <FilterSelect
         label="履约状态"
-        disabled={!previewEnabled}
         registration={form.register('fulfillment')}
         options={[
           ['unallocated', '待分配'],
@@ -96,23 +91,13 @@ export function OrderFilterForm({ value, previewEnabled, onApply, onColumns, col
           ['delivered', '已完成'],
         ]}
       />
-      <PreviewSelect
-        label="商城范围"
-        disabled={!previewEnabled}
-        registration={form.register('mall')}
-        options={[
-          ['huimin', '鸿泰惠民通'],
-          ['zhenxuan', '鸿泰甄选'],
-        ]}
-      />
-
       <OrderPreviewAction
         ariaLabel="更多筛选"
         title="更多筛选"
-        disabled={!previewEnabled}
+        disabled={false}
         describedBy="orderfilterboundary"
         triggerClassName="ordertoolbutton"
-        triggerTitle={previewEnabled ? '打开快捷筛选预览' : '等待服务端更多筛选合同'}
+        triggerTitle="打开快捷筛选"
         trigger={
           <>
             <OrderIcon name="filter" />
@@ -153,24 +138,23 @@ export function OrderFilterForm({ value, previewEnabled, onApply, onColumns, col
         列设置
       </button>
       <p id="orderfilterboundary" className="sr-only">
-        生产订单合同目前只支持内部订单 ID 精确筛选；时间、状态、支付、履约和商城筛选仅在本地预览范围演示。
+        订单号、时间、订单状态、支付状态和履约状态均由服务端筛选；结果限定在当前授权节点范围内。
       </p>
     </Form>
   );
 }
 
-interface PreviewSelectProps {
+interface FilterSelectProps {
   readonly label: string;
-  readonly disabled: boolean;
   readonly registration: UseFormRegisterReturn;
   readonly options: readonly (readonly [string, string])[];
 }
 
-function PreviewSelect({ label, disabled, registration, options }: PreviewSelectProps) {
+function FilterSelect({ label, registration, options }: FilterSelectProps) {
   return (
-    <label className="orderselectcontrol" title={disabled ? `${label}筛选等待服务端合同` : undefined}>
+    <label className="orderselectcontrol">
       <span className="sr-only">{label}</span>
-      <select {...registration} disabled={disabled} aria-describedby={disabled ? 'orderfilterboundary' : undefined}>
+      <select {...registration} aria-describedby="orderfilterboundary">
         <option value="">{label}</option>
         {options.map(([value, text]) => (
           <option key={value} value={value}>

@@ -80,7 +80,7 @@ describe('Order list query', () => {
     expect(keys[0]).toContain(ORDER_PAGE_LIMIT);
   });
 
-  it('does not send preview-only filters to production scopes', async () => {
+  it('sends authoritative server filters to production scopes', async () => {
     const filter: OrderQuery = {
       order: '',
       placed: '30days',
@@ -97,6 +97,12 @@ describe('Order list query', () => {
     expect(Object.fromEntries(requests[0]?.url.searchParams ?? [])).toEqual({
       limit: String(ORDER_PAGE_LIMIT),
       cursor: 'cursor:production',
+      placed: '30days',
+      lifecycle: 'completed',
+      payment: 'refunded',
+      fulfillment: 'returned',
+      mall: 'mall:east',
+      view: 'exception',
     });
   });
 

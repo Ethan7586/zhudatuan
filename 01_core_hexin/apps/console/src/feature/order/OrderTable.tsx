@@ -2,12 +2,12 @@ import { Button } from 'react-aria-components';
 import { formatMinor } from '../../shared/ui/Format';
 import { OrderIcon } from './OrderIcon';
 import { OrderPreviewAction } from './OrderPreviewAction';
-import { aftersaleLabel, aftersaleTone, formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone, previewRecord, productSummary } from './OrderPresentation';
+import { aftersaleLabel, aftersaleTone, financeLabel, formatOrderTime, fulfillmentLabel, fulfillmentTone, inventoryLabel, lifecycleLabel, paymentLabel, paymentTone, previewRecord, productSummary } from './OrderPresentation';
 import type { OrderRecord } from './OrderSchema';
 
-export type OrderColumnKey = 'member' | 'product' | 'payment' | 'fulfillment' | 'aftersale' | 'sla';
+export type OrderColumnKey = 'member' | 'finance' | 'product' | 'payment' | 'fulfillment' | 'aftersale' | 'sla';
 
-export const defaultOrderColumns: ReadonlySet<OrderColumnKey> = new Set(['member', 'product', 'payment', 'fulfillment', 'aftersale', 'sla']);
+export const defaultOrderColumns: ReadonlySet<OrderColumnKey> = new Set(['member', 'finance', 'product', 'payment', 'fulfillment', 'aftersale']);
 
 export function OrderTable({
   rows,
@@ -38,11 +38,12 @@ export function OrderTable({
             <th className="ordercheckcell" scope="col">
               <input type="checkbox" aria-label="选择本页订单" checked={allChecked} onChange={onCheckAll} />
             </th>
-            <th scope="col">订单 / 时间</th>
-            {visible.has('member') ? <th scope="col">会员 / 企业</th> : null}
-            {visible.has('product') ? <th scope="col">商品摘要</th> : null}
-            {visible.has('payment') ? <th scope="col">金额 / 支付</th> : null}
-            {visible.has('fulfillment') ? <th scope="col">履约状态</th> : null}
+            <th scope="col">订单流 / 时间</th>
+            {visible.has('member') ? <th scope="col">会员 / 节点</th> : null}
+            {visible.has('finance') ? <th scope="col">财务流</th> : null}
+            {visible.has('product') ? <th scope="col">商品流</th> : null}
+            {visible.has('payment') ? <th scope="col">现金暗线</th> : null}
+            {visible.has('fulfillment') ? <th scope="col">商品履约</th> : null}
             {visible.has('aftersale') ? <th scope="col">售后</th> : null}
             {visible.has('sla') ? <th scope="col">SLA</th> : null}
             <th scope="col">操作</th>
@@ -97,14 +98,22 @@ function OrderRow({
       <td>
         <div className="orderprimarycell">
           <strong>{order.order_number}</strong>
-          <span>{formatOrderTime(order.created_at)}</span>
+          <span>{lifecycleLabel(order.lifecycle_state)} · {formatOrderTime(order.created_at)}</span>
         </div>
       </td>
       {visible.has('member') ? (
         <td>
           <div className="orderprimarycell">
             <strong>{preview?.memberName ?? order.member_id ?? '会员显示名不可用'}</strong>
-            <span>{preview?.enterpriseName ?? '企业显示名不可用'}</span>
+            <span>{preview?.enterpriseName ?? order.mall_id ?? order.scope_id ?? '节点归属未返回'}</span>
+          </div>
+        </td>
+      ) : null}
+      {visible.has('finance') ? (
+        <td>
+          <div className="orderprimarycell">
+            <strong>{formatMinor(order.total_minor, order.currency)}</strong>
+            <span>{financeLabel(order)}</span>
           </div>
         </td>
       ) : null}
@@ -116,7 +125,7 @@ function OrderRow({
             </span>
             <span>
               <strong>{product.title}</strong>
-              <small>{product.detail}</small>
+              <small>{product.detail} · {inventoryLabel(order)}</small>
             </span>
           </div>
         </td>
@@ -124,11 +133,11 @@ function OrderRow({
       {visible.has('payment') ? (
         <td>
           <div className="orderprimarycell">
-            <strong>{formatMinor(paidMinor, order.currency)}</strong>
             <span className={`orderstatustext tone-${paymentTone(order.payment_state)}`}>
               <i />
               {preview?.paymentMethod ?? paymentLabel(order.payment_state)}
             </span>
+            <small>{preview === undefined ? '现金结果' : formatMinor(paidMinor, order.currency)}</small>
           </div>
         </td>
       ) : null}

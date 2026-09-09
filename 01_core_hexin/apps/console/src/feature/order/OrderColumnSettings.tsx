@@ -1,10 +1,11 @@
 import type { OrderColumnKey } from './OrderTable';
 
 const configurableColumns: readonly Readonly<{ key: OrderColumnKey; label: string }>[] = Object.freeze([
-  { key: 'member', label: '会员 / 企业' },
-  { key: 'product', label: '商品摘要' },
-  { key: 'payment', label: '金额 / 支付' },
-  { key: 'fulfillment', label: '履约状态' },
+  { key: 'member', label: '会员 / 节点' },
+  { key: 'finance', label: '财务流' },
+  { key: 'product', label: '商品流' },
+  { key: 'payment', label: '现金暗线' },
+  { key: 'fulfillment', label: '商品履约' },
   { key: 'aftersale', label: '售后' },
   { key: 'sla', label: 'SLA' },
 ]);

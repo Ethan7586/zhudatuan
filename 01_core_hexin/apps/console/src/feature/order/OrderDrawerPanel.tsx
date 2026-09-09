@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { formatMinor } from '../../shared/ui/Format';
+import { appConfig } from '../../shared/config/AppConfig';
 import { OrderIcon } from './OrderIcon';
-import { aftersaleLabel, formatOrderTime, fulfillmentLabel, lifecycleLabel, paymentLabel, previewRecord } from './OrderPresentation';
+import { aftersaleLabel, financeLabel, formatOrderTime, fulfillmentLabel, inventoryLabel, lifecycleLabel, paymentLabel, previewRecord } from './OrderPresentation';
 import type { OrderDetailTab, OrderRecord } from './OrderSchema';
 
 export function OrderDrawerPanel({
@@ -26,10 +27,20 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
   return (
     <div className="orderdrawerstack">
       <section className="ordersummarynote">
-        <p>{preview?.summary ?? `订单为${lifecycleLabel(order.lifecycle_state)}状态；支付、履约与售后字段来自当前订单快照。`}</p>
-        {!previewEnabled ? <small>状态链为聚合状态的展示映射；除下单外的里程碑时间不可用，组织级完整性也未由当前 member audience 合同保证。</small> : <small>本地预览数据 · 不作为生产业务真值</small>}
+        <p>{preview?.summary ?? `订单为${lifecycleLabel(order.lifecycle_state)}状态；订单、财务、商品为明线，现金结果用于核验财务。`}</p>
+        {!previewEnabled ? <small>所有状态来自当前授权节点的权威订单读模型；没有事实来源的结算、路径和里程碑不会推测。</small> : <small>本地预览数据 · 不作为生产业务真值</small>}
       </section>
+      <FourFlowSummary order={order} />
       <MilestoneChain order={order} previewEnabled={previewEnabled} />
+
+      <DetailSection title="节点归属与路径">
+        <div className="orderdetailgrid">
+          <Info label="订单商城" value={order.mall_id ?? order.scope_id ?? '未返回'} />
+          <Info label="当前运营节点" value={`${appConfig.nodeManifest.signed_level} · ${appConfig.nodeManifest.node_id}`} />
+          <Info label="治理父节点" value={appConfig.nodeManifest.parent_node_id ?? 'L0 无父节点'} />
+          <Info label="交易上下游" value="路径快照尚未写入本订单" />
+        </div>
+      </DetailSection>
 
       <DetailSection title="商品明细">
         <div className="orderlinepreview">
@@ -116,6 +127,8 @@ function MilestoneChain({ order, previewEnabled }: Readonly<{ order: OrderRecord
 
 function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
   const lines = [...(order.lines ?? [])].sort((left, right) => left.id.localeCompare(right.id));
+  const reservations = [...(order.inventory_reservations ?? [])].sort((left, right) => left.id.localeCompare(right.id));
+  const aftersales = [...(order.aftersales ?? [])].sort((left, right) => right.requestedAt.localeCompare(left.requestedAt));
   return (
     <div className="orderdrawerstack">
       <DetailSection title="商品与履约快照">
@@ -144,7 +157,29 @@ function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
           </div>
         )}
       </DetailSection>
-      <Unavailable text="履约 ID、运单、里程碑时间与收货信息未包含在统一订单读模型中。" />
+      <DetailSection title="库存事实">
+        {reservations.length === 0 ? (
+          <Unavailable text="当前授权范围没有返回库存占用记录。" />
+        ) : (
+          <div className="orderdetailgrid">
+            {reservations.map((reservation) => (
+              <Info key={reservation.id} label={reservation.stockItem} value={`${reservation.state} · ${reservation.quantity} 件`} />
+            ))}
+          </div>
+        )}
+      </DetailSection>
+      <DetailSection title="退换货事实">
+        {aftersales.length === 0 ? (
+          <Unavailable text="当前订单没有退货、换货或退款申请。" />
+        ) : (
+          <div className="orderdetailgrid">
+            {aftersales.map((aftersale) => (
+              <Info key={aftersale.id} label={`${aftersaleKindLabel(aftersale.kind)} · ${aftersale.state}`} value={`${aftersale.quantity ?? '整单'} · ${aftersale.reason}`} />
+            ))}
+          </div>
+        )}
+      </DetailSection>
+      <Unavailable text="运单与完整履约里程碑尚未进入统一订单读模型。" />
     </div>
   );
 }
@@ -156,7 +191,8 @@ function PaymentPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord; 
       <DetailSection title="支付快照">
         <div className="orderdetailgrid">
           <Info label="订单应付" value={formatMinor(order.total_minor, order.currency)} />
-          <Info label="支付状态" value={paymentLabel(order.payment_state)} />
+          <Info label="财务状态" value={financeLabel(order)} />
+          <Info label="现金结果" value={paymentLabel(order.payment_state)} />
           <Info label="实付金额" value={preview === undefined ? '当前读模型未提供' : formatMinor(preview.paidMinor, order.currency)} />
           <Info label="支付方式" value={preview?.paymentMethod ?? '当前读模型未提供'} />
           <Info label="福利账户" value={preview === undefined ? '当前读模型未提供' : formatMinor(preview.benefitMinor, order.currency)} />
@@ -166,6 +202,23 @@ function PaymentPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord; 
       <Unavailable text="支付 ID、可退余额与退款明细未由当前订单读合同提供；退款动作保持关闭。" />
     </div>
   );
+}
+
+function FourFlowSummary({ order }: Readonly<{ order: OrderRecord }>) {
+  return (
+    <DetailSection title="四流合一">
+      <div className="orderdetailgrid">
+        <Info label="订单流" value={lifecycleLabel(order.lifecycle_state)} />
+        <Info label="财务流" value={`${formatMinor(order.total_minor, order.currency)} · ${financeLabel(order)}`} />
+        <Info label="商品流" value={`${fulfillmentLabel(order.fulfillment_state)} · ${inventoryLabel(order)} · ${aftersaleLabel(order.aftersale_state)}`} />
+        <Info label="现金暗线" value={paymentLabel(order.payment_state)} />
+      </div>
+    </DetailSection>
+  );
+}
+
+function aftersaleKindLabel(kind: 'cancel' | 'return' | 'refund' | 'exchange' | 'claim'): string {
+  return ({ cancel: '取消', return: '退货', refund: '退款', exchange: '换货', claim: '理赔' } as const)[kind];
 }
 
 function AftersalePanel({ order }: Readonly<{ order: OrderRecord }>) {

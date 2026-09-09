@@ -31,7 +31,6 @@ export function OrderStatusTabs({
   return (
     <nav className="orderstatustabs" aria-label="订单状态">
       {tabs.map((tab) => {
-        const disabled = !previewEnabled && tab.key !== 'all';
         const count = counts?.[tab.key];
         return (
           <Button
@@ -41,8 +40,6 @@ export function OrderStatusTabs({
             tone="quiet"
             aria-pressed={active === tab.key}
             data-selected={active === tab.key || undefined}
-            isDisabled={disabled}
-            aria-description={disabled ? '等待服务端状态筛选与全量计数合同' : undefined}
             onPress={() => onChange(tab.key)}
           >
             <span>{tab.label}</span>

@@ -33,19 +33,18 @@ export const orderKey = (context: ConsoleContext, filter: OrderQuery) =>
   ] as const);
 
 export async function readOrders(context: ConsoleContext, filter: OrderQuery, signal: AbortSignal) {
-  const preview = isOrderPreviewContext(context);
   const value = await ordersRead(
     {
       query: {
         limit: ORDER_PAGE_LIMIT,
         ...(filter.order === '' ? {} : { order: filter.order }),
         ...(filter.cursor === undefined ? {} : { cursor: filter.cursor }),
-        ...(preview && filter.placed ? { placed: filter.placed } : {}),
-        ...(preview && filter.lifecycle ? { lifecycle: filter.lifecycle } : {}),
-        ...(preview && filter.payment ? { payment: filter.payment } : {}),
-        ...(preview && filter.fulfillment ? { fulfillment: filter.fulfillment } : {}),
-        ...(preview && filter.mall ? { mall: filter.mall } : {}),
-        ...(preview && filter.view !== undefined && filter.view !== 'all' ? { view: filter.view } : {}),
+        ...(filter.placed ? { placed: filter.placed } : {}),
+        ...(filter.lifecycle ? { lifecycle: filter.lifecycle } : {}),
+        ...(filter.payment ? { payment: filter.payment } : {}),
+        ...(filter.fulfillment ? { fulfillment: filter.fulfillment } : {}),
+        ...(filter.mall ? { mall: filter.mall } : {}),
+        ...(filter.view !== undefined && filter.view !== 'all' ? { view: filter.view } : {}),
       },
     },
     consoleRequest(context.scope, signal, context.session.accessVersion)

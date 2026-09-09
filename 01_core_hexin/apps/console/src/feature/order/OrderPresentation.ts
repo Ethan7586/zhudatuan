@@ -42,6 +42,21 @@ export const fulfillmentLabel = (value: string): string => fulfillmentLabels[val
 export const aftersaleLabel = (value: string): string => aftersaleLabels[value] ?? value;
 export const lifecycleLabel = (value: string): string => lifecycleLabels[value] ?? value;
 
+export function financeLabel(order: OrderRecord): string {
+  if (order.payment_state === 'paid') return '现金已确认，待结算核验';
+  if (order.payment_state === 'partially_refunded' || order.payment_state === 'refunded') return '退款冲销待核验';
+  if (order.payment_state === 'failed') return '现金异常，待核账';
+  return '应收尚未实现';
+}
+
+export function inventoryLabel(order: OrderRecord): string {
+  const reservations = order.inventory_reservations ?? [];
+  if (reservations.some(({ state }) => state === 'committed')) return '库存已扣减';
+  if (reservations.some(({ state }) => state === 'active')) return '库存已锁定';
+  if (reservations.length > 0 && reservations.every(({ state }) => ['released', 'expired', 'cancelled'].includes(state))) return '库存已释放';
+  return '库存记录未返回';
+}
+
 export function paymentTone(value: string): OrderTone {
   if (value === 'paid') return 'brand';
   if (value === 'failed') return 'danger';

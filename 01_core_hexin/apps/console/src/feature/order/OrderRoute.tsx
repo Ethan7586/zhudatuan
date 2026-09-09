@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
+import { appConfig } from '../../shared/config/AppConfig';
 import { formatOrderTime } from './OrderPresentation';
 import { OrderColumnSettings } from './OrderColumnSettings';
 import { orderDetailKey } from './OrderDetailQuery';
@@ -28,7 +29,6 @@ import './order-exception-timeline.css';
 import './order-exception-action.css';
 import './order-exception-responsive.css';
 
-const previewOnlySearchKeys = ['placed', 'lifecycle', 'payment', 'fulfillment', 'mall', 'view'] as const;
 const emptyChecked: ReadonlySet<string> = new Set();
 
 export function Component() {
@@ -37,8 +37,8 @@ export function Component() {
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
   const previewEnabled = isOrderPreviewContext(context);
-  const filter = readFilter(search, previewEnabled);
-  const view = readView(search, previewEnabled);
+  const filter = readFilter(search);
+  const view = readView(search);
   const selected = readSelected(search);
   const detailTab = readDetailTab(search);
   const cursor = search.get('cursor') ?? undefined;
@@ -62,13 +62,8 @@ export function Component() {
   const fulfillmentCount = pageOrders.filter((order) => !['delivered', 'completed'].includes(order.fulfillment_state)).length;
   const attentionCount = pageOrders.filter((order) => order.aftersale_state !== 'none' || order.lifecycle_state === 'cancelled').length;
   const error = safeQueryError(query.error);
+  const unauthenticated = query.error !== null && errorStatus(query.error) === 401;
 
-  useEffect(() => {
-    if (previewEnabled || !previewOnlySearchKeys.some((key) => search.has(key))) return;
-    const next = new URLSearchParams(search);
-    previewOnlySearchKeys.forEach((key) => next.delete(key));
-    setSearch(next, { replace: true });
-  }, [previewEnabled, search, setSearch]);
   useEffect(() => {
     setCheckedState((current) => (current.boundary === selectionBoundary ? current : { boundary: selectionBoundary, ids: new Set() }));
   }, [selectionBoundary]);
@@ -189,11 +184,11 @@ export function Component() {
               </div>
 
               <p id="orderwriteboundary" className="ordercontractnote" role="note">
-                当前生产读合同仅保证已加载订单；当前页导出不补造全量数据，发货、退款和售后操作暂未开放。
+                当前列表读取本节点及授权下游的权威订单；订单、财务、商品为明线，现金结果用于核验财务。发货、退款和售后写操作暂未开放。
               </p>
 
               <div className="orderfilterarea">
-                <OrderFilterForm value={filter} previewEnabled={previewEnabled} onApply={applyFilter} onColumns={() => setColumnsOpen((open) => !open)} columnsOpen={columnsOpen} />
+                <OrderFilterForm value={filter} onApply={applyFilter} onColumns={() => setColumnsOpen((open) => !open)} columnsOpen={columnsOpen} />
                 <OrderColumnSettings open={columnsOpen} visible={visibleColumns} onToggle={toggleColumn} onClose={() => setColumnsOpen(false)} />
                 <div className="orderfiltermeta">
                   <span>{previewPage === undefined ? '服务端筛选 · 更新时间未提供' : `服务端实时筛选 · ${formatOrderTime(previewPage.updatedAt)}`}</span>
@@ -213,10 +208,10 @@ export function Component() {
                 ) : null}
                 {query.isError && page === undefined ? (
                   <section className="orderliststate" role="alert">
-                    <strong>订单读取失败</strong>
-                    <p>{error}</p>
-                    <button type="button" onClick={refresh}>
-                      重试
+                    <strong>{unauthenticated ? '登录状态已失效' : '订单读取失败'}</strong>
+                    <p>{unauthenticated ? '当前 L1 会话已经失效，请重新登录后继续读取订单。' : error}</p>
+                    <button type="button" onClick={unauthenticated ? () => window.location.assign(appConfig.identityEntryUrl) : refresh}>
+                      {unauthenticated ? '重新登录' : '重试'}
                     </button>
                   </section>
                 ) : null}
@@ -252,6 +247,10 @@ export function Component() {
       {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled={previewEnabled} onTab={selectTab} onClose={closeOrder} />}
     </section>
   );
+}
+
+function errorStatus(error: Error): number | undefined {
+  return 'status' in error && typeof error.status === 'number' ? error.status : undefined;
 }
 
 function OrderPagination({
@@ -293,20 +292,19 @@ function OrderPagination({
   );
 }
 
-function readFilter(search: URLSearchParams, previewEnabled: boolean): OrderListFilter {
+function readFilter(search: URLSearchParams): OrderListFilter {
   const parsed = OrderListFilterSchema.safeParse({
     order: search.get('order') ?? '',
-    placed: previewEnabled ? (search.get('placed') ?? '') : '',
-    lifecycle: previewEnabled ? (search.get('lifecycle') ?? '') : '',
-    payment: previewEnabled ? (search.get('payment') ?? '') : '',
-    fulfillment: previewEnabled ? (search.get('fulfillment') ?? '') : '',
-    mall: previewEnabled ? (search.get('mall') ?? '') : '',
+    placed: search.get('placed') ?? '',
+    lifecycle: search.get('lifecycle') ?? '',
+    payment: search.get('payment') ?? '',
+    fulfillment: search.get('fulfillment') ?? '',
+    mall: search.get('mall') ?? '',
   });
   return parsed.success ? parsed.data : emptyOrderFilter;
 }
 
-function readView(search: URLSearchParams, previewEnabled: boolean): OrderView {
-  if (!previewEnabled) return 'all';
+function readView(search: URLSearchParams): OrderView {
   const parsed = OrderViewSchema.safeParse(search.get('view') ?? 'all');
   return parsed.success ? parsed.data : 'all';
 }

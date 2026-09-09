@@ -82,6 +82,32 @@ export const OrderSchema = z.object({
       })
     )
   ),
+  inventory_reservations: z.optional(
+    z.array(
+      z.object({
+        id: z.string().check(z.minLength(1)),
+        stockItem: z.string().check(z.minLength(1)),
+        quantity: DatabaseIntegerSchema,
+        state: z.string().check(z.minLength(1)),
+        expiresAt: z.nullable(z.string()),
+      })
+    )
+  ),
+  aftersales: z.optional(
+    z.array(
+      z.object({
+        id: z.string().check(z.minLength(1)),
+        lineId: z.nullable(z.string()),
+        kind: z.enum(['cancel', 'return', 'refund', 'exchange', 'claim']),
+        state: z.enum(['requested', 'approved', 'rejected', 'processing', 'completed', 'cancelled']),
+        quantity: z.nullable(DatabaseIntegerSchema),
+        amountMinor: z.nullable(DatabaseIntegerSchema),
+        reason: z.string(),
+        requestedAt: z.string().check(z.minLength(1)),
+        updatedAt: z.string().check(z.minLength(1)),
+      })
+    )
+  ),
   preview: z.optional(OrderPreviewSchema),
 });
 
@@ -120,4 +146,6 @@ export type OrderView = z.infer<typeof OrderViewSchema>;
 export type OrderDetailTab = z.infer<typeof OrderDetailTabSchema>;
 export type OrderRecord = z.infer<typeof OrderSchema>;
 export type OrderLine = NonNullable<OrderRecord['lines']>[number];
+export type OrderInventoryReservation = NonNullable<OrderRecord['inventory_reservations']>[number];
+export type OrderAftersale = NonNullable<OrderRecord['aftersales']>[number];
 export type OrderPage = z.infer<typeof OrderPageSchema>;
