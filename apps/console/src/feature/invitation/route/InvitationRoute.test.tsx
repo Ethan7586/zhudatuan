@@ -3,12 +3,13 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import { createConsoleDependencies } from '../../../app/Dependencies';
 import { DependencyProvider } from '../../../app/DependencyContext';
 import { ConsoleContextProvider } from '../../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
+import { StepupProvider } from '../../../entity/session/StepupContext';
 import { Component } from '../route/InvitationRoute';
 
 const server = setupServer(
@@ -26,14 +27,18 @@ afterAll(() => server.close());
 describe('InvitationRoute assurance boundary', () => {
   it('explains why all invitation actions are unavailable below AAL2', async () => {
     const user = userEvent.setup();
-    renderRoute(context(1));
+    const request = vi.fn();
+    renderRoute(context(1), request);
     expect(await screen.findByRole('heading', { level: 1, name: '邀请管理' })).toBeTruthy();
     await user.click(screen.getByRole('button', { name: '新建邀请' }));
     expect(screen.getByRole<HTMLButtonElement>('button', { name: /指定员工注册/ }).disabled).toBe(true);
     expect(screen.getByRole<HTMLButtonElement>('button', { name: /共享员工注册/ }).disabled).toBe(true);
     expect(screen.getByRole<HTMLButtonElement>('button', { name: /指定成员安全访问/ }).disabled).toBe(true);
     expect(await screen.findByText('需要重新验证身份')).toBeTruthy();
-    expect(screen.getByText(/指定员工注册至少需要双因素验证/)).toBeTruthy();
+    expect(screen.getByText(/完成一次身份验证/)).toBeTruthy();
+    expect(screen.queryByText(/成员范围读取失败/)).toBeNull();
+    await user.click(screen.getByRole('button', { name: '完成身份验证' }));
+    expect(request).toHaveBeenCalledExactlyOnceWith();
   });
 
   it('enables employee enrollment at AAL2 while keeping signin and campaign at AAL3', async () => {
@@ -171,14 +176,16 @@ function invitation() {
   } as const;
 }
 
-function renderRoute(value: ConsoleContext) {
+function renderRoute(value: ConsoleContext, request = () => undefined) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <MemoryRouter>
       <QueryClientProvider client={client}>
         <DependencyProvider value={createConsoleDependencies()}>
           <ConsoleContextProvider value={value}>
-            <Component />
+            <StepupProvider controller={{ request }}>
+              <Component />
+            </StepupProvider>
           </ConsoleContextProvider>
         </DependencyProvider>
       </QueryClientProvider>

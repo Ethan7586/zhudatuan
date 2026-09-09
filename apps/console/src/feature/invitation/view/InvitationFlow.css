@@ -54,6 +54,36 @@
   gap: var(--sw-space-2);
 }
 
+.invitationchoiceverify {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-brand-faint);
+  padding: var(--sw-space-1-5) var(--sw-space-2);
+}
+
+.invitationchoiceverify > div {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+
+.invitationchoiceverify strong {
+  color: var(--sw-text);
+}
+
+.invitationchoiceverify span {
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  line-height: var(--sw-line-height-body-sm);
+}
+
+.invitationchoiceverify .shopbutton {
+  flex: 0 0 auto;
+}
+
 .invitationchoicegroup {
   display: grid;
   gap: var(--sw-space-1-5);

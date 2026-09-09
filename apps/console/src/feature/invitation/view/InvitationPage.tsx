@@ -53,6 +53,7 @@ export function InvitationPage({ title, model }: Readonly<{ title: string; model
         membershipCount={model.memberships.length}
         onClose={model.actions.closeCreate}
         onChoose={model.actions.openCreate}
+        onVerify={model.actions.verify}
       />
       <EmployeeInvitationDialog
         open={model.createKind === 'employee'}

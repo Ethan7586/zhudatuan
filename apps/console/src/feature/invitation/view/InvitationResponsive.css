@@ -69,6 +69,15 @@
 }
 
 @media (max-width: 48rem) {
+  .invitationchoiceverify {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .invitationchoiceverify .shopbutton {
+    width: 100%;
+  }
+
   .invitationgrid,
   .invitationreceiptmeta,
   .invitationchoicegrid,

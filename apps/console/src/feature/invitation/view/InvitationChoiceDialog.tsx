@@ -10,6 +10,7 @@ export function InvitationChoiceDialog({
   membershipCount,
   onClose,
   onChoose,
+  onVerify,
 }: Readonly<{
   open: boolean;
   assurance: number;
@@ -18,6 +19,7 @@ export function InvitationChoiceDialog({
   membershipCount: number;
   onClose: () => void;
   onChoose: (kind: Exclude<InvitationCreateKind, 'choice'>) => void;
+  onVerify: () => void;
 }>) {
   const employeeReady = assurance >= 2 && hasStorefronts;
   const protectedReady = assurance >= 3;
@@ -25,6 +27,17 @@ export function InvitationChoiceDialog({
   return (
     <Dialog open={open} title="新建邀请" eyebrow="统一邀请流程" description="先按接收人是否已有账号选择场景，后续只显示该场景需要填写的信息。" onClose={onClose}>
       <div className="invitationchooser">
+        {assurance < 3 ? (
+          <section className="invitationchoiceverify" aria-label="邀请安全验证">
+            <div>
+              <strong>{assurance < 2 ? '先验证身份，再选择邀请场景' : '指定员工注册已可用'}</strong>
+              <span>{assurance < 2 ? '只需完成一次短信验证，三个邀请场景都会在这里开放。' : '如需共享注册或邀请现有成员，请先完成高强度验证。'}</span>
+            </div>
+            <Button tone="primary" onPress={onVerify}>
+              完成身份验证
+            </Button>
+          </section>
+        ) : null}
         <InvitationChoiceGroup icon="member" title="邀请新员工注册" description="接收人在统一邀请页验证手机号、设置密码，系统随后创建账号并授予固定商城身份。">
           <InvitationChoice
             title="指定员工注册"

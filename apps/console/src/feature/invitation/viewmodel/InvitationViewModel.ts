@@ -16,13 +16,17 @@ export interface InvitationDepartment {
   readonly id: string;
   readonly name: string;
 }
-export function useInvitationViewModel(context: ConsoleContext, dependencies: InvitationDependencies) {
+export function useInvitationViewModel(context: ConsoleContext, dependencies: InvitationDependencies, requestStepup: () => void) {
   const [search, setSearch] = useSearchParams();
   const filter = useMemo(() => readFilter(search), [search]);
   const query = useQuery({ queryKey: invitationQueryKey(context, filter), queryFn: ({ signal }) => dependencies.read.execute(context, filter, signal) });
   const canIssue = canUseOperation(context, OP_IDENTITY_INVITATIONS_CREATE) && context.session.csrf !== undefined;
   const canRevoke = canUseOperation(context, OP_IDENTITY_INVITATIONS_REVOKE) && context.session.csrf !== undefined && context.session.assurance.level >= 3;
-  const memberships = useQuery({ queryKey: invitationMembershipKey(context), queryFn: ({ signal }) => dependencies.memberships.execute(context, signal), enabled: canIssue });
+  const memberships = useQuery({
+    queryKey: invitationMembershipKey(context),
+    queryFn: ({ signal }) => dependencies.memberships.execute(context, signal),
+    enabled: canIssue && context.session.assurance.level >= 3,
+  });
   const [createKind, setCreateKind] = useState<InvitationCreateKind>();
   const [receipt, setReceipt] = useState<InvitationReceipt>();
   const [revoking, setRevoking] = useState<Invitation>();
@@ -121,6 +125,13 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
       setCreateKind('choice');
     }
   }, [createMutation.isPending, resetCreate]);
+  const verify = useCallback(() => {
+    if (createMutation.isPending) return;
+    createIdentity.current = undefined;
+    resetCreate();
+    setCreateKind(undefined);
+    requestStepup();
+  }, [createMutation.isPending, requestStepup, resetCreate]);
   const openRevoke = useCallback(
     (invitation: Invitation) => {
       revokeIdentity.current = undefined;
@@ -149,6 +160,7 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
         first,
         openCreate,
         openChoice,
+        verify,
         closeCreate,
         create: (draft: InvitationDraft) =>
           mutateCreate(draft).then(
@@ -164,7 +176,7 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
           ),
         discardReceipt: () => setReceipt(undefined),
       }),
-    [closeCreate, closeRevoke, first, mutateCreate, mutateRevoke, next, openChoice, openCreate, openRevoke, refresh, updateFilter]
+    [closeCreate, closeRevoke, first, mutateCreate, mutateRevoke, next, openChoice, openCreate, openRevoke, refresh, updateFilter, verify]
   );
   return Object.freeze({
     filter,
@@ -183,7 +195,7 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
     membershipsReady: memberships.isSuccess,
     condition: queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data?.items.length === 0 }),
     error: safeQueryError(query.error),
-    membershipError: safeQueryError(memberships.error),
+    membershipError: context.session.assurance.level >= 3 ? safeQueryError(memberships.error) : undefined,
     fetching: query.isFetching,
     createBusy: createMutation.isPending,
     createError: safeQueryError(createMutation.error),
@@ -193,7 +205,7 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
       title: context.session.assurance.level < 2 ? '需要重新验证身份' : storefronts.length === 0 ? '当前范围没有可邀请商城' : '一次性安全回执',
       message:
         context.session.assurance.level < 2
-          ? '指定员工注册至少需要双因素验证；共享注册和现有成员安全访问需要高强度验证。'
+          ? '在“新建邀请”中完成一次身份验证，即可安全选择新员工注册或现有成员访问。'
           : storefronts.length === 0
             ? '切换到包含已授权商城的集团或商城范围后再创建注册邀请。'
             : '创建失败会保留表单并复用同一请求编号；成功回执关闭后，邀请码无法恢复。',
