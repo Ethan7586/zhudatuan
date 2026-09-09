@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 
-export type VisualIntegrityKind = 'documentoverflow' | 'textclipped' | 'touchtarget' | 'viewportbreach';
+export type VisualIntegrityKind = 'controlcopyoverflow' | 'documentoverflow' | 'textclipped' | 'touchtarget' | 'viewportbreach';
 
 export interface VisualIntegrityIssue {
   readonly kind: VisualIntegrityKind;
@@ -37,6 +37,17 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
           element: identify(element),
           text,
           actual: `${element.clientWidth}×${element.clientHeight}px viewport / ${element.scrollWidth}×${element.scrollHeight}px content`,
+        });
+      }
+
+      const copyOverflowX = text.length > 0 && control(element) && element.scrollWidth > element.clientWidth + 1;
+      const copyOverflowY = text.length > 0 && control(element) && element.scrollHeight > element.clientHeight + 1;
+      if ((copyOverflowX || copyOverflowY) && !clippedX && !clippedY) {
+        issues.push({
+          kind: 'controlcopyoverflow',
+          element: identify(element),
+          text,
+          actual: `${element.clientWidth}×${element.clientHeight}px control / ${element.scrollWidth}×${element.scrollHeight}px content`,
         });
       }
 
@@ -96,6 +107,10 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
     function interactive(element: HTMLElement): boolean {
       if (element instanceof HTMLAnchorElement) return element.hasAttribute('href');
       return element.matches('button,input,select,textarea,summary,[role="button"],[role="tab"],[role="radio"],[role="checkbox"]');
+    }
+
+    function control(element: HTMLElement): boolean {
+      return element.matches('button,summary,[role="button"],[role="tab"],[role="radio"],[role="checkbox"]');
     }
 
     function readableText(element: HTMLElement): string {

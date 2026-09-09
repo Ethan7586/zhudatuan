@@ -297,6 +297,90 @@ test('Console 商城管理在平板和手机将宽表转为可读卡片', async 
   }
 });
 
+test('Console 商品全部弹层与订单抽屉的动作文案始终留在控件内', async ({ page }) => {
+  test.slow();
+  await prepareVisual(page, { width: 1280, height: 800 });
+  await signInConsole(page);
+  for (const viewport of [
+    { width: 1280, height: 800 },
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleproducts, 'enterprise')}`);
+
+    await page.getByRole('button', { name: '导入商品' }).click();
+    const productImport = page.getByRole('form', { name: '商品导入' });
+    await expect(productImport).toBeVisible();
+    await expectUsable(page);
+    await productImport.getByRole('button', { name: '关闭商品导入窗口' }).click();
+
+    await page.getByRole('button', { name: '新建商品' }).click();
+    const create = page.getByRole('form', { name: '新建商品' });
+    await expect(create).toBeVisible();
+    await expectUsable(page);
+    await create.getByRole('button', { name: '关闭商品操作窗口' }).click();
+
+    await page.getByRole('button', { name: '商品池', exact: true }).click();
+    const pools = page.getByRole('form', { name: '商品池管理' });
+    await expect(pools).toBeVisible();
+    await expectUsable(page);
+    await pools.getByRole('button', { name: '关闭商品池窗口' }).click();
+
+    if (viewport.width <= 768) {
+      const disclosure = page.locator('.productfilterdisclosure');
+      if (!(await disclosure.evaluate((element) => (element as HTMLDetailsElement).open))) await disclosure.locator('summary').click();
+    }
+    await page.getByRole('button', { name: '列设置' }).click();
+    const columns = page.getByRole('dialog', { name: '列设置' });
+    await expect(columns).toBeVisible();
+    await expectUsable(page);
+    await columns.getByRole('button', { name: '完成' }).click();
+
+    await page
+      .getByRole('checkbox', { name: /^选择 / })
+      .first()
+      .check();
+    await page.getByRole('button', { name: '批量上架' }).click();
+    const batch = page.getByRole('dialog', { name: /^批量上架/ });
+    await expect(batch).toBeVisible();
+    await expectUsable(page);
+    const cancelBatch = batch.getByRole('button', { name: '取消' });
+    await expect(cancelBatch).toBeEnabled();
+    await cancelBatch.click();
+
+    await page.locator('.producttablewrap tbody tr').first().click();
+    await expect(page.locator('.productdrawercontent')).toBeVisible();
+    await expectUsable(page);
+    await page.getByRole('tab', { name: '来源与供货' }).click();
+    const managePool = page.getByRole('button', { name: '管理商品投池' });
+    await expect(managePool).toBeDisabled();
+    await expect(managePool).toHaveAttribute('title', '请先下架商品再调整商品池');
+    const edit = page.getByRole('button', { name: '编辑商品' });
+    await expect(edit).toBeEnabled();
+    await edit.click();
+    const update = page.getByRole('form', { name: '编辑商品' });
+    await expect(update).toBeVisible();
+    await expectUsable(page);
+    await update.getByRole('button', { name: '关闭商品操作窗口' }).click();
+
+    await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleorders, 'enterprise')}`);
+    await page
+      .getByRole('button', { name: /^查看订单/ })
+      .first()
+      .click();
+    await expect(page.locator('.orderdrawer')).toBeVisible();
+    await expectUsable(page);
+    const reminder = page.getByRole('button', { name: '提醒履约' });
+    await expect(reminder).toBeEnabled();
+    await reminder.click();
+    const reminderDialog = page.getByRole('dialog', { name: '提醒履约方处理' });
+    await expect(reminderDialog).toBeVisible();
+    await expectUsable(page);
+    await reminderDialog.getByRole('button', { name: '取消' }).click();
+  }
+});
+
 function canonicalScope(routeid: string): ScopeKind {
   const declared = authority.nodes.filter((node) => node.surface === 'console' && node.routeid === routeid).map(({ scope }) => scope);
   const preferred: readonly ScopeKind[] = routeid.startsWith('consolereferral') ? ['distributor', 'enterprise', 'mall', 'platform'] : ['enterprise', 'mall', 'platform', 'distributor'];

@@ -15,11 +15,12 @@ test('visual integrity accepts semantic card tables and explicit scroll regions'
   await expectVisualIntegrity(page);
 });
 
-test('visual integrity reports clipped copy, viewport breaches and undersized touch targets', async ({ page }) => {
+test('visual integrity reports clipped copy, control copy overflow, viewport breaches and undersized touch targets', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.setContent(`
     <main>
       <strong style="display:block;width:40px;overflow:hidden;white-space:nowrap">这段文案被错误裁切</strong>
+      <button style="width:72px;height:44px;white-space:nowrap">查看完整商品治理详情</button>
       <span style="position:absolute;left:350px;width:80px">越过视口</span>
       <button style="width:32px;height:32px">小</button>
     </main>
@@ -27,5 +28,5 @@ test('visual integrity reports clipped copy, viewport breaches and undersized to
 
   const issues = await inspectVisualIntegrity(page);
 
-  expect(issues.map(({ kind }) => kind)).toEqual(expect.arrayContaining(['textclipped', 'viewportbreach', 'touchtarget']));
+  expect(issues.map(({ kind }) => kind)).toEqual(expect.arrayContaining(['textclipped', 'controlcopyoverflow', 'viewportbreach', 'touchtarget']));
 });
