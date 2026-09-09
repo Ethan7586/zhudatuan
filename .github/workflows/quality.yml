@@ -1,23 +1,217 @@
-name: Main Baseline
+name: Affected Delivery
 
 on:
   pull_request:
+    branches: [zdt-next]
   push:
-    branches: [main]
+    branches: [zdt-next]
   workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Optional immutable base SHA for candidate validation
+        required: false
+        type: string
+      head_sha:
+        description: Optional immutable head SHA for candidate validation
+        required: false
+        type: string
+      stage_candidate:
+        description: Stage the validated candidate on Aliyun without production cutover
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 concurrency:
-  group: zhudatuan-main-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: zdt-next-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/zdt-next' }}
+
+env:
+  NODE_VERSION: 22.22.0
+  RELEASE_NODE: hbbtzn-l1
 
 jobs:
-  verify:
-    name: source, contract, database and build
+  plan:
+    name: plan affected scope
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 5
+    outputs:
+      deploy_required: ${{ steps.plan.outputs.deploy_required }}
+      head_sha: ${{ steps.plan.outputs.head_sha }}
+      lane: ${{ steps.plan.outputs.lane }}
+      run_id: ${{ steps.plan.outputs.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.head_sha || github.event.pull_request.head.sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Resolve immutable base and head
+        id: refs
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BASE_SHA: ${{ github.event.before }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+          INPUT_BASE_SHA: ${{ inputs.base_sha }}
+          INPUT_HEAD_SHA: ${{ inputs.head_sha }}
+        run: |
+          if [ -n "$INPUT_HEAD_SHA" ]; then
+            base_sha="$INPUT_BASE_SHA"
+            head_sha="$INPUT_HEAD_SHA"
+            if [ -z "$base_sha" ]; then
+              base_sha="$(git rev-parse "$head_sha^")"
+            fi
+          elif [ "$EVENT_NAME" = "pull_request" ]; then
+            base_sha="$PR_BASE_SHA"
+            head_sha="$PR_HEAD_SHA"
+          else
+            head_sha="$PUSH_HEAD_SHA"
+            base_sha="$PUSH_BASE_SHA"
+            if [ -z "$base_sha" ] || [ "$base_sha" = "0000000000000000000000000000000000000000" ]; then
+              base_sha="$(git rev-parse "$head_sha^")"
+            fi
+          fi
+          git cat-file -e "$base_sha^{commit}"
+          git cat-file -e "$head_sha^{commit}"
+          printf 'base_sha=%s\nhead_sha=%s\n' "$base_sha" "$head_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Create authoritative release plan
+        id: plan
+        env:
+          BASE_SHA: ${{ steps.refs.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+        run: |
+          mkdir -p .ci-release
+          node 04_tools/release-engine/cli.mjs plan \
+            --from "$BASE_SHA" \
+            --to "$HEAD_SHA" \
+            --node "$RELEASE_NODE" \
+            --format json > .ci-release/plan-envelope.json
+          node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
+          const envelope = JSON.parse(readFileSync('.ci-release/plan-envelope.json', 'utf8'));
+          if (!envelope.ok) throw new Error('release plan failed');
+          const plan = envelope.result;
+          writeFileSync('.ci-release/plan.json', `${JSON.stringify(plan, null, 2)}\n`);
+          appendFileSync(process.env.GITHUB_OUTPUT, [
+            `deploy_required=${plan.deployRequired}`,
+            `head_sha=${plan.to.sha}`,
+            `lane=${plan.lane}`,
+            `run_id=${plan.runId}`,
+            '',
+          ].join('\n'));
+          NODE
+
+      - name: Publish machine-readable plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-plan-${{ github.run_id }}
+          path: .ci-release/plan.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14
+
+  affected_candidate:
+    name: affected tests, typecheck, build, package and candidate
+    needs: plan
+    if: needs.plan.outputs.deploy_required == 'true' && needs.plan.outputs.lane != 'A3'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ZDT_RELEASE_SSH_HOST: root@123.57.232.253
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.plan.outputs.head_sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Restore authoritative plan
+        uses: actions/download-artifact@v4
+        with:
+          name: release-plan-${{ github.run_id }}
+          path: .ci-release
+
+      - name: Restore dependencies for affected targets
+        if: needs.plan.outputs.lane != 'A0'
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run affected tests, typecheck and build once
+        run: |
+          node 04_tools/release-engine/cli.mjs build \
+            --plan .ci-release/plan.json \
+            --format json > .ci-release/build-envelope.json
+
+      - name: Package immutable target artifacts
+        run: |
+          node 04_tools/release-engine/cli.mjs package \
+            --build .ci-release/build.json \
+            --format json > .ci-release/package-envelope.json
+
+      - name: Publish immutable candidate artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-${{ needs.plan.outputs.head_sha }}
+          path: |
+            .ci-release/plan.json
+            .ci-release/build.json
+            .ci-release/package.json
+            .ai-delivery/artifacts/**
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14
+
+      - name: Configure candidate-only SSH transport
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate)
+        env:
+          RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+        run: |
+          test -n "$RELEASE_SSH_KEY"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$RELEASE_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          ssh-keyscan -H 123.57.232.253 >> "$HOME/.ssh/known_hosts"
+
+      - name: Stage candidate on Aliyun without production cutover
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate)
+        run: |
+          node 04_tools/release-engine/cli.mjs deploy \
+            --package .ci-release/package.json \
+            --node "$RELEASE_NODE" \
+            --environment candidate \
+            --format json > .ci-release/deploy-candidate.json
+
+      - name: Publish candidate timing evidence
+        if: always() && ((github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate))
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-evidence-${{ needs.plan.outputs.head_sha }}
+          path: .ci-release/deploy-candidate.json
+          if-no-files-found: ignore
+          include-hidden-files: true
+          retention-days: 14
+
+      - name: Ensure release produced no source drift
+        run: git diff --exit-code
+
+  full_a3:
+    name: full A3 quality lane
+    needs: plan
+    if: needs.plan.outputs.deploy_required == 'true' && needs.plan.outputs.lane == 'A3'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
     env:
       PGHOST: 127.0.0.1
       PGPORT: 5432
@@ -51,9 +245,13 @@ jobs:
           --health-retries 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.plan.outputs.head_sha }}
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 22.22.0
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - name: Install and verify selected source set
@@ -87,10 +285,18 @@ jobs:
       - name: Build locked applications and services
         run: |
           npm run build
-          docker build --file 02_platform_pingtai/infrastructure/aliyun/Dockerfile --tag zhudatuan-commerce:${{ github.sha }} .
+          docker build --file 02_platform_pingtai/infrastructure/aliyun/Dockerfile --tag zhudatuan-commerce:${{ needs.plan.outputs.head_sha }} .
           npm audit --omit=dev --audit-level=high
 
       - name: Ensure verification produced no source drift
         run: |
           git diff --exit-code
           test -z "$(git status --porcelain)"
+
+  no_changes:
+    name: no deployable changes
+    needs: plan
+    if: needs.plan.outputs.deploy_required != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Plan completed; no tests, build, package, upload or restart required."
