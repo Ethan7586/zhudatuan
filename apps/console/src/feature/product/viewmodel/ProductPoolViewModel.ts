@@ -11,7 +11,7 @@ import { isManagedListing } from '../model/ProductAction';
 import { productCommand } from './ProductCommand';
 import { poolKey } from './ProductQueryKey';
 
-type PoolMode = 'allocate' | 'attach' | 'detach' | 'move' | 'remove';
+export type PoolMode = 'allocate' | 'attach' | 'detach' | 'move' | 'remove';
 
 export function useProductPoolViewModel(open: boolean, listing: Listing | undefined, context: ConsoleContext, dependencies: ProductDependencies, onDone: () => void) {
   const request = { scope: { kind: context.scope.kind, id: context.scope.id }, accessVersion: context.session.accessVersion, ...(context.session.csrf === undefined ? {} : { csrf: context.session.csrf }) } as const;
@@ -31,18 +31,20 @@ export function useProductPoolViewModel(open: boolean, listing: Listing | undefi
   const [operation, setOperation] = useState<PoolMode>('allocate');
   useEffect(() => {
     if (!open) return;
-    select(listing !== undefined && isManagedListing(listing) ? (listing.pool_id ?? '') : '');
+    select('');
     setOperation(listing === undefined ? globalMode : 'move');
   }, [globalMode, listing, open]);
   const listingpool = listing !== undefined && isManagedListing(listing) ? listing.pool_id : undefined;
-  const selected = pools.find((pool) => pool.id === selectedid) ?? (listing === undefined ? pools[0] : pools.find((pool) => pool.id !== listingpool));
+  const selected = pools.find((pool) => pool.id === selectedid && pool.id !== listingpool) ?? (listing === undefined ? pools[0] : undefined);
   const target = targetscope || malls[0]?.id || context.scope.id;
   const globalOperation = operation === 'allocate' || operation === 'attach' || operation === 'detach';
   const operationAllowed = canRead && canMode(operation);
   const listingManageable = listing !== undefined && isManagedListing(listing) && listing.status !== 'published' && listing.status !== 'retired';
   const canSubmit =
     operationAllowed &&
-    (listing === undefined ? selected !== undefined && globalOperation : listingManageable && (operation === 'remove' ? listingpool != null : operation === 'move' && selected !== undefined && selected.id !== listingpool));
+    (listing === undefined
+      ? selected !== undefined && globalOperation && target.length > 0 && (operation !== 'allocate' || name.trim().length > 0)
+      : listingManageable && (operation === 'remove' ? listingpool != null : operation === 'move' && selected !== undefined && selected.id !== listingpool));
   const commandidentity = useRef<CommandIdentity | undefined>(undefined);
   const identity = identityFor(commandidentity, JSON.stringify({ listing: listing?.id, version: listing?.version, selected: selected?.id, target, kind, name, operation }), dependencies.createIdentity);
   const mutation = useMutation<unknown>({

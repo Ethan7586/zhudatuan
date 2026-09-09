@@ -371,7 +371,7 @@
   font-size: 11px;
 }
 .productpooldialog {
-  width: min(700px, 100%);
+  width: min(760px, 100%);
 }
 .productpoolcontext {
   display: grid;
@@ -386,13 +386,39 @@
   color: var(--sw-text-secondary);
   font-size: 11px;
 }
+.productpoolfield {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+.productpoolfield > legend {
+  padding: 0;
+  color: var(--sw-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+.productpoolfield > p {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-body);
+}
+.productpooltasks,
 .productpoolsummary {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+  min-width: 0;
+}
+.productpoolsummary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   max-height: 230px;
   overflow: auto;
 }
+.productpooltask,
 .productpoolsummary > button {
   display: grid;
   min-width: 0;
@@ -407,17 +433,54 @@
   text-align: left;
   white-space: normal;
 }
+.productpooltask {
+  align-content: start;
+  min-height: 82px;
+}
+.productpooltask[aria-checked='true'],
 .productpoolsummary > button[aria-pressed='true'] {
   border-color: var(--sw-brand);
   background: var(--sw-commerce-warm);
+  color: var(--sw-brand-dark);
 }
+.productpooltask span,
 .productpoolsummary span {
   color: var(--sw-muted);
   font-size: 10px;
+  line-height: var(--sw-line-height-body);
   overflow-wrap: anywhere;
 }
+.productpooltask strong,
 .productpoolsummary strong {
   overflow-wrap: anywhere;
+}
+.productpoolresult {
+  display: grid;
+  gap: 4px;
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-commerce-warm);
+  padding: 12px 14px;
+}
+.productpoolresult > span {
+  color: var(--sw-brand);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.productpoolresult > strong,
+.productpoolresult > p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.productpoolresult > strong {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body-sm);
+}
+.productpoolresult > p {
+  margin: 0;
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-body);
 }
 @media (max-width: 640px) {
   .productflowoverlay {
@@ -432,6 +495,7 @@
     width: 100%;
     min-width: 0;
   }
+  .productpooltasks,
   .productpoolsummary {
     grid-template-columns: 1fr;
   }

@@ -17,11 +17,12 @@ describe('ProductPoolViewModel', () => {
     const move = vi.fn().mockRejectedValueOnce(new Error('网络暂时不可用')).mockResolvedValueOnce({ version: 4 });
     setup(listing, move);
     await screen.findByRole('button', { name: /目标渠道池/ });
-    expect(screen.getByRole('button', { name: '确认执行' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: '确认移入' }).hasAttribute('disabled')).toBe(true);
     await userEvent.setup().click(screen.getByRole('button', { name: /目标渠道池/ }));
-    await userEvent.setup().click(screen.getByRole('button', { name: '确认执行' }));
+    expect(screen.getByText(/将移入“目标渠道池”/)).toBeTruthy();
+    await userEvent.setup().click(screen.getByRole('button', { name: '确认移入' }));
     await screen.findByText('服务暂时无法完成操作，请稍后重试。');
-    await userEvent.setup().click(screen.getByRole('button', { name: '确认执行' }));
+    await userEvent.setup().click(screen.getByRole('button', { name: '确认移入' }));
 
     await waitFor(() => expect(move).toHaveBeenCalledTimes(2));
     expect(commandIdentity(move.mock.calls[0]?.[0])).toBe(commandIdentity(move.mock.calls[1]?.[0]));
@@ -32,9 +33,10 @@ describe('ProductPoolViewModel', () => {
   it('removes the current pool without requiring a target selection', async () => {
     const move = vi.fn().mockResolvedValue({ version: 4 });
     setup(listing, move);
-    await screen.findByRole('option', { name: '移出当前商品池' });
-    await userEvent.setup().selectOptions(screen.getByLabelText('操作'), 'remove');
-    await userEvent.setup().click(screen.getByRole('button', { name: '确认执行' }));
+    await screen.findByRole('radio', { name: /移出当前商品池/ });
+    await userEvent.setup().click(screen.getByRole('radio', { name: /移出当前商品池/ }));
+    expect(screen.getByText(/将移出“当前商品池”/)).toBeTruthy();
+    await userEvent.setup().click(screen.getByRole('button', { name: '确认移出' }));
     await waitFor(() => expect(move).toHaveBeenCalledTimes(1));
     expect(commandIdentity(move.mock.calls[0]?.[0])).toMatch(/^command:/);
     expect(move).toHaveBeenCalledWith(expect.anything(), listing, null);
@@ -45,14 +47,15 @@ describe('ProductPoolViewModel', () => {
     setup(undefined, vi.fn(), execute, globalContext);
     const user = userEvent.setup();
     await screen.findByRole('button', { name: /当前商品池/ });
-    await user.click(screen.getByRole('button', { name: '确认执行' }));
+    expect(screen.getByText(/将在“华东福利商城”创建“主打团渠道商品池”/)).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '创建派生池' }));
     await waitFor(() => expect(execute).toHaveBeenCalledTimes(1));
 
-    await user.selectOptions(screen.getByLabelText('操作'), 'attach');
-    await user.click(screen.getByRole('button', { name: '确认执行' }));
+    await user.click(screen.getByRole('radio', { name: /投放到商城/ }));
+    await user.click(screen.getByRole('button', { name: '确认投放' }));
     await waitFor(() => expect(execute).toHaveBeenCalledTimes(2));
-    await user.selectOptions(screen.getByLabelText('操作'), 'detach');
-    await user.click(screen.getByRole('button', { name: '确认执行' }));
+    await user.click(screen.getByRole('radio', { name: /停止商城投放/ }));
+    await user.click(screen.getByRole('button', { name: '停止投放' }));
     await waitFor(() => expect(execute).toHaveBeenCalledTimes(3));
 
     expect(execute).toHaveBeenNthCalledWith(1, expect.anything(), expect.anything(), { operation: OP_CATALOG_POOLS_ALLOCATE, target: 'mall:one', poolkind: 'channel', name: '主打团渠道商品池' });
@@ -65,9 +68,9 @@ describe('ProductPoolViewModel', () => {
     const denied = { ...context, session: { ...context.session, capabilities: [OP_CATALOG_POOLS_READ] } };
     setup(listing, move, vi.fn(), denied);
 
-    expect((await screen.findByRole('option', { name: '移入所选商品池' })).hasAttribute('disabled')).toBe(true);
+    expect((await screen.findByRole('radio', { name: /移入其他商品池/ })).hasAttribute('disabled')).toBe(true);
     expect(screen.getByText('当前账号不能执行所选商品池操作。')).toBeTruthy();
-    expect(screen.getByRole('button', { name: '确认执行' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: '确认移入' }).hasAttribute('disabled')).toBe(true);
     expect(move).not.toHaveBeenCalled();
   });
 });
