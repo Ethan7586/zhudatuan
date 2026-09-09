@@ -121,7 +121,7 @@
 }
 .commercesummary span {
   color: var(--sw-muted);
-  font-size: 11px;
+  font-size: var(--sw-font-size-label-sm);
   font-weight: 650;
 }
 .commercesummary strong {
@@ -134,9 +134,9 @@
 .commercesummary small {
   margin-top: 7px;
   overflow: hidden;
-  color: var(--sw-disabled);
-  font-size: 10px;
-  line-height: 16px;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -232,12 +232,13 @@
 }
 .commerceflow strong {
   color: var(--sw-sidebar-top);
-  font-size: 11px;
+  font-size: var(--sw-font-size-label);
 }
 .commerceflow small {
   overflow: hidden;
-  color: var(--sw-disabled);
-  font-size: 9px;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
