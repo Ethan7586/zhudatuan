@@ -19,8 +19,11 @@ const sku = strictObject({
 const listing = strictObject({
   id: text,
   scope: text,
+  scopeName: text,
   pool: nullableText,
+  poolName: nullableText,
   sku: text,
+  skuCode: text,
   title: text,
   status: literal(['draft', 'published', 'unpublished', 'retired']),
   effectiveAt: nullableText,
@@ -31,8 +34,11 @@ const listing = strictObject({
 });
 const stock = strictObject({
   sku: text,
+  skuCode: text,
   scope: text,
+  scopeName: text,
   location: text,
+  locationName: text,
   onhand: integer,
   safety: integer,
   status: literal(['active', 'blocked', 'retired']),
@@ -40,7 +46,9 @@ const stock = strictObject({
 });
 const price = strictObject({
   sku: text,
+  skuCode: text,
   scope: text,
+  scopeName: text,
   currency: text,
   amountMinor: integer,
   compareMinor: union([integer, nullSchema()]),
@@ -151,8 +159,15 @@ const dependency = strictObject({ state: literal(['ready', 'unavailable', 'notre
 const productMedia = strictObject({ id: text, kind: literal(['image', 'video', 'document']), url: text, alt: nullableText, sort: unsigned });
 const productChannel = strictObject({ provider: text, externalId: text, status: literal(['pending', 'mapped', 'rejected', 'retired']), sourceVersion: text, observedAt: isoUtc });
 const productPool = strictObject({ id: text, name: text, kind: literal(['global', 'channel', 'private', 'markup']), status: literal(['draft', 'active', 'disabled']), listingCount: unsigned });
-const productTimeline = strictObject({ id: text, kind: literal(['productcreated', 'productupdated', 'listingcreated', 'listingupdated', 'sourceobserved']), title: text, occurredAt: isoUtc, reference: nullableText });
-const productQualification = strictObject({ listing: text, eligible: boolean(), policyVersion: unsigned });
+const productTimeline = strictObject({
+  id: text,
+  kind: literal(['productcreated', 'productupdated', 'listingcreated', 'listingupdated', 'sourceobserved']),
+  title: text,
+  occurredAt: isoUtc,
+  reference: nullableText,
+  referenceLabel: nullableText,
+});
+const productQualification = strictObject({ listing: text, listingTitle: text, eligible: boolean(), policyVersion: unsigned });
 
 export const CATALOG_QUERY_SCHEMAS = {
   CatalogPoolsReadInput: strictObject(pageQuery),
@@ -207,8 +222,11 @@ export const CATALOG_OUTPUT_SCHEMAS = {
     status: literal(['draft', 'review', 'active', 'archived']),
     version: integer,
     category_id: text,
+    category_name: text,
     brand_id: nullableText,
+    brand_name: nullableText,
     owner_partner_id: nullableText,
+    owner_partner_name: nullableText,
     cover_url: nullableText,
     subtitle: nullableText,
     createdAt: isoUtc,

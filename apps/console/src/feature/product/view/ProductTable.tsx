@@ -1,6 +1,6 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { Button } from '@shop/design';
-import { chineseReference, presentCatalogGap, presentProductSource, presentProductStatus } from '@shop/presentation';
+import { presentCatalogGap, presentProductSource, presentProductStatus, presentProductType } from '@shop/presentation';
 import { ProductIcon } from './ProductIcon';
 import type { Listing } from '../model/Product';
 import { ProductSelectionBar } from './ProductSelectionBar';
@@ -60,7 +60,7 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                     <ProductThumbnail row={row} />
                     <Button className="productidentitybutton" tone="quiet" onClick={stopClick} onPress={() => onOpen(row)}>
                       <strong>{row.title}</strong>
-                      <span>{chineseReference('商品编号', row.product_id)}</span>
+                      <span>{row.subtitle ?? (row.product_type === null ? '待映射商品' : presentProductType(row.product_type))}</span>
                     </Button>
                   </div>
                 </td>
@@ -71,7 +71,7 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                 ) : null}
                 {visibleColumns.has('sku') ? (
                   <td data-label="规格摘要">
-                    <CellPair primary={`${formatCount(row.sku_count)} / ${formatCount(row.sku_total)}`} secondary={row.code ?? chineseReference('规格', row.sku_id)} />
+                    <CellPair primary={`${formatCount(row.sku_count)} / ${formatCount(row.sku_total)}`} secondary={row.code ?? '规格待映射'} />
                   </td>
                 ) : null}
                 {visibleColumns.has('malls') ? (
@@ -80,7 +80,9 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                   </td>
                 ) : null}
                 {visibleColumns.has('price') ? (
-                  <td className="productmoney" data-label="有效售价">{row.price_amount_minor === null ? <DataGap label={gapLabel(row, 'price')} onOpen={() => onOpen(row)} /> : formatMoney(row.price_amount_minor, row.price_currency)}</td>
+                  <td className="productmoney" data-label="有效售价">
+                    {row.price_amount_minor === null ? <DataGap label={gapLabel(row, 'price')} onOpen={() => onOpen(row)} /> : formatMoney(row.price_amount_minor, row.price_currency)}
+                  </td>
                 ) : null}
                 {visibleColumns.has('stock') ? <td data-label="可售库存">{row.saleable_stock === null ? <DataGap label={gapLabel(row, 'stock')} onOpen={() => onOpen(row)} /> : formatCount(row.saleable_stock)}</td> : null}
                 {visibleColumns.has('status') ? (
@@ -89,18 +91,18 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                     {row.qualification_eligible === false ? <DataGap label="资格未通过" onOpen={() => onOpen(row)} /> : null}
                   </td>
                 ) : null}
-                {visibleColumns.has('updated') ? <td className="producttime" data-label="更新时间">{formatTime(row.cursor_sort)}</td> : null}
+                {visibleColumns.has('updated') ? (
+                  <td className="producttime" data-label="更新时间">
+                    {formatTime(row.cursor_sort)}
+                  </td>
+                ) : null}
                 <td data-label="可用操作">
                   <div className="productrowactions" onClick={stopClick}>
                     <Button tone="quiet" onPress={() => onOpen(row)}>
                       <ProductIcon name="eye" />
                       查看
                     </Button>
-                    <Button
-                      tone="quiet"
-                      aria-label={`${row.title}更多操作`}
-                      onPress={() => onOpen(row)}
-                    >
+                    <Button tone="quiet" aria-label={`${row.title}更多操作`} onPress={() => onOpen(row)}>
                       <ProductIcon name="more" />
                       <span>更多</span>
                     </Button>
@@ -134,13 +136,7 @@ function CellPair({ primary, secondary }: Readonly<{ primary: string; secondary:
 
 function DataGap({ label, onOpen }: Readonly<{ label: string; onOpen: () => void }>) {
   return (
-    <Button
-      tone="quiet"
-      className="productdatagap"
-      aria-label={`${label}，查看修复方法`}
-      onClick={stopClick}
-      onPress={onOpen}
-    >
+    <Button tone="quiet" className="productdatagap" aria-label={`${label}，查看修复方法`} onClick={stopClick} onPress={onOpen}>
       {label}
     </Button>
   );

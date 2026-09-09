@@ -1,4 +1,4 @@
-import { chineseDomainLabel, chineseReference, presentProductStatus, presentProductType } from '@shop/presentation';
+import { chineseDomainLabel, presentProductStatus, presentProductType } from '@shop/presentation';
 import { ResourceState, SectionBoundary } from '@shop/design';
 import type { Listing, ProductDetail } from '../model/Product';
 import { isManagedListing } from '../model/ProductAction';
@@ -60,11 +60,10 @@ function Overview({ detail }: Readonly<{ detail: ProductDetail }>) {
     <section className="productdetailpanel" aria-label="商品概览">
       <h3>商品概览</h3>
       <dl>
-        <Entry label="商品编号" value={chineseReference('商品', detail.id)} />
         <Entry label="商品名称" value={detail.title} />
         <Entry label="商品类型" value={presentProductType(detail.product_type)} />
-        <Entry label="分类" value={chineseReference('分类', detail.category_id)} />
-        <Entry label="品牌" value={detail.brand_id ? chineseReference('品牌', detail.brand_id) : '未绑定'} />
+        <Entry label="分类" value={detail.category_name} />
+        <Entry label="品牌" value={detail.brand_name ?? '未绑定'} />
         <Entry label="状态" value={presentProductStatus(detail.status).label} />
         <Entry label="商品版本" value={`第 ${detail.version} 版`} />
         <Entry label="规格数" value={String(detail.skus.length)} />
@@ -95,7 +94,7 @@ function SkuPanel({ detail }: Readonly<{ detail: ProductDetail }>) {
                 .map((stock) => (
                   <li key={`${stock.scope}:${stock.location}`}>
                     <span>
-                      {chineseReference('库存范围', stock.scope)} · {chineseReference('库位', stock.location)}
+                      {stock.scopeName} · {stock.locationName}
                     </span>
                     <strong>
                       可用基数 {stock.onhand} · 安全库存 {stock.safety}
@@ -123,7 +122,7 @@ function MallPanel({ detail }: Readonly<{ detail: ProductDetail }>) {
             </span>
           </header>
           <p>
-            商城：{chineseReference('商城', listing.scope)} · 商品池：{listing.pool ? chineseReference('商品池', listing.pool) : '未绑定'}
+            商城：{listing.scopeName} · 商品池：{listing.poolName ?? '未绑定'}
           </p>
           <ul>
             {detail.prices
@@ -149,27 +148,16 @@ function SourcePanel({ detail, listing, onPool, canPool }: Readonly<{ detail: Pr
     <section className="productdetailpanel" aria-label="来源与供货">
       <h3>来源与供货</h3>
       <dl>
-        <Entry label="商品所有方" value={detail.owner_partner_id ? chineseReference('合作方', detail.owner_partner_id) : '平台自营'} />
-        <Entry label="当前商品池" value={managed && listing.pool_id ? chineseReference('商品池', listing.pool_id) : '未绑定'} />
-        <Entry label="当前商品规格" value={chineseReference('规格', listing.sku_id)} />
-        <Entry label="商城上架记录" value={chineseReference('上架记录', listing.id)} />
+        <Entry label="商品所有方" value={detail.owner_partner_name ?? '平台自营'} />
+        <Entry label="当前商品池" value={managed ? (listing.pool_name ?? '未绑定') : '未绑定'} />
+        <Entry label="当前商品规格" value={listing.code ?? '标准规格'} />
       </dl>
       <p className="productboundarynote">供应信息由供应商管理统一维护，本页展示当前商品的归属与投放关系。</p>
       <button
         className="productpanelaction"
         type="button"
         disabled={!manageable}
-        title={
-          manageable
-            ? undefined
-            : !canPool
-              ? '当前账号没有调整商品投池关系的权限。'
-              : !managed
-                ? '渠道商品尚未映射，不能调整商品池'
-                : listing.status === 'published'
-                  ? '请先下架商品再调整商品池'
-                  : '已归档商品不能调整商品池'
-        }
+        title={manageable ? undefined : !canPool ? '当前账号没有调整商品投池关系的权限。' : !managed ? '渠道商品尚未映射，不能调整商品池' : listing.status === 'published' ? '请先下架商品再调整商品池' : '已归档商品不能调整商品池'}
         onClick={() => onPool(listing)}
       >
         管理商品投池

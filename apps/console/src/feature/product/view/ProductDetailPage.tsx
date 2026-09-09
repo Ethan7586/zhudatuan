@@ -1,5 +1,5 @@
 import { Button, DataTable, MetricGrid, ResourcePanel, ResourceState, SectionBoundary, type ResourceCondition } from '@shop/design';
-import { chineseReference, chineseSectionLabel, presentProductMediaKind, presentProductStatus, presentProductType, presentResourceCondition } from '@shop/presentation';
+import { chineseSectionLabel, presentProductMediaKind, presentProductStatus, presentProductType, presentResourceCondition } from '@shop/presentation';
 import { formatDate } from '../../../shared/ui/Format';
 import type { ProductDetail } from '../model/Product';
 import type { ProductDetailSectionViewModel, ProductDetailViewModel } from '../viewmodel/ProductDetailViewModel';
@@ -11,7 +11,7 @@ export function ProductDetailPage({ routeTitle, onBack, viewmodel }: Readonly<{ 
     <ResourcePanel
       title={data?.title ?? routeTitle}
       eyebrow={chineseSectionLabel('商品详情')}
-      description={data === undefined ? '正在读取商品权威主档。' : `${data.subtitle ?? '商品主档'} · ${chineseReference('商品', data.id)}`}
+      description={data === undefined ? '正在读取商品权威主档。' : (data.subtitle ?? '商品主档')}
       condition={viewmodel.condition}
       {...(viewmodel.error === undefined ? {} : { error: viewmodel.error })}
       retry={viewmodel.refresh}
@@ -44,12 +44,11 @@ function ProductDetailContent({ data, viewmodel }: Readonly<{ data: ProductDetai
       />
       <DetailSection id="productbase" title="基础信息" description="商品中心维护的权威主档字段。" model={core}>
         <dl className="productdetailfacts">
-          <Entry label="商品编号" value={chineseReference('商品', data.id)} />
           <Entry label="商品名称" value={data.title} />
           <Entry label="商品类型" value={presentProductType(data.product_type)} />
-          <Entry label="分类" value={chineseReference('分类', data.category_id)} />
-          <Entry label="品牌" value={data.brand_id ? chineseReference('品牌', data.brand_id) : '未绑定品牌'} />
-          <Entry label="商品所有方" value={data.owner_partner_id ? chineseReference('合作方', data.owner_partner_id) : '平台自营'} />
+          <Entry label="分类" value={data.category_name} />
+          <Entry label="品牌" value={data.brand_name ?? '未绑定品牌'} />
+          <Entry label="商品所有方" value={data.owner_partner_name ?? '平台自营'} />
           <Entry label="创建时间" value={formatDate(data.createdAt)} />
           <Entry label="更新时间" value={formatDate(data.updatedAt)} />
         </dl>
@@ -101,7 +100,7 @@ function ProductHero({ data }: Readonly<{ data: ProductDetail }>) {
         <div className="productdetailtags">
           <span>{presentProductStatus(data.status).label}</span>
           <span>第 {formatInteger(data.version)} 版</span>
-          <span>{chineseReference('分类', data.category_id)}</span>
+          <span>{data.category_name}</span>
         </div>
       </div>
     </header>

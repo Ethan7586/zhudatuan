@@ -17,7 +17,7 @@ describe('ProductDetailReadHandler', () => {
     } as unknown as CatalogInventoryPort;
     const pricing = { prices: vi.fn() } as unknown as CatalogPricingPort;
     const qualifications = { decisions: vi.fn() } as unknown as CatalogQualificationPort;
-    const handler = new ProductDetailReadHandler(products, inventory, pricing, qualifications);
+    const handler = new ProductDetailReadHandler(products, inventory, pricing, qualifications, organizations);
 
     const reply = await handler.execute({ path: { productid: 'product:one' }, query: { section: 'inventory' }, body: {} } as never, readHandlerContext('catalog.product.detail.read', {} as never));
 
@@ -42,7 +42,7 @@ describe('ProductDetailReadHandler', () => {
 
   it('loads qualification decisions as their own retryable partition', async () => {
     const qualifications = { decisions: vi.fn(async () => [{ listing: 'listing:one', eligible: false, policyVersion: 4 }]) } as CatalogQualificationPort;
-    const handler = new ProductDetailReadHandler(repository(), { stock: vi.fn() } as unknown as CatalogInventoryPort, { prices: vi.fn() } as unknown as CatalogPricingPort, qualifications);
+    const handler = new ProductDetailReadHandler(repository(), { stock: vi.fn() } as unknown as CatalogInventoryPort, { prices: vi.fn() } as unknown as CatalogPricingPort, qualifications, organizations);
 
     const reply = await handler.execute({ path: { productid: 'product:one' }, query: { section: 'qualification' }, body: {} } as never, readHandlerContext('catalog.product.detail.read', {} as never));
 
@@ -70,11 +70,24 @@ describe('ProductDetailReadHandler', () => {
         },
       ]),
     } as unknown as CatalogInventoryPort;
-    const handler = new ProductDetailReadHandler(repository(), inventory, { prices: vi.fn() } as unknown as CatalogPricingPort, { decisions: vi.fn() } as unknown as CatalogQualificationPort);
+    const handler = new ProductDetailReadHandler(repository(), inventory, { prices: vi.fn() } as unknown as CatalogPricingPort, { decisions: vi.fn() } as unknown as CatalogQualificationPort, organizations);
 
     const reply = await handler.execute({ path: { productid: 'product:one' }, query: { section: 'inventory' }, body: {} } as never, readHandlerContext('catalog.product.detail.read', {} as never));
 
-    expect(reply.body.inventory).toEqual([{ sku: 'sku:one', scope: 'mall:one', location: 'warehouse:one', onhand: '12', safety: '2', status: 'active', version: '3' }]);
+    expect(reply.body.inventory).toEqual([
+      {
+        sku: 'sku:one',
+        skuCode: 'MEAL-1',
+        scope: 'mall:one',
+        scopeName: '员工福利商城',
+        location: 'warehouse:one',
+        locationName: '商品仓库',
+        onhand: '12',
+        safety: '2',
+        status: 'active',
+        version: '3',
+      },
+    ]);
     expect(reply.body.inventory[0]).not.toHaveProperty('reserved');
     expect(reply.body.inventory[0]).not.toHaveProperty('watermark');
     expect(() => OPERATION_SCHEMAS['catalog.product.detail.read'].output.parse(reply.body)).not.toThrow();
@@ -95,8 +108,11 @@ const detail: ProductDetailBase = Object.freeze({
   status: 'active',
   version: '7',
   category_id: 'category:food',
+  category_name: '餐饮美食',
   brand_id: null,
+  brand_name: null,
   owner_partner_id: null,
+  owner_partner_name: null,
   cover_url: null,
   subtitle: null,
   createdAt: '2026-09-01T00:00:00.000Z',
@@ -108,7 +124,9 @@ const detail: ProductDetailBase = Object.freeze({
       id: 'listing:one',
       scope: 'mall:one',
       pool: 'pool:one',
+      poolName: '早餐池',
       sku: 'sku:one',
+      skuCode: 'MEAL-1',
       title: '早餐',
       status: 'published',
       effectiveAt: '2026-09-01T00:00:00.000Z',
@@ -124,3 +142,7 @@ const detail: ProductDetailBase = Object.freeze({
   timeline: Object.freeze([]),
   visibleScopes: Object.freeze(['mall:one']),
 });
+
+const organizations = {
+  summaries: vi.fn(async () => [{ id: 'mall:one', name: '员工福利商城', kind: 'mall' }]),
+};

@@ -66,7 +66,7 @@ export const CatalogModule = defineModule(Manifest, {
       new PoolsAttachHandler(pools),
       new PoolsDetachHandler(pools),
       new PoolsAllocateHandler(pools),
-      new ProductDetailReadHandler(products, context.ports.get(CATALOG_INVENTORY_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_QUALIFICATION_PORT)),
+      new ProductDetailReadHandler(products, context.ports.get(CATALOG_INVENTORY_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_QUALIFICATION_PORT), context.ports.get(ORGANIZATION_READ_PORT)),
       new ProductsCreateHandler(products),
       new ProductsUpdateHandler(products),
       new ProductsArchiveHandler(products),

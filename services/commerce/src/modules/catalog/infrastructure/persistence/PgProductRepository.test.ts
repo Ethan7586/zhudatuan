@@ -14,6 +14,7 @@ describe('PgProductRepository detail projection', () => {
           status: 'active',
           version: '7',
           category_id: 'category:food',
+          category_name: '餐饮美食',
           brand_id: null,
           owner_partner_id: null,
           cover_url: 'https://assets.example/cover.jpg',
@@ -34,7 +35,9 @@ describe('PgProductRepository detail projection', () => {
               id: 'listing:one',
               scope: 'mall:one',
               pool: 'pool:one',
+              poolName: '早餐池',
               sku: 'sku:one',
+              skuCode: 'MEAL-1',
               title: '早餐',
               status: 'published',
               effectiveAt: null,
@@ -54,7 +57,11 @@ describe('PgProductRepository detail projection', () => {
       fields: [],
     }));
     const database = { query } as unknown as SqlExecutor;
-    const repository = new PgProductRepository({ database: () => database } as unknown as PgTransactionAccess, { visible: vi.fn(async () => ['mall:one']) } as never, { scopes: vi.fn() } as never);
+    const repository = new PgProductRepository(
+      { database: () => database } as unknown as PgTransactionAccess,
+      { visible: vi.fn(async () => ['mall:one']) } as never,
+      { scopes: vi.fn(async () => new Map()), names: vi.fn(async () => new Map()) } as never
+    );
 
     const detail = await repository.detail({} as ReadTransactionContext, 'product:one', 'mall:one', false);
 

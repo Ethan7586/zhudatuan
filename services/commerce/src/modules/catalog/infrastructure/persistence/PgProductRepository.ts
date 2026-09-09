@@ -20,7 +20,7 @@ export class PgProductRepository implements ProductRepository {
     const allowedScopes = await this.scopes.visible(context, scope, store);
     const result = await database.query<ProductDetailRow>(
       `select product.id,product.title,product.product_type,product.status,product.version::text version,
-        product.category_id,product.brand_id,product.owner_partner_id,
+        product.category_id,category.name category_name,product.brand_id,product.owner_partner_id,
         product.attributes,product.attributes->>'coverUrl' cover_url,product.attributes->>'subtitle' subtitle,
         product.attributes->>'description' description,product.created_at "createdAt",product.updated_at "updatedAt",
         coalesce((select jsonb_agg(jsonb_build_object('id',sku.id,'code',sku.code,'status',sku.status,
@@ -29,11 +29,13 @@ export class PgProductRepository implements ProductRepository {
           'version',sku.version::text) order by sku.code,sku.id) from catalog.sku sku
           where sku.product_id=product.id),'[]'::jsonb) skus,
         coalesce((select jsonb_agg(jsonb_build_object('id',listing.id,'scope',listing.scope_id,
-          'pool',listing.pool_id,'sku',listing.sku_id,'title',listing.title,'status',listing.status,
+          'pool',listing.pool_id,'poolName',pool.name,'sku',listing.sku_id,'skuCode',sku.code,'title',listing.title,'status',listing.status,
           'effectiveAt',listing.effective_at,'expiresAt',listing.expires_at,'createdAt',listing.created_at,
           'updatedAt',listing.updated_at,'version',listing.version::text)
           order by listing.updated_at desc,listing.id) from catalog.listing listing
-          where listing.sku_id in(select sku.id from catalog.sku sku where sku.product_id=product.id)
+          join catalog.sku sku on sku.id=listing.sku_id
+          left join catalog.pool pool on pool.id=listing.pool_id
+          where sku.product_id=product.id
             and listing.scope_id=any($2::text[])),'[]'::jsonb) listings,
         coalesce((select jsonb_agg(jsonb_build_object('provider',source.provider,'externalId',source.external_id,
           'status',source.status,'sourceVersion',source.source_version,'observedAt',source.observed_at)
@@ -46,14 +48,23 @@ export class PgProductRepository implements ProductRepository {
           where listing.sku_id in(select sku.id from catalog.sku sku where sku.product_id=product.id)
             and listing.scope_id=any($2::text[]) group by pool.id,pool.name,pool.kind,pool.status
         ) pooled),'[]'::jsonb) pools
-      from catalog.product product where product.id=$1`,
+      from catalog.product product join catalog.category category on category.id=product.category_id where product.id=$1`,
       [productId, allowedScopes]
     );
     const product = result.rows[0];
     if (!product) throw new DomainError('LISTING_NOT_PURCHASABLE');
-    const ownerScope = product.owner_partner_id ? ((await this.partners.scopes(context, [product.owner_partner_id])).get(product.owner_partner_id) ?? null) : null;
+    const partnerIds = [product.owner_partner_id, product.brand_id].filter((value): value is string => value !== null);
+    const [partnerScopes, partnerNames] = await Promise.all([this.partners.scopes(context, partnerIds), this.partners.names(context, partnerIds)]);
+    const ownerScope = product.owner_partner_id ? (partnerScopes.get(product.owner_partner_id) ?? null) : null;
     if (product.listings.length === 0 && (ownerScope === null || !allowedScopes.includes(ownerScope))) throw new DomainError('LISTING_NOT_PURCHASABLE');
-    return projectProductDetail(product, allowedScopes);
+    return projectProductDetail(
+      {
+        ...product,
+        brand_name: product.brand_id === null ? null : (partnerNames.get(product.brand_id) ?? null),
+        owner_partner_name: product.owner_partner_id === null ? null : (partnerNames.get(product.owner_partner_id) ?? null),
+      },
+      allowedScopes
+    );
   }
   async create(context: WriteTransactionContext, input: Parameters<ProductRepository['create']>[1]) {
     const database = this.transactions.database(context);

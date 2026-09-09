@@ -8,7 +8,7 @@ import {
   OP_CATALOG_PRODUCTS_ARCHIVE,
   OP_CATALOG_PRODUCTS_UPDATE,
 } from '@shop/contract/ids';
-import { chineseReference, editableProductStatus } from '@shop/presentation';
+import { editableProductStatus } from '@shop/presentation';
 import { Dialog as AriaDialog, Heading, Modal, ModalOverlay } from 'react-aria-components';
 import { ProductDrawerPanels, type ProductDrawerTab } from './ProductDrawerPanels';
 import { ProductIcon } from './ProductIcon';
@@ -107,7 +107,7 @@ function ProductDrawerContent({
           </span>
           <div>
             <Heading slot="title">{listing.title}</Heading>
-            <p>{chineseReference('商品', listing.product_id)}</p>
+            <p>{listing.subtitle ?? listing.category_name ?? '商品主档'}</p>
             <span className="productdrawermeta">
               <StatusBadge status={listing.status} />
               <small>第 {listing.version} 版</small>

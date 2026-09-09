@@ -6,7 +6,9 @@ import { requireSession } from '../../../../platform/security/OperationSecurityC
 import type { CatalogInventoryPort } from '../../../inventory/public';
 import type { CatalogPricingPort } from '../../../pricing/public';
 import type { CatalogQualificationPort } from '../../../qualification/public';
+import type { OrganizationReadPort } from '../../../organization/public';
 import type { ProductDetailBase, ProductRepository } from '../port/ProductRepository';
+import { productDetailLabels, type ProductDetailLabels } from '../service/ProductDetailLabels';
 
 type DetailSection = NonNullable<OperationInputFor<'catalog.product.detail.read'>['query']>['section'];
 type Partition<T> = Readonly<{ state: 'ready' | 'unavailable' | 'notrequested'; rows: readonly T[] }>;
@@ -19,7 +21,8 @@ export class ProductDetailReadHandler implements OperationHandler<'catalog.produ
     private readonly products: ProductRepository,
     private readonly inventory: CatalogInventoryPort,
     private readonly pricing: CatalogPricingPort,
-    private readonly qualifications: CatalogQualificationPort
+    private readonly qualifications: CatalogQualificationPort,
+    private readonly organizations: Pick<OrganizationReadPort, 'summaries'>
   ) {}
 
   async execute(input: OperationInputFor<'catalog.product.detail.read'>, context: HandlerContext<'catalog.product.detail.read'>): Promise<OperationReply<OperationOutputFor<'catalog.product.detail.read'>>> {
@@ -28,10 +31,17 @@ export class ProductDetailReadHandler implements OperationHandler<'catalog.produ
     if (section === undefined) throw new DomainError('VALIDATION_FAILED', { field: 'section' });
     const detail = await this.products.detail(context.transaction, input.path.productid, access.scope.id, access.scope.kind === 'store');
     const skus = detail.skus.map(({ id }) => id);
-    const inventory = await partition(section === 'inventory', async () => inventoryProjection(await this.inventory.stock(context.transaction, skus, detail.visibleScopes)));
-    const pricing = await partition(section === 'pricing', async () => priceProjection(await this.pricing.prices(context.transaction, skus, detail.visibleScopes)));
-    const qualification = await partition(section === 'qualification', async () => qualificationProjection(await this.qualifications.decisions(context.transaction, access.scope.id, qualificationSubjects(detail))));
-    const { visibleScopes: _visibleScopes, regionIds: _regionIds, ...base } = detail;
+    const [organizations, inventoryRows, pricingRows, qualificationRows] = await Promise.all([
+      this.organizations.summaries(context.transaction, detail.visibleScopes),
+      partition(section === 'inventory', () => this.inventory.stock(context.transaction, skus, detail.visibleScopes)),
+      partition(section === 'pricing', () => this.pricing.prices(context.transaction, skus, detail.visibleScopes)),
+      partition(section === 'qualification', () => this.qualifications.decisions(context.transaction, access.scope.id, qualificationSubjects(detail))),
+    ]);
+    const labels = productDetailLabels(detail, organizations);
+    const inventory = projectPartition(inventoryRows, (rows) => inventoryProjection(rows, labels));
+    const pricing = projectPartition(pricingRows, (rows) => priceProjection(rows, labels));
+    const qualification = projectPartition(qualificationRows, (rows) => qualificationProjection(rows, labels));
+    const { visibleScopes: _visibleScopes, regionIds: _regionIds, listings: _listings, timeline: _timeline, ...base } = detail;
     const gaps = Object.freeze([
       ...(inventory.state === 'unavailable' ? [{ dependency: 'inventory' as const, code: 'DEPENDENCY_UNAVAILABLE' }] : []),
       ...(pricing.state === 'unavailable' ? [{ dependency: 'pricing' as const, code: 'DEPENDENCY_UNAVAILABLE' }] : []),
@@ -40,6 +50,8 @@ export class ProductDetailReadHandler implements OperationHandler<'catalog.produ
     const body = Object.freeze({
       section,
       ...base,
+      listings: labels.listings,
+      timeline: labels.timeline,
       inventory: Object.freeze(inventory.rows),
       prices: Object.freeze(pricing.rows),
       qualifications: Object.freeze(qualification.rows),
@@ -74,24 +86,30 @@ function dependency(partitionValue: Partition<unknown>, field: string) {
   return Object.freeze({ state: 'ready' as const, watermark, code: null });
 }
 
+function projectPartition<Input, Output>(partitionValue: Partition<Input>, project: (rows: readonly Input[]) => readonly Output[]): Partition<Output> {
+  return Object.freeze({ state: partitionValue.state, rows: partitionValue.state === 'ready' ? Object.freeze(project(partitionValue.rows)) : Object.freeze([]) });
+}
+
 function qualificationSubjects(detail: ProductDetailBase) {
   return Object.freeze(detail.listings.map((listing) => Object.freeze({ listing: listing.id, product: detail.id, category: detail.category_id, partner: detail.owner_partner_id, regions: detail.regionIds })));
 }
 
-function inventoryProjection(rows: readonly Readonly<Record<string, unknown>>[]) {
+function inventoryProjection(rows: readonly Readonly<Record<string, unknown>>[], labels: ProductDetailLabels) {
   return Object.freeze(
-    rows.map(({ sku, scope, location, onhand, safety, status, version }) => Object.freeze({ sku, scope, location, onhand, safety, status, version }))
-  );
-}
-
-function priceProjection(rows: readonly Readonly<Record<string, unknown>>[]) {
-  return Object.freeze(
-    rows.map(({ sku, scope, currency, amountMinor, compareMinor, bookStatus, effectiveAt, expiresAt, bookVersion, priceVersion }) =>
-      Object.freeze({ sku, scope, currency, amountMinor, compareMinor, bookStatus, effectiveAt, expiresAt, bookVersion, priceVersion })
+    rows.map(({ sku, scope, location, onhand, safety, status, version }) =>
+      Object.freeze({ sku, skuCode: labels.sku(sku), scope, scopeName: labels.scope(scope), location, locationName: labels.location(location), onhand, safety, status, version })
     )
   );
 }
 
-function qualificationProjection(rows: readonly Readonly<{ listing: string; eligible: boolean; policyVersion: number }>[]) {
-  return Object.freeze(rows.map(({ listing, eligible, policyVersion }) => Object.freeze({ listing, eligible, policyVersion })));
+function priceProjection(rows: readonly Readonly<Record<string, unknown>>[], labels: ProductDetailLabels) {
+  return Object.freeze(
+    rows.map(({ sku, scope, currency, amountMinor, compareMinor, bookStatus, effectiveAt, expiresAt, bookVersion, priceVersion }) =>
+      Object.freeze({ sku, skuCode: labels.sku(sku), scope, scopeName: labels.scope(scope), currency, amountMinor, compareMinor, bookStatus, effectiveAt, expiresAt, bookVersion, priceVersion })
+    )
+  );
+}
+
+function qualificationProjection(rows: readonly Readonly<{ listing: string; eligible: boolean; policyVersion: number }>[], labels: ProductDetailLabels) {
+  return Object.freeze(rows.map(({ listing, eligible, policyVersion }) => Object.freeze({ listing, listingTitle: labels.listing(listing), eligible, policyVersion })));
 }

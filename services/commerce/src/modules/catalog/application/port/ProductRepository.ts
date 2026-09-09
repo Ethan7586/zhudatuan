@@ -8,8 +8,11 @@ export interface ProductDetailBase {
   readonly status: ProductState;
   readonly version: string | number;
   readonly category_id: string;
+  readonly category_name: string;
   readonly brand_id: string | null;
+  readonly brand_name: string | null;
   readonly owner_partner_id: string | null;
+  readonly owner_partner_name: string | null;
   readonly cover_url: string | null;
   readonly subtitle: string | null;
   readonly description: string | null;
@@ -21,7 +24,9 @@ export interface ProductDetailBase {
     id: string;
     scope: string;
     pool: string | null;
+    poolName: string | null;
     sku: string;
+    skuCode: string;
     title: string;
     status: string;
     effectiveAt: string | null;

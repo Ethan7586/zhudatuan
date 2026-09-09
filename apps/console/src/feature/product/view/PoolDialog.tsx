@@ -1,5 +1,5 @@
 import { Button } from '@shop/design';
-import { chineseReference, presentProductPoolKind } from '@shop/presentation';
+import { presentProductPoolKind } from '@shop/presentation';
 import type { ProductPoolViewModel } from '../viewmodel/ProductPoolViewModel';
 import type { Pool } from '../model/Product';
 import { isManagedListing } from '../model/ProductAction';
@@ -9,6 +9,7 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
   if (!viewmodel.open) return null;
   const listingMode = viewmodel.listing !== undefined;
   const listingPool = viewmodel.listing !== undefined && isManagedListing(viewmodel.listing) ? viewmodel.listing.pool_id : null;
+  const listingPoolName = listingPool === null ? null : (viewmodel.pools.find((pool) => pool.id === listingPool)?.name ?? '当前商品池');
   return (
     <div className="productflowoverlay">
       <button className="productflowbackdrop" type="button" onClick={onClose} aria-label="关闭商品池窗口" />
@@ -34,7 +35,7 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
             <section className="productpoolcontext" aria-label="当前商品">
               <span>当前商品</span>
               <strong>{viewmodel.listing.title}</strong>
-              <small>{listingPool ? `当前已进入${chineseReference('商品池', listingPool)}` : '当前尚未进入商品池'}</small>
+              <small>{listingPoolName ? `当前已进入“${listingPoolName}”` : '当前尚未进入商品池'}</small>
             </section>
           )}
           <section className="productpoolsummary" aria-label={listingMode ? '可选商品池' : '当前商品池'}>
@@ -79,7 +80,7 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
               <select value={viewmodel.target} onChange={(event) => viewmodel.setTarget(event.target.value)}>
                 {viewmodel.malls.map((scope) => (
                   <option key={scope.id} value={scope.id}>
-                    {scope.name ?? chineseReference('组织范围', scope.id)}
+                    {scope.name ?? '商城名称暂不可用'}
                   </option>
                 ))}
               </select>
