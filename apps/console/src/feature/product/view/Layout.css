@@ -145,6 +145,7 @@
   opacity: 0.58;
 }
 .productcontrols {
+  container-type: inline-size;
   margin: 15px 16px 0;
   border: 1px solid var(--sw-border);
   border-radius: var(--sw-radius-sm);

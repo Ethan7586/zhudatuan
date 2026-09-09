@@ -1,3 +1,11 @@
+@container (max-width: 68rem) {
+  .producttoolbar {
+    flex-wrap: wrap;
+  }
+  .producttoolspacer {
+    display: none;
+  }
+}
 @media (max-width: 1199px) {
   .productpage[data-drawer='open'] {
     width: 100%;

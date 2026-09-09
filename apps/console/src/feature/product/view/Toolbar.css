@@ -55,6 +55,7 @@
 .producttoolbutton {
   --shop-button-min-height: var(--sw-control-touch-target);
   --shop-button-padding: 0 var(--sw-control-padding-compact);
+  flex: 0 0 auto;
 }
 
 .producttoolbutton svg {
@@ -69,6 +70,7 @@
   --shop-button-min-height: var(--sw-control-touch-target);
   --shop-button-padding: 0 var(--sw-space-1);
   --shop-button-quiet-color: var(--sw-brand-dark);
+  flex: 0 0 auto;
 }
 
 .producttoolspacer {
