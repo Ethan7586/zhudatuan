@@ -91,7 +91,7 @@ export async function createIdentityRegistrationApiRuntime(
   );
   const databaseRole = required(environment.DATABASE_API_ROLE, 'DATABASE_API_ROLE_MISSING');
   try {
-    await assertIdentityRegistrationRuntimeCompatibility(pool, databaseRole);
+    await assertIdentityRegistrationRuntimeCompatibility(pool, databaseRole, manifest.node_id);
     await objects.find('catalog/readiness-probe');
   } catch (cause) {
     await pool.end();
@@ -178,13 +178,14 @@ export async function identityRegistrationRuntimeCompatibility(
 export async function assertIdentityRegistrationRuntimeCompatibility(
   pool: DatabasePool,
   expectedRole = 'zhudatuanidentityapi',
+  nodeId?: string,
 ): Promise<void> {
   await identityRegistrationRuntimeCompatibility(pool, expectedRole);
   await assertIdentityRuntimeDatabaseBoundary(
     pool,
     expectedRole as 'zhudatuanidentityapi' | 'zhudatuanidentityjob',
   );
-  await assertIdentityNodeManifestRuntime(pool);
+  await assertIdentityNodeManifestRuntime(pool, nodeId);
 }
 
 export function assertIdentityRegistrationNodeManifest(

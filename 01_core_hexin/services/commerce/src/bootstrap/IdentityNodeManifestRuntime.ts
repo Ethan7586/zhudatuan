@@ -35,8 +35,12 @@ export interface IdentityNodeDatabaseManifest {
   readonly targets: readonly TargetRow[];
 }
 
-export function expectedIdentityNodeDatabaseManifest(): IdentityNodeDatabaseManifest {
-  const realms = IDENTITY_NODE_MANIFEST.nodes.map((node) => ({
+export function expectedIdentityNodeDatabaseManifest(nodeId?: string): IdentityNodeDatabaseManifest {
+  const nodes = nodeId === undefined
+    ? IDENTITY_NODE_MANIFEST.nodes
+    : IDENTITY_NODE_MANIFEST.nodes.filter((node) => node.nodeId === nodeId);
+  if (nodeId !== undefined && nodes.length !== 1) throw new Error(`IDENTITY_NODE_MANIFEST_NODE_UNKNOWN:${nodeId}`);
+  const realms = nodes.map((node) => ({
     id: node.realmId,
     node_id: node.nodeId,
     status: node.status,
@@ -45,13 +49,13 @@ export function expectedIdentityNodeDatabaseManifest(): IdentityNodeDatabaseMani
     host_node_id: node.hostNodeId,
     host_node_profile: node.nodeProfile === 'consumer' ? 'operating_mall' : null,
   })).sort(by('id'));
-  const entries = IDENTITY_NODE_MANIFEST.nodes.flatMap((node) => node.entries.map((entry) => ({
+  const entries = nodes.flatMap((node) => node.entries.map((entry) => ({
     host: entry.host,
     realm_id: node.realmId,
     kind: entry.kind,
     status: entry.status,
   }))).sort(by('host'));
-  const targets = IDENTITY_NODE_MANIFEST.nodes.flatMap((node) => node.targets.map((target) => ({
+  const targets = nodes.flatMap((node) => node.targets.map((target) => ({
     realm_id: node.realmId,
     surface: target.surface,
     target: target.target,
@@ -64,22 +68,26 @@ export function expectedIdentityNodeDatabaseManifest(): IdentityNodeDatabaseMani
   return Object.freeze({ realms: Object.freeze(realms), entries: Object.freeze(entries), targets: Object.freeze(targets) });
 }
 
-export async function assertIdentityNodeManifestRuntime(pool: DatabasePool): Promise<void> {
+export async function assertIdentityNodeManifestRuntime(pool: DatabasePool, nodeId?: string): Promise<void> {
+  const expected = expectedIdentityNodeDatabaseManifest(nodeId);
+  const realmId = expected.realms[0]?.id;
+  const scoped = nodeId !== undefined;
   const [realmResult, entryResult, targetResult] = await Promise.all([
     pool.query<RealmRow>(`select id,node_id,status,node_profile,mall_id,host_node_id,host_node_profile
-      from identity.realm order by id`),
-    pool.query<EntryRow>(`select host,realm_id,kind,status from identity.realmentry order by host`),
+      from identity.realm${scoped ? ' where node_id=$1' : ''} order by id`, scoped ? [nodeId] : undefined),
+    pool.query<EntryRow>(`select host,realm_id,kind,status from identity.realmentry${scoped ? ' where realm_id=$1' : ''} order by host`,
+      scoped ? [realmId] : undefined),
     pool.query<TargetRow>(`select realm_id,surface,target,membership_client,membership_organization_id,
-      application_slug,return_origin,node_profile from identity.realmtarget order by realm_id,target`),
+      application_slug,return_origin,node_profile from identity.realmtarget${scoped ? ' where realm_id=$1' : ''} order by realm_id,target`,
+      scoped ? [realmId] : undefined),
   ]);
-  const expected = expectedIdentityNodeDatabaseManifest();
   const actual = {
     realms: realmResult.rows.map((row) => ({ ...row })),
     entries: entryResult.rows.map((row) => ({ ...row })),
     targets: targetResult.rows.map((row) => ({ ...row })),
   };
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-    throw new Error(`IDENTITY_NODE_MANIFEST_RUNTIME_DRIFT:${IDENTITY_NODE_MANIFEST.revision}`);
+    throw new Error(`IDENTITY_NODE_MANIFEST_RUNTIME_DRIFT:${nodeId ?? IDENTITY_NODE_MANIFEST.revision}`);
   }
 }
 
