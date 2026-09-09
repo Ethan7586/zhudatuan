@@ -10,7 +10,7 @@ export function AuthCard({
 }: React.PropsWithChildren<
   Readonly<{
     stage: 1 | 2;
-    flow?: 'login' | 'registration';
+    flow?: 'login' | 'invitation';
     onBack: () => void;
   }>
 >) {
@@ -45,10 +45,10 @@ export function AuthCard({
         <div className="authsurfaceframe">
           <div className="authsurface">
             <div className="authsurfacehead">
-              {flow === 'registration' ? (
+              {flow === 'invitation' ? (
                 <div className="authflowlabel">
                   <ShieldCheck aria-hidden="true" />
-                  <span>安全邀请注册</span>
+                  <span>企业安全邀请</span>
                 </div>
               ) : (
                 <div className="authsteps" aria-label={`认证进度：第 ${stage} 步，共 2 步`}>
@@ -68,7 +68,7 @@ export function AuthCard({
               )}
               <div className="authsurfacelabel">
                 <Brand variant="mark" />
-                <span>{flow === 'registration' ? '新用户注册' : stage === 1 ? '账号认证' : '选择进入方式'}</span>
+                <span>{flow === 'invitation' ? '企业邀请' : stage === 1 ? '账号认证' : '选择进入方式'}</span>
               </div>
             </div>
             <div className="authsurfacebody">{children}</div>

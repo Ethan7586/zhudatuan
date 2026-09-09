@@ -20,7 +20,7 @@ export function InvitationForm({
     await vm.submit();
   };
   return (
-    <form onSubmit={(event) => void submit(event)} className="authform" aria-label="邀请码注册">
+    <form onSubmit={(event) => void submit(event)} className="authform" aria-label="企业邀请验证">
       <label className="authfield">
         <span className="authlabel">
           <KeyRound aria-hidden="true" />
@@ -51,7 +51,7 @@ export function InvitationForm({
       {agreement}
       <Button type="submit" tone="primary" isDisabled={busy} className="authfull">
         {busy ? <RefreshCw className="authspin" aria-hidden="true" /> : <ArrowRight aria-hidden="true" />}
-        {busy ? '正在安全验证…' : '验证邀请码，继续注册'}
+        {busy ? '正在安全验证…' : '验证邀请码，继续'}
       </Button>
     </form>
   );

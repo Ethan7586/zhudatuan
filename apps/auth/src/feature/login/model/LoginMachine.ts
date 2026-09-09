@@ -31,7 +31,7 @@ export function loginMachine(state: LoginState, event: LoginEvent): LoginState {
         ? Object.freeze({ ...base(state), phase: event.invitation ? 'resolvinginvitation' : 'submitting', command: state.command + 1, bootstrap: state.bootstrap })
         : state;
     case 'INVITATION_RESOLVED':
-      return state.phase === 'resolvinginvitation' ? Object.freeze({ ...base(state), phase: 'submitting', bootstrap: state.bootstrap }) : state;
+      return state.phase === 'resolvinginvitation' ? Object.freeze({ ...base(state), phase: 'submitting', invitationMode: event.mode, bootstrap: state.bootstrap }) : state;
     case 'AUTHENTICATED':
       return isRunning(state) || state.phase === 'membershipselection' || state.phase === 'proof' || state.phase === 'enrollment'
         ? Object.freeze({ ...base(state), phase: 'exchangingticket', redirectUrl: event.redirectUrl, bootstrap: state.bootstrap })
@@ -51,10 +51,10 @@ export function loginMachine(state: LoginState, event: LoginEvent): LoginState {
     case 'MEMBERSHIP_REQUIRED':
       return isRunning(state) ? Object.freeze({ ...base(state), phase: 'membershipselection', memberships: event.memberships, bootstrap: state.bootstrap }) : state;
     case 'ENROLLMENT_COMPLETED':
-      return state.phase === 'enrollment' && state.submitting ? Object.freeze({ ...base(state), phase: 'registrationcomplete', bootstrap: state.bootstrap, notice: event.notice }) : state;
+      return state.phase === 'enrollment' && state.submitting ? Object.freeze({ ...base(state), phase: 'enrollmentcomplete', invitationMode: 'enrollment', bootstrap: state.bootstrap, notice: event.notice }) : state;
     case 'RECOVERABLE_FAILED':
       return isRunning(state) || state.phase === 'membershipselection' || state.phase === 'proof' || state.phase === 'enrollment'
-        ? Object.freeze({ ...base(state), phase: 'recoverablefailure', bootstrap: state.bootstrap, failure: event.failure })
+        ? Object.freeze({ ...withoutInvitation(state), phase: 'recoverablefailure', bootstrap: state.bootstrap, failure: event.failure })
         : state;
     case 'TERMINAL_FAILED':
       return Object.freeze({ ...base(state), phase: 'terminalfailure', failure: event.failure });
@@ -65,7 +65,7 @@ export function loginMachine(state: LoginState, event: LoginEvent): LoginState {
       if (state.phase === 'recoverablefailure' && state.bootstrap) return Object.freeze({ ...base(state), phase: 'ready', bootstrap: state.bootstrap });
       return state;
     case 'BACK_REQUESTED':
-      return state.phase === 'membershipselection' || state.phase === 'proof' || (state.phase === 'enrollment' && !state.submitting) ? Object.freeze({ ...base(state), phase: 'ready', bootstrap: state.bootstrap }) : state;
+      return state.phase === 'membershipselection' || state.phase === 'proof' || (state.phase === 'enrollment' && !state.submitting) ? Object.freeze({ ...withoutInvitation(state), phase: 'ready', bootstrap: state.bootstrap }) : state;
   }
 }
 
@@ -74,7 +74,24 @@ function isRunning(state: LoginState): state is Extract<LoginState, { phase: 'ch
 }
 
 function base(state: LoginState) {
-  return Object.freeze({ target: state.target, method: state.method, accepted: state.accepted, command: state.command, ...(state.notice ? { notice: state.notice } : {}) });
+  return Object.freeze({
+    target: state.target,
+    method: state.method,
+    accepted: state.accepted,
+    command: state.command,
+    ...(state.notice ? { notice: state.notice } : {}),
+    ...(state.invitationMode ? { invitationMode: state.invitationMode } : {}),
+  });
+}
+
+function withoutInvitation(state: LoginState) {
+  return Object.freeze({
+    target: state.target,
+    method: state.method,
+    accepted: state.accepted,
+    command: state.command,
+    ...(state.notice ? { notice: state.notice } : {}),
+  });
 }
 
 function bootstrap(state: LoginState, target: LoginState['target']): LoginState {

@@ -5,6 +5,7 @@ import type { EnrollmentState } from '../../enrollment';
 import type { Membership } from '../../membership';
 import type { LoginProofMethod } from './Login';
 import type { Challenge } from '../../challenge';
+import type { InvitationMode } from '../../invitation';
 
 interface BaseState {
   readonly target: AuthTarget;
@@ -12,6 +13,7 @@ interface BaseState {
   readonly accepted: boolean;
   readonly command: number;
   readonly notice?: string;
+  readonly invitationMode?: Exclude<InvitationMode, 'unknown'>;
 }
 
 interface BootstrappedState extends BaseState {
@@ -29,7 +31,7 @@ export type LoginState =
   | Readonly<BootstrappedState & { phase: 'enrollment'; enrollment: EnrollmentState; submitting: boolean }>
   | Readonly<BootstrappedState & { phase: 'proof'; reference: string; methodKind: LoginProofMethod; expiresAt: string; challenge?: Challenge }>
   | Readonly<BootstrappedState & { phase: 'membershipselection'; memberships: readonly Membership[] }>
-  | Readonly<BootstrappedState & { phase: 'registrationcomplete' }>
+  | Readonly<BootstrappedState & { phase: 'enrollmentcomplete' }>
   | Readonly<BootstrappedState & { phase: 'redirecting'; redirectUrl: string }>
   | Readonly<BootstrappedState & { phase: 'recoverablefailure'; failure: FailureView }>
   | Readonly<BaseState & { phase: 'terminalfailure'; failure: FailureView }>
@@ -52,7 +54,7 @@ export type LoginEvent =
   | Readonly<{ type: 'CHALLENGE_FAILED'; command: number; failure: FailureView }>
   | Readonly<{ type: 'SUBMIT_REQUESTED'; invitation?: boolean }>
   | Readonly<{ type: 'AUTHENTICATED'; command: number; redirectUrl: string }>
-  | Readonly<{ type: 'INVITATION_RESOLVED'; command: number }>
+  | Readonly<{ type: 'INVITATION_RESOLVED'; command: number; mode: Exclude<InvitationMode, 'unknown'> }>
   | Readonly<{ type: 'TICKET_EXCHANGED'; command: number }>
   | Readonly<{ type: 'ENROLLMENT_REQUIRED'; command: number; enrollment: EnrollmentState }>
   | Readonly<{ type: 'ENROLLMENT_SUBMIT_REQUESTED' }>

@@ -7,4 +7,5 @@ export interface InvitationResolution {
   readonly signal?: AbortSignal;
 }
 
+export type InvitationMode = 'unknown' | 'enrollment' | 'signin';
 export type InvitationOutcome = LoginOutcome;

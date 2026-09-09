@@ -5,7 +5,7 @@ import { LoginPage, type LoginPageProps } from '../../src/feature/login/view/Log
 import { bootstrap } from '../TestData';
 
 describe('small-screen login journey', () => {
-  it('keeps target, method, credential, recovery, registration and policy actions available at 375px', () => {
+  it('keeps target, method, credential, recovery, invitation and policy actions available at 375px', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
     render(<LoginPage {...props()} />);
 
@@ -17,7 +17,7 @@ describe('small-screen login journey', () => {
     expect(screen.getByLabelText(/登录账号或已绑定手机号/)).toBeTruthy();
     expect(screen.getByLabelText(/^密码$/)).toBeTruthy();
     expect(screen.getByRole('button', { name: '忘记密码？' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '开始注册' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '验证邀请' })).toBeTruthy();
     expect(screen.getByRole('checkbox')).toBeTruthy();
     expect(screen.getByRole('button', { name: /服务协议/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /隐私政策/ })).toBeTruthy();

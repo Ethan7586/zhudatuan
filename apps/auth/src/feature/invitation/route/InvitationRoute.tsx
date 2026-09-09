@@ -16,7 +16,7 @@ export function Component() {
         <AuthRuntime
           dependencies={dependencies}
           request={request}
-          journey="registration"
+          journey="invitation"
           onTarget={(target) => void navigate({ pathname: location.pathname, search: authTargetSearch(location.search, target) }, { replace: true })}
           onLogin={() => void navigate({ pathname: ROUTES.authlogin, search: location.search })}
         />

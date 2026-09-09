@@ -16,7 +16,7 @@ import { startLoginProvider } from './LoginProviderAction';
 import { invitationIssues, otpIssues, passwordIssues, subjectIssue } from '../model/LoginValidation';
 
 const NO_METHODS: readonly [] = Object.freeze([]);
-export function useLoginViewModel(dependencies: Dependencies, request: SessionRequest, journey: 'login' | 'registration', onTarget: (target: SessionRequest['target']) => void) {
+export function useLoginViewModel(dependencies: Dependencies, request: SessionRequest, journey: 'login' | 'invitation', onTarget: (target: SessionRequest['target']) => void) {
   const [state, dispatch] = useReducer(loginMachine, request.target, initialLoginState);
   const [fields, setFields] = useState<Readonly<Record<string, string>>>({});
   const [recovery, setRecovery] = useState(false);
@@ -99,7 +99,8 @@ export function useLoginViewModel(dependencies: Dependencies, request: SessionRe
     if (operation === undefined) return;
     try {
       const outcome = await dependencies.invitationView.resolve({ code, session, signal: operation.signal });
-      dispatch({ type: 'INVITATION_RESOLVED', command: operation.command });
+      const mode = outcome.kind === 'enrollment' || outcome.kind === 'enrolled' ? 'enrollment' : 'signin';
+      dispatch({ type: 'INVITATION_RESOLVED', command: operation.command, mode });
       await command.route(operation.command, outcome);
     } catch (cause) {
       command.fail(operation.command, cause);

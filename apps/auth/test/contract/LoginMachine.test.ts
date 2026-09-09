@@ -43,8 +43,8 @@ describe('LoginMachine', () => {
 
     const invitation = loginMachine(accepted, { type: 'SUBMIT_REQUESTED', invitation: true });
     expect(invitation.phase).toBe('resolvinginvitation');
-    const resolving = loginMachine(invitation, { type: 'INVITATION_RESOLVED', command: 2 });
-    expect(resolving.phase).toBe('submitting');
+    const resolving = loginMachine(invitation, { type: 'INVITATION_RESOLVED', command: 2, mode: 'enrollment' });
+    expect(resolving).toMatchObject({ phase: 'submitting', invitationMode: 'enrollment' });
     expect(loginMachine(resolving, { type: 'ENROLLMENT_REQUIRED', command: 2, enrollment: enrollment() })).toMatchObject({ phase: 'enrollment', submitting: false });
     expect(loginMachine(resolving, { type: 'PROOF_REQUIRED', command: 2, reference: 'proof', method: 'otp', expiresAt: '2099-01-01' }).phase).toBe('proof');
     expect(loginMachine(resolving, { type: 'MEMBERSHIP_REQUIRED', command: 2, memberships: [] }).phase).toBe('membershipselection');
@@ -94,7 +94,7 @@ describe('LoginMachine', () => {
     expect(enrollmentSubmitting).toMatchObject({ phase: 'enrollment', submitting: true, command: 3 });
     expect(loginMachine(enrollmentSubmitting, { type: 'ENROLLMENT_SUBMIT_REQUESTED' })).toBe(enrollmentSubmitting);
     expect(loginMachine(enrollmentSubmitting, { type: 'BACK_REQUESTED' })).toBe(enrollmentSubmitting);
-    expect(loginMachine(enrollmentSubmitting, { type: 'ENROLLMENT_COMPLETED', command: 3, notice: 'complete' })).toMatchObject({ phase: 'registrationcomplete', notice: 'complete' });
+    expect(loginMachine(enrollmentSubmitting, { type: 'ENROLLMENT_COMPLETED', command: 3, notice: 'complete' })).toMatchObject({ phase: 'enrollmentcomplete', notice: 'complete' });
     expect(loginMachine(enrollmentState, { type: 'ENROLLMENT_COMPLETED', command: 2, notice: 'illegal' })).toBe(enrollmentState);
     const enrollmentFailed = loginMachine(enrollmentSubmitting, { type: 'ENROLLMENT_FAILED', command: 3, failure: problem });
     expect(enrollmentFailed).toMatchObject({ phase: 'enrollment', submitting: false });

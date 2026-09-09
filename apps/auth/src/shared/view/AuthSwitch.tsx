@@ -1,12 +1,12 @@
 import { Button } from '@shop/design';
-import { LogIn, UserRoundPlus } from 'lucide-react';
+import { LogIn, ShieldCheck } from 'lucide-react';
 
 const COPY = Object.freeze({
   register: Object.freeze({
-    title: '还没有账号？',
-    description: '使用企业邀请码注册，系统会按邀请确定可进入的系统与权限。',
-    action: '开始注册',
-    icon: UserRoundPlus,
+    title: '收到企业邀请？',
+    description: '验证邀请码后，系统会自动识别新员工注册或已有成员安全进入。',
+    action: '验证邀请',
+    icon: ShieldCheck,
   }),
   login: Object.freeze({
     title: '已经有账号？',

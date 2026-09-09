@@ -23,7 +23,7 @@ describe('Auth application', () => {
     expect(await screen.findByRole('heading', { name: '统一账号认证' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '登录并进入消费者商城' })).toBeTruthy();
     expect(screen.queryByRole('tab', { name: '邀请码登录' })).toBeNull();
-    expect(screen.getByRole('button', { name: '开始注册' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '验证邀请' })).toBeTruthy();
     expect(await screen.findByRole('alert')).toBeTruthy();
   });
 });

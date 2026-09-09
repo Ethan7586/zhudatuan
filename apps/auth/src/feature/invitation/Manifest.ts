@@ -4,7 +4,7 @@ export const InvitationManifest = defineManifest({
   routeid: 'authinvitation',
   operation: OP_IDENTITY_INVITATIONS_RESOLVE,
   scope: 'public',
-  title: '使用邀请码注册',
-  breadcrumbs: ['邀请码注册'],
+  title: '验证企业邀请',
+  breadcrumbs: ['企业邀请'],
   load: () => import('./route/InvitationRoute'),
 });

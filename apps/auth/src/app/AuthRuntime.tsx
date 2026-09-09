@@ -12,7 +12,7 @@ import { AuthCard } from '../shell/AuthCard';
 import { AuthShell } from '../shell/AuthShell';
 import { useRecoveryViewModel } from '../feature/recovery/viewmodel/RecoveryViewModel';
 import { useEnrollmentViewModel } from '../feature/enrollment/viewmodel/EnrollmentViewModel';
-import { RegistrationPage } from '../feature/invitation/view/RegistrationPage';
+import { InvitationPage } from '../feature/invitation/view/InvitationPage';
 
 const EnrollmentPage = lazy(() => import('../feature/enrollment/view/EnrollmentPage').then((module) => ({ default: module.EnrollmentPage })));
 const RecoveryDialog = lazy(() => import('../feature/recovery/view/RecoveryDialog').then((module) => ({ default: module.RecoveryDialog })));
@@ -23,7 +23,7 @@ interface RuntimeBase {
   onTarget: (target: SessionRequest['target']) => void;
 }
 
-type AuthRuntimeProps = RuntimeBase & ({ readonly journey: 'login'; readonly onRegister: () => void } | { readonly journey: 'registration'; readonly onLogin: () => void });
+type AuthRuntimeProps = RuntimeBase & ({ readonly journey: 'login'; readonly onRegister: () => void } | { readonly journey: 'invitation'; readonly onLogin: () => void });
 
 export function AuthRuntime(props: Readonly<AuthRuntimeProps>) {
   const { dependencies, request, onTarget } = props;
@@ -32,7 +32,7 @@ export function AuthRuntime(props: Readonly<AuthRuntimeProps>) {
   if (state.phase === 'bootstrapping')
     return (
       <Frame flow={props.journey}>
-        <Loading label="正在初始化安全登录…" />
+        <Loading label={props.journey === 'invitation' ? '正在初始化企业邀请…' : '正在初始化安全登录…'} />
       </Frame>
     );
   if (state.phase === 'bootstrapfailure' || state.phase === 'terminalfailure')
@@ -60,8 +60,8 @@ export function AuthRuntime(props: Readonly<AuthRuntimeProps>) {
       <ProofForm busy={vm.busy} method={state.methodKind} {...(state.challenge ? { challenge: state.challenge } : {})} onSubmit={vm.proof} />
     ) : undefined;
   const page =
-    props.journey === 'registration' ? (
-      <RegistrationPage
+    props.journey === 'invitation' ? (
+      <InvitationPage
         bootstrap={state.bootstrap}
         target={state.target}
         {...(vm.focusTarget === undefined ? {} : { focusTarget: vm.focusTarget })}
@@ -69,7 +69,8 @@ export function AuthRuntime(props: Readonly<AuthRuntimeProps>) {
         busy={vm.busy}
         fields={vm.fields}
         current={invitationStep(state.phase)}
-        complete={state.phase === 'registrationcomplete'}
+        mode={state.invitationMode ?? (state.phase === 'enrollment' || state.phase === 'enrollmentcomplete' ? 'enrollment' : 'unknown')}
+        complete={state.phase === 'enrollmentcomplete'}
         {...(vm.pageFailure === undefined ? {} : { failure: vm.pageFailure })}
         {...(state.notice === undefined ? {} : { notice: state.notice })}
         {...(stage === undefined ? {} : { stage })}
@@ -117,14 +118,14 @@ export function AuthRuntime(props: Readonly<AuthRuntimeProps>) {
 }
 
 function invitationStep(phase: ReturnType<typeof useLoginViewModel>['state']['phase']): 1 | 2 | 3 | 4 {
-  if (phase === 'registrationcomplete') return 4;
+  if (phase === 'enrollmentcomplete') return 4;
   if (phase === 'enrollment') return 2;
   if (phase === 'proof' || phase === 'membershipselection') return 3;
   if (phase === 'exchangingticket' || phase === 'redirecting') return 4;
   return 1;
 }
 
-function Frame({ children, flow }: Readonly<{ children: ReactNode; flow: 'login' | 'registration' }>) {
+function Frame({ children, flow }: Readonly<{ children: ReactNode; flow: 'login' | 'invitation' }>) {
   return (
     <AuthShell>
       <AuthCard flow={flow} stage={1} onBack={() => undefined}>
