@@ -75,6 +75,27 @@ describe('ProductDrawer', () => {
     expect(screen.getByRole('button', { name: '归档' }).getAttribute('title')).toBe('当前账号没有归档商品的权限。');
     expect(screen.getByRole('button', { name: '编辑商品' }).getAttribute('title')).toBe('当前账号没有编辑商品的权限。');
   });
+
+  it('keeps versioned product writes disabled while the latest product snapshot is refreshing', () => {
+    render(
+      <ProductDrawer
+        listing={listing}
+        tab="overview"
+        detail={detail}
+        sections={readySections({ core: section('core', detail, 'refreshing') })}
+        onTab={() => undefined}
+        onClose={() => undefined}
+        onDetail={() => undefined}
+        onAction={() => undefined}
+        onPool={() => undefined}
+        canUse={allow}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: '编辑商品' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: '编辑商品' }).getAttribute('title')).toBe('正在读取商品主档版本');
+    expect(screen.getByRole('button', { name: '归档' }).hasAttribute('disabled')).toBe(true);
+  });
 });
 
 const allow = () => true;

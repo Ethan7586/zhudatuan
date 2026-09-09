@@ -89,7 +89,7 @@ function ProductDrawerContent({
   const publicationOperation = published ? OP_CATALOG_LISTINGS_UNPUBLISH : OP_CATALOG_LISTINGS_PUBLISH;
   const publicationAllowed = canUse(publicationOperation);
   const canChangePublication = publicationAllowed && isManagedListing(listing) && canChangeListingPublication(listing.status, detail?.status);
-  const expectedVersion = productVersion(detail?.version);
+  const expectedVersion = sections.core.condition === 'ready' ? productVersion(detail?.version) : undefined;
   const hasProduct = typeof listing.product_id === 'string' && listing.product_id !== '';
   const canReadDetail = canUse(OP_CATALOG_PRODUCT_DETAIL_READ);
   const canChangePrice = canUse(OP_CATALOG_LISTINGS_PRICE_SET);
