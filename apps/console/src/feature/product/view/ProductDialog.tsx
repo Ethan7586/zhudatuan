@@ -1,8 +1,10 @@
 import { useEffect, useRef, type FormEvent } from 'react';
 import { OP_CATALOG_LISTINGS_PRICE_SET, OP_CATALOG_LISTINGS_PUBLISH, OP_CATALOG_LISTINGS_UNPUBLISH, OP_CATALOG_PRODUCTS_ARCHIVE, OP_CATALOG_PRODUCTS_CREATE, OP_CATALOG_PRODUCTS_UPDATE } from '@shop/contract/ids';
+import { Button } from '@shop/design';
 import { PRODUCT_STATUS_OPTIONS, PRODUCT_TYPE_OPTIONS, presentProductAction } from '@shop/presentation';
 import type { ProductAction } from '../model/ProductAction';
 import type { ProductActionViewModel } from '../viewmodel/ProductActionViewModel';
+import { ProductIcon } from './ProductIcon';
 
 export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: ProductActionViewModel; onClose: () => void }>) {
   const action = viewmodel.action;
@@ -26,9 +28,9 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
             <p>商品操作</p>
             <h2>{presentProductAction(action.operation).title}</h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="关闭商品操作窗口">
-            ×
-          </button>
+          <Button className="productflowclose" tone="quiet" onPress={onClose} aria-label="关闭商品操作窗口">
+            <ProductIcon name="close" />
+          </Button>
         </header>
         <div className="productflowbody">
           {action.operation === OP_CATALOG_PRODUCTS_CREATE || action.operation === OP_CATALOG_PRODUCTS_UPDATE ? (
@@ -86,12 +88,12 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
           )}
         </div>
         <footer>
-          <button type="button" onClick={onClose}>
+          <Button onPress={onClose} isDisabled={viewmodel.submitting}>
             取消
-          </button>
-          <button className="productactionprimary" type="submit" disabled={viewmodel.submitting || !viewmodel.allowed} title={viewmodel.permissionReason}>
+          </Button>
+          <Button tone="primary" type="submit" isDisabled={viewmodel.submitting || !viewmodel.allowed} title={viewmodel.permissionReason}>
             {viewmodel.submitting ? '正在提交…' : presentProductAction(action.operation).submit}
-          </button>
+          </Button>
         </footer>
       </form>
     </div>
