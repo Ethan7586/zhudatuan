@@ -94,6 +94,7 @@ test('Console 页名、品牌与管理范围在平板宽度完整可读', async 
   await expectUsable(page);
   await expect(page.locator('.consolebreadcrumb > strong')).toHaveText('订单管理系统');
   await expect.poll(() => textFits(page, '.consolebreadcrumb > strong')).toBe(true);
+  await expect.poll(() => textFits(page, '.consoleheadersummary')).toBe(true);
   await expect.poll(() => textFits(page, '.sidebarbrandcopy strong')).toBe(true);
   await expect.poll(() => textFits(page, '.scopepath li[aria-current="page"]')).toBe(true);
 });
@@ -238,7 +239,10 @@ async function textFits(page: import('@playwright/test').Page, selector: string)
 }
 
 async function columnCount(page: import('@playwright/test').Page, selector: string): Promise<number> {
-  return page.locator(selector).first().evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length);
+  return page
+    .locator(selector)
+    .first()
+    .evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length);
 }
 
 async function elementFitsParent(page: import('@playwright/test').Page, selector: string, parent: string): Promise<boolean> {
