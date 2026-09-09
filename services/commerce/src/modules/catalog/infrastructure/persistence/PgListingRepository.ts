@@ -19,7 +19,7 @@ export class PgListingRepository implements ListingRepository, ListingFacetRepos
     const scopes = await this.scopes.visible(context, filter.scope, filter.scopeKind === 'store');
     const result = await database.query(
       `select listing.id,listing.scope_id,$1::text[] visible_scopes,listing.pool_id,listing.sku_id,listing.title,listing.status,listing.effective_at,listing.expires_at,
-      listing.version,listing.updated_at cursor_sort,sku.code,product.id product_id,product.product_type,product.attributes->>'coverUrl' cover_url,
+      listing.version,listing.updated_at cursor_sort,sku.code,product.id product_id,product.product_type,product.attributes->>'coverObject' cover_object,product.attributes->>'coverUrl' cover_url,
       product.attributes->>'subtitle' subtitle,product.category_id,category.name category_name,
       case when product.owner_partner_id is null then 'self' else 'partner' end source,product.owner_partner_id source_partner_id,pool.name pool_name,
       (select count(*)::integer from catalog.sku productsku where productsku.product_id=product.id and productsku.status='active') sku_count,

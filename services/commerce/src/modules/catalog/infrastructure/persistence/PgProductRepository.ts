@@ -7,6 +7,7 @@ import type { ProductRepository } from '../../application/port/ProductRepository
 import { Product, type ProductSnapshot } from '../../domain/model/Product';
 import { Sku } from '../../domain/model/Sku';
 import { Category, type CategorySnapshot } from '../../domain/model/Category';
+import { productAttributes } from '../../domain/model/ProductAttributes';
 import type { CatalogScopeReader } from './CatalogScopeReader';
 import { projectProductDetail, type ProductDetailRow } from './ProductDetailProjection';
 export class PgProductRepository implements ProductRepository {
@@ -21,7 +22,7 @@ export class PgProductRepository implements ProductRepository {
     const result = await database.query<ProductDetailRow>(
       `select product.id,product.title,product.product_type,product.status,product.version::text version,
         product.category_id,category.name category_name,product.brand_id,product.owner_partner_id,
-        product.attributes,product.attributes->>'coverUrl' cover_url,product.attributes->>'subtitle' subtitle,
+        product.attributes,product.attributes->>'coverObject' cover_object,product.attributes->>'coverUrl' cover_url,product.attributes->>'subtitle' subtitle,
         product.attributes->>'description' description,product.created_at "createdAt",product.updated_at "updatedAt",
         coalesce((select jsonb_agg(jsonb_build_object('id',sku.id,'code',sku.code,'status',sku.status,
           'specifications',coalesce((select jsonb_agg(jsonb_build_object('name',specification.key,'value',specification.value)
@@ -114,7 +115,7 @@ export class PgProductRepository implements ProductRepository {
         {
           ...(input.title === null ? {} : { title: input.title }),
           ...(category === undefined ? {} : { category }),
-          ...(input.attributes === null ? {} : { attributes: input.attributes }),
+          ...(input.attributes === null && input.coverObject === undefined ? {} : { attributes: productAttributes(current.attributes, input.attributes, input.coverObject) }),
           ...(input.status === null ? {} : { state: input.status }),
         },
         input.expectedVersion

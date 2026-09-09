@@ -47,6 +47,9 @@ import { createJobs, createProviderJobs } from './interface/job/JobFactory';
 import { CATALOG_QUALIFICATION_PORT } from '../qualification/public';
 import { ListingPublication } from './application/service/ListingPublication';
 import { IMPORT_OBJECT_PORT, RUNTIME_IMPORT_PORT } from '../runtime/public';
+import { ASSET_PORT } from '../runtime/public';
+import { MediauploadsCreateHandler } from './application/handler/MediauploadsCreateHandler';
+import { ProductMedia } from './application/service/ProductMedia';
 
 export const CatalogModule = defineModule(Manifest, {
   jobs: createJobs,
@@ -60,18 +63,21 @@ export const CatalogModule = defineModule(Manifest, {
     const partners = context.ports.get(CATALOG_PARTNER_PORT);
     const imports = context.ports.get(RUNTIME_IMPORT_PORT);
     const objects = context.service(OBJECT_STORE);
+    const assets = context.ports.get(ASSET_PORT);
+    const media = new ProductMedia(assets);
     const publication = new ListingPublication(listings, context.ports.get(CATALOG_QUALIFICATION_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_INVENTORY_PORT));
     return [
       new PoolsReadHandler(pools),
       new PoolsAttachHandler(pools),
       new PoolsDetachHandler(pools),
       new PoolsAllocateHandler(pools),
-      new ProductDetailReadHandler(products, context.ports.get(CATALOG_INVENTORY_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_QUALIFICATION_PORT), context.ports.get(ORGANIZATION_READ_PORT)),
-      new ProductsCreateHandler(products),
-      new ProductsUpdateHandler(products),
+      new ProductDetailReadHandler(products, context.ports.get(CATALOG_INVENTORY_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_QUALIFICATION_PORT), context.ports.get(ORGANIZATION_READ_PORT), media),
+      new MediauploadsCreateHandler(assets),
+      new ProductsCreateHandler(products, media),
+      new ProductsUpdateHandler(products, media),
       new ProductsArchiveHandler(products),
       new FacetsReadHandler(listings, partners),
-      new ListingsReadHandler(listings, context.ports.get(CATALOG_INVENTORY_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_QUALIFICATION_PORT), partners),
+      new ListingsReadHandler(listings, context.ports.get(CATALOG_INVENTORY_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_QUALIFICATION_PORT), partners, media),
       new ListingsPublishHandler(publication),
       new ListingsPriceSetHandler(listings, context.ports.get(CATALOG_PRICE_COMMAND_PORT)),
       new ListingsPoolSetHandler(listings),

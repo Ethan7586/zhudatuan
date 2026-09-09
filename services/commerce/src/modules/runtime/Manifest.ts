@@ -2,6 +2,7 @@ import { defineModuleManifest } from '../../composition/ModuleManifest';
 import {
   EVENT_EVIDENCE_READ_PORT,
   EVENT_REPLAY_PORT,
+  ASSET_PORT,
   EXPORT_PORT,
   EXPORT_RUNNER_PORT,
   IMPORT_BATCH_FACTORY_PORT,
@@ -17,7 +18,7 @@ import {
 export const Manifest = defineModuleManifest({
   id: 'runtime',
   services: ['cache', 'database.querymetrics', 'extension.registry', 'identity.invitationkeyversions', 'object.store'],
-  ports: [RUNTIME_IMPORT_PORT, JOB_PORT, EXPORT_PORT, IMPORT_OBJECT_PORT, EVENT_EVIDENCE_READ_PORT, EVENT_REPLAY_PORT],
+  ports: [RUNTIME_IMPORT_PORT, JOB_PORT, EXPORT_PORT, IMPORT_OBJECT_PORT, EVENT_EVIDENCE_READ_PORT, EVENT_REPLAY_PORT, ASSET_PORT],
   workloads: {
     jobs: {
       dependencies: ['identity', 'checkout', 'pricing', 'verification', 'observability'],

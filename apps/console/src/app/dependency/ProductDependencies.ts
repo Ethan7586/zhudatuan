@@ -10,6 +10,7 @@ import type { ReadFacets } from '../../feature/product/application/ReadFacets';
 import type { ReadPools } from '../../feature/product/application/ReadPools';
 import type { ReadProduct } from '../../feature/product/application/ReadProduct';
 import type { ReadProducts } from '../../feature/product/application/ReadProducts';
+import type { UploadProductImage } from '../../feature/product/application/UploadProductImage';
 import type { ProductImportTemplate } from '../../feature/product/model/ProductImport';
 import type { ProductImportPort, ProductPort } from '../../feature/product/public';
 import type { PreferencePort } from '../../shared/preference/PreferencePort';
@@ -24,6 +25,7 @@ export interface ProductDependencies {
   readonly previewBatch: PreviewProductBatch;
   readonly executeBatch: ExecuteProductBatch;
   readonly changePool: ChangePool;
+  readonly uploadImage: UploadProductImage;
   readonly executeAction: ExecuteProductAction;
   readonly createImport: CreateProductImport;
   readonly readImport: ReadProductImport;

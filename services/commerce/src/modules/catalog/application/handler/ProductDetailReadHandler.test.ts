@@ -17,7 +17,7 @@ describe('ProductDetailReadHandler', () => {
     } as unknown as CatalogInventoryPort;
     const pricing = { prices: vi.fn() } as unknown as CatalogPricingPort;
     const qualifications = { decisions: vi.fn() } as unknown as CatalogQualificationPort;
-    const handler = new ProductDetailReadHandler(products, inventory, pricing, qualifications, organizations);
+    const handler = new ProductDetailReadHandler(products, inventory, pricing, qualifications, organizations, media);
 
     const reply = await handler.execute({ path: { productid: 'product:one' }, query: { section: 'inventory' }, body: {} } as never, readHandlerContext('catalog.product.detail.read', {} as never));
 
@@ -42,7 +42,7 @@ describe('ProductDetailReadHandler', () => {
 
   it('loads qualification decisions as their own retryable partition', async () => {
     const qualifications = { decisions: vi.fn(async () => [{ listing: 'listing:one', eligible: false, policyVersion: 4 }]) } as CatalogQualificationPort;
-    const handler = new ProductDetailReadHandler(repository(), { stock: vi.fn() } as unknown as CatalogInventoryPort, { prices: vi.fn() } as unknown as CatalogPricingPort, qualifications, organizations);
+    const handler = new ProductDetailReadHandler(repository(), { stock: vi.fn() } as unknown as CatalogInventoryPort, { prices: vi.fn() } as unknown as CatalogPricingPort, qualifications, organizations, media);
 
     const reply = await handler.execute({ path: { productid: 'product:one' }, query: { section: 'qualification' }, body: {} } as never, readHandlerContext('catalog.product.detail.read', {} as never));
 
@@ -70,7 +70,7 @@ describe('ProductDetailReadHandler', () => {
         },
       ]),
     } as unknown as CatalogInventoryPort;
-    const handler = new ProductDetailReadHandler(repository(), inventory, { prices: vi.fn() } as unknown as CatalogPricingPort, { decisions: vi.fn() } as unknown as CatalogQualificationPort, organizations);
+    const handler = new ProductDetailReadHandler(repository(), inventory, { prices: vi.fn() } as unknown as CatalogPricingPort, { decisions: vi.fn() } as unknown as CatalogQualificationPort, organizations, media);
 
     const reply = await handler.execute({ path: { productid: 'product:one' }, query: { section: 'inventory' }, body: {} } as never, readHandlerContext('catalog.product.detail.read', {} as never));
 
@@ -90,6 +90,31 @@ describe('ProductDetailReadHandler', () => {
     ]);
     expect(reply.body.inventory[0]).not.toHaveProperty('reserved');
     expect(reply.body.inventory[0]).not.toHaveProperty('watermark');
+    expect(() => OPERATION_SCHEMAS['catalog.product.detail.read'].output.parse(reply.body)).not.toThrow();
+  });
+
+  it('projects an opaque cover object as a fresh signed image without exposing the reference', async () => {
+    const products = {
+      detail: vi.fn(async () => ({ ...detail, cover_object: 'object:cover', cover_url: null })),
+    } as unknown as ProductRepository;
+    const links = vi.fn(async () => new Map([['object:cover', 'http://127.0.0.1:3001/objects/signed-cover']]));
+    const handler = new ProductDetailReadHandler(
+      products,
+      { stock: vi.fn() } as unknown as CatalogInventoryPort,
+      { prices: vi.fn() } as unknown as CatalogPricingPort,
+      { decisions: vi.fn() } as unknown as CatalogQualificationPort,
+      organizations,
+      { links }
+    );
+
+    const reply = await handler.execute({ path: { productid: 'product:one' }, query: { section: 'core' }, body: {} } as never, readHandlerContext('catalog.product.detail.read', {} as never));
+
+    expect(links).toHaveBeenCalledWith(['object:cover']);
+    expect(reply.body).toMatchObject({
+      cover_url: 'http://127.0.0.1:3001/objects/signed-cover',
+      media: [{ id: 'media:cover', kind: 'image', url: 'http://127.0.0.1:3001/objects/signed-cover', alt: '早餐', sort: 0 }],
+    });
+    expect(reply.body).not.toHaveProperty('cover_object');
     expect(() => OPERATION_SCHEMAS['catalog.product.detail.read'].output.parse(reply.body)).not.toThrow();
   });
 });
@@ -113,6 +138,7 @@ const detail: ProductDetailBase = Object.freeze({
   brand_name: null,
   owner_partner_id: null,
   owner_partner_name: null,
+  cover_object: null,
   cover_url: null,
   subtitle: null,
   createdAt: '2026-09-01T00:00:00.000Z',
@@ -145,4 +171,8 @@ const detail: ProductDetailBase = Object.freeze({
 
 const organizations = {
   summaries: vi.fn(async () => [{ id: 'mall:one', name: '员工福利商城', kind: 'mall' }]),
+};
+
+const media = {
+  links: vi.fn(async () => new Map<string, string>()),
 };

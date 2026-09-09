@@ -60,12 +60,14 @@ runtime:
     maximumAuthorizationSeconds: 900
     maximumChunkBytes: 8388608
     maximumAttachmentBytes: 20971520
+    maximumImageBytes: 10485760
     maximumRetentionDays: 3650
     retentionDays:
       import: 1
       aftersale: 365
       support: 365
       qualification: 3650
+      catalog: 3650
   queue:
     maximumDepth: 4096
     reservedDepth: 1024

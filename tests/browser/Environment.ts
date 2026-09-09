@@ -2,6 +2,8 @@ import { expect, type Page } from '@playwright/test';
 import { LOCAL_AUTH_ORIGIN, LOCAL_CONSOLE_ORIGIN, LOCAL_STOREFRONT_ORIGIN, type AuthTarget } from '@shop/config/client';
 import { localSeedEnvironment } from '@shop/config/server';
 import { localSecret } from '../../tools/seed/src/LocalSecrets';
+import { Client } from 'pg';
+import { HttpKmsClient } from '../../services/commerce/src/platform/crypto/KmsClient';
 
 const account = 'ethan';
 
@@ -44,6 +46,19 @@ export async function completePasswordSignIn(page: Page): Promise<void> {
   await page.getByRole('button', { name: /登录并进入/ }).click();
 }
 
+export async function completeConsoleStepup(page: Page): Promise<void> {
+  const dialog = page.getByRole('dialog', { name: '开启二次验证' });
+  await expect(dialog).toBeVisible();
+  const challengeResponse = page.waitForResponse((response) => response.request().method() === 'POST' && response.url().endsWith('/api/v1/identity/stepup/challenges'));
+  await dialog.getByRole('button', { name: '发送验证码' }).click();
+  const payload = (await (await challengeResponse).json()) as Readonly<{ id?: unknown }>;
+  if (typeof payload.id !== 'string') throw new Error('BROWSER_STEPUP_CHALLENGE_INVALID');
+  const code = await localStepupCode(payload.id);
+  await dialog.getByLabel('二次验证验证码').fill(code);
+  await Promise.all([page.waitForNavigation({ waitUntil: 'commit' }), dialog.getByRole('button', { name: '确认验证' }).click()]);
+  await page.locator('main:visible').first().waitFor({ state: 'visible' });
+}
+
 export async function expectResponsivePage(page: Page): Promise<void> {
   await page.locator('main:visible').first().waitFor({ state: 'visible' });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
@@ -51,4 +66,18 @@ export async function expectResponsivePage(page: Page): Promise<void> {
 
 function escape(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+async function localStepupCode(challenge: string): Promise<string> {
+  const environment = localSeedEnvironment();
+  const database = new Client({ connectionString: await localSecret(environment.adminDatabaseConnectionRef) });
+  await database.connect();
+  try {
+    const result = await database.query<{ code_ciphertext: string }>('select code_ciphertext from identity.challengesecret where challenge_id=$1', [challenge]);
+    const ciphertext = result.rows[0]?.code_ciphertext;
+    if (!ciphertext) throw new Error('BROWSER_STEPUP_SECRET_MISSING');
+    return new HttpKmsClient(environment.kmsEndpoint, environment.kmsBearerToken).decrypt('pii', 'identity/challenge', ciphertext, { challenge, purpose: 'stepup' });
+  } finally {
+    await database.end();
+  }
 }

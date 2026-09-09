@@ -49,6 +49,17 @@ classes:
     retentionRef: config/capacity.yml#runtime.upload.retentionDays.support
     worm: governance
     scan: required
+  catalog:
+    provider: aliyunoss
+    bucket: shop-catalog
+    prefix: '{tenantHash}/asset/{date}/{object}'
+    writers: [api]
+    readers: [api]
+    retentionRef: config/capacity.yml#runtime.upload.retentionDays.catalog
+    delivery: shortlived-signedurl
+    publicAcl: forbidden
+    worm: false
+    scan: required
   experience:
     bucket: shop-experience
     prefix: 'releases/{application}/{release}/{sha256}'

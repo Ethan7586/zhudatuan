@@ -13,6 +13,7 @@ export interface ProductDetailBase {
   readonly brand_name: string | null;
   readonly owner_partner_id: string | null;
   readonly owner_partner_name: string | null;
+  readonly cover_object: string | null;
   readonly cover_url: string | null;
   readonly subtitle: string | null;
   readonly description: string | null;
@@ -50,7 +51,16 @@ export interface ProductRepository {
   ): Promise<Readonly<Record<string, unknown>>>;
   update(
     context: WriteTransactionContext,
-    input: Readonly<{ id: string; scope: string; title: string | null; category: string | null; attributes: Readonly<Record<string, unknown>> | null; status: ProductState | null; expectedVersion: number }>
+    input: Readonly<{
+      id: string;
+      scope: string;
+      title: string | null;
+      category: string | null;
+      attributes: Readonly<Record<string, unknown>> | null;
+      coverObject: string | null | undefined;
+      status: ProductState | null;
+      expectedVersion: number;
+    }>
   ): Promise<Readonly<Record<string, unknown>>>;
   archive(context: WriteTransactionContext, id: string, scope: string, expectedVersion: number): Promise<Readonly<Record<string, unknown>>>;
 }

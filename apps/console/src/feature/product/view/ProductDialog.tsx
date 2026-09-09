@@ -5,6 +5,7 @@ import { PRODUCT_STATUS_OPTIONS, PRODUCT_TYPE_OPTIONS, presentProductAction } fr
 import type { ProductAction } from '../model/ProductAction';
 import type { ProductActionViewModel } from '../viewmodel/ProductActionViewModel';
 import { ProductIcon } from './ProductIcon';
+import { ProductImageField } from './ProductImageField';
 
 export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: ProductActionViewModel; onClose: () => void }>) {
   const action = viewmodel.action;
@@ -21,14 +22,14 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
   };
   return (
     <div className="productflowoverlay">
-      <button className="productflowbackdrop" type="button" onClick={onClose} aria-label="关闭商品操作窗口" />
+      <button className="productflowbackdrop" type="button" onClick={onClose} aria-label="关闭商品操作窗口" disabled={viewmodel.submitting} />
       <form className="productflowdialog" aria-label={presentProductAction(action.operation).title} onSubmit={submit}>
         <header>
           <div>
             <p>商品操作</p>
             <h2>{presentProductAction(action.operation).title}</h2>
           </div>
-          <Button className="productflowclose" tone="quiet" onPress={onClose} aria-label="关闭商品操作窗口">
+          <Button className="productflowclose" tone="quiet" onPress={onClose} aria-label="关闭商品操作窗口" isDisabled={viewmodel.submitting}>
             <ProductIcon name="close" />
           </Button>
         </header>
@@ -67,6 +68,18 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
                   </select>
                 </label>
               ) : null}
+              <ProductImageField
+                current={viewmodel.currentImage}
+                image={viewmodel.image}
+                error={viewmodel.imageError}
+                canChoose={viewmodel.canUploadImage}
+                permissionReason={viewmodel.imagePermissionReason}
+                disabled={viewmodel.submitting}
+                progress={viewmodel.imageProgress}
+                title={viewmodel.title}
+                onChoose={viewmodel.chooseImage}
+                onRemove={viewmodel.removeImage}
+              />
             </>
           ) : null}
           {action.operation === OP_CATALOG_LISTINGS_PRICE_SET ? (
@@ -91,8 +104,13 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
           <Button onPress={onClose} isDisabled={viewmodel.submitting}>
             取消
           </Button>
-          <Button tone="primary" type="submit" isDisabled={viewmodel.submitting || !viewmodel.allowed} {...(viewmodel.permissionReason === undefined ? {} : { 'aria-describedby': 'productactionpermission' })}>
-            {viewmodel.submitting ? '正在提交…' : presentProductAction(action.operation).submit}
+          <Button
+            tone="primary"
+            type="submit"
+            isDisabled={viewmodel.submitting || !viewmodel.allowed || viewmodel.imageError !== undefined || (viewmodel.image instanceof File && !viewmodel.canUploadImage)}
+            {...(viewmodel.permissionReason === undefined ? {} : { 'aria-describedby': 'productactionpermission' })}
+          >
+            {viewmodel.submitting ? viewmodel.submittingLabel : presentProductAction(action.operation).submit}
           </Button>
         </footer>
       </form>

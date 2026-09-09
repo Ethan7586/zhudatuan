@@ -33,7 +33,16 @@ const edge = yaml('infrastructure/network/Edge.yml');
 const cors = yaml('infrastructure/storage/Cors.yml');
 const clients = yaml('config/clients.yml')?.clients?.map(({ id }) => id) ?? [];
 if (edge?.cors !== 'infrastructure/storage/Cors.yml' || cors?.credentials !== true || cors?.wildcard !== false) violation('CORS_POLICY_UNSAFE', join(root, 'infrastructure/storage/Cors.yml'));
-if (clients.length !== 6 || Object.keys(cors?.origins ?? {}).sort().join(',') !== [...clients].sort().join(',')) violation('CORS_SURFACE_SET_INVALID', join(root, 'infrastructure/storage/Cors.yml'));
+if (
+  clients.length !== 6 ||
+  Object.keys(cors?.origins ?? {})
+    .sort()
+    .join(',') !== [...clients].sort().join(',')
+)
+  violation('CORS_SURFACE_SET_INVALID', join(root, 'infrastructure/storage/Cors.yml'));
+for (const header of ['content-type', 'x-content-sha256', 'x-retention-until']) {
+  if (!cors?.headers?.request?.includes(header)) violation('CORS_OBJECT_UPLOAD_HEADER_MISSING', join(root, 'infrastructure/storage/Cors.yml'), header);
+}
 for (const surface of clients) {
   if (cors?.origins?.[surface]?.source !== `routes.${surface}.host` || !Array.isArray(cors.origins[surface].methods) || !cors.origins[surface].methods.includes('OPTIONS')) {
     violation('CORS_SURFACE_POLICY_INVALID', join(root, 'infrastructure/storage/Cors.yml'), surface);
@@ -57,11 +66,16 @@ if (['wechatpay', 'wechatnotification', 'sms', 'email'].some((id) => !egress?.se
 const networkPolicy = readFileSync(join(root, 'infrastructure/network/Policy.yml'), 'utf8');
 if (!networkPolicy.includes('shop-default-deny') || !networkPolicy.includes('shop-provider-egress') || /0\.0\.0\.0\/0/.test(networkPolicy)) violation('NETWORK_POLICY_EGRESS_UNSAFE', join(root, 'infrastructure/network/Policy.yml'));
 const storage = yaml('infrastructure/storage/Policy.yml');
-for (const kind of ['import', 'export', 'credential', 'support', 'experience', 'evidence']) if (!storage?.classes?.[kind]) violation('STORAGE_CLASS_MISSING', join(root, 'infrastructure/storage/Policy.yml'), kind);
+for (const kind of ['import', 'export', 'credential', 'support', 'catalog', 'experience', 'evidence']) if (!storage?.classes?.[kind]) violation('STORAGE_CLASS_MISSING', join(root, 'infrastructure/storage/Policy.yml'), kind);
 if (storage?.access?.default !== 'deny' || storage?.access?.publicAcl !== 'forbidden' || storage?.scan?.failMode !== 'closed') violation('STORAGE_POLICY_UNSAFE', join(root, 'infrastructure/storage/Policy.yml'));
 
 const secrets = yaml('infrastructure/security/Secrets.yml');
-if (secrets?.valuesInRepository !== 'forbidden' || !Array.isArray(secrets?.catalog) || secrets.catalog.length < 19 || secrets.catalog.some((item) => !item.id || !item.owner || !item.purpose || !Array.isArray(item.readers) || !item.revoke)) {
+if (
+  secrets?.valuesInRepository !== 'forbidden' ||
+  !Array.isArray(secrets?.catalog) ||
+  secrets.catalog.length < 19 ||
+  secrets.catalog.some((item) => !item.id || !item.owner || !item.purpose || !Array.isArray(item.readers) || !item.revoke)
+) {
   violation('SECRET_CATALOG_INCOMPLETE', join(root, 'infrastructure/security/Secrets.yml'));
 }
 const data = yaml('infrastructure/security/Data.yml');
@@ -77,11 +91,21 @@ if (database?.rls?.required !== 'all-tenant-tables' || database?.rls?.force !== 
   violation('DATABASE_SECURITY_POLICY_INCOMPLETE', join(root, 'infrastructure/security/Database.yml'));
 }
 const extensions = yaml('infrastructure/security/Extensions.yml');
-if (extensions?.package?.signature !== 'ed25519' || extensions?.runtime?.process !== 'provider' || extensions?.runtime?.apiProcessLoad !== 'forbidden' || extensions?.sandbox?.contractSuite?.join(',') !== 'Contract,Fixture,Mapping,Failure') {
+if (
+  extensions?.package?.signature !== 'ed25519' ||
+  extensions?.runtime?.process !== 'provider' ||
+  extensions?.runtime?.apiProcessLoad !== 'forbidden' ||
+  extensions?.sandbox?.contractSuite?.join(',') !== 'Contract,Fixture,Mapping,Failure'
+) {
   violation('EXTENSION_SECURITY_POLICY_INCOMPLETE', join(root, 'infrastructure/security/Extensions.yml'));
 }
 const identityProviders = yaml('config/identityproviders.yml');
-if (identityProviders?.security?.pkce !== 'S256' || identityProviders?.security?.bindingConflict !== 'reject' || identityProviders?.security?.issuerPolicy !== 'exact-configured-https-origin' || identityProviders?.security?.redirectMatch !== 'exact-origin-and-path') {
+if (
+  identityProviders?.security?.pkce !== 'S256' ||
+  identityProviders?.security?.bindingConflict !== 'reject' ||
+  identityProviders?.security?.issuerPolicy !== 'exact-configured-https-origin' ||
+  identityProviders?.security?.redirectMatch !== 'exact-origin-and-path'
+) {
   violation('IDENTITY_PROVIDER_SECURITY_INCOMPLETE', join(root, 'config/identityproviders.yml'));
 }
 
@@ -105,7 +129,10 @@ for (const object of objects.filter(({ kind }) => kind === 'table')) {
   if (typeof object.owner !== 'string' || !/^shop[a-z]+owner$/.test(object.owner)) violation('TABLE_OWNER_INVALID', join(root, 'database/contracts/objects.yml'), object.id);
 }
 
-const migrationText = files(join(root, 'database/migrations')).filter((file) => file.endsWith('.sql')).map((file) => readFileSync(file, 'utf8')).join('\n');
+const migrationText = files(join(root, 'database/migrations'))
+  .filter((file) => file.endsWith('.sql'))
+  .map((file) => readFileSync(file, 'utf8'))
+  .join('\n');
 for (const proof of ['force row level security', 'nobypassrls', 'revoke all', 'consume_action_proof', 'assert_role_separation']) {
   if (!migrationText.toLowerCase().includes(proof)) violation('DATABASE_SECURITY_PROOF_MISSING', join(root, 'database/migrations'), proof);
 }
@@ -137,11 +164,13 @@ function yaml(path) {
 
 function declaredHandlerMode(path) {
   const source = readFileSync(join(root, path), 'utf8');
-  return /readonly mode = ['"](read|write)['"]/.exec(source)?.[1]
-    ?? /OperationHandler<[^>]+,\s*['"](read|write)['"]/.exec(source)?.[1]
-    ?? /PreparedOperation<[^>]+,\s*[^,>]+,\s*['"](read|write)['"]/.exec(source)?.[1]
-    ?? /DurableOperationHandler<[^>]+,\s*[^,>]+,\s*[^,>]+,\s*['"](read|write)['"]/.exec(source)?.[1]
-    ?? null;
+  return (
+    /readonly mode = ['"](read|write)['"]/.exec(source)?.[1] ??
+    /OperationHandler<[^>]+,\s*['"](read|write)['"]/.exec(source)?.[1] ??
+    /PreparedOperation<[^>]+,\s*[^,>]+,\s*['"](read|write)['"]/.exec(source)?.[1] ??
+    /DurableOperationHandler<[^>]+,\s*[^,>]+,\s*[^,>]+,\s*['"](read|write)['"]/.exec(source)?.[1] ??
+    null
+  );
 }
 
 function lineOf(source, offset) {

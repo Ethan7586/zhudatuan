@@ -97,6 +97,7 @@ export const OPERATION_SCHEMAS = Object.freeze({
   "catalog.pools.detach": Object.freeze({ input: exactOperationInput("CatalogPoolsDetachInput", ["poolid","scopeid"] as const, true), output: exactOperationOutput("CatalogPoolsDetachOutput") }),
   "catalog.pools.allocate": Object.freeze({ input: exactOperationInput("CatalogPoolsAllocateInput", ["poolid"] as const, true), output: exactOperationOutput("CatalogPoolsAllocateOutput") }),
   "catalog.product.detail.read": Object.freeze({ input: exactOperationInput("CatalogProductDetailReadInput", ["productid"] as const, false), output: exactOperationOutput("CatalogProductDetailReadOutput") }),
+  "catalog.mediauploads.create": Object.freeze({ input: exactOperationInput("CatalogMediauploadsCreateInput", [] as const, true), output: exactOperationOutput("CatalogMediauploadsCreateOutput") }),
   "catalog.products.create": Object.freeze({ input: exactOperationInput("CatalogProductsCreateInput", [] as const, true), output: exactOperationOutput("CatalogProductsCreateOutput") }),
   "catalog.products.update": Object.freeze({ input: exactOperationInput("CatalogProductsUpdateInput", ["productid"] as const, true), output: exactOperationOutput("CatalogProductsUpdateOutput") }),
   "catalog.products.archive": Object.freeze({ input: exactOperationInput("CatalogProductsArchiveInput", ["productid"] as const, true), output: exactOperationOutput("CatalogProductsArchiveOutput") }),

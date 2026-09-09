@@ -30,6 +30,10 @@ export default defineConfig({
   reporter: [['list'], ['html', { outputFolder: 'tmp/playwright/report', open: 'never' }]],
   use: {
     ...devices['Desktop Chrome'],
+    // Local infrastructure uses the repository-generated TLS certificate. Browser
+    // journeys must trust it so signed object uploads exercise the HTTPS service
+    // itself instead of failing inside Chromium before the request is delivered.
+    ignoreHTTPSErrors: true,
     locale: 'zh-CN',
     timezoneId: 'Asia/Shanghai',
     trace: 'retain-on-failure',

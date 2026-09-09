@@ -73,6 +73,7 @@ describe('UploadSession', () => {
     const session = new UploadSession({ authorizeUpload } as unknown as ObjectStore);
     const invalid = [
       { ...request(), category: 'import' as const, name: 'large.xlsx', contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', size: IMPORT_CAPACITY.maximumSpreadsheetBytes + 1 },
+      { ...request(), category: 'asset' as const, size: RUNTIME_LIMITS.upload.maximumImageBytes + 1 },
       { ...request(), name: 'receipt.pdf' },
       { ...request(), retentionDays: RUNTIME_LIMITS.upload.maximumRetentionDays + 1 },
     ];

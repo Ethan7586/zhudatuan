@@ -12,7 +12,7 @@ import { EvaluateReadiness } from './application/service/EvaluateReadiness';
 import { PgRuntimeRepository } from './infrastructure/persistence/PgRuntimeRepository';
 import { Manifest } from './Manifest';
 import { createJobs } from './interface/job/JobFactory';
-import { EVENT_EVIDENCE_READ_PORT, EVENT_REPLAY_PORT, EXPORT_RUNNER_PORT, IMPORT_BATCH_FACTORY_PORT, IMPORT_OBJECT_PORT, IMPORT_RUNNER_PORT, LEASE_PORT, OUTBOX_RELAY_PORT, TABULAR_FILE_PORT } from './public';
+import { ASSET_PORT, EVENT_EVIDENCE_READ_PORT, EVENT_REPLAY_PORT, EXPORT_RUNNER_PORT, IMPORT_BATCH_FACTORY_PORT, IMPORT_OBJECT_PORT, IMPORT_RUNNER_PORT, LEASE_PORT, OUTBOX_RELAY_PORT, TABULAR_FILE_PORT } from './public';
 import { PgOutboxRelay } from './infrastructure/persistence/PgOutboxRelay';
 import { RUNTIME_IMPORT_PORT } from './public/ImportPort';
 import { PgRuntimeImporting } from './infrastructure/persistence/PgRuntimeImporting';
@@ -42,6 +42,7 @@ import { RuntimeTabularFiles } from './infrastructure/storage/RuntimeTabularFile
 import { PgEventEvidenceReadPort } from './infrastructure/persistence/PgEventEvidenceReadPort';
 import { PgEventReplayPort } from './infrastructure/persistence/PgEventReplayPort';
 import { createWorkers } from './infrastructure/queue/WorkerFactory';
+import { RuntimeAssets } from './infrastructure/storage/RuntimeAssets';
 
 export const RuntimeModule = defineModule(Manifest, {
   jobs: createJobs,
@@ -53,6 +54,7 @@ export const RuntimeModule = defineModule(Manifest, {
     { token: IMPORT_OBJECT_PORT, value: new PrepareImportObject(context.service(OBJECT_STORE)) },
     { token: EVENT_EVIDENCE_READ_PORT, value: new PgEventEvidenceReadPort() },
     { token: EVENT_REPLAY_PORT, value: new PgEventReplayPort() },
+    { token: ASSET_PORT, value: new RuntimeAssets(context.service(OBJECT_STORE)) },
   ],
   jobPorts: (context) => {
     const execution = new RuntimeImportExecution(context.service(OBJECT_STORE));

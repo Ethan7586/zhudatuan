@@ -2,6 +2,7 @@ import { array, boolean, literal, null as nullSchema, number, optional, strictOb
 import { catalogListingsBatchInput, catalogListingsBatchOutput } from './CatalogBatchSchema';
 import { importCreated, importInput, importRead } from './ImportSchema';
 import { ContractJsonValueSchema } from './JsonSchema';
+import { ImageAssetInputSchema, ImageAssetUploadInputSchema, ImageAssetUploadOutputSchema } from './ObjectSchema';
 import { isoUtc, pageOutput, pageQuery, unsigned, version as entityVersion } from './Primitives';
 
 const text = string();
@@ -197,8 +198,16 @@ export const CATALOG_BODY_SCHEMAS = {
     title: string(),
     type: optional(literal(['physical', 'virtual', 'service', 'voucher'])),
     attributes: optional(ContractJsonValueSchema),
+    image: optional(ImageAssetInputSchema),
   }),
-  CatalogProductsUpdateInput: strictObject({ title: optional(string()), category: optional(string()), attributes: optional(ContractJsonValueSchema), status: optional(literal(['draft', 'review', 'active', 'archived'])) }),
+  CatalogProductsUpdateInput: strictObject({
+    title: optional(string()),
+    category: optional(string()),
+    attributes: optional(ContractJsonValueSchema),
+    image: optional(union([ImageAssetInputSchema, nullSchema()])),
+    status: optional(literal(['draft', 'review', 'active', 'archived'])),
+  }),
+  CatalogMediauploadsCreateInput: ImageAssetUploadInputSchema,
   CatalogProductsArchiveInput: strictObject({}),
   CatalogListingsPublishInput: strictObject({}),
   CatalogListingsUnpublishInput: strictObject({}),
@@ -245,6 +254,7 @@ export const CATALOG_OUTPUT_SCHEMAS = {
   }),
   CatalogProductsCreateOutput: product,
   CatalogProductsUpdateOutput: product,
+  CatalogMediauploadsCreateOutput: ImageAssetUploadOutputSchema,
   CatalogProductsArchiveOutput: product,
   CatalogListingsReadOutput: pageOutput(union([listingRead, sourceRead])),
   CatalogFacetsReadOutput: strictObject({ categories: array(facet), suppliers: array(facet), malls: array(facet), statuses: array(facet) }),

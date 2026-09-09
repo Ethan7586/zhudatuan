@@ -1,4 +1,5 @@
 import { HttpResponse, http } from 'msw';
+import { File as NodeFile } from 'node:buffer';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { Listing, Pool } from '../model/Product';
@@ -13,11 +14,27 @@ interface RecordedRequest {
   readonly body: unknown;
 }
 const requests: RecordedRequest[] = [];
+const objectUploads: Readonly<{ headers: Headers; bytes: Uint8Array }>[] = [];
 const server = setupServer(
   http.all('*/api/v1/catalog/**', async ({ request }) => {
     const url = new URL(request.url);
     const body = request.body === null ? null : await request.json();
     requests.push({ method: request.method, path: url.pathname, headers: request.headers, body });
+    if (url.pathname.endsWith('/mediauploads')) {
+      const image = body as { name: string; contentType: 'image/png'; size: number; sha256: string };
+      return HttpResponse.json(
+        {
+          reference: 'object:cover',
+          path: 'tenant/owner/asset/2030/01/01/cover.png',
+          sha256: image.sha256,
+          size: image.size,
+          contentType: image.contentType,
+          retentionUntil: '2030-12-31T00:00:00.000Z',
+          upload: { url: 'https://objects.test/upload', method: 'PUT', headers: { 'content-type': image.contentType }, expiresAt: '2030-01-01T00:05:00.000Z' },
+        },
+        { status: 201 }
+      );
+    }
     if (url.pathname.endsWith('/batches')) {
       const input = body as { phase: 'preview' | 'execute'; action: 'publish' | 'unpublish' };
       return HttpResponse.json({
@@ -35,12 +52,17 @@ const server = setupServer(
     if (url.pathname.endsWith('/allocations')) return HttpResponse.json(poolRecord, { status: 201 });
     if (url.pathname.endsWith('/publication')) return HttpResponse.json(listingRecord);
     return HttpResponse.json(url.pathname.endsWith('/products') ? productRecord : { ...productRecord, status: request.method === 'DELETE' ? 'archived' : 'active' });
+  }),
+  http.put('https://objects.test/upload', async ({ request }) => {
+    objectUploads.push({ headers: request.headers, bytes: new Uint8Array(await request.arrayBuffer()) });
+    return new HttpResponse(null, { status: 204 });
   })
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   requests.length = 0;
+  objectUploads.length = 0;
 });
 afterAll(() => server.close());
 
@@ -54,6 +76,25 @@ describe('ProductGateway commands', () => {
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual(['POST /api/v1/catalog/products', 'PATCH /api/v1/catalog/products/product%3Aone', 'DELETE /api/v1/catalog/products/product%3Aone']);
     expect(requests.map(({ headers }) => headers.get('idempotency-key'))).toEqual(['command:create', 'command:edit', 'command:archive']);
     expect(requests.map(({ headers }) => headers.get('if-match'))).toEqual([null, '"7"', '"8"']);
+  });
+
+  it('uploads a validated product image to the signed OSS target and forwards only its immutable receipt', async () => {
+    const gateway = createGateway();
+    const bytes = Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const file = new NodeFile([bytes], '礼盒.png', { type: 'image/png' }) as unknown as File;
+    const progress: Readonly<{ stage: string; processed: number; total: number }>[] = [];
+
+    const image = await gateway.uploadProductImage(command('image'), file, undefined, (value) => progress.push(value));
+    await gateway.createProduct(command('create-image'), { title: '节日礼盒', category: 'category:festival', type: 'physical', image });
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual(['POST /api/v1/catalog/mediauploads', 'POST /api/v1/catalog/products']);
+    expect(requests[0]?.body).toMatchObject({ name: '礼盒.png', contentType: 'image/png', size: bytes.byteLength, sha256: expect.stringMatching(/^[a-f0-9]{64}$/u) });
+    expect(objectUploads).toHaveLength(1);
+    expect(objectUploads[0]?.headers.get('content-type')).toBe('image/png');
+    expect(objectUploads[0]?.bytes).toEqual(bytes);
+    expect(progress).toContainEqual({ stage: 'uploading', processed: 0, total: bytes.byteLength });
+    expect(requests[1]?.body).toEqual({ title: '节日礼盒', category: 'category:festival', type: 'physical', image });
+    expect(requests[1]?.body).not.toHaveProperty('upload');
   });
 
   it('connects publication, pricing and pool writes without preview-only fallbacks', async () => {

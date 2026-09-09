@@ -6,23 +6,21 @@ import { ProductsUpdateHandler } from './ProductsUpdateHandler';
 
 describe('supplier product policy', () => {
   it('binds a supplier draft to the authenticated supplier and ignores forged owner and brand', async () => {
-    const create = vi
-      .fn()
-      .mockResolvedValue({
-        id: 'product:one',
-        scope_id: 'supplier:one',
-        owner_partner_id: 'supplier:one',
-        brand_id: null,
-        category_id: 'category:food',
-        title: '礼盒',
-        product_type: 'physical',
-        attributes: {},
-        status: 'draft',
-        version: 1,
-        created_at: '2026-09-07T00:00:00Z',
-        updated_at: '2026-09-07T00:00:00Z',
-      });
-    await new ProductsCreateHandler({ create } as unknown as ProductRepository).execute(
+    const create = vi.fn().mockResolvedValue({
+      id: 'product:one',
+      scope_id: 'supplier:one',
+      owner_partner_id: 'supplier:one',
+      brand_id: null,
+      category_id: 'category:food',
+      title: '礼盒',
+      product_type: 'physical',
+      attributes: {},
+      status: 'draft',
+      version: 1,
+      created_at: '2026-09-07T00:00:00Z',
+      updated_at: '2026-09-07T00:00:00Z',
+    });
+    await new ProductsCreateHandler({ create } as unknown as ProductRepository, media()).execute(
       { body: { owner: 'supplier:other', brand: 'brand:other', category: 'category:food', title: '礼盒' } } as never,
       supplierContext('catalog.products.create') as never
     );
@@ -30,23 +28,21 @@ describe('supplier product policy', () => {
   });
 
   it('allows review submission but rejects direct activation and archival', async () => {
-    const update = vi
-      .fn()
-      .mockResolvedValue({
-        id: 'product:one',
-        scope_id: 'supplier:one',
-        owner_partner_id: 'supplier:one',
-        brand_id: null,
-        category_id: 'category:food',
-        title: '礼盒',
-        product_type: 'physical',
-        attributes: {},
-        status: 'review',
-        version: 2,
-        created_at: '2026-09-07T00:00:00Z',
-        updated_at: '2026-09-07T00:00:00Z',
-      });
-    const handler = new ProductsUpdateHandler({ update } as unknown as ProductRepository);
+    const update = vi.fn().mockResolvedValue({
+      id: 'product:one',
+      scope_id: 'supplier:one',
+      owner_partner_id: 'supplier:one',
+      brand_id: null,
+      category_id: 'category:food',
+      title: '礼盒',
+      product_type: 'physical',
+      attributes: {},
+      status: 'review',
+      version: 2,
+      created_at: '2026-09-07T00:00:00Z',
+      updated_at: '2026-09-07T00:00:00Z',
+    });
+    const handler = new ProductsUpdateHandler({ update } as unknown as ProductRepository, media());
     await handler.execute({ path: { productid: 'product:one' }, body: { status: 'review' } } as never, supplierContext('catalog.products.update') as never);
     expect(update).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ status: 'review', scope: 'supplier:one', expectedVersion: 3 }));
     await expect(handler.execute({ path: { productid: 'product:one' }, body: { status: 'active' } } as never, supplierContext('catalog.products.update') as never)).rejects.toMatchObject({ code: 'SCOPE_DENIED' });
@@ -64,4 +60,8 @@ function supplierContext(operation: 'catalog.products.create' | 'catalog.product
     idempotencyKey: 'supplier-command:one',
     security: { kind: 'session', access: { ...base.security.access, actor: { ...base.security.access.actor, target: 'supplier' }, scope: { id: 'supplier:one', kind: 'supplier', path: [] } } },
   };
+}
+
+function media() {
+  return { verify: vi.fn(async (image) => image) } as never;
 }

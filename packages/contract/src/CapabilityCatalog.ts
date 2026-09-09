@@ -1014,6 +1014,13 @@ export const CAPABILITY_CATALOG = Object.freeze([
     "audience": "console"
   },
   {
+    "code": "catalog.mediauploads.create",
+    "kind": "operation",
+    "owner": "catalog",
+    "permission": "catalog.product.manage",
+    "audience": "console"
+  },
+  {
     "code": "catalog.products.create",
     "kind": "operation",
     "owner": "catalog",
@@ -3029,7 +3036,7 @@ export const CAPABILITY_CODES_BY_OWNER = Object.freeze({
   "benefit": Object.freeze(["benefit.accounts.read","benefit.ledgers.read","benefit.plans.read","benefit.plans.manage","benefit.budgets.read","benefit.budgets.manage","benefit.grants.create","benefit.grants.decide","benefit.grants.read","benefit.grants.control","benefit.grants.revoke","benefit.lots.read"] as const),
   "capability": Object.freeze(["surface.auth","surface.console","surface.storefront","surface.miniapp","surface.store","surface.supplier","capability.assignments.read","capability.assignments.manage"] as const),
   "cart": Object.freeze(["cart.current.read","cart.anonymous.merge","cart.items.put","cart.items.batch"] as const),
-  "catalog": Object.freeze(["catalog.pools.read","catalog.pools.attach","catalog.pools.detach","catalog.pools.allocate","catalog.listings.price.set","catalog.listings.pool.set","catalog.product.detail.read","catalog.products.create","catalog.products.update","catalog.products.archive","catalog.listings.read","catalog.facets.read","catalog.listings.publish","catalog.listings.unpublish","catalog.listings.batch","catalog.imports.create","catalog.imports.read"] as const),
+  "catalog": Object.freeze(["catalog.pools.read","catalog.pools.attach","catalog.pools.detach","catalog.pools.allocate","catalog.listings.price.set","catalog.listings.pool.set","catalog.product.detail.read","catalog.mediauploads.create","catalog.products.create","catalog.products.update","catalog.products.archive","catalog.listings.read","catalog.facets.read","catalog.listings.publish","catalog.listings.unpublish","catalog.listings.batch","catalog.imports.create","catalog.imports.read"] as const),
   "channel": Object.freeze(["channel.distributors.create","channel.distributors.read","channel.distributors.update","channel.distributors.disable","channel.bindings.manage","channel.quotas.manage","channel.connections.read","channel.connections.create","channel.connections.update","channel.connections.test","channel.connections.enable","channel.connections.disable","channel.webhooks.receive","channel.syncruns.start","channel.syncruns.read","channel.syncruns.cancel","channel.operations.read","channel.operations.replay"] as const),
   "checkout": Object.freeze(["checkout.quote.create","checkout.quotes.current.read"] as const),
   "experience": Object.freeze(["experience.applications.create","experience.applications.copy","experience.applications.detail.read","experience.applications.read","experience.applications.update","experience.versions.save","experience.versions.validate","experience.versions.publish","experience.versions.restore","experience.published.read"] as const),
@@ -3064,7 +3071,7 @@ export const OPERATION_CAPABILITY_CODES_BY_OWNER = Object.freeze({
   "benefit": Object.freeze(["benefit.accounts.read","benefit.ledgers.read","benefit.plans.read","benefit.plans.manage","benefit.budgets.read","benefit.budgets.manage","benefit.grants.create","benefit.grants.decide","benefit.grants.read","benefit.grants.control","benefit.grants.revoke","benefit.lots.read"] as const),
   "capability": Object.freeze(["capability.assignments.read","capability.assignments.manage"] as const),
   "cart": Object.freeze(["cart.current.read","cart.anonymous.merge","cart.items.put","cart.items.batch"] as const),
-  "catalog": Object.freeze(["catalog.pools.read","catalog.pools.attach","catalog.pools.detach","catalog.pools.allocate","catalog.listings.price.set","catalog.listings.pool.set","catalog.product.detail.read","catalog.products.create","catalog.products.update","catalog.products.archive","catalog.listings.read","catalog.facets.read","catalog.listings.publish","catalog.listings.unpublish","catalog.listings.batch","catalog.imports.create","catalog.imports.read"] as const),
+  "catalog": Object.freeze(["catalog.pools.read","catalog.pools.attach","catalog.pools.detach","catalog.pools.allocate","catalog.listings.price.set","catalog.listings.pool.set","catalog.product.detail.read","catalog.mediauploads.create","catalog.products.create","catalog.products.update","catalog.products.archive","catalog.listings.read","catalog.facets.read","catalog.listings.publish","catalog.listings.unpublish","catalog.listings.batch","catalog.imports.create","catalog.imports.read"] as const),
   "channel": Object.freeze(["channel.distributors.create","channel.distributors.read","channel.distributors.update","channel.distributors.disable","channel.bindings.manage","channel.quotas.manage","channel.connections.read","channel.connections.create","channel.connections.update","channel.connections.test","channel.connections.enable","channel.connections.disable","channel.webhooks.receive","channel.syncruns.start","channel.syncruns.read","channel.syncruns.cancel","channel.operations.read","channel.operations.replay"] as const),
   "checkout": Object.freeze(["checkout.quote.create","checkout.quotes.current.read"] as const),
   "experience": Object.freeze(["experience.applications.create","experience.applications.copy","experience.applications.detail.read","experience.applications.read","experience.applications.update","experience.versions.save","experience.versions.validate","experience.versions.publish","experience.versions.restore","experience.published.read"] as const),

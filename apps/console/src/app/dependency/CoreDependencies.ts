@@ -60,6 +60,7 @@ import { ReadPools } from '../../feature/product/application/ReadPools';
 import { ReadProduct } from '../../feature/product/application/ReadProduct';
 import { ReadProductImport } from '../../feature/product/application/ReadProductImport';
 import { ReadProducts } from '../../feature/product/application/ReadProducts';
+import { UploadProductImage } from '../../feature/product/application/UploadProductImage';
 import type { ProductImportPort, ProductPort } from '../../feature/product/public';
 import { CancelTask } from '../../feature/task/application/CancelTask';
 import { ConfirmImport } from '../../feature/task/application/ConfirmImport';
@@ -160,6 +161,7 @@ export function createCoreDependencies(imports: ImportRegistryPort): CoreDepende
       previewBatch: new PreviewProductBatch(product),
       executeBatch: new ExecuteProductBatch(product),
       changePool: new ChangePool(product),
+      uploadImage: new UploadProductImage(product),
       executeAction: new ExecuteProductAction(product),
       createImport: new CreateProductImport(product),
       readImport: new ReadProductImport(product),

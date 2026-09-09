@@ -11,7 +11,7 @@ origins:
   store: { source: routes.store.host, methods: [GET, HEAD, POST, PUT, DELETE, OPTIONS] }
   supplier: { source: routes.supplier.host, methods: [GET, HEAD, POST, PUT, DELETE, OPTIONS] }
 headers:
-  request: [authorization, content-type, idempotency-key, if-match, traceparent, tracestate, x-csrf-token, x-request-id, x-upload-sha256]
+  request: [authorization, content-type, idempotency-key, if-match, traceparent, tracestate, x-content-sha256, x-csrf-token, x-request-id, x-retention-until, x-upload-sha256]
   expose: [etag, retry-after, traceparent, x-request-id, x-result-version]
   forbidden: [cookie-forwarding, proxy-authorization]
 preflight:

@@ -695,6 +695,11 @@ capabilities:
     owner: catalog
     permission: catalog.product.read
     audience: console
+  - code: catalog.mediauploads.create
+    kind: operation
+    owner: catalog
+    permission: catalog.product.manage
+    audience: console
   - code: catalog.products.create
     kind: operation
     owner: catalog

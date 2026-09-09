@@ -17,6 +17,7 @@ describe('PgProductRepository detail projection', () => {
           category_name: '餐饮美食',
           brand_id: null,
           owner_partner_id: null,
+          cover_object: null,
           cover_url: 'https://assets.example/cover.jpg',
           subtitle: null,
           description: '工作日早餐',
@@ -68,6 +69,7 @@ describe('PgProductRepository detail projection', () => {
     expect(query).toHaveBeenCalledOnce();
     expect(String(query.mock.calls[0]?.[0])).toContain('catalog.sourcelisting');
     expect(String(query.mock.calls[0]?.[0])).toContain('listingCount');
+    expect(String(query.mock.calls[0]?.[0])).toContain("product.attributes->>'coverObject' cover_object");
     expect(detail.media).toEqual([
       { id: 'media:cover', kind: 'image', url: 'https://assets.example/cover.jpg', alt: '早餐', sort: 0 },
       { id: 'media:manual', kind: 'document', url: 'https://assets.example/manual.pdf', alt: '说明书', sort: 2 },

@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx#MVP上线功能清单!A3:F24
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
 navigationCatalogSha256: 5651699e2d2208f73571b9aa8b527fe2ccf89b46c7e5fe1839cb5ef24ba1c08c
-contractSha256: 8713e0af84e656306288d6931cbd8685746f8877e6f2c873e91049938ef80fb0
+contractSha256: 552b3ab16e83378da001633909c4691de87d2c5cf538b83e96c65403313a81bc
 journeyCatalogSha256: 63325ab3955bc65b7d2cc383eefdaea0968b302ddaa86b2d196b4be26589d4e8
 generated: true
 releasePolicy: blocking
@@ -2295,6 +2295,7 @@ requirements:
       - catalog.listings.publish
       - catalog.listings.read
       - catalog.listings.unpublish
+      - catalog.mediauploads.create
       - catalog.product.detail.read
       - catalog.products.archive
       - catalog.products.create
@@ -2378,6 +2379,7 @@ requirements:
       - catalog.listings.publish
       - catalog.listings.read
       - catalog.listings.unpublish
+      - catalog.mediauploads.create
       - catalog.pools.read
       - catalog.product.detail.read
       - catalog.products.archive
@@ -2649,6 +2651,7 @@ requirements:
       - services/commerce/src/modules/catalog/application/handler/ListingsPublishHandler.ts
       - services/commerce/src/modules/catalog/application/handler/ListingsReadHandler.ts
       - services/commerce/src/modules/catalog/application/handler/ListingsUnpublishHandler.ts
+      - services/commerce/src/modules/catalog/application/handler/MediauploadsCreateHandler.ts
       - services/commerce/src/modules/catalog/application/handler/PoolsReadHandler.ts
       - services/commerce/src/modules/catalog/application/handler/ProductDetailReadHandler.ts
       - services/commerce/src/modules/catalog/application/handler/ProductsArchiveHandler.ts
@@ -7148,6 +7151,7 @@ requirements:
       - catalog.listings.publish
       - catalog.listings.read
       - catalog.listings.unpublish
+      - catalog.mediauploads.create
       - catalog.product.detail.read
       - catalog.products.archive
       - catalog.products.create
@@ -7236,6 +7240,7 @@ requirements:
       - catalog.listings.publish
       - catalog.listings.read
       - catalog.listings.unpublish
+      - catalog.mediauploads.create
       - catalog.pools.read
       - catalog.product.detail.read
       - catalog.products.archive
@@ -7521,6 +7526,7 @@ requirements:
       - services/commerce/src/modules/catalog/application/handler/ListingsPublishHandler.ts
       - services/commerce/src/modules/catalog/application/handler/ListingsReadHandler.ts
       - services/commerce/src/modules/catalog/application/handler/ListingsUnpublishHandler.ts
+      - services/commerce/src/modules/catalog/application/handler/MediauploadsCreateHandler.ts
       - services/commerce/src/modules/catalog/application/handler/PoolsReadHandler.ts
       - services/commerce/src/modules/catalog/application/handler/ProductDetailReadHandler.ts
       - services/commerce/src/modules/catalog/application/handler/ProductsArchiveHandler.ts

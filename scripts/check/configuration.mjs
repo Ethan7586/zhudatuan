@@ -86,8 +86,8 @@ if (
 )
   fail('IMPORT_CAPACITY_INVALID');
 const upload = documents.capacity.runtime.upload;
-exact(Object.keys(upload), ['authorizationSeconds', 'maximumAuthorizationSeconds', 'maximumChunkBytes', 'maximumAttachmentBytes', 'maximumRetentionDays', 'retentionDays'], 'UPLOAD_CAPACITY_KEY_SET_INVALID');
-exact(Object.keys(upload.retentionDays), ['import', 'aftersale', 'support', 'qualification'], 'UPLOAD_RETENTION_CLASS_SET_INVALID');
+exact(Object.keys(upload), ['authorizationSeconds', 'maximumAuthorizationSeconds', 'maximumChunkBytes', 'maximumAttachmentBytes', 'maximumImageBytes', 'maximumRetentionDays', 'retentionDays'], 'UPLOAD_CAPACITY_KEY_SET_INVALID');
+exact(Object.keys(upload.retentionDays), ['import', 'aftersale', 'support', 'qualification', 'catalog'], 'UPLOAD_RETENTION_CLASS_SET_INVALID');
 if (
   upload.authorizationSeconds < 60 ||
   upload.authorizationSeconds > upload.maximumAuthorizationSeconds ||
@@ -96,6 +96,8 @@ if (
   upload.maximumChunkBytes > imports.maximumFileBytes ||
   upload.maximumAttachmentBytes < 1_048_576 ||
   upload.maximumAttachmentBytes > imports.maximumFileBytes ||
+  upload.maximumImageBytes < 1_048_576 ||
+  upload.maximumImageBytes > upload.maximumAttachmentBytes ||
   upload.maximumRetentionDays < 1 ||
   upload.maximumRetentionDays > 3650 ||
   Object.values(upload.retentionDays).some((days) => !Number.isSafeInteger(days) || days < 1 || days > upload.maximumRetentionDays)

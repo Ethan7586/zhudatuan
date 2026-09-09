@@ -21,6 +21,7 @@ const row = Object.freeze({
   cursor_sort: '2026-09-07T00:00:00.000Z',
   code: 'MEAL-1',
   product_type: 'physical',
+  cover_object: null,
   cover_url: null,
   subtitle: null,
   effective_at: null,
@@ -45,7 +46,7 @@ describe('ListingsReadHandler', () => {
     } as CatalogPricingPort;
     const qualifications = { decisions: vi.fn(async () => [{ listing: 'listing:one', eligible: false, policyVersion: 4 }]) } as CatalogQualificationPort;
     const partners = { names: vi.fn(async () => new Map([['partner:one', '央企供应链']])) } as Pick<CatalogPartnerPort, 'names'>;
-    const reply = await new ListingsReadHandler(listings, inventory, pricing, qualifications, partners).execute({ query: {} } as never, readHandlerContext('catalog.listings.read', {} as never));
+    const reply = await new ListingsReadHandler(listings, inventory, pricing, qualifications, partners, media()).execute({ query: {} } as never, readHandlerContext('catalog.listings.read', {} as never));
     expect(reply.body.items[0]).toMatchObject({
       sku_count: 1,
       sku_total: 2,
@@ -68,10 +69,14 @@ describe('ListingsReadHandler', () => {
       throw new Error('projection unavailable');
     };
     const listings = { read: vi.fn(async () => [{ ...row, pool_id: null, pool_name: null }]) } as unknown as ListingRepository;
-    const reply = await new ListingsReadHandler(listings, { stock: failure } as CatalogInventoryPort, { prices: failure } as CatalogPricingPort, { decisions: failure } as CatalogQualificationPort, { names: failure } as Pick<CatalogPartnerPort, 'names'>).execute(
-      { query: {} } as never,
-      readHandlerContext('catalog.listings.read', {} as never)
-    );
+    const reply = await new ListingsReadHandler(
+      listings,
+      { stock: failure } as CatalogInventoryPort,
+      { prices: failure } as CatalogPricingPort,
+      { decisions: failure } as CatalogQualificationPort,
+      { names: failure } as Pick<CatalogPartnerPort, 'names'>,
+      media()
+    ).execute({ query: {} } as never, readHandlerContext('catalog.listings.read', {} as never));
     expect(reply.body.items[0]).toMatchObject({
       pool_id: null,
       price_amount_minor: null,
@@ -82,4 +87,25 @@ describe('ListingsReadHandler', () => {
       data_gaps: ['pool_missing', 'inventory_unavailable', 'pricing_unavailable', 'qualification_unavailable'],
     });
   });
+
+  it('replaces an opaque cover reference with a signed URL and never exposes that reference', async () => {
+    const listings = { read: vi.fn(async () => [{ ...row, cover_object: 'object:cover' }]) } as unknown as ListingRepository;
+    const links = vi.fn(async () => new Map([['object:cover', 'http://127.0.0.1:3001/objects/signed-cover']]));
+    const reply = await new ListingsReadHandler(
+      listings,
+      { stock: vi.fn(async () => []) } as unknown as CatalogInventoryPort,
+      { prices: vi.fn(async () => []) } as unknown as CatalogPricingPort,
+      { decisions: vi.fn(async () => []) } as unknown as CatalogQualificationPort,
+      { names: vi.fn(async () => new Map()) } as Pick<CatalogPartnerPort, 'names'>,
+      { links }
+    ).execute({ query: {} } as never, readHandlerContext('catalog.listings.read', {} as never));
+
+    expect(links).toHaveBeenCalledWith(['object:cover']);
+    expect(reply.body.items[0]).toMatchObject({ cover_url: 'http://127.0.0.1:3001/objects/signed-cover' });
+    expect(reply.body.items[0]).not.toHaveProperty('cover_object');
+  });
 });
+
+function media() {
+  return { links: vi.fn(async () => new Map<string, string>()) };
+}

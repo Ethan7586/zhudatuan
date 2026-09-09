@@ -1,4 +1,6 @@
 import { createRequestContext } from '@shop/sdk/context';
+import { hashFile } from '@shop/sdk/files';
+import { uploadObject } from '@shop/sdk/objects';
 import { createFetchCatalog, createFetchCatalogFacetsRead, createFetchCatalogListingsRead, createFetchCatalogPoolsRead, createFetchCatalogProductDetailRead } from '@shop/sdk/catalog';
 import { createFetchRuntime } from '@shop/sdk/runtime';
 import type { Listing, Pool, PoolAllocationKind, ProductBatchAction, ProductDetailSection, ProductDraft } from '../model/Product';
@@ -6,6 +8,7 @@ import type { ProductImport } from '../model/ProductImport';
 import type { ProductCommand, ProductImportPort, ProductPort, ProductQuery, ProductRequest } from '../public';
 import { ProductMapper } from './ProductMapper';
 import { ImportUploadGateway } from '../../../shared/import/ImportUploadGateway';
+import { productImageContentType } from '../model/ProductImagePolicy';
 
 export interface ProductGatewayConfig {
   readonly apiBaseUrl: string;
@@ -64,6 +67,24 @@ export class ProductGateway implements ProductPort, ProductImportPort {
     return this.mapper.pools(await this.pools({ query: { limit: 100 } }, this.context(request, signal)));
   }
 
+  async uploadProductImage(request: ProductCommand, file: File, signal?: AbortSignal, progress?: Parameters<ProductPort['uploadProductImage']>[3]) {
+    const contentType = productImageContentType(file);
+    const sha256 = await hashFile(file, signal, (processed) => progress?.({ stage: 'checking', processed, total: file.size }));
+    const intent = await this.catalog.mediauploadsCreate({ body: { name: file.name, contentType, size: file.size, sha256 } }, this.command(request, undefined, signal));
+    progress?.({ stage: 'uploading', processed: 0, total: file.size });
+    await uploadObject({
+      url: intent.upload.url,
+      headers: intent.upload.headers,
+      body: file,
+      ...(progress === undefined ? {} : { progress: (processed: number, total: number) => progress({ stage: 'uploading', processed, total }) }),
+      ...(signal === undefined ? {} : { signal }),
+    }).catch(() => {
+      throw new Error('商品图片上传失败，请检查网络后直接重试；已选择的图片会保留。');
+    });
+    const { upload: _upload, ...image } = intent;
+    return Object.freeze(image);
+  }
+
   async createProduct(request: ProductCommand, draft: ProductDraft) {
     const body = {
       title: draft.title,
@@ -72,6 +93,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
       ...(draft.brand === undefined ? {} : { brand: draft.brand }),
       ...(draft.type === undefined ? {} : { type: draft.type }),
       ...(draft.attributes === undefined ? {} : { attributes: draft.attributes }),
+      ...(draft.image === undefined ? {} : { image: draft.image }),
     };
     return this.catalog.productsCreate({ body }, this.command(request));
   }
@@ -81,6 +103,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
       ...(draft.title === undefined ? {} : { title: draft.title }),
       ...(draft.category === undefined ? {} : { category: draft.category }),
       ...(draft.attributes === undefined ? {} : { attributes: draft.attributes }),
+      ...(draft.image === undefined ? {} : { image: draft.image }),
       ...(draft.status === undefined ? {} : { status: draft.status }),
     };
     return this.catalog.productsUpdate({ path: { productid: productId(listing) }, body }, this.command(request, expectedVersion));
@@ -143,7 +166,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
     return createRequestContext(this.config.clientVersion, { target: 'console', catalogVersion: this.config.catalogVersion, scope: request.scope, accessVersion: request.accessVersion, ...(signal === undefined ? {} : { signal }) });
   }
 
-  private command(request: ProductCommand, expectedVersion?: number) {
+  private command(request: ProductCommand, expectedVersion?: number, signal?: AbortSignal) {
     return createRequestContext(this.config.clientVersion, {
       target: 'console',
       catalogVersion: this.config.catalogVersion,
@@ -152,6 +175,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
       idempotencyKey: request.identity,
       ...(request.csrf === undefined ? {} : { csrfToken: request.csrf }),
       ...(expectedVersion === undefined ? {} : { expectedVersion }),
+      ...(signal === undefined ? {} : { signal }),
     });
   }
 }

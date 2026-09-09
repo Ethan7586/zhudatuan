@@ -11670,6 +11670,119 @@
         ],
         "type": "object"
       },
+      "CatalogMediauploadsCreateInput": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "additionalProperties": false,
+            "properties": {
+              "contentType": {
+                "enum": [
+                  "image/jpeg",
+                  "image/png"
+                ],
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "sha256": {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              "size": {
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "name",
+              "contentType",
+              "size",
+              "sha256"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "type": "object"
+      },
+      "CatalogMediauploadsCreateOutput": {
+        "additionalProperties": false,
+        "properties": {
+          "contentType": {
+            "enum": [
+              "image/jpeg",
+              "image/png"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "retentionUntil": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          },
+          "size": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "upload": {
+            "additionalProperties": false,
+            "properties": {
+              "expiresAt": {
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                "type": "string"
+              },
+              "headers": {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "propertyNames": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              "method": {
+                "const": "PUT",
+                "type": "string"
+              },
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "url",
+              "method",
+              "headers",
+              "expiresAt"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "reference",
+          "path",
+          "sha256",
+          "size",
+          "contentType",
+          "retentionUntil",
+          "upload"
+        ],
+        "type": "object"
+      },
       "CatalogPoolsAllocateInput": {
         "additionalProperties": false,
         "properties": {
@@ -12084,7 +12197,20 @@
               }
             ]
           },
+          "brand_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "category_id": {
+            "type": "string"
+          },
+          "category_name": {
             "type": "string"
           },
           "channels": {
@@ -12351,6 +12477,9 @@
                 "location": {
                   "type": "string"
                 },
+                "locationName": {
+                  "type": "string"
+                },
                 "onhand": {
                   "anyOf": [
                     {
@@ -12374,7 +12503,13 @@
                 "scope": {
                   "type": "string"
                 },
+                "scopeName": {
+                  "type": "string"
+                },
                 "sku": {
+                  "type": "string"
+                },
+                "skuCode": {
                   "type": "string"
                 },
                 "status": {
@@ -12398,8 +12533,11 @@
               },
               "required": [
                 "sku",
+                "skuCode",
                 "scope",
+                "scopeName",
                 "location",
+                "locationName",
                 "onhand",
                 "safety",
                 "status",
@@ -12450,10 +12588,26 @@
                     }
                   ]
                 },
+                "poolName": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "scope": {
                   "type": "string"
                 },
+                "scopeName": {
+                  "type": "string"
+                },
                 "sku": {
+                  "type": "string"
+                },
+                "skuCode": {
                   "type": "string"
                 },
                 "status": {
@@ -12486,8 +12640,11 @@
               "required": [
                 "id",
                 "scope",
+                "scopeName",
                 "pool",
+                "poolName",
                 "sku",
+                "skuCode",
                 "title",
                 "status",
                 "effectiveAt",
@@ -12546,6 +12703,16 @@
             "type": "array"
           },
           "owner_partner_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "owner_partner_name": {
             "anyOf": [
               {
                 "type": "string"
@@ -12672,13 +12839,21 @@
                 "scope": {
                   "type": "string"
                 },
+                "scopeName": {
+                  "type": "string"
+                },
                 "sku": {
+                  "type": "string"
+                },
+                "skuCode": {
                   "type": "string"
                 }
               },
               "required": [
                 "sku",
+                "skuCode",
                 "scope",
+                "scopeName",
                 "currency",
                 "amountMinor",
                 "compareMinor",
@@ -12711,6 +12886,9 @@
                 "listing": {
                   "type": "string"
                 },
+                "listingTitle": {
+                  "type": "string"
+                },
                 "policyVersion": {
                   "maximum": 9007199254740991,
                   "minimum": 0,
@@ -12719,6 +12897,7 @@
               },
               "required": [
                 "listing",
+                "listingTitle",
                 "eligible",
                 "policyVersion"
               ],
@@ -12844,6 +13023,16 @@
                     }
                   ]
                 },
+                "referenceLabel": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "title": {
                   "type": "string"
                 }
@@ -12853,7 +13042,8 @@
                 "kind",
                 "title",
                 "occurredAt",
-                "reference"
+                "reference",
+                "referenceLabel"
               ],
               "type": "object"
             },
@@ -12886,8 +13076,11 @@
           "status",
           "version",
           "category_id",
+          "category_name",
           "brand_id",
+          "brand_name",
           "owner_partner_id",
+          "owner_partner_name",
           "cover_url",
           "subtitle",
           "createdAt",
@@ -13108,6 +13301,46 @@
               "category": {
                 "type": "string"
               },
+              "image": {
+                "additionalProperties": false,
+                "properties": {
+                  "contentType": {
+                    "enum": [
+                      "image/jpeg",
+                      "image/png"
+                    ],
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  },
+                  "reference": {
+                    "type": "string"
+                  },
+                  "retentionUntil": {
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                    "type": "string"
+                  },
+                  "sha256": {
+                    "pattern": "^[a-f0-9]{64}$",
+                    "type": "string"
+                  },
+                  "size": {
+                    "maximum": 9007199254740991,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "reference",
+                  "path",
+                  "sha256",
+                  "size",
+                  "contentType",
+                  "retentionUntil"
+                ],
+                "type": "object"
+              },
               "owner": {
                 "anyOf": [
                   {
@@ -13306,6 +13539,53 @@
               },
               "category": {
                 "type": "string"
+              },
+              "image": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "contentType": {
+                        "enum": [
+                          "image/jpeg",
+                          "image/png"
+                        ],
+                        "type": "string"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "reference": {
+                        "type": "string"
+                      },
+                      "retentionUntil": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      },
+                      "sha256": {
+                        "pattern": "^[a-f0-9]{64}$",
+                        "type": "string"
+                      },
+                      "size": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "reference",
+                      "path",
+                      "sha256",
+                      "size",
+                      "contentType",
+                      "retentionUntil"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               "status": {
                 "enum": [
@@ -88673,6 +88953,237 @@
         "x-timeout-ms": 800
       }
     },
+    "/api/v1/catalog/mediauploads": {
+      "post": {
+        "operationId": "catalog.mediauploads.create",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "contentType": {
+                    "enum": [
+                      "image/jpeg",
+                      "image/png"
+                    ],
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "sha256": {
+                    "pattern": "^[a-f0-9]{64}$",
+                    "type": "string"
+                  },
+                  "size": {
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "name",
+                  "contentType",
+                  "size",
+                  "sha256"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogMediauploadsCreateOutput"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "426": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Typed operation error"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "商品 · 创建图片上传会话",
+        "tags": [
+          "catalog"
+        ],
+        "x-assurance-level": "mfa",
+        "x-audience": "console",
+        "x-audit-level": "detailed",
+        "x-cache-policy": "none",
+        "x-capability": "catalog.mediauploads.create",
+        "x-concurrency-policy": "serialized",
+        "x-csrf-policy": "required",
+        "x-error-union": [
+          "AUTHENTICATION_REQUIRED",
+          "AUTHORIZATION_DENIED",
+          "CAPABILITY_DENIED",
+          "CONTENT_TYPE_UNSUPPORTED",
+          "CONTRACT_VERSION_UNSUPPORTED",
+          "CSRF_TOKEN_INVALID",
+          "DEADLINE_EXCEEDED",
+          "IDEMPOTENCY_CONFLICT",
+          "IDEMPOTENCY_KEY_REQUIRED",
+          "INTERNAL_ERROR",
+          "ORIGIN_REQUIRED",
+          "PERMISSION_DENIED",
+          "RATE_LIMITED",
+          "REQUEST_BODY_TOO_LARGE",
+          "REQUEST_JSON_INVALID",
+          "SCOPE_DENIED",
+          "STEPUP_REQUIRED",
+          "URL_SENSITIVE_DATA_FORBIDDEN",
+          "VALIDATION_FAILED"
+        ],
+        "x-execution-mode": "sync",
+        "x-expected-version": "none",
+        "x-idempotency-policy": "required",
+        "x-idempotency-scope": "actor-operation-scope",
+        "x-lifecycle": "active",
+        "x-maker-checker": false,
+        "x-operation-version": 1,
+        "x-origin-policy": "sameorigin",
+        "x-permission": "catalog.product.manage",
+        "x-rate-class": "write",
+        "x-requirements": [
+          "MVPGROUPPOOL",
+          "MVPMALLPOOL"
+        ],
+        "x-resource-parameter": null,
+        "x-resource-resolver": "catalog.resource",
+        "x-response-mode": "json",
+        "x-risk": "high",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "store",
+          "supplier",
+          "brand"
+        ],
+        "x-sensitive-fields": [
+          "body.name"
+        ],
+        "x-target-policy": "exact",
+        "x-targets": [
+          "console",
+          "supplier"
+        ],
+        "x-timeout-ms": 1000
+      }
+    },
     "/api/v1/catalog/pools": {
       "get": {
         "operationId": "catalog.pools.read",
@@ -89596,6 +90107,46 @@
                   "category": {
                     "type": "string"
                   },
+                  "image": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "contentType": {
+                        "enum": [
+                          "image/jpeg",
+                          "image/png"
+                        ],
+                        "type": "string"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "reference": {
+                        "type": "string"
+                      },
+                      "retentionUntil": {
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                        "type": "string"
+                      },
+                      "sha256": {
+                        "pattern": "^[a-f0-9]{64}$",
+                        "type": "string"
+                      },
+                      "size": {
+                        "maximum": 9007199254740991,
+                        "minimum": 0,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "reference",
+                      "path",
+                      "sha256",
+                      "size",
+                      "contentType",
+                      "retentionUntil"
+                    ],
+                    "type": "object"
+                  },
                   "owner": {
                     "anyOf": [
                       {
@@ -90275,6 +90826,53 @@
                   },
                   "category": {
                     "type": "string"
+                  },
+                  "image": {
+                    "anyOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "contentType": {
+                            "enum": [
+                              "image/jpeg",
+                              "image/png"
+                            ],
+                            "type": "string"
+                          },
+                          "path": {
+                            "type": "string"
+                          },
+                          "reference": {
+                            "type": "string"
+                          },
+                          "retentionUntil": {
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$",
+                            "type": "string"
+                          },
+                          "sha256": {
+                            "pattern": "^[a-f0-9]{64}$",
+                            "type": "string"
+                          },
+                          "size": {
+                            "maximum": 9007199254740991,
+                            "minimum": 0,
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "reference",
+                          "path",
+                          "sha256",
+                          "size",
+                          "contentType",
+                          "retentionUntil"
+                        ],
+                        "type": "object"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   },
                   "status": {
                     "enum": [

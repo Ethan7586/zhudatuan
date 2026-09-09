@@ -3,6 +3,7 @@ export { RUNTIME_IMPORT_PORT, type ImportPort, type RuntimeImportChunk, type Run
 export { JOB_PORT, type JobPort, type RuntimeJobRecord } from './JobPort';
 export { EXPORT_PORT, type ExportPort, type RuntimeExportDownload, type RuntimeExportRecord, type RuntimeExportWork } from './ExportPort';
 export { OBJECT_STORE, type ObjectMetadata, type ObjectStore, type ObjectUpload, type StoredObject, type UploadAuthorization } from './ObjectPort';
+export { ASSET_PORT, type AssetPort, type AssetUploadRecord, type AssetUploadRequest } from './AssetPort';
 export type { ClaimedJob, JobAuthorization, JobClaim, JobDeadletter, JobProcessor, JobQueuePort, JobRunnerConfig } from './JobProcess';
 export { IMPORT_BATCH_FACTORY_PORT, IMPORT_RUNNER_PORT } from './ImportProcess';
 export type {

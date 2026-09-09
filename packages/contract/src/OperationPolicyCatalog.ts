@@ -1792,6 +1792,26 @@ const POLICIES = [
     "actionProof": false
   },
   {
+    "id": "catalog.mediauploads.create",
+    "version": 1,
+    "title": "商品 · 创建图片上传会话",
+    "method": "POST",
+    "path": "/api/v1/catalog/mediauploads",
+    "capability": "catalog.mediauploads.create",
+    "permission": "catalog.product.manage",
+    "assuranceLevel": "mfa",
+    "makerChecker": false,
+    "expectedVersion": "none",
+    "concurrencyPolicy": "serialized",
+    "executionMode": "sync",
+    "auditLevel": "detailed",
+    "sensitiveFields": [
+      "body.name"
+    ],
+    "lifecycle": "active",
+    "actionProof": false
+  },
+  {
     "id": "catalog.products.create",
     "version": 1,
     "title": "商品 · 商品创建",

@@ -1,6 +1,7 @@
 import { localObjectEnvironment } from '@shop/config/server';
 import { IMPORT_CAPACITY } from '@shop/config/runtime';
 import { bytesResponse, jsonBody, jsonResponse, startLocalHttps, type LocalHandler } from '../../localinfra/src/Http';
+import { withObjectCors } from './Cors';
 import { LocalObjects } from './LocalObjects';
 
 const environment = localObjectEnvironment();
@@ -19,8 +20,7 @@ const handler: LocalHandler = async (request) => {
   }
   const publicUpload = /^\/v1\/public-upload\/([^/]+)$/.exec(request.url.pathname);
   if (publicUpload && request.method === 'PUT') {
-    await objects.writeAuthorized(decodeURIComponent(publicUpload[1] ?? ''), request.url.searchParams.get('expires'),
-      request.url.searchParams.get('signature'), request.headers, request.body);
+    await objects.writeAuthorized(decodeURIComponent(publicUpload[1] ?? ''), request.url.searchParams.get('expires'), request.url.searchParams.get('signature'), request.headers, request.body);
     return { status: 204 };
   }
   objects.authorizeHeader(request.headers.authorization);
@@ -31,8 +31,7 @@ const handler: LocalHandler = async (request) => {
   }
   if (request.url.pathname === '/v1/uploads/authorizations' && request.method === 'POST') {
     const body = jsonBody(request);
-    return jsonResponse(200, objects.authorizeUpload({ path: body.path, contentType: body.contentType, size: body.size,
-      sha256: body.sha256, expiresIn: body.expiresIn, retentionUntil: body.retentionUntil }));
+    return jsonResponse(200, objects.authorizeUpload({ path: body.path, contentType: body.contentType, size: body.size, sha256: body.sha256, expiresIn: body.expiresIn, retentionUntil: body.retentionUntil }));
   }
   const part = /^\/v1\/uploads\/([^/]+)\/parts\/(\d+)$/.exec(request.url.pathname);
   if (part && request.method === 'PUT') {
@@ -77,7 +76,13 @@ const handler: LocalHandler = async (request) => {
   return jsonResponse(404, { code: 'OBJECT_ROUTE_NOT_FOUND' });
 };
 
-await startLocalHttps('localobjects', port, handler, {
-  certificateFile: environment.tlsCertificateFile,
-  keyFile: environment.tlsKeyFile,
-}, IMPORT_CAPACITY.maximumFileBytes);
+await startLocalHttps(
+  'localobjects',
+  port,
+  withObjectCors(handler),
+  {
+    certificateFile: environment.tlsCertificateFile,
+    keyFile: environment.tlsKeyFile,
+  },
+  IMPORT_CAPACITY.maximumFileBytes
+);

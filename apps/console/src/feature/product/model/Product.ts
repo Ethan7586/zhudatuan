@@ -11,4 +11,6 @@ export type ProductFacets = DeepReadonly<OperationOutputFor<'catalog.facets.read
 export type ProductBatch = DeepReadonly<OperationOutputFor<'catalog.listings.batch'>>;
 export type ProductBatchAction = NonNullable<OperationBodyFor<'CatalogListingsBatchInput'>['action']>;
 export type ProductDraft = OperationBodyFor<'CatalogProductsCreateInput'>;
+export type ProductImage = NonNullable<ProductDraft['image']>;
+export type ProductImageProgress = Readonly<{ stage: 'checking' | 'uploading'; processed: number; total: number }>;
 export type PoolAllocationKind = NonNullable<OperationBodyFor<'CatalogPoolsAllocateInput'>['kind']>;

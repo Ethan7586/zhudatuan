@@ -12,6 +12,7 @@ export const CATALOG_OPERATION_IDS = Object.freeze([
   "catalog.pools.detach",
   "catalog.pools.allocate",
   "catalog.product.detail.read",
+  "catalog.mediauploads.create",
   "catalog.products.create",
   "catalog.products.update",
   "catalog.products.archive",
@@ -32,6 +33,7 @@ export interface CatalogOperations {
   readonly poolsDetach: OperationMethod<"catalog.pools.detach">;
   readonly poolsAllocate: OperationMethod<"catalog.pools.allocate">;
   readonly productDetailRead: OperationMethod<"catalog.product.detail.read">;
+  readonly mediauploadsCreate: OperationMethod<"catalog.mediauploads.create">;
   readonly productsCreate: OperationMethod<"catalog.products.create">;
   readonly productsUpdate: OperationMethod<"catalog.products.update">;
   readonly productsArchive: OperationMethod<"catalog.products.archive">;
@@ -52,6 +54,7 @@ export const CATALOG_METHOD_BY_OPERATION = Object.freeze({
   "catalog.pools.detach": "poolsDetach",
   "catalog.pools.allocate": "poolsAllocate",
   "catalog.product.detail.read": "productDetailRead",
+  "catalog.mediauploads.create": "mediauploadsCreate",
   "catalog.products.create": "productsCreate",
   "catalog.products.update": "productsUpdate",
   "catalog.products.archive": "productsArchive",
@@ -74,6 +77,7 @@ export function createCatalogOperations(client: OperationExecutor): CatalogOpera
     poolsDetach: bindPoolsDetach(client),
     poolsAllocate: bindPoolsAllocate(client),
     productDetailRead: bindProductDetailRead(client),
+    mediauploadsCreate: bindMediauploadsCreate(client),
     productsCreate: bindProductsCreate(client),
     productsUpdate: bindProductsUpdate(client),
     productsArchive: bindProductsArchive(client),
@@ -107,6 +111,10 @@ export function bindPoolsAllocate(client: OperationExecutor): OperationMethod<"c
 export function createFetchCatalogProductDetailRead(baseUrl: string): OperationMethod<"catalog.product.detail.read"> { return bindProductDetailRead(new ApiClient(baseUrl, new FetchTransport())); }
 
 export function bindProductDetailRead(client: OperationExecutor): OperationMethod<"catalog.product.detail.read"> { return bindOperation(client, defineOperation({ ...{"id":"catalog.product.detail.read","method":"GET","path":"/api/v1/catalog/products/{productid}","audience":"console","targets":["console","supplier"],"responseMode":"json","idempotencyPolicy":"none","idempotent":true,"timeout":500,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","LISTING_NOT_PURCHASABLE","PERMISSION_DENIED","RATE_LIMITED","SCOPE_DENIED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("CatalogProductDetailReadInput", ["productid"] as const, false), output: exactOperationOutput("CatalogProductDetailReadOutput") })); }
+
+export function createFetchCatalogMediauploadsCreate(baseUrl: string): OperationMethod<"catalog.mediauploads.create"> { return bindMediauploadsCreate(new ApiClient(baseUrl, new FetchTransport())); }
+
+export function bindMediauploadsCreate(client: OperationExecutor): OperationMethod<"catalog.mediauploads.create"> { return bindOperation(client, defineOperation({ ...{"id":"catalog.mediauploads.create","method":"POST","path":"/api/v1/catalog/mediauploads","audience":"console","targets":["console","supplier"],"responseMode":"json","idempotencyPolicy":"required","idempotent":false,"timeout":1000,"errorUnion":["AUTHENTICATION_REQUIRED","AUTHORIZATION_DENIED","CAPABILITY_DENIED","CONTENT_TYPE_UNSUPPORTED","CONTRACT_VERSION_UNSUPPORTED","CSRF_TOKEN_INVALID","DEADLINE_EXCEEDED","IDEMPOTENCY_CONFLICT","IDEMPOTENCY_KEY_REQUIRED","INTERNAL_ERROR","ORIGIN_REQUIRED","PERMISSION_DENIED","RATE_LIMITED","REQUEST_BODY_TOO_LARGE","REQUEST_JSON_INVALID","SCOPE_DENIED","STEPUP_REQUIRED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("CatalogMediauploadsCreateInput", [] as const, true), output: exactOperationOutput("CatalogMediauploadsCreateOutput") })); }
 
 export function createFetchCatalogProductsCreate(baseUrl: string): OperationMethod<"catalog.products.create"> { return bindProductsCreate(new ApiClient(baseUrl, new FetchTransport())); }
 

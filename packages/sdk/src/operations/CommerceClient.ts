@@ -168,6 +168,7 @@ export const SDK_OPERATION_IDS = Object.freeze([
   "catalog.pools.detach",
   "catalog.pools.allocate",
   "catalog.product.detail.read",
+  "catalog.mediauploads.create",
   "catalog.products.create",
   "catalog.products.update",
   "catalog.products.archive",

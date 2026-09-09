@@ -28,7 +28,14 @@ export class UploadSession implements UploadPort {
 }
 
 function validate(request: UploadRequest, now: Date): void {
-  const maximum = request.category === 'import' ? (request.contentType.endsWith('spreadsheetml.sheet') ? IMPORT_CAPACITY.maximumSpreadsheetBytes : IMPORT_CAPACITY.maximumFileBytes) : RUNTIME_LIMITS.upload.maximumAttachmentBytes;
+  const maximum =
+    request.category === 'import'
+      ? request.contentType.endsWith('spreadsheetml.sheet')
+        ? IMPORT_CAPACITY.maximumSpreadsheetBytes
+        : IMPORT_CAPACITY.maximumFileBytes
+      : request.category === 'asset'
+        ? RUNTIME_LIMITS.upload.maximumImageBytes
+        : RUNTIME_LIMITS.upload.maximumAttachmentBytes;
   if (
     !Number.isFinite(now.getTime()) ||
     !request.tenant ||

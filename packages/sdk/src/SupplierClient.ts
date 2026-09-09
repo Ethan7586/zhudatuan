@@ -9,7 +9,7 @@ import { bindLayersRead as bindOrganizationLayersRead } from './operations/organ
 import { bindAssignmentsRead as bindCapabilityAssignmentsRead } from './operations/capability';
 import { bindPartnersRead as bindPartnerPartnersRead } from './operations/partner';
 import { bindProfileRead as bindMemberProfileRead } from './operations/member';
-import { bindPoolsRead as bindCatalogPoolsRead, bindProductDetailRead as bindCatalogProductDetailRead, bindProductsCreate as bindCatalogProductsCreate, bindProductsUpdate as bindCatalogProductsUpdate, bindListingsRead as bindCatalogListingsRead, bindFacetsRead as bindCatalogFacetsRead, bindListingsPriceSet as bindCatalogListingsPriceSet, bindImportsCreate as bindCatalogImportsCreate, bindImportsRead as bindCatalogImportsRead } from './operations/catalog';
+import { bindPoolsRead as bindCatalogPoolsRead, bindProductDetailRead as bindCatalogProductDetailRead, bindMediauploadsCreate as bindCatalogMediauploadsCreate, bindProductsCreate as bindCatalogProductsCreate, bindProductsUpdate as bindCatalogProductsUpdate, bindListingsRead as bindCatalogListingsRead, bindFacetsRead as bindCatalogFacetsRead, bindListingsPriceSet as bindCatalogListingsPriceSet, bindImportsCreate as bindCatalogImportsCreate, bindImportsRead as bindCatalogImportsRead } from './operations/catalog';
 import { bindOffersRead as bindPricingOffersRead } from './operations/pricing';
 import { bindAvailabilityRead as bindInventoryAvailabilityRead, bindImportsCreate as bindInventoryImportsCreate, bindImportsRead as bindInventoryImportsRead } from './operations/inventory';
 import { bindPublishedRead as bindExperiencePublishedRead } from './operations/experience';
@@ -31,7 +31,7 @@ export function createSupplierClient(executor: OperationExecutor): SupplierSurfa
     capability: Object.freeze({ assignmentsRead: bindCapabilityAssignmentsRead(executor) }),
     partner: Object.freeze({ partnersRead: bindPartnerPartnersRead(executor) }),
     member: Object.freeze({ profileRead: bindMemberProfileRead(executor) }),
-    catalog: Object.freeze({ poolsRead: bindCatalogPoolsRead(executor), productDetailRead: bindCatalogProductDetailRead(executor), productsCreate: bindCatalogProductsCreate(executor), productsUpdate: bindCatalogProductsUpdate(executor), listingsRead: bindCatalogListingsRead(executor), facetsRead: bindCatalogFacetsRead(executor), listingsPriceSet: bindCatalogListingsPriceSet(executor), importsCreate: bindCatalogImportsCreate(executor), importsRead: bindCatalogImportsRead(executor) }),
+    catalog: Object.freeze({ poolsRead: bindCatalogPoolsRead(executor), productDetailRead: bindCatalogProductDetailRead(executor), mediauploadsCreate: bindCatalogMediauploadsCreate(executor), productsCreate: bindCatalogProductsCreate(executor), productsUpdate: bindCatalogProductsUpdate(executor), listingsRead: bindCatalogListingsRead(executor), facetsRead: bindCatalogFacetsRead(executor), listingsPriceSet: bindCatalogListingsPriceSet(executor), importsCreate: bindCatalogImportsCreate(executor), importsRead: bindCatalogImportsRead(executor) }),
     pricing: Object.freeze({ offersRead: bindPricingOffersRead(executor) }),
     inventory: Object.freeze({ availabilityRead: bindInventoryAvailabilityRead(executor), importsCreate: bindInventoryImportsCreate(executor), importsRead: bindInventoryImportsRead(executor) }),
     experience: Object.freeze({ publishedRead: bindExperiencePublishedRead(executor) }),

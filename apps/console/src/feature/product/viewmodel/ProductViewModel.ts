@@ -84,7 +84,7 @@ export function useProductViewModel(context: ConsoleContext, dependencies: Produ
     setSearch(next);
   };
   const closeAction = () => setAction(null);
-  const actionvm = useProductActionViewModel(action, context, dependencies, () => {
+  const actionvm = useProductActionViewModel(action, context, dependencies, requestStepup, () => {
     const productid = action !== null && 'listing' in action && typeof action.listing.product_id === 'string' ? action.listing.product_id : undefined;
     closeAction();
     setMessage('商品操作已完成');

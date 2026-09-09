@@ -1,5 +1,5 @@
 // Generated from config/cache.yml and config/capacity.yml. Do not edit.
-export const CONFIG_CHECKSUM = '35da7f1e3cf857c8d3cf8fa2c1bff6c1c4bb28123dbfa1ee86337046ee53e645' as const;
+export const CONFIG_CHECKSUM = '16095c020679f234e056590fc9ad85ef23ac6602a5b592613270faaed07c26d2' as const;
 
 export const BROWSER_QUERY_POLICY = Object.freeze({
   "query": {
@@ -245,12 +245,14 @@ export const RUNTIME_LIMITS = Object.freeze({
     "maximumAuthorizationSeconds": 900,
     "maximumChunkBytes": 8388608,
     "maximumAttachmentBytes": 20971520,
+    "maximumImageBytes": 10485760,
     "maximumRetentionDays": 3650,
     "retentionDays": {
       "import": 1,
       "aftersale": 365,
       "support": 365,
-      "qualification": 3650
+      "qualification": 3650,
+      "catalog": 3650
     }
   },
   "queue": {
