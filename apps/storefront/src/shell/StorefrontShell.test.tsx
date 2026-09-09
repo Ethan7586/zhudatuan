@@ -56,7 +56,7 @@ describe('StorefrontShell', () => {
 });
 
 function model(overrides: Record<string, unknown> = {}) {
-  const mall = { id: 'mall:one', membershipId: 'membership:one', enterpriseId: 'enterprise:one', enterpriseName: '示例企业', mallName: '员工福利商城', logoText: '员工福利', badge: '当前商城', welcomeBanner: '欢迎' };
+  const mall = { id: 'mall:one', membershipId: 'membership:one', enterpriseId: 'enterprise:one', enterpriseName: '示例企业', mallName: '员工福利商城', logoText: '员工福利', badge: '当前商城', roleLabel: '企业员工', welcomeBanner: '欢迎' };
   return {
     brand: { name: mall.mallName, enterprise: mall.enterpriseName, badge: mall.badge },
     navigation: {

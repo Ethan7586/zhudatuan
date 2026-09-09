@@ -39,7 +39,7 @@ export function productFixture(overrides: Partial<Product> = {}): Product {
 export function profileFixture(overrides: Partial<Profile> = {}): Profile {
   return {
     id: 'member-one',
-    employeeId: 'EMP-ONE',
+    employeeNumber: 'EMP-ONE',
     name: '测试会员',
     avatar: '',
     phone: '138****0000',

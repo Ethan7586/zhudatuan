@@ -10,6 +10,7 @@ import { SwitchMembership } from '../application/SwitchMembership';
 import { ChangeFavorite } from '../application/ChangeFavorite';
 import { ChangeAddress } from '../application/ChangeAddress';
 import type { AddressDraft } from '../model/Address';
+import { presentCurrentMall, presentMembershipMall } from '../model/MallPresentation';
 import { useDependencies } from '../../../app/DependencyContext';
 import { presentError } from '@shop/presentation';
 
@@ -27,37 +28,11 @@ export function useAccountIdentity() {
     enabled: session.status === 'authenticated',
   });
   const currentMembership = membershipQuery.data?.find(({ current }) => current);
-  const mall = useMemo(
-    () =>
-      session.scope
-        ? Object.freeze({
-            id: session.scope,
-            membershipId: currentMembership?.id,
-            enterpriseId: currentMembership?.organizationId ?? session.scope,
-            enterpriseName: currentMembership?.name ?? session.scope,
-            mallName: currentMembership?.name ?? session.scope,
-            logoText: (currentMembership?.name ?? session.scope).slice(0, 4),
-            badge: '当前商城',
-            welcomeBanner: '企业员工福利商城已开放，实际权益以企业发放为准。',
-          })
-        : UNRESOLVED_MALL,
-    [currentMembership, session.scope]
-  );
+  const mall = useMemo(() => (session.scope ? presentCurrentMall(session.scope, currentMembership) : UNRESOLVED_MALL), [currentMembership, session.scope]);
   const malls = useMemo(
     () =>
       Object.freeze(
-        (membershipQuery.data ?? []).map((membership) =>
-          Object.freeze({
-            id: membership.organizationId,
-            membershipId: membership.id,
-            enterpriseId: membership.organizationId,
-            enterpriseName: membership.name,
-            mallName: membership.name,
-            logoText: membership.name.slice(0, 4),
-            badge: membership.current ? '当前商城' : '可切换',
-            welcomeBanner: membership.current ? '当前授权商城' : '可切换授权商城',
-          })
-        )
+        (membershipQuery.data ?? []).map(presentMembershipMall)
       ),
     [membershipQuery.data]
   );
@@ -73,6 +48,7 @@ export function useAccountIdentity() {
             ...profileQuery.data,
             enterpriseId: mall.enterpriseId,
             enterpriseName: mall.enterpriseName,
+            department: mall.enterpriseName,
             currentMallId: mall.id,
           })
         : EMPTY_GUEST_PROFILE,

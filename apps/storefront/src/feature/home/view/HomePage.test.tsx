@@ -74,7 +74,7 @@ const page: ExperiencePage = {
 };
 
 function mall(id: string, membershipId: string, name: string) {
-  return Object.freeze({ id, membershipId, enterpriseId: id, enterpriseName: name, mallName: `${name}福利商城`, logoText: name.slice(0, 4), badge: '当前商城', welcomeBanner: '企业福利已开放' });
+  return Object.freeze({ id, membershipId, enterpriseId: id, enterpriseName: name, mallName: `${name}福利商城`, logoText: name.slice(0, 4), badge: '当前商城', roleLabel: '企业员工', welcomeBanner: '企业福利已开放' });
 }
 
 function follows(before: HTMLElement, after: HTMLElement) {

@@ -62,7 +62,7 @@ export function AccountPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
             <div>
               <h1 className="text-2xl font-black">{viewmodel.user.name}</h1>
               <p className="mt-1 text-sm text-inverse-label">
-                {viewmodel.user.department} · {viewmodel.user.employeeId}
+                {viewmodel.currentMall.enterpriseName} · {viewmodel.currentMall.roleLabel}
               </p>
               <p className="mt-1 text-xs text-inverse-label">{viewmodel.currentMall.mallName}</p>
             </div>

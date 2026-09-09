@@ -1,6 +1,6 @@
 export interface Profile {
   readonly id: string;
-  readonly employeeId: string;
+  readonly employeeNumber: string | null;
   readonly name: string;
   readonly avatar: string;
   readonly phone: string;
@@ -30,5 +30,6 @@ export interface EnterpriseMall {
   readonly mallName: string;
   readonly logoText: string;
   readonly badge: string;
+  readonly roleLabel: string;
   readonly welcomeBanner: string;
 }

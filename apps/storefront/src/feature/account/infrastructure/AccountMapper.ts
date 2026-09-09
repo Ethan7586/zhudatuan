@@ -12,6 +12,7 @@ export function mapMemberships(value: OperationOutputFor<'identity.memberships.r
         id: item.id,
         organizationId: item.scopeId,
         name: item.organizationName,
+        roleLabel: item.roleLabel,
         current: item.current,
         accessVersion: Number(item.accessVersion),
       })
@@ -36,14 +37,14 @@ export function mapFavorites(value: OperationOutputFor<'member.favorites.read'>)
 export function mapProfile(value: OperationOutputFor<'member.profile.read'>, balances: BenefitBalances = { welfareMinor: 0, mealMinor: 0 }): Profile {
   return Object.freeze({
     id: value.id,
-    employeeId: value.employee_no ?? value.membership_id,
+    employeeNumber: value.employee_no,
     name: value.display_name,
     avatar: '',
     phone: value.mobile_bound ? '已绑定' : '未绑定',
     jobTitle: '',
-    department: value.organization_id,
+    department: '所属部门未设置',
     enterpriseId: value.organization_id,
-    enterpriseName: value.organization_id,
+    enterpriseName: '当前企业',
     currentMallId: value.organization_id,
     welfareBalanceMinor: balances.welfareMinor,
     mealBalanceMinor: balances.mealMinor,
