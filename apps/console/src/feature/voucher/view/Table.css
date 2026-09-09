@@ -19,6 +19,8 @@
   position: relative;
   display: flex;
   min-width: max-content;
+  min-height: var(--sw-control-touch-target);
+  flex: 0 0 auto;
   align-items: center;
   gap: 7px;
   border: 0;
@@ -28,6 +30,7 @@
   color: var(--sw-muted);
   font: inherit;
   font-size: 12px;
+  white-space: nowrap;
   cursor: pointer;
 }
 
