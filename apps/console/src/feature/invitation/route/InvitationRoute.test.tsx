@@ -76,6 +76,18 @@ describe('InvitationRoute assurance boundary', () => {
         HttpResponse.json({
           items: [
             {
+              id: 'membership:one',
+              display_name: '当前管理员',
+              employee_no: null,
+              mobile_masked: '138****8000',
+              client: 'console',
+              status: 'active',
+              access_version: 7,
+              roles: [],
+              scopes: [],
+              overrides: [],
+            },
+            {
               id: 'membership:employee',
               display_name: '李小明',
               employee_no: 'E1002',
@@ -88,7 +100,7 @@ describe('InvitationRoute assurance boundary', () => {
               overrides: [],
             },
           ],
-          count: 1,
+          count: 2,
           roles: [],
           templates: [],
           separationRules: [],
@@ -101,6 +113,7 @@ describe('InvitationRoute assurance boundary', () => {
     await user.click(await screen.findByRole('button', { name: '新建邀请' }));
     await user.click(screen.getByRole('button', { name: /指定成员安全访问/ }));
     expect(screen.getByRole('option', { name: '李小明 · 工号 E1002' })).toBeTruthy();
+    expect(screen.queryByRole('option', { name: /当前管理员/ })).toBeNull();
     expect(screen.queryByText(/membership:employee/)).toBeNull();
     expect(screen.queryByText('登录邀请')).toBeNull();
   });

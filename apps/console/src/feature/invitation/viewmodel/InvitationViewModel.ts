@@ -73,6 +73,10 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
   );
   const organization =
     receipt === undefined ? (context.scope.name ?? chineseReference('组织范围', context.scope.id)) : (storefronts.find(({ id }) => id === receipt.organizationId)?.name ?? chineseReference('组织范围', receipt.organizationId));
+  const invitationMemberships = useMemo(
+    () => (memberships.data?.items ?? []).filter((membership) => membership.id !== context.session.membership),
+    [context.session.membership, memberships.data?.items]
+  );
   const updateFilter = useCallback(
     (name: 'target' | 'kind' | 'status', value: string) =>
       setSearch((current) => {
@@ -191,7 +195,7 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
     canIssue,
     canRevoke,
     assurance: context.session.assurance.level,
-    memberships: memberships.data?.items ?? [],
+    memberships: invitationMemberships,
     membershipsReady: memberships.isSuccess,
     condition: queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error, hasData: query.data !== undefined, empty: query.data?.items.length === 0 }),
     error: safeQueryError(query.error),
