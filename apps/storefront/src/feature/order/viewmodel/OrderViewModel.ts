@@ -4,6 +4,7 @@ import { routePath, ROUTES } from '../../../generated/RouteBinding';
 import { pathForFeature } from '../../../shared/navigation/Route';
 import { useAccountIdentity } from '../../account';
 import { useOrderState } from './OrderState';
+import { orderFilter, type OrderFilter } from '../model/OrderFilter';
 
 export function useOrderViewModel() {
   const navigate = useNavigate();
@@ -11,8 +12,14 @@ export function useOrderViewModel() {
   const identity = useAccountIdentity();
   const [search, setSearch] = useSearchParams();
   const order = useOrderState(identity.currentMall);
-  const status = search.get('status') ?? 'all';
-  const visibleOrders = order.orders.filter((item) => status === 'all' || (status === 'shipping' ? item.status === 'pending_shipment' || item.status === 'pending_receipt' : item.status === status));
+  const status = orderFilter(search.get('status'));
+  const visibleOrders = order.orders.filter((item) => status === 'all' || item.status === status);
+  const filter = (value: OrderFilter) => {
+    const next = new URLSearchParams(search);
+    if (value === 'all') next.delete('status');
+    else next.set('status', value);
+    setSearch(next);
+  };
   return Object.freeze({
     user: identity.user,
     ...order,
@@ -23,15 +30,11 @@ export function useOrderViewModel() {
     status,
     visibleOrders,
     actions: Object.freeze({
-      filter: (value: string) => {
-        const next = new URLSearchParams(search);
-        if (value === 'all') next.delete('status');
-        else next.set('status', value);
-        setSearch(next);
-      },
+      filter,
       open: (id: string) => void navigate(routePath('storeorder', { orderId: id })),
       aftersale: (id: string) => void navigate(routePath('storeaftersale', { orderId: id })),
       invoices: () => void navigate(`${ROUTES.storeorders}?view=invoices`),
+      aftersales: () => filter('after_sale'),
     }),
   });
 }

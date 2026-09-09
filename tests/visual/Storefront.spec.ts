@@ -73,6 +73,27 @@ test('Storefront 安全中心优先展示可理解的设备名称并渐进披露
 });
 
 for (const width of [390, 360]) {
+  test(`Storefront 订单中心在 ${width}px 保持设计稿层级和单行操作`, async ({ page }) => {
+    await prepareVisual(page, { width, height: 844 });
+    await signInStorefront(page, '/orders');
+    await expectUsable(page);
+    const filters = page.getByRole('navigation', { name: '订单状态筛选' });
+    for (const label of ['全部', '待付款', '待发货', '待收货', '已完成']) await expect(filters.getByRole('button', { name: label, exact: true })).toBeVisible();
+    const card = page.locator('[data-order-card]').first();
+    await expect(card).toBeVisible();
+    const bounds = await card.boundingBox();
+    expect(bounds?.x ?? -1).toBeGreaterThanOrEqual(0);
+    expect((bounds?.x ?? 0) + (bounds?.width ?? Number.POSITIVE_INFINITY)).toBeLessThanOrEqual(width + 1);
+    const actions = card.locator('footer button');
+    for (let index = 0; index < (await actions.count()); index += 1) {
+      const action = actions.nth(index);
+      const metrics = await action.evaluate((element) => ({ width: element.clientWidth, content: element.scrollWidth, height: element.getBoundingClientRect().height, whiteSpace: getComputedStyle(element).whiteSpace }));
+      expect(metrics.content).toBeLessThanOrEqual(metrics.width + 1);
+      expect(metrics.height).toBeGreaterThanOrEqual(44);
+      expect(metrics.whiteSpace).toBe('nowrap');
+    }
+  });
+
   test(`Storefront 结算商品信息在 ${width}px 保持可读且操作不被压缩`, async ({ page }) => {
     await prepareVisual(page, { width, height: 844 });
     await signInStorefront(page, '/checkout');
