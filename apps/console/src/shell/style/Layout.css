@@ -147,6 +147,10 @@ body:has(.consolelayout[data-visual-theme='console-v1']) {
     grid-template-columns: auto minmax(0, 1fr) auto;
     padding-inline: var(--sw-space-1-5);
   }
+  .consolelayout .consoleheader .commandtrigger {
+    height: var(--sw-control-touch-target);
+    min-height: var(--sw-control-touch-target);
+  }
 
   .consoleheader .mobilemenubutton {
     display: grid;
@@ -165,8 +169,13 @@ body:has(.consolelayout[data-visual-theme='console-v1']) {
     display: none;
   }
   .consolelayout[data-visual-theme='console-v1'] .consoleworkspace .scopebar {
+    height: calc(var(--sw-control-touch-target) + var(--sw-space-1));
+    min-height: calc(var(--sw-control-touch-target) + var(--sw-space-1));
     flex-direction: row;
     padding-inline: var(--sw-space-1-5);
+  }
+  .consolelayout[data-visual-theme='console-v1'] .consoleworkspace .scopecontext select {
+    min-height: var(--sw-control-touch-target);
   }
   .consolelayout[data-visual-theme='console-v1'] .scopecontext > span,
   .consolelayout[data-visual-theme='console-v1'] .scopecontext > .scopepath,

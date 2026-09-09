@@ -151,6 +151,20 @@ test('Console 窄屏页脚只保留服务状态且不覆盖工作区', async ({ 
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });
 
+test('Console 平板和手机壳层控件保持完整触控目标', async ({ page }) => {
+  await prepareVisual(page, { width: 768, height: 1024 });
+  await signInConsole(page);
+  await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleproducts, 'enterprise')}`);
+  await expectUsable(page);
+  await expect.poll(() => minimumHeight(page, '.commandtrigger, #consolescope, #consoleperiod')).toBeGreaterThanOrEqual(44);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('.commandtrigger')).toBeHidden();
+  await expect(page.locator('#consoleperiod')).toBeHidden();
+  await expect.poll(() => minimumHeight(page, '#consolescope')).toBeGreaterThanOrEqual(44);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+});
+
 test('Console 商品治理台在桌面、平板和手机保持清晰布局与触控尺寸', async ({ page }) => {
   test.slow();
   await prepareVisual(page, { width: 1366, height: 768 });
