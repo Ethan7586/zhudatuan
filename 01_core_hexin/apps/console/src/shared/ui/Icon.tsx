@@ -11,7 +11,7 @@ const paths: Readonly<Record<IconName, readonly string[]>> = Object.freeze({
   application: ['M4 4h7v7H4z', 'M13 4h7v7h-7z', 'M4 13h7v7H4z', 'M13 13h7v7h-7z'],
   voucher: ['M3 6h18v12H3z', 'M8 6v12', 'M8 10h2', 'M8 14h2'],
   report: ['M4 20V10', 'M10 20V4', 'M16 20v-7', 'M22 20H2'],
-  support: ['M4 13a8 8 0 0 1 16 0', 'M4 13v5h3v-5', 'M20 13v5h-3v-5', 'M17 20h-5'],
+  support: ['M20.25 11.25c0 4.06-3.69 7.1-8.25 7.1-1.04 0-2.04-.16-2.94-.46L4.8 20.1l1.1-4.04a6.55 6.55 0 0 1-2.15-4.81c0-4.06 3.69-7.1 8.25-7.1s8.25 3.04 8.25 7.1Z', 'm8.65 11.3 2.18 2.05 4.72-4.55'],
   channel: ['M5 12h14', 'm15 8 4 4-4 4', 'M9 5H5v14h4'],
   import: ['M12 3v12', 'm7 10 5 5 5-5', 'M4 19h16'],
   access: ['M12 2a5 5 0 0 0-5 5v3', 'M6 10h12v12H6z', 'M12 14v4'],
@@ -26,7 +26,7 @@ const paths: Readonly<Record<IconName, readonly string[]>> = Object.freeze({
 
 export function Icon({ name }: Readonly<{ name: IconName }>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={name === 'support' ? 1.65 : 2} strokeLinecap="round" strokeLinejoin="round"
       focusable="false" aria-hidden="true">
       {paths[name].map((path) => <path key={path} d={path} />)}
     </svg>

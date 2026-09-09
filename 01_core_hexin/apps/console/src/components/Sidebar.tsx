@@ -52,11 +52,13 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, brandName =
       {bottomItems.map((item) => {
         const label = navigationLabel(item);
         return <nav key={item.moduleId} aria-label={label} className="sidebarsupport">
-          <button type="button" onClick={() => onNavigate(item.suffix)} data-status={item.status}
-            aria-disabled={item.status === 'disabled' ? true : undefined} aria-label={label}
-            aria-current={item.moduleId === active ? 'page' : undefined} title={collapsed ? label : undefined}>
-            <ShellIcon name={item.icon} /><span className="sidebarlabel">{label}</span>
-          </button>
+          <div className="sidebarnavigation" style={{ height: 68, paddingBlock: 16 }}>
+            <button type="button" onClick={() => onNavigate(item.suffix)} data-status={item.status}
+              aria-disabled={item.status === 'disabled' ? true : undefined} aria-label={label}
+              aria-current={item.moduleId === active ? 'page' : undefined} title={collapsed ? label : undefined}>
+              <ShellIcon name={item.icon} /><span className="sidebarlabel">{label}</span>
+            </button>
+          </div>
         </nav>;
       })}
     </aside>

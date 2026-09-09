@@ -5,7 +5,7 @@ const states: Readonly<Record<string, string>> = Object.freeze({
   open: '待处理',
   pending: '处理中',
   resolved: '已解决',
-  waiting: '等待客户',
+  waiting: '等待消费者',
 });
 
 const priorities: Readonly<Record<string, string>> = Object.freeze({
@@ -46,13 +46,21 @@ export function supportTone(value: string): 'danger' | 'muted' | 'success' | 'wa
   return 'warning';
 }
 
-export function supportAuthorLabel(authorType: string, author: string | null): string {
-  const role = authorType.toLowerCase() === 'agent' ? '客服坐席' : authorType.toLowerCase() === 'member' ? '客户' : authorType;
-  return author === null ? role : `${role} · ${shortIdentifier(author)}`;
+export function supportAuthorLabel(authorType: string): string {
+  if (authorType.toLowerCase() === 'agent') return '管理员';
+  if (authorType.toLowerCase() === 'member') return '消费者';
+  return '消息发起人';
 }
 
 export function supportAuthorInitial(authorType: string): string {
-  return authorType.toLowerCase() === 'agent' ? '主' : authorType.toLowerCase() === 'member' ? '客' : '讯';
+  return authorType.toLowerCase() === 'agent' ? '管' : authorType.toLowerCase() === 'member' ? '消' : '讯';
+}
+
+export function supportRoleLabel(level: 'owner' | 'senior_administrator' | 'administrator' | 'member' | undefined): string {
+  if (level === 'owner') return '商城负责人';
+  if (level === 'senior_administrator') return '高级管理员';
+  if (level === 'member') return '成员';
+  return '管理员';
 }
 
 export function supportTime(value: string | null | undefined): string {

@@ -22,7 +22,7 @@ export const professionalRoutes: readonly ProfessionalRoute[] = Object.freeze([
   route('reports', 'reports', /^reports$/, '数据报表', '商品、商城、分类、渠道和卡券投影', '业务运营', 'report',
     'reporting.sales.read', ['reporting.sales.read', 'reporting.products.read', 'reporting.malls.read', 'reporting.categories.read',
       'reporting.channels.read', 'reporting.powderclass.read', 'reporting.voucherconsumption.read']),
-  route('support', 'support', /^support(?:\/[^/]+)?$/, '客服中心', '工单、对话、分派和 SLA 状态', '业务运营', 'support',
+  route('support', 'support', /^support(?:\/[^/]+)?$/, '服务中心', '消费者与管理员共用一个工作台', '业务运营', 'support',
     'support.cases.read', ['support.cases.read', 'support.messages.read']),
   route('channels', 'channels', /^channels$/, '渠道管理', '连接、同步批次和外部操作回执', '业务运营', 'channel',
     'channel.connections.read', ['channel.connections.read', 'channel.syncruns.read', 'channel.operations.read']),

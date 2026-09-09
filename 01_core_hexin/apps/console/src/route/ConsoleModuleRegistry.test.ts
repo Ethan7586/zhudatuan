@@ -121,7 +121,7 @@ describe('registered Console modules', () => {
     expect(consoleModuleById.get('control')?.navigation).toMatchObject({
       placement: 'main', group: 'overview', label: '商家服务中心', icon: 'control', scopeKinds: ['platform'],
     });
-    expect(consoleModuleById.get('support')?.navigation).toMatchObject({ placement: 'bottom', label: '客服系统' });
+    expect(consoleModuleById.get('support')?.navigation).toMatchObject({ placement: 'bottom', label: '服务中心' });
     expect(consoleModuleById.get('referral')?.navigation).toMatchObject({ preferredScopeKind: 'mall' });
   });
 

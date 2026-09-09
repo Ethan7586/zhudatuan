@@ -1,21 +1,23 @@
-@media (max-width: 1180px) {
-  .supportdesk { grid-template-columns: minmax(15rem, 18rem) minmax(22rem, 1fr); }
-  .supportcontext { display: none; }
-}
-
 @media (max-width: 760px) {
-  .supportworkspaceheader { align-items: flex-start; flex-direction: column; }
+  .supportpage { height: auto; min-height: 100dvh; grid-template-rows: auto auto auto; overflow: visible; }
+  .supportworkspaceheader { min-height: 112px; align-items: flex-start; flex-direction: column; gap: 12px; padding: 18px 16px; }
+  .supportworkspaceheader h1 { font-size: 25px; }
+  .supportworkspaceheader p { font-size: 14px; }
   .supportworkspacestatus { width: 100%; justify-content: space-between; }
-  .supportdesk { display: flex; height: auto; min-height: 0; flex-direction: column; overflow: visible; }
-  .supportdesk[data-case-selected='false'] .supportconversation { display: none; }
-  .supportdesk[data-case-selected='true'] .supportcaserail { display: none; }
-  .supportcaserail { min-height: 38rem; border-right: 0; }
-  .supportconversation { min-height: 38rem; }
-  .supportconversationheader { padding-inline: var(--sw-space-1-5); }
-  .supportmessages { min-height: 22rem; padding: var(--sw-space-2) var(--sw-space-1-5); }
+  .supportworkspacestatus > span { min-height: 38px; padding-inline: 10px; font-size: 12px; }
+  .supportidentitylabel strong { padding: 5px 8px; font-size: 12px; }
+  .supporttasktabs { overflow-x: auto; gap: 0; padding: 0 8px; }
+  .supporttasktabs button { min-width: 118px; min-height: 52px; font-size: 14px; }
+  .supportworkspace { display: block; padding: 8px; }
+  .supportworkspace[data-case-selected='false'] .supportconversation { display: none; }
+  .supportworkspace[data-case-selected='true'] .supportcaserail { display: none; }
+  .supportcaserail { min-height: 640px; }
+  .supportconversation { height: calc(100dvh - 76px); min-height: 640px; grid-template-rows: 66px minmax(0, 1fr) 176px; }
+  .supportconversationheader { padding-inline: 12px; }
+  .supportconversationidentity { display: none; }
+  .supportmessages { padding: 16px 12px; }
   .supportmessage { max-width: 94%; }
-  .supportcomposer { padding-inline: var(--sw-space-1-5); }
-  .supportcomposerbar > span { display: none; }
+  .supportcomposermodes button { padding-inline: 12px; }
 }
 
 @media (min-width: 761px) {
@@ -23,8 +25,11 @@
 }
 
 @media (max-width: 430px) {
-  .supportcasefilters { grid-template-columns: 1fr; }
+  .supportcasefilters { grid-template-columns: minmax(0, 1fr) 36px; }
+  .supportcasefilters label:nth-child(2) { display: none; }
   .supportconversationtools > span { display: none; }
-  .supportconversationheader p { max-width: 13rem; }
-  .supportcomposeractions > span { max-width: 11rem; }
+  .supportconversationheader p { max-width: 170px; }
+  .supportcomposermodes button { padding-inline: 9px; font-size: 12px; }
+  .supportcomposeractions > span { max-width: 72px; }
+  .supportcomposeractions > button { min-width: 96px; }
 }
