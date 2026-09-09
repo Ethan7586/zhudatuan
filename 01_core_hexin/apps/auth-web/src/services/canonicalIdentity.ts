@@ -1,5 +1,6 @@
 import { CONTRACT_VERSION } from '@shop/contract/version';
 import { PASSWORD_POLICY_MESSAGE } from '@shop/contract/password-policy';
+import { createResourceCache } from '@shop/interaction';
 import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
 import { createSecureId } from '@shop/sdk/context';
 import { z } from 'zod';
@@ -7,6 +8,11 @@ import type { Membership, PreAuthContext } from '../types';
 import { currentIdentityNode, currentLoginIntent } from './identityNodeEnvironment';
 
 const DEVICE_KEY = 'zhudatuan:identity:device:v1';
+const storefrontSessionCache = createResourceCache<string | null>({
+  namespace: 'auth-session',
+  schema: 'v1',
+  validate: (value): value is string | null => value === null || typeof value === 'string',
+});
 
 const MembershipSelectionSchema = z.strictObject({
   principal: z.string().min(1),
@@ -86,22 +92,45 @@ export interface CanonicalPasswordResetChallenge {
 }
 
 export async function currentCanonicalStorefrontOrganization(signal?: AbortSignal): Promise<string | null> {
-  const response = await fetch(new URL('/api/v1/identity/session', storefrontApiOrigin()), {
-    method: 'GET',
-    credentials: 'include',
-    redirect: 'error',
-    headers: {
-      accept: 'application/json',
-      'x-client-version': clientVersion(),
-      'x-contract-version': CONTRACT_VERSION,
-      'x-device-id': deviceId(),
-      'x-request-id': createSecureId(),
-    },
-    signal,
+  const request = storefrontSessionCache.revalidate('current', async (requestSignal) => {
+    const response = await fetch(new URL('/api/v1/identity/session', storefrontApiOrigin()), {
+      method: 'GET',
+      credentials: 'include',
+      redirect: 'error',
+      headers: {
+        accept: 'application/json',
+        'x-client-version': clientVersion(),
+        'x-contract-version': CONTRACT_VERSION,
+        'x-device-id': deviceId(),
+        'x-request-id': createSecureId(),
+      },
+      signal: requestSignal,
+    });
+    if (!response.ok) return null;
+    const parsed = CurrentStorefrontSessionSchema.safeParse(await response.json().catch(() => null));
+    return parsed.success ? parsed.data.governance.organization : null;
   });
-  if (!response.ok) return null;
-  const parsed = CurrentStorefrontSessionSchema.safeParse(await response.json().catch(() => null));
-  return parsed.success ? parsed.data.governance.organization : null;
+  return waitForSharedRequest(request, signal);
+}
+
+function waitForSharedRequest<Value>(request: Promise<Value>, signal?: AbortSignal): Promise<Value> {
+  if (!signal) return request;
+  if (signal.aborted) return Promise.reject(new DOMException('Aborted', 'AbortError'));
+  return new Promise<Value>((resolve, reject) => {
+    const abort = () => reject(new DOMException('Aborted', 'AbortError'));
+    const settle = () => signal.removeEventListener('abort', abort);
+    signal.addEventListener('abort', abort, { once: true });
+    request.then(
+      (value) => {
+        settle();
+        resolve(value);
+      },
+      (reason: unknown) => {
+        settle();
+        reject(reason);
+      },
+    );
+  });
 }
 
 type LoginCredential =

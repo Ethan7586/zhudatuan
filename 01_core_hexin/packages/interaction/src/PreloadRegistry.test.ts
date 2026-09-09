@@ -34,4 +34,12 @@ describe('preload registry', () => {
     expect(loader).toHaveBeenCalledTimes(1);
     cancel();
   });
+
+  it('stops accepting work after disposal', () => {
+    const loader = vi.fn(async () => undefined);
+    const registry = createPreloadRegistry({ cart: loader });
+    registry.dispose();
+    expect(registry.preload('cart')).toBeUndefined();
+    expect(loader).not.toHaveBeenCalled();
+  });
 });

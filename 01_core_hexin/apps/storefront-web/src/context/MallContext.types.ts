@@ -116,7 +116,7 @@ export interface MallContextType {
   addresses: DeliveryAddress[];
   addAddress: (address: Omit<DeliveryAddress, 'id'>) => Promise<boolean>;
   setDefaultAddress: (addressId: string) => Promise<boolean>;
-  toasts: ToastMessage[];
+  toasts: readonly ToastMessage[];
   showToast: (text: string, type?: ToastMessage['type'], options?: ToastOptions) => void;
   removeToast: (id: string) => void;
   quickViewProduct: Product | null;

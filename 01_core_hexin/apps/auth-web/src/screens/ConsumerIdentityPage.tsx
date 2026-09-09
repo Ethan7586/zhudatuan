@@ -8,8 +8,10 @@ import {
   resolveCanonicalStorefrontRegistration,
   type CanonicalStorefrontRegistration,
 } from '../services/canonicalRegistration';
+import { useIdentityActions } from './useIdentityActions';
 
 type IdentityMode = 'login' | 'register';
+type ConsumerActionKey = 'consumer-login' | 'consumer-register';
 
 export const ConsumerIdentityPage: React.FC<{ application: string }> = ({ application }) => {
   const [mode, setMode] = useState<IdentityMode>('login');
@@ -21,8 +23,8 @@ export const ConsumerIdentityPage: React.FC<{ application: string }> = ({ applic
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [policy, setPolicy] = useState<'terms' | 'privacy' | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
+  const identityActions = useIdentityActions<ConsumerActionKey>();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -40,54 +42,60 @@ export const ConsumerIdentityPage: React.FC<{ application: string }> = ({ applic
   }, [application]);
 
   const switchMode = (next: IdentityMode) => {
+    identityActions.cancel();
     setMode(next);
     setFormError('');
     setConfirmPassword('');
   };
 
-  const submitLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submitLogin = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitting(true);
     setFormError('');
-    try {
-      const result = await loginCanonicalStorefrontEntry(mobile, password, application);
-      window.location.assign(result.redirectUrl);
-    } catch (error) {
-      setFormError(messageOf(error));
-    } finally {
-      setSubmitting(false);
-    }
+    identityActions.run(
+      'consumer-login',
+      (signal) => loginCanonicalStorefrontEntry(mobile, password, application, signal),
+      {
+        completionStages: ['server-response', 'session-exchange', 'redirect'],
+        onSuccess: (result) => window.location.assign(result.redirectUrl),
+        onError: (error) => setFormError(messageOf(error)),
+      },
+    );
   };
 
-  const submitRegistration = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submitRegistration = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (context === null) return setFormError(contextError || '商城注册入口正在读取，请稍后重试');
+    const registrationContext = context;
+    if (registrationContext === null) return setFormError(contextError || '商城注册入口正在读取，请稍后重试');
     if (!passwordMeetsPolicy(password)) return setFormError(PASSWORD_POLICY_MESSAGE);
     if (password !== confirmPassword) return setFormError('两次输入的密码不一致');
     if (!acceptedTerms) return setFormError('请先阅读并同意服务协议与隐私政策');
-    setSubmitting(true);
     setFormError('');
-    try {
-      const created = await createCanonicalMember({
-        subject: mobile,
-        password,
-        displayName: automaticL6DisplayName(mobile),
-        applicationSlug: context.applicationSlug,
-        deferPhoneVerification: true,
-        termsAccepted: true,
-        termsHash: context.termsHash,
-        directLogin: true,
-      });
-      if (!created.redirectUrl) throw new Error('账号已创建，但登录会话未能建立，请直接登录');
-      window.location.assign(created.redirectUrl);
-    } catch (error) {
-      setFormError(messageOf(error));
-    } finally {
-      setSubmitting(false);
-    }
+    identityActions.run(
+      'consumer-register',
+      async (signal) => {
+        const created = await createCanonicalMember({
+          subject: mobile,
+          password,
+          displayName: automaticL6DisplayName(mobile),
+          applicationSlug: registrationContext.applicationSlug,
+          deferPhoneVerification: true,
+          termsAccepted: true,
+          termsHash: registrationContext.termsHash,
+          directLogin: true,
+        }, signal);
+        if (!created.redirectUrl) throw new Error('账号已创建，但登录会话未能建立，请直接登录');
+        return created;
+      },
+      {
+        completionStages: ['server-response', 'session-exchange', 'redirect'],
+        onSuccess: (created) => window.location.assign(created.redirectUrl!),
+        onError: (error) => setFormError(messageOf(error)),
+      },
+    );
   };
 
   const organizationName = context?.organizationName ?? '宏泰甄选';
+  const submitting = identityActions.isBusy(mode === 'login' ? 'consumer-login' : 'consumer-register');
   const busyLabel = mode === 'login' ? '正在登录…' : '正在创建账号…';
 
   return (
@@ -160,7 +168,12 @@ export const ConsumerIdentityPage: React.FC<{ application: string }> = ({ applic
               </>
             )}
 
-            <button type="submit" disabled={submitting || (mode === 'register' && (context === null || !acceptedTerms))} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/15 transition hover:bg-[var(--sw-brand-dark)] disabled:cursor-not-allowed disabled:bg-slate-300">
+            <button
+              type="submit"
+              disabled={submitting || (mode === 'register' && (context === null || !acceptedTerms))}
+              onPointerDown={() => identityActions.pointerDown(mode === 'login' ? 'consumer-login' : 'consumer-register')}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/15 transition hover:bg-[var(--sw-brand-dark)] disabled:cursor-not-allowed disabled:bg-slate-300"
+            >
               {submitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : mode === 'login' ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
               {submitting ? busyLabel : mode === 'login' ? '登录并进入商城' : '创建账号并进入商城'}
             </button>

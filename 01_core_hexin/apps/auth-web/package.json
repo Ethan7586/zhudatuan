@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@shop/contract": "1.0.0",
+    "@shop/interaction": "1.0.0",
     "@shop/sdk": "1.0.0",
+    "@shop/telemetry": "1.0.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^6.0.2",
     "lucide-react": "^0.546.0",
@@ -22,9 +24,11 @@
     "vite": "^8.1.5"
   },
   "devDependencies": {
+    "@testing-library/react": "16.3.2",
     "@types/node": "^22.14.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
+    "jsdom": "30.0.1",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",

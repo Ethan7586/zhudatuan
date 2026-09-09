@@ -1,27 +1,47 @@
+import { preloadOnce } from '@shop/interaction';
 import type { MiniProgramPage } from '../../context/MallContext';
 
-export const loadMPCartPage = () => import('../../features/miniprogram/MPCartPage');
-export const loadMPAddressPage = () => import('../../features/miniprogram/MPAddressPage');
-export const loadMPCategoryPage = () => import('../../features/miniprogram/MPCategoryPage');
-export const loadMPDetailPage = () => import('../../features/miniprogram/MPDetailPage');
-export const loadMPWelfarePage = () => import('../../features/miniprogram/MPWelfarePage');
-export const loadMobileOrdersPage = () => import('./MobileOrdersPage');
-export const loadMPProfilePage = () => {
-  void loadMobileOrdersPage();
+type PagePreloadKey = MiniProgramPage | 'payment-result';
+
+const importMPCartPage = () => import('../../features/miniprogram/MPCartPage');
+const importMPAddressPage = () => import('../../features/miniprogram/MPAddressPage');
+const importMPCategoryPage = () => import('../../features/miniprogram/MPCategoryPage');
+const importMPDetailPage = () => import('../../features/miniprogram/MPDetailPage');
+const importMPWelfarePage = () => import('../../features/miniprogram/MPWelfarePage');
+const importMobileOrdersPage = () => import('./MobileOrdersPage');
+const importMPProfilePage = () => {
+  void preloadPage('orders')?.catch(() => undefined);
   return import('../../features/miniprogram/MPProfilePage');
 };
-export const loadPaymentResultPage = () => import('../common/PaymentResultPage');
+const importPaymentResultPage = () => import('../common/PaymentResultPage');
 
-const PRIMARY_PAGE_LOADERS: Partial<Record<MiniProgramPage, () => Promise<unknown>>> = {
-  category: loadMPCategoryPage,
-  welfare: loadMPWelfarePage,
-  cart: loadMPCartPage,
-  profile: loadMPProfilePage,
-  address: loadMPAddressPage,
-  orders: loadMobileOrdersPage,
-};
+const PAGE_LOADERS = {
+  category: importMPCategoryPage,
+  welfare: importMPWelfarePage,
+  detail: importMPDetailPage,
+  cart: importMPCartPage,
+  profile: importMPProfilePage,
+  address: importMPAddressPage,
+  orders: importMobileOrdersPage,
+  'payment-result': importPaymentResultPage,
+} satisfies Partial<Record<PagePreloadKey, () => Promise<unknown>>>;
+const pagePreloads = new Map<PagePreloadKey, Promise<unknown>>();
+
+const preloadPage = (key: PagePreloadKey) => preloadOnce(PAGE_LOADERS, pagePreloads, key);
+
+function loadPage<Module>(key: PagePreloadKey, loader: () => Promise<Module>): Promise<Module> {
+  return (preloadPage(key) ?? loader()) as Promise<Module>;
+}
+
+export const loadMPCartPage = () => loadPage('cart', importMPCartPage);
+export const loadMPAddressPage = () => loadPage('address', importMPAddressPage);
+export const loadMPCategoryPage = () => loadPage('category', importMPCategoryPage);
+export const loadMPDetailPage = () => loadPage('detail', importMPDetailPage);
+export const loadMPWelfarePage = () => loadPage('welfare', importMPWelfarePage);
+export const loadMobileOrdersPage = () => loadPage('orders', importMobileOrdersPage);
+export const loadMPProfilePage = () => loadPage('profile', importMPProfilePage);
+export const loadPaymentResultPage = () => loadPage('payment-result', importPaymentResultPage);
 
 export function preloadMiniProgramPage(page: MiniProgramPage): void {
-  const pageLoad = PRIMARY_PAGE_LOADERS[page]?.();
-  void pageLoad;
+  void preloadPage(page)?.catch(() => undefined);
 }

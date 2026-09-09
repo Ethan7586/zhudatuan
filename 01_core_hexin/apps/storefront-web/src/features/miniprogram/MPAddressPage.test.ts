@@ -236,7 +236,8 @@ describe('mini-program address page', () => {
     const dataSource = readFileSync(resolve(process.cwd(), 'src/features/miniprogram/address/chinaRegions.ts'), 'utf8');
     const pickerSource = readFileSync(resolve(process.cwd(), 'src/features/miniprogram/address/AddressRegionPicker.tsx'), 'utf8');
 
-    expect(loaderSource).toContain("loadMPAddressPage = () => import('../../features/miniprogram/MPAddressPage')");
+    expect(loaderSource).toContain("const importMPAddressPage = () => import('../../features/miniprogram/MPAddressPage')");
+    expect(loaderSource).toContain("loadMPAddressPage = () => loadPage('address', importMPAddressPage)");
     expect(pageSource).toContain("import { AddressRegionPicker } from './address/AddressRegionPicker'");
     expect(pageSource).toContain('void loadChinaRegions();');
     expect(pageSource).toContain('prepareWechatDeliveryAddress');

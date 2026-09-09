@@ -13,8 +13,16 @@ import {
   resolveCanonicalInvite,
   type CanonicalInvitation,
 } from '../services/canonicalRegistration';
+import { useIdentityActions } from './useIdentityActions';
 
 type PageMode = 'login' | 'register' | 'reset';
+type OperatorActionKey =
+  | 'operator-login'
+  | 'operator-invite'
+  | 'operator-registration-code'
+  | 'operator-register'
+  | 'operator-reset-code'
+  | 'operator-reset';
 
 export const OperatorIdentityPage: React.FC<Readonly<{
   target: string;
@@ -29,7 +37,6 @@ export const OperatorIdentityPage: React.FC<Readonly<{
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [memberships, setMemberships] = useState<readonly Membership[]>([]);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [inviteCode, setInviteCode] = useState(initialInvite);
@@ -44,6 +51,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
   const [resetCode, setResetCode] = useState('');
   const [resetChallenge, setResetChallenge] = useState('');
   const [resetConfirm, setResetConfirm] = useState('');
+  const identityActions = useIdentityActions<OperatorActionKey>();
 
   useEffect(() => {
     if (!initialInvite) return;
@@ -51,6 +59,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
   }, []);
 
   const changeMode = (next: PageMode) => {
+    identityActions.cancel();
     setMode(next);
     setError('');
     setNotice('');
@@ -59,79 +68,96 @@ export const OperatorIdentityPage: React.FC<Readonly<{
 
   const consoleOptions = () => ({ target, expectedOrigin });
 
-  const signIn = async (event: React.FormEvent<HTMLFormElement>) => {
+  const signIn = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await authorize();
+    authorize();
   };
 
-  const authorize = async (membership?: string) => {
-    setBusy(true);
+  const authorize = (membership?: string) => {
     setError('');
-    try {
-      const result = await loginCanonicalConsole(identifier, password, membership, undefined, consoleOptions());
-      if (result.kind === 'authenticated') return window.location.assign(result.redirectUrl);
-      if (result.context.memberships.length === 0) throw new Error('该账号没有可用的运营会员身份');
-      setMemberships(result.context.memberships);
-    } catch (reason) {
-      setError(messageOf(reason));
-    } finally {
-      setBusy(false);
-    }
+    identityActions.run(
+      'operator-login',
+      (signal) => loginCanonicalConsole(identifier, password, membership, signal, consoleOptions()),
+      {
+        completionStages: (result) => result.kind === 'authenticated'
+          ? ['server-response', 'session-exchange', 'redirect']
+          : ['server-response'],
+        onSuccess: (result) => {
+          if (result.kind === 'authenticated') {
+            window.location.assign(result.redirectUrl);
+            return;
+          }
+          if (result.context.memberships.length === 0) {
+            setError('该账号没有可用的运营会员身份');
+            return;
+          }
+          setMemberships(result.context.memberships);
+        },
+        onError: (reason) => setError(messageOf(reason)),
+      },
+    );
   };
 
-  const loadInvite = async (value = inviteCode) => {
-    setBusy(true);
+  const loadInvite = (value = inviteCode) => {
     setError('');
     setNotice('');
-    try {
-      const normalized = value.trim().toUpperCase();
-      const resolved = await resolveCanonicalInvite(normalized);
-      setInvite(resolved);
-      setInviteCode(normalized);
-      setResolvedInviteCode(normalized);
-      setAcceptedTerms(false);
-      setRegistrationChallenge('');
-      setNotice(`邀请码已确认：${resolved.organizationName}`);
-      return resolved;
-    } catch (reason) {
-      setInvite(null);
-      setResolvedInviteCode('');
-      setError(messageOf(reason));
-      return null;
-    } finally {
-      setBusy(false);
-    }
+    const normalized = value.trim().toUpperCase();
+    identityActions.run(
+      'operator-invite',
+      (signal) => resolveCanonicalInvite(normalized, signal),
+      {
+        onSuccess: (resolved) => {
+          setInvite(resolved);
+          setInviteCode(normalized);
+          setResolvedInviteCode(normalized);
+          setAcceptedTerms(false);
+          setRegistrationChallenge('');
+          setNotice(`邀请码已确认：${resolved.organizationName}`);
+        },
+        onError: (reason) => {
+          setInvite(null);
+          setResolvedInviteCode('');
+          setError(messageOf(reason));
+        },
+      },
+    );
   };
 
-  const sendRegistrationCode = async () => {
-    setBusy(true);
+  const sendRegistrationCode = () => {
     setError('');
-    try {
-      const normalized = inviteCode.trim().toUpperCase();
-      const resolved = invite !== null && resolvedInviteCode === normalized ? invite : await resolveCanonicalInvite(normalized);
-      setInvite(resolved);
-      setResolvedInviteCode(normalized);
-      const challenge = await createCanonicalRegistrationChallenge(identifier, normalized);
-      setRegistrationChallenge(challenge.challengeId);
-      setNotice('验证码已经发送，请填写最新收到的 6 位验证码');
-    } catch (reason) {
-      setError(messageOf(reason));
-    } finally {
-      setBusy(false);
-    }
+    const normalized = inviteCode.trim().toUpperCase();
+    identityActions.run(
+      'operator-registration-code',
+      async (signal) => {
+        const resolved = invite !== null && resolvedInviteCode === normalized
+          ? invite
+          : await resolveCanonicalInvite(normalized, signal);
+        const challenge = await createCanonicalRegistrationChallenge(identifier, normalized, signal);
+        return { challenge, resolved };
+      },
+      {
+        onSuccess: ({ challenge, resolved }) => {
+          setInvite(resolved);
+          setResolvedInviteCode(normalized);
+          setRegistrationChallenge(challenge.challengeId);
+          setNotice('验证码已经发送，请填写最新收到的 6 位验证码');
+        },
+        onError: (reason) => setError(messageOf(reason)),
+      },
+    );
   };
 
-  const register = async (event: React.FormEvent<HTMLFormElement>) => {
+  const register = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (invite === null || resolvedInviteCode !== inviteCode.trim().toUpperCase()) return setError('请先验证当前邀请码');
     if (!registrationChallenge) return setError('请先获取验证码');
     if (!passwordMeetsPolicy(password)) return setError(PASSWORD_POLICY_MESSAGE);
     if (password !== confirmPassword) return setError('两次输入的密码不一致');
     if (!acceptedTerms) return setError('请先阅读并同意服务协议与隐私政策');
-    setBusy(true);
     setError('');
-    try {
-      const created = await createCanonicalMember({
+    identityActions.run(
+      'operator-register',
+      (signal) => createCanonicalMember({
         subject: identifier,
         password,
         displayName,
@@ -141,54 +167,69 @@ export const OperatorIdentityPage: React.FC<Readonly<{
         termsAccepted: true,
         termsHash: invite.termsHash,
         directLogin: invite.target === 'storefront',
-      });
-      if (created.redirectUrl) return window.location.assign(created.redirectUrl);
-      setPassword('');
-      setConfirmPassword('');
-      setNotice('账号已经创建，请使用手机号和刚才设置的密码登录');
-      setMode('login');
-    } catch (reason) {
-      setError(messageOf(reason));
-    } finally {
-      setBusy(false);
-    }
+      }, signal),
+      {
+        completionStages: (created) => created.redirectUrl
+          ? ['server-response', 'session-exchange', 'redirect']
+          : ['server-response'],
+        onSuccess: (created) => {
+          if (created.redirectUrl) {
+            window.location.assign(created.redirectUrl);
+            return;
+          }
+          setPassword('');
+          setConfirmPassword('');
+          setNotice('账号已经创建，请使用手机号和刚才设置的密码登录');
+          setMode('login');
+        },
+        onError: (reason) => setError(messageOf(reason)),
+      },
+    );
   };
 
-  const sendResetCode = async () => {
-    setBusy(true);
+  const sendResetCode = () => {
     setError('');
-    try {
-      const challenge = await createCanonicalPasswordResetChallenge(identifier);
-      setResetChallenge(challenge.challengeId);
-      setNotice('验证码已经发送，请填写最新收到的 6 位验证码');
-    } catch (reason) {
-      setError(messageOf(reason));
-    } finally {
-      setBusy(false);
-    }
+    identityActions.run(
+      'operator-reset-code',
+      (signal) => createCanonicalPasswordResetChallenge(identifier, signal),
+      {
+        onSuccess: (challenge) => {
+          setResetChallenge(challenge.challengeId);
+          setNotice('验证码已经发送，请填写最新收到的 6 位验证码');
+        },
+        onError: (reason) => setError(messageOf(reason)),
+      },
+    );
   };
 
-  const resetPassword = async (event: React.FormEvent<HTMLFormElement>) => {
+  const resetPassword = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!resetChallenge) return setError('请先获取验证码');
     if (!passwordMeetsPolicy(password)) return setError(PASSWORD_POLICY_MESSAGE);
     if (password !== resetConfirm) return setError('两次输入的密码不一致');
-    setBusy(true);
     setError('');
-    try {
-      await resetCanonicalPassword(resetChallenge, resetCode, password);
-      setPassword('');
-      setResetConfirm('');
-      setNotice('密码已重置，请使用新密码登录');
-      setMode('login');
-    } catch (reason) {
-      setError(messageOf(reason));
-    } finally {
-      setBusy(false);
-    }
+    identityActions.run(
+      'operator-reset',
+      (signal) => resetCanonicalPassword(resetChallenge, resetCode, password, signal),
+      {
+        onSuccess: () => {
+          setPassword('');
+          setResetConfirm('');
+          setNotice('密码已重置，请使用新密码登录');
+          setMode('login');
+        },
+        onError: (reason) => setError(messageOf(reason)),
+      },
+    );
   };
 
   const productName = nodeDisplayName;
+  const loginBusy = identityActions.isBusy('operator-login');
+  const inviteBusy = identityActions.isBusy('operator-invite');
+  const registrationCodeBusy = identityActions.isBusy('operator-registration-code');
+  const registrationBusy = identityActions.isBusy('operator-register');
+  const resetCodeBusy = identityActions.isBusy('operator-reset-code');
+  const resetBusy = identityActions.isBusy('operator-reset');
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4 sm:p-8">
@@ -218,7 +259,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
             <form onSubmit={signIn} className="space-y-4">
               <TextField label="手机号或账号" value={identifier} onChange={setIdentifier} autoComplete="username" />
               <PasswordField label="密码" value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="current-password" />
-              <SubmitButton busy={busy} icon={<LogIn className="h-4 w-4" />}>登录并进入后台</SubmitButton>
+              <SubmitButton busy={loginBusy} onPointerDown={() => identityActions.pointerDown('operator-login')} icon={<LogIn className="h-4 w-4" />}>登录并进入后台</SubmitButton>
             </form>
           )}
 
@@ -226,7 +267,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
             <div className="space-y-3">
               <p className="text-sm font-bold text-slate-900">选择本次进入的会员身份</p>
               {memberships.map((membership) => (
-                <button key={membership.id} type="button" disabled={busy} onClick={() => void authorize(membership.id)} className="flex w-full items-center gap-3 rounded-xl border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50">
+                <button key={membership.id} type="button" disabled={loginBusy} onPointerDown={() => identityActions.pointerDown('operator-login')} onClick={() => authorize(membership.id)} className="flex w-full items-center gap-3 rounded-xl border border-slate-200 p-4 text-left transition hover:border-blue-300 hover:bg-blue-50">
                   <Building2 className="h-5 w-5 text-[var(--sw-brand)]" />
                   <span><strong className="block text-sm text-slate-900">{membership.enterpriseName}</strong><span className="text-xs text-slate-500">{membership.roleName}</span></span>
                 </button>
@@ -239,13 +280,13 @@ export const OperatorIdentityPage: React.FC<Readonly<{
             <form onSubmit={register} className="space-y-4">
               <div className="flex gap-2">
                 <input required value={inviteCode} onChange={(event) => { setInviteCode(event.target.value.toUpperCase()); setInvite(null); }} placeholder="企业邀请码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm uppercase outline-none focus:ring-2 focus:ring-blue-100" />
-                <button type="button" disabled={busy || !inviteCode.trim()} onClick={() => void loadInvite()} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50">验证邀请码</button>
+                <button type="button" disabled={inviteBusy || !inviteCode.trim()} onPointerDown={() => identityActions.pointerDown('operator-invite')} onClick={() => loadInvite()} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50">验证邀请码</button>
               </div>
               <TextField label="姓名" value={displayName} onChange={setDisplayName} autoComplete="name" />
               <TextField label="手机号" value={identifier} onChange={setIdentifier} autoComplete="tel" inputMode="tel" />
               <div className="flex gap-2">
                 <input required inputMode="numeric" maxLength={6} value={registrationCode} onChange={(event) => setRegistrationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6 位验证码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100" />
-                <button type="button" disabled={busy || !identifier.trim() || !inviteCode.trim()} onClick={() => void sendRegistrationCode()} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50"><Send className="mr-1 inline h-3.5 w-3.5" />获取验证码</button>
+                <button type="button" disabled={registrationCodeBusy || !identifier.trim() || !inviteCode.trim()} onPointerDown={() => identityActions.pointerDown('operator-registration-code')} onClick={sendRegistrationCode} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50"><Send className="mr-1 inline h-3.5 w-3.5" />获取验证码</button>
               </div>
               <PasswordField label="设置密码" value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />
               <PasswordField label="确认密码" value={confirmPassword} onChange={setConfirmPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />
@@ -253,7 +294,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
                 <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} disabled={invite === null} className="mt-0.5 h-4 w-4 accent-[var(--sw-brand)]" />
                 <span>我已阅读并同意<button type="button" disabled={invite === null} onClick={() => setPolicy('terms')} className="text-[var(--sw-brand)] disabled:text-slate-400">《用户服务协议》</button>和<button type="button" disabled={invite === null} onClick={() => setPolicy('privacy')} className="text-[var(--sw-brand)] disabled:text-slate-400">《隐私保护政策》</button></span>
               </label>
-              <SubmitButton busy={busy} disabled={invite === null || !acceptedTerms} icon={<UserPlus className="h-4 w-4" />}>创建统一账号</SubmitButton>
+              <SubmitButton busy={registrationBusy} disabled={invite === null || !acceptedTerms} onPointerDown={() => identityActions.pointerDown('operator-register')} icon={<UserPlus className="h-4 w-4" />}>创建统一账号</SubmitButton>
             </form>
           )}
 
@@ -262,11 +303,11 @@ export const OperatorIdentityPage: React.FC<Readonly<{
               <TextField label="绑定手机号" value={identifier} onChange={setIdentifier} autoComplete="tel" inputMode="tel" />
               <div className="flex gap-2">
                 <input required inputMode="numeric" maxLength={6} value={resetCode} onChange={(event) => setResetCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6 位验证码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100" />
-                <button type="button" disabled={busy || !identifier.trim()} onClick={() => void sendResetCode()} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50"><KeyRound className="mr-1 inline h-3.5 w-3.5" />获取验证码</button>
+                <button type="button" disabled={resetCodeBusy || !identifier.trim()} onPointerDown={() => identityActions.pointerDown('operator-reset-code')} onClick={sendResetCode} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50"><KeyRound className="mr-1 inline h-3.5 w-3.5" />获取验证码</button>
               </div>
               <PasswordField label="新密码" value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />
               <PasswordField label="确认新密码" value={resetConfirm} onChange={setResetConfirm} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />
-              <SubmitButton busy={busy} icon={<KeyRound className="h-4 w-4" />}>重置密码</SubmitButton>
+              <SubmitButton busy={resetBusy} onPointerDown={() => identityActions.pointerDown('operator-reset')} icon={<KeyRound className="h-4 w-4" />}>重置密码</SubmitButton>
             </form>
           )}
         </div>
@@ -299,8 +340,8 @@ const PasswordField: React.FC<{ label: string; value: string; onChange: (value: 
   <label className="block space-y-1.5 text-xs font-semibold text-slate-700">{label}<span className="relative block"><input type={visible ? 'text' : 'password'} required minLength={PASSWORD_MIN_LENGTH} maxLength={PASSWORD_MAX_LENGTH} value={value} onChange={(event) => onChange(event.target.value)} autoComplete={autoComplete} className="w-full rounded-xl border border-slate-200 px-3.5 py-3 pr-11 text-sm outline-none focus:border-[var(--sw-brand)] focus:ring-2 focus:ring-blue-100" /><button type="button" onClick={onToggle} aria-label={visible ? '隐藏密码' : '显示密码'} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400">{visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></span></label>
 );
 
-const SubmitButton: React.FC<{ busy: boolean; disabled?: boolean; icon: React.ReactNode; children: React.ReactNode }> = ({ busy, disabled, icon, children }) => (
-  <button type="submit" disabled={busy || disabled} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/15 disabled:cursor-not-allowed disabled:bg-slate-300">{busy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : icon}{busy ? '处理中…' : children}</button>
+const SubmitButton: React.FC<{ busy: boolean; disabled?: boolean; onPointerDown: () => void; icon: React.ReactNode; children: React.ReactNode }> = ({ busy, disabled, onPointerDown, icon, children }) => (
+  <button type="submit" disabled={busy || disabled} onPointerDown={onPointerDown} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/15 disabled:cursor-not-allowed disabled:bg-slate-300">{busy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : icon}{busy ? '处理中…' : children}</button>
 );
 
 const Message: React.FC<{ tone: 'error' | 'notice'; children: React.ReactNode }> = ({ tone, children }) => (

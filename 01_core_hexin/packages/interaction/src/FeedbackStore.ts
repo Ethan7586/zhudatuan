@@ -11,14 +11,9 @@ export interface FeedbackPublishOptions {
 export interface FeedbackStore<Message extends FeedbackMessage> {
   readonly publish: (message: Message, options?: FeedbackPublishOptions) => void;
   readonly remove: (id: string) => void;
-  readonly clear: (channel?: string) => void;
   readonly getSnapshot: () => readonly Message[];
   readonly subscribe: (listener: () => void) => () => void;
   readonly dispose: () => void;
-}
-
-export function publishFeedbackSnapshot<Message extends FeedbackMessage>(current: readonly Message[], message: Message, replaceChannel = true): Message[] {
-  return [...current.filter((candidate) => candidate.id !== message.id && (!replaceChannel || candidate.channel !== message.channel)), message];
 }
 
 export function createFeedbackStore<Message extends FeedbackMessage>(): FeedbackStore<Message> {
@@ -48,11 +43,14 @@ export function createFeedbackStore<Message extends FeedbackMessage>(): Feedback
     publish(message, options = {}) {
       if (disposed) return;
       const replaceChannel = options.replaceChannel ?? true;
-      const removed = snapshot.filter((current) => current.id === message.id || (replaceChannel && current.channel === message.channel));
-      for (const current of removed) cancelTimer(current.id);
-      snapshot = publishFeedbackSnapshot(snapshot, message, replaceChannel);
+      const retained = snapshot.filter((current) => {
+        const replace = current.id === message.id || (replaceChannel && current.channel === message.channel);
+        if (replace) cancelTimer(current.id);
+        return !replace;
+      });
+      snapshot = [...retained, message];
       const durationMs = options.durationMs;
-      if (durationMs !== undefined && durationMs > 0) {
+      if (durationMs && durationMs > 0) {
         timers.set(
           message.id,
           setTimeout(() => remove(message.id), durationMs)
@@ -61,14 +59,6 @@ export function createFeedbackStore<Message extends FeedbackMessage>(): Feedback
       notify();
     },
     remove,
-    clear(channel) {
-      if (disposed) return;
-      const removed = channel === undefined ? snapshot : snapshot.filter((message) => message.channel === channel);
-      for (const message of removed) cancelTimer(message.id);
-      if (removed.length === 0) return;
-      snapshot = channel === undefined ? [] : snapshot.filter((message) => message.channel !== channel);
-      notify();
-    },
     getSnapshot: () => snapshot,
     subscribe(listener) {
       listeners.add(listener);

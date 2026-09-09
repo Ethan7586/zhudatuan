@@ -37,6 +37,25 @@ function setWindowSearch(search: string): void {
 }
 
 describe('canonical storefront session', () => {
+  it('deduplicates concurrent authoritative session reads', async () => {
+    setWindowHostname('accounts.hbbtzn.com');
+    let resolve!: (response: Response) => void;
+    const fetchMock = vi.fn<typeof fetch>(() => new Promise<Response>((done) => {
+      resolve = done;
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    const first = currentCanonicalStorefrontOrganization();
+    const second = currentCanonicalStorefrontOrganization();
+    resolve(jsonResponse({
+      target: 'storefront',
+      governance: { organization: 'mall:l1-hongtai' },
+      actor: 'principal:one',
+    }));
+
+    await expect(Promise.all([first, second])).resolves.toEqual(['mall:l1-hongtai', 'mall:l1-hongtai']);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('recognizes the already signed-in L1 before reopening consumer registration', async () => {
     setWindowHostname('accounts.hbbtzn.com');
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
