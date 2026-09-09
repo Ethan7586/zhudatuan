@@ -39,6 +39,12 @@ export interface ToastMessage {
   id: string;
   type: 'success' | 'info' | 'error' | 'warning';
   text: string;
+  channel?: 'default' | 'cart';
+}
+
+export interface ToastOptions {
+  channel?: ToastMessage['channel'];
+  durationMs?: number;
 }
 
 export interface LoginCredentials {
@@ -99,8 +105,9 @@ export interface MallContextType {
   checkoutSelectedCart: () => Promise<boolean>;
   cart: CartItem[];
   cartCount: number;
-  addToCart: (product: Product, quantity?: number, selectedSpec?: Record<string, string>) => void;
-  updateCartQuantity: (cartItemId: string, quantity: number) => void;
+  addToCart: (product: Product, quantity?: number, selectedSpec?: Record<string, string>) => boolean;
+  updateCartQuantity: (cartItemId: string, quantity: number) => boolean;
+  prepareCart: () => void;
   toggleCartItemSelected: (cartItemId: string) => void;
   toggleSelectAllCart: (selected: boolean) => void;
   removeCartItem: (cartItemId: string) => Promise<void>;
@@ -110,7 +117,7 @@ export interface MallContextType {
   addAddress: (address: Omit<DeliveryAddress, 'id'>) => Promise<boolean>;
   setDefaultAddress: (addressId: string) => Promise<boolean>;
   toasts: ToastMessage[];
-  showToast: (text: string, type?: ToastMessage['type']) => void;
+  showToast: (text: string, type?: ToastMessage['type'], options?: ToastOptions) => void;
   removeToast: (id: string) => void;
   quickViewProduct: Product | null;
   setQuickViewProduct: Dispatch<SetStateAction<Product | null>>;

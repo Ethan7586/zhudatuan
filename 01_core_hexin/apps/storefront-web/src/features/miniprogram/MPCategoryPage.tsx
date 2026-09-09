@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Search, ShoppingBag } from 'lucide-react';
+import { Search, ShoppingBag } from 'lucide-react';
+import type { FrontendProduct } from '../../adapters/frontendData';
+import { InstantCartAddButton } from '../../components/mobile/InstantCartAddButton';
+import { MobileInventoryBadge } from '../../components/mobile/MobileInventoryBadge';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { useMall } from '../../context/MallContext';
 import { storefrontImageUrl } from '../../services/storefrontImageUrl';
@@ -8,6 +11,8 @@ export const MPCategoryPage: React.FC = () => {
   const { setMpPage, addToCart, presentationProducts: products, presentationCategories: categories } = useMall();
   const [activeCategoryId, setActiveCategoryId] = useState(() => categories[0]?.id ?? 'cat_all');
   const [keyword, setKeyword] = useState('');
+  const setMpPageRef = React.useRef(setMpPage);
+  setMpPageRef.current = setMpPage;
 
   const currentCategory = categories.find((category) => category.id === activeCategoryId) || categories[0];
 
@@ -26,13 +31,15 @@ export const MPCategoryPage: React.FC = () => {
     );
   }
 
-  const filteredProducts = products.filter((product) => {
+  const filteredProducts = React.useMemo(() => products.filter((product) => {
     const matchesCategory = activeCategoryId === 'cat_all' || product.categoryId === activeCategoryId;
     const matchesKeyword = !keyword || product.title.includes(keyword) || product.subtitle?.includes(keyword);
     return matchesCategory && matchesKeyword;
-  });
+  }), [activeCategoryId, keyword, products]);
   const showCategoryRail = categories.length > 1;
   const stockedCategoryId = categories.find((category) => products.some((product) => product.categoryId === category.id))?.id;
+  const openProduct = React.useCallback((productId: string) => setMpPageRef.current('detail', productId), []);
+  const addProduct = React.useCallback((product: FrontendProduct) => addToCart(product, 1), [addToCart]);
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#F4F6FA] font-sans text-gray-900">
@@ -130,54 +137,7 @@ export const MPCategoryPage: React.FC = () => {
             </div>
           ) : (
             <div className="mt-2.5 space-y-2.5 pb-3">
-              {filteredProducts.map((product) => (
-                <article
-                  key={product.id}
-                  onClick={() => setMpPage('detail', product.id)}
-                  className="flex gap-2.5 rounded-2xl border border-gray-100 bg-white p-2.5 shadow-[0_5px_18px_rgba(15,23,42,0.05)] active:bg-gray-50"
-                >
-                  <img
-                    src={storefrontImageUrl(product.imageUrl, 152)}
-                    srcSet={`${storefrontImageUrl(product.imageUrl, 152)} 2x, ${storefrontImageUrl(product.imageUrl, 228)} 3x`}
-                    alt={product.title}
-                    width={76}
-                    height={76}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-[76px] w-[76px] flex-none rounded-xl border border-gray-100 bg-gray-50 object-cover"
-                  />
-
-                  <div className="flex min-w-0 flex-1 flex-col justify-between">
-                    <div>
-                      <h2 className="line-clamp-2 text-[11px] font-bold leading-[16px] text-gray-900">{product.title}</h2>
-                      <div className="mt-1.5 flex min-w-0 gap-1">
-                        {product.enterpriseSubsidyAmount > 0 && (
-                          <span className="truncate rounded-md bg-red-50 px-1.5 py-0.5 text-[8px] font-bold text-[#E5484D]">协议省¥{product.enterpriseSubsidyAmount}</span>
-                        )}
-                        <span className="flex-none rounded-md bg-blue-50 px-1.5 py-0.5 text-[8px] font-bold text-blue-700">福利卡可用</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-end justify-between gap-1.5">
-                      <div className="min-w-0 whitespace-nowrap">
-                        <span className="font-mono text-sm font-black text-[#E5484D]"><span className="text-[9px]">¥</span>{product.price}</span>
-                        {product.originalPrice > product.price && <span className="ml-1 font-mono text-[8px] text-gray-400 line-through">¥{product.originalPrice}</span>}
-                      </div>
-                      <button
-                        type="button"
-                        aria-label={`加入购物车：${product.title}`}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          addToCart(product, 1);
-                        }}
-                        className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[var(--sw-brand)] text-white shadow-[0_4px_10px_rgba(37,99,235,0.22)] active:bg-[var(--sw-brand-dark)]"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
+              {filteredProducts.map((product) => <CategoryProductCard key={product.id} product={product} onAdd={addProduct} onOpen={openProduct} />)}
             </div>
           )}
         </main>
@@ -185,3 +145,56 @@ export const MPCategoryPage: React.FC = () => {
     </div>
   );
 };
+
+const CategoryProductCard = React.memo(function CategoryProductCard({
+  onAdd,
+  onOpen,
+  product,
+}: Readonly<{
+  onAdd: (product: FrontendProduct) => boolean;
+  onOpen: (productId: string) => void;
+  product: FrontendProduct;
+}>) {
+  const unavailable = product.purchasable === false || product.stockCount <= 0;
+  return (
+    <article onClick={() => onOpen(product.id)} className="flex gap-2.5 rounded-2xl border border-gray-100 bg-white p-2.5 shadow-[0_5px_18px_rgba(15,23,42,0.05)] active:bg-gray-50">
+      <img
+        src={storefrontImageUrl(product.imageUrl, 152)}
+        srcSet={`${storefrontImageUrl(product.imageUrl, 152)} 2x, ${storefrontImageUrl(product.imageUrl, 228)} 3x`}
+        alt={product.title}
+        width={76}
+        height={76}
+        loading="lazy"
+        decoding="async"
+        className="h-[76px] w-[76px] flex-none rounded-xl border border-gray-100 bg-gray-50 object-cover"
+      />
+
+      <div className="flex min-w-0 flex-1 flex-col justify-between">
+        <div>
+          <h2 className="line-clamp-2 text-[11px] font-bold leading-[16px] text-gray-900">{product.title}</h2>
+          <div className="mt-1.5 flex min-w-0 items-center justify-between gap-1">
+            <div className="flex min-w-0 gap-1">
+              {product.enterpriseSubsidyAmount > 0 ? <span className="truncate rounded-md bg-red-50 px-1.5 py-0.5 text-[8px] font-bold text-[#E5484D]">协议省¥{product.enterpriseSubsidyAmount}</span> : null}
+              <span className="flex-none rounded-md bg-blue-50 px-1.5 py-0.5 text-[8px] font-bold text-blue-700">福利卡可用</span>
+            </div>
+            <MobileInventoryBadge product={product} />
+          </div>
+        </div>
+
+        <div className="flex items-end justify-between gap-1.5">
+          <div className="min-w-0 whitespace-nowrap">
+            <span className="font-mono text-sm font-black text-[#E5484D]"><span className="text-[9px]">¥</span>{product.price}</span>
+            {product.originalPrice > product.price ? <span className="ml-1 font-mono text-[8px] text-gray-400 line-through">¥{product.originalPrice}</span> : null}
+          </div>
+          <InstantCartAddButton
+            ariaLabel={`加入购物车：${product.title}`}
+            className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[var(--sw-brand)] text-white shadow-[0_4px_10px_rgba(37,99,235,0.22)] active:bg-[var(--sw-brand-dark)] disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+            disabled={unavailable}
+            listingId={product.id}
+            onAdd={() => onAdd(product)}
+          />
+        </div>
+      </div>
+    </article>
+  );
+});

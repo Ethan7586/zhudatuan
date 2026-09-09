@@ -21,17 +21,5 @@ const PRIMARY_PAGE_LOADERS: Partial<Record<MiniProgramPage, () => Promise<unknow
 export function preloadMiniProgramPage(page: MiniProgramPage): void {
   const pageLoad = PRIMARY_PAGE_LOADERS[page]?.();
   void pageLoad;
-  if (page === 'cart') void pageLoad?.then(() => Promise.all([loadMPAddressPage(), loadPaymentResultPage()]));
   if (page === 'profile') void loadMobileOrdersPage();
-}
-
-export function preloadPrimaryMiniProgramPages() {
-  const primaryPages = Promise.all([
-    loadMPCategoryPage(),
-    loadMPWelfarePage(),
-    loadMPCartPage(),
-    loadMPProfilePage(),
-  ]);
-  void primaryPages.then(() => Promise.all([loadMPAddressPage(), loadMobileOrdersPage()]));
-  return primaryPages;
 }

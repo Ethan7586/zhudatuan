@@ -1,16 +1,18 @@
 import React from 'react';
-import { CheckCircle2, Circle, CreditCard, ShoppingBag, Store } from 'lucide-react';
-import { MobileInventoryBadge } from '../../components/mobile/MobileInventoryBadge';
+import { CheckCircle2, Circle, CreditCard, RotateCcw, ShoppingBag, Store } from 'lucide-react';
+import { inventoryStatus, MobileInventoryBadge } from '../../components/mobile/MobileInventoryBadge';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { useMall } from '../../context/MallContext';
 import { loadPaymentResultPage } from '../../components/mobile/miniProgramPageLoaders';
 import { storefrontImageUrl } from '../../services/storefrontImageUrl';
-import { requestWechatDeliveryAddress, WechatAddressRequestError } from '../../services/wechatDeliveryAddress';
+import type { WechatAddressRequestError } from '../../services/wechatDeliveryAddress';
 import { MPCartInvoiceDisclosure } from './MPCartInvoiceDisclosure';
+import type { CartItem } from '../../types';
 
 export const MPCartPage: React.FC = () => {
   const {
     addresses,
+    addToCart,
     addAddress,
     cart,
     checkoutSelectedCart,
@@ -28,17 +30,42 @@ export const MPCartPage: React.FC = () => {
   const [isManaging, setIsManaging] = React.useState(false);
   const [isOrderServicesOpen, setIsOrderServicesOpen] = React.useState(false);
   const [isImportingWechatAddress, setIsImportingWechatAddress] = React.useState(false);
+  const [recentlyRemoved, setRecentlyRemoved] = React.useState<CartItem | null>(null);
+  const removeNoticeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const selectedItems = cart.filter((item) => item.selected);
+  const selectedItems = cart.filter((item) => item.selected && inventoryStatus(item.product) !== 'unavailable' && item.product.purchasable !== false);
   const cartQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
   const selectedQuantity = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
-  const isAllSelected = cart.length > 0 && cart.every((item) => item.selected);
+  const selectableItems = cart.filter((item) => inventoryStatus(item.product) !== 'unavailable' && item.product.purchasable !== false);
+  const isAllSelected = selectableItems.length > 0 && selectableItems.every((item) => item.selected);
   const totalPrice = selectedItems.reduce((sum, item) => sum + item.product.priceMall * item.quantity, 0);
   const totalSubsidy = selectedItems.reduce(
     (sum, item) => sum + Math.max(0, item.product.priceMarket - item.product.priceWelfare) * item.quantity,
     0,
   );
   const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0];
+
+  React.useEffect(() => () => {
+    if (removeNoticeTimer.current) clearTimeout(removeNoticeTimer.current);
+  }, []);
+
+  const updateLineQuantity = (item: CartItem, quantity: number) => {
+    if (quantity > 0) {
+      updateCartQuantity(item.id, quantity);
+      return;
+    }
+    if (removeNoticeTimer.current) clearTimeout(removeNoticeTimer.current);
+    setRecentlyRemoved(item);
+    updateCartQuantity(item.id, 0);
+    removeNoticeTimer.current = setTimeout(() => setRecentlyRemoved(null), 3_200);
+  };
+
+  const undoRemoval = () => {
+    if (!recentlyRemoved) return;
+    if (removeNoticeTimer.current) clearTimeout(removeNoticeTimer.current);
+    addToCart(recentlyRemoved.product, recentlyRemoved.quantity, recentlyRemoved.selectedSpec);
+    setRecentlyRemoved(null);
+  };
 
   const handleCheckout = async () => {
     void loadPaymentResultPage();
@@ -59,12 +86,15 @@ export const MPCartPage: React.FC = () => {
     if (isImportingWechatAddress) return;
     setIsImportingWechatAddress(true);
     try {
+      const { requestWechatDeliveryAddress } = await import('../../services/wechatDeliveryAddress');
       const address = await requestWechatDeliveryAddress();
       await addAddress({ ...address, isDefault: true, tag: '微信地址' });
     } catch (error) {
-      const message = error instanceof WechatAddressRequestError ? error.message : '微信地址获取失败，请手动填写';
+      const wechatError = error as Partial<WechatAddressRequestError>;
+      const message = typeof wechatError.code === 'string' && wechatError.message
+        ? wechatError.message : '微信地址获取失败，请手动填写';
       showToast(message, 'info');
-      if (!(error instanceof WechatAddressRequestError) || error.code !== 'cancelled') setMpPage('address');
+      if (wechatError.code !== 'cancelled') setMpPage('address');
     } finally {
       setIsImportingWechatAddress(false);
     }
@@ -82,6 +112,11 @@ export const MPCartPage: React.FC = () => {
           </div>
           <h1 className="text-base font-black tracking-tight text-gray-900">购物车空空的</h1>
           <p className="mt-2 text-xs leading-5 text-gray-400">去挑选心仪福利，加入后可一起结算</p>
+          {recentlyRemoved ? (
+            <button type="button" onClick={undoRemoval} className="mt-4 flex min-h-10 touch-manipulation items-center gap-1.5 rounded-full bg-blue-50 px-5 text-xs font-bold text-[var(--sw-brand)] active:bg-blue-100">
+              <RotateCcw className="h-3.5 w-3.5" />撤销刚才的移除
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => setMpPage('home')}
@@ -134,12 +169,13 @@ export const MPCartPage: React.FC = () => {
 
               <div className="divide-y divide-gray-100">
                 {cart.map((item) => (
-                  <article key={item.id} className="flex gap-2.5 px-3 py-3.5">
+                  <article key={item.id} data-cart-item={item.id} className="flex gap-2.5 px-3 py-3.5">
                     <button
                       type="button"
                       aria-label={`${item.selected ? '取消选择' : '选择'}：${item.product.title}`}
                       onClick={() => toggleCartItemSelected(item.id)}
-                      className="flex h-20 w-7 flex-none items-center justify-start"
+                      disabled={inventoryStatus(item.product) === 'unavailable' || item.product.purchasable === false}
+                      className="flex h-20 w-7 flex-none items-center justify-start disabled:opacity-40"
                     >
                       {item.selected ? <CheckCircle2 className="h-5 w-5 fill-[var(--sw-brand)] text-white" /> : <Circle className="h-5 w-5 text-gray-300" />}
                     </button>
@@ -189,17 +225,18 @@ export const MPCartPage: React.FC = () => {
                             <button
                               type="button"
                               aria-label={`减少${item.product.title}数量`}
-                              onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
+                              onClick={() => updateLineQuantity(item, item.quantity - 1)}
                               className="h-8 w-8 font-bold text-gray-600 active:bg-gray-200"
                             >
                               −
                             </button>
-                            <CartQuantityInput value={item.quantity} onChange={(quantity) => updateCartQuantity(item.id, quantity)} />
+                            <CartQuantityInput value={item.quantity} onChange={(quantity) => updateLineQuantity(item, quantity)} />
                             <button
                               type="button"
                               aria-label={`增加${item.product.title}数量`}
-                              onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
-                              className="h-8 w-8 font-bold text-gray-700 active:bg-gray-200"
+                              onClick={() => updateLineQuantity(item, item.quantity + 1)}
+                              disabled={item.product.purchasable === false || item.product.stock <= item.quantity}
+                              className="h-8 w-8 font-bold text-gray-700 active:bg-gray-200 disabled:text-gray-300"
                             >
                               ＋
                             </button>
@@ -209,6 +246,14 @@ export const MPCartPage: React.FC = () => {
                     </div>
                   </article>
                 ))}
+                {recentlyRemoved && !cart.some((item) => item.id === recentlyRemoved.id) ? (
+                  <div data-cart-removal-undo className="flex min-h-14 items-center justify-between gap-3 bg-blue-50/60 px-3.5 py-2.5 text-[11px] text-slate-600">
+                    <span className="min-w-0 truncate">已移除“{recentlyRemoved.product.title}”</span>
+                    <button type="button" onClick={undoRemoval} className="flex min-h-9 flex-none touch-manipulation items-center gap-1 rounded-full px-3 font-bold text-[var(--sw-brand)] active:bg-blue-100">
+                      <RotateCcw className="h-3.5 w-3.5" />撤销
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </section>
 

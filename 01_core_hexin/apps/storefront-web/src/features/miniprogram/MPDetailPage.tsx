@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useMall } from '../../context/MallContext';
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
-import { WeChatTabBar } from '../../components/mobile/WeChatTabBar';
+import { InstantCartAddButton } from '../../components/mobile/InstantCartAddButton';
+import { preloadMiniProgramPage } from '../../components/mobile/miniProgramPageLoaders';
 import { Share2, Headphones, ShoppingCart, ShieldCheck, Truck, CheckCircle2, ChevronRight, Heart, Store, CreditCard } from 'lucide-react';
 
 export const MPDetailPage: React.FC = () => {
-  const { mobileProductId, setMpPage, addToCart, cartCount, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
+  const { mobileProductId, setMpPage, addToCart, cartCount, prepareCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedSpec, setSelectedSpec] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
@@ -32,8 +33,7 @@ export const MPDetailPage: React.FC = () => {
   const images = [product.imageUrl, ...(product.gallery || [])];
 
   const handleBuyNow = () => {
-    addToCart(product, quantity, selectedSpec);
-    setMpPage('cart');
+    if (addToCart(product, quantity, selectedSpec)) setMpPage('cart');
   };
 
   return (
@@ -189,15 +189,27 @@ export const MPDetailPage: React.FC = () => {
           <span>客服</span>
         </button>
 
-        <button onClick={() => setMpPage('cart')} className="flex flex-col items-center justify-center p-1.5 text-gray-500 hover:text-gray-800 text-[10px] relative cursor-pointer">
+        <button
+          onPointerDown={() => {
+            preloadMiniProgramPage('cart');
+            prepareCart();
+          }}
+          onClick={() => setMpPage('cart')}
+          className="flex flex-col items-center justify-center p-1.5 text-gray-500 hover:text-gray-800 text-[10px] relative cursor-pointer"
+        >
           <ShoppingCart className="w-4 h-4" />
           <span>购物车</span>
           {cartCount > 0 && <span className="absolute top-0 right-1 bg-[#E5484D] text-white text-[9px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">{cartCount}</span>}
         </button>
 
-        <button onClick={() => addToCart(product, quantity, selectedSpec)} className="flex-1 bg-[var(--sw-brand-light)] hover:bg-blue-100 text-[var(--sw-brand)] font-bold text-xs py-2.5 rounded-xl transition-colors cursor-pointer">
-          加入购物车
-        </button>
+        <InstantCartAddButton
+          ariaLabel={`加入购物车：${product.title}`}
+          className="flex min-h-10 flex-1 items-center justify-center rounded-xl bg-[var(--sw-brand)] px-3 text-xs font-bold text-white shadow-[0_5px_14px_rgba(37,99,235,0.18)] disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
+          disabled={product.purchasable === false || product.stockCount <= 0}
+          label="加入购物车"
+          listingId={product.id}
+          onAdd={() => addToCart(product, quantity, selectedSpec)}
+        />
 
         <button onClick={handleBuyNow} className="flex-1 bg-gradient-to-r from-[var(--sw-brand)] to-[var(--sw-brand-dark)] text-white font-bold text-xs py-2.5 rounded-xl shadow-md shadow-blue-500/20 transition-all cursor-pointer">
           福利卡直接兑换

@@ -12,7 +12,7 @@ export const WECHAT_TABS: readonly { id: MiniProgramPage; label: string; icon: R
 ];
 
 export const WeChatTabBar: React.FC = () => {
-  const { mpPage, setMpPage, cartCount } = useMall();
+  const { mpPage, setMpPage, cartCount, prepareCart } = useMall();
   const [visualPage, setVisualPage] = React.useState<MiniProgramPage>(mpPage);
 
   React.useEffect(() => setVisualPage(mpPage), [mpPage]);
@@ -20,6 +20,10 @@ export const WeChatTabBar: React.FC = () => {
   const selectTab = (page: MiniProgramPage) => {
     if (page === mpPage) return;
     setVisualPage(page);
+    if (page === 'cart') {
+      setMpPage(page);
+      return;
+    }
     React.startTransition(() => setMpPage(page));
   };
 
@@ -33,12 +37,15 @@ export const WeChatTabBar: React.FC = () => {
           <button
             key={tab.id}
             type="button"
-            onPointerDown={() => preloadMiniProgramPage(tab.id)}
+            onPointerDown={() => {
+              preloadMiniProgramPage(tab.id);
+              if (tab.id === 'cart') prepareCart();
+            }}
             onClick={() => selectTab(tab.id)}
             aria-current={isActive ? 'page' : undefined}
             className={`relative flex h-full min-w-0 touch-manipulation cursor-pointer flex-col items-center justify-center rounded-lg py-1 transition-colors duration-100 active:bg-slate-50 ${isActive ? 'text-[var(--sw-brand)]' : 'text-gray-500 hover:text-gray-800'}`}
           >
-            <div className="relative flex h-5 items-center justify-center">
+            <div key={tab.id === 'cart' ? cartCount : tab.id} className={`relative flex h-5 items-center justify-center ${tab.id === 'cart' ? 'animate-in zoom-in-95 duration-150 motion-reduce:animate-none' : ''}`}>
               <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
               {tab.id === 'cart' && cartCount > 0 && (
                 <span className="absolute -top-1.5 -right-2 bg-[#E5484D] text-white font-bold text-[9px] min-w-[15px] h-[15px] rounded-full flex items-center justify-center px-1 shadow-xs animate-in zoom-in-50">

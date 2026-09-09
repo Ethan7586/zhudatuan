@@ -8,10 +8,10 @@ import { useDeviceNavigation } from './useDeviceNavigation';
 import { checkoutSelectedCartRequest, PaymentPhoneVerificationRequired, prepareCheckoutSelection } from './checkoutSelectedCart';
 import { useProductionSync } from './useProductionSync';
 import { useToasts } from './useToasts';
-import { mapApiCartItems } from './mallMappers';
 import { guestStorefrontProfile } from './guestStorefrontProfile';
 import { EMPTY_GUEST_PROFILE, UNRESOLVED_MALL } from './productionStorefrontState';
-import { createCartQuantitySync, type CartQuantitySync } from './cartQuantitySync';
+import type { CartQuantitySync, CartQuantityUpdate } from './cartQuantitySync';
+import { addCartItemOptimistically, rollbackCartQuantity, setCartQuantityOptimistically } from './cartOptimisticState';
 import { switchDefaultAddressOptimistically } from './addressDefaultState';
 import type { ApiPaymentResult } from '../services/productionApi.types';
 import type { CanonicalPaymentProgress } from '../services/canonicalCheckout';
@@ -69,7 +69,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const [user, setUser] = useState<UserProfile>(() => (showcaseService ? showcaseService.getUserProfile() : { ...EMPTY_GUEST_PROFILE }));
   const [currentMall, setCurrentMall] = useState<EnterpriseMall>(() => (showcaseService ? showcaseService.getCurrentMall() : { ...UNRESOLVED_MALL }));
   const [malls, setMalls] = useState<EnterpriseMall[]>(() => (showcaseService ? showcaseService.getMalls() : []));
-  const [cart, setCart] = useState<CartItem[]>(() => (showcaseService ? showcaseService.getCart() : []));
+  const [cart, setCartState] = useState<CartItem[]>(() => (showcaseService ? showcaseService.getCart() : []));
   const [orders, setOrders] = useState<Order[]>(() => (showcaseService ? showcaseService.getOrders() : []));
   const [mobileFulfillmentSimulationStage, setMobileFulfillmentSimulationStage] = useState<MobileFulfillmentStage | null>(null);
   const [products, setProducts] = useState<Product[]>(() => (showcaseService ? showcaseService.getProducts() : []));
@@ -85,6 +85,12 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const [addresses, setAddresses] = useState<DeliveryAddress[]>(() => (showcaseService ? showcaseService.getAddresses() : []));
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const sessionGenerationRef = useRef(0);
+  const sessionStatusRef = useRef(sessionStatus);
+  const cartRef = useRef(cart);
+  const cartCacheScopeRef = useRef<string | null>(null);
+  const cartMutationVersionRef = useRef(0);
+  const cartItemSnapshotsRef = useRef(new Map<string, CartItem>());
+  const refreshCartRequestRef = useRef<Promise<void> | null>(null);
   const activePaymentSessionRef = useRef<PaymentRecoveryRecord | null>(null);
   const paymentInFlightRef = useRef(false);
   const dismissedPaymentKeyRef = useRef<string | null>(null);
@@ -93,10 +99,33 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   const showToastRef = useRef(showToast);
   const refreshServerCartRef = useRef<() => Promise<void>>(async () => undefined);
   const cartQuantitySyncRef = useRef<CartQuantitySync | null>(null);
+  const cartQuantitySyncLoadRef = useRef<Promise<CartQuantitySync> | null>(null);
+  const bufferedCartUpdatesRef = useRef(new Map<string, CartQuantityUpdate>());
+  const cartSyncGenerationRef = useRef(0);
   const productsRef = useRef(products);
   showToastRef.current = showToast;
   productsRef.current = products;
+  sessionStatusRef.current = sessionStatus;
+  cartRef.current = cart;
   activePaymentSessionRef.current = activePaymentSession;
+  const cacheCart = useCallback((items: CartItem[]) => {
+    const scope = cartCacheScopeRef.current;
+    if (!scope || typeof window === 'undefined') return;
+    void import('./cartCache').then(({ writeCartCache }) => writeCartCache(scope, items));
+  }, []);
+  const publishCart = useCallback((items: CartItem[]) => {
+    cartRef.current = items;
+    items.forEach((item) => cartItemSnapshotsRef.current.set(item.id, item));
+    setCartState(items);
+  }, []);
+  const setCart = useCallback<React.Dispatch<React.SetStateAction<CartItem[]>>>((update) => {
+    setCartState((current) => {
+      const next = typeof update === 'function' ? update(current) : update;
+      cartRef.current = next;
+      next.forEach((item) => cartItemSnapshotsRef.current.set(item.id, item));
+      return next;
+    });
+  }, []);
   const presentationProducts = useMemo(() => toFrontendProducts(products), [products]);
   const presentationOrders = useMemo(() => toFrontendOrders(orders, presentationProducts), [orders, presentationProducts]);
   const presentationCategories = useMemo(() => toFrontendCategories(products), [products]);
@@ -114,26 +143,79 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     return next;
   }, []);
 
-  const refreshServerCart = useCallback(async () => {
+  const refreshServerCart = useCallback((): Promise<void> => {
+    if (refreshCartRequestRef.current) return refreshCartRequestRef.current;
     const sessionGeneration = sessionGenerationRef.current;
-    const productionApi = await loadProductionApi();
-    const response = await productionApi.listCart();
-    if (sessionGeneration !== sessionGenerationRef.current) return;
-    setCart(mapApiCartItems(response.items, productsRef.current));
-  }, []);
+    const mutationVersion = cartMutationVersionRef.current;
+    const request = (async () => {
+      const productionApi = await loadProductionApi();
+      const [response, { mergeAuthoritativeCart }] = await Promise.all([
+        productionApi.listCart(),
+        import('./cartServerState'),
+      ]);
+      if (sessionGeneration !== sessionGenerationRef.current || mutationVersion !== cartMutationVersionRef.current) return;
+      const next = mergeAuthoritativeCart(response.items, productsRef.current, cartRef.current);
+      publishCart(next);
+      cacheCart(next);
+    })().finally(() => {
+      if (refreshCartRequestRef.current === request) refreshCartRequestRef.current = null;
+    });
+    refreshCartRequestRef.current = request;
+    return request;
+  }, [cacheCart, publishCart]);
   refreshServerCartRef.current = refreshServerCart;
-  if (!cartQuantitySyncRef.current) {
-    cartQuantitySyncRef.current = createCartQuantitySync(
-      async ({ listingId, quantity }) => {
-        const productionApi = await loadProductionApi();
-        await productionApi.upsertCartItem({ listingId, quantity });
-      },
-      () => {
-        showToastRef.current('购物车更新失败，请稍后重试', 'error');
+  const ensureCartQuantitySync = useCallback(async (): Promise<CartQuantitySync> => {
+    if (cartQuantitySyncRef.current) return cartQuantitySyncRef.current;
+    if (cartQuantitySyncLoadRef.current) return cartQuantitySyncLoadRef.current;
+    const loadGeneration = cartSyncGenerationRef.current;
+    const load = import('./cartQuantitySync').then(({ createCartQuantitySync }) => {
+      const sync = createCartQuantitySync(
+        async ({ listingId, quantity }) => {
+          const productionApi = await loadProductionApi();
+          await productionApi.upsertCartItem({ listingId, quantity });
+        },
+        {
+          onCommitted: () => cacheCart(cartRef.current),
+          onError: (_cause, failure) => {
+            cartMutationVersionRef.current += 1;
+            publishCart(rollbackCartQuantity(
+              cartRef.current,
+              cartItemSnapshotsRef.current.get(failure.update.cartItemId),
+              failure.update.cartItemId,
+              failure.rollbackQuantity,
+            ));
+            showToastRef.current('同步失败，已恢复原数量', 'error', { channel: 'cart', durationMs: 1_800 });
+          },
+        },
+      );
+      if (loadGeneration !== cartSyncGenerationRef.current) {
+        sync.cancel();
+        return sync;
       }
-    );
-  }
-  useEffect(() => () => cartQuantitySyncRef.current?.cancel(), []);
+      cartQuantitySyncRef.current = sync;
+      const buffered = [...bufferedCartUpdatesRef.current.values()];
+      bufferedCartUpdatesRef.current.clear();
+      buffered.forEach((update) => sync.schedule(update));
+      return sync;
+    }).finally(() => {
+      if (cartQuantitySyncLoadRef.current === load) cartQuantitySyncLoadRef.current = null;
+    });
+    cartQuantitySyncLoadRef.current = load;
+    return load;
+  }, [cacheCart, publishCart]);
+  const scheduleCartQuantityUpdate = useCallback((update: CartQuantityUpdate) => {
+    if (cartQuantitySyncRef.current) {
+      cartQuantitySyncRef.current.schedule(update);
+      return;
+    }
+    bufferedCartUpdatesRef.current.set(update.cartItemId, update);
+    void ensureCartQuantitySync();
+  }, [ensureCartQuantitySync]);
+  useEffect(() => () => {
+    cartSyncGenerationRef.current += 1;
+    bufferedCartUpdatesRef.current.clear();
+    cartQuantitySyncRef.current?.cancel();
+  }, []);
   const refreshServerAddresses = useCallback(async () => {
     const sessionGeneration = sessionGenerationRef.current;
     const productionApi = await loadProductionApi();
@@ -158,20 +240,50 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     !isShowcase
   );
   useEffect(() => {
+    if (showcaseService) return;
     if (sessionStatus !== 'authenticated') {
+      cartSyncGenerationRef.current += 1;
+      bufferedCartUpdatesRef.current.clear();
       cartQuantitySyncRef.current?.cancel();
+      cartQuantitySyncRef.current = null;
+      cartQuantitySyncLoadRef.current = null;
+      cartCacheScopeRef.current = null;
       return;
     }
+    const scope = `${user.id}:${currentMall.id}`;
+    if (cartCacheScopeRef.current !== scope) {
+      cartCacheScopeRef.current = scope;
+      void import('./cartCache').then(({ readCartCache }) => {
+        if (cartCacheScopeRef.current === scope && cartRef.current.length === 0) publishCart(readCartCache(scope));
+      });
+    }
     setFavorites([]);
-    // Cart and addresses are non-critical for the first view. Defer their
-    // network work until the storefront is interactive instead of delaying a
-    // refresh behind two more cross-region authorization round trips.
-    const timer = window.setTimeout(() => {
-      void refreshServerCart().catch(() => showToast('购物车同步失败，请稍后重试', 'error'));
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const refreshCart = () => {
+      void ensureCartQuantitySync();
+      void refreshServerCart().catch(() => showToast('购物车同步失败，请重试', 'error', { channel: 'cart', durationMs: 1_800 }));
+    };
+    const idleHandle = idleWindow.requestIdleCallback?.(refreshCart, { timeout: 700 });
+    const cartTimer = idleHandle === undefined ? window.setTimeout(refreshCart, 120) : null;
+    const addressTimer = window.setTimeout(() => {
       void refreshServerAddresses().catch(() => showToast('地址簿同步失败，请稍后重试', 'error'));
     }, 1_500);
-    return () => window.clearTimeout(timer);
-  }, [sessionStatus, refreshServerCart, refreshServerAddresses, showToast]);
+    return () => {
+      if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
+      if (cartTimer !== null) window.clearTimeout(cartTimer);
+      window.clearTimeout(addressTimer);
+    };
+  }, [currentMall.id, ensureCartQuantitySync, publishCart, refreshServerAddresses, refreshServerCart, sessionStatus, showcaseService, showToast, user.id]);
+
+  const prepareCart = useCallback(() => {
+    if (showcaseService) return;
+    if (sessionStatusRef.current !== 'authenticated') return;
+    void ensureCartQuantitySync();
+    void refreshServerCart().catch(() => undefined);
+  }, [ensureCartQuantitySync, refreshServerCart, showcaseService]);
   useEffect(() => {
     if (sessionStatus !== 'authenticated') {
       activatePaymentSession(null);
@@ -243,7 +355,11 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   };
   const logout = async () => {
     const revokeRequest = loadProductionApi().then((productionApi) => productionApi.logout());
+    cartSyncGenerationRef.current += 1;
+    bufferedCartUpdatesRef.current.clear();
     cartQuantitySyncRef.current?.cancel();
+    cartQuantitySyncRef.current = null;
+    cartQuantitySyncLoadRef.current = null;
     sessionGenerationRef.current += 1;
     cancelProductionSync();
     setSessionStatus('guest');
@@ -291,69 +407,88 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     showToast('请先登录并获取企业商城访问权限', 'warning');
   };
 
-  const handleAddToCart = async (product: Product, quantity = 1, selectedSpec: Record<string, string> = {}) => {
+  const handleAddToCart = useCallback((product: Product, quantity = 1, selectedSpec: Record<string, string> = {}): boolean => {
     if (product.isTest) {
       showToast('测试商品仅用于系统验证，不能加入购物车', 'warning');
-      return;
+      return false;
     }
     if (sessionStatus !== 'authenticated' && !showcaseService) {
       showToast('商品可以直接浏览；登录后才能确认会员价与加入购物车', 'warning');
-      return;
+      return false;
     }
     if (product.purchasable === false) {
       showToast(product.qualificationReason === 'PURCHASE_LIMIT_EXCEEDED' ? '已达到该商品的限购上限' : '当前资格或城市暂不能购买该商品', 'warning');
-      return;
+      return false;
     }
-    if (sessionStatus === 'authenticated' && product.skuId) {
-      try {
-        const productionApi = await loadProductionApi();
-        await productionApi.upsertCartItem({ listingId: product.id, quantity });
-      } catch {
-        showToast('购物车保存失败，请稍后重试', 'error');
-        return;
-      }
-      try {
-        await refreshServerCart();
-        showToast(`已将“${product.title.slice(0, 16)}...”加入购物车`, 'success');
-      } catch {
-        showToast('商品已加入，但购物车读取失败，请刷新后重试', 'error');
-      }
-      return;
+    if (!Number.isSafeInteger(quantity) || quantity < 1) return false;
+    const existingQuantity = cartRef.current.find((item) => item.product.id === product.id)?.quantity ?? 0;
+    const remainingStock = Math.max(0, product.stock - existingQuantity);
+    if (remainingStock === 0) {
+      showToast(product.stock <= 0 ? '暂时缺货' : `库存仅剩 ${product.stock} 件`, 'warning', { channel: 'cart', durationMs: 1_800 });
+      return false;
     }
-    if (sessionStatus === 'authenticated') {
+    const acceptedQuantity = Math.min(quantity, remainingStock);
+    if (!showcaseService && sessionStatus === 'authenticated' && product.skuId) {
+      const mutation = addCartItemOptimistically(cartRef.current, product, acceptedQuantity, selectedSpec);
+      cartMutationVersionRef.current += 1;
+      cartItemSnapshotsRef.current.set(mutation.item.id, mutation.item);
+      publishCart(mutation.items);
+      scheduleCartQuantityUpdate({
+        cartItemId: mutation.item.id,
+        listingId: product.id,
+        previousQuantity: mutation.previousQuantity,
+        quantity: mutation.quantity,
+      });
+      showToast(mutation.quantity === 1 ? '已加入购物车' : `已加入 ${mutation.quantity} 件`, 'success', { channel: 'cart' });
+      return true;
+    }
+    if (!showcaseService && sessionStatus === 'authenticated') {
       showToast('商品资格正在后台同步，请稍后再加入购物车', 'info');
-      return;
+      return false;
     }
     if (showcaseService) {
-      setCart(showcaseService.addToCart(product, quantity, selectedSpec));
-      showToast(`已将“${product.title.slice(0, 16)}...”加入展示购物车`, 'success');
-      return;
+      publishCart(showcaseService.addToCart(product, acceptedQuantity, selectedSpec));
+      showToast('已加入购物车', 'success', { channel: 'cart' });
+      return true;
     }
-    showToast('请先登录后再加入购物车', 'warning');
-  };
+    return false;
+  }, [publishCart, scheduleCartQuantityUpdate, sessionStatus, showcaseService, showToast]);
 
-  const handleUpdateCartQuantity = (cartItemId: string, quantity: number) => {
-    if (sessionStatus === 'authenticated') {
-      const item = cart.find((candidate) => candidate.id === cartItemId);
-      if (!item?.product.skuId || !Number.isSafeInteger(quantity)) return;
-      const nextQuantity = Math.max(0, quantity);
-      setCart((current) => nextQuantity === 0
-        ? current.filter((candidate) => candidate.id !== cartItemId)
-        : current.map((candidate) => candidate.id === cartItemId ? { ...candidate, quantity: nextQuantity } : candidate));
-      cartQuantitySyncRef.current?.schedule({
+  const handleUpdateCartQuantity = useCallback((cartItemId: string, quantity: number): boolean => {
+    if (!showcaseService && sessionStatus === 'authenticated') {
+      const item = cartRef.current.find((candidate) => candidate.id === cartItemId);
+      if (!item?.product.skuId || !Number.isSafeInteger(quantity)) return false;
+      const requestedQuantity = Math.max(0, quantity);
+      const nextQuantity = Math.min(requestedQuantity, Math.max(0, item.product.stock));
+      if (nextQuantity === item.quantity) {
+        if (requestedQuantity > nextQuantity) showToast(`库存仅剩 ${item.product.stock} 件`, 'warning', { channel: 'cart', durationMs: 1_800 });
+        return false;
+      }
+      const mutation = setCartQuantityOptimistically(cartRef.current, cartItemId, nextQuantity);
+      if (!mutation) return false;
+      cartMutationVersionRef.current += 1;
+      cartItemSnapshotsRef.current.set(cartItemId, mutation.item);
+      publishCart(mutation.items);
+      scheduleCartQuantityUpdate({
         cartItemId,
         listingId: item.product.id,
+        previousQuantity: mutation.previousQuantity,
         quantity: nextQuantity,
       });
-      return;
+      if (requestedQuantity > nextQuantity) showToast(`库存仅剩 ${item.product.stock} 件`, 'warning', { channel: 'cart', durationMs: 1_800 });
+      return true;
     }
-    if (showcaseService) setCart(showcaseService.updateCartQuantity(cartItemId, quantity));
-  };
+    if (showcaseService) {
+      publishCart(showcaseService.updateCartQuantity(cartItemId, quantity));
+      return true;
+    }
+    return false;
+  }, [publishCart, scheduleCartQuantityUpdate, sessionStatus, showcaseService, showToast]);
 
   const handleToggleCartItemSelected = (cartItemId: string) => {
-    if (sessionStatus === 'authenticated') {
+    if (!showcaseService && sessionStatus === 'authenticated') {
       setCart((current) => current.map((item) => (
-        item.id === cartItemId ? { ...item, selected: !item.selected } : item
+        item.id === cartItemId && item.product.purchasable !== false && item.product.stock > 0 ? { ...item, selected: !item.selected } : item
       )));
       return;
     }
@@ -361,27 +496,24 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
   };
 
   const handleToggleSelectAllCart = (selected: boolean) => {
-    if (sessionStatus === 'authenticated') {
-      setCart((current) => current.map((item) => ({ ...item, selected })));
+    if (!showcaseService && sessionStatus === 'authenticated') {
+      setCart((current) => current.map((item) => ({
+        ...item,
+        selected: selected && item.product.purchasable !== false && item.product.stock > 0,
+      })));
       return;
     }
     if (showcaseService) setCart(showcaseService.toggleSelectAllCart(selected));
   };
 
   const handleRemoveCartItem = async (cartItemId: string) => {
-    if (sessionStatus === 'authenticated') {
-      const item = cart.find((candidate) => candidate.id === cartItemId);
-      if (!item?.product.skuId) return;
-      setCart((current) => current.filter((candidate) => candidate.id !== cartItemId));
-      cartQuantitySyncRef.current?.schedule({ cartItemId, listingId: item.product.id, quantity: 0 });
-      await cartQuantitySyncRef.current?.flush()
-        .then(() => showToast('已从购物车移除该商品', 'info'))
-        .catch(() => refreshServerCartRef.current().catch(() => undefined));
+    if (!showcaseService && sessionStatus === 'authenticated') {
+      if (handleUpdateCartQuantity(cartItemId, 0)) showToast('已从购物车移除', 'info', { channel: 'cart' });
       return;
     }
     if (showcaseService) {
-      setCart(showcaseService.removeCartItem(cartItemId));
-      showToast('已从展示购物车移除该商品', 'info');
+      publishCart(showcaseService.removeCartItem(cartItemId));
+      showToast('已从购物车移除', 'info', { channel: 'cart' });
     }
   };
 
@@ -487,7 +619,9 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
       dismissedPaymentKeyRef.current = null;
       activatePaymentSession(recovery);
       await afterPaymentCarrierPaint();
-      await cartQuantitySyncRef.current?.flush();
+      if (bufferedCartUpdatesRef.current.size > 0 || cartQuantitySyncRef.current?.hasPending()) {
+        await (await ensureCartQuantitySync()).flush();
+      }
       patchActivePaymentSession({ stage: 'creating-order' });
       const checkout = await checkoutSelectedCartRequest(cart, addresses, checkoutUser, {
         idempotencyKey: recovery.idempotencyKey,
@@ -685,6 +819,7 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
         cartCount,
         addToCart: handleAddToCart,
         updateCartQuantity: handleUpdateCartQuantity,
+        prepareCart,
         toggleCartItemSelected: handleToggleCartItemSelected,
         toggleSelectAllCart: handleToggleSelectAllCart,
         removeCartItem: handleRemoveCartItem,

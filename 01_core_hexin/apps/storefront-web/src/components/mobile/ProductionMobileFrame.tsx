@@ -3,7 +3,7 @@ import { PaymentExperienceBoundary, PaymentStableCarrier } from '../common/Payme
 import { useMall, type MiniProgramPage } from '../../context/MallContext';
 import { MPHomePage } from '../../features/miniprogram/MPHomePage';
 import { WeChatTabBar } from './WeChatTabBar';
-import { loadMobileOrdersPage, loadMPAddressPage, loadMPCartPage, loadMPCategoryPage, loadMPDetailPage, loadMPProfilePage, loadMPWelfarePage, loadPaymentResultPage, preloadPrimaryMiniProgramPages } from './miniProgramPageLoaders';
+import { loadMobileOrdersPage, loadMPAddressPage, loadMPCartPage, loadMPCategoryPage, loadMPDetailPage, loadMPProfilePage, loadMPWelfarePage, loadPaymentResultPage } from './miniProgramPageLoaders';
 
 const MPCartPage = React.lazy(() => loadMPCartPage().then(({ MPCartPage }) => ({ default: MPCartPage })));
 const MPCategoryPage = React.lazy(() => loadMPCategoryPage().then(({ MPCategoryPage }) => ({ default: MPCategoryPage })));
@@ -23,42 +23,29 @@ export function ProductionMobileFrame() {
     setAndroidPage, setLaptopPage, setMpPage, setTabletPage, toasts,
   } = useMall();
   const visitedPages = React.useRef(new Set<KeepAlivePage>(['home']));
-  const [warmedPages, setWarmedPages] = React.useState<WarmedPageComponents>({});
   const activeKeepAlivePage = !activePaymentSession && isKeepAlivePage(mpPage) ? mpPage : null;
 
   React.useEffect(() => {
-    let cancelled = false;
-    const warmPrimaryTabs = () => {
-      void preloadPrimaryMiniProgramPages().then(([category, welfare, cart, profile]) => {
-        if (cancelled) return;
-        setWarmedPages({
-          category: category.MPCategoryPage,
-          welfare: welfare.MPWelfarePage,
-          cart: cart.MPCartPage,
-          profile: profile.MPProfilePage,
-        });
-      });
+    const warmCart = () => {
+      void loadMPCartPage();
     };
     const idleWindow = window as Window & {
       requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
       cancelIdleCallback?: (handle: number) => void;
     };
     if (idleWindow.requestIdleCallback && idleWindow.cancelIdleCallback) {
-      const handle = idleWindow.requestIdleCallback(warmPrimaryTabs, { timeout: 2_000 });
+      const handle = idleWindow.requestIdleCallback(warmCart, { timeout: 2_000 });
       return () => {
-        cancelled = true;
         idleWindow.cancelIdleCallback?.(handle);
       };
     }
-    const handle = globalThis.setTimeout(warmPrimaryTabs, 500);
+    const handle = globalThis.setTimeout(warmCart, 500);
     return () => {
-      cancelled = true;
       globalThis.clearTimeout(handle);
     };
   }, []);
 
   React.useEffect(() => {
-    if (mpPage === 'cart') void Promise.all([loadMPAddressPage(), loadPaymentResultPage()]);
     if (mpPage === 'profile') void loadMobileOrdersPage();
   }, [mpPage]);
 
@@ -98,7 +85,7 @@ export function ProductionMobileFrame() {
               aria-hidden={activeKeepAlivePage !== page}
               className={`absolute inset-0 overflow-x-hidden overflow-y-auto overscroll-y-contain touch-pan-y [-webkit-overflow-scrolling:touch] ${activeKeepAlivePage === page ? 'visible z-10' : 'invisible pointer-events-none z-0'}`}
             >
-              {renderKeepAlivePage(page, warmedPages)}
+              {renderKeepAlivePage(page)}
             </div>
           ))}
           {activeKeepAlivePage === null ? (
@@ -120,8 +107,6 @@ export function ProductionMobileFrame() {
 }
 
 type KeepAlivePage = Extract<MiniProgramPage, 'home' | 'category' | 'welfare' | 'detail' | 'cart' | 'profile'>;
-type WarmedPage = Extract<KeepAlivePage, 'category' | 'welfare' | 'cart' | 'profile'>;
-type WarmedPageComponents = Partial<Record<WarmedPage, React.ComponentType>>;
 
 const KEEP_ALIVE_PAGES: readonly KeepAlivePage[] = ['home', 'category', 'welfare', 'detail', 'cart', 'profile'];
 
@@ -129,10 +114,7 @@ function isKeepAlivePage(page: MiniProgramPage): page is KeepAlivePage {
   return KEEP_ALIVE_PAGES.includes(page as KeepAlivePage);
 }
 
-function renderKeepAlivePage(page: KeepAlivePage, warmedPages: WarmedPageComponents) {
-  const WarmedPage = page === 'home' || page === 'detail' ? undefined : warmedPages[page];
-  if (WarmedPage) return <WarmedPage />;
-
+function renderKeepAlivePage(page: KeepAlivePage) {
   switch (page) {
     case 'category':
       return deferredPage(<MPCategoryPage />);
@@ -141,7 +123,7 @@ function renderKeepAlivePage(page: KeepAlivePage, warmedPages: WarmedPageCompone
     case 'detail':
       return deferredPage(<MPDetailPage />);
     case 'cart':
-      return deferredPage(<MPCartPage />);
+      return deferredPage(<MPCartPage />, <MobileOrdersEntryShell />);
     case 'profile':
       return deferredPage(<MPProfilePage />);
     default:

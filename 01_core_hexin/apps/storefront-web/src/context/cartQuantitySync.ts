@@ -2,80 +2,142 @@ export interface CartQuantityUpdate {
   cartItemId: string;
   listingId: string;
   quantity: number;
+  previousQuantity: number;
+}
+
+export interface CartQuantityFailure {
+  update: CartQuantityUpdate;
+  rollbackQuantity: number;
+}
+
+export interface CartQuantitySyncHandlers {
+  onCommitted?: (update: CartQuantityUpdate) => void;
+  onError: (cause: unknown, failure: CartQuantityFailure) => void;
 }
 
 export interface CartQuantitySync {
   schedule: (update: CartQuantityUpdate) => void;
   flush: () => Promise<void>;
   cancel: () => void;
+  hasPending: () => boolean;
 }
 
+interface ItemQueue {
+  confirmedQuantity: number;
+  pending: CartQuantityUpdate | null;
+  active: Promise<void> | null;
+  timer: ReturnType<typeof setTimeout> | null;
+}
+
+/**
+ * Coalesces rapid absolute-quantity writes per listing while allowing unrelated
+ * products to sync concurrently. Failed writes report the last confirmed value.
+ */
 export function createCartQuantitySync(
   write: (update: CartQuantityUpdate) => Promise<void>,
-  onError: (cause: unknown) => void,
-  delayMs = 350,
-  retryBaseDelayMs = 1_000
+  handlers: CartQuantitySyncHandlers,
+  delayMs = 180,
 ): CartQuantitySync {
-  const pending = new Map<string, CartQuantityUpdate>();
-  const timers = new Map<string, ReturnType<typeof setTimeout>>();
-  const active = new Map<string, Promise<void>>();
-  const retryAttempts = new Map<string, number>();
+  const queues = new Map<string, ItemQueue>();
+  let generation = 0;
 
-  const scheduleCommit = (cartItemId: string, waitMs: number) => {
-    const timer = timers.get(cartItemId);
-    if (timer) clearTimeout(timer);
-    timers.set(cartItemId, setTimeout(() => {
-      timers.delete(cartItemId);
-      void commit(cartItemId);
-    }, waitMs));
+  const queueFor = (update: CartQuantityUpdate): ItemQueue => {
+    const current = queues.get(update.cartItemId);
+    if (current) return current;
+    const created: ItemQueue = {
+      confirmedQuantity: update.previousQuantity,
+      pending: null,
+      active: null,
+      timer: null,
+    };
+    queues.set(update.cartItemId, created);
+    return created;
   };
 
-  function commit(cartItemId: string): Promise<void> {
-    const update = pending.get(cartItemId);
-    if (!update) return active.get(cartItemId) ?? Promise.resolve();
-    pending.delete(cartItemId);
+  const scheduleCommit = (cartItemId: string, waitMs: number) => {
+    const queue = queues.get(cartItemId);
+    if (!queue || queue.active) return;
+    if (queue.timer) clearTimeout(queue.timer);
+    queue.timer = setTimeout(() => {
+      queue.timer = null;
+      void commit(cartItemId).catch(() => undefined);
+    }, waitMs);
+  };
 
-    const previous = active.get(cartItemId) ?? Promise.resolve();
-    const current = previous.catch(() => undefined).then(() => write(update));
-    active.set(cartItemId, current);
-    current.then(
-      () => {
-        if (active.get(cartItemId) === current) {
-          active.delete(cartItemId);
-          retryAttempts.delete(cartItemId);
+  const commit = (cartItemId: string): Promise<void> => {
+    const queue = queues.get(cartItemId);
+    if (!queue) return Promise.resolve();
+    if (queue.active) return queue.active;
+    if (queue.timer) {
+      clearTimeout(queue.timer);
+      queue.timer = null;
+    }
+    const update = queue.pending;
+    if (!update) return Promise.resolve();
+    queue.pending = null;
+    const requestGeneration = generation;
+    let succeeded = false;
+    const request = write(update)
+      .then(() => {
+        if (requestGeneration !== generation) return;
+        succeeded = true;
+        queue.confirmedQuantity = update.quantity;
+        handlers.onCommitted?.(update);
+      })
+      .catch((cause) => {
+        if (requestGeneration === generation) {
+          if (queue.timer) clearTimeout(queue.timer);
+          queue.timer = null;
+          queue.pending = null;
+          handlers.onError(cause, { update, rollbackQuantity: queue.confirmedQuantity });
         }
-      },
-      (cause) => {
-        if (active.get(cartItemId) === current) {
-          active.delete(cartItemId);
-          if (!pending.has(cartItemId)) pending.set(cartItemId, update);
-          const attempt = (retryAttempts.get(cartItemId) ?? 0) + 1;
-          retryAttempts.set(cartItemId, attempt);
-          if (!timers.has(cartItemId)) scheduleCommit(cartItemId, Math.min(retryBaseDelayMs * 2 ** (attempt - 1), 8_000));
-        }
-        onError(cause);
+        throw cause;
+      })
+      .finally(() => {
+        if (queue.active === request) queue.active = null;
+        if (requestGeneration !== generation) return;
+        if (succeeded && queue.pending) scheduleCommit(cartItemId, 0);
+        else if (!queue.pending && !queue.active) queues.delete(cartItemId);
+      });
+    queue.active = request;
+    return request;
+  };
+
+  const flushItem = async (cartItemId: string): Promise<void> => {
+    while (true) {
+      const queue = queues.get(cartItemId);
+      if (!queue) return;
+      if (queue.timer) {
+        clearTimeout(queue.timer);
+        queue.timer = null;
       }
-    );
-    return current;
-  }
+      if (queue.active) {
+        await queue.active;
+        continue;
+      }
+      if (!queue.pending) return;
+      await commit(cartItemId);
+    }
+  };
 
   return {
     schedule(update) {
-      pending.set(update.cartItemId, update);
-      retryAttempts.delete(update.cartItemId);
-      scheduleCommit(update.cartItemId, delayMs);
+      const queue = queueFor(update);
+      queue.pending = update;
+      if (!queue.active) scheduleCommit(update.cartItemId, delayMs);
     },
     async flush() {
-      for (const timer of timers.values()) clearTimeout(timer);
-      timers.clear();
-      const ids = new Set([...pending.keys(), ...active.keys()]);
-      await Promise.all([...ids].map(commit));
+      await Promise.all([...queues.keys()].map(flushItem));
     },
     cancel() {
-      for (const timer of timers.values()) clearTimeout(timer);
-      timers.clear();
-      pending.clear();
-      retryAttempts.clear();
+      generation += 1;
+      for (const queue of queues.values()) {
+        if (queue.timer) clearTimeout(queue.timer);
+      }
+      queues.clear();
+    },
+    hasPending() {
+      return [...queues.values()].some((queue) => Boolean(queue.pending || queue.active));
     },
   };
 }
