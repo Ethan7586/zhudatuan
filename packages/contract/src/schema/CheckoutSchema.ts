@@ -27,6 +27,8 @@ const quoteLine = strictObject({
   productType: string(),
   category: string(),
   title: string(),
+  imageReference: union([string(), nullSchema()]),
+  imageUrl: union([string(), nullSchema()]),
   quantity: unsigned,
   unitMinor: unsigned,
   totalMinor: unsigned,

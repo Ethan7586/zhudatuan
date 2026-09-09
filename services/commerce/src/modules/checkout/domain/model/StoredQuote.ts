@@ -11,6 +11,7 @@ export function storedQuote(value: unknown): CheckoutQuote {
   if (!nullableSnapshot(source.address) || !nullableSnapshot(source.invoice) || !shipping(source.shipping) || !tax(source.tax)) invalid();
   for (const line of source.lines) {
     if (!record(line) || !texts(line, ['listing', 'sku', 'product', 'productType', 'category', 'title'])) invalid();
+    if (!nullableText(line.imageReference) || !nullableText(line.imageUrl)) invalid();
     if (!integers(line, ['quantity', 'unitMinor', 'totalMinor', 'discountMinor', 'payableMinor']) || !record(line.versions) || typeof line.accepted !== 'boolean' || !stringArray(line.reasons)) invalid();
     if (!(line.provider === null || typeof line.provider === 'string') || !(line.partner === null || typeof line.partner === 'string') || !(line.stockitem === null || typeof line.stockitem === 'string')) invalid();
   }
@@ -43,6 +44,9 @@ function integers(value: Readonly<Record<string, unknown>>, keys: readonly strin
 }
 function stringArray(value: unknown): boolean {
   return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+function nullableText(value: unknown): boolean {
+  return value === null || typeof value === 'string';
 }
 function invalid(): never {
   throw new Error('QUOTE_PAYLOAD_INVALID');
