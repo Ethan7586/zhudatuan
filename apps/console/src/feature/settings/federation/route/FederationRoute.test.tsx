@@ -75,7 +75,7 @@ function context(level: number): ConsoleContext {
       actor: 'actor:one',
       membership: 'membership:one',
       accessVersion: 7,
-      permissions: ['identity.provider.manage', 'identity.provider.test'],
+      permissions: ['identity.provider.read', 'identity.provider.manage', 'identity.provider.test'],
       capabilities: ['identity.providers.center.read', 'identity.providers.test'],
       target: 'console',
       scope,
