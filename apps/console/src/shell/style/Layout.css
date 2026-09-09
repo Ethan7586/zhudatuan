@@ -78,7 +78,7 @@ body:has(.consolelayout[data-visual-theme='console-v1']) {
   .consoleheader .commandtrigger {
     width: 100%;
   }
-  .scopebar .scopestatus {
+  .consolelayout[data-visual-theme='console-v1'] .scopebar .scopestatus {
     display: none;
   }
 }
@@ -164,13 +164,13 @@ body:has(.consolelayout[data-visual-theme='console-v1']) {
   .consoleheader .taskbutton {
     display: none;
   }
-  .consoleworkspace .scopebar {
+  .consolelayout[data-visual-theme='console-v1'] .consoleworkspace .scopebar {
     flex-direction: row;
     padding-inline: var(--sw-space-1-5);
   }
-  .scopecontext > span,
-  .scopecontext > .scopepath,
-  .scopecontext > i {
+  .consolelayout[data-visual-theme='console-v1'] .scopecontext > span,
+  .consolelayout[data-visual-theme='console-v1'] .scopecontext > .scopepath,
+  .consolelayout[data-visual-theme='console-v1'] .scopecontext > i {
     display: none;
   }
   .consoleworkspace .workspacebody {
@@ -199,16 +199,16 @@ body:has(.consolelayout[data-visual-theme='console-v1']) {
   .consoleheader .consoleactions {
     grid-column: 2;
   }
-  .consoleworkspace .scopebar {
+  .consolelayout[data-visual-theme='console-v1'] .consoleworkspace .scopebar {
     padding-inline: var(--sw-space-1);
   }
-  .consoleworkspace .scopecontext {
+  .consolelayout[data-visual-theme='console-v1'] .consoleworkspace .scopecontext {
     width: 100%;
   }
-  .consoleworkspace #consolescope {
+  .consolelayout[data-visual-theme='console-v1'] .consoleworkspace #consolescope {
     max-width: 100%;
   }
-  .consoleworkspace :where(.scopedivider, #consoleperiod) {
+  .consolelayout[data-visual-theme='console-v1'] .consoleworkspace :where(.scopedivider, #consoleperiod) {
     display: none;
   }
 }

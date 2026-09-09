@@ -136,6 +136,9 @@ test('Console 窄屏页脚只保留服务状态且不覆盖工作区', async ({ 
   await signInConsole(page);
   await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleproducts, 'enterprise')}`);
   await expectUsable(page);
+  await expect(page.locator('.scopepath')).toBeHidden();
+  await expect(page.locator('.scopestatus')).toBeHidden();
+  await expect(page.locator('#consolescope')).toBeVisible();
   await expect(page.locator('.consolefooterscope')).toBeHidden();
   await expect(page.locator('.consolefooterhint')).toBeHidden();
   await expect(page.locator('.consolefooterstatus')).toBeVisible();
