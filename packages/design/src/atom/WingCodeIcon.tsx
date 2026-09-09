@@ -1,0 +1,28 @@
+import type { SVGProps } from 'react';
+
+export interface WingCodeIconProps extends Omit<SVGProps<SVGSVGElement>, 'children'> {
+  readonly label?: string;
+}
+
+export function WingCodeIcon({ label, ...props }: WingCodeIconProps) {
+  return (
+    <svg {...props} viewBox="0 0 64 64" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="7" y="7" width="18" height="18" rx="4" />
+        <rect x="39" y="7" width="18" height="18" rx="4" />
+        <rect x="7" y="39" width="18" height="18" rx="4" />
+      </g>
+      <g fill="currentColor">
+        <rect x="13" y="13" width="6" height="6" rx="1.5" />
+        <rect x="45" y="13" width="6" height="6" rx="1.5" />
+        <rect x="13" y="45" width="6" height="6" rx="1.5" />
+        <rect x="31" y="31" width="7" height="7" rx="2" />
+        <rect x="42" y="31" width="6" height="6" rx="1.5" />
+        <rect x="52" y="31" width="5" height="12" rx="1.5" />
+        <rect x="31" y="42" width="6" height="15" rx="1.5" />
+        <rect x="41" y="42" width="7" height="7" rx="2" />
+        <rect x="48" y="51" width="9" height="6" rx="1.5" />
+      </g>
+    </svg>
+  );
+}

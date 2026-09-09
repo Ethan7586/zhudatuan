@@ -6,6 +6,7 @@ export interface QrCodeProps {
   readonly size?: number;
   readonly label?: string;
   readonly className?: string;
+  readonly content?: 'link' | 'credential';
 }
 
 export interface QrMatrix {
@@ -14,8 +15,8 @@ export interface QrMatrix {
   readonly quiet: 4;
 }
 
-export function QrCode({ value, size = 232, label = '商城二维码', className }: QrCodeProps) {
-  const matrix = useMemo(() => qrMatrix(value), [value]);
+export function QrCode({ value, size = 232, label = '商城二维码', className, content = 'link' }: QrCodeProps) {
+  const matrix = useMemo(() => qrMatrix(value, content), [content, value]);
   const pixels = boundedSize(size);
   const extent = matrix.count + matrix.quiet * 2;
   return (
@@ -27,8 +28,8 @@ export function QrCode({ value, size = 232, label = '商城二维码', className
   );
 }
 
-export function qrMatrix(value: string): QrMatrix {
-  const parsed = validValue(value);
+export function qrMatrix(value: string, content: 'link' | 'credential' = 'link'): QrMatrix {
+  const parsed = validValue(value, content);
   const code = qrcode(0, 'M');
   code.addData(parsed, 'Byte');
   code.make();
@@ -47,8 +48,12 @@ function matrixPath(matrix: QrMatrix): string {
   return commands.join('');
 }
 
-function validValue(value: string): string {
+function validValue(value: string, content: 'link' | 'credential'): string {
   if (value.length < 1 || value.length > 2048) throw new Error('QRCODE_VALUE_INVALID');
+  if (content === 'credential') {
+    if (value.length > 256 || !/^[A-Za-z][A-Za-z0-9+.-]*:[\x21-\x7e]+$/.test(value)) throw new Error('QRCODE_VALUE_INVALID');
+    return value;
+  }
   let parsed: URL;
   try {
     parsed = new URL(value);
