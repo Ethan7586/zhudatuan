@@ -498,6 +498,7 @@ describe('Order route', () => {
               priority: 'high',
               state: 'assigned',
               assigned_agent_id: 'agent:one',
+              assigned_agent_name: '王客服',
               response_due_at: '2026-09-05T02:00:00.000Z',
               resolution_due_at: '2026-09-05T08:00:00.000Z',
               created_at: '2026-09-05T01:00:00.000Z',
