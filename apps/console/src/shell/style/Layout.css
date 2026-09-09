@@ -92,6 +92,13 @@ body:has(.consolelayout[data-visual-theme='console-v1']) {
   .consolelayout[data-mobile-nav] .consolesidebar .sidebarbrand {
     display: flex;
   }
+  .consolelayout[data-mobile-nav] .consolesidebar .sidebartoggle {
+    display: none;
+  }
+  .consolelayout[data-mobile-nav='open'] .consolesidebar .sidebarmobileclose {
+    display: grid;
+    margin-left: auto;
+  }
   .consolelayout[data-mobile-nav] .consolesidebar .sidebarbrandcopy,
   .consolelayout[data-mobile-nav] .consolesidebar .sidebarlabel {
     display: grid;

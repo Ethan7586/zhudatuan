@@ -108,6 +108,21 @@ describe('generated navigation catalog', () => {
     }
   });
 
+  it('keeps growth and support independent while settings owns only related configuration destinations', () => {
+    for (const [scope, settings, referral, support] of [
+      ['enterprise', 'groupsettings', 'groupreferral', 'groupsupport'],
+      ['mall', 'mallsettings', 'mallreferral', 'mallsupport'],
+    ] as const) {
+      const scoped = NAVIGATION_CATALOG.filter((node) => node.surface === 'console' && node.scope === scope);
+      expect(scoped.find(({ key }) => key === settings)).toMatchObject({ parent: null, title: '设置', experience: { placement: 'primary' } });
+      expect(scoped.find(({ key }) => key === referral)).toMatchObject({ parent: null, title: '分销与返佣', experience: { placement: 'secondary' } });
+      expect(scoped.find(({ key }) => key === support)).toMatchObject({ parent: null, title: '客服中心', experience: { placement: 'secondary' } });
+      expect(scoped.filter(({ parent }) => parent === settings).map(({ title }) => title)).toEqual(
+        expect.arrayContaining(['权限中心', '邀请管理', '成员管理', '供应商与门店', '资格管理', '渠道连接', '通知管理', '登录方式', '通讯录同步', '审批规则', '风险与安全', '系统运行'])
+      );
+    }
+  });
+
   it('projects every configured deep link with a reversible breadcrumb and stable sibling order', () => {
     const permissions = new Set(NAVIGATION_CATALOG.flatMap((node) => (node.permission === null ? [] : [node.permission])));
     const capabilities = new Set(NAVIGATION_CATALOG.map(({ capability }) => capability));

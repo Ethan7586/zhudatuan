@@ -146,6 +146,68 @@ for (const [scope, expected] of Object.entries(expectedPrimary)) {
   if ([...actual].sort().join(',') !== [...expected].sort().join(',')) violation('NAVIGATION_PRIMARY_INFORMATION_ARCHITECTURE_DRIFT', `scope:${scope}`, `expected=${expected.join(',')} actual=${actual.join(',')}`);
 }
 
+const expectedSettings = Object.freeze({
+  enterprise: Object.freeze({
+    root: 'groupsettings',
+    entries: Object.freeze([
+      ['groupadmin', '权限中心', 'organization'],
+      ['groupinvitation', '邀请管理', 'organization'],
+      ['groupmemberdata', '成员管理', 'organization'],
+      ['groupdirectory', '通讯录同步', 'organization'],
+      ['groupapproval', '审批规则', 'organization'],
+      ['grouppartner', '供应商与门店', 'resources'],
+      ['groupqualification', '资格管理', 'resources'],
+      ['groupchannel', '渠道连接', 'connections'],
+      ['groupprovider', '登录方式', 'connections'],
+      ['groupmessage', '通知管理', 'connections'],
+      ['grouprisk', '风险与安全', 'security'],
+      ['groupcontrol', '系统运行', 'system'],
+    ]),
+  }),
+  mall: Object.freeze({
+    root: 'mallsettings',
+    entries: Object.freeze([
+      ['malladmin', '权限中心', 'organization'],
+      ['mallinvitation', '邀请管理', 'organization'],
+      ['mallmemberdata', '成员管理', 'organization'],
+      ['malldirectory', '通讯录同步', 'organization'],
+      ['mallapproval', '审批规则', 'organization'],
+      ['mallpartner', '供应商与门店', 'resources'],
+      ['mallqualification', '资格管理', 'resources'],
+      ['mallchannel', '渠道连接', 'connections'],
+      ['mallprovider', '登录方式', 'connections'],
+      ['mallmessage', '通知管理', 'connections'],
+      ['mallrisk', '风险与安全', 'security'],
+      ['mallcontrol', '系统运行', 'system'],
+    ]),
+  }),
+});
+for (const [scope, architecture] of Object.entries(expectedSettings)) {
+  const root = nodeById.get(architecture.root);
+  if (root?.title !== '设置' || root?.parent !== null || root?.placement !== 'primary') violation('SETTINGS_ROOT_INFORMATION_ARCHITECTURE_DRIFT', architecture.root, `${root?.title}:${root?.parent}:${root?.placement}`);
+  for (const [id, title, group] of architecture.entries) {
+    const node = nodeById.get(id);
+    const route = routeById.get(node?.routeid);
+    if (node?.scope !== scope || node?.parent !== architecture.root || node?.title !== title || node?.placement !== 'secondary' || route?.group !== group) {
+      violation('SETTINGS_ENTRY_INFORMATION_ARCHITECTURE_DRIFT', id, `scope=${node?.scope} parent=${node?.parent} title=${node?.title} placement=${node?.placement} group=${route?.group}`);
+    }
+  }
+}
+for (const [id, scope] of [
+  ['groupreferral', 'enterprise'],
+  ['mallreferral', 'mall'],
+]) {
+  const node = nodeById.get(id);
+  if (node?.scope !== scope || node?.parent !== null || node?.title !== '分销与返佣' || node?.placement !== 'secondary') violation('REFERRAL_INFORMATION_ARCHITECTURE_DRIFT', id, `${node?.scope}:${node?.parent}:${node?.title}:${node?.placement}`);
+}
+for (const [id, scope] of [
+  ['groupsupport', 'enterprise'],
+  ['mallsupport', 'mall'],
+]) {
+  const node = nodeById.get(id);
+  if (node?.scope !== scope || node?.parent !== null || node?.title !== '客服中心' || node?.placement !== 'secondary') violation('SUPPORT_INFORMATION_ARCHITECTURE_DRIFT', id, `${node?.scope}:${node?.parent}:${node?.title}:${node?.placement}`);
+}
+
 const referencedRoutes = new Set(nodes.map(({ routeid }) => routeid));
 for (const route of routes.filter(({ surface }) => surface !== 'auth')) {
   if (!referencedRoutes.has(route.id)) violation('ROUTE_ORPHANED', route.id, route.path);

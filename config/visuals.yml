@@ -101,8 +101,8 @@ navigationTitles:
       applications: 築店 · 商城管理
       vouchers: 卡券治理台
       reports: 数据报表
-      support: 客服系统
-      channels: 渠道接入系统
+      support: 客服中心
+      channels: 渠道管理
       entries: 财务分录
       statements: 账单
       reconciliations: 对账
@@ -119,14 +119,14 @@ navigationTitles:
       productdetail: 商品详情
       orderdetail: 订单详情
     referral:
-      system: 分销返佣系统
+      system: 分销与返佣
       settings: 分销设定
       products: 分销商品
       review: 分销审核
       bindings: 分销关系
       withdrawals: 佣金提现
       promotion: 推广详情
-    membership: 会员与权限
+    membership: 权限中心
   storefront:
     primary:
       - 首页

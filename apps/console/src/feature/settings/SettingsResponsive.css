@@ -1,0 +1,42 @@
+@media (max-width: 74.99rem) {
+  .settingsgroup {
+    grid-template-columns: 1fr;
+    gap: var(--sw-space-2);
+  }
+
+  .settingsgroup > header {
+    max-width: var(--sw-layout-reading-max);
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .settingsworkspace {
+    gap: var(--sw-space-2);
+    padding: var(--sw-space-2);
+  }
+
+  .settingshero {
+    gap: var(--sw-space-2);
+    padding: var(--sw-space-2);
+  }
+
+  .settingsgroups {
+    gap: var(--sw-space-3);
+  }
+}
+
+@media (max-width: 29.99rem) {
+  .settingshero dl {
+    grid-template-columns: 1fr;
+  }
+
+  .settingscard {
+    min-height: auto;
+    grid-template-columns: var(--sw-icon-container) minmax(0, 1fr);
+  }
+
+  .settingsopen {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+}

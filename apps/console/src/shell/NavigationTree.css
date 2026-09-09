@@ -5,6 +5,27 @@
   min-width: 0;
 }
 
+.navigationsection {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+
+.navigationsection + .navigationsection {
+  margin-top: var(--sw-space-1);
+}
+
+.navigationsectiontitle {
+  overflow: hidden;
+  padding: var(--sw-space-0-5) var(--sw-space-1-5) 0;
+  color: var(--sw-disabled);
+  font-size: var(--sw-font-size-caption);
+  font-weight: var(--sw-font-weight-semibold);
+  letter-spacing: var(--sw-letter-spacing-wide);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .navigationchildren {
   border-left: var(--sw-border-width) solid color-mix(in srgb, var(--sw-surface) 10%, transparent);
   margin-left: var(--sw-space-2);

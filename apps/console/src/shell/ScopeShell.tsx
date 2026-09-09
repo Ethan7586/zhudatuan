@@ -25,8 +25,8 @@ export function ScopeShell({ registry }: Readonly<{ registry: RouteRegistryContr
       <StepupProvider controller={model.stepupController}>
         <RouteScroll entry={location.key} />
         <div className="consolelayout" data-visual-theme="console-v1" data-route={model.activeRoute} data-sidebar={model.collapsed ? 'collapsed' : 'expanded'} data-mobile-nav={model.mobileOpen ? 'open' : 'closed'}>
-          <NavigationTree active={model.activeRoute} collapsed={model.collapsed} nodes={model.nodes} displayName={context.profile.display_name} roleLabel={model.scopeLabel} onNavigate={actions.openRoute} onToggle={actions.toggleNavigation} />
-          <button className="mobilebackdrop" type="button" onClick={actions.closeMobileNavigation} aria-label="关闭主导航" />
+          <NavigationTree active={model.activeRoute} collapsed={model.collapsed} nodes={model.nodes} displayName={context.profile.display_name} roleLabel={model.scopeLabel} onNavigate={actions.openRoute} onDismiss={actions.closeMobileNavigation} onToggle={actions.toggleNavigation} />
+          <button className="mobilebackdrop" type="button" onClick={actions.closeMobileNavigation} aria-label="点击页面空白处关闭主导航" />
           <div className="consoleworkspace">
             <Header
               title={model.routeTitle}

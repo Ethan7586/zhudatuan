@@ -73,12 +73,12 @@ owners:
 visuals:
   logicalSource: RepositoryAuthority config/visuals.yml
   repositoryRelativePath: config/visuals.yml
-  sha256: dfb5268ef72290baa488c5eecfc603fbdade6eebdc0d3576a28990cdba7d7434
+  sha256: fbe1e8525b932b723e3cf2feb939b8fff4f4f0e8a73fac83240b70d5dc018a5d
 navigation:
   logicalSource: RepositoryAuthority config/navigation.yml
   repositoryRelativePath: config/navigation.yml
   version: 3
-  sha256: 1374c3f6d3fc8ba04ea5b20fc4d11f039f9e5c99376750fbaaaa7c4b9e7ad796
+  sha256: 5bf50f5f037799a4696a15bbe9414f53550dd7fe25420a54b1b7a9727eebcecd
   generator: tools/navigationgen
   outputs:
     - services/commerce/src/modules/navigation/infrastructure/registry/NavigationCatalog.ts

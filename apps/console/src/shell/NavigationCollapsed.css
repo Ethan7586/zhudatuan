@@ -5,6 +5,7 @@
 .consolesidebar.iscollapsed .sidebarbrandcopy,
 .consolesidebar.iscollapsed .sidebarlabel,
 .consolesidebar.iscollapsed .sidebarnavtitle,
+.consolesidebar.iscollapsed .navigationsectiontitle,
 .consolesidebar.iscollapsed .sidebarnavavailability,
 .consolesidebar.iscollapsed .navigationdisclosure {
   display: none;

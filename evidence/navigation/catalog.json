@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "hash": "75d8163d77a47616d2e4c7c83d32a0e60228a0ee7159235619116560b2aeffea",
+  "hash": "5651699e2d2208f73571b9aa8b527fe2ccf89b46c7e5fe1839cb5ef24ba1c08c",
   "routes": [
     {
       "id": "authlogin",
@@ -51,7 +51,7 @@
       "surface": "console",
       "path": "/scopes/:scopeKind/:scopeId/channels",
       "feature": "channel",
-      "group": null,
+      "group": "connections",
       "default": false,
       "requirements": [
         "MVPPROVIDER"
@@ -74,7 +74,7 @@
       "surface": "console",
       "path": "/scopes/:scopeKind/:scopeId/control",
       "feature": "control",
-      "group": null,
+      "group": "system",
       "default": false,
       "requirements": [
         "MVPPLATFORM",
@@ -1240,7 +1240,7 @@
       "surface": "console",
       "scope": "distributor",
       "parent": null,
-      "title": "分销设置",
+      "title": "设置",
       "order": 40,
       "operation": "access.center.read",
       "owner": "access",
@@ -1380,6 +1380,29 @@
       }
     },
     {
+      "key": "groupreferral",
+      "surface": "console",
+      "scope": "enterprise",
+      "parent": null,
+      "title": "分销与返佣",
+      "order": 45,
+      "operation": "referral.settings.read",
+      "owner": "referral",
+      "permission": "referral.setting.read",
+      "capability": "referral.settings.read",
+      "featureFlags": [
+        "MVPDISTRIBUTION"
+      ],
+      "experience": {
+        "icon": "referral",
+        "routeKey": "consolereferral",
+        "route": "/scopes/:scopeKind/:scopeId/referral",
+        "component": "referral",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
       "key": "groupvoucher",
       "surface": "console",
       "scope": "enterprise",
@@ -1457,7 +1480,7 @@
       "surface": "console",
       "scope": "enterprise",
       "parent": null,
-      "title": "客服系统",
+      "title": "客服中心",
       "order": 80,
       "operation": "support.cases.read",
       "owner": "support",
@@ -1481,7 +1504,7 @@
       "surface": "console",
       "scope": "enterprise",
       "parent": null,
-      "title": "会员与权限",
+      "title": "设置",
       "order": 90,
       "operation": "access.center.read",
       "owner": "access",
@@ -1521,30 +1544,6 @@
         "route": "/scopes/:scopeKind/:scopeId/settings/approvals/:templateId",
         "component": "approval",
         "placement": "contextual",
-        "empty": "hide"
-      }
-    },
-    {
-      "key": "groupcontrol",
-      "surface": "console",
-      "scope": "enterprise",
-      "parent": "groupdashboard",
-      "title": "智慧翼中控台",
-      "order": 15,
-      "operation": "runtime.health.dependency",
-      "owner": "runtime",
-      "permission": "runtime.health.read",
-      "capability": "runtime.health.dependency",
-      "featureFlags": [
-        "MVPPLATFORM",
-        "MVPDISTRIBUTION"
-      ],
-      "experience": {
-        "icon": "control",
-        "routeKey": "consolecontrol",
-        "route": "/scopes/:scopeKind/:scopeId/control",
-        "component": "control",
-        "placement": "secondary",
         "empty": "hide"
       }
     },
@@ -1793,53 +1792,6 @@
       }
     },
     {
-      "key": "groupqualification",
-      "surface": "console",
-      "scope": "enterprise",
-      "parent": "grouppartner",
-      "title": "资格管理",
-      "order": 35,
-      "operation": "qualification.center.read",
-      "owner": "qualification",
-      "permission": "qualification.read",
-      "capability": "qualification.center.read",
-      "featureFlags": [
-        "MVPGROUPSETTING",
-        "MVPMALLSETTING"
-      ],
-      "experience": {
-        "icon": "qualification",
-        "routeKey": "consolequalification",
-        "route": "/scopes/:scopeKind/:scopeId/settings/partners/qualifications",
-        "component": "qualification",
-        "placement": "secondary",
-        "empty": "hide"
-      }
-    },
-    {
-      "key": "groupreferral",
-      "surface": "console",
-      "scope": "enterprise",
-      "parent": "groupproduct",
-      "title": "分销返佣系统",
-      "order": 45,
-      "operation": "referral.settings.read",
-      "owner": "referral",
-      "permission": "referral.setting.read",
-      "capability": "referral.settings.read",
-      "featureFlags": [
-        "MVPDISTRIBUTION"
-      ],
-      "experience": {
-        "icon": "referral",
-        "routeKey": "consolereferral",
-        "route": "/scopes/:scopeKind/:scopeId/referral",
-        "component": "referral",
-        "placement": "secondary",
-        "empty": "hide"
-      }
-    },
-    {
       "key": "groupproductdetail",
       "surface": "console",
       "scope": "enterprise",
@@ -1887,79 +1839,6 @@
       }
     },
     {
-      "key": "groupmessage",
-      "surface": "console",
-      "scope": "enterprise",
-      "parent": "grouprisk",
-      "title": "通知管理",
-      "order": 40,
-      "operation": "notification.templates.read",
-      "owner": "notification",
-      "permission": "notification.template.read",
-      "capability": "notification.templates.read",
-      "featureFlags": [
-        "MVPGROUPSETTING",
-        "MVPMALLSETTING"
-      ],
-      "experience": {
-        "icon": "notification",
-        "routeKey": "consolenotifications",
-        "route": "/scopes/:scopeKind/:scopeId/settings/messages",
-        "component": "notification",
-        "placement": "secondary",
-        "empty": "hide"
-      }
-    },
-    {
-      "key": "groupprovider",
-      "surface": "console",
-      "scope": "enterprise",
-      "parent": "grouprisk",
-      "title": "登录方式",
-      "order": 60,
-      "operation": "identity.providers.center.read",
-      "owner": "identity",
-      "permission": "identity.provider.manage",
-      "capability": "identity.providers.center.read",
-      "featureFlags": [
-        "MVPGROUPSETTING",
-        "MVPMALLSETTING",
-        "MVPIDENTITY"
-      ],
-      "experience": {
-        "icon": "identity",
-        "routeKey": "consolefederation",
-        "route": "/scopes/:scopeKind/:scopeId/settings/federation",
-        "component": "federation",
-        "placement": "secondary",
-        "empty": "hide"
-      }
-    },
-    {
-      "key": "groupdirectory",
-      "surface": "console",
-      "scope": "enterprise",
-      "parent": "grouprisk",
-      "title": "通讯录同步",
-      "order": 70,
-      "operation": "organization.directories.read",
-      "owner": "organization",
-      "permission": "organization.directory.read",
-      "capability": "organization.directories.read",
-      "featureFlags": [
-        "MVPGROUPSETTING",
-        "MVPMALLSETTING"
-      ],
-      "experience": {
-        "icon": "directory",
-        "routeKey": "consoledirectory",
-        "route": "/scopes/:scopeKind/:scopeId/settings/directory",
-        "component": "directory",
-        "placement": "secondary",
-        "empty": "hide"
-      }
-    },
-    {
       "key": "groupadmin",
       "surface": "console",
       "scope": "enterprise",
@@ -1979,6 +1858,30 @@
         "routeKey": "consoleaccess",
         "route": "/scopes/:scopeKind/:scopeId/settings/access",
         "component": "access",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
+      "key": "groupcontrol",
+      "surface": "console",
+      "scope": "enterprise",
+      "parent": "groupsettings",
+      "title": "系统运行",
+      "order": 15,
+      "operation": "runtime.health.dependency",
+      "owner": "runtime",
+      "permission": "runtime.health.read",
+      "capability": "runtime.health.dependency",
+      "featureFlags": [
+        "MVPPLATFORM",
+        "MVPDISTRIBUTION"
+      ],
+      "experience": {
+        "icon": "control",
+        "routeKey": "consolecontrol",
+        "route": "/scopes/:scopeKind/:scopeId/control",
+        "component": "control",
         "placement": "secondary",
         "empty": "hide"
       }
@@ -2056,11 +1959,59 @@
       }
     },
     {
+      "key": "groupqualification",
+      "surface": "console",
+      "scope": "enterprise",
+      "parent": "groupsettings",
+      "title": "资格管理",
+      "order": 35,
+      "operation": "qualification.center.read",
+      "owner": "qualification",
+      "permission": "qualification.read",
+      "capability": "qualification.center.read",
+      "featureFlags": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ],
+      "experience": {
+        "icon": "qualification",
+        "routeKey": "consolequalification",
+        "route": "/scopes/:scopeKind/:scopeId/settings/partners/qualifications",
+        "component": "qualification",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
+      "key": "groupmessage",
+      "surface": "console",
+      "scope": "enterprise",
+      "parent": "groupsettings",
+      "title": "通知管理",
+      "order": 40,
+      "operation": "notification.templates.read",
+      "owner": "notification",
+      "permission": "notification.template.read",
+      "capability": "notification.templates.read",
+      "featureFlags": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ],
+      "experience": {
+        "icon": "notification",
+        "routeKey": "consolenotifications",
+        "route": "/scopes/:scopeKind/:scopeId/settings/messages",
+        "component": "notification",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
       "key": "groupchannel",
       "surface": "console",
       "scope": "enterprise",
       "parent": "groupsettings",
-      "title": "渠道接入系统",
+      "title": "渠道连接",
       "order": 47,
       "operation": "channel.connections.read",
       "owner": "channel",
@@ -2103,11 +2054,60 @@
       }
     },
     {
+      "key": "groupprovider",
+      "surface": "console",
+      "scope": "enterprise",
+      "parent": "groupsettings",
+      "title": "登录方式",
+      "order": 60,
+      "operation": "identity.providers.center.read",
+      "owner": "identity",
+      "permission": "identity.provider.manage",
+      "capability": "identity.providers.center.read",
+      "featureFlags": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING",
+        "MVPIDENTITY"
+      ],
+      "experience": {
+        "icon": "identity",
+        "routeKey": "consolefederation",
+        "route": "/scopes/:scopeKind/:scopeId/settings/federation",
+        "component": "federation",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
+      "key": "groupdirectory",
+      "surface": "console",
+      "scope": "enterprise",
+      "parent": "groupsettings",
+      "title": "通讯录同步",
+      "order": 70,
+      "operation": "organization.directories.read",
+      "owner": "organization",
+      "permission": "organization.directory.read",
+      "capability": "organization.directories.read",
+      "featureFlags": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ],
+      "experience": {
+        "icon": "directory",
+        "routeKey": "consoledirectory",
+        "route": "/scopes/:scopeKind/:scopeId/settings/directory",
+        "component": "directory",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
       "key": "grouprisk",
       "surface": "console",
       "scope": "enterprise",
       "parent": "groupsettings",
-      "title": "系统治理台",
+      "title": "风险与安全",
       "order": 100,
       "operation": "risk.center.read",
       "owner": "risk",
@@ -2277,6 +2277,29 @@
       }
     },
     {
+      "key": "mallreferral",
+      "surface": "console",
+      "scope": "mall",
+      "parent": null,
+      "title": "分销与返佣",
+      "order": 45,
+      "operation": "referral.settings.read",
+      "owner": "referral",
+      "permission": "referral.setting.read",
+      "capability": "referral.settings.read",
+      "featureFlags": [
+        "MVPDISTRIBUTION"
+      ],
+      "experience": {
+        "icon": "referral",
+        "routeKey": "consolereferral",
+        "route": "/scopes/:scopeKind/:scopeId/referral",
+        "component": "referral",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
       "key": "mallvoucher",
       "surface": "console",
       "scope": "mall",
@@ -2354,7 +2377,7 @@
       "surface": "console",
       "scope": "mall",
       "parent": null,
-      "title": "客服系统",
+      "title": "客服中心",
       "order": 80,
       "operation": "support.cases.read",
       "owner": "support",
@@ -2378,7 +2401,7 @@
       "surface": "console",
       "scope": "mall",
       "parent": null,
-      "title": "会员与权限",
+      "title": "设置",
       "order": 90,
       "operation": "access.center.read",
       "owner": "access",
@@ -2418,30 +2441,6 @@
         "route": "/scopes/:scopeKind/:scopeId/settings/approvals/:templateId",
         "component": "approval",
         "placement": "contextual",
-        "empty": "hide"
-      }
-    },
-    {
-      "key": "mallcontrol",
-      "surface": "console",
-      "scope": "mall",
-      "parent": "malldashboard",
-      "title": "智慧翼中控台",
-      "order": 15,
-      "operation": "runtime.health.dependency",
-      "owner": "runtime",
-      "permission": "runtime.health.read",
-      "capability": "runtime.health.dependency",
-      "featureFlags": [
-        "MVPPLATFORM",
-        "MVPDISTRIBUTION"
-      ],
-      "experience": {
-        "icon": "control",
-        "routeKey": "consolecontrol",
-        "route": "/scopes/:scopeKind/:scopeId/control",
-        "component": "control",
-        "placement": "secondary",
         "empty": "hide"
       }
     },
@@ -2690,53 +2689,6 @@
       }
     },
     {
-      "key": "mallqualification",
-      "surface": "console",
-      "scope": "mall",
-      "parent": "mallpartner",
-      "title": "资格管理",
-      "order": 35,
-      "operation": "qualification.center.read",
-      "owner": "qualification",
-      "permission": "qualification.read",
-      "capability": "qualification.center.read",
-      "featureFlags": [
-        "MVPGROUPSETTING",
-        "MVPMALLSETTING"
-      ],
-      "experience": {
-        "icon": "qualification",
-        "routeKey": "consolequalification",
-        "route": "/scopes/:scopeKind/:scopeId/settings/partners/qualifications",
-        "component": "qualification",
-        "placement": "secondary",
-        "empty": "hide"
-      }
-    },
-    {
-      "key": "mallreferral",
-      "surface": "console",
-      "scope": "mall",
-      "parent": "mallproduct",
-      "title": "分销返佣系统",
-      "order": 45,
-      "operation": "referral.settings.read",
-      "owner": "referral",
-      "permission": "referral.setting.read",
-      "capability": "referral.settings.read",
-      "featureFlags": [
-        "MVPDISTRIBUTION"
-      ],
-      "experience": {
-        "icon": "referral",
-        "routeKey": "consolereferral",
-        "route": "/scopes/:scopeKind/:scopeId/referral",
-        "component": "referral",
-        "placement": "secondary",
-        "empty": "hide"
-      }
-    },
-    {
       "key": "mallproductdetail",
       "surface": "console",
       "scope": "mall",
@@ -2784,79 +2736,6 @@
       }
     },
     {
-      "key": "mallmessage",
-      "surface": "console",
-      "scope": "mall",
-      "parent": "mallrisk",
-      "title": "通知管理",
-      "order": 40,
-      "operation": "notification.templates.read",
-      "owner": "notification",
-      "permission": "notification.template.read",
-      "capability": "notification.templates.read",
-      "featureFlags": [
-        "MVPGROUPSETTING",
-        "MVPMALLSETTING"
-      ],
-      "experience": {
-        "icon": "notification",
-        "routeKey": "consolenotifications",
-        "route": "/scopes/:scopeKind/:scopeId/settings/messages",
-        "component": "notification",
-        "placement": "secondary",
-        "empty": "hide"
-      }
-    },
-    {
-      "key": "mallprovider",
-      "surface": "console",
-      "scope": "mall",
-      "parent": "mallrisk",
-      "title": "登录方式",
-      "order": 60,
-      "operation": "identity.providers.center.read",
-      "owner": "identity",
-      "permission": "identity.provider.manage",
-      "capability": "identity.providers.center.read",
-      "featureFlags": [
-        "MVPGROUPSETTING",
-        "MVPMALLSETTING",
-        "MVPIDENTITY"
-      ],
-      "experience": {
-        "icon": "identity",
-        "routeKey": "consolefederation",
-        "route": "/scopes/:scopeKind/:scopeId/settings/federation",
-        "component": "federation",
-        "placement": "secondary",
-        "empty": "hide"
-      }
-    },
-    {
-      "key": "malldirectory",
-      "surface": "console",
-      "scope": "mall",
-      "parent": "mallrisk",
-      "title": "通讯录同步",
-      "order": 70,
-      "operation": "organization.directories.read",
-      "owner": "organization",
-      "permission": "organization.directory.read",
-      "capability": "organization.directories.read",
-      "featureFlags": [
-        "MVPGROUPSETTING",
-        "MVPMALLSETTING"
-      ],
-      "experience": {
-        "icon": "directory",
-        "routeKey": "consoledirectory",
-        "route": "/scopes/:scopeKind/:scopeId/settings/directory",
-        "component": "directory",
-        "placement": "secondary",
-        "empty": "hide"
-      }
-    },
-    {
       "key": "malladmin",
       "surface": "console",
       "scope": "mall",
@@ -2876,6 +2755,30 @@
         "routeKey": "consoleaccess",
         "route": "/scopes/:scopeKind/:scopeId/settings/access",
         "component": "access",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
+      "key": "mallcontrol",
+      "surface": "console",
+      "scope": "mall",
+      "parent": "mallsettings",
+      "title": "系统运行",
+      "order": 15,
+      "operation": "runtime.health.dependency",
+      "owner": "runtime",
+      "permission": "runtime.health.read",
+      "capability": "runtime.health.dependency",
+      "featureFlags": [
+        "MVPPLATFORM",
+        "MVPDISTRIBUTION"
+      ],
+      "experience": {
+        "icon": "control",
+        "routeKey": "consolecontrol",
+        "route": "/scopes/:scopeKind/:scopeId/control",
+        "component": "control",
         "placement": "secondary",
         "empty": "hide"
       }
@@ -2953,11 +2856,59 @@
       }
     },
     {
+      "key": "mallqualification",
+      "surface": "console",
+      "scope": "mall",
+      "parent": "mallsettings",
+      "title": "资格管理",
+      "order": 35,
+      "operation": "qualification.center.read",
+      "owner": "qualification",
+      "permission": "qualification.read",
+      "capability": "qualification.center.read",
+      "featureFlags": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ],
+      "experience": {
+        "icon": "qualification",
+        "routeKey": "consolequalification",
+        "route": "/scopes/:scopeKind/:scopeId/settings/partners/qualifications",
+        "component": "qualification",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
+      "key": "mallmessage",
+      "surface": "console",
+      "scope": "mall",
+      "parent": "mallsettings",
+      "title": "通知管理",
+      "order": 40,
+      "operation": "notification.templates.read",
+      "owner": "notification",
+      "permission": "notification.template.read",
+      "capability": "notification.templates.read",
+      "featureFlags": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ],
+      "experience": {
+        "icon": "notification",
+        "routeKey": "consolenotifications",
+        "route": "/scopes/:scopeKind/:scopeId/settings/messages",
+        "component": "notification",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
       "key": "mallchannel",
       "surface": "console",
       "scope": "mall",
       "parent": "mallsettings",
-      "title": "渠道接入系统",
+      "title": "渠道连接",
       "order": 47,
       "operation": "channel.connections.read",
       "owner": "channel",
@@ -3000,11 +2951,60 @@
       }
     },
     {
+      "key": "mallprovider",
+      "surface": "console",
+      "scope": "mall",
+      "parent": "mallsettings",
+      "title": "登录方式",
+      "order": 60,
+      "operation": "identity.providers.center.read",
+      "owner": "identity",
+      "permission": "identity.provider.manage",
+      "capability": "identity.providers.center.read",
+      "featureFlags": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING",
+        "MVPIDENTITY"
+      ],
+      "experience": {
+        "icon": "identity",
+        "routeKey": "consolefederation",
+        "route": "/scopes/:scopeKind/:scopeId/settings/federation",
+        "component": "federation",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
+      "key": "malldirectory",
+      "surface": "console",
+      "scope": "mall",
+      "parent": "mallsettings",
+      "title": "通讯录同步",
+      "order": 70,
+      "operation": "organization.directories.read",
+      "owner": "organization",
+      "permission": "organization.directory.read",
+      "capability": "organization.directories.read",
+      "featureFlags": [
+        "MVPGROUPSETTING",
+        "MVPMALLSETTING"
+      ],
+      "experience": {
+        "icon": "directory",
+        "routeKey": "consoledirectory",
+        "route": "/scopes/:scopeKind/:scopeId/settings/directory",
+        "component": "directory",
+        "placement": "secondary",
+        "empty": "hide"
+      }
+    },
+    {
       "key": "mallrisk",
       "surface": "console",
       "scope": "mall",
       "parent": "mallsettings",
-      "title": "系统治理台",
+      "title": "风险与安全",
       "order": 100,
       "operation": "risk.center.read",
       "owner": "risk",
@@ -3154,7 +3154,7 @@
       "surface": "console",
       "scope": "platform",
       "parent": null,
-      "title": "渠道接入系统",
+      "title": "渠道管理",
       "order": 40,
       "operation": "channel.connections.read",
       "owner": "channel",
@@ -3177,7 +3177,7 @@
       "surface": "console",
       "scope": "platform",
       "parent": null,
-      "title": "平台设置",
+      "title": "设置",
       "order": 50,
       "operation": "access.center.read",
       "owner": "access",

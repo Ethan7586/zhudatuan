@@ -1,5 +1,6 @@
 import { Brand, NavigationIcon } from '@shop/design';
 import type { ConsoleNavigationNode } from '../entity/session/ConsoleSession';
+import { SETTINGS_SECTIONS, settingsSectionForRoute } from '../shared/navigation/SettingsSection';
 import { ShellIcon } from './ShellIcon';
 
 export interface NavigationTreeProps {
@@ -9,10 +10,11 @@ export interface NavigationTreeProps {
   readonly roleLabel: string;
   readonly nodes: readonly ConsoleNavigationNode[];
   readonly onNavigate: (route: string) => void;
+  readonly onDismiss: () => void;
   readonly onToggle: () => void;
 }
 
-export function NavigationTree({ active, collapsed, displayName, roleLabel, nodes, onNavigate, onToggle }: NavigationTreeProps) {
+export function NavigationTree({ active, collapsed, displayName, roleLabel, nodes, onNavigate, onDismiss, onToggle }: NavigationTreeProps) {
   const primary = nodes.filter((node) => node.experience.placement === 'primary');
   const secondary = nodes.filter((node) => node.experience.placement === 'secondary');
   return (
@@ -26,13 +28,16 @@ export function NavigationTree({ active, collapsed, displayName, roleLabel, node
         <button className="sidebartoggle" type="button" onClick={onToggle} aria-label={collapsed ? '展开导航' : '收起导航'} aria-expanded={!collapsed}>
           <ShellIcon name={collapsed ? 'chevron' : 'collapse'} />
         </button>
+        <button className="sidebarmobileclose" type="button" onClick={onDismiss} aria-label="关闭主导航">
+          <ShellIcon name="close" />
+        </button>
       </div>
       <div className="sidebarnavtitle">工作台工作流</div>
       <nav aria-label="工作台与治理系统" className="sidebarnavigation">
         {primary.map((node) => (
           <NavigationBranch key={node.key} node={node} active={active} collapsed={collapsed} onNavigate={onNavigate} depth={0} />
         ))}
-        {secondary.length === 0 ? null : <div className="sidebarnavtitle">服务与设置</div>}
+        {secondary.length === 0 ? null : <div className="sidebarnavtitle">增长与服务</div>}
         {secondary.map((node) => (
           <NavigationBranch key={node.key} node={node} active={active} collapsed={collapsed} onNavigate={onNavigate} depth={0} />
         ))}
@@ -89,12 +94,51 @@ function NavigationBranch({
       </button>
       {!expanded ? null : (
         <div className="navigationchildren" role="group" aria-label={`${node.title}子导航`}>
-          {children.map((child) => (
-            <NavigationBranch key={child.key} node={child} active={active} collapsed={collapsed} onNavigate={onNavigate} depth={depth + 1} />
-          ))}
+          {experience.component === 'settings' ? (
+            <SettingsNavigation children={children} active={active} collapsed={collapsed} onNavigate={onNavigate} depth={depth + 1} />
+          ) : (
+            children.map((child) => <NavigationBranch key={child.key} node={child} active={active} collapsed={collapsed} onNavigate={onNavigate} depth={depth + 1} />)
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+function SettingsNavigation({
+  children,
+  active,
+  collapsed,
+  onNavigate,
+  depth,
+}: Readonly<{
+  children: readonly ConsoleNavigationNode[];
+  active: string | undefined;
+  collapsed: boolean;
+  onNavigate: (route: string) => void;
+  depth: number;
+}>) {
+  const groupedKeys = new Set<string>();
+  const groups = SETTINGS_SECTIONS.flatMap((section) => {
+    const nodes = children.filter((child) => settingsSectionForRoute(child.experience.routeKey)?.id === section.id);
+    for (const node of nodes) groupedKeys.add(node.key);
+    return nodes.length === 0 ? [] : [Object.freeze({ section, nodes: Object.freeze(nodes) })];
+  });
+  const remaining = children.filter((child) => !groupedKeys.has(child.key));
+  return (
+    <>
+      {groups.map(({ section, nodes }) => (
+        <div className="navigationsection" role="group" aria-label={section.title} key={section.id}>
+          <span className="navigationsectiontitle">{section.title}</span>
+          {nodes.map((child) => (
+            <NavigationBranch key={child.key} node={child} active={active} collapsed={collapsed} onNavigate={onNavigate} depth={depth} />
+          ))}
+        </div>
+      ))}
+      {remaining.map((child) => (
+        <NavigationBranch key={child.key} node={child} active={active} collapsed={collapsed} onNavigate={onNavigate} depth={depth} />
+      ))}
+    </>
   );
 }
 

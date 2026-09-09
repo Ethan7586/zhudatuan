@@ -37,6 +37,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/control
     feature: control
+    group: system
     requirements:
       - MVPPLATFORM
       - MVPDISTRIBUTION
@@ -113,6 +114,7 @@ routes:
     surface: console
     path: /scopes/:scopeKind/:scopeId/channels
     feature: channel
+    group: connections
     requirements:
       - MVPPROVIDER
   - id: consolefinance
@@ -721,7 +723,7 @@ nodes:
     surface: console
     scope: platform
     parent: null
-    title: 平台设置
+    title: 设置
     icon: settings
     order: 50
     entry: access.center.read
@@ -765,7 +767,7 @@ nodes:
     surface: console
     scope: distributor
     parent: null
-    title: 分销设置
+    title: 设置
     icon: settings
     order: 40
     entry: access.center.read
@@ -786,8 +788,8 @@ nodes:
   - id: groupcontrol
     surface: console
     scope: enterprise
-    parent: groupdashboard
-    title: 智慧翼中控台
+    parent: groupsettings
+    title: 系统运行
     icon: control
     order: 15
     entry: runtime.health.dependency
@@ -830,8 +832,8 @@ nodes:
   - id: groupreferral
     surface: console
     scope: enterprise
-    parent: groupproduct
-    title: 分销返佣系统
+    parent: null
+    title: 分销与返佣
     icon: referral
     order: 45
     entry: referral.settings.read
@@ -853,7 +855,7 @@ nodes:
     surface: console
     scope: enterprise
     parent: groupsettings
-    title: 渠道接入系统
+    title: 渠道连接
     icon: channel
     order: 47
     entry: channel.connections.read
@@ -886,7 +888,7 @@ nodes:
     surface: console
     scope: enterprise
     parent: null
-    title: 客服系统
+    title: 客服中心
     icon: support
     order: 80
     entry: support.cases.read
@@ -897,7 +899,7 @@ nodes:
     surface: console
     scope: enterprise
     parent: null
-    title: 会员与权限
+    title: 设置
     icon: settings
     order: 90
     entry: access.center.read
@@ -918,8 +920,8 @@ nodes:
   - id: mallcontrol
     surface: console
     scope: mall
-    parent: malldashboard
-    title: 智慧翼中控台
+    parent: mallsettings
+    title: 系统运行
     icon: control
     order: 15
     entry: runtime.health.dependency
@@ -974,7 +976,7 @@ nodes:
     surface: console
     scope: mall
     parent: mallsettings
-    title: 渠道接入系统
+    title: 渠道连接
     icon: channel
     order: 47
     entry: channel.connections.read
@@ -995,8 +997,8 @@ nodes:
   - id: mallreferral
     surface: console
     scope: mall
-    parent: mallproduct
-    title: 分销返佣系统
+    parent: null
+    title: 分销与返佣
     icon: referral
     order: 45
     entry: referral.settings.read
@@ -1018,7 +1020,7 @@ nodes:
     surface: console
     scope: mall
     parent: null
-    title: 客服系统
+    title: 客服中心
     icon: support
     order: 80
     entry: support.cases.read
@@ -1029,7 +1031,7 @@ nodes:
     surface: console
     scope: mall
     parent: null
-    title: 会员与权限
+    title: 设置
     icon: settings
     order: 90
     entry: access.center.read
@@ -1040,7 +1042,7 @@ nodes:
     surface: console
     scope: platform
     parent: null
-    title: 渠道接入系统
+    title: 渠道管理
     icon: channel
     order: 40
     entry: channel.connections.read
@@ -1094,7 +1096,7 @@ nodes:
   - id: groupqualification
     surface: console
     scope: enterprise
-    parent: grouppartner
+    parent: groupsettings
     title: 资格管理
     icon: qualification
     order: 35
@@ -1105,7 +1107,7 @@ nodes:
   - id: groupmessage
     surface: console
     scope: enterprise
-    parent: grouprisk
+    parent: groupsettings
     title: 通知管理
     icon: notification
     order: 40
@@ -1117,7 +1119,7 @@ nodes:
     surface: console
     scope: enterprise
     parent: groupsettings
-    title: 系统治理台
+    title: 风险与安全
     icon: risk
     order: 100
     entry: risk.center.read
@@ -1127,7 +1129,7 @@ nodes:
   - id: groupprovider
     surface: console
     scope: enterprise
-    parent: grouprisk
+    parent: groupsettings
     title: 登录方式
     icon: identity
     order: 60
@@ -1138,7 +1140,7 @@ nodes:
   - id: groupdirectory
     surface: console
     scope: enterprise
-    parent: grouprisk
+    parent: groupsettings
     title: 通讯录同步
     icon: directory
     order: 70
@@ -1193,7 +1195,7 @@ nodes:
   - id: mallqualification
     surface: console
     scope: mall
-    parent: mallpartner
+    parent: mallsettings
     title: 资格管理
     icon: qualification
     order: 35
@@ -1204,7 +1206,7 @@ nodes:
   - id: mallmessage
     surface: console
     scope: mall
-    parent: mallrisk
+    parent: mallsettings
     title: 通知管理
     icon: notification
     order: 40
@@ -1216,7 +1218,7 @@ nodes:
     surface: console
     scope: mall
     parent: mallsettings
-    title: 系统治理台
+    title: 风险与安全
     icon: risk
     order: 100
     entry: risk.center.read
@@ -1226,7 +1228,7 @@ nodes:
   - id: mallprovider
     surface: console
     scope: mall
-    parent: mallrisk
+    parent: mallsettings
     title: 登录方式
     icon: identity
     order: 60
@@ -1237,7 +1239,7 @@ nodes:
   - id: malldirectory
     surface: console
     scope: mall
-    parent: mallrisk
+    parent: mallsettings
     title: 通讯录同步
     icon: directory
     order: 70

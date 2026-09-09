@@ -98,14 +98,15 @@ test('Console 页名、品牌与管理范围在平板宽度完整可读', async 
   await expect.poll(() => textFits(page, '.scopepath li[aria-current="page"]')).toBe(true);
 });
 
-test('Console 会员与权限首页加载所属样式并按视口重排', async ({ page }) => {
+test('Console 设置首页按业务任务分组并随视口重排', async ({ page }) => {
   await prepareVisual(page, { width: 1440, height: 900 });
   await signInConsole(page);
   await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consolesettings, 'enterprise')}`);
   await expectUsable(page);
   await expect(page.locator('.settingsworkspace')).toHaveCSS('display', 'grid');
   await expect(page.locator('.settingshero')).toHaveCSS('display', 'grid');
-  await expect(page.locator('.settingsgrid')).toHaveCSS('display', 'grid');
+  await expect(page.locator('.settingsgrid').first()).toHaveCSS('display', 'grid');
+  expect(await page.locator('.settingsgroup').count()).toBeGreaterThan(1);
   expect(await columnCount(page, '.settingsgrid')).toBeGreaterThan(1);
 
   await page.setViewportSize({ width: 390, height: 844 });
@@ -221,7 +222,7 @@ async function textFits(page: import('@playwright/test').Page, selector: string)
 }
 
 async function columnCount(page: import('@playwright/test').Page, selector: string): Promise<number> {
-  return page.locator(selector).evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length);
+  return page.locator(selector).first().evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(' ').length);
 }
 
 async function elementFitsParent(page: import('@playwright/test').Page, selector: string, parent: string): Promise<boolean> {

@@ -74,10 +74,32 @@
   opacity: 0;
   background: var(--sw-sidebar-top);
   color: var(--sw-border-strong);
-  transform: translateX(var(--sw-space-3));
   transition:
     opacity var(--sw-duration-fast) var(--sw-ease-standard),
     color var(--sw-duration-fast) var(--sw-ease-standard);
+}
+
+.sidebarmobileclose {
+  display: none;
+  width: var(--sw-control-touch-target);
+  min-width: var(--sw-control-touch-target);
+  min-height: var(--sw-control-touch-target);
+  place-items: center;
+  border: 0;
+  border-radius: var(--sw-radius-sm);
+  background: transparent;
+  color: var(--sw-border-strong);
+}
+
+.sidebarmobileclose:hover,
+.sidebarmobileclose:focus-visible {
+  background: color-mix(in srgb, var(--sw-surface) 8%, transparent);
+  color: var(--sw-surface);
+}
+
+.sidebarmobileclose svg {
+  width: var(--sw-icon-size-md);
+  height: var(--sw-icon-size-md);
 }
 
 .consolesidebar:hover .sidebartoggle,
