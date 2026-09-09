@@ -62,6 +62,16 @@ test('三主题权威、中文长文案和 200% 字号不会造成水平裁切',
   await expectUsable(page);
 });
 
+test('Storefront 安全中心优先展示可理解的设备名称并渐进披露其他会话', async ({ page }) => {
+  await prepareVisual(page, { width: 390, height: 844 });
+  await signInStorefront(page, '/profile/security');
+  await expectUsable(page);
+  await expect(page.getByText(/Google Chrome/).first()).toBeVisible();
+  await expect(page.getByText(/当前安全状态：/)).toBeVisible();
+  expect(await page.locator('[data-security-device]').count()).toBeLessThanOrEqual(4);
+  await expect(page.locator('main')).not.toContainText(/L[0-9]/);
+});
+
 for (const width of [390, 360]) {
   test(`Storefront 结算商品信息在 ${width}px 保持可读且操作不被压缩`, async ({ page }) => {
     await prepareVisual(page, { width, height: 844 });
