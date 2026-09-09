@@ -10,9 +10,9 @@ afterEach(cleanup);
 describe('SettingsRoute', () => {
   it('renders exactly the enabled modules projected by the server', () => {
     renderRoute([node('member', '成员管理'), node('partner', '合作伙伴', true), node('task', '任务中心')]);
-    expect(screen.getByRole('heading', { name: '成员管理' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: '打开成员管理' })).toBeTruthy();
     expect(screen.queryByText('合作伙伴')).toBeNull();
-    expect(screen.getByRole('heading', { name: '任务中心' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: '打开任务中心' })).toBeTruthy();
     expect(screen.queryByText('暂不可用')).toBeNull();
     expect(screen.getByText('2')).toBeTruthy();
   });
