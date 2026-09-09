@@ -241,7 +241,7 @@ describe('canonical console identity', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalConsole('13424327586', 'Original!Password1', undefined, undefined, {
-      target: 'console', expectedOrigin: 'https://console.zhudatuan.com',
+      target: 'console', expectedOrigin: 'https://console.fufu.wang',
     })).rejects.toThrow('后台登录目标与当前身份节点不匹配');
   });
 
@@ -357,11 +357,11 @@ describe('canonical console identity', () => {
   });
 
   it('keeps the L0 identity host on its own storefront when sharing the same auth build', async () => {
-    setWindowHostname('accounts.zhudatuan.com');
+    setWindowHostname('accounts.fufu.wang');
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:zhudatuan')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://zhudatuan.com/orders?source=login')));
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://fufu.wang/orders?source=login')));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalStorefrontEntry(
@@ -370,11 +370,11 @@ describe('canonical console identity', () => {
       'zhudatuan-storefront',
     )).resolves.toEqual({
       membership: 'membership:zhudatuan',
-      redirectUrl: 'https://zhudatuan.com/orders?source=login',
+      redirectUrl: 'https://fufu.wang/orders?source=login',
     });
     expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([
-      'https://api.zhudatuan.com/api/v1/identity/sessions',
-      'https://api.zhudatuan.com/api/v1/identity/tickets/exchange',
+      'https://api.fufu.wang/api/v1/identity/sessions',
+      'https://api.fufu.wang/api/v1/identity/tickets/exchange',
     ]);
   });
 
@@ -383,7 +383,7 @@ describe('canonical console identity', () => {
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:hongtai')))
-      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://zhudatuan.com/orders')));
+      .mockResolvedValueOnce(jsonResponse(ticketExchanged('https://fufu.wang/orders')));
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(loginCanonicalStorefrontEntry(
@@ -392,7 +392,7 @@ describe('canonical console identity', () => {
   });
 
   it('rejects an L1 return ticket on the L0 identity host instead of rewriting it', async () => {
-    setWindowHostname('accounts.zhudatuan.com');
+    setWindowHostname('accounts.fufu.wang');
     const fetchMock = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse(sessionCreated('storefront', 'membership:zhudatuan')))

@@ -52,6 +52,14 @@ describe('identity node manifest runtime parity', () => {
     expect(statements).toHaveLength(3);
     expect(statements.every((statement) => statement.includes('where') && statement.includes('$1'))).toBe(true);
   });
+
+  it('retains every L0 admin target while validating only the L0 realm', () => {
+    const manifest = SERVER_NODE_MANIFEST_REGISTRY.manifests.find((candidate) => candidate.node_id === 'node:zhudatuan:l0')!;
+    const node = PRODUCTION_IDENTITY_NODE_REGISTRY.nodes.find((candidate) => candidate.nodeId === manifest.node_id)!;
+    const expected = expectedIdentityNodeDatabaseManifest(manifest, node);
+    expect(expected.targets.map((target) => target.target)).toEqual(['console', 'store', 'storefront', 'supplier']);
+    expect(new Set(expected.targets.map((target) => target.realm_id))).toEqual(new Set(['realm:l0']));
+  });
 });
 
 function pool(manifest: IdentityNodeDatabaseManifest, statements: string[] = []): DatabasePool {

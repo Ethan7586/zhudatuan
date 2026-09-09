@@ -7,7 +7,7 @@ describe('consumer account façade', () => {
       .toBe('https://merchant.example');
     expect(resolveConsumerFacadeOrigin({ origin: 'https://merchant.example', pathname: '/accounts/assets/app.js' }))
       .toBe('https://merchant.example');
-    expect(resolveConsumerFacadeOrigin({ origin: 'https://accounts.zhudatuan.com', pathname: '/' }))
+    expect(resolveConsumerFacadeOrigin({ origin: 'https://accounts.fufu.wang', pathname: '/' }))
       .toBeUndefined();
   });
 });

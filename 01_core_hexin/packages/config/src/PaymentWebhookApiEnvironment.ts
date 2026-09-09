@@ -72,8 +72,8 @@ export function validatePaymentWebhookApiEnvironment(source: EnvironmentSource):
   if (source.API_BIND_HOST !== undefined && source.API_BIND_HOST !== '127.0.0.1') {
     throw new Error('PAYMENT_WEBHOOK_API_BIND_HOST_INVALID');
   }
-  secureEndpoint(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_INVALID');
-  if (app === 'production' && source.SECRET_STORE_ENDPOINT !== 'https://127.0.0.1:8543') {
+  const secretStoreEndpoint = secureEndpoint(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_INVALID');
+  if (app === 'production' && secretStoreEndpoint.hostname !== '127.0.0.1') {
     throw new Error('PAYMENT_WEBHOOK_API_SECRET_STORE_ENDPOINT_INVALID');
   }
   bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
@@ -84,9 +84,10 @@ export function paymentWebhookApiPort(environment: PaymentWebhookApiEnvironment)
   return integerValue(environment.API_PORT, 4326, 1, 65_535, 'API_PORT_INVALID');
 }
 
-function secureEndpoint(value: string | undefined, code: string): void {
+function secureEndpoint(value: string | undefined, code: string): URL {
   const endpoint = requiredValue(value, code);
   let parsed: URL;
   try { parsed = new URL(endpoint); } catch { throw new Error(code); }
   if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.hash || parsed.search) throw new Error(code);
+  return parsed;
 }

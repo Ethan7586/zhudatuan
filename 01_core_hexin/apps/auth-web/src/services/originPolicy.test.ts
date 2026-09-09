@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveAdminLoginOrigin, resolveBuildTimeOrigin, resolveStorefrontLoginOrigin } from './originPolicy';
 
 const policy = (configuredOrigin?: string, stagingOrigin?: string, allowLocalDevelopment = false) => ({
-  canonicalOrigin: 'https://api.zhudatuan.com',
+  canonicalOrigin: 'https://api.fufu.wang',
   configuredOrigin,
   stagingOrigin,
   allowLocalDevelopment,
@@ -13,7 +13,7 @@ const policy = (configuredOrigin?: string, stagingOrigin?: string, allowLocalDev
 
 describe('Auth build-time origin policy', () => {
   it('defaults to the canonical production origin without widening the allowlist', () => {
-    expect(resolveBuildTimeOrigin(policy())).toBe('https://api.zhudatuan.com');
+    expect(resolveBuildTimeOrigin(policy())).toBe('https://api.fufu.wang');
     expect(() => resolveBuildTimeOrigin(policy('https://attacker.example'))).toThrow('ORIGIN_DENIED');
   });
 
@@ -29,7 +29,7 @@ describe('Auth build-time origin policy', () => {
     'https://api.staging.example?target=other',
     'https://api.staging.example#other',
   ])('rejects malformed or non-HTTPS staging allowlist value %s', (stagingOrigin) => {
-    expect(() => resolveBuildTimeOrigin(policy('https://api.zhudatuan.com', stagingOrigin))).toThrow('ORIGIN_INVALID');
+    expect(() => resolveBuildTimeOrigin(policy('https://api.fufu.wang', stagingOrigin))).toThrow('ORIGIN_INVALID');
   });
 
   it('keeps loopback HTTP available only when the development flag is explicit', () => {
@@ -40,10 +40,10 @@ describe('Auth build-time origin policy', () => {
 
 describe('canonical identity return origin policy', () => {
   it('preserves the approved admin and storefront origins after leaving the legacy auth module', () => {
-    expect(resolveAdminLoginOrigin()).toBe('https://console.zhudatuan.com');
+    expect(resolveAdminLoginOrigin()).toBe('https://console.fufu.wang');
     expect(resolveAdminLoginOrigin('https://console.hbbtzn.com')).toBe('https://console.hbbtzn.com');
-    expect(resolveStorefrontLoginOrigin()).toBe('https://hbbtzn.com');
-    expect(resolveStorefrontLoginOrigin('https://zhudatuan.com')).toBe('https://zhudatuan.com');
+    expect(resolveStorefrontLoginOrigin()).toBe('https://fufu.wang');
+    expect(resolveStorefrontLoginOrigin('https://hbbtzn.com')).toBe('https://hbbtzn.com');
   });
 
   it('keeps canonical identity physically disconnected from the legacy auth and static origin modules', () => {

@@ -41,7 +41,7 @@ describe('consumer identity entry', () => {
 describe('node-bound identity entry', () => {
   it('accepts only the consumer application belonging to the current accounts host', () => {
     expect(resolveIdentityEntry(
-      '?target=storefront&application=zhudatuan-storefront', 'accounts.zhudatuan.com',
+      '?target=storefront&application=zhudatuan-storefront', 'accounts.fufu.wang',
     )).toMatchObject({ kind: 'consumer', target: 'storefront' });
     expect(resolveIdentityEntry(
       '?target=storefront&application=zdt-l1-verify', 'accounts.hbbtzn.com',
@@ -50,34 +50,34 @@ describe('node-bound identity entry', () => {
       '?target=storefront&application=zhudatuan-storefront', 'accounts.hbbtzn.com',
     )).toBeNull();
     expect(resolveIdentityEntry(
-      '?target=storefront&application=zdt-l1-verify', 'accounts.zhudatuan.com',
+      '?target=storefront&application=zdt-l1-verify', 'accounts.fufu.wang',
     )).toBeNull();
   });
 
   it('binds operator targets to the current accounts host', () => {
-    expect(resolveIdentityEntry('', 'accounts.zhudatuan.com')).toMatchObject({ kind: 'operator', nodeId: 'node:zhudatuan:l0', target: 'console' });
+    expect(resolveIdentityEntry('', 'accounts.fufu.wang')).toMatchObject({ kind: 'operator', nodeId: 'node:zhudatuan:l0', target: 'console' });
     expect(resolveIdentityEntry('', 'accounts.hbbtzn.com')).toMatchObject({ kind: 'operator', nodeId: 'node:hbbtzn:l1', target: 'console' });
     expect(resolveIdentityEntry('?target=console', 'accounts.hbbtzn.com')).toMatchObject({ kind: 'operator', nodeId: 'node:hbbtzn:l1' });
-    expect(resolveIdentityEntry('?target=console-hbbtzn', 'accounts.zhudatuan.com')).toBeNull();
-    expect(resolveIdentityEntry('?target=console&client=console-hbbtzn', 'accounts.zhudatuan.com')).toBeNull();
+    expect(resolveIdentityEntry('?target=console-hbbtzn', 'accounts.fufu.wang')).toBeNull();
+    expect(resolveIdentityEntry('?target=console&client=console-hbbtzn', 'accounts.fufu.wang')).toBeNull();
     expect(resolveIdentityEntry(
-      '?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.hbbtzn.com', 'accounts.zhudatuan.com',
+      '?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.hbbtzn.com', 'accounts.fufu.wang',
     )).toBeNull();
     expect(resolveIdentityEntry(
-      '?target=console-hbbtzn&client=console-hbbtzn&admin_origin=https%3A%2F%2Fconsole.zhudatuan.com', 'accounts.hbbtzn.com',
+      '?target=console-hbbtzn&client=console-hbbtzn&admin_origin=https%3A%2F%2Fconsole.fufu.wang', 'accounts.hbbtzn.com',
     )).toBeNull();
     expect(resolveIdentityEntry('', 'untrusted.example.com')).toBeNull();
   });
 
   it('rejects unsigned cross-node parameters instead of rewriting them', () => {
     expect(resolveIdentityEntry(
-      '?target=storefront&surface=web&application=zdt-l1-verify', 'accounts.zhudatuan.com',
+      '?target=storefront&surface=web&application=zdt-l1-verify', 'accounts.fufu.wang',
     )).toBeNull();
     expect(resolveIdentityEntry(
       '?target=storefront&surface=web&application=zhudatuan-storefront', 'accounts.hbbtzn.com',
     )).toBeNull();
     expect(resolveIdentityEntry(
-      '?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.hbbtzn.com', 'accounts.zhudatuan.com',
+      '?target=console&client=console&admin_origin=https%3A%2F%2Fconsole.hbbtzn.com', 'accounts.fufu.wang',
     )).toBeNull();
   });
 

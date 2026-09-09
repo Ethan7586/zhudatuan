@@ -16,7 +16,7 @@ function valid() {
     APP_ENV: 'production',
     AUTH_MODE: 'membership',
     SERVICE_VERSION: '1.0.0',
-    API_ALLOWED_ORIGINS: 'https://console.zhudatuan.com',
+    API_ALLOWED_ORIGINS: 'https://console.fufu.wang',
     DATABASE_API_CONNECTION_REF: 'zhudatuan/mall-provisioning/database/api',
     SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8543',
     SECRET_STORE_BEARER_TOKEN: bearer,
@@ -28,9 +28,11 @@ describe('mall provisioning API environment', () => {
     const environment = mallProvisioningApiEnvironment(valid());
     expect(environment.MALL_PROVISIONING_API_PROFILE).toBe('mall-provisioning-only');
     expect(mallProvisioningApiPort(environment)).toBe(4325);
-    expect(mallProvisioningApiAllowedOrigins(environment)).toEqual(['https://console.zhudatuan.com']);
+    expect(mallProvisioningApiAllowedOrigins(environment)).toEqual(['https://console.fufu.wang']);
     expect(new Set(MALL_PROVISIONING_API_ENVIRONMENT_KEYS).size)
       .toBe(MALL_PROVISIONING_API_ENVIRONMENT_KEYS.length);
+    expect(mallProvisioningApiEnvironment({ ...valid(), SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8553' })
+      .SECRET_STORE_ENDPOINT).toBe('https://127.0.0.1:8553');
   });
 
   it('rejects full-runtime dependencies, public binds, and storefront origins', () => {
@@ -49,7 +51,7 @@ describe('mall provisioning API environment', () => {
       .toThrow('MALL_PROVISIONING_API_BIND_HOST_INVALID');
     expect(() => mallProvisioningApiEnvironment({ ...valid(), API_PORT: '4321' }))
       .toThrow('MALL_PROVISIONING_API_PORT_INVALID');
-    expect(() => mallProvisioningApiEnvironment({ ...valid(), API_ALLOWED_ORIGINS: 'https://zhudatuan.com' }))
+    expect(() => mallProvisioningApiEnvironment({ ...valid(), API_ALLOWED_ORIGINS: 'https://fufu.wang' }))
       .toThrow('MALL_PROVISIONING_API_ORIGINS_INVALID');
   });
 

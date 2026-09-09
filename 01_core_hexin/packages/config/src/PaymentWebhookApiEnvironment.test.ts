@@ -50,6 +50,11 @@ describe('payment webhook API environment', () => {
     expect(paymentWebhookApiPort(environment)).toBe(4436);
   });
 
+  it('accepts a dedicated loopback secret store for an independently released node', () => {
+    expect(paymentWebhookApiEnvironment({ ...valid(), SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8553' })
+      .SECRET_STORE_ENDPOINT).toBe('https://127.0.0.1:8553');
+  });
+
   it('rejects foreign service configuration and partial configuration', () => {
     expect(() => paymentWebhookApiEnvironment({ ...valid(), QUOTE_KEY_REF: 'foreign' }))
       .toThrow('PAYMENT_WEBHOOK_API_KEY_FORBIDDEN:QUOTE_KEY_REF');

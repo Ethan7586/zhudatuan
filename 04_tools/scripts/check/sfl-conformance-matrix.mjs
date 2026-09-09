@@ -45,12 +45,12 @@ assert.match(v16, /SFL-26 \| 主动跨节点授权/);
 assert.match(v16, /Cross-Node Grant 保留项/);
 
 const registry = await json('02_platform_pingtai', 'config', 'sfl-node-registry.declaration.json');
-assert.equal(registry.registry_version, '1.6.0');
+assert.equal(registry.registry_version, '1.6.1');
 const l0 = registry.manifests.find((manifest) => manifest.node_id === 'node:zhudatuan:l0');
 const l1 = registry.manifests.find((manifest) => manifest.node_id === 'node:hbbtzn:l1');
 assert.ok(l0 && l1);
 const apiHost = (manifest) => manifest.domain_bindings.find((binding) => binding.surface_ref === 'surface:api')?.host;
-assert.equal(apiHost(l0), 'api.zhudatuan.com');
+assert.equal(apiHost(l0), 'api.fufu.wang');
 assert.equal(apiHost(l1), 'api.hbbtzn.com');
 assert.notEqual(apiHost(l0), apiHost(l1));
 

@@ -55,10 +55,10 @@ describe('web business API environment', () => {
     const environment = webBusinessApiEnvironment({
       ...valid(),
       API_PORT: '4422',
-      API_ALLOWED_ORIGINS: `${valid().API_ALLOWED_ORIGINS},https://internal.zhudatuan.com`,
+      API_ALLOWED_ORIGINS: `${valid().API_ALLOWED_ORIGINS},https://internal.fufu.wang`,
     });
     expect(webBusinessApiPort(environment)).toBe(4422);
-    expect(webBusinessApiAllowedOrigins(environment)).toContain('https://internal.zhudatuan.com');
+    expect(webBusinessApiAllowedOrigins(environment)).toContain('https://internal.fufu.wang');
   });
 
   it('fails closed on full-commerce secrets, public binds, and reused bearer credentials', () => {

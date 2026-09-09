@@ -41,22 +41,22 @@ oneShots:
     publicRegistrationRole: forbidden
 routes:
   storefront:
-    host: zhudatuan.com
+    host: fufu.wang
     workspace: 01_core_hexin/apps/storefront-web
     artifact: 01_core_hexin/apps/storefront-web/dist
     process: zhudatuan-storefront
   accounts:
-    host: accounts.zhudatuan.com
+    host: accounts.fufu.wang
     workspace: 01_core_hexin/apps/auth-web
     artifact: 01_core_hexin/apps/auth-web/dist
     server: caddy-static
   console:
-    host: console.zhudatuan.com
+    host: console.fufu.wang
     workspace: 01_core_hexin/apps/console
     artifact: 01_core_hexin/apps/console/dist
     server: caddy-static
   api:
-    host: api.zhudatuan.com
+    host: api.fufu.wang
     workspace: 01_core_hexin/services/commerce
     artifact: 01_core_hexin/services/commerce/dist
     process: zhudatuan-api
@@ -64,7 +64,7 @@ routes:
     profile: registration-only
     port: 4321
   webBusinessApi:
-    host: api.zhudatuan.com
+    host: api.fufu.wang
     workspace: 01_core_hexin/services/commerce
     artifact: 01_core_hexin/services/commerce/dist/WebBusinessApiMain.js
     readinessArtifact: 01_core_hexin/services/commerce/dist/WebBusinessApiReadyMain.js
@@ -88,7 +88,7 @@ routes:
       - /api/v1/benefits/ledgers
       - /api/v1/orders
   purchaseApi:
-    host: api.zhudatuan.com
+    host: api.fufu.wang
     workspace: 01_core_hexin/services/commerce
     artifact: 01_core_hexin/services/commerce/dist/PurchaseApiMain.js
     readinessArtifact: 01_core_hexin/services/commerce/dist/PurchaseApiReadyMain.js

@@ -14,7 +14,7 @@ describe('storefront auth origin boundary', () => {
     expect(resolveStorefrontAuthOrigin(undefined, 'production', l1)).toBe('https://accounts.hbbtzn.com');
     expect(resolveStorefrontAuthOrigin('https://accounts.hbbtzn.com', 'production', l1)).toBe('https://accounts.hbbtzn.com');
     expect(resolveStorefrontAuthOrigin('http://127.0.0.1:3002', 'production', l1)).toBe('https://accounts.hbbtzn.com');
-    expect(resolveStorefrontAuthOrigin('https://accounts.zhudatuan.com', 'production', l1)).toBe('https://accounts.hbbtzn.com');
+    expect(resolveStorefrontAuthOrigin('https://accounts.fufu.wang', 'production', l1)).toBe('https://accounts.hbbtzn.com');
   });
 
   it('allows only the configured local account center during development', () => {
@@ -25,7 +25,7 @@ describe('storefront auth origin boundary', () => {
   });
 
   it('opens the configured account center in consumer mode', () => {
-    const target = new URL(storefrontAuthHref('internal.zhudatuan.com'));
+    const target = new URL(storefrontAuthHref('internal.fufu.wang'));
     expect(target.searchParams.get('target')).toBe('storefront');
     expect(target.searchParams.get('surface')).toBe('web');
     expect(target.searchParams.get('application')).toBe('zhudatuan-storefront');
@@ -33,19 +33,19 @@ describe('storefront auth origin boundary', () => {
 
   it('keeps existing L0 and L1 storefront identities separate through registry rows', () => {
     vi.stubEnv('NODE_ENV', 'production');
-    vi.stubEnv('NEXT_PUBLIC_AUTH_ORIGIN', 'https://accounts.zhudatuan.com');
-    expect(resolveStorefrontApplication('zhudatuan.com')).toBe('zhudatuan-storefront');
-    expect(resolveStorefrontApplication('internal.zhudatuan.com')).toBe('zhudatuan-storefront');
-    expect(resolveStorefrontApplication('beta.zhudatuan.com')).toBe('zhudatuan-storefront');
+    vi.stubEnv('NEXT_PUBLIC_AUTH_ORIGIN', 'https://accounts.fufu.wang');
+    expect(resolveStorefrontApplication('fufu.wang')).toBe('zhudatuan-storefront');
+    expect(resolveStorefrontApplication('internal.fufu.wang')).toBe('zhudatuan-storefront');
+    expect(resolveStorefrontApplication('beta.fufu.wang')).toBe('zhudatuan-storefront');
     expect(resolveStorefrontApplication('mall.hbbtzn.com')).toBe('zdt-l1-verify');
-    const zhudatuan = new URL(storefrontAuthHref('zhudatuan.com'));
+    const zhudatuan = new URL(storefrontAuthHref('fufu.wang'));
     const hongtai = new URL(storefrontAuthHref('hbbtzn.com'));
-    expect(zhudatuan.origin).toBe('https://accounts.zhudatuan.com');
+    expect(zhudatuan.origin).toBe('https://accounts.fufu.wang');
     expect(zhudatuan.searchParams.get('target')).toBe('storefront');
     expect(hongtai.origin).toBe('https://accounts.hbbtzn.com');
     expect(hongtai.searchParams.get('target')).toBe('storefront');
     expect(resolveStorefrontPresentationIdentity('hbbtzn.com')).toEqual({ mallName: '宏泰甄选', brandName: '宏泰甄选' });
-    expect(resolveStorefrontPresentationIdentity('zhudatuan.com')).toEqual({ mallName: '筑大团商城', brandName: '筑大团' });
+    expect(resolveStorefrontPresentationIdentity('fufu.wang')).toEqual({ mallName: '筑大团商城', brandName: '筑大团' });
   });
 
   it('opens an L11 identity entry added only through registry data', () => {

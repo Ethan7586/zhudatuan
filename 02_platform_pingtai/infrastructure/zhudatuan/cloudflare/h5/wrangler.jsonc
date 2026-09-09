@@ -17,6 +17,8 @@
     "AUTH_MODE": "membership"
   },
   "routes": [
-    { "pattern": "h5.zhudatuan.com", "custom_domain": true }
+    { "pattern": "h5.fufu.wang", "custom_domain": true },
+    { "pattern": "beta.fufu.wang", "custom_domain": true },
+    { "pattern": "internal.fufu.wang", "custom_domain": true }
   ]
 }

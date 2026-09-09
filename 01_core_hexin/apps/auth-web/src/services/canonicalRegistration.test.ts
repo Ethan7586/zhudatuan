@@ -41,8 +41,8 @@ describe('canonical registration', () => {
   });
 
   it('routes the L0 accounts host to its own L0 API even when an L1 build value leaked in', () => {
-    expect(resolveCanonicalRegistrationApiOrigin('accounts.zhudatuan.com'))
-      .toBe('https://api.zhudatuan.com');
+    expect(resolveCanonicalRegistrationApiOrigin('accounts.fufu.wang'))
+      .toBe('https://api.fufu.wang');
   });
 
   it('resolves a storefront application into its authoritative organization and terms', async () => {

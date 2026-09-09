@@ -171,6 +171,7 @@ const REPAIR_FILES = [
   '20260909062500_reconcile_autonode_identity_migration_ledger.sql',
   '20260909063000_reprovision_disabled_autonode_identity_realm.sql',
   '20260909160000_route_identity_notifications_by_node.sql',
+  '20260909203000_switch_l0_public_domain_to_fufu.sql',
 ];
 
 const mode = process.argv[2];

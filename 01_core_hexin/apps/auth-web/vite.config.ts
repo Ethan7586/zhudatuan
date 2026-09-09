@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { PRODUCTION_IDENTITY_NODE_REGISTRY } from '@shop/sdk/identity-node';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import { validateAuthBuildEnvironment } from './src/buildEnvironment';
@@ -11,8 +12,8 @@ export default defineConfig(({ command, mode }) => {
   }
 
   return {
-    // Relative assets let the exact same reviewed dist run at
-    // accounts.zhudatuan.com/ and at the storefront's optional /login/ mount.
+    // Relative assets let the same reviewed dist run at a node identity host
+    // and at the storefront's optional /login/ mount.
     base: command === 'build' ? './' : '/',
     plugins: [react(), tailwindcss()],
     ...(identityNodeRegistrySource === undefined ? {} : {
@@ -41,7 +42,11 @@ export default defineConfig(({ command, mode }) => {
     },
     // Keep the explicit host allowlist; do not turn on allowHosts: true.
     preview: {
-      allowedHosts: ['zhudatuan.com', 'www.zhudatuan.com', 'accounts.zhudatuan.com', 'console.zhudatuan.com'],
+      allowedHosts: [...new Set(PRODUCTION_IDENTITY_NODE_REGISTRY.nodes.flatMap((node) => [
+        node.accountsHost,
+        ...node.storefrontHosts,
+        ...(node.adminOrigin === null ? [] : [new URL(node.adminOrigin).hostname]),
+      ]))],
     },
   };
 });

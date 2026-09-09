@@ -35,8 +35,8 @@ beforeAll(async () => {
 describe('SFL Console runtime adapter', () => {
   it('resolves Console and API Hosts to one authoritative context per node', () => {
     const resolver = createNodeContextResolver(artifact.node_manifest_registry);
-    const l0Console = resolver.resolve('console.zhudatuan.com');
-    const l0Api = resolver.resolve('api.zhudatuan.com');
+    const l0Console = resolver.resolve('console.fufu.wang');
+    const l0Api = resolver.resolve('api.fufu.wang');
     const l1Console = resolver.resolve('console.hbbtzn.com');
     const l1Api = resolver.resolve('api.hbbtzn.com');
 
@@ -45,7 +45,7 @@ describe('SFL Console runtime adapter', () => {
       node_id: 'node:zhudatuan:l0',
       signed_level: 'L0',
       mall_id: 'mall-zhudatuan',
-      host: 'console.zhudatuan.com',
+      host: 'console.fufu.wang',
       surface: 'surface:console',
       scope: { ref: 'organization-platform-root', version: '1' },
     });
@@ -153,12 +153,12 @@ describe('SFL Console runtime adapter', () => {
   });
 
   it('resolves L0 and L1 by exact Console Host with independent API, Identity, Scope, and NodeContext', () => {
-    const l0 = resolveConsoleAppConfig(artifact, 'console.zhudatuan.com');
+    const l0 = resolveConsoleAppConfig(artifact, 'console.fufu.wang');
     const l1 = resolveConsoleAppConfig(artifact, 'console.hbbtzn.com');
 
     expect(l0).toMatchObject({
-      apiBaseUrl: 'https://api.zhudatuan.com',
-      identityEntryUrl: 'https://accounts.zhudatuan.com/?target=console',
+      apiBaseUrl: 'https://api.fufu.wang',
+      identityEntryUrl: 'https://accounts.fufu.wang/?target=console',
       scope: { kind: 'platform', id: 'organization-platform-root' },
       nodeContext: {
         line_id: 'line:zhudatuan:commerce:v1',
@@ -195,14 +195,14 @@ describe('SFL Console runtime adapter', () => {
   it('rejects ambiguous Hosts and tampered generic manifest digests', async () => {
     const ambiguous = structuredClone(SFL_CONSOLE_RELEASE_DECLARATION);
     (ambiguous.manifests[1]!.domain_bindings.find(({ surface_ref }) => surface_ref === 'surface:console') as { host: string }).host =
-      'console.zhudatuan.com';
+      'console.fufu.wang';
     await expect(materializeSflConsoleArtifact(ambiguous, {
       source_sha: sourceSha,
       build_id: 'console:test:single-build',
       source_tree: 'clean',
       client_version: '1.0.0-test',
       immutable_artifact_digest: artifactDigest,
-    })).rejects.toThrow('SFL_NODE_MANIFEST_HOST_AMBIGUOUS:console.zhudatuan.com');
+    })).rejects.toThrow('SFL_NODE_MANIFEST_HOST_AMBIGUOUS:console.fufu.wang');
 
     const tampered = {
       ...artifact,

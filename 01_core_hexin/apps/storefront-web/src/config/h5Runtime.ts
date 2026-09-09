@@ -1,4 +1,9 @@
-const H5_STOREFRONT_HOST = 'h5.zhudatuan.com';
+import { PRODUCTION_IDENTITY_NODE_REGISTRY } from '@shop/sdk/identity-node';
+
+const H5_STOREFRONT_HOST = PRODUCTION_IDENTITY_NODE_REGISTRY.nodes
+  .find((node) => node.nodeId === 'node:zhudatuan:l0')
+  ?.storefrontHosts.find((host) => host.startsWith('h5.'));
+if (!H5_STOREFRONT_HOST) throw new Error('H5_STOREFRONT_HOST_MISSING');
 const H5_DOCUMENT_PATH = '/h5';
 
 function isStaticAssetPath(pathname: string): boolean {

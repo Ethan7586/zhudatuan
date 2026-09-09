@@ -10,10 +10,7 @@ import { defaultTermsAccepted } from '../services/termsAcceptance';
 const MallContext = createContext<MallContextType | undefined>(undefined);
 
 function initialDomain(): DomainType {
-  if (typeof window === 'undefined') return 'zhudatuan.com';
-  const hostname = window.location.hostname.toLowerCase();
-  if (hostname === 'console.zhudatuan.com') return 'console.zhudatuan.com';
-  return 'zhudatuan.com';
+  return typeof window === 'undefined' ? '' : window.location.hostname.toLowerCase();
 }
 
 export const MallProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

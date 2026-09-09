@@ -121,7 +121,7 @@ export function purchaseBrowserOrigins(): readonly string[] {
 
 function validateRegistryDeclaration(value: SflNodeRegistryDeclaration): SflNodeRegistryDeclaration {
   if (value.schema_version !== SFL_NODE_REGISTRY_DECLARATION_SCHEMA_VERSION
-    || value.registry_version !== '1.6.0'
+    || value.registry_version !== '1.6.1'
     || !Array.isArray(value.manifests)
     || value.manifests.length === 0
     || !Array.isArray(value.node_bindings)) {

@@ -1,3 +1,5 @@
+import { PRODUCTION_IDENTITY_NODE_REGISTRY } from '@shop/sdk/identity-node';
+
 interface OriginPolicy {
   readonly allowLocalDevelopment: boolean;
   readonly canonicalOrigin: string;
@@ -7,10 +9,12 @@ interface OriginPolicy {
   readonly stagingOrigin?: string;
 }
 
-const CANONICAL_ADMIN_LOGIN_ORIGIN = 'https://console.zhudatuan.com';
-const HONGTAI_ADMIN_LOGIN_ORIGIN = 'https://console.hbbtzn.com';
-const CANONICAL_STOREFRONT_LOGIN_ORIGIN = 'https://hbbtzn.com';
-const LEGACY_STOREFRONT_LOGIN_ORIGIN = 'https://zhudatuan.com';
+const platform = operatingNode('node:zhudatuan:l0');
+const hongtai = operatingNode('node:hbbtzn:l1');
+const CANONICAL_ADMIN_LOGIN_ORIGIN = platform.adminOrigin;
+const HONGTAI_ADMIN_LOGIN_ORIGIN = hongtai.adminOrigin;
+const CANONICAL_STOREFRONT_LOGIN_ORIGIN = platform.storefrontOrigin;
+const HONGTAI_STOREFRONT_LOGIN_ORIGIN = hongtai.storefrontOrigin;
 
 export function resolveAdminLoginOrigin(configuredOrigin?: string, allowLocalDevelopment = false): string {
   return resolveCredentialTargetOrigin(
@@ -28,7 +32,7 @@ export function resolveStorefrontLoginOrigin(configuredOrigin?: string, allowLoc
     CANONICAL_STOREFRONT_LOGIN_ORIGIN,
     '商城',
     allowLocalDevelopment,
-    [LEGACY_STOREFRONT_LOGIN_ORIGIN],
+    [HONGTAI_STOREFRONT_LOGIN_ORIGIN],
   );
 }
 
@@ -91,4 +95,10 @@ function parseOrigin(value: string, message: string): URL {
 
 function originOnly(value: URL): boolean {
   return !value.username && !value.password && (value.pathname === '/' || value.pathname === '') && !value.search && !value.hash;
+}
+
+function operatingNode(nodeId: string) {
+  const node = PRODUCTION_IDENTITY_NODE_REGISTRY.nodes.find((candidate) => candidate.nodeId === nodeId);
+  if (node?.nodeProfile !== 'operating_mall') throw new Error(`IDENTITY_OPERATING_NODE_MISSING:${nodeId}`);
+  return node;
 }

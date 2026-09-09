@@ -1,6 +1,6 @@
 /**
  * 智慧翼企业福利商城 - 统一登录 LoginPage screen
- * 消费者端（zhudatuan.com）与运营后台共用同一份账号密码登录组件
+ * 消费者商城与运营后台共用同一份节点身份登录组件
  * 技术服务方：雍彻科技
  */
 
@@ -488,7 +488,7 @@ export const LoginPage: React.FC = () => {
     const storefrontItems = allMemberships.filter((m) => m.target === 'storefront');
     const adminItems = allMemberships.filter((m) => m.target === 'admin');
 
-    const isSmartDomain = currentDomain === 'console.zhudatuan.com';
+    const isSmartDomain = isTenantConsoleLogin;
 
     const renderStorefrontSection = () => (
       <div className="space-y-3 mb-6">
@@ -1039,7 +1039,7 @@ export const LoginPage: React.FC = () => {
                         角色：{selectedMembership.roleName}（{selectedMembership.storeName}）
                       </p>
                       <div className="border-t border-slate-800 pt-2 text-[11px] text-slate-400">
-                        目标域名：<span className="font-mono text-blue-300">console.zhudatuan.com</span>
+                        目标域名：<span className="font-mono text-blue-300">{operatorNode ? new URL(operatorNode.adminOrigin).hostname : currentDomain}</span>
                       </div>
                     </div>
 
@@ -1286,7 +1286,7 @@ export const LoginPage: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto text-xs text-slate-600 space-y-3 pr-2 custom-scrollbar leading-relaxed">
               <p className="font-semibold text-slate-800">一、服务说明与主体定义</p>
-              <p>本《统一身份与登录服务协议》适用于筑大团消费者商城（zhudatuan.com）与运营后台（console.zhudatuan.com）。技术服务由雍彻科技提供安全合规与鉴权支持；旧项目域名不属于本系统的登录或会话边界。</p>
+              <p>本《统一身份与登录服务协议》适用于当前节点的消费者商城与运营后台。技术服务由雍彻科技提供安全合规与鉴权支持；其他节点域名不属于本次登录或会话边界。</p>
 
               <p className="font-semibold text-slate-800">二、安全与凭证红线</p>
               <p>

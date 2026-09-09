@@ -85,28 +85,34 @@ export function expectedIdentityNodeDatabaseManifest(
       { host: new URL(node.apiOrigin).hostname, realm_id: realmId, kind: 'api', status },
       ...node.storefrontHosts.slice(0, 1).map((host) => ({ host, realm_id: realmId, kind: 'storefront', status })),
     ].sort(by('host'));
-    const targets = [
+    const projected = IDENTITY_NODE_MANIFEST.nodes.find((candidate) => candidate.nodeId === manifest.node_id);
+    const targets = (projected?.targets ?? [
       ...(node.nodeProfile === 'operating_mall' ? [{
-        realm_id: realmId,
-        surface: 'admin',
+        surface: 'admin' as const,
         target: node.adminTarget,
-        membership_client: 'operator',
-        membership_organization_id: node.mallId,
-        application_slug: null,
-        return_origin: node.adminOrigin,
-        node_profile: node.nodeProfile,
+        membershipClient: 'operator' as const,
+        membershipOrganizationId: node.mallId,
+        application: null,
+        returnOrigin: node.adminOrigin,
       }] : []),
       {
-        realm_id: realmId,
-        surface: 'consumer',
+        surface: 'consumer' as const,
         target: node.consumerTarget,
-        membership_client: 'storefront',
-        membership_organization_id: node.nodeProfile === 'operating_mall' ? node.mallId : node.hostNodeId,
-        application_slug: node.consumerApplication,
-        return_origin: node.storefrontOrigin,
-        node_profile: node.nodeProfile,
+        membershipClient: 'storefront' as const,
+        membershipOrganizationId: node.nodeProfile === 'operating_mall' ? node.mallId : node.hostNodeId,
+        application: node.consumerApplication,
+        returnOrigin: node.storefrontOrigin,
       },
-    ].sort((left, right) => `${left.realm_id}:${left.target}`.localeCompare(`${right.realm_id}:${right.target}`));
+    ]).map((target) => ({
+      realm_id: realmId,
+      surface: target.surface,
+      target: target.target,
+      membership_client: target.membershipClient,
+      membership_organization_id: target.membershipOrganizationId,
+      application_slug: target.application,
+      return_origin: target.returnOrigin,
+      node_profile: node.nodeProfile,
+    })).sort((left, right) => `${left.realm_id}:${left.target}`.localeCompare(`${right.realm_id}:${right.target}`));
     return Object.freeze({ realms: Object.freeze(realms), entries: Object.freeze(entries), targets: Object.freeze(targets) });
   }
 

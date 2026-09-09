@@ -18,11 +18,11 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 
 export async function verifySflNodeDomainBoundary() {
   const registry = await materializeNodeManifestRegistryDeclaration(SFL_NODE_MANIFEST_REGISTRY_DECLARATION);
-  if (registry.registry_version !== '1.6.0' || registry.manifests.length !== 2) fail('SFL_PRODUCTION_NODE_SET_INVALID');
+  if (registry.registry_version !== '1.6.1' || registry.manifests.length !== 2) fail('SFL_PRODUCTION_NODE_SET_INVALID');
   const l0 = registry.manifests.find((manifest) => manifest.node_id === 'node:zhudatuan:l0');
   const l1 = registry.manifests.find((manifest) => manifest.node_id === 'node:hbbtzn:l1');
   if (l0 === undefined || l1 === undefined || l1.parent_node_id !== l0.node_id) fail('SFL_PRODUCTION_TOPOLOGY_INVALID');
-  verifyNodeOwnership(l0, 'zhudatuan.com', 'zhudatuan');
+  verifyNodeOwnership(l0, 'fufu.wang', 'zhudatuan');
   verifyNodeOwnership(l1, 'hbbtzn.com', 'hbbtzn');
   const l0Hosts = new Set(l0.domain_bindings.map((binding) => binding.host));
   if (l1.domain_bindings.some((binding) => l0Hosts.has(binding.host))) fail('SFL_PRODUCTION_HOST_OWNERSHIP_AMBIGUOUS');

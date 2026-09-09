@@ -42,6 +42,13 @@ const identityNodeManifest = Object.freeze({
     });
   }),
 });
+const canonicalL0 = identityNodeManifest.nodes.find((node) => node.nodeId === 'node:zhudatuan:l0');
+const canonicalL1 = identityNodeManifest.nodes.find((node) => node.nodeId === 'node:hbbtzn:l1');
+if (!canonicalL0 || !canonicalL1) throw new Error('IDENTITY_CANONICAL_NODE_MISSING');
+const accountsHost = (node) => node.entries.find((entry) => entry.kind === 'accounts')?.host
+  ?? (() => { throw new Error(`IDENTITY_ACCOUNTS_ENTRY_MISSING:${node.nodeId}`); })();
+const returnOrigin = (node, target) => node.targets.find((candidate) => candidate.target === target)?.returnOrigin
+  ?? (() => { throw new Error(`IDENTITY_TARGET_MISSING:${node.nodeId}:${target}`); })();
 
 export async function verifyIdentityRealmIsolation(database) {
   await database.exec('begin');
@@ -77,7 +84,7 @@ export async function verifyIdentityRealmIsolation(database) {
           when level=1 then 'mall:d1708f04df2dd8a61736852c4900fb43'
           when level<=5 then 'mall:realm-isolation:l'||level else null end,
         case when level<=5 then null else 'node:zhudatuan:l0' end,
-        case level when 0 then 'accounts.zhudatuan.com' when 1 then 'accounts.hbbtzn.com'
+        case level when 0 then '${accountsHost(canonicalL0)}' when 1 then '${accountsHost(canonicalL1)}'
           else 'accounts.l'||level||'.identity.test' end,
         case when level<=5 then 'console' else 'storefront' end,
         case when level<=5 then 'operator' else 'storefront' end,
@@ -393,10 +400,10 @@ export async function verifyIdentityRealmIsolation(database) {
       || (row.level === 0 && row.surface === 'consumer' && row.auth_target !== 'storefront')
       || (row.level === 1 && row.surface === 'consumer' && row.auth_target !== 'storefront')
       || row.return_origin !== ({
-        '0:admin': 'https://console.zhudatuan.com',
-        '0:consumer': 'https://zhudatuan.com',
-        '1:admin': 'https://console.hbbtzn.com',
-        '1:consumer': 'https://hbbtzn.com',
+        '0:admin': returnOrigin(canonicalL0, 'console'),
+        '0:consumer': returnOrigin(canonicalL0, 'storefront'),
+        '1:admin': returnOrigin(canonicalL1, 'console'),
+        '1:consumer': returnOrigin(canonicalL1, 'storefront'),
       })[`${row.level}:${row.surface}`])) {
       throw new Error(`IDENTITY_L0_L1_FOUR_ENTRY_MATRIX_INVALID:${JSON.stringify(entryMatrix.rows)}`);
     }
@@ -407,7 +414,7 @@ export async function verifyIdentityRealmIsolation(database) {
       select count(*)::integer value from matrix
       cross join lateral identity.resolve_session(
         (select session.token_hash from identity.session session where session.id=matrix.session_id),
-        case matrix.level when 0 then 'accounts.hbbtzn.com' else 'accounts.zhudatuan.com' end
+        case matrix.level when 0 then '${accountsHost(canonicalL1)}' else '${accountsHost(canonicalL0)}' end
       ) resolved`, 0, 'IDENTITY_L0_L1_CROSS_HOST_ENTRY_ACCEPTED');
 
     await database.exec(`savepoint l0_l1_password_scope;

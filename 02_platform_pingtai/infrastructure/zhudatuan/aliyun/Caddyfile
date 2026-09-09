@@ -7,15 +7,15 @@
 	}
 }
 
-www.zhudatuan.com {
-	redir https://zhudatuan.com{uri} permanent
+www.fufu.wang {
+	redir https://fufu.wang{uri} permanent
 }
 
-zhudatuan.com {
+fufu.wang {
 	encode gzip
 
 	header {
-		Content-Security-Policy "frame-ancestors 'self'; form-action 'self' https://accounts.zhudatuan.com https://console.zhudatuan.com; base-uri 'self'; object-src 'none'"
+		Content-Security-Policy "frame-ancestors 'self'; form-action 'self' https://accounts.fufu.wang https://console.fufu.wang; base-uri 'self'; object-src 'none'"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "SAMEORIGIN"
@@ -38,11 +38,11 @@ zhudatuan.com {
 	}
 }
 
-accounts.zhudatuan.com {
+accounts.fufu.wang {
 	encode gzip
 
 	header {
-		Content-Security-Policy "frame-ancestors 'none'; form-action https://zhudatuan.com https://console.zhudatuan.com; base-uri 'none'; object-src 'none'"
+		Content-Security-Policy "frame-ancestors 'none'; form-action https://fufu.wang https://console.fufu.wang; base-uri 'none'; object-src 'none'"
 		Referrer-Policy "no-referrer"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
@@ -62,11 +62,11 @@ accounts.zhudatuan.com {
 	}
 }
 
-console.zhudatuan.com {
+console.fufu.wang {
 	encode gzip
 
 	header {
-		Content-Security-Policy "frame-ancestors 'none'; form-action 'self' https://accounts.zhudatuan.com; base-uri 'self'; object-src 'none'"
+		Content-Security-Policy "frame-ancestors 'none'; form-action 'self' https://accounts.fufu.wang; base-uri 'self'; object-src 'none'"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
@@ -94,7 +94,7 @@ console.zhudatuan.com {
 	}
 }
 
-api.zhudatuan.com {
+api.fufu.wang {
 	encode gzip
 
 	header {

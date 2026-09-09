@@ -17,7 +17,7 @@ function valid() {
     APP_ENV: 'production',
     AUTH_MODE: 'membership',
     SERVICE_VERSION: '1.0.0',
-    API_ALLOWED_ORIGINS: 'https://beta.zhudatuan.com,https://h5.zhudatuan.com,https://internal.zhudatuan.com,https://mini.zhudatuan.com,https://www.zhudatuan.com,https://zhudatuan.com',
+    API_ALLOWED_ORIGINS: 'https://beta.fufu.wang,https://fufu.wang,https://h5.fufu.wang,https://internal.fufu.wang,https://mini.fufu.wang,https://www.fufu.wang',
     DATABASE_API_CONNECTION_REF: 'zhudatuan/nodes/l0/database/purchase-api',
     DATABASE_API_ROLE: 'zhudatuanpurchaseapi',
     QUOTE_KEY_REF: 'zhudatuan/nodes/l0/purchase/checkout/quote',
@@ -43,12 +43,12 @@ describe('purchase API environment', () => {
     expect(environment.PURCHASE_API_PROFILE).toBe('purchase-only');
     expect(purchaseApiPort(environment)).toBe(4323);
     expect(purchaseApiAllowedOrigins(environment)).toEqual([
-      'https://beta.zhudatuan.com',
-      'https://h5.zhudatuan.com',
-      'https://internal.zhudatuan.com',
-      'https://mini.zhudatuan.com',
-      'https://www.zhudatuan.com',
-      'https://zhudatuan.com',
+      'https://beta.fufu.wang',
+      'https://fufu.wang',
+      'https://h5.fufu.wang',
+      'https://internal.fufu.wang',
+      'https://mini.fufu.wang',
+      'https://www.fufu.wang',
     ]);
     expect(new Set(PURCHASE_API_ENVIRONMENT_KEYS).size).toBe(PURCHASE_API_ENVIRONMENT_KEYS.length);
   });
@@ -80,7 +80,7 @@ describe('purchase API environment', () => {
       NODE_RELEASE_POINTER_REF: '/opt/sfl/nodes/hbbtzn-l1/current',
     });
     expect(purchaseApiPort(environment)).toBe(4434);
-    expect(purchaseApiAllowedOrigins(environment)).not.toContain('https://zhudatuan.com');
+    expect(purchaseApiAllowedOrigins(environment)).not.toContain('https://fufu.wang');
   });
 
   it('fails closed on full-runtime dependencies, public binds, and invalid ports', () => {

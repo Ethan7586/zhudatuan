@@ -68,7 +68,7 @@ describe('runtime configuration schema', () => {
     };
     expect(catalogOperatorApiEnvironment(catalog).API_ALLOWED_ORIGINS).toBe('https://console.hbbtzn.com');
     expect(() => catalogOperatorApiEnvironment({ ...catalog,
-      API_ALLOWED_ORIGINS: 'https://console.hbbtzn.com,https://console.zhudatuan.com' }))
+      API_ALLOWED_ORIGINS: 'https://console.hbbtzn.com,https://console.fufu.wang' }))
       .toThrow('CATALOG_OPERATOR_API_ORIGINS_INVALID');
     expect(() => catalogOperatorApiEnvironment({ ...catalog, SESSION_KEY_REF: 'shared/session' }))
       .toThrow('CATALOG_OPERATOR_API_KEY_FORBIDDEN:SESSION_KEY_REF');
@@ -113,7 +113,7 @@ describe('runtime configuration schema', () => {
       APP_ENV: 'production',
       AUTH_MODE: 'membership',
       SERVICE_VERSION: '1.0.0',
-      API_ALLOWED_ORIGINS: 'https://accounts.zhudatuan.com,https://beta.zhudatuan.com,https://console.zhudatuan.com,https://h5.zhudatuan.com,https://internal.zhudatuan.com,https://mini.zhudatuan.com,https://www.zhudatuan.com,https://zhudatuan.com',
+      API_ALLOWED_ORIGINS: 'https://accounts.fufu.wang,https://beta.fufu.wang,https://console.fufu.wang,https://fufu.wang,https://h5.fufu.wang,https://internal.fufu.wang,https://mini.fufu.wang,https://www.fufu.wang',
       DATABASE_API_CONNECTION_REF: 'zhudatuan/nodes/l0/database/identity-api',
       DATABASE_API_ROLE: 'zhudatuanidentityapi',
       SESSION_KEY_REF: 'zhudatuan/nodes/l0/identity/session',
@@ -153,7 +153,7 @@ describe('runtime configuration schema', () => {
       .toThrow('IDENTITY_REGISTRATION_API_KEY_FORBIDDEN:WECHAT_PAYMENT_CONFIG_REF');
     expect(() => identityRegistrationApiEnvironment({ ...registration, API_BIND_HOST: '0.0.0.0' }))
       .toThrow('IDENTITY_REGISTRATION_API_BIND_HOST_INVALID');
-    expect(identityRegistrationApiEnvironment(registration).API_ALLOWED_ORIGINS).toContain('https://zhudatuan.com');
+    expect(identityRegistrationApiEnvironment(registration).API_ALLOWED_ORIGINS).toContain('https://fufu.wang');
     expect(identityRegistrationApiEnvironment({ ...registration,
       API_ALLOWED_ORIGINS: 'https://accounts.example.com,https://console.example.com' }).API_ALLOWED_ORIGINS)
       .toContain('https://accounts.example.com');
@@ -368,8 +368,8 @@ describe('runtime configuration schema', () => {
   it('fails closed for incomplete browser, storefront, and miniapp deployment identity', () => {
     const client = { VITE_API_BASE_URL: 'https://api.example.com', VITE_AUTH_BASE_URL: 'https://auth.example.com', VITE_CLIENT_VERSION: '2.4.1' };
     expect(clientEnvironment(client).clientVersion).toBe('2.4.1');
-    const productionClient = { ...client, APP_ENV: 'production', VITE_API_BASE_URL: 'https://api.zhudatuan.com', VITE_AUTH_BASE_URL: 'https://accounts.zhudatuan.com' };
-    expect(clientEnvironment(productionClient).apiBaseUrl).toBe('https://api.zhudatuan.com');
+    const productionClient = { ...client, APP_ENV: 'production', VITE_API_BASE_URL: 'https://api.fufu.wang', VITE_AUTH_BASE_URL: 'https://accounts.fufu.wang' };
+    expect(clientEnvironment(productionClient).apiBaseUrl).toBe('https://api.fufu.wang');
     expect(clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.hbbtzn.com', VITE_AUTH_BASE_URL: 'https://accounts.hbbtzn.com' }).apiBaseUrl)
       .toBe('https://api.hbbtzn.com');
     expect(() => clientEnvironment({ ...productionClient, VITE_API_BASE_URL: 'https://api.hbbtzn.com' })).toThrow('CLIENT_NODE_BINDING_INVALID');

@@ -17,6 +17,6 @@
     "AUTH_MODE": "membership"
   },
   "routes": [
-    { "pattern": "mini.zhudatuan.com", "custom_domain": true }
+    { "pattern": "mini.fufu.wang", "custom_domain": true }
   ]
 }

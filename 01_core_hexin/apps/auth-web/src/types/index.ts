@@ -39,7 +39,7 @@ export interface LockoutState {
   failedAttempts: number;
 }
 
-export type DomainType = 'zhudatuan.com' | 'console.zhudatuan.com';
+export type DomainType = string;
 
 export interface MallContextType {
   currentDomain: DomainType;

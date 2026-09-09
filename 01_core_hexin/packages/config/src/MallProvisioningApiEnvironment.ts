@@ -7,8 +7,13 @@ import {
   type EnvironmentSource,
 } from './Environment';
 import { apiAllowedOrigins } from './ApiEnvironment';
+import { nodeOriginForBinding } from './SflNodeRegistry';
 
 export const MALL_PROVISIONING_API_PROFILE = 'mall-provisioning-only' as const;
+const PLATFORM_CONSOLE_ORIGIN = nodeOriginForBinding(
+  'node:zhudatuan:l0',
+  'domain:zhudatuan:l0:console',
+);
 
 export const MALL_PROVISIONING_API_ENVIRONMENT_KEYS = Object.freeze([
   'MALL_PROVISIONING_API_PROFILE',
@@ -55,13 +60,13 @@ export function validateMallProvisioningApiEnvironment(source: EnvironmentSource
   if (source.API_BIND_HOST !== undefined && source.API_BIND_HOST !== '127.0.0.1') {
     throw new Error('MALL_PROVISIONING_API_BIND_HOST_INVALID');
   }
-  secureEndpoint(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_INVALID');
-  if (app === 'production' && source.SECRET_STORE_ENDPOINT !== 'https://127.0.0.1:8543') {
+  const secretStoreEndpoint = secureEndpoint(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_INVALID');
+  if (app === 'production' && secretStoreEndpoint.hostname !== '127.0.0.1') {
     throw new Error('MALL_PROVISIONING_API_SECRET_STORE_ENDPOINT_INVALID');
   }
   bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   const origins = apiAllowedOrigins(source);
-  if (app === 'production' && origins.join(',') !== 'https://console.zhudatuan.com') {
+  if (app === 'production' && origins.join(',') !== PLATFORM_CONSOLE_ORIGIN) {
     throw new Error('MALL_PROVISIONING_API_ORIGINS_INVALID');
   }
   if (mallProvisioningApiPort(source) !== 4325) throw new Error('MALL_PROVISIONING_API_PORT_INVALID');
@@ -77,9 +82,10 @@ export function mallProvisioningApiAllowedOrigins(
   return apiAllowedOrigins(environment);
 }
 
-function secureEndpoint(value: string | undefined, code: string): void {
+function secureEndpoint(value: string | undefined, code: string): URL {
   const endpoint = requiredValue(value, code);
   let parsed: URL;
   try { parsed = new URL(endpoint); } catch { throw new Error(code); }
   if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.hash || parsed.search) throw new Error(code);
+  return parsed;
 }

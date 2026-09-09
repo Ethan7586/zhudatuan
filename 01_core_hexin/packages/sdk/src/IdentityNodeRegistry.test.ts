@@ -16,7 +16,7 @@ describe('identity node registry', () => {
       consumerTarget: node.consumerTarget,
     }))).toEqual([
       {
-        nodeId: 'node:zhudatuan:l0', nodeProfile: 'operating_mall', accountsHost: 'accounts.zhudatuan.com',
+        nodeId: 'node:zhudatuan:l0', nodeProfile: 'operating_mall', accountsHost: 'accounts.fufu.wang',
         adminTarget: 'console', consumerTarget: 'storefront',
       },
       {
