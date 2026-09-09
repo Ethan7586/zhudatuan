@@ -20,6 +20,7 @@ import { ResetPassword } from '../feature/recovery/application/ResetPassword';
 import { RecoveryGateway } from '../feature/recovery/infrastructure/RecoveryGateway';
 import { createClient } from '../shared/api/Client';
 import { AuthorizationFactory } from '../shared/security/Authorization';
+import { AuthorizationJourney } from '../shared/security/AuthorizationJourney';
 import { deviceId } from '../shared/security/Device';
 import { BrowserNavigation } from '../shared/navigation/BrowserNavigation';
 import type { NavigationPort } from '../shared/navigation/NavigationPort';
@@ -54,13 +55,14 @@ export interface Dependencies {
 export function createDependencies(environment: AuthEnvironment): Dependencies {
   const sdk = createClient(environment);
   const authorizations = new AuthorizationFactory();
+  const authorizationJourney = new AuthorizationJourney();
   deviceId();
   authorizations.prewarm();
   const bootstrapGateway = new BootstrapGateway(sdk, environment);
   const loginGateway = new LoginGateway(sdk, environment, bootstrapGateway, authorizations);
   const challengeGateway = new ChallengeGateway(sdk, environment, bootstrapGateway);
-  const invitationGateway = new InvitationGateway(sdk, environment, bootstrapGateway);
-  const enrollmentGateway = new EnrollmentGateway(sdk, environment, bootstrapGateway);
+  const invitationGateway = new InvitationGateway(sdk, environment, bootstrapGateway, authorizations, authorizationJourney);
+  const enrollmentGateway = new EnrollmentGateway(sdk, environment, bootstrapGateway, authorizationJourney);
   const federationGateway = new FederationGateway(sdk, environment, bootstrapGateway, authorizations);
   const membershipGateway = new MembershipGateway(sdk, environment, bootstrapGateway);
   const recoveryGateway = new RecoveryGateway(sdk, environment, bootstrapGateway);

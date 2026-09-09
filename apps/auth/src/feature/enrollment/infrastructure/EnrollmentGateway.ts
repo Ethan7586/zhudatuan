@@ -3,7 +3,7 @@ import type { AuthEnvironment } from '../../../config/Environment';
 import type { IdentitySdk } from '../../../shared/api/Client';
 import { commandContext, queryContext } from '../../../shared/api/Context';
 import { exchangeSession } from '../../../shared/api/Exchange';
-import { createAuthorization } from '../../../shared/security/Authorization';
+import type { AuthorizationJourneyPort } from '../../../shared/security/AuthorizationJourney';
 import type { SessionRequest } from '../../../shared/security/ReturnTarget';
 import type { BootstrapPort } from '../../bootstrap/public/BootstrapPort';
 import type { EnrollmentCompletion } from '../model/Enrollment';
@@ -14,7 +14,8 @@ export class EnrollmentGateway implements EnrollmentPort {
   constructor(
     private readonly sdk: IdentitySdk,
     private readonly environment: AuthEnvironment,
-    private readonly bootstrap: BootstrapPort
+    private readonly bootstrap: BootstrapPort,
+    private readonly journey: AuthorizationJourneyPort
   ) {}
 
   read(id: string, session: SessionRequest, signal?: AbortSignal) {
@@ -22,7 +23,8 @@ export class EnrollmentGateway implements EnrollmentPort {
   }
 
   async complete(input: EnrollmentCompletion, session: SessionRequest, signal?: AbortSignal) {
-    const [authorization, bootstrap] = await Promise.all([createAuthorization(), this.bootstrap.read(session, signal)]);
+    const authorization = this.journey.require(input.id);
+    const bootstrap = await this.bootstrap.read(session, signal);
     const body =
       input.subjectMode === 'bound'
         ? {
@@ -49,9 +51,11 @@ export class EnrollmentGateway implements EnrollmentPort {
     const result = await this.sdk.enrollmentsComplete({ path: { id: input.id }, body }, commandContext(this.environment, session.target, bootstrap.csrf, signal));
     if (result.kind === 'enrolled') {
       if (result.target !== session.target) throw new TransportError('CONTRACT_INVALID', undefined, false);
+      this.journey.clear(input.id);
       return Object.freeze(result);
     }
     const redirectUrl = await exchangeSession(this.sdk, this.environment, result, authorization, session.target, bootstrap.csrf, signal);
+    this.journey.clear(input.id);
     return Object.freeze({ kind: 'authenticated' as const, redirectUrl });
   }
 }
