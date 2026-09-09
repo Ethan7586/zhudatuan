@@ -8,8 +8,12 @@ import { expectWcagAA } from '../browser/Accessibility';
 import { expectUsable, fillRoute, prepareVisual, resetVisual } from './Runtime';
 
 const viewports = Object.freeze([
-  { width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 1024, height: 768 },
-  { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 360, height: 800 },
+  { width: 1920, height: 1080 },
+  { width: 1440, height: 900 },
+  { width: 1024, height: 768 },
+  { width: 768, height: 1024 },
+  { width: 390, height: 844 },
+  { width: 360, height: 800 },
 ]);
 
 for (const viewport of viewports) {
@@ -21,6 +25,11 @@ for (const viewport of viewports) {
       await page.goto(url(ROUTES[routeid]));
       await expectUsable(page);
       await expectWcagAA(page);
+      if (routeid === 'storehome') {
+        await expect(page.getByRole('img', { name: '暖心生活关怀礼盒' })).toBeVisible();
+        await expect(page.getByRole('img', { name: '工作日营养餐券' })).toBeVisible();
+        await expect(page.getByRole('img', { name: '全国通兑电影票' })).toBeVisible();
+      }
     }
   });
 }

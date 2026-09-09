@@ -7,9 +7,9 @@ import { LOCAL_PRICEBOOK } from './LocalPricing';
 const environment = localSeedEnvironment();
 const database = new Client({ connectionString: await localSecret(environment.adminDatabaseConnectionRef) });
 const products = Object.freeze([
-  Object.freeze({ id: 'product:visual:care', sku: 'sku:visual:care', code: 'VISUAL-CARE', title: '暖心生活关怀礼盒', kind: 'physical', amount: 12_800, compare: 15_800, account: 'welfare' }),
-  Object.freeze({ id: 'product:visual:meal', sku: 'sku:visual:meal', code: 'VISUAL-MEAL', title: '工作日营养餐券', kind: 'voucher', amount: 3_000, compare: 3_000, account: 'meal' }),
-  Object.freeze({ id: 'product:visual:movie', sku: 'sku:visual:movie', code: 'VISUAL-MOVIE', title: '全国通兑电影票', kind: 'service', amount: 5_000, compare: 6_000, account: 'welfare' }),
+  Object.freeze({ id: 'product:visual:care', sku: 'sku:visual:care', code: 'VISUAL-CARE', title: '暖心生活关怀礼盒', kind: 'physical', amount: 12_800, compare: 15_800, account: 'welfare', cover: '/products/care.jpg' }),
+  Object.freeze({ id: 'product:visual:meal', sku: 'sku:visual:meal', code: 'VISUAL-MEAL', title: '工作日营养餐券', kind: 'voucher', amount: 3_000, compare: 3_000, account: 'meal', cover: '/products/meal.jpg' }),
+  Object.freeze({ id: 'product:visual:movie', sku: 'sku:visual:movie', code: 'VISUAL-MOVIE', title: '全国通兑电影票', kind: 'service', amount: 5_000, compare: 6_000, account: 'welfare', cover: '/products/movie.jpg' }),
 ] as const);
 
 await database.connect();
@@ -31,6 +31,8 @@ try {
 
 async function ensureProduct(client: Client, product: (typeof products)[number], index: number): Promise<void> {
   const attributes = JSON.stringify({
+    coverUrl: product.cover,
+    media: [{ id: `media:${product.sku}:cover`, kind: 'image', url: product.cover, alt: product.title, sort: 0 }],
     allowedAccounts: [product.account, 'cash'],
     deliverySla: product.kind === 'physical' ? '预计两个工作日送达' : '付款后即时到账',
     enterpriseExclusive: true,
@@ -80,10 +82,13 @@ async function ensureProduct(client: Client, product: (typeof products)[number],
 }
 
 async function assertVisualSeed(client: Client): Promise<void> {
-  const result = await client.query<{ count: number }>(`select count(distinct listing.id)::integer count from catalog.listing listing
+  const result = await client.query<{ count: number }>(
+    `select count(distinct listing.id)::integer count from catalog.listing listing
     join catalog.poolbinding binding on binding.pool_id=listing.pool_id and binding.mall_id=$1 and binding.status='active'
     join pricing.price price on price.book_id=$3 and price.sku_id=listing.sku_id
     join inventory.stockitem stock on stock.scope_id=$1 and stock.sku_id=listing.sku_id and stock.status='active'
-    where listing.sku_id=any($2::text[]) and listing.status='published' and price.amount_minor>0 and stock.onhand>stock.safety`, [LOCAL_OWNER.mall, products.map(({ sku }) => sku), LOCAL_PRICEBOOK.id]);
+    where listing.sku_id=any($2::text[]) and listing.status='published' and price.amount_minor>0 and stock.onhand>stock.safety`,
+    [LOCAL_OWNER.mall, products.map(({ sku }) => sku), LOCAL_PRICEBOOK.id]
+  );
   if (result.rows[0]?.count !== products.length) throw new Error(`LOCAL_VISUAL_SEED_INCOMPLETE:${result.rows[0]?.count ?? 0}`);
 }

@@ -12,5 +12,5 @@ export function ProductMedia({
   readonly emptyText?: string;
 }) {
   const normalized = source?.trim();
-  return normalized ? <img src={normalized} alt={alt} className={className} /> : <span className={emptyClassName}>{emptyText}</span>;
+  return normalized ? <img src={normalized} alt={alt} className={className} loading="lazy" decoding="async" /> : <span className={emptyClassName}>{emptyText}</span>;
 }

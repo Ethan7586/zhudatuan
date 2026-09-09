@@ -6,6 +6,8 @@ describe('ProductMedia', () => {
   it('renders a normal image without changing its source', () => {
     const markup = renderToStaticMarkup(<ProductMedia source="/media/product.jpg" alt="商品" className="image" emptyClassName="empty" />);
     expect(markup).toContain('src="/media/product.jpg"');
+    expect(markup).toContain('loading="lazy"');
+    expect(markup).toContain('decoding="async"');
     expect(markup).not.toContain('暂无商品图片');
   });
 
