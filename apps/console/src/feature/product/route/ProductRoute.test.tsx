@@ -107,7 +107,7 @@ describe('Product route', () => {
 
     expect(await screen.findByRole('table', { name: '商品列表' })).toBeTruthy();
     expect(screen.getByText('办公福利礼盒')).toBeTruthy();
-    expect(screen.getByText(/^商品编号 \d{4} \d{4}$/)).toBeTruthy();
+    expect(screen.queryByText(/^商品编号\b/)).toBeNull();
     expect(screen.getByRole('columnheader', { name: '分类 / 来源' })).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: 'SKU 摘要' })).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: '商城覆盖' })).toBeTruthy();
@@ -165,7 +165,7 @@ describe('Product route', () => {
     renderRoute(context);
 
     await userEvent.setup().click(await screen.findByText('渠道福利礼盒'));
-    const detail = screen.getByRole('button', { name: '打开完整详情' });
+    const detail = screen.getByRole('button', { name: '打开完整商品详情' });
     expect(detail.hasAttribute('disabled')).toBe(true);
     expect(detail.getAttribute('title')).toBe('渠道商品尚未映射到商品主档');
     expect(requests.every((request) => !request.includes('/api/v1/catalog/products/'))).toBe(true);
