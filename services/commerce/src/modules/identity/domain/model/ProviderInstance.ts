@@ -1,5 +1,5 @@
 import { DomainError } from '../../../../platform/error/DomainError';
-import { isOrganizationReference } from '../../../../platform/security/OrganizationReference';
+import { isOrganizationReference } from '@shop/kernel';
 import type { IdentityProviderType } from '@shop/config/server';
 
 export type ProviderStatus = 'draft' | 'enabled' | 'disabled' | 'revoked';

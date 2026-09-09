@@ -14,6 +14,7 @@ export * from './Id';
 export * from './IdGenerator';
 export * from './Mobile';
 export * from './Money';
+export * from './OrganizationReference';
 export * from './Page';
 export * from './Parallel';
 export * from './Policy';

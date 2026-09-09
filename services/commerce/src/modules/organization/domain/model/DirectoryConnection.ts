@@ -1,4 +1,4 @@
-import { isOrganizationReference } from '../../../../platform/security/OrganizationReference';
+import { isOrganizationReference } from '@shop/kernel';
 
 export type DirectoryConnectionStatus = 'draft' | 'enabled' | 'paused' | 'disabled' | 'revoked';
 
