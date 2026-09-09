@@ -195,6 +195,8 @@
 }
 .orderdrawerfooter {
   display: flex;
+  width: 100%;
+  min-width: 0;
   align-items: stretch;
   justify-content: flex-end;
   flex-wrap: wrap;

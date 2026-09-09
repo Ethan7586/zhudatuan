@@ -15,6 +15,7 @@
 .orderdrawer {
   display: grid;
   height: 100%;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
   border-left: 0.0625rem solid var(--sw-border);
   background: var(--sw-surface);
