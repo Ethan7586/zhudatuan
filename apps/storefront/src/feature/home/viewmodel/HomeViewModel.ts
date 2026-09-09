@@ -22,6 +22,8 @@ export function useHomeViewModel() {
     profileMessage: identity.profileMessage,
     retryProfile: identity.retryProfile,
     currentMall: identity.currentMall,
+    malls: identity.malls,
+    switchMall: identity.switchMall,
     presentationProducts: catalog.presentationProducts,
     presentationCategories: catalog.presentationCategories,
     catalogState: catalog.state,

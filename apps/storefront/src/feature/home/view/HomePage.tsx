@@ -3,6 +3,8 @@ import type { useHomeViewModel } from '../viewmodel/HomeViewModel';
 import { AccountSummary } from './AccountSummary';
 import { CategoryGrid } from './CategoryGrid';
 import { DefaultHome } from './DefaultHome';
+import { HomeShortcuts } from './HomeShortcuts';
+import { MallSelector } from './MallSelector';
 import { PublishedPage } from './PublishedPage';
 import { experiencePath } from '../../../entity/session/model/PublishedExperience';
 
@@ -18,9 +20,16 @@ export function HomePage({ viewmodel, page }: Readonly<{ viewmodel: ReturnType<t
   return (
     <div className="bg-[var(--sw-background)] px-3 py-4 sm:px-5">
       <div className="mx-auto grid max-w-[1280px] gap-4 lg:grid-cols-[220px_1fr_260px]">
-        <CategoryGrid viewmodel={viewmodel} />
-        <div className="order-3 min-w-0 space-y-4 lg:order-2">{page ? <PublishedPage page={page} viewmodel={viewmodel} /> : <DefaultHome viewmodel={viewmodel} />}</div>
-        <div className="order-1 lg:order-3">
+        <MallSelector viewmodel={viewmodel} />
+        <div data-home-layout="mobile" className="lg:hidden">
+          <AccountSummary viewmodel={viewmodel} />
+        </div>
+        <CategoryGrid viewmodel={viewmodel} layout="rail" />
+        <div className="min-w-0 space-y-4">
+          <HomeShortcuts viewmodel={viewmodel} />
+          {page ? <PublishedPage page={page} viewmodel={viewmodel} afterHero={<CategoryGrid viewmodel={viewmodel} layout="scenes" />} /> : <DefaultHome viewmodel={viewmodel} />}
+        </div>
+        <div data-home-layout="desktop" className="hidden lg:block">
           <AccountSummary viewmodel={viewmodel} />
         </div>
       </div>

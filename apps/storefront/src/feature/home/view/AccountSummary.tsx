@@ -1,4 +1,4 @@
-import { ChevronRight, CreditCard, Gift, Package } from 'lucide-react';
+import { ChevronRight, CircleAlert, CreditCard, Gift, Package } from 'lucide-react';
 import { formatMinor } from '../../../shared/format/Money';
 import type { useHomeViewModel } from '../viewmodel/HomeViewModel';
 import { orderStatusText } from '../../order';
@@ -8,7 +8,7 @@ export function AccountSummary({ viewmodel }: Readonly<{ viewmodel: ViewModel }>
   const recent = viewmodel.orders[0];
   return (
     <aside className="space-y-3 lg:sticky lg:top-24">
-      <section className="rounded-3xl border border-brand-light bg-gradient-to-br from-surface to-brand-faint p-4 shadow-sm lg:p-5">
+      <section aria-label={viewmodel.user.name} className="rounded-3xl border border-brand-light bg-gradient-to-br from-surface to-brand-faint p-4 shadow-sm lg:p-5">
         {viewmodel.profileState === 'loading' ? (
           <p role="status" className="py-8 text-center text-xs text-muted">
             正在读取账户与权益余额…
@@ -32,23 +32,30 @@ export function AccountSummary({ viewmodel }: Readonly<{ viewmodel: ViewModel }>
                   <span className="block truncate text-[11px] text-muted lg:text-xs">{viewmodel.currentMall.enterpriseName}</span>
                 </div>
               </div>
-              <button type="button" onClick={() => viewmodel.navigatePage('catalog')} className="flex min-h-9 shrink-0 items-center gap-1 rounded-full px-2 text-[11px] font-bold text-brand lg:hidden">
+              <button type="button" onClick={() => viewmodel.navigatePage('catalog')} className="flex min-h-11 shrink-0 items-center gap-1 rounded-xl px-2 text-[11px] font-bold text-brand lg:hidden">
                 去选购
                 <ChevronRight size={13} aria-hidden="true" />
               </button>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-2 lg:mt-4 lg:grid-cols-1">
-              <button type="button" onClick={() => viewmodel.openFeature('账户流水')} className="min-w-0 rounded-2xl bg-brand-light p-3 text-left">
+            <div className="mt-3 grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-2 lg:mt-4 lg:grid-cols-1">
+              <button type="button" onClick={() => viewmodel.openFeature('账户流水')} className="min-h-24 min-w-0 rounded-2xl bg-brand-light p-3 text-left lg:min-h-0">
                 <CreditCard size={18} className="text-brand" />
-                <span className="mt-2 block truncate text-[11px] font-medium text-secondary lg:text-xs">福利卡可用</span>
-                <b className="block truncate text-base lg:text-lg">¥{formatMinor(viewmodel.user.welfareBalanceMinor)}</b>
+                <span className="mt-2 block truncate text-[11px] font-medium text-secondary lg:text-xs">当前可用福利</span>
+                <b className="block truncate text-xl lg:text-lg">¥{formatMinor(viewmodel.user.welfareBalanceMinor)}</b>
               </button>
-              <button type="button" onClick={() => viewmodel.openFeature('账户流水')} className="min-w-0 rounded-2xl bg-success-surface p-3 text-left">
+              <button type="button" onClick={() => viewmodel.openFeature('餐卡流水')} className="min-h-24 min-w-0 rounded-2xl bg-success-surface p-3 text-left lg:min-h-0">
                 <Gift size={18} className="text-success-strong" />
                 <span className="mt-2 block truncate text-[11px] font-medium text-secondary lg:text-xs">餐卡可用</span>
                 <b className="block truncate text-base lg:text-lg">¥{formatMinor(viewmodel.user.mealBalanceMinor)}</b>
               </button>
             </div>
+            {!viewmodel.user.phoneVerified ? (
+              <button type="button" onClick={() => viewmodel.openFeature('账号安全')} className="mt-3 flex min-h-11 w-full items-center gap-2 rounded-xl bg-warning-surface px-3 text-left text-xs font-bold text-warning-strong">
+                <CircleAlert size={16} className="shrink-0" aria-hidden="true" />
+                <span className="min-w-0 flex-1">手机号尚未认证，个人支付等敏感功能受限</span>
+                <ChevronRight size={15} className="shrink-0" aria-hidden="true" />
+              </button>
+            ) : null}
           </>
         ) : null}
       </section>

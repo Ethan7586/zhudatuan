@@ -29,6 +29,7 @@ for (const viewport of viewports) {
         await expect(page.getByRole('img', { name: '暖心生活关怀礼盒' })).toBeVisible();
         await expect(page.getByRole('img', { name: '工作日营养餐券' })).toBeVisible();
         await expect(page.getByRole('img', { name: '全国通兑电影票' })).toBeVisible();
+        if (viewport.width < 1024) await expectMobileHomePattern(page);
       }
     }
   });
@@ -62,4 +63,18 @@ test('三主题权威、中文长文案和 200% 字号不会造成水平裁切',
 
 function url(template: string): string {
   return `${LOCAL_STOREFRONT_ORIGIN}/s/zhudatuan-local${fillRoute(template, { productId: 'listing:mall-zhudatuan:sku:visual:care', orderId: 'order:visual:missing', paymentId: 'payment:visual:missing', caseId: 'case:visual:missing' })}`;
+}
+
+async function expectMobileHomePattern(page: import('@playwright/test').Page) {
+  const landmarks = [
+    page.getByRole('region', { name: '当前企业福利商城' }),
+    page.locator('[data-home-layout="mobile"]').getByRole('region'),
+    page.getByRole('navigation', { name: '商城快捷入口' }),
+    page.locator('main h1').first(),
+    page.getByRole('region', { name: '福利场景' }),
+    page.getByRole('heading', { name: '员工严选' }),
+  ];
+  for (const landmark of landmarks) await expect(landmark).toBeVisible();
+  const positions = await Promise.all(landmarks.map(async (landmark) => (await landmark.boundingBox())?.y ?? Number.POSITIVE_INFINITY));
+  expect(positions).toEqual([...positions].sort((left, right) => left - right));
 }
