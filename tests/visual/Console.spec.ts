@@ -228,6 +228,30 @@ test('Console 数据报表在桌面、平板和手机保持可读且无需横向
   }
 });
 
+test('Console 客服工作台按可用空间从三栏重排为两栏和单栏', async ({ page }) => {
+  test.slow();
+  await prepareVisual(page, { width: 1440, height: 900 });
+  await signInConsole(page);
+  await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consolesupport, 'enterprise')}`);
+  await expectUsable(page);
+  await expect.poll(() => columnCount(page, '.supportdesk')).toBe(3);
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await expect.poll(() => columnCount(page, '.supportdesk')).toBe(2);
+  await expect(page.locator('.supportcontext')).toBeHidden();
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+
+  for (const viewport of [
+    { width: 1024, height: 768 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await expect(page.locator('.supportdesk')).toHaveCSS('display', 'block');
+    await expect(page.locator('.supportqueue')).toBeVisible();
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+  }
+});
+
 test('Console 商城管理在平板和手机将宽表转为可读卡片', async ({ page }) => {
   test.slow();
   await prepareVisual(page, { width: 768, height: 1024 });

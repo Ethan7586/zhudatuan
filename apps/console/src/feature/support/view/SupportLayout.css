@@ -1,4 +1,4 @@
-.supportworkspace { display: grid; min-width: 0; gap: var(--sw-space-3); }
+.supportworkspace { container: support / inline-size; display: grid; min-width: 0; gap: var(--sw-space-3); }
 .supportheader { display: flex; align-items: end; justify-content: space-between; gap: var(--sw-space-3); min-height: 3.5rem; }
 .supportheader p { margin: 0; color: var(--sw-brand); font-size: var(--sw-font-size-caption); font-weight: 800; letter-spacing: .1em; }
 .supportheader h1 { margin: var(--sw-space-0-5) 0; color: var(--sw-brand-ink); font-size: var(--sw-font-size-h1); }
@@ -86,6 +86,6 @@
 .supportsettingsection > label, .supportsettingsgrid label { display: grid; gap: var(--sw-space-0-5); color: var(--sw-text-secondary); font-weight: 700; }
 .supportsettingsgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sw-space-2); }
 
-@media (max-width: 79.99rem) { .supportdesk { grid-template-columns: minmax(19rem, 20rem) minmax(30rem, 1fr); } .supportcontext { position: fixed; z-index: 50; inset: 5rem 0 0 auto; display: none; width: min(24rem, 90vw); border-left: .0625rem solid var(--sw-border); box-shadow: var(--sw-shadow-overlay); } .supportcontext[data-open='true'] { display: block; } .supportcontextdismiss, .supportcontexttoggle { display: inline-flex; } }
-@media (max-width: 63.99rem) { .supportdesk { display: block; height: calc(100dvh - 12rem); } .supportqueue, .supportconversation { height: 100%; } .supportdesk[data-selected='true'] .supportqueue { display: none; } .supportdesk[data-selected='false'] .supportconversation { display: none; } .supportcontext { top: 4rem; width: min(24rem, 100vw); } }
+@container support (max-width: 70rem) { .supportdesk { grid-template-columns: minmax(19rem, 20rem) minmax(30rem, 1fr); } .supportcontext { position: fixed; z-index: 50; inset: 5rem 0 0 auto; display: none; width: min(24rem, 90vw); border-left: .0625rem solid var(--sw-border); box-shadow: var(--sw-shadow-overlay); } .supportcontext[data-open='true'] { display: block; } .supportcontextdismiss, .supportcontexttoggle { display: inline-flex; } }
+@container support (max-width: 49rem) { .supportdesk { display: block; height: calc(100dvh - 12rem); } .supportqueue, .supportconversation { height: 100%; } .supportdesk[data-selected='true'] .supportqueue { display: none; } .supportdesk[data-selected='false'] .supportconversation { display: none; } .supportcontext { top: 4rem; width: min(24rem, 100vw); } }
 @media (max-width: 47.99rem) { .supportheader { align-items: stretch; flex-direction: column; } .supportheaderactions { justify-content: flex-start; } .supportdesk { height: calc(100dvh - 14rem); border-radius: var(--sw-radius-md); } .supportsettingsgrid { grid-template-columns: 1fr; } }
