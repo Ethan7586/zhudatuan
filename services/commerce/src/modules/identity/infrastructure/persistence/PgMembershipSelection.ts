@@ -12,6 +12,7 @@ interface SelectionRow {
   readonly candidate_memberships: readonly Readonly<{
     id: string;
     target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
+    organization: string;
     accessVersion: number;
     displayName: string;
     organizationName: string;

@@ -21,6 +21,7 @@ import type { MembershipSelector } from '../service/MembershipSelector';
 import type { CredentialRepository, PasswordCredential } from '../port/CredentialRepository';
 import { returnDestination } from './ReturnDestination';
 import { membershipCandidate, membershipView } from '../model/MembershipCandidate';
+import type { MembershipDestination } from './MembershipDestination';
 
 export class PasswordAuthenticator implements AuthenticationStrategy {
   readonly method = 'password' as const;
@@ -33,6 +34,7 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
     private readonly access: IdentityAccessPort,
     private readonly members: IdentityMemberPort,
     private readonly selector: MembershipSelector,
+    private readonly destinations: MembershipDestination,
     private readonly credentials: CredentialRepository,
     private readonly passwords = new PasswordPolicy()
   ) {}
@@ -50,10 +52,8 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
     ] as const;
     const credential = await this.credentials.matchPassword(database, hashes);
     const authorization = AuthTransaction.start(body.authorization);
-    return new LoadedPasswordAuthentication(
-      Object.freeze({ target, returnTarget: destination.proof, hashes: Object.freeze(hashes), client, keys, credential, authorization }),
-      this.passwords,
-      (current, transaction, prepared) => this.complete(current, transaction, prepared)
+    return new LoadedPasswordAuthentication(Object.freeze({ target, returnTarget: destination.proof, hashes: Object.freeze(hashes), client, keys, credential, authorization }), this.passwords, (current, transaction, prepared) =>
+      this.complete(current, transaction, prepared)
     );
   }
 
@@ -86,7 +86,8 @@ export class PasswordAuthenticator implements AuthenticationStrategy {
       trace,
     });
     const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, target, authorization);
-    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget } };
+    const destination = await this.destinations.resolve(database, { target, returnTarget, organization: membership.organization });
+    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget: destination.proof } };
   }
   private digest(value: string): string {
     return createHmac('sha256', this.key).update(value.trim().toLowerCase()).digest('hex');

@@ -3,6 +3,7 @@ import type { IdentityMembership } from '../../../access/public/IdentityAccessPo
 export interface MembershipCandidate {
   readonly id: string;
   readonly target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier';
+  readonly organization: string;
   readonly accessVersion: number;
   readonly displayName: string;
   readonly organizationName: string;
@@ -12,12 +13,13 @@ export interface MembershipCandidate {
   readonly logoUrl: string | null;
 }
 
-export type MembershipView = Omit<MembershipCandidate, 'accessVersion'>;
+export type MembershipView = Omit<MembershipCandidate, 'accessVersion' | 'organization'>;
 
 export function membershipCandidate(value: IdentityMembership): MembershipCandidate {
   return Object.freeze({
     id: value.id,
     target: value.target,
+    organization: value.organization,
     accessVersion: value.accessVersion,
     displayName: value.displayName,
     organizationName: value.organizationName,

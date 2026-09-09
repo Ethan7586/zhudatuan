@@ -80,7 +80,8 @@ describe('identity federation callback', () => {
       { directoryBindings: vi.fn() } as never,
       {} as never,
       new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds),
-      links as never
+      links as never,
+      {} as never
     );
 
     const response = await callback(service);
@@ -147,13 +148,14 @@ describe('identity federation callback', () => {
       { directoryBindings: vi.fn() } as never,
       {} as never,
       new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds),
-      {} as never
+      {} as never,
+      { resolve: vi.fn(async () => ({ url: 'https://console.yengze.press' })) } as never
     );
 
     const response = await callback(service);
 
     expect(response.status).toBe(303);
-    expect(response.headers?.location).toBe('https://console.fufu.wang');
+    expect(response.headers?.location).toBe('https://console.yengze.press');
     expect(response.headers?.['set-cookie']).toContain('__Host-console-session=opaque');
     const location = new URL(response.headers!.location!);
     expect(location.search).toBe('');
@@ -221,6 +223,7 @@ describe('identity federation callback', () => {
       { directoryBindings: vi.fn() } as never,
       {} as never,
       new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds),
+      {} as never,
       {} as never
     );
 

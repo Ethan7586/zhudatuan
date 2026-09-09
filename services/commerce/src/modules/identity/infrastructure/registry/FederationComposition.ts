@@ -4,6 +4,7 @@ import type { IdentityAccessPort } from '../../../access/public';
 import type { IdentityMemberPort } from '../../../member/public';
 import type { IdentityOrganizationPort } from '../../../organization/public';
 import { FederateIdentity } from '../../application/service/FederateIdentity';
+import type { MembershipDestination } from '../../application/service/MembershipDestination';
 import { MembershipSelector } from '../../application/service/MembershipSelector';
 import { ProviderResolver } from '../../application/service/ProviderResolver';
 import type { ReturnTargetPort } from '../../application/port/ReturnTargetPort';
@@ -30,6 +31,7 @@ interface FederationDependencies {
   readonly kms: KmsClient;
   readonly returns: ReturnTargetPort;
   readonly organizations: IdentityOrganizationPort;
+  readonly destinations: MembershipDestination;
   readonly cookies: SessionCookiePort;
 }
 
@@ -38,7 +40,7 @@ export function composeFederation(input: FederationDependencies) {
   const providers = new PgProviderRepository(client, input.identityKey);
   const resolver = new ProviderResolver(providers, identityProviderRegistry(client, input.identityKey));
   const repository = new PgFederationRepository(input.members, input.access);
-  const selector = new MembershipSelector(new PgMembershipSelection(), input.sessions, input.protector, input.access, input.members, repository, input.returns, input.cookies);
+  const selector = new MembershipSelector(new PgMembershipSelection(), input.sessions, input.protector, input.access, input.members, repository, input.destinations, input.cookies);
   const cases = new PgLinkCaseRepository();
   const links = new PgIdentityLinkRepository();
   const federation = new FederateIdentity(
@@ -54,7 +56,8 @@ export function composeFederation(input: FederationDependencies) {
     input.organizations,
     input.access,
     input.cookies,
-    links
+    links,
+    input.destinations
   );
   return Object.freeze({ providers, resolver, selector, cases, links, federation });
 }

@@ -20,6 +20,7 @@ import { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
 import type { IdentityLinkRepository } from '../port/IdentityLinkRepository';
 import { membershipCandidate } from '../model/MembershipCandidate';
+import type { MembershipDestination } from './MembershipDestination';
 import type { FederationCallbackInput, FederationRequestContext, FederationStartInput, LoadedFederationCallback, LoadedFederationStart, PreparedFederationCallback, PreparedFederationStart } from './FederationFlow';
 
 export class FederateIdentity {
@@ -37,6 +38,7 @@ export class FederateIdentity {
     private readonly access: IdentityAccessPort,
     private readonly cookies: SessionCookiePort,
     private readonly links: IdentityLinkRepository,
+    private readonly destinations: MembershipDestination,
     private readonly policy: FederationPolicy = new FederationPolicy()
   ) {}
 
@@ -197,7 +199,12 @@ export class FederateIdentity {
       trace: prepared.request.trace,
     });
     await this.repository.complete(database, accepted.transaction.id, verified.version);
-    return Object.freeze({ status: 303, headers: Object.freeze({ ...issued.headers, location: this.returns.verify(accepted.returntarget).url, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }) });
+    const destination = await this.destinations.resolve(database, {
+      target: accepted.transaction.target,
+      returnTarget: accepted.returntarget,
+      organization: candidates[0]!.organization,
+    });
+    return Object.freeze({ status: 303, headers: Object.freeze({ ...issued.headers, location: destination.url, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' }) });
   }
 
   private authRedirect(path: string, target: 'console' | 'storefront' | 'miniapp' | 'store' | 'supplier', query: Readonly<Record<string, string>>, cookie?: string): OperationResult {

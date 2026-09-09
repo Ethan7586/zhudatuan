@@ -7,6 +7,7 @@ import { RISK_GATE } from '../../../../platform/security/RiskGate';
 import { ACTION_PROOF_PORT, IDENTITY_ACCESS_PORT, INVITATION_ACCESS_PORT, MEMBERSHIP_READ_PORT } from '../../../access/public';
 import { IDENTITY_MEMBER_PORT, IDENTITY_REGISTRATION_PORT, MEMBER_READ_PORT } from '../../../member/public';
 import { IDENTITY_ORGANIZATION_PORT } from '../../../organization/public';
+import { IDENTITY_EXPERIENCE_PORT } from '../../../experience/public';
 import { AuthenticateIdentity } from '../../application/service/AuthenticateIdentity';
 import { OtpAuthenticator } from '../../application/service/OtpAuthenticator';
 import { PasswordAuthenticator } from '../../application/service/PasswordAuthenticator';
@@ -74,6 +75,7 @@ import { PgStepupRequestRepository } from '../persistence/PgStepupRequestReposit
 import { assembleOperations } from '../../application/service/OperationAssembly';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { SessionPolicy } from '../../domain/policy/SessionPolicy';
+import { MembershipDestination } from '../../application/service/MembershipDestination';
 
 export function composeIdentity(context: ModuleContext) {
   const pool = context.service(DATABASE_POOL);
@@ -107,8 +109,16 @@ export function composeIdentity(context: ModuleContext) {
   const redeemer = new InvitationRedeemer(repository, invitationAccess, telemetry);
   const invited = context.ports.get(IDENTITY_REGISTRATION_PORT);
   const organizations = context.ports.get(IDENTITY_ORGANIZATION_PORT);
+  const destinations = new MembershipDestination(returns, context.ports.get(IDENTITY_EXPERIENCE_PORT));
   const challengeCommands = new CreateChallenge(kms, context.service(RISK_GATE), challenges, keys.identity, keys.session, preauth, repository, hasher, events, credentials, members, invitationAccess, invited);
-  const { providers, resolver, selector, cases: linkcases, links: linkRepository, federation } = composeFederation({
+  const {
+    providers,
+    resolver,
+    selector,
+    cases: linkcases,
+    links: linkRepository,
+    federation,
+  } = composeFederation({
     secrets: context.service(SECRET_STORE),
     identityKey: keys.identity,
     members,
@@ -118,12 +128,13 @@ export function composeIdentity(context: ModuleContext) {
     kms,
     returns,
     organizations,
+    destinations,
     cookies,
   });
   const authentication = new AuthenticateIdentity(
     new CredentialRegistry([
-      new PasswordAuthenticator(keys.identity, sessions, returns, tickets, new PgLoginGuard(), identityAccess, members, selector, credentials),
-      new OtpAuthenticator(keys.identity, keys.session, sessions, returns, tickets, challenges, identityAccess, members, selector, assurances),
+      new PasswordAuthenticator(keys.identity, sessions, returns, tickets, new PgLoginGuard(), identityAccess, members, selector, destinations, credentials),
+      new OtpAuthenticator(keys.identity, keys.session, sessions, returns, tickets, challenges, identityAccess, members, selector, destinations, assurances),
     ])
   );
   const enrollmentRepository = new PgEnrollmentRepository();

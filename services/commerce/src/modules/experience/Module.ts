@@ -27,7 +27,7 @@ import { PgVersionRepository } from './infrastructure/persistence/PgVersionRepos
 import { PgEntryRepository } from './infrastructure/persistence/PgEntryRepository';
 import { RedisEntryCache } from './infrastructure/cache/RedisEntryCache';
 import { Manifest } from './Manifest';
-import { CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT } from './public';
+import { CART_EXPERIENCE_PORT, CHECKOUT_EXPERIENCE_PORT, IDENTITY_EXPERIENCE_PORT } from './public';
 import { EXPERIENCE_READ_PORT } from './public/ExperienceReadPort';
 import { EXPERIENCE_DIMENSION_PORT } from './public/ExperienceDimensionPort';
 import { PgExperienceDimensionPort } from './infrastructure/persistence/PgExperienceDimensionPort';
@@ -42,6 +42,7 @@ import { CATALOG_QUALIFICATION_PORT } from '../qualification/public/CatalogQuali
 import { PRICING_READ_PORT } from '../pricing/public/PricingReadPort';
 import { INVENTORY_READ_PORT } from '../inventory/public/InventoryReadPort';
 import { OBJECT_STORE } from '../runtime/public/ObjectPort';
+import { PgIdentityExperiencePort } from './infrastructure/persistence/PgIdentityExperiencePort';
 
 export const ExperienceModule = defineModule(Manifest, {
   jobs: createJobs,
@@ -85,6 +86,7 @@ export const ExperienceModule = defineModule(Manifest, {
     { token: CART_EXPERIENCE_PORT, value: new PgCartExperiencePort() },
     { token: CHECKOUT_EXPERIENCE_PORT, value: new PgCheckoutExperiencePort() },
     { token: EXPERIENCE_DIMENSION_PORT, value: new PgExperienceDimensionPort(new PgTransactionAccess(), context.ports.get(ORGANIZATION_READ_PORT)) },
+    { token: IDENTITY_EXPERIENCE_PORT, value: new PgIdentityExperiencePort() },
     {
       token: EXPERIENCE_READ_PORT,
       value: new PgExperienceReadPort(

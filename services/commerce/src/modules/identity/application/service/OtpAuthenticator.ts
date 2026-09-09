@@ -20,6 +20,7 @@ import type { MembershipSelector } from '../service/MembershipSelector';
 import type { AssuranceRepository } from '../port/AssuranceRepository';
 import { returnDestination } from './ReturnDestination';
 import { membershipCandidate, membershipView } from '../model/MembershipCandidate';
+import type { MembershipDestination } from './MembershipDestination';
 
 export class OtpAuthenticator implements AuthenticationStrategy {
   readonly method = 'otp' as const;
@@ -33,6 +34,7 @@ export class OtpAuthenticator implements AuthenticationStrategy {
     private readonly access: IdentityAccessPort,
     private readonly members: IdentityMemberPort,
     private readonly selector: MembershipSelector,
+    private readonly destinations: MembershipDestination,
     private readonly assurances: AssuranceRepository
   ) {}
   async load(_request: OperationRequest, _database: ReadTransactionContext, body: AuthenticationBody): Promise<LoadedAuthentication> {
@@ -42,10 +44,7 @@ export class OtpAuthenticator implements AuthenticationStrategy {
     const subject = this.digest(identitySubjectVariants(textField(body, 'subject'))[0]!);
     const challenge = textField(body, 'challenge');
     const authorization = AuthTransaction.start(body.authorization);
-    return new LoadedOtpAuthentication(
-      Object.freeze({ target, returnTarget: destination.proof, subject, challenge, authorization }),
-      (request, database, prepared) => this.complete(request, database, prepared)
-    );
+    return new LoadedOtpAuthentication(Object.freeze({ target, returnTarget: destination.proof, subject, challenge, authorization }), (request, database, prepared) => this.complete(request, database, prepared));
   }
 
   private async complete(request: OperationRequest, database: WriteTransactionContext, prepared: PreparedOtp): Promise<AuthenticationReply> {
@@ -74,7 +73,8 @@ export class OtpAuthenticator implements AuthenticationStrategy {
       trace,
     });
     const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, target, authorization);
-    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget } };
+    const destination = await this.destinations.resolve(database, { target, returnTarget, organization: membership.organization });
+    return { status: 201, headers: session.headers, result: { kind: 'session', ticket: ticket.ticket, returnTarget: destination.proof } };
   }
   private digest(value: string): string {
     return createHmac('sha256', this.identityKey).update(value.trim().toLowerCase()).digest('hex');

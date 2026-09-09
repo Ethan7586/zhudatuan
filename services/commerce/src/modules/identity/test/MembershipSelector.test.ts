@@ -22,6 +22,7 @@ describe('MembershipSelector', () => {
     });
     const repository = { create, consume, read: vi.fn() };
     const issue = vi.fn().mockResolvedValue({ session: 'session-one', headers: { 'set-cookie': 'session-cookie' } });
+    const resolve = vi.fn(async () => ({ url: 'https://yengze.press/s/mall-one/orders', proof: returnTarget, expiresAt: '2099-01-01T00:00:00.000Z', target: 'storefront' as const }));
     const selector = new MembershipSelector(
       repository as never,
       { issue } as never,
@@ -29,7 +30,7 @@ describe('MembershipSelector', () => {
       { memberships: async () => [{ ...membership('membership-two'), organization: 'mall-one' }] } as never,
       { memberForPrincipal: async () => 'member-one' } as never,
       { complete: vi.fn() } as never,
-      { verify: vi.fn(() => ({ url: 'https://fufu.wang/s/mall-one/orders', proof: returnTarget, expiresAt: '2099-01-01T00:00:00.000Z', target: 'storefront' })) } as never,
+      { resolve } as never,
       new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds)
     );
     const authorization = AuthTransaction.start({ state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: 'c'.repeat(43) });
@@ -60,8 +61,9 @@ describe('MembershipSelector', () => {
       async () => result([]),
       (transaction) => selector.select(transaction, 'selection-id', 'membership-two', { peer: '127.0.0.1', agent: 'browser', device: 'device-one', trace: 'trace-one' })
     );
-    expect(completed.destination).toBe('https://fufu.wang/s/mall-one/orders');
+    expect(completed.destination).toBe('https://yengze.press/s/mall-one/orders');
     expect(issue).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ membership: 'membership-two', assurance: 1 }));
+    expect(resolve).toHaveBeenCalledWith(expect.anything(), { target: 'storefront', returnTarget, organization: 'mall-one' });
   });
 });
 
@@ -69,6 +71,7 @@ function membership(id: string) {
   return Object.freeze({
     id,
     target: 'storefront' as const,
+    organization: 'mall-one',
     accessVersion: 1,
     displayName: '张三',
     organizationName: '福利商城',

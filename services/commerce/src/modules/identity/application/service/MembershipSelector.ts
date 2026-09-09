@@ -10,8 +10,7 @@ import type { IdentityMemberPort } from '../../../member/public';
 import type { AuthTransaction } from '../../domain/model/AuthTransaction';
 import type { FederationCompletionPort } from '../port/FederationRepository';
 import type { SessionCookiePort } from '../port/SessionCookiePort';
-import type { ReturnTargetPort } from '../port/ReturnTargetPort';
-import { returnDestination } from './ReturnDestination';
+import type { MembershipDestination } from './MembershipDestination';
 export class MembershipSelector {
   constructor(
     private readonly repository: MembershipSelectionPort,
@@ -20,7 +19,7 @@ export class MembershipSelector {
     private readonly access: IdentityAccessPort,
     private readonly members: IdentityMemberPort,
     private readonly federations: FederationCompletionPort,
-    private readonly returns: ReturnTargetPort,
+    private readonly destinations: MembershipDestination,
     private readonly cookies: SessionCookiePort
   ) {}
   async begin(
@@ -46,12 +45,12 @@ export class MembershipSelector {
   async select(database: ReadTransactionContext, id: string, membership: string, context: Readonly<{ peer: string; agent: string; device: string; trace: string }>) {
     const browser = this.protector.browser(context.peer, context.agent, context.device);
     const selected = await this.repository.consume(requireWriteTransaction(database), id, browser, this.protector.device(context.device), membership);
-    const destination = returnDestination(this.returns, selected.target, selected.returnTarget);
     const member = await this.members.memberForPrincipal(database, selected.principal);
     const active = await this.access.memberships(database, member, selected.target);
     const snapshot = selected.memberships.find((candidate) => candidate.id === membership && candidate.target === selected.target);
     const current = active.find((candidate) => candidate.id === membership && candidate.target === selected.target);
     if (!snapshot || !current || current.accessVersion !== snapshot.accessVersion) throw new DomainError('MEMBERSHIP_SELECTION_REQUIRED');
+    const destination = await this.destinations.resolve(database, { target: selected.target, returnTarget: selected.returnTarget, organization: current.organization });
     const issued = await this.sessions.issue(requireWriteTransaction(database), {
       principal: selected.principal,
       membership,

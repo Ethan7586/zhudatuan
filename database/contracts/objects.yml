@@ -413,6 +413,12 @@ objects:
     owner: shopexperienceowner
     source: database/migrations/20260904023000_prepare_experience.sql
     operationalOwner: experience
+  - id: experience.identity_storefront
+    kind: function
+    owner: shopexperienceowner
+    source: database/migrations/20260909016000_publish_identity_storefront.sql
+    callers:
+      - services/commerce/src/modules/experience/infrastructure/persistence/PgIdentityExperiencePort.ts
   - id: experience.prevent_storefront_handle_change
     kind: function
     owner: shopexperienceowner
@@ -1484,6 +1490,14 @@ objects:
     role: shopapp
     objectType: function
     target: channel.webhook_context(text)
+    privilege: execute
+  - id: shopapp:function:experience.identity_storefront(text):execute
+    kind: grant
+    owner: shopexperienceowner
+    source: database/migrations/20260909016000_publish_identity_storefront.sql
+    role: shopapp
+    objectType: function
+    target: experience.identity_storefront(text)
     privilege: execute
   - id: shopapp:function:experience.read_published(text):execute
     kind: grant

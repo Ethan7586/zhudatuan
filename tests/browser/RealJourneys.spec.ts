@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { LOCAL_API_ORIGIN, LOCAL_AUTH_ORIGIN, LOCAL_CONSOLE_ORIGIN, LOCAL_STOREFRONT_ORIGIN } from '@shop/config/client';
 import { expectWcagAA } from './Accessibility';
-import { expectResponsivePage, signInConsole, signInStorefront } from './Environment';
+import { completePasswordSignIn, expectResponsivePage, signInConsole, signInStorefront } from './Environment';
 
 test('真实 API 健康门禁与未知路径失败语义有效', async ({ request }) => {
   const health = await request.get(`${LOCAL_API_ORIGIN}/health/ready`);
@@ -36,6 +36,15 @@ test('员工深链登录后读取真实购物车与商品权威信息', async ({
   await expect(page.getByText('正在读取购物车…')).toHaveCount(0);
   expect(operations).toContain('/api/v1/carts/current');
   await expect.poll(() => operations).toContain('/api/v1/storefront/catalog');
+  await expectResponsivePage(page);
+  await expectWcagAA(page);
+});
+
+test('员工从消费者商城登录入口进入所属商城而不是无效根地址', async ({ page }) => {
+  await page.goto(`${LOCAL_AUTH_ORIGIN}/?target=storefront`);
+  await completePasswordSignIn(page);
+  await page.waitForURL(`${LOCAL_STOREFRONT_ORIGIN}/s/zhudatuan-local`, { timeout: 20_000, waitUntil: 'commit' });
+  await expect(page.getByText('暖心生活关怀礼盒').first()).toBeVisible();
   await expectResponsivePage(page);
   await expectWcagAA(page);
 });

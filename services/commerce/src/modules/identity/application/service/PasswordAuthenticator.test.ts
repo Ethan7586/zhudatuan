@@ -23,6 +23,7 @@ describe('PasswordAuthenticator preparation', () => {
       {} as never,
       {} as never,
       {} as never,
+      {} as never,
       credentials,
       { verify } as never
     );
