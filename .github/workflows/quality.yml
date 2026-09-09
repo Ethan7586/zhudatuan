@@ -127,6 +127,9 @@ jobs:
     timeout-minutes: 20
     env:
       ZDT_RELEASE_SSH_HOST: root@123.57.232.253
+      VITE_API_BASE_URL: https://api.hbbtzn.com
+      VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
+      VITE_CLIENT_VERSION: ${{ needs.plan.outputs.head_sha }}
     steps:
       - uses: actions/checkout@v4
         with:
