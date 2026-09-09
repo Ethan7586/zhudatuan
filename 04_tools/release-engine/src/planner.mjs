@@ -139,17 +139,7 @@ async function refineDynamicImpact(adapter, classification, changes, refs) {
   if (refs.toSha !== await currentHead(adapter.projectRoot)) {
     return { ...classification, reasons: [...classification.reasons, `dynamic impact ${resolverId} requires target commit checked out`] };
   }
-  let resolver;
-  try {
-    resolver = await import(new URL(definition.module, `file://${adapter.adapterPath}`).href);
-  } catch (error) {
-    const missingPackage = missingExternalPackage(error);
-    if (!missingPackage) throw error;
-    return {
-      ...classification,
-      reasons: [...new Set([...classification.reasons, `dynamic impact ${resolverId} unavailable: missing package ${missingPackage}`])].sort(),
-    };
-  }
+  const resolver = await import(new URL(definition.module, `file://${adapter.adapterPath}`).href);
   invariant(typeof resolver.resolveImpact === 'function', 'IMPACT_RESOLVER_INVALID', `${resolverId} must export resolveImpact`);
   const impact = await resolver.resolveImpact({ adapter, changes, refs, definition });
   invariant(impact?.lane === 'A2' || impact?.lane === 'A3', 'IMPACT_RESULT_INVALID', `${resolverId} returned invalid lane`);
@@ -165,11 +155,6 @@ async function refineDynamicImpact(adapter, classification, changes, refs) {
     files: classification.files.map((file) => file.lane === 'NONE' ? file : { ...file, lane: impact.lane, targets: impact.lane === 'A2' ? impact.targets : [adapter.fallbackTarget] }),
     ambiguous: impact.lane === 'A3',
   };
-}
-
-function missingExternalPackage(error) {
-  if (error?.code !== 'ERR_MODULE_NOT_FOUND') return null;
-  return /^Cannot find package '([^']+)' imported from /.exec(String(error.message))?.[1] ?? null;
 }
 
 function eligibleNodesForTargets(adapter, targets) {

@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { loadAdapter } from '../src/adapter.mjs';
 import { classifyChanges, createPlan } from '../src/planner.mjs';
 
 const adapter = {
@@ -64,7 +65,7 @@ test('dependency layer key changes always upgrade to A3', () => {
   assert.match(dependencyChange.reasons.join('\n'), /dependency-layer-key/);
 });
 
-test('keeps the conservative classification when an optional impact package is unavailable', async () => {
+test('fails visibly when a dynamic impact dependency is unavailable', async () => {
   const fixtureRoot = await mkdtemp(join(tmpdir(), 'release-engine-impact-'));
   try {
     await writeFile(join(fixtureRoot, 'missing-impact.mjs'), "import 'release-engine-missing-fixture';\n");
@@ -85,12 +86,48 @@ test('keeps the conservative classification when an optional impact package is u
       ],
     };
 
-    const plan = await createPlan(dynamicAdapter, { from: 'HEAD', to: 'HEAD', files: ['services/shared.ts'] });
-
-    assert.equal(plan.lane, 'A3');
-    assert.deepEqual(plan.targets, ['core']);
-    assert.match(plan.reasons.join('\n'), /dynamic impact services unavailable: missing package release-engine-missing-fixture/);
+    await assert.rejects(
+      () => createPlan(dynamicAdapter, { from: 'HEAD', to: 'HEAD', files: ['services/shared.ts'] }),
+      (error) => {
+        assert.equal(error.code, 'ERR_MODULE_NOT_FOUND');
+        assert.match(error.message, /release-engine-missing-fixture/);
+        return true;
+      },
+    );
   } finally {
     await rm(fixtureRoot, { recursive: true, force: true });
   }
+});
+
+test('uses the real commerce dependency graph for shared source changes', async () => {
+  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const singleService = await createPlan(commerceAdapter, {
+    from: 'HEAD',
+    to: 'HEAD',
+    files: ['01_core_hexin/services/commerce/src/modules/member/05_interface_jieru/IdentityOperatorMemberModule.ts'],
+  });
+  assert.equal(singleService.lane, 'A2');
+  assert.deepEqual(singleService.targets, ['identity-api']);
+  assert.match(singleService.reasons.join('\n'), /dependency graph selects only identity-api/);
+  assert.equal(typeof singleService.planDigest, 'string');
+
+  const multipleServices = await createPlan(commerceAdapter, {
+    from: 'HEAD',
+    to: 'HEAD',
+    files: ['01_core_hexin/services/commerce/src/modules/webbusiness/WebBusinessScopeResolver.ts'],
+  });
+  assert.equal(multipleServices.lane, 'A3');
+  assert.deepEqual(multipleServices.targets, ['core']);
+  assert.match(multipleServices.reasons.join('\n'), /dependency graph spans purchase-api, web-api/);
+  assert.equal(typeof multipleServices.planDigest, 'string');
+
+  const sharedTest = await createPlan(commerceAdapter, {
+    from: 'HEAD',
+    to: 'HEAD',
+    files: ['01_core_hexin/services/commerce/src/modules/benefit/06_tests_ceshi/module.manifest.test.ts'],
+  });
+  assert.equal(sharedTest.lane, 'A3');
+  assert.deepEqual(sharedTest.targets, ['core']);
+  assert.match(sharedTest.reasons.join('\n'), /dependency graph unresolved/);
+  assert.equal(typeof sharedTest.planDigest, 'string');
 });
