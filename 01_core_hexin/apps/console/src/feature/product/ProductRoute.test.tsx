@@ -194,6 +194,11 @@ describe('Product governance workspace', () => {
     completed = true;
     expect(await screen.findByText('任务已完成', {}, { timeout: 5_000 })).toBeTruthy();
     expect(screen.getByText('成功 1 · 失败 0 · 跳过 0')).toBeTruthy();
+    const completedRelease = screen.getByRole<HTMLButtonElement>('button', { name: '一键审核上架' });
+    expect(completedRelease.disabled).toBe(true);
+    expect(completedRelease.title).toBe('当前没有待审核商品，新增待审核商品后即可使用');
+    expect(screen.getByText('当前没有待审核商品')).toBeTruthy();
+    expect(screen.queryByText('暂不可用：当前商城没有待审核商品')).toBeNull();
     expect(maximumConcurrentReads).toBe(1);
     expect(requests).toHaveLength(2);
   });

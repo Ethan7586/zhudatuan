@@ -52,8 +52,9 @@
 }
 .productreleasecontrol {
   display: grid;
+  min-width: 0;
   width: min(360px, 32vw);
-  gap: 5px;
+  gap: 6px;
 }
 .productreleasecontrol .productaction {
   width: 100%;
@@ -62,14 +63,24 @@
   margin: 0;
   font-size: 11px;
   line-height: 16px;
-  text-align: center;
+  text-align: left;
 }
 .productreleasefeedbackdisabled { color: #9a3412; }
+.productreleasefeedbackempty { color: #64748b; }
 .productreleasefeedbackerror { color: #b91c1c; }
 .productreleasefeedbacksuccess { color: #15803d; }
-.productreleasestate,
+.productreleasestate {
+  display: grid;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid #dbe4f0;
+  border-radius: 7px;
+  background: #f8fafc;
+  gap: 6px;
+}
 .productpublicationtask {
   display: grid;
+  min-width: 0;
   gap: 5px;
 }
 .productpublicationtask {
@@ -83,27 +94,40 @@
   margin: 0;
 }
 .productpublicationmeta {
-  display: grid;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   color: #475569;
   text-align: left;
 }
-.productpublicationmeta strong { color: #1d4ed8; }
+.productpublicationmeta strong {
+  flex: 0 0 auto;
+  color: #1d4ed8;
+}
 .productpublicationmeta span {
-  overflow-wrap: anywhere;
+  min-width: 0;
+  overflow: hidden;
   color: #64748b;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .productpublicationcounts {
   color: #334155;
   font-weight: 600;
-  text-align: center;
+  text-align: left;
+  white-space: nowrap;
 }
 .productreleaseprogress {
   display: grid;
-  gap: 3px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
   color: #1d4ed8;
   font-size: 11px;
   line-height: 16px;
-  text-align: center;
+  text-align: right;
 }
 .productreleaseprogress progress {
   width: 100%;

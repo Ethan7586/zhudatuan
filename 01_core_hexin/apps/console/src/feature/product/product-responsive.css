@@ -2,11 +2,43 @@
   .productpage[data-drawer='open'] {
     width: 100%;
   }
+  .producthero {
+    min-height: 0;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .producthero > div:first-child {
+    width: 100%;
+  }
+  .productheroactions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: minmax(220px, 1fr) repeat(3, max-content);
+    align-items: start;
+  }
+  .productreleasecontrol {
+    width: 100%;
+  }
+  .productheroactions > .productaction {
+    white-space: nowrap;
+  }
   .producttoolbar {
     flex-wrap: wrap;
   }
   .producttoolspacer {
     display: none;
+  }
+}
+@media (max-width: 820px) {
+  .productheroactions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .productreleasecontrol {
+    grid-column: 1 / -1;
+  }
+  .productheroactions > .productaction {
+    width: 100%;
   }
 }
 @media (max-width: 760px) {

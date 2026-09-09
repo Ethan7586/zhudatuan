@@ -32,6 +32,8 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
   const coreTotal = preview === undefined ? page?.total_count : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
   const description = coreTotal === undefined ? '正在读取当前范围商品总量与管理状态。' : `当前范围内共 ${formatCount(coreTotal)} 件商品`;
+  const pendingReviewCount = page?.status_counts?.pending_review;
+  const noPendingReview = releaseDisabledReason === '当前商城没有待审核商品';
 
   return (
     <>
@@ -47,12 +49,13 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
               disabled={releaseDisabledReason !== undefined}
               aria-describedby={releaseDisabledReason === undefined && releaseFeedback === undefined ? undefined : 'productreleasestate'}
               onClick={onRelease}
-              title={releaseDisabledReason === undefined ? '一次审核并上架当前商城全部合格商品' : `暂不可用：${releaseDisabledReason}`}>
+              title={releaseDisabledReason === undefined ? '一次审核并上架当前商城全部合格商品'
+                : noPendingReview ? '当前没有待审核商品，新增待审核商品后即可使用' : `暂不可用：${releaseDisabledReason}`}>
               <ProductIcon name="store" />
               {publicationTask?.state === 'queued' || publicationTask?.state === 'running'
                 ? '正在审核上架…'
                 : releasePending ? '正在创建上架任务…'
-                  : `一键审核上架${page?.status_counts === undefined ? '' : ` ${formatCount(page.status_counts.pending_review)}`}`}
+                  : `一键审核上架${pendingReviewCount === undefined || pendingReviewCount === 0 ? '' : ` ${formatCount(pendingReviewCount)}`}`}
             </button>
             {publicationTask === undefined && releaseFeedback === undefined && releaseDisabledReason === undefined ? null : (
               <div id="productreleasestate" className="productreleasestate">
@@ -64,8 +67,8 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
                     role={releaseFeedback.tone === 'error' ? 'alert' : 'status'}>{releaseFeedback.message}</p>
                 )}
                 {releaseDisabledReason === undefined ? null : (
-                  <p className="productreleasefeedback productreleasefeedbackdisabled">
-                    暂不可用：{releaseDisabledReason}
+                  <p className={`productreleasefeedback ${noPendingReview ? 'productreleasefeedbackempty' : 'productreleasefeedbackdisabled'}`}>
+                    {noPendingReview ? '当前没有待审核商品' : `暂不可用：${releaseDisabledReason}`}
                   </p>
                 )}
               </div>
@@ -119,7 +122,7 @@ function PublicationTaskStatus({ task, retryPending, onRetry }: Readonly<{
   return (
     <section className="productpublicationtask" aria-label="商品发布任务" aria-live="polite">
       <p className="productpublicationmeta"><strong>{task.state === 'completed' && task.failed > 0
-        ? '任务已完成（部分失败）' : publicationStateLabel(task.state)}</strong><span>任务 ID：{task.id}</span></p>
+        ? '任务已完成（部分失败）' : publicationStateLabel(task.state)}</strong><span title={`任务 ID：${task.id}`}>任务 ID：{task.id}</span></p>
       {knownTotal && task.total! > 0 ? (
         <div className="productreleaseprogress" role={active ? 'status' : undefined}>
           <progress aria-label="商品发布进度" max={task.total!} value={Math.min(task.processed, task.total!)} />
