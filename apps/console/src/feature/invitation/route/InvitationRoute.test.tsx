@@ -157,6 +157,60 @@ describe('InvitationRoute assurance boundary', () => {
     expect(identities[0]).toBeTruthy();
     expect(new Set(identities)).toEqual(new Set([identities[0]!]));
   });
+
+  it('shows the authorized organization name on a console access receipt', async () => {
+    server.use(
+      http.get('*/api/v1/access/center', () =>
+        HttpResponse.json({
+          items: [
+            {
+              id: 'membership:employee',
+              display_name: '李小明',
+              employee_no: null,
+              mobile_masked: '139****0002',
+              client: 'console',
+              status: 'active',
+              access_version: 3,
+              roles: [{ role: 'role:operator', name: '订单运营', description: '处理订单', status: 'active', kind: 'custom', template: null, version: 1, allows: ['order.read'], denies: [] }],
+              scopes: [],
+              overrides: [],
+            },
+          ],
+          count: 1,
+          roles: [],
+          templates: [],
+          separationRules: [],
+        })
+      ),
+      http.post('*/api/v1/identity/invitations', () =>
+        HttpResponse.json({
+          id: 'invitation:signin',
+          kind: 'signin',
+          target: 'console',
+          organizationId: 'enterprise:one',
+          membershipId: 'membership:employee',
+          maxUses: 1,
+          useCount: 0,
+          expiresAt: '2026-09-12T00:00:00.000Z',
+          status: 'active',
+          version: 1,
+          code: 'SAFE-CODE',
+          recipientMasked: '139****0002',
+        })
+      )
+    );
+    const user = userEvent.setup();
+    renderRoute(context(3));
+
+    await user.click(await screen.findByRole('button', { name: '新建邀请' }));
+    await user.click(screen.getByRole('button', { name: /指定成员安全访问/ }));
+    await user.type(screen.getByLabelText('邀请原因'), '协助处理订单');
+    await user.click(screen.getByRole('button', { name: '生成安全访问码' }));
+
+    expect(await screen.findByRole('dialog', { name: '邀请码已创建' })).toBeTruthy();
+    expect(screen.getByText('示例企业')).toBeTruthy();
+    expect(screen.queryByText(/组织范围 \d/)).toBeNull();
+  });
 });
 
 function invitation() {

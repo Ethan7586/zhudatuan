@@ -72,8 +72,8 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
         .map((scope) => Object.freeze({ id: scope.id, name: scope.name ?? chineseReference('组织范围', scope.id) })),
     [context.scope.id, context.scopes]
   );
-  const organization =
-    receipt === undefined ? (context.scope.name ?? chineseReference('组织范围', context.scope.id)) : (storefronts.find(({ id }) => id === receipt.organizationId)?.name ?? chineseReference('组织范围', receipt.organizationId));
+  const receiptScope = receipt === undefined ? undefined : context.scopes.find(({ id }) => id === receipt.organizationId);
+  const organization = receipt === undefined ? (context.scope.name ?? '当前管理范围') : (receiptScope?.name ?? (receipt.organizationId === context.scope.id ? context.scope.name : undefined) ?? '当前授权组织');
   const invitationMemberships = useMemo(
     () => invitationCandidates(memberships.data?.items ?? [], context.session.membership, context.session.permissions),
     [context.session.membership, context.session.permissions, memberships.data?.items]
