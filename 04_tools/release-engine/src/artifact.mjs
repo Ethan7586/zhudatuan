@@ -1,5 +1,5 @@
 import { createReadStream } from 'node:fs';
-import { cp, lstat, mkdir, readFile, readdir, readlink, rename, rm, writeFile } from 'node:fs/promises';
+import { cp, lstat, lutimes, mkdir, readFile, readdir, readlink, rename, rm, utimes, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 
@@ -64,7 +64,8 @@ export async function packageTarget(adapter, plan, buildEvidence, runDirectory, 
   const temporary = `${directory}.candidate-${process.pid}-${Date.now()}`;
   await mkdir(temporary, { recursive: true });
   const temporaryArchive = join(temporary, `${targetId}.tar.gz`);
-  const command = await runCommand({ name: `package:${targetId}`, argv: ['tar', '-czf', temporaryArchive, '-C', buildEvidence.directory, '.'], timeoutMs: 10 * 60_000 }, {
+  await normalizeArtifactTimes(buildEvidence.directory, content.entries);
+  const command = await runCommand({ name: `package:${targetId}`, argv: deterministicTarArgv(temporaryArchive, buildEvidence.directory), timeoutMs: 10 * 60_000 }, {
     projectRoot: adapter.projectRoot,
     environment: {},
     changedFiles: [],
@@ -93,8 +94,6 @@ export async function packageTarget(adapter, plan, buildEvidence, runDirectory, 
     deletions: buildEvidence.deletions ?? [],
     dependencyLayer,
     archive: { sha256: `sha256:${archiveSha256}`, bytes: archiveBytes },
-    packagedAt: new Date().toISOString(),
-    packageDurationMs: command.durationMs,
   };
   manifest.manifestDigest = digest(manifest);
   const temporaryManifest = join(temporary, `${targetId}.artifact.json`);
@@ -110,6 +109,26 @@ export async function packageTarget(adapter, plan, buildEvidence, runDirectory, 
   const committed = await existingArtifact(manifestPath, archive, { adapter, plan, targetId, content });
   invariant(Boolean(committed), 'ARTIFACT_IMMUTABLE_COMMIT_FAILED', `Artifact was not committed: ${targetId}`);
   return { ...committed, packageCache: 'miss' };
+}
+
+function deterministicTarArgv(archive, source) {
+  const ownership = process.platform === 'darwin'
+    ? ['--uid', '0', '--gid', '0', '--uname', 'root', '--gname', 'root']
+    : ['--owner=0', '--group=0', '--numeric-owner', '--sort=name', '--mtime=@0'];
+  return ['tar', ...ownership, '-czf', archive, '-C', source, '.'];
+}
+
+async function normalizeArtifactTimes(root, entries) {
+  const epoch = new Date(0);
+  for (const entry of entries.filter((item) => item.type !== 'directory')) {
+    const absolute = join(root, entry.path);
+    if (entry.type === 'symlink') await lutimes(absolute, epoch, epoch);
+    else await utimes(absolute, epoch, epoch);
+  }
+  for (const entry of entries.filter((item) => item.type === 'directory').reverse()) {
+    await utimes(join(root, entry.path), epoch, epoch);
+  }
+  await utimes(root, epoch, epoch);
 }
 
 async function existingArtifact(manifestPath, archivePath, expected) {

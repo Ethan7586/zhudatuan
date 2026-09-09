@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -50,6 +50,13 @@ test('packages only existing changed files and records deletions', async () => {
   assert.equal(reused.archive.sha256, artifact.archive.sha256);
   assert.equal(reused.manifestDigest, artifact.manifestDigest);
   assert.equal(reused.packageCache, 'hit_local');
+
+  await utimes(join(evidence.directory, 'content', 'new.webp'), new Date(), new Date());
+  const rebuilt = await packageTarget(adapter, plan, evidence, run, join(root, 'second-artifact-store'));
+  assert.equal(rebuilt.packageCache, 'miss');
+  assert.equal(rebuilt.archive.sha256, artifact.archive.sha256);
+  assert.equal(rebuilt.archive.bytes, artifact.archive.bytes);
+  assert.equal(rebuilt.manifestDigest, artifact.manifestDigest);
 });
 
 test('rejects forbidden directories even when they appear inside an allowed target source', async () => {

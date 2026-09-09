@@ -97,9 +97,16 @@ jobs:
             --format json > .ci-release/plan-envelope.json
           node --input-type=module <<'NODE'
           import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
+          import { digest } from './04_tools/release-engine/src/stable.mjs';
           const envelope = JSON.parse(readFileSync('.ci-release/plan-envelope.json', 'utf8'));
           if (!envelope.ok) throw new Error('release plan failed');
           const plan = envelope.result;
+          const stablePlan = { ...plan };
+          delete stablePlan.generatedAt;
+          delete stablePlan.planDigest;
+          delete stablePlan.runId;
+          delete stablePlan.timings;
+          plan.planDigest = digest(stablePlan);
           writeFileSync('.ci-release/plan.json', `${JSON.stringify(plan, null, 2)}\n`);
           appendFileSync(process.env.GITHUB_OUTPUT, [
             `deploy_required=${plan.deployRequired}`,
@@ -151,7 +158,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .ai-delivery/artifacts
-          key: delivery-artifacts-v2-${{ runner.os }}-${{ needs.plan.outputs.head_sha }}
+          key: delivery-artifacts-v3-${{ runner.os }}-${{ needs.plan.outputs.head_sha }}
 
       - name: Restore dependencies for affected targets
         if: needs.plan.outputs.lane != 'A0'

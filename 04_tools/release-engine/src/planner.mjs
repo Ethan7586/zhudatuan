@@ -48,9 +48,8 @@ export async function createPlan(adapter, options = {}) {
       .map(([target, deployment]) => ({ node: nodeKey, target, service: deployment.service }))),
     productionApproval: { required: true, token: `${adapter.project}:${toSha}` },
     estimates: estimate(adapter, classification.lane, classification.targets),
-    generatedAt: new Date().toISOString(),
   };
-  return Object.freeze({ ...plan, planDigest: digest(plan) });
+  return Object.freeze({ ...plan, generatedAt: new Date().toISOString(), planDigest: digest(plan) });
 }
 
 export function classifyChanges(adapter, changes) {
