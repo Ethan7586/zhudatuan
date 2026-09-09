@@ -16,11 +16,12 @@ import { FilterDisclosure } from './FilterDisclosure';
 import { presentProductStatus } from './ProductStatus';
 
 export function ProductPage({ title, viewmodel, importmodel }: Readonly<{ title: string; viewmodel: ProductViewModel; importmodel: ProductImportViewModel }>) {
+  const drawerOpen = viewmodel.drawer.listing !== undefined && viewmodel.action.action === null;
   return (
     <WorkspacePage
       label="商品治理台"
       className="productpage"
-      drawerOpen={viewmodel.drawer.listing !== undefined}
+      drawerOpen={drawerOpen}
       header={
         <ProductHeader
           title={title}
@@ -64,7 +65,7 @@ export function ProductPage({ title, viewmodel, importmodel }: Readonly<{ title:
       layers={
         <>
           <ProductDrawer
-            {...(viewmodel.drawer.listing === undefined ? {} : { listing: viewmodel.drawer.listing })}
+            {...(!drawerOpen || viewmodel.drawer.listing === undefined ? {} : { listing: viewmodel.drawer.listing })}
             tab={viewmodel.drawer.tab}
             {...(viewmodel.drawer.detail === undefined ? {} : { detail: viewmodel.drawer.detail })}
             sections={viewmodel.drawer.sections}
