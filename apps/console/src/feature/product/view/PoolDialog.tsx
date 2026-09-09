@@ -1,7 +1,9 @@
+import { Button } from '@shop/design';
 import { chineseReference, presentProductPoolKind } from '@shop/presentation';
 import type { ProductPoolViewModel } from '../viewmodel/ProductPoolViewModel';
 import type { Pool } from '../model/Product';
 import { isManagedListing } from '../model/ProductAction';
+import { ProductIcon } from './ProductIcon';
 
 export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: ProductPoolViewModel; onClose: () => void }>) {
   if (!viewmodel.open) return null;
@@ -23,9 +25,9 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
             <p>{listingMode ? '商品投放' : '商品池治理'}</p>
             <h2>{listingMode ? '商品投池' : '商品池管理'}</h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="关闭商品池窗口">
-            ×
-          </button>
+          <Button className="productflowclose" tone="quiet" onPress={onClose} aria-label="关闭商品池窗口">
+            <ProductIcon name="close" />
+          </Button>
         </header>
         <div className="productflowbody">
           {viewmodel.listing === undefined ? null : (
@@ -49,16 +51,24 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
             <select value={viewmodel.operation} onChange={(event) => viewmodel.setOperation(event.target.value as ProductPoolViewModel['operation'])}>
               {listingMode ? (
                 <>
-                  <option value="move" disabled={!viewmodel.canMode('move')}>移入所选商品池</option>
+                  <option value="move" disabled={!viewmodel.canMode('move')}>
+                    移入所选商品池
+                  </option>
                   <option value="remove" disabled={listingPool === null || !viewmodel.canMode('remove')}>
                     移出当前商品池
                   </option>
                 </>
               ) : (
                 <>
-                  <option value="allocate" disabled={!viewmodel.canMode('allocate')}>派生商品池</option>
-                  <option value="attach" disabled={!viewmodel.canMode('attach')}>将商品池投放到商城</option>
-                  <option value="detach" disabled={!viewmodel.canMode('detach')}>停止商品池投放</option>
+                  <option value="allocate" disabled={!viewmodel.canMode('allocate')}>
+                    派生商品池
+                  </option>
+                  <option value="attach" disabled={!viewmodel.canMode('attach')}>
+                    将商品池投放到商城
+                  </option>
+                  <option value="detach" disabled={!viewmodel.canMode('detach')}>
+                    停止商品池投放
+                  </option>
                 </>
               )}
             </select>
@@ -103,18 +113,18 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
             </p>
           )}
           {viewmodel.permissionReason === undefined ? null : (
-            <p role="alert" className="productflowerror">
+            <p id="productpoolpermission" role="alert" className="productflowerror">
               {viewmodel.permissionReason}
             </p>
           )}
         </div>
         <footer>
-          <button type="button" onClick={onClose}>
+          <Button onPress={onClose} isDisabled={viewmodel.submitting}>
             关闭
-          </button>
-          <button className="productactionprimary" type="submit" disabled={!viewmodel.canSubmit || viewmodel.submitting} title={viewmodel.permissionReason}>
+          </Button>
+          <Button tone="primary" type="submit" isDisabled={!viewmodel.canSubmit || viewmodel.submitting} {...(viewmodel.permissionReason === undefined ? {} : { 'aria-describedby': 'productpoolpermission' })}>
             {viewmodel.submitting ? '正在执行…' : '确认执行'}
-          </button>
+          </Button>
         </footer>
       </form>
     </div>
@@ -123,11 +133,11 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
 
 function PoolCard({ pool, selected, onSelect }: Readonly<{ pool: Pool; selected: boolean; onSelect: (id: string) => void }>) {
   return (
-    <button type="button" aria-pressed={selected} onClick={() => onSelect(pool.id)}>
+    <Button className="productpoolchoice" aria-pressed={selected} onPress={() => onSelect(pool.id)}>
       <strong>{pool.name}</strong>
       <span>
         {presentProductPoolKind(pool.kind)} · {pool.item_count} 件 · 第 {pool.version} 版
       </span>
-    </button>
+    </Button>
   );
 }
