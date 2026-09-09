@@ -61,6 +61,24 @@ test('三主题权威、中文长文案和 200% 字号不会造成水平裁切',
   await expectUsable(page);
 });
 
+for (const width of [390, 360]) {
+  test(`Storefront 结算商品信息在 ${width}px 保持可读且操作不被压缩`, async ({ page }) => {
+    await prepareVisual(page, { width, height: 844 });
+    await signInStorefront(page, '/checkout');
+    await expectUsable(page);
+    const item = page.locator('[data-checkout-item]').first();
+    await expect(item).toBeVisible();
+    const copy = await item.locator('[data-checkout-copy]').boundingBox();
+    expect(copy?.width ?? 0).toBeGreaterThanOrEqual(130);
+    for (const action of ['减少', '增加', '移除']) {
+      const target = item.getByRole('button', { name: new RegExp(action) });
+      const box = await target.boundingBox();
+      expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    }
+  });
+}
+
 function url(template: string): string {
   return `${LOCAL_STOREFRONT_ORIGIN}/s/zhudatuan-local${fillRoute(template, { productId: 'listing:mall-zhudatuan:sku:visual:care', orderId: 'order:visual:missing', paymentId: 'payment:visual:missing', caseId: 'case:visual:missing' })}`;
 }

@@ -3,15 +3,7 @@ import type { CheckoutState } from '../application/CheckoutState';
 import { formatMinor } from '../../../shared/format/Money';
 import { TenderPanel } from './TenderPanel';
 
-export function OrderSummary({
-  state,
-  selectedCount,
-  onSubmit,
-}: {
-  readonly state: CheckoutState;
-  readonly selectedCount: number;
-  readonly onSubmit: () => void;
-}) {
+export function OrderSummary({ state, selectedCount, onSubmit }: { readonly state: CheckoutState; readonly selectedCount: number; readonly onSubmit: () => void }) {
   const quote = state.quote;
   const busy = state.phase === 'quoting' || state.phase === 'committing';
   return (
@@ -40,12 +32,16 @@ export function OrderSummary({
           <b className="text-base font-black text-price">{money(quote?.payableMinor)}</b>
         </div>
       </div>
-      {quote?.rejections.map((rejection) => <p key={rejection.listing} role="alert" className="rounded bg-warning-surface p-2 text-xs text-warning-strong">商品未通过：{rejection.reasons.join('、')}</p>)}
+      {quote?.rejections.map((rejection) => (
+        <p key={rejection.listing} role="alert" className="rounded bg-warning-surface p-2 text-xs text-warning-strong">
+          商品未通过：{rejection.reasons.join('、')}
+        </p>
+      ))}
       <button
         type="button"
         onClick={onSubmit}
         disabled={selectedCount === 0 || (!state.canQuote && !state.canCommit) || busy}
-        className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[var(--sw-brand)] py-3 text-xs font-extrabold text-inverse shadow-md hover:bg-brand disabled:bg-disabled"
+        className="flex min-h-11 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-[var(--sw-brand)] px-3 py-3 text-xs font-extrabold text-inverse shadow-md hover:bg-brand disabled:bg-disabled"
       >
         <Zap className="h-4 w-4 text-warning" />
         {buttonLabel(state, selectedCount)}
