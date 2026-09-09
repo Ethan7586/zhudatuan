@@ -8,6 +8,7 @@ export const line = strictObject({
   sku: string(),
   listing: string(),
   title: string(),
+  image: union([string(), nullSchema()]),
   quantity: unsigned,
   unitMinor: unsigned,
   totalMinor: unsigned,

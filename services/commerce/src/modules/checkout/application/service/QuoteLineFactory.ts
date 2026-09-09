@@ -23,6 +23,8 @@ export function evaluateLine(source: LineRow, cart: CartRow, policies: readonly 
     productType: source.product_type ?? 'unknown',
     category: source.category_id ?? '',
     title: source.listing_title ?? source.listing_id,
+    imageReference: source.image_reference,
+    imageUrl: source.image_url,
     quantity: source.quantity,
     unitMinor: unit.minor,
     totalMinor: total.minor,

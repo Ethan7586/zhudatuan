@@ -35,6 +35,8 @@ export interface LineRow {
   readonly category_id: string | null;
   readonly product_version: number | null;
   readonly sku_version: number | null;
+  readonly image_reference: string | null;
+  readonly image_url: string | null;
   readonly unit_minor: number | null;
   readonly price_version: string | null;
   readonly price_breakdown: readonly Readonly<{ kind: string; label: string; amountMinor: number }>[];

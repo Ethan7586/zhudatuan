@@ -36,11 +36,12 @@ import { AUDIT_READ_PORT } from '../audit/public';
 import { PgOrderDetailRepository } from './infrastructure/persistence/PgOrderDetailRepository';
 import { MEMBER_READ_PORT } from '../member/public';
 import { CATALOG_PARTNER_PORT } from '../partner/public';
-import { IMPORT_OBJECT_PORT, RUNTIME_IMPORT_PORT } from '../runtime/public';
+import { ASSET_PORT, IMPORT_OBJECT_PORT, RUNTIME_IMPORT_PORT } from '../runtime/public';
 import { PgJobScheduler } from '../../platform/database/PgJobScheduler';
 import { createJobs } from './interface/job/JobFactory';
 import { EVENT_SUBSCRIPTIONS } from '../../generated/EventSubscriptions';
 import { OrderLabels } from './application/service/OrderLabels';
+import { OrderMedia } from './application/service/OrderMedia';
 
 export const OrderModule = defineModule(Manifest, {
   events: [{ handler: 'orderevent', events: EVENT_SUBSCRIPTIONS.orderevent }],
@@ -51,13 +52,14 @@ export const OrderModule = defineModule(Manifest, {
     const organizations = context.ports.get(ORGANIZATION_READ_PORT);
     const partners = context.ports.get(CATALOG_PARTNER_PORT);
     const labels = new OrderLabels(members, organizations, partners);
-    const repository = new PgOrderRepository(transactions, new PgOutbox(new PgTransactionManager(context.service(DATABASE_POOL))), organizations, members, partners);
+    const media = new OrderMedia(context.ports.get(ASSET_PORT));
+    const repository = new PgOrderRepository(transactions, new PgOutbox(new PgTransactionManager(context.service(DATABASE_POOL))), organizations, members, partners, media);
     const aftersales = new PgAfterSaleRepository(transactions, context.ports.get(AFTERSALE_POLICY_PORT), organizations, members);
     const attachmentService = new AfterSaleAttachment(context.service(OBJECT_STORE));
     const audit = context.ports.get(AUDIT_READ_PORT);
     return [
       new OrdersReadHandler(repository),
-      new OrderDetailReadHandler(new PgOrderDetailRepository(transactions, organizations), audit, labels),
+      new OrderDetailReadHandler(new PgOrderDetailRepository(transactions, organizations, media), audit, labels),
       new ImportsCreateHandler(context.ports.get(RUNTIME_IMPORT_PORT), new PgJobScheduler(transactions), context.ports.get(IMPORT_OBJECT_PORT)),
       new ImportsReadHandler(context.ports.get(RUNTIME_IMPORT_PORT), context.service(OBJECT_STORE)),
       new RemindersCreateHandler(repository),

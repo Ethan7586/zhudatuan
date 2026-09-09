@@ -55,7 +55,10 @@ export class PgCatalogFacade implements CartCatalogPort, CatalogDimensionPort, C
     const result = await this.transactions.database(context).query<CheckoutCatalogItem & Record<string, unknown>>(
       `select listing.id listing,listing.sku_id sku,listing.title,listing.version::integer "listingVersion",
        listing.status "listingStatus",product.id product,product.product_type "productType",product.category_id category,
-       product.version::integer "productVersion",sku.version::integer "skuVersion",source.provider,product.owner_partner_id partner
+       product.version::integer "productVersion",sku.version::integer "skuVersion",
+       nullif(product.attributes->>'coverObject','') "imageReference",
+       nullif(coalesce(product.attributes->>'coverUrl',product.attributes->'detail'->>'coverUrl'),'') "imageUrl",
+       source.provider,product.owner_partner_id partner
        from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id and sku.status='active'
        join catalog.product product on product.id=sku.product_id and product.status='active'
        join catalog.pool pool on pool.id=listing.pool_id and pool.status='active'

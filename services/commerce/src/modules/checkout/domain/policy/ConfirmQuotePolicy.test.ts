@@ -48,6 +48,8 @@ function fixture(): CheckoutQuote {
         productType: 'digital',
         category: 'category:one',
         title: '商品',
+        imageReference: null,
+        imageUrl: '/products/gift.webp',
         quantity: 1,
         unitMinor: 100,
         totalMinor: 100,

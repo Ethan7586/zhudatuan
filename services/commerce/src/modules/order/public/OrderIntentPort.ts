@@ -9,6 +9,8 @@ export interface OrderLineSnapshot {
   readonly productType: string;
   readonly category: string;
   readonly title: string;
+  readonly imageReference: string | null;
+  readonly imageUrl: string | null;
   readonly quantity: number;
   readonly unitMinor: number;
   readonly totalMinor: number;

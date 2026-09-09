@@ -33,6 +33,8 @@ describe('OrderPort', () => {
             productType: 'physical',
             category: '福利',
             title: '礼品',
+            imageReference: 'object:catalog:gift',
+            imageUrl: null,
             quantity: 1,
             unitMinor: 100,
             totalMinor: 100,
@@ -48,8 +50,11 @@ describe('OrderPort', () => {
     );
 
     const insert = queries.find((sql) => sql.includes('insert into ordering.orderrecord')) ?? '';
+    const lineInsert = queries.find((sql) => sql.includes('insert into ordering.line')) ?? '';
     expect(insert).not.toContain('returning *');
     expect(insert).not.toContain('received_at');
+    expect(lineInsert).toContain('\'imageReference\',line."imageReference"');
+    expect(lineInsert).toContain('\'imageUrl\',line."imageUrl"');
     expect(created.record).not.toHaveProperty('received_at');
     expect(created.record).not.toHaveProperty('receipt_event_id');
     expect(created.record.created_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/u);

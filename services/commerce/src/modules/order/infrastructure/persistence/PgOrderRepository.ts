@@ -26,6 +26,7 @@ import { orderTime } from '../../application/model/OrderTime';
 import { orderProjection } from './OrderProjection';
 import { OrderLabels } from '../../application/service/OrderLabels';
 import type { CatalogPartnerPort } from '../../../partner/public';
+import type { OrderMedia } from '../../application/service/OrderMedia';
 export class PgOrderRepository implements OrderRepository, ReminderRepository, ExportRepository {
   private readonly receiver: ReceiveOrder;
   private readonly canceller: CancelOrder;
@@ -35,7 +36,8 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
     outbox: OutboxWriter,
     private readonly organizations: Pick<OrganizationReadPort, 'descendants' | 'scope' | 'summaries'>,
     private readonly members: Pick<MemberReadPort, 'search' | 'profiles' | 'principals'>,
-    partners: Pick<CatalogPartnerPort, 'names'>
+    partners: Pick<CatalogPartnerPort, 'names'>,
+    private readonly media: Pick<OrderMedia, 'orders'>
   ) {
     this.receiver = new ReceiveOrder(transactions, outbox, new SystemClock());
     this.canceller = new CancelOrder(transactions, outbox, new SystemClock());
@@ -91,7 +93,8 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
       coalesce(jsonb_agg(jsonb_build_object('id',line.id,'sku',line.sku_id,'listing',line.listing_id,'title',line.title_snapshot,
       'quantity',line.quantity::float8,'unitMinor',line.unit_minor::float8,'totalMinor',line.total_minor::float8,'discountMinor',line.discount_minor::float8,
       'payableMinor',line.payable_minor::float8,'productType',coalesce(nullif(line.evidence->>'productType',''),'unknown'),
-      'category',coalesce(nullif(line.evidence->>'category',''),'unknown'),'provider',line.provider,'partner',line.partner_id))
+      'category',coalesce(nullif(line.evidence->>'category',''),'unknown'),'provider',line.provider,'partner',line.partner_id,
+      'imageReference',nullif(line.evidence->>'imageReference',''),'imageUrl',nullif(line.evidence->>'imageUrl','')))
       filter(where line.id is not null),'[]') lines
       from ordering.orderrecord orders left join ordering.line line on line.order_id=orders.id
       left join lateral(select detail.payment_id,detail.version,detail.captured_minor,detail.refunded_minor,detail.updated_at,
@@ -111,7 +114,8 @@ export class PgOrderRepository implements OrderRepository, ReminderRepository, E
       orderFacets(database, [owner, access.scope.id, supplier, store, scopes, ...orderReadFilterValues(filter, timezone, memberIds, 'all')], execution.signal),
     ]);
     const projected = result.rows.map((row) => orderProjection(row));
-    const rows = await this.labels.list(context, access.scope.id, supplier || store, projected);
+    const labeled = await this.labels.list(context, access.scope.id, supplier || store, projected);
+    const rows = await this.media.orders(labeled);
     const pageResult = keysetResult({ rows }, page, 'created_at');
     const body = pageResult.body as Readonly<Record<string, unknown>>;
     return { ...pageResult, body: Object.freeze({ ...body, facets }) } as never;

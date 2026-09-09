@@ -57,10 +57,11 @@ export class OrderPort extends OrderReadPort {
       discount_minor,qualification_evidence_id,provider,partner_id,evidence)
       select 'line:'||gen_random_uuid()::text,$1,line.sku,line.listing,line.title,line.quantity,line."unitMinor",line."totalMinor",
         line."discountMinor",null,line.provider,line.partner,
-        jsonb_build_object('versions',line.versions,'product',line.product,'productType',line."productType",'category',line.category)
+        jsonb_build_object('versions',line.versions,'product',line.product,'productType',line."productType",'category',line.category,
+          'imageReference',line."imageReference",'imageUrl',line."imageUrl")
       from jsonb_to_recordset($2::jsonb) as line(sku text,listing text,title text,quantity bigint,"unitMinor" bigint,
         "totalMinor" bigint,"discountMinor" bigint,"payableMinor" bigint,provider text,partner text,versions jsonb,accepted boolean,
-        product text,"productType" text,category text)
+        product text,"productType" text,category text,"imageReference" text,"imageUrl" text)
       where line.accepted`,
       [input.id, JSON.stringify(input.lines)]
     );

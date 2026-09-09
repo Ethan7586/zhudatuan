@@ -45294,6 +45294,16 @@
                         "id": {
                           "type": "string"
                         },
+                        "image": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "listing": {
                           "type": "string"
                         },
@@ -45362,6 +45372,7 @@
                         "sku",
                         "listing",
                         "title",
+                        "image",
                         "quantity",
                         "unitMinor",
                         "totalMinor",
@@ -47055,6 +47066,16 @@
                       "id": {
                         "type": "string"
                       },
+                      "image": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "listing": {
                         "type": "string"
                       },
@@ -47123,6 +47144,7 @@
                       "sku",
                       "listing",
                       "title",
+                      "image",
                       "quantity",
                       "unitMinor",
                       "totalMinor",

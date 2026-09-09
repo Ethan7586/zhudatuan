@@ -204,6 +204,8 @@ function frozenQuote(): CheckoutQuote {
         productType: 'digital',
         category: 'category:one',
         title: '测试商品',
+        imageReference: null,
+        imageUrl: '/products/gift.webp',
         quantity: 1,
         unitMinor: 100,
         totalMinor: 100,

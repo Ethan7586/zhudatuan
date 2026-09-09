@@ -6,11 +6,13 @@ import { requireSession } from '../../../../platform/security/OperationSecurityC
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { OrderDetailRepository, OrderDetailSummary, OrderFinanceSummary } from '../../application/port/OrderDetailRepository';
 import { orderProjection } from './OrderProjection';
+import type { OrderMedia } from '../../application/service/OrderMedia';
 
 export class PgOrderDetailRepository implements OrderDetailRepository {
   constructor(
     private readonly transactions: PgTransactionAccess,
-    private readonly organizations: Pick<OrganizationReadPort, 'descendants'>
+    private readonly organizations: Pick<OrganizationReadPort, 'descendants'>,
+    private readonly media: Pick<OrderMedia, 'lines'>
   ) {}
 
   async summary(context: ReadTransactionContext, order: string, execution: ExecutionContext<'order.detail.read'>): Promise<OrderDetailSummary | null> {
@@ -44,12 +46,13 @@ export class PgOrderDetailRepository implements OrderDetailRepository {
       `select line.id,line.sku_id sku,line.listing_id listing,line.title_snapshot title,line.quantity::float8 quantity,
       line.unit_minor::float8 "unitMinor",line.total_minor::float8 "totalMinor",line.discount_minor::float8 "discountMinor",
       line.payable_minor::float8 "payableMinor",coalesce(nullif(line.evidence->>'productType',''),'unknown') "productType",
-      coalesce(nullif(line.evidence->>'category',''),'unknown') category,line.provider,line.partner_id partner
+      coalesce(nullif(line.evidence->>'category',''),'unknown') category,line.provider,line.partner_id partner,
+      nullif(line.evidence->>'imageReference','') "imageReference",nullif(line.evidence->>'imageUrl','') "imageUrl"
       from ordering.line line where line.order_id=$1 and ($2::text is null or line.partner_id=$2) order by line.id`,
       [order, partner]
     );
     if (result.rows.length === 0) throw new Error('ORDER_PRODUCT_SNAPSHOT_MISSING');
-    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
+    return this.media.lines(result.rows.map((row) => Object.freeze(row)));
   }
 
   async payment(context: ReadTransactionContext, order: string) {

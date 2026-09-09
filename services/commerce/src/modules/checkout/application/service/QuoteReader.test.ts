@@ -71,6 +71,8 @@ describe('QuoteReader', () => {
         category: 'category:one',
         productVersion: 6,
         skuVersion: 7,
+        imageReference: 'object:catalog:gift',
+        imageUrl: null,
         provider: null,
         partner: null,
       },
@@ -78,7 +80,17 @@ describe('QuoteReader', () => {
     pricing.resolve([{ sku: 'sku:one', amountMinor: 100, compareMinor: null, currency: 'CNY', version: 'price:8', breakdown: [], watermark: 'pricewatermark' }]);
     inventory.resolve([{ sku: 'sku:one', stockitem: 'stock:one', onhand: 20, safety: 2, reserved: 3, version: 9 }]);
     const quote = await reading;
-    expect(quote).toMatchObject({ subtotalMinor: 200, discountMinor: 10, shippingMinor: 0, taxMinor: 0, payableMinor: 190, address: { value: address, version: '3' }, shipping: { method: 'standard' }, tax: { mode: 'included' } });
+    expect(quote).toMatchObject({
+      subtotalMinor: 200,
+      discountMinor: 10,
+      shippingMinor: 0,
+      taxMinor: 0,
+      payableMinor: 190,
+      address: { value: address, version: '3' },
+      shipping: { method: 'standard' },
+      tax: { mode: 'included' },
+      lines: [{ imageReference: 'object:catalog:gift', imageUrl: null }],
+    });
     expect(quote.evidence).toMatchObject({ catalog: [{ listingVersion: 5 }], pricing: [{ version: 'price:8' }], inventory: [{ version: 9 }], qualification: [], marketing: [{ id: 'campaign:one', version: 2 }], risk: { outcome: 'allow' } });
   });
 });

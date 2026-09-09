@@ -12,6 +12,8 @@ export interface CheckoutCatalogItem {
   readonly category: string;
   readonly productVersion: number;
   readonly skuVersion: number;
+  readonly imageReference: string | null;
+  readonly imageUrl: string | null;
   readonly provider: string | null;
   readonly partner: string | null;
 }

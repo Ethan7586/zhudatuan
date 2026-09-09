@@ -97,6 +97,8 @@ export class QuoteDataReader {
           category_id: product?.category ?? null,
           product_version: product?.productVersion ?? null,
           sku_version: product?.skuVersion ?? null,
+          image_reference: product?.imageReference ?? null,
+          image_url: product?.imageUrl ?? null,
           unit_minor: price?.amountMinor ?? null,
           price_version: price?.version ?? null,
           price_breakdown: price?.breakdown ?? [],

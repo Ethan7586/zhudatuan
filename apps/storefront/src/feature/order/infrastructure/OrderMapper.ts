@@ -120,7 +120,7 @@ function mapLine(line: OrderDto['lines'][number]) {
     listingId: line.listing,
     skuId: line.sku,
     title: line.title,
-    image: '',
+    image: line.image ?? '',
     unitMinor: line.unitMinor,
     totalMinor: line.totalMinor,
     discountMinor: line.discountMinor,

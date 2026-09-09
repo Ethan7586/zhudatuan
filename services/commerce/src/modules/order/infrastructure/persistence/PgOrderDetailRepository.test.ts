@@ -25,7 +25,7 @@ describe('PgOrderDetailRepository finance projection', () => {
           : []
       )
     );
-    const repository = new PgOrderDetailRepository(new PgTransactionAccess(), {} as never);
+    const repository = new PgOrderDetailRepository(new PgTransactionAccess(), {} as never, orderMedia());
     const value = await withReadTransaction(query, (context) => repository.finance(context, 'order:one'));
 
     expect(value).toMatchObject({ grossMinor: 12_800, netMinor: 11_800, state: 'partialrefund' });
@@ -36,7 +36,7 @@ describe('PgOrderDetailRepository finance projection', () => {
   });
 
   it('fails the local section instead of manufacturing a zero financial state', async () => {
-    const repository = new PgOrderDetailRepository(new PgTransactionAccess(), {} as never);
+    const repository = new PgOrderDetailRepository(new PgTransactionAccess(), {} as never, orderMedia());
     await expect(
       withReadTransaction(
         async () => result([]),
@@ -59,7 +59,7 @@ describe('PgOrderDetailRepository contract timestamps', () => {
       if (sql.includes('from ordering.refundread refund')) return result([{ id: 'refund:one', createdAt: '2026-09-05T08:04:00+08:00', updatedAt: '2026-09-05T08:05:00+08:00', tenders: [] }]);
       return result([]);
     });
-    const repository = new PgOrderDetailRepository(new PgTransactionAccess(), {} as never);
+    const repository = new PgOrderDetailRepository(new PgTransactionAccess(), {} as never, orderMedia());
 
     const [payment, fulfillment, aftersale] = await Promise.all([
       withReadTransaction(query, (context) => repository.payment(context, 'order:one')),
@@ -75,4 +75,8 @@ describe('PgOrderDetailRepository contract timestamps', () => {
 
 function result(rows: readonly unknown[]): QueryResult<any> {
   return { rows: [...rows], rowCount: rows.length, command: '', oid: 0, fields: [] } as QueryResult<any>;
+}
+
+function orderMedia() {
+  return { lines: vi.fn(async (rows: readonly Readonly<Record<string, unknown>>[]) => Object.freeze(rows)) };
 }
