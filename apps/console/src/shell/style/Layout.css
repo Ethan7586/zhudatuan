@@ -34,7 +34,7 @@ body:has(.consolelayout[data-visual-theme='console-v1']) {
   display: none;
 }
 
-@media (max-width: 68rem) {
+@media (max-width: 80rem) {
   .consolelayout .consoleheader {
     grid-template-columns: minmax(12rem, 1fr) minmax(10rem, 13rem) auto;
     align-items: center;

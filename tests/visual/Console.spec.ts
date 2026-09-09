@@ -87,9 +87,14 @@ test('Console 未登录、缺失资源和小屏状态均有可恢复反馈', asy
   await expect(page.locator('body')).not.toContainText(/Error:|TypeError|SQLSTATE|INTERNAL_ERROR/);
 });
 
-test('Console 页名、品牌与管理范围在平板宽度完整可读', async ({ page }) => {
-  await prepareVisual(page, { width: 1024, height: 768 });
+test('Console 页名、说明、品牌与管理范围在紧凑桌面和平板完整可读', async ({ page }) => {
+  await prepareVisual(page, { width: 1280, height: 800 });
   await signInConsole(page);
+  await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consolefinanceinvoice, 'enterprise')}`);
+  await expectUsable(page);
+  await expect.poll(() => textFits(page, '.consoleheadersummary')).toBe(true);
+
+  await page.setViewportSize({ width: 1024, height: 768 });
   await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleorders, 'enterprise')}`);
   await expectUsable(page);
   await expect(page.locator('.consolebreadcrumb > strong')).toHaveText('订单管理系统');
