@@ -106,7 +106,9 @@ function ProductDrawerContent({
             {listing.cover_url == null || listing.cover_url === '' ? <ProductIcon name="cube" /> : <img src={listing.cover_url} alt="" />}
           </span>
           <div>
-            <Heading slot="title">{listing.title}</Heading>
+            <Heading slot="title" data-visual-copy="truncate" title={listing.title}>
+              {listing.title}
+            </Heading>
             <p>{listing.subtitle ?? listing.category_name ?? '商品主档'}</p>
             <span className="productdrawermeta">
               <StatusBadge status={listing.status} />

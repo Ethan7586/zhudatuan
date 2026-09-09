@@ -48,68 +48,71 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} data-active={activeId === row.id ? 'true' : undefined} onClick={() => onOpen(row)}>
-                <td className="productcheckcell">
-                  <label className="productchecktarget" onClick={stopClick}>
-                    <input type="checkbox" aria-label={`选择 ${row.title}`} checked={selected.has(row.id)} onChange={() => onToggle(row.id)} />
-                  </label>
-                </td>
-                <td data-label="商品信息">
-                  <div className="productidentity">
-                    <ProductThumbnail row={row} />
-                    <Button className="productidentitybutton" tone="quiet" onClick={stopClick} onPress={() => onOpen(row)}>
-                      <strong>{row.title}</strong>
-                      <span>{row.subtitle ?? (row.product_type === null ? '待映射商品' : presentProductType(row.product_type))}</span>
-                    </Button>
-                  </div>
-                </td>
-                {visibleColumns.has('category') ? (
-                  <td data-label="分类与来源">
-                    <CellPair primary={row.category_name ?? '分类待映射'} secondary={presentProductSource(row.source, row.source_partner_name)} />
+            {rows.map((row) => {
+              const subtitle = row.subtitle ?? (row.product_type === null ? '待映射商品' : presentProductType(row.product_type));
+              return (
+                <tr key={row.id} data-active={activeId === row.id ? 'true' : undefined} onClick={() => onOpen(row)}>
+                  <td className="productcheckcell">
+                    <label className="productchecktarget" onClick={stopClick}>
+                      <input type="checkbox" aria-label={`选择 ${row.title}`} checked={selected.has(row.id)} onChange={() => onToggle(row.id)} />
+                    </label>
                   </td>
-                ) : null}
-                {visibleColumns.has('sku') ? (
-                  <td data-label="规格摘要">
-                    <CellPair primary={`${formatCount(row.sku_count)} / ${formatCount(row.sku_total)}`} secondary={row.code ?? '规格待映射'} />
+                  <td data-label="商品信息">
+                    <div className="productidentity">
+                      <ProductThumbnail row={row} />
+                      <Button className="productidentitybutton" tone="quiet" data-visual-copy="truncate" aria-label={`${row.title}，${subtitle}，查看详情`} onClick={stopClick} onPress={() => onOpen(row)}>
+                        <strong>{row.title}</strong>
+                        <span>{subtitle}</span>
+                      </Button>
+                    </div>
                   </td>
-                ) : null}
-                {visibleColumns.has('malls') ? (
-                  <td data-label="商城覆盖">
-                    <CellPair primary={`${formatCount(row.mall_count)} / ${formatCount(row.mall_total)}`} secondary={row.pool_name ?? <DataGap label={gapLabel(row, 'pool')} onOpen={() => onOpen(row)} />} />
+                  {visibleColumns.has('category') ? (
+                    <td data-label="分类与来源">
+                      <CellPair primary={row.category_name ?? '分类待映射'} secondary={presentProductSource(row.source, row.source_partner_name)} />
+                    </td>
+                  ) : null}
+                  {visibleColumns.has('sku') ? (
+                    <td data-label="规格摘要">
+                      <CellPair primary={`${formatCount(row.sku_count)} / ${formatCount(row.sku_total)}`} secondary={row.code ?? '规格待映射'} />
+                    </td>
+                  ) : null}
+                  {visibleColumns.has('malls') ? (
+                    <td data-label="商城覆盖">
+                      <CellPair primary={`${formatCount(row.mall_count)} / ${formatCount(row.mall_total)}`} secondary={row.pool_name ?? <DataGap label={gapLabel(row, 'pool')} onOpen={() => onOpen(row)} />} />
+                    </td>
+                  ) : null}
+                  {visibleColumns.has('price') ? (
+                    <td className="productmoney" data-label="有效售价">
+                      {row.price_amount_minor === null ? <DataGap label={gapLabel(row, 'price')} onOpen={() => onOpen(row)} /> : formatMoney(row.price_amount_minor, row.price_currency)}
+                    </td>
+                  ) : null}
+                  {visibleColumns.has('stock') ? <td data-label="可售库存">{row.saleable_stock === null ? <DataGap label={gapLabel(row, 'stock')} onOpen={() => onOpen(row)} /> : formatCount(row.saleable_stock)}</td> : null}
+                  {visibleColumns.has('status') ? (
+                    <td data-label="商品状态">
+                      <StatusBadge status={row.status} />
+                      {row.qualification_eligible === false ? <DataGap label="资格未通过" onOpen={() => onOpen(row)} /> : null}
+                    </td>
+                  ) : null}
+                  {visibleColumns.has('updated') ? (
+                    <td className="producttime" data-label="更新时间">
+                      {formatTime(row.cursor_sort)}
+                    </td>
+                  ) : null}
+                  <td data-label="可用操作">
+                    <div className="productrowactions" onClick={stopClick}>
+                      <Button tone="quiet" onPress={() => onOpen(row)}>
+                        <ProductIcon name="eye" />
+                        查看
+                      </Button>
+                      <Button tone="quiet" aria-label={`${row.title}更多操作`} onPress={() => onOpen(row)}>
+                        <ProductIcon name="more" />
+                        <span>更多</span>
+                      </Button>
+                    </div>
                   </td>
-                ) : null}
-                {visibleColumns.has('price') ? (
-                  <td className="productmoney" data-label="有效售价">
-                    {row.price_amount_minor === null ? <DataGap label={gapLabel(row, 'price')} onOpen={() => onOpen(row)} /> : formatMoney(row.price_amount_minor, row.price_currency)}
-                  </td>
-                ) : null}
-                {visibleColumns.has('stock') ? <td data-label="可售库存">{row.saleable_stock === null ? <DataGap label={gapLabel(row, 'stock')} onOpen={() => onOpen(row)} /> : formatCount(row.saleable_stock)}</td> : null}
-                {visibleColumns.has('status') ? (
-                  <td data-label="商品状态">
-                    <StatusBadge status={row.status} />
-                    {row.qualification_eligible === false ? <DataGap label="资格未通过" onOpen={() => onOpen(row)} /> : null}
-                  </td>
-                ) : null}
-                {visibleColumns.has('updated') ? (
-                  <td className="producttime" data-label="更新时间">
-                    {formatTime(row.cursor_sort)}
-                  </td>
-                ) : null}
-                <td data-label="可用操作">
-                  <div className="productrowactions" onClick={stopClick}>
-                    <Button tone="quiet" onPress={() => onOpen(row)}>
-                      <ProductIcon name="eye" />
-                      查看
-                    </Button>
-                    <Button tone="quiet" aria-label={`${row.title}更多操作`} onPress={() => onOpen(row)}>
-                      <ProductIcon name="more" />
-                      <span>更多</span>
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

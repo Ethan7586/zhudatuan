@@ -16,12 +16,15 @@
 }
 .productdrawercontent {
   display: grid;
+  min-width: 0;
   height: 100%;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
+  overflow: hidden;
   outline: 0;
 }
 .productdrawerheader {
   display: flex;
+  min-width: 0;
   min-height: 112px;
   align-items: flex-start;
   justify-content: space-between;
@@ -30,6 +33,7 @@
 }
 .productdraweridentity {
   display: flex;
+  flex: 1 1 auto;
   min-width: 0;
   gap: 12px;
 }
@@ -90,6 +94,7 @@
 }
 .productdrawertabs {
   display: grid;
+  min-width: 0;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   border-bottom: 1px solid var(--sw-border);
   padding: 0 15px;
@@ -122,18 +127,25 @@
   content: '';
 }
 .productdrawerbody {
+  min-width: 0;
   min-height: 0;
   overflow-y: auto;
   padding: 16px 20px 22px;
 }
 .productdrawerfooter {
   display: flex;
+  min-width: 0;
   min-height: 64px;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 11px;
   border-top: 1px solid var(--sw-border);
   padding: 10px 20px;
+}
+.productdrawerfooter > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 .productdrawerfooter > button:first-child {
   min-width: 88px;
