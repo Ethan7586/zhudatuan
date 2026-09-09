@@ -76,6 +76,7 @@ import { assembleOperations } from '../../application/service/OperationAssembly'
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { SessionPolicy } from '../../domain/policy/SessionPolicy';
 import { MembershipDestination } from '../../application/service/MembershipDestination';
+import { IDENTITY_CHALLENGE_CODE } from '../../application/port/ChallengeCode';
 
 export function composeIdentity(context: ModuleContext) {
   const pool = context.service(DATABASE_POOL);
@@ -105,12 +106,13 @@ export function composeIdentity(context: ModuleContext) {
   const sessionRepository = new PgSessionRepository();
   const sessions = new DefaultSessionIssuer(csrf, keys.identity, identityAccess, cookies, sessionRepository, sessionPolicy);
   const challenges = new PgChallenge();
+  const challengeCodes = context.service(IDENTITY_CHALLENGE_CODE);
   const invitationAccess = context.ports.get(INVITATION_ACCESS_PORT);
   const redeemer = new InvitationRedeemer(repository, invitationAccess, telemetry);
   const invited = context.ports.get(IDENTITY_REGISTRATION_PORT);
   const organizations = context.ports.get(IDENTITY_ORGANIZATION_PORT);
   const destinations = new MembershipDestination(returns, context.ports.get(IDENTITY_EXPERIENCE_PORT));
-  const challengeCommands = new CreateChallenge(kms, context.service(RISK_GATE), challenges, keys.identity, keys.session, preauth, repository, hasher, events, credentials, members, invitationAccess, invited);
+  const challengeCommands = new CreateChallenge(kms, context.service(RISK_GATE), challenges, challengeCodes, keys.identity, keys.session, preauth, repository, hasher, events, credentials, members, invitationAccess, invited);
   const {
     providers,
     resolver,
@@ -172,7 +174,7 @@ export function composeIdentity(context: ModuleContext) {
   ).lifecycle();
   const passwords = new PasswordPolicy();
   const credentialCommands = new ManageCredential(passwords, challenges, members, kms, context.service(RISK_GATE), keys.identity, keys.session, credentials, assurances, sessionRepository, events);
-  const stepup = new ManageStepup(members, kms, challenges, keys.identity, keys.session, assurances, sessionRepository, events, context.ports.get(ACTION_PROOF_PORT), new PgStepupRequestRepository());
+  const stepup = new ManageStepup(members, kms, challenges, challengeCodes, keys.identity, keys.session, assurances, sessionRepository, events, context.ports.get(ACTION_PROOF_PORT), new PgStepupRequestRepository());
   const revocation = new RevokeSession(sessionRepository, cookies, events);
   const handovers = new PgHandoverRepository();
   const linker = new IdentityLinker(linkRepository);
@@ -207,6 +209,7 @@ export function composeIdentity(context: ModuleContext) {
         returns,
         cookies,
         challenges,
+        challengeCodes,
         redeemer,
         invitationFailures,
         registrations,

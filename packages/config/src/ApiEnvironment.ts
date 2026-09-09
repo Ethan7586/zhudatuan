@@ -16,6 +16,7 @@ export const API_ENVIRONMENT_KEYS = [
   'REDIS_CONNECTION_REF',
   'SESSION_KEY_REF',
   'IDENTITY_KEY_REF',
+  'IDENTITY_CHALLENGE_CODE_REF',
   'INVITATION_KEY_REF',
   'NAVIGATION_KEY_REF',
   'QUOTE_KEY_REF',
@@ -79,10 +80,20 @@ export function apiStorefrontOrigin(environment: ApiEnvironment): string {
   return webOrigin(requiredValue(environment.PUBLIC_STOREFRONT_ORIGIN, 'PUBLIC_STOREFRONT_ORIGIN_MISSING'), 'PUBLIC_STOREFRONT_ORIGIN_INVALID');
 }
 
+export function apiChallengeCodeRef(environment: ApiEnvironment): string | null {
+  const value = environment.IDENTITY_CHALLENGE_CODE_REF?.trim();
+  if (!value) return null;
+  if (environment.APP_ENV === 'production') throw new Error('PRODUCTION_FIXED_CHALLENGE_CODE_FORBIDDEN');
+  if (environment.APP_ENV !== 'development' || !value.startsWith('local/')) throw new Error('NONLOCAL_FIXED_CHALLENGE_CODE_FORBIDDEN');
+  if (!/^[a-z0-9][a-z0-9/.-]{2,255}$/.test(value)) throw new Error('IDENTITY_CHALLENGE_CODE_REF_INVALID');
+  return value;
+}
+
 export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSource): void {
   const app = enumValue(source.APP_ENV, ['development', 'test', 'production'], 'APP_ENV_INVALID');
   const auth = enumValue(source.AUTH_MODE, ['test', 'membership'], 'AUTH_MODE_INVALID');
   if (app === 'production' && auth !== 'membership') throw new Error('PRODUCTION_AUTH_MODE_INVALID');
+  apiChallengeCodeRef(source);
   for (const [key, code] of [
     ['SERVICE_VERSION', 'SERVICE_VERSION_MISSING'],
     ['API_ALLOWED_ORIGINS', 'API_ALLOWED_ORIGINS_MISSING'],

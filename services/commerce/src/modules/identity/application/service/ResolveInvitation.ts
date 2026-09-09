@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomBytes, randomInt, randomUUID } from 'node:crypto';
+import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
 import type { IdentityInvitationsResolveBody } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { Telemetry } from '@shop/telemetry';
@@ -27,6 +27,7 @@ import type { InvitationLookup } from './InvitationLookup';
 import type { InvitationRedeemer } from './InvitationRedeemer';
 import { returnDestination } from './ReturnDestination';
 import type { LoadedInvitationResolution, PreparedInvitationResolution } from './InvitationResolution';
+import type { ChallengeCode } from '../port/ChallengeCode';
 
 export class ResolveInvitation {
   constructor(
@@ -45,6 +46,7 @@ export class ResolveInvitation {
     private readonly returns: ReturnTargetPort,
     private readonly cookies: SessionCookiePort,
     private readonly challenges: ChallengePort,
+    private readonly codes: ChallengeCode,
     private readonly redeemer: InvitationRedeemer,
     private readonly failures: InvitationFailure,
     private readonly registrations: RegistrationPolicyRepository,
@@ -103,7 +105,7 @@ export class ResolveInvitation {
       const mobile = await this.kms.decrypt('pii', 'identity/mobile', loaded.mobileCiphertext, { principal });
       if (!this.hasher.matchesRecipient(mobile, recipient)) throw new DomainError('INVITATION_INVALID');
       const challenge = `challenge:${randomUUID()}`;
-      const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+      const code = this.codes.issue('invitation_acceptance');
       const purpose = 'invitation_acceptance';
       const [codeEnvelope, destinationEnvelope] = await Promise.all([this.kms.encrypt('pii', 'identity/challenge', code, { challenge, purpose }), this.kms.encrypt('pii', 'identity/destination', mobile, { challenge, purpose })]);
       return Object.freeze({ ...prepared, proof: Object.freeze({ challenge, code, codeEnvelope, destinationEnvelope }) });

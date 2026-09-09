@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { LOCAL_CREDENTIAL_KEYS, LOCAL_ENVIRONMENT_KEYS, LOCAL_SECRET_REFS, MIGRATION_APPROVAL, bearerToken, localComposeEnvironment } from '@shop/config/server';
 import { createNotificationSecrets, normalizeNotificationSecrets } from './NotificationSecrets';
 import { localPassword } from './LocalPassword';
+import { localVerificationCode } from './LocalVerificationCode';
 
 const execute = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -114,6 +115,7 @@ async function loadOrCreateSecrets(forceRotation: boolean): Promise<PreparedSecr
     const migrated: Record<string, string> = {
       ...existing,
       'local/ethan/password': localPassword(existing['local/ethan/password']),
+      [LOCAL_SECRET_REFS.identityChallengeCode]: localVerificationCode(existing[LOCAL_SECRET_REFS.identityChallengeCode]),
       'local/postgres/provider-password': providerPassword,
       'shop/local/redis/query': redisUrl(redisPassword),
       ...databaseConnections({
@@ -167,6 +169,7 @@ async function loadOrCreateSecrets(forceRotation: boolean): Promise<PreparedSecr
     'local/postgres/provider-password': postgresProvider,
     'local/redis/password': redisPassword,
     'local/ethan/password': localPassword(),
+    [LOCAL_SECRET_REFS.identityChallengeCode]: localVerificationCode(),
     ...databaseConnections({ admin: postgresAdmin, api: postgresApi, jobs: postgresJobs, provider: postgresProvider }),
     'shop/local/redis/query': redisUrl(redisPassword),
     'shop/local/identity/session': secret(),
@@ -234,6 +237,7 @@ function commerceEnvironment(prepared: PreparedSecrets): string {
     REDIS_CONNECTION_REF: 'shop/local/redis/query',
     SESSION_KEY_REF: 'shop/local/identity/session',
     IDENTITY_KEY_REF: 'shop/local/identity/index',
+    IDENTITY_CHALLENGE_CODE_REF: LOCAL_SECRET_REFS.identityChallengeCode,
     INVITATION_KEY_REF: 'shop/local/identity/invitation',
     NAVIGATION_KEY_REF: 'shop/local/navigation/hmac',
     QUOTE_KEY_REF: 'shop/local/checkout/quote',

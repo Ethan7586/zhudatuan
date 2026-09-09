@@ -38,6 +38,7 @@ export const LOCAL_SECRET_REFS = Object.freeze({
   redis: 'local/redis/password',
   kmsMaster: 'shop/local/kms/master',
   objects: 'shop/local/objects/api',
+  identityChallengeCode: 'local/identity/challenge-code',
 } as const);
 
 export const LOCAL_CREDENTIAL_KEYS = Object.freeze({

@@ -11,6 +11,7 @@ describe('login challenge destination resolution', () => {
     const response = await execute(command, request('ethan'));
 
     expect(response).toMatchObject({ status: 202, body: { purpose: 'login', expires_at: '2026-08-31T12:10:00.000Z' } });
+    expect(encrypt).toHaveBeenCalledWith('pii', 'identity/challenge', '246810', expect.objectContaining({ purpose: 'login' }));
     expect(encrypt).toHaveBeenCalledWith('pii', 'identity/destination', '+8613800138000', expect.objectContaining({ purpose: 'login' }));
     expect(issued).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ principal: 'principal:one', destinationCiphertext: 'resolved-mobile-ciphertext', ttlMinutes: 10, queueDelivery: true }));
   });
@@ -56,6 +57,7 @@ function createCommand(input: Readonly<{ principal: string | null; mobileCiphert
     { decrypt: vi.fn(async () => input.decrypt), encrypt: input.encrypt } as never,
     { evaluate: vi.fn(async () => ({ outcome: 'allow', safeReason: 'policy', decision: null })) } as never,
     { throttle: input.throttle ?? vi.fn(), issue: input.issued } as never,
+    { issue: vi.fn(() => '246810') },
     'identity-key-with-at-least-thirty-two-bytes',
     'session-key-with-at-least-thirty-two-bytes',
     {} as never,

@@ -40,6 +40,7 @@
     "local:seed:visual": "node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/Visual.ts",
     "local:seed:journey": "node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/Journey.ts",
     "local:verify": "node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/Verify.ts",
+    "local:credentials": "node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/AcceptanceCredentials.mts",
     "dev:api": "npm run build:commerce && node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts services/commerce/dist/ApiMain.js",
     "dev:jobs": "npm run build:commerce && node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts services/commerce/dist/JobsMain.js",
     "dev:provider": "npm run build:commerce && node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts services/commerce/dist/ProviderMain.js",

@@ -1,6 +1,6 @@
 import { identityLifecycle as operationLifecycle, type IdentityAction as OperationAction, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
 import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
-import { createHmac, randomInt, randomUUID } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
 import type { OperationId } from '@shop/contract';
 
 import { reject } from '../../../../pipeline/OperationRejection';
@@ -14,6 +14,7 @@ import type { IdentityEventRepository } from '../port/IdentityEventRepository';
 import type { SessionRepository } from '../port/SessionRepository';
 import type { StepupRequestRepository } from '../port/StepupRequestRepository';
 import type { ActionProofBinding, ActionProofChecker, ActionProofPort } from '../../../access/public';
+import type { ChallengeCode } from '../port/ChallengeCode';
 
 interface PreparedStepup {
   readonly actor: ReturnType<typeof requireAccess>;
@@ -38,6 +39,7 @@ export class ManageStepup {
     private readonly members: IdentityMemberPort,
     private readonly kms: KmsClient,
     private readonly challenges: ChallengePort,
+    private readonly codes: ChallengeCode,
     private readonly identityKey: string,
     private readonly sessionKey: string,
     private readonly assurances: AssuranceRepository,
@@ -56,7 +58,7 @@ export class ManageStepup {
       },
       prepare: async (request, loaded) => {
         const id = `challenge:${randomUUID()}`;
-        const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+        const code = this.codes.issue('stepup');
         const destination = await this.kms.decrypt('pii', 'identity/mobile', loaded.mobileCiphertext, { principal: loaded.actor.actor.id });
         const [envelope, recipient] = await Promise.all([
           this.kms.encrypt('pii', 'identity/challenge', code, { challenge: id, purpose: 'stepup' }),

@@ -1,6 +1,6 @@
 import { SystemClock } from '@shop/kernel';
 import type { Telemetry } from '@shop/telemetry';
-import { apiReturnTargets, apiStorefrontOrigin, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
+import { apiChallengeCodeRef, apiReturnTargets, apiStorefrontOrigin, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
 import { AccessPipeline } from '../pipeline/AccessPipeline';
 import { CSRF_PROTECTOR, CsrfProtector } from '../platform/security/CsrfProtector';
 import { PgSessionResolver } from '../platform/security/PgSessionResolver';
@@ -62,6 +62,8 @@ import { LOG_SINK } from '../modules/observability/application/port/LogSink';
 import { METRIC_SINK } from '../modules/observability/application/port/MetricSink';
 import { TRACE_SINK } from '../modules/observability/application/port/TraceSink';
 import { TelemetryLogSink, TelemetryMetricSink, TelemetryTraceSink } from '../modules/observability/infrastructure/adapter/TelemetrySinks';
+import { IDENTITY_CHALLENGE_CODE } from '../modules/identity/application/port/ChallengeCode';
+import { FixedChallengeCode, RandomChallengeCode } from '../modules/identity/infrastructure/security/ChallengeCodes';
 
 export interface CommerceApplication {
   readonly pool: DatabasePool;
@@ -108,6 +110,8 @@ export async function createApplication(environment: ApiEnvironment | JobsEnviro
           quote: await secretText(secrets, environment.QUOTE_KEY_REF, 'quote'),
         }
       : null;
+  const challengeCodeRef = workload === 'api' ? apiChallengeCodeRef(environment as ApiEnvironment) : null;
+  const challengeCodes = challengeCodeRef === null ? new RandomChallengeCode() : new FixedChallengeCode(await resolveSecret(challengeCodeRef, 'identity'));
   const returnTargets = workload === 'api' ? apiReturnTargets(environment as ApiEnvironment) : null;
   const storefrontOrigin = workload === 'api' ? apiStorefrontOrigin(environment as ApiEnvironment) : null;
   const kms = environment.KMS_ENDPOINT ? new HttpKmsClient(environment.KMS_ENDPOINT, required(environment.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_MISSING')) : null;
@@ -170,6 +174,7 @@ export async function createApplication(environment: ApiEnvironment | JobsEnviro
       container.bind(CACHE, cache);
       container.bind(EVENT_STREAM, streams);
       container.bind(RISK_GATE, risk);
+      container.bind(IDENTITY_CHALLENGE_CODE, challengeCodes);
       container.bind(AUDIT_SINK, audit);
       container.bind(AUDIT_REPOSITORY, auditRepository);
       container.bind(MANIFEST_VERIFIER, verifier);

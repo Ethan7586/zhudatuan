@@ -8,6 +8,7 @@ describe('secondary verification destination', () => {
       { securityProfile: vi.fn(async () => ({ mobileCiphertext: null, mobileFingerprint: null })) } as never,
       {} as never,
       {} as never,
+      { issue: vi.fn(() => '246810') },
       'identity-key-with-at-least-thirty-two-bytes',
       'session-key-with-at-least-thirty-two-bytes',
       {} as never,
@@ -23,6 +24,33 @@ describe('secondary verification destination', () => {
         (context) => service.start().load!(request(), context)
       )
     ).rejects.toMatchObject({ code: 'STEPUP_DESTINATION_MISSING', result: { status: 409, body: { code: 'STEPUP_DESTINATION_MISSING' } } });
+  });
+
+  it('uses the configured local challenge code without exposing it in the response', async () => {
+    const encrypt = vi.fn(async () => ({ ciphertext: 'ciphertext', fingerprint: 'f'.repeat(64), keyVersion: 'current' }));
+    const service = new ManageStepup(
+      { securityProfile: vi.fn(async () => ({ mobileCiphertext: 'mobile-ciphertext', mobileFingerprint: 'mobile-fingerprint' })) } as never,
+      { decrypt: vi.fn(async () => '+8613800138000'), encrypt } as never,
+      {} as never,
+      { issue: vi.fn(() => '246810') },
+      'identity-key-with-at-least-thirty-two-bytes',
+      'session-key-with-at-least-thirty-two-bytes',
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never
+    );
+    const lifecycle = service.start();
+    const operation = request();
+    const loaded = await withReadTransaction(
+      async () => result([]),
+      (context) => lifecycle.load!(operation, context)
+    );
+    const prepared = await lifecycle.prepare!(operation, loaded);
+
+    expect(encrypt).toHaveBeenCalledWith('pii', 'identity/challenge', '246810', expect.objectContaining({ purpose: 'stepup' }));
+    expect(prepared).not.toHaveProperty('verificationCode');
   });
 });
 

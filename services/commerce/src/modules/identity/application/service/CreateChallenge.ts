@@ -1,7 +1,7 @@
 import { identityLifecycle as operationLifecycle, type IdentityLifecycle as OperationLifecycle } from '../model/IdentityAction';
 import { requireWriteTransaction } from '../../../../platform/database/TransactionContext';
 import { DomainError } from '../../../../platform/error/DomainError';
-import { createHmac, randomInt, randomUUID } from 'node:crypto';
+import { createHmac, randomUUID } from 'node:crypto';
 import { isConsumerTarget, OperationCatalog } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 
@@ -22,6 +22,7 @@ import type { IdentityRegistrationPort } from '../../../member/public';
 import type { InvitationAccessPort } from '../../../access/public';
 import { canonicalIdentitySubject, canonicalMobile } from '../../domain/value/IdentitySubject';
 import { assertPublicRisk } from '../service/PublicRisk';
+import type { ChallengeCode } from '../port/ChallengeCode';
 
 interface PreparedChallenge {
   readonly id: string;
@@ -54,6 +55,7 @@ export class CreateChallenge {
     private readonly kms: KmsClient,
     private readonly risk: RiskGate,
     private readonly challenges: ChallengePort,
+    private readonly codes: ChallengeCode,
     private readonly identityKey: string,
     private readonly sessionKey: string,
     private readonly preauth: PreauthResolver,
@@ -166,7 +168,7 @@ export class CreateChallenge {
     const peer = this.digest(request.input.headers['x-peer-address'] ?? 'unknown');
     await assertPublicRisk(this.risk, request, destinationHash, device);
     const id = `challenge:${randomUUID()}`;
-    const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+    const code = this.codes.issue(purpose);
     const [envelope, recipient] = await Promise.all([this.kms.encrypt('pii', 'identity/challenge', code, { challenge: id, purpose }), this.kms.encrypt('pii', 'identity/destination', destination, { challenge: id, purpose })]);
     return Object.freeze({ id, code, purpose, destination, destinationHash, device, peer, envelope, recipient, principal, queueDelivery, scope, enrollment: null });
   }
