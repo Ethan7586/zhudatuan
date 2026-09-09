@@ -7,7 +7,7 @@ MIN_FREE_PERCENT=15
 
 RELEASE_ROOTS=/opt/zhudatuan/releases:/opt/zhudatuan/storefront-releases:/opt/sfl/releases
 DISCOVER_RELEASE_PATTERNS="/opt/sfl/nodes/*/releases /opt/sfl/nodes/*/console/releases"
-POINTER_SCAN_POLICIES="/opt/zhudatuan,2 /opt/sfl/nodes,3"
+POINTER_SCAN_POLICIES="/opt/zhudatuan,2 /opt/zhudatuan/backups,3 /opt/sfl/nodes,3 /opt/sfl/backups,3"
 
 # Uploads are disposable after two hours; failed candidates remain inspectable for 24 hours.
 TRANSIENT_POLICIES="/opt/zhudatuan/incoming,2 /opt/zhudatuan/candidates,24 /opt/sfl/incoming,2 /opt/sfl/candidates,24"
