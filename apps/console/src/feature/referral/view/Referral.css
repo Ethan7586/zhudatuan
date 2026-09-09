@@ -9,7 +9,7 @@
   scrollbar-width: thin;
 }
 .referraltabs button {
-  min-height: 2.5rem;
+  min-height: var(--sw-control-touch-target);
   flex: 0 0 auto;
   border: 1px solid transparent;
   border-radius: var(--sw-radius-sm);

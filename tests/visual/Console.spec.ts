@@ -114,6 +114,22 @@ test('Console 设置首页按业务任务分组并随视口重排', async ({ pag
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });
 
+test('Console 分销与返佣页签在桌面和手机均可清晰触控', async ({ page }) => {
+  await prepareVisual(page, { width: 1440, height: 900 });
+  await signInConsole(page);
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consolereferral, 'enterprise')}`);
+    await expectUsable(page);
+    await expect(page.locator('.referraltabs button')).toHaveCount(6);
+    await expect.poll(() => minimumHeight(page, '.referraltabs button')).toBeGreaterThanOrEqual(44);
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+  }
+});
+
 test('Console 窄屏页脚只保留服务状态且不覆盖工作区', async ({ page }) => {
   await prepareVisual(page, { width: 390, height: 844 });
   await signInConsole(page);
