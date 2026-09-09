@@ -36,6 +36,7 @@ describe('WeChat JS-SDK address bootstrap', () => {
       wx: sdk,
     });
     const { ensureWechatAddressJsSdk } = await import('./wechatJsSdk');
+    const { getWechatAddressDiagnostics } = await import('./wechatAddressDiagnostics');
 
     await ensureWechatAddressJsSdk();
     await ensureWechatAddressJsSdk();
@@ -43,5 +44,40 @@ describe('WeChat JS-SDK address bootstrap', () => {
     expect(requestConfiguration).toHaveBeenCalledOnce();
     expect(requestConfiguration).toHaveBeenCalledWith('https://hbbtzn.com/?source=wechat');
     expect(sdk.config).toHaveBeenCalledWith(expect.objectContaining({ debug: false, jsApiList: ['openAddress'] }));
+    expect(getWechatAddressDiagnostics().map(({ stage, status }) => `${stage}:${status}`)).toEqual([
+      'sdk-load:succeeded',
+      'signature:succeeded',
+      'configuration:succeeded',
+      'sdk-load:cached',
+      'signature:cached',
+      'configuration:cached',
+    ]);
+  });
+
+  it('keeps the original wx.config error in the configuration diagnostic', async () => {
+    let sdkError: ((error: unknown) => void) | undefined;
+    const rawError = { errMsg: 'config:invalid signature' };
+    const sdk = {
+      openAddress: vi.fn(),
+      ready: vi.fn(),
+      error: vi.fn((callback: (error: unknown) => void) => { sdkError = callback; }),
+      config: vi.fn(() => sdkError?.(rawError)),
+    };
+    vi.stubGlobal('navigator', { userAgent: 'MicroMessenger/8.0.50' });
+    vi.stubGlobal('window', {
+      location: { href: 'https://hbbtzn.com/address' },
+      setTimeout: globalThis.setTimeout.bind(globalThis),
+      clearTimeout: globalThis.clearTimeout.bind(globalThis),
+      wx: sdk,
+    });
+    const { ensureWechatAddressJsSdk } = await import('./wechatJsSdk');
+    const { getWechatAddressDiagnostics } = await import('./wechatAddressDiagnostics');
+
+    await expect(ensureWechatAddressJsSdk()).rejects.toBe(rawError);
+    expect(getWechatAddressDiagnostics()).toContainEqual(expect.objectContaining({
+      stage: 'configuration',
+      status: 'failed',
+      rawError,
+    }));
   });
 });

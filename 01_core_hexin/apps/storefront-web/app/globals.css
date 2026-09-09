@@ -226,12 +226,17 @@ textarea {
 }
 
 .sw-address-sheet-backdrop {
-  animation: sw-address-sheet-fade 260ms ease-out both;
+  animation: sw-address-sheet-fade 160ms ease-out both;
 }
 
 .sw-address-sheet-panel {
-  animation: sw-address-sheet-rise 440ms cubic-bezier(0.22, 0.82, 0.2, 1) both;
+  animation: sw-address-sheet-rise 220ms cubic-bezier(0.22, 0.82, 0.2, 1) both;
   will-change: transform, opacity;
+}
+
+.sw-address-sheet[data-economy-effects='true'] .sw-address-sheet-backdrop {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .sw-address-wheel {
@@ -246,6 +251,11 @@ textarea {
   .sw-address-sheet-backdrop,
   .sw-address-sheet-panel {
     animation: none;
+  }
+
+  .sw-address-sheet-backdrop {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 
   .sw-address-wheel {

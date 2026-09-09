@@ -1,9 +1,8 @@
 import React from 'react';
 import {
-  CheckCircle2,
   ChevronRight,
-  Circle,
   ClipboardPaste,
+  LoaderCircle,
   MapPin,
   MessageCircle,
   Sparkles,
@@ -11,12 +10,19 @@ import {
 import { WeChatCapsule } from '../../components/mobile/WeChatCapsule';
 import { useMall } from '../../context/MallContext';
 import type { DeliveryAddress } from '../../types';
+import {
+  prepareWechatDeliveryAddress,
+  requestWechatDeliveryAddress,
+  WechatAddressRequestError,
+  type WechatAddressFlowState,
+} from '../../services/wechatDeliveryAddress';
+import { AddressRegionPicker } from './address/AddressRegionPicker';
 import { readAddressClipboard } from './address/addressClipboard';
+import { loadChinaRegions } from './address/chinaRegions';
 import type { RegionSelection } from './address/regionSelection';
 
-const AddressRegionPicker = React.lazy(() => import('./address/AddressRegionPicker').then((module) => ({ default: module.AddressRegionPicker })));
-
 type AddressForm = Pick<DeliveryAddress, 'name' | 'phone' | 'province' | 'city' | 'district' | 'detail'>;
+type WechatAddressUiState = 'idle' | WechatAddressFlowState;
 
 const EMPTY_ADDRESS: Readonly<AddressForm> = Object.freeze({
   name: '',
@@ -33,10 +39,28 @@ export const MPAddressPage: React.FC = () => {
   const [rawAddress, setRawAddress] = React.useState('');
   const [saving, setSaving] = React.useState(false);
   const [parsing, setParsing] = React.useState(false);
-  const [importingWechat, setImportingWechat] = React.useState(false);
+  const [wechatAddressState, setWechatAddressState] = React.useState<WechatAddressUiState>('idle');
   const [regionPickerOpen, setRegionPickerOpen] = React.useState(false);
   const [switchingDefaultId, setSwitchingDefaultId] = React.useState<string>();
   const pasteAreaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  React.useEffect(() => {
+    // This page is itself lazy-loaded. Starting the sole region-data request
+    // here keeps it out of the home entry while making the picker warm before use.
+    void loadChinaRegions();
+  }, []);
+
+  React.useEffect(() => {
+    const warmWechatAddress = () => {
+      void prepareWechatDeliveryAddress().catch(() => undefined);
+    };
+    if (window.requestIdleCallback && window.cancelIdleCallback) {
+      const handle = window.requestIdleCallback(warmWechatAddress, { timeout: 500 });
+      return () => window.cancelIdleCallback(handle);
+    }
+    const handle = window.setTimeout(warmWechatAddress, 120);
+    return () => window.clearTimeout(handle);
+  }, []);
 
   const update = (field: keyof AddressForm, value: string) => setForm((current) => ({ ...current, [field]: value }));
   const valid = form.name.trim().length > 0 && /^1[3-9]\d{9}$/.test(form.phone.trim())
@@ -80,16 +104,18 @@ export const MPAddressPage: React.FC = () => {
   };
 
   const importFromWechat = async () => {
-    if (importingWechat) return;
-    setImportingWechat(true);
+    if (isWechatAddressBusy(wechatAddressState)) return;
+    setWechatAddressState('preparing');
     try {
-      const { requestWechatDeliveryAddress } = await import('../../services/wechatDeliveryAddress');
-      const imported = await requestWechatDeliveryAddress();
+      const imported = await requestWechatDeliveryAddress({ onStateChange: setWechatAddressState });
       setForm(imported);
+      setWechatAddressState('filled');
       showToast('微信地址已带入，请确认后保存', 'success');
     } catch (error) {
-      const { WechatAddressRequestError } = await import('../../services/wechatDeliveryAddress');
-      if (error instanceof WechatAddressRequestError && error.code === 'cancelled') return;
+      if (error instanceof WechatAddressRequestError && error.code === 'cancelled') {
+        setWechatAddressState('cancelled');
+        return;
+      }
       if (error instanceof WechatAddressRequestError && error.code === 'incomplete' && error.partialAddress) {
         setForm((current) => ({
           name: error.partialAddress?.name || current.name,
@@ -99,13 +125,13 @@ export const MPAddressPage: React.FC = () => {
           district: error.partialAddress?.district || current.district,
           detail: error.partialAddress?.detail || current.detail,
         }));
+        setWechatAddressState('filled');
         showToast('已带入微信地址，请补齐缺少内容', 'info');
         return;
       }
+      setWechatAddressState('failed');
       pasteAreaRef.current?.focus();
       showToast(error instanceof Error ? error.message : '暂时无法读取微信地址，请手动填写', 'info');
-    } finally {
-      setImportingWechat(false);
     }
   };
 
@@ -122,6 +148,11 @@ export const MPAddressPage: React.FC = () => {
   };
 
   const selectedRegion = [form.province, form.city, form.district].filter(Boolean).join(' / ');
+  const orderedAddresses = React.useMemo(() => {
+    const defaultIndex = addresses.findIndex((address) => address.isDefault);
+    if (defaultIndex <= 0) return addresses;
+    return [addresses[defaultIndex], ...addresses.slice(0, defaultIndex), ...addresses.slice(defaultIndex + 1)];
+  }, [addresses]);
 
   const chooseDefault = async (addressId: string) => {
     if (switchingDefaultId) return;
@@ -138,8 +169,13 @@ export const MPAddressPage: React.FC = () => {
       <WeChatCapsule title="收货地址" showBack onBack={() => setMpPage(mpAddressReturnPage)} />
       <main className="space-y-3 p-3">
         {addresses.length > 0 && (
-          <section aria-label="已保存地址" className="space-y-2.5">
-            {addresses.map((address) => (
+          <section
+            aria-label="默认收货地址"
+            className="space-y-2.5"
+            role="radiogroup"
+            onKeyDown={handleAddressRadioGroupKeyDown}
+          >
+            {orderedAddresses.map((address) => (
               <AddressCard
                 key={address.id}
                 address={address}
@@ -164,7 +200,14 @@ export const MPAddressPage: React.FC = () => {
               <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-800"><Sparkles className="h-3.5 w-3.5 text-[var(--sw-brand)]" />智能填写</div>
               <div className="flex gap-1.5">
                 <UtilityButton icon={ClipboardPaste} label={parsing ? '识别中' : '粘贴并识别'} disabled={parsing} onClick={() => void pasteAndRecognize()} />
-                <UtilityButton icon={MessageCircle} label={importingWechat ? '等待微信' : '从微信选择地址'} disabled={importingWechat} onClick={() => void importFromWechat()} />
+                <UtilityButton
+                  icon={isWechatAddressBusy(wechatAddressState) ? LoaderCircle : MessageCircle}
+                  label={wechatAddressButtonLabel(wechatAddressState)}
+                  disabled={isWechatAddressBusy(wechatAddressState)}
+                  busy={isWechatAddressBusy(wechatAddressState)}
+                  state={wechatAddressState}
+                  onClick={() => void importFromWechat()}
+                />
               </div>
             </div>
             <textarea
@@ -216,16 +259,14 @@ export const MPAddressPage: React.FC = () => {
       </main>
 
       {regionPickerOpen && (
-        <React.Suspense fallback={null}>
-          <AddressRegionPicker
-            value={form}
-            onCancel={() => setRegionPickerOpen(false)}
-            onConfirm={(region: RegionSelection) => {
-              setForm((current) => ({ ...current, ...region }));
-              setRegionPickerOpen(false);
-            }}
-          />
-        </React.Suspense>
+        <AddressRegionPicker
+          value={form}
+          onCancel={() => setRegionPickerOpen(false)}
+          onConfirm={(region: RegionSelection) => {
+            setForm((current) => ({ ...current, ...region }));
+            setRegionPickerOpen(false);
+          }}
+        />
       )}
     </div>
   );
@@ -236,40 +277,118 @@ function AddressCard({ address, switching, onSetDefault }: Readonly<{
   switching: boolean;
   onSetDefault: () => void;
 }>) {
+  const addressLine = [address.province, address.city, address.district, address.detail].filter(Boolean).join(' ');
+  const chooseFromCard = (event: React.MouseEvent<HTMLElement>) => {
+    if (address.isDefault || switching || isInteractiveAddressTarget(event.target)) return;
+    onSetDefault();
+  };
+
   return (
-    <article className={`rounded-[22px] border bg-white p-3.5 shadow-[0_8px_28px_rgba(30,64,120,0.07)] ${address.isDefault ? 'border-blue-100' : 'border-slate-100'}`}>
-      <div className="flex items-start gap-2.5">
-        {address.isDefault
-          ? <CheckCircle2 className="mt-0.5 h-[18px] w-[18px] shrink-0 text-[var(--sw-brand)]" />
-          : <Circle className="mt-0.5 h-[18px] w-[18px] shrink-0 text-slate-300" />}
+    <article
+      data-address-card={address.id}
+      onClick={chooseFromCard}
+      className={`rounded-[22px] border bg-white p-3.5 shadow-[0_8px_28px_rgba(30,64,120,0.07)] transition-[border-color,background-color,box-shadow,transform] duration-75 ${address.isDefault ? 'border-blue-200 bg-blue-50/20 shadow-[0_10px_30px_rgba(30,64,120,0.1)]' : 'cursor-pointer touch-manipulation border-slate-100 active:scale-[0.995] active:border-blue-100'}`}
+    >
+      <div className="flex items-start gap-1.5">
+        <label
+          data-address-action="default-radio"
+          className="relative grid h-11 w-11 shrink-0 cursor-pointer touch-manipulation place-items-center rounded-full"
+        >
+          <input
+            type="radio"
+            name="default-delivery-address"
+            role="radio"
+            checked={address.isDefault}
+            aria-checked={address.isDefault}
+            aria-label={`设为默认地址：${address.name} ${address.phone}，${addressLine}`}
+            aria-busy={switching || undefined}
+            onChange={() => {
+              if (!address.isDefault && !switching) onSetDefault();
+            }}
+            onKeyDown={(event) => {
+              if ((event.key === ' ' || event.key === 'Enter') && !address.isDefault && !switching) {
+                event.preventDefault();
+                onSetDefault();
+              }
+            }}
+            className="peer absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+          <span
+            aria-hidden="true"
+            className={`grid h-5 w-5 place-items-center rounded-full border-2 transition-colors duration-75 peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--sw-brand)] peer-focus-visible:ring-offset-2 ${address.isDefault ? 'border-[var(--sw-brand)] bg-[var(--sw-brand)]' : 'border-slate-300 bg-white peer-hover:border-blue-300'}`}
+          >
+            {address.isDefault && <span className="h-2 w-2 rounded-full bg-white" />}
+          </span>
+        </label>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-black text-slate-900">
             <span>{address.name}</span><span>{address.phone}</span>
             {address.isDefault && <span className="rounded-md bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-[var(--sw-brand)]">默认</span>}
           </div>
-          <p className="mt-1.5 text-[11px] leading-5 text-slate-500">{[address.province, address.city, address.district, address.detail].filter(Boolean).join(' ')}</p>
-          {!address.isDefault && (
-            <button type="button" disabled={switching} onClick={onSetDefault} className="mt-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-[9px] font-bold text-slate-500 transition active:scale-95 active:bg-blue-50 active:text-[var(--sw-brand)] disabled:text-slate-300">
-              {switching ? '轻轻切换中…' : '设为默认'}
-            </button>
-          )}
+          <p className="mt-1.5 text-[11px] leading-5 text-slate-500">{addressLine}</p>
         </div>
       </div>
     </article>
   );
 }
 
-function UtilityButton({ icon: Icon, label, disabled, onClick }: Readonly<{
+function isInteractiveAddressTarget(target: EventTarget | null): boolean {
+  return target instanceof Element
+    && Boolean(target.closest('a, button, input, select, textarea, [role="button"], [data-address-action]'));
+}
+
+function handleAddressRadioGroupKeyDown(event: React.KeyboardEvent<HTMLElement>) {
+  if (!(event.target instanceof HTMLInputElement) || event.target.type !== 'radio') return;
+  const step = event.key === 'ArrowDown' || event.key === 'ArrowRight'
+    ? 1
+    : event.key === 'ArrowUp' || event.key === 'ArrowLeft'
+      ? -1
+      : 0;
+  if (!step) return;
+
+  const radios = Array.from(event.currentTarget.querySelectorAll<HTMLInputElement>('input[name="default-delivery-address"]'));
+  const currentIndex = radios.indexOf(event.target);
+  if (currentIndex < 0 || radios.length < 2) return;
+  event.preventDefault();
+  const nextRadio = radios[(currentIndex + step + radios.length) % radios.length];
+  nextRadio?.focus();
+  if (nextRadio && !nextRadio.checked) nextRadio.click();
+}
+
+function UtilityButton({ icon: Icon, label, disabled, busy = false, state, onClick }: Readonly<{
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   disabled: boolean;
+  busy?: boolean;
+  state?: WechatAddressUiState;
   onClick: () => void;
 }>) {
   return (
-    <button type="button" disabled={disabled} onClick={onClick} className="inline-flex min-h-8 items-center gap-1 rounded-lg border border-blue-100 bg-white px-2 text-[9px] font-bold text-[var(--sw-brand)] shadow-sm transition active:scale-95 disabled:text-slate-400">
-      <Icon className="h-3 w-3" />{label}
+    <button
+      type="button"
+      disabled={disabled}
+      aria-busy={busy || undefined}
+      data-wechat-address-state={state}
+      onClick={onClick}
+      className="inline-flex min-h-11 touch-manipulation items-center gap-1.5 rounded-[var(--sw-radius-md)] border border-[var(--sw-border)] bg-white px-2.5 text-[10px] font-bold text-[var(--sw-brand)] shadow-[var(--sw-shadow-card)] transition-[color,transform,border-color] duration-[var(--sw-duration-fast)] outline-none active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--sw-brand)] focus-visible:ring-offset-2 disabled:text-slate-400"
+    >
+      <Icon className={`h-3.5 w-3.5 ${busy ? 'motion-safe:animate-spin' : ''}`} />
+      <span aria-live={state ? 'polite' : undefined}>{label}</span>
     </button>
   );
+}
+
+function isWechatAddressBusy(state: WechatAddressUiState): boolean {
+  return state === 'preparing' || state === 'launching' || state === 'returned';
+}
+
+function wechatAddressButtonLabel(state: WechatAddressUiState): string {
+  if (state === 'preparing') return '正在准备微信';
+  if (state === 'launching') return '正在拉起微信';
+  if (state === 'returned') return '正在读取地址';
+  if (state === 'filled') return '已回填，可重选';
+  if (state === 'failed') return '重新选择微信地址';
+  return '从微信选择地址';
 }
 
 function Field({ label, value, onChange, placeholder, inputMode, autoComplete }: Readonly<{

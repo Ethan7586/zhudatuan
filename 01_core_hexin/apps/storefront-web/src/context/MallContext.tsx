@@ -625,11 +625,13 @@ export const MallProvider: React.FC<MallProviderProps> = ({ children, showcaseSe
     }
     if (sessionStatus === 'authenticated') {
       try {
-        const productionApi = await loadProductionApi();
         await switchDefaultAddressOptimistically(
           addresses,
           addressId,
-          (address) => productionApi.setDefaultAddress(address.id, address.version),
+          async (address) => {
+            const productionApi = await loadProductionApi();
+            return productionApi.setDefaultAddress(address.id, address.version);
+          },
           setAddresses,
         );
         showToast('默认收货地址已更新', 'success');

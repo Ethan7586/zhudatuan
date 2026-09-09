@@ -20,11 +20,16 @@ describe('three-level region selection', () => {
     expect(xiangyang?.district).toBeTruthy();
   });
 
-  it('resolves municipalities as a complete three-level value', () => {
-    expect(resolveRegionSelection(regions, { province: '重庆市', city: '重庆市', district: '渝中区' })).toMatchObject({
-      province: '重庆市',
-      city: '重庆市',
-      district: '渝中区',
+  it.each([
+    ['北京市', '东城区'],
+    ['天津市', '和平区'],
+    ['上海市', '黄浦区'],
+    ['重庆市', '渝中区'],
+  ])('resolves %s as a complete three-level value', (municipality, district) => {
+    expect(resolveRegionSelection(regions, { province: municipality, city: municipality, district })).toMatchObject({
+      province: municipality,
+      city: municipality,
+      district,
     });
   });
 

@@ -20,13 +20,23 @@ interface AreaListSource {
 }
 
 let regionTreePromise: Promise<ChinaRegionTree> | undefined;
+let loadedRegionTree: ChinaRegionTree | undefined;
+
+export function getLoadedChinaRegions(): ChinaRegionTree | undefined {
+  return loadedRegionTree;
+}
 
 export function loadChinaRegions(): Promise<ChinaRegionTree> {
   regionTreePromise ??= import('@vant/area-data').then(async ({ areaList }) => {
     // Let the sheet and its frost-dew placeholder paint before transforming
     // the complete district table on slower WebViews.
     await new Promise<void>((resolve) => globalThis.setTimeout(resolve, 0));
-    return buildChinaRegionTree(areaList);
+    const builtRegionTree = buildChinaRegionTree(areaList);
+    // Keep data conversion and the first three-wheel React render in separate
+    // main-thread tasks on entry-level devices.
+    await new Promise<void>((resolve) => globalThis.setTimeout(resolve, 0));
+    loadedRegionTree = builtRegionTree;
+    return loadedRegionTree;
   });
   return regionTreePromise;
 }
