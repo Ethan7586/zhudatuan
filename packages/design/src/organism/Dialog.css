@@ -97,6 +97,57 @@
   backdrop-filter: blur(0.75rem);
 }
 
+.dialogbackdropsecure {
+  z-index: 110;
+}
+
+.dialogpanelsecure {
+  width: min(28rem, 100%);
+  border-color: var(--sw-brand-light);
+  border-radius: var(--sw-radius-xl);
+}
+
+.dialogcontentsecure > header {
+  position: static;
+  border-bottom: 0;
+  background: var(--sw-action-gradient);
+  padding: var(--sw-space-5) var(--sw-space-6);
+}
+
+.dialogcontentsecure > header h2 {
+  color: var(--sw-text-inverse);
+}
+
+.dialogcontentsecure > header .dialogdescription {
+  margin-top: var(--sw-space-1);
+  color: var(--sw-text-inverse-label);
+  font-size: var(--sw-font-size-body-sm);
+  line-height: var(--sw-line-height-body);
+}
+
+.dialogcontentsecure > header button {
+  --shop-button-background: color-mix(in srgb, var(--sw-surface) 15%, transparent);
+  --shop-button-border: transparent;
+  --shop-button-color: var(--sw-text-inverse);
+  --shop-button-hover-background: color-mix(in srgb, var(--sw-surface) 25%, transparent);
+  --shop-button-hover-color: var(--sw-text-inverse);
+}
+
+.dialogicon {
+  display: grid;
+  width: var(--sw-icon-container-md);
+  height: var(--sw-icon-container-md);
+  margin-bottom: var(--sw-space-2);
+  border-radius: var(--sw-radius-md);
+  background: color-mix(in srgb, var(--sw-surface) 15%, transparent);
+  color: var(--sw-text-inverse);
+  place-items: center;
+}
+
+.dialogcontentsecure .dialogbody {
+  padding: var(--sw-space-5) var(--sw-space-6);
+}
+
 @media (max-width: 48rem) {
   .dialogbackdrop {
     align-items: end;
@@ -115,13 +166,27 @@
     overscroll-behavior: contain;
   }
 
-  .dialogcontent > header { position: static; }
-  .dialogbody { overflow: visible; }
+  .dialogcontent > header {
+    position: static;
+  }
+  .dialogbody {
+    overflow: visible;
+  }
 
   .dialogbody > form > footer {
     position: static;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
     gap: var(--sw-space-2);
+  }
+
+  .dialogbackdropsecure {
+    align-items: center;
+    padding: var(--sw-space-4);
+  }
+
+  .dialogpanelsecure {
+    width: min(28rem, 100%);
+    border-radius: var(--sw-radius-xl);
   }
 }

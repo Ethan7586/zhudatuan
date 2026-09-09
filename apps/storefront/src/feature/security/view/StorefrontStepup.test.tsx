@@ -10,6 +10,8 @@ describe('StorefrontStepup mobile readiness', () => {
   it('prevents challenge delivery when the account has no bound mobile', () => {
     render(<StorefrontStepup open onClose={vi.fn()} viewmodel={viewmodel()} />);
 
+    expect(screen.getByRole('dialog', { name: '确认是你本人操作', description: /验证结果 15 分钟内有效/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '关闭二次验证' })).toBeTruthy();
     expect(screen.getByText('当前账号未绑定手机号，请先在安全中心完成绑定。')).toBeTruthy();
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '发送验证码' }).disabled).toBe(true);
   });

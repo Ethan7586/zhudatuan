@@ -13,9 +13,12 @@ export interface DialogProps {
   readonly eyebrow?: string;
   readonly description?: ReactNode;
   readonly initialFocus?: RefObject<HTMLElement | null>;
+  readonly tone?: 'default' | 'secure';
+  readonly icon?: ReactNode;
+  readonly closeLabel?: string;
 }
 
-export function Dialog({ open, title, children, onClose, dismissable = true, eyebrow, description, initialFocus }: DialogProps) {
+export function Dialog({ open, title, children, onClose, dismissable = true, eyebrow, description, initialFocus, tone = 'default', icon, closeLabel = '关闭' }: DialogProps) {
   const descriptionId = useId();
   const returnFocus = useRef<HTMLElement | null>(null);
   useEffect(() => {
@@ -33,7 +36,7 @@ export function Dialog({ open, title, children, onClose, dismissable = true, eye
   }, [initialFocus, open]);
   return (
     <ModalOverlay
-      className="dialogbackdrop"
+      className={`dialogbackdrop dialogbackdrop${tone}`}
       isDismissable={dismissable}
       isKeyboardDismissDisabled={!dismissable}
       isOpen={open}
@@ -41,12 +44,17 @@ export function Dialog({ open, title, children, onClose, dismissable = true, eye
         if (!nextOpen) onClose();
       }}
     >
-      <Modal className="dialogpanel">
-        <AriaDialog className="dialogcontent" {...(description === undefined ? {} : { 'aria-describedby': descriptionId })}>
+      <Modal className={`dialogpanel dialogpanel${tone}`}>
+        <AriaDialog className={`dialogcontent dialogcontent${tone}`} {...(description === undefined ? {} : { 'aria-describedby': descriptionId })}>
           {({ close }) => (
             <>
               <header>
                 <div>
+                  {icon === undefined ? null : (
+                    <span className="dialogicon" aria-hidden="true">
+                      {icon}
+                    </span>
+                  )}
                   {eyebrow === undefined ? null : <p>{eyebrow}</p>}
                   <Heading slot="title">{title}</Heading>
                   {description === undefined ? null : (
@@ -55,7 +63,7 @@ export function Dialog({ open, title, children, onClose, dismissable = true, eye
                     </p>
                   )}
                 </div>
-                <Button aria-label="关闭" onPress={close} isDisabled={!dismissable}>
+                <Button aria-label={closeLabel} onPress={close} isDisabled={!dismissable}>
                   <span aria-hidden="true">×</span>
                 </Button>
               </header>

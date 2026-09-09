@@ -41,6 +41,19 @@ describe('Dialog', () => {
     expect(screen.getByRole('dialog', { name: '确认操作' })).toBeTruthy();
     expect(closed).not.toHaveBeenCalled();
   });
+
+  it('exposes the secure dialog tone through the shared accessible primitive', async () => {
+    const closed = vi.fn();
+    render(
+      <Dialog open title="身份验证" description="验证后继续" tone="secure" icon={<span>盾</span>} closeLabel="关闭身份验证" onClose={closed}>
+        验证内容
+      </Dialog>
+    );
+
+    const dialog = screen.getByRole('dialog', { name: '身份验证', description: '验证后继续' });
+    expect(dialog.classList.contains('dialogcontentsecure')).toBe(true);
+    expect(screen.getByRole('button', { name: '关闭身份验证' })).toBeTruthy();
+  });
 });
 
 function DialogHarness({ dismissable = true, onClose }: Readonly<{ dismissable?: boolean; onClose: () => void }>) {
