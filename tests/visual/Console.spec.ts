@@ -221,6 +221,8 @@ test('Console 商城管理在平板和手机将宽表转为可读卡片', async 
     await expect(page.locator('.commerceboard tbody tr').first()).toHaveCSS('display', 'grid');
     await expect.poll(() => page.locator('.commerceboard .tablewrap').evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
     await expect.poll(() => minimumHeight(page, '.commerceboard tbody .commerceactions > .commercerowaction')).toBeGreaterThanOrEqual(44);
+    await expect.poll(() => minimumWidth(page, '.commercetabs button')).toBeGreaterThanOrEqual(44);
+    await expect.poll(() => minimumWidth(page, '.commerceactions > .commercerowaction, .commerceactions > .commerceactionmore > summary')).toBeGreaterThanOrEqual(44);
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
   }
 });

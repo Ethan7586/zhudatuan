@@ -103,6 +103,10 @@
   .commerceboard tbody td:last-child {
     border-bottom: 0;
   }
+  .commerceboard tbody td[data-column='action'] {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
   .commerceidentity,
   .commercebinding,
   .commercepublication {
@@ -124,6 +128,7 @@
   .commercerowaction,
   .commerceactionmore summary {
     width: 100%;
+    min-width: var(--sw-control-touch-target);
     justify-content: center;
   }
   .commerceactionmore[open] {
