@@ -1,0 +1,54 @@
+@media (max-width: 74.99rem) {
+  .accesstasks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 44rem) {
+  .rolecards,
+  .roletemplates > div,
+  .rolemetrics,
+  .roleimpactgrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rolesteps {
+    grid-template-columns: 1fr;
+  }
+
+  .roleworkspace > header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .rolejourney {
+    min-width: 0;
+  }
+
+  .rolediff,
+  .accessfieldgrid,
+  .accessownership {
+    grid-template-columns: 1fr;
+  }
+
+  .accessimpact > div {
+    grid-template-columns: auto 1fr;
+  }
+
+  .accessreceipt {
+    right: var(--sw-space-2);
+    bottom: var(--sw-space-2);
+    left: var(--sw-space-2);
+  }
+}
+
+@media (max-width: 29.99rem) {
+  .accesstasks {
+    grid-template-columns: 1fr;
+  }
+
+  .accesstasks button {
+    min-height: var(--sw-control-touch-target);
+    align-items: center;
+  }
+}

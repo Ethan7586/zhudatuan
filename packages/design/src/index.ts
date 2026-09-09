@@ -23,6 +23,7 @@ export * from './molecule/CameraScanner';
 export * from './molecule/DateRange';
 export * from './molecule/Field';
 export * from './molecule/Form';
+export * from './molecule/JourneyGuide';
 export * from './molecule/Progress';
 export * from './molecule/ResourceQuery';
 export * from './molecule/RouteLoading';

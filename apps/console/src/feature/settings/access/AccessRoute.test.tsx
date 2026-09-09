@@ -37,13 +37,15 @@ const server = setupServer(
     })
   ),
   http.get('*/api/v1/access/ownership', () => HttpResponse.json(ownershipState())),
-  http.get('*/api/v1/organizations/layers', () => HttpResponse.json({
-    items: [
-      { id: 'mall:one', kind: 'mall', parent_id: 'enterprise:two', parent_name: '华东企业', name: '测试商城', timezone: 'Asia/Shanghai', status: 'active', version: 4 },
-      { id: 'enterprise:two', kind: 'enterprise', parent_id: null, parent_name: null, name: '华东企业', timezone: 'Asia/Shanghai', status: 'active', version: 2 },
-    ],
-    count: 2,
-  })),
+  http.get('*/api/v1/organizations/layers', () =>
+    HttpResponse.json({
+      items: [
+        { id: 'mall:one', kind: 'mall', parent_id: 'enterprise:two', parent_name: '华东企业', name: '测试商城', timezone: 'Asia/Shanghai', status: 'active', version: 4 },
+        { id: 'enterprise:two', kind: 'enterprise', parent_id: null, parent_name: null, name: '华东企业', timezone: 'Asia/Shanghai', status: 'active', version: 2 },
+      ],
+      count: 2,
+    })
+  ),
   http.post('*/api/v1/access/ownership/transfers/preview', () =>
     HttpResponse.json({
       sourceMembership: 'membership:owner',
@@ -94,11 +96,27 @@ describe('access center account presentation', () => {
     expect(request).toHaveBeenCalledOnce();
   });
 
+  it('explains the safe change journey in business language and keeps ownership actions in their task', async () => {
+    server.use(http.get('*/api/v1/access/center', () => HttpResponse.json(ownerPage())));
+    renderRoute(vi.fn(), true, 3);
+
+    expect(await screen.findByText('选择管理任务')).toBeTruthy();
+    expect(screen.getByText('查看变更影响')).toBeTruthy();
+    expect(screen.getByText('验证后生效')).toBeTruthy();
+    expect(screen.queryByText(/乐观锁|幂等键|权威回读/)).toBeNull();
+    expect(screen.queryByRole('button', { name: '发起所有权转移' })).toBeNull();
+
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: /所有权转移/ }));
+    expect(await screen.findByRole('button', { name: '发起所有权转移' })).toBeTruthy();
+  });
+
   it('requires step-up before preparing an owner transfer', async () => {
     const request = vi.fn();
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json(ownerPage())));
     renderRoute(request, true, 2);
     const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: /所有权转移/ }));
     await user.click(await screen.findByRole('button', { name: '发起所有权转移' }));
     await user.type(screen.getByLabelText('转移原因'), '负责人岗位调整');
     await user.click(screen.getByRole('button', { name: '立即完成二次验证' }));
@@ -110,6 +128,7 @@ describe('access center account presentation', () => {
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json(ownerPage())));
     renderRoute(vi.fn(), true, 3);
     const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: /所有权转移/ }));
     await user.click(await screen.findByRole('button', { name: '发起所有权转移' }));
     await user.type(screen.getByLabelText('转移原因'), '负责人岗位调整');
     await user.click(screen.getByRole('button', { name: '生成复核请求码' }));
@@ -123,10 +142,11 @@ describe('access center account presentation', () => {
     server.use(
       http.get('*/api/v1/access/center', () => HttpResponse.json(ownerPage())),
       http.get('*/api/v1/access/ownership', () => HttpResponse.json({ ...ownershipState(), version: ownershipReads++ === 0 ? 4 : 5 })),
-      http.post('*/api/v1/access/ownership/transfers', () => HttpResponse.json({ code: 'VERSION_CONFLICT', message: 'VERSION_CONFLICT', requestId: 'request:conflict', retryable: true }, { status: 409 })),
+      http.post('*/api/v1/access/ownership/transfers', () => HttpResponse.json({ code: 'VERSION_CONFLICT', message: 'VERSION_CONFLICT', requestId: 'request:conflict', retryable: true }, { status: 409 }))
     );
     renderRoute(vi.fn(), true, 3);
     const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: /所有权转移/ }));
     await user.click(await screen.findByRole('button', { name: '发起所有权转移' }));
     await user.type(screen.getByLabelText('转移原因'), '负责人岗位调整');
     await user.click(screen.getByRole('button', { name: '生成复核请求码' }));
@@ -195,8 +215,12 @@ function renderRoute(request: () => void, privileged = false, level = 2) {
       actor: 'principal:one',
       membership: 'membership:owner',
       accessVersion: 7,
-      permissions: privileged ? ['access.center.read', 'access.ownership.read', 'access.ownership.transfer', 'access.role.manage', 'access.scope.manage', 'access.override.manage', 'organization.layer.read', 'payment.refund'] : ['access.center.read'],
-      capabilities: privileged ? ['access.center.read', 'access.ownership.read', 'access.ownership.transfers.preview', 'access.ownership.transfers.create', 'access.roles.manage', 'access.scopes.manage', 'access.overrides.manage', 'organization.layers.read'] : ['access.center.read'],
+      permissions: privileged
+        ? ['access.center.read', 'access.ownership.read', 'access.ownership.transfer', 'access.role.manage', 'access.scope.manage', 'access.override.manage', 'organization.layer.read', 'payment.refund']
+        : ['access.center.read'],
+      capabilities: privileged
+        ? ['access.center.read', 'access.ownership.read', 'access.ownership.transfers.preview', 'access.ownership.transfers.create', 'access.roles.manage', 'access.scopes.manage', 'access.overrides.manage', 'organization.layers.read']
+        : ['access.center.read'],
       target: 'console',
       scope,
       scopes: [scope, { kind: 'enterprise', id: 'enterprise:two', name: '华东企业' }],

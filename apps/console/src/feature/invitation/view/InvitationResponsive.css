@@ -1,8 +1,4 @@
 @media (max-width: 64rem) {
-  .invitationguide ol {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .invitationfilters {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -93,10 +89,6 @@
 }
 
 @media (max-width: 30rem) {
-  .invitationguide ol {
-    grid-template-columns: 1fr;
-  }
-
   .invitationchoicegroup {
     padding: var(--sw-space-1-5);
   }
