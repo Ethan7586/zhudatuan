@@ -13,6 +13,7 @@ const visualRuntimePath = join(repositoryRoot, 'tests/visual/Runtime.ts');
 assert(existsSync(integrityPath), 'VISUAL_INTEGRITY_GATE_MISSING');
 const integritySource = readFileSync(integrityPath, 'utf8');
 assert(integritySource.includes("'controlcopyoverflow'") && integritySource.includes("'controlcopymultiline'"), 'VISUAL_CONTROL_COPY_GATE_INCOMPLETE');
+assert(integritySource.includes("'technicalidentity'") && integritySource.includes('data-visual-identity="required"'), 'VISUAL_IDENTITY_PRESENTATION_GATE_INCOMPLETE');
 assert(integritySource.includes('maximumTextNodeLines(element)') && integritySource.includes("dataset.visualCopy !== 'multiline'"), 'VISUAL_CONTROL_LINE_GATE_INCOMPLETE');
 assert(integritySource.includes('[data-visual-copy="truncate"]') && integritySource.includes("style.textOverflow !== 'ellipsis'"), 'VISUAL_TRUNCATION_CONTRACT_MISSING');
 assert(readFileSync(visualRuntimePath, 'utf8').includes('../../scripts/check/VisualIntegrity'), 'VISUAL_RUNTIME_GATE_NOT_SHARED');

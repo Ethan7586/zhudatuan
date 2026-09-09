@@ -50,3 +50,16 @@ test('visual integrity accepts accessible ellipsis and rejects unlabeled clippin
   expect(issues.filter(({ element }) => element.includes('button'))).toEqual([]);
   expect(issues.some(({ kind, element }) => kind === 'textclipped' && element === 'span#unlabeled')).toBe(true);
 });
+
+test('visual integrity rejects internal identities unless the business explicitly requires them', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setContent(`
+    <p>当前商城 mall-zhudatuan</p>
+    <span>员工账号 SW_LOCAL_ETHAN</span>
+    <p>用户可读订单号 D202609100001</p>
+    <span data-visual-identity="required">故障排查引用 order:diagnostic:one</span>
+  `);
+
+  const issues = await inspectVisualIntegrity(page);
+  expect(issues.filter(({ kind }) => kind === 'technicalidentity').map(({ text }) => text)).toEqual(['mall-zhudatuan', 'SW_LOCAL_ETHAN']);
+});

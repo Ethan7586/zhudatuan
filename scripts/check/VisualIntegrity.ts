@@ -1,6 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-export type VisualIntegrityKind = 'controlcopymultiline' | 'controlcopyoverflow' | 'documentoverflow' | 'textclipped' | 'touchtarget' | 'viewportbreach';
+export type VisualIntegrityKind = 'controlcopymultiline' | 'controlcopyoverflow' | 'documentoverflow' | 'technicalidentity' | 'textclipped' | 'touchtarget' | 'viewportbreach';
 
 export interface VisualIntegrityIssue {
   readonly kind: VisualIntegrityKind;
@@ -33,6 +33,10 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
       if (!visuallyPresented(element)) continue;
       const style = getComputedStyle(element);
       const text = readableText(element);
+      const exposedIdentity = technicalIdentity(directReadableText(element));
+      if (exposedIdentity && element.closest('[data-visual-identity="required"]') === null) {
+        issues.push({ kind: 'technicalidentity', element: identify(element), text: exposedIdentity, actual: 'internal identity exposed without an explicit business requirement' });
+      }
       const clippedX = text.length > 0 && hiddenOverflow(style.overflowX) && element.scrollWidth > element.clientWidth + 1;
       const clippedY = text.length > 0 && hiddenOverflow(style.overflowY) && element.scrollHeight > element.clientHeight + 1;
       if ((clippedX || clippedY) && !permittedTruncation(element, style)) {
@@ -161,6 +165,31 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
 
     function readableText(element: HTMLElement): string {
       return (element.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 120);
+    }
+
+    function directReadableText(element: HTMLElement): string {
+      return [...element.childNodes]
+        .filter((node) => node.nodeType === Node.TEXT_NODE)
+        .map((node) => node.textContent ?? '')
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 120);
+    }
+
+    function technicalIdentity(text: string): string | null {
+      if (!text) return null;
+      const patterns = [
+        /\b(?:address|application|benefit(?:account)?|campaign|cart|case|channel|checkout|department|enterprise|fulfillment|invoice|journal|listing|mall|member|membership|order|organization|partner|payment|permission|pool|principal|product|promotion|provider|quote|reconciliation|role|scope|settlement|shipment|sku|stock(?:item)?|store|supplier|tenant|ticket|voucher|warehouse):[A-Za-z0-9][A-Za-z0-9.:/_-]*\b/i,
+        /\b(?:application|department|enterprise|listing|mall|member|membership|organization|pool|product|sku|stock|tenant)-[A-Za-z0-9][A-Za-z0-9_-]{2,}\b/i,
+        /\b[A-Z]{2,}_[A-Z0-9]+(?:_[A-Z0-9]+)+\b/,
+        /\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b/i,
+      ];
+      for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match) return match[0];
+      }
+      return null;
     }
 
     function identify(element: HTMLElement): string {
