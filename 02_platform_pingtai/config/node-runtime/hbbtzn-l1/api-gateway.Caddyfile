@@ -42,7 +42,7 @@ https://:4430 {
 
 	@ordersRead {
 		host api.hbbtzn.com
-		method GET HEAD
+		method GET HEAD OPTIONS
 		path /api/v1/orders /api/v1/orders/*
 	}
 	handle @ordersRead {
