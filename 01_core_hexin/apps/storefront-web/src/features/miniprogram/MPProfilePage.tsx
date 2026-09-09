@@ -10,8 +10,6 @@ import { preloadMiniProgramPage } from '../../components/mobile/miniProgramPageL
 export const MPProfilePage: React.FC = () => {
   const { user, currentMall, sessionStatus, logout, presentationOrders, mobileFulfillmentSimulationStage, triggerPendingFeature, setMpPage } = useMall();
 
-  React.useEffect(() => preloadMiniProgramPage('orders'), []);
-
   const openOrders = (statusFilter: MobileOrderFilter) => {
     preloadMiniProgramPage('orders');
     selectMobileOrderFilter(statusFilter);

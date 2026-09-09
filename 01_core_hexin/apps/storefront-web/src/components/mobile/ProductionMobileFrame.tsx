@@ -1,20 +1,21 @@
 import React from 'react';
+import { lazyNamed } from '@shop/interaction/react';
 import { PaymentExperienceBoundary, PaymentStableCarrier } from '../common/PaymentExperienceBoundary';
 import { useMall, type MiniProgramPage } from '../../context/MallContext';
 import { MPHomePage } from '../../features/miniprogram/MPHomePage';
 import { WeChatTabBar } from './WeChatTabBar';
 import { loadMobileOrdersPage, loadMPAddressPage, loadMPCartPage, loadMPCategoryPage, loadMPDetailPage, loadMPProfilePage, loadMPWelfarePage, loadPaymentResultPage } from './miniProgramPageLoaders';
 
-const MPCartPage = React.lazy(() => loadMPCartPage().then(({ MPCartPage }) => ({ default: MPCartPage })));
-const MPCategoryPage = React.lazy(() => loadMPCategoryPage().then(({ MPCategoryPage }) => ({ default: MPCategoryPage })));
-const MPDetailPage = React.lazy(() => loadMPDetailPage().then(({ MPDetailPage }) => ({ default: MPDetailPage })));
-const MPProfilePage = React.lazy(() => loadMPProfilePage().then(({ MPProfilePage }) => ({ default: MPProfilePage })));
-const MPWelfarePage = React.lazy(() => loadMPWelfarePage().then(({ MPWelfarePage }) => ({ default: MPWelfarePage })));
-const MPAddressPage = React.lazy(() => loadMPAddressPage().then(({ MPAddressPage }) => ({ default: MPAddressPage })));
-const MobileOrdersPage = React.lazy(() => loadMobileOrdersPage().then(({ MobileOrdersPage }) => ({ default: MobileOrdersPage })));
-const PaymentResultPage = React.lazy(() => loadPaymentResultPage().then(({ PaymentResultPage }) => ({ default: PaymentResultPage })));
-const PendingInterfaceModal = React.lazy(() => import('./PendingInterfaceModal').then(({ PendingInterfaceModal }) => ({ default: PendingInterfaceModal })));
-const ToastContainer = React.lazy(() => import('../common/ToastContainer').then(({ ToastContainer }) => ({ default: ToastContainer })));
+const MPCartPage = lazyNamed(loadMPCartPage, 'MPCartPage');
+const MPCategoryPage = lazyNamed(loadMPCategoryPage, 'MPCategoryPage');
+const MPDetailPage = lazyNamed(loadMPDetailPage, 'MPDetailPage');
+const MPProfilePage = lazyNamed(loadMPProfilePage, 'MPProfilePage');
+const MPWelfarePage = lazyNamed(loadMPWelfarePage, 'MPWelfarePage');
+const MPAddressPage = lazyNamed(loadMPAddressPage, 'MPAddressPage');
+const MobileOrdersPage = lazyNamed(loadMobileOrdersPage, 'MobileOrdersPage');
+const PaymentResultPage = lazyNamed(loadPaymentResultPage, 'PaymentResultPage');
+const PendingInterfaceModal = lazyNamed(() => import('./PendingInterfaceModal'), 'PendingInterfaceModal');
+const ToastContainer = lazyNamed(() => import('../common/ToastContainer'), 'ToastContainer');
 
 /** Production phone storefront shown after an L6 consumer opens the mall. */
 export function ProductionMobileFrame() {
@@ -44,10 +45,6 @@ export function ProductionMobileFrame() {
       globalThis.clearTimeout(handle);
     };
   }, []);
-
-  React.useEffect(() => {
-    if (mpPage === 'profile') void loadMobileOrdersPage();
-  }, [mpPage]);
 
   if (activeKeepAlivePage) visitedPages.current.add(activeKeepAlivePage);
 

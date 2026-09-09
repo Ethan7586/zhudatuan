@@ -14,7 +14,9 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@shop/interaction": "1.0.0",
     "@shop/sdk": "1.0.0",
+    "@shop/telemetry": "1.0.0",
     "@smart-wing/api-contract": "1.0.0",
     "@smart-wing/design-system": "1.0.0",
     "@vant/area-data": "2.2.0",

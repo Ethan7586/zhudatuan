@@ -1,3 +1,4 @@
+import { readStoredResource, writeStoredResource, type ResourceReadStorage, type ResourceWriteStorage } from '@shop/interaction';
 import type { CartItem } from '../types';
 
 const CART_CACHE_SCHEMA = 'storefront.cart-cache.v1';
@@ -12,34 +13,35 @@ export function cartCacheScope(memberId: string, mallId: string): string {
   return `${memberId}:${mallId}`;
 }
 
-export function readCartCache(scope: string, storage: Pick<Storage, 'getItem'> = window.localStorage): CartItem[] {
-  try {
-    const raw = storage.getItem(`${CART_CACHE_PREFIX}${scope}`);
-    if (!raw) return [];
-    const value = JSON.parse(raw) as Partial<CartCacheRecord>;
-    if (value.schema !== CART_CACHE_SCHEMA || !Array.isArray(value.items)) return [];
-    return value.items.filter(isCartItem);
-  } catch {
-    return [];
-  }
+export function readCartCache(scope: string, storage: ResourceReadStorage | undefined = browserStorage()): CartItem[] {
+  return readStoredResource(storage, `${CART_CACHE_PREFIX}${scope}`, decodeCart) ?? [];
 }
 
-export function writeCartCache(scope: string, items: CartItem[], storage: Pick<Storage, 'setItem'> = window.localStorage): void {
-  try {
-    const value: CartCacheRecord = { schema: CART_CACHE_SCHEMA, items };
-    storage.setItem(`${CART_CACHE_PREFIX}${scope}`, JSON.stringify(value));
-  } catch {
-    // Storage can be unavailable in private WebViews. The in-memory cart stays authoritative for this visit.
-  }
+export function writeCartCache(scope: string, items: CartItem[], storage: ResourceWriteStorage | undefined = browserStorage()): void {
+  writeStoredResource(
+    storage,
+    `${CART_CACHE_PREFIX}${scope}`,
+    items,
+    (value): CartCacheRecord => ({
+      schema: CART_CACHE_SCHEMA,
+      items: value,
+    })
+  );
+}
+
+function browserStorage(): Storage | undefined {
+  return typeof window === 'undefined' ? undefined : window.localStorage;
+}
+
+function decodeCart(value: unknown): CartItem[] | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const record = value as Partial<CartCacheRecord>;
+  if (record.schema !== CART_CACHE_SCHEMA || !Array.isArray(record.items)) return undefined;
+  return record.items.filter(isCartItem);
 }
 
 function isCartItem(value: unknown): value is CartItem {
   if (!value || typeof value !== 'object') return false;
   const item = value as Partial<CartItem>;
-  return typeof item.id === 'string'
-    && typeof item.productId === 'string'
-    && Number.isSafeInteger(item.quantity)
-    && Number(item.quantity) > 0
-    && Boolean(item.product)
-    && typeof item.product?.id === 'string';
+  return typeof item.id === 'string' && typeof item.productId === 'string' && Number.isSafeInteger(item.quantity) && Number(item.quantity) > 0 && Boolean(item.product) && typeof item.product?.id === 'string';
 }

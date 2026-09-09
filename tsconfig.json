@@ -26,6 +26,7 @@
     { "path": "01_core_hexin/packages/config" },
     { "path": "01_core_hexin/packages/contract" },
     { "path": "01_core_hexin/packages/design" },
+    { "path": "01_core_hexin/packages/interaction" },
     { "path": "01_core_hexin/packages/kernel" },
     { "path": "01_core_hexin/packages/sdk" },
     { "path": "01_core_hexin/packages/smart-wing-authz" },

@@ -1,24 +1,28 @@
-export type CartInteractionStage =
-  | 'pointerdown'
-  | 'button-feedback-frame'
-  | 'local-cart-updated'
-  | 'request-start'
-  | 'server-response'
-  | 'rollback';
+import { createInteractionTimeline } from '@shop/telemetry';
 
-const activeInteractions = new Map<string, string>();
-let interactionSequence = 0;
+export type CartInteractionStage = 'pointerdown' | 'button-feedback-frame' | 'local-cart-updated' | 'request-start' | 'server-response' | 'rollback';
+
+const timeline = createInteractionTimeline<CartInteractionStage>({
+  name: 'storefront.cart',
+  onRecord: (event) => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(
+      new CustomEvent('storefront:cart-timing', {
+        detail: {
+          interactionId: event.interactionId,
+          listingId: event.resourceKey,
+          stage: event.stage,
+          time: event.time,
+        },
+      })
+    );
+  },
+});
 
 export function beginCartInteraction(listingId: string): string {
-  const interactionId = `${listingId}:${++interactionSequence}`;
-  activeInteractions.set(listingId, interactionId);
-  recordCartInteraction('pointerdown', listingId, interactionId);
-  return interactionId;
+  return timeline.begin(listingId, 'pointerdown');
 }
 
-export function recordCartInteraction(stage: CartInteractionStage, listingId: string, interactionId = activeInteractions.get(listingId)): void {
-  if (typeof window === 'undefined' || typeof performance === 'undefined') return;
-  window.dispatchEvent(new CustomEvent('storefront:cart-timing', {
-    detail: { interactionId: interactionId ?? null, listingId, stage, time: performance.now() },
-  }));
+export function recordCartInteraction(stage: CartInteractionStage, listingId: string, interactionId?: string): void {
+  timeline.record(stage, listingId, interactionId);
 }

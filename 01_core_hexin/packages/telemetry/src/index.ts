@@ -1,6 +1,7 @@
 export * from './Adapter';
 export * from './ClientErrors';
 export * from './Context';
+export * from './InteractionTimeline';
 export * from './Logger';
 export * from './Metrics';
 export * from './Redactor';
