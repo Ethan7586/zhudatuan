@@ -52,6 +52,12 @@ describe('Console RouteGuard', () => {
     const values = [node('groupdashboard', 'cockpit', 'consolecockpit', '/scopes/:scopeKind/:scopeId/cockpit', 'reporting.dashboard.read', [], true), nodes[1]!];
     expect(landingPath({ defaultKey: 'groupsettings', nodes: values }, scope, RouteRegistry)).toBe('/scopes/enterprise/enterprise%3Aone/settings');
   });
+
+  it('uses the server-selected platform control entry instead of a client hard-coded cockpit fallback', () => {
+    const platform: ConsoleScope = { kind: 'platform', id: 'organization-platform-root' };
+    const control = node('platformcontrol', 'control', 'consolecontrol', '/scopes/:scopeKind/:scopeId/control', 'organization.layers.read');
+    expect(landingPath({ defaultKey: 'platformcontrol', nodes: [control] }, platform, RouteRegistry)).toBe('/scopes/platform/organization-platform-root/control');
+  });
 });
 
 function rejected(pathname: string, routeAccess: RouteAccess, routeScope: ConsoleScope = scope): Response {

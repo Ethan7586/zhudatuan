@@ -1,6 +1,6 @@
 import { RouteLoading } from '@shop/design';
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter, Navigate } from 'react-router';
+import { createBrowserRouter } from 'react-router';
 import type { RouteRegistryContract } from '../shared/manifest/ComponentManifest';
 import { relativeRoute, ROOT_PATH, ROUTE_BASE } from '../generated/RouteBinding';
 import type { SessionPort } from '../entity/session/public/SessionPort';
@@ -25,7 +25,7 @@ export function createConsoleRouter(registry: RouteRegistryContract, session: Se
       ),
       HydrateFallback: RouteLoading,
       errorElement: <ApplicationRouteError />,
-      children: [{ index: true, element: <Navigate to={relativeRoute('consolecockpit')} replace /> }, ...featureRoutes, { path: '*', lazy: () => import('./NotFoundRoute'), ErrorBoundary: IsolatedRouteError }],
+      children: [...featureRoutes, { path: '*', lazy: () => import('./NotFoundRoute'), ErrorBoundary: IsolatedRouteError }],
     },
     { path: '*', lazy: () => import('./NotFoundRoute') },
   ]);
