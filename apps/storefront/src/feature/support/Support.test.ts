@@ -18,6 +18,7 @@ describe('support mapping', () => {
           reference_type: null,
           reference_id: null,
           assigned_agent_id: null,
+          assigned_agent_name: null,
           response_due_at: '2026-08-31T01:00:00Z',
           resolution_due_at: '2026-09-01T01:00:00Z',
           created_at: '2026-08-31T00:00:00Z',
