@@ -31,9 +31,12 @@
 }
 @media (max-width: 540px) {
   .productdrawerfulldetail {
-    width: 36px;
-    overflow: hidden;
-    padding: 0 9px;
-    white-space: nowrap;
+    width: var(--sw-control-touch-target);
+    min-width: var(--sw-control-touch-target);
+    min-height: var(--sw-control-touch-target);
+    padding: 0;
+  }
+  .productdrawerfulldetail span {
+    display: none;
   }
 }

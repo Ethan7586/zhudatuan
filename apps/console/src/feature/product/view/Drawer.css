@@ -72,9 +72,9 @@
 }
 .productdrawerclose {
   display: grid;
-  width: 36px;
-  min-width: 36px;
-  min-height: 36px;
+  width: var(--sw-control-touch-target);
+  min-width: var(--sw-control-touch-target);
+  min-height: var(--sw-control-touch-target);
   border: 0;
   border-radius: 50%;
   background: transparent;

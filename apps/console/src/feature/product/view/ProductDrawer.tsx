@@ -53,18 +53,7 @@ export function ProductDrawer({ listing, tab, detail, sections, onTab, onClose, 
         <AriaDialog className="productdrawercontent" aria-label={listing?.title ?? '商品详情'}>
           {({ close }) =>
             listing === undefined ? null : (
-              <ProductDrawerContent
-                listing={listing}
-                tab={tab}
-                {...(detail === undefined ? {} : { detail })}
-                sections={sections}
-                onTab={onTab}
-                onClose={close}
-                onDetail={onDetail}
-                onAction={onAction}
-                onPool={onPool}
-                canUse={canUse}
-              />
+              <ProductDrawerContent listing={listing} tab={tab} {...(detail === undefined ? {} : { detail })} sections={sections} onTab={onTab} onClose={close} onDetail={onDetail} onAction={onAction} onPool={onPool} canUse={canUse} />
             )
           }
         </AriaDialog>
@@ -130,12 +119,13 @@ function ProductDrawerContent({
           <button
             className="productdrawerfulldetail"
             type="button"
+            aria-label="打开完整商品详情"
             disabled={!hasProduct || !canReadDetail}
             title={!hasProduct ? '渠道商品尚未映射到商品主档' : !canReadDetail ? '当前账号没有查看完整商品详情的权限。' : undefined}
             onClick={() => onDetail(listing)}
           >
             <ProductIcon name="eye" />
-            打开完整详情
+            <span>打开完整详情</span>
           </button>
           <button className="productdrawerclose" type="button" aria-label="关闭商品详情" onClick={onClose}>
             <ProductIcon name="close" />
@@ -159,15 +149,7 @@ function ProductDrawerContent({
         <button
           type="button"
           disabled={!canChangePublication}
-          title={
-            !publicationAllowed
-              ? '当前账号没有上架或下架商品的权限。'
-              : !canChangePublication
-                ? !isManagedListing(listing)
-                  ? '渠道商品尚未映射，不能直接上架或下架'
-                  : '请先把商品状态设为启用'
-                : undefined
-          }
+          title={!publicationAllowed ? '当前账号没有上架或下架商品的权限。' : !canChangePublication ? (!isManagedListing(listing) ? '渠道商品尚未映射，不能直接上架或下架' : '请先把商品状态设为启用') : undefined}
           onClick={() => {
             onClose();
             onAction({ operation: publicationOperation, listing });
