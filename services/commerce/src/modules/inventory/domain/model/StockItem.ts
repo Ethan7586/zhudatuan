@@ -83,12 +83,16 @@ export function available(onhand: number, activeReserved: number, safety: number
 }
 
 function validate(value: StockItemSnapshot): void {
-  if (!/^stock:[A-Za-z0-9][A-Za-z0-9.:/-]*$/.test(value.id) || !value.scope || !/^sku:/.test(value.sku) || !value.location) invalid('identity');
+  if (!/^stock:[A-Za-z0-9][A-Za-z0-9.:/-]*$/.test(value.id) || !value.scope || !foreignIdentity(value.sku) || !value.location) invalid('identity');
   quantity(value.onhand, false, 'onhand');
   quantity(value.safety, false, 'safety');
   if (!['active', 'blocked', 'retired'].includes(value.state)) invalid('state');
   if (!Number.isSafeInteger(value.version) || value.version < 1) invalid('version');
   iso(value.updatedAt);
+}
+
+function foreignIdentity(value: string): boolean {
+  return /^[^\s,]{1,256}$/.test(value);
 }
 
 function quantity(value: number, positive: boolean, field: string): void {

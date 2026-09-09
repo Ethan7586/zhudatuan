@@ -15,6 +15,15 @@ describe('Inventory domain', () => {
     expect(stock.reserve(4, 4, now).snapshot().version).toBe(2);
   });
 
+  it('treats the catalog SKU as an opaque foreign identity', () => {
+    expect(
+      StockItem.create({ id: 'stock:legacycatalog', scope: 'mall:one', sku: 'sku-rice-5kg', location: 'warehouse:one', onhand: 10, safety: 2, state: 'active', updatedAt: now }).snapshot().sku
+    ).toBe('sku-rice-5kg');
+    expect(() =>
+      StockItem.create({ id: 'stock:invalidsku', scope: 'mall:one', sku: 'sku,invalid', location: 'warehouse:one', onhand: 10, safety: 2, state: 'active', updatedAt: now })
+    ).toThrow('INVENTORY_BALANCE_INVALID');
+  });
+
   it('makes reservation confirmation release and expiry mutually exclusive and idempotent', () => {
     const value = reservation();
     const committed = value.commit(new Date('2026-09-05T00:10:00.000Z'));
