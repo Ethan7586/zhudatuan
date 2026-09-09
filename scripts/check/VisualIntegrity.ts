@@ -305,14 +305,33 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
     }
 
     function occludingElement(element: HTMLElement, rect: DOMRect): HTMLElement | null {
-      const visibleLeft = Math.max(0, rect.left);
-      const visibleRight = Math.min(document.documentElement.clientWidth, rect.right);
-      const visibleTop = Math.max(0, rect.top);
-      const visibleBottom = Math.min(document.documentElement.clientHeight, rect.bottom);
-      if (visibleRight - visibleLeft < 2 || visibleBottom - visibleTop < 2) return null;
-      const top = document.elementFromPoint((visibleLeft + visibleRight) / 2, (visibleTop + visibleBottom) / 2);
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      if (centerX < 0 || centerX > document.documentElement.clientWidth || centerY < 0 || centerY > document.documentElement.clientHeight) return null;
+      const top = document.elementFromPoint(centerX, centerY);
       if (!(top instanceof HTMLElement) || element === top || element.contains(top) || top.contains(element)) return null;
+      const blocker = fixedLayer(top);
+      if (blocker && fixedLayer(element) === null && canScrollClear(rect, blocker.getBoundingClientRect())) return null;
       return top;
+    }
+
+    function fixedLayer(element: HTMLElement): HTMLElement | null {
+      let candidate: HTMLElement | null = element;
+      while (candidate) {
+        const position = getComputedStyle(candidate).position;
+        if (position === 'fixed' || position === 'sticky') return candidate;
+        candidate = candidate.parentElement;
+      }
+      return null;
+    }
+
+    function canScrollClear(target: DOMRect, blocker: DOMRect): boolean {
+      const viewportHeight = document.documentElement.clientHeight;
+      const documentHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+      const maximumScrollY = Math.max(0, documentHeight - viewportHeight);
+      const minimumCenter = Math.max(target.height / 2, target.top + target.height / 2 - (maximumScrollY - window.scrollY));
+      const maximumCenter = Math.min(viewportHeight - target.height / 2, target.top + target.height / 2 + window.scrollY);
+      return minimumCenter < blocker.top - 1 || maximumCenter > blocker.bottom + 1;
     }
 
     function readableText(element: HTMLElement): string {

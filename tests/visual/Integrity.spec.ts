@@ -84,6 +84,9 @@ test('visual integrity reports text outside control boundaries, occluded control
       <button id="outside" style="position:relative;width:88px;height:44px"><span style="position:absolute;left:72px;white-space:nowrap">保存并发布</span></button>
       <button id="covered" style="position:fixed;left:20px;top:100px;width:120px;height:44px">提交订单</button>
       <div style="position:fixed;z-index:2;left:20px;top:100px;width:120px;height:44px;background:white">错误遮挡</div>
+      <button id="recoverable" style="position:absolute;top:790px;width:120px;height:44px">可滚动操作</button>
+      <div style="position:absolute;top:1200px;height:1px">页面末尾</div>
+      <nav style="position:fixed;inset:auto 0 0;height:72px;background:white">底部导航</nav>
       <img id="broken" src="data:image/png;base64,broken" alt="商品主图" style="display:block;width:80px;height:80px" />
     </main>
   `);
@@ -91,4 +94,5 @@ test('visual integrity reports text outside control boundaries, occluded control
 
   const issues = await inspectVisualIntegrity(page);
   expect(issues.map(({ kind }) => kind)).toEqual(expect.arrayContaining(['controlcopyboundary', 'controloccluded', 'imagefailure']));
+  expect(issues.some(({ kind, element }) => kind === 'controloccluded' && element === 'button#recoverable')).toBe(false);
 });
