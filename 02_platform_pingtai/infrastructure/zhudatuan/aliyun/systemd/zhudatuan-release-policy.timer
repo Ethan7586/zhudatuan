@@ -1,0 +1,13 @@
+[Unit]
+Description=Hourly Zhudatuan and SFL release lifecycle collection
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1h
+RandomizedDelaySec=5min
+AccuracySec=1min
+Persistent=true
+Unit=zhudatuan-release-policy.service
+
+[Install]
+WantedBy=timers.target

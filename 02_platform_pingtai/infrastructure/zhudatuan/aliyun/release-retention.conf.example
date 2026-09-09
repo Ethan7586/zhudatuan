@@ -1,0 +1,23 @@
+# Zhudatuan/SFL production release lifecycle. This file contains no credentials.
+KEEP_RECENT_PER_ROOT=12
+MAX_RELEASES_PER_ROOT=30
+RELEASE_GRACE_HOURS=12
+MIN_FREE_GIB=15
+MIN_FREE_PERCENT=15
+
+RELEASE_ROOTS=/opt/zhudatuan/releases:/opt/zhudatuan/storefront-releases:/opt/sfl/releases
+DISCOVER_RELEASE_PATTERNS="/opt/sfl/nodes/*/releases /opt/sfl/nodes/*/console/releases"
+POINTER_SCAN_POLICIES="/opt/zhudatuan,2 /opt/sfl/nodes,3"
+
+# Uploads are disposable after two hours; failed candidates remain inspectable for 24 hours.
+TRANSIENT_POLICIES="/opt/zhudatuan/incoming,2 /opt/zhudatuan/candidates,24 /opt/sfl/incoming,2 /opt/sfl/candidates,24"
+
+# One absolute release path per line. Database backups, media and rollback directories are never
+# part of automatic collection; this file is for extra manually pinned releases.
+PINS_FILE=/etc/zhudatuan/release-pins
+AUDIT_DIR=/var/log/zhudatuan-release-policy
+AUDIT_RETENTION_DAYS=30
+LOCK_FILE=/run/lock/zhudatuan-release-policy.lock
+LOCK_WAIT_SECONDS=30
+FILESYSTEM_TO_CHECK=/
+ALLOWED_BASES=/opt/zhudatuan:/opt/sfl
