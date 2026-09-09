@@ -22,13 +22,14 @@ for (const path of process.argv.slice(3)) {
 NODE
 }
 
-mkdir -p "$fixture/releases" "$fixture/pointers" "$fixture/incoming" "$fixture/candidates" "$fixture/proc/100" "$fixture/audit" "$fixture/lock"
-for name in oldest pinned active dependency disposable recent-a recent-b; do mkdir -p "$fixture/releases/$name"; done
+mkdir -p "$fixture/releases" "$fixture/pointers" "$fixture/backups/snapshot" "$fixture/incoming" "$fixture/candidates" "$fixture/proc/100" "$fixture/audit" "$fixture/lock"
+for name in oldest pinned active dependency rollback-backup disposable recent-a recent-b; do mkdir -p "$fixture/releases/$name"; done
 
-set_mtime_seconds_ago 604800 "$fixture/releases/oldest" "$fixture/releases/pinned" "$fixture/releases/active" "$fixture/releases/dependency" "$fixture/releases/disposable"
+set_mtime_seconds_ago 604800 "$fixture/releases/oldest" "$fixture/releases/pinned" "$fixture/releases/active" "$fixture/releases/dependency" "$fixture/releases/rollback-backup" "$fixture/releases/disposable"
 set_mtime_seconds_ago 7200 "$fixture/releases/recent-a"
 set_mtime_seconds_ago 3600 "$fixture/releases/recent-b"
 ln -s "$fixture/releases/oldest" "$fixture/pointers/current"
+ln -s "$fixture/releases/rollback-backup" "$fixture/backups/snapshot/l1-current.before"
 ln -s "$fixture/releases/active" "$fixture/proc/100/cwd"
 ln -s "$fixture/releases/dependency" "$fixture/releases/recent-b/node_modules"
 printf '%s\n' "$fixture/releases/pinned" > "$fixture/pins"
@@ -46,7 +47,7 @@ common_env=(
   MIN_FREE_PERCENT=0
   RELEASE_ROOTS="$fixture/releases"
   DISCOVER_RELEASE_PATTERNS=''
-  POINTER_SCAN_POLICIES="$fixture/pointers,2"
+  POINTER_SCAN_POLICIES="$fixture/pointers,2 $fixture/backups,3"
   TRANSIENT_POLICIES="$fixture/incoming,2 $fixture/candidates,24"
   PINS_FILE="$fixture/pins"
   AUDIT_DIR="$fixture/audit"
@@ -65,6 +66,7 @@ env "${common_env[@]}" "$policy" collect
 [[ -d "$fixture/releases/pinned" ]]
 [[ -d "$fixture/releases/active" ]]
 [[ -d "$fixture/releases/dependency" ]]
+[[ -d "$fixture/releases/rollback-backup" ]]
 [[ -d "$fixture/releases/recent-a" && -d "$fixture/releases/recent-b" ]]
 [[ ! -e "$fixture/incoming/expired" && -d "$fixture/incoming/fresh" ]]
 [[ ! -e "$fixture/candidates/expired" ]]
