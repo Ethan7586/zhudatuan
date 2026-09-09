@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DatabasePool } from '../foundation/persistence/Pool';
-import { assertIdentityNotificationRuntimeCompatibility, createIdentityNotificationJob } from './IdentityNotificationJobsRuntime';
+import {
+  assertIdentityNotificationJobsNodeManifest,
+  assertIdentityNotificationRuntimeCompatibility,
+  createIdentityNotificationJob,
+} from './IdentityNotificationJobsRuntime';
 
 const challenge = 'challenge:00000000-0000-4000-8000-000000000001';
 
@@ -29,6 +33,31 @@ describe('identity notification Jobs runtime', () => {
     expect(query.mock.calls.some(([statement]) => String(statement).includes('runtime:scheduler'))).toBe(false);
   });
 
+  it('claims only jobs routed to its SFL node', async () => {
+    const controller = new AbortController();
+    const scope = 'node:hbbtzn:l1';
+    let claimed = false;
+    const query = vi.fn(async (statement: string, _values?: readonly unknown[]) => {
+      if (statement.includes('with candidates as')) {
+        if (claimed) return result([], 0);
+        claimed = true;
+        return result([{ id: 'job:identity:l1', kind: 'identitynotification', scope_id: scope,
+          payload: { challenge }, attempts: 1 }], 1);
+      }
+      if (statement.includes("state='completed'")) return result([], 1);
+      throw new Error(`UNEXPECTED_QUERY:${statement}`);
+    });
+    const dispatch = vi.fn(async () => { controller.abort('test-complete'); });
+    const job = createIdentityNotificationJob({ query } as unknown as DatabasePool,
+      { challenge: dispatch }, 'hbbtzn-l1-identity-notification-1', undefined, scope);
+
+    await job.execute(undefined, { id: 'identitynotification', attempt: 1, signal: controller.signal });
+
+    expect(query.mock.calls.some(([statement]) => String(statement).includes('claim_identity_notification_job'))).toBe(false);
+    expect(query.mock.calls.find(([statement]) => String(statement).includes('with candidates as'))?.[1]?.[1]).toBe(scope);
+    expect(dispatch).toHaveBeenCalledWith(challenge);
+  });
+
   it('fails startup unless the database is writable, canonical, and owned by shopjob', async () => {
     const healthy = {
       current_user: 'zhudatuanidentityjob', writable: true, schema: true, contract: true, registration: true, runtime_job: true,
@@ -52,6 +81,26 @@ describe('identity notification Jobs runtime', () => {
       : result([healthy], 1) } as unknown as DatabasePool;
     await expect(assertIdentityNotificationRuntimeCompatibility(ownerMissing))
       .rejects.toThrow('LIVE_DATABASE_BOUNDARY_ASSERTION_FAILED');
+  });
+
+  it('binds a node worker to the identity-enabled manifest and its own secret namespace', () => {
+    const manifest = {
+      node_profile: 'operating_mall',
+      lifecycle_status: 'active',
+      enabled_features: [{ ref: 'feature:identity', version: '1' }],
+      secret_binding_set_ref: { ref: 'hbbtzn/nodes/l1/secrets', version: '1' },
+    } as never;
+    const environment = {
+      APP_ENV: 'production',
+      DATABASE_JOB_CONNECTION_REF: 'hbbtzn/nodes/l1/database/identity-notification-jobs',
+      IDENTITY_NOTIFICATION_CONFIG_REF: 'hbbtzn/nodes/l1/notification/aliyun-sms',
+    };
+
+    expect(() => assertIdentityNotificationJobsNodeManifest(manifest, environment)).not.toThrow();
+    expect(() => assertIdentityNotificationJobsNodeManifest(manifest, {
+      ...environment,
+      IDENTITY_NOTIFICATION_CONFIG_REF: 'zhudatuan/registration/notification/aliyun-sms',
+    })).toThrow('IDENTITY_NOTIFICATION_JOBS_NODE_SECRET_BINDING_MISMATCH');
   });
 });
 

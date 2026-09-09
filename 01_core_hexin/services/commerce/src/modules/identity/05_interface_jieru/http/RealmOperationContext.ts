@@ -1,5 +1,6 @@
 import { createHash, createHmac } from 'node:crypto';
 import type { ModuleContext } from '../../../../bootstrap/ModuleRegistry';
+import { NODE_MANIFEST } from '../../../../bootstrap/NodeRuntime';
 import { AUDIT_SINK } from '../../../../foundation/application/AuditSink';
 import { reject } from '../../../../foundation/application/ModuleOperations';
 import { KMS_CLIENT } from '../../../../foundation/infrastructure/KmsClient';
@@ -13,6 +14,7 @@ import { ReturnTargetSigner } from '../../04_adapters_shixian/providers_waibu/Re
 
 export function createRealmOperationContext(context: ModuleContext, registrationOnly: boolean) {
   const keys = context.container.get(IDENTITY_SECURITY_KEYS);
+  const manifest = context.container.has(NODE_MANIFEST) ? context.container.get(NODE_MANIFEST) : undefined;
   return Object.freeze({
     pool: context.container.get(DATABASE_POOL),
     audit: context.container.get(AUDIT_SINK),
@@ -22,6 +24,7 @@ export function createRealmOperationContext(context: ModuleContext, registration
     stepup: new StepupPolicy(),
     tickets: new PgAuthTicket(new ReturnTargetSigner(keys.session)),
     registrationOnly,
+    notificationScope: manifest?.parent_node_id ? manifest.node_id : undefined,
     digest: (value: string) => createHmac('sha256', keys.identity).update(value.trim().toLowerCase()).digest('hex'),
     codeDigest: (challenge: string, code: string) => createHmac('sha256', keys.session).update(`${challenge}:${code}`).digest('hex'),
     sessionDigest: (session: string) => createHash('sha256').update(session).digest('hex'),

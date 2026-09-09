@@ -167,6 +167,7 @@ const REPAIR_FILES = [
   '20260908013000_generalize_storefront_roles.sql',
   '20260909010000_bind_published_listings_to_storefront_pool.sql',
   '20260909061000_add_checkout_address_default.sql',
+  '20260909160000_route_identity_notifications_by_node.sql',
 ];
 
 const mode = process.argv[2];

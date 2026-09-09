@@ -55,6 +55,8 @@ runtime:
       port: 4436
     - unit: sfl-payment-jobs@hbbtzn-l1.service
       responsibility: node-scoped-payment-jobs
+    - unit: sfl-identity-notification-jobs@hbbtzn-l1.service
+      responsibility: node-scoped-identity-notification-jobs
     - unit: sfl-api-gateway@hbbtzn-l1.service
       responsibility: node-local-tls-gateway
       port: 4430

@@ -1,4 +1,13 @@
-import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, requiredValue, type JobsEnvironment } from '@shop/config/server';
+import {
+  CONTRACT_SCHEMA_HEAD,
+  RUNTIME_CONTRACT_CHECKSUM,
+  TARGET_SCHEMA_HEAD,
+  loadNodeManifest,
+  nodeManifestHasFeature,
+  requiredValue,
+  type JobsEnvironment,
+  type NodeManifest,
+} from '@shop/config/server';
 import type { Job } from '../foundation/application/Job';
 import { QueueJob } from '../foundation/infrastructure/QueueJob';
 import { KmsClient } from '../foundation/infrastructure/KmsClient';
@@ -18,10 +27,21 @@ import { assertIdentityRuntimeDatabaseBoundary } from './LiveDatabaseBoundary';
 export interface IdentityNotificationJobsRuntime {
   readonly job: Job<void>;
   readonly backlog: IdentityNotificationBacklogMonitor;
+  readonly manifest?: NodeManifest;
   close(): Promise<void>;
 }
 
 export async function createIdentityNotificationJobsRuntime(environment: JobsEnvironment): Promise<IdentityNotificationJobsRuntime> {
+  const manifest = environment.NODE_MANIFEST_PATH === undefined ? undefined : await loadNodeManifest(
+    requiredValue(environment.NODE_MANIFEST_PATH, 'NODE_MANIFEST_PATH_MISSING'), {
+      manifestId: requiredValue(environment.NODE_MANIFEST_ID, 'NODE_MANIFEST_ID_MISSING'),
+      manifestDigest: requiredValue(environment.NODE_MANIFEST_DIGEST, 'NODE_MANIFEST_DIGEST_MISSING'),
+      runtimeInstanceId: requiredValue(environment.NODE_RUNTIME_INSTANCE_ID, 'NODE_RUNTIME_INSTANCE_ID_MISSING'),
+      runtimeConfigRef: requiredValue(environment.NODE_RUNTIME_CONFIG_REF, 'NODE_RUNTIME_CONFIG_REF_MISSING'),
+      resourceBindingVersion: requiredValue(environment.NODE_RESOURCE_BINDING_VERSION, 'NODE_RESOURCE_BINDING_VERSION_MISSING'),
+      releasePointerRef: requiredValue(environment.NODE_RELEASE_POINTER_REF, 'NODE_RELEASE_POINTER_REF_MISSING'),
+    });
+  if (manifest) assertIdentityNotificationJobsNodeManifest(manifest, environment);
   const secrets = new WorkloadSecretStore(
     requiredValue(environment.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_MISSING'),
     requiredValue(environment.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_MISSING'),
@@ -43,8 +63,9 @@ export async function createIdentityNotificationJobsRuntime(environment: JobsEnv
     const telemetry = commerceTelemetry();
     return Object.freeze({
       job: createIdentityNotificationJob(pool, dispatches, requiredValue(environment.JOB_WORKER_ID, 'JOB_WORKER_ID_MISSING'),
-        new JobMetrics(telemetry)),
+        new JobMetrics(telemetry), manifest?.node_id),
       backlog: new IdentityNotificationBacklogMonitor(pool, telemetry),
+      ...(manifest === undefined ? {} : { manifest }),
       close: () => pool.end(),
     });
   } catch (cause) {
@@ -54,7 +75,7 @@ export async function createIdentityNotificationJobsRuntime(environment: JobsEnv
 }
 
 export function createIdentityNotificationJob(pool: DatabasePool, dispatches: IdentityChallengeDispatcher, worker: string,
-  metrics?: JobMetrics): Job<void> {
+  metrics?: JobMetrics, scope?: string): Job<void> {
   return new QueueJob('identitynotification', pool, {
     worker,
     owner: 'identity',
@@ -63,11 +84,26 @@ export function createIdentityNotificationJob(pool: DatabasePool, dispatches: Id
     lease: 30,
     concurrency: 16,
     attempts: 8,
-    claim: 'identity-notification',
     deadline: 15_000,
     retryMinimum: 250,
     retryMaximum: 60_000,
+    ...(scope === undefined ? { claim: 'identity-notification' as const } : { scope }),
   }, new IdentityNotificationJobProcessor(dispatches), undefined, metrics);
+}
+
+export function assertIdentityNotificationJobsNodeManifest(manifest: NodeManifest, environment: JobsEnvironment): void {
+  if (manifest.node_profile !== 'operating_mall' || !nodeManifestHasFeature(manifest, 'identity')) {
+    throw new Error('IDENTITY_NOTIFICATION_JOBS_NODE_MANIFEST_INVALID');
+  }
+  const binding = manifest.secret_binding_set_ref.ref;
+  const prefix = binding.endsWith('/secrets') ? binding.slice(0, -'secrets'.length) : `${binding}/`;
+  if (![environment.DATABASE_JOB_CONNECTION_REF, environment.IDENTITY_NOTIFICATION_CONFIG_REF]
+    .every((reference) => reference?.startsWith(prefix))) {
+    throw new Error('IDENTITY_NOTIFICATION_JOBS_NODE_SECRET_BINDING_MISMATCH');
+  }
+  if (environment.APP_ENV === 'production' && manifest.lifecycle_status !== 'active') {
+    throw new Error('IDENTITY_NOTIFICATION_JOBS_NODE_NOT_ACTIVE');
+  }
 }
 
 export async function assertIdentityNotificationRuntimeCompatibility(pool: DatabasePool): Promise<void> {

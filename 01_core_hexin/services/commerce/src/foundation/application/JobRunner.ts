@@ -53,7 +53,9 @@ export class JobRunner {
         )
         : this.config.scope !== undefined
           ? await this.pool.query<ClaimedJob>(`with candidates as (
-              select id from runtime.job where kind=$1 and scope_id=$2 and state='queued' and available_at<=clock_timestamp()
+              select id from runtime.job where kind=$1 and scope_id=$2
+                and ((state='queued' and available_at<=clock_timestamp())
+                  or (state='running' and lease_deadline<=clock_timestamp()))
               order by priority,available_at,id for update skip locked limit $3
             )
             update runtime.job target set state='running',lease_owner=$4,

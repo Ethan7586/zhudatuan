@@ -24,7 +24,7 @@ export const REGISTRATION_OPERATION_IDS = Object.freeze([
 ] as const satisfies readonly OperationId[]);
 
 export function registrationOperations(runtime: RealmOperationContext): OperationActions {
-  const { codeDigest, digest, kms, passwords, registrationOnly, tickets } = runtime;
+  const { codeDigest, digest, kms, notificationScope, passwords, registrationOnly, tickets } = runtime;
   return {
       'identity.challenges.create': operationLifecycle({
         prepare: async (request) => {
@@ -77,10 +77,10 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             [id, principal, purpose, destinationHash, codeDigest(id, registrationHash === undefined ? code : `${code}:${registrationHash}`), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion, realm.realmId, account]
           );
           await database.query(
-            `insert into runtime.job(id,kind,owner,payload,state,priority,available_at,created_at,updated_at)
-          select $1,'identitynotification','identity',jsonb_build_object('challenge',$2::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp()
-          where $3::text is not null`,
-            [`job:notify:${id}`, id, purpose === 'login' ? principal : 'public-challenge']
+            `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
+          select $1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp()
+          where $4::text is not null`,
+            [`job:notify:${id}`, notificationScope ?? null, id, purpose === 'login' ? principal : 'public-challenge']
           );
           await publishIdentityEvent(database, 'identity.challenge.started', id, 'identity', request.input.idempotency!, {
             challenge: id, destination: destinationHash, purpose, realm: realm.realmId, ...(account === null ? {} : { account }),

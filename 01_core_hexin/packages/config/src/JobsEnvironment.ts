@@ -44,6 +44,13 @@ const IDENTITY_NOTIFICATION_KEYS = new Set<string>([
   'KMS_BEARER_TOKEN',
   'IDENTITY_NOTIFICATION_CONFIG_REF',
   'JOB_WORKER_ID',
+  'NODE_MANIFEST_PATH',
+  'NODE_MANIFEST_ID',
+  'NODE_MANIFEST_DIGEST',
+  'NODE_RUNTIME_INSTANCE_ID',
+  'NODE_RUNTIME_CONFIG_REF',
+  'NODE_RESOURCE_BINDING_VERSION',
+  'NODE_RELEASE_POINTER_REF',
 ]);
 const PAYMENT_KEYS = new Set<string>([
   'APP_ENV',
@@ -87,6 +94,20 @@ export function validateJobsEnvironment(source: JobsEnvironment | EnvironmentSou
     const kmsBearer = bearerToken(source.KMS_BEARER_TOKEN, 'KMS_BEARER_TOKEN_INVALID');
     distinctValues(secretStoreBearer, kmsBearer, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
     requiredValue(source.IDENTITY_NOTIFICATION_CONFIG_REF, 'IDENTITY_NOTIFICATION_CONFIG_REF_MISSING');
+    const nodeKeys = [
+      ['NODE_MANIFEST_PATH', 'NODE_MANIFEST_PATH_MISSING'],
+      ['NODE_MANIFEST_ID', 'NODE_MANIFEST_ID_MISSING'],
+      ['NODE_RUNTIME_INSTANCE_ID', 'NODE_RUNTIME_INSTANCE_ID_MISSING'],
+      ['NODE_RUNTIME_CONFIG_REF', 'NODE_RUNTIME_CONFIG_REF_MISSING'],
+      ['NODE_RESOURCE_BINDING_VERSION', 'NODE_RESOURCE_BINDING_VERSION_MISSING'],
+      ['NODE_RELEASE_POINTER_REF', 'NODE_RELEASE_POINTER_REF_MISSING'],
+    ] as const;
+    if (nodeKeys.some(([key]) => source[key]?.trim()) || source.NODE_MANIFEST_DIGEST?.trim()) {
+      for (const [key, code] of nodeKeys) requiredValue(source[key], code);
+      if (!/^sha256:[0-9a-f]{64}$/.test(requiredValue(source.NODE_MANIFEST_DIGEST, 'NODE_MANIFEST_DIGEST_INVALID'))) {
+        throw new Error('NODE_MANIFEST_DIGEST_INVALID');
+      }
+    }
     rejectConfigured(source, [
       'REDIS_CONNECTION_REF',
       'EXTENSION_MANIFEST_KEY_REF',

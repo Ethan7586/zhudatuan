@@ -27,6 +27,7 @@ describe('node-bound job runner', () => {
     await new JobRunner(pool, configuration).run('catalogimport', processor, controller.signal);
 
     expect(calls[0]?.text).toContain('kind=$1 and scope_id=$2');
+    expect(calls[0]?.text).toContain("state='running' and lease_deadline<=clock_timestamp()");
     expect(calls[0]?.values).toEqual(['catalogimport', 'mall:hongtai', 4, 'catalog-l1', 180]);
     expect(calls.find(({ text }) => text.includes("set state='completed'"))?.values)
       .toEqual(['job:catalog:1', 'catalog-l1', 'mall:hongtai']);

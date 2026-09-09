@@ -69,10 +69,13 @@ describe('checkout identity assurance', () => {
 
   it('routes payment verification through the existing OTP modal before retrying checkout', () => {
     const context = readFileSync(resolve(contextRoot, 'MallContext.tsx'), 'utf8');
+    const verification = readFileSync(resolve(contextRoot, '../components/mobile/PaymentPhoneVerificationModal.tsx'), 'utf8');
 
     expect(context).toContain('error instanceof PaymentPhoneVerificationRequired');
     expect(context).toContain('<PaymentPhoneVerificationModal');
     expect(context).toContain('await submitSelectedCart(verifiedUser)');
+    expect(verification).toContain('验证码请求已提交');
+    expect(verification).not.toContain('验证码已发送至');
   });
 
   it('routes a missing delivery address into the real server-backed address flow', () => {

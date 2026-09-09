@@ -311,6 +311,21 @@ describe('runtime configuration schema', () => {
       .toThrow('JOB_RUNTIME_PROFILE_KEY_FORBIDDEN:PAYMENT_CONFIG_REF');
     expect(() => validateJobsEnvironment({ ...identity, KMS_BEARER_TOKEN: secretStoreBearerToken }))
       .toThrow('WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
+    const nodeBoundIdentity = {
+      ...identity,
+      DATABASE_JOB_CONNECTION_REF: 'hbbtzn/nodes/l1/database/identity-notification-jobs',
+      IDENTITY_NOTIFICATION_CONFIG_REF: 'hbbtzn/nodes/l1/notification/aliyun-sms',
+      NODE_MANIFEST_PATH: '/opt/sfl/nodes/hbbtzn-l1/manifest.json',
+      NODE_MANIFEST_ID: 'manifest:hbbtzn:l1:v1',
+      NODE_MANIFEST_DIGEST: `sha256:${'a'.repeat(64)}`,
+      NODE_RUNTIME_INSTANCE_ID: 'runtime:hbbtzn:l1:commerce',
+      NODE_RUNTIME_CONFIG_REF: 'sfl/nodes/hbbtzn-l1/runtime/v1',
+      NODE_RESOURCE_BINDING_VERSION: '1',
+      NODE_RELEASE_POINTER_REF: '/opt/sfl/nodes/hbbtzn-l1/current',
+    };
+    expect(() => validateJobsEnvironment(nodeBoundIdentity)).not.toThrow();
+    expect(() => validateJobsEnvironment({ ...nodeBoundIdentity, NODE_MANIFEST_ID: undefined }))
+      .toThrow('NODE_MANIFEST_ID_MISSING');
   });
 
   it('accepts only payment dependencies for the payment-only Jobs profile', () => {

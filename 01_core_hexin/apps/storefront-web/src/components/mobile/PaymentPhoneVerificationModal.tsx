@@ -79,7 +79,7 @@ export function PaymentPhoneVerificationModal(props: PaymentPhoneVerificationMod
       <form onSubmit={verify} className="w-full max-w-[400px] rounded-3xl bg-white p-5 shadow-2xl">
         <div className="flex items-start justify-between">
           <div className="flex gap-3"><div className="rounded-2xl bg-blue-50 p-2 text-[var(--sw-brand)]"><ShieldCheck className="h-6 w-6" /></div>
-            <div><h2 className="text-base font-black">{isWechatBinding ? '微信改绑验证' : '支付前验证手机号'}</h2><p className="mt-1 text-[11px] text-gray-500">{sending ? '验证码正在发送至' : '验证码已发送至'} {phone}</p></div></div>
+            <div><h2 className="text-base font-black">{isWechatBinding ? '微信改绑验证' : '支付前验证手机号'}</h2><p className="mt-1 text-[11px] text-gray-500">{sending ? '正在提交验证码请求' : '验证码请求已提交'} · {phone}</p></div></div>
           <button type="button" onClick={onClose} aria-label="关闭" className="rounded-full p-1 text-gray-400"><X className="h-5 w-5" /></button>
         </div>
         <div className="mt-4 flex gap-2">

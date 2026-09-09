@@ -4,6 +4,7 @@ import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it } from 'vitest';
 import { Container } from '../../../bootstrap/Container';
 import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
+import { NODE_MANIFEST } from '../../../bootstrap/NodeRuntime';
 import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import { KMS_CLIENT, type KmsClient } from '../../../foundation/infrastructure/KmsClient';
@@ -309,9 +310,10 @@ describe('identity challenge notification queue', () => {
   it('enqueues registration challenges on the dedicated identity notification queue', async () => {
     let requestHash = '';
     let notificationSql = '';
+    let notificationValues: readonly unknown[] = [];
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
-        if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
+        if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l1', node_id: 'node:hbbtzn:l1' }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
         if (text.startsWith('select request_hash,state,response')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
@@ -320,7 +322,7 @@ describe('identity challenge notification queue', () => {
         if (text.includes('insert into identity.challenge')) {
           return result([{ id: 'challenge:one', purpose: 'registration', expires_at: new Date(Date.now() + 600_000).toISOString() }]);
         }
-        if (text.includes('insert into runtime.job')) notificationSql = text;
+        if (text.includes('insert into runtime.job')) { notificationSql = text; notificationValues = values; }
         return result([]);
       },
       release: () => undefined,
@@ -331,7 +333,7 @@ describe('identity challenge notification queue', () => {
       workload: () => pool,
       end: async () => undefined,
     };
-    const moduleContext = context(pool);
+    const moduleContext = context(pool, 'node:hbbtzn:l1');
 
     const response = await identityOperations(moduleContext).invoke({
       type: 'identity.challenges.create',
@@ -339,7 +341,7 @@ describe('identity challenge notification queue', () => {
       input: {
         path: {},
         query: {},
-        headers: { host: 'api.zhudatuan.com' },
+        headers: { host: 'api.hbbtzn.com' },
         body: { destination: '+8613800138000', invite: 'invitation-secret', purpose: 'registration' },
         rawBody: '',
         deadline: Date.now() + 1_000,
@@ -351,10 +353,11 @@ describe('identity challenge notification queue', () => {
     expect(response).toMatchObject({ status: 202, body: { purpose: 'registration' } });
     expect(notificationSql).toContain("'identitynotification','identity'");
     expect(notificationSql).not.toContain("'notification','identity'");
+    expect(notificationValues[1]).toBe('node:hbbtzn:l1');
   });
 });
 
-function context(pool: DatabasePool): ModuleContext {
+function context(pool: DatabasePool, notificationNode?: string): ModuleContext {
   const container = new Container();
   container.bind(DATABASE_POOL, pool);
   container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
@@ -370,6 +373,10 @@ function context(pool: DatabasePool): ModuleContext {
     exchange: async () => ({ subject: 'subject' }),
     jsSdkConfiguration: async () => { throw new Error('not used'); },
   });
+  if (notificationNode) container.bind(NODE_MANIFEST, {
+    node_id: notificationNode,
+    parent_node_id: 'node:zhudatuan:l0',
+  } as never);
   return { container } as unknown as ModuleContext;
 }
 

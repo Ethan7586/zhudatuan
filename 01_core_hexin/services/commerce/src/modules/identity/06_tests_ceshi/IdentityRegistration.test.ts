@@ -3,6 +3,7 @@ import type { PoolClient, QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
 import { Container } from '../../../bootstrap/Container';
 import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
+import { NODE_MANIFEST } from '../../../bootstrap/NodeRuntime';
 import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import { KMS_CLIENT, type KmsClient } from '../../../foundation/infrastructure/KmsClient';
@@ -37,7 +38,7 @@ describe('canonical member registration security boundary', () => {
     }));
     const decrypt = vi.fn(async () => SUBJECT);
 
-    const response = await identityOperations(context(harness.pool, { encrypt, decrypt } as unknown as KmsClient))
+    const response = await identityOperations(context(harness.pool, { encrypt, decrypt } as unknown as KmsClient, 'node:hbbtzn:l1'))
       .invoke(stepupRequest({}));
 
     expect(response.status).toBe(202);
@@ -48,6 +49,7 @@ describe('canonical member registration security boundary', () => {
     const notification = harness.queries.find(({ text }) => text.includes('insert into runtime.job'));
     expect(notification?.text).toContain("'identitynotification','identity'");
     expect(notification?.text).not.toContain("'notification','identity'");
+    expect(notification?.values[1]).toBe('node:hbbtzn:l1');
   });
 
   it('rejects public phone-change and Step-Up challenge purposes before opening a transaction', async () => {
@@ -1206,7 +1208,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
 
 function context(pool: DatabasePool, kms: KmsClient = {
   encrypt: async () => ({ ciphertext: 'encrypted-value', fingerprint: 'f'.repeat(64), keyVersion: 'v1' }),
-} as unknown as KmsClient): ModuleContext {
+} as unknown as KmsClient, notificationNode?: string): ModuleContext {
   const container = new Container();
   container.bind(DATABASE_POOL, pool);
   container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
@@ -1219,6 +1221,10 @@ function context(pool: DatabasePool, kms: KmsClient = {
     exchange: async () => ({ subject: 'subject' }),
     jsSdkConfiguration: async () => { throw new Error('not used'); },
   });
+  if (notificationNode) container.bind(NODE_MANIFEST, {
+    node_id: notificationNode,
+    parent_node_id: 'node:zhudatuan:l0',
+  } as never);
   return { container } as unknown as ModuleContext;
 }
 

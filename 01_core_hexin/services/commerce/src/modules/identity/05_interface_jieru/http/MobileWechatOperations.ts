@@ -19,7 +19,7 @@ export const MOBILE_WECHAT_OPERATION_IDS = Object.freeze([
 ] as const satisfies readonly OperationId[]);
 
 export function mobileWechatOperations(runtime: RealmOperationContext): OperationActions {
-  const { codeDigest, digest, kms, sessionDigest, stepup } = runtime;
+  const { codeDigest, digest, kms, notificationScope, sessionDigest, stepup } = runtime;
   return {
       'identity.mobile.challenge': operationLifecycle({
         prepare: async (request) => {
@@ -49,7 +49,7 @@ export function mobileWechatOperations(runtime: RealmOperationContext): Operatio
           );
           await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
           values($1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
-          [`job:notify:${id}`, access.scope.id, id]);
+          [`job:notify:${id}`, notificationScope ?? access.scope.id, id]);
           await publishIdentityEvent(database, 'identity.challenge.started', id, access.scope.id, request.input.idempotency!,
             { challenge: id, destination: destinationHash, purpose: 'phone_change' });
           return rowResult(result, 202);
@@ -143,7 +143,7 @@ export function mobileWechatOperations(runtime: RealmOperationContext): Operatio
           await database.query(
             `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
           values($1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
-            [`job:notify:${id}`, access.scope.id, id]
+            [`job:notify:${id}`, notificationScope ?? access.scope.id, id]
           );
           await publishIdentityEvent(database, 'identity.challenge.started', id, access.scope.id, request.input.idempotency!, { challenge: id, purpose: 'stepup' });
           return rowResult(result, 202);
