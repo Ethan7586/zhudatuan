@@ -94,10 +94,11 @@ describe('CloseSettlement authoritative snapshots', () => {
     const settlement = await database.query<{ state: string; version: number; approved_by: string }>(`select state,version::float8 version,approved_by from finance.settlement where id='settlement:one'`);
     expect(settlement.rows[0]).toEqual({ state: 'payable', version: 2, approved_by: 'finance:final' });
     const posts = await database.query<{ reference_id: string; amount: number; occurred_at: string }>(`select reference_id,
-      amount_minor::float8 amount,occurred_at::text occurred_at from finance.posted order by reference_id`);
+      amount_minor::float8 amount,(occurred_at at time zone 'UTC')::text occurred_at
+      from finance.posted order by reference_id`);
     expect(posts.rows).toEqual([
-      { reference_id: 'settlement:one:partner', amount: 810, occurred_at: '2026-08-31 23:59:59.999999+08' },
-      { reference_id: 'settlement:one:platform', amount: 90, occurred_at: '2026-08-31 23:59:59.999999+08' },
+      { reference_id: 'settlement:one:partner', amount: 810, occurred_at: '2026-08-31 15:59:59.999999' },
+      { reference_id: 'settlement:one:platform', amount: 90, occurred_at: '2026-08-31 15:59:59.999999' },
     ]);
   });
 });

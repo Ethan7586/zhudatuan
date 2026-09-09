@@ -39,7 +39,8 @@ describe('SettlementJobProcessor frozen basis', () => {
       invoice_basis basis,(evidence->'lineSnapshot'->>'count')::integer item_count,
       (evidence->'lineSnapshot'->>'invoice')::float8 invoice,
       (evidence->'excludedLateBasis'->>'itemCount')::integer excluded_late,
-      evidence->'recognition'->>'occurredAt' recognition,evidence->'recognition'->>'timezone' timezone,
+      (((evidence->'recognition'->>'occurredAt')::timestamptz at time zone 'UTC')::text) recognition,
+      evidence->'recognition'->>'timezone' timezone,
       evidence->'recognition'->>'statementPeriodEnd' period_end from finance.settlement`);
     expect(settlement.rows[0]).toEqual({
       gross: 800,
@@ -49,7 +50,7 @@ describe('SettlementJobProcessor frozen basis', () => {
       item_count: 2,
       invoice: 720,
       excluded_late: 2,
-      recognition: '2026-08-31 23:59:59.999999+08',
+      recognition: '2026-08-31 15:59:59.999999',
       timezone: 'Asia/Shanghai',
       period_end: '2026-08-31',
     });

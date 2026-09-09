@@ -30,7 +30,7 @@ describe('API bootstrap SFL NodeContext assembly', () => {
       operationIds: ['identity.sessions.create'],
     });
 
-    const response = await bootstrapped.app.handle(new Request('https://api.zhudatuan.com/api/v1/identity/sessions', {
+    const response = await bootstrapped.app.handle(new Request('https://api.fufu.wang/api/v1/identity/sessions', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION },
       body: '{}',
