@@ -1,4 +1,4 @@
-import { Dialog } from '@shop/design';
+import { Button, Dialog } from '@shop/design';
 import type { ProductColumnKey } from './ProductTable';
 
 const columns: readonly Readonly<{ key: ProductColumnKey; label: string }>[] = Object.freeze([
@@ -32,9 +32,9 @@ export function ProductColumnSettings({ open, visible, onChange, onClose }: Prod
           ))}
         </div>
         <footer>
-          <button className="productaction productactionprimary" type="button" onClick={onClose}>
+          <Button tone="primary" onPress={onClose}>
             完成
-          </button>
+          </Button>
         </footer>
       </div>
     </Dialog>
