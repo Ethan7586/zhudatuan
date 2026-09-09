@@ -19,7 +19,7 @@ test('商品新增与编辑共用完整图片上传组件并可从失败中直�
   const create = page.getByRole('form', { name: '新建商品' });
   await expect(create).toBeVisible();
   await create.getByLabel('商品名称').fill(title);
-  await create.getByLabel('商品分类').fill('员工精选');
+  await selectProductCategory(create);
 
   await chooseUsingButton(page, create, '选择图片', PNG);
   await expect(create.getByAltText(`${title}待上传图片`)).toBeVisible();
@@ -88,10 +88,14 @@ async function prepareProductAssurance(page: Page): Promise<void> {
   await page.getByRole('button', { name: '新建商品' }).click();
   const form = page.getByRole('form', { name: '新建商品' });
   await form.getByLabel('商品名称').fill('身份验证准备');
-  await form.getByLabel('商品分类').fill('员工精选');
+  await selectProductCategory(form);
   await form.getByRole('button', { name: '创建草稿' }).click();
   await completeConsoleStepup(page);
   await expect(page.getByRole('button', { name: '新建商品' })).toBeVisible();
+}
+
+async function selectProductCategory(form: Locator): Promise<void> {
+  await form.getByLabel('商品分类').selectOption({ label: '员工精选' });
 }
 
 async function chooseUsingButton(page: Page, form: Locator, name: string, path: string): Promise<void> {
