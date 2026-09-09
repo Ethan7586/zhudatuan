@@ -8,7 +8,7 @@ import { identityFor, type CommandIdentity } from '../../../shared/action/Comman
 import { canUseOperation } from '../../../shared/security/OperationAccess';
 import type { Listing, PoolAllocationKind } from '../model/Product';
 import { isManagedListing } from '../model/ProductAction';
-import { command } from './ProductActionViewModel';
+import { productCommand } from './ProductCommand';
 import { poolKey } from './ProductQueryKey';
 
 type PoolMode = 'allocate' | 'attach' | 'detach' | 'move' | 'remove';
@@ -50,15 +50,15 @@ export function useProductPoolViewModel(open: boolean, listing: Listing | undefi
       if (!operationAllowed) throw new Error('OPERATION_ACCESS_DENIED');
       if (listing !== undefined) {
         if (!isManagedListing(listing)) throw new Error('LISTING_NOT_PURCHASABLE');
-        if (operation === 'remove') return dependencies.changePool.move(command(context, identity), listing, null);
+        if (operation === 'remove') return dependencies.changePool.move(productCommand(context, identity), listing, null);
         if (selected === undefined) throw new Error('请先选择目标商品池');
-        return dependencies.changePool.move(command(context, identity), listing, selected);
+        return dependencies.changePool.move(productCommand(context, identity), listing, selected);
       }
       if (selected === undefined) throw new Error('请先选择来源商品池');
       if (!globalOperation) throw new Error('请选择商品池管理操作');
       const change =
         operation === 'allocate' ? ({ operation: OP_CATALOG_POOLS_ALLOCATE, target, poolkind: kind, name } as const) : ({ operation: operation === 'attach' ? OP_CATALOG_POOLS_ATTACH : OP_CATALOG_POOLS_DETACH, target } as const);
-      return dependencies.changePool.execute(command(context, identity), selected, change);
+      return dependencies.changePool.execute(productCommand(context, identity), selected, change);
     },
     onSuccess: () => {
       void query.refetch();

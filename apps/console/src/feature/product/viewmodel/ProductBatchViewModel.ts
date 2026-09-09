@@ -8,7 +8,7 @@ import { identityFor, type CommandIdentity } from '../../../shared/action/Comman
 import { canUseOperation } from '../../../shared/security/OperationAccess';
 import type { Listing, ProductBatch, ProductBatchAction } from '../model/Product';
 import { isManagedListing } from '../model/ProductAction';
-import { command } from './ProductActionViewModel';
+import { productCommand } from './ProductCommand';
 
 interface BatchDraft {
   readonly action: ProductBatchAction;
@@ -31,7 +31,7 @@ export function useProductBatchViewModel(context: ConsoleContext, dependencies: 
   const executeidentity = useRef<CommandIdentity | undefined>(undefined);
   const allowed = canUseOperation(context, OP_CATALOG_LISTINGS_BATCH);
   const previewMutation = useMutation({
-    mutationFn: (input: PreviewInput) => dependencies.previewBatch.execute(command(context, input.identity), input.listings, input.action),
+    mutationFn: (input: PreviewInput) => dependencies.previewBatch.execute(productCommand(context, input.identity), input.listings, input.action),
     onSuccess: (value) => {
       setPreview(value);
       setReceipt(undefined);
@@ -39,7 +39,7 @@ export function useProductBatchViewModel(context: ConsoleContext, dependencies: 
     },
   });
   const executeMutation = useMutation({
-    mutationFn: (input: ExecuteInput) => dependencies.executeBatch.execute(command(context, input.identity), input.listings, input.action, input.preview),
+    mutationFn: (input: ExecuteInput) => dependencies.executeBatch.execute(productCommand(context, input.identity), input.listings, input.action, input.preview),
     onSuccess: (value) => {
       setReceipt(value);
       onCompleted(value);

@@ -1,11 +1,13 @@
 import type { ChangePool } from '../../feature/product/application/ChangePool';
 import type { ChangePublication } from '../../feature/product/application/ChangePublication';
 import type { ConfirmProductImport } from '../../feature/product/application/ConfirmProductImport';
+import type { CreateCategory } from '../../feature/product/application/CreateCategory';
 import type { CreateProductImport } from '../../feature/product/application/CreateProductImport';
 import type { ExecuteProductBatch } from '../../feature/product/application/ExecuteProductBatch';
 import type { ExecuteProductAction } from '../../feature/product/application/ProductActions';
 import type { PreviewProductBatch } from '../../feature/product/application/PreviewProductBatch';
 import type { ReadProductImport } from '../../feature/product/application/ReadProductImport';
+import type { ReadCategories } from '../../feature/product/application/ReadCategories';
 import type { ReadFacets } from '../../feature/product/application/ReadFacets';
 import type { ReadPools } from '../../feature/product/application/ReadPools';
 import type { ReadProduct } from '../../feature/product/application/ReadProduct';
@@ -20,6 +22,8 @@ export interface ProductDependencies {
   readonly readProducts: ReadProducts;
   readonly readProduct: ReadProduct;
   readonly readPools: ReadPools;
+  readonly readCategories: ReadCategories;
+  readonly createCategory: CreateCategory;
   readonly readFacets: ReadFacets;
   readonly changePublication: ChangePublication;
   readonly previewBatch: PreviewProductBatch;

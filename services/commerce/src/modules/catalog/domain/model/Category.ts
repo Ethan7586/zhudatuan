@@ -21,6 +21,10 @@ export class Category {
     return new Category(Object.freeze({ ...value }));
   }
 
+  static create(value: Omit<CategorySnapshot, 'state'>): Category {
+    return new Category(Object.freeze({ ...value, name: value.name.trim(), state: 'active' }));
+  }
+
   active(): CategorySnapshot {
     if (this.value.state !== 'active') throw new DomainError('VALIDATION_FAILED', { field: 'category', reason: 'CATEGORY_DISABLED' });
     return this.value;

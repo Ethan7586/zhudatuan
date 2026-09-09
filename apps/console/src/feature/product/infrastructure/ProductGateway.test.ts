@@ -20,6 +20,7 @@ const server = setupServer(
     const url = new URL(request.url);
     const body = request.body === null ? null : await request.json();
     requests.push({ method: request.method, path: url.pathname, headers: request.headers, body });
+    if (url.pathname.endsWith('/categories')) return request.method === 'GET' ? HttpResponse.json({ items: [category], count: 1 }) : HttpResponse.json(category, { status: 201 });
     if (url.pathname.endsWith('/mediauploads')) {
       const image = body as { name: string; contentType: 'image/png'; size: number; sha256: string };
       return HttpResponse.json(
@@ -67,6 +68,18 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('ProductGateway commands', () => {
+  it('reads human-readable category choices and creates a category through generated operations', async () => {
+    const gateway = createGateway();
+    const categories = await gateway.readCategories({ scope: { kind: 'platform', id: 'platform:shop' }, accessVersion: 7 }, new AbortController().signal);
+    const created = await gateway.createCategory({ ...command('category'), scope: { kind: 'platform', id: 'platform:shop' } }, { name: '办公用品', parent: null, sort: 10 });
+
+    expect(categories).toEqual({ items: [category], count: 1 });
+    expect(created).toEqual(category);
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual(['GET /api/v1/catalog/categories', 'POST /api/v1/catalog/categories']);
+    expect(requests[1]?.body).toEqual({ name: '办公用品', parent: null, sort: 10 });
+    expect(requests[1]?.headers.get('idempotency-key')).toBe('command:category');
+  });
+
   it('connects create, edit and archive to real operations with command and version evidence', async () => {
     const gateway = createGateway();
     await gateway.createProduct(command('create'), { title: '办公福利礼盒', category: 'category:office', type: 'physical' });
@@ -179,3 +192,4 @@ const listingRecord = {
 const price = { listing_id: 'listing:one', sku_id: 'sku:one', scope_id: 'mall:one', amount_minor: 9900, currency: 'CNY', version: 5, effective_at: '2026-09-07T08:00:00.000Z', updated_at: '2026-09-07T08:00:00.000Z' };
 const poolRecord = { id: 'pool:two', scope_id: 'mall:one', kind: 'channel', name: '办公渠道池', status: 'active', version: 1 };
 const binding = { mall_id: 'mall:one', pool_id: 'pool:one', listing_kind: 'selected', status: 'active', effective_at: '2026-09-07T08:00:00.000Z', expires_at: null, created_at: '2026-09-07T08:00:00.000Z' };
+const category = { id: 'category:office', parent_id: null, parent_name: null, code: 'OFFICE', name: '办公用品', status: 'active', sort_order: 10, product_count: 1 };

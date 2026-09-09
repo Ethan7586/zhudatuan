@@ -51,11 +51,13 @@ import type { OrderPort } from '../../feature/order/public';
 import { ChangePool } from '../../feature/product/application/ChangePool';
 import { ChangePublication } from '../../feature/product/application/ChangePublication';
 import { ConfirmProductImport } from '../../feature/product/application/ConfirmProductImport';
+import { CreateCategory } from '../../feature/product/application/CreateCategory';
 import { CreateProductImport } from '../../feature/product/application/CreateProductImport';
 import { ExecuteProductBatch } from '../../feature/product/application/ExecuteProductBatch';
 import { PreviewProductBatch } from '../../feature/product/application/PreviewProductBatch';
 import { ExecuteProductAction } from '../../feature/product/application/ProductActions';
 import { ReadFacets as ReadProductFacets } from '../../feature/product/application/ReadFacets';
+import { ReadCategories } from '../../feature/product/application/ReadCategories';
 import { ReadPools } from '../../feature/product/application/ReadPools';
 import { ReadProduct } from '../../feature/product/application/ReadProduct';
 import { ReadProductImport } from '../../feature/product/application/ReadProductImport';
@@ -156,6 +158,8 @@ export function createCoreDependencies(imports: ImportRegistryPort): CoreDepende
       readProducts: new ReadProducts(product),
       readProduct: new ReadProduct(product),
       readPools: new ReadPools(product),
+      readCategories: new ReadCategories(product),
+      createCategory: new CreateCategory(product),
       readFacets: new ReadProductFacets(product),
       changePublication: new ChangePublication(product),
       previewBatch: new PreviewProductBatch(product),

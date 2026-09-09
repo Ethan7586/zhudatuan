@@ -6,6 +6,7 @@ import type { ProductAction } from '../model/ProductAction';
 import type { ProductActionViewModel } from '../viewmodel/ProductActionViewModel';
 import { ProductIcon } from './ProductIcon';
 import { ProductImageField } from './ProductImageField';
+import { ProductCategoryField } from './ProductCategoryField';
 
 export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: ProductActionViewModel; onClose: () => void }>) {
   const action = viewmodel.action;
@@ -40,10 +41,7 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
                 商品名称
                 <input ref={titleInput} value={viewmodel.title} onChange={(event) => viewmodel.setTitle(event.target.value)} required maxLength={160} disabled={viewmodel.submitting} />
               </label>
-              <label>
-                商品分类
-                <input value={viewmodel.category} onChange={(event) => viewmodel.setCategory(event.target.value)} required maxLength={120} disabled={viewmodel.submitting} />
-              </label>
+              <ProductCategoryField viewmodel={viewmodel.categories} disabled={viewmodel.submitting} />
               {action.operation === OP_CATALOG_PRODUCTS_CREATE ? (
                 <label>
                   商品类型
@@ -107,7 +105,7 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
           <Button
             tone="primary"
             type="submit"
-            isDisabled={viewmodel.submitting || !viewmodel.allowed || viewmodel.imageError !== undefined || (viewmodel.image instanceof File && !viewmodel.canUploadImage)}
+            isDisabled={viewmodel.submitting || !viewmodel.allowed || viewmodel.categories.blocked || viewmodel.imageError !== undefined || (viewmodel.image instanceof File && !viewmodel.canUploadImage)}
             {...(viewmodel.permissionReason === undefined ? {} : { 'aria-describedby': 'productactionpermission' })}
           >
             {viewmodel.submitting ? viewmodel.submittingLabel : presentProductAction(action.operation).submit}

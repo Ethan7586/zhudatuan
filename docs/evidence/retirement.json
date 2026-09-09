@@ -4,8 +4,8 @@
   "accepted": true,
   "removed": 18,
   "replacements": 24,
-  "productionFiles": 4559,
-  "references": 4566,
+  "productionFiles": 4466,
+  "references": 4473,
   "archiveFiles": 29,
   "lock": "package-lock.json",
   "violations": []

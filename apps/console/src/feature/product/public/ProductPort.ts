@@ -1,6 +1,6 @@
 import type { ScopeKind } from '@shop/authz';
 import type { OperationBodyFor, OperationOutputFor } from '@shop/contract';
-import type { Listing, ListingPage, Pool, PoolAllocationKind, PoolPage, ProductBatch, ProductBatchAction, ProductDetail, ProductDetailSection, ProductFacets, ProductImage, ProductImageProgress } from '../model/Product';
+import type { CategoryPage, Listing, ListingPage, Pool, PoolAllocationKind, PoolPage, ProductBatch, ProductBatchAction, ProductCategory, ProductDetail, ProductDetailSection, ProductFacets, ProductImage, ProductImageProgress } from '../model/Product';
 import type { ProductFilter } from '../model/ProductFilter';
 
 export type ProductRequest = Readonly<{
@@ -27,6 +27,8 @@ export interface ProductPort {
   readFacets(request: ProductRequest, query: Readonly<{ q: string }>, signal: AbortSignal): Promise<ProductFacets>;
   readProduct(request: ProductRequest, productid: string, section: ProductDetailSection, signal?: AbortSignal): Promise<ProductDetail>;
   readPools(request: ProductRequest, signal: AbortSignal): Promise<PoolPage>;
+  readCategories(request: ProductRequest, signal: AbortSignal): Promise<CategoryPage>;
+  createCategory(request: ProductCommand, body: Readonly<{ name: string; parent: string | null; sort: number }>): Promise<ProductCategory>;
   uploadProductImage(request: ProductCommand, file: File, signal?: AbortSignal, progress?: (value: ProductImageProgress) => void): Promise<ProductImage>;
   createProduct(request: ProductCommand, body: OperationBodyFor<'CatalogProductsCreateInput'>): Promise<OperationOutputFor<'catalog.products.create'>>;
   updateProduct(request: ProductCommand, listing: Listing, expectedVersion: number, body: OperationBodyFor<'CatalogProductsUpdateInput'>): Promise<OperationOutputFor<'catalog.products.update'>>;

@@ -1,5 +1,5 @@
 import type { OperationOutputFor } from '@shop/contract';
-import type { ListingPage, PoolPage, ProductBatch, ProductDetail, ProductFacets } from '../model/Product';
+import type { CategoryPage, ListingPage, PoolPage, ProductBatch, ProductDetail, ProductFacets } from '../model/Product';
 import type { ProductImport } from '../model/ProductImport';
 import { deepFreeze } from '../../../shared/model/Immutable';
 
@@ -9,6 +9,10 @@ export class ProductMapper {
   }
 
   pools(value: OperationOutputFor<'catalog.pools.read'>): PoolPage {
+    return deepFreeze(structuredClone(value));
+  }
+
+  categories(value: OperationOutputFor<'catalog.categories.read'>): CategoryPage {
     return deepFreeze(structuredClone(value));
   }
 

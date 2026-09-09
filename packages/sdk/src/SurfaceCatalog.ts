@@ -167,6 +167,8 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "catalog.pools.detach",
     "catalog.pools.allocate",
     "catalog.product.detail.read",
+    "catalog.categories.read",
+    "catalog.categories.create",
     "catalog.mediauploads.create",
     "catalog.products.create",
     "catalog.products.update",
@@ -734,6 +736,7 @@ export const SURFACE_OPERATION_IDS = Object.freeze({
     "member.profile.read",
     "catalog.pools.read",
     "catalog.product.detail.read",
+    "catalog.categories.read",
     "catalog.mediauploads.create",
     "catalog.products.create",
     "catalog.products.update",
@@ -1269,6 +1272,14 @@ const SURFACE_METHODS = Object.freeze({
     {
       "domain": "catalog",
       "method": "productDetailRead"
+    },
+    {
+      "domain": "catalog",
+      "method": "categoriesRead"
+    },
+    {
+      "domain": "catalog",
+      "method": "categoriesCreate"
     },
     {
       "domain": "catalog",
@@ -3516,6 +3527,10 @@ const SURFACE_METHODS = Object.freeze({
     },
     {
       "domain": "catalog",
+      "method": "categoriesRead"
+    },
+    {
+      "domain": "catalog",
       "method": "mediauploadsCreate"
     },
     {
@@ -3796,7 +3811,7 @@ export interface ConsoleSurfaceClient {
   readonly member: Pick<CommerceClient["member"], "membersRead" | "profileRead" | "importsCreate" | "importsRead">;
   readonly qualification: Pick<CommerceClient["qualification"], "centerRead" | "decisionsPreview" | "policiesManage" | "qualificationsPublish" | "qualificationsRevoke" | "evidenceuploadsCreate">;
   readonly channel: Pick<CommerceClient["channel"], "distributorsCreate" | "distributorsRead" | "distributorsUpdate" | "distributorsDisable" | "bindingsManage" | "quotasManage" | "connectionsRead" | "connectionsCreate" | "connectionsUpdate" | "connectionsTest" | "connectionsEnable" | "connectionsDisable" | "syncrunsStart" | "syncrunsRead" | "syncrunsCancel" | "operationsRead" | "operationsReplay">;
-  readonly catalog: Pick<CommerceClient["catalog"], "poolsRead" | "poolsAttach" | "poolsDetach" | "poolsAllocate" | "productDetailRead" | "mediauploadsCreate" | "productsCreate" | "productsUpdate" | "productsArchive" | "listingsRead" | "facetsRead" | "listingsPublish" | "listingsPriceSet" | "listingsPoolSet" | "listingsUnpublish" | "listingsBatch" | "importsCreate" | "importsRead">;
+  readonly catalog: Pick<CommerceClient["catalog"], "poolsRead" | "poolsAttach" | "poolsDetach" | "poolsAllocate" | "productDetailRead" | "categoriesRead" | "categoriesCreate" | "mediauploadsCreate" | "productsCreate" | "productsUpdate" | "productsArchive" | "listingsRead" | "facetsRead" | "listingsPublish" | "listingsPriceSet" | "listingsPoolSet" | "listingsUnpublish" | "listingsBatch" | "importsCreate" | "importsRead">;
   readonly pricing: Pick<CommerceClient["pricing"], "rulesCreate" | "rulesPublish" | "offersRead">;
   readonly inventory: Pick<CommerceClient["inventory"], "availabilityRead" | "adjustmentsRead" | "adjustmentsCreate" | "importsCreate" | "importsRead">;
   readonly marketing: Pick<CommerceClient["marketing"], "campaignsRead" | "campaignsCreate" | "campaignsRevise" | "campaignsPublish" | "campaignsDisable">;
@@ -3892,7 +3907,7 @@ export interface SupplierSurfaceClient {
   readonly capability: Pick<CommerceClient["capability"], "assignmentsRead">;
   readonly partner: Pick<CommerceClient["partner"], "partnersRead">;
   readonly member: Pick<CommerceClient["member"], "profileRead">;
-  readonly catalog: Pick<CommerceClient["catalog"], "poolsRead" | "productDetailRead" | "mediauploadsCreate" | "productsCreate" | "productsUpdate" | "listingsRead" | "facetsRead" | "listingsPriceSet" | "importsCreate" | "importsRead">;
+  readonly catalog: Pick<CommerceClient["catalog"], "poolsRead" | "productDetailRead" | "categoriesRead" | "mediauploadsCreate" | "productsCreate" | "productsUpdate" | "listingsRead" | "facetsRead" | "listingsPriceSet" | "importsCreate" | "importsRead">;
   readonly pricing: Pick<CommerceClient["pricing"], "offersRead">;
   readonly inventory: Pick<CommerceClient["inventory"], "availabilityRead" | "importsCreate" | "importsRead">;
   readonly experience: Pick<CommerceClient["experience"], "publishedRead">;

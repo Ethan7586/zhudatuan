@@ -96,6 +96,8 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('catalog.pools.detach','catalog','DELETE','/api/v1/catalog/pools/{poolid}/bindings/{scopeid}','5.0.0'),
   ('catalog.pools.allocate','catalog','POST','/api/v1/catalog/pools/{poolid}/allocations','5.0.0'),
   ('catalog.product.detail.read','catalog','GET','/api/v1/catalog/products/{productid}','5.0.0'),
+  ('catalog.categories.read','catalog','GET','/api/v1/catalog/categories','5.0.0'),
+  ('catalog.categories.create','catalog','POST','/api/v1/catalog/categories','5.0.0'),
   ('catalog.mediauploads.create','catalog','POST','/api/v1/catalog/mediauploads','5.0.0'),
   ('catalog.products.create','catalog','POST','/api/v1/catalog/products','5.0.0'),
   ('catalog.products.update','catalog','PATCH','/api/v1/catalog/products/{productid}','5.0.0'),
@@ -922,6 +924,8 @@ insert into capability.capability(id,kind,name,version,status) values
   ('channel.bindings.manage','operation','channel.bindings.manage',3,'active'),
   ('channel.quotas.manage','operation','channel.quotas.manage',3,'active'),
   ('catalog.pools.read','operation','catalog.pools.read',3,'active'),
+  ('catalog.categories.read','operation','catalog.categories.read',3,'active'),
+  ('catalog.categories.create','operation','catalog.categories.create',3,'active'),
   ('catalog.pools.attach','operation','catalog.pools.attach',3,'active'),
   ('catalog.pools.detach','operation','catalog.pools.detach',3,'active'),
   ('catalog.pools.allocate','operation','catalog.pools.allocate',3,'active'),
@@ -1387,6 +1391,8 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('catalog.pools.detach','catalog.pools.detach','catalog.pool.manage','console','{console}'),
   ('catalog.pools.allocate','catalog.pools.allocate','catalog.pool.allocate','console','{console}'),
   ('catalog.product.detail.read','catalog.product.detail.read','catalog.product.read','console','{console,supplier}'),
+  ('catalog.categories.read','catalog.categories.read','catalog.product.read','console','{console,supplier}'),
+  ('catalog.categories.create','catalog.categories.create','catalog.product.manage','console','{console}'),
   ('catalog.mediauploads.create','catalog.mediauploads.create','catalog.product.manage','console','{console,supplier}'),
   ('catalog.products.create','catalog.products.create','catalog.product.manage','console','{console,supplier}'),
   ('catalog.products.update','catalog.products.update','catalog.product.manage','console','{console,supplier}'),
@@ -2043,6 +2049,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','627b3cb7e3d58060bdc9a5beeca5c24df2385b03d564498a15f25b77adfdc38d');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','7327837b306d661aa2f820b04ab4a379bf26c887c025701f731f838cf8733cd4');
 
 commit;

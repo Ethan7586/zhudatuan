@@ -67,6 +67,14 @@ export class ProductGateway implements ProductPort, ProductImportPort {
     return this.mapper.pools(await this.pools({ query: { limit: 100 } }, this.context(request, signal)));
   }
 
+  async readCategories(request: ProductRequest, signal: AbortSignal) {
+    return this.mapper.categories(await this.catalog.categoriesRead({ query: { limit: 100 } }, this.context(request, signal)));
+  }
+
+  async createCategory(request: ProductCommand, body: Readonly<{ name: string; parent: string | null; sort: number }>) {
+    return this.catalog.categoriesCreate({ body }, this.command(request));
+  }
+
   async uploadProductImage(request: ProductCommand, file: File, signal?: AbortSignal, progress?: Parameters<ProductPort['uploadProductImage']>[3]) {
     const contentType = productImageContentType(file);
     const sha256 = await hashFile(file, signal, (processed) => progress?.({ stage: 'checking', processed, total: file.size }));

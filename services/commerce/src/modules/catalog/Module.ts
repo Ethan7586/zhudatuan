@@ -50,6 +50,9 @@ import { IMPORT_OBJECT_PORT, RUNTIME_IMPORT_PORT } from '../runtime/public';
 import { ASSET_PORT } from '../runtime/public';
 import { MediauploadsCreateHandler } from './application/handler/MediauploadsCreateHandler';
 import { ProductMedia } from './application/service/ProductMedia';
+import { CategoriesReadHandler } from './application/handler/CategoriesReadHandler';
+import { CategoriesCreateHandler } from './application/handler/CategoriesCreateHandler';
+import { PgCategoryRepository } from './infrastructure/persistence/PgCategoryRepository';
 
 export const CatalogModule = defineModule(Manifest, {
   jobs: createJobs,
@@ -58,6 +61,7 @@ export const CatalogModule = defineModule(Manifest, {
     const transactions = new PgTransactionAccess();
     const scopes = new CatalogScopeReader(context.ports.get(ORGANIZATION_READ_PORT));
     const pools = new PgPoolRepository(transactions, scopes);
+    const categories = new PgCategoryRepository(transactions);
     const products = new PgProductRepository(transactions, scopes, context.ports.get(CATALOG_PARTNER_PORT));
     const listings = new PgListingRepository(transactions, scopes);
     const partners = context.ports.get(CATALOG_PARTNER_PORT);
@@ -67,6 +71,8 @@ export const CatalogModule = defineModule(Manifest, {
     const media = new ProductMedia(assets);
     const publication = new ListingPublication(listings, context.ports.get(CATALOG_QUALIFICATION_PORT), context.ports.get(CATALOG_PRICING_PORT), context.ports.get(CATALOG_INVENTORY_PORT));
     return [
+      new CategoriesReadHandler(categories),
+      new CategoriesCreateHandler(categories),
       new PoolsReadHandler(pools),
       new PoolsAttachHandler(pools),
       new PoolsDetachHandler(pools),

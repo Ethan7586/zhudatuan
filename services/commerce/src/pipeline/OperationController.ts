@@ -95,6 +95,8 @@ export const CONTROLLER_OPERATIONS = Object.freeze([
   "catalog.pools.detach",
   "catalog.pools.allocate",
   "catalog.product.detail.read",
+  "catalog.categories.read",
+  "catalog.categories.create",
   "catalog.mediauploads.create",
   "catalog.products.create",
   "catalog.products.update",

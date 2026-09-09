@@ -27,6 +27,11 @@ describe('Catalog aggregates', () => {
     expect(() => Category.restore({ ...category.snapshot(), state: 'disabled' }).active()).toThrow();
   });
 
+  it('creates a trimmed active category while keeping identity generation outside the aggregate', () => {
+    const category = Category.create({ id: 'category:meal', parent: null, code: 'MEAL', name: ' 餐食 ', sort: 10 });
+    expect(category.snapshot()).toEqual({ id: 'category:meal', parent: null, code: 'MEAL', name: '餐食', state: 'active', sort: 10 });
+  });
+
   it('refuses publication when any centrally evaluated dependency has a gap', () => {
     const listing = Listing.draft({ id: 'listing:one', scope: 'mall:one', pool: 'pool:one', sku: 'sku:one', title: '早餐' });
     const decision = new ListingEligibility().decide({

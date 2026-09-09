@@ -10,6 +10,8 @@ import { productImageError } from '../model/ProductImagePolicy';
 import type { ProductCommand } from '../public';
 import { identityFor, type CommandIdentity } from '../../../shared/action/CommandIdentity';
 import { canUseOperation, requiredAssurance } from '../../../shared/security/OperationAccess';
+import { productCommand } from './ProductCommand';
+import { useProductCategoryViewModel } from './ProductCategoryViewModel';
 
 export function useProductActionViewModel(action: ProductAction | null, context: ConsoleContext, dependencies: ProductDependencies, requestStepup: () => void, onDone: () => void) {
   const listing = action !== null && 'listing' in action ? action.listing : undefined;
@@ -25,6 +27,17 @@ export function useProductActionViewModel(action: ProductAction | null, context:
   const [imageProgress, setImageProgress] = useState<ProductImageProgress | undefined>(undefined);
   const [uploadedImage, setUploadedImage] = useState<Readonly<{ key: string; receipt: ProductImage }> | undefined>(undefined);
   const actionkey = action === null ? 'closed' : `${action.operation}:${listing?.id ?? 'new'}`;
+  const productForm = action?.operation === OP_CATALOG_PRODUCTS_CREATE || action?.operation === OP_CATALOG_PRODUCTS_UPDATE;
+  const categories = useProductCategoryViewModel(
+    actionkey,
+    productForm,
+    category,
+    typeof listing?.category_id === 'string' && typeof listing.category_name === 'string' ? { id: listing.category_id, name: listing.category_name } : undefined,
+    setCategory,
+    context,
+    dependencies,
+    requestStepup
+  );
   const canUploadImage = canUseOperation(context, OP_CATALOG_MEDIAUPLOADS_CREATE);
   const commandidentity = useRef<CommandIdentity | undefined>(undefined);
   useEffect(() => {
@@ -44,7 +57,7 @@ export function useProductActionViewModel(action: ProductAction | null, context:
     mutationKey: ['productaction', actionkey],
     mutationFn: async () => {
       if (action === null) throw new Error('PRODUCT_ACTION_MISSING');
-      const request = command(context, identity);
+      const request = productCommand(context, identity);
       const uploaded = image instanceof File ? await uploadImage(dependencies, request, image, uploadedImage, setUploadedImage, setPhase, setImageProgress) : image;
       setPhase('saving');
       if (action.operation === OP_CATALOG_PRODUCTS_CREATE)
@@ -78,6 +91,7 @@ export function useProductActionViewModel(action: ProductAction | null, context:
     state,
     title,
     category,
+    categories,
     type,
     status,
     amount,
@@ -111,7 +125,7 @@ export function useProductActionViewModel(action: ProductAction | null, context:
       mutation.reset();
     },
     submit: () => {
-      if (!allowed || imageError !== undefined || (image instanceof File && !canUploadImage) || mutation.isPending || action === null) return;
+      if (!allowed || (productForm && categories.blocked) || imageError !== undefined || (image instanceof File && !canUploadImage) || mutation.isPending || action === null) return;
       const assurance = Math.max(requiredAssurance(action.operation), image instanceof File ? requiredAssurance(OP_CATALOG_MEDIAUPLOADS_CREATE) : 0);
       if (context.session.assurance.level < assurance) {
         requestStepup();
@@ -120,10 +134,6 @@ export function useProductActionViewModel(action: ProductAction | null, context:
       mutation.mutate();
     },
   });
-}
-
-export function command(context: ConsoleContext, identity: string): ProductCommand {
-  return Object.freeze({ scope: { kind: context.scope.kind, id: context.scope.id }, accessVersion: context.session.accessVersion, identity, ...(context.session.csrf === undefined ? {} : { csrf: context.session.csrf }) });
 }
 
 export type ProductActionViewModel = ReturnType<typeof useProductActionViewModel>;

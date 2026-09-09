@@ -11,7 +11,7 @@ import { downloadImportTemplate } from '../../../shared/import/ImportTemplate';
 import { canUseOperation } from '../../../shared/security/OperationAccess';
 import { scopeRoutePath } from '../../../shared/url/ScopePath';
 import type { ProductImport } from '../model/ProductImport';
-import { command } from './ProductActionViewModel';
+import { productCommand } from './ProductCommand';
 
 export type ProductImportStep = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -33,7 +33,7 @@ export function useProductImportViewModel(context: ConsoleContext, dependencies:
   const createKey = identityFor(createidentity, fileFingerprint, dependencies.createIdentity);
   const confirmKey = identityFor(confirmidentity, JSON.stringify({ id: task?.id, version: task?.version, previewHash: task?.previewHash }), dependencies.createIdentity);
   const create = useMutation({
-    mutationFn: () => dependencies.createImport.execute(command(context, createKey), file, setUploaded),
+    mutationFn: () => dependencies.createImport.execute(productCommand(context, createKey), file, setUploaded),
     onSuccess: (created) => setTask(created),
   });
   const taskKey = ['console', context.scope.kind, context.scope.id, context.session.accessVersion, OP_RUNTIME_IMPORTS_READ, task?.id ?? null] as const;
@@ -44,7 +44,7 @@ export function useProductImportViewModel(context: ConsoleContext, dependencies:
     refetchInterval: (query) => (waiting(query.state.data ?? task) ? 2_000 : false),
   });
   const confirm = useMutation({
-    mutationFn: () => dependencies.confirmImport.execute(command(context, confirmKey), task!),
+    mutationFn: () => dependencies.confirmImport.execute(productCommand(context, confirmKey), task!),
     onSuccess: (confirmedTask) => {
       setTask(confirmedTask);
       setStep(6);

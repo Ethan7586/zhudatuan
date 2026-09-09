@@ -665,6 +665,16 @@ capabilities:
     owner: catalog
     permission: catalog.pool.read
     audience: console
+  - code: catalog.categories.read
+    kind: operation
+    owner: catalog
+    permission: catalog.product.read
+    audience: console
+  - code: catalog.categories.create
+    kind: operation
+    owner: catalog
+    permission: catalog.product.manage
+    audience: console
   - code: catalog.pools.attach
     kind: operation
     owner: catalog

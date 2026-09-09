@@ -153,6 +153,94 @@
   font-size: 12px;
   font-weight: 600;
 }
+.productcategoryfield {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+.productcategoryfield > legend {
+  margin-bottom: 6px;
+  padding: 0;
+  color: var(--sw-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.productcategoryselect {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  min-width: 0;
+}
+.productcategoryselect .shopbutton {
+  min-width: 6rem;
+  white-space: nowrap;
+}
+.productcategoryhelp,
+.productcategoryreason,
+.productcategorycreator p {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-body);
+  overflow-wrap: anywhere;
+}
+.productcategoryreason {
+  color: var(--sw-text-secondary);
+}
+.productcategoryissue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  color: var(--sw-danger);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-body);
+  overflow-wrap: anywhere;
+}
+.productcategoryissue span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.productcategorycreator {
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-commerce-warm);
+  padding: 14px;
+}
+.productcategorycreatorhead,
+.productcategorycreatoractions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.productcategorycreatorhead > div {
+  min-width: 0;
+}
+.productcategorycreatorhead strong {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body-sm);
+}
+.productcategorycreator > label {
+  display: grid;
+  gap: 6px;
+  color: var(--sw-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.productcategorycreatoractions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.productcategorycreatoractions .shopbutton {
+  min-width: 7rem;
+}
 .productflowbody input,
 .productflowbody select {
   min-height: 38px;
@@ -358,6 +446,24 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .productimageactions .shopbutton {
+    width: 100%;
+    min-width: 0;
+  }
+  .productcategoryselect {
+    grid-template-columns: 1fr;
+  }
+  .productcategoryselect .shopbutton {
+    width: 100%;
+    min-width: 0;
+  }
+  .productcategorycreatorhead {
+    align-items: flex-start;
+  }
+  .productcategorycreatoractions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .productcategorycreatoractions .shopbutton {
     width: 100%;
     min-width: 0;
   }

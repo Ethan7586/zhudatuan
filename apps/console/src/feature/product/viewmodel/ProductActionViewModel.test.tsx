@@ -12,6 +12,8 @@ import {
   OP_CATALOG_LISTINGS_PRICE_SET,
   OP_CATALOG_LISTINGS_PUBLISH,
   OP_CATALOG_LISTINGS_UNPUBLISH,
+  OP_CATALOG_CATEGORIES_CREATE,
+  OP_CATALOG_CATEGORIES_READ,
   OP_CATALOG_MEDIAUPLOADS_CREATE,
   OP_CATALOG_PRODUCTS_ARCHIVE,
   OP_CATALOG_PRODUCTS_CREATE,
@@ -29,6 +31,7 @@ describe('ProductActionViewModel', () => {
 
     harness.rerender({ operation: OP_CATALOG_PRODUCTS_UPDATE, listing, status: 'active', expectedVersion: 7 });
     await waitFor(() => expect(screen.getByLabelText('商品名称')).toHaveProperty('value', '办公福利礼盒'));
+    await waitForCategory('category:office');
     expect(screen.getByLabelText('商品分类')).toHaveProperty('value', 'category:office');
   });
 
@@ -36,6 +39,7 @@ describe('ProductActionViewModel', () => {
     const execute = vi.fn().mockResolvedValue({ id: 'product:one', version: 8 });
     const done = vi.fn();
     setup({ operation: OP_CATALOG_PRODUCTS_UPDATE, listing, status: 'active', expectedVersion: 7 }, execute, done);
+    await waitForCategory('category:office');
     await userEvent.setup().click(screen.getByRole('button', { name: '保存修改' }));
 
     await waitFor(() => expect(execute).toHaveBeenCalledTimes(1));
@@ -50,7 +54,8 @@ describe('ProductActionViewModel', () => {
     setup({ operation: OP_CATALOG_PRODUCTS_CREATE }, execute);
     const user = userEvent.setup();
     await user.type(screen.getByLabelText('商品名称'), '中秋员工礼盒');
-    await user.type(screen.getByLabelText('商品分类'), 'category:festival');
+    await waitForCategory('category:festival');
+    await user.selectOptions(await screen.findByLabelText('商品分类'), 'category:festival');
     await user.selectOptions(screen.getByLabelText('商品类型'), 'voucher');
     await user.click(screen.getByRole('button', { name: '创建草稿' }));
 
@@ -80,7 +85,8 @@ describe('ProductActionViewModel', () => {
     const user = userEvent.setup();
     const file = new File([Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])], '节日礼盒.png', { type: 'image/png', lastModified: 1 });
     await user.type(screen.getByLabelText('商品名称'), '中秋员工礼盒');
-    await user.type(screen.getByLabelText('商品分类'), 'category:festival');
+    await waitForCategory('category:festival');
+    await user.selectOptions(await screen.findByLabelText('商品分类'), 'category:festival');
     await user.upload(screen.getByLabelText('选择商品图片'), file);
     expect(screen.getByText('已选择：节日礼盒.png')).toBeTruthy();
 
@@ -112,7 +118,8 @@ describe('ProductActionViewModel', () => {
     const user = userEvent.setup();
     const file = new File([Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])], '节日礼盒.png', { type: 'image/png', lastModified: 1 });
     await user.type(screen.getByLabelText('商品名称'), '中秋员工礼盒');
-    await user.type(screen.getByLabelText('商品分类'), 'category:festival');
+    await waitForCategory('category:festival');
+    await user.selectOptions(await screen.findByLabelText('商品分类'), 'category:festival');
     await user.upload(screen.getByLabelText('选择商品图片'), file);
 
     await user.click(screen.getByRole('button', { name: '创建草稿' }));
@@ -134,6 +141,7 @@ describe('ProductActionViewModel', () => {
     const user = userEvent.setup();
 
     expect(screen.getByAltText('办公福利礼盒当前图片')).toBeTruthy();
+    await waitForCategory('category:office');
     await user.click(screen.getByRole('button', { name: '移除图片' }));
     expect(screen.getByText('保存后移除当前图片')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: '保存修改' }));
@@ -179,17 +187,58 @@ describe('ProductActionViewModel', () => {
     setup({ operation: OP_CATALOG_PRODUCTS_CREATE }, execute, vi.fn(), passwordContext, vi.fn(), requestStepup);
     const user = userEvent.setup();
     await user.type(screen.getByLabelText('商品名称'), '中秋员工礼盒');
-    await user.type(screen.getByLabelText('商品分类'), 'category:festival');
+    await waitForCategory('category:festival');
+    await user.selectOptions(await screen.findByLabelText('商品分类'), 'category:festival');
     await user.click(screen.getByRole('button', { name: '创建草稿' }));
 
     expect(requestStepup).toHaveBeenCalledOnce();
     expect(execute).not.toHaveBeenCalled();
   });
+
+  it('creates a real category from the shared product field and selects its readable name', async () => {
+    const createCategory = vi.fn().mockResolvedValue(createdCategory);
+    const platformScope = { kind: 'platform', id: 'platform:shop', tenant: 'tenant:one', name: '平台商品中心' } as const;
+    const platformContext: ConsoleContext = {
+      ...context,
+      scope: platformScope,
+      scopes: [platformScope],
+      session: { ...context.session, scope: platformScope, scopes: [platformScope], capabilities: [...context.session.capabilities, OP_CATALOG_CATEGORIES_CREATE] },
+    };
+    setup({ operation: OP_CATALOG_PRODUCTS_CREATE }, vi.fn(), vi.fn(), platformContext, vi.fn(), vi.fn(), undefined, createCategory);
+    const user = userEvent.setup();
+
+    await waitForCategory('category:office');
+    await user.click(await screen.findByRole('button', { name: '新增分类' }));
+    await user.type(screen.getByLabelText('分类名称'), '节日礼赠');
+    await user.selectOptions(screen.getByLabelText('上级分类（可选）'), 'category:office');
+    await user.click(screen.getByRole('button', { name: '创建并选中' }));
+
+    await waitFor(() => expect(createCategory).toHaveBeenCalledWith(expect.objectContaining({ scope: { kind: 'platform', id: 'platform:shop' } }), { name: '节日礼赠', parent: 'category:office', sort: 0 }));
+    expect(screen.getByLabelText('商品分类')).toHaveProperty('value', 'category:gifts');
+    expect(screen.getByText('已选择“节日礼赠”。')).toBeTruthy();
+  });
+
+  it('shows a retired current category by name but requires an active replacement before saving', async () => {
+    const retired = listingFixture({ category_id: 'category:retired', category_name: '旧员工礼盒' });
+    setup({ operation: OP_CATALOG_PRODUCTS_UPDATE, listing: retired, status: 'active', expectedVersion: 7 });
+
+    await waitFor(() => expect(screen.getByText('当前分类“旧员工礼盒”已停用，请重新选择。')).toBeTruthy());
+    expect(screen.getByRole('button', { name: '保存修改' }).hasAttribute('disabled')).toBe(true);
+  });
 });
 
-function setup(initial: ProductAction, execute = vi.fn().mockResolvedValue({}), done = vi.fn(), value: ConsoleContext = context, upload = vi.fn().mockResolvedValue({}), requestStepup = vi.fn()) {
+function setup(
+  initial: ProductAction,
+  execute = vi.fn().mockResolvedValue({}),
+  done = vi.fn(),
+  value: ConsoleContext = context,
+  upload = vi.fn().mockResolvedValue({}),
+  requestStepup = vi.fn(),
+  readCategories = vi.fn().mockResolvedValue(categoryPage),
+  createCategory = vi.fn().mockResolvedValue(createdCategory)
+) {
   let sequence = 0;
-  const dependencies = { executeAction: { execute }, uploadImage: { execute: upload }, createIdentity: () => `command:${++sequence}` } as unknown as ProductDependencies;
+  const dependencies = { executeAction: { execute }, uploadImage: { execute: upload }, readCategories: { execute: readCategories }, createCategory: { execute: createCategory }, createIdentity: () => `command:${++sequence}` } as unknown as ProductDependencies;
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
   const view = render(
     <QueryClientProvider client={client}>
@@ -220,8 +269,8 @@ const context: ConsoleContext = {
     scope,
     scopes: [scope],
     accessVersion: 7,
-    permissions: ['catalog.product.manage', 'catalog.listing.manage'],
-    capabilities: [OP_CATALOG_PRODUCTS_CREATE, OP_CATALOG_PRODUCTS_UPDATE, OP_CATALOG_PRODUCTS_ARCHIVE, OP_CATALOG_MEDIAUPLOADS_CREATE, OP_CATALOG_LISTINGS_PRICE_SET, OP_CATALOG_LISTINGS_PUBLISH, OP_CATALOG_LISTINGS_UNPUBLISH],
+    permissions: ['catalog.product.read', 'catalog.product.manage', 'catalog.listing.manage'],
+    capabilities: [OP_CATALOG_CATEGORIES_READ, OP_CATALOG_PRODUCTS_CREATE, OP_CATALOG_PRODUCTS_UPDATE, OP_CATALOG_PRODUCTS_ARCHIVE, OP_CATALOG_MEDIAUPLOADS_CREATE, OP_CATALOG_LISTINGS_PRICE_SET, OP_CATALOG_LISTINGS_PUBLISH, OP_CATALOG_LISTINGS_UNPUBLISH],
     assurance: { level: 3 },
     security: { hasLocalCredential: true, phoneMasked: null, passwordChangedAt: null },
     target: 'console',
@@ -232,3 +281,16 @@ const context: ConsoleContext = {
   scopes: [scope],
   scope,
 };
+
+const categoryPage = Object.freeze({
+  items: Object.freeze([
+    Object.freeze({ id: 'category:office', parent_id: null, parent_name: null, code: 'OFFICE', name: '办公用品', status: 'active' as const, sort_order: 10, product_count: 1 }),
+    Object.freeze({ id: 'category:festival', parent_id: null, parent_name: null, code: 'FESTIVAL', name: '节日福利', status: 'active' as const, sort_order: 20, product_count: 0 }),
+  ]),
+  count: 2,
+});
+const createdCategory = Object.freeze({ id: 'category:gifts', parent_id: 'category:office', parent_name: '办公用品', code: 'GIFTS', name: '节日礼赠', status: 'active' as const, sort_order: 0, product_count: 0 });
+
+async function waitForCategory(id: string) {
+  await waitFor(() => expect((screen.getByLabelText('商品分类') as HTMLSelectElement).querySelector(`option[value="${id}"]`)).not.toBeNull());
+}

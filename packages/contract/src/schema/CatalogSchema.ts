@@ -62,6 +62,16 @@ const price = strictObject({
 
 const pool = strictObject({ id: text, scope_id: text, kind: literal(['global', 'channel', 'private', 'markup']), name: text, status: literal(['draft', 'active', 'disabled']), version: entityVersion });
 const poolRead = strictObject({ id: text, kind: string(), name: text, status: string(), version: entityVersion, item_count: unsigned });
+const category = strictObject({
+  id: text,
+  parent_id: nullableText,
+  parent_name: nullableText,
+  code: text,
+  name: text,
+  status: literal(['active', 'disabled']),
+  sort_order: unsigned,
+  product_count: unsigned,
+});
 const poolBinding = strictObject({ mall_id: text, pool_id: text, listing_kind: literal(['selected', 'combined']), status: literal(['active', 'disabled']), effective_at: nullableText, expires_at: nullableText, created_at: isoUtc });
 const listingPrice = strictObject({ listing_id: text, sku_id: text, scope_id: text, amount_minor: unsigned, currency: literal('CNY'), version: entityVersion, effective_at: isoUtc, updated_at: isoUtc });
 const product = strictObject({
@@ -172,6 +182,7 @@ const productQualification = strictObject({ listing: text, listingTitle: text, e
 
 export const CATALOG_QUERY_SCHEMAS = {
   CatalogPoolsReadInput: strictObject(pageQuery),
+  CatalogCategoriesReadInput: strictObject({ ...pageQuery, q: optional(string()) }),
   CatalogProductDetailReadInput: strictObject({ section: detailSection }),
   CatalogListingsReadInput: strictObject({
     ...pageQuery,
@@ -191,6 +202,7 @@ export const CATALOG_BODY_SCHEMAS = {
   CatalogPoolsAttachInput: strictObject({}),
   CatalogPoolsDetachInput: strictObject({}),
   CatalogPoolsAllocateInput: strictObject({ scope: string(), kind: optional(literal(['channel', 'markup'])), name: string() }),
+  CatalogCategoriesCreateInput: strictObject({ name: string(), parent: optional(union([string(), nullSchema()])), sort: optional(unsigned) }),
   CatalogProductsCreateInput: strictObject({
     owner: optional(union([string(), nullSchema()])),
     brand: optional(union([string(), nullSchema()])),
@@ -219,6 +231,8 @@ export const CATALOG_BODY_SCHEMAS = {
 
 export const CATALOG_OUTPUT_SCHEMAS = {
   CatalogPoolsReadOutput: pageOutput(poolRead),
+  CatalogCategoriesReadOutput: pageOutput(category),
+  CatalogCategoriesCreateOutput: category,
   CatalogPoolsAttachOutput: poolBinding,
   CatalogPoolsDetachOutput: poolBinding,
   CatalogPoolsAllocateOutput: pool,
