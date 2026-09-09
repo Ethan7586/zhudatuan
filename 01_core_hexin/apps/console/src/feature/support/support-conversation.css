@@ -69,7 +69,7 @@
 .supportapprovalcard button { min-height: 40px; border: 1px solid #bec9d8; border-radius: 6px; background: #fff; color: #25334b; font-weight: 700; }
 .supportapprovalcard button:disabled { cursor: not-allowed; opacity: .6; }
 
-.supportconversationwelcome { display: flex; grid-template-rows: none; align-items: center; justify-content: flex-start; flex-direction: column; border-color: transparent; background: transparent; padding: clamp(96px, 16vh, 156px) 40px 40px; box-shadow: none; text-align: center; }
+.supportconversationwelcome { display: flex; grid-template-rows: none; align-items: center; justify-content: flex-start; flex-direction: column; padding: clamp(96px, 16vh, 156px) 40px 40px; text-align: center; }
 .supportwelcomeicon { display: grid; width: 46px; height: 46px; place-items: center; border: 1px solid #d9e8ff; border-radius: 14px; background: #eaf3ff; color: var(--support-blue); box-shadow: 0 8px 20px rgb(15 111 255 / 8%); }
 .supportwelcomeicon svg { width: 25px; height: 25px; }
 .supportconversationwelcome p { margin: 14px 0 4px; color: var(--support-blue); font-size: 11px; font-weight: 800; }

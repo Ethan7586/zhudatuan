@@ -77,7 +77,6 @@
 .supportcontext,
 .supportconversation { min-width: 0; min-height: 0; border: 1px solid var(--support-border); border-radius: 12px; background: #fff; box-shadow: var(--support-panel-shadow); }
 .supportcaserail { display: flex; flex-direction: column; overflow: hidden; }
-.supportcaserail:is([data-condition='empty'], [data-condition='notfound'], [data-condition='conflict'], [data-condition='ratelimited'], [data-condition='offline'], [data-condition='failure']) { align-self: start; min-height: 0; }
 .supportpanelheading { display: flex; min-height: 54px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--support-border); padding: 0 20px; }
 .supportpanelheading > div { display: flex; align-items: center; gap: 8px; }
 .supportpanelheading span { color: #16233b; font-size: 18px; font-weight: 800; }
