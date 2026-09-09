@@ -1,3 +1,3 @@
 // Generated from canonical definitions. Do not edit.
 export const CONTRACT_VERSION = "5.0.0" as const;
-export const CONTRACT_CHECKSUM = '5036828476472c9a0efec9d37d4f7f8681276c60fde4fb14efc20b7175ba1122' as const;
+export const CONTRACT_CHECKSUM = '93826327e7f4f9b579b426eb712ab593f959c017d9af41364305051a79b42e9a' as const;

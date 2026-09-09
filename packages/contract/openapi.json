@@ -17065,6 +17065,26 @@
                   "minimum": 0,
                   "type": "integer"
                 },
+                "imageReference": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "imageUrl": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "listing": {
                   "type": "string"
                 },
@@ -17160,6 +17180,8 @@
                 "productType",
                 "category",
                 "title",
+                "imageReference",
+                "imageUrl",
                 "quantity",
                 "unitMinor",
                 "totalMinor",
@@ -17571,6 +17593,26 @@
                           "minimum": 0,
                           "type": "integer"
                         },
+                        "imageReference": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "imageUrl": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "listing": {
                           "type": "string"
                         },
@@ -17666,6 +17708,8 @@
                         "productType",
                         "category",
                         "title",
+                        "imageReference",
+                        "imageUrl",
                         "quantity",
                         "unitMinor",
                         "totalMinor",
