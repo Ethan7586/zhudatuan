@@ -9,7 +9,7 @@ export function ProductCard({ product, open, add }: Readonly<{ product: Presente
   const Icon = availability.canPurchase ? ShieldCheck : AlertTriangle;
   return (
     <article className="group overflow-hidden rounded-2xl border border-edge bg-surface shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <button type="button" onClick={() => open(product.productId)} className="block w-full text-left">
+      <button type="button" data-visual-copy="multiline" onClick={() => open(product.productId)} className="block w-full text-left">
         <ProductMedia source={product.image} alt={product.title} className="aspect-square w-full object-cover" emptyClassName="grid aspect-square place-items-center bg-subtle text-xs text-muted" />
         <div className="p-2 sm:p-3">
           <h3 className="line-clamp-2 min-h-10 text-xs font-bold leading-5 sm:text-sm">{product.title}</h3>

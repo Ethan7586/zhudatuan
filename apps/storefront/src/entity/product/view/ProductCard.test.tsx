@@ -14,7 +14,9 @@ describe('ProductCard', () => {
     const product = presentProduct(productFixture());
     render(<ProductCard product={product} open={open} add={add} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /^测试商品/ }));
+    const details = screen.getByRole('button', { name: /^测试商品/ });
+    expect(details.getAttribute('data-visual-copy')).toBe('multiline');
+    fireEvent.click(details);
     fireEvent.click(screen.getByRole('button', { name: '将测试商品加入购物车' }));
     expect(open).toHaveBeenCalledWith('product-one');
     expect(add).toHaveBeenCalledWith(product);
