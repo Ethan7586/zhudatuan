@@ -7,6 +7,16 @@ import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 const visuals = YAML.parse(readFileSync(join(repositoryRoot, 'config/visuals.yml'), 'utf8'));
 const navigation = YAML.parse(readFileSync(join(repositoryRoot, 'config/navigation.yml'), 'utf8'));
 const tokens = JSON.parse(readFileSync(join(repositoryRoot, 'packages/design/src/tokens.json'), 'utf8'));
+const integrityPath = join(repositoryRoot, 'scripts/check/VisualIntegrity.ts');
+const visualRuntimePath = join(repositoryRoot, 'tests/visual/Runtime.ts');
+
+assert(existsSync(integrityPath), 'VISUAL_INTEGRITY_GATE_MISSING');
+const integritySource = readFileSync(integrityPath, 'utf8');
+assert(integritySource.includes("'controlcopyoverflow'") && integritySource.includes("'controlcopymultiline'"), 'VISUAL_CONTROL_COPY_GATE_INCOMPLETE');
+assert(integritySource.includes('maximumTextNodeLines(element)') && integritySource.includes("dataset.visualCopy !== 'multiline'"), 'VISUAL_CONTROL_LINE_GATE_INCOMPLETE');
+assert(integritySource.includes('[data-visual-copy="truncate"]') && integritySource.includes("style.textOverflow !== 'ellipsis'"), 'VISUAL_TRUNCATION_CONTRACT_MISSING');
+assert(readFileSync(visualRuntimePath, 'utf8').includes('../../scripts/check/VisualIntegrity'), 'VISUAL_RUNTIME_GATE_NOT_SHARED');
+assert(!existsSync(join(repositoryRoot, 'tests/visual/Integrity.ts')), 'VISUAL_INTEGRITY_GATE_DUPLICATED');
 
 assert(visuals.version === 2, 'VISUAL_AUTHORITY_VERSION_INVALID');
 assert(visuals.authority?.policy?.preserveLayout === true, 'VISUAL_LAYOUT_NOT_LOCKED');

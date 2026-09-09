@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { LOCAL_AUTH_ORIGIN } from '@shop/config/client';
 import { ROUTES } from '../../apps/auth/src/generated/RouteBinding';
 import { expectWcagAA } from '../browser/Accessibility';
+import { elementCopyFits } from '../../scripts/check/VisualIntegrity';
 import { expectUsable, prepareVisual, resetVisual } from './Runtime';
 
 for (const viewport of [
@@ -44,7 +45,7 @@ test('Auth 共享按钮原子保持主次层级、触控尺寸与完整中文', 
     const box = await control.boundingBox();
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
   }
-  await expect.poll(() => textFits(primary)).toBe(true);
+  await expect.poll(() => elementCopyFits(primary)).toBe(true);
   await expect(primary).toHaveCSS('background-image', /linear-gradient/);
   await expect(primary).toHaveCSS('box-shadow', 'none');
   await expect(primary).toHaveCSS('border-top-color', 'rgba(0, 0, 0, 0)');
@@ -59,7 +60,3 @@ test('Auth 共享按钮原子保持主次层级、触控尺寸与完整中文', 
   await reveal.hover();
   expect(await reveal.evaluate((element) => getComputedStyle(element).transform)).toBe(revealTransform);
 });
-
-async function textFits(locator: import('@playwright/test').Locator): Promise<boolean> {
-  return locator.evaluate((element) => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1);
-}

@@ -1,6 +1,6 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
-export type VisualIntegrityKind = 'controlcopyoverflow' | 'documentoverflow' | 'textclipped' | 'touchtarget' | 'viewportbreach';
+export type VisualIntegrityKind = 'controlcopymultiline' | 'controlcopyoverflow' | 'documentoverflow' | 'textclipped' | 'touchtarget' | 'viewportbreach';
 
 export interface VisualIntegrityIssue {
   readonly kind: VisualIntegrityKind;
@@ -13,6 +13,10 @@ export async function expectVisualIntegrity(page: Page): Promise<void> {
   await page.evaluate(() => document.fonts.ready);
   const issues = await inspectVisualIntegrity(page);
   expect(issues, describe(issues)).toEqual([]);
+}
+
+export function elementCopyFits(locator: Locator): Promise<boolean> {
+  return locator.evaluate((element) => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1);
 }
 
 export function inspectVisualIntegrity(page: Page): Promise<readonly VisualIntegrityIssue[]> {
@@ -31,7 +35,7 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
       const text = readableText(element);
       const clippedX = text.length > 0 && hiddenOverflow(style.overflowX) && element.scrollWidth > element.clientWidth + 1;
       const clippedY = text.length > 0 && hiddenOverflow(style.overflowY) && element.scrollHeight > element.clientHeight + 1;
-      if (clippedX || clippedY) {
+      if ((clippedX || clippedY) && !permittedTruncation(element, style)) {
         issues.push({
           kind: 'textclipped',
           element: identify(element),
@@ -40,8 +44,9 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
         });
       }
 
-      const copyOverflowX = text.length > 0 && control(element) && element.scrollWidth > element.clientWidth + 1;
-      const copyOverflowY = text.length > 0 && control(element) && element.scrollHeight > element.clientHeight + 1;
+      const isControl = control(element);
+      const copyOverflowX = text.length > 0 && isControl && element.scrollWidth > element.clientWidth + 1;
+      const copyOverflowY = text.length > 0 && isControl && element.scrollHeight > element.clientHeight + 1;
       if ((copyOverflowX || copyOverflowY) && !clippedX && !clippedY) {
         issues.push({
           kind: 'controlcopyoverflow',
@@ -49,6 +54,18 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
           text,
           actual: `${element.clientWidth}×${element.clientHeight}px control / ${element.scrollWidth}×${element.scrollHeight}px content`,
         });
+      }
+
+      if (text.length > 0 && isControl && element.dataset.visualCopy !== 'multiline') {
+        const lines = maximumTextNodeLines(element);
+        if (lines > 1) {
+          issues.push({
+            kind: 'controlcopymultiline',
+            element: identify(element),
+            text,
+            actual: `${lines} rendered text lines / 1 line required`,
+          });
+        }
       }
 
       const rect = element.getBoundingClientRect();
@@ -109,8 +126,37 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
       return element.matches('button,input,select,textarea,summary,[role="button"],[role="tab"],[role="radio"],[role="checkbox"]');
     }
 
+    function permittedTruncation(element: HTMLElement, style: CSSStyleDeclaration): boolean {
+      const owner = element.closest<HTMLElement>('[data-visual-copy="truncate"]');
+      if (owner === null || style.textOverflow !== 'ellipsis') return false;
+      const fullCopy = owner.getAttribute('aria-label') ?? owner.getAttribute('title');
+      return (fullCopy ?? '').trim().length > 0;
+    }
+
     function control(element: HTMLElement): boolean {
-      return element.matches('button,summary,[role="button"],[role="tab"],[role="radio"],[role="checkbox"]');
+      return element.matches('a[href],button,summary,[role="button"],[role="tab"],[role="radio"],[role="checkbox"]');
+    }
+
+    function maximumTextNodeLines(element: HTMLElement): number {
+      let maximum = 0;
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      let node = walker.nextNode();
+      while (node) {
+        const owner = node.parentElement;
+        if ((node.textContent ?? '').trim().length > 0 && owner && visuallyPresented(owner)) {
+          const centers: number[] = [];
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          for (const rect of range.getClientRects()) {
+            if (rect.width <= 0 || rect.height <= 0) continue;
+            const center = rect.top + rect.height / 2;
+            if (!centers.some((known) => Math.abs(known - center) <= 1)) centers.push(center);
+          }
+          maximum = Math.max(maximum, centers.length);
+        }
+        node = walker.nextNode();
+      }
+      return maximum;
     }
 
     function readableText(element: HTMLElement): string {

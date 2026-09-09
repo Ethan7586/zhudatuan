@@ -5,6 +5,7 @@ import { LOCAL_CONSOLE_ORIGIN } from '@shop/config/client';
 import { ROUTES } from '../../apps/console/src/generated/RouteBinding';
 import { signInConsole } from '../browser/Environment';
 import { expectWcagAA } from '../browser/Accessibility';
+import { elementCopyFits } from '../../scripts/check/VisualIntegrity';
 import { expectUsable, fillRoute, prepareVisual, resetVisual } from './Runtime';
 
 type ScopeKind = 'platform' | 'distributor' | 'enterprise' | 'mall';
@@ -92,16 +93,16 @@ test('Console 页名、说明、品牌与管理范围在紧凑桌面和平板完
   await signInConsole(page);
   await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consolefinanceinvoice, 'enterprise')}`);
   await expectUsable(page);
-  await expect.poll(() => textFits(page, '.consoleheadersummary')).toBe(true);
+  await expect.poll(() => elementCopyFits(page.locator('.consoleheadersummary'))).toBe(true);
 
   await page.setViewportSize({ width: 1024, height: 768 });
   await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleorders, 'enterprise')}`);
   await expectUsable(page);
   await expect(page.locator('.consolebreadcrumb > strong')).toHaveText('订单管理系统');
-  await expect.poll(() => textFits(page, '.consolebreadcrumb > strong')).toBe(true);
-  await expect.poll(() => textFits(page, '.consoleheadersummary')).toBe(true);
-  await expect.poll(() => textFits(page, '.sidebarbrandcopy strong')).toBe(true);
-  await expect.poll(() => textFits(page, '.scopepath li[aria-current="page"]')).toBe(true);
+  await expect.poll(() => elementCopyFits(page.locator('.consolebreadcrumb > strong'))).toBe(true);
+  await expect.poll(() => elementCopyFits(page.locator('.consoleheadersummary'))).toBe(true);
+  await expect.poll(() => elementCopyFits(page.locator('.sidebarbrandcopy strong'))).toBe(true);
+  await expect.poll(() => elementCopyFits(page.locator('.scopepath li[aria-current="page"]'))).toBe(true);
 });
 
 test('Console 设置首页按业务任务分组并随视口重排', async ({ page }) => {
@@ -194,8 +195,8 @@ test('Console 商品治理台在桌面、平板和手机保持清晰布局与触
     if (viewport.width <= 768) {
       await expect(page.locator('.producttablewrap tbody tr').first()).toHaveCSS('display', 'grid');
       await expect.poll(() => elementFitsParent(page, '.producttablewrap tbody .productchecktarget', '.producttablewrap tbody tr')).toBe(true);
-      await expect.poll(() => textFits(page, '.productfilterdisclosure > summary > span')).toBe(true);
-      await expect.poll(() => textFits(page, '.productfilterdisclosure > summary > small')).toBe(true);
+      await expect.poll(() => elementCopyFits(page.locator('.productfilterdisclosure > summary > span'))).toBe(true);
+      await expect.poll(() => elementCopyFits(page.locator('.productfilterdisclosure > summary > small'))).toBe(true);
       await page.locator('.productfilterdisclosure > summary').click();
       await expect(page.locator('.producttoolbar')).toBeVisible();
       await expect.poll(() => minimumHeight(page, '.producttoolbar :is(button, input, select)')).toBeGreaterThanOrEqual(44);
@@ -349,7 +350,7 @@ test('Console 商品全部弹层与订单抽屉的动作文案始终留在控件
     await expect(cancelBatch).toBeEnabled();
     await cancelBatch.click();
 
-    await page.locator('.producttablewrap tbody tr').first().click();
+    await page.getByRole('button', { name: /^暖心生活关怀礼盒，.*查看详情$/ }).click();
     await expect(page.locator('.productdrawercontent')).toBeVisible();
     await expectUsable(page);
     await page.getByRole('tab', { name: '来源与供货' }).click();
@@ -391,10 +392,6 @@ function canonicalScope(routeid: string): ScopeKind {
 
 function path(template: string, scope: ScopeKind): string {
   return fillRoute(template, { scopeKind: scope, scopeId: scopes[scope], kind: 'catalog', jobId: 'job:visual:missing', productId: 'product:visual:care', orderId: 'order:visual:missing', view: 'settings', caseId: 'case:visual:missing' });
-}
-
-async function textFits(page: import('@playwright/test').Page, selector: string): Promise<boolean> {
-  return page.locator(selector).evaluate((element) => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1);
 }
 
 async function columnCount(page: import('@playwright/test').Page, selector: string): Promise<number> {

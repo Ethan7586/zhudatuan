@@ -134,7 +134,7 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
 
 function PoolCard({ pool, selected, onSelect }: Readonly<{ pool: Pool; selected: boolean; onSelect: (id: string) => void }>) {
   return (
-    <Button className="productpoolchoice" aria-pressed={selected} onPress={() => onSelect(pool.id)}>
+    <Button className="productpoolchoice" data-visual-copy="multiline" aria-pressed={selected} onPress={() => onSelect(pool.id)}>
       <strong>{pool.name}</strong>
       <span>
         {presentProductPoolKind(pool.kind)} · {pool.item_count} 件 · 第 {pool.version} 版

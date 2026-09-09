@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { expectResponsivePage } from '../browser/Environment';
-import { expectVisualIntegrity } from './Integrity';
+import { expectVisualIntegrity } from '../../scripts/check/VisualIntegrity';
 
 const faults = new WeakMap<Page, string[]>();
 

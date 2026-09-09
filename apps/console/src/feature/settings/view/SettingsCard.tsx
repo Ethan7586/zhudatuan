@@ -3,7 +3,7 @@ import type { SettingsModule } from '../model/Settings';
 
 export function SettingsCard({ module }: Readonly<{ module: SettingsModule }>) {
   return (
-    <a className="settingscard" href={module.href} aria-label={`打开${module.title}`}>
+    <a className="settingscard" data-visual-copy="multiline" href={module.href} aria-label={`打开${module.title}`}>
       <span className="settingsicon" aria-hidden="true">
         <NavigationIcon icon={module.icon} />
       </span>

@@ -88,7 +88,7 @@ function InvitationChoiceGroup({ icon, title, description, secondary = false, ch
 
 function InvitationChoice({ title, description, requirement, disabled, onPress }: Readonly<{ title: string; description: string; requirement: string; disabled: boolean; onPress: () => void }>) {
   return (
-    <Button className="invitationchoice" isDisabled={disabled} onPress={onPress}>
+    <Button className="invitationchoice" data-visual-copy="multiline" isDisabled={disabled} onPress={onPress}>
       <span>
         <strong>{title}</strong>
         <small>{description}</small>
