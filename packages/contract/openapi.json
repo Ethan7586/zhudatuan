@@ -112832,7 +112832,7 @@
         "x-maker-checker": false,
         "x-operation-version": 1,
         "x-origin-policy": "none",
-        "x-permission": "identity.provider.manage",
+        "x-permission": "identity.provider.read",
         "x-rate-class": "read",
         "x-requirements": [
           "MVPGROUPSETTING",

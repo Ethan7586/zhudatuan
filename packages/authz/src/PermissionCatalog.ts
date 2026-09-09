@@ -1890,6 +1890,22 @@ export const PERMISSION_CATALOG = Object.freeze([
     "description": "identity.provider.manage"
   },
   {
+    "code": "identity.provider.read",
+    "module": "identity",
+    "category": "identity",
+    "risk": "elevated",
+    "minimumAssurance": 1,
+    "delegatable": true,
+    "allowedScopeKinds": [
+      "platform",
+      "tenant",
+      "enterprise",
+      "mall"
+    ],
+    "makerChecker": false,
+    "description": "查看登录方式"
+  },
+  {
     "code": "identity.provider.test",
     "module": "identity",
     "category": "identity",

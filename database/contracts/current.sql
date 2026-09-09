@@ -633,6 +633,7 @@ insert into access.permission(id,code,risk,status) values
   ('permission:1cdb23dfabd6ab236aca82d0','identity.link.read','elevated','active'),
   ('permission:ab2bb34cd1256118404c5142','identity.mobile.manage','high','active'),
   ('permission:22de5a9e1eb1b0d0f836a80c','identity.provider.manage','critical','active'),
+  ('permission:897b4bdb1dbcb8c4638b79d9','identity.provider.read','elevated','active'),
   ('permission:9df60ce481e4665494cde728','identity.provider.test','critical','active'),
   ('permission:62a354df9138535ba0651fd6','identity.registration.reset','critical','active'),
   ('permission:a061c751526602d3562ce3b4','identity.session.manage','elevated','active'),
@@ -1629,7 +1630,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('identity.links.read','identity.links.read','identity.link.read','public','{console,storefront,miniapp,store,supplier}'),
   ('identity.links.create','identity.links.create','identity.link.manage','public','{console,storefront,miniapp,store,supplier}'),
   ('identity.links.revoke','identity.links.revoke','identity.link.manage','public','{console,storefront,miniapp,store,supplier}'),
-  ('identity.providers.center.read','identity.providers.center.read','identity.provider.manage','console','{console}'),
+  ('identity.providers.center.read','identity.providers.center.read','identity.provider.read','console','{console}'),
   ('identity.providers.manage','identity.providers.manage','identity.provider.manage','console','{console}'),
   ('identity.providers.test','identity.providers.test','identity.provider.test','console','{console}'),
   ('organization.directories.read','organization.directories.read','organization.directory.read','console','{console}'),
@@ -2039,6 +2040,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='supplier' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','8895bb8d1dbe8322f1c071ceda41418686a6eaf24ab081293a225e2c87b510b4');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','61be469e97ee20eba4f69ee528249eb7af583a2da6a305a6821654556bf07c24');
 
 commit;

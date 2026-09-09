@@ -18521,7 +18521,7 @@ operations:
     path: /api/v1/identity/providers/center
     audience: console
     targets: [console]
-    permission: identity.provider.manage
+    permission: identity.provider.read
     capability: identity.providers.center.read
     scopeKinds: [platform, enterprise, mall]
     assuranceLevel: session

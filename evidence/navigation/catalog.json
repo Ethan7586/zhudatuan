@@ -2062,7 +2062,7 @@
       "order": 60,
       "operation": "identity.providers.center.read",
       "owner": "identity",
-      "permission": "identity.provider.manage",
+      "permission": "identity.provider.read",
       "capability": "identity.providers.center.read",
       "featureFlags": [
         "MVPGROUPSETTING",
@@ -2959,7 +2959,7 @@
       "order": 60,
       "operation": "identity.providers.center.read",
       "owner": "identity",
-      "permission": "identity.provider.manage",
+      "permission": "identity.provider.read",
       "capability": "identity.providers.center.read",
       "featureFlags": [
         "MVPGROUPSETTING",

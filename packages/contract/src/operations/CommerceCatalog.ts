@@ -26381,7 +26381,7 @@ const definitions = [
     "targets": [
       "console"
     ],
-    "permission": "identity.provider.manage",
+    "permission": "identity.provider.read",
     "capability": "identity.providers.center.read",
     "scopeKinds": [
       "platform",

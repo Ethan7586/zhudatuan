@@ -99,6 +99,7 @@ export const PERM_IDENTITY_LINK_MANAGE = "identity.link.manage" as const;
 export const PERM_IDENTITY_LINK_READ = "identity.link.read" as const;
 export const PERM_IDENTITY_MOBILE_MANAGE = "identity.mobile.manage" as const;
 export const PERM_IDENTITY_PROVIDER_MANAGE = "identity.provider.manage" as const;
+export const PERM_IDENTITY_PROVIDER_READ = "identity.provider.read" as const;
 export const PERM_IDENTITY_PROVIDER_TEST = "identity.provider.test" as const;
 export const PERM_IDENTITY_REGISTRATION_RESET = "identity.registration.reset" as const;
 export const PERM_IDENTITY_SESSION_MANAGE = "identity.session.manage" as const;

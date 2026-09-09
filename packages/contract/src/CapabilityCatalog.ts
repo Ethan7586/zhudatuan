@@ -266,7 +266,7 @@ export const CAPABILITY_CATALOG = Object.freeze([
     "code": "identity.providers.center.read",
     "kind": "operation",
     "owner": "identity",
-    "permission": "identity.provider.manage",
+    "permission": "identity.provider.read",
     "audience": "console"
   },
   {

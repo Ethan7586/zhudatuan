@@ -173,7 +173,7 @@ capabilities:
   - code: identity.providers.center.read
     kind: operation
     owner: identity
-    permission: identity.provider.manage
+    permission: identity.provider.read
     audience: console
   - code: identity.providers.manage
     kind: operation

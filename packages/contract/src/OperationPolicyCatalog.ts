@@ -6237,7 +6237,7 @@ const POLICIES = [
     "method": "GET",
     "path": "/api/v1/identity/providers/center",
     "capability": "identity.providers.center.read",
-    "permission": "identity.provider.manage",
+    "permission": "identity.provider.read",
     "assuranceLevel": "session",
     "makerChecker": false,
     "expectedVersion": "none",

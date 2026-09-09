@@ -787,7 +787,7 @@ const SOURCE = [
     order: 60,
     operation: 'identity.providers.center.read',
     owner: 'identity',
-    permission: 'identity.provider.manage',
+    permission: 'identity.provider.read',
     capability: 'identity.providers.center.read',
     featureFlags: ['MVPGROUPSETTING', 'MVPMALLSETTING', 'MVPIDENTITY'],
     experience: {
@@ -1564,7 +1564,7 @@ const SOURCE = [
     order: 60,
     operation: 'identity.providers.center.read',
     owner: 'identity',
-    permission: 'identity.provider.manage',
+    permission: 'identity.provider.read',
     capability: 'identity.providers.center.read',
     featureFlags: ['MVPGROUPSETTING', 'MVPMALLSETTING', 'MVPIDENTITY'],
     experience: {
