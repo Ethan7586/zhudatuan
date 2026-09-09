@@ -170,9 +170,23 @@ describe('Support Chat VI route', () => {
     renderRoute('/scopes/enterprise/enterprise%3A1/support');
 
     expect(await screen.findByRole('heading', { name: '选择一条工单开始处理' })).toBeTruthy();
-    expect(screen.getByText('从左侧会话队列打开工单，这里会展示经服务端解密的真实消息记录。')).toBeTruthy();
+    expect(screen.getByText('从左侧队列打开工单，查看完整沟通记录与处理信息。')).toBeTruthy();
     expect(screen.getByText('尚未选择工单')).toBeTruthy();
     expect(mocks.readMessages).not.toHaveBeenCalled();
+  });
+
+  it('shows a compact recoverable queue error without exposing a large technical alert', async () => {
+    const user = userEvent.setup();
+    mocks.readCases.mockRejectedValue(Object.assign(new Error('not found'), {
+      name: 'ApiError', code: 'NOT_FOUND', requestId: 'request-support-1', status: 404,
+    }));
+    renderRoute('/scopes/enterprise/enterprise%3A1/support');
+
+    const alert = await screen.findByRole('alert');
+    expect(within(alert).getByText('工单服务暂未接通')).toBeTruthy();
+    expect(within(alert).getByText('请求 request-support-1')).toBeTruthy();
+    await user.click(within(alert).getByRole('button', { name: '重新加载' }));
+    await waitFor(() => expect(mocks.readCases.mock.calls.length).toBeGreaterThan(1));
   });
 
   it('uses the service-center copy and keeps future task and operation entries inert', async () => {

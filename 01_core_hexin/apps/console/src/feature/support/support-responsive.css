@@ -20,6 +20,17 @@
   .supportcomposermodes button { padding-inline: 12px; }
 }
 
+@media (min-width: 761px) and (max-height: 820px) {
+  .supportpage { grid-template-rows: 70px 48px minmax(0, 1fr); }
+  .supportworkspaceheader h1 { font-size: 24px; }
+  .supportworkspaceheader p { font-size: 12px; }
+  .supportworkspacestatus > span { min-height: 34px; }
+  .supporttasktabs button { min-height: 48px; }
+  .supportworkspace { padding-block: 9px; }
+  .supportconversation { grid-template-rows: 60px minmax(0, 1fr) 154px; }
+  .supportconversationwelcome { padding-top: 76px; }
+}
+
 @media (min-width: 761px) {
   .supportmobileback { display: none; }
 }

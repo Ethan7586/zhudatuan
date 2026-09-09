@@ -37,7 +37,7 @@ export function SupportCaseRail(props: SupportCaseRailProps) {
   }, [props.cases, query, state]);
 
   return (
-    <aside className="supportcaserail" aria-label="服务工单队列">
+    <aside className="supportcaserail" aria-label="服务工单队列" data-condition={props.condition}>
       <div className="supportcasefilters">
         <label>
           <span className="sr-only">搜索当前页工单</span>
@@ -55,19 +55,39 @@ export function SupportCaseRail(props: SupportCaseRailProps) {
       </div>
       <div className="supportcasepagehint">搜索与状态筛选仅作用于当前页 {props.cases.length} 条工单</div>
       <div className="supportcaseviewport">
-        <ResourceState condition={props.condition} {...(props.error === undefined ? {} : { error: props.error })} retry={props.onRetry}>
-          {visibleCases.length === 0 ? <div className="supportlocalempty"><strong>没有匹配的工单</strong><span>换个关键词或状态试试。</span></div> :
-            <nav className="supportcaselist" aria-label="服务工单">
-              {visibleCases.map((item) => <SupportCaseLink key={item.id} item={item} selected={item.id === props.selectedCaseId}
-                supportPath={props.supportPath} />)}
-            </nav>}
-        </ResourceState>
+        {isQueueError(props.condition) ? <SupportQueueError onRetry={props.onRetry}
+          {...(props.error === undefined ? {} : { error: props.error })} /> :
+          <ResourceState condition={props.condition} {...(props.error === undefined ? {} : { error: props.error })} retry={props.onRetry}>
+            {visibleCases.length === 0 ? <div className="supportlocalempty"><strong>没有匹配的工单</strong><span>换个关键词或状态试试。</span></div> :
+              <nav className="supportcaselist" aria-label="服务工单">
+                {visibleCases.map((item) => <SupportCaseLink key={item.id} item={item} selected={item.id === props.selectedCaseId}
+                  supportPath={props.supportPath} />)}
+              </nav>}
+          </ResourceState>}
       </div>
       {props.nextCursor === undefined ? null : <div className="supportcasepagination">
         <button type="button" onClick={() => props.onNext(props.nextCursor!)}>读取下一页工单</button>
       </div>}
     </aside>
   );
+}
+
+function isQueueError(condition: ResourceCondition): boolean {
+  return condition === 'notfound' || condition === 'conflict' || condition === 'ratelimited'
+    || condition === 'offline' || condition === 'failure';
+}
+
+function SupportQueueError({ error, onRetry }: Readonly<{ error?: string; onRetry: () => void }>) {
+  const requestId = error?.match(/请求\s+([A-Za-z0-9-]+)/)?.[1];
+  const unavailable = error?.includes('NOT_FOUND') ?? false;
+  return <section className="supportqueueerror" role="alert">
+    <span className="supportqueueerroricon" aria-hidden="true">!</span>
+    <div><strong>{unavailable ? '工单服务暂未接通' : '暂时无法读取工单'}</strong>
+      <p>{unavailable ? '当前商城暂时没有可读取的工单资源。' : '请稍后重试，已有页面内容不会受到影响。'}</p>
+      {requestId === undefined ? null : <small>请求 {requestId}</small>}
+    </div>
+    <button type="button" onClick={onRetry}>重新加载</button>
+  </section>;
 }
 
 function SupportCaseLink({ item, selected, supportPath }: Readonly<{

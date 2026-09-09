@@ -161,7 +161,7 @@ function ConversationWelcome() {
       <span className="supportwelcomeicon" aria-hidden="true"><SupportMark /></span>
       <p>服务中心</p>
       <h2 id="supportconversationtitle">选择一条工单开始处理</h2>
-      <span>从左侧会话队列打开工单，这里会展示经服务端解密的真实消息记录。</span>
+      <span>从左侧队列打开工单，查看完整沟通记录与处理信息。</span>
     </section>
   );
 }

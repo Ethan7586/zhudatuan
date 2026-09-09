@@ -1,19 +1,21 @@
 .supportcontext { overflow-y: auto; scrollbar-gutter: stable; }
-.supportcontextsection { border-bottom: 1px solid var(--support-border); padding: 16px 22px; }
+.supportcontextsection { border-bottom: 1px solid var(--support-border); padding: 15px 20px; }
 .supportcontextsection h3,
 .supportcontextactions > strong { display: block; margin: 0 0 14px; color: #142139; font-size: 16px; font-weight: 800; }
-.supportcontextsection dl { display: grid; gap: 11px; margin: 0; }
-.supportcontextsection dl > div { display: grid; min-width: 0; grid-template-columns: 104px minmax(0, 1fr); align-items: baseline; gap: 8px; }
+.supportcontextsection dl { display: grid; gap: 10px; margin: 0; }
+.supportcontextsection dl > div { display: grid; min-width: 0; grid-template-columns: 92px minmax(0, 1fr); align-items: baseline; gap: 8px; }
 .supportcontextsection dt { color: #6f7f99; font-size: 13px; }
 .supportcontextsection dd { overflow: hidden; margin: 0; color: #27354d; font-size: 13px; font-weight: 600; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
 .supportcontextsection dd[data-strong='true'] { color: #152139; font-weight: 800; }
 .supportcontextsection dd[data-tone] { max-width: 100%; justify-self: start; border-radius: 5px; padding: 3px 8px; font-weight: 800; }
 .supportcontextidentity { justify-self: start; border-radius: 6px; background: #edf1f6; color: #5f6d85; padding: 5px 10px; font-size: 12px; font-weight: 800; }
-.supportcontextactions { padding: 16px 22px 18px; }
+.supportcontextactions { padding: 15px 20px 18px; }
 .supportcontextactions > div { display: grid; grid-template-columns: .72fr 1.45fr 1fr; gap: 8px; }
 .supportcontextactions button { min-height: 42px; border: 1px solid #c5cfdd; border-radius: 6px; background: #fff; color: #31405a; font-size: 12px; font-weight: 700; }
 .supportcontextactions button:last-child { border-color: #bad1f8; background: #e8f1ff; color: #4f77b8; }
 .supportcontextactions button:disabled { cursor: not-allowed; opacity: .62; }
 .supportcontextactions p { margin: 9px 0 0; color: #919daf; font-size: 11px; text-align: center; }
-.supportcontextempty { min-height: 360px; align-content: center; }
-.supportcontextempty > span { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 50%; background: #f2f5f8; color: #a2adbc; font-size: 22px; }
+.supportworkspace[data-case-selected='false'] .supportcontext { border-color: transparent; background: transparent; box-shadow: none; }
+.supportworkspace[data-case-selected='false'] .supportcontext .supportpanelheading { min-height: 48px; border-bottom: 0; padding-inline: 12px; }
+.supportcontextempty { min-height: 0; align-content: start; justify-items: start; gap: 5px; padding: 22px 12px; text-align: left; }
+.supportcontextempty > span { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid #e4e9f0; border-radius: 50%; background: #fff; color: #a2adbc; font-size: 15px; }
