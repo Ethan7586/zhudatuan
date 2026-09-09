@@ -28,6 +28,9 @@
   gap: var(--sw-space-2);
   padding: var(--sw-space-2) var(--sw-space-2) var(--sw-space-1-5);
 }
+.orderdrawerheader > div {
+  min-width: 0;
+}
 .orderdrawerheader p {
   margin: 0 0 var(--sw-space-0-5);
   color: var(--sw-text-secondary);
@@ -36,23 +39,30 @@
 }
 .orderdrawertitleline {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: var(--sw-space-0-5);
 }
 .orderdrawertitleline h2 {
+  min-width: 0;
+  overflow: hidden;
   margin: 0;
   font-size: var(--sw-font-size-h2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .orderdrawertitleline button,
 .orderdrawerclose {
   display: grid;
-  min-height: 2rem;
+  width: var(--sw-control-touch-target);
+  min-width: var(--sw-control-touch-target);
+  min-height: var(--sw-control-touch-target);
   border: 0;
   background: transparent;
+  padding: 0;
   place-items: center;
 }
 .orderdrawertitleline button {
-  width: 2rem;
   color: var(--sw-muted);
 }
 .orderdrawertitleline svg,
@@ -61,7 +71,7 @@
   height: 1.1rem;
 }
 .orderdrawerclose {
-  width: 2.5rem;
+  flex: 0 0 var(--sw-control-touch-target);
   color: var(--sw-text);
 }
 .orderdrawerbadges {

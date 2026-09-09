@@ -1,5 +1,6 @@
 import { Dialog as AriaDialog, Heading, Modal, ModalOverlay, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
 import { useEffect } from 'react';
+import { Button } from '@shop/design';
 import { OrderDrawerPanel } from './OrderDrawerPanel';
 import { OrderIcon } from './OrderIcon';
 import { formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone } from './OrderPresentation';
@@ -58,9 +59,9 @@ export function OrderDrawer({
                   <Heading slot="title" id="orderdrawertitle">
                     {order?.order_number ?? '正在读取订单'}
                   </Heading>
-                  <button type="button" onClick={viewmodel.copyNumber} disabled={order === undefined} aria-label={viewmodel.copied ? '订单号已复制' : '复制订单号'}>
+                  <Button className="orderdrawercopy" tone="quiet" onPress={viewmodel.copyNumber} isDisabled={order === undefined} aria-label={viewmodel.copied ? '订单号已复制' : '复制订单号'}>
                     <OrderIcon name={viewmodel.copied ? 'check' : 'copy'} />
-                  </button>
+                  </Button>
                 </div>
                 {order === undefined ? (
                   <span className="ordermutetext">正在读取订单信息</span>
@@ -76,9 +77,9 @@ export function OrderDrawer({
                   </>
                 )}
               </div>
-              <button className="orderdrawerclose" type="button" onClick={onClose} aria-label="关闭订单详情">
+              <Button className="orderdrawerclose" tone="quiet" onPress={onClose} aria-label="关闭订单详情">
                 <OrderIcon name="close" />
-              </button>
+              </Button>
             </header>
 
             <Tabs
@@ -128,31 +129,15 @@ export function OrderDrawer({
             </Tabs>
 
             <footer className="orderdrawerfooter">
-              <div>
-                {order ? (
-                  <button type="button" onClick={onDetail}>
-                    打开完整详情
-                  </button>
-                ) : null}
-                {viewmodel.canCancel ? (
-                  <button type="button" onClick={viewmodel.actions.openCancel}>
-                    取消订单
-                  </button>
-                ) : null}
-                {viewmodel.canRemind ? (
-                  <button type="button" onClick={viewmodel.actions.openReminder}>
-                    提醒履约
-                  </button>
-                ) : null}
-                {viewmodel.canReceive ? (
-                  <button type="button" onClick={viewmodel.actions.openReceive}>
-                    确认收货
-                  </button>
-                ) : null}
+              <div className="orderdraweractions">
+                {order ? <Button onPress={onDetail}>打开完整详情</Button> : null}
+                {viewmodel.canCancel ? <Button onPress={viewmodel.actions.openCancel}>取消订单</Button> : null}
+                {viewmodel.canRemind ? <Button onPress={viewmodel.actions.openReminder}>提醒履约</Button> : null}
+                {viewmodel.canReceive ? <Button onPress={viewmodel.actions.openReceive}>确认收货</Button> : null}
               </div>
-              <button type="button" onClick={onClose}>
+              <Button className="orderdrawerfinish" onPress={onClose}>
                 关闭
-              </button>
+              </Button>
             </footer>
           </AriaDialog>
         </Modal>
