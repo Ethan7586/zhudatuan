@@ -64,6 +64,13 @@ describe('NavigationFilter', () => {
     ]);
   });
 
+  it('keeps a usable workbench when its optional child is unavailable', () => {
+    const catalog = [catalogNode('dashboard', null, 1, '/dashboard'), catalogNode('tasks', 'dashboard', 2, '/tasks', { capability: 'runtime.disabled', placement: 'secondary' })];
+    const nodes = new NavigationFilter().apply(catalog, context());
+    expect(nodes).toHaveLength(1);
+    expect(nodes[0]).toMatchObject({ key: 'dashboard', experience: { disabled: false }, children: [] });
+  });
+
   it('uses one policy for membership, scope, client, permission, capability and feature flags', () => {
     const policy = new VisibilityPolicy();
     const candidate = catalogNode('node', null, 1, '/node');

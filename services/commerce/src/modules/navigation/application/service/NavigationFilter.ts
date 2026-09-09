@@ -45,10 +45,8 @@ export class NavigationFilter {
           const descendants = build(node.key, breadcrumbs);
           const reason = this.visibility.decide(node, context);
           const visible = reason === 'visible';
-          const hasCatalogChildren = (children.get(node.key)?.length ?? 0) > 0;
           if (!visible && descendants.length === 0) return [];
-          if (visible && hasCatalogChildren && descendants.length === 0 && node.experience.empty === 'hide') return [];
-          const disabled = !visible || (hasCatalogChildren && descendants.length === 0);
+          const disabled = !visible;
           return [
             new NavigationNode({
               key: node.key,

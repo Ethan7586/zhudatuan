@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import type { NavigationContext } from '../../domain/model/NavigationContext';
 
+const NAVIGATION_PROJECTION_VERSION = 2;
+
 export function navigationVersion(catalog: string, context: NavigationContext): Readonly<{ version: string; etag: string; featureVersion: string }> {
   const featureVersion = navigationFeatureVersion(context.featureFlags);
   const version = createHash('sha256')
@@ -13,6 +15,6 @@ export function navigationVersion(catalog: string, context: NavigationContext): 
 
 export function navigationFeatureVersion(flags: ReadonlySet<string>): string {
   return createHash('sha256')
-    .update([...flags].sort().join('\u001f'))
+    .update(JSON.stringify({ projection: NAVIGATION_PROJECTION_VERSION, flags: [...flags].sort() }))
     .digest('hex');
 }
