@@ -8625,6 +8625,7 @@ operations:
       - SCOPE_DENIED
       - STEPUP_REQUIRED
       - VALIDATION_FAILED
+      - VERIFICATION_MOBILE_REQUIRED
     idempotencyScope: actor-operation-scope
     expectedVersion: none
     timeout: 800

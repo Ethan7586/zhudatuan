@@ -2,6 +2,7 @@ import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess
 import { defineModule } from '../../composition/DefinedModule';
 import { MEMBER_ACCESS_PORT } from '../access/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
+import { MEMBER_READ_PORT } from '../member/public';
 import { VERIFICATION_CHANNEL_PORT } from '../notification/public';
 import { VERIFICATION_VOUCHER_PORT } from '../voucher/public';
 import { ChallengesIssueHandler } from './application/handler/ChallengesIssueHandler';
@@ -27,7 +28,14 @@ export const VerificationModule = defineModule(Manifest, {
     const transactions = new PgTransactionAccess();
     const members = context.ports.get(MEMBER_ACCESS_PORT);
     const organizations = context.ports.get(ORGANIZATION_READ_PORT);
-    const challenges = new PgChallengeRepository(transactions, members, organizations, context.ports.get(VERIFICATION_VOUCHER_PORT), context.ports.get(VERIFICATION_CHANNEL_PORT));
+    const challenges = new PgChallengeRepository(
+      transactions,
+      members,
+      context.ports.get(MEMBER_READ_PORT),
+      organizations,
+      context.ports.get(VERIFICATION_VOUCHER_PORT),
+      context.ports.get(VERIFICATION_CHANNEL_PORT)
+    );
     const sessions = new PgSessionRepository(transactions, members);
     const attempts = new PgAttemptRepository(transactions, organizations);
     const devices = new PgDeviceRepository(transactions);

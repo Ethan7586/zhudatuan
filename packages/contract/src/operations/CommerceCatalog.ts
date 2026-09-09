@@ -13086,7 +13086,8 @@ const definitions = [
       "SCOPE_DENIED",
       "STEPUP_REQUIRED",
       "URL_SENSITIVE_DATA_FORBIDDEN",
-      "VALIDATION_FAILED"
+      "VALIDATION_FAILED",
+      "VERIFICATION_MOBILE_REQUIRED"
     ],
     "idempotencyScope": "actor-operation-scope",
     "expectedVersion": "none",

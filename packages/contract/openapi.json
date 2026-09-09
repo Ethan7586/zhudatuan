@@ -152427,7 +152427,8 @@
           "SCOPE_DENIED",
           "STEPUP_REQUIRED",
           "URL_SENSITIVE_DATA_FORBIDDEN",
-          "VALIDATION_FAILED"
+          "VALIDATION_FAILED",
+          "VERIFICATION_MOBILE_REQUIRED"
         ],
         "x-execution-mode": "sync",
         "x-expected-version": "none",

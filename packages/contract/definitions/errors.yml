@@ -2437,6 +2437,20 @@ api:
     audit: false
     details: []
     reserved: false
+  - code: VERIFICATION_MOBILE_REQUIRED
+    owner: verification
+    category: authorization
+    retryable: false
+    retryAfter: false
+    exposure: message
+    action: none
+    messageKey: error.verification_mobile_required
+    message: 请先完成手机号认证，再使用会员码。
+    english: Verify a mobile number before using the member code.
+    status: 403
+    audit: true
+    details: []
+    reserved: false
   - code: VERIFICATION_TOKEN_INVALID
     owner: verification
     category: conflict

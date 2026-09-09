@@ -4,6 +4,7 @@ import { PgTransactionAccess, type SqlExecutor } from '../../../../platform/data
 import { DomainError } from '../../../../platform/error/DomainError';
 import type { WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { MemberAccessPort } from '../../../access/public';
+import type { MemberReadPort } from '../../../member/public';
 import type { OrganizationReadPort } from '../../../organization/public';
 import type { VerificationChannelPort } from '../../../notification/public';
 import type { VerificationVoucherPort } from '../../../voucher/public';
@@ -22,6 +23,7 @@ export class PgChallengeRepository implements ChallengeRepository {
   constructor(
     private readonly transactions: PgTransactionAccess,
     private readonly members: MemberAccessPort,
+    private readonly memberProfiles: MemberReadPort,
     private readonly organizations: OrganizationReadPort,
     private readonly vouchers: VerificationVoucherPort,
     private readonly channels: VerificationChannelPort
@@ -30,6 +32,11 @@ export class PgChallengeRepository implements ChallengeRepository {
   async issue(context: WriteTransactionContext, input: Parameters<ChallengeRepository['issue']>[1]) {
     const database = this.transactions.database(context);
     const profile = await this.members.profile(context, input.membership);
+    if (input.purpose === 'member_code') {
+      const member = await this.memberProfiles.summary(context, profile.member, profile.organization);
+      if (!member || member.status !== 'active') throw new DomainError('VERIFICATION_MEMBER_INACTIVE');
+      if (member.mobileMasked === null) throw new DomainError('VERIFICATION_MOBILE_REQUIRED');
+    }
     const rule = this.policy.resolve(input.purpose);
     this.channels.require(rule.channel);
     let subjectType: VerificationSessionValue['subjectType'] = 'member';
@@ -229,7 +236,9 @@ export class PgChallengeRepository implements ChallengeRepository {
   private async issuerIsCurrent(context: WriteTransactionContext, row: SessionRow): Promise<boolean> {
     try {
       const profile = await this.members.profile(context, row.issued_by);
-      return profile.member === row.subject_id && profile.organization === row.scope_id && profile.accessversion === row.issued_access_version;
+      if (profile.member !== row.subject_id || profile.organization !== row.scope_id || profile.accessversion !== row.issued_access_version) return false;
+      const member = await this.memberProfiles.summary(context, profile.member, profile.organization);
+      return member?.status === 'active' && member.mobileMasked !== null;
     } catch (cause) {
       if (cause instanceof DomainError && cause.code === 'MEMBERSHIP_SELECTION_REQUIRED') return false;
       throw cause;
