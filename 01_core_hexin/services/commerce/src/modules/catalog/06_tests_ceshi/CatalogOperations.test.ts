@@ -106,6 +106,7 @@ describe('catalog mall command boundaries', () => {
     expect(calls[1]?.text).toContain('insert into runtime.job');
     expect(JSON.parse(String(calls[1]?.values[2]))).toMatchObject({
       total: 2, processed: 0, target_ids: ['listing:1', 'listing:2'], failures: [],
+      idempotency_key: 'catalog-test-key',
     });
   });
 
@@ -114,6 +115,7 @@ describe('catalog mall command boundaries', () => {
     const database = recordingDatabase(calls, () => [{
       id: 'catalogpublication:1', kind: 'catalogpublication', scope_id: 'mall:hongtai', state: 'running',
       payload: { action: 'publish_ready', total: 3, processed: 2, published: 1, failed: 1, skipped: 0,
+        idempotency_key: 'catalog-test-key',
         failures: [{ id: 'listing:2', sku_id: 'sku:2', title: '商品二', code: 'STOREFRONT_POOL_MISSING',
           message: '商城缺少前台商品池', retryable: true }] },
       created_at: '2026-09-09T00:00:00.000Z', updated_at: '2026-09-09T00:00:01.000Z',
@@ -127,8 +129,57 @@ describe('catalog mall command boundaries', () => {
     expect(result).toMatchObject({ status: 200, body: {
       id: 'catalogpublication:1', kind: 'catalogpublication', scope_id: 'mall:hongtai',
       state: 'running', total: 3, processed: 2, published: 1,
-      failed: 1, retryable_count: 1,
+      failed: 1, retryable_count: 1, idempotency_key: 'catalog-test-key',
     } });
+  });
+
+  it('returns a server completion time for a terminal task even when the worker stopped before writing one', async () => {
+    const database = recordingDatabase([], () => [{
+      id: 'catalogpublication:failed', kind: 'catalogpublication', scope_id: 'mall:hongtai', state: 'failed',
+      payload: { action: 'publish_ready', total: 1, processed: 0, succeeded: 0, failed: 0, skipped: 0, failures: [] },
+      created_at: '2026-09-09T00:00:00.000Z', updated_at: '2026-09-09T00:00:05.000Z',
+    }]);
+
+    const result = await readListingPublicationStatus(
+      request('catalog.imports.read', { importid: 'catalogpublication:failed' }), database,
+    );
+
+    expect(result).toMatchObject({ status: 200, body: {
+      state: 'failed', completed_at: '2026-09-09T00:00:05.000Z',
+    } });
+  });
+
+  it('discovers the active task before the most recent terminal task for the current mall', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, () => [{
+      id: 'catalogpublication:active', kind: 'catalogpublication', scope_id: 'mall:hongtai', state: 'queued',
+      payload: { action: 'publish_ready', total: 2, processed: 0, succeeded: 0, failed: 0, skipped: 0,
+        failures: [], idempotency_key: 'catalog-active-key' },
+      created_at: '2026-09-09T00:00:00.000Z', updated_at: '2026-09-09T00:00:00.000Z',
+    }]);
+
+    const result = await readListingPublicationStatus(
+      request('catalog.imports.read', { importid: 'catalogpublication:latest' }), database,
+    );
+
+    expect(calls[0]?.values).toEqual(['mall:hongtai', null]);
+    expect(calls[0]?.text).toContain("case when state in('queued','running') then 0 else 1 end");
+    expect(result).toMatchObject({ status: 200, body: {
+      id: 'catalogpublication:active', state: 'queued', idempotency_key: 'catalog-active-key',
+    } });
+  });
+
+  it('rejects malformed persisted counters instead of reporting invented progress', async () => {
+    const database = recordingDatabase([], () => [{
+      id: 'catalogpublication:invalid', kind: 'catalogpublication', scope_id: 'mall:hongtai', state: 'running',
+      payload: { action: 'publish_ready', total: 1, processed: 'not-a-number', succeeded: 0,
+        failed: 0, skipped: 0, failures: [] },
+      created_at: '2026-09-09T00:00:00.000Z', updated_at: '2026-09-09T00:00:01.000Z',
+    }]);
+
+    await expect(readListingPublicationStatus(
+      request('catalog.imports.read', { importid: 'catalogpublication:invalid' }), database,
+    )).rejects.toThrow('CATALOGPUBLICATION_PROGRESS_INVALID');
   });
 
   it('queues a child task containing only retryable failed listings', async () => {
@@ -149,6 +200,7 @@ describe('catalog mall command boundaries', () => {
     expect(calls[0]?.values).toEqual(['catalogpublication:old', 'mall:hongtai']);
     expect(JSON.parse(String(calls[1]?.values[2]))).toMatchObject({
       action: 'retry_failed', target_ids: ['listing:2'], parent_id: 'catalogpublication:old', total: 1,
+      idempotency_key: 'catalog-test-key',
     });
     expect(result).toMatchObject({ status: 202, body: { action: 'retry_failed', count: 1,
       parent_id: 'catalogpublication:old' } });
@@ -204,6 +256,7 @@ function request(
     type,
     access,
     input: { path, query, headers: {}, body, rawBody: '{}', deadline: Date.now() + 1_000,
-      signal: new AbortController().signal, ...(expectedVersion === undefined ? {} : { expectedVersion }) },
+      signal: new AbortController().signal, idempotency: 'catalog-test-key',
+      ...(expectedVersion === undefined ? {} : { expectedVersion }) },
   };
 }

@@ -74,7 +74,7 @@ export async function setListingBatchPublication(request: OperationRequest, data
             and (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='pending_review'
           order by listing.id`, [access.scope.id])).rows.map(({ id }) => id)
       : publicationIds(body.ids);
-    return queuePublication(database, access.scope.id, 'publish_ready', ids);
+    return queuePublication(database, access.scope.id, 'publish_ready', ids, undefined, request.input.idempotency);
   }
   if (body.action === 'retry_failed') {
     if (typeof body.id !== 'string' || !body.id.startsWith('catalogpublication:')) {
@@ -89,7 +89,7 @@ export async function setListingBatchPublication(request: OperationRequest, data
     }
     const ids = publicationFailures(row.payload).filter(({ retryable }) => retryable).map(({ id }) => id);
     if (ids.length === 0) return { status: 409, body: { code: 'CATALOG_PUBLICATION_RETRY_EMPTY' } };
-    return queuePublication(database, access.scope.id, 'retry_failed', [...new Set(ids)], row.id);
+    return queuePublication(database, access.scope.id, 'retry_failed', [...new Set(ids)], row.id, request.input.idempotency);
   }
   if (body.action !== 'publish' && body.action !== 'unpublish') throw new Error('VALIDATION_FAILED:action');
   if (!Array.isArray(body.ids) || body.ids.some((id) => typeof id !== 'string')) throw new Error('VALIDATION_FAILED:ids');
@@ -134,6 +134,7 @@ async function queuePublication(
   action: 'publish_ready' | 'retry_failed',
   ids: readonly string[],
   parentId?: string,
+  idempotencyKey?: string,
 ) {
   const id = `catalogpublication:${randomUUID()}`;
   const payload = {
@@ -147,6 +148,7 @@ async function queuePublication(
     phase: 'queued',
     target_ids: ids,
     failures: [],
+    idempotency_key: idempotencyKey ?? null,
     ...(parentId === undefined ? {} : { parent_id: parentId }),
   };
   await database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
@@ -166,6 +168,7 @@ function publicationIds(value: unknown): readonly string[] {
 
 function publicationStatus(row: PublicationJobRow) {
   const payload = record(row.payload);
+  const state = publicationState(row.state);
   const failures = publicationFailures(payload);
   const published = integer(payload.published ?? payload.succeeded);
   const failed = integer(payload.failed ?? failures.length);
@@ -183,7 +186,7 @@ function publicationStatus(row: PublicationJobRow) {
     id: row.id,
     kind: row.kind,
     scope_id: row.scope_id,
-    state: publicationState(row.state),
+    state,
     action: text(payload.action, 'publish_ready'),
     phase: text(payload.phase, row.state),
     total,
@@ -195,8 +198,10 @@ function publicationStatus(row: PublicationJobRow) {
     failures,
     retryable_count: failures.filter(({ retryable }) => retryable).length,
     parent_id: nullableText(payload.parent_id),
+    idempotency_key: nullableText(payload.idempotency_key),
     started_at: nullableText(payload.started_at),
-    completed_at: nullableText(payload.completed_at),
+    completed_at: nullableText(payload.completed_at)
+      ?? (state === 'completed' || state === 'failed' || state === 'cancelled' ? timestamp(row.updated_at) : null),
     created_at: timestamp(row.created_at),
     updated_at: timestamp(row.updated_at),
   };
@@ -205,7 +210,7 @@ function publicationStatus(row: PublicationJobRow) {
 function idlePublicationStatus() {
   return { id: null, kind: 'catalogpublication', scope_id: null, state: 'idle', action: 'publish_ready', phase: 'idle', total: null, processed: 0,
     succeeded: 0, published: 0, failed: 0, skipped: 0, failures: [], retryable_count: 0,
-    parent_id: null, started_at: null, completed_at: null, created_at: null, updated_at: null };
+    parent_id: null, idempotency_key: null, started_at: null, completed_at: null, created_at: null, updated_at: null };
 }
 
 function publicationFailures(value: unknown): readonly PublicationFailure[] {
@@ -236,7 +241,8 @@ function nullableText(value: unknown): string | null {
 
 function integer(value: unknown): number {
   const parsed = typeof value === 'number' ? value : Number(value ?? 0);
-  return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : 0;
+  if (!Number.isSafeInteger(parsed) || parsed < 0) throw new Error('CATALOGPUBLICATION_PROGRESS_INVALID');
+  return parsed;
 }
 
 function publicationState(value: string): 'queued' | 'running' | 'completed' | 'failed' | 'cancelled' {

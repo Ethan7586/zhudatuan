@@ -45,7 +45,7 @@ interface PublicationCheckpoint {
   readonly startedAt: string;
 }
 
-const PUBLICATION_PROGRESS_INTERVAL = 20;
+type PublicationDatabase = Pick<DatabasePool, 'query'>;
 
 export class CatalogPublicationProcessor implements JobProcessor {
   constructor(private readonly pool: DatabasePool) {}
@@ -60,35 +60,50 @@ export class CatalogPublicationProcessor implements JobProcessor {
     const startedAt = checkpoint.startedAt;
     let published = checkpoint.published;
     let skipped = checkpoint.skipped;
-    const failures: PublicationFailure[] = [...checkpoint.failures];
-    await this.progress(job.id, {
+    let failures: PublicationFailure[] = [...checkpoint.failures];
+    await this.progress(this.pool, job.id, {
       total: targetIds.length, processed: checkpoint.processed, succeeded: published, published,
       failed: failures.length, skipped,
       phase: 'publishing', failures, started_at: startedAt,
-    });
+    }, checkpoint.processed);
 
     for (let index = checkpoint.processed; index < targetIds.length; index += 1) {
       const id = targetIds[index]!;
       if (signal.aborted) throw signal.reason;
-      const outcome = await this.publishOne(job.scope_id, id);
-      if (outcome.outcome === 'published') published += 1;
-      else if (outcome.outcome === 'skipped') skipped += 1;
-      else failures.push(publicationFailure(outcome));
-
-      const processed = index + 1;
-      if (processed % PUBLICATION_PROGRESS_INTERVAL === 0 && processed < targetIds.length) {
-        await this.progress(job.id, {
-          total: targetIds.length, processed, succeeded: published, published, failed: failures.length, skipped,
-          phase: 'publishing', failures, started_at: startedAt,
-        });
+      const client = await this.pool.connect();
+      try {
+        await client.query('begin');
+        const outcome = await this.publishOne(client as unknown as PublicationDatabase, job.scope_id, id);
+        const nextPublished = published + (outcome.outcome === 'published' ? 1 : 0);
+        const nextSkipped = skipped + (outcome.outcome === 'skipped' ? 1 : 0);
+        const nextFailures = outcome.outcome === 'failed' ? [...failures, publicationFailure(outcome)] : failures;
+        const processed = index + 1;
+        const completed = processed === targetIds.length;
+        await this.progress(client as unknown as PublicationDatabase, job.id, {
+          total: targetIds.length, processed, succeeded: nextPublished, published: nextPublished,
+          failed: nextFailures.length, skipped: nextSkipped, phase: completed ? 'completed' : 'publishing',
+          failures: nextFailures, started_at: startedAt,
+          ...(completed ? { completed_at: new Date().toISOString() } : {}),
+        }, index);
+        await client.query('commit');
+        published = nextPublished;
+        skipped = nextSkipped;
+        failures = nextFailures;
+      } catch (cause) {
+        await client.query('rollback').catch(() => undefined);
+        throw cause;
+      } finally {
+        client.release();
       }
     }
     if (signal.aborted) throw signal.reason;
-    await this.progress(job.id, {
-      total: targetIds.length, processed: targetIds.length, succeeded: published, published,
-      failed: failures.length, skipped, phase: 'completed', failures, started_at: startedAt,
-      completed_at: new Date().toISOString(),
-    });
+    if (checkpoint.processed === targetIds.length) {
+      await this.progress(this.pool, job.id, {
+        total: targetIds.length, processed: targetIds.length, succeeded: published, published,
+        failed: failures.length, skipped, phase: 'completed', failures, started_at: startedAt,
+        completed_at: new Date().toISOString(),
+      }, targetIds.length);
+    }
   }
 
   private async targetIds(job: ClaimedJob): Promise<readonly string[]> {
@@ -108,8 +123,8 @@ export class CatalogPublicationProcessor implements JobProcessor {
     return legacy.rows.map(({ id }) => id);
   }
 
-  private async publishOne(scope: string, id: string): Promise<PublicationOutcomeRow> {
-    const result = await this.pool.query<PublicationOutcomeRow>(`with selected_pool as(
+  private async publishOne(database: PublicationDatabase, scope: string, id: string): Promise<PublicationOutcomeRow> {
+    const result = await database.query<PublicationOutcomeRow>(`with selected_pool as(
       select binding.pool_id from experience.binding binding
       join experience.application application on application.id=binding.application_id
         and application.status='active' and binding.domain=application.public_slug
@@ -155,11 +170,20 @@ export class CatalogPublicationProcessor implements JobProcessor {
     return row;
   }
 
-  private async progress(id: string, progress: PublicationProgress): Promise<void> {
-    const result = await this.pool.query(`update runtime.job
-      set payload=coalesce(payload,'{}'::jsonb)||$2::jsonb,updated_at=clock_timestamp() where id=$1`,
-    [id, JSON.stringify(progress)]);
-    if (result.rowCount !== 1) throw new Error('CATALOGPUBLICATION_JOB_MISSING');
+  private async progress(database: PublicationDatabase, id: string, progress: PublicationProgress,
+    expectedProcessed: number): Promise<void> {
+    if (progress.processed !== progress.succeeded + progress.failed + progress.skipped
+      || progress.processed < expectedProcessed || progress.processed > progress.total
+      || progress.failures.length !== progress.failed) throw new Error('CATALOGPUBLICATION_PROGRESS_INVALID');
+    const result = await database.query(`update runtime.job
+      set payload=coalesce(payload,'{}'::jsonb)||$2::jsonb,updated_at=clock_timestamp()
+      where id=$1 and state='running'
+        and coalesce((payload->>'processed')::integer,0)=$3
+        and coalesce((payload->>'succeeded')::integer,(payload->>'published')::integer,0)<=$4
+        and coalesce((payload->>'failed')::integer,0)<=$5
+        and coalesce((payload->>'skipped')::integer,0)<=$6`,
+    [id, JSON.stringify(progress), expectedProcessed, progress.succeeded, progress.failed, progress.skipped]);
+    if (result.rowCount !== 1) throw new Error('CATALOGPUBLICATION_PROGRESS_CONFLICT');
   }
 }
 

@@ -115,6 +115,7 @@ export const CatalogPublicationTaskSchema = z.object({
   failures: z.array(CatalogPublicationFailureSchema),
   retryable_count: DatabaseIntegerSchema,
   parent_id: z.nullable(z.string()),
+  idempotency_key: z.optional(z.nullable(z.string())),
   started_at: z.nullable(z.string()),
   created_at: z.nullable(z.string()),
   updated_at: z.nullable(z.string()),
