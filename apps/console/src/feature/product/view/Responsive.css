@@ -214,6 +214,7 @@
   .productidentity {
     min-width: 0;
     max-width: none;
+    align-items: flex-start;
   }
   .productidentity > button,
   .productcellpair {
@@ -223,9 +224,16 @@
   .productidentity span {
     display: block;
     max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  .productidentity strong {
+    line-height: 1.45;
+  }
+  .productidentity span {
+    line-height: 1.5;
   }
   .productrowactions {
     display: grid;

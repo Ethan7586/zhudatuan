@@ -60,7 +60,7 @@ export function ProductTable({ rows, visibleColumns, selected, activeId, onToggl
                   <td data-label="商品信息">
                     <div className="productidentity">
                       <ProductThumbnail row={row} />
-                      <Button className="productidentitybutton" tone="quiet" data-visual-copy="truncate" aria-label={`${row.title}，${subtitle}，查看详情`} onClick={stopClick} onPress={() => onOpen(row)}>
+                      <Button className="productidentitybutton" tone="quiet" data-visual-copy="multiline" aria-label={`${row.title}，${subtitle}，查看详情`} onClick={stopClick} onPress={() => onOpen(row)}>
                         <strong>{row.title}</strong>
                         <span>{subtitle}</span>
                       </Button>

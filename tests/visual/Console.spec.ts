@@ -195,6 +195,7 @@ test('Console 商品治理台在桌面、平板和手机保持清晰布局与触
     if (viewport.width <= 768) {
       await expect(page.locator('.producttablewrap tbody tr').first()).toHaveCSS('display', 'grid');
       await expect.poll(() => elementFitsParent(page, '.producttablewrap tbody .productchecktarget', '.producttablewrap tbody tr')).toBe(true);
+      await expect.poll(() => allCopyFits(page, '.productidentity strong, .productidentity span')).toBe(true);
       await expect.poll(() => elementCopyFits(page.locator('.productfilterdisclosure > summary > span'))).toBe(true);
       await expect.poll(() => elementCopyFits(page.locator('.productfilterdisclosure > summary > small'))).toBe(true);
       await page.locator('.productfilterdisclosure > summary').click();
@@ -414,4 +415,8 @@ async function minimumHeight(page: import('@playwright/test').Page, selector: st
 
 async function minimumWidth(page: import('@playwright/test').Page, selector: string): Promise<number> {
   return page.locator(selector).evaluateAll((elements) => Math.min(...elements.map((element) => element.getBoundingClientRect().width)));
+}
+
+async function allCopyFits(page: import('@playwright/test').Page, selector: string): Promise<boolean> {
+  return page.locator(selector).evaluateAll((elements) => elements.every((element) => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1));
 }
