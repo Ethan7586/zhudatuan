@@ -13,7 +13,7 @@ import { memberInvitationAvailable } from '../member/MemberInvitationCommand';
 import { memberKey, readMembers } from '../member/MemberQuery';
 import { MemberRegistrationResetDialog } from '../member/MemberRegistrationResetDialog';
 import type { Member } from '../member/MemberSchema';
-import { accessKey, readAccess } from './AccessQuery';
+import { ACCESS_QUERY_STALE_TIME_MS, accessKey, readAccess } from './AccessQuery';
 import type { AccessMembership } from './AccessSchema';
 import { AccessWorkspaceTabs } from './AccessWorkspaceTabs';
 import './member-access-workspace.css';
@@ -44,6 +44,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
     queryFn: ({ signal }) => readAccess(context, accessCursor, signal),
     enabled: canReadAccess,
     placeholderData: keepPreviousData,
+    staleTime: ACCESS_QUERY_STALE_TIME_MS,
   });
   const memberQuery = useQuery({
     queryKey: memberKey(context, memberCursor),

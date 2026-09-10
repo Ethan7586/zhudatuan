@@ -37,6 +37,7 @@ export function RoleEditor({ context, role, members, onEdit, onRefresh, onSaved,
   const [name, setName] = useState(role.name);
   const [permissions, setPermissions] = useState<readonly string[]>(role.permissions);
   const [permissionFilter, setPermissionFilter] = useState('');
+  const [expandedCategories, setExpandedCategories] = useState<ReadonlySet<string>>(() => new Set());
   const permissionSet = useMemo(() => new Set(permissions), [permissions]);
   const canWrite = role.editable && roleCommandAvailable(context);
   const normalizedName = name.trim();
@@ -47,6 +48,7 @@ export function RoleEditor({ context, role, members, onEdit, onRefresh, onSaved,
     return PERMISSION_GROUPS.map((group) => ({ ...group, permissions: group.permissions.filter(({ code }) => code.toLocaleLowerCase('zh-CN').includes(filter)) }))
       .filter(({ permissions: items }) => items.length > 0);
   }, [permissionFilter]);
+  const filteringPermissions = permissionFilter.trim() !== '';
   const mutation = useMutation({
     mutationFn: async () => {
       const draft = { id: role.id, name: normalizedName, permissions, ...(role.version === undefined ? {} : { version: role.version }) };
@@ -87,7 +89,14 @@ export function RoleEditor({ context, role, members, onEdit, onRefresh, onSaved,
         <div className="rolecategorygrid">
           {PERMISSION_GROUPS.map((group) => {
             const selected = group.permissions.filter(({ code }) => permissionSet.has(code)).length;
-            return <button key={group.category} type="button" onClick={() => document.getElementById(`permission-${group.category}`)?.scrollIntoView({ block: 'start' })}>
+            const expanded = expandedCategories.has(group.category);
+            return <button key={group.category} type="button" aria-controls={`permission-${group.category}`} aria-expanded={expanded} onClick={() => {
+              setExpandedCategories((current) => current.has(group.category) ? current : new Set(current).add(group.category));
+              requestAnimationFrame(() => {
+                const target = document.getElementById(`permission-${group.category}`);
+                if (typeof target?.scrollIntoView === 'function') target.scrollIntoView({ block: 'start' });
+              });
+            }}>
               <span>{group.label}</span><strong>{selected}</strong><small>/ {group.permissions.length} 项已选择</small>
             </button>;
           })}
@@ -97,15 +106,26 @@ export function RoleEditor({ context, role, members, onEdit, onRefresh, onSaved,
       <section className="rolepermissiondirectory" aria-label="完整权限目录">
         {visibleGroups.length === 0 ? <p className="rolepermissionempty">没有匹配的权限代码。</p> : visibleGroups.map((group) => {
           const selected = group.permissions.filter(({ code }) => permissionSet.has(code)).length;
-          return <details key={group.category} id={`permission-${group.category}`} open>
+          const expanded = filteringPermissions || expandedCategories.has(group.category);
+          return <details key={group.category} id={`permission-${group.category}`} open={expanded} onToggle={(event) => {
+            if (filteringPermissions) return;
+            const open = event.currentTarget.open;
+            setExpandedCategories((current) => {
+              if (open === current.has(group.category)) return current;
+              const next = new Set(current);
+              if (open) next.add(group.category);
+              else next.delete(group.category);
+              return next;
+            });
+          }}>
             <summary><span>{group.label}</span><Badge tone={selected === 0 ? 'neutral' : 'info'}>{selected} / {group.permissions.length}</Badge></summary>
-            <div className="rolepermissionitems">
+            {expanded ? <div className="rolepermissionitems">
               {group.permissions.map((permission) => <label key={permission.code}>
                 <input type="checkbox" checked={permissionSet.has(permission.code)} disabled={!canWrite || mutation.isPending}
                   onChange={(event) => togglePermission(permission.code, event.target.checked)} />
                 <span><code>{permission.code}</code><small>{riskLabel(permission.risk)} · {permission.scopes.map(scopeKindLabel).join('、')}</small></span>
               </label>)}
-            </div>
+            </div> : null}
           </details>;
         })}
       </section>

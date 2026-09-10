@@ -6,7 +6,7 @@ import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { MemberInvitationDialog } from '../member/MemberInvitationDialog';
 import { memberInvitationAvailable } from '../member/MemberInvitationCommand';
-import { accessKey, readAccess } from './AccessQuery';
+import { ACCESS_QUERY_STALE_TIME_MS, accessKey, readAccess } from './AccessQuery';
 import type { AccessRole } from './AccessSchema';
 import { roleCommandAvailable } from './AccessRoleCommand';
 import { AccessWorkspaceTabs } from './AccessWorkspaceTabs';
@@ -32,6 +32,7 @@ export function RoleAccessWorkspace() {
     queryKey: accessKey(context),
     queryFn: ({ signal }) => readAccess(context, undefined, signal),
     enabled: canRead,
+    staleTime: ACCESS_QUERY_STALE_TIME_MS,
   });
   const invitationRecordsQuery = useInfiniteQuery({
     queryKey: invitationRecordsKey(context),
