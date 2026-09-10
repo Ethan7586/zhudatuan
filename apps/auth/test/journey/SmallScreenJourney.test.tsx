@@ -33,6 +33,7 @@ function props(): LoginPageProps {
   return {
     bootstrap,
     target: 'storefront',
+    entryTarget: 'storefront',
     method: 'password',
     accepted: false,
     busy: false,

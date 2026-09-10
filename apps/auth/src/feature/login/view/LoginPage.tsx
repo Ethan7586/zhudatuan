@@ -20,6 +20,7 @@ import type { Challenge } from '../../challenge';
 export interface LoginPageProps {
   readonly bootstrap: Bootstrap;
   readonly target: AuthTarget;
+  readonly entryTarget: AuthTarget;
   readonly focusTarget?: AuthTarget;
   readonly method: Method;
   readonly accepted: boolean;
@@ -59,7 +60,7 @@ export function LoginPage(props: Readonly<LoginPageProps>) {
           <Alert {...(props.failure ? { failure: props.failure } : {})} {...(props.notice ? { notice: props.notice } : {})} />
           {first ? (
             <div className="authformstack">
-              <TargetPicker target={props.target} {...(props.focusTarget ? { focusTarget: props.focusTarget } : {})} busy={props.busy} description="请选择登录成功后要进入的系统。" onTarget={props.onTarget} />
+              <TargetPicker target={props.target} entryTarget={props.entryTarget} {...(props.focusTarget ? { focusTarget: props.focusTarget } : {})} busy={props.busy} description="请选择登录成功后要进入的系统。" onTarget={props.onTarget} />
               <LoginMethod method={props.method} methods={props.providers.credentials} busy={props.busy} onChange={props.onMethod} />
               <div id={`auth-panel-${props.method}`} role="tabpanel" aria-labelledby={`auth-tab-${props.method}`} key={`${props.target}:${props.method}`}>
                 {props.method === 'password' ? <PasswordForm busy={props.busy} error={props.fields} agreement={agreement} submitLabel={`登录并进入${destination}`} onSubmit={props.onPassword} onReset={props.onReset} /> : null}

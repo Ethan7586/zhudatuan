@@ -53,6 +53,7 @@ describe('invitation journey', () => {
       <InvitationPage
         bootstrap={bootstrap}
         target="storefront"
+        entryTarget="storefront"
         accepted={false}
         busy={false}
         fields={{}}

@@ -19,6 +19,7 @@ import type { InvitationMode } from '../model/Invitation';
 export interface InvitationPageProps {
   readonly bootstrap: Bootstrap;
   readonly target: AuthTarget;
+  readonly entryTarget: AuthTarget;
   readonly focusTarget?: AuthTarget;
   readonly accepted: boolean;
   readonly busy: boolean;
@@ -71,7 +72,7 @@ export function InvitationPage(props: Readonly<InvitationPageProps>) {
             </section>
           ) : first ? (
             <div className="authformstack">
-              <TargetPicker target={props.target} {...(props.focusTarget ? { focusTarget: props.focusTarget } : {})} busy={props.busy} description="先选择邀请码对应的目标系统；验证后，系统会自动进入正确流程。" onTarget={props.onTarget} />
+              <TargetPicker target={props.target} entryTarget={props.entryTarget} {...(props.focusTarget ? { focusTarget: props.focusTarget } : {})} busy={props.busy} description="先选择邀请码对应的目标系统；验证后，系统会自动进入正确流程。" onTarget={props.onTarget} />
               <InvitationForm
                 busy={props.busy}
                 {...(props.fields.invitation ? { error: props.fields.invitation } : {})}

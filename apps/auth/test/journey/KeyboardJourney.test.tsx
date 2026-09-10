@@ -40,4 +40,21 @@ describe('keyboard journey', () => {
     expect(select).toHaveBeenLastCalledWith('storefront');
     expect(document.activeElement).toBe(storefront);
   });
+
+  it.each([
+    ['supplier', '供应链后台'],
+    ['store', '门店工作台'],
+  ] as const)('keeps the %s entry focused on its own workspace and the operations console', (entryTarget, label) => {
+    const { rerender } = render(<TargetPicker target={entryTarget} entryTarget={entryTarget} busy={false} onTarget={vi.fn()} />);
+
+    expect(screen.getByRole('radio', { name: new RegExp(label) })).toBeTruthy();
+    expect(screen.getByRole('radio', { name: /运营控制台/ })).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: /消费者商城/ })).toBeNull();
+    expect(screen.getAllByRole('radio')).toHaveLength(2);
+
+    rerender(<TargetPicker target="console" entryTarget={entryTarget} busy={false} onTarget={vi.fn()} />);
+    expect(screen.getByRole('radio', { name: new RegExp(label) })).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: /消费者商城/ })).toBeNull();
+    expect(screen.getAllByRole('radio')).toHaveLength(2);
+  });
 });

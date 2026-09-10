@@ -1,5 +1,5 @@
 import { Button } from '@shop/design';
-import { lazy, type ReactNode } from 'react';
+import { lazy, useRef, type ReactNode } from 'react';
 import type { SessionRequest } from '../shared/security/ReturnTarget';
 import type { Dependencies } from './Dependencies';
 import { useLoginViewModel } from '../feature/login/viewmodel/LoginViewModel';
@@ -27,6 +27,7 @@ type AuthRuntimeProps = RuntimeBase & ({ readonly journey: 'login'; readonly onR
 
 export function AuthRuntime(props: Readonly<AuthRuntimeProps>) {
   const { dependencies, request, onTarget } = props;
+  const entryTarget = useRef(request.target).current;
   const vm = useLoginViewModel(dependencies, request, props.journey, onTarget);
   const state = vm.state;
   if (state.phase === 'bootstrapping')
@@ -64,6 +65,7 @@ export function AuthRuntime(props: Readonly<AuthRuntimeProps>) {
       <InvitationPage
         bootstrap={state.bootstrap}
         target={state.target}
+        entryTarget={entryTarget}
         {...(vm.focusTarget === undefined ? {} : { focusTarget: vm.focusTarget })}
         accepted={state.accepted}
         busy={vm.busy}
@@ -84,6 +86,7 @@ export function AuthRuntime(props: Readonly<AuthRuntimeProps>) {
       <LoginPage
         bootstrap={state.bootstrap}
         target={state.target}
+        entryTarget={entryTarget}
         {...(vm.focusTarget === undefined ? {} : { focusTarget: vm.focusTarget })}
         method={state.method}
         accepted={state.accepted}

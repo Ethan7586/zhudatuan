@@ -12,27 +12,30 @@ interface TargetOption {
   readonly icon: typeof ShoppingBag;
 }
 
-const targets: readonly TargetOption[] = Object.freeze([
-  { value: 'storefront', title: targetTitle('storefront'), description: '进入商城选福利、查订单', icon: ShoppingBag },
-  { value: 'console', title: targetTitle('console'), description: '进入后台管理商城与企业', icon: LayoutDashboard },
-]);
+const storefrontTarget: TargetOption = Object.freeze({ value: 'storefront', title: targetTitle('storefront'), description: '进入商城选福利、查订单', icon: ShoppingBag });
+const consoleTarget: TargetOption = Object.freeze({ value: 'console', title: targetTitle('console'), description: '进入后台管理商城与企业', icon: LayoutDashboard });
+const targets: readonly TargetOption[] = Object.freeze([storefrontTarget, consoleTarget]);
 const specialized: Readonly<Record<Exclude<AuthTarget, 'storefront' | 'console'>, TargetOption>> = Object.freeze({
   miniapp: Object.freeze({ value: 'miniapp', title: targetTitle('miniapp'), description: '进入微信领取与选购福利', icon: Smartphone }),
   store: Object.freeze({ value: 'store', title: targetTitle('store'), description: '进入工作台处理核销与履约', icon: Store }),
   supplier: Object.freeze({ value: 'supplier', title: targetTitle('supplier'), description: '进入后台管理商品与库存', icon: Building2 }),
 });
+const supplierTargets: readonly TargetOption[] = Object.freeze([specialized.supplier, consoleTarget]);
+const storeTargets: readonly TargetOption[] = Object.freeze([specialized.store, consoleTarget]);
+const miniappTargets: readonly TargetOption[] = Object.freeze([specialized.miniapp, ...targets]);
 
 export function TargetPicker({
   target,
+  entryTarget,
   focusTarget,
   busy,
   description = '登录成功后将直接进入所选系统。',
   onTarget,
-}: Readonly<{ target: AuthTarget; focusTarget?: AuthTarget; busy: boolean; description?: string; onTarget: (target: AuthTarget) => void }>) {
+}: Readonly<{ target: AuthTarget; entryTarget?: AuthTarget; focusTarget?: AuthTarget; busy: boolean; description?: string; onTarget: (target: AuthTarget) => void }>) {
   const controls = useRef(new Map<AuthTarget, HTMLButtonElement>());
   const titleId = useId();
   const descriptionId = useId();
-  const options = target === 'storefront' || target === 'console' ? targets : Object.freeze([specialized[target], ...targets]);
+  const options = targetOptions(entryTarget ?? target);
   useEffect(() => {
     if (focusTarget === target) controls.current.get(target)?.focus();
   }, [focusTarget, target]);
@@ -75,6 +78,12 @@ export function TargetPicker({
       </div>
     </fieldset>
   );
+}
+
+function targetOptions(entryTarget: AuthTarget): readonly TargetOption[] {
+  if (entryTarget === 'supplier' || entryTarget === 'store') return entryTarget === 'supplier' ? supplierTargets : storeTargets;
+  if (entryTarget === 'miniapp') return miniappTargets;
+  return targets;
 }
 
 function move(event: KeyboardEvent<HTMLButtonElement>, index: number, options: readonly TargetOption[], onTarget: (target: AuthTarget) => void): void {
