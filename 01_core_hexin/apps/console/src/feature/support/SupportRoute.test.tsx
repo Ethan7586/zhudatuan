@@ -9,7 +9,9 @@ import type { SupportCase, SupportMessage } from './SupportSchema';
 import { Component } from './SupportRoute';
 
 const mocks = vi.hoisted(() => ({
+  canCreateSupportCase: vi.fn(),
   canSendSupportMessage: vi.fn(),
+  createSupportCase: vi.fn(),
   readCases: vi.fn(),
   readMessages: vi.fn(),
   sendSupportMessage: vi.fn(),
@@ -23,7 +25,9 @@ vi.mock('./SupportQuery', () => ({
 }));
 
 vi.mock('./SupportCommand', () => ({
+  canCreateSupportCase: mocks.canCreateSupportCase,
   canSendSupportMessage: mocks.canSendSupportMessage,
+  createSupportCase: mocks.createSupportCase,
   sendSupportMessage: mocks.sendSupportMessage,
 }));
 
@@ -66,8 +70,8 @@ const context: ConsoleContext = {
     actor: 'actor:support-test',
     membership: 'membership:support-test',
     accessVersion: 8,
-    permissions: ['support.cases.read', 'support.messages.read', 'support.message.send'],
-    capabilities: ['support.cases.read', 'support.messages.read', 'support.messages.send'],
+    permissions: ['support.cases.read', 'support.messages.read', 'support.message.send', 'support.case.create'],
+    capabilities: ['support.cases.read', 'support.messages.read', 'support.messages.send', 'support.cases.create'],
     csrf: 'csrf-support-console-test',
     target: 'console',
     scope: { kind: 'enterprise', id: 'enterprise:1', name: '宏泰甄选' },
@@ -88,7 +92,9 @@ beforeAll(() => {
 beforeEach(() => {
   mocks.readCases.mockResolvedValue({ items: [supportCase], count: 1 });
   mocks.readMessages.mockResolvedValue({ items: messages, count: messages.length });
+  mocks.canCreateSupportCase.mockReturnValue(true);
   mocks.canSendSupportMessage.mockReturnValue(true);
+  mocks.createSupportCase.mockResolvedValue({ ...supportCase, id: 'case:new-service' });
   mocks.sendSupportMessage.mockResolvedValue({ id: 'message:sent-1' });
 });
 
@@ -173,6 +179,35 @@ describe('Support Chat VI route', () => {
     expect(screen.getByText('从左侧队列打开工单，查看完整沟通记录与处理信息。')).toBeTruthy();
     expect(screen.getByText('尚未选择工单')).toBeTruthy();
     expect(mocks.readMessages).not.toHaveBeenCalled();
+  });
+
+  it('opens a quiet in-workbench composer and creates a real case without leaving the service center', async () => {
+    const user = userEvent.setup();
+    renderRoute('/scopes/enterprise/enterprise%3A1/support');
+    await screen.findByRole('heading', { name: '选择一条工单开始处理' });
+
+    await user.click(screen.getByRole('button', { name: '新建工单' }));
+    expect(screen.getByRole('heading', { name: '新建工单' })).toBeTruthy();
+    await user.type(screen.getByRole('textbox', { name: '工单标题' }), '退款进度需要核实');
+    await user.type(screen.getByRole('textbox', { name: '第一条留言' }), '订单退款状态长时间没有更新。');
+    await user.click(screen.getByRole('button', { name: '创建并进入会话' }));
+
+    await waitFor(() => expect(mocks.createSupportCase).toHaveBeenCalledWith(context, {
+      subject: '退款进度需要核实', message: '订单退款状态长时间没有更新。',
+    }));
+    await waitFor(() => expect(mocks.readMessages).toHaveBeenCalledWith(context, 'case:new-service', undefined, expect.any(AbortSignal)));
+  });
+
+  it('places the workspace refresh below the identity status and disables create honestly when unavailable', async () => {
+    mocks.canCreateSupportCase.mockReturnValue(false);
+    renderRoute('/scopes/enterprise/enterprise%3A1/support');
+    await screen.findByRole('heading', { name: '选择一条工单开始处理' });
+
+    const status = screen.getByLabelText('当前受理状态');
+    expect(within(status).getByRole('button', { name: '刷新服务中心' })).toBeTruthy();
+    const create = screen.getByRole('button', { name: '新建工单' });
+    expect(create.hasAttribute('disabled')).toBe(true);
+    expect(create.getAttribute('title')).toBe('当前身份没有新建工单权限');
   });
 
   it('shows a compact recoverable queue error without exposing a large technical alert', async () => {

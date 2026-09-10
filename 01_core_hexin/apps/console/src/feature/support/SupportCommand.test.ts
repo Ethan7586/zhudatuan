@@ -2,11 +2,18 @@ import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
-import { canSendSupportMessage, sendSupportMessage } from './SupportCommand';
+import { canCreateSupportCase, canSendSupportMessage, createSupportCase, sendSupportMessage } from './SupportCommand';
 
 const requests: Request[] = [];
 const bodies: unknown[] = [];
 const server = setupServer(
+  http.post('*/api/v1/support/cases', async ({ request }) => {
+    requests.push(request);
+    bodies.push(await request.clone().json());
+    return HttpResponse.json({ id: 'case:new', conversation_id: 'conversation:new', priority: 'normal', skill: 'general', state: 'open',
+      assigned_agent_id: null, response_due_at: null, resolution_due_at: null, created_at: '2026-09-10T00:00:00.000Z',
+      updated_at: '2026-09-10T00:00:00.000Z', version: 0, subject: '退款进度', member_id: null, order_id: null, channel: 'inapp' }, { status: 201 });
+  }),
   http.post('*/api/v1/support/cases/:caseid/messages', async ({ request }) => {
     requests.push(request);
     bodies.push(await request.clone().json());
@@ -23,6 +30,23 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('support message command', () => {
+  it('creates a scoped in-app case through the existing generated operation', async () => {
+    const value = await createSupportCase(context, { subject: '  退款进度  ', message: '  请协助核实。  ' });
+
+    expect(value).toMatchObject({ id: 'case:new', subject: '退款进度', channel: 'inapp' });
+    expect(new URL(requests[0]!.url).pathname).toBe('/api/v1/support/cases');
+    expect(bodies).toEqual([{ subject: '退款进度', message: '请协助核实。', channel: 'inapp', priority: 'normal' }]);
+    expect(requests[0]?.headers.get('x-csrf-token')).toBe('csrf-token-for-support');
+    expect(requests[0]?.headers.get('idempotency-key')).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it('reports case creation availability from the existing CSRF, permission and capability', () => {
+    expect(canCreateSupportCase(context)).toBe(true);
+    expect(canCreateSupportCase(withSession({ csrf: undefined }))).toBe(false);
+    expect(canCreateSupportCase(withSession({ permissions: ['support.message.send'] }))).toBe(false);
+    expect(canCreateSupportCase(withSession({ capabilities: ['support.messages.send'] }))).toBe(false);
+  });
+
   it('sends a trimmed, scoped, CSRF-bound and versioned message through the generated SDK', async () => {
     const value = await sendSupportMessage(context, {
       caseId: 'case:one',
@@ -70,8 +94,8 @@ const context: ConsoleContext = {
     actor: 'actor:agent',
     membership: 'membership:agent',
     accessVersion: 7,
-    permissions: ['support.message.send'],
-    capabilities: ['support.messages.send'],
+    permissions: ['support.message.send', 'support.case.create'],
+    capabilities: ['support.messages.send', 'support.cases.create'],
     assurance: { level: 2 },
     csrf: 'csrf-token-for-support',
     target: 'console',
