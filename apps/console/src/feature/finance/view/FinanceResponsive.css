@@ -75,6 +75,9 @@
   .financetabs {
     padding-inline: 7px;
   }
+  .financetabs button {
+    padding-inline: 10px;
+  }
   .financecolumnbar {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;

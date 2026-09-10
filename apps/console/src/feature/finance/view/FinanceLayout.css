@@ -183,6 +183,7 @@ body:has(.financeworkspace) .financeimmutablealert > p {
 }
 .financetabs button {
   position: relative;
+  flex: 0 0 auto;
   min-width: max-content;
   min-height: 48px;
   border: 0;
@@ -191,6 +192,7 @@ body:has(.financeworkspace) .financeimmutablealert > p {
   padding: 0 14px;
   font-size: 12px;
   font-weight: 650;
+  white-space: nowrap;
 }
 .financetabs button:hover {
   color: var(--sw-brand);
