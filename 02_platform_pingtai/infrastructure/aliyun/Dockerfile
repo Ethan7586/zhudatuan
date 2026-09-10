@@ -9,6 +9,7 @@ COPY 01_core_hexin/packages ./01_core_hexin/packages
 COPY 01_core_hexin/extensions ./01_core_hexin/extensions
 COPY 04_tools/tools ./04_tools/tools
 COPY 02_platform_pingtai/database ./02_platform_pingtai/database
+COPY 02_platform_pingtai/config ./02_platform_pingtai/config
 RUN npm ci --ignore-scripts
 RUN npm run build:commerce
 
