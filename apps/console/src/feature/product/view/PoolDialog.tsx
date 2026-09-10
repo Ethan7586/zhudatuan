@@ -63,9 +63,9 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
               </section>
             </fieldset>
           ) : null}
-          {listingMode ? null : (
+          {!listingMode && viewmodel.operation !== 'allocate' ? (
             <label>
-              {viewmodel.operation === 'allocate' ? '3. 新商品池归属商城' : '3. 目标商城'}
+              3. 目标商城
               <select value={viewmodel.target} onChange={(event) => viewmodel.setTarget(event.target.value)}>
                 {viewmodel.malls.map((scope) => (
                   <option key={scope.id} value={scope.id}>
@@ -73,19 +73,20 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
                   </option>
                 ))}
               </select>
+              {viewmodel.targetsLoading ? <small>正在读取可投放商城…</small> : viewmodel.malls.length === 0 ? <small>当前范围没有可投放商城，请先在“集店 · 商城管理”创建商城。</small> : null}
             </label>
-          )}
+          ) : null}
           {viewmodel.operation === 'allocate' ? (
             <>
               <label>
-                4. 新商品池类型
+                3. 新商品池类型
                 <select value={viewmodel.kind} onChange={(event) => viewmodel.setKind(event.target.value as ProductPoolViewModel['kind'])}>
                   <option value="channel">渠道商品池</option>
                   <option value="markup">加价商品池</option>
                 </select>
               </label>
               <label>
-                5. 新商品池名称
+                4. 新商品池名称
                 <input value={viewmodel.name} onChange={(event) => viewmodel.setName(event.target.value)} required maxLength={120} />
               </label>
             </>

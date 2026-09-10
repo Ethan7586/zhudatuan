@@ -59,6 +59,7 @@ import { ExecuteProductAction } from '../../feature/product/application/ProductA
 import { ReadFacets as ReadProductFacets } from '../../feature/product/application/ReadFacets';
 import { ReadCategories } from '../../feature/product/application/ReadCategories';
 import { ReadPools } from '../../feature/product/application/ReadPools';
+import { ReadPoolTargets } from '../../feature/product/application/ReadPoolTargets';
 import { ReadProduct } from '../../feature/product/application/ReadProduct';
 import { ReadProductImport } from '../../feature/product/application/ReadProductImport';
 import { ReadProducts } from '../../feature/product/application/ReadProducts';
@@ -74,6 +75,7 @@ import type { TaskPort } from '../../feature/task/public';
 import { NAVIGATION_CATALOG_HASH } from '../../generated/NavigationBinding';
 import { appConfig } from '../../shared/config/AppConfig';
 import { BrowserPreference } from '../../shared/preference/BrowserPreference';
+import { ScopeGateway } from '../../shared/scope/ScopeGateway';
 import type { ImportRegistryPort } from '../registry/ImportRegistry';
 import type { CoreDependencies } from './CoreDependency';
 import { lazyPort } from './LazyPort';
@@ -91,6 +93,7 @@ export function createCoreDependencies(imports: ImportRegistryPort): CoreDepende
   const product = lazyPort<ProductPort & ProductImportPort>(() =>
     import('../../feature/product/infrastructure/ProductGateway').then(({ ProductGateway }) => new ProductGateway({ apiBaseUrl: appConfig.apiBaseUrl, clientVersion: appConfig.clientVersion, catalogVersion: NAVIGATION_CATALOG_HASH }))
   );
+  const scopes = new ScopeGateway(appConfig.apiBaseUrl);
   const task = lazyPort<TaskPort>(() => import('../../feature/task/infrastructure/TaskGateway').then(({ TaskGateway }) => new TaskGateway(appConfig.apiBaseUrl)));
   const preferences = new BrowserPreference();
   return Object.freeze({
@@ -158,6 +161,7 @@ export function createCoreDependencies(imports: ImportRegistryPort): CoreDepende
       readProducts: new ReadProducts(product),
       readProduct: new ReadProduct(product),
       readPools: new ReadPools(product),
+      readPoolTargets: new ReadPoolTargets(scopes),
       readCategories: new ReadCategories(product),
       createCategory: new CreateCategory(product),
       readFacets: new ReadProductFacets(product),

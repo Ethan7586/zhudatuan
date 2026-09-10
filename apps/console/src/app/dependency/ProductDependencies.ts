@@ -10,6 +10,7 @@ import type { ReadProductImport } from '../../feature/product/application/ReadPr
 import type { ReadCategories } from '../../feature/product/application/ReadCategories';
 import type { ReadFacets } from '../../feature/product/application/ReadFacets';
 import type { ReadPools } from '../../feature/product/application/ReadPools';
+import type { ReadPoolTargets } from '../../feature/product/application/ReadPoolTargets';
 import type { ReadProduct } from '../../feature/product/application/ReadProduct';
 import type { ReadProducts } from '../../feature/product/application/ReadProducts';
 import type { UploadProductImage } from '../../feature/product/application/UploadProductImage';
@@ -22,6 +23,7 @@ export interface ProductDependencies {
   readonly readProducts: ReadProducts;
   readonly readProduct: ReadProduct;
   readonly readPools: ReadPools;
+  readonly readPoolTargets: ReadPoolTargets;
   readonly readCategories: ReadCategories;
   readonly createCategory: CreateCategory;
   readonly readFacets: ReadFacets;

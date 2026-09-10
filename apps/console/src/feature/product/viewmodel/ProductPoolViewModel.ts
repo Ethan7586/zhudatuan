@@ -1,4 +1,4 @@
-import { OP_CATALOG_LISTINGS_POOL_SET, OP_CATALOG_POOLS_ALLOCATE, OP_CATALOG_POOLS_ATTACH, OP_CATALOG_POOLS_DETACH, OP_CATALOG_POOLS_READ } from '@shop/contract/ids';
+import { OP_CATALOG_LISTINGS_POOL_SET, OP_CATALOG_POOLS_ALLOCATE, OP_CATALOG_POOLS_ATTACH, OP_CATALOG_POOLS_DETACH, OP_CATALOG_POOLS_READ, OP_ORGANIZATION_LAYERS_READ } from '@shop/contract/ids';
 import { presentError } from '@shop/presentation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -20,10 +20,14 @@ export function useProductPoolViewModel(open: boolean, listing: Listing | undefi
   const globalMode = (['allocate', 'attach', 'detach'] as const).find(canMode) ?? 'allocate';
   const query = useQuery({ queryKey: poolKey(context), queryFn: ({ signal }) => dependencies.readPools.execute(request, signal), enabled: open && canRead, staleTime: 60_000 });
   const pools = query.data?.items ?? [];
-  const malls = useMemo(() => {
-    const visible = context.scopes.filter((scope) => scope.kind === 'mall' && visibleMall(context, scope)).map((scope) => Object.freeze({ id: scope.id, name: scope.name }));
-    return visible.length === 0 ? [Object.freeze({ id: context.scope.id, name: context.scope.name })] : visible;
-  }, [context]);
+  const canReadTargets = canUseOperation(context, OP_ORGANIZATION_LAYERS_READ);
+  const targetQuery = useQuery({
+    queryKey: ['console', context.scope.kind, context.scope.id, context.session.accessVersion, OP_ORGANIZATION_LAYERS_READ, 'productpooltargets'],
+    queryFn: ({ signal }) => dependencies.readPoolTargets.execute(context, signal),
+    enabled: open && canReadTargets,
+    staleTime: 60_000,
+  });
+  const malls = useMemo(() => mallTargets(context, targetQuery.data ?? context.scopes), [context, targetQuery.data]);
   const [selectedid, select] = useState('');
   const [targetscope, setTarget] = useState('');
   const [kind, setKind] = useState<PoolAllocationKind>('channel');
@@ -36,7 +40,7 @@ export function useProductPoolViewModel(open: boolean, listing: Listing | undefi
   }, [globalMode, listing, open]);
   const listingpool = listing !== undefined && isManagedListing(listing) ? listing.pool_id : undefined;
   const selected = pools.find((pool) => pool.id === selectedid && pool.id !== listingpool) ?? (listing === undefined ? pools[0] : undefined);
-  const target = targetscope || malls[0]?.id || context.scope.id;
+  const target = operation === 'allocate' ? context.scope.id : malls.some(({ id }) => id === targetscope) ? targetscope : (malls[0]?.id ?? '');
   const globalOperation = operation === 'allocate' || operation === 'attach' || operation === 'detach';
   const operationAllowed = canRead && canMode(operation);
   const listingManageable = listing !== undefined && isManagedListing(listing) && listing.status !== 'published' && listing.status !== 'retired';
@@ -67,7 +71,7 @@ export function useProductPoolViewModel(open: boolean, listing: Listing | undefi
       onDone();
     },
   });
-  const failure = mutation.error ?? query.error;
+  const failure = mutation.error ?? query.error ?? targetQuery.error;
   return Object.freeze({
     open,
     ...(listing === undefined ? {} : { listing }),
@@ -81,6 +85,7 @@ export function useProductPoolViewModel(open: boolean, listing: Listing | undefi
     canMode,
     canSubmit,
     loading: query.isPending,
+    targetsLoading: targetQuery.isPending && targetQuery.isEnabled,
     submitting: mutation.isPending,
     permissionReason: operationAllowed ? undefined : !canRead ? '当前账号没有查看商品池的权限。' : '当前账号不能执行所选商品池操作。',
     ...(failure === null ? {} : { error: presentError(failure).message }),
@@ -102,9 +107,33 @@ function operationId(mode: PoolMode) {
   return OP_CATALOG_LISTINGS_POOL_SET;
 }
 
-function visibleMall(context: ConsoleContext, scope: ConsoleContext['scopes'][number]): boolean {
-  if (context.scope.kind === 'platform' || scope.id === context.scope.id) return true;
-  return scope.path?.some((part) => part.id === context.scope.id) === true;
+type PoolTargetSource = Readonly<{ id: string; name?: string | undefined; parent_id?: string | null | undefined; path?: readonly Readonly<{ id: string }>[] | undefined; kind: string }>;
+type PoolTarget = Readonly<{ id: string; name: string | undefined; parent: string | null | undefined; path: readonly Readonly<{ id: string }>[] | undefined; kind: string }>;
+
+function mallTargets(context: ConsoleContext, values: readonly PoolTargetSource[]): readonly Readonly<{ id: string; name?: string }>[] {
+  const combined = new Map<string, PoolTarget>();
+  for (const value of [...values, ...context.scopes, context.scope]) {
+    combined.set(value.id, Object.freeze({ id: value.id, kind: value.kind, name: value.name, parent: value.parent_id, path: value.path }));
+  }
+  return Object.freeze(
+    [...combined.values()]
+      .filter((scope) => scope.kind === 'mall' && governedBy(context.scope.id, scope, combined))
+      .sort((left, right) => (left.name ?? left.id).localeCompare(right.name ?? right.id, 'zh-CN'))
+      .map((scope) => Object.freeze({ id: scope.id, ...(scope.name === undefined ? {} : { name: scope.name }) }))
+  );
+}
+
+function governedBy(current: string, target: PoolTarget, scopes: ReadonlyMap<string, PoolTarget>): boolean {
+  if (target.id === current) return true;
+  if (target.path?.some((part) => part.id === current) === true) return true;
+  const seen = new Set<string>();
+  let parent = target.parent;
+  while (parent !== undefined && parent !== null && !seen.has(parent)) {
+    if (parent === current) return true;
+    seen.add(parent);
+    parent = scopes.get(parent)?.parent;
+  }
+  return false;
 }
 
 export type ProductPoolViewModel = ReturnType<typeof useProductPoolViewModel>;

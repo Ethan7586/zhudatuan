@@ -63,6 +63,17 @@ describe('ProductPoolViewModel', () => {
     expect(execute).toHaveBeenNthCalledWith(3, expect.anything(), expect.anything(), { operation: OP_CATALOG_POOLS_DETACH, target: 'mall:one' });
   });
 
+  it('discovers governed malls from the organization catalog instead of treating the enterprise as a mall', async () => {
+    setup(undefined, vi.fn(), vi.fn(), enterpriseContext, [enterpriseScope, governedMall, unrelatedMall]);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('radio', { name: /投放到商城/ }));
+
+    const target = await screen.findByLabelText('3. 目标商城');
+    expect((target as HTMLSelectElement).value).toBe('mall:governed');
+    expect(target.querySelectorAll('option')).toHaveLength(1);
+    expect(target.textContent).toBe('主打团福利商城');
+  });
+
   it('does not execute a listing pool change without the generated operation access', async () => {
     const move = vi.fn();
     const denied = { ...context, session: { ...context.session, capabilities: [OP_CATALOG_POOLS_READ] } };
@@ -75,10 +86,11 @@ describe('ProductPoolViewModel', () => {
   });
 });
 
-function setup(current: Listing | undefined, move: ReturnType<typeof vi.fn>, execute = vi.fn(), value: ConsoleContext = context) {
+function setup(current: Listing | undefined, move: ReturnType<typeof vi.fn>, execute = vi.fn(), value: ConsoleContext = context, targets = value.scopes) {
   let sequence = 0;
   const dependencies = {
     readPools: { execute: vi.fn(() => Promise.resolve({ items: pools, count: pools.length })) },
+    readPoolTargets: { execute: vi.fn(() => Promise.resolve(targets)) },
     changePool: { move, execute },
     createIdentity: () => `command:${++sequence}`,
   } as unknown as ProductDependencies;
@@ -133,5 +145,20 @@ const globalContext: ConsoleContext = {
     ...context.session,
     permissions: ['catalog.pool.read', 'catalog.pool.manage', 'catalog.pool.allocate'],
     capabilities: [OP_CATALOG_POOLS_READ, OP_CATALOG_POOLS_ALLOCATE, OP_CATALOG_POOLS_ATTACH, OP_CATALOG_POOLS_DETACH],
+  },
+};
+const enterpriseScope = { kind: 'enterprise', id: 'enterprise:governed', tenant: 'tenant:one', name: '主打团' } as const;
+const governedMall = { kind: 'mall', id: 'mall:governed', parent_id: enterpriseScope.id, name: '主打团福利商城', status: 'active', timezone: 'Asia/Shanghai', version: 1 } as const;
+const unrelatedMall = { kind: 'mall', id: 'mall:unrelated', parent_id: 'enterprise:other', name: '其他商城', status: 'active', timezone: 'Asia/Shanghai', version: 1 } as const;
+const enterpriseContext: ConsoleContext = {
+  ...context,
+  scope: enterpriseScope,
+  scopes: [enterpriseScope],
+  session: {
+    ...context.session,
+    scope: enterpriseScope,
+    scopes: [enterpriseScope],
+    permissions: ['catalog.pool.read', 'catalog.pool.manage', 'catalog.pool.allocate', 'organization.layer.read'],
+    capabilities: [OP_CATALOG_POOLS_READ, OP_CATALOG_POOLS_ALLOCATE, OP_CATALOG_POOLS_ATTACH, OP_CATALOG_POOLS_DETACH, 'organization.layers.read'],
   },
 };
