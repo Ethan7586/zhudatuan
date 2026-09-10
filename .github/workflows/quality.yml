@@ -141,7 +141,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      ZDT_RELEASE_SSH_HOST: root@123.57.232.253
+      ZDT_RELEASE_SSH_HOST: zdt-candidate@123.57.232.253
+      ZDT_RELEASE_SSH_IDENTITY_FILE: /home/runner/.ssh/zdt_candidate
       VITE_API_BASE_URL: https://api.hbbtzn.com
       VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
       VITE_CLIENT_VERSION: 0.0.0-g${{ needs.plan.outputs.head_sha }}
@@ -204,8 +205,8 @@ jobs:
         run: |
           test -n "$RELEASE_SSH_KEY"
           install -d -m 700 "$HOME/.ssh"
-          printf '%s\n' "$RELEASE_SSH_KEY" > "$HOME/.ssh/id_ed25519"
-          chmod 600 "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$RELEASE_SSH_KEY" > "$ZDT_RELEASE_SSH_IDENTITY_FILE"
+          chmod 600 "$ZDT_RELEASE_SSH_IDENTITY_FILE"
           ssh-keyscan -H 123.57.232.253 >> "$HOME/.ssh/known_hosts"
 
       - name: Stage candidate on Aliyun without production cutover

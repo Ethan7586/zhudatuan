@@ -31,6 +31,8 @@ const lifecycleSource = lifecycleFiles.map((file) => `${file}\n${readFileSync(re
 const controlledReleaseFiles = [
   '04_tools/release-engine/src/engine.mjs',
   '04_tools/release-engine/remote/agent.mjs',
+  '04_tools/release-engine/remote/candidate-gateway.mjs',
+  '02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh',
   '02_platform_pingtai/infrastructure/release/zdt-next.release.json',
   '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json',
   '.github/workflows/quality.yml',
@@ -60,9 +62,10 @@ for (const token of [
 ]) {
   if (!lifecycleSource.includes(token)) throw new Error(`RELEASE_LIFECYCLE_POLICY_MISSING:${token}`);
 }
-for (const token of ['ai.delivery.receipt.v1', 'externalAcceptance', 'rollbackPoint', 'protectedProcesses', 'minimumFreeBytes', 'expected-caddy-semantic', '--environment candidate', 'agent-candidate']) {
+for (const token of ['ai.delivery.receipt.v1', 'externalAcceptance', 'rollbackPoint', 'protectedProcesses', 'minimumFreeBytes', 'expected-caddy-semantic', '--environment candidate', 'agent-candidate', 'access-candidate', 'zdt-candidate@123.57.232.253', 'ZDT_RELEASE_OPERATOR_SSH_HOST', 'PRODUCTION_ACTION_DENIED']) {
   if (!controlledReleaseSource.includes(token)) throw new Error(`CONTROLLED_RELEASE_CONTRACT_MISSING:${token}`);
 }
 if (controlledReleaseSource.includes("production.lock")) throw new Error('CONTROLLED_RELEASE_GLOBAL_LOCK_FORBIDDEN');
 if (/quality\.yml[\s\S]*--environment production/.test(controlledReleaseSource)) throw new Error('CI_PRODUCTION_CUTOVER_FORBIDDEN');
+if (/quality\.yml[\s\S]*root@123\.57\.232\.253/.test(controlledReleaseSource)) throw new Error('CI_ROOT_SSH_FORBIDDEN');
 console.log('deployment contract: hard-cut, immutable, signed, highly available');

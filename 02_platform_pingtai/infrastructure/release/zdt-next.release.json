@@ -17,9 +17,13 @@
   },
   "transport": {
     "kind": "ssh",
-    "host": "root@123.57.232.253",
+    "host": "zdt-candidate@123.57.232.253",
     "hostEnv": "ZDT_RELEASE_SSH_HOST",
-    "agent": "/usr/local/lib/ai-delivery/agent.mjs",
+    "identityFileEnv": "ZDT_RELEASE_SSH_IDENTITY_FILE",
+    "agent": "/usr/local/sbin/ai-delivery-candidate",
+    "operatorHostEnv": "ZDT_RELEASE_OPERATOR_SSH_HOST",
+    "operatorIdentityFileEnv": "ZDT_RELEASE_OPERATOR_SSH_IDENTITY_FILE",
+    "operatorAgent": "/usr/local/lib/ai-delivery/agent.mjs",
     "incomingRoot": "/opt/ai-delivery/incoming",
     "uploadTimeoutMs": 600000,
     "deployTimeoutMs": 600000

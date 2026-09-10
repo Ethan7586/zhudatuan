@@ -21,6 +21,14 @@ test('production acceptance is fixed to the protected fifteen-domain baseline', 
   assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
 });
 
+test('ordinary release transport is candidate-only and privileged execution has no default host', () => {
+  assert.equal(adapter.transport.host, 'zdt-candidate@123.57.232.253');
+  assert.equal(adapter.transport.agent, '/usr/local/sbin/ai-delivery-candidate');
+  assert.equal(adapter.transport.operatorHost, undefined);
+  assert.equal(adapter.transport.operatorHostEnv, 'ZDT_RELEASE_OPERATOR_SSH_HOST');
+  assert.equal(adapter.transport.operatorAgent, '/usr/local/lib/ai-delivery/agent.mjs');
+});
+
 test('build and remote adapters agree on every pointer and process', () => {
   for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
     for (const [target, deployment] of Object.entries(node.deployments)) {
@@ -150,6 +158,9 @@ test('runtime installer cannot restart or cut over a service', async () => {
   assert.doesNotMatch(source, /pm2\s+(restart|start|reload|startOrReload)\b/);
   assert.match(source, /systemctl daemon-reload/);
   assert.match(source, /agent-candidate/);
+  assert.match(source, /access-candidate/);
+  assert.match(source, /zdt-candidate/);
+  assert.match(source, /restrict,command=/);
   assert.match(source, /candidate validated without installation/);
   assert.match(source, /i-2zeewhay0farxq8lucrd/);
   assert.match(source, /latest\/meta-data\/instance-id/);
