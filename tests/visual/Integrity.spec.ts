@@ -83,6 +83,23 @@ test('visual readiness waits until route and resource placeholders are replaced 
   expect(await inspectVisualReadiness(page)).toEqual([]);
 });
 
+test('visual readiness waits for visible images without blocking on intentionally lazy offscreen images', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setContent(`
+    <main>
+      <img id="visible" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="当前可见商品" style="display:block;width:80px;height:80px" />
+      <div style="height:1000px"></div>
+      <img id="offscreen" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="屏外懒加载商品" loading="lazy" style="display:block;width:80px;height:80px" />
+    </main>
+  `);
+  await page.evaluate(() => {
+    Object.defineProperty(document.querySelector('#visible'), 'complete', { configurable: true, value: false });
+    Object.defineProperty(document.querySelector('#offscreen'), 'complete', { configurable: true, value: false });
+  });
+
+  expect(await inspectVisualReadiness(page)).toEqual(['img: waiting for 当前可见商品']);
+});
+
 test('visual integrity reports text outside control boundaries, occluded controls and failed images', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.setContent(`

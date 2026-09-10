@@ -78,7 +78,17 @@ export function inspectVisualReadiness(page: Page): Promise<readonly string[]> {
       if (element.closest('.sr-only,[hidden],[inert],[aria-hidden="true"]')) return false;
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
-      return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) !== 0 && rect.width > 1 && rect.height > 1;
+      return (
+        style.display !== 'none' &&
+        style.visibility !== 'hidden' &&
+        Number(style.opacity) !== 0 &&
+        rect.width > 1 &&
+        rect.height > 1 &&
+        rect.right > 0 &&
+        rect.bottom > 0 &&
+        rect.left < window.innerWidth &&
+        rect.top < window.innerHeight
+      );
     }
   });
 }
