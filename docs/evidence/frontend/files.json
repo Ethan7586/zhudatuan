@@ -31,7 +31,7 @@
     "test": 332,
     "binding": 12
   },
-  "treeSha256": "4b217882ee00c06f45410de0519cdd9ad7bee9ecd6c5855bf466cda5f74468d2",
+  "treeSha256": "cc2051fe81e3f64dac662aaf884b6f8c888bffdda5f65402e6efa8f82cde5f20",
   "entries": [
     {
       "path": "apps/auth/.env.example",
@@ -9673,7 +9673,7 @@
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/shell/Header.css",
+      "path": "apps/console/src/shell/header.css",
       "kind": "support",
       "sha256": "037aec9e11a9ee704f29ab298667a238b7c6adf32a1b25b112aa8d7737b7ae3c",
       "size": 87,
@@ -9701,7 +9701,7 @@
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/shell/Navigation.css",
+      "path": "apps/console/src/shell/navigation.css",
       "kind": "support",
       "sha256": "a0f4987d9d7f66291176fe81d16b2c81092220094a86a08858b30602972f41a8",
       "size": 102,
@@ -9785,7 +9785,7 @@
       "mode": "0644"
     },
     {
-      "path": "apps/console/src/Style.css",
+      "path": "apps/console/src/style.css",
       "kind": "support",
       "sha256": "b8dba049b8a474ae98eba8e0def1f98015c56b96757efaf1ed13b244e306fca6",
       "size": 491,
