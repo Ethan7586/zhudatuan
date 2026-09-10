@@ -1,6 +1,7 @@
 import { Button, Dialog, Form } from '@shop/design';
 import { useEffect, useRef, useState } from 'react';
 import type { Invitation } from '../model/Invitation';
+import { invitationKind } from '../viewmodel/InvitationText';
 
 export function InvitationRevokeDialog({ invitation, busy, error, onClose, onSubmit }: Readonly<{ invitation?: Invitation; busy: boolean; error?: string; onClose: () => void; onSubmit: (reason: string) => Promise<void> }>) {
   const [reason, setReason] = useState('');
@@ -16,7 +17,7 @@ export function InvitationRevokeDialog({ invitation, busy, error, onClose, onSub
     await onSubmit(reason.trim());
   };
   return (
-    <Dialog open={invitation !== undefined} title="撤销邀请" {...(invitation === undefined ? {} : { eyebrow: invitation.id })} onClose={onClose} dismissable={!busy}>
+    <Dialog open={invitation !== undefined} title="撤销邀请" {...(invitation === undefined ? {} : { eyebrow: invitationContext(invitation) })} onClose={onClose} dismissable={!busy}>
       <Form label="撤销邀请" className="invitationform" onSubmit={(event) => void submit(event)}>
         <p className="invitationwarning">撤销提交后立即生效，正在进行的注册会在事务校验时被拒绝。</p>
         {error === undefined ? null : (
@@ -37,4 +38,9 @@ export function InvitationRevokeDialog({ invitation, busy, error, onClose, onSub
       </Form>
     </Dialog>
   );
+}
+
+function invitationContext(invitation: Invitation): string {
+  const recipient = invitation.recipientDisplayName ?? (invitation.kind === 'campaign' ? '多人共享注册' : invitation.kind === 'signin' ? '已有成员' : '待注册员工');
+  return `${invitationKind(invitation.kind)} · ${recipient}`;
 }
