@@ -1,5 +1,7 @@
 import { Client, type QueryResult, type QueryResultRow } from 'pg';
 
+export const OWNERSHIP_CUTOVER = '20260904065000_finalize_constraints.sql';
+
 export interface MigrationOwnershipClient {
   connect(): Promise<void>;
   end(): Promise<void>;

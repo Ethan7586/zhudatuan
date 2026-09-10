@@ -5,6 +5,7 @@ import { PGlite } from '@electric-sql/pglite';
 import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
 import { Client } from 'pg';
 import { parse } from 'yaml';
+import { OWNERSHIP_CUTOVER, ownerInheritanceSql } from '../../services/commerce/src/platform/database/MigrationOwnership.ts';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 
 const ROOT = repositoryRoot;
@@ -21,7 +22,6 @@ const ELEVATED_REPLAY_FILES = new Set([
   '20260828183000_zhudatuan_runtime_readiness_repair.sql',
   '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql',
   '20260829054500_zhudatuan_identity_login_acl_repair.sql',
-  '20260904065000_finalize_constraints.sql',
 ]);
 const REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION =
   /\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260828183000'\n      and version not in\('20260828190000','20260829040000'\)\) then\n    raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_FUTURE_HEAD_INVALID';\n  end if;/;
@@ -42,7 +42,7 @@ const DIGEST_DEPENDENCY = '20260910013000_grant_digest_dependency.sql';
 const INVENTORY_CUTOVER = '20260820133000_inventory_single_source_cutover.sql';
 const SECURE_STAGE = '20260821026000_backfill_domain_data.sql';
 const PROVIDER_HARDCUT = '20260830150000_hardcut_provider_ids.sql';
-const IDEAL_FINAL = '20260904065000_finalize_constraints.sql';
+const IDEAL_FINAL = OWNERSHIP_CUTOVER;
 const HARD_CUT_CONTRACTS = [
   'contract_v5_catalog_contract.sql',
   'access_override_authorization_contract.sql',
@@ -83,6 +83,7 @@ if (mode === '--check-inventory') {
 }
 
 const database = await openDatabase();
+let ownerInheritanceEnabled = false;
 try {
   await execute(
     database,
@@ -134,6 +135,12 @@ try {
     if (name === SECURE_STAGE) await stageFreshReplaySecrets(database);
     if (name === PROVIDER_HARDCUT) await seedProviderHardcutUpgrade(database);
     if (name === DIGEST_DEPENDENCY && replayRole === undefined) await stageDigestExtensionReplay(database);
+    if (replayRole !== undefined && !ownerInheritanceEnabled && name >= OWNERSHIP_CUTOVER) {
+      await execute(database, 'reset role', 'module ownership lease elevation');
+      await execute(database, ownerInheritanceSql(true), 'module ownership lease');
+      await execute(database, `set role "${replayRole}"`, 'database migration role restore');
+      ownerInheritanceEnabled = true;
+    }
     const source = await readFile(join(MIGRATIONS, name), 'utf8');
     const omission = REGISTRATION_ASSERTION_OMISSIONS.get(name);
     const environmentSql = mode === '--registration-fresh' && omission ? omitExactEnvironmentAssertion(source, omission, name) : source;
@@ -153,6 +160,11 @@ try {
     }
   }
   if (mode !== '--inventory-cutover-unsafe') {
+    if (ownerInheritanceEnabled) {
+      await execute(database, 'reset role', 'module ownership lease release elevation');
+      await execute(database, ownerInheritanceSql(false), 'module ownership lease release');
+      ownerInheritanceEnabled = false;
+    }
     if (replayRole !== undefined) await execute(database, 'reset role', 'database verification elevation');
     await execute(database, 'alter role shopmigration nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls', 'database migration role hardening');
     if (mode === '--registration-fresh') await reconcileRegistrationReplayBoundary(database);
@@ -174,6 +186,11 @@ try {
     console.log(`target schema replay passed: migrations=${applied} historical=${historyContract.count} repair=${repairFiles.length}`);
   }
 } finally {
+  if (ownerInheritanceEnabled) {
+    await database.exec('rollback').catch(() => undefined);
+    await database.exec('reset role').catch(() => undefined);
+    await database.exec(ownerInheritanceSql(false)).catch(() => undefined);
+  }
   await database.close();
 }
 

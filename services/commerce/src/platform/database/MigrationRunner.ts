@@ -6,7 +6,7 @@ import { MIGRATION_PHASES, TARGET_SCHEMA_HEAD, type MigrationPhase } from '@shop
 
 import type { KmsClient } from '../../pipeline/KmsPort';
 import type { DatabasePool } from '../database/Pool';
-import { ownerInheritanceSql } from './MigrationOwnership';
+import { OWNERSHIP_CUTOVER, ownerInheritanceSql } from './MigrationOwnership';
 import { MigrationSecretStager, type MigrationSecrets } from './MigrationSecretStager';
 
 export { ownerInheritanceSql } from './MigrationOwnership';
@@ -19,8 +19,6 @@ interface HistoryContract {
 }
 
 const BACKFILL = '20260821026000_backfill_domain_data.sql';
-const OWNERSHIP_CUTOVER = '20260904065000_finalize_constraints.sql';
-
 export class MigrationRunner {
   private readonly secretStager: MigrationSecretStager;
 
