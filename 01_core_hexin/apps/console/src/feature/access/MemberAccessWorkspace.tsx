@@ -3,7 +3,6 @@ import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-qu
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import { scopeDisplayName } from '../../entity/session/ScopePresentation';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { formatDate } from '../../shared/ui/Format';
@@ -21,7 +20,7 @@ import type { InvitationRecord } from './InvitationRecordsSchema';
 import './member-access-discord.css';
 
 export type MemberAccessPrimary = 'access' | 'members';
-type MemberDirectoryFilter = 'all' | 'administrator' | 'ordinary' | 'incomplete';
+type MemberDirectoryFilter = 'all' | 'bound' | 'incomplete';
 type MemberDetailTab = 'profile' | 'roles' | 'invitations';
 type MemberIconName = 'chevron' | 'close' | 'expand' | 'member' | 'mobile' | 'refresh' | 'search' | 'shield';
 type MemberRole = AccessMembership['roles'][number];
@@ -56,6 +55,15 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
     placeholderData: keepPreviousData,
     staleTime: ACCESS_QUERY_STALE_TIME_MS,
   });
+  const invitationSummaryReadable = invitationRecordsAvailable(context);
+  const invitationSummaryQuery = useInfiniteQuery({
+    queryKey: invitationRecordsKey(context),
+    queryFn: ({ signal, pageParam }) => readInvitationRecords(context, pageParam, signal),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor,
+    enabled: invitationSummaryReadable,
+    staleTime: ACCESS_QUERY_STALE_TIME_MS,
+  });
   const memberQuery = useQuery({
     queryKey: memberKey(context, memberCursor),
     queryFn: ({ signal }) => readMembers(context, memberCursor, signal),
@@ -67,8 +75,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   const rows = useMemo(() => mergeRows(memberItems, accessItems, context.session.membership), [accessItems, context.session.membership, memberItems]);
   const normalizedFilter = filter.trim().toLocaleLowerCase('zh-CN');
   const visibleRows = useMemo(() => rows.filter((row) => {
-    if (directoryFilter === 'administrator' && !isAdministrator(row)) return false;
-    if (directoryFilter === 'ordinary' && isAdministrator(row)) return false;
+    if (directoryFilter === 'bound' && row.member?.login_identity_bound !== true) return false;
     if (directoryFilter === 'incomplete' && row.member?.login_identity_bound === true) return false;
     return normalizedFilter === '' || rowSearchText(row).includes(normalizedFilter);
   }), [directoryFilter, normalizedFilter, rows]);
@@ -85,11 +92,9 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
     && context.session.capabilities.includes('identity.members.reset')
     && context.session.csrf !== undefined;
   const administratorCount = rows.filter(isAdministrator).length;
-  const ordinaryCount = rows.length - administratorCount;
-  const loginBoundCount = rows.filter((row) => row.member?.login_identity_bound === true).length;
-  const total = Math.max(rows.length, memberQuery.data?.count ?? 0, accessQuery.data?.count ?? 0);
+  const pendingInvitationCount = invitationSummaryQuery.data?.pages.flatMap(({ items }) => items).filter(({ status }) => status === 'active').length ?? 0;
+  const total = Math.max(rows.length, memberQuery.data?.count ?? 0);
   const nextCursor = primary === 'access' ? accessQuery.data?.nextCursor : memberQuery.data?.nextCursor;
-  const currentScope = scopeDisplayName(context.scope);
 
   useEffect(() => {
     if (!detailOpen) return undefined;
@@ -116,22 +121,22 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
       <section className="storefrontmembersworkspace memberaccessworkspace" aria-labelledby="memberaccessworkspacetitle">
         <header className="storefrontmemberhero">
           <div>
+            <span className="memberaccesseyebrow">ADMINISTRATION</span>
             <h1 id="memberaccessworkspacetitle">管理与权限</h1>
-            <p>管理管理员身份、角色、权限与数据范围</p>
+            <p>管理管理员身份、角色和授权范围。L0–L11 会员请前往“商城会员”。</p>
           </div>
           <div className="storefrontmemberherometa">
-            <span>当前范围 <strong>{currentScope}</strong></span>
             <button type="button" onClick={() => void navigate(scopePath(context.scope, 'settings/access'))}>角色模板</button>
-            <button type="button" data-tone="primary" onClick={() => void navigate(`${scopePath(context.scope, 'settings/access')}?section=invitations`)}>邀请管理</button>
+            <button type="button" data-tone="primary" onClick={() => setInvitationOpen(true)}>邀请管理员</button>
           </div>
         </header>
 
-        <MemberOverview total={total} ordinary={ordinaryCount} administrators={administratorCount} loginBound={loginBoundCount} />
+        <MemberOverview total={total} roles={accessQuery.data?.roles.length ?? 0} administrators={administratorCount} pendingInvitations={pendingInvitationCount} />
 
         <div className="storefrontmemberstage" data-detail-open={detailOpen}>
           <section className="storefrontmemberpanel" aria-labelledby="memberdirectorytitle">
             <header className="storefrontmemberpanelheading">
-              <div><h2 id="memberdirectorytitle">成员目录</h2><span>{total}</span><small>点击成员查看详情</small></div>
+              <div><h2 id="memberdirectorytitle">管理员目录</h2><span>{total}</span><small>点击管理员查看资料、身份与权限及邀请记录</small></div>
               <div className="storefrontmemberpanelactions">
                 <IconButton label={fetching ? '正在刷新成员名单' : '刷新成员名单'} icon="refresh" loading={fetching} onPress={refresh} />
                 {detailOpen ? <IconButton label="全屏查看成员目录" icon="expand" onPress={closeDetail} /> : null}
@@ -139,17 +144,16 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
             </header>
 
             <form className="storefrontmembersearch" role="search" onSubmit={submitSearch}>
-              <label htmlFor="memberaccessfilter">搜索成员</label>
+              <label htmlFor="memberaccessfilter">搜索管理员</label>
               <MemberIcon name="search" />
-              <input id="memberaccessfilter" type="search" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="搜索姓名、手机号或管理角色" />
+              <input id="memberaccessfilter" type="search" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder="搜索姓名、角色或管理范围" />
               <button type="submit">搜索</button>
             </form>
 
-            <div className="storefrontmemberfilters" aria-label="成员筛选">
-              <FilterButton active={directoryFilter === 'all'} onPress={() => { setDirectoryFilter('all'); closeDetail(); }}>全部成员</FilterButton>
-              <FilterButton active={directoryFilter === 'administrator'} onPress={() => { setDirectoryFilter('administrator'); closeDetail(); }}>管理员</FilterButton>
-              <FilterButton active={directoryFilter === 'ordinary'} onPress={() => { setDirectoryFilter('ordinary'); closeDetail(); }}>普通会员</FilterButton>
-              <FilterButton active={directoryFilter === 'incomplete'} onPress={() => { setDirectoryFilter('incomplete'); closeDetail(); }}>待完善</FilterButton>
+            <div className="storefrontmemberfilters" aria-label="管理员筛选">
+              <FilterButton active={directoryFilter === 'all'} onPress={() => { setDirectoryFilter('all'); closeDetail(); }}>全部管理员</FilterButton>
+              <FilterButton active={directoryFilter === 'bound'} onPress={() => { setDirectoryFilter('bound'); closeDetail(); }}>登录已绑定</FilterButton>
+              <FilterButton active={directoryFilter === 'incomplete'} onPress={() => { setDirectoryFilter('incomplete'); closeDetail(); }}>待补充</FilterButton>
             </div>
 
             {supplementalError === undefined ? null : <div className="storefrontmemberdetailerror" role="status"><p>部分补充资料暂不可用：{supplementalError}</p></div>}
@@ -157,18 +161,18 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
             <div className="storefrontmemberresource">
               {hasSourceData && visibleRows.length === 0 && fatalError === undefined ? (
                 <Empty
-                  title={rows.length === 0 && filter === '' && directoryFilter === 'all' ? '暂无成员' : '未找到匹配成员'}
-                  description={rows.length === 0 ? '当前范围暂未返回成员资料。' : '请调整姓名、员工号、管理身份或筛选条件。'}
+                  title={rows.length === 0 && filter === '' && directoryFilter === 'all' ? '暂无管理员' : '未找到匹配管理员'}
+                  description={rows.length === 0 ? '当前范围暂未返回管理员资料。' : '请调整姓名、角色、管理范围或筛选条件。'}
                 />
               ) : (
-                <ResourceState condition={condition} {...(fatalError === undefined ? {} : { error: fatalError })} retry={refresh} resourceLabel="成员名单">
+                <ResourceState condition={condition} {...(fatalError === undefined ? {} : { error: fatalError })} retry={refresh} resourceLabel="管理员名单">
                   <MemberDirectory rows={visibleRows} selectedId={selectedId} onSelect={(row) => setSelectedId(row.id)} />
                 </ResourceState>
               )}
             </div>
 
             <footer className="storefrontmemberpagination">
-              <span>当前页 {visibleRows.length} 位 · 共 {total} 位成员</span>
+              <span>当前页 {visibleRows.length} 位 · 共 {total} 位管理员</span>
               <button type="button" disabled={nextCursor === undefined || fetching} onClick={() => {
                 if (nextCursor === undefined) return;
                 closeDetail();
@@ -187,12 +191,12 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   );
 }
 
-function MemberOverview({ total, ordinary, administrators, loginBound }: Readonly<{ total: number; ordinary: number; administrators: number; loginBound: number }>) {
-  return <div className="storefrontmemberoverview" aria-label="当前成员概览">
-    <OverviewItem icon="member" label="成员总数" value={total} />
-    <OverviewItem icon="shield" label="管理员" value={administrators} tone="purple" />
-    <OverviewItem icon="member" label="普通会员" value={ordinary} />
-    <OverviewItem icon="mobile" label="本页登录已绑定" value={loginBound} tone="success" />
+function MemberOverview({ total, roles, administrators, pendingInvitations }: Readonly<{ total: number; roles: number; administrators: number; pendingInvitations: number }>) {
+  return <div className="storefrontmemberoverview" aria-label="当前管理员概览">
+    <OverviewItem icon="member" label="管理员总数" value={total} />
+    <OverviewItem icon="shield" label="已分配管理身份" value={administrators} tone="purple" />
+    <OverviewItem icon="shield" label="角色模板" value={roles} />
+    <OverviewItem icon="mobile" label="待处理邀请" value={pendingInvitations} tone="success" />
   </div>;
 }
 
@@ -201,16 +205,16 @@ function OverviewItem({ icon, label, value, tone = 'blue' }: Readonly<{ icon: Me
 }
 
 function MemberDirectory({ rows, selectedId, onSelect }: Readonly<{ rows: readonly MemberAccessRow[]; selectedId: string | undefined; onSelect: (row: MemberAccessRow) => void }>) {
-  return <div className="storefrontmemberdirectory" role="table" aria-label="成员管理">
+  return <div className="storefrontmemberdirectory" role="table" aria-label="管理员目录">
     <div className="storefrontmemberlisthead" role="row">
-      <span role="columnheader">成员</span><span role="columnheader">登录状态</span><span role="columnheader">管理身份</span>
+      <span role="columnheader">管理员</span><span role="columnheader">登录状态</span><span role="columnheader">管理角色</span>
       <span className="memberaccessscopecol" role="columnheader">可管理范围</span>
       <span className="storefrontmemberstatuscol" role="columnheader">当前状态</span><span role="columnheader">加入时间</span><span aria-hidden="true" />
     </div>
     <div role="rowgroup">
       {rows.map((row) => {
-        return <button className="storefrontmemberrow" data-selected={selectedId === row.id} key={row.id} type="button" role="row" aria-label={`查看成员 ${rowName(row)}`} aria-expanded={selectedId === row.id} onClick={() => onSelect(row)}>
-          <span className="storefrontmemberperson" role="cell"><i>{rowName(row).slice(0, 1)}</i><strong>{rowName(row)}</strong><small>{memberAccountLabel(row)}</small></span>
+        return <button className="storefrontmemberrow" data-selected={selectedId === row.id} key={row.id} type="button" role="row" aria-label={`查看管理员 ${rowName(row)}`} aria-expanded={selectedId === row.id} onClick={() => onSelect(row)}>
+          <span className="storefrontmemberperson" role="cell"><i>{rowName(row).slice(0, 1)}</i><strong>{rowName(row)}</strong><small>管理员身份</small></span>
           <BindingState bound={row.member?.login_identity_bound} trueLabel="已绑定" falseLabel="未绑定" unknownLabel="待补充" />
           <span className="memberaccessrole" data-administrator={isAdministrator(row)} role="cell">{administratorLabel(row)}</span>
           <span className="memberaccessscopecol" role="cell">{managementScopeLabel(row)}</span>
@@ -248,7 +252,7 @@ function MemberDetail({ row, open, context, resetAvailable, onClose, onReset, on
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor,
     enabled: open && administrator && tab === 'invitations' && invitationReadable,
-    staleTime: 15_000,
+    staleTime: ACCESS_QUERY_STALE_TIME_MS,
   });
   const invitationRecords = useMemo(() => invitationQuery.data?.pages.flatMap((page) => page.items)
     .filter((record) => record.created_by === row?.id || record.created_by === row?.access?.id) ?? [], [invitationQuery.data?.pages, row?.access?.id, row?.id]);
@@ -369,7 +373,7 @@ function MemberIcon({ name }: Readonly<{ name: MemberIconName }>) {
 function mergeRows(members: readonly Member[], access: readonly AccessMembership[], currentMembershipId: string): readonly MemberAccessRow[] {
   const memberById = new Map(members.map((member) => [member.membership_id, member]));
   const accessById = new Map(access.map((membership) => [membership.id, membership]));
-  return [...new Set([...memberById.keys(), ...accessById.keys()])].map((id) => {
+  return [...memberById.keys()].map((id) => {
     const member = memberById.get(id);
     const membership = accessById.get(id);
     const administrator = member !== undefined || id === currentMembershipId;
