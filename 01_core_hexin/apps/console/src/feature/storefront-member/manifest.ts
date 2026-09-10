@@ -16,6 +16,8 @@ export const storefrontMembersModule = {
       'member.storefront.detail.read',
       'member.storefront.invitees.read',
       'member.storefront.orders.read',
+      'member.storefront.config.read',
+      'member.storefront.custom.read',
     ],
     presentation: { title: '商城会员', summary: '当前商城的消费者会员名单' },
   }],
