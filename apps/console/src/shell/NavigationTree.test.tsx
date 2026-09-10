@@ -43,6 +43,7 @@ describe('server-driven navigation tree', () => {
   });
 
   it('expands only the active branch and marks the exact active page', () => {
+    const originalScrollIntoView = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView');
     const scrollIntoView = vi.fn();
     Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView });
     const members = node('groupmembers', '成员管理', 'member', 'consolemembers', '/scopes/:scopeKind/:scopeId/settings/members', 'member', 10, false, 'groupsettings', 'secondary');
@@ -62,7 +63,11 @@ describe('server-driven navigation tree', () => {
     expect(screen.getByRole('button', { name: '商品治理台' }).getAttribute('aria-expanded')).toBe('false');
     expect(screen.queryByRole('button', { name: '商品详情' })).toBeNull();
     expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', inline: 'nearest' });
-    delete HTMLElement.prototype.scrollIntoView;
+    if (originalScrollIntoView) {
+      Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', originalScrollIntoView);
+    } else {
+      Reflect.deleteProperty(HTMLElement.prototype, 'scrollIntoView');
+    }
   });
 });
 
