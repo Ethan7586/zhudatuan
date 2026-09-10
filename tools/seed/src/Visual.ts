@@ -1,16 +1,55 @@
+import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
+import { HttpObjectStore } from '../../../services/commerce/src/platform/object/ObjectStore';
 import { localSecret } from './LocalSecrets';
 import { LOCAL_OWNER } from './LocalOwner';
 import { LOCAL_PRICEBOOK } from './LocalPricing';
 
 const environment = localSeedEnvironment();
-const database = new Client({ connectionString: await localSecret(environment.adminDatabaseConnectionRef) });
+const [connectionString, objectToken] = await Promise.all([localSecret(environment.adminDatabaseConnectionRef), localSecret(environment.objectStoreTokenRef)]);
+const database = new Client({ connectionString });
+const objects = new HttpObjectStore(environment.objectStoreEndpoint, objectToken);
 const products = Object.freeze([
-  Object.freeze({ id: 'product:visual:care', sku: 'sku:visual:care', code: 'VISUAL-CARE', title: '暖心生活关怀礼盒', kind: 'physical', amount: 12_800, compare: 15_800, account: 'welfare', cover: '/products/care.jpg' }),
-  Object.freeze({ id: 'product:visual:meal', sku: 'sku:visual:meal', code: 'VISUAL-MEAL', title: '工作日营养餐券', kind: 'voucher', amount: 3_000, compare: 3_000, account: 'meal', cover: '/products/meal.jpg' }),
-  Object.freeze({ id: 'product:visual:movie', sku: 'sku:visual:movie', code: 'VISUAL-MOVIE', title: '全国通兑电影票', kind: 'service', amount: 5_000, compare: 6_000, account: 'welfare', cover: '/products/movie.jpg' }),
+  Object.freeze({
+    id: 'product:visual:care',
+    sku: 'sku:visual:care',
+    code: 'VISUAL-CARE',
+    title: '暖心生活关怀礼盒',
+    kind: 'physical',
+    amount: 12_800,
+    compare: 15_800,
+    account: 'welfare',
+    coverPath: 'catalog/visual/care.jpg',
+    coverFile: new URL('../../../apps/storefront/public/products/care.jpg', import.meta.url),
+  }),
+  Object.freeze({
+    id: 'product:visual:meal',
+    sku: 'sku:visual:meal',
+    code: 'VISUAL-MEAL',
+    title: '工作日营养餐券',
+    kind: 'voucher',
+    amount: 3_000,
+    compare: 3_000,
+    account: 'meal',
+    coverPath: 'catalog/visual/meal.jpg',
+    coverFile: new URL('../../../apps/storefront/public/products/meal.jpg', import.meta.url),
+  }),
+  Object.freeze({
+    id: 'product:visual:movie',
+    sku: 'sku:visual:movie',
+    code: 'VISUAL-MOVIE',
+    title: '全国通兑电影票',
+    kind: 'service',
+    amount: 5_000,
+    compare: 6_000,
+    account: 'welfare',
+    coverPath: 'catalog/visual/movie.jpg',
+    coverFile: new URL('../../../apps/storefront/public/products/movie.jpg', import.meta.url),
+  }),
 ] as const);
+const covers = await Promise.all(products.map((product) => ensureCover(product)));
 
 await database.connect();
 try {
@@ -18,7 +57,7 @@ try {
   await database.query(`insert into catalog.category(id,parent_id,code,name,status,sort_order)
     values('category:visual:benefit',null,'visual-benefit','员工精选','active',10)
     on conflict(id) do update set code=excluded.code,name=excluded.name,status='active',sort_order=excluded.sort_order`);
-  for (const [index, product] of products.entries()) await ensureProduct(database, product, index);
+  for (const [index, product] of products.entries()) await ensureProduct(database, product, covers[index]!, index);
   await assertVisualSeed(database);
   await database.query('commit');
   process.stdout.write(`LOCAL_VISUAL_SEEDED products=${products.length}\n`);
@@ -29,10 +68,27 @@ try {
   await database.end();
 }
 
-async function ensureProduct(client: Client, product: (typeof products)[number], index: number): Promise<void> {
+async function ensureCover(product: (typeof products)[number]): Promise<string> {
+  const bytes = await readFile(product.coverFile);
+  const digest = createHash('sha256').update(bytes).digest('hex');
+  const existing = await objects.find(product.coverPath);
+  if (existing?.sha256 === digest) return existing.reference;
+  if (existing !== null) await objects.remove(existing.reference);
+  const upload = await objects.create(product.coverPath, 'image/jpeg');
+  try {
+    await upload.append(bytes);
+    const stored = await upload.complete();
+    if (stored.sha256 !== digest) throw new Error(`LOCAL_VISUAL_IMAGE_INTEGRITY_INVALID:${product.id}`);
+    return stored.reference;
+  } catch (cause) {
+    await upload.abort().catch(() => undefined);
+    throw cause;
+  }
+}
+
+async function ensureProduct(client: Client, product: (typeof products)[number], cover: string, index: number): Promise<void> {
   const attributes = JSON.stringify({
-    coverUrl: product.cover,
-    media: [{ id: `media:${product.sku}:cover`, kind: 'image', url: product.cover, alt: product.title, sort: 0 }],
+    coverObject: cover,
     allowedAccounts: [product.account, 'cash'],
     deliverySla: product.kind === 'physical' ? '预计两个工作日送达' : '付款后即时到账',
     enterpriseExclusive: true,
