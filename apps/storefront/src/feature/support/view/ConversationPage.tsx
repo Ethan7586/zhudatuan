@@ -10,6 +10,8 @@ import './Support.css';
 
 export function ConversationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof useConversationViewModel> }>) {
   const { caseId, ticket, connected, error, state, messages, attachments, context, hasEarlier, loadingEarlier, draft, failed, sending, uploading, sendingDraft, unavailable, newMessage, actions } = viewmodel;
+  const subject = ticket?.subject ?? '工单会话';
+  const connection = `${chineseReference('工单', caseId)} · ${connected ? '实时连接正常' : '正在恢复实时连接'}`;
   const viewport = useRef<HTMLDivElement>(null);
   const scroll = useRef({ caseId, first: 0, last: 0, height: 0, bottom: true });
   useLayoutEffect(() => {
@@ -39,9 +41,11 @@ export function ConversationPage({ viewmodel }: Readonly<{ viewmodel: ReturnType
         </button>
         <div>
           <p>智慧翼 · 客户服务</p>
-          <h1>{ticket?.subject ?? '工单会话'}</h1>
-          <span>
-            {chineseReference('工单', caseId)} · {connected ? '实时连接正常' : '正在恢复实时连接'}
+          <h1 data-visual-copy="truncate" title={subject}>
+            {subject}
+          </h1>
+          <span data-visual-copy="truncate" title={connection}>
+            {connection}
           </span>
         </div>
         <button type="button" aria-label="刷新会话" onClick={actions.refresh}>
@@ -137,7 +141,7 @@ function MessageBubble({ message, attachments, showDate }: Readonly<{ message: S
                 ) : (
                   <span>{item.name}</span>
                 )}
-                <em>{item.state === 'clean' ? '已通过安全检查' : item.state === 'pending' ? '安全扫描中，完成前不可下载' : item.recoveryAction ?? '安全检查未通过，请重新上传'}</em>
+                <em>{item.state === 'clean' ? '已通过安全检查' : item.state === 'pending' ? '安全扫描中，完成前不可下载' : (item.recoveryAction ?? '安全检查未通过，请重新上传')}</em>
               </li>
             ))}
           </ul>
