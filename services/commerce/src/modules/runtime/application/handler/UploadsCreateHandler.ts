@@ -30,7 +30,9 @@ export class UploadsCreateHandler implements OperationHandler<'runtime.uploads.c
         sha256: textField(body, 'sha256', 64),
         retentionDays: RUNTIME_LIMITS.upload.retentionDays.import,
       });
-      return { status: 201, body: session };
+      const { upload, ...record } = session;
+      const { reference: _reference, ...authorization } = upload;
+      return { status: 201, body: Object.freeze({ ...record, upload: Object.freeze(authorization) }) };
     } catch (cause) {
       if (cause instanceof DomainError) throw cause;
       if (cause instanceof Error && cause.message === 'UPLOAD_SESSION_INVALID') throw new DomainError('VALIDATION_FAILED', { field: 'file' });
