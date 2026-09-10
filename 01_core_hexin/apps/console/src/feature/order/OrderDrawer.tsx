@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
+import { formatMinor } from '../../shared/ui/Format';
 import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
 import { OrderDrawerPanel } from './OrderDrawerPanel';
 import { OrderIcon } from './OrderIcon';
@@ -35,6 +36,7 @@ export function OrderDrawer({
 }>) {
   const context = useConsoleContext();
   const detailRef = useRef<HTMLElement>(null);
+  const onCloseRef = useRef(onClose);
   const [copied, setCopied] = useState(false);
   const query = useQuery({
     queryKey: orderDetailKey(context, orderId),
@@ -45,13 +47,17 @@ export function OrderDrawer({
   const error = safeQueryError(query.error);
 
   useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
     detailRef.current?.focus({ preventScroll: true });
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') onCloseRef.current();
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [onClose, orderId]);
+  }, [orderId]);
 
   const copyNumber = () => {
     if (order === undefined || navigator.clipboard === undefined) return;
@@ -67,33 +73,40 @@ export function OrderDrawer({
   return (
     <aside ref={detailRef} className="orderdrawer" aria-label={`订单详情 ${order?.order_number ?? '正在读取'}`} tabIndex={-1}>
           <header className="orderdrawerheader">
-            <div>
-              <p>订单详情</p>
+            <div className="orderdrawerheadline">
               <div className="orderdrawertitleline">
                 <h2 id="orderdrawertitle">
                   {order?.order_number ?? '正在读取订单'}
                 </h2>
                 <button type="button" onClick={copyNumber} disabled={order === undefined} aria-label={copied ? '订单号已复制' : '复制订单号'}>
                   <OrderIcon name={copied ? 'check' : 'copy'} />
+                  {copied ? <span className="ordercopyfeedback" role="status">已复制</span> : null}
                 </button>
               </div>
               {order === undefined ? null : (
-                <>
-                  <div className="orderdrawerbadges">
-                    <span className="orderstatuspill tone-brand">{lifecycleLabel(order.lifecycle_state)}</span>
-                    <span className={`orderstatuspill tone-${paymentTone(order.payment_state)}`}>{paymentLabel(order.payment_state)}</span>
-                    <span className={`orderstatuspill tone-${fulfillmentTone(order.fulfillment_state)}`}>{fulfillmentLabel(order.fulfillment_state)}</span>
-                    <span className={`orderstatuspill tone-${aftersaleTone(order.aftersale_state)}`}>{aftersaleLabel(order.aftersale_state)}</span>
-                  </div>
-                  <span className="ordermutetext">
-                    {mallName} · {formatOrderTime(order.created_at)}
-                  </span>
-                </>
+                <div className="orderdraweramount">
+                  <span>订单金额</span>
+                  <strong>{formatMinor(order.total_minor, order.currency)}</strong>
+                </div>
               )}
+              <button className="orderdrawerclose" type="button" onClick={onClose} aria-label="关闭订单详情">
+                <OrderIcon name="close" />
+              </button>
             </div>
-            <button className="orderdrawerclose" type="button" onClick={onClose} aria-label="关闭订单详情">
-              <OrderIcon name="close" />
-            </button>
+            {order === undefined ? null : (
+              <>
+                <div className="orderdrawerbadges" aria-label="订单状态摘要">
+                  <span className="orderstatuspill tone-brand">{lifecycleLabel(order.lifecycle_state)}</span>
+                  <span className={`orderstatuspill tone-${paymentTone(order.payment_state)}`}>{paymentLabel(order.payment_state)}</span>
+                  <span className={`orderstatuspill tone-${fulfillmentTone(order.fulfillment_state)}`}>{fulfillmentLabel(order.fulfillment_state)}</span>
+                  <span className={`orderstatuspill tone-${aftersaleTone(order.aftersale_state)}`}>{aftersaleLabel(order.aftersale_state)}</span>
+                </div>
+                <div className="orderdrawermeta">
+                  <span>所属商城 <strong>{mallName}</strong></span>
+                  <span>创建时间 <strong>{formatOrderTime(order.created_at)}</strong></span>
+                </div>
+              </>
+            )}
           </header>
 
           <Tabs

@@ -12,7 +12,7 @@ import { OrderDrawer } from './OrderDrawer';
 import { OrderExceptionWorkbench } from './OrderExceptionWorkbench';
 import { emptyOrderFilter, OrderFilterForm } from './OrderFilter';
 import { OrderIcon } from './OrderIcon';
-import { OrderDirectoryActions, OrderPageHeader } from './OrderPageHeader';
+import { OrderDirectoryActions } from './OrderPageHeader';
 import { isOrderPreviewContext, orderKey, readOrders, type OrderQuery } from './OrderQuery';
 import { defaultOrderColumns, OrderTable, type OrderColumnKey } from './OrderTable';
 import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
@@ -152,9 +152,7 @@ export function Component() {
   }
 
   return (
-    <section className="orderworkspace" data-detail-open={selected !== undefined} aria-labelledby="ordermanagementtitle">
-      <OrderPageHeader mallName={mallName} />
-
+    <section className="orderworkspace" data-detail-open={selected !== undefined} aria-label="订单管理">
       <div className="orderoverview" aria-label="当前页订单概览">
         <OrderMetric label="当前页订单" value={page === undefined ? '—' : pageOrders.length} tone="blue" icon={<OrderIcon name="order" />} />
         <OrderMetric label="本页已支付" value={page === undefined ? '—' : paidCount} tone="success" icon={<OrderIcon name="check" />} />

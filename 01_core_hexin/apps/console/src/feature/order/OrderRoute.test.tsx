@@ -136,7 +136,8 @@ describe('Order route', () => {
     renderRoute();
 
     expect(await screen.findByRole('table', { name: '订单列表' })).toBeTruthy();
-    expect(screen.getByRole('heading', { level: 1, name: '订单管理系统' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: '订单管理' })).toBeTruthy();
+    expect(screen.queryByText('订单管理系统')).toBeNull();
     expect(screen.getByRole('note').textContent).toContain('订单、财务、商品为明线，现金结果用于核验财务');
     expect(screen.getByText('服务端筛选 · 更新时间未提供')).toBeTruthy();
     expect(screen.getByText('本页 1 条 · 全量总数不可用')).toBeTruthy();
@@ -158,10 +159,53 @@ describe('Order route', () => {
     await userEvent.setup().click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
     const detail = await screen.findByRole('complementary', { name: new RegExp(order.order_number) });
     expect(within(detail).getByRole('heading', { name: '四流合一' })).toBeTruthy();
-    expect(within(detail).getByText(/没有事实来源的结算、路径和里程碑不会推测/)).toBeTruthy();
+    expect(within(detail).getByText(/没有事实来源的结算、路径和事件时间不会推测/)).toBeTruthy();
     expect(within(detail).getAllByText('当前读模型未提供').length).toBeGreaterThan(0);
-    expect(within(detail).getByText(/当前读模型未返回真实状态事件时间线/)).toBeTruthy();
+    const flow = within(detail).getByRole('list', { name: '订单流程' });
+    expect(within(flow).getByText('下单')).toBeTruthy();
+    expect(within(flow).getByText('支付')).toBeTruthy();
+    expect(within(flow).getByText('履约')).toBeTruthy();
+    expect(within(flow).getByText('售后')).toBeTruthy();
+    expect(within(flow).getByText('完成')).toBeTruthy();
+    expect(within(flow).getByLabelText('支付：已完成，已支付')).toBeTruthy();
+    expect(within(flow).getByLabelText('履约：当前，待发货')).toBeTruthy();
+    expect(within(flow).getByLabelText('售后：等待，无售后')).toBeTruthy();
     expect(within(detail).queryByText('不应泄漏的演示说明')).toBeNull();
+  });
+
+  it.each([
+    {
+      name: '正常订单',
+      states: { payment_state: 'paid', fulfillment_state: 'delivered', aftersale_state: 'resolved', lifecycle_state: 'completed' },
+      expected: ['支付：已完成，已支付', '履约：已完成，已完成', '售后：已完成，已完成', '完成：已完成，已完成'],
+    },
+    {
+      name: '待付款订单',
+      states: { payment_state: 'unpaid', fulfillment_state: 'unallocated', aftersale_state: 'none', lifecycle_state: 'created' },
+      expected: ['支付：当前，待付款', '履约：等待，待分配', '售后：等待，无售后', '完成：等待，已创建'],
+    },
+    {
+      name: '异常订单',
+      states: { payment_state: 'failed', fulfillment_state: 'cancelled', aftersale_state: 'rejected', lifecycle_state: 'cancelled' },
+      expected: ['支付：异常，支付失败', '履约：异常，已取消', '售后：异常，已驳回', '完成：异常，已取消'],
+    },
+    {
+      name: '无售后订单',
+      states: { payment_state: 'paid', fulfillment_state: 'allocated', aftersale_state: 'none', lifecycle_state: 'active' },
+      expected: ['支付：已完成，已支付', '履约：当前，待发货', '售后：等待，无售后', '完成：等待，进行中'],
+    },
+  ] as const)('renders an honest five-step flow for $name', async ({ name, states, expected }) => {
+    const variant = { ...order, ...states, id: `order:${name}`, order_number: `SW-${name}` };
+    server.use(http.get('*/api/v1/orders', ({ request }) => {
+      const url = new URL(request.url);
+      if (url.searchParams.get('limit') === '1') return HttpResponse.json({ items: [variant], count: 1 });
+      return HttpResponse.json({ ...listPage, items: [variant] });
+    }));
+    renderRoute(`/orders?selected=${encodeURIComponent(variant.id)}`);
+
+    const detail = await screen.findByRole('complementary', { name: new RegExp(variant.order_number) });
+    const flow = within(detail).getByRole('list', { name: '订单流程' });
+    for (const label of expected) expect(within(flow).getByLabelText(label)).toBeTruthy();
   });
 
   it('turns the preview exception view into a vertical responsibility workflow', async () => {
@@ -256,6 +300,9 @@ describe('Order route', () => {
     const operations = within(dialog).getByRole('tab', { name: '操作记录' });
     expect([overview, products, payment, aftersale, operations]).toHaveLength(5);
     expect(overview.getAttribute('aria-selected')).toBe('true');
+
+    await user.click(within(dialog).getByRole('button', { name: '复制订单号' }));
+    expect(within(dialog).getByRole('status').textContent).toBe('已复制');
 
     overview.focus();
     await user.keyboard('{ArrowRight}{Enter}');
