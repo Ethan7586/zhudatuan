@@ -1,4 +1,6 @@
 @import './AccessEditor.css';
+@import './AccessMember.css';
+@import './AccessPermission.css';
 @import './AccessTasks.css';
 @import './RoleJourney.css';
 @import './RoleWorkspace.css';

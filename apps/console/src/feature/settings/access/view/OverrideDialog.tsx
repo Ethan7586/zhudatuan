@@ -5,6 +5,7 @@ import { permissionText } from '../PermissionText';
 import type { AccessViewModel } from '../viewmodel/AccessViewModel';
 import { ApprovalPanel } from './ApprovalPanel';
 import { TargetSummary } from './TargetSummary';
+import { TechnicalDetails } from './TechnicalDetails';
 import type { AccessEffect, AccessOverrideAction } from '../model/Access';
 
 export function OverrideDialog({ model }: Readonly<{ model: AccessViewModel }>) {
@@ -19,7 +20,7 @@ function OverrideForm({ model }: Readonly<{ model: AccessViewModel }>) {
   const editor = model.editor;
   if (editor?.kind !== 'override') return null;
   return (
-    <Dialog open title="编辑成员权限" eyebrow="覆盖规则 · 有效期 · 双人复核" onClose={model.actions.close} dismissable={!model.mutation.busy}>
+    <Dialog open title="设置个人权限例外" eyebrow="仅用于少数特殊情况" onClose={model.actions.close} dismissable={!model.mutation.busy}>
       <form
         className="accessform"
         onSubmit={(event) => {
@@ -29,15 +30,22 @@ function OverrideForm({ model }: Readonly<{ model: AccessViewModel }>) {
       >
         <TargetSummary membership={editor.membership} />
         <label>
-          操作
+          要做什么
           <select value={editor.action} onChange={(event) => model.actions.overrideAction(event.target.value as AccessOverrideAction)}>
-            <option value="set">设置覆盖权限</option>
-            <option value="revoke">撤销覆盖权限</option>
+            <option value="set">新增或更新个人例外</option>
+            <option value="revoke">撤销已有个人例外</option>
           </select>
         </label>
         <label>
           搜索业务权限
-          <input value={query} onChange={(event) => { setQuery(event.target.value); model.actions.permission(''); }} placeholder="例如：退款、库存、审批；也可输入权限代码" />
+          <input
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              model.actions.permission('');
+            }}
+            placeholder="例如：退款、库存、审批"
+          />
         </label>
         <label>
           选择业务权限
@@ -45,15 +53,27 @@ function OverrideForm({ model }: Readonly<{ model: AccessViewModel }>) {
             <option value="" disabled>
               请选择要调整的权限
             </option>
-            {groups.map((group) => <optgroup key={group.category} label={group.name}>{group.permissions.map((permission) => <option key={permission.code} value={permission.code}>{permissionText(permission.code)}</option>)}</optgroup>)}
+            {groups.map((group) => (
+              <optgroup key={group.category} label={group.name}>
+                {group.permissions.map((permission) => (
+                  <option key={permission.code} value={permission.code}>
+                    {permissionText(permission.code)}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
           </select>
         </label>
-        {groups.length === 0 ? <p className="accesserror" role="status">没有匹配权限。可尝试“售后”“返款”等同义词，或输入权限代码。</p> : null}
-        {editor.permission ? (
-          <p className="accesshint">
-            所选权限：{permissionText(editor.permission)}
-            <small>系统标识：{editor.permission}</small>
+        {groups.length === 0 ? (
+          <p className="accesserror" role="status">
+            没有匹配权限。可尝试“售后”“返款”等同义词。
           </p>
+        ) : null}
+        {editor.permission ? (
+          <section className="accesshint">
+            所选权限：{permissionText(editor.permission)}
+            <TechnicalDetails facts={[{ label: '权限标识', value: <code>{editor.permission}</code> }]} />
+          </section>
         ) : null}
         {editor.action === 'set' ? <EffectFields effect={editor.effect} expiresAt={editor.expiresAt} model={model} /> : null}
         <label>

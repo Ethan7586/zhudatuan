@@ -78,9 +78,10 @@ describe('access center account presentation', () => {
     renderRoute(vi.fn());
 
     expect(await screen.findByText('张三')).toBeTruthy();
-    expect(screen.getByText('员工号 E1001')).toBeTruthy();
+    expect(screen.getByText('手机 138****0000')).toBeTruthy();
     expect(screen.getByText('自助服务')).toBeTruthy();
     expect(screen.queryByText('Self Service')).toBeNull();
+    expect(screen.queryByText('E1001')).toBeNull();
     expect(screen.queryByText('membership:internal-value')).toBeNull();
   });
 
@@ -100,14 +101,14 @@ describe('access center account presentation', () => {
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json(ownerPage())));
     renderRoute(vi.fn(), true, 3);
 
-    expect(await screen.findByText('选择管理任务')).toBeTruthy();
-    expect(screen.getByText('查看变更影响')).toBeTruthy();
-    expect(screen.getByText('验证后生效')).toBeTruthy();
+    expect(await screen.findByText('选择现在要完成的事情')).toBeTruthy();
+    expect(screen.getByText('谁，可以做什么，可以管理哪里')).toBeTruthy();
+    expect(screen.getByText(/个人权限只处理少数临时或特殊情况/)).toBeTruthy();
     expect(screen.queryByText(/乐观锁|幂等键|权威回读/)).toBeNull();
     expect(screen.queryByRole('button', { name: '发起所有权转移' })).toBeNull();
 
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: /所有权转移/ }));
+    await user.click(await screen.findByRole('button', { name: /所有者转移/ }));
     expect(await screen.findByRole('button', { name: '发起所有权转移' })).toBeTruthy();
   });
 
@@ -116,7 +117,7 @@ describe('access center account presentation', () => {
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json(ownerPage())));
     renderRoute(request, true, 2);
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: /所有权转移/ }));
+    await user.click(await screen.findByRole('button', { name: /所有者转移/ }));
     await user.click(await screen.findByRole('button', { name: '发起所有权转移' }));
     await user.type(screen.getByLabelText('转移原因'), '负责人岗位调整');
     await user.click(screen.getByRole('button', { name: '立即完成二次验证' }));
@@ -128,7 +129,7 @@ describe('access center account presentation', () => {
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json(ownerPage())));
     renderRoute(vi.fn(), true, 3);
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: /所有权转移/ }));
+    await user.click(await screen.findByRole('button', { name: /所有者转移/ }));
     await user.click(await screen.findByRole('button', { name: '发起所有权转移' }));
     await user.type(screen.getByLabelText('转移原因'), '负责人岗位调整');
     await user.click(screen.getByRole('button', { name: '生成复核请求码' }));
@@ -146,7 +147,7 @@ describe('access center account presentation', () => {
     );
     renderRoute(vi.fn(), true, 3);
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: /所有权转移/ }));
+    await user.click(await screen.findByRole('button', { name: /所有者转移/ }));
     await user.click(await screen.findByRole('button', { name: '发起所有权转移' }));
     await user.type(screen.getByLabelText('转移原因'), '负责人岗位调整');
     await user.click(screen.getByRole('button', { name: '生成复核请求码' }));
@@ -168,18 +169,19 @@ describe('access center account presentation', () => {
     const first = renderRoute(vi.fn(), true, 3);
     const user = userEvent.setup();
     await user.click(await screen.findByRole('button', { name: /岗位角色/ }));
-    await user.click(screen.getByRole('button', { name: '新建角色' }));
+    await user.click(screen.getByRole('button', { name: '新建岗位角色' }));
     await user.click(screen.getByRole('button', { name: /自定义/ }));
     await user.type(screen.getByLabelText('角色名称'), '退款客服');
     await user.type(screen.getByLabelText('角色说明'), '负责退款申请与客户沟通');
     await user.click(screen.getByRole('button', { name: '下一步' }));
+    await user.click(screen.getByRole('button', { name: '打开高级权限' }));
     await user.type(screen.getByLabelText('搜索业务权限'), '退款');
     expect(screen.getByText('支付 · 退款')).toBeTruthy();
     first.unmount();
 
     renderRoute(vi.fn(), true, 3);
     await user.click(await screen.findByRole('button', { name: /岗位角色/ }));
-    await user.click(screen.getByRole('button', { name: '新建角色' }));
+    await user.click(screen.getByRole('button', { name: '新建岗位角色' }));
     expect(screen.getByText(/当前管理范围/)).toBeTruthy();
     await user.click(screen.getByRole('button', { name: /选择岗位模板/ }));
     expect(screen.getByLabelText<HTMLInputElement>('角色名称').value).toBe('退款客服');
@@ -188,13 +190,33 @@ describe('access center account presentation', () => {
     expect(screen.getByText(/未发现职责分离冲突/)).toBeTruthy();
   });
 
+  it('shows the role relationship first and keeps assignment and technical data progressively disclosed', async () => {
+    server.use(http.get('*/api/v1/access/center', () => HttpResponse.json(roleWorkspacePage())));
+    renderRoute(vi.fn(), true, 3);
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole('button', { name: /岗位角色/ }));
+    expect(await screen.findByText('一处配置，多人复用')).toBeTruthy();
+    expect(screen.getByText('多人复用同一岗位')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '商品运营' })).toBeTruthy();
+    expect(screen.getByText('商品 · 查看')).toBeTruthy();
+    expect(screen.getByRole('button', { name: '调整岗位权限' })).toBeTruthy();
+
+    const assignment = screen.getByText('分配成员到此岗位').closest('details') as HTMLDetailsElement;
+    const technical = screen.getAllByText('技术详情')[0]?.closest('details') as HTMLDetailsElement;
+    expect(assignment.open).toBe(false);
+    expect(technical.open).toBe(false);
+    expect(screen.queryByText('权限第 11 版')).toBeNull();
+  });
+
   it('selects delegated projects by business name and filters member overrides by Chinese synonyms', async () => {
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json(ownerPage())));
     renderRoute(vi.fn(), true, 3);
     const user = userEvent.setup();
 
     await user.click(await screen.findByRole('button', { name: /项目范围/ }));
-    await user.click(screen.getAllByRole('button', { name: '项目授权' })[0]!);
+    await user.click(screen.getAllByRole('button', { name: '查看与调整' })[0]!);
+    await user.click(screen.getByRole('button', { name: '设置可管理项目' }));
     expect(await screen.findByRole('option', { name: '测试商城' })).toBeTruthy();
     await user.selectOptions(screen.getByLabelText('项目类型'), 'enterprise');
     expect(screen.getByRole('option', { name: '华东企业' })).toBeTruthy();
@@ -202,7 +224,8 @@ describe('access center account presentation', () => {
     await user.click(screen.getByRole('button', { name: '关闭' }));
 
     await user.click(screen.getByRole('button', { name: /成员与权限/ }));
-    await user.click(screen.getByRole('button', { name: '编辑权限' }));
+    await user.click(screen.getAllByRole('button', { name: '查看与调整' })[1]!);
+    await user.click(screen.getByRole('button', { name: '设置个人例外' }));
     await user.type(screen.getByLabelText('搜索业务权限'), '返款');
     expect(screen.getByRole('option', { name: '支付 · 退款' })).toBeTruthy();
   });
@@ -282,6 +305,28 @@ function rolePage() {
       { code: 'custom', name: '自定义', description: '从空权限开始逐项配置', allows: [], denies: [], version: 1 },
     ],
     separationRules: [{ left: 'finance.settlement.decide', right: 'finance.withdrawal.decide', reason: '结算审核与提现审核必须职责分离' }],
+  };
+}
+
+function roleWorkspacePage() {
+  return {
+    ...ownerPage(),
+    roles: [
+      {
+        id: 'role:catalog',
+        name: '商品运营',
+        description: '负责商品资料和上架管理',
+        status: 'active',
+        kind: 'custom',
+        template: 'catalogoperator',
+        version: 2,
+        allows: ['catalog.read'],
+        denies: ['finance.withdrawal.decide'],
+        affectedPeople: 1,
+        affectedScopes: 1,
+        members: [{ membership: 'membership:owner', displayName: '当前负责人', accessVersion: 11 }],
+      },
+    ],
   };
 }
 

@@ -152,13 +152,13 @@
   font-weight: var(--sw-font-weight-bold);
 }
 
-.roleadvanced details {
+.roleadvanced > details {
   border: var(--sw-border-width) solid var(--sw-border);
   border-radius: var(--sw-radius-sm);
   background: var(--sw-surface);
 }
 
-.roleadvanced summary {
+.roleadvanced > details > summary {
   display: flex;
   min-height: var(--sw-control-touch-target);
   align-items: center;
@@ -175,10 +175,8 @@
   border-radius: 0;
 }
 
-.accessmatrixrow code {
-  color: var(--sw-muted);
-  font-size: var(--sw-font-size-caption);
-  overflow-wrap: anywhere;
+.accessmatrixrow .accesstechnical {
+  margin-top: var(--sw-space-0-5);
 }
 
 .roletemplatehint,

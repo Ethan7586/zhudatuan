@@ -120,7 +120,7 @@
   border-top: 0.0625rem solid var(--sw-border);
   padding-top: var(--sw-space-1);
 }
-.accessmatrixrow > span {
+.accessmatrixrow > div {
   display: grid;
   gap: 0.15rem;
   min-width: 0;

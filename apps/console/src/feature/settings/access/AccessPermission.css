@@ -1,0 +1,100 @@
+.memberdetailgrid,
+.permissionsummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sw-space-2);
+}
+
+.permissiongroup {
+  display: grid;
+  align-content: start;
+  gap: var(--sw-space-1);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-success-surface);
+  padding: var(--sw-space-1-5);
+}
+
+.permissiongroup.denied {
+  background: var(--sw-danger-surface);
+}
+
+.permissiongroup > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+}
+
+.permissiongroup :is(p, ul) {
+  margin: 0;
+}
+
+.permissiongroup ul {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  padding-left: var(--sw-space-2);
+}
+
+.permissiongroup details summary {
+  min-height: var(--sw-control-touch-target);
+  color: var(--sw-brand-dark);
+  cursor: pointer;
+}
+
+.permissionsummaryowner {
+  grid-template-columns: 1fr;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-brand-light);
+  padding: var(--sw-space-1-5);
+}
+
+.permissionsummaryowner p {
+  margin: var(--sw-space-0-5) 0 0;
+  color: var(--sw-text-secondary);
+}
+
+.accesstechnical {
+  width: 100%;
+  color: var(--sw-muted);
+}
+
+.accesstechnical > summary {
+  padding: 0 var(--sw-space-1);
+}
+
+.accesstechnical dl {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  margin: 0;
+  border-top: var(--sw-border-width) solid var(--sw-border);
+  padding: var(--sw-space-1);
+}
+
+.accesstechnical dl > div {
+  display: grid;
+  grid-template-columns: minmax(6rem, auto) minmax(0, 1fr);
+  gap: var(--sw-space-1);
+}
+
+.accesstechnical :is(dt, dd) {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.accesstechnical code {
+  white-space: normal;
+}
+
+.accessownership > .accesstechnical {
+  grid-column: 1 / -1;
+}
+
+.memberdetails > footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sw-space-1);
+  border-top: var(--sw-border-width) solid var(--sw-border);
+  padding-top: var(--sw-space-2);
+}

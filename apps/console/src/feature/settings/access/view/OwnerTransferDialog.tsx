@@ -2,6 +2,7 @@ import { Dialog } from '@shop/design';
 import type { OwnershipImpact } from '../model/Access';
 import type { AccessViewModel } from '../viewmodel/AccessViewModel';
 import { ApprovalPanel } from './ApprovalPanel';
+import { TechnicalDetails } from './TechnicalDetails';
 
 export function OwnerTransferDialog({ model }: Readonly<{ model: AccessViewModel }>) {
   const editor = model.editor;
@@ -19,7 +20,8 @@ export function OwnerTransferDialog({ model }: Readonly<{ model: AccessViewModel
         <section className="accesstarget" aria-label="当前所有者">
           <strong>当前所有者</strong>
           <span>{editor.ownership.owner.displayName}</span>
-          <small>所有权版本：第 {editor.ownership.version} 版</small>
+          <small>提交时系统会自动核对最新所有权状态。</small>
+          <TechnicalDetails facts={[{ label: '所有权版本', value: `第 ${editor.ownership.version} 版` }]} />
         </section>
         {editor.action === 'create' ? <CreateFields model={model} /> : <PendingSummary model={model} />}
         {editor.preview ? <ImpactPreview impact={editor.preview.impact} expiresAt={editor.preview.action === 'create' ? editor.preview.expiresAt : editor.preview.transfer.expiresAt} /> : null}
@@ -46,7 +48,8 @@ function CreateFields({ model }: Readonly<{ model: AccessViewModel }>) {
           </option>
           {model.ownerTargets.map((target) => (
             <option key={target.membership} value={target.membership} disabled={!target.mobileReady}>
-              {target.displayName} · 权限第 {target.accessVersion} 版{target.mobileReady ? '' : ' · 未绑定手机'}
+              {target.displayName}
+              {target.mobileReady ? '' : ' · 未绑定手机'}
             </option>
           ))}
         </select>
@@ -76,7 +79,7 @@ function CreateFields({ model }: Readonly<{ model: AccessViewModel }>) {
             </option>
             {editor.ownership.formerOwnerRoles.map((role) => (
               <option key={role.id} value={role.id}>
-                {role.name} · 第 {role.version} 版
+                {role.name}
               </option>
             ))}
           </select>
@@ -99,7 +102,7 @@ function PendingSummary({ model }: Readonly<{ model: AccessViewModel }>) {
         <strong>{editor.action === 'accept' ? '接受后立即成为新所有者' : '取消后申请立即失效'}</strong>
         <span>目标账号：{editor.transfer.targetDisplayName}</span>
         <span>有效期至：{new Date(editor.transfer.expiresAt).toLocaleString('zh-CN')}</span>
-        <span>申请版本：第 {editor.transfer.version} 版</span>
+        <TechnicalDetails facts={[{ label: '申请版本', value: `第 ${editor.transfer.version} 版` }]} />
       </section>
       {editor.action === 'cancel' ? (
         <label>

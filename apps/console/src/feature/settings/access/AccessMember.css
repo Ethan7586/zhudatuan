@@ -1,0 +1,240 @@
+.accessmembers {
+  display: grid;
+  gap: var(--sw-space-2);
+}
+
+.accessmembers > header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+}
+
+.accessmembers > header > div {
+  display: grid;
+  gap: var(--sw-space-0-5);
+}
+
+.accessmembers > header :is(h2, p) {
+  margin: 0;
+}
+
+.accessmembers > header span {
+  color: var(--sw-brand-dark);
+  font-size: var(--sw-font-size-caption);
+  font-weight: var(--sw-font-weight-bold);
+}
+
+.accessmembers > header p {
+  max-width: 44rem;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.accessmembers > header label {
+  display: grid;
+  min-width: min(20rem, 100%);
+  gap: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: var(--sw-font-weight-bold);
+}
+
+.accessmembers > header input,
+.memberroleassign select {
+  min-height: var(--sw-control-touch-target);
+  border: var(--sw-border-width) solid var(--sw-border-interactive);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1);
+  color: var(--sw-text);
+}
+
+.accessmembers > header input:focus-visible,
+.memberroleassign select:focus-visible {
+  border-color: var(--sw-brand);
+  outline: var(--sw-focus-width) solid var(--sw-focus-color);
+  outline-offset: var(--sw-focus-offset);
+}
+
+.accessstatus,
+.memberidentity > b {
+  width: max-content;
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-surface-subtle);
+  padding: 0.25rem 0.6rem;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  white-space: nowrap;
+}
+
+.accessstatus[data-status='active'],
+.memberidentity > b[data-status='active'] {
+  background: var(--sw-success-surface);
+  color: var(--sw-success-strong);
+}
+
+.accessstatus[data-status='invited'],
+.memberidentity > b[data-status='invited'] {
+  background: var(--sw-brand-light);
+  color: var(--sw-brand-dark);
+}
+
+.accessroles .unassigned {
+  background: var(--sw-surface-subtle);
+  color: var(--sw-muted);
+}
+
+.accessmemberempty {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  border: var(--sw-border-width) dashed var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface-subtle);
+  padding: var(--sw-space-3);
+  text-align: center;
+}
+
+.accessmemberempty span {
+  color: var(--sw-muted);
+}
+
+.memberdetails {
+  display: grid;
+  min-width: min(48rem, 78vw);
+  gap: var(--sw-space-2);
+}
+
+.memberidentity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--sw-space-1);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-brand-light);
+  padding: var(--sw-space-2);
+}
+
+.memberidentity > span {
+  display: grid;
+  min-width: 0;
+  gap: var(--sw-space-0-5);
+}
+
+.memberidentity small,
+.memberdetailsection > header p,
+.memberempty,
+.memberroleassign p {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-body-sm);
+}
+
+.memberidentity > .accesstechnical {
+  grid-column: 1 / -1;
+}
+
+.memberdetailsection {
+  display: grid;
+  gap: var(--sw-space-1-5);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  padding: var(--sw-space-2);
+}
+
+.memberdetailsection > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sw-space-2);
+}
+
+.memberdetailsection > header > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.memberdetailsection > header :is(span, h2) {
+  margin: 0;
+}
+
+.memberdetailsection > header span {
+  color: var(--sw-brand-dark);
+  font-size: var(--sw-font-size-caption);
+  font-weight: var(--sw-font-weight-bold);
+}
+
+.memberroles,
+.memberfacts {
+  display: grid;
+  gap: var(--sw-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.memberroles li,
+.memberfacts li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+  border-top: var(--sw-border-width) solid var(--sw-border);
+  padding-top: var(--sw-space-1);
+}
+
+.memberroles li > span {
+  display: grid;
+  min-width: 0;
+  gap: 0.15rem;
+}
+
+.memberroles small,
+.memberfacts span {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+
+.memberroleassign,
+.accesstechnical {
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface-subtle);
+}
+
+.memberroleassign > summary,
+.accesstechnical > summary {
+  display: flex;
+  min-height: var(--sw-control-touch-target);
+  align-items: center;
+  color: var(--sw-brand-dark);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: var(--sw-font-weight-bold);
+  cursor: pointer;
+}
+
+.memberroleassign > summary {
+  padding: 0 var(--sw-space-1-5);
+}
+
+.memberroleassign > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--sw-space-1);
+  border-top: var(--sw-border-width) solid var(--sw-border);
+  padding: var(--sw-space-1-5);
+}
+
+.memberroleassign label {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  color: var(--sw-text-secondary);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: var(--sw-font-weight-bold);
+}
+
+.memberroleassign p {
+  grid-column: 1 / -1;
+}

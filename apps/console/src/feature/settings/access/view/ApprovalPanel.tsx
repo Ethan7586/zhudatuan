@@ -8,11 +8,7 @@ export function ApprovalPanel({ model, destructive = false }: Readonly<{ model: 
     <>
       <section className="accessapproval" aria-label="双人复核">
         <strong>高强度验证与双人复核</strong>
-        <p>
-          {model.editor?.kind === 'owner'
-            ? ownerApprovalText(model.editor.action)
-            : '生成的请求码绑定操作、目标、请求内容和当前版本，必须由另一位拥有相同管理权限的管理员签发一次性凭证。'}
-        </p>
+        <p>{model.editor?.kind === 'owner' ? ownerApprovalText(model.editor.action) : '生成的请求码会绑定本次操作、目标和最新授权状态，必须由另一位拥有相同管理权限的管理员签发一次性凭证。'}</p>
         {model.approval.error ? (
           <p className="accesserror" role="alert">
             {model.approval.error}
@@ -40,14 +36,18 @@ export function ApprovalPanel({ model, destructive = false }: Readonly<{ model: 
         </label>
         <label className="accessconfirm">
           <input type="checkbox" checked={editor.confirmed} onChange={(event) => model.actions.confirmed(event.target.checked)} />
-          {destructive && model.editor?.kind === 'owner' ? ownerConfirmationText(model.editor.action) : destructive ? '我已核对不可逆影响' : '我已核对目标、版本和修改内容'}
+          {destructive && model.editor?.kind === 'owner' ? ownerConfirmationText(model.editor.action) : destructive ? '我已核对不可逆影响' : '我已核对目标和修改内容'}
         </label>
       </section>
       {model.conflict ? (
         <section className="accessconflict" role="alert" aria-label="并发修改冲突">
           <strong>{model.conflict.title}</strong>
           <p>系统已读取最新权威状态，没有覆盖其他管理员的修改。请核对下列差异：</p>
-          <ul>{model.conflict.details.map((detail) => <li key={detail}>{detail}</li>)}</ul>
+          <ul>
+            {model.conflict.details.map((detail) => (
+              <li key={detail}>{detail}</li>
+            ))}
+          </ul>
           <Button onPress={model.actions.resolveConflict}>{model.conflict.next ? '应用最新基线并重新复核' : '关闭并重新选择目标'}</Button>
         </section>
       ) : null}
@@ -70,15 +70,15 @@ export function ApprovalPanel({ model, destructive = false }: Readonly<{ model: 
 }
 
 function ownerApprovalText(action: 'create' | 'accept' | 'cancel'): string {
-  if (action === 'create') return '请求码绑定新所有者、双方版本、原所有者后续角色和原因；复核通过后只会发起待接受申请。';
+  if (action === 'create') return '请求码绑定新所有者、双方最新授权状态、原所有者后续角色和原因；复核通过后只会发起待接受申请。';
   if (action === 'accept') return '目标账号必须使用自己的会话接受，并提供不同于发起方的独立一次性凭证；成功后所有权才会原子切换。';
-  return '仅原所有者可以取消待接受申请；取消请求仍需绑定当前申请版本并由另一位管理员复核。';
+  return '仅原所有者可以取消待接受申请；取消请求仍需绑定当前申请状态并由另一位管理员复核。';
 }
 
 function ownerConfirmationText(action: 'create' | 'accept' | 'cancel'): string {
-  if (action === 'create') return '我已核对目标账号、双方版本、后续角色和影响范围';
+  if (action === 'create') return '我已核对目标账号、后续角色和影响范围';
   if (action === 'accept') return '我已核对申请来源，并确认接受后立即切换所有权';
-  return '我已核对申请版本，并确认取消后不能再接受';
+  return '我已核对申请状态，并确认取消后不能再接受';
 }
 
 function ownerSubmitText(action: 'create' | 'accept' | 'cancel'): string {
