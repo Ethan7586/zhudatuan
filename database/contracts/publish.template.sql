@@ -240,23 +240,94 @@ $function$;
 
 create or replace function capability.membership_authorization(p_membership_id text)
 returns table(operation_ids text[],capability_version bigint)
-language sql stable security definer set search_path=capability,access,organization,pg_temp as $function$
-  with membership_scope as (
-    select membership.organization_id from access.membership membership
+language sql stable security definer
+set search_path=capability,access,organization,pg_temp as $function$
+  with recursive subject as materialized (
+    select membership.organization_id,case membership.client
+      when 'operator' then array['console']::text[]
+      when 'storefront' then array['storefront','miniapp']::text[]
+      else array[membership.client]::text[] end targets
+    from access.membership membership
     where membership.id=p_membership_id and membership.status='active'
-  ), current_version as (
-    select coalesce(max(greatest(entitlement.version,capability.version)),0)::bigint value
-    from membership_scope membership
-    join organization.unitclosure closure on closure.descendant_id=membership.organization_id
-    join capability.entitlement entitlement on entitlement.scope_id=closure.ancestor_id
-      and entitlement.state='enabled' and entitlement.effective_at<=clock_timestamp()
+  ), lineage as materialized (
+    select subject.organization_id scope_id,subject.organization_id ancestor_id,0 depth
+    from subject
+    union all
+    select subject.organization_id,closure.ancestor_id,closure.depth
+    from subject join organization.unitclosure closure
+      on closure.descendant_id=subject.organization_id and closure.depth>0
+  ), active as materialized (
+    select entitlement.capability_id,entitlement.state
+    from lineage join capability.entitlement entitlement
+      on entitlement.scope_id=lineage.ancestor_id
+    where entitlement.effective_at<=clock_timestamp()
       and (entitlement.expires_at is null or entitlement.expires_at>clock_timestamp())
-    join capability.capability capability on capability.id=entitlement.capability_id
+  ), base as materialized (
+    select catalog.id capability_id,
+      catalog.status='active'
+        and coalesce(bool_or(active.state='enabled'),false)
+        and not coalesce(bool_or(active.state='disabled'),false) enabled
+    from capability.capability catalog
+    left join active on active.capability_id=catalog.id
+    group by catalog.id,catalog.status
+  ), dependencytree(root,required) as (
+    select capability_id,depends_on_id from capability.dependency
+    union
+    select dependencytree.root,dependency.depends_on_id
+    from dependencytree join capability.dependency dependency
+      on dependency.capability_id=dependencytree.required
+  ), healthy as materialized (
+    select base.capability_id from base
+    where base.enabled and not exists(
+      select 1 from dependencytree
+      left join base required on required.capability_id=dependencytree.required
+      where dependencytree.root=base.capability_id and not coalesce(required.enabled,false)
+    )
+  ), permission_catalog as materialized (
+    select id,code from access.permission where status='active'
+  ), permission_candidates as materialized (
+    select permission.code,mapping.effect
+    from access.membershiprole assignment
+    join access.role role on role.id=assignment.role_id and role.status='active'
+    join access.rolepermission mapping on mapping.role_id=role.id
+    join permission_catalog permission on permission.id=mapping.permission_id
+    where assignment.membership_id=p_membership_id
+      and assignment.effective_at<=clock_timestamp()
+      and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
+    union all
+    select permission.code,override.effect
+    from access.membershipoverride override
+    join permission_catalog permission on permission.id=override.permission_id
+    where override.membership_id=p_membership_id and override.revoked_at is null
+      and override.effective_at<=clock_timestamp()
+      and (override.expires_at is null or override.expires_at>clock_timestamp())
+  ), permissions as materialized (
+    select code permission_code,
+      case when bool_or(effect='deny') then 'deny' else 'allow' end effect
+    from permission_candidates group by code
+    having bool_or(effect='deny') or bool_or(effect='allow')
+  ), operation_catalog as materialized (
+    select operation_id,capability_id,permission_code,targets from capability.operation
+  ), available as materialized (
+    select distinct operation.operation_id
+    from subject cross join lateral unnest(subject.targets) requested(target)
+    join healthy surface on surface.capability_id='surface.'||requested.target
+    join operation_catalog operation on requested.target=any(operation.targets)
+    join healthy enabled on enabled.capability_id=operation.capability_id
+    where operation.permission_code is null or exists(
+      select 1 from permissions permission
+      where permission.permission_code=operation.permission_code and permission.effect='allow'
+    )
+  ), version as (
+    select case when exists(select 1 from subject) then
+      coalesce((select sum(capabilityset.version) from lineage
+        join capability.capabilityset capabilityset on capabilityset.scope_id=lineage.ancestor_id),0)
+      +coalesce((select sum(catalog.version) from capability.capability catalog),0)
+      else 0 end value
   )
-  select coalesce(array_agg(available.operation_id order by available.operation_id)
-    filter(where available.operation_id is not null),'{}'::text[]),current_version.value
-  from current_version left join capability.membership_operations(p_membership_id) available on true
-  group by current_version.value
+  select coalesce((select array_agg(operation_id order by operation_id) from available),'{}'::text[]),
+    version.value::bigint
+  from version
 $function$;
 
 create or replace function access.authorization_snapshot(p_membership_id text,p_target text,p_operation text,p_resource text)
