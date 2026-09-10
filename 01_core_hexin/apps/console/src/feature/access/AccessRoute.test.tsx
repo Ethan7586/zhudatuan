@@ -1,6 +1,6 @@
 import { PERMISSION_CATALOG } from '@shop/authz';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
@@ -123,7 +123,7 @@ describe('custom identity and permission directory', () => {
 
     renderWorkspace();
 
-    expect(await screen.findByRole('heading', { name: '编辑身份' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '财务观察' })).toBeTruthy();
     expect(screen.queryByText('身份目录读取失败')).toBeNull();
   });
 
@@ -131,12 +131,12 @@ describe('custom identity and permission directory', () => {
     const user = userEvent.setup();
     renderWorkspace();
 
-    expect(await screen.findByRole('heading', { name: '编辑身份' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '角色模板' })).toBeTruthy();
+    await openRolePermissions();
+    expect(screen.getAllByRole('heading', { name: '角色模板' }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('navigation', { name: '管理与权限工作台' })).toBeNull();
     expect(screen.getByRole('button', { name: '返回成员目录' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '治理身份' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '自定义业务身份' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '自定义角色' })).toBeTruthy();
     expect(screen.getByText('平台 Owner')).toBeTruthy();
     expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
     await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^运行状态/ }));
@@ -152,7 +152,7 @@ describe('custom identity and permission directory', () => {
   it('mounts only permission matches while filtering', async () => {
     const user = userEvent.setup();
     renderWorkspace();
-    await screen.findByRole('heading', { name: '编辑身份' });
+    await openRolePermissions();
 
     await user.type(screen.getByPlaceholderText('输入权限代码'), 'finance.overview.read');
 
@@ -169,7 +169,7 @@ describe('custom identity and permission directory', () => {
 
     await user.click(screen.getByRole('button', { name: '角色模板' }));
 
-    expect(await screen.findByRole('heading', { name: '编辑身份' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '财务观察' })).toBeTruthy();
     expect(reads).toBe(1);
   });
 
@@ -208,28 +208,28 @@ describe('custom identity and permission directory', () => {
       max_uses: 1, use_count: 0, starts_at: '2026-09-10T12:00:00.000Z', expires_at: '2026-09-17T12:00:00.000Z',
       accepted_at: null, status: 'active', created_at: '2026-09-10T12:00:00.000Z', version: '0',
     }];
+    server.use(http.get('*/api/v1/members', () => HttpResponse.json({ items: [{
+      id: 'member:administrator', display_name: '小白管理员', status: 'active', membership_id: 'membership:owner',
+      employee_no: null, membership_status: 'active', access_version: 7, joined_at: '2026-09-02T03:28:35.000Z',
+      principal_id: 'principal:administrator', principal_version: 1, client: 'operator', login_identity_bound: true,
+      reset_allowed: false, reset_block_reason: null, governance_parent_membership_id: 'membership:root', governance_parent_name: 'Ethan',
+    }], count: 1 })));
     const user = userEvent.setup();
     renderSwitchWorkspace();
 
     expect(await screen.findByRole('heading', { name: '管理与权限' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: '管理与权限工作台' })).toBeNull();
     expect(screen.getByRole('button', { name: '角色模板' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '邀请管理' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '邀请管理员' })).toBeTruthy();
 
-    const consumerRow = await screen.findByRole('row', { name: '查看成员 普通消费者' });
-    const administratorRow = await screen.findByRole('row', { name: '查看成员 小白管理员' });
-    expect(within(consumerRow).getByText('非管理员')).toBeTruthy();
+    const administratorRow = await screen.findByRole('row', { name: '查看管理员 小白管理员' });
+    expect(screen.queryByRole('row', { name: '查看管理员 普通消费者' })).toBeNull();
     expect(within(administratorRow).getByText('财务观察')).toBeTruthy();
-
-    await user.click(consumerRow);
-    expect(screen.getByRole('heading', { name: '成员详情' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '授予管理权限' })).toBeTruthy();
-    expect(screen.queryByRole('navigation', { name: '管理员档案' })).toBeNull();
 
     await user.click(administratorRow);
     expect(screen.getByRole('heading', { name: '管理员详情' })).toBeTruthy();
     expect(screen.getByRole('navigation', { name: '管理员档案' })).toBeTruthy();
-    expect(invitationReads).toBe(0);
+    expect(invitationReads).toBe(1);
 
     await user.click(screen.getByRole('tab', { name: '邀请记录' }));
     expect(await screen.findByText('受邀管理员')).toBeTruthy();
@@ -240,10 +240,10 @@ describe('custom identity and permission directory', () => {
   it('creates a freely named identity with finance, order, and product permissions and verifies it by rereading', async () => {
     const user = userEvent.setup();
     renderWorkspace();
-    await screen.findByRole('heading', { name: '编辑身份' });
+    await openRolePermissions();
 
-    await user.click(screen.getByRole('button', { name: '＋ 新建自定义身份' }));
-    const name = screen.getByPlaceholderText('例如：财务');
+    await user.click(screen.getByRole('button', { name: '＋ 新建角色' }));
+    const name = screen.getByPlaceholderText('例如：财务管理员');
     await user.type(name, '财务');
     expect(screen.queryAllByRole('checkbox').filter((item) => (item as HTMLInputElement).checked)).toHaveLength(0);
     const permissionOverview = within(screen.getByRole('region', { name: '选择功能权限' }));
@@ -253,7 +253,7 @@ describe('custom identity and permission directory', () => {
     await user.click(screen.getByRole('checkbox', { name: /finance\.overview\.read/ }));
     await user.click(screen.getByRole('checkbox', { name: /order\.read/ }));
     await user.click(screen.getByRole('checkbox', { name: /catalog\.product\.manage/ }));
-    await user.click(screen.getByRole('button', { name: '保存身份' }));
+    await user.click(screen.getByRole('button', { name: '保存修改' }));
 
     expect(await screen.findByText(/“财务”已保存，并已通过正式接口重读核对名称、权限与版本 v0/)).toBeTruthy();
     expect(writes).toHaveLength(1);
@@ -265,18 +265,21 @@ describe('custom identity and permission directory', () => {
   it('preserves permissions on rename and preserves the name on permission changes', async () => {
     const user = userEvent.setup();
     renderWorkspace();
-    const name = await screen.findByPlaceholderText('例如：财务');
+    await openRolePermissions();
+    const name = screen.getByPlaceholderText('例如：财务管理员');
 
     await user.clear(name);
     await user.type(name, '财务主管');
-    await user.click(screen.getByRole('button', { name: '保存身份' }));
+    await user.click(screen.getByRole('button', { name: '保存修改' }));
     await screen.findByText(/“财务主管”已保存/);
     expect(writes[0]?.body).toEqual({ name: '财务主管', permissions: ['finance.overview.read', 'order.read'] });
     expect(writes[0]?.expectedVersion).toBe('"1"');
 
+    await waitFor(() => expect(within(screen.getByRole('navigation', { name: '角色详情' })).getByRole('button', { name: '角色概览' }).getAttribute('aria-selected')).toBe('true'));
+    await openRolePermissions('财务主管');
     await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^商品/ }));
     await user.click(screen.getByRole('checkbox', { name: /catalog\.product\.manage/ }));
-    await user.click(screen.getByRole('button', { name: '保存身份' }));
+    await user.click(screen.getByRole('button', { name: '保存修改' }));
     await waitFor(() => expect(writes).toHaveLength(2));
     expect(writes[1]?.body.name).toBe('财务主管');
     expect(writes[1]?.body.permissions).toEqual(['finance.overview.read', 'order.read', 'catalog.product.manage']);
@@ -292,11 +295,11 @@ describe('custom identity and permission directory', () => {
     const scopesBefore = structuredClone(member.scopes);
     const user = userEvent.setup();
     renderWorkspace();
-    await screen.findByRole('heading', { name: '编辑身份' });
+    await openRolePermissions();
 
     await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^商品/ }));
     await user.click(screen.getByRole('checkbox', { name: /catalog\.product\.manage/ }));
-    await user.click(screen.getByRole('button', { name: '保存身份' }));
+    await user.click(screen.getByRole('button', { name: '保存修改' }));
 
     expect(await screen.findByText(/Access Version v4/)).toBeTruthy();
     expect(member.access_version).toBe('4');
@@ -310,10 +313,11 @@ describe('custom identity and permission directory', () => {
     conflict = true;
     const user = userEvent.setup();
     renderWorkspace();
-    const name = await screen.findByPlaceholderText('例如：财务');
+    await openRolePermissions();
+    const name = screen.getByPlaceholderText('例如：财务管理员');
     await user.clear(name);
     await user.type(name, '冲突中的财务');
-    await user.click(screen.getByRole('button', { name: '保存身份' }));
+    await user.click(screen.getByRole('button', { name: '保存修改' }));
 
     expect((await screen.findByRole('alert')).textContent).toContain('版本冲突');
     expect(screen.getByText(/当前草稿未保存/)).toBeTruthy();
@@ -391,13 +395,14 @@ describe('custom identity and permission directory', () => {
     syncRoleMetadata();
     const user = userEvent.setup();
     renderWorkspace();
-    await screen.findByRole('heading', { name: '编辑身份' });
+    await openRoleMembers();
 
     await user.click(screen.getByRole('button', { name: '＋ 分配成员' }));
     await user.click(screen.getByRole('button', { name: '确认分配并重读' }));
     expect(await screen.findByText(/“财务观察”已分配给 张三/)).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: /运营协作/ }));
+    await openRoleMembers('运营协作');
     await user.click(screen.getByRole('button', { name: '＋ 分配成员' }));
     await user.click(screen.getByRole('button', { name: '确认分配并重读' }));
     expect(await screen.findByText(/“运营协作”已分配给 张三/)).toBeTruthy();
@@ -419,7 +424,7 @@ describe('custom identity and permission directory', () => {
     syncRoleMetadata();
     const user = userEvent.setup();
     renderWorkspace();
-    await screen.findByRole('heading', { name: '编辑身份' });
+    await openRoleMembers();
 
     await user.click(screen.getByRole('button', { name: '＋ 分配成员' }));
     await user.selectOptions(screen.getByLabelText('范围来源'), 'inherited');
@@ -445,7 +450,7 @@ describe('custom identity and permission directory', () => {
     syncRoleMetadata();
     const user = userEvent.setup();
     renderWorkspace();
-    await screen.findByRole('heading', { name: '编辑身份' });
+    await openRoleMembers();
 
     await user.click(screen.getByRole('button', { name: '删除身份' }));
     await user.click(screen.getByRole('button', { name: '确认删除“财务观察”' }));
@@ -467,6 +472,18 @@ function renderWorkspace(value: ConsoleContext = context, entry = '/scopes/tenan
       </QueryClientProvider>
     </MemoryRouter>,
   );
+}
+
+async function openRolePermissions(roleName = '财务观察') {
+  await screen.findByRole('heading', { name: roleName });
+  fireEvent.click(within(screen.getByRole('navigation', { name: '角色详情' })).getByRole('button', { name: /^权限/ }));
+  await screen.findByPlaceholderText('例如：财务管理员');
+}
+
+async function openRoleMembers(roleName = '财务观察') {
+  await screen.findByRole('heading', { name: roleName });
+  fireEvent.click(within(screen.getByRole('navigation', { name: '角色详情' })).getByRole('button', { name: /^成员与范围/ }));
+  await screen.findByRole('button', { name: '＋ 分配成员' });
 }
 
 function renderSwitchWorkspace() {

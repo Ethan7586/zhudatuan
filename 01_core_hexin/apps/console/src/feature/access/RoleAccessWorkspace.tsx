@@ -70,11 +70,6 @@ export function RoleAccessWorkspace() {
         actions={<><Button onPress={() => void navigate(scopePath(context.scope, 'settings/members'))}>返回成员目录</Button>{section === 'invitations' && invitationEnabled ? <Button tone="primary" onPress={() => setInvitationOpen(true)}>邀请新成员</Button> : null}</>}
       />
 
-      {section === 'roles' ? <Surface className="roleaccessprinciple" depth="flat" padding="default" radius="large">
-        <span aria-hidden="true">✓</span>
-        <div><strong>身份是权限容器，不是固定职位</strong><p>名称由商户自由定义；权限独立组合，每次成员分配都直接指定或继承明确范围。</p></div>
-      </Surface> : null}
-
       {section === 'invitations' ? (
         <InvitationRecordsPanel
           available={invitationEnabled}
@@ -161,19 +156,19 @@ function RoleDirectory({ roles, total, selectedId, draftId, filter, canWrite, on
   const governance = roles.filter(({ governance: value }) => value);
   const custom = roles.filter(({ governance: value }) => !value);
   return <div className="roledirectory">
-    <header><div><h2>身份列表</h2><p>治理身份与业务身份分区显示</p></div><Badge tone="neutral">{total} 个</Badge></header>
-    <label className="roledirectorysearch">搜索身份或权限
-      <input value={filter} onChange={(event) => onFilter(event.target.value)} placeholder="搜索身份或权限代码" />
+    <header><div><h2>角色模板</h2><p>统一定义管理员职责</p></div><Badge tone="neutral">{total}</Badge></header>
+    <label className="roledirectorysearch">搜索角色
+      <input value={filter} onChange={(event) => onFilter(event.target.value)} placeholder="搜索角色或权限" />
     </label>
     <RoleGroup title="治理身份" empty={governance.length === 0 ? '当前范围未返回治理身份' : undefined}>
       {governance.map((role) => <RoleItem key={role.id} role={role} selected={role.id === selectedId} onSelect={onSelect} />)}
     </RoleGroup>
-    <RoleGroup title="自定义业务身份" empty={draftId === undefined && custom.length === 0 ? '尚未创建自定义业务身份' : undefined}>
-      {draftId === undefined ? null : <MasterItem selected title="未保存的新身份" description="名称与权限均为本地草稿" meta="0 项权限" trailing={<Badge tone="warning">草稿</Badge>} />}
+    <RoleGroup title="自定义角色" empty={draftId === undefined && custom.length === 0 ? '尚未创建自定义角色' : undefined}>
+      {draftId === undefined ? null : <MasterItem selected title="未保存的新角色" description="名称与权限均为本地草稿" meta="0 项权限" trailing={<Badge tone="warning">草稿</Badge>} />}
       {custom.map((role) => <RoleItem key={role.id} role={role} selected={role.id === selectedId} onSelect={onSelect} />)}
     </RoleGroup>
-    <Button className="roledirectorycreate" isDisabled={!canWrite} onPress={onCreate}>＋ 新建自定义身份</Button>
-    {!canWrite ? <p className="roledirectoryhint">当前会话无身份写入权限；读取结果仍保持可见。</p> : <p className="roledirectoryhint">身份名称不会推断、勾选或限制任何权限。</p>}
+    <Button className="roledirectorycreate" isDisabled={!canWrite} onPress={onCreate}>＋ 新建角色</Button>
+    {!canWrite ? <p className="roledirectoryhint">当前会话无角色写入权限；读取结果仍保持可见。</p> : <p className="roledirectoryhint">角色名称不会自动推断或勾选权限。</p>}
   </div>;
 }
 
