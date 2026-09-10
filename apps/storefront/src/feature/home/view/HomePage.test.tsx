@@ -42,11 +42,13 @@ describe('HomePage approved storefront composition', () => {
     expect(mobile).not.toBeNull();
     const account = within(mobile!).getByRole('region', { name: '测试会员' });
     const shortcuts = screen.getByRole('navigation', { name: '商城快捷入口' });
+    const categories = screen.getByRole('navigation', { name: '商品快捷分类' });
     const hero = screen.getByRole('heading', { name: '员工专享福利季' });
     const scenes = screen.getByRole('heading', { name: '福利场景' });
     expect(follows(account, shortcuts)).toBe(true);
     expect(follows(shortcuts, hero)).toBe(true);
     expect(follows(hero, scenes)).toBe(true);
+    expect(screen.getByRole('region', { name: '商城公告' }).textContent).toContain('企业福利已开放');
     expect(screen.getAllByRole('img', { name: '员工关怀礼盒' }).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: /福利账户/ }));
@@ -56,6 +58,8 @@ describe('HomePage approved storefront composition', () => {
     expect(openFeature.mock.calls).toEqual([['账户流水'], ['电子卡券'], ['客服中心'], ['账号安全']]);
     fireEvent.click(screen.getByRole('button', { name: /企业专区/ }));
     expect(navigatePage).toHaveBeenCalledWith('catalog');
+    fireEvent.click(within(categories).getByRole('button', { name: /员工关怀/ }));
+    expect(viewmodel.openCategory).toHaveBeenCalledWith('category:care');
   });
 });
 

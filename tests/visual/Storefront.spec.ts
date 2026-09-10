@@ -22,6 +22,7 @@ for (const viewport of VISUAL_VIEWPORTS) {
         await expect(page.getByRole('img', { name: '工作日营养餐券' })).toBeVisible();
         await expect(page.getByRole('img', { name: '全国通兑电影票' })).toBeVisible();
         if (viewport.width < 1024) await expectMobileHomePattern(page);
+        else await expectDesktopHomePattern(page);
       }
       if (routeid === 'storecatalog' && viewport.width < 1024) await expectMobileCatalogPattern(page);
     }
@@ -149,4 +150,14 @@ async function expectMobileCatalogPattern(page: import('@playwright/test').Page)
   const category = await page.getByRole('navigation', { name: '商品分类选择' }).boundingBox();
   const product = await page.locator('main article').first().boundingBox();
   expect(category ? category.x + category.width : Number.POSITIVE_INFINITY).toBeLessThanOrEqual(product?.x ?? 0);
+}
+
+async function expectDesktopHomePattern(page: import('@playwright/test').Page) {
+  await expect(page.getByRole('region', { name: '商城公告' })).toBeVisible();
+  const categories = page.getByRole('navigation', { name: '商品快捷分类' });
+  await expect(categories).toBeVisible();
+  const hero = page.locator('main h1').first();
+  const product = page.getByRole('heading', { name: '员工严选' });
+  const positions = await Promise.all([hero, categories, product].map(async (landmark) => (await landmark.boundingBox())?.y ?? Number.POSITIVE_INFINITY));
+  expect(positions).toEqual([...positions].sort((left, right) => left - right));
 }

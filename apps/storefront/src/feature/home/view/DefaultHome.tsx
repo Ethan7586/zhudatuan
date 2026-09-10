@@ -4,6 +4,7 @@ import { ProductCard } from '../../../entity/product';
 import { ProductMedia } from '../../../shared/view/ProductMedia';
 import { responsivePattern } from '../../../shared/view/ResponsivePattern';
 import { CategoryGrid } from './CategoryGrid';
+import { CategoryShortcuts } from './CategoryShortcuts';
 
 export function DefaultHome({ viewmodel }: Readonly<{ viewmodel: ReturnType<typeof useHomeViewModel> }>) {
   const products = viewmodel.presentationProducts.slice(0, 8);
@@ -35,6 +36,7 @@ export function DefaultHome({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
           </button>
         </div>
       </section>
+      <CategoryShortcuts viewmodel={viewmodel} />
       <CategoryGrid viewmodel={viewmodel} layout="scenes" />
       <section className="rounded-3xl border border-edge bg-surface p-3 shadow-sm sm:p-4">
         <div className="mb-4 flex items-center justify-between">
