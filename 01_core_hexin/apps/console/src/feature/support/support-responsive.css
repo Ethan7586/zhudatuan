@@ -1,3 +1,103 @@
+@media (min-width: 2200px) and (min-height: 1100px) {
+  .supportpage { grid-template-rows: 92px 62px minmax(0, 1fr); }
+  .supportworkspaceheader h1 { font-size: 32px; }
+  .supportworkspaceheader p { margin-top: 5px; font-size: 16px; }
+  .supportworkspacestatus { gap: 7px; }
+  .supportstatuschips { gap: 10px; }
+  .supportstatuschips > span { min-height: 40px; gap: 9px; padding-inline: 13px; font-size: 14px; }
+  .supportidentitylabel strong { padding: 6px 11px; font-size: 14px; }
+  .supportworkspacerefresh { min-height: 28px; font-size: 12px; }
+  .supportworkspacerefresh svg { width: 16px; height: 16px; }
+
+  .supporttasktabs { gap: 14px; }
+  .supporttasktabs button { min-width: 154px; padding-inline: 13px; font-size: 16px; }
+  .supporttasktabs button strong { min-width: 28px; height: 28px; margin-left: 8px; font-size: 13px; }
+
+  .supportworkspace { grid-template-columns: minmax(390px, 420px) minmax(760px, 1fr) minmax(360px, 390px); gap: 16px; padding: 16px; }
+  .supportcaserail,
+  .supportcontext,
+  .supportconversation { border-radius: 14px; }
+
+  .supportpanelheading { min-height: 64px; padding-inline: 24px; }
+  .supportpanelheading span { font-size: 20px; }
+  .supportpanelheading strong { min-width: 28px; height: 28px; font-size: 13px; }
+  .supportcasefilters { grid-template-columns: minmax(0, 1fr) 108px 42px; gap: 9px; padding: 15px 15px 9px; }
+  .supportcasefilters input,
+  .supportcasefilters select,
+  .supportcasefilters button { height: 42px; font-size: 14px; }
+  .supportcasefilters button { min-height: 42px; font-size: 18px; }
+  .supportcasefilters .supportcasecreate svg { width: 23px; height: 23px; }
+  .supportcasepagehint { padding: 0 17px 10px; font-size: 11px; }
+  .supportcaselist > a { min-height: 130px; padding: 15px 19px 14px 21px; }
+  .supportcaselist > a[aria-current='page'] { padding-left: 18px; }
+  .supportcasecopy { gap: 7px; }
+  .supportcaseidentity { padding: 4px 9px; font-size: 12px; }
+  .supportcasetopline strong { font-size: 16px; }
+  .supportcasepreview { font-size: 14px; }
+  .supportcasefacts { font-size: 12px; }
+  .supportcasebadges { gap: 9px; }
+  .supportcasebadges em,
+  .supportconversationtools > span { padding: 4px 9px; font-size: 11px; }
+
+  .supportconversation { grid-template-rows: 74px minmax(0, 1fr) 192px; }
+  .supportconversationheader { padding-inline: 25px; }
+  .supportconversationheader > div:first-child { gap: 16px; }
+  .supportconversationidentity { padding: 8px 14px; font-size: 14px; }
+  .supportconversationheader h2 { font-size: 20px; }
+  .supportconversationheader p { font-size: 14px; }
+  .supportconversationtools button { width: 38px; height: 38px; font-size: 19px; }
+  .supportmessages { padding: 24px 26px; }
+  .supportmessagelog { gap: 18px; }
+  .supportmessagedate { padding: 4px 12px; font-size: 11px; }
+  .supportmessage { max-width: min(74%, 650px); gap: 12px; }
+  .supportmessageavatar { width: 42px; height: 42px; flex-basis: 42px; font-size: 16px; }
+  .supportmessage > div { gap: 7px; }
+  .supportmessage header { gap: 11px; font-size: 12px; }
+  .supportmessage header strong { font-size: 14px; }
+  .supportmessage p { padding: 14px 17px; font-size: 15px; }
+  .supportloadmessages { min-height: 32px; padding-inline: 16px; font-size: 12px; }
+
+  .supportcomposermodes { gap: 10px; padding: 10px 15px 0; }
+  .supportcomposermodes button { min-height: 40px; padding-inline: 21px; font-size: 14px; }
+  .supportcomposerbox { min-height: 136px; grid-template-rows: minmax(0, 1fr) 46px; margin: 0 13px 13px; }
+  .supportcomposer textarea { min-height: 78px; padding: 14px 16px 6px; font-size: 15px; }
+  .supportcomposeractions { gap: 10px; padding-inline: 12px; }
+  .supportcomposerattachments button { width: 34px; height: 34px; font-size: 19px; }
+  .supportcomposeractions > span { font-size: 12px; }
+  .supportcomposeractions > button { min-width: 136px; min-height: 42px; font-size: 15px; }
+
+  .supportcontextsection { padding: 20px 24px; }
+  .supportcontextsection h3,
+  .supportcontextactions > strong { margin-bottom: 17px; font-size: 18px; }
+  .supportcontextsection dl { gap: 13px; }
+  .supportcontextsection dl > div { grid-template-columns: 106px minmax(0, 1fr); gap: 10px; }
+  .supportcontextsection dt,
+  .supportcontextsection dd { font-size: 14px; }
+  .supportcontextidentity { padding: 6px 11px; font-size: 13px; }
+  .supportcontextactions { padding: 20px 24px 22px; }
+  .supportcontextactions > div { gap: 10px; }
+  .supportcontextactions button { min-height: 48px; font-size: 13px; }
+  .supportcontextactions p { margin-top: 11px; font-size: 12px; }
+
+  .supportconversationwelcome { padding-top: clamp(130px, 18vh, 210px); }
+  .supportwelcomeicon { width: 56px; height: 56px; border-radius: 16px; }
+  .supportwelcomeicon svg { width: 30px; height: 30px; }
+  .supportconversationwelcome p { margin-top: 17px; font-size: 12px; }
+  .supportconversationwelcome h2 { font-size: 21px; }
+  .supportconversationwelcome > span:last-child { max-width: 430px; font-size: 14px; }
+
+  .supportnewcase { grid-template-rows: 74px minmax(0, 1fr); }
+  .supportnewcaseform { width: min(100%, 820px); gap: 21px; padding: clamp(48px, 8vh, 92px) 46px 46px; }
+  .supportnewcaseintro strong { font-size: 24px; }
+  .supportnewcaseintro p,
+  .supportnewcaseform > label { font-size: 14px; }
+  .supportnewcaseform input,
+  .supportnewcaseform textarea { font-size: 15px; }
+  .supportnewcaseform input { height: 48px; }
+  .supportnewcaseform textarea { min-height: 172px; }
+  .supportnewcaseactions > button { min-height: 42px; padding-inline: 17px; font-size: 14px; }
+}
+
 @media (max-width: 760px) {
   .supportpage { height: auto; min-height: 100dvh; grid-template-rows: auto auto auto; overflow: visible; }
   .supportworkspaceheader { min-height: 112px; align-items: flex-start; flex-direction: column; gap: 12px; padding: 18px 16px; }

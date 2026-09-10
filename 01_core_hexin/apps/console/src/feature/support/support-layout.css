@@ -35,7 +35,7 @@
   gap: 20px;
   border-bottom: 1px solid var(--support-border);
   background: #fff;
-  padding: 0 max(24px, calc((100% - 1820px) / 2 + 12px));
+  padding: 0 max(24px, calc((100% - 2300px) / 2 + 12px));
 }
 
 .supportworkspaceheader h1 { margin: 0; color: #111d34; font-size: 27px; line-height: 1.15; letter-spacing: -.035em; }
@@ -59,7 +59,7 @@
   gap: 10px;
   border-bottom: 1px solid var(--support-border);
   background: #fff;
-  padding: 0 max(20px, calc((100% - 1820px) / 2 + 8px));
+  padding: 0 max(20px, calc((100% - 2300px) / 2 + 8px));
 }
 .supporttasktabs button { position: relative; min-width: 132px; border: 0; background: transparent; color: #344055; padding: 0 10px; font: inherit; font-size: 14px; font-weight: 700; }
 .supporttasktabs button strong { display: inline-grid; min-width: 24px; height: 24px; margin-left: 6px; place-items: center; border-radius: 999px; background: #f0f2f5; color: #718097; font-size: 12px; }
@@ -70,7 +70,7 @@
 
 .supportworkspace {
   display: grid;
-  width: min(100%, 1820px);
+  width: min(100%, 2300px);
   min-width: 0;
   min-height: 0;
   justify-self: center;
