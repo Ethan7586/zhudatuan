@@ -6087,7 +6087,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -6102,12 +6102,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "policy",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "console",
@@ -6130,7 +6130,7 @@
         "client": "console",
         "route": "/platform",
         "feature": "platform/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/console/src/route/routes.tsx",
@@ -6142,8 +6142,8 @@
           "platform/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -6182,7 +6182,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -6197,12 +6197,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "required",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "console",
@@ -6225,7 +6225,7 @@
         "client": "console",
         "route": "/platform",
         "feature": "platform/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/console/src/route/routes.tsx",
@@ -6237,8 +6237,8 @@
           "platform/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -6277,7 +6277,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -6292,12 +6292,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "policy",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "console",
@@ -6320,7 +6320,7 @@
         "client": "console",
         "route": "/platform",
         "feature": "platform/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/console/src/route/routes.tsx",
@@ -6332,8 +6332,8 @@
           "platform/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -6372,7 +6372,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -6387,12 +6387,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "policy",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "console",
@@ -6415,7 +6415,7 @@
         "client": "console",
         "route": "/platform",
         "feature": "platform/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/console/src/route/routes.tsx",
@@ -6427,8 +6427,8 @@
           "platform/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -9962,7 +9962,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -9977,12 +9977,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "policy",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "console",
@@ -10005,7 +10005,7 @@
         "client": "console",
         "route": "/distributors",
         "feature": "distribution/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/console/src/route/routes.tsx",
@@ -10017,8 +10017,8 @@
           "distribution/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -10057,7 +10057,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -10072,12 +10072,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "required",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "console",
@@ -10100,7 +10100,7 @@
         "client": "console",
         "route": "/distributors",
         "feature": "distribution/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/console/src/route/routes.tsx",
@@ -10112,8 +10112,8 @@
           "distribution/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -10152,7 +10152,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -10167,12 +10167,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "policy",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "console",
@@ -10195,7 +10195,7 @@
         "client": "console",
         "route": "/distributors",
         "feature": "distribution/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/console/src/route/routes.tsx",
@@ -10207,8 +10207,8 @@
           "distribution/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -10247,7 +10247,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -10262,12 +10262,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "policy",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "console",
@@ -10290,7 +10290,7 @@
         "client": "console",
         "route": "/distributors",
         "feature": "distribution/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/console/src/route/routes.tsx",
@@ -10302,8 +10302,8 @@
           "distribution/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -18731,7 +18731,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -18746,12 +18746,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "policy",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "console",
@@ -18774,7 +18774,7 @@
         "client": "console",
         "route": "/malls/current/settings",
         "feature": "mall/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp22_mallsetting.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/console/src/route/routes.tsx",
@@ -18786,8 +18786,8 @@
           "mall/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -18826,7 +18826,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -18841,12 +18841,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "policy",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "console",
@@ -18869,7 +18869,7 @@
         "client": "console",
         "route": "/malls/current/settings",
         "feature": "mall/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp22_mallsetting.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/console/src/route/routes.tsx",
@@ -18881,8 +18881,8 @@
           "mall/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -22697,7 +22697,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -22712,12 +22712,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "required",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "store",
@@ -22740,7 +22740,7 @@
         "client": "store",
         "route": "/stores/current/member",
         "feature": "store/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/store/src/route/routes.tsx",
@@ -22752,8 +22752,8 @@
           "store/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -24308,7 +24308,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -24323,12 +24323,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "required",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "supplier",
@@ -24351,7 +24351,7 @@
         "client": "supplier",
         "route": "/suppliers/current/member",
         "feature": "supplier/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp23_providers.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/supplier/src/route/routes.tsx",
@@ -24363,8 +24363,8 @@
           "supplier/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"
@@ -24403,7 +24403,7 @@
       ],
       "mainFlow": [
         "client route",
-        "member.addresses.manage",
+        "member.storefront.config.manage",
         "member application",
         "member.membership"
       ],
@@ -24418,12 +24418,12 @@
         "conflict or retry",
         "dependency failure surfaced"
       ],
-      "permission": "member.address.manage",
+      "permission": "member.read",
       "stepup": "policy",
       "audit": "before and after state with actor and scope",
       "module": "member",
-      "capability": "member.addresses.manage",
-      "api": "PUT /api/v1/members/me/addresses/{addressid}",
+      "capability": "member.storefront.config.manage",
+      "api": "PUT /api/v1/member/storefront-profile-config",
       "commandOrQuery": "command",
       "tableOrProjection": "member.membership",
       "client": "supplier",
@@ -24446,7 +24446,7 @@
         "client": "supplier",
         "route": "/suppliers/current/member",
         "feature": "supplier/member",
-        "operation": "member.addresses.manage",
+        "operation": "member.storefront.config.manage",
         "test": "03_quality_ceshi/tests/journeys/mvp23_providers.spec.ts",
         "files": {
           "route": "01_core_hexin/apps/supplier/src/route/routes.tsx",
@@ -24458,8 +24458,8 @@
           "supplier/member"
         ],
         "callees": [
-          "sdk:member.addresses.manage",
-          "operation:member.addresses.manage"
+          "sdk:member.storefront.config.manage",
+          "operation:member.storefront.config.manage"
         ],
         "evidence": [],
         "status": "Missing"

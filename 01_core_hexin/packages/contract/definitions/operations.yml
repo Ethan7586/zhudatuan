@@ -563,6 +563,54 @@ operations:
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
     sdk: 01_core_hexin/packages/sdk/src/operations/member.ts
+  - id: member.storefront.config.read
+    owner: member
+    method: GET
+    path: /api/v1/member/storefront-profile-config
+    audience: operator
+    permission: member.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP13, MVP22]
+    controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
+    handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: 01_core_hexin/packages/sdk/src/operations/member.ts
+  - id: member.storefront.config.manage
+    owner: member
+    method: PUT
+    path: /api/v1/member/storefront-profile-config
+    audience: operator
+    permission: member.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP13, MVP22]
+    controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
+    handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: 01_core_hexin/packages/sdk/src/operations/member.ts
+  - id: member.storefront.custom.read
+    owner: member
+    method: GET
+    path: /api/v1/member/storefront-members/{membershipid}/custom-profile
+    audience: operator
+    permission: member.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP13, MVP22]
+    controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
+    handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: 01_core_hexin/packages/sdk/src/operations/member.ts
+  - id: member.storefront.custom.manage
+    owner: member
+    method: PUT
+    path: /api/v1/member/storefront-members/{membershipid}/custom-profile
+    audience: operator
+    permission: member.read
+    idempotent: true
+    schema: structural
+    requirements: [MVP13, MVP22]
+    controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
+    handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
+    sdk: 01_core_hexin/packages/sdk/src/operations/member.ts
   - id: member.invitations.read
     owner: member
     method: GET

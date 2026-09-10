@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { OperationCatalog } from './OperationCatalog';
 import {
+  StorefrontMemberCustomProfileSchema,
   StorefrontMemberDetailSchema,
   StorefrontMemberInviteePageSchema,
   StorefrontMemberOrderPageSchema,
   StorefrontMemberPageSchema,
+  StorefrontMemberProfileConfigSchema,
 } from './StorefrontMemberContract';
 
 const page = {
@@ -35,6 +37,18 @@ describe('storefront member read contract', () => {
     });
     expect(OperationCatalog.get('member.storefront.orders.read')).toMatchObject({
       method: 'GET', path: '/api/v1/member/storefront-members/{membershipid}/orders', permission: 'member.read',
+    });
+    expect(OperationCatalog.get('member.storefront.config.read')).toMatchObject({
+      method: 'GET', path: '/api/v1/member/storefront-profile-config', permission: 'member.read',
+    });
+    expect(OperationCatalog.get('member.storefront.config.manage')).toMatchObject({
+      method: 'PUT', path: '/api/v1/member/storefront-profile-config', permission: 'member.read',
+    });
+    expect(OperationCatalog.get('member.storefront.custom.read')).toMatchObject({
+      method: 'GET', path: '/api/v1/member/storefront-members/{membershipid}/custom-profile', permission: 'member.read',
+    });
+    expect(OperationCatalog.get('member.storefront.custom.manage')).toMatchObject({
+      method: 'PUT', path: '/api/v1/member/storefront-members/{membershipid}/custom-profile', permission: 'member.read',
     });
   });
 
@@ -79,5 +93,22 @@ describe('storefront member read contract', () => {
       count: 1,
     })).toBeTruthy();
     expect(() => StorefrontMemberDetailSchema.parse({ ...detail, member_id: 'member:internal' })).toThrow();
+  });
+
+  it('accepts mall-defined tags, seven field types and persisted custom values', () => {
+    const config = {
+      tags: [{ id: 'tag:vip', name: '重点会员', color: 'purple', sort_order: 0, enabled: true }],
+      fields: ['text', 'number', 'date', 'select', 'multiselect', 'switch', 'remark'].map((type, index) => ({
+        id: `field:${type}`, name: `字段 ${index + 1}`, type,
+        options: type === 'select' || type === 'multiselect' ? ['选项一'] : [],
+        sort_order: index, enabled: true,
+      })),
+    };
+    expect(StorefrontMemberProfileConfigSchema.parse(config)).toEqual(config);
+    expect(StorefrontMemberCustomProfileSchema.parse({
+      system_tags: [{ code: 'active_member', name: '有效会员' }],
+      custom_tag_ids: ['tag:vip'],
+      custom_field_values: [{ field_id: 'field:text', value: '华东' }],
+    })).toBeTruthy();
   });
 });

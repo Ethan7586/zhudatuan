@@ -72,6 +72,51 @@ export const StorefrontMemberOrderPageSchema = z.strictObject({
   nextCursor: z.optional(z.string().check(z.minLength(1))),
 });
 
+export const StorefrontMemberTagColorSchema = z.enum(['blue', 'purple', 'green', 'orange', 'pink', 'gray']);
+export const StorefrontMemberFieldTypeSchema = z.enum(['text', 'number', 'date', 'select', 'multiselect', 'switch', 'remark']);
+
+export const StorefrontMemberCustomTagSchema = z.strictObject({
+  id: z.string().check(z.minLength(1)),
+  name: z.string().check(z.minLength(1)),
+  color: StorefrontMemberTagColorSchema,
+  sort_order: z.int().check(z.nonnegative()),
+  enabled: z.boolean(),
+});
+
+export const StorefrontMemberCustomFieldSchema = z.strictObject({
+  id: z.string().check(z.minLength(1)),
+  name: z.string().check(z.minLength(1)),
+  type: StorefrontMemberFieldTypeSchema,
+  options: z.array(z.string().check(z.minLength(1))),
+  sort_order: z.int().check(z.nonnegative()),
+  enabled: z.boolean(),
+});
+
+export const StorefrontMemberProfileConfigSchema = z.strictObject({
+  tags: z.array(StorefrontMemberCustomTagSchema),
+  fields: z.array(StorefrontMemberCustomFieldSchema),
+});
+
+export const StorefrontMemberSystemTagSchema = z.strictObject({
+  code: z.string().check(z.minLength(1)),
+  name: z.string().check(z.minLength(1)),
+});
+
+export const StorefrontMemberCustomFieldValueSchema = z.strictObject({
+  field_id: z.string().check(z.minLength(1)),
+  value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string()), z.null()]),
+});
+
+export const StorefrontMemberCustomProfileUpdateSchema = z.strictObject({
+  custom_tag_ids: z.array(z.string().check(z.minLength(1))),
+  custom_field_values: z.array(StorefrontMemberCustomFieldValueSchema),
+});
+
+export const StorefrontMemberCustomProfileSchema = z.strictObject({
+  system_tags: z.array(StorefrontMemberSystemTagSchema),
+  ...StorefrontMemberCustomProfileUpdateSchema.shape,
+});
+
 export type StorefrontMember = z.infer<typeof StorefrontMemberSchema>;
 export type StorefrontMemberPage = z.infer<typeof StorefrontMemberPageSchema>;
 export type StorefrontMemberDetail = z.infer<typeof StorefrontMemberDetailSchema>;
@@ -79,3 +124,12 @@ export type StorefrontMemberInvitee = z.infer<typeof StorefrontMemberInviteeSche
 export type StorefrontMemberInviteePage = z.infer<typeof StorefrontMemberInviteePageSchema>;
 export type StorefrontMemberOrder = z.infer<typeof StorefrontMemberOrderSchema>;
 export type StorefrontMemberOrderPage = z.infer<typeof StorefrontMemberOrderPageSchema>;
+export type StorefrontMemberTagColor = z.infer<typeof StorefrontMemberTagColorSchema>;
+export type StorefrontMemberFieldType = z.infer<typeof StorefrontMemberFieldTypeSchema>;
+export type StorefrontMemberCustomTag = z.infer<typeof StorefrontMemberCustomTagSchema>;
+export type StorefrontMemberCustomField = z.infer<typeof StorefrontMemberCustomFieldSchema>;
+export type StorefrontMemberProfileConfig = z.infer<typeof StorefrontMemberProfileConfigSchema>;
+export type StorefrontMemberSystemTag = z.infer<typeof StorefrontMemberSystemTagSchema>;
+export type StorefrontMemberCustomFieldValue = z.infer<typeof StorefrontMemberCustomFieldValueSchema>;
+export type StorefrontMemberCustomProfileUpdate = z.infer<typeof StorefrontMemberCustomProfileUpdateSchema>;
+export type StorefrontMemberCustomProfile = z.infer<typeof StorefrontMemberCustomProfileSchema>;

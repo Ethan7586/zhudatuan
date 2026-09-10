@@ -45,6 +45,10 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('member.storefront.detail.read','member','GET','/api/v1/member/storefront-members/{membershipid}','1.0.0'),
   ('member.storefront.invitees.read','member','GET','/api/v1/member/storefront-members/{membershipid}/invitees','1.0.0'),
   ('member.storefront.orders.read','member','GET','/api/v1/member/storefront-members/{membershipid}/orders','1.0.0'),
+  ('member.storefront.config.read','member','GET','/api/v1/member/storefront-profile-config','1.0.0'),
+  ('member.storefront.config.manage','member','PUT','/api/v1/member/storefront-profile-config','1.0.0'),
+  ('member.storefront.custom.read','member','GET','/api/v1/member/storefront-members/{membershipid}/custom-profile','1.0.0'),
+  ('member.storefront.custom.manage','member','PUT','/api/v1/member/storefront-members/{membershipid}/custom-profile','1.0.0'),
   ('member.invitations.read','member','GET','/api/v1/member/invitations','1.0.0'),
   ('member.profile.read','member','GET','/api/v1/members/me','1.0.0'),
   ('member.addresses.read','member','GET','/api/v1/members/me/addresses','1.0.0'),
@@ -574,6 +578,10 @@ insert into capability.capability(id,kind,name,version,status) values
   ('member.storefront.detail.read','operation','member.storefront.detail.read',1,'active'),
   ('member.storefront.invitees.read','operation','member.storefront.invitees.read',1,'active'),
   ('member.storefront.orders.read','operation','member.storefront.orders.read',1,'active'),
+  ('member.storefront.config.read','operation','member.storefront.config.read',1,'active'),
+  ('member.storefront.config.manage','operation','member.storefront.config.manage',1,'active'),
+  ('member.storefront.custom.read','operation','member.storefront.custom.read',1,'active'),
+  ('member.storefront.custom.manage','operation','member.storefront.custom.manage',1,'active'),
   ('member.invitations.read','operation','member.invitations.read',1,'active'),
   ('member.profile.read','operation','member.profile.read',1,'active'),
   ('member.addresses.read','operation','member.addresses.read',1,'active'),
@@ -837,6 +845,10 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('member.storefront.detail.read','member.storefront.detail.read','member.read','operator'),
   ('member.storefront.invitees.read','member.storefront.invitees.read','member.read','operator'),
   ('member.storefront.orders.read','member.storefront.orders.read','member.read','operator'),
+  ('member.storefront.config.read','member.storefront.config.read','member.read','operator'),
+  ('member.storefront.config.manage','member.storefront.config.manage','member.read','operator'),
+  ('member.storefront.custom.read','member.storefront.custom.read','member.read','operator'),
+  ('member.storefront.custom.manage','member.storefront.custom.manage','member.read','operator'),
   ('member.invitations.read','member.invitations.read','identity.invitation.manage','operator'),
   ('member.profile.read','member.profile.read','member.profile.read','member'),
   ('member.addresses.read','member.addresses.read','member.address.read','member'),
@@ -1371,6 +1383,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','bd0c612271ce7ade10ee954422995ba2ba9e2e9ad6e72bdbcf36e4b5f2ac7b00');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','79f4c02fe449142920f100af8deeeaf6f79f5eff8ddb00aa96963d75e318e57d');
 
 commit;

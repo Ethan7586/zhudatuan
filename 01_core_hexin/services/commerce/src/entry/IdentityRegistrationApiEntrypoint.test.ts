@@ -24,7 +24,7 @@ import { IdentityRegistrationModule } from '../modules/identity';
 import { FINANCE_OPERATOR_READ_OPERATION_IDS } from '../modules/finance/FinanceReadOperations';
 import { IdentityOperatorFinanceModule } from '../modules/finance/IdentityOperatorFinanceModule';
 import { MEMBER_OPERATOR_READ_OPERATION_IDS } from '../modules/member/03_application_yingyong/MemberReadOperations';
-import { IdentityOperatorMemberModule } from '../modules/member/05_interface_jieru/IdentityOperatorMemberModule';
+import { IdentityOperatorMemberModule, MEMBER_IDENTITY_OPERATOR_OPERATION_IDS } from '../modules/member/05_interface_jieru/IdentityOperatorMemberModule';
 import { IdentityOperatorNotificationModule } from '../modules/notification/IdentityOperatorNotificationModule';
 import { NOTIFICATION_OPERATOR_READ_OPERATION_IDS } from '../modules/notification/NotificationReadOperations';
 import {
@@ -46,7 +46,7 @@ describe('identity registration API entrypoint', () => {
     expect([
       ...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS,
       ...IDENTITY_REGISTRATION_OPERATION_IDS,
-      ...MEMBER_OPERATOR_READ_OPERATION_IDS,
+      ...MEMBER_IDENTITY_OPERATOR_OPERATION_IDS,
       ...ACCESS_OPERATOR_READ_OPERATION_IDS,
       ...FINANCE_OPERATOR_READ_OPERATION_IDS,
       ...REFERRAL_OPERATOR_READ_OPERATION_IDS,
@@ -86,6 +86,10 @@ describe('identity registration API entrypoint', () => {
       'member.storefront.orders.read',
       'member.invitations.read',
       'member.imports.read',
+      'member.storefront.config.read',
+      'member.storefront.config.manage',
+      'member.storefront.custom.read',
+      'member.storefront.custom.manage',
       'access.center.read',
       'finance.entries.read',
       'finance.statements.read',

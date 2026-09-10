@@ -1,10 +1,14 @@
 import {
+  StorefrontMemberCustomProfileSchema,
   StorefrontMemberDetailSchema,
   StorefrontMemberInviteePageSchema,
   StorefrontMemberOrderPageSchema,
   StorefrontMemberPageSchema,
+  StorefrontMemberProfileConfigSchema,
 } from '@shop/contract';
 import {
+  createFetchMemberStorefrontConfigRead,
+  createFetchMemberStorefrontCustomRead,
   createFetchMemberStorefrontDetailRead,
   createFetchMemberStorefrontInviteesRead,
   createFetchMemberStorefrontMembersRead,
@@ -18,6 +22,8 @@ const storefrontMembersRead = createFetchMemberStorefrontMembersRead(appConfig.a
 const storefrontDetailRead = createFetchMemberStorefrontDetailRead(appConfig.apiBaseUrl);
 const storefrontInviteesRead = createFetchMemberStorefrontInviteesRead(appConfig.apiBaseUrl);
 const storefrontOrdersRead = createFetchMemberStorefrontOrdersRead(appConfig.apiBaseUrl);
+const storefrontConfigRead = createFetchMemberStorefrontConfigRead(appConfig.apiBaseUrl);
+const storefrontCustomRead = createFetchMemberStorefrontCustomRead(appConfig.apiBaseUrl);
 
 export interface StorefrontMemberQuery {
   readonly cursor?: string;
@@ -89,5 +95,31 @@ export async function readStorefrontMemberOrders(
   return StorefrontMemberOrderPageSchema.parse(await storefrontOrdersRead({
     path: { membershipid: membershipId },
     query: { limit: 10, ...(cursor === undefined ? {} : { cursor }) },
+  }, consoleRequest(context.scope, signal, context.session.accessVersion)));
+}
+
+export const storefrontMemberConfigKey = (context: ConsoleContext) => Object.freeze([
+  'console', context.scope.kind, context.scope.id, context.session.accessVersion,
+  'member.storefront.config.read',
+] as const);
+
+export async function readStorefrontMemberConfig(context: ConsoleContext, signal: AbortSignal) {
+  return StorefrontMemberProfileConfigSchema.parse(await storefrontConfigRead(
+    {}, consoleRequest(context.scope, signal, context.session.accessVersion),
+  ));
+}
+
+export const storefrontMemberCustomKey = (context: ConsoleContext, membershipId: string) => Object.freeze([
+  'console', context.scope.kind, context.scope.id, context.session.accessVersion,
+  'member.storefront.custom.read', membershipId,
+] as const);
+
+export async function readStorefrontMemberCustomProfile(
+  context: ConsoleContext,
+  membershipId: string,
+  signal: AbortSignal,
+) {
+  return StorefrontMemberCustomProfileSchema.parse(await storefrontCustomRead({
+    path: { membershipid: membershipId },
   }, consoleRequest(context.scope, signal, context.session.accessVersion)));
 }

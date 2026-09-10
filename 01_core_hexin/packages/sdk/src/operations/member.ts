@@ -10,6 +10,10 @@ export const MEMBER_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "member.storefront.detail.read",
   "member.storefront.invitees.read",
   "member.storefront.orders.read",
+  "member.storefront.config.read",
+  "member.storefront.config.manage",
+  "member.storefront.custom.read",
+  "member.storefront.custom.manage",
   "member.invitations.read",
   "member.profile.read",
   "member.addresses.read",
@@ -24,6 +28,10 @@ export interface MemberOperations {
   readonly storefrontDetailRead: OperationMethod<"member.storefront.detail.read">;
   readonly storefrontInviteesRead: OperationMethod<"member.storefront.invitees.read">;
   readonly storefrontOrdersRead: OperationMethod<"member.storefront.orders.read">;
+  readonly storefrontConfigRead: OperationMethod<"member.storefront.config.read">;
+  readonly storefrontConfigManage: OperationMethod<"member.storefront.config.manage">;
+  readonly storefrontCustomRead: OperationMethod<"member.storefront.custom.read">;
+  readonly storefrontCustomManage: OperationMethod<"member.storefront.custom.manage">;
   readonly invitationsRead: OperationMethod<"member.invitations.read">;
   readonly profileRead: OperationMethod<"member.profile.read">;
   readonly addressesRead: OperationMethod<"member.addresses.read">;
@@ -43,6 +51,10 @@ export function createMemberOperations(client: OperationExecutor): MemberOperati
     storefrontDetailRead: bindStorefrontDetailRead(client),
     storefrontInviteesRead: bindStorefrontInviteesRead(client),
     storefrontOrdersRead: bindStorefrontOrdersRead(client),
+    storefrontConfigRead: bindStorefrontConfigRead(client),
+    storefrontConfigManage: bindStorefrontConfigManage(client),
+    storefrontCustomRead: bindStorefrontCustomRead(client),
+    storefrontCustomManage: bindStorefrontCustomManage(client),
     invitationsRead: bindInvitationsRead(client),
     profileRead: bindProfileRead(client),
     addressesRead: bindAddressesRead(client),
@@ -90,6 +102,38 @@ export function createFetchMemberStorefrontOrdersRead(baseUrl: string): Operatio
 
 function bindStorefrontOrdersRead(client: OperationExecutor): OperationMethod<"member.storefront.orders.read"> {
   return bindOperation(client, defineStructuralOperation({"id":"member.storefront.orders.read","method":"GET","path":"/api/v1/member/storefront-members/{membershipid}/orders","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["membershipid"]}));
+}
+
+export function createFetchMemberStorefrontConfigRead(baseUrl: string): OperationMethod<"member.storefront.config.read"> {
+  return bindStorefrontConfigRead(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindStorefrontConfigRead(client: OperationExecutor): OperationMethod<"member.storefront.config.read"> {
+  return bindOperation(client, defineStructuralOperation({"id":"member.storefront.config.read","method":"GET","path":"/api/v1/member/storefront-profile-config","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+}
+
+export function createFetchMemberStorefrontConfigManage(baseUrl: string): OperationMethod<"member.storefront.config.manage"> {
+  return bindStorefrontConfigManage(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindStorefrontConfigManage(client: OperationExecutor): OperationMethod<"member.storefront.config.manage"> {
+  return bindOperation(client, defineStructuralOperation({"id":"member.storefront.config.manage","method":"PUT","path":"/api/v1/member/storefront-profile-config","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+}
+
+export function createFetchMemberStorefrontCustomRead(baseUrl: string): OperationMethod<"member.storefront.custom.read"> {
+  return bindStorefrontCustomRead(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindStorefrontCustomRead(client: OperationExecutor): OperationMethod<"member.storefront.custom.read"> {
+  return bindOperation(client, defineStructuralOperation({"id":"member.storefront.custom.read","method":"GET","path":"/api/v1/member/storefront-members/{membershipid}/custom-profile","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["membershipid"]}));
+}
+
+export function createFetchMemberStorefrontCustomManage(baseUrl: string): OperationMethod<"member.storefront.custom.manage"> {
+  return bindStorefrontCustomManage(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindStorefrontCustomManage(client: OperationExecutor): OperationMethod<"member.storefront.custom.manage"> {
+  return bindOperation(client, defineStructuralOperation({"id":"member.storefront.custom.manage","method":"PUT","path":"/api/v1/member/storefront-members/{membershipid}/custom-profile","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["membershipid"]}));
 }
 
 export function createFetchMemberInvitationsRead(baseUrl: string): OperationMethod<"member.invitations.read"> {

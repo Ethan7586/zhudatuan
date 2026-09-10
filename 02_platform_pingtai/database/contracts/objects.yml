@@ -5449,6 +5449,134 @@ objects:
     objectType: table
     target: member.profile
     privilege: update
+  - id: shopapp:table:member.storefrontcustomfield:delete
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontcustomfield
+    privilege: delete
+  - id: shopapp:table:member.storefrontcustomfield:insert
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontcustomfield
+    privilege: insert
+  - id: shopapp:table:member.storefrontcustomfield:select
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontcustomfield
+    privilege: select
+  - id: shopapp:table:member.storefrontcustomfield:update
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontcustomfield
+    privilege: update
+  - id: shopapp:table:member.storefrontcustomtag:delete
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontcustomtag
+    privilege: delete
+  - id: shopapp:table:member.storefrontcustomtag:insert
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontcustomtag
+    privilege: insert
+  - id: shopapp:table:member.storefrontcustomtag:select
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontcustomtag
+    privilege: select
+  - id: shopapp:table:member.storefrontcustomtag:update
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontcustomtag
+    privilege: update
+  - id: shopapp:table:member.storefrontmemberfieldvalue:delete
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontmemberfieldvalue
+    privilege: delete
+  - id: shopapp:table:member.storefrontmemberfieldvalue:insert
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontmemberfieldvalue
+    privilege: insert
+  - id: shopapp:table:member.storefrontmemberfieldvalue:select
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontmemberfieldvalue
+    privilege: select
+  - id: shopapp:table:member.storefrontmemberfieldvalue:update
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontmemberfieldvalue
+    privilege: update
+  - id: shopapp:table:member.storefrontmembertag:delete
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontmembertag
+    privilege: delete
+  - id: shopapp:table:member.storefrontmembertag:insert
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontmembertag
+    privilege: insert
+  - id: shopapp:table:member.storefrontmembertag:select
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontmembertag
+    privilege: select
+  - id: shopapp:table:member.storefrontmembertag:update
+    kind: grant
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    role: shopapp
+    objectType: table
+    target: member.storefrontmembertag
+    privilege: update
   - id: shopapp:table:notification.announcement:delete
     kind: grant
     owner: notification
@@ -23857,6 +23985,22 @@ objects:
     kind: policy
     owner: member
     source: 02_platform_pingtai/database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql
+  - id: member.storefrontcustomfield.appscope
+    kind: policy
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+  - id: member.storefrontcustomtag.appscope
+    kind: policy
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+  - id: member.storefrontmemberfieldvalue.appscope
+    kind: policy
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+  - id: member.storefrontmembertag.appscope
+    kind: policy
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
   - id: notification.announcement.appscope
     kind: policy
     owner: notification
@@ -26441,6 +26585,26 @@ objects:
     kind: table
     owner: member
     source: 02_platform_pingtai/database/supabase/migrations/20260821015000_create_capability_member.sql
+    rls: true
+  - id: member.storefrontcustomfield
+    kind: table
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    rls: true
+  - id: member.storefrontcustomtag
+    kind: table
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    rls: true
+  - id: member.storefrontmemberfieldvalue
+    kind: table
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
+    rls: true
+  - id: member.storefrontmembertag
+    kind: table
+    owner: member
+    source: 02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql
     rls: true
   - id: notification.announcement
     kind: table

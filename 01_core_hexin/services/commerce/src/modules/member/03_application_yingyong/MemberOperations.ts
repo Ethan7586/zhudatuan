@@ -7,6 +7,7 @@ import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
 import { accessPort } from '../../access';
 import { addressPort } from '../../checkout_jiesuan';
 import { memberImportOperations } from './MemberImportOperations';
+import { memberCustomProfileActions } from './MemberCustomProfileOperations';
 import { memberOperatorReadActions } from './MemberReadOperations';
 
 export function memberOperations(context: ModuleContext): ModuleOperations {
@@ -14,6 +15,7 @@ export function memberOperations(context: ModuleContext): ModuleOperations {
   const kms = context.container.get(KMS_CLIENT);
   return new ModuleOperations('member', pool, context.container.get(AUDIT_SINK), {
     ...memberImportOperations(context),
+    ...memberCustomProfileActions(),
     ...memberOperatorReadActions(),
     'member.profile.read': async (request, database) => {
       const access = requireAccess(request);

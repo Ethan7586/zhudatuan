@@ -15,6 +15,7 @@ import { formatDate } from '../../shared/ui/Format';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';
 import { aftersaleLabel, fulfillmentLabel, paymentLabel } from '../order/OrderPresentation';
+import { StorefrontMemberCustomProfile } from './StorefrontMemberCustomProfile';
 import {
   readStorefrontMemberDetail,
   readStorefrontMemberInvitees,
@@ -95,7 +96,7 @@ export function Component() {
         </div>
         <div className="storefrontmemberherometa">
           <span>当前商城 <strong>{mallName}</strong></span>
-          <em>只读名单</em>
+          <em>完整档案</em>
         </div>
       </header>
 
@@ -349,7 +350,7 @@ function MemberDetail({ member, mallName, open, onClose }: Readonly<{
           ) : null}
         </div>}
 
-        <p className="storefrontmembernotice">会员档案来自当前商城真实业务数据，本页面仅供查看</p>
+        <p className="storefrontmembernotice">系统资料来自真实业务数据；自定义标签与资料由当前商城维护</p>
       </div>}
     </aside>
   );
@@ -377,14 +378,7 @@ function ProfileTab({ detail, mallName }: Readonly<{ detail: StorefrontMemberDet
         <Fact label="入会时间" value={formatDate(detail.joined_at)} />
       </dl>
     </section>
-    <section className="storefrontmemberplaceholder">
-      <div><h3>自定义资料</h3><span>第二批接入</span></div>
-      <p>当前没有可读取的商城自定义字段。</p>
-    </section>
-    <section className="storefrontmemberplaceholder">
-      <div><h3>自定义标签</h3><span>第二批接入</span></div>
-      <p>系统标签已显示在会员姓名下方，自定义标签将在下一批接入。</p>
-    </section>
+    <StorefrontMemberCustomProfile membershipId={detail.membership_id} />
   </>;
 }
 

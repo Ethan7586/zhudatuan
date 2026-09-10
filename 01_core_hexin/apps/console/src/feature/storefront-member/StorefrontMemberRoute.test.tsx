@@ -28,6 +28,23 @@ const server = setupServer(
     requests.push(request.clone());
     return HttpResponse.json(orderPage);
   }),
+  http.get('*/api/v1/member/storefront-profile-config', ({ request }) => {
+    requests.push(request.clone());
+    return HttpResponse.json(profileConfig);
+  }),
+  http.put('*/api/v1/member/storefront-profile-config', async ({ request }) => {
+    requests.push(request.clone());
+    return HttpResponse.json(await request.json());
+  }),
+  http.get('*/api/v1/member/storefront-members/:membershipid/custom-profile', ({ request }) => {
+    requests.push(request.clone());
+    return HttpResponse.json(customProfile);
+  }),
+  http.put('*/api/v1/member/storefront-members/:membershipid/custom-profile', async ({ request }) => {
+    requests.push(request.clone());
+    const update = await request.json() as { custom_tag_ids: string[]; custom_field_values: unknown[] };
+    return HttpResponse.json({ system_tags: customProfile.system_tags, ...update });
+  }),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -93,7 +110,7 @@ describe('storefront member workspace', () => {
     expect(await within(detail).findByText('测试商城')).toBeTruthy();
     expect(within(detail).getByRole('tab', { name: '个人资料' }).getAttribute('aria-selected')).toBe('true');
     expect(within(detail).getByText('手机已绑定')).toBeTruthy();
-    expect(within(detail).getByText('微信已绑定')).toBeTruthy();
+    expect(within(detail).getAllByText('微信已绑定')).toHaveLength(2);
     expect(screen.queryByText('membership:storefront:test')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: '全屏查看会员目录' }));
@@ -179,6 +196,77 @@ describe('storefront member workspace', () => {
     expect(screen.queryByText('测试消费者')).toBeNull();
   });
 
+  it('shows real system tags and saves edited custom tags and all field controls', async () => {
+    const user = userEvent.setup();
+    renderRoute();
+    await user.click(await screen.findByRole('row', { name: '查看会员 测试消费者' }));
+    const detail = screen.getByRole('complementary', { name: '会员详情' });
+    expect(await within(detail).findByText('有效会员')).toBeTruthy();
+    const region = within(detail).getByRole('textbox', { name: '地区' });
+    await user.clear(region);
+    await user.type(region, '华南');
+    await user.click(within(detail).getByRole('checkbox', { name: '重点会员' }));
+    await user.click(within(detail).getByRole('button', { name: '保存会员资料' }));
+    await within(detail).findByRole('status', { name: '' });
+    const saved = requests.find(({ method, url }) => method === 'PUT' && url.includes('/custom-profile'));
+    expect(await saved?.json()).toMatchObject({ custom_tag_ids: [], custom_field_values: expect.arrayContaining([{ field_id: 'field:region', value: '华南' }]) });
+  });
+
+  it('keeps local custom-profile edits visible when save fails', async () => {
+    server.use(http.put('*/api/v1/member/storefront-members/:membershipid/custom-profile', () => HttpResponse.json({ code: 'SAVE_FAILED', message: '保存失败' }, { status: 503 })));
+    const user = userEvent.setup();
+    renderRoute();
+    await user.click(await screen.findByRole('row', { name: '查看会员 测试消费者' }));
+    const region = await screen.findByRole('textbox', { name: '地区' });
+    await user.clear(region);
+    await user.type(region, '仍然保留');
+    await user.click(screen.getByRole('button', { name: '保存会员资料' }));
+    expect((await screen.findByRole('alert')).textContent).toContain('保存失败，修改内容仍保留');
+    expect((region as HTMLInputElement).value).toBe('仍然保留');
+  });
+
+  it('renders honest custom-profile loading and empty configuration states', async () => {
+    let release: (() => void) | undefined;
+    server.use(http.get('*/api/v1/member/storefront-profile-config', async () => {
+      await new Promise<void>((resolve) => { release = resolve; });
+      return HttpResponse.json({ tags: [], fields: [] });
+    }));
+    const user = userEvent.setup();
+    renderRoute();
+    await user.click(await screen.findByRole('row', { name: '查看会员 测试消费者' }));
+    expect(await screen.findByText('正在读取自定义档案…')).toBeTruthy();
+    release?.();
+    expect(await screen.findByText('当前商城尚未配置自定义标签')).toBeTruthy();
+    expect(screen.getByText('当前商城尚未配置自定义字段')).toBeTruthy();
+  });
+
+  it('shows custom-profile load errors and retries both scoped reads', async () => {
+    server.use(http.get('*/api/v1/member/storefront-profile-config', () => HttpResponse.json({
+      code: 'PROFILE_UNAVAILABLE', message: '自定义档案失败',
+    }, { status: 503 })));
+    const user = userEvent.setup();
+    renderRoute();
+    await user.click(await screen.findByRole('row', { name: '查看会员 测试消费者' }));
+    expect(await screen.findByText(/自定义档案暂不可用|PROFILE_UNAVAILABLE/)).toBeTruthy();
+    server.use(http.get('*/api/v1/member/storefront-profile-config', () => HttpResponse.json(profileConfig)));
+    await user.click(screen.getByRole('button', { name: '重新加载' }));
+    expect(await screen.findByRole('textbox', { name: '地区' })).toBeTruthy();
+  });
+
+  it('adds and removes mall-level tag and field definitions before saving config', async () => {
+    const user = userEvent.setup();
+    renderRoute();
+    await user.click(await screen.findByRole('row', { name: '查看会员 测试消费者' }));
+    await user.click(await screen.findByRole('button', { name: '配置标签与字段' }));
+    await user.click(screen.getByRole('button', { name: '添加标签' }));
+    expect((screen.getByRole('textbox', { name: '标签 2 名称' }) as HTMLInputElement).value).toBe('新标签 2');
+    await user.click(screen.getAllByRole('button', { name: '删除' })[1]!);
+    await user.click(screen.getByRole('button', { name: '添加字段' }));
+    expect(screen.getByRole('textbox', { name: '字段 8 名称' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '保存配置' }));
+    await waitFor(() => expect(requests.some(({ method, url }) => method === 'PUT' && url.endsWith('/storefront-profile-config'))).toBe(true));
+  });
+
   it('defines desktop split motion, narrow-screen slide motion and reduced-motion fallback', () => {
     const css = readFileSync('src/feature/storefront-member/storefront-member.css', 'utf8');
     expect(css).toMatch(/\.storefrontmemberstage\[data-detail-open='true'\][\s\S]*grid-template-columns:/);
@@ -208,11 +296,16 @@ function LocationProbe() {
 const context: ConsoleContext = {
   session: {
     actor: 'principal:operator', membership: 'membership:operator', accessVersion: 9,
+    csrf: 'csrf:test',
     permissions: ['member.read'], capabilities: [
       'member.storefront.members.read',
       'member.storefront.detail.read',
       'member.storefront.invitees.read',
       'member.storefront.orders.read',
+      'member.storefront.config.read',
+      'member.storefront.config.manage',
+      'member.storefront.custom.read',
+      'member.storefront.custom.manage',
     ], target: 'console',
     scope: { kind: 'mall', id: 'mall:test', name: '测试商城' },
     scopes: [{ kind: 'mall', id: 'mall:test', name: '测试商城' }],
@@ -261,4 +354,31 @@ const orderPage = {
     created_at: '2026-09-06T10:00:00.000Z',
   }],
   count: 1,
+} as const;
+
+const profileConfig = {
+  tags: [{ id: 'tag:vip', name: '重点会员', color: 'purple', sort_order: 0, enabled: true }],
+  fields: [
+    { id: 'field:region', name: '地区', type: 'text', options: [], sort_order: 0, enabled: true },
+    { id: 'field:level', name: '会员等级', type: 'select', options: ['金卡', '银卡'], sort_order: 1, enabled: true },
+    { id: 'field:interests', name: '兴趣', type: 'multiselect', options: ['母婴', '食品'], sort_order: 2, enabled: true },
+    { id: 'field:visits', name: '到店次数', type: 'number', options: [], sort_order: 3, enabled: true },
+    { id: 'field:birthday', name: '生日', type: 'date', options: [], sort_order: 4, enabled: true },
+    { id: 'field:consent', name: '允许回访', type: 'switch', options: [], sort_order: 5, enabled: true },
+    { id: 'field:remark', name: '备注', type: 'remark', options: [], sort_order: 6, enabled: true },
+  ],
+} as const;
+
+const customProfile = {
+  system_tags: [{ code: 'active_member', name: '有效会员' }, { code: 'wechat_bound', name: '微信已绑定' }],
+  custom_tag_ids: ['tag:vip'],
+  custom_field_values: [
+    { field_id: 'field:region', value: '华东' },
+    { field_id: 'field:level', value: '金卡' },
+    { field_id: 'field:interests', value: ['母婴'] },
+    { field_id: 'field:visits', value: 3 },
+    { field_id: 'field:birthday', value: '1990-01-02' },
+    { field_id: 'field:consent', value: true },
+    { field_id: 'field:remark', value: '周末联系' },
+  ],
 } as const;

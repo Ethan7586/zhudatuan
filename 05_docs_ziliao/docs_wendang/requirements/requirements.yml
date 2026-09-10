@@ -5194,7 +5194,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -5206,12 +5206,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: policy
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: console
@@ -5233,7 +5233,7 @@ requirements:
       client: console
       route: /platform
       feature: platform/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts
       files:
         route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -5243,8 +5243,8 @@ requirements:
         - console:/platform
         - platform/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: PLAT066
@@ -5275,7 +5275,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -5287,12 +5287,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: required
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: console
@@ -5314,7 +5314,7 @@ requirements:
       client: console
       route: /platform
       feature: platform/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts
       files:
         route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -5324,8 +5324,8 @@ requirements:
         - console:/platform
         - platform/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: PLAT067
@@ -5356,7 +5356,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -5368,12 +5368,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: policy
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: console
@@ -5395,7 +5395,7 @@ requirements:
       client: console
       route: /platform
       feature: platform/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts
       files:
         route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -5405,8 +5405,8 @@ requirements:
         - console:/platform
         - platform/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: PLAT068
@@ -5437,7 +5437,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -5449,12 +5449,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: policy
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: console
@@ -5476,7 +5476,7 @@ requirements:
       client: console
       route: /platform
       feature: platform/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts
       files:
         route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -5486,8 +5486,8 @@ requirements:
         - console:/platform
         - platform/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: DIST001
@@ -8495,7 +8495,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -8507,12 +8507,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: policy
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: console
@@ -8534,7 +8534,7 @@ requirements:
       client: console
       route: /distributors
       feature: distribution/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts
       files:
         route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -8544,8 +8544,8 @@ requirements:
         - console:/distributors
         - distribution/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: DIST039
@@ -8576,7 +8576,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -8588,12 +8588,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: required
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: console
@@ -8615,7 +8615,7 @@ requirements:
       client: console
       route: /distributors
       feature: distribution/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts
       files:
         route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -8625,8 +8625,8 @@ requirements:
         - console:/distributors
         - distribution/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: DIST040
@@ -8657,7 +8657,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -8669,12 +8669,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: policy
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: console
@@ -8696,7 +8696,7 @@ requirements:
       client: console
       route: /distributors
       feature: distribution/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts
       files:
         route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -8706,8 +8706,8 @@ requirements:
         - console:/distributors
         - distribution/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: DIST041
@@ -8738,7 +8738,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -8750,12 +8750,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: policy
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: console
@@ -8777,7 +8777,7 @@ requirements:
       client: console
       route: /distributors
       feature: distribution/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts
       files:
         route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -8787,8 +8787,8 @@ requirements:
         - console:/distributors
         - distribution/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: GROUP001
@@ -15987,7 +15987,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -15999,12 +15999,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: policy
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: console
@@ -16026,7 +16026,7 @@ requirements:
       client: console
       route: /malls/current/settings
       feature: mall/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp22_mallsetting.spec.ts
       files:
         route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -16036,8 +16036,8 @@ requirements:
         - console:/malls/current/settings
         - mall/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: MALL023
@@ -16068,7 +16068,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -16080,12 +16080,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: policy
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: console
@@ -16107,7 +16107,7 @@ requirements:
       client: console
       route: /malls/current/settings
       feature: mall/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp22_mallsetting.spec.ts
       files:
         route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -16117,8 +16117,8 @@ requirements:
         - console:/malls/current/settings
         - mall/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: MALL024
@@ -19381,7 +19381,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -19393,12 +19393,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: required
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: store
@@ -19420,7 +19420,7 @@ requirements:
       client: store
       route: /stores/current/member
       feature: store/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts
       files:
         route: 01_core_hexin/apps/store/src/route/routes.tsx
@@ -19430,8 +19430,8 @@ requirements:
         - store:/stores/current/member
         - store/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: STORE013
@@ -20754,7 +20754,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -20766,12 +20766,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: required
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: supplier
@@ -20793,7 +20793,7 @@ requirements:
       client: supplier
       route: /suppliers/current/member
       feature: supplier/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp23_providers.spec.ts
       files:
         route: 01_core_hexin/apps/supplier/src/route/routes.tsx
@@ -20803,8 +20803,8 @@ requirements:
         - supplier:/suppliers/current/member
         - supplier/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: SUPPLY010
@@ -20835,7 +20835,7 @@ requirements:
       - command
     mainFlow:
       - client route
-      - member.addresses.manage
+      - member.storefront.config.manage
       - member application
       - member.membership
     stateTransitions:
@@ -20847,12 +20847,12 @@ requirements:
       - authorization denied
       - conflict or retry
       - dependency failure surfaced
-    permission: member.address.manage
+    permission: member.read
     stepup: policy
     audit: before and after state with actor and scope
     module: member
-    capability: member.addresses.manage
-    api: PUT /api/v1/members/me/addresses/{addressid}
+    capability: member.storefront.config.manage
+    api: PUT /api/v1/member/storefront-profile-config
     commandOrQuery: command
     tableOrProjection: member.membership
     client: supplier
@@ -20874,7 +20874,7 @@ requirements:
       client: supplier
       route: /suppliers/current/member
       feature: supplier/member
-      operation: member.addresses.manage
+      operation: member.storefront.config.manage
       test: 03_quality_ceshi/tests/journeys/mvp23_providers.spec.ts
       files:
         route: 01_core_hexin/apps/supplier/src/route/routes.tsx
@@ -20884,8 +20884,8 @@ requirements:
         - supplier:/suppliers/current/member
         - supplier/member
       callees:
-        - sdk:member.addresses.manage
-        - operation:member.addresses.manage
+        - sdk:member.storefront.config.manage
+        - operation:member.storefront.config.manage
       evidence: []
       status: Missing
   - id: SUPPLY011

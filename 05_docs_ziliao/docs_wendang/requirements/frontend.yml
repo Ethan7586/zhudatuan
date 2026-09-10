@@ -1232,7 +1232,7 @@ requirements:
     client: console
     route: /platform
     feature: platform/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts
     files:
       route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -1242,8 +1242,8 @@ requirements:
       - console:/platform
       - platform/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: PLAT066
@@ -1251,7 +1251,7 @@ requirements:
     client: console
     route: /platform
     feature: platform/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts
     files:
       route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -1261,8 +1261,8 @@ requirements:
       - console:/platform
       - platform/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: PLAT067
@@ -1270,7 +1270,7 @@ requirements:
     client: console
     route: /platform
     feature: platform/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts
     files:
       route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -1280,8 +1280,8 @@ requirements:
       - console:/platform
       - platform/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: PLAT068
@@ -1289,7 +1289,7 @@ requirements:
     client: console
     route: /platform
     feature: platform/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts
     files:
       route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -1299,8 +1299,8 @@ requirements:
       - console:/platform
       - platform/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: DIST001
@@ -2011,7 +2011,7 @@ requirements:
     client: console
     route: /distributors
     feature: distribution/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts
     files:
       route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -2021,8 +2021,8 @@ requirements:
       - console:/distributors
       - distribution/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: DIST039
@@ -2030,7 +2030,7 @@ requirements:
     client: console
     route: /distributors
     feature: distribution/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts
     files:
       route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -2040,8 +2040,8 @@ requirements:
       - console:/distributors
       - distribution/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: DIST040
@@ -2049,7 +2049,7 @@ requirements:
     client: console
     route: /distributors
     feature: distribution/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts
     files:
       route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -2059,8 +2059,8 @@ requirements:
       - console:/distributors
       - distribution/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: DIST041
@@ -2068,7 +2068,7 @@ requirements:
     client: console
     route: /distributors
     feature: distribution/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp04_distribution.spec.ts
     files:
       route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -2078,8 +2078,8 @@ requirements:
       - console:/distributors
       - distribution/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: GROUP001
@@ -3778,7 +3778,7 @@ requirements:
     client: console
     route: /malls/current/settings
     feature: mall/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp22_mallsetting.spec.ts
     files:
       route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -3788,8 +3788,8 @@ requirements:
       - console:/malls/current/settings
       - mall/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: MALL023
@@ -3797,7 +3797,7 @@ requirements:
     client: console
     route: /malls/current/settings
     feature: mall/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp22_mallsetting.spec.ts
     files:
       route: 01_core_hexin/apps/console/src/route/routes.tsx
@@ -3807,8 +3807,8 @@ requirements:
       - console:/malls/current/settings
       - mall/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: MALL024
@@ -4576,7 +4576,7 @@ requirements:
     client: store
     route: /stores/current/member
     feature: store/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp03_platform.spec.ts
     files:
       route: 01_core_hexin/apps/store/src/route/routes.tsx
@@ -4586,8 +4586,8 @@ requirements:
       - store:/stores/current/member
       - store/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: STORE013
@@ -4899,7 +4899,7 @@ requirements:
     client: supplier
     route: /suppliers/current/member
     feature: supplier/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp23_providers.spec.ts
     files:
       route: 01_core_hexin/apps/supplier/src/route/routes.tsx
@@ -4909,8 +4909,8 @@ requirements:
       - supplier:/suppliers/current/member
       - supplier/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: SUPPLY010
@@ -4918,7 +4918,7 @@ requirements:
     client: supplier
     route: /suppliers/current/member
     feature: supplier/member
-    operation: member.addresses.manage
+    operation: member.storefront.config.manage
     test: 03_quality_ceshi/tests/journeys/mvp23_providers.spec.ts
     files:
       route: 01_core_hexin/apps/supplier/src/route/routes.tsx
@@ -4928,8 +4928,8 @@ requirements:
       - supplier:/suppliers/current/member
       - supplier/member
     callees:
-      - sdk:member.addresses.manage
-      - operation:member.addresses.manage
+      - sdk:member.storefront.config.manage
+      - operation:member.storefront.config.manage
     status: Missing
     evidence: []
   - requirement: SUPPLY011
