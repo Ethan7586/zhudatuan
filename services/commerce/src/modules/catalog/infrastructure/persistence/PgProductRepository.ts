@@ -91,8 +91,7 @@ export class PgProductRepository implements ProductRepository {
     ]);
     await database.query(
       `insert into catalog.listing(id,scope_id,pool_id,sku_id,title,status,effective_at,expires_at,version,created_at,updated_at)
-      values($1,$2,(select id from catalog.pool where scope_id=$2 and status='active' order by case kind when 'private' then 0 else 1 end,id limit 1),
-      $3,$4,'draft',null,null,1,clock_timestamp(),clock_timestamp())`,
+      values($1,$2,null,$3,$4,'draft',null,null,1,clock_timestamp(),clock_timestamp())`,
       [`listing:${suffix}`, input.scope, sku, input.title]
     );
     const created = result.rows[0];

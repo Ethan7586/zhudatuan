@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PgTransactionAccess, SqlExecutor } from '../../../../platform/database/PgTransactionAccess';
-import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
+import type { ReadTransactionContext, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 import { PgProductRepository } from './PgProductRepository';
 
 describe('PgProductRepository detail projection', () => {
@@ -89,4 +89,29 @@ describe('PgProductRepository detail projection', () => {
     expect(detail.timeline.every(({ occurredAt }) => typeof occurredAt === 'string')).toBe(true);
     expect(detail).not.toHaveProperty('attributes');
   });
+
+  it('creates a draft listing without silently choosing a product pool', async () => {
+    const query = vi.fn(async (sql: string) => {
+      if (sql.startsWith('select id,parent_id')) return result([{ id: 'category:food', parent_id: null, code: 'FOOD', name: '餐饮美食', status: 'active', sort_order: 1 }]);
+      if (sql.includes('insert into catalog.product'))
+        return result([{ id: 'product:one', scope_id: 'mall:one', owner_partner_id: null, brand_id: null, category_id: 'category:food', title: '早餐', product_type: 'physical', attributes: {}, status: 'draft', version: 1 }]);
+      return result([]);
+    });
+    const database = { query } as unknown as SqlExecutor;
+    const repository = new PgProductRepository(
+      { database: () => database } as unknown as PgTransactionAccess,
+      { visible: vi.fn() } as never,
+      { scopes: vi.fn(), names: vi.fn() } as never
+    );
+
+    await repository.create({} as WriteTransactionContext, { scope: 'mall:one', owner: null, brand: null, category: 'category:food', title: '早餐', kind: 'physical', attributes: {} });
+
+    const listingSql = query.mock.calls.map(([sql]) => sql).find((sql) => sql.includes('insert into catalog.listing'));
+    expect(listingSql).toContain('values($1,$2,null,$3,$4');
+    expect(listingSql).not.toContain('select id from catalog.pool');
+  });
 });
+
+function result(rows: readonly Readonly<Record<string, unknown>>[]) {
+  return { rows, rowCount: rows.length, command: '', oid: 0, fields: [] };
+}
