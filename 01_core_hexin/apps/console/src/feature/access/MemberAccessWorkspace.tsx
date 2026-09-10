@@ -30,6 +30,7 @@ interface MemberAccessRow {
   readonly id: string;
   readonly member?: Member;
   readonly access?: AccessMembership;
+  readonly administrator: boolean;
   readonly managementRoles: readonly MemberRole[];
 }
 
@@ -63,8 +64,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   });
   const accessItems = accessQuery.data?.items ?? [];
   const memberItems = memberQuery.data?.items ?? [];
-  const managementRoleIds = useMemo(() => new Set((accessQuery.data?.roles ?? []).map(({ id }) => id)), [accessQuery.data?.roles]);
-  const rows = useMemo(() => mergeRows(memberItems, accessItems, managementRoleIds), [accessItems, managementRoleIds, memberItems]);
+  const rows = useMemo(() => mergeRows(memberItems, accessItems, context.session.membership), [accessItems, context.session.membership, memberItems]);
   const normalizedFilter = filter.trim().toLocaleLowerCase('zh-CN');
   const visibleRows = useMemo(() => rows.filter((row) => {
     if (directoryFilter === 'administrator' && !isAdministrator(row)) return false;
@@ -366,14 +366,15 @@ function MemberIcon({ name }: Readonly<{ name: MemberIconName }>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{iconPaths[name].map((path) => <path key={path} d={path} />)}</svg>;
 }
 
-function mergeRows(members: readonly Member[], access: readonly AccessMembership[], managementRoleIds: ReadonlySet<string>): readonly MemberAccessRow[] {
+function mergeRows(members: readonly Member[], access: readonly AccessMembership[], currentMembershipId: string): readonly MemberAccessRow[] {
   const memberById = new Map(members.map((member) => [member.membership_id, member]));
   const accessById = new Map(access.map((membership) => [membership.id, membership]));
   return [...new Set([...memberById.keys(), ...accessById.keys()])].map((id) => {
     const member = memberById.get(id);
     const membership = accessById.get(id);
-    const managementRoles = membership?.roles.filter(({ role }) => managementRoleIds.has(role)) ?? [];
-    return { id, managementRoles, ...(member === undefined ? {} : { member }), ...(membership === undefined ? {} : { access: membership }) };
+    const administrator = member !== undefined || id === currentMembershipId;
+    const managementRoles = administrator ? membership?.roles ?? [] : [];
+    return { id, administrator, managementRoles, ...(member === undefined ? {} : { member }), ...(membership === undefined ? {} : { access: membership }) };
   });
 }
 function hasOperation(context: ConsoleContext, operation: string): boolean {
@@ -384,7 +385,7 @@ function rowSearchText(row: MemberAccessRow): string {
 }
 function rowName(row: MemberAccessRow): string { return row.member?.display_name ?? row.access?.display_name ?? '未命名成员'; }
 function rowStatus(row: MemberAccessRow): string { return row.member?.membership_status ?? row.access?.status ?? row.member?.status ?? 'unknown'; }
-function isAdministrator(row: MemberAccessRow): boolean { return row.member?.client === 'operator' || row.managementRoles.length > 0; }
+function isAdministrator(row: MemberAccessRow): boolean { return row.administrator; }
 function isOwner(row: MemberAccessRow): boolean { return row.managementRoles.some((role) => /owner/i.test(`${role.role} ${role.name}`)); }
 function isSelf(row: MemberAccessRow, context: ConsoleContext): boolean { return row.id === context.session.membership || row.member?.membership_id === context.session.membership; }
 function administratorLabel(row: MemberAccessRow): string {

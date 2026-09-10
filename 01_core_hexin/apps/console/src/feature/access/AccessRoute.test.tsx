@@ -184,16 +184,20 @@ describe('custom identity and permission directory', () => {
   });
 
   it('keeps ordinary members separate and nests administrator tools inside administrator details', async () => {
+    roles = [...roles, {
+      id: 'role-consumer', name: '商城会员', status: 'active', version: '1', permissions: ['order.read'], member_count: '1',
+      governance: false, editable: true, members: [], scopes: [],
+    }];
     members = [{
       ...memberFixture(), id: 'membership:consumer', member_id: 'member:consumer', display_name: '普通消费者',
       roles: [assignment('role-consumer', 'L6 消费者', mallScope, 'direct')],
     }, {
-      ...memberFixture(), id: 'membership:administrator', member_id: 'member:administrator', display_name: '小白管理员',
+      ...memberFixture(), id: 'membership:owner', member_id: 'member:administrator', display_name: '小白管理员',
       roles: [assignment('role-finance', '财务观察', mallScope, 'direct')],
     }];
     invitationRecords = [{
       id: 'invite:administrator', scope: 'tenant:one', scope_name: '主打团商户', label: '管理员发出的邀请',
-      governance_level: 'administrator', created_by: 'membership:administrator', created_by_name: '小白管理员',
+      governance_level: 'administrator', created_by: 'membership:owner', created_by_name: '小白管理员',
       accepted_membership_id: null, invitee_name: '受邀管理员', destination_masked: '138****0000',
       max_uses: 1, use_count: 0, starts_at: '2026-09-10T12:00:00.000Z', expires_at: '2026-09-17T12:00:00.000Z',
       accepted_at: null, status: 'active', created_at: '2026-09-10T12:00:00.000Z', version: '0',
