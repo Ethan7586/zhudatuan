@@ -38,7 +38,7 @@ export class Category {
 function validate(value: CategorySnapshot): void {
   if (!/^category:[A-Za-z0-9][A-Za-z0-9.:/-]*$/.test(value.id)) invalid('id');
   if (value.parent !== null && !/^category:/.test(value.parent)) invalid('parent');
-  if (!/^[A-Za-z0-9][A-Za-z0-9./:-]{0,127}$/.test(value.code)) invalid('code');
+  if (!/^[A-Za-z0-9][A-Za-z0-9_./:-]{0,127}$/.test(value.code)) invalid('code');
   if (value.name.trim().length < 1 || value.name.length > 255) invalid('name');
   if (!['active', 'disabled'].includes(value.state)) invalid('state');
   if (!Number.isSafeInteger(value.sort)) invalid('sort');

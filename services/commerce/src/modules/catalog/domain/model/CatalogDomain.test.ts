@@ -27,6 +27,12 @@ describe('Catalog aggregates', () => {
     expect(() => Category.restore({ ...category.snapshot(), state: 'disabled' }).active()).toThrow();
   });
 
+  it('restores snake-case category codes used by the authoritative catalog', () => {
+    const category = Category.restore({ id: 'category:office', parent: null, code: 'digital_office_stationery', name: '办公文具', state: 'active', sort: 10 });
+
+    expect(category.active().code).toBe('digital_office_stationery');
+  });
+
   it('creates a trimmed active category while keeping identity generation outside the aggregate', () => {
     const category = Category.create({ id: 'category:meal', parent: null, code: 'MEAL', name: ' 餐食 ', sort: 10 });
     expect(category.snapshot()).toEqual({ id: 'category:meal', parent: null, code: 'MEAL', name: '餐食', state: 'active', sort: 10 });

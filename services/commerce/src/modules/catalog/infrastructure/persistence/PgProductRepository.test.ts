@@ -92,7 +92,7 @@ describe('PgProductRepository detail projection', () => {
 
   it('creates a draft listing without silently choosing a product pool', async () => {
     const query = vi.fn(async (sql: string) => {
-      if (sql.startsWith('select id,parent_id')) return result([{ id: 'category:food', parent_id: null, code: 'FOOD', name: '餐饮美食', status: 'active', sort_order: 1 }]);
+      if (sql.startsWith('select id,parent_id')) return result([{ id: 'category:food', parent_id: null, code: 'food_meal', name: '餐饮美食', status: 'active', sort_order: 1 }]);
       if (sql.includes('insert into catalog.product'))
         return result([{ id: 'product:one', scope_id: 'mall:one', owner_partner_id: null, brand_id: null, category_id: 'category:food', title: '早餐', product_type: 'physical', attributes: {}, status: 'draft', version: 1 }]);
       return result([]);
