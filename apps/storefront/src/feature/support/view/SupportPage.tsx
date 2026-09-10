@@ -1,4 +1,5 @@
 import { CircleAlert, Headphones, LoaderCircle, MessageSquarePlus } from 'lucide-react';
+import { Input, Select } from '@shop/design';
 import type { useSupportViewModel } from '../viewmodel/SupportViewModel';
 import type { SupportPriority } from '../model/SupportCase';
 import './Support.css';
@@ -30,19 +31,17 @@ export function SupportPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
             创建工单
           </h2>
           {order ? <p className="mt-3 rounded-lg bg-brand-light p-2 text-brand">本工单将安全关联您从订单详情选择的订单，客服只会看到授权后的脱敏上下文。</p> : null}
-          <label className="mt-4 block font-bold">
-            问题标题
-            <input value={subject} maxLength={120} onChange={(event) => actions.changeSubject(event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal" />
-          </label>
-          <label className="mt-3 block font-bold">
-            优先级
-            <select value={priority} onChange={(event) => actions.changePriority(event.target.value as SupportPriority)} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal">
+          <div className="mt-4">
+            <Input label="问题标题" value={subject} maxLength={120} onChange={(event) => actions.changeSubject(event.target.value)} />
+          </div>
+          <div className="mt-3">
+            <Select label="优先级" value={priority} onChange={(event) => actions.changePriority(event.target.value as SupportPriority)}>
               <option value="low">低</option>
               <option value="normal">普通</option>
               <option value="high">高</option>
               <option value="urgent">紧急</option>
-            </select>
-          </label>
+            </Select>
+          </div>
           <label className="mt-3 block font-bold">
             详细描述
             <textarea value={message} maxLength={4000} rows={6} onChange={(event) => actions.changeMessage(event.target.value)} className="mt-1 w-full resize-y rounded-lg border px-3 py-2 font-normal" />
@@ -69,7 +68,10 @@ export function SupportPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
               <p className="mt-2 text-muted">
                 响应期限 {format(item.responseDueAt)} · 解决期限 {format(item.resolutionDueAt)}
               </p>
-              <p className={`mt-2 font-bold ${item.slaRisk === 'overdue' ? 'text-danger-strong' : item.slaRisk === 'risk' ? 'text-warning-strong' : 'text-success-strong'}`}>{item.slaRisk === 'overdue' ? '服务时限已超时，平台正在升级处理' : item.slaRisk === 'risk' ? '接近服务时限' : '服务时限正常'}{item.unreadCount > 0 ? ` · ${item.unreadCount} 条未读回复` : ''}</p>
+              <p className={`mt-2 font-bold ${item.slaRisk === 'overdue' ? 'text-danger-strong' : item.slaRisk === 'risk' ? 'text-warning-strong' : 'text-success-strong'}`}>
+                {item.slaRisk === 'overdue' ? '服务时限已超时，平台正在升级处理' : item.slaRisk === 'risk' ? '接近服务时限' : '服务时限正常'}
+                {item.unreadCount > 0 ? ` · ${item.unreadCount} 条未读回复` : ''}
+              </p>
             </button>
           ))}
           {state === 'empty' ? <State text="暂无服务工单，可在左侧创建" /> : null}
