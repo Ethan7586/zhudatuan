@@ -22,16 +22,16 @@
     "docs/architecture/福利商城理想方案20260904.md",
     "docs/architecture/福利商城代码修改清单20260904.md"
   ],
-  "count": 2603,
+  "count": 2613,
   "coverage": {
     "manifest": 81,
     "viewmodel": 214,
-    "view": 419,
+    "view": 425,
     "route": 96,
     "test": 332,
     "binding": 12
   },
-  "treeSha256": "cc2051fe81e3f64dac662aaf884b6f8c888bffdda5f65402e6efa8f82cde5f20",
+  "treeSha256": "59889a4fbadd38e205ac289597aa24389fcdeb2cddcfeb4e233017a85a81775c",
   "entries": [
     {
       "path": "apps/auth/.env.example",
@@ -1702,15 +1702,15 @@
     {
       "path": "apps/console/src/app/Dependencies.ts",
       "kind": "support",
-      "sha256": "0eb7e989b6fc7570afe6a70f29dd517c22d039c6e6de0f633c0fe5d1ff472ab5",
-      "size": 1841,
+      "sha256": "76d8d4f96d7cfaf0da796e4729459b65fcfc15001c738d62212e6eb666649ed8",
+      "size": 1928,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/app/dependency/CoreDependencies.ts",
       "kind": "support",
-      "sha256": "23120b1994c50d0635a7ea20172712d617265d9375954c58e474e5b556426acb",
-      "size": 12826,
+      "sha256": "42e01eff8a871a4bdb9b30ffb303eed35e2045775fcc6226ad154193929d4626",
+      "size": 10493,
       "mode": "0644"
     },
     {
@@ -1718,6 +1718,13 @@
       "kind": "support",
       "sha256": "ff289c7c67a303051c3ec1d0671d1f3d66d4d389becdd233ed32dd378cd2d2b1",
       "size": 8014,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/app/dependency/FinanceDependencies.ts",
+      "kind": "support",
+      "sha256": "22fe4ca302bdf57fd81215c5b69396f3e60e1117e80e43c467af3657462910bf",
+      "size": 2587,
       "mode": "0644"
     },
     {
@@ -1786,8 +1793,8 @@
     {
       "path": "apps/console/src/app/LoadDependencies.ts",
       "kind": "support",
-      "sha256": "072b34cbad683a036c74b75f974ccd8e0b4e08ff9ae4089db7d13e9a4c3e5109",
-      "size": 1723,
+      "sha256": "8e156b8254e41320138a6e9dec793421261343b37b828ea771b690b3e0e9dec9",
+      "size": 1908,
       "mode": "0644"
     },
     {
@@ -6553,36 +6560,57 @@
     {
       "path": "apps/console/src/feature/settings/access/Access.css",
       "kind": "support",
-      "sha256": "ae08fcbaec0d9292f1186a99279209586884f9a4913aab134b19c9ca4ec238e9",
-      "size": 153,
+      "sha256": "a94be487ea58db631e4d7298d466835147723614be588dd95a4d6d885243bb7e",
+      "size": 217,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/AccessEditor.css",
       "kind": "support",
-      "sha256": "2e6bafe1d69aceb9007931990d1e89e587c8cc3e71fc7ffcf3d25946a50e7849",
-      "size": 5694,
+      "sha256": "856c07398bb068fb5f759eafaceb0ebfcf30d31c60dfbd853bf44b3427dfeb58",
+      "size": 5693,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/settings/access/AccessMember.css",
+      "kind": "support",
+      "sha256": "316dbf24de28be2a374ae41382755acf8964ae36b2d75e7858159fedacd15f81",
+      "size": 5155,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/settings/access/AccessPermission.css",
+      "kind": "support",
+      "sha256": "fab6c9e0f4b38408c357b5ebfff7f9421ce2c90075cfc3028f1d565ded8fa103",
+      "size": 1943,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/AccessResponsive.css",
       "kind": "support",
-      "sha256": "21f8b9a508cafa149c9ff1412af92cea989e982460dd2f0d44c66cfa56f591f9",
-      "size": 888,
+      "sha256": "50eb83ae8dcfa67d89d417b1016a658dbd606019875444c4d8ec0aa5b0acdb83",
+      "size": 3023,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/AccessRoute.test.tsx",
       "kind": "test",
-      "sha256": "84475c8b597afae8db65faddeea1573421d120e06a3846d6f51243e4fbd35de1",
-      "size": 15099,
+      "sha256": "354943e73cbc21d6009734077ee6d5d7cba6b3e52a53ed28c595838a59a0313e",
+      "size": 17187,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/AccessTasks.css",
       "kind": "support",
-      "sha256": "bb2c87fea7ea70f4f05c75582b24daace9317c14a4cd50846c47647cd1fd4c0b",
-      "size": 1777,
+      "sha256": "10598337701ef2e3306a022de43d70e131d9fa1ffbee119a7ff56c04793efb6a",
+      "size": 4132,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/settings/access/AccessText.ts",
+      "kind": "support",
+      "sha256": "7307a5bc0b976ad9d571b63a58bf9f93d5521e2880071024e6fd49c5448c6227",
+      "size": 1372,
       "mode": "0644"
     },
     {
@@ -6763,15 +6791,15 @@
     {
       "path": "apps/console/src/feature/settings/access/RoleJourney.css",
       "kind": "support",
-      "sha256": "6cfe8337150f9fece04ff33e631a9de569d186481d0ee684f2125afbeb59a452",
-      "size": 4730,
+      "sha256": "d41d07d072efb0c94f5c16b211de6a8137792e0b3dc2e16e790f21e361c91633",
+      "size": 4696,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/RoleWorkspace.css",
       "kind": "support",
-      "sha256": "7e7cac1bbd4b1f56f3b6a9b1ea0de2bc6d4ffc2c5f32e2f2830f7d113c4c8701",
-      "size": 3135,
+      "sha256": "3ee6b99bbd9954a6302122d56434e8ab4a3f6bceea66256994c886c6f7b5d70b",
+      "size": 4797,
       "mode": "0644"
     },
     {
@@ -6782,59 +6810,94 @@
       "mode": "0644"
     },
     {
+      "path": "apps/console/src/feature/settings/access/view/AccessGuide.tsx",
+      "kind": "view",
+      "sha256": "b71a7cfbfcaa298e5bbb99e462f1d002fe5becd688ab1eb7f59ef14a5818c7df",
+      "size": 1603,
+      "mode": "0644"
+    },
+    {
       "path": "apps/console/src/feature/settings/access/view/AccessPage.tsx",
       "kind": "view",
-      "sha256": "22cc55b064b412da4cb0b7a92ca77c9331d5fd0712f55914797ed0e43716c83f",
-      "size": 3622,
+      "sha256": "6538fb311ff3c4db884d4a23408c5086ccc3eb59bc0e0cec998404f0899a93b7",
+      "size": 3319,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/view/AccessTasks.tsx",
       "kind": "view",
-      "sha256": "5d21c696f5fb40d466dccdab669aad9f0b76dfe03496a392f7782257a75241b5",
-      "size": 3487,
+      "sha256": "3801b6cc4bf01d778a06538adfd7b31060e2b812361b4cf0e7d2c0b8ec23bc48",
+      "size": 4727,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/view/ApprovalPanel.tsx",
       "kind": "view",
-      "sha256": "4ca051ec1b62e2f27fc40ae604018ef8ffa7e7fbfe157fe3d853ba21941ae2df",
-      "size": 4692,
+      "sha256": "adfd121e9f63f27c5bf0d1cc37a950dfe837173b3ecfe7da2d1e942ddc5bfc56",
+      "size": 4690,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/settings/access/view/MemberDetails.tsx",
+      "kind": "view",
+      "sha256": "d7c1f36e9dd4193622b81893bf82dcb9999c0a4b1bffe918583291098dc8c612",
+      "size": 8514,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/view/MemberTable.tsx",
       "kind": "view",
-      "sha256": "ec8e1114fd7f08546f2627b604a3975c6781778e2d3d4f8f3097de5bab11bf7a",
-      "size": 2787,
+      "sha256": "c4e736d6d14e01b048c7f928255dbbe246e48173ce35236ebab03b0954f619d7",
+      "size": 4001,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/view/OverrideDialog.tsx",
       "kind": "view",
-      "sha256": "033c401cc763129d919fe44878a940f96dc1eedeb005ca566916015c0eb39570",
-      "size": 3926,
+      "sha256": "c56c789ee170a5ce3b1cb6d0cf98bb6339d1b065d1fd9537342161da2961fe82",
+      "size": 4275,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/view/OwnerTransferDialog.tsx",
       "kind": "view",
-      "sha256": "ab4dcb91ae01faa0fa48c68faee11e982ba49617a70970d04442426a5d7d23a8",
-      "size": 6379,
+      "sha256": "69bc5014cf212e4c1dbadbfc133909a91ea7ae07527e33655580c784eb08019a",
+      "size": 6541,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/settings/access/view/PermissionSummary.tsx",
+      "kind": "view",
+      "sha256": "e1047cd2460c56922a3a910ea3fcbf175b5502e65e21f6adcf4b1eb77409ee6b",
+      "size": 1787,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/settings/access/view/RoleActionDialog.tsx",
+      "kind": "view",
+      "sha256": "baff1327d9d7dbf219f97d8b5da24e135b66379a61614310d026e15d9de32d65",
+      "size": 2798,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/view/RoleDialog.tsx",
       "kind": "view",
-      "sha256": "8503cee98df86e1762fb2f39a5556e9db05a607294bd5c5bb567c9a492027559",
-      "size": 11537,
+      "sha256": "b178e9350e90050d7aba8274c842c04537faf8a0373328489e5eab1e95c96708",
+      "size": 8596,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/settings/access/view/RoleReview.tsx",
+      "kind": "view",
+      "sha256": "7d48135033fb86afb0ba5be7a6e3b00371886f0fb2f46106a48d1468ebe7a84c",
+      "size": 3344,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/feature/settings/access/view/RoleWorkspace.tsx",
       "kind": "view",
-      "sha256": "db08b7200e416c681ed4a9cc247de8981518da0bb72d532ca04592d6af04279f",
-      "size": 4578,
+      "sha256": "c26cd455bcdf5046705eae14667a897dd0d69254db60d81468ddaa5ea0f933a8",
+      "size": 6341,
       "mode": "0644"
     },
     {
@@ -6847,8 +6910,15 @@
     {
       "path": "apps/console/src/feature/settings/access/view/TargetSummary.tsx",
       "kind": "view",
-      "sha256": "8c92fd5292c7a9c63d5c4a666c7b9ba67208b9e82fa3a2a34aa0223512795766",
-      "size": 860,
+      "sha256": "c8a9d890869cbae3c5b4aac98b46da5cd3e4837fa5725f015bcc5cff5b6d4d9f",
+      "size": 777,
+      "mode": "0644"
+    },
+    {
+      "path": "apps/console/src/feature/settings/access/view/TechnicalDetails.tsx",
+      "kind": "view",
+      "sha256": "6895b67bb4601ba1709d399aa25a58a384ad4cb6235f616f5216c19d9bca98fd",
+      "size": 595,
       "mode": "0644"
     },
     {
@@ -9563,15 +9633,15 @@
     {
       "path": "apps/console/src/shared/security/OperationAccess.test.ts",
       "kind": "test",
-      "sha256": "e8e3b5b59bde5e858978501a50946e8fca688df86d58c2ec452d1fe77ca77b49",
-      "size": 885,
+      "sha256": "bf61c0208e140866bb6d8c19f7f81f998a21944224098d41603f208f2f164b0d",
+      "size": 2616,
       "mode": "0644"
     },
     {
       "path": "apps/console/src/shared/security/OperationAccess.ts",
       "kind": "support",
-      "sha256": "3dce0ef4f3148b38f7f4da8f95aaf83e0176812a2c6d9c015bd711fbb45aee76",
-      "size": 1361,
+      "sha256": "6ea295b7e3ab9393c3e19a23da17c7c82e0ec34f4662b792efa291224c47546d",
+      "size": 1536,
       "mode": "0644"
     },
     {
@@ -9745,8 +9815,8 @@
     {
       "path": "apps/console/src/shell/ScopeShell.tsx",
       "kind": "support",
-      "sha256": "5dfd466c3bba18d54b44a56485a6d8c61588ddc3304bfdf1b924041fe0a05ea3",
-      "size": 7029,
+      "sha256": "60fd9da992ca4a1b9eb11804912924df28bee95191241c3a4200d5e40f3edcfc",
+      "size": 7179,
       "mode": "0644"
     },
     {
@@ -9759,8 +9829,8 @@
     {
       "path": "apps/console/src/shell/style/Layout.css",
       "kind": "support",
-      "sha256": "84c09af16bdf2535cbb35a8c31ebbe8552459de124e96d9641526162cc9f8494",
-      "size": 6051,
+      "sha256": "f4d155e29ef8c0fc4ff9909bb1c1931a85dfb178faa3ee749a381d433cd383d4",
+      "size": 6251,
       "mode": "0644"
     },
     {
@@ -15149,8 +15219,8 @@
     {
       "path": "config/visuals.yml",
       "kind": "support",
-      "sha256": "786157f996069ad57163c5074b9a954478ac778c10444c530883445edda88ce0",
-      "size": 14061,
+      "sha256": "accebef604cbec05999cca3c3cad643e4533dde4af4e452fe4dc05347da8124c",
+      "size": 14115,
       "mode": "0644"
     },
     {
@@ -15408,7 +15478,7 @@
     {
       "path": "packages/config/src/Release.ts",
       "kind": "support",
-      "sha256": "b71f440e7518971c02b887844ef034779e0e45a2a162d3a016d2eba562484113",
+      "sha256": "94b971e1ce801420560815ad3abd19b15d639afc5c28259cb37804f387c6f321",
       "size": 201,
       "mode": "0755"
     },
@@ -15429,8 +15499,8 @@
     {
       "path": "packages/config/src/RuntimeCatalog.ts",
       "kind": "support",
-      "sha256": "c84d9aa1e6b0e1f3b3ebe48e1b8f6b4bd08a40b922ef50cb2ff16838be9b6b48",
-      "size": 10017,
+      "sha256": "07b8c4f6edf1e44d6f8b58b94f3e8b75a74f060c8fce665388c7d8d19de60ee6",
+      "size": 10052,
       "mode": "0644"
     },
     {
@@ -15723,8 +15793,8 @@
     {
       "path": "packages/contract/src/OperationPolicyCatalog.ts",
       "kind": "support",
-      "sha256": "bdfba320617478e59fc09758c9cc76cd284fc1fd8f54b2726fb0d0b449e637ad",
-      "size": 209354,
+      "sha256": "7cb1720580a2c59af3ff23145dc4e90b9973f4c96aa28a5dfadfc784b189c58f",
+      "size": 261495,
       "mode": "0644"
     },
     {
