@@ -21,7 +21,7 @@ test('storefront catalog composes listing, price, inventory and qualification co
       resolveEntry: async () => ({
         application: 'application:one',
         handle: 'mall-one',
-        url: 'https://fufu.wang/s/mall-one',
+        url: 'https://yengze.press/s/mall-one',
         mall: 'mall:one',
         pool: 'pool:one',
         release: 'release:one',

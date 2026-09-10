@@ -74,7 +74,7 @@ export function createRuntimeOperations(client: OperationExecutor): RuntimeOpera
 
 export function createFetchRuntimeHealthLive(baseUrl: string): OperationMethod<"runtime.health.live"> { return bindHealthLive(new ApiClient(baseUrl, new FetchTransport())); }
 
-export function bindHealthLive(client: OperationExecutor): OperationMethod<"runtime.health.live"> { return bindOperation(client, defineOperation({ ...{"id":"runtime.health.live","method":"GET","path":"/health/live","audience":"system","targets":[],"responseMode":"json","idempotencyPolicy":"none","idempotent":true,"timeout":300,"errorUnion":["AUTHORIZATION_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","RATE_LIMITED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("RuntimeHealthLiveInput", [] as const, false), output: exactOperationOutput("RuntimeHealthLiveOutput") })); }
+export function bindHealthLive(client: OperationExecutor): OperationMethod<"runtime.health.live"> { return bindOperation(client, defineOperation({ ...{"id":"runtime.health.live","method":"GET","path":"/health/live","audience":"system","targets":[],"responseMode":"json","idempotencyPolicy":"none","idempotent":true,"timeout":3000,"errorUnion":["AUTHORIZATION_DENIED","CONTRACT_VERSION_UNSUPPORTED","DEADLINE_EXCEEDED","INTERNAL_ERROR","RATE_LIMITED","URL_SENSITIVE_DATA_FORBIDDEN","VALIDATION_FAILED"]}, input: exactOperationInput("RuntimeHealthLiveInput", [] as const, false), output: exactOperationOutput("RuntimeHealthLiveOutput") })); }
 
 export function createFetchRuntimeHealthReady(baseUrl: string): OperationMethod<"runtime.health.ready"> { return bindHealthReady(new ApiClient(baseUrl, new FetchTransport())); }
 

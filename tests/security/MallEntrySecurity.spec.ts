@@ -35,7 +35,7 @@ test('host and forwarded host never participate in storefront selection', async 
   } as never);
   const value = context('mall-other') as unknown as { headers: Record<string, string> };
   value.headers.host = 'attacker.example';
-  value.headers['x-forwarded-host'] = 'mall-victim.fufu.wang';
+  value.headers['x-forwarded-host'] = 'mall-victim.yengze.press';
   await query.execute({} as never, value as never);
   assert.equal(selected, 'mall-other');
 });
@@ -78,7 +78,7 @@ function entry(mall: string) {
   return {
     application: 'application:one',
     handle: 'mall-other',
-    url: 'https://fufu.wang/s/mall-other',
+    url: 'https://yengze.press/s/mall-other',
     mall,
     pool: 'pool:one',
     release: 'release:one',

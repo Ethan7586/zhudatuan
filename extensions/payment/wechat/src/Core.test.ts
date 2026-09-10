@@ -66,7 +66,7 @@ describe('WeChat Pay configuration', () => {
   });
 
   it('rejects a public URL that does not match the canonical webhook contract', () => {
-    expect(() => loadWechatPayConfig({ ...keys.config, notifyUrl: 'https://fufu.wang/api/v1/payments/wechat/notify' })).toThrowError(expect.objectContaining({ code: 'WECHAT_PAY_NOTIFY_URL_INVALID' }));
+    expect(() => loadWechatPayConfig({ ...keys.config, notifyUrl: 'https://yengze.press/api/v1/payments/wechat/notify' })).toThrowError(expect.objectContaining({ code: 'WECHAT_PAY_NOTIFY_URL_INVALID' }));
   });
 
   it('stops provider work before parsing when the parent task is cancelled', async () => {

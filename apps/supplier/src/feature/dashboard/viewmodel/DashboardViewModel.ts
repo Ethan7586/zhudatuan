@@ -20,9 +20,19 @@ export const dashboardViewModel = defineSupplierViewModel({
     ];
     return Object.freeze({ items: Object.freeze(items), count: items.length });
   },
-  project: (value) => operatorCollection(value, operatorItems(value).map((item) => operatorRow({
-    key: operatorText(item, 'id'), title: taskTitle(item), detail: taskDetail(item), statusLabel: taskStatus(item), timestamp: operatorText(item, 'updated_at') || operatorText(item, 'checked_at'),
-  }))),
+  project: (value) =>
+    operatorCollection(
+      value,
+      operatorItems(value).map((item) =>
+        operatorRow({
+          key: operatorText(item, 'id'),
+          title: taskTitle(item),
+          detail: taskDetail(item),
+          statusLabel: taskStatus(item),
+          timestamp: operatorText(item, 'updated_at') || operatorText(item, 'checked_at'),
+        })
+      )
+    ),
 });
 
 function taskTitle(item: Parameters<typeof operatorText>[0]): string {
@@ -50,4 +60,6 @@ function taskStatus(item: Parameters<typeof operatorText>[0]): string {
   return kind === 'shipment' ? '待发货' : '待确认或备货';
 }
 
-function priority(value: string): string { return value === 'urgent' ? '非常紧急' : value === 'high' ? '高优先级' : '普通优先级'; }
+function priority(value: string): string {
+  return value === 'urgent' ? '非常紧急' : value === 'high' ? '高优先级' : '普通优先级';
+}

@@ -7,7 +7,7 @@ import { RiskAction } from '../../domain/model/RiskAction';
 import { signal, type Signal, type SignalSensitivity } from '../../domain/model/Signal';
 import type { RiskDecisionDraft } from '../../domain/model/Decision';
 
-interface PolicyRow {
+export interface PolicyRow {
   readonly id: string;
   readonly scope: string;
   readonly activeVersion: number;
@@ -27,19 +27,15 @@ interface SignalRow {
 }
 
 export class PgRiskRepository implements RiskRepository {
-  constructor(private readonly database: SqlExecutor) {}
+  constructor(
+    private readonly database: SqlExecutor,
+    private readonly prefetchedPolicies?: readonly RiskPolicyRecord[]
+  ) {}
 
   async policies(scopes: readonly string[]): Promise<readonly RiskPolicyRecord[]> {
-    const result = await this.database.query<PolicyRow>(
-      `select policy.id,policy.scope_id scope,policy.active_version "activeVersion",
-      active.rule "activeRule",active.rollout_percent "activeRollout",policy.baseline_version "baselineVersion",baseline.rule "baselineRule"
-      from risk.policy policy join risk.policyversion active on active.policy_id=policy.id and active.version=policy.active_version
-      left join risk.policyversion baseline on baseline.policy_id=policy.id and baseline.version=policy.baseline_version
-      where policy.scope_id=any($1::text[]) and policy.status='active'
-      order by array_position($1::text[],policy.scope_id) desc,policy.id`,
-      [scopes]
-    );
-    return Object.freeze(result.rows.map((row) => Object.freeze(row)));
+    if (this.prefetchedPolicies !== undefined) return this.prefetchedPolicies;
+    const result = await this.database.query<PolicyRow>(riskPolicySql(1), [scopes]);
+    return riskPolicyRecords(result.rows);
   }
 
   async signals(actor: string, scopes: readonly string[]): Promise<readonly Signal[]> {
@@ -167,4 +163,18 @@ export class PgRiskRepository implements RiskRepository {
       trace: input.check.trace,
     });
   }
+}
+
+export function riskPolicySql(scopeParameter: number, contextRelation?: string): string {
+  const context = contextRelation === undefined ? '' : `${contextRelation} cross join `;
+  return `select policy.id,policy.scope_id scope,policy.active_version "activeVersion",
+    active.rule "activeRule",active.rollout_percent "activeRollout",policy.baseline_version "baselineVersion",baseline.rule "baselineRule"
+    from ${context}risk.policy policy join risk.policyversion active on active.policy_id=policy.id and active.version=policy.active_version
+    left join risk.policyversion baseline on baseline.policy_id=policy.id and baseline.version=policy.baseline_version
+    where policy.scope_id=any($${scopeParameter}::text[]) and policy.status='active'
+    order by array_position($${scopeParameter}::text[],policy.scope_id) desc,policy.id`;
+}
+
+export function riskPolicyRecords(rows: readonly PolicyRow[]): readonly RiskPolicyRecord[] {
+  return Object.freeze(rows.map((row) => Object.freeze(row)));
 }

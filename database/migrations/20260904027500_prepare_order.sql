@@ -45,6 +45,7 @@ create unique index order_external_identity on ordering.orderrecord(source_chann
 create index order_scope_ordered on ordering.orderrecord(scope_id,ordered_at desc,id desc);
 create index order_verification_queue on ordering.orderrecord(scope_id,verification_state,ordered_at,id) where verification_state<>'verified';
 
+drop trigger ordering_line_immutable on ordering.line;
 update ordering.line set evidence=jsonb_build_object(
   'product',coalesce(nullif(evidence->>'product',''),listing_id),
   'productType',coalesce(nullif(evidence->>'productType',''),'unknown'),
@@ -82,6 +83,7 @@ create unique index order_import_statement_evidence on ordering.importreceipt(st
 create index order_importreceipt_created on ordering.importreceipt(created_at desc,import_id,row_number);
 alter table ordering.importreceipt enable row level security;
 alter table ordering.importreceipt force row level security;
+create policy migrationaccess on ordering.importreceipt for all to shopmigration using(true) with check(true);
 create policy orderimportread on ordering.importreceipt for select to shopapp using(
   exists(select 1 from ordering.orderrecord orders where orders.id=order_id and access.scope_allowed(orders.scope_id))
 );
@@ -104,6 +106,7 @@ create table ordering.paymenteffect(
 create index order_paymenteffect_order on ordering.paymenteffect(order_id,kind,occurred_at,event_id);
 alter table ordering.paymenteffect enable row level security;
 alter table ordering.paymenteffect force row level security;
+create policy migrationaccess on ordering.paymenteffect for all to shopmigration using(true) with check(true);
 create policy orderpaymenteffectread on ordering.paymenteffect for select to shopapp using(access.scope_allowed(scope_id));
 create policy orderpaymenteffectjob on ordering.paymenteffect for all to shopjob using(true) with check(true);
 grant select on ordering.paymenteffect to shopapp;

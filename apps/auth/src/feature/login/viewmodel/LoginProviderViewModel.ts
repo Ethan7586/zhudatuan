@@ -6,6 +6,8 @@ import type { Provider } from '../../federation';
 import type { Bootstrap } from '../../bootstrap';
 import { providerCatalog } from '../model/ProviderCatalog';
 
+export const NO_LOGIN_METHODS: Bootstrap['methods'] = Object.freeze([]);
+
 export function useLoginProviderViewModel(dependencies: Dependencies, session: SessionRequest, methods: Bootstrap['methods']) {
   const [providers, setProviders] = useState<readonly Provider[]>([]);
   const [failure, setFailure] = useState<FailureView>();

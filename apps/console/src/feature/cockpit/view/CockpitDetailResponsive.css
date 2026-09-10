@@ -1,0 +1,35 @@
+@media (max-width: 980px) {
+  .cockpitsecondarygrid,
+  .cockpitlowergrid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .productleaderhead,
+  .productleaders article {
+    grid-template-columns: 28px minmax(0, 1fr) 92px 48px;
+  }
+  .productleaderhead span:last-child,
+  .productleaders article span:last-child {
+    display: none;
+  }
+  .mallhead,
+  .mallrow {
+    grid-template-columns: minmax(0, 1fr) 84px 56px;
+  }
+  .mallhead span:nth-child(3),
+  .mallrow span:nth-child(3) {
+    display: none;
+  }
+  .eventhead {
+    display: none;
+  }
+  .businessevents article {
+    grid-template-columns: 26px minmax(0, 1fr);
+  }
+  .businessevents article > span:not(.eventicon),
+  .businessevents time {
+    grid-column: 2;
+    text-align: left;
+  }
+}

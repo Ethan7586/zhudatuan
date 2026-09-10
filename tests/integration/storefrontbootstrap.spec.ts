@@ -40,7 +40,7 @@ test('storefront bootstrap resolves the trusted entry handle and returns one coh
         return {
           application: 'application:one',
           handle: 'mall-one',
-          url: 'https://fufu.wang/s/mall-one',
+          url: 'https://yengze.press/s/mall-one',
           mall: 'mall:one',
           pool: 'pool:one',
           release: 'release:one',
@@ -61,7 +61,7 @@ test('storefront bootstrap resolves the trusted entry handle and returns one coh
   assert.equal(response.status, 200);
   assert.equal(response.headers?.['cache-control'], 'private,no-store');
   assert.equal(body.state, 'complete');
-  assert.deepEqual(body.entry, { handle: 'mall-one', url: 'https://fufu.wang/s/mall-one' });
+  assert.deepEqual(body.entry, { handle: 'mall-one', url: 'https://yengze.press/s/mall-one' });
   assert.equal(body.binding.mall, 'mall:one');
   assert.equal(body.identity.data.state, 'anonymous');
   assert.equal(body.benefit.state, 'unavailable');

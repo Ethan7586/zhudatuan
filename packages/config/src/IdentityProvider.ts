@@ -1,5 +1,5 @@
 // Generated from config/identityproviders.yml and infrastructure/network/Edge.yml. Do not edit.
-export const IDENTITY_PROVIDER_CHECKSUM = '1a8fe0d381b9ecf0008f0799d80577f3c39b3d27e3bc18f8146cb3bb3255ae7f' as const;
+export const IDENTITY_PROVIDER_CHECKSUM = 'f26bc21a7d84f97d431563fbca677055c888f74b77795e00d28c66010f742e9b' as const;
 
 export const IDENTITY_PROVIDER_TYPES = Object.freeze(["oidc","wechat","wecomcorp","wecomsuite"] as const);
 export type IdentityProviderType = (typeof IDENTITY_PROVIDER_TYPES)[number];
@@ -40,7 +40,7 @@ export const IDENTITY_PROVIDER_CONFIGURATION = Object.freeze({
     "keyVersion": "positiveinteger"
   }
 } as const),
-  callbackOrigin: 'https://passport.fufu.wang',
+  callbackOrigin: 'https://passport.yengze.press',
   discoveryPath: '/.well-known/openid-configuration',
   discoveryTtlSeconds: 3600,
   jwksTtlSeconds: 900,
@@ -56,7 +56,7 @@ export const IDENTITY_PROVIDER_CONFIGURATION = Object.freeze({
   maximumResponseBytes: 1048576,
   retryAttempts: 3,
   allowedAlgorithms: Object.freeze(["RS256","ES256"] as const),
-  redirectAllowlist: Object.freeze(["https://passport.fufu.wang"] as const),
+  redirectAllowlist: Object.freeze(["https://passport.yengze.press"] as const),
   bindingConflict: 'reject',
   accountLink: 'explicitproof',
   keyRotationDays: 90,

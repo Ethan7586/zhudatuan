@@ -1,9 +1,9 @@
-import { localSecurityEnvironment } from '@shop/config/server';
+import { localKmsEnvironment } from '@shop/config/server';
 import { startLocalHttps, workloadBearerPreflight } from '../../localinfra/src/Http';
 import { kmsHandler } from './Handler';
 import { LocalKms } from './LocalKms';
 
-const environment = localSecurityEnvironment();
+const environment = localKmsEnvironment();
 const kms = new LocalKms(environment.kmsMasterKey);
 
 await startLocalHttps(
@@ -15,5 +15,6 @@ await startLocalHttps(
     keyFile: environment.tlsKeyFile,
   },
   9 * 1024 * 1024,
-  workloadBearerPreflight(environment.kmsBearerToken)
+  workloadBearerPreflight(environment.kmsBearerToken),
+  environment.bindHost
 );

@@ -229,7 +229,7 @@ function options(operation: string, request: string): TransactionOptions {
 }
 
 function candidate(id: string, displayName: string) {
-  return Object.freeze({ id, target: 'storefront' as const, accessVersion: 1, displayName, organizationName: '猪肚团福利商城', scopeKind: 'mall', scopeId: organization, roleLabel: '员工', logoUrl: null });
+  return Object.freeze({ id, target: 'storefront' as const, organization, accessVersion: 1, displayName, organizationName: '猪肚团福利商城', scopeKind: 'mall', scopeId: organization, roleLabel: '员工', logoUrl: null });
 }
 
 async function expectExactlyOne(operations: readonly Promise<unknown>[]): Promise<void> {

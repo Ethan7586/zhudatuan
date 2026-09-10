@@ -61,20 +61,47 @@ insert into runtime.moduleauthority(module_id,schema_name,owner_role,reader_role
   ('audit','audit','shopauditowner','shopauditreader','shopauditwriter',1,clock_timestamp(),clock_timestamp()),
   ('extension','extension','shopextensionowner','shopextensionreader','shopextensionwriter',1,clock_timestamp(),clock_timestamp());
 
+select set_config('app.module_authorities',jsonb_agg(jsonb_build_object(
+  'module',module_id,'schema',schema_name,'owner',owner_role,'reader',reader_role,'writer',writer_role
+) order by module_id)::text,true)
+from runtime.moduleauthority;
+
+reset role;
+
 do $roles$
 declare authority record;
 begin
+  if current_user<>session_user
+    or not coalesce((select rolcreaterole from pg_roles where rolname=current_user),false)
+    or not pg_has_role(current_user,'shopmigration','set') then
+    raise exception 'MODULE_ROLE_DEPLOYMENT_SESSION_INVALID';
+  end if;
+  for authority in select * from jsonb_to_recordset(current_setting('app.module_authorities')::jsonb)
+    as source(module text,schema text,owner text,reader text,writer text) order by module loop
+    if exists(select 1 from pg_roles where rolname in(authority.owner,authority.reader,authority.writer)
+      and (rolcanlogin or rolinherit or rolsuper or rolcreatedb or rolcreaterole or rolreplication or rolbypassrls)) then
+      raise exception 'MODULE_ROLE_UNSAFE:%',authority.module;
+    end if;
+    if not exists(select 1 from pg_roles where rolname=authority.owner) then
+      execute format('create role %I nologin noinherit',authority.owner);
+    end if;
+    if not exists(select 1 from pg_roles where rolname=authority.reader) then
+      execute format('create role %I nologin noinherit',authority.reader);
+    end if;
+    if not exists(select 1 from pg_roles where rolname=authority.writer) then
+      execute format('create role %I nologin noinherit',authority.writer);
+    end if;
+    execute format('grant %I to shopmigration with inherit false, set true',authority.owner);
+  end loop;
+end
+$roles$;
+
+set role shopmigration;
+
+do $privileges$
+declare authority record;
+begin
   for authority in select * from runtime.moduleauthority order by module_id loop
-    if not exists(select 1 from pg_roles where rolname=authority.owner_role) then
-      execute format('create role %I nologin noinherit',authority.owner_role);
-    end if;
-    if not exists(select 1 from pg_roles where rolname=authority.reader_role) then
-      execute format('create role %I nologin noinherit',authority.reader_role);
-    end if;
-    if not exists(select 1 from pg_roles where rolname=authority.writer_role) then
-      execute format('create role %I nologin noinherit',authority.writer_role);
-    end if;
-    execute format('grant %I to shopmigration',authority.owner_role);
     execute format('grant usage on schema %I to %I,%I',authority.schema_name,authority.reader_role,authority.writer_role);
     execute format('grant usage,create on schema %I to %I',authority.schema_name,authority.owner_role);
     execute format('alter default privileges for role shopmigration in schema %I grant select on tables to %I',authority.schema_name,authority.reader_role);
@@ -83,7 +110,7 @@ begin
     execute format('alter default privileges for role shopmigration in schema %I grant execute on functions to %I,%I',authority.schema_name,authority.reader_role,authority.writer_role);
   end loop;
 end
-$roles$;
+$privileges$;
 
 revoke all on schema approval,navigation,observability from public;
 grant usage on schema approval,navigation,observability to shopapp,shopjob;
@@ -92,6 +119,7 @@ revoke all on table runtime.moduleauthority from public;
 alter table runtime.moduleauthority enable row level security;
 alter table runtime.moduleauthority force row level security;
 create policy moduleauthorityread on runtime.moduleauthority for select to shopread,shopapp,shopjob using(true);
+create policy moduleauthoritymigration on runtime.moduleauthority for select to shopmigration using(true);
 grant select on runtime.moduleauthority to shopread,shopapp,shopjob;
 
 select runtime.record_migration_evidence(
@@ -117,5 +145,7 @@ begin
   end loop;
 end
 $assert$;
+
+drop policy moduleauthoritymigration on runtime.moduleauthority;
 
 commit;

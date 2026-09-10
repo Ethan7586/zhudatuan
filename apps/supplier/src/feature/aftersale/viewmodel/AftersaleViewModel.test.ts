@@ -1,2 +1,3 @@
-import { expect, it } from 'vitest'; import { aftersaleViewModel } from './AftersaleViewModel';
+import { expect, it } from 'vitest';
+import { aftersaleViewModel } from './AftersaleViewModel';
 it('binds returns', () => expect(aftersaleViewModel.routes).toEqual(['supplierreturns']));

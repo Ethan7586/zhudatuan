@@ -1,6 +1,6 @@
 {
   "algorithm": "sha256",
-  "count": 316,
+  "count": 318,
   "head": "20260903116000",
   "migrations": [
     {
@@ -445,7 +445,7 @@
     },
     {
       "file": "20260821026000_backfill_domain_data.sql",
-      "sha256": "126540b5c19f30a0f01588c72238b27d51ef0adf85fcde3e5cfea8d1b24feff5"
+      "sha256": "f62a4c71eee8e8ade178b0977625d0e16f25b82cc67231178d532ae2678c55bd"
     },
     {
       "file": "20260821027000_reconcile_domain_data.sql",
@@ -669,23 +669,27 @@
     },
     {
       "file": "20260828173000_zhudatuan_web_business_access.sql",
-      "sha256": "bf790e5e9a94f89abbee39d90338fef6504c2a33809995271aeaa947d07ca981"
+      "sha256": "978060e6fb629cab119d27f97287365442a917495afc7a166bc9e5aaf1bcdfb5"
     },
     {
       "file": "20260828180000_zhudatuan_purchase_access.sql",
-      "sha256": "38cd43115db61a1cb0c97320264ba86de30148c0a0ecc96f9d2557211aa878cf"
+      "sha256": "96e9032bd2991eb69f6923a0bdcc82336ef60ec937befe79a86cffb60ccbd628"
     },
     {
       "file": "20260828183000_zhudatuan_runtime_readiness_repair.sql",
-      "sha256": "6cbc0848ff1cd1729810ada50a80cfced994d3055a1b89ea5b2094eba4aeac86"
+      "sha256": "6e8d7b5750a70b22d5eb8ea1f2913cbfa001535478c27537d169c8ce266c0ff2"
+    },
+    {
+      "file": "20260828190000_reconcile_conflicting_history.sql",
+      "sha256": "abb20c53304b9c147bfe92812023b6197e047a45494142aab8016fffa91417a7"
     },
     {
       "file": "20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql",
-      "sha256": "c7f179ebc16bf21e84b20a304f0c110824fc9bb3a4fad7e91368caf2519bf01a"
+      "sha256": "239f66dd54a08356da9b931c3c8cc89aa0a104110178aec982269747bd4adad0"
     },
     {
       "file": "20260829054500_zhudatuan_identity_login_acl_repair.sql",
-      "sha256": "a909cc9c878e2e15892985b1a480701e437be4d233fd848387595366e937d9e2"
+      "sha256": "a13747d4de51f5362eb1f2b52c495ba00197a1d757fc40856cc273d2c9d75a3a"
     },
     {
       "file": "20260829100000_contract_v2_catalog.sql",
@@ -725,7 +729,7 @@
     },
     {
       "file": "20260829109000_runtime_role_hardcut.sql",
-      "sha256": "3a83d3339fa031b0cfb802ba35670dde045cfa0e85599999decfad0ace47558a"
+      "sha256": "bae6f4a7abb8653562e453b7b5a24742520508f1601dd16babd270b3bb298140"
     },
     {
       "file": "20260829110000_add_identity_federation.sql",
@@ -753,11 +757,11 @@
     },
     {
       "file": "20260829116000_add_federation_cleanup_jobs.sql",
-      "sha256": "b489b9bd41975d994c04a969dc8c1f192dab910968adafd95949b864b12abbdb"
+      "sha256": "3e0ee6583a5191482168b67c8a430ea60b7f1ceb1288ae0787f2392e0eb38f74"
     },
     {
       "file": "20260829117000_validate_federation_data.sql",
-      "sha256": "481ef0fc1fe60f33a90d0f0f0341ba14032c88ba4e6e281d704e7a30f752cc0c"
+      "sha256": "dae7fed2e9658b5a85e11582a9fdb2fa13a9a5a335d626b2bac30af4c8f9c453"
     },
     {
       "file": "20260829118000_retire_compatibility_runtime.sql",
@@ -789,7 +793,7 @@
     },
     {
       "file": "20260830106000_harden_invitation_lifecycle.sql",
-      "sha256": "07416912adf3e65c007f794b72e3fda3f43d0b6d793eb62e6af0557c8916b342"
+      "sha256": "0224e74c1ddaecc215a8fae7ae4d1c7393351990284d8fb22f84cbe3bf46fef5"
     },
     {
       "file": "20260830107000_bind_federation_auth_ticket.sql",
@@ -857,7 +861,7 @@
     },
     {
       "file": "20260830127000_complete_invitation_audit_shape.sql",
-      "sha256": "ee0e963bf9fd01daf533f4f0431507ee15b7dee4cd89d823c4a0c9bdc53fed88"
+      "sha256": "65a7924be103484a4184367bfe8ec1a73d5b4368b9ddbdfaffd15749376c94d8"
     },
     {
       "file": "20260830128000_complete_authorization_snapshot.sql",
@@ -957,7 +961,7 @@
     },
     {
       "file": "20260830152000_publish_mvp_authority.sql",
-      "sha256": "105ca9d032e052aa3b5ac24e4cd08ed7a048e0ffc5f0f7c057c24d3f522c0926"
+      "sha256": "09f631ccb1942136c30a67e9fb0c581d39118bef697f79e74fbc3f4a367edd68"
     },
     {
       "file": "20260830153000_issue_action_proof.sql",
@@ -993,7 +997,7 @@
     },
     {
       "file": "20260831017000_publish_storefront_contract.sql",
-      "sha256": "ad8a442d4b415133942477bf90083aded13105dea07c60db9367d521585d6ef7"
+      "sha256": "eef227872cb8b045558cb31f34825ea75b37ab77892661a2369d22b6deb8201e"
     },
     {
       "file": "20260831018000_fix_stepup_session_resolution.sql",
@@ -1128,6 +1132,10 @@
       "sha256": "c355eb129b38000e0c5bd095ed41a4ebb898849e4bc4d23bb0ddb43ffeab648b"
     },
     {
+      "file": "20260901013500_reconcile_orphan_experience.sql",
+      "sha256": "592b64d097c3791841f921447847713b48fe506dae385bac5d18efc835b9b59a"
+    },
+    {
       "file": "20260901014000_mall_storefront_entry.sql",
       "sha256": "b0887ddd58d9d507f69c87a39370d04e61481d4eac6967fe47217393a67afcd6"
     },
@@ -1141,7 +1149,7 @@
     },
     {
       "file": "20260902010000_publish_stepup_destination_contract.sql",
-      "sha256": "0ca531a58fad7edfb69b0b86f18da4e2d6748a49e9c3b87179f05c29480d60fd"
+      "sha256": "f3d77ea1d34784a1fcd9974e185703b12ae246a355ca80f89888bf500dbce102"
     },
     {
       "file": "20260902011000_enable_experience_detail_capability.sql",

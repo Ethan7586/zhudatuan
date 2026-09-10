@@ -2,7 +2,16 @@ import { actionField, requiredText } from '@shop/presentation/actions';
 import { resolveRoutePath } from '../../../generated/RouteBinding';
 import { clientMessageId } from '../../../shared/Command';
 import { defineStoreViewModel } from '../../../shared/FeatureViewModel';
-import { operatorCollection as displayCollection, operatorItems as dataItems, operatorNumber as recordNumber, operatorRecord as dataRecord, operatorRow as displayRow, operatorText as recordText, selectedOperatorRecord as selectedRecord, supportCaseStatus } from '@shop/presentation/operator';
+import {
+  operatorCollection as displayCollection,
+  operatorItems as dataItems,
+  operatorNumber as recordNumber,
+  operatorRecord as dataRecord,
+  operatorRow as displayRow,
+  operatorText as recordText,
+  selectedOperatorRecord as selectedRecord,
+  supportCaseStatus,
+} from '@shop/presentation/operator';
 
 export const supportViewModel = defineStoreViewModel({
   routes: ['storesupportwork', 'storeworkcase'],
@@ -46,7 +55,6 @@ function conversationActions(value: unknown) {
     description: '发送对客回复或仅门店可见的内部协同消息。',
     tone: 'primary',
     expectedVersion: state.version,
-    identityScope: true,
     fields: Object.freeze([
       actionField('visibility', '消息类型', {
         kind: 'choice',

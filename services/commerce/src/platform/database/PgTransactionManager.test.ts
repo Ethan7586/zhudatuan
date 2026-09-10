@@ -17,11 +17,12 @@ describe('PgTransactionManager', () => {
       await access.database(context).query('select 1');
     });
 
-    expect(client.statements[0]).toBe('begin read only');
+    expect(client.statements[0]).toMatch(/^begin read only;select set_config\('app\.tenant_id'/);
     expect(client.statements).toContain('select 1');
     expect(client.statements.at(-1)).toBe('commit');
-    expect(Number(client.parameters.find(({ text }) => text.startsWith('select set_config('))?.values?.[8])).toBeGreaterThan(0);
-    expect(Number(client.parameters.find(({ text }) => text.startsWith('select set_config('))?.values?.[8])).toBeLessThanOrEqual(10_000);
+    const timeout = /set_config\('statement_timeout','(\d+)',true\)/.exec(client.statements[0]!)?.[1];
+    expect(Number(timeout)).toBeGreaterThan(0);
+    expect(Number(timeout)).toBeLessThanOrEqual(10_000);
     expect(client.release).toHaveBeenCalledOnce();
     expect(() => access.database(retained!)).toThrow('TRANSACTION_CONTEXT_INACTIVE');
   });
@@ -48,7 +49,7 @@ describe('PgTransactionManager', () => {
     await manager.write(options(), async (outer) => {
       await manager.read(options(), async (inner) => expect(inner).toBe(outer));
     });
-    expect(client.statements.filter((statement) => statement.startsWith('begin'))).toEqual(['begin isolation level serializable']);
+    expect(client.statements.filter((statement) => statement.startsWith('begin')).map((statement) => statement.split(';')[0])).toEqual(['begin isolation level serializable']);
   });
 
   it('uses an explicitly bounded read committed write transaction', async () => {
@@ -57,7 +58,17 @@ describe('PgTransactionManager', () => {
 
     await manager.write({ ...options(), isolation: 'read committed' }, async () => undefined);
 
-    expect(client.statements.filter((statement) => statement.startsWith('begin'))).toEqual(['begin isolation level read committed']);
+    expect(client.statements.filter((statement) => statement.startsWith('begin')).map((statement) => statement.split(';')[0])).toEqual(['begin isolation level read committed']);
+  });
+
+  it('escapes request context values before batching the transaction start', async () => {
+    const client = fakeClient();
+    const manager = new PgTransactionManager(fakePool(client));
+
+    await manager.read({ ...options(), actor: "actor';select pg_sleep(10);--" }, async () => undefined);
+
+    expect(client.statements[0]).toContain("'actor'';select pg_sleep(10);--'");
+    expect(client.statements).toHaveLength(2);
   });
 
   it('retries serialization failures with a bounded delay', async () => {
@@ -139,6 +150,7 @@ function options() {
 function fakePool(...clients: ReturnType<typeof fakeClient>[]): DatabasePool {
   const queue = [...clients];
   const pool = {
+    batchedTransactionStart: true,
     connect: async () => {
       const client = queue.shift();
       if (!client) throw new Error('TEST_CLIENT_MISSING');

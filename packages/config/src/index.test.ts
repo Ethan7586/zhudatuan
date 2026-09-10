@@ -29,6 +29,7 @@ import {
   localInfrastructureEnvironment,
   localProviderEnvironment,
   localSeedEnvironment,
+  providerCatalogEnvironment,
   requiredValue,
   validateApiEnvironment,
   validateJobsEnvironment,
@@ -37,11 +38,19 @@ import {
 import { relativeRoutePath } from './RoutePath';
 import { providerConnectionConfig } from './ProviderConfig';
 import { RUNTIME_LIMITS } from './RuntimeCatalog';
+import { networkHtml } from './NetworkHtml';
 
 const secretStoreBearerToken = 's'.repeat(43);
 const kmsBearerToken = 'k'.repeat(43);
 
 describe('canonical runtime configuration', () => {
+  it('preconnects every web shell to the canonical API before application code starts', () => {
+    const html = networkHtml('<html><head></head><body></body></html>');
+    expect(html).toContain(`<link rel="dns-prefetch" href="//${new URL(CANONICAL_API_ORIGIN).host}" />`);
+    expect(html).toContain(`<link rel="preconnect" href="${CANONICAL_API_ORIGIN}" crossorigin />`);
+    expect(networkHtml(html).match(/rel="preconnect"/g)).toHaveLength(1);
+  });
+
   it('keeps authenticated browser sessions at exactly two hours', () => {
     expect(RUNTIME_LIMITS.authentication.session.ttlSeconds).toBe(7_200);
   });
@@ -86,6 +95,23 @@ describe('canonical runtime configuration', () => {
     };
     expect(() => validateProviderWorkerEnvironment(provider)).not.toThrow();
     expect(() => validateProviderWorkerEnvironment({ ...provider, DATABASE_PROVIDER_CONNECTION_REF: '' })).toThrow('DATABASE_PROVIDER_CONNECTION_REF_MISSING');
+  });
+
+  it('owns provider catalog registration configuration in the server authority', () => {
+    const source = {
+      MIGRATION_DATABASE_CONNECTION_REF: 'shop/production/database/migration',
+      PROVIDER_MANIFEST_PRIVATE_KEY_FILE: '/run/secrets/manifestprivate',
+      PROVIDER_MANIFEST_PUBLIC_KEY_FILE: '/run/secrets/manifestpublic',
+      SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
+      SECRET_STORE_ENDPOINT: 'https://secretstore:8443',
+    };
+    const value = providerCatalogEnvironment(source);
+    expect(value).toMatchObject({
+      databaseConnectionRef: 'shop/production/database/migration',
+      manifestPrivateKeyFile: '/run/secrets/manifestprivate',
+      manifestPublicKeyFile: '/run/secrets/manifestpublic',
+    });
+    expect(() => providerCatalogEnvironment({ ...source, SECRET_STORE_BEARER_TOKEN: undefined })).toThrow('SECRET_STORE_BEARER_TOKEN_INVALID');
   });
 
   it('validates the single Jobs runtime without profiles', () => {
@@ -146,6 +172,7 @@ describe('canonical runtime configuration', () => {
     const infrastructure = {
       LOCAL_TLS_KEY_FILE: '/private/local.key',
       LOCAL_TLS_CERT_FILE: '/private/local.crt',
+      LOCAL_BIND_HOST: '0.0.0.0',
       LOCAL_SECRETS_FILE: '/private/secrets.json',
       LOCAL_SECRETS_PORT: '8443',
       LOCAL_KMS_PORT: '8444',
@@ -154,9 +181,12 @@ describe('canonical runtime configuration', () => {
       LOCAL_KMS_BEARER_TOKEN: kmsBearerToken,
       LOCAL_OBJECTS_PORT: '8445',
       LOCAL_OBJECTS_DIRECTORY: '/private/objects',
+      LOCAL_OBJECTS_PUBLIC_BASE_URL: 'https://objects.example.com',
       LOCAL_OBJECTS_TOKEN: 'local-object-token-value',
     };
-    expect(localInfrastructureEnvironment(infrastructure).objectsPort).toBe(8445);
+    expect(localInfrastructureEnvironment(infrastructure)).toMatchObject({ bindHost: '0.0.0.0', objectsPort: 8445, objectsPublicBaseUrl: 'https://objects.example.com' });
+    expect(localInfrastructureEnvironment({ ...infrastructure, LOCAL_BIND_HOST: undefined }).bindHost).toBe('127.0.0.1');
+    expect(() => localInfrastructureEnvironment({ ...infrastructure, LOCAL_BIND_HOST: 'localhost' })).toThrow('LOCAL_BIND_HOST_INVALID');
     expect(localComposeEnvironment({})).toEqual({ project: undefined, postgresPort: 5432, redisPort: 6379 });
     expect(localComposeEnvironment({ LOCAL_COMPOSE_PROJECT: 'isolated', LOCAL_POSTGRES_PORT: '55432', LOCAL_REDIS_PORT: '56379' })).toEqual({
       project: 'isolated',
@@ -178,7 +208,13 @@ describe('canonical runtime configuration', () => {
       KMS_BEARER_TOKEN: kmsBearerToken,
       SERVICE_VERSION: 'local-test',
     };
-    expect(localSeedEnvironment(seed)).toMatchObject({ adminDatabaseConnectionRef: 'shop/local/database/admin', serviceVersion: 'local-test' });
+    expect(localSeedEnvironment(seed)).toMatchObject({
+      adminDatabaseConnectionRef: 'shop/local/database/admin',
+      apiEndpoint: 'http://127.0.0.1:3001',
+      serviceVersion: 'local-test',
+    });
+    expect(localSeedEnvironment({ ...seed, LOCAL_API_ENDPOINT: 'http://api:3001' }).apiEndpoint).toBe('http://api:3001');
+    expect(() => localSeedEnvironment({ ...seed, LOCAL_API_ENDPOINT: 'http://attacker.example:3001' })).toThrow('LOCAL_API_ENDPOINT_INVALID');
   });
 
   it('owns Auth and Storefront origins, versions and local exceptions in one fail-closed source', () => {

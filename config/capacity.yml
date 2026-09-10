@@ -106,7 +106,7 @@ runtime:
     maximumPriceDriftMinor: 0
     confirmationTokenBytes: 32
   risk:
-    syncDeadlineMilliseconds: 80
+    syncDeadlineMilliseconds: 3000
     complexScoreRules: 20
     failClosed: [high, critical]
     signalRetentionDays:

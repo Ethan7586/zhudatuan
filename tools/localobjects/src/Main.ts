@@ -6,7 +6,7 @@ import { LocalObjects } from './LocalObjects';
 
 const environment = localObjectEnvironment();
 const port = environment.objectsPort;
-const objects = new LocalObjects(environment.objectsDirectory, environment.objectsToken, `https://127.0.0.1:${port}`);
+const objects = new LocalObjects(environment.objectsDirectory, environment.objectsToken, environment.objectsPublicBaseUrl);
 await objects.initialize();
 
 const handler: LocalHandler = async (request) => {
@@ -84,5 +84,7 @@ await startLocalHttps(
     certificateFile: environment.tlsCertificateFile,
     keyFile: environment.tlsKeyFile,
   },
-  IMPORT_CAPACITY.maximumFileBytes
+  IMPORT_CAPACITY.maximumFileBytes,
+  undefined,
+  environment.bindHost
 );

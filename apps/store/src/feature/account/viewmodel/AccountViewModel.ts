@@ -19,7 +19,6 @@ export const accountViewModel = defineStoreViewModel({
         description: '记录交班说明并立即结束当前门店会话。',
         confirmation: '提交后本机当前会话立即失效，需要下一位员工重新登录。',
         tone: 'danger',
-        identityScope: true,
         fields: Object.freeze([actionField('note', '交班说明', { kind: 'textarea', maximumLength: 500 })]),
       }),
     ]),

@@ -13,9 +13,10 @@ objects:
   - id: access.authorization_snapshot
     kind: function
     owner: shopaccessowner
-    source: database/migrations/20260830128000_complete_authorization_snapshot.sql
+    source: database/migrations/20260908012000_complete_surface_membership_targets.sql
     callers:
       - services/commerce/src/modules/access/infrastructure/persistence/PgAuthorizationRepository.ts
+      - services/commerce/src/platform/security/PgAuthorizationResolver.ts
   - id: access.consume_action_proof
     kind: function
     owner: shopaccessowner
@@ -55,7 +56,7 @@ objects:
   - id: access.identity_memberships
     kind: function
     owner: shopaccessowner
-    source: database/migrations/20260903100000_enrich_identity_membership.sql
+    source: database/migrations/20260908012000_complete_surface_membership_targets.sql
     operationalOwner: access
   - id: access.issue_action_proof
     kind: function
@@ -276,12 +277,12 @@ objects:
   - id: capability.membership_authorization
     kind: function
     owner: shopcapabilityowner
-    source: database/migrations/20260904015000_prepare_capability.sql
+    source: database/migrations/20260908014000_optimize_membership_authorization.sql
     operationalOwner: capability
   - id: capability.membership_operations
     kind: function
     owner: shopcapabilityowner
-    source: database/migrations/20260904015000_prepare_capability.sql
+    source: database/migrations/20260908012000_complete_surface_membership_targets.sql
     operationalOwner: capability
   - id: capability.navigation_capabilities
     kind: function
@@ -417,8 +418,7 @@ objects:
     kind: function
     owner: shopexperienceowner
     source: database/migrations/20260909016000_publish_identity_storefront.sql
-    callers:
-      - services/commerce/src/modules/experience/infrastructure/persistence/PgIdentityExperiencePort.ts
+    operationalOwner: experience
   - id: experience.prevent_storefront_handle_change
     kind: function
     owner: shopexperienceowner
@@ -465,7 +465,7 @@ objects:
   - id: finance.account_id
     kind: function
     owner: shopfinanceowner
-    source: database/migrations/20260821042000_benefit_lifecycle.sql
+    source: database/migrations/20260910012500_normalize_finance_digest.sql
     operationalOwner: finance
   - id: finance.append_repair_journal
     kind: function
@@ -515,7 +515,7 @@ objects:
   - id: finance.post
     kind: function
     owner: shopfinanceowner
-    source: database/migrations/20260821042000_benefit_lifecycle.sql
+    source: database/migrations/20260904065000_finalize_constraints.sql
     operationalOwner: finance
   - id: finance.reject_economic_leg_mutation
     kind: function
@@ -614,7 +614,7 @@ objects:
     owner: shopidentityowner
     source: database/migrations/20260904013000_prepare_access_ownership.sql
     callers:
-      - services/commerce/src/platform/security/PgSessionResolver.ts
+      - services/commerce/src/platform/security/PgAuthorizationResolver.ts
   - id: identity.revoke_session_token_family
     kind: function
     owner: shopidentityowner
@@ -708,7 +708,7 @@ objects:
   - id: notification.resource_scope
     kind: function
     owner: shopnotificationowner
-    source: database/migrations/20260821047000_notification_lifecycle.sql
+    source: database/migrations/20260828190000_reconcile_conflicting_history.sql
     operationalOwner: notification
   - id: notification.visible_notifications
     kind: function
@@ -801,7 +801,7 @@ objects:
   - id: organization.webhook_directory
     kind: function
     owner: shoporganizationowner
-    source: database/migrations/20260830124000_harden_directory_provider_boundary.sql
+    source: database/migrations/20260909015000_unify_identity_tenant_reference.sql
     operationalOwner: organization
   - id: payment.guard_attempt_transition
     kind: function
@@ -927,7 +927,7 @@ objects:
   - id: risk.resource_scope
     kind: function
     owner: shopriskowner
-    source: database/migrations/20260821049000_risk_lifecycle.sql
+    source: database/migrations/20260828190000_reconcile_conflicting_history.sql
     operationalOwner: risk
   - id: risk.scope_allowed
     kind: function
@@ -979,7 +979,7 @@ objects:
   - id: runtime.guard_event_version
     kind: function
     owner: shopruntimeowner
-    source: database/migrations/20260904029000_publish_voucher_redemption.sql
+    source: database/migrations/20260904022000_prepare_inventory.sql
     operationalOwner: runtime
   - id: runtime.guard_import_chunk
     kind: function
@@ -1686,10 +1686,26 @@ objects:
   - id: shopapp:function:organization.webhook_directory(uuid):execute
     kind: grant
     owner: shoporganizationowner
-    source: database/migrations/20260830124000_harden_directory_provider_boundary.sql
+    source: database/migrations/20260909015000_unify_identity_tenant_reference.sql
     role: shopapp
     objectType: function
     target: organization.webhook_directory(uuid)
+    privilege: execute
+  - id: shopapp:function:public.digest(bytea,text):execute
+    kind: grant
+    owner: shoppublicowner
+    source: database/migrations/20260904065000_finalize_constraints.sql
+    role: shopapp
+    objectType: function
+    target: public.digest(bytea,text)
+    privilege: execute
+  - id: shopapp:function:public.digest(text,text):execute
+    kind: grant
+    owner: shoppublicowner
+    source: database/migrations/20260904065000_finalize_constraints.sql
+    role: shopapp
+    objectType: function
+    target: public.digest(text,text)
     privilege: execute
   - id: shopapp:function:qualification.resource_scope(text):execute
     kind: grant
@@ -2018,6 +2034,14 @@ objects:
     role: shopapp
     objectType: schema
     target: pricing
+    privilege: usage
+  - id: shopapp:schema:public:usage
+    kind: grant
+    owner: shoppublicowner
+    source: database/migrations/20260904065000_finalize_constraints.sql
+    role: shopapp
+    objectType: schema
+    target: public
     privilege: usage
   - id: shopapp:schema:qualification:usage
     kind: grant
@@ -11859,6 +11883,22 @@ objects:
     objectType: function
     target: notification.visible_notifications(text,boolean)
     privilege: execute
+  - id: shopjob:function:public.digest(bytea,text):execute
+    kind: grant
+    owner: shoppublicowner
+    source: database/migrations/20260904065000_finalize_constraints.sql
+    role: shopjob
+    objectType: function
+    target: public.digest(bytea,text)
+    privilege: execute
+  - id: shopjob:function:public.digest(text,text):execute
+    kind: grant
+    owner: shoppublicowner
+    source: database/migrations/20260904065000_finalize_constraints.sql
+    role: shopjob
+    objectType: function
+    target: public.digest(text,text)
+    privilege: execute
   - id: shopjob:function:qualification.resource_scope(text):execute
     kind: grant
     owner: shopqualificationowner
@@ -12154,6 +12194,14 @@ objects:
     role: shopjob
     objectType: schema
     target: pricing
+    privilege: usage
+  - id: shopjob:schema:public:usage
+    kind: grant
+    owner: shoppublicowner
+    source: database/migrations/20260904065000_finalize_constraints.sql
+    role: shopjob
+    objectType: schema
+    target: public
     privilege: usage
   - id: shopjob:schema:qualification:usage
     kind: grant
@@ -22171,6 +22219,30 @@ objects:
     objectType: view
     target: benefit.balance
     privilege: select
+  - id: shopmigration:function:finance.account_id(text,text,text):execute
+    kind: grant
+    owner: shopfinanceowner
+    source: database/migrations/20260910012500_normalize_finance_digest.sql
+    role: shopmigration
+    objectType: function
+    target: finance.account_id(text,text,text)
+    privilege: execute
+  - id: shopmigration:function:public.digest(bytea,text):execute
+    kind: grant
+    owner: shoppublicowner
+    source: database/migrations/20260904065000_finalize_constraints.sql
+    role: shopmigration
+    objectType: function
+    target: public.digest(bytea,text)
+    privilege: execute
+  - id: shopmigration:function:public.digest(text,text):execute
+    kind: grant
+    owner: shoppublicowner
+    source: database/migrations/20260904065000_finalize_constraints.sql
+    role: shopmigration
+    objectType: function
+    target: public.digest(text,text)
+    privilege: execute
   - id: shopmigration:function:runtime.record_migration_evidence(text,bigint,bigint,numeric,numeric,text,text):execute
     kind: grant
     owner: shopruntimeowner
@@ -22814,7 +22886,7 @@ objects:
   - id: access.purposeproof.migrationaccess
     kind: policy
     owner: shopaccessowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904057000_prepare_security_controls.sql
   - id: access.purposeproof.moduleowner
     kind: policy
     owner: shopaccessowner
@@ -22898,7 +22970,7 @@ objects:
   - id: access.roletemplate.migrationaccess
     kind: policy
     owner: shopaccessowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904013000_prepare_access_ownership.sql
   - id: access.roletemplate.moduleowner
     kind: policy
     owner: shopaccessowner
@@ -22954,7 +23026,7 @@ objects:
   - id: access.separationrule.migrationaccess
     kind: policy
     owner: shopaccessowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904013000_prepare_access_ownership.sql
   - id: access.separationrule.moduleowner
     kind: policy
     owner: shopaccessowner
@@ -23386,7 +23458,7 @@ objects:
   - id: audit.sensitiveaccess.migrationaccess
     kind: policy
     owner: shopauditowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904057000_prepare_security_controls.sql
   - id: audit.sensitiveaccess.moduleowner
     kind: policy
     owner: shopauditowner
@@ -23786,7 +23858,7 @@ objects:
   - id: capability.capabilityset.migrationaccess
     kind: policy
     owner: shopcapabilityowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904015000_prepare_capability.sql
   - id: capability.capabilityset.moduleowner
     kind: policy
     owner: shopcapabilityowner
@@ -23834,7 +23906,7 @@ objects:
   - id: capability.entitlement.appscope
     kind: policy
     owner: shopcapabilityowner
-    source: database/migrations/20260821030000_revoke_public_access.sql
+    source: database/migrations/20260828190000_reconcile_conflicting_history.sql
   - id: capability.entitlement.jobscope
     kind: policy
     owner: shopcapabilityowner
@@ -23870,7 +23942,7 @@ objects:
   - id: capability.entitlementhistory.migrationaccess
     kind: policy
     owner: shopcapabilityowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904015000_prepare_capability.sql
   - id: capability.entitlementhistory.moduleowner
     kind: policy
     owner: shopcapabilityowner
@@ -24382,7 +24454,7 @@ objects:
   - id: catalog.salechainhead.migrationaccess
     kind: policy
     owner: shopcatalogowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904045000_prepare_catalog_salechain.sql
   - id: catalog.salechainhead.moduleowner
     kind: policy
     owner: shopcatalogowner
@@ -24994,7 +25066,7 @@ objects:
   - id: experience.releasehead.migrationaccess
     kind: policy
     owner: shopexperienceowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904047000_prepare_experience_release.sql
   - id: experience.releasehead.moduleowner
     kind: policy
     owner: shopexperienceowner
@@ -25550,7 +25622,7 @@ objects:
   - id: finance.postingreference.migrationaccess
     kind: policy
     owner: shopfinanceowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904053000_prepare_finance_ledger.sql
   - id: finance.postingreference.moduleowner
     kind: policy
     owner: shopfinanceowner
@@ -26470,7 +26542,7 @@ objects:
   - id: identity.federationtransaction.federationapp
     kind: policy
     owner: shopidentityowner
-    source: database/migrations/20260829111000_secure_identity_federation.sql
+    source: database/migrations/20260909015000_unify_identity_tenant_reference.sql
   - id: identity.federationtransaction.federationjob
     kind: policy
     owner: shopidentityowner
@@ -26598,7 +26670,7 @@ objects:
   - id: identity.linkcase.linkcaseapp
     kind: policy
     owner: shopidentityowner
-    source: database/migrations/20260830111000_generalize_identity_linkcase.sql
+    source: database/migrations/20260909015000_unify_identity_tenant_reference.sql
   - id: identity.linkcase.linkcasejob
     kind: policy
     owner: shopidentityowner
@@ -26606,7 +26678,7 @@ objects:
   - id: identity.linkcase.linkcasepublic
     kind: policy
     owner: shopidentityowner
-    source: database/migrations/20260830111000_generalize_identity_linkcase.sql
+    source: database/migrations/20260909015000_unify_identity_tenant_reference.sql
   - id: identity.linkcase.migrationaccess
     kind: policy
     owner: shopidentityowner
@@ -26734,7 +26806,7 @@ objects:
   - id: identity.provider.providerapp
     kind: policy
     owner: shopidentityowner
-    source: database/migrations/20260829111000_secure_identity_federation.sql
+    source: database/migrations/20260909015000_unify_identity_tenant_reference.sql
   - id: identity.provider.providerjob
     kind: policy
     owner: shopidentityowner
@@ -26766,7 +26838,7 @@ objects:
   - id: identity.providerhealth.providerhealthapp
     kind: policy
     owner: shopidentityowner
-    source: database/migrations/20260829116000_add_federation_cleanup_jobs.sql
+    source: database/migrations/20260909015000_unify_identity_tenant_reference.sql
   - id: identity.providerhealth.providerhealthjob
     kind: policy
     owner: shopidentityowner
@@ -26794,7 +26866,7 @@ objects:
   - id: identity.providersecretrotation.rotationapp
     kind: policy
     owner: shopidentityowner
-    source: database/migrations/20260829111000_secure_identity_federation.sql
+    source: database/migrations/20260909015000_unify_identity_tenant_reference.sql
   - id: identity.providersecretrotation.rotationjob
     kind: policy
     owner: shopidentityowner
@@ -26802,7 +26874,7 @@ objects:
   - id: identity.refreshtoken.migrationaccess
     kind: policy
     owner: shopidentityowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904016000_prepare_identity.sql
   - id: identity.refreshtoken.moduleowner
     kind: policy
     owner: shopidentityowner
@@ -27510,7 +27582,7 @@ objects:
   - id: member.address.migrationaccess
     kind: policy
     owner: shopmemberowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904018000_prepare_member.sql
   - id: member.address.moduleowner
     kind: policy
     owner: shopmemberowner
@@ -27538,7 +27610,7 @@ objects:
   - id: member.favorite.migrationaccess
     kind: policy
     owner: shopmemberowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904018000_prepare_member.sql
   - id: member.favorite.moduleowner
     kind: policy
     owner: shopmemberowner
@@ -27558,7 +27630,7 @@ objects:
   - id: member.preference.migrationaccess
     kind: policy
     owner: shopmemberowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904018000_prepare_member.sql
   - id: member.preference.moduleowner
     kind: policy
     owner: shopmemberowner
@@ -28114,7 +28186,7 @@ objects:
   - id: ordering.importreceipt.migrationaccess
     kind: policy
     owner: shoporderowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904027500_prepare_order.sql
   - id: ordering.importreceipt.moduleowner
     kind: policy
     owner: shoporderowner
@@ -28206,7 +28278,7 @@ objects:
   - id: ordering.paymenteffect.migrationaccess
     kind: policy
     owner: shoporderowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904027500_prepare_order.sql
   - id: ordering.paymenteffect.moduleowner
     kind: policy
     owner: shoporderowner
@@ -28714,7 +28786,7 @@ objects:
   - id: organization.directorypreviewpage.migrationaccess
     kind: policy
     owner: shoporganizationowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904017000_prepare_organization.sql
   - id: organization.directorypreviewpage.moduleowner
     kind: policy
     owner: shoporganizationowner
@@ -28738,7 +28810,7 @@ objects:
   - id: organization.directorypreviewsubject.migrationaccess
     kind: policy
     owner: shoporganizationowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904017000_prepare_organization.sql
   - id: organization.directorypreviewsubject.moduleowner
     kind: policy
     owner: shoporganizationowner
@@ -28798,7 +28870,7 @@ objects:
   - id: organization.mall.migrationaccess
     kind: policy
     owner: shoporganizationowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904017000_prepare_organization.sql
   - id: organization.mall.moduleowner
     kind: policy
     owner: shoporganizationowner
@@ -28818,7 +28890,7 @@ objects:
   - id: organization.membership.migrationaccess
     kind: policy
     owner: shoporganizationowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904017000_prepare_organization.sql
   - id: organization.membership.moduleowner
     kind: policy
     owner: shoporganizationowner
@@ -28974,7 +29046,7 @@ objects:
   - id: partner.agreement.appscope
     kind: policy
     owner: shoppartnerowner
-    source: database/migrations/20260821030000_revoke_public_access.sql
+    source: database/migrations/20260828190000_reconcile_conflicting_history.sql
   - id: partner.agreement.jobscope
     kind: policy
     owner: shoppartnerowner
@@ -29226,7 +29298,7 @@ objects:
   - id: partner.store.appscope
     kind: policy
     owner: shoppartnerowner
-    source: database/migrations/20260821030000_revoke_public_access.sql
+    source: database/migrations/20260828190000_reconcile_conflicting_history.sql
   - id: partner.store.jobscope
     kind: policy
     owner: shoppartnerowner
@@ -30478,7 +30550,7 @@ objects:
   - id: reporting.clientprojection.migrationaccess
     kind: policy
     owner: shopreportingowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904062000_publish_ideal_projections.sql
   - id: reporting.clientprojection.moduleowner
     kind: policy
     owner: shopreportingowner
@@ -30534,7 +30606,7 @@ objects:
   - id: reporting.fact.migrationaccess
     kind: policy
     owner: shopreportingowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904032100_harden_reporting_metric.sql
   - id: reporting.fact.moduleowner
     kind: policy
     owner: shopreportingowner
@@ -30566,7 +30638,7 @@ objects:
   - id: reporting.factrevision.migrationaccess
     kind: policy
     owner: shopreportingowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904032300_version_reporting_projection.sql
   - id: reporting.factrevision.moduleowner
     kind: policy
     owner: shopreportingowner
@@ -30622,7 +30694,7 @@ objects:
   - id: reporting.financerevision.migrationaccess
     kind: policy
     owner: shopreportingowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904032300_version_reporting_projection.sql
   - id: reporting.financerevision.moduleowner
     kind: policy
     owner: shopreportingowner
@@ -30650,7 +30722,7 @@ objects:
   - id: reporting.metric.migrationaccess
     kind: policy
     owner: shopreportingowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904032100_harden_reporting_metric.sql
   - id: reporting.metric.moduleowner
     kind: policy
     owner: shopreportingowner
@@ -30702,7 +30774,7 @@ objects:
   - id: reporting.orderrevision.migrationaccess
     kind: policy
     owner: shopreportingowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904032300_version_reporting_projection.sql
   - id: reporting.orderrevision.moduleowner
     kind: policy
     owner: shopreportingowner
@@ -30730,7 +30802,7 @@ objects:
   - id: reporting.period.migrationaccess
     kind: policy
     owner: shopreportingowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904032300_version_reporting_projection.sql
   - id: reporting.period.moduleowner
     kind: policy
     owner: shopreportingowner
@@ -30786,7 +30858,7 @@ objects:
   - id: reporting.snapshot.migrationaccess
     kind: policy
     owner: shopreportingowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904056000_prepare_reporting_snapshots.sql
   - id: reporting.snapshot.moduleowner
     kind: policy
     owner: shopreportingowner
@@ -30854,7 +30926,7 @@ objects:
   - id: risk.action.migrationaccess
     kind: policy
     owner: shopriskowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904032600_harden_risk_decisions.sql
   - id: risk.action.moduleowner
     kind: policy
     owner: shopriskowner
@@ -30886,7 +30958,7 @@ objects:
   - id: risk.assessment.migrationaccess
     kind: policy
     owner: shopriskowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904032600_harden_risk_decisions.sql
   - id: risk.assessment.moduleowner
     kind: policy
     owner: shopriskowner
@@ -31158,7 +31230,7 @@ objects:
   - id: runtime.businessreference.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904059000_backfill_business_references.sql
   - id: runtime.businessreference.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -31218,7 +31290,7 @@ objects:
   - id: runtime.deadletters.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904011000_prepare_runtime_tasks.sql
   - id: runtime.deadletters.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -31314,7 +31386,7 @@ objects:
   - id: runtime.exports.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904011000_prepare_runtime_tasks.sql
   - id: runtime.exports.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -31378,7 +31450,7 @@ objects:
   - id: runtime.import_chunks.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904011000_prepare_runtime_tasks.sql
   - id: runtime.import_chunks.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -31410,7 +31482,7 @@ objects:
   - id: runtime.import_errors.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904020000_prepare_catalog.sql
   - id: runtime.import_errors.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -31438,7 +31510,7 @@ objects:
   - id: runtime.imports.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904011000_prepare_runtime_tasks.sql
   - id: runtime.imports.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -31502,7 +31574,7 @@ objects:
   - id: runtime.job_attempts.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904011000_prepare_runtime_tasks.sql
   - id: runtime.job_attempts.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -31534,7 +31606,7 @@ objects:
   - id: runtime.jobs.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904011000_prepare_runtime_tasks.sql
   - id: runtime.jobs.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -31566,7 +31638,7 @@ objects:
   - id: runtime.leases.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904011000_prepare_runtime_tasks.sql
   - id: runtime.leases.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -31762,7 +31834,7 @@ objects:
   - id: runtime.partitionpolicy.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904058000_prepare_partitioning.sql
   - id: runtime.partitionpolicy.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -31914,7 +31986,7 @@ objects:
   - id: runtime.retiredoperation.migrationaccess
     kind: policy
     owner: shopruntimeowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904063000_retire_legacy_contract.sql
   - id: runtime.retiredoperation.moduleowner
     kind: policy
     owner: shopruntimeowner
@@ -32498,7 +32570,7 @@ objects:
   - id: voucher.actionbatch.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.actionbatch.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -32526,7 +32598,7 @@ objects:
   - id: voucher.actionitem.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.actionitem.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -32554,7 +32626,7 @@ objects:
   - id: voucher.activationattempt.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.activationattempt.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -32582,7 +32654,7 @@ objects:
   - id: voucher.credential.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.credential.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -32610,7 +32682,7 @@ objects:
   - id: voucher.credentialpool.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.credentialpool.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -32702,7 +32774,7 @@ objects:
   - id: voucher.holder.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.holder.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -32730,7 +32802,7 @@ objects:
   - id: voucher.issuebatch.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.issuebatch.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -32758,7 +32830,7 @@ objects:
   - id: voucher.issueitem.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.issueitem.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -32786,7 +32858,7 @@ objects:
   - id: voucher.issueorder.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.issueorder.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33222,7 +33294,7 @@ objects:
   - id: voucher.migrationsource.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904050000_prepare_voucher_model.sql
   - id: voucher.migrationsource.migrationsourcejob
     kind: policy
     owner: shopvoucherowner
@@ -33246,7 +33318,7 @@ objects:
   - id: voucher.product.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.product.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33274,7 +33346,7 @@ objects:
   - id: voucher.productversion.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.productversion.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33302,7 +33374,7 @@ objects:
   - id: voucher.redemption.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.redemption.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33330,7 +33402,7 @@ objects:
   - id: voucher.refund.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.refund.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33358,7 +33430,7 @@ objects:
   - id: voucher.retirement.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904064000_retire_legacy_voucher.sql
   - id: voucher.retirement.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33382,7 +33454,7 @@ objects:
   - id: voucher.searchsnapshot.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.searchsnapshot.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33410,7 +33482,7 @@ objects:
   - id: voucher.searchsnapshotitem.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.searchsnapshotitem.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33438,7 +33510,7 @@ objects:
   - id: voucher.stockrequest.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.stockrequest.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33466,7 +33538,7 @@ objects:
   - id: voucher.tenderhold.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.tenderhold.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33494,7 +33566,7 @@ objects:
   - id: voucher.timeline.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.timeline.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -33522,7 +33594,7 @@ objects:
   - id: voucher.voucher.migrationaccess
     kind: policy
     owner: shopvoucherowner
-    source: database/migrations/20260904065000_finalize_constraints.sql
+    source: database/migrations/20260904028200_prepare_voucher.sql
   - id: voucher.voucher.moduleowner
     kind: policy
     owner: shopvoucherowner
@@ -36028,11 +36100,6 @@ objects:
     owner: shoporderowner
     source: database/migrations/20260904027500_prepare_order.sql
     operationalOwner: order
-  - id: ordering.line.ordering_line_immutable
-    kind: trigger
-    owner: shoporderowner
-    source: database/migrations/20260829109000_runtime_role_hardcut.sql
-    operationalOwner: order
   - id: ordering.line.orderlineguard
     kind: trigger
     owner: shoporderowner
@@ -36231,7 +36298,7 @@ objects:
   - id: runtime.inbox.activeevent
     kind: trigger
     owner: shopruntimeowner
-    source: database/migrations/20260904029000_publish_voucher_redemption.sql
+    source: database/migrations/20260904022000_prepare_inventory.sql
     operationalOwner: runtime
   - id: runtime.jobs.runtime_job_identity_guard
     kind: trigger
@@ -36241,7 +36308,7 @@ objects:
   - id: runtime.outbox.activeevent
     kind: trigger
     owner: shopruntimeowner
-    source: database/migrations/20260904029000_publish_voucher_redemption.sql
+    source: database/migrations/20260904022000_prepare_inventory.sql
     operationalOwner: runtime
   - id: runtime.outbox.runtime_outbox_aggregate_version
     kind: trigger

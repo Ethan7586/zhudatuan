@@ -17,14 +17,10 @@ import { orderKey, orderRecoveryKey } from './OrderQueryKey';
 import { readCursor, readDetailTab, readFilter, readPage, readSelected, readView, writeOrderCursor, writeOrderFilter, writeOrderSelection, writeOrderTab, writeOrderView } from './OrderSearch';
 import { orderRecoveryAccess, orderRecoveryState } from './RecoveryViewModel';
 import { usePreference } from '../../../shared/preference/PreferenceState';
-import { validateImportFile } from '../../../shared/import/ImportUploadGateway';
 import { downloadImportTemplate } from '../../../shared/import/ImportTemplate';
+import { importValidation, type OrderImportEditor } from './OrderImportEditor';
 
-export interface OrderImportEditor {
-  readonly step: 1 | 2 | 3;
-  readonly file: File | null;
-  readonly confirmed: boolean;
-}
+export type { OrderImportEditor } from './OrderImportEditor';
 
 export function useOrderListViewModel(context: ConsoleContext, dependencies: OrderDependencies, requestStepup: () => void) {
   const navigate = useNavigate();
@@ -207,17 +203,6 @@ export function useOrderListViewModel(context: ConsoleContext, dependencies: Ord
     }),
     pagination: Object.freeze({ canFirst: pageindex > 1, canPrevious, canNext: nextCursor !== undefined }),
   });
-}
-
-function importValidation(editor: OrderImportEditor | undefined, assurance: number): string | undefined {
-  if (!editor) return undefined;
-  if (editor.step === 1) return undefined;
-  if (!editor.file) return '请选择 CSV 或 XLSX 文件。';
-  const fileError = validateImportFile(editor.file);
-  if (fileError) return fileError;
-  if (editor.step === 2) return undefined;
-  if (!editor.confirmed) return '请确认服务端将校验来源证明、映射、金额分解和重复订单。';
-  return assurance < 3 ? '提交外部订单前请完成高强度二次验证。' : undefined;
 }
 
 export type ListViewModel = ReturnType<typeof useOrderListViewModel>;

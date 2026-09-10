@@ -4,6 +4,7 @@ import type { DatabasePool } from '../../platform/database/Pool';
 import type { ReadTransactionContext, TransactionMode, WriteTransactionContext } from '../../platform/database/TransactionContext';
 import type { TransactionManager, TransactionOptions } from '../../platform/database/TransactionManager';
 import { pgTransactionState } from './PgTransactionState';
+import { pgContextLiteral, pgContextParameters, pgContextValues } from './PgContext';
 
 type Sleep = (milliseconds: number, signal: AbortSignal) => Promise<void>;
 
@@ -53,10 +54,15 @@ export class PgTransactionManager implements TransactionManager {
       const active = { client, context, mode, open: true };
       try {
         assertAvailable(options);
-        await client.query(mode === 'write' ? `begin isolation level ${options.isolation ?? 'serializable'}` : 'begin read only');
+        const begin = mode === 'write' ? `begin isolation level ${options.isolation ?? 'serializable'}` : 'begin read only';
+        if (this.pool.batchedTransactionStart === true) {
+          await client.query(`${begin};${pgContextLiteral(options)}`);
+        } else {
+          await client.query(begin);
+          assertAvailable(options);
+          await client.query(pgContextParameters(1), pgContextValues(options) as unknown[]);
+        }
         began = true;
-        assertAvailable(options);
-        await applyContext(client, options);
         const result = await pgTransactionState.run(active, () => (work as (context: ReadTransactionContext) => Promise<T>)(context));
         active.open = false;
         await client.query('commit');
@@ -74,26 +80,6 @@ export class PgTransactionManager implements TransactionManager {
     }
     throw new Error('TRANSACTION_RETRY_EXHAUSTED');
   }
-}
-
-function applyContext(client: PoolClient, options: TransactionOptions): Promise<unknown> {
-  const statementTimeout = String(Math.max(1, Math.ceil(options.deadline - Date.now())));
-  return client.query(
-    `select set_config('app.tenant_id',$1,true),set_config('app.membership_id',$2,true),set_config('app.scope_id',$3,true),
-    set_config('app.actor_id',$4,true),set_config('app.trace_id',$5,true),set_config('app.operation_id',$6,true),set_config('app.workload',$7,true),
-    set_config('app.authorization_snapshot',$8,true),set_config('statement_timeout',$9,true)`,
-    [
-      options.tenant,
-      options.membership,
-      options.scope,
-      options.actor,
-      options.trace,
-      options.operation,
-      options.workload === 'jobs' ? 'jobs' : 'api',
-      options.authorization === undefined ? '' : JSON.stringify(options.authorization),
-      statementTimeout,
-    ]
-  );
 }
 
 async function rollback(client: { query(text: string): Promise<unknown> }): Promise<void> {

@@ -1,6 +1,14 @@
 import { actionField, requiredText, type OperatorAction } from '@shop/presentation/actions';
 import { defineStoreViewModel } from '../../../shared/FeatureViewModel';
-import { operatorCollection as displayCollection, operatorItems as dataItems, operatorNumber as recordNumber, operatorRow as displayRow, operatorText as recordText, selectedOperatorRecord as selectedRecord, type OperatorRecord as DataRecord } from '@shop/presentation/operator';
+import {
+  operatorCollection as displayCollection,
+  operatorItems as dataItems,
+  operatorNumber as recordNumber,
+  operatorRow as displayRow,
+  operatorText as recordText,
+  selectedOperatorRecord as selectedRecord,
+  type OperatorRecord as DataRecord,
+} from '@shop/presentation/operator';
 
 const register = Object.freeze({
   id: 'register',
@@ -8,7 +16,6 @@ const register = Object.freeze({
   description: '将扫码枪、平板或收银设备绑定到当前门店。',
   confirmation: '仅登记由门店管理的设备；设备码不会在页面回显。',
   tone: 'primary',
-  identityScope: true,
   expectedVersion: 0,
   fields: Object.freeze([actionField('id', '设备编号', { kind: 'scan', maximumLength: 128 }), actionField('label', '设备名称', { maximumLength: 120 }), actionField('fingerprint', '设备码', { kind: 'password', maximumLength: 512 })]),
 } as const);
@@ -52,7 +59,6 @@ function stateAction(id: string, label: string, description: string, item: DataR
     description,
     confirmation: `${description}提交前请再次输入设备码。`,
     tone,
-    identityScope: true,
     requiresSelection: true,
     expectedVersion,
     fields: Object.freeze([actionField('label', '设备名称', { maximumLength: 120, value: recordText(item, 'label') }), actionField('fingerprint', '设备码', { kind: 'password', maximumLength: 512 })]),

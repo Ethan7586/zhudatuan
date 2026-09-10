@@ -9,6 +9,9 @@ do $precondition$ begin
   end if;
 end $precondition$;
 
+create policy invitationmigration on identity.invitation for all to shopmigration
+  using(true) with check(true);
+
 alter table identity.invitation add column created_by text;
 alter table identity.invitation add column updated_at timestamptz;
 update identity.invitation
@@ -61,5 +64,7 @@ do $assert$ begin
     raise exception 'INVITATION_MEMBERSHIP_TARGET_TRIGGER_MISSING';
   end if;
 end $assert$;
+
+drop policy invitationmigration on identity.invitation;
 
 commit;

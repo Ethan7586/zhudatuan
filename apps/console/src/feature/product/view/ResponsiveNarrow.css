@@ -1,0 +1,16 @@
+@media (max-width: 767px) {
+  .productpage {
+    border-inline: 0;
+    border-radius: 0;
+  }
+}
+@media (max-width: 30rem) {
+  .producttablewrap tbody td {
+    grid-template-columns: minmax(6.25rem, 36%) minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .productpage {
+    transition: none;
+  }
+}

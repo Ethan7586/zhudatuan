@@ -1,6 +1,15 @@
 import { actionField, optionalText, type OperatorAction } from '@shop/presentation/actions';
 import { defineStoreViewModel } from '../../../shared/FeatureViewModel';
-import { fulfillmentWorkStatus as workStatus, operatorCollection as displayCollection, operatorItems as dataItems, operatorNumber as recordNumber, operatorRow as displayRow, operatorText as recordText, selectedOperatorRecord as selectedRecord, type OperatorRecord as DataRecord } from '@shop/presentation/operator';
+import {
+  fulfillmentWorkStatus as workStatus,
+  operatorCollection as displayCollection,
+  operatorItems as dataItems,
+  operatorNumber as recordNumber,
+  operatorRow as displayRow,
+  operatorText as recordText,
+  selectedOperatorRecord as selectedRecord,
+  type OperatorRecord as DataRecord,
+} from '@shop/presentation/operator';
 
 const transition = Object.freeze({ submitted: ['accept', '接单', '确认由当前门店接单。'], accepted: ['prepare', '开始备货', '进入备货状态。'], processing: ['ready', '备货完成', '确认商品已备齐。'] } as const);
 
@@ -54,7 +63,6 @@ function nextAction(item: DataRecord): (OperatorAction & Readonly<{ operation: W
     confirmation: `${selected[2]}提交后将记录当前员工和门店。`,
     tone: 'primary',
     requiresSelection: true,
-    identityScope: true,
     expectedVersion: version,
     fields: Object.freeze([actionField('note', '操作备注', { kind: 'textarea', required: false, maximumLength: 1000 })]),
   });

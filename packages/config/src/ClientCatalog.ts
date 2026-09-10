@@ -1,5 +1,5 @@
 // Generated from config/clients.yml and infrastructure/network/Edge.yml. Do not edit.
-export const CLIENT_CATALOG_CHECKSUM = '63e080b64fb680c0183886c669fe2a58cad5c6fa8caa3190f2f3d2311fbdb50d' as const;
+export const CLIENT_CATALOG_CHECKSUM = 'a073775938dc7ee1f466314289f485a4ddd0003e3f8bea1e133a46331cf34b32' as const;
 const CLIENT_SOURCE = [
   {
     "id": "auth",
@@ -15,7 +15,7 @@ const CLIENT_SOURCE = [
     "transport": "browser",
     "route": "auth",
     "localPort": 3002,
-    "origin": "https://passport.fufu.wang",
+    "origin": "https://passport.yengze.press",
     "localOrigin": "http://127.0.0.1:3002"
   },
   {
@@ -30,7 +30,7 @@ const CLIENT_SOURCE = [
     "transport": "browser",
     "route": "console",
     "localPort": 4173,
-    "origin": "https://console.fufu.wang",
+    "origin": "https://console.yengze.press",
     "localOrigin": "http://127.0.0.1:4173"
   },
   {
@@ -45,7 +45,7 @@ const CLIENT_SOURCE = [
     "transport": "browser",
     "route": "storefront",
     "localPort": 3000,
-    "origin": "https://fufu.wang",
+    "origin": "https://yengze.press",
     "localOrigin": "http://127.0.0.1:3000"
   },
   {
@@ -60,7 +60,7 @@ const CLIENT_SOURCE = [
     "transport": "wechat",
     "route": "miniapp",
     "localPort": 4174,
-    "origin": "https://miniapp.fufu.wang",
+    "origin": "https://miniapp.yengze.press",
     "localOrigin": "http://127.0.0.1:4174"
   },
   {
@@ -75,7 +75,7 @@ const CLIENT_SOURCE = [
     "transport": "browser",
     "route": "store",
     "localPort": 4175,
-    "origin": "https://store.fufu.wang",
+    "origin": "https://store.yengze.press",
     "localOrigin": "http://127.0.0.1:4175"
   },
   {
@@ -90,7 +90,7 @@ const CLIENT_SOURCE = [
     "transport": "browser",
     "route": "supplier",
     "localPort": 4176,
-    "origin": "https://supplier.fufu.wang",
+    "origin": "https://supplier.yengze.press",
     "localOrigin": "http://127.0.0.1:4176"
   }
 ] as const;

@@ -2,10 +2,10 @@ begin;
 
 do $precondition$
 begin
-  if not exists(select 1 from runtime.schemaversion where version='20260910012000') then
+  if not exists(select 1 from runtime.schemaversion where version='20260910013000') then
     raise exception 'NAVIGATION_CAPABILITY_CODE_PREVIOUS_HEAD_MISSING';
   end if;
-  if exists(select 1 from runtime.schemaversion where version='20260910013000') then
+  if exists(select 1 from runtime.schemaversion where version='20260910174500') then
     raise exception 'NAVIGATION_CAPABILITY_CODE_ALREADY_APPLIED';
   end if;
 end
@@ -34,7 +34,7 @@ update capability.capabilityset
 set version=version+1,updated_at=clock_timestamp();
 
 select runtime.record_migration_evidence(
-  '20260910013000',
+  '20260910174500',
   (select count(*) from capability.effective_entitlements(array['enterprise-zhudatuan']) effective
     join capability.capability catalog on catalog.id=effective.capability_id
     left join capability.operation operation on operation.capability_id=catalog.id
@@ -47,10 +47,10 @@ select runtime.record_migration_evidence(
 );
 
 insert into runtime.schemaversion(version,checksum)
-values('20260910013000',encode(public.digest('20260910013000_publish_navigation_capability_codes','sha256'),'hex'));
+values('20260910174500',encode(public.digest('20260910174500_publish_navigation_capability_codes','sha256'),'hex'));
 
 update runtime.schemahead set
-  migration_head='20260910013000',
+  migration_head='20260910174500',
   migration_count=(select count(*) from runtime.schemaversion),
   checksum=(select encode(public.digest(string_agg(version||chr(31)||checksum,chr(30) order by version),'sha256'),'hex') from runtime.schemaversion),
   published_by='migration:capability',published_at=clock_timestamp()
@@ -87,7 +87,7 @@ begin
   end if;
   if not exists(
     select 1 from runtime.schemahead
-    where artifact='commerce' and migration_head='20260910013000'
+    where artifact='commerce' and migration_head='20260910174500'
       and migration_count=(select count(*) from runtime.schemaversion)
   ) then raise exception 'NAVIGATION_CAPABILITY_SCHEMA_HEAD_INVALID'; end if;
 end

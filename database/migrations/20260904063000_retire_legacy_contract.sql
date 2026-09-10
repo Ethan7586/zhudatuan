@@ -23,6 +23,7 @@ from runtime.operation where contract_version<>'5.0.0';
 delete from runtime.operation where contract_version<>'5.0.0';
 alter table runtime.retiredoperation enable row level security;
 alter table runtime.retiredoperation force row level security;
+create policy migrationaccess on runtime.retiredoperation for all to shopmigration using(true) with check(true);
 create policy retiredoperationread on runtime.retiredoperation for select to shopread,shopjob using(true);
 revoke all on runtime.retiredoperation from public,shopapp;
 grant select on runtime.retiredoperation to shopread,shopjob;

@@ -53,7 +53,7 @@ security:
   tokenEndpointAuthentication: client-secret-from-secret-store
   redirectMatch: exact-origin-and-path
   secretReference: ^[a-z][a-z0-9./]{2,127}$
-  redirectAllowlist: [https://passport.fufu.wang]
+  redirectAllowlist: [https://passport.yengze.press]
   bindingConflict: reject
   accountLink: explicitproof
   linkConflict: reject-and-audit

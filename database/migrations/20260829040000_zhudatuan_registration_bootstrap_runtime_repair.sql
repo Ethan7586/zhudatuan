@@ -5,7 +5,7 @@ select pg_advisory_xact_lock(hashtext('zhudatuan:registration-bootstrap-runtime-
 do $boundary_guard$
 begin
   if not (
-    (current_database()='zhudatuan_registration' and current_user='shopmigration')
+    current_user='shopmigration'
     or coalesce((select rolsuper from pg_roles where rolname=current_user),false)
   ) then
     raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_BOUNDARY_INVALID';
@@ -16,7 +16,8 @@ begin
     raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_PREDECESSOR_INVALID';
   end if;
   if exists(select 1 from runtime.schemaversion
-    where version>'20260828183000' and version<>'20260829040000') then
+    where version>'20260828183000'
+      and version not in('20260828190000','20260829040000')) then
     raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_FUTURE_HEAD_INVALID';
   end if;
 end

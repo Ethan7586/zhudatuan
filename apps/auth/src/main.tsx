@@ -4,7 +4,14 @@ import { ClientError } from '@shop/sdk';
 import { Button } from '@shop/design';
 import './style/Auth.css';
 
-const App = lazy(() => import('./app/App'));
+const applicationModule = import('./app/App');
+void Promise.allSettled([
+  import('./feature/login/route/LoginRoute'),
+  import('./feature/invitation/route/InvitationRoute'),
+  import('./feature/membership/route/MembershipRoute'),
+  import('./feature/link/route/LinkRoute'),
+]);
+const App = lazy(() => applicationModule);
 
 function BootStatus() {
   return (

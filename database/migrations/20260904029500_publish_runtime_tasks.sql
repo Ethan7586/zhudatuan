@@ -4,14 +4,29 @@ do $precondition$
 begin
   if not exists(select 1 from runtime.schemaversion where version='20260904029400') then raise exception 'RUNTIME_TASK_PUBLISH_PREVIOUS_HEAD_MISSING'; end if;
   if exists(select 1 from runtime.schemaversion where version='20260904029500') then raise exception 'RUNTIME_TASK_PUBLISH_ALREADY_APPLIED'; end if;
-  if exists(select 1 from runtime.job where state='running') then raise exception 'RUNTIME_JOB_DRAIN_REQUIRED'; end if;
-  if exists(select 1 from member.importjob where id!~'^import:') then raise exception 'MEMBER_IMPORT_ID_RECONCILIATION_REQUIRED'; end if;
+  if exists(select 1 from runtime.job where state='running' and lease_deadline>clock_timestamp()) then raise exception 'RUNTIME_JOB_DRAIN_REQUIRED'; end if;
   if exists(select 1 from member.importjob group by organization_id,sha256 having count(*)>1) then raise exception 'MEMBER_IMPORT_DUPLICATE_RECONCILIATION_REQUIRED'; end if;
 end
 $precondition$;
 
+update runtime.job
+set state='queued',lease_owner=null,lease_deadline=null,available_at=clock_timestamp(),updated_at=clock_timestamp()
+where state='running' and (lease_deadline is null or lease_deadline<=clock_timestamp());
+
+do $drained$
+begin
+  if exists(select 1 from runtime.job where state='running') then raise exception 'RUNTIME_JOB_DRAIN_REQUIRED'; end if;
+end
+$drained$;
+
 create temporary table runtime_job_map on commit drop as
 select id legacy_id,case when id like 'job:%' then id else 'job:migrated:'||md5(id) end task_id from runtime.job;
+
+create temporary table member_import_map on commit drop as
+select id legacy_id,case when id like 'import:%' then id else 'import:'||id end import_id
+from member.importjob;
+create unique index member_import_map_legacy on member_import_map(legacy_id);
+create unique index member_import_map_target on member_import_map(import_id);
 
 insert into runtime.jobs(id,tenant_id,scope_id,kind,owner,queue,payload,state,priority,available_at,lease_owner,lease_deadline,
   fencing_token,checkpoint,progress,cancel_requested_at,attempts,idempotency_key,retention_until,version,created_by,updated_by,created_at,updated_at)
@@ -40,31 +55,54 @@ select resource,'organization-platform-root','organization-platform-root',owner,
 
 insert into runtime.imports(id,tenant_id,scope_id,owner,kind,object_key,file_hash,file_name,media_type,size_bytes,state,rows_total,
   rows_processed,rows_succeeded,rows_failed,checkpoint,error_report_key,idempotency_key,version,created_by,updated_by,created_at,updated_at,retention_until)
-select source.id,source.organization_id,source.organization_id,'member','member',source.object_ref,source.sha256,'member-import.csv','text/csv',1,
+select mapping.import_id,source.organization_id,source.organization_id,'member','member',source.object_ref,source.sha256,'member-import.csv','text/csv',1,
   case source.state when 'validating' then 'preflight' when 'running' then 'ready' when 'reporting' then 'ready' when 'completed' then 'succeeded' else source.state end,
   source.total_count,source.cursor_value,source.success_count,source.failure_count,
   source.validation_summary||jsonb_build_object('migratedFrom',source.id,'lastError',source.last_error,'reportSha256',source.report_sha256,'reportSize',source.report_size),
-  source.report_object_ref,'migration:'||source.id,1,'system:runtimemigration','system:runtimemigration',source.created_at,source.updated_at,
-  greatest(source.updated_at,clock_timestamp())+interval '90 days' from member.importjob source;
+  source.report_object_ref,'migration:'||mapping.import_id,1,'system:runtimemigration','system:runtimemigration',source.created_at,source.updated_at,
+  greatest(source.updated_at,clock_timestamp())+interval '90 days'
+from member.importjob source join member_import_map mapping on mapping.legacy_id=source.id;
 
 insert into runtime.import_chunks(id,tenant_id,scope_id,import_id,sequence,row_start,row_end,payload_hash,payload,state,fencing_token,
   checkpoint,error_count,version,created_at,updated_at)
-select 'importchunk:'||split_part(row.job_id,':',2)||':'||((row.row_number-2)/500)::integer,job.organization_id,job.organization_id,
-  row.job_id,((row.row_number-2)/500)::integer,min(row.row_number),max(row.row_number),
+select 'importchunk:member:'||md5(mapping.import_id)||':'||((row.row_number-2)/500)::integer,job.organization_id,job.organization_id,
+  mapping.import_id,((row.row_number-2)/500)::integer,min(row.row_number),max(row.row_number),
   encode(public.digest(jsonb_agg(jsonb_build_object('row',row.row_number,'payload',row.payload) order by row.row_number)::text,'sha256'),'hex'),
   jsonb_agg(jsonb_build_object('row',row.row_number,'payload',row.payload) order by row.row_number),
   case when max(row.row_number)-1<=job.cursor_value then 'succeeded' else 'pending' end,null,
   jsonb_build_object('migrated',true),0,1,job.created_at,job.updated_at
-from member.importrow row join member.importjob job on job.id=row.job_id
-group by row.job_id,job.organization_id,job.cursor_value,job.created_at,job.updated_at,((row.row_number-2)/500)::integer;
+from member.importrow row
+join member.importjob job on job.id=row.job_id
+join member_import_map mapping on mapping.legacy_id=job.id
+group by mapping.import_id,job.organization_id,job.cursor_value,job.created_at,job.updated_at,((row.row_number-2)/500)::integer;
 
 insert into runtime.import_errors(import_id,scope_id,row_number,reason_code,field,detail)
-select error.job_id,job.organization_id,error.row_number,error.reason_code,error.field,to_jsonb(error.detail)
-from member.importerror error join member.importjob job on job.id=error.job_id on conflict do nothing;
+select mapping.import_id,job.organization_id,error.row_number,error.reason_code,error.field,to_jsonb(error.detail)
+from member.importerror error
+join member.importjob job on job.id=error.job_id
+join member_import_map mapping on mapping.legacy_id=job.id
+on conflict do nothing;
 
 update runtime.import_chunks chunk set error_count=(select count(*) from runtime.import_errors error
   where error.import_id=chunk.import_id and error.row_number between chunk.row_start and chunk.row_end)
-where chunk.import_id in(select id from member.importjob);
+where chunk.import_id in(select import_id from member_import_map);
+
+update runtime.jobs target set payload=jsonb_set(target.payload,'{import}',to_jsonb(mapping.import_id))
+from member_import_map mapping
+where target.payload->>'import'=mapping.legacy_id;
+
+do $memberimportaudit$
+begin
+  if (select count(*) from member_import_map)<>(
+    select count(*) from runtime.imports imported
+    where exists(select 1 from member_import_map mapping where mapping.import_id=imported.id)
+  ) or exists(
+    select 1 from runtime.jobs target join member_import_map mapping on target.payload->>'import'=mapping.legacy_id
+  ) then
+    raise exception 'MEMBER_IMPORT_ID_RECONCILIATION_REQUIRED';
+  end if;
+end
+$memberimportaudit$;
 
 drop function runtime.claim_job(text,text,integer,integer,text);
 drop function runtime.acquire_lease(text,text,integer);

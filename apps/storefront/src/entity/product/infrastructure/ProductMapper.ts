@@ -1,6 +1,8 @@
 import type { OperationOutputFor } from '@shop/contract';
-import type { PresentedProduct, Product, ProductKind, ProductSku } from '../model/Product';
+import type { PresentedProduct, Product, ProductSku } from '../model/Product';
 import { categoryName } from '../../../shared/format/CategoryName';
+import { mapProductKind } from './ProductKindMapper';
+export { mapProductKind } from './ProductKindMapper';
 export type ProductDto = OperationOutputFor<'storefront.catalog.read'>['items'][number];
 export function mapProduct(item: ProductDto): Product {
   const priceMinor = item.price?.amountMinor ?? 0;
@@ -118,16 +120,6 @@ export function presentProduct(product: Product): PresentedProduct {
     applicableStoreName: product.nearbyStoreInfo?.storeName ?? product.supplierName,
     category: product.categoryName,
   });
-}
-
-export function mapProductKind(value: string, category: string): ProductKind {
-  const normalized = category.toLowerCase();
-  if (value === 'physical') return normalized.includes('supermarket') ? 'supermarket' : 'physical';
-  if (value === 'voucher') return 'virtual_coupon';
-  if (normalized.includes('movie')) return 'movie_ticket';
-  if (normalized.includes('nearby') || normalized.includes('store')) return 'nearby_store';
-  if (value === 'service') return 'life_service';
-  return 'unknown';
 }
 
 function specificationValues(value: Readonly<Record<string, unknown>>): Readonly<Record<string, string>> {

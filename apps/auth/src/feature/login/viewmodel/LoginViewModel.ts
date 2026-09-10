@@ -11,11 +11,10 @@ import type { Membership } from '../../membership';
 import { actionFailure, actionSuccess, type ActionResult } from '../../../shared/model/ActionResult';
 import type { EnrollmentCompletion } from '../../enrollment';
 import { loginBusy, useLoginCommand } from './LoginCommandViewModel';
-import { useLoginProviderViewModel } from './LoginProviderViewModel';
+import { NO_LOGIN_METHODS, useLoginProviderViewModel } from './LoginProviderViewModel';
 import { startLoginProvider } from './LoginProviderAction';
 import { invitationIssues, otpIssues, passwordIssues, subjectIssue } from '../model/LoginValidation';
 
-const NO_METHODS: readonly [] = Object.freeze([]);
 export function useLoginViewModel(dependencies: Dependencies, request: SessionRequest, journey: 'login' | 'invitation', onTarget: (target: SessionRequest['target']) => void) {
   const [state, dispatch] = useReducer(loginMachine, request.target, initialLoginState);
   const [fields, setFields] = useState<Readonly<Record<string, string>>>({});
@@ -27,7 +26,7 @@ export function useLoginViewModel(dependencies: Dependencies, request: SessionRe
   );
   const currentBootstrap = 'bootstrap' in state ? state.bootstrap : undefined;
   const command = useLoginCommand(dependencies, state, dispatch);
-  const providerState = useLoginProviderViewModel(dependencies, session, journey === 'login' ? (currentBootstrap?.methods ?? NO_METHODS) : NO_METHODS);
+  const providerState = useLoginProviderViewModel(dependencies, session, journey === 'login' ? (currentBootstrap?.methods ?? NO_LOGIN_METHODS) : NO_LOGIN_METHODS);
   useEffect(() => {
     if (state.phase !== 'bootstrapping') return;
     const controller = new AbortController();

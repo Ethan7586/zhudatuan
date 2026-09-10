@@ -1,0 +1,296 @@
+name: smartwiston
+
+x-node-runtime: &node-runtime
+  image: node:22.22.2-alpine@sha256:8ea2348b068a9544dae7317b4f3aafcdc032df1647bb7d768a05a5cad1a7683f
+  working_dir: /app
+  user: '10001:10001'
+  read_only: true
+  init: true
+  restart: unless-stopped
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  tmpfs:
+    - /tmp:size=128m,mode=1777
+  volumes: [/opt/smart-wiston/current:/app:ro]
+  networks: [runtime]
+
+x-workload-secrets: &workload-secrets
+  - runtimeca
+  - secretstorebearer
+  - kmsbearer
+
+x-workload-entrypoint: &workload-entrypoint
+  - /bin/sh
+  - -ec
+
+x-release-environment: &release-environment /opt/smart-wiston/current/deployment/release.env
+
+services:
+  secretstore:
+    <<: *node-runtime
+    container_name: smartwiston-secretstore
+    command:
+      - |
+        export LOCAL_SECRET_STORE_BEARER_TOKEN="$$(cat /run/secrets/secretstorebearer)"
+        exec node /app/runtime/SecretStoreMain.js
+    entrypoint: *workload-entrypoint
+    environment:
+      LOCAL_BIND_HOST: 0.0.0.0
+      LOCAL_TLS_KEY_FILE: /run/secrets/internaltlskey
+      LOCAL_TLS_CERT_FILE: /run/secrets/internaltlscert
+      LOCAL_SECRETS_FILE: /run/secrets/secretcatalog
+      LOCAL_SECRETS_PORT: '8443'
+    secrets: [internaltlskey, internaltlscert, secretcatalog, secretstorebearer]
+    healthcheck:
+      test: [CMD, wget, --no-check-certificate, -qO-, https://127.0.0.1:8443/health/ready]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 3s
+    mem_limit: 192m
+    cpus: 0.5
+
+  kms:
+    <<: *node-runtime
+    container_name: smartwiston-kms
+    command:
+      - |
+        export LOCAL_KMS_BEARER_TOKEN="$$(cat /run/secrets/kmsbearer)"
+        export LOCAL_KMS_MASTER_KEY="$$(cat /run/secrets/kmsmaster)"
+        exec node /app/runtime/KmsMain.js
+    entrypoint: *workload-entrypoint
+    environment:
+      LOCAL_BIND_HOST: 0.0.0.0
+      LOCAL_TLS_KEY_FILE: /run/secrets/internaltlskey
+      LOCAL_TLS_CERT_FILE: /run/secrets/internaltlscert
+      LOCAL_KMS_PORT: '8444'
+    secrets: [internaltlskey, internaltlscert, kmsbearer, kmsmaster]
+    healthcheck:
+      test: [CMD, wget, --no-check-certificate, -qO-, https://127.0.0.1:8444/health/ready]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 3s
+    mem_limit: 192m
+    cpus: 0.5
+
+  objects:
+    <<: *node-runtime
+    container_name: smartwiston-objects
+    command:
+      - |
+        export LOCAL_OBJECTS_TOKEN="$$(cat /run/secrets/objecttoken)"
+        exec node /app/runtime/ObjectMain.js
+    entrypoint: *workload-entrypoint
+    environment:
+      LOCAL_BIND_HOST: 0.0.0.0
+      LOCAL_TLS_KEY_FILE: /run/secrets/internaltlskey
+      LOCAL_TLS_CERT_FILE: /run/secrets/internaltlscert
+      LOCAL_OBJECTS_PORT: '8445'
+      LOCAL_OBJECTS_DIRECTORY: /var/lib/smartwiston/objects
+      LOCAL_OBJECTS_PUBLIC_BASE_URL: https://img.yengze.press
+    secrets: [internaltlskey, internaltlscert, objecttoken]
+    volumes:
+      - /opt/smart-wiston/current:/app:ro
+      - /opt/smart-wiston/shared/objects:/var/lib/smartwiston/objects
+    ports: [127.0.0.1:18445:8445]
+    healthcheck:
+      test: [CMD, wget, --no-check-certificate, -qO-, https://127.0.0.1:8445/health/ready]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 3s
+    mem_limit: 384m
+    cpus: 1.0
+
+  redis:
+    image: redis:7.4-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
+    container_name: smartwiston-redis
+    user: '999:999'
+    restart: unless-stopped
+    read_only: true
+    init: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    entrypoint: [/bin/sh, -ec]
+    command:
+      - exec redis-server --appendonly yes --requirepass "$$(cat /run/secrets/redispassword)"
+    secrets: [redispassword]
+    volumes: [/opt/smart-wiston/shared/redis:/data]
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    networks: [runtime]
+    healthcheck:
+      test: [CMD-SHELL, redis-cli -a "$$(cat /run/secrets/redispassword)" --no-auth-warning ping | grep -qx PONG]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 3s
+    mem_limit: 256m
+    cpus: 0.5
+
+  api:
+    <<: *node-runtime
+    container_name: smartwiston-api
+    command:
+      - |
+        export SECRET_STORE_BEARER_TOKEN="$$(cat /run/secrets/secretstorebearer)"
+        export KMS_BEARER_TOKEN="$$(cat /run/secrets/kmsbearer)"
+        exec node /app/runtime/ApiMain.js
+    entrypoint: *workload-entrypoint
+    env_file:
+      - /opt/smart-wiston/shared/config/api.env
+      - *release-environment
+    environment: { NODE_EXTRA_CA_CERTS: /run/secrets/runtimeca }
+    secrets: *workload-secrets
+    depends_on:
+      secretstore: { condition: service_healthy }
+      kms: { condition: service_healthy }
+      objects: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports: [127.0.0.1:13301:3001]
+    healthcheck:
+      test: [CMD, wget, -qO-, http://127.0.0.1:3001/health/ready]
+      interval: 5s
+      timeout: 3s
+      retries: 18
+      start_period: 10s
+    mem_limit: 768m
+    cpus: 1.5
+
+  jobs:
+    <<: *node-runtime
+    container_name: smartwiston-jobs
+    command:
+      - |
+        export SECRET_STORE_BEARER_TOKEN="$$(cat /run/secrets/secretstorebearer)"
+        export KMS_BEARER_TOKEN="$$(cat /run/secrets/kmsbearer)"
+        exec node /app/runtime/JobsMain.js
+    entrypoint: *workload-entrypoint
+    env_file:
+      - /opt/smart-wiston/shared/config/jobs.env
+      - *release-environment
+    environment: { NODE_EXTRA_CA_CERTS: /run/secrets/runtimeca }
+    secrets: *workload-secrets
+    depends_on:
+      secretstore: { condition: service_healthy }
+      kms: { condition: service_healthy }
+      objects: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: [CMD, test, -f, /tmp/jobs-ready]
+      interval: 5s
+      timeout: 3s
+      retries: 18
+      start_period: 10s
+    mem_limit: 768m
+    cpus: 1.5
+
+  provider:
+    <<: *node-runtime
+    container_name: smartwiston-provider
+    command:
+      - |
+        export SECRET_STORE_BEARER_TOKEN="$$(cat /run/secrets/secretstorebearer)"
+        export KMS_BEARER_TOKEN="$$(cat /run/secrets/kmsbearer)"
+        exec node /app/runtime/ProviderMain.js
+    entrypoint: *workload-entrypoint
+    env_file:
+      - /opt/smart-wiston/shared/config/provider.env
+      - *release-environment
+    environment: { NODE_EXTRA_CA_CERTS: /run/secrets/runtimeca }
+    secrets: *workload-secrets
+    depends_on:
+      secretstore: { condition: service_healthy }
+      kms: { condition: service_healthy }
+    healthcheck:
+      test: [CMD, test, -f, /tmp/provider-ready]
+      interval: 5s
+      timeout: 3s
+      retries: 18
+      start_period: 10s
+    mem_limit: 768m
+    cpus: 1.5
+
+  migration:
+    <<: *node-runtime
+    restart: 'no'
+    profiles: [tools]
+    command:
+      - |
+        export SECRET_STORE_BEARER_TOKEN="$$(cat /run/secrets/secretstorebearer)"
+        export KMS_BEARER_TOKEN="$$(cat /run/secrets/kmsbearer)"
+        exec node /app/runtime/MigrationMain.js
+    entrypoint: *workload-entrypoint
+    env_file:
+      - /opt/smart-wiston/shared/config/migration.env
+      - *release-environment
+    environment: { NODE_EXTRA_CA_CERTS: /run/secrets/runtimeca }
+    secrets: *workload-secrets
+    depends_on:
+      secretstore: { condition: service_healthy }
+      kms: { condition: service_healthy }
+    mem_limit: 2g
+    cpus: 3.0
+
+  providercatalog:
+    <<: *node-runtime
+    restart: 'no'
+    profiles: [tools]
+    command:
+      - |
+        export SECRET_STORE_BEARER_TOKEN="$$(cat /run/secrets/secretstorebearer)"
+        export KMS_BEARER_TOKEN="$$(cat /run/secrets/kmsbearer)"
+        exec node /app/runtime/ProviderCatalogMain.js
+    entrypoint: *workload-entrypoint
+    env_file:
+      - /opt/smart-wiston/shared/config/migration.env
+      - *release-environment
+    environment:
+      NODE_EXTRA_CA_CERTS: /run/secrets/runtimeca
+      PROVIDER_MANIFEST_PRIVATE_KEY_FILE: /run/secrets/manifestprivate
+      PROVIDER_MANIFEST_PUBLIC_KEY_FILE: /run/secrets/manifestpublic
+    secrets: [runtimeca, secretstorebearer, kmsbearer, manifestprivate, manifestpublic]
+    depends_on:
+      secretstore: { condition: service_healthy }
+    mem_limit: 256m
+    cpus: 0.5
+
+  seed:
+    <<: *node-runtime
+    restart: 'no'
+    profiles: [tools]
+    command:
+      - |
+        export SECRET_STORE_BEARER_TOKEN="$$(cat /run/secrets/secretstorebearer)"
+        export KMS_BEARER_TOKEN="$$(cat /run/secrets/kmsbearer)"
+        exec node "/app/runtime/$${TOOL_ENTRY:-SeedMain}.js" $${TOOL_ARGUMENT:+"$${TOOL_ARGUMENT}"}
+    entrypoint: *workload-entrypoint
+    env_file:
+      - /opt/smart-wiston/shared/config/seed.env
+      - *release-environment
+    environment: { NODE_EXTRA_CA_CERTS: /run/secrets/runtimeca }
+    secrets: *workload-secrets
+    depends_on:
+      secretstore: { condition: service_healthy }
+      kms: { condition: service_healthy }
+      objects: { condition: service_healthy }
+    mem_limit: 1g
+    cpus: 2.0
+
+networks:
+  runtime:
+    name: smartwiston-runtime
+
+secrets:
+  runtimeca: { file: /opt/smart-wiston/shared/tls/runtime-ca.crt }
+  internaltlscert: { file: /opt/smart-wiston/shared/tls/internal.crt }
+  internaltlskey: { file: /opt/smart-wiston/shared/tls/internal.key }
+  secretcatalog: { file: /opt/smart-wiston/shared/secrets/catalog.json }
+  secretstorebearer: { file: /opt/smart-wiston/shared/secrets/secretstorebearer }
+  kmsbearer: { file: /opt/smart-wiston/shared/secrets/kmsbearer }
+  kmsmaster: { file: /opt/smart-wiston/shared/secrets/kmsmaster }
+  objecttoken: { file: /opt/smart-wiston/shared/secrets/objecttoken }
+  redispassword: { file: /opt/smart-wiston/shared/secrets/redispassword }
+  manifestprivate: { file: /opt/smart-wiston/shared/secrets/manifest-private.pem }
+  manifestpublic: { file: /opt/smart-wiston/shared/secrets/manifest-public.pem }

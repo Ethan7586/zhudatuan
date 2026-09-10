@@ -27,6 +27,7 @@ create table finance.postingreference(
 );
 alter table finance.postingreference enable row level security;
 alter table finance.postingreference force row level security;
+create policy migrationaccess on finance.postingreference for all to shopmigration using(true) with check(true);
 create policy postingreferenceapp on finance.postingreference for select to shopapp using(access.scope_allowed(scope_id));
 create policy postingreferencejob on finance.postingreference for all to shopjob using(true) with check(true);
 revoke all on finance.postingreference from public;

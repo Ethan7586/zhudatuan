@@ -16,7 +16,7 @@ const migrations = await Promise.all(
     })
   )
 );
-if (migrations.length !== 316 || migrations.at(-1)?.file.slice(0, 14) !== head) throw new Error('CANONICAL_MIGRATION_BASELINE_INVALID');
+if (migrations.length !== 318 || migrations.at(-1)?.file.slice(0, 14) !== head) throw new Error('CANONICAL_MIGRATION_BASELINE_INVALID');
 await writeFile(
   join(repositoryRoot, 'database', 'contracts', 'history.json'),
   `${JSON.stringify(

@@ -1,7 +1,7 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx#MVP上线功能清单!A3:F24
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
-navigationCatalogSha256: 5651699e2d2208f73571b9aa8b527fe2ccf89b46c7e5fe1839cb5ef24ba1c08c
-contractSha256: 201a3ef5b95733e65e5d3434909e62c9d18a0f8f8c78532c062881a67b6f3fa6
+navigationCatalogSha256: b09829c6b6da59cd97705b8e7df536dcad6e7990cd89df31037e905dbf7cc690
+contractSha256: 8d0af97921650e963c858e13b7660d73b0d7d9a0ed0a8a0108e064f7e834fb55
 journeyCatalogSha256: 63325ab3955bc65b7d2cc383eefdaea0968b302ddaa86b2d196b4be26589d4e8
 generated: true
 releasePolicy: blocking
@@ -36,6 +36,7 @@ requirements:
       - storecart
       - storepayment
       - storevouchers
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
@@ -43,6 +44,7 @@ requirements:
       - miniappcart
       - miniapppayment
       - miniappvouchers
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -145,6 +147,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - voucher.actionbatches.create
       - voucher.actionbatches.get
@@ -276,6 +280,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - voucher.actionbatches.create
       - voucher.actionbatches.get
@@ -611,6 +617,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher
       - services/commerce/src/modules/voucher/application/handler/ActionBatchesCreateHandler.ts
@@ -700,6 +708,7 @@ requirements:
       - storecart
       - storepayment
       - storevouchers
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
@@ -707,6 +716,7 @@ requirements:
       - miniappcart
       - miniapppayment
       - miniappvouchers
+      - miniappmembercode
       - miniappbenefits
       - miniappreferral
       - miniappprofile
@@ -827,6 +837,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - voucher.actionbatches.create
       - voucher.actionbatches.get
@@ -968,6 +980,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - voucher.actionbatches.create
       - voucher.actionbatches.get
@@ -1334,6 +1348,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher
       - services/commerce/src/modules/voucher/application/handler/ActionBatchesCreateHandler.ts
@@ -1407,12 +1423,14 @@ requirements:
       - mallcontrol
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -1490,6 +1508,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -1553,6 +1573,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -1768,6 +1790,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -1793,6 +1817,7 @@ requirements:
       - storehome
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
@@ -1800,6 +1825,7 @@ requirements:
       - miniapphome
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -1886,6 +1912,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -1958,6 +1986,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -2202,6 +2232,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -2227,12 +2259,14 @@ requirements:
       - mallproduct
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -2354,6 +2388,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -2441,6 +2477,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -2728,6 +2766,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -2755,6 +2795,7 @@ requirements:
       - storeorders
       - storeorder
       - storeaftersale
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
@@ -2764,6 +2805,7 @@ requirements:
       - miniapporders
       - miniapporder
       - miniappaftersale
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storetasks
@@ -2888,6 +2930,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - approval.instances.get
@@ -2975,6 +3019,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - approval
@@ -3253,6 +3299,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -3280,6 +3328,7 @@ requirements:
       - storecart
       - storepayment
       - storevouchers
+      - storemembercode
       - storebenefits
       - storeprofile
       - groupapproval
@@ -3289,6 +3338,7 @@ requirements:
       - miniappcart
       - miniapppayment
       - miniappvouchers
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -3445,6 +3495,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - approval.instances.get
@@ -3526,6 +3578,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - voucher.actionbatches.create
       - voucher.actionbatches.get
@@ -3859,6 +3913,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher
       - services/commerce/src/modules/voucher/application/handler/ActionBatchesCreateHandler.ts
@@ -3942,12 +3998,14 @@ requirements:
       - mallfinance
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -4108,6 +4166,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - approval.instances.get
@@ -4211,6 +4271,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - approval
@@ -4533,6 +4595,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -4558,12 +4622,14 @@ requirements:
       - mallreporting
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -4649,6 +4715,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -4720,6 +4788,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -4943,6 +5013,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -4967,6 +5039,7 @@ requirements:
       - mallsupport
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - storesupport
@@ -4975,6 +5048,7 @@ requirements:
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - miniappsupport
@@ -5089,6 +5163,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -5175,6 +5251,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -5432,6 +5510,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -5476,6 +5556,7 @@ requirements:
       - malldirectory
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - storenotifications
@@ -5485,6 +5566,7 @@ requirements:
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - miniappnotifications
@@ -5660,6 +5742,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - access.center.read
@@ -5792,6 +5876,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - access
@@ -6188,6 +6274,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -6214,12 +6302,14 @@ requirements:
       - mallcontrol
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -6301,6 +6391,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -6364,6 +6456,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -6508,7 +6602,7 @@ requirements:
       - apps/miniapp/miniprogram/feature/home/viewmodel/HomeViewModel.ts
       - apps/storefront/src/feature/home/Manifest.ts
       - apps/storefront/src/feature/home/route/HomeRoute.tsx
-      - apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+      - apps/storefront/src/feature/home/view/HomePage.test.tsx
       - apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
       - docs/operations/projection.md
       - services/commerce/src/modules/audit
@@ -6587,6 +6681,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -6612,6 +6708,7 @@ requirements:
       - storehome
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
@@ -6619,6 +6716,7 @@ requirements:
       - miniapphome
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -6714,6 +6812,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - approval.instances.get
@@ -6791,6 +6891,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - approval
@@ -6959,7 +7061,7 @@ requirements:
       - apps/miniapp/miniprogram/feature/home/viewmodel/HomeViewModel.ts
       - apps/storefront/src/feature/home/Manifest.ts
       - apps/storefront/src/feature/home/route/HomeRoute.tsx
-      - apps/storefront/src/feature/home/view/PublishedPage.test.tsx
+      - apps/storefront/src/feature/home/view/HomePage.test.tsx
       - apps/storefront/src/feature/home/viewmodel/HomeViewModel.ts
       - docs/operations/experiencepublish.md
       - services/commerce/src/modules/approval
@@ -7053,6 +7155,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -7083,6 +7187,7 @@ requirements:
       - storecart
       - storecheckout
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
@@ -7093,6 +7198,7 @@ requirements:
       - miniappcart
       - miniappcheckout
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -7221,6 +7327,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -7313,6 +7421,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -7614,6 +7724,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -7644,6 +7756,7 @@ requirements:
       - storeorders
       - storeorder
       - storeaftersale
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
@@ -7655,6 +7768,7 @@ requirements:
       - miniapporders
       - miniapporder
       - miniappaftersale
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storetasks
@@ -7811,6 +7925,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - approval.instances.get
@@ -7904,6 +8020,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - approval
@@ -8251,6 +8369,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -8278,6 +8398,7 @@ requirements:
       - storecart
       - storepayment
       - storevouchers
+      - storemembercode
       - storebenefits
       - storeprofile
       - groupapproval
@@ -8287,6 +8408,7 @@ requirements:
       - miniappcart
       - miniapppayment
       - miniappvouchers
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -8451,6 +8573,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - approval.instances.get
@@ -8532,6 +8656,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
       - voucher.actionbatches.create
       - voucher.actionbatches.get
@@ -8882,6 +9008,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/modules/voucher
       - services/commerce/src/modules/voucher/application/handler/ActionBatchesCreateHandler.ts
@@ -8966,12 +9094,14 @@ requirements:
       - mallfinance
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -9132,6 +9262,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - approval.instances.get
@@ -9237,6 +9369,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - approval
@@ -9556,6 +9690,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -9581,12 +9717,14 @@ requirements:
       - mallreporting
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -9672,6 +9810,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -9743,6 +9883,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -9966,6 +10108,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -9990,6 +10134,7 @@ requirements:
       - mallsupport
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - storesecurity
@@ -9999,6 +10144,7 @@ requirements:
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - miniappsecurity
@@ -10125,6 +10271,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -10214,6 +10362,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -10484,6 +10634,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -10528,6 +10680,7 @@ requirements:
       - malldirectory
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - storesecurity
@@ -10538,6 +10691,7 @@ requirements:
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - miniappsecurity
@@ -10735,6 +10889,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - access.center.read
@@ -10874,6 +11030,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - access
@@ -11314,6 +11472,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -11341,12 +11501,14 @@ requirements:
       - mallprovider
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -11363,10 +11525,14 @@ requirements:
       - authlogin
       - authmembership
       - consolefederation
+      - miniappmembercode
+      - storemembercode
     routes:
       - /
       - /invitation
       - /link
+      - /member-code
+      - /member-code
       - /membership
       - /scopes/:scopeKind/:scopeId/settings/federation
     directOperations:
@@ -11440,6 +11606,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -11511,6 +11679,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -11667,6 +11837,14 @@ requirements:
       - apps/console/src/feature/settings/federation/route/FederationRoute.test.tsx
       - apps/console/src/feature/settings/federation/route/FederationRoute.tsx
       - apps/console/src/feature/settings/federation/viewmodel/FederationViewModel.ts
+      - apps/miniapp/miniprogram/feature/membercode/Manifest.ts
+      - apps/miniapp/miniprogram/feature/membercode/MemberCode.test.ts
+      - apps/miniapp/miniprogram/feature/membercode/page.ts
+      - apps/miniapp/miniprogram/feature/membercode/viewmodel/MemberCodeViewModel.ts
+      - apps/storefront/src/feature/membercode/Manifest.ts
+      - apps/storefront/src/feature/membercode/MemberCode.test.ts
+      - apps/storefront/src/feature/membercode/route/MemberCodeRoute.tsx
+      - apps/storefront/src/feature/membercode/viewmodel/MemberCodeViewModel.ts
       - docs/operations/identityrecovery.md
       - services/commerce/src/modules/audit
       - services/commerce/src/modules/audit/application/handler/RecordsReadHandler.ts
@@ -11750,6 +11928,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts
@@ -11788,12 +11968,14 @@ requirements:
       - platformchannel
       - storecart
       - storepayment
+      - storemembercode
       - storebenefits
       - storeprofile
       - grouptasks
       - malltasks
       - miniappcart
       - miniapppayment
+      - miniappmembercode
       - miniappbenefits
       - miniappprofile
       - storeverification
@@ -11889,6 +12071,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     operations:
       - audit.records.read
@@ -11967,6 +12151,8 @@ requirements:
       - verification.devices.manage
       - verification.devices.read
       - verification.history.read
+      - verification.membercodes.issue
+      - verification.membercodes.revoke
       - verification.sessions.read
     modules:
       - audit
@@ -12213,6 +12399,8 @@ requirements:
       - services/commerce/src/modules/verification/application/handler/DevicesManageHandler.ts
       - services/commerce/src/modules/verification/application/handler/DevicesReadHandler.ts
       - services/commerce/src/modules/verification/application/handler/HistoryReadHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesIssueHandler.ts
+      - services/commerce/src/modules/verification/application/handler/MemberCodesRevokeHandler.ts
       - services/commerce/src/modules/verification/application/handler/SessionsReadHandler.ts
       - services/commerce/src/test/architecture/DomainPolicy.test.ts
       - services/commerce/src/test/architecture/ModuleCatalog.test.ts

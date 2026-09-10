@@ -9,10 +9,10 @@ import { Singleflight } from '@shop/kernel';
 import type { ReadTransactionContext } from '../../services/commerce/src/platform/database/TransactionContext';
 
 test('QR generation p95 stays within the 30ms interaction budget', () => {
-  qrMatrix('https://fufu.wang/s/warmup');
+  qrMatrix('https://yengze.press/s/warmup');
   const samples = Array.from({ length: 200 }, (_, index) => {
     const started = performance.now();
-    qrMatrix(`https://fufu.wang/s/performance-${index}`);
+    qrMatrix(`https://yengze.press/s/performance-${index}`);
     return performance.now() - started;
   }).sort((left, right) => left - right);
   assert.ok(samples[Math.floor(samples.length * 0.95)]! < 30);
@@ -31,7 +31,7 @@ test('a 50-row application page remains lightweight and contains no QR or decora
     publishedSequence: index,
     entry: {
       handle: `mall-${index}`,
-      url: `https://fufu.wang/s/mall-${index}`,
+      url: `https://yengze.press/s/mall-${index}`,
       state: 'ready',
       releaseId: `release:${index}`,
       releaseVersion: `version:${index}`,
@@ -77,7 +77,7 @@ function storefrontEntry(handle: string): StorefrontEntry {
   return Object.freeze({
     application: `application:${handle}`,
     handle,
-    url: `https://fufu.wang/s/${handle}`,
+    url: `https://yengze.press/s/${handle}`,
     mall: `mall:${handle}`,
     pool: `pool:${handle}`,
     release: `release:${handle}`,

@@ -437,7 +437,7 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
     wechatSchema.appId !== 'wechatapplicationid' ||
     wechatSchema.secretRef !== 'secretreference' ||
     wechatSchema.keyVersion !== 'positiveinteger' ||
-    identitySecurity.redirectAllowlist?.join(',') !== 'https://passport.fufu.wang' ||
+    identitySecurity.redirectAllowlist?.join(',') !== origin(networkDocument.routes.auth.host) ||
     identitySecurity.bindingConflict !== 'reject' ||
     identitySecurity.accountLink !== 'explicitproof' ||
     identitySecurity.keyRotationDays !== 90

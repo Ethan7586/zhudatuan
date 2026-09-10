@@ -57,7 +57,7 @@ npm run check:bundles
 ## 环境网络入口
 
 - 本地 Storefront 使用 `http://127.0.0.1:3000`，Auth、Console 和 Commerce API 分别使用本地清单声明的独立 Origin。
-- 当前生产 Storefront 使用 `https://fufu.wang`，Auth、Console 和 Commerce API 使用同一生产网络清单声明的独立 Origin。
+- 当前生产 Storefront 使用 `https://yengze.press`，Auth、Console 和 Commerce API 使用同一生产网络清单声明的独立 Origin。
 
 生产 Origin 由 `infrastructure/network/Edge.yml` 唯一生成；本地 Origin 由 `tools/localinfra` 唯一生成到各工作负载环境，业务模块不写死域名，也不接受未列入当前环境清单的 Origin。
 

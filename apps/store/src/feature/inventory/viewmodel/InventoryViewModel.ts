@@ -1,6 +1,14 @@
 import { actionField, requiredSignedInteger, requiredText, type OperatorAction } from '@shop/presentation/actions';
 import { defineStoreViewModel } from '../../../shared/FeatureViewModel';
-import { operatorCollection as displayCollection, operatorItems as dataItems, operatorNumber as recordNumber, operatorRecord as dataRecord, operatorRow as displayRow, operatorText as recordText, type OperatorRecord as DataRecord } from '@shop/presentation/operator';
+import {
+  operatorCollection as displayCollection,
+  operatorItems as dataItems,
+  operatorNumber as recordNumber,
+  operatorRecord as dataRecord,
+  operatorRow as displayRow,
+  operatorText as recordText,
+  type OperatorRecord as DataRecord,
+} from '@shop/presentation/operator';
 
 interface InventoryPage {
   readonly mode: 'availability' | 'adjustments';
@@ -43,7 +51,6 @@ function inventoryActions(value: unknown, selectedKey: string | undefined): read
           confirmation: '该操作只创建审批申请；审批通过并执行前，库存不会变化。',
           tone: 'danger',
           requiresSelection: true,
-          identityScope: true,
           expectedVersion: version,
           fields: Object.freeze([actionField('quantity', '调整数量', { kind: 'number', placeholder: '增加填正数，减少填负数', maximumLength: 16 }), actionField('reason', '调整原因', { kind: 'textarea', maximumLength: 1000 })]),
         } as const)

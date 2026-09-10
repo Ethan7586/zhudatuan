@@ -1,6 +1,14 @@
 import { actionField, optionalText, requiredText, type OperatorAction } from '@shop/presentation/actions';
 import { defineStoreViewModel } from '../../../shared/FeatureViewModel';
-import { operatorCollection as displayCollection, operatorItems as dataItems, operatorNumber as recordNumber, operatorRow as displayRow, operatorText as recordText, selectedOperatorRecord as selectedRecord, type OperatorRecord as DataRecord } from '@shop/presentation/operator';
+import {
+  operatorCollection as displayCollection,
+  operatorItems as dataItems,
+  operatorNumber as recordNumber,
+  operatorRow as displayRow,
+  operatorText as recordText,
+  selectedOperatorRecord as selectedRecord,
+  type OperatorRecord as DataRecord,
+} from '@shop/presentation/operator';
 
 export const returnViewModel = defineStoreViewModel({
   routes: ['storereturnwork'],
@@ -43,7 +51,7 @@ function returnActions(item: DataRecord | undefined): readonly OperatorAction[] 
 }
 
 function operation(id: string, label: string, description: string, expectedVersion: number, fields: readonly ReturnType<typeof actionField>[], tone: 'primary' | 'danger' = 'primary'): OperatorAction {
-  return Object.freeze({ id, label, description, confirmation: `${description}提交后将绑定当前员工和门店。`, tone, requiresSelection: true, identityScope: true, expectedVersion, fields: Object.freeze([...fields]) });
+  return Object.freeze({ id, label, description, confirmation: `${description}提交后将绑定当前员工和门店。`, tone, requiresSelection: true, expectedVersion, fields: Object.freeze([...fields]) });
 }
 
 function returnItems(value: unknown) {

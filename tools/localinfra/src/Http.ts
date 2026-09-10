@@ -24,6 +24,8 @@ export interface LocalTls {
   readonly keyFile: string;
 }
 
+export type LocalBindHost = '127.0.0.1' | '0.0.0.0';
+
 export class LocalHttpError extends Error {
   constructor(
     readonly status: number,
@@ -34,7 +36,15 @@ export class LocalHttpError extends Error {
   }
 }
 
-export async function startLocalHttps(name: string, port: number, handler: LocalHandler, tls: LocalTls, maximumBodyBytes = 9 * 1024 * 1024, preflight?: LocalPreflight): Promise<HttpsServer> {
+export async function startLocalHttps(
+  name: string,
+  port: number,
+  handler: LocalHandler,
+  tls: LocalTls,
+  maximumBodyBytes = 9 * 1024 * 1024,
+  preflight?: LocalPreflight,
+  host: LocalBindHost = '127.0.0.1'
+): Promise<HttpsServer> {
   if (!/^[a-z][a-z0-9]{2,31}$/.test(name) || !Number.isSafeInteger(port) || port < 1024 || port > 65_535) {
     throw new Error('LOCAL_HTTPS_CONFIGURATION_INVALID');
   }
@@ -43,12 +53,12 @@ export async function startLocalHttps(name: string, port: number, handler: Local
   });
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
-    server.listen(port, '127.0.0.1', () => {
+    server.listen(port, host, () => {
       server.off('error', reject);
       resolve();
     });
   });
-  process.stdout.write(`${name.toUpperCase()}_READY https://127.0.0.1:${port}\n`);
+  process.stdout.write(`${name.toUpperCase()}_READY https://${host}:${port}\n`);
   return server;
 }
 

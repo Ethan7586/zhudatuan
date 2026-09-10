@@ -22,5 +22,5 @@ export type { CommerceClient, IdentityOperations, OperationMethod } from './oper
 export type { OperationExecutor } from './OperationDescriptor';
 export { createSurfaceClient, MINIAPP_TRANSPORT_POLICY, SURFACE_CATALOG, SURFACE_OPERATION_IDS } from './SurfaceCatalog';
 export type { MiniappSurfaceClient, StoreSurfaceClient, SupplierSurfaceClient, SurfaceClientMap } from './SurfaceCatalog';
-export { readSurfaceNavigation, readSurfaceSession, selectSurfaceScope, surfaceRequestContext } from './SurfaceSession';
+export { preloadSurfaceRoutes, readSurfaceNavigation, readSurfaceSession, selectSurfaceScope, SurfaceAccessRuntime, surfaceNavigationNodes, surfaceRequestContext } from './SurfaceSession';
 export type { OperatorSurface, SurfaceAccessClient, SurfaceAccessEnvironment, SurfaceNavigation, SurfaceSession } from './SurfaceSession';

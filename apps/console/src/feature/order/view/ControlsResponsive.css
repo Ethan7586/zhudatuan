@@ -1,0 +1,101 @@
+@media (max-width: 64rem) {
+  .orderpageheader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .orderpageidentity {
+    align-items: flex-start;
+  }
+  .orderstatustabs {
+    gap: var(--sw-space-2);
+  }
+  .ordertoolspacer {
+    display: none;
+  }
+  .orderfilterdisclosure > summary {
+    display: flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sw-space-1-5);
+    color: var(--sw-text);
+    padding: var(--sw-space-1) var(--sw-space-1-5);
+    cursor: pointer;
+  }
+  .orderfilterdisclosure > summary::marker {
+    color: var(--sw-brand);
+  }
+  .orderfilterdisclosure > summary small {
+    color: var(--sw-muted);
+    font-size: var(--sw-font-size-caption);
+    font-weight: 400;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .orderfilterdisclosure[open] > summary {
+    border-bottom: 0.0625rem solid var(--sw-border);
+  }
+  .orderfilterdisclosure:not([open]) > .ordertoolbar {
+    display: none;
+  }
+}
+
+@media (max-width: 44rem) {
+  .orderworkspace {
+    border-inline: 0;
+    border-radius: 0;
+  }
+  .orderpageheader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .orderpageactions button {
+    width: 100%;
+    min-width: 0;
+  }
+  .orderpageactions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .orderpageactions button:last-child {
+    grid-column: 1 / -1;
+  }
+  .ordersearchfield {
+    width: 100%;
+  }
+  .orderselectcontrol {
+    flex: 1 1 calc(50% - var(--sw-space-1));
+  }
+  .orderselectcontrol select {
+    width: 100%;
+  }
+  .orderfilterdisclosure > .ordertoolbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ordersearchfield,
+  .orderadvancedfilter,
+  .ordertoolspacer {
+    grid-column: 1 / -1;
+  }
+  .ordersearchfield,
+  .orderselectcontrol,
+  .orderreset,
+  .ordertoolbutton,
+  .ordertoolbar input,
+  .ordertoolbar select,
+  .ordertoolbar button {
+    min-height: 2.75rem;
+  }
+  .ordertoolbutton {
+    width: 100%;
+  }
+  .orderpagination {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding-block: var(--sw-space-2);
+  }
+  .orderpagination > span {
+    width: 100%;
+  }
+}

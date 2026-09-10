@@ -33,6 +33,7 @@ values
   ('channel.webhookinbox','received_at','month',6,365,'audit',true,'prepared',1,'migration:partition',clock_timestamp());
 alter table runtime.partitionpolicy enable row level security;
 alter table runtime.partitionpolicy force row level security;
+create policy migrationaccess on runtime.partitionpolicy for all to shopmigration using(true) with check(true);
 create policy partitionpolicyread on runtime.partitionpolicy for select to shopread,shopapp,shopjob using(true);
 revoke all on runtime.partitionpolicy from public;
 grant select on runtime.partitionpolicy to shopread,shopapp,shopjob;

@@ -1,10 +1,15 @@
 import { lazy, StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
+import { LazyModule } from '@shop/kernel';
 import { ErrorBoundary } from './app/ErrorBoundary';
 import { QueryRuntime } from './app/QueryRuntime';
+import { storefrontDependencies } from './app/Modules';
 import './index.css';
 
-const App = lazy(() => import('./app/App').then((module) => ({ default: module.App })));
+const application = new LazyModule(() => import('./app/App').then((module) => ({ default: module.App })));
+application.preload();
+storefrontDependencies.preload();
+const App = lazy(() => application.load());
 const root = document.getElementById('root');
 if (root === null) throw new Error('STOREFRONT_ROOT_MISSING');
 

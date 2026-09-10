@@ -4,15 +4,13 @@ import { auditDatabase } from '../check/callgraph/database.mjs';
 import { auditJobs } from '../check/callgraph/jobs.mjs';
 import { auditRoutes } from '../check/callgraph/routes.mjs';
 import { root } from '../check/source.mjs';
+import { BUNDLED_ENTRY_POINTS, COMMERCE_ENTRY_POINTS } from '../lib/CommerceEntries.mjs';
 import { graphContext } from './graphcontext.mjs';
 import { report } from './report.mjs';
 
 const context = graphContext();
 const violations = [...auditJobs(context.sourceFiles, context.production), ...auditDatabase(context.production), ...auditRoutes(context.sourceFiles, context.production)];
-const runtimeEntries = ['ApiMain', 'JobsMain', 'ProviderMain', 'MigrationMain'];
-const releaseEntries = ['SmokeMain'];
-for (const entry of [...runtimeEntries, ...releaseEntries]) {
-  const path = `services/commerce/src/entry/${entry}.ts`;
+for (const [entry, path] of Object.entries(COMMERCE_ENTRY_POINTS)) {
   if (!existsSync(join(root, path))) violations.push({ code: 'RUNTIME_ENTRY_MISSING', location: path, detail: entry });
 }
 const obsoleteEntry = join(root, 'services/commerce/src/app');
@@ -24,16 +22,14 @@ if (existsSync(obsoleteEntry) && readdirSync(obsoleteEntry).some((file) => file.
   });
 
 const build = readFileSync(join(root, 'scripts/build-commerce.mjs'), 'utf8');
-for (const entry of [...runtimeEntries, ...releaseEntries])
-  if (!build.includes(`${entry}: 'services/commerce/src/entry/${entry}.ts'`)) {
-    violations.push({ code: 'RUNTIME_BUILD_ENTRY_MISSING', location: 'scripts/build-commerce.mjs', detail: entry });
-  }
-if (runtimeEntries.length !== 4) violations.push({ code: 'RUNTIME_ENTRY_COUNT_INVALID', location: 'services/commerce/src/entry', detail: String(runtimeEntries.length) });
+if (!build.includes("import { BUNDLED_ENTRY_POINTS } from './lib/CommerceEntries.mjs';") || !build.includes('entryPoints: BUNDLED_ENTRY_POINTS')) {
+  violations.push({ code: 'RUNTIME_BUILD_CATALOG_MISSING', location: 'scripts/build-commerce.mjs', detail: 'BUNDLED_ENTRY_POINTS' });
+}
 const smoke = readFileSync(join(root, 'services/commerce/src/entry/SmokeMain.ts'), 'utf8');
 for (const forbidden of ['insert into', 'update ', 'delete from', '.query(', 'seed'])
   if (smoke.toLowerCase().includes(forbidden)) violations.push({ code: 'SMOKE_BUSINESS_WRITE_FORBIDDEN', location: 'services/commerce/src/entry/SmokeMain.ts', detail: forbidden });
 for (const forbidden of ['Registration', 'WebBusiness', 'Purchase', 'IdentityNotificationJobsOnly'])
-  if (build.includes(forbidden)) {
+  if (JSON.stringify(BUNDLED_ENTRY_POINTS).includes(forbidden)) {
     violations.push({ code: 'RUNTIME_TEMPORARY_ENTRY_FORBIDDEN', location: 'scripts/build-commerce.mjs', detail: forbidden });
   }
 

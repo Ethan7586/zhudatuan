@@ -8,15 +8,6 @@ begin
   if exists(select 1 from runtime.schemaversion where version='20260909015000') then
     raise exception 'IDENTITY_TENANT_REFERENCE_ALREADY_APPLIED';
   end if;
-  if exists(
-    select 1 from (
-      select tenant_id::text tenant_id from identity.provider
-      union all select tenant_id::text from identity.linkcase where tenant_id is not null
-      union all select tenant_id::text from organization.directoryconnection
-    ) reference
-    left join organization.organization tenant on tenant.id=reference.tenant_id and tenant.kind='tenant'
-    where tenant.id is null
-  ) then raise exception 'IDENTITY_TENANT_REFERENCE_REMEDIATION_REQUIRED'; end if;
 end
 $precondition$;
 
@@ -35,6 +26,75 @@ alter table identity.provider drop constraint identity_provider_directory_refere
 alter table identity.provider alter column tenant_id type text using tenant_id::text;
 alter table identity.linkcase alter column tenant_id type text using tenant_id::text;
 alter table organization.directoryconnection alter column tenant_id type text using tenant_id::text;
+
+create temporary table identitytenantreference(
+  provider_id uuid primary key,
+  tenant_id text not null
+) on commit drop;
+
+with recursive anchors(provider_id,organization_id) as (
+  select provider.id,membership.organization_id
+  from identity.provider provider
+  join identity.federatedidentity federation on federation.provider_instance_id=provider.id
+  join access.membership membership on membership.id=federation.membership_id
+  where provider.tenant_id='00000000-0000-0000-0000-000000000000'
+    and federation.status='active'
+  union
+  select provider.id,connection.organization_id
+  from identity.provider provider
+  join organization.directoryconnection connection on connection.provider_instance_id=provider.id
+  where provider.tenant_id='00000000-0000-0000-0000-000000000000'
+), lineage(provider_id,id,kind,parent_id,path) as (
+  select anchors.provider_id,organization.id,organization.kind,organization.parent_id,array[organization.id]
+  from anchors join organization.organization organization on organization.id=anchors.organization_id
+  union all
+  select lineage.provider_id,parent.id,parent.kind,parent.parent_id,lineage.path||parent.id
+  from lineage join organization.organization parent on parent.id=lineage.parent_id
+  where not parent.id=any(lineage.path)
+)
+insert into identitytenantreference(provider_id,tenant_id)
+select provider_id,min(id) from lineage where kind='tenant'
+group by provider_id having count(distinct id)=1;
+
+do $remediation$
+begin
+  if exists(
+    select 1 from identity.provider provider
+    where provider.tenant_id='00000000-0000-0000-0000-000000000000'
+      and not exists(select 1 from identitytenantreference reference where reference.provider_id=provider.id)
+  ) then raise exception 'IDENTITY_TENANT_REFERENCE_REMEDIATION_AMBIGUOUS'; end if;
+end
+$remediation$;
+
+update identity.provider provider set tenant_id=reference.tenant_id,version=provider.version+1,updated_at=clock_timestamp()
+from identitytenantreference reference where reference.provider_id=provider.id;
+update identity.linkcase linkcase set tenant_id=provider.tenant_id,version=linkcase.version+1,updated_at=clock_timestamp()
+from identity.provider provider
+where provider.id=linkcase.provider_id and linkcase.tenant_id='00000000-0000-0000-0000-000000000000';
+update organization.directoryconnection connection
+set tenant_id=provider.tenant_id,version=connection.version+1,updated_at=clock_timestamp()
+from identity.provider provider
+where provider.id=connection.provider_instance_id
+  and connection.tenant_id='00000000-0000-0000-0000-000000000000';
+
+do $reference$
+begin
+  if exists(
+    select 1 from (
+      select tenant_id from identity.provider
+      union all select tenant_id from identity.linkcase where tenant_id is not null
+      union all select tenant_id from organization.directoryconnection
+    ) source
+    left join organization.organization tenant on tenant.id=source.tenant_id and tenant.kind='tenant'
+    where tenant.id is null
+  ) then raise exception 'IDENTITY_TENANT_REFERENCE_REMEDIATION_REQUIRED'; end if;
+  if exists(
+    select 1 from organization.directoryconnection connection
+    join identity.provider provider on provider.id=connection.provider_instance_id
+    where connection.tenant_id<>provider.tenant_id
+  ) then raise exception 'IDENTITY_DIRECTORY_PROVIDER_TENANT_MISMATCH'; end if;
+end
+$reference$;
 
 alter table identity.provider
   add constraint identity_provider_tenant_reference foreign key(tenant_id) references organization.organization(id),

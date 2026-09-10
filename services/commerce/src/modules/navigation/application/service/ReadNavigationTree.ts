@@ -19,7 +19,7 @@ export class ReadNavigationTree {
 
   async execute(transaction: ReadTransactionContext, access: AccessContext, requestedScope?: string, execution: Readonly<{ signal?: AbortSignal; deadline?: number }> = {}) {
     const scope = requestedScope ?? access.scope.id;
-    if (!scope || scope.length > 255) throw new DomainError('NAVIGATION_SCOPE_DENIED');
+    if (!scope || scope.length > 255 || scope !== access.scope.id) throw new DomainError('NAVIGATION_SCOPE_DENIED');
     const pointer = NavigationKey.pointer(this.secret, {
       catalog: this.catalogHash,
       target: access.actor.target,

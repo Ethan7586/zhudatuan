@@ -1,7 +1,7 @@
-import { CLIENT_LOCAL_ORIGINS } from '@shop/config/clientcatalog';
+import { CLIENT_LOCAL_ORIGINS, CLIENT_ORIGINS } from '@shop/config/clientcatalog';
 import { LocalHttpError, jsonResponse, type LocalHandler, type LocalRequest, type LocalResponse } from '../../localinfra/src/Http';
 
-const ALLOWED_ORIGINS = new Set(Object.values(CLIENT_LOCAL_ORIGINS));
+const ALLOWED_ORIGINS = new Set([...Object.values(CLIENT_LOCAL_ORIGINS), ...Object.values(CLIENT_ORIGINS)]);
 const ALLOWED_HEADERS = Object.freeze(['content-type', 'x-content-sha256', 'x-retention-until']);
 const PREFLIGHT_VARY = 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers';
 

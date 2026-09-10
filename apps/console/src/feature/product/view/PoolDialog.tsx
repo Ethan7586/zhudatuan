@@ -5,6 +5,7 @@ import type { Pool } from '../model/Product';
 import { isManagedListing } from '../model/ProductAction';
 import { ProductIcon } from './ProductIcon';
 import { ProductFlowModal } from './ProductFlowModal';
+import { poolGuidance, poolSubmitLabel } from './PoolPresentation';
 
 export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: ProductPoolViewModel; onClose: () => void }>) {
   const listingMode = viewmodel.listing !== undefined;
@@ -108,7 +109,7 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
             关闭
           </Button>
           <Button tone="primary" type="submit" isDisabled={!viewmodel.canSubmit || viewmodel.submitting} {...(viewmodel.permissionReason === undefined ? {} : { 'aria-describedby': 'productpoolpermission' })}>
-            {viewmodel.submitting ? '正在执行…' : submitLabel(viewmodel.operation)}
+            {viewmodel.submitting ? '正在执行…' : poolSubmitLabel(viewmodel.operation)}
           </Button>
         </footer>
       </form>
@@ -206,18 +207,4 @@ function PoolResult({
       <p>{description}</p>
     </section>
   );
-}
-
-function poolGuidance(operation: PoolMode): string {
-  if (operation === 'move') return '请选择新的目标池；当前所在商品池不可重复选择。';
-  if (operation === 'allocate') return '请选择需要复制商品的来源池，来源池本身不会发生变化。';
-  return operation === 'attach' ? '请选择要提供给商城使用的商品池。' : '请选择要从商城停止投放的商品池。';
-}
-
-function submitLabel(operation: PoolMode): string {
-  if (operation === 'allocate') return '创建派生池';
-  if (operation === 'attach') return '确认投放';
-  if (operation === 'detach') return '停止投放';
-  if (operation === 'move') return '确认移入';
-  return '确认移出';
 }

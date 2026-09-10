@@ -21,9 +21,13 @@ export const orderViewModel = defineSupplierViewModel({
     const version = item && operatorNumber(item, 'version');
     if (!item || !next || version === undefined || next.id !== action.id) throw new Error('订单状态已变化，请刷新后重新选择。');
     const note = optionalText(input, 'note', 1000);
-    await client.fulfillment.workitemsTransition({
-      path: { fulfillmentid: operatorText(item, 'id') }, body: { action: next.operation, ...(note ? { note } : {}) },
-    }, { ...context, expectedVersion: version });
+    await client.fulfillment.workitemsTransition(
+      {
+        path: { fulfillmentid: operatorText(item, 'id') },
+        body: { action: next.operation, ...(note ? { note } : {}) },
+      },
+      { ...context, expectedVersion: version }
+    );
     return { message: `${next.label}成功，平台履约状态已同步更新。` };
   },
 });
@@ -38,18 +42,31 @@ function nextAction(item: OperatorRecord): (OperatorAction & Readonly<{ operatio
   const version = operatorNumber(item, 'version');
   if (!configured || version === undefined) return undefined;
   return Object.freeze({
-    id: configured[0], operation: configured[0], label: configured[1], description: configured[2],
-    confirmation: `${configured[2]}提交后会记录当前操作人员和供应商。`, tone: 'primary', requiresSelection: true, identityScope: true, expectedVersion: version,
+    id: configured[0],
+    operation: configured[0],
+    label: configured[1],
+    description: configured[2],
+    confirmation: `${configured[2]}提交后会记录当前操作人员和供应商。`,
+    tone: 'primary',
+    requiresSelection: true,
+    expectedVersion: version,
     fields: Object.freeze([actionField('note', '操作备注', { kind: 'textarea', required: false, maximumLength: 1000 })]),
   });
 }
 
 function orderProjection(value: unknown) {
-  return operatorCollection(value, operatorItems(value).map((item) => operatorRow({
-    key: operatorText(item, 'id'), title: `订单 ${operatorText(item, 'order_number') || operatorText(item, 'order_id')}`,
-    detail: `${operatorText(item, 'member_masked')} · ${lineSummary(item)}`,
-    statusLabel: fulfillmentWorkStatus(operatorText(item, 'state'), operatorText(item, 'priority'), 'order'), timestamp: operatorText(item, 'updated_at'),
-  })));
+  return operatorCollection(
+    value,
+    operatorItems(value).map((item) =>
+      operatorRow({
+        key: operatorText(item, 'id'),
+        title: `订单 ${operatorText(item, 'order_number') || operatorText(item, 'order_id')}`,
+        detail: `${operatorText(item, 'member_masked')} · ${lineSummary(item)}`,
+        statusLabel: fulfillmentWorkStatus(operatorText(item, 'state'), operatorText(item, 'priority'), 'order'),
+        timestamp: operatorText(item, 'updated_at'),
+      })
+    )
+  );
 }
 
 function lineSummary(item: OperatorRecord): string {

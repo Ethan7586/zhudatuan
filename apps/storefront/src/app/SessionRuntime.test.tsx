@@ -91,7 +91,7 @@ describe('storefront session runtime', () => {
 function bootstrap(identity: Pick<NonNullable<StorefrontBootstrap['identity']['data']>, 'state' | 'membership'> & Partial<NonNullable<StorefrontBootstrap['identity']['data']>>): StorefrontBootstrap {
   return {
     state: 'complete',
-    entry: { handle: 'mall-one', url: 'https://fufu.wang/s/mall-one' },
+    entry: { handle: 'mall-one', url: 'https://yengze.press/s/mall-one' },
     binding: { application: 'app:one', mall: 'mall:one', pool: 'pool:one', release: 'release:one', version: '7', tenant: 'tenant:one' },
     subject: { principal: 'principal:one', membership: identity.membership, member: identity.membership ? 'member:one' : null },
     scope: { id: 'mall:one', kind: 'mall', tenant: 'tenant:one' },

@@ -1,6 +1,15 @@
 import { actionField, optionalText, requiredText, type OperatorAction } from '@shop/presentation/actions';
 import { defineStoreViewModel } from '../../../shared/FeatureViewModel';
-import { fulfillmentWorkStatus as workStatus, operatorCollection as displayCollection, operatorItems as dataItems, operatorNumber as recordNumber, operatorRow as displayRow, operatorText as recordText, selectedOperatorRecord as selectedRecord, type OperatorRecord as DataRecord } from '@shop/presentation/operator';
+import {
+  fulfillmentWorkStatus as workStatus,
+  operatorCollection as displayCollection,
+  operatorItems as dataItems,
+  operatorNumber as recordNumber,
+  operatorRow as displayRow,
+  operatorText as recordText,
+  selectedOperatorRecord as selectedRecord,
+  type OperatorRecord as DataRecord,
+} from '@shop/presentation/operator';
 
 export const fulfillmentViewModel = defineStoreViewModel({
   routes: ['storefulfillment'],
@@ -37,7 +46,6 @@ function shipmentActions(item: DataRecord | undefined): readonly OperatorAction[
       confirmation: '请核对包裹和物流单号；提交后不能以同一版本重复发货。',
       tone: 'primary',
       requiresSelection: true,
-      identityScope: true,
       expectedVersion: version,
       fields: Object.freeze([actionField('tracking', '物流单号', { kind: 'scan', maximumLength: 128 }), actionField('carrier', '承运商', { required: false, maximumLength: 128 })]),
     }),

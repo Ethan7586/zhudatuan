@@ -53,7 +53,7 @@ function instance(scopes: readonly string[]): ProviderInstance {
     clientid: 'wx1234567890abcdef',
     secretref: 'secret/identity/wechat',
     status: 'enabled',
-    redirecturi: 'https://passport.fufu.wang/api/v1/identity/federations/callback',
+    redirecturi: 'https://passport.yengze.press/api/v1/identity/federations/callback',
     scopes,
     version: 1,
     createdat: '2026-09-04T00:00:00.000Z',

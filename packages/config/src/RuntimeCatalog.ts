@@ -1,5 +1,5 @@
 // Generated from config/cache.yml and config/capacity.yml. Do not edit.
-export const CONFIG_CHECKSUM = '16095c020679f234e056590fc9ad85ef23ac6602a5b592613270faaed07c26d2' as const;
+export const CONFIG_CHECKSUM = '7429b21c6e429575ee317ce3b88ad34a795e62b5e1194f317e23731a6ac38686' as const;
 
 export const BROWSER_QUERY_POLICY = Object.freeze({
   "query": {
@@ -312,7 +312,7 @@ export const RUNTIME_LIMITS = Object.freeze({
     "confirmationTokenBytes": 32
   },
   "risk": {
-    "syncDeadlineMilliseconds": 80,
+    "syncDeadlineMilliseconds": 3000,
     "complexScoreRules": 20,
     "failClosed": [
       "high",

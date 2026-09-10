@@ -55,6 +55,8 @@ for each row execute function reporting.reject_metric_mutation();
 
 alter table reporting.metric force row level security;
 alter table reporting.fact force row level security;
+create policy migrationaccess on reporting.metric for all to shopmigration using(true) with check(true);
+create policy migrationaccess on reporting.fact for all to shopmigration using(true) with check(true);
 revoke insert,update,delete on reporting.metric from shopapp,shopjob;
 grant select on reporting.metric to shopapp,shopjob;
 

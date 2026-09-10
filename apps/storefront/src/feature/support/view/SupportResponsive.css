@@ -1,0 +1,36 @@
+@keyframes storesupportspin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 47.99rem) {
+  .storesupportconversation {
+    width: 100%;
+    height: calc(100dvh - 4rem);
+    margin: 0;
+    overflow: visible;
+    border-width: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .storesupportmessages {
+    padding: var(--sw-space-1);
+  }
+  .storesupportmessage {
+    width: 90%;
+  }
+  .storesupportcomposer {
+    position: sticky;
+    bottom: var(--storefront-mobile-navigation-height);
+    padding: var(--sw-space-1);
+  }
+  .storesupportcomposebar > button {
+    min-width: var(--sw-min-touch-target);
+    padding: 0 var(--sw-space-1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .storesupportloading svg {
+    animation: none;
+  }
+}

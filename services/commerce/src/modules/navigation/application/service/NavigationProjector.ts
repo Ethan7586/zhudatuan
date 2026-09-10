@@ -1,11 +1,6 @@
 import { DomainError } from '../../../../platform/error/DomainError';
-import { NAVIGATION_CONFIGURATION } from '@shop/config/server';
-import { allParallel } from '@shop/kernel';
 import type { ReadTransactionContext } from '../../../../platform/database/TransactionContext';
 import type { AccessContext } from '../../../../platform/security/AccessContext';
-import type { NavigationAccessPort } from '../../../access/public';
-import type { NavigationCapabilityPort } from '../../../capability/public';
-import type { MembershipContextPort } from '../../../identity/public';
 import type { NavigationOrganizationPort } from '../../../organization/public';
 import { NavigationContext } from '../../domain/model/NavigationContext';
 import { NavigationKey } from '../../domain/model/NavigationKey';
@@ -22,10 +17,7 @@ export interface NavigationProjection {
 
 export class NavigationProjector {
   constructor(
-    private readonly identity: MembershipContextPort,
-    private readonly access: NavigationAccessPort,
     private readonly organization: NavigationOrganizationPort,
-    private readonly capability: NavigationCapabilityPort,
     private readonly clock: NavigationClock,
     private readonly secret: string,
     private readonly catalog: readonly import('./NavigationFilter').CatalogNavigationNode[],
@@ -38,35 +30,26 @@ export class NavigationProjector {
   async project(context: ReadTransactionContext, accessContext: AccessContext, requestedScope: string, signal?: AbortSignal): Promise<NavigationProjection> {
     if (signal?.aborted) throw signal.reason;
     const memberships = Object.freeze([accessContext.membership.id]);
-    const [identity, accesses, scopes, capabilities] = await allParallel(
-      [
-        () => this.identity.read(context, accessContext.actor.id, accessContext.membership.id),
-        () => this.access.read(context, memberships),
-        () => this.organization.read(context, memberships),
-        () => this.capability.read(context, Object.freeze([requestedScope]), accessContext.actor.target),
-      ] as const,
-      { concurrency: 4, expiresAt: Date.now() + NAVIGATION_CONFIGURATION.rebuildDeadlineMilliseconds, signal: signal ?? new AbortController().signal }
-    );
-    const access = accesses[0];
+    const scopes = await this.organization.read(context, memberships);
+    if (signal?.aborted) throw signal.reason;
     const scope = this.scopes.select(scopes, requestedScope, accessContext.actor.target);
-    const capability = capabilities.find((candidate) => candidate.scope === scope.id);
-    if (!access || identity.accessVersion !== accessContext.accessVersion || access.version !== accessContext.accessVersion) {
-      throw new DomainError('ACCESS_VERSION_STALE');
+    if (scope.id !== accessContext.scope.id || scope.kind !== accessContext.scope.kind || accessContext.actor.membership !== accessContext.membership.id) {
+      throw new DomainError('NAVIGATION_SCOPE_DENIED');
     }
-    if ((capability?.version ?? 0) !== accessContext.capabilityVersion) throw new Error('CAPABILITY_VERSION_STALE');
+    const permissions = effectivePermissions(accessContext);
     const navigation = new NavigationContext({
       target: accessContext.actor.target,
-      principal: identity.principal,
-      membership: identity.membership,
-      membershipActive: identity.membershipStatus === 'active',
-      assurance: identity.assurance,
+      principal: accessContext.actor.id,
+      membership: accessContext.membership.id,
+      membershipActive: accessContext.membership.active,
+      assurance: accessContext.assurance.level,
       scope,
       scopes,
-      permissions: access.permissions,
-      capabilities: capability?.capabilities ?? new Set<string>(),
+      permissions,
+      capabilities: accessContext.capabilities,
       featureFlags: this.featureFlags,
-      accessVersion: access.version,
-      capabilityVersion: capability?.version ?? 0,
+      accessVersion: accessContext.accessVersion,
+      capabilityVersion: accessContext.capabilityVersion,
     });
     const nodes = this.filter.apply(this.catalog, navigation);
     const version = navigationVersion(this.catalogHash, navigation);
@@ -97,6 +80,10 @@ export class NavigationProjector {
       tree,
     });
   }
+}
+
+function effectivePermissions(context: AccessContext): ReadonlySet<string> {
+  return new Set([...context.membership.permissions.allows].filter((permission) => !context.membership.permissions.denies.has(permission)));
 }
 
 function enabled(nodes: readonly import('../../domain/model/NavigationNode').NavigationNodeValue[]): import('../../domain/model/NavigationNode').NavigationNodeValue | undefined {

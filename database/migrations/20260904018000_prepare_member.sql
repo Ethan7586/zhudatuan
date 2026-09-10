@@ -33,6 +33,7 @@ create trigger memberpreference after insert on member.profile for each row exec
 
 alter table member.preference enable row level security;
 alter table member.preference force row level security;
+create policy migrationaccess on member.preference for all to shopmigration using(true) with check(true);
 create policy preferenceapp on member.preference for all to shopapp using(access.scope_allowed(member_id)) with check(access.scope_allowed(member_id));
 create policy preferencejob on member.preference for all to shopjob using(true) with check(true);
 revoke all on member.preference from public;
@@ -81,6 +82,8 @@ update member.favorite set updated_at=created_at,status='active',version=1;
 
 alter table member.address force row level security;
 alter table member.favorite force row level security;
+create policy migrationaccess on member.address for all to shopmigration using(true) with check(true);
+create policy migrationaccess on member.favorite for all to shopmigration using(true) with check(true);
 revoke delete on member.favorite from shopapp,shopjob;
 grant select,insert,update on member.favorite to shopapp,shopjob;
 do $roles$

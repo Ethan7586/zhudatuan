@@ -14,10 +14,13 @@ export const fulfillmentViewModel = defineSupplierViewModel({
     const version = item && operatorNumber(item, 'version');
     if (action.id !== 'ship' || !item || version === undefined || !canShip(item)) throw new Error('当前履约任务不能发货，请刷新后核对状态。');
     const carrier = optionalText(input, 'carrier', 128);
-    await client.fulfillment.shipmentsCreate({
-      path: { fulfillmentid: operatorText(item, 'id') },
-      body: { tracking: requiredText(input, 'tracking', 128), ...(carrier ? { carrier } : {}) },
-    }, { ...context, expectedVersion: version });
+    await client.fulfillment.shipmentsCreate(
+      {
+        path: { fulfillmentid: operatorText(item, 'id') },
+        body: { tracking: requiredText(input, 'tracking', 128), ...(carrier ? { carrier } : {}) },
+      },
+      { ...context, expectedVersion: version }
+    );
     return { message: '发货成功，物流单号和供应商操作人员已写入平台履约记录。' };
   },
 });
@@ -25,11 +28,18 @@ export const fulfillmentViewModel = defineSupplierViewModel({
 function shipmentActions(item: OperatorRecord | undefined): readonly OperatorAction[] {
   const version = item && operatorNumber(item, 'version');
   if (!item || version === undefined || !canShip(item)) return Object.freeze([]);
-  return Object.freeze([Object.freeze({
-    id: 'ship', label: '确认发货', description: '录入承运商和物流单号，发出当前履约单。', confirmation: '请核对包裹与物流信息；同一履约版本不能重复提交。',
-    tone: 'primary', requiresSelection: true, identityScope: true, expectedVersion: version,
-    fields: Object.freeze([actionField('tracking', '物流单号', { kind: 'scan', maximumLength: 128 }), actionField('carrier', '承运商', { required: false, maximumLength: 128 })]),
-  })]);
+  return Object.freeze([
+    Object.freeze({
+      id: 'ship',
+      label: '确认发货',
+      description: '录入承运商和物流单号，发出当前履约单。',
+      confirmation: '请核对包裹与物流信息；同一履约版本不能重复提交。',
+      tone: 'primary',
+      requiresSelection: true,
+      expectedVersion: version,
+      fields: Object.freeze([actionField('tracking', '物流单号', { kind: 'scan', maximumLength: 128 }), actionField('carrier', '承运商', { required: false, maximumLength: 128 })]),
+    }),
+  ]);
 }
 
 function canShip(item: OperatorRecord): boolean {
@@ -37,17 +47,29 @@ function canShip(item: OperatorRecord): boolean {
 }
 
 function shipmentProjection(value: unknown) {
-  return operatorCollection(value, operatorItems(value).map((item) => operatorRow({
-    key: operatorText(item, 'id'), title: `履约 ${operatorText(item, 'order_number') || operatorText(item, 'order_id')}`,
-    detail: `${routeLabel(operatorText(item, 'kind'))} · ${packedSummary(item)}`,
-    statusLabel: fulfillmentWorkStatus(operatorText(item, 'state'), operatorText(item, 'priority'), 'fulfillment'), timestamp: operatorText(item, 'updated_at'),
-  })));
+  return operatorCollection(
+    value,
+    operatorItems(value).map((item) =>
+      operatorRow({
+        key: operatorText(item, 'id'),
+        title: `履约 ${operatorText(item, 'order_number') || operatorText(item, 'order_id')}`,
+        detail: `${routeLabel(operatorText(item, 'kind'))} · ${packedSummary(item)}`,
+        statusLabel: fulfillmentWorkStatus(operatorText(item, 'state'), operatorText(item, 'priority'), 'fulfillment'),
+        timestamp: operatorText(item, 'updated_at'),
+      })
+    )
+  );
 }
 
 function packedSummary(item: OperatorRecord): string {
   const lines = Array.isArray(item.lines) ? (item.lines as readonly OperatorRecord[]) : [];
-  const total = lines.reduce<{ packed: number; quantity: number }>((sum, line) => ({ packed: sum.packed + (operatorNumber(line, 'packed') ?? 0), quantity: sum.quantity + (operatorNumber(line, 'quantity') ?? 0) }), { packed: 0, quantity: 0 });
+  const total = lines.reduce<{ packed: number; quantity: number }>((sum, line) => ({ packed: sum.packed + (operatorNumber(line, 'packed') ?? 0), quantity: sum.quantity + (operatorNumber(line, 'quantity') ?? 0) }), {
+    packed: 0,
+    quantity: 0,
+  });
   return `已装 ${total.packed}/${total.quantity} 件`;
 }
 
-function routeLabel(value: string): string { return value === 'delivery' ? '配送' : value === 'shipment' ? '快递发货' : '履约'; }
+function routeLabel(value: string): string {
+  return value === 'delivery' ? '配送' : value === 'shipment' ? '快递发货' : '履约';
+}

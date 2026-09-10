@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ApiError } from '@shop/sdk';
+import { ApiError } from '@shop/sdk/error';
 import { hasFailureCode } from './Failure';
 import { presentError, presentFailure, safeQueryError } from './PresentFailure';
 

@@ -41,6 +41,23 @@ describe('ReadNavigationTree', () => {
     expect(result.body).toEqual(tree.toValue());
     expect(Object.getPrototypeOf(result.body)).toBe(Object.prototype);
   });
+
+  it('rejects a requested scope before reading a cache keyed for another authorization scope', async () => {
+    let cacheReads = 0;
+    const cache: NavigationCacheRepository = {
+      get: async () => {
+        cacheReads += 1;
+        return null;
+      },
+      put: async () => false,
+      accept: async () => false,
+      invalidate: async () => false,
+      state: () => ({ available: true }),
+    };
+    const query = new ReadNavigationTree({ project: async () => Promise.reject(new Error('PROJECTOR_MUST_NOT_RUN')) }, cache, {} as never, 's'.repeat(32), 'catalog', 'feature');
+    await expect(query.execute({} as never, accessContext(), 'enterprise:2')).rejects.toThrow('NAVIGATION_SCOPE_DENIED');
+    expect(cacheReads).toBe(0);
+  });
 });
 
 function accessContext(): AccessContext {

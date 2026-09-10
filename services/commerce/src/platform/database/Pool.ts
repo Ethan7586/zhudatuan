@@ -9,6 +9,7 @@ const POSTGRES_BIGINT = 20;
 pgTypes.setTypeParser(POSTGRES_BIGINT, databaseSafeInteger);
 
 export interface DatabasePool {
+  readonly batchedTransactionStart?: boolean;
   connect(): Promise<PoolClient>;
   query<R extends QueryResultRow = QueryResultRow>(text: string, values?: readonly unknown[]): Promise<QueryResult<R>>;
   workload(workload: DatabaseWorkload): DatabasePool;
@@ -43,6 +44,8 @@ export function poolConfiguration(workload: DatabaseWorkload): Readonly<{
 }
 
 class PoolSet implements DatabasePool {
+  readonly batchedTransactionStart = true;
+
   constructor(
     private readonly pools: ReadonlyMap<DatabaseWorkload, PgPool>,
     private readonly selected: DatabaseWorkload,

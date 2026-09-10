@@ -4,7 +4,7 @@ import { qrMatrix } from '@shop/design/atom/QrCode';
 import jsQR from 'jsqr';
 
 test('independent decoder recovers the exact canonical mall URL', () => {
-  const expected = 'https://fufu.wang/s/zhudatuan-employee';
+  const expected = 'https://yengze.press/s/zhudatuan-employee';
   const matrix = qrMatrix(expected);
   const scale = 8;
   const extent = matrix.count + matrix.quiet * 2;

@@ -1,26 +1,28 @@
 import { createHash, createHmac, randomBytes, randomUUID } from 'node:crypto';
-import { Client } from 'pg';
 import { localSeedEnvironment, TARGET_SCHEMA_HEAD } from '@shop/config/server';
+import { CANONICAL_CONSOLE_ORIGIN, CANONICAL_STOREFRONT_ORIGIN, LOCAL_API_ORIGIN, LOCAL_CONSOLE_ORIGIN, LOCAL_STOREFRONT_ORIGIN } from '@shop/config/client';
 import { COMMERCE_OPERATIONS, CONTRACT_VERSION, errorStatus } from '@shop/contract';
 import { HttpKmsClient } from '../../../services/commerce/src/platform/crypto/KmsClient';
 import type { KmsClient } from '../../../services/commerce/src/pipeline/KmsPort';
 import { HttpObjectStore } from '../../../services/commerce/src/platform/object/ObjectStore';
+import { withMigrationOwnership } from '../../../services/commerce/src/platform/database/MigrationOwnership';
 import { localFetch } from '@shop/localinfra';
 import { localSecret } from './LocalSecrets';
 import { EMPLOYEE_PERMISSIONS } from './RolePermissions';
+import { LOCAL_OWNER } from './LocalOwner';
 
 const CURRENT_SCHEMA_RELATIONS = 246;
 const LOCAL_ACCOUNT = 'ethan';
-const LOCAL_MOBILE = '+8613800138000';
 
 const environment = localSeedEnvironment();
+const clientVersion = /^\d+\.\d+\.\d+(?:-[a-z0-9.]+)?$/i.test(environment.serviceVersion) ? environment.serviceVersion : '0.0.0';
 const [connectionString, objectToken, ethanPassword, identityKey] = await Promise.all([
   localSecret(environment.adminDatabaseConnectionRef),
   localSecret(environment.objectStoreTokenRef),
   localSecret(environment.ethanPasswordRef),
   localSecret(environment.identityKeyRef),
 ]);
-await Promise.all([expectReady('https://127.0.0.1:8443/health/ready'), expectReady('https://127.0.0.1:8444/health/ready'), expectReady('https://127.0.0.1:8445/health/ready'), expectReady('http://127.0.0.1:3001/health/ready')]);
+await Promise.all([expectReady(`${environment.secretStoreEndpoint}/health/ready`), expectReady(`${environment.kmsEndpoint}/health/ready`), expectReady(`${environment.objectStoreEndpoint}/health/ready`), expectReady(api('/health/ready'))]);
 const kms = new HttpKmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
 await resetLocalVerificationRateLimits(connectionString, identityKey, kms);
 const context = { verification: randomUUID() };
@@ -42,9 +44,7 @@ await issueChallenge('storefront', `localverify-${randomUUID()}`, 'password_rese
 if ((await challengeSecretCount(connectionString)) <= challengeBefore) throw new Error('LOCAL_CHALLENGE_ENVELOPE_MISSING');
 await verifyEmployeeSession(ethanPassword);
 
-const database = new Client({ connectionString });
-await database.connect();
-try {
+const counts = await withMigrationOwnership(connectionString, async (database) => {
   const result = await database.query<{ tables: string; migrations: string; operations: string; publicobjects: string; head: boolean }>(
     `select
     (select count(*) from information_schema.tables where table_schema not in('pg_catalog','information_schema')) tables,
@@ -54,13 +54,16 @@ try {
     (select exists(select 1 from runtime.schemaversion where version=$1)) head`,
     [TARGET_SCHEMA_HEAD]
   );
-  const counts = result.rows[0];
-  if (!counts || Number(counts.tables) < CURRENT_SCHEMA_RELATIONS || counts.head !== true || Number(counts.operations) < COMMERCE_OPERATIONS.length || Number(counts.publicobjects) !== 0) {
-    throw new Error(`LOCAL_RUNTIME_COUNTS_INVALID:${JSON.stringify(counts)}`);
-  }
-  process.stdout.write(`LOCAL_P0_VERIFIED tables=${counts.tables} migrations=${counts.migrations} operations=${counts.operations} public=${counts.publicobjects}\n`);
-} finally {
-  await database.end();
+  return result.rows[0];
+});
+if (!counts || Number(counts.tables) < CURRENT_SCHEMA_RELATIONS || counts.head !== true || Number(counts.operations) < COMMERCE_OPERATIONS.length || Number(counts.publicobjects) !== 0) {
+  throw new Error(`LOCAL_RUNTIME_COUNTS_INVALID:${JSON.stringify(counts)}`);
+}
+process.stdout.write(`LOCAL_P0_VERIFIED tables=${counts.tables} migrations=${counts.migrations} operations=${counts.operations} public=${counts.publicobjects}\n`);
+
+function api(path: string): string {
+  if (!path.startsWith('/')) throw new Error('LOCAL_API_PATH_INVALID');
+  return `${environment.apiEndpoint}${path}`;
 }
 
 async function expectReady(url: string): Promise<void> {
@@ -69,56 +72,45 @@ async function expectReady(url: string): Promise<void> {
 }
 
 async function verifyEncryptedStore(connectionString: string, store: string, plaintext: string): Promise<void> {
-  const database = new Client({ connectionString });
-  await database.connect();
-  try {
+  await withMigrationOwnership(connectionString, async (database) => {
     const result = await database.query<{ address_ciphertext: string | null; address_token: string | null }>('select address_ciphertext,address_token from partner.store where id=$1', [store]);
     const found = result.rows[0];
     if (!found?.address_ciphertext || found.address_ciphertext.includes(plaintext) || !/^[0-9a-f]{64}$/.test(found.address_token ?? '')) {
       throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
     }
-  } finally {
-    await database.end();
-  }
+  });
 }
 
 async function challengeSecretCount(connectionString: string): Promise<number> {
-  const database = new Client({ connectionString });
-  await database.connect();
-  try {
+  return withMigrationOwnership(connectionString, async (database) => {
     const result = await database.query<{ count: string }>('select count(*) count from identity.challengesecret');
     return Number(result.rows[0]?.count ?? 0);
-  } finally {
-    await database.end();
-  }
+  });
 }
 
 async function resetLocalVerificationRateLimits(connectionString: string, identityKey: string, kms: KmsClient): Promise<void> {
-  const database = new Client({ connectionString });
-  await database.connect();
-  try {
+  await withMigrationOwnership(connectionString, async (database) => {
     const principal = 'principal:zhudatuan:owner:ethan:v1';
     const profile = await database.query<{ mobile_ciphertext: string | null }>('select mobile_ciphertext from member.profile where principal_id=$1', [principal]);
     const ciphertext = profile.rows[0]?.mobile_ciphertext;
-    const mobile = ciphertext ? await kms.decrypt('pii', 'identity/mobile', ciphertext, { principal }) : LOCAL_MOBILE;
+    const mobile = ciphertext ? await kms.decrypt('pii', 'identity/mobile', ciphertext, { principal }) : LOCAL_OWNER.mobile;
+    if (mobile !== LOCAL_OWNER.mobile) throw new Error('LOCAL_OWNER_MOBILE_INVALID');
     const digest = (value: string) => createHmac('sha256', identityKey).update(value).digest('hex');
     await database.query("delete from identity.loginattempt where subject_hash=any($1::text[]) and client_hash in('login','stepup')", [[digest(LOCAL_ACCOUNT), digest(mobile), digest(`${principal}:${mobile}`)]]);
-  } finally {
-    await database.end();
-  }
+  });
 }
 
 type ChallengePurpose = 'login' | 'password_reset' | 'phone_change' | 'enrollment';
 
 async function issueChallenge(target: AuthTarget, destination: string, purpose: ChallengePurpose): Promise<Readonly<{ id: string }>> {
   const bootstrap = await authBootstrap(target);
-  const response = await localFetch('http://127.0.0.1:3001/api/v1/identity/challenges', {
+  const response = await localFetch(api('/api/v1/identity/challenges'), {
     method: 'POST',
     headers: {
       ...bootstrapCommand(bootstrap),
       'content-type': 'application/json',
       'idempotency-key': randomUUID(),
-      'x-client-version': '0.0.0',
+      'x-client-version': clientVersion,
       'x-contract-version': CONTRACT_VERSION,
       'x-device-id': `local-${randomUUID()}`,
       'x-real-ip': localPeer(),
@@ -134,20 +126,16 @@ async function issueChallenge(target: AuthTarget, destination: string, purpose: 
 }
 
 async function decryptChallengeCode(challenge: string, purpose: 'login' | 'stepup'): Promise<string> {
-  const database = new Client({ connectionString });
-  await database.connect();
-  try {
+  return withMigrationOwnership(connectionString, async (database) => {
     const result = await database.query<{ code_ciphertext: string }>('select code_ciphertext from identity.challengesecret where challenge_id=$1', [challenge]);
     const ciphertext = result.rows[0]?.code_ciphertext;
     if (!ciphertext) throw new Error('LOCAL_CHALLENGE_SECRET_MISSING');
     return await kms.decrypt('pii', 'identity/challenge', ciphertext, { challenge, purpose });
-  } finally {
-    await database.end();
-  }
+  });
 }
 
 async function completeStepup(session: AuthenticatedSession): Promise<void> {
-  const started = await localFetch('http://127.0.0.1:3001/api/v1/identity/stepup/challenges', {
+  const started = await localFetch(api('/api/v1/identity/stepup/challenges'), {
     method: 'POST',
     headers: { ...sessionHeaders(session), 'content-type': 'application/json', 'idempotency-key': randomUUID() },
     body: '{}',
@@ -157,7 +145,7 @@ async function completeStepup(session: AuthenticatedSession): Promise<void> {
   const challenge = payload !== null && typeof payload === 'object' && !Array.isArray(payload) ? (payload as Readonly<Record<string, unknown>>).id : null;
   if (typeof challenge !== 'string') throw new Error('LOCAL_STEPUP_RESPONSE_INVALID');
   const code = await decryptChallengeCode(challenge, 'stepup');
-  const completed = await localFetch('http://127.0.0.1:3001/api/v1/identity/stepup/verifications', {
+  const completed = await localFetch(api('/api/v1/identity/stepup/verifications'), {
     method: 'POST',
     headers: { ...sessionHeaders(session), 'content-type': 'application/json', 'idempotency-key': randomUUID() },
     body: JSON.stringify({ challenge, code }),
@@ -166,7 +154,7 @@ async function completeStepup(session: AuthenticatedSession): Promise<void> {
 }
 
 async function sessionAccessVersion(session: AuthenticatedSession): Promise<number> {
-  const response = await localFetch('http://127.0.0.1:3001/api/v1/identity/session', { headers: sessionHeaders(session) });
+  const response = await localFetch(api('/api/v1/identity/session'), { headers: sessionHeaders(session) });
   if (response.status !== 200) throw new Error(`LOCAL_SESSION_SNAPSHOT_HTTP_${response.status}:${await response.text()}`);
   const payload: unknown = await response.json();
   const value = payload !== null && typeof payload === 'object' && !Array.isArray(payload) ? (payload as Readonly<Record<string, unknown>>).accessVersion : null;
@@ -184,13 +172,13 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const bootstraps = await Promise.all([authBootstrap('storefront'), authBootstrap('console')]);
   const authenticate = (target: AuthTarget, credential: Readonly<Record<string, string>>) => {
     const bootstrap = bootstraps.find((item) => item.target === target)!;
-    return localFetch('http://127.0.0.1:3001/api/v1/identity/sessions', {
+    return localFetch(api('/api/v1/identity/sessions'), {
       method: 'POST',
       headers: {
         ...bootstrapCommand(bootstrap),
         'content-type': 'application/json',
         'idempotency-key': randomUUID(),
-        'x-client-version': '0.0.0',
+        'x-client-version': clientVersion,
         'x-contract-version': CONTRACT_VERSION,
         'x-device-id': `local-${randomUUID()}`,
         'x-real-ip': localPeer(),
@@ -202,7 +190,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const login = await authenticate('storefront', { method: 'password', subject: LOCAL_ACCOUNT, password });
   if (login.status !== 201) throw new Error(`LOCAL_EMPLOYEE_LOGIN_HTTP_${login.status}:${await login.text()}`);
   const storefront = authenticatedSession(login, 'storefront');
-  const session = await localFetch('http://127.0.0.1:3001/api/v1/identity/session', {
+  const session = await localFetch(api('/api/v1/identity/session'), {
     headers: sessionHeaders(storefront),
   });
   if (session.status !== 200) throw new Error(`LOCAL_EMPLOYEE_SESSION_HTTP_${session.status}:${await session.text()}`);
@@ -214,7 +202,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   if (!Array.isArray(permissions)) throw new Error('LOCAL_EMPLOYEE_SESSION_PERMISSIONS_INVALID');
   const missing = EMPLOYEE_PERMISSIONS.filter((permission) => !permissions.includes(permission));
   if (missing.length > 0) throw new Error(`LOCAL_EMPLOYEE_SESSION_PERMISSIONS_MISSING:${missing.join(',')}`);
-  const report = await localFetch('http://127.0.0.1:3001/api/v1/telemetry/clienterrors', {
+  const report = await localFetch(api('/api/v1/telemetry/clienterrors'), {
     method: 'POST',
     headers: {
       ...sessionHeaders(storefront),
@@ -227,24 +215,24 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const reported: unknown = await report.json();
   const faultCode = reported !== null && typeof reported === 'object' && !Array.isArray(reported) ? (reported as Readonly<Record<string, unknown>>).faultCode : null;
   if (typeof faultCode !== 'string') throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
-  const operatorChallenge = await issueChallenge('console', LOCAL_ACCOUNT, 'login');
+  const operatorChallenge = await issueChallenge('console', LOCAL_OWNER.mobile, 'login');
   const operatorCode = await decryptChallengeCode(operatorChallenge.id, 'login');
-  const operatorLogin = await authenticate('console', { method: 'otp', subject: LOCAL_ACCOUNT, challenge: operatorChallenge.id, code: operatorCode });
+  const operatorLogin = await authenticate('console', { method: 'otp', subject: LOCAL_OWNER.mobile, challenge: operatorChallenge.id, code: operatorCode });
   if (operatorLogin.status !== 201) throw new Error(`LOCAL_OPERATOR_LOGIN_HTTP_${operatorLogin.status}:${await operatorLogin.text()}`);
   const consoleSession = authenticatedSession(operatorLogin, 'console');
   await completeStepup(consoleSession);
   const consoleAccessVersion = await sessionAccessVersion(consoleSession);
-  const navigation = await localFetch('http://127.0.0.1:3001/api/v1/navigation', {
+  const navigation = await localFetch(api('/api/v1/navigation'), {
     headers: { ...sessionHeaders(consoleSession), 'x-access-version': String(consoleAccessVersion), 'x-scope-hint': 'organization-platform-root' },
   });
   const navigationPayload = await navigation.text();
   if (navigation.status !== 200) throw new Error(`LOCAL_NAVIGATION_INVALID:${navigation.status}:${navigationPayload}`);
-  const errors = await localFetch('http://127.0.0.1:3001/api/v1/telemetry/clienterrors?limit=20', {
+  const errors = await localFetch(api('/api/v1/telemetry/clienterrors?limit=20'), {
     headers: { ...sessionHeaders(consoleSession), 'x-scope-hint': 'organization-platform-root' },
   });
   const errorsPayload = await errors.text();
   if (errors.status !== 200 || !errorsPayload.includes(faultCode)) throw new Error(`LOCAL_CLIENT_ERROR_READ_INVALID:${errors.status}:${faultCode}:${errorsPayload}`);
-  const activeInvitations = await localFetch('http://127.0.0.1:3001/api/v1/identity/invitations?status=active&target=storefront&limit=100', {
+  const activeInvitations = await localFetch(api('/api/v1/identity/invitations?status=active&target=storefront&limit=100'), {
     headers: sessionHeaders(consoleSession),
   });
   const activePayload: unknown = await activeInvitations.json();
@@ -257,7 +245,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
     const id = record.id;
     const version = Number(record.version);
     if (typeof id !== 'string' || !Number.isSafeInteger(version)) throw new Error(`LOCAL_INVITATION_CLEANUP_RECORD_INVALID:${JSON.stringify(record)}`);
-    const cleanup = await localFetch(`http://127.0.0.1:3001/api/v1/identity/invitations/${encodeURIComponent(id)}`, {
+    const cleanup = await localFetch(api(`/api/v1/identity/invitations/${encodeURIComponent(id)}`), {
       method: 'DELETE',
       headers: {
         ...sessionHeaders(consoleSession),
@@ -272,7 +260,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const storeId = `store:local-${randomUUID()}`;
   const storeName = `本地门店-${storeId.slice(-12)}`;
   const saveStore = (body: unknown, etag?: string) =>
-    localFetch(`http://127.0.0.1:3001/api/v1/organizations/stores/${encodeURIComponent(storeId)}`, {
+    localFetch(api(`/api/v1/organizations/stores/${encodeURIComponent(storeId)}`), {
       method: 'PUT',
       headers: {
         ...sessionHeaders(consoleSession),
@@ -288,7 +276,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   if (createdStore.status !== 200 || storeEtag === null || storePayload === null || typeof storePayload !== 'object' || Array.isArray(storePayload) || (storePayload as Readonly<Record<string, unknown>>).addressConfigured !== true)
     throw new Error(`LOCAL_STORE_CREATE_INVALID:${createdStore.status}:${storeEtag ?? 'NO_ETAG'}:${JSON.stringify(storePayload)}`);
   await verifyEncryptedStore(connectionString, storeId, '上海市测试路88号');
-  const stores = await localFetch('http://127.0.0.1:3001/api/v1/organizations/stores?limit=100', {
+  const stores = await localFetch(api('/api/v1/organizations/stores?limit=100'), {
     headers: sessionHeaders(consoleSession),
   });
   const storesPayload = await stores.text();
@@ -307,7 +295,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   const staleStore = await saveStore({ name: '过期版本不应生效', status: 'active', mall: 'mall-zhudatuan', regionCode: '310000', serviceRadiusMeters: 5000, address: null }, storeEtag);
   if (staleStore.status !== 409) throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
   const createInvitation = () =>
-    localFetch('http://127.0.0.1:3001/api/v1/identity/invitations', {
+    localFetch(api('/api/v1/identity/invitations'), {
       method: 'POST',
       headers: {
         ...sessionHeaders(consoleSession),
@@ -329,13 +317,13 @@ async function verifyEmployeeSession(password: string): Promise<void> {
     throw new Error(`LOCAL_INVITATION_RESPONSE_INVALID:${invitationEtag ?? 'NO_ETAG'}:${JSON.stringify(created)}`);
   }
   const resolveInvitation = (code: string) =>
-    localFetch('http://127.0.0.1:3001/api/v1/identity/invitations/resolve', {
+    localFetch(api('/api/v1/identity/invitations/resolve'), {
       method: 'POST',
       headers: {
         ...bootstrapCommand(bootstraps[0]),
         'content-type': 'application/json',
         'idempotency-key': randomUUID(),
-        'x-client-version': '0.0.0',
+        'x-client-version': clientVersion,
         'x-contract-version': CONTRACT_VERSION,
         'x-request-id': randomUUID(),
       },
@@ -364,7 +352,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
   if (revocable.status !== 201 || typeof revocableId !== 'string' || typeof revocableCode !== 'string' || revocableEtag === null) {
     throw new Error(`LOCAL_REVOCABLE_INVITATION_INVALID:${revocable.status}:${JSON.stringify(revocablePayload)}`);
   }
-  const revoke = await localFetch(`http://127.0.0.1:3001/api/v1/identity/invitations/${encodeURIComponent(revocableId)}`, {
+  const revoke = await localFetch(api(`/api/v1/identity/invitations/${encodeURIComponent(revocableId)}`), {
     method: 'DELETE',
     headers: {
       ...sessionHeaders(consoleSession),
@@ -385,12 +373,12 @@ async function verifyEmployeeSession(password: string): Promise<void> {
     (revokedResolutionPayload as Readonly<Record<string, unknown>>).code !== 'INVITATION_REVOKED'
   )
     throw new Error(`LOCAL_REVOKED_INVITATION_RESOLUTION_INVALID:${revokedResolution.status}:${JSON.stringify(revokedResolutionPayload)}`);
-  const ledger = await localFetch('http://127.0.0.1:3001/api/v1/benefits/ledgers', { headers: sessionHeaders(storefront) });
+  const ledger = await localFetch(api('/api/v1/benefits/ledgers'), { headers: sessionHeaders(storefront) });
   const ledgerPayload: unknown = await ledger.json();
   if (ledger.status !== 200 || ledgerPayload === null || typeof ledgerPayload !== 'object' || Array.isArray(ledgerPayload) || !Array.isArray((ledgerPayload as Readonly<Record<string, unknown>>).items))
     throw new Error(`LOCAL_BENEFIT_LEDGER_INVALID:${ledger.status}:${JSON.stringify(ledgerPayload)}`);
   await completeStepup(storefront);
-  const listSessions = () => localFetch('http://127.0.0.1:3001/api/v1/identity/sessions', { headers: sessionHeaders(storefront) });
+  const listSessions = () => localFetch(api('/api/v1/identity/sessions'), { headers: sessionHeaders(storefront) });
   const sessions = await listSessions();
   const sessionPayload: unknown = await sessions.json();
   const sessionItems = sessionPayload !== null && typeof sessionPayload === 'object' && !Array.isArray(sessionPayload) ? (sessionPayload as Readonly<Record<string, unknown>>).items : null;
@@ -401,7 +389,7 @@ async function verifyEmployeeSession(password: string): Promise<void> {
     sessionItems.filter((item) => item !== null && typeof item === 'object' && !Array.isArray(item) && (item as Readonly<Record<string, unknown>>).current === true).length !== 1
   )
     throw new Error('LOCAL_EMPLOYEE_SESSION_INVALID');
-  const revokeOthers = await localFetch('http://127.0.0.1:3001/api/v1/identity/sessions/others', {
+  const revokeOthers = await localFetch(api('/api/v1/identity/sessions/others'), {
     method: 'DELETE',
     headers: {
       ...sessionHeaders(storefront),
@@ -444,10 +432,10 @@ interface AuthenticatedSession {
 }
 
 async function authBootstrap(target: AuthTarget): Promise<AuthBootstrap> {
-  const response = await localFetch('http://127.0.0.1:3001/api/v1/identity/bootstrap', {
+  const response = await localFetch(api('/api/v1/identity/bootstrap'), {
     headers: {
       'x-client-target': target,
-      'x-client-version': '0.0.0',
+      'x-client-version': clientVersion,
       'x-contract-version': CONTRACT_VERSION,
       'x-device-id': `local-${randomUUID()}`,
       'x-request-id': randomUUID(),
@@ -464,7 +452,7 @@ async function authBootstrap(target: AuthTarget): Promise<AuthBootstrap> {
 function bootstrapCommand(bootstrap: AuthBootstrap): Readonly<Record<string, string>> {
   return Object.freeze({
     cookie: bootstrap.cookie,
-    origin: bootstrap.target === 'console' ? 'http://127.0.0.1:4173' : 'http://127.0.0.1:3000',
+    origin: clientOrigin(bootstrap.target),
     'x-client-target': bootstrap.target,
     'x-csrf-token': bootstrap.csrf,
   });
@@ -482,15 +470,21 @@ function sessionHeaders(session: AuthenticatedSession): Readonly<Record<string, 
   return Object.freeze({
     authorization: `Bearer ${session.bearer}`,
     cookie: session.cookie,
-    origin: session.target === 'console' ? 'http://127.0.0.1:4173' : 'http://127.0.0.1:3000',
+    origin: clientOrigin(session.target),
     'x-client-target': session.target,
-    'x-client-version': '0.0.0',
+    'x-client-version': clientVersion,
     'x-contract-version': CONTRACT_VERSION,
     'x-csrf-token': session.csrf,
     'x-device-id': `local-${randomUUID()}`,
     'x-real-ip': localPeer(),
     'x-request-id': randomUUID(),
   });
+}
+
+function clientOrigin(target: AuthTarget): string {
+  const production = environment.apiEndpoint !== LOCAL_API_ORIGIN;
+  if (target === 'console') return production ? CANONICAL_CONSOLE_ORIGIN : LOCAL_CONSOLE_ORIGIN;
+  return production ? CANONICAL_STOREFRONT_ORIGIN : LOCAL_STOREFRONT_ORIGIN;
 }
 
 function cookieValue(cookies: readonly string[], name: string): string | null {

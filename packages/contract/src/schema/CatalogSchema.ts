@@ -1,185 +1,35 @@
-import { array, boolean, literal, null as nullSchema, number, optional, strictObject, string, union } from 'zod/mini';
+import { array, literal, null as nullSchema, optional, strictObject, string, union } from 'zod/mini';
 import { catalogListingsBatchInput, catalogListingsBatchOutput } from './CatalogBatchSchema';
 import { importCreated, importInput, importRead } from './ImportSchema';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { ImageAssetInputSchema, ImageAssetUploadInputSchema, ImageAssetUploadOutputSchema } from './ObjectSchema';
 import { isoUtc, pageOutput, pageQuery, unsigned, version as entityVersion } from './Primitives';
-
-const text = string();
-const nullableText = union([text, nullSchema()]);
-const integer = union([number(), string()]);
-
-const specification = strictObject({ name: text, value: text });
-const sku = strictObject({
-  id: text,
-  code: text,
-  status: literal(['draft', 'active', 'archived']),
-  specifications: array(specification),
-  version: integer,
-});
-const listing = strictObject({
-  id: text,
-  scope: text,
-  scopeName: text,
-  pool: nullableText,
-  poolName: nullableText,
-  sku: text,
-  skuCode: text,
-  title: text,
-  status: literal(['draft', 'published', 'unpublished', 'retired']),
-  effectiveAt: nullableText,
-  expiresAt: nullableText,
-  createdAt: isoUtc,
-  updatedAt: isoUtc,
-  version: integer,
-});
-const stock = strictObject({
-  sku: text,
-  skuCode: text,
-  scope: text,
-  scopeName: text,
-  location: text,
-  locationName: text,
-  onhand: integer,
-  safety: integer,
-  status: literal(['active', 'blocked', 'retired']),
-  version: integer,
-});
-const price = strictObject({
-  sku: text,
-  skuCode: text,
-  scope: text,
-  scopeName: text,
-  currency: text,
-  amountMinor: integer,
-  compareMinor: union([integer, nullSchema()]),
-  bookStatus: literal(['draft', 'active', 'retired']),
-  effectiveAt: text,
-  expiresAt: nullableText,
-  bookVersion: integer,
-  priceVersion: entityVersion,
-});
-
-const pool = strictObject({ id: text, scope_id: text, kind: literal(['global', 'channel', 'private', 'markup']), name: text, status: literal(['draft', 'active', 'disabled']), version: entityVersion });
-const poolRead = strictObject({ id: text, kind: string(), name: text, status: string(), version: entityVersion, item_count: unsigned });
-const category = strictObject({
-  id: text,
-  parent_id: nullableText,
-  parent_name: nullableText,
-  code: text,
-  name: text,
-  status: literal(['active', 'disabled']),
-  sort_order: unsigned,
-  product_count: unsigned,
-});
-const poolBinding = strictObject({ mall_id: text, pool_id: text, listing_kind: literal(['selected', 'combined']), status: literal(['active', 'disabled']), effective_at: nullableText, expires_at: nullableText, created_at: isoUtc });
-const listingPrice = strictObject({ listing_id: text, sku_id: text, scope_id: text, amount_minor: unsigned, currency: literal('CNY'), version: entityVersion, effective_at: isoUtc, updated_at: isoUtc });
-const product = strictObject({
-  id: text,
-  scope_id: text,
-  owner_partner_id: nullableText,
-  brand_id: nullableText,
-  category_id: text,
-  title: text,
-  product_type: literal(['physical', 'virtual', 'service', 'voucher']),
-  attributes: ContractJsonValueSchema,
-  status: literal(['draft', 'review', 'active', 'archived']),
-  version: entityVersion,
-  created_at: isoUtc,
-  updated_at: isoUtc,
-});
-const listingRecord = strictObject({
-  id: text,
-  scope_id: text,
-  pool_id: nullableText,
-  sku_id: text,
-  title: text,
-  status: literal(['draft', 'published', 'unpublished', 'retired']),
-  effective_at: nullableText,
-  expires_at: nullableText,
-  version: entityVersion,
-  created_at: isoUtc,
-  updated_at: isoUtc,
-});
-const listingRead = strictObject({
-  id: text,
-  scope_id: text,
-  pool_id: nullableText,
-  sku_id: text,
-  title: text,
-  status: string(),
-  effective_at: nullableText,
-  expires_at: nullableText,
-  version: integer,
-  cursor_sort: isoUtc,
-  code: text,
-  product_id: text,
-  product_type: string(),
-  cover_url: nullableText,
-  subtitle: nullableText,
-  category_id: text,
-  category_name: text,
-  source: text,
-  source_partner_id: nullableText,
-  source_partner_name: nullableText,
-  pool_name: nullableText,
-  sku_count: unsigned,
-  sku_total: unsigned,
-  mall_count: unsigned,
-  mall_total: unsigned,
-  price_amount_minor: union([unsigned, nullSchema()]),
-  price_currency: nullableText,
-  price_version: union([unsigned, nullSchema()]),
-  saleable_stock: union([unsigned, nullSchema()]),
-  qualification_eligible: union([boolean(), nullSchema()]),
-  data_gaps: array(text),
-});
-const sourceRead = strictObject({
-  id: text,
-  scope_id: text,
-  sku_id: nullableText,
-  title: text,
-  status: string(),
-  version: text,
-  cursor_sort: isoUtc,
-  code: nullableText,
-  product_id: nullableText,
-  product_type: nullableText,
-  cover_url: nullableText,
-  subtitle: nullableText,
-  category_id: nullableText,
-  category_name: nullableText,
-  source: text,
-  source_partner_id: nullableText,
-  source_partner_name: nullableText,
-  pool_name: nullableText,
-  sku_count: unsigned,
-  sku_total: unsigned,
-  mall_count: unsigned,
-  mall_total: unsigned,
-  price_amount_minor: union([unsigned, nullSchema()]),
-  price_currency: nullableText,
-  price_version: union([unsigned, nullSchema()]),
-  saleable_stock: union([unsigned, nullSchema()]),
-  qualification_eligible: union([boolean(), nullSchema()]),
-  data_gaps: array(text),
-});
-const facet = strictObject({ value: text, label: nullableText, count: unsigned });
-const detailSection = literal(['core', 'pricing', 'inventory', 'qualification']);
-const dependency = strictObject({ state: literal(['ready', 'unavailable', 'notrequested']), watermark: nullableText, code: nullableText });
-const productMedia = strictObject({ id: text, kind: literal(['image', 'video', 'document']), url: text, alt: nullableText, sort: unsigned });
-const productChannel = strictObject({ provider: text, externalId: text, status: literal(['pending', 'mapped', 'rejected', 'retired']), sourceVersion: text, observedAt: isoUtc });
-const productPool = strictObject({ id: text, name: text, kind: literal(['global', 'channel', 'private', 'markup']), status: literal(['draft', 'active', 'disabled']), listingCount: unsigned });
-const productTimeline = strictObject({
-  id: text,
-  kind: literal(['productcreated', 'productupdated', 'listingcreated', 'listingupdated', 'sourceobserved']),
-  title: text,
-  occurredAt: isoUtc,
-  reference: nullableText,
-  referenceLabel: nullableText,
-});
-const productQualification = strictObject({ listing: text, listingTitle: text, eligible: boolean(), policyVersion: unsigned });
-
+import {
+  category,
+  dependency,
+  detailSection,
+  facet,
+  integer,
+  listing,
+  listingPrice,
+  listingRead,
+  listingRecord,
+  nullableText,
+  pool,
+  poolBinding,
+  poolRead,
+  price,
+  product,
+  productChannel,
+  productMedia,
+  productPool,
+  productQualification,
+  productTimeline,
+  sku,
+  sourceRead,
+  stock,
+  text,
+} from './CatalogEntitySchema';
 export const CATALOG_QUERY_SCHEMAS = {
   CatalogPoolsReadInput: strictObject(pageQuery),
   CatalogCategoriesReadInput: strictObject({ ...pageQuery, q: optional(string()) }),

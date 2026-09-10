@@ -901,6 +901,7 @@ on conflict(version) do nothing;
 
 do $assert$
 declare
+  table_oid oid;
   table_name text;
   update_contract record;
 begin
@@ -910,7 +911,10 @@ begin
   end if;
   if exists(select 1 from pg_auth_members membership
     where membership.member=(select oid from pg_roles where rolname='zhudatuanpurchaseapi')
-      or membership.roleid=(select oid from pg_roles where rolname='zhudatuanpurchaseapi')) then
+      or (membership.roleid=(select oid from pg_roles where rolname='zhudatuanpurchaseapi')
+        and not (membership.member=(select oid from pg_roles where rolname='postgres')
+          and membership.grantor=(select oid from pg_roles where rolname='supabase_admin')
+          and membership.admin_option and not membership.inherit_option and not membership.set_option))) then
     raise exception 'ZHUDATUAN_PURCHASE_ROLE_MEMBERSHIP_UNSAFE';
   end if;
   if has_schema_privilege('zhudatuanpurchaseapi','finance','USAGE')
@@ -934,13 +938,16 @@ begin
       raise exception 'ZHUDATUAN_PURCHASE_FORBIDDEN_TABLE_ACCESS:%',table_name;
     end if;
   end loop;
-  for table_name in select schemaname||'.'||tablename from pg_tables
-    where schemaname not in('pg_catalog','information_schema')
+  for table_oid,table_name in
+    select relation.oid,format('%I.%I',namespace.nspname,relation.relname)
+    from pg_class relation
+    join pg_namespace namespace on namespace.oid=relation.relnamespace
+    where relation.relkind in('r','p') and namespace.nspname not in('pg_catalog','information_schema')
   loop
-    if has_table_privilege('zhudatuanpurchaseapi',table_name,'DELETE')
-      or has_table_privilege('zhudatuanpurchaseapi',table_name,'TRUNCATE')
-      or has_table_privilege('zhudatuanpurchaseapi',table_name,'REFERENCES')
-      or has_table_privilege('zhudatuanpurchaseapi',table_name,'TRIGGER') then
+    if has_table_privilege('zhudatuanpurchaseapi',table_oid,'DELETE')
+      or has_table_privilege('zhudatuanpurchaseapi',table_oid,'TRUNCATE')
+      or has_table_privilege('zhudatuanpurchaseapi',table_oid,'REFERENCES')
+      or has_table_privilege('zhudatuanpurchaseapi',table_oid,'TRIGGER') then
       raise exception 'ZHUDATUAN_PURCHASE_DESTRUCTIVE_PRIVILEGE:%',table_name;
     end if;
   end loop;

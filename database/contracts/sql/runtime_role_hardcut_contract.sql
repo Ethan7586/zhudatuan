@@ -7,6 +7,6 @@ do $contract$ begin
     raise exception 'LEGACY_JOB_CLAIM_PATH_PRESENT';
   end if;
   if (select count(*) from pg_trigger where not tgisinternal and tgname in('pricing_quote_immutable','ordering_orderrecord_snapshot',
-    'ordering_line_immutable'))<>3 then raise exception 'IMMUTABLE_CHECKOUT_FACT_TRIGGER_MISSING'; end if;
+    'orderlineguard'))<>3 then raise exception 'IMMUTABLE_CHECKOUT_FACT_TRIGGER_MISSING'; end if;
 end $contract$;
 rollback;

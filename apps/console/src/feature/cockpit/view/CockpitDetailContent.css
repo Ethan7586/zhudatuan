@@ -1,0 +1,238 @@
+.ispositive {
+  color: var(--sw-success-strong) !important;
+}
+.isnegative {
+  color: var(--sw-danger-strong) !important;
+}
+.cockpitsecondarygrid,
+.cockpitlowergrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.grainbuttons {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid var(--sw-border);
+  border-radius: 7px;
+}
+.grainbuttons button {
+  min-width: 42px;
+  padding: 5px 9px;
+  border: 0;
+  border-left: 1px solid var(--sw-border);
+  background: var(--sw-surface);
+  color: var(--sw-muted);
+  cursor: pointer;
+}
+.grainbuttons button:first-child {
+  border-left: 0;
+}
+.grainbuttons button[aria-pressed='true'] {
+  color: var(--sw-brand);
+  background: var(--sw-brand-light);
+  font-weight: 600;
+}
+.eventnormal line,
+.eventnormal circle {
+  stroke: var(--sw-brand);
+  fill: var(--sw-brand);
+}
+.eventwarning line,
+.eventwarning circle {
+  stroke: var(--sw-danger-strong);
+  fill: var(--sw-danger-strong);
+}
+.eventnormal text,
+.eventwarning text {
+  fill: var(--sw-text-secondary);
+  font-size: 9px;
+}
+.mallcomparison,
+.businessevents,
+.businessinsights {
+  min-height: 250px;
+  padding: 15px 16px;
+}
+.mallhead,
+.mallrow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px 58px 62px;
+  align-items: center;
+  gap: 8px;
+}
+.mallhead {
+  margin-top: 13px;
+  color: var(--sw-muted);
+  font-size: 11px;
+}
+.mallhead span:not(:first-child),
+.mallrow span {
+  text-align: right;
+}
+.mallcomparison article {
+  margin-top: 17px;
+}
+.mallrow {
+  font-size: 12px;
+}
+.mallrow strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.malltrack {
+  height: 5px;
+  margin-top: 9px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--sw-brand-light);
+}
+.malltrack i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--sw-brand);
+}
+.eventhead,
+.businessevents article {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) minmax(80px, auto) minmax(150px, auto);
+  gap: 8px;
+  align-items: center;
+}
+.eventhead {
+  grid-template-columns: 26px minmax(0, 1fr) minmax(80px, auto) minmax(150px, auto);
+  margin-top: 13px;
+  color: var(--sw-muted);
+  font-size: 11px;
+}
+.eventhead span:first-child {
+  grid-column: 2;
+}
+.businessevents article {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--sw-border);
+  font-size: 12px;
+}
+.businessevents article:last-child {
+  border-bottom: 0;
+}
+.businessevents time {
+  color: var(--sw-muted);
+  text-align: right;
+}
+.eventicon,
+.insighticon {
+  display: inline-grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--sw-brand);
+  background: var(--sw-brand-light);
+  font-weight: 700;
+}
+.eventicon[data-kind='warning'],
+.insighticon[data-tone='warning'] {
+  color: var(--sw-danger-strong);
+  background: var(--sw-danger-subtle, var(--sw-surface-subtle));
+}
+.businessinsights article {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--sw-surface-subtle);
+}
+.businessinsights article > div {
+  display: grid;
+  gap: 3px;
+}
+.businessinsights span {
+  color: var(--sw-muted);
+  font-size: 12px;
+}
+.businessinsights button {
+  width: fit-content;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sw-brand);
+  cursor: pointer;
+}
+.productleaders {
+  padding: 15px 16px;
+}
+.productleaderhead,
+.productleaders article {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 112px 64px 64px;
+  align-items: center;
+  gap: 10px;
+}
+.productleaderhead {
+  margin-top: 13px;
+  color: var(--sw-muted);
+  font-size: 11px;
+}
+.productleaderhead span:first-child {
+  grid-column: 2;
+}
+.productleaderhead span:not(:first-child),
+.productleaders article span {
+  text-align: right;
+}
+.productleaders article {
+  min-height: 48px;
+  border-bottom: 1px solid var(--sw-border);
+  font-size: 12px;
+}
+.productleaders article:last-child {
+  border-bottom: 0;
+}
+.productleaders article > b {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-brand-light);
+  color: var(--sw-brand);
+}
+.cockpitmetricfoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cockpitmetricfoot button,
+.productleaderlink {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sw-brand);
+  font: inherit;
+  cursor: pointer;
+}
+.cockpitmetricfoot button {
+  display: inline-flex;
+  min-height: var(--sw-control-touch-target);
+  flex: 0 0 auto;
+  align-items: center;
+  padding-inline: var(--sw-space-0-5);
+  white-space: nowrap;
+}
+.cockpitmetricfoot button:focus-visible,
+.productleaderlink:focus-visible {
+  outline: 2px solid var(--sw-focus);
+  outline-offset: 3px;
+}
+.productleaderlink {
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

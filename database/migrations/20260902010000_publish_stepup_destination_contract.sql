@@ -22,6 +22,7 @@ begin
 end
 $precondition$;
 
+create policy errorcontractmigration on runtime.errorcontract for select to shopmigration using(true);
 alter table runtime.errorcontract disable row level security;
 insert into runtime.errorcontract(code,status,retryable,audit,client,contract_version)
 values('STEPUP_DESTINATION_MISSING',409,false,false,'message','3.0.0');
@@ -69,5 +70,7 @@ begin
   end if;
 end
 $assert$;
+
+drop policy errorcontractmigration on runtime.errorcontract;
 
 commit;

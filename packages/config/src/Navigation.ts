@@ -16,6 +16,6 @@ export const NAVIGATION_CONFIGURATION: NavigationConfiguration = Object.freeze({
   maximumNodes: 100,
   maximumBytes: 65_536,
   maximumDepth: 4,
-  rebuildDeadlineMilliseconds: 120,
+  rebuildDeadlineMilliseconds: 3_000,
   degradedFailureThreshold: 5,
 });

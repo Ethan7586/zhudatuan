@@ -137,6 +137,8 @@ alter table risk.action enable row level security;
 alter table risk.action force row level security;
 alter table risk.assessment enable row level security;
 alter table risk.assessment force row level security;
+create policy migrationaccess on risk.action for all to shopmigration using(true) with check(true);
+create policy migrationaccess on risk.assessment for all to shopmigration using(true) with check(true);
 create policy appselect on risk.action for select to shopapp,shopjob using(risk.scope_allowed(scope_id));
 create policy appinsert on risk.action for insert to shopapp,shopjob with check(risk.scope_allowed(scope_id));
 create policy appupdate on risk.action for update to shopapp,shopjob using(risk.scope_allowed(scope_id)) with check(risk.scope_allowed(scope_id));

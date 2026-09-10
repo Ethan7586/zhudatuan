@@ -1,7 +1,8 @@
 import { RouteScroll, useBrowserPath, useResourceQuery } from '@shop/design';
+import type { OperationOutputFor } from '@shop/contract';
 import { hasFailureCode, presentError, projectRecords } from '@shop/presentation';
 import { actionField, requiredText, type ActionInput, type OperatorAction } from '@shop/presentation/actions';
-import { readSurfaceNavigation, readSurfaceSession, selectSurfaceScope, surfaceRequestContext, type SurfaceNavigation } from '@shop/sdk/session';
+import { preloadSurfaceRoutes, selectSurfaceScope, SurfaceAccessRuntime, surfaceNavigationNodes, surfaceRequestContext, type SurfaceNavigation } from '@shop/sdk/session';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createSupplierDependencies, type SupplierDependencies } from './Dependencies';
 import { SUPPLIER_ROUTES } from './RouteRegistry';
@@ -31,16 +32,23 @@ interface StepupState {
 
 export function SupplierApp({ dependencies: supplied }: Readonly<{ dependencies?: SupplierDependencies }>) {
   const dependencies = useMemo(() => supplied ?? createSupplierDependencies(), [supplied]);
+  const access = useMemo(() => new SurfaceAccessRuntime(dependencies.client, dependencies.environment, 'supplier', NAVIGATION_CATALOG_HASH), [dependencies]);
   const location = useBrowserPath();
-  const load = useCallback((signal: AbortSignal) => loadSupplier(dependencies, location.pathname, location.navigate, signal), [dependencies, location.pathname, location.navigate]);
+  const load = useCallback((signal: AbortSignal) => loadSupplier(dependencies, access, location.pathname, location.navigate, signal), [access, dependencies, location.pathname, location.navigate]);
   const query = useResourceQuery(location.pathname, load);
+  const retry = useCallback(() => {
+    access.clear();
+    query.reload();
+  }, [access, query.reload]);
   const [selectedKey, setSelectedKey] = useState<string>();
   const [replacement, setReplacement] = useState<unknown>();
   const [stepup, setStepup] = useState<StepupState>();
   const authenticationRequired = hasFailureCode(query.error, 'AUTHENTICATION_REQUIRED');
   useEffect(() => {
-    if (authenticationRequired) window.location.replace(authHref(dependencies.environment.authOrigin, location.pathname));
-  }, [authenticationRequired, dependencies.environment.authOrigin, location.pathname]);
+    if (!authenticationRequired) return;
+    access.clear();
+    window.location.replace(authHref(dependencies.environment.authOrigin, location.pathname));
+  }, [access, authenticationRequired, dependencies.environment.authOrigin, location.pathname]);
   const error = query.error === undefined || authenticationRequired ? undefined : presentError(query.error).message;
   const value = query.data;
   useEffect(() => {
@@ -48,7 +56,7 @@ export function SupplierApp({ dependencies: supplied }: Readonly<{ dependencies?
     setReplacement(undefined);
     setStepup(undefined);
   }, [location.pathname, value]);
-  if (value === undefined) return <Loading pathname={location.pathname} {...(error === undefined ? {} : { error })} retry={query.reload} navigate={location.navigate} entry={location.entry} />;
+  if (value === undefined) return <Loading pathname={location.pathname} {...(error === undefined ? {} : { error })} retry={retry} navigate={location.navigate} entry={location.entry} />;
   const raw = replacement ?? value.raw;
   const data = value.viewModel.project?.(raw, value.route) ?? projectRecords(raw);
   const sourceActions = value.viewModel.actions?.(raw, value.route, selectedKey) ?? [];
@@ -57,7 +65,7 @@ export function SupplierApp({ dependencies: supplied }: Readonly<{ dependencies?
     if (!navigator.onLine) throw new Error('网络不可用，操作尚未提交。请恢复网络后重试。');
     const handler = value.viewModel.execute;
     if (handler === undefined) throw new Error('当前页面没有可执行操作。');
-    const context = supplierCommand(value.context, action.expectedVersion);
+    const context = action.identityScope === true ? identityContext(value.context, action.expectedVersion) : supplierCommand(value.context, action.expectedVersion);
     let commandInput = input;
     if (stepup?.action === action.id && stepup.selectedKey === selectedKey) {
       await dependencies.client.identity.stepupComplete({ body: { challenge: stepup.challenge, code: requiredText(input, 'stepupcode', 12) } }, identityContext(value.context));
@@ -66,6 +74,11 @@ export function SupplierApp({ dependencies: supplied }: Readonly<{ dependencies?
     }
     try {
       const result = await handler(dependencies.client, context, value.route, raw, selectedKey, action, commandInput);
+      if (result.sessionEnded) {
+        access.clear();
+        window.location.replace(authHref(dependencies.environment.authOrigin, location.pathname));
+        return { message: result.message };
+      }
       if (result.destination) location.navigate(result.destination);
       else if (result.data !== undefined) setReplacement(result.data);
       else if (result.refresh !== false) setReplacement(await value.viewModel.read(dependencies.client, value.context, value.route));
@@ -85,58 +98,111 @@ export function SupplierApp({ dependencies: supplied }: Readonly<{ dependencies?
   return (
     <>
       <RouteScroll entry={location.entry} />
-      <SupplierShell pathname={location.pathname} scopeLabel={value.scopeLabel} title={value.title} description={value.description} items={value.items} data={data} context={<span>{value.employeeLabel}</span>} actions={actions} {...(selectedKey === undefined ? {} : { selectedKey })} select={select} execute={execute} {...(error === undefined ? {} : { error })} retry={query.reload} navigate={location.navigate} />
+      <SupplierShell
+        pathname={location.pathname}
+        scopeLabel={value.scopeLabel}
+        title={value.title}
+        description={value.description}
+        items={value.items}
+        data={data}
+        context={<span>{value.employeeLabel}</span>}
+        actions={actions}
+        {...(selectedKey === undefined ? {} : { selectedKey })}
+        select={select}
+        execute={execute}
+        {...(error === undefined ? {} : { error })}
+        retry={retry}
+        navigate={location.navigate}
+      />
     </>
   );
 }
 
-async function loadSupplier(dependencies: SupplierDependencies, pathname: string, navigate: (path: string, replace?: boolean) => void, signal: AbortSignal): Promise<SupplierSnapshot> {
-  const session = await readSurfaceSession(dependencies.client, dependencies.environment, 'supplier', NAVIGATION_CATALOG_HASH, signal);
+async function loadSupplier(dependencies: SupplierDependencies, access: SurfaceAccessRuntime, pathname: string, navigate: (path: string, replace?: boolean) => void, signal: AbortSignal): Promise<SupplierSnapshot> {
   const match = pathname === '/' ? undefined : matchRoutePath(pathname);
   if (pathname !== '/' && match === undefined) throw new Error('SUPPLIER_ROUTE_NOT_FOUND');
+  const manifestPromise = match === undefined ? Promise.resolve(undefined) : SUPPLIER_ROUTES[match.id].load();
+  const [session, requestedManifest] = await Promise.all([access.session(signal), manifestPromise]);
   const scope = selectSurfaceScope(session, 'supplier', match === undefined ? undefined : scopeCandidate(match));
-  const navigation = await readSurfaceNavigation(dependencies.client, dependencies.environment, session, scope, NAVIGATION_CATALOG_HASH, signal);
-  const items = navigationItems(navigation, scope.kind, scope.id);
+  const context = surfaceRequestContext(dependencies.environment, session, scope, NAVIGATION_CATALOG_HASH, signal);
+  const navigationPromise = access.navigation(session, scope, signal);
+  const profilePromise = dependencies.client.member.profileRead({}, context);
+  if (match !== undefined && requestedManifest !== undefined) {
+    const resultPromise = requestedManifest.viewModel.read(dependencies.client, context, match);
+    const [navigation, result, profile] = await Promise.all([navigationPromise, resultPromise, profilePromise]);
+    preloadSurfaceRoutes(navigation, SUPPLIER_ROUTES);
+    if (!routeAllowed(match, navigation)) throw new Error('SUPPLIER_ROUTE_DENIED');
+    return supplierSnapshot(scope.id, navigation, profile, result, match, context, requestedManifest.viewModel);
+  }
+  const [navigation, profile] = await Promise.all([navigationPromise, profilePromise]);
+  preloadSurfaceRoutes(navigation, SUPPLIER_ROUTES);
   const landing = navigationLanding(navigation, scope.kind, scope.id);
-  if (pathname === '/') navigate(landing, true);
-  const route = match ?? matchRoutePath(landing);
+  navigate(landing, true);
+  const route = matchRoutePath(landing);
   if (route === undefined || !routeAllowed(route, navigation)) throw new Error('SUPPLIER_ROUTE_DENIED');
   const manifest = await SUPPLIER_ROUTES[route.id].load();
-  const context = surfaceRequestContext(dependencies.environment, session, scope, NAVIGATION_CATALOG_HASH, signal);
-  const [result, profile] = await Promise.all([manifest.viewModel.read(dependencies.client, context, route), dependencies.client.member.profileRead({}, context)]);
+  const result = await manifest.viewModel.read(dependencies.client, context, route);
+  return supplierSnapshot(scope.id, navigation, profile, result, route, context, manifest.viewModel);
+}
+
+function supplierSnapshot(
+  scope: string,
+  navigation: SurfaceNavigation,
+  profile: OperationOutputFor<'member.profile.read'>,
+  result: unknown,
+  route: RouteMatch,
+  context: ReturnType<typeof surfaceRequestContext>,
+  viewModel: SupplierFeatureViewModel
+): SupplierSnapshot {
   const employeeLabel = profile.employee_no ? `${profile.display_name} · 工号 ${profile.employee_no}` : profile.display_name;
-  return Object.freeze({ scopeLabel: `供应商 · ${shortScope(scope.id)}`, employeeLabel, title: manifest.viewModel.title, description: manifest.viewModel.description, items, raw: result, route, context, viewModel: manifest.viewModel });
+  return Object.freeze({
+    scopeLabel: `供应商 · ${shortScope(scope)}`,
+    employeeLabel,
+    title: viewModel.title,
+    description: viewModel.description,
+    items: navigationItems(navigation, 'supplier', scope),
+    raw: result,
+    route,
+    context,
+    viewModel,
+  });
 }
 
 function Loading(value: Readonly<{ pathname: string; error?: string; retry: () => void; navigate: (path: string) => void; entry: string }>) {
   return (
     <>
       <RouteScroll entry={value.entry} />
-      <SupplierShell scopeLabel="正在校验供应商身份" pathname={value.pathname} title="正在加载" description="正在同步权限、导航和业务数据。" items={[]} data={undefined} {...(value.error === undefined ? {} : { error: value.error })} retry={value.retry} navigate={value.navigate} />
+      <SupplierShell
+        scopeLabel="正在校验供应商身份"
+        pathname={value.pathname}
+        title="正在加载"
+        description="正在同步权限、导航和业务数据。"
+        items={[]}
+        data={undefined}
+        {...(value.error === undefined ? {} : { error: value.error })}
+        retry={value.retry}
+        navigate={value.navigate}
+      />
     </>
   );
 }
 
 function navigationItems(navigation: SurfaceNavigation, scopeKind: string, scopeId: string) {
   return Object.freeze(
-    flatten(navigation.nodes)
+    surfaceNavigationNodes(navigation)
       .filter((node) => !node.experience.disabled && node.experience.placement === 'primary')
       .map((node) => Object.freeze({ id: node.experience.routeKey, title: node.title, path: resolveRoutePath(node.experience.routeKey as RouteId, { scopeKind, scopeId }) }))
   );
 }
 
 function routeAllowed(route: RouteMatch, navigation: SurfaceNavigation): boolean {
-  return flatten(navigation.nodes).some((node) => !node.experience.disabled && node.experience.routeKey === route.id);
+  return surfaceNavigationNodes(navigation).some((node) => !node.experience.disabled && node.experience.routeKey === route.id);
 }
 
 function navigationLanding(navigation: SurfaceNavigation, scopeKind: string, scopeId: string): string {
-  const node = flatten(navigation.nodes).find((candidate) => candidate.key === navigation.defaultKey && !candidate.experience.disabled);
+  const node = surfaceNavigationNodes(navigation).find((candidate) => candidate.key === navigation.defaultKey && !candidate.experience.disabled);
   if (node === undefined) throw new Error('SUPPLIER_NAVIGATION_EMPTY');
   return resolveRoutePath(node.experience.routeKey as RouteId, { scopeKind, scopeId });
-}
-
-function flatten(nodes: readonly SurfaceNavigation['nodes'][number][]): readonly SurfaceNavigation['nodes'][number][] {
-  return Object.freeze(nodes.flatMap((node) => [node, ...flatten(node.children)]));
 }
 
 function scopeCandidate(route: RouteMatch) {
@@ -157,10 +223,14 @@ function shortScope(value: string): string {
 }
 
 function withStepupCode(action: OperatorAction): OperatorAction {
-  return Object.freeze({ ...action, confirmation: '本操作需要再次验证当前人员身份。请输入刚收到的验证码后提交。', fields: Object.freeze([...action.fields, actionField('stepupcode', '身份验证码', { kind: 'password', maximumLength: 12 })]) });
+  return Object.freeze({
+    ...action,
+    confirmation: '本操作需要再次验证当前人员身份。请输入刚收到的验证码后提交。',
+    fields: Object.freeze([...action.fields, actionField('stepupcode', '身份验证码', { kind: 'password', maximumLength: 12 })]),
+  });
 }
 
-function identityContext(context: ReturnType<typeof surfaceRequestContext>) {
+function identityContext(context: ReturnType<typeof surfaceRequestContext>, expectedVersion?: number) {
   const { scope: _scope, expectedVersion: _version, idempotencyKey: _key, ...identity } = context;
-  return supplierCommand(identity);
+  return supplierCommand(identity, expectedVersion);
 }

@@ -298,6 +298,8 @@ alter table capability.entitlementhistory enable row level security;
 alter table capability.entitlementhistory force row level security;
 alter table capability.capabilityset enable row level security;
 alter table capability.capabilityset force row level security;
+create policy migrationaccess on capability.entitlementhistory for all to shopmigration using(true) with check(true);
+create policy migrationaccess on capability.capabilityset for all to shopmigration using(true) with check(true);
 create policy entitlementhistoryapp on capability.entitlementhistory for all to shopapp using(access.scope_allowed(scope_id)) with check(access.scope_allowed(scope_id));
 create policy entitlementhistoryjob on capability.entitlementhistory for all to shopjob using(true) with check(true);
 create policy capabilitysetapp on capability.capabilityset for all to shopapp using(access.scope_allowed(scope_id)) with check(access.scope_allowed(scope_id));

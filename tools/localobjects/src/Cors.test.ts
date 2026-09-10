@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { CLIENT_ORIGINS } from '@shop/config/clientcatalog';
 import type { LocalRequest } from '../../localinfra/src/Http';
 import { withObjectCors } from './Cors';
 
@@ -28,6 +29,12 @@ test('adds an origin-specific response policy without allowing credentials', asy
   assert.equal(response.headers?.['access-control-allow-origin'], origin);
   assert.equal(response.headers?.['access-control-allow-credentials'], undefined);
   assert.equal(response.headers?.vary, 'Origin');
+});
+
+test('allows the generated production console origin without widening the policy', async () => {
+  const response = await handler(request('/v1/public-upload/upload-id', 'PUT', { origin: CLIENT_ORIGINS.console }));
+
+  assert.equal(response.headers?.['access-control-allow-origin'], CLIENT_ORIGINS.console);
 });
 
 test('rejects unknown origins, methods and request headers', async () => {

@@ -1,173 +1,31 @@
-import { array, boolean, discriminatedUnion, literal, maxLength, minLength, null as nullSchema, optional, record, strictObject, string, union } from 'zod/mini';
+import { array, boolean, discriminatedUnion, literal, minLength, optional, strictObject, string, union } from 'zod/mini';
 import { FINANCE_RECONCILIATION_STATES, FINANCE_REPAIR_DECISIONS } from '../Vocabulary';
 import { adjustment, backfill, exportResult, financePolicy, hold, period, periodClose, settlement, settlementRead, withdrawal } from './FinanceSettlementSchema';
 import { importCreated, importInput, importRead } from './ImportSchema';
 import { ContractJsonValueSchema } from './JsonSchema';
 import { currency, expectedVersion, id, integer, isoUtc, pageOutput, pageQuery, unsigned, version } from './Primitives';
-
-const entry = strictObject({ account: string(), debitMinor: unsigned, creditMinor: unsigned, currency, memo: string() });
-const policy = strictObject({
-  id: id<'financepolicy'>(),
-  name: string(),
-  status: literal(['draft', 'active', 'retired']),
-  trigger: string(),
-  entries: array(entry),
-  effectiveAt: isoUtc,
-  expiresAt: union([isoUtc, nullSchema()]),
-  version,
-});
-const difference = strictObject({ id: id<'reconciliationdifference'>(), kind: string(), expectedMinor: integer, actualMinor: integer, deltaMinor: integer, currency });
-const repairStatus = literal(['draft', 'submitted', 'approved', 'rejected', 'reversed']);
-const nullableText = union([string(), nullSchema()]);
-const nullableTime = union([isoUtc, nullSchema()]);
-const repairReason = string().check(minLength(2), maxLength(1_000));
-const repairHash = string().check(minLength(64), maxLength(64));
-const repair = strictObject({
-  id: id<'reconciliationrepair'>(),
-  statementId: id<'statement'>(),
-  status: repairStatus,
-  sourceHash: repairHash,
-  sourceJournalId: id<'journal'>(),
-  sourceJournalHash: repairHash,
-  previewHash: repairHash,
-  differences: array(difference),
-  entries: array(entry),
-  makerId: id<'membership'>(),
-  checkerId: union([id<'membership'>(), nullSchema()]),
-  approvalInstanceId: union([id<'approvalinstance'>(), nullSchema()]),
-  approvalAmountMinor: union([unsigned, nullSchema()]),
-  sourceReversalJournalId: union([id<'journal'>(), nullSchema()]),
-  replacementJournalId: union([id<'journal'>(), nullSchema()]),
-  rollbackJournalId: union([id<'journal'>(), nullSchema()]),
-  reason: repairReason,
-  decisionReason: nullableText,
-  reverseReason: nullableText,
-  reversedBy: union([id<'membership'>(), nullSchema()]),
-  decidedAt: nullableTime,
-  reversedAt: nullableTime,
-  version,
-  createdAt: isoUtc,
-  updatedAt: isoUtc,
-});
-const policyDraft = {
-  policyId: optional(id<'financepolicy'>()),
-  targetStatus: optional(literal(['active', 'retired'])),
-  name: string(),
-  trigger: string(),
-  entries: array(entry),
-  effectiveAt: isoUtc,
-  expiresAt: optional(union([isoUtc, nullSchema()])),
-} as const;
-const repairDraft = { statementId: id<'statement'>(), sourceJournalId: id<'journal'>(), sourceHash: repairHash, entries: array(entry), reason: repairReason, expectedVersion } as const;
-const facet = strictObject({ value: string(), label: string(), count: unsigned });
-const providerFacet = strictObject({ ...facet.shape, available: boolean() });
-const facetGroup = strictObject({ items: array(facet), reason: nullableText });
-const providerFacetGroup = strictObject({ items: array(providerFacet), reason: nullableText });
-const auditReference = string().check(minLength(1), maxLength(200));
-const auditFact = strictObject({
-  id: string(),
-  kind: literal(['journal', 'entry', 'statement', 'reconciliation', 'settlement', 'withdrawal', 'invoice', 'repair']),
-  label: string(),
-  business_reference: string(),
-  state: nullableText,
-  amount_minor: union([integer, nullSchema()]),
-  currency: union([currency, nullSchema()]),
-  occurred_at: nullableTime,
-  version: union([version, nullSchema()]),
-});
-const auditEvent = strictObject({
-  id: string(),
-  type: string(),
-  event_version: version,
-  aggregate_type: string(),
-  aggregate_id: string(),
-  state: literal(['pending', 'published', 'failed']),
-  occurred_at: isoUtc,
-  trace_id: string(),
-});
-const auditEvidence = strictObject({
-  id: string(),
-  kind: literal(['command', 'access']),
-  action: string(),
-  resource_type: string(),
-  resource_id: nullableText,
-  actor_id: nullableText,
-  actor_type: string(),
-  before_hash: nullableText,
-  after_hash: nullableText,
-  record_hash: string(),
-  evidence: ContractJsonValueSchema,
-  occurred_at: isoUtc,
-  trace_id: string(),
-});
-const overview = strictObject({ currency, balance_minor: integer, liability_minor: integer, income_minor: integer, expense_minor: integer, cash_minor: integer, journal_count: unsigned, watermark: nullableTime });
-const ledgerEntry = strictObject({ id: string(), side: literal(['debit', 'credit']), amount_minor: unsigned, code: string(), currency, reference_type: string(), reference_id: string(), description: string(), posted_at: isoUtc });
-const statement = strictObject({
-  id: string(),
-  scope_id: string(),
-  period_start: string(),
-  period_end: string(),
-  currency,
-  opening_minor: integer,
-  debit_minor: unsigned,
-  credit_minor: unsigned,
-  closing_minor: integer,
-  state: literal(['draft', 'final']),
-  object_ref: nullableText,
-  sha256: nullableText,
-  generated_at: isoUtc,
-});
-const reconciliationItem = strictObject({
-  id: string(),
-  externalMinor: integer,
-  internalMinor: integer,
-  differenceMinor: integer,
-  state: string(),
-  reasonCode: nullableText,
-  evidence: ContractJsonValueSchema,
-  resolution: union([ContractJsonValueSchema, nullSchema()]),
-  resolvedBy: nullableText,
-  approvedBy: nullableText,
-});
-const reconciliation = strictObject({
-  id: string(),
-  scope_id: string(),
-  provider: string(),
-  partner_id: string(),
-  period: string(),
-  statement_ref: string(),
-  statement_hash: string(),
-  state: string(),
-  debit_minor: integer,
-  credit_minor: integer,
-  difference_minor: integer,
-  created_by: string(),
-  approved_by: nullableText,
-  evidence: ContractJsonValueSchema,
-  updated_at: isoUtc,
-  version,
-});
-const reconciliationRead = strictObject({ ...reconciliation.shape, item_counts: record(string(), unsigned), items: array(reconciliationItem) });
-const resolvedItem = strictObject({
-  id: string(),
-  reconciliation_id: string(),
-  statement_line_id: string(),
-  scope_id: string(),
-  internal_type: nullableText,
-  internal_id: nullableText,
-  external_minor: integer,
-  internal_minor: integer,
-  difference_minor: integer,
-  state: string(),
-  reason_code: nullableText,
-  evidence: ContractJsonValueSchema,
-  resolution: union([ContractJsonValueSchema, nullSchema()]),
-  resolved_by: nullableText,
-  approved_by: nullableText,
-  resolved_at: nullableTime,
-  approved_at: nullableTime,
-  version,
-});
+import {
+  auditEvidence,
+  auditEvent,
+  auditFact,
+  auditReference,
+  entry,
+  facetGroup,
+  ledgerEntry,
+  nullableTime,
+  overview,
+  policy,
+  policyDraft,
+  providerFacetGroup,
+  reconciliation,
+  reconciliationRead,
+  repair,
+  repairDraft,
+  repairReason,
+  repairStatus,
+  resolvedItem,
+  statement,
+} from './FinanceEntitySchema';
 export const FINANCE_QUERY_SCHEMAS = {
   FinanceOverviewReadInput: strictObject({}),
   FinanceFacetsReadInput: strictObject({}),

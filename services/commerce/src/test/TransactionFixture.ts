@@ -17,7 +17,7 @@ function manager(query: Query): PgTransactionManager {
   const control = new Set(['begin read only', 'begin isolation level read committed', 'begin isolation level serializable', 'commit', 'rollback']);
   const client = {
     query: async <R extends QueryResultRow = QueryResultRow>(text: string, values?: readonly unknown[]) => {
-      if (control.has(text) || text.startsWith('select set_config(')) return result<R>([]);
+      if (control.has(text) || text.startsWith('select set_config(') || /^begin(?: read only| isolation level (?:read committed|serializable));select set_config\(/.test(text)) return result<R>([]);
       return query(text, values) as Promise<QueryResult<R>>;
     },
     release: () => undefined,

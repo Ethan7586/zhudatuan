@@ -3,7 +3,7 @@ import { returnDestination } from './ReturnDestination';
 
 describe('returnDestination', () => {
   it('accepts only a verified proof for the same client target', () => {
-    const destination = { url: 'https://fufu.wang/s/mall-one/orders', proof: 'proof', expiresAt: '2026-09-01T00:01:00.000Z', target: 'storefront' as const };
+    const destination = { url: 'https://yengze.press/s/mall-one/orders', proof: 'proof', expiresAt: '2026-09-01T00:01:00.000Z', target: 'storefront' as const };
     const returns = { verify: vi.fn(() => destination) };
     expect(returnDestination(returns as never, 'storefront', 'proof')).toBe(destination);
     expect(() => returnDestination(returns as never, 'console', 'proof')).toThrow('VALIDATION_FAILED');

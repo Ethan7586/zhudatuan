@@ -5,12 +5,15 @@ do $precondition$ begin
   if exists(select 1 from runtime.schemaversion where version='20260829117000') then raise exception 'FEDERATION_VALIDATE_ALREADY_APPLIED'; end if;
 end $precondition$;
 
+create policy providermigration on identity.provider for all to shopmigration using(true) with check(true);
+create policy linkcasemigration on identity.linkcase for all to shopmigration using(true) with check(true);
+
 insert into identity.provider(id,tenant_id,type,provider_tenant_hash,issuer_hash,client_id_hash,secret_ref,redirect_uri,scopes,status,version)
 select (substr(md5('migration:'||identity.application_hash),1,8)||'-'||substr(md5('migration:'||identity.application_hash),9,4)||'-4'||
   substr(md5('migration:'||identity.application_hash),14,3)||'-8'||substr(md5('migration:'||identity.application_hash),18,3)||'-'||
   substr(md5('migration:'||identity.application_hash),21,12))::uuid,
   '00000000-0000-0000-0000-000000000000'::uuid,'wechat',public.digest(identity.application_hash,'sha256'),null,
-  public.digest(identity.application_hash,'sha256'),'identity/migration/wechat','https://passport.fufu.wang/api/v1/identity/federations/callback',
+  public.digest(identity.application_hash,'sha256'),'identity/migration/wechat','https://passport.yengze.press/api/v1/identity/federations/callback',
   array['snsapi_base'], 'disabled',0
 from identity.federatedidentity identity group by identity.application_hash
 on conflict(id) do nothing;
@@ -49,6 +52,9 @@ do $validate$ begin
   if exists(select 1 from identity.federatedidentity where status='active' group by provider_instance_id,provider_tenant_hash,normalized_subject_hash having count(distinct principal_id)>1) then raise exception 'FEDERATION_PRINCIPAL_CONFLICT'; end if;
   if exists(select 1 from organization.directorymembership membership left join organization.directorysubject subject on subject.id=membership.subject_id where subject.id is null) then raise exception 'DIRECTORY_SUBJECT_ORPHAN'; end if;
 end $validate$;
+
+drop policy providermigration on identity.provider;
+drop policy linkcasemigration on identity.linkcase;
 
 select runtime.record_migration_evidence('20260829117000',
   (select count(*) from identity.federatedidentity),(select count(*) from identity.federatedidentity),0,0,

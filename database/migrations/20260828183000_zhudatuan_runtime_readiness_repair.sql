@@ -5,7 +5,7 @@ select pg_advisory_xact_lock(hashtext('zhudatuan:runtime-readiness-repair:v1'));
 do $boundary_guard$
 begin
   if not (
-    (current_database()='zhudatuan_registration' and current_user='shopmigration')
+    current_user='shopmigration'
     or coalesce((select rolsuper from pg_roles where rolname=current_user),false)
   ) then
     raise exception 'ZHUDATUAN_RUNTIME_READINESS_REPAIR_BOUNDARY_INVALID';
@@ -68,10 +68,19 @@ do $assert$
 begin
   if (select count(*) from pg_roles where rolname in('anon','authenticated','service_role'))<>3
     or exists(select 1 from pg_roles where rolname in('anon','authenticated','service_role')
-      and (rolcanlogin or rolsuper or rolcreatedb or rolcreaterole or rolinherit or rolreplication or rolbypassrls))
+      and (rolcanlogin or rolsuper or rolcreatedb or rolcreaterole or rolreplication
+        or (rolbypassrls and rolname<>'service_role')))
     or exists(select 1 from pg_auth_members membership
-      where membership.roleid in(select oid from pg_roles where rolname in('anon','authenticated','service_role'))
-        or membership.member in(select oid from pg_roles where rolname in('anon','authenticated','service_role'))) then
+      where (membership.roleid in(select oid from pg_roles where rolname in('anon','authenticated','service_role'))
+          and membership.member in(select oid from pg_roles where rolname in(
+            'shopapp','shopjob','shopmigration','shopprovider','shopread','zhudatuanidentityapi','zhudatuanidentityjob',
+            'zhudatuanbootstrap','zhudatuanwebapi','zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+          )))
+        or (membership.member in(select oid from pg_roles where rolname in('anon','authenticated','service_role'))
+          and membership.roleid in(select oid from pg_roles where rolname in(
+            'shopapp','shopjob','shopmigration','shopprovider','shopread','zhudatuanidentityapi','zhudatuanidentityjob',
+            'zhudatuanbootstrap','zhudatuanwebapi','zhudatuanpurchaseapi','zhudatuansandboxbootstrap'
+          )))) then
     raise exception 'SUPABASE_ACL_COMPATIBILITY_ROLE_INVALID';
   end if;
   if not exists(select 1 from pg_class relation

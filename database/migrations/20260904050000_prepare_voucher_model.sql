@@ -29,6 +29,7 @@ create table voucher.migrationsource(
 );
 alter table voucher.migrationsource enable row level security;
 alter table voucher.migrationsource force row level security;
+create policy migrationaccess on voucher.migrationsource for all to shopmigration using(true) with check(true);
 create policy migrationsourcejob on voucher.migrationsource for all to shopjob using(true) with check(true);
 revoke all on voucher.migrationsource from public,shopapp;
 grant select on voucher.migrationsource to shopread;

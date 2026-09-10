@@ -11,12 +11,9 @@ import { invitationCandidates } from '../model/InvitationCandidate';
 import type { InvitationDraft } from '../model/InvitationDraft';
 import { invitationTargets } from '../model/InvitationTarget';
 import { identityFor, invitationMembershipKey, invitationQueryKey, readFilter, type CommandIdentity } from './InvitationState';
+import type { InvitationCreateKind, InvitationDepartment } from './InvitationTypes';
 
-export type InvitationCreateKind = 'choice' | 'employee' | 'campaign' | 'signin';
-export interface InvitationDepartment {
-  readonly id: string;
-  readonly name: string;
-}
+export type { InvitationCreateKind, InvitationDepartment } from './InvitationTypes';
 export function useInvitationViewModel(context: ConsoleContext, dependencies: InvitationDependencies, requestStepup: () => void) {
   const [search, setSearch] = useSearchParams();
   const filter = useMemo(() => readFilter(search), [search]);
@@ -74,10 +71,7 @@ export function useInvitationViewModel(context: ConsoleContext, dependencies: In
   );
   const receiptScope = receipt === undefined ? undefined : context.scopes.find(({ id }) => id === receipt.organizationId);
   const organization = receipt === undefined ? (context.scope.name ?? '当前管理范围') : (receiptScope?.name ?? (receipt.organizationId === context.scope.id ? context.scope.name : undefined) ?? '当前授权组织');
-  const invitationMemberships = useMemo(
-    () => invitationCandidates(memberships.data?.items ?? [], context.session.membership, context.session.permissions),
-    [context.session.membership, context.session.permissions, memberships.data?.items]
-  );
+  const invitationMemberships = useMemo(() => invitationCandidates(memberships.data?.items ?? [], context.session.membership, context.session.permissions), [context.session.membership, context.session.permissions, memberships.data?.items]);
   const updateFilter = useCallback(
     (name: 'target' | 'kind' | 'status', value: string) =>
       setSearch((current) => {

@@ -16483,10 +16483,16 @@
                   ],
                   "type": "string"
                 },
+                "provider": {
+                  "type": "string"
+                },
                 "pulled_count": {
                   "maximum": 9007199254740991,
                   "minimum": 0,
                   "type": "integer"
+                },
+                "region": {
+                  "type": "string"
                 },
                 "rejected_count": {
                   "maximum": 9007199254740991,
@@ -16547,6 +16553,8 @@
                 "started_at",
                 "completed_at",
                 "version",
+                "provider",
+                "region",
                 "cursor_sort"
               ],
               "type": "object"
@@ -122541,7 +122549,7 @@
           "store",
           "supplier"
         ],
-        "x-timeout-ms": 300
+        "x-timeout-ms": 3000
       }
     },
     "/api/v1/navigation/catalog": {
@@ -136481,7 +136489,7 @@
         "x-targets": [
           "console"
         ],
-        "x-timeout-ms": 3000
+        "x-timeout-ms": 300
       }
     },
     "/api/v1/qualifications/{qualificationid}/revoke": {
@@ -167818,7 +167826,7 @@
         "x-sensitive-fields": [],
         "x-target-policy": "service",
         "x-targets": [],
-        "x-timeout-ms": 300
+        "x-timeout-ms": 3000
       }
     },
     "/health/ready": {

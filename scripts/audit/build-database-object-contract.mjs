@@ -103,10 +103,10 @@ function grantedLater(sql, offset, target, role, privilege) {
 }
 
 const callerMap = {
-  'identity.resolve_session': ['services/commerce/src/platform/security/PgSessionResolver.ts'],
+  'identity.resolve_session': ['services/commerce/src/platform/security/PgAuthorizationResolver.ts'],
   'identity.resolve_preauth': ['services/commerce/src/modules/identity/infrastructure/security/PgPreauthResolver.ts'],
   'identity.navigation_identity': ['services/commerce/src/modules/identity/infrastructure/persistence/PgMembershipContext.ts'],
-  'access.authorization_snapshot': ['services/commerce/src/modules/access/infrastructure/persistence/PgAuthorizationRepository.ts'],
+  'access.authorization_snapshot': ['services/commerce/src/modules/access/infrastructure/persistence/PgAuthorizationRepository.ts', 'services/commerce/src/platform/security/PgAuthorizationResolver.ts'],
   'notification.visible_notifications': ['services/commerce/src/modules/notification/infrastructure/persistence/PgNotificationRepository.ts'],
   'access.consume_action_proof': ['services/commerce/src/modules/access/infrastructure/persistence/PgMakerCheckerGuard.ts'],
   'access.navigation_access': ['services/commerce/src/modules/access/infrastructure/persistence/PgAuthorizationRepository.ts'],

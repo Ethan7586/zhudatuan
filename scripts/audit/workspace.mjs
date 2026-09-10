@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import ts from 'typescript';
 import { parse } from 'yaml';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
+import { COMMERCE_ENTRY_FILES } from '../lib/CommerceEntries.mjs';
 
 export const ROOT = repositoryRoot;
 
@@ -172,7 +173,6 @@ export function workspacePackages() {
 
 const EXPECTED_CLIENTS = Object.freeze(['auth', 'console', 'miniapp', 'store', 'storefront', 'supplier']);
 const EXPECTED_PACKAGES = Object.freeze(['authz', 'config', 'contract', 'design', 'kernel', 'presentation', 'sdk', 'telemetry', 'testing']);
-const RUNTIME_ENTRIES = Object.freeze(['ApiMain.ts', 'JobsMain.ts', 'MigrationMain.ts', 'ProviderMain.ts']);
 const SHARED_CHANNELS = Object.freeze(['cakecore', 'core', 'jdcore', 'wanliancore']);
 const BUSINESS_CHANNELS = Object.freeze(['book', 'cake', 'charge', 'flower', 'foodvoucher', 'jdfresh', 'jdproduct', 'meal', 'movie', 'supplier', 'tmall']);
 const DESIGN_LAYERS = Object.freeze(['accessibility', 'atom', 'molecule', 'organism', 'template', 'theme', 'token']);
@@ -192,7 +192,7 @@ export function auditWorkspace() {
   const sourceRoot = join(ROOT, 'services/commerce/src');
   for (const name of COMMERCE_ROOTS) if (!existsSync(join(sourceRoot, name))) add('COMMERCE_ROOT_MISSING', `services/commerce/src/${name}`, name);
   for (const name of ['app', 'adapter', 'bootstrap', 'foundation']) if (existsSync(join(sourceRoot, name))) add('COMMERCE_LEGACY_ROOT_FORBIDDEN', `services/commerce/src/${name}`, name);
-  exactFiles('services/commerce/src/entry', RUNTIME_ENTRIES, ['SmokeMain.ts'], add, 'RUNTIME_ENTRY_SET_INVALID');
+  exactFiles('services/commerce/src/entry', COMMERCE_ENTRY_FILES, add, 'RUNTIME_ENTRY_SET_INVALID');
 
   const moduleConfig = parse(readFileSync(join(ROOT, 'config/modules.yml'), 'utf8'));
   const configuredModules = [...(moduleConfig.foundation ?? []), ...(moduleConfig.support ?? []), ...(moduleConfig.business ?? [])].sort();
@@ -255,11 +255,9 @@ function directoryNames(directory) {
   return readdirSync(directory, { withFileTypes: true }).filter((entry) => entry.isDirectory() && !EXCLUDED.has(entry.name) && !entry.name.startsWith('.')).map((entry) => entry.name).sort();
 }
 
-function exactFiles(location, runtime, release, add, code) {
+function exactFiles(location, expected, add, code) {
   const actual = readdirSync(join(ROOT, location), { withFileTypes: true }).filter((entry) => entry.isFile() && entry.name.endsWith('Main.ts')).map((entry) => entry.name).sort();
-  const expected = [...runtime, ...release].sort();
   compareSet(actual, expected, (detail) => add(code, location, detail));
-  if (runtime.length !== 4) add(code, location, `runtime=${runtime.length}`);
 }
 
 function compareSet(actual, expected, report) {

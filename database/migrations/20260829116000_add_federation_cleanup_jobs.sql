@@ -37,6 +37,7 @@ alter table identity.providerhealth enable row level security;
 alter table identity.providerhealth force row level security;
 create policy jobdefinitionapp on runtime.jobdefinition for select to shopapp using(true);
 create policy jobdefinitionjob on runtime.jobdefinition for select to shopjob using(true);
+create policy jobdefinitionmigration on runtime.jobdefinition for select to shopmigration using(true);
 create policy providerhealthapp on identity.providerhealth for select to shopapp using(exists(select 1 from identity.provider provider
   where provider.id=provider_id and provider.tenant_id::text=nullif(current_setting('app.tenant_id',true),'')));
 create policy providerhealthjob on identity.providerhealth for all to shopjob using(true) with check(true);
@@ -51,6 +52,7 @@ create index runtime_job_resource_lease on runtime.job(kind,(payload->>'resource
 select runtime.record_migration_evidence('20260829116000',4,(select count(*) from runtime.jobdefinition),0,0,
   'create index concurrently if not exists runtime_job_resource_lease_live on runtime.job(kind,(payload->>''resource'')) where state in(''queued'',''running'');',
   'select kind,owner,queue,concurrency,timeout_ms,retry_attempts,lease_seconds from runtime.jobdefinition order by kind;');
+drop policy jobdefinitionmigration on runtime.jobdefinition;
 insert into runtime.schemaversion(version,checksum) values('20260829116000',encode(public.digest('20260829116000_add_federation_cleanup_jobs','sha256'),'hex'));
 
 commit;

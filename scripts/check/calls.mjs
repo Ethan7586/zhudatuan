@@ -55,6 +55,7 @@ function entrypoints(sources, packages) {
     const name = path.basename(source);
     const parts = relative(source).split('/');
     if (entryNames.has(name) || name.endsWith('.d.ts')) entries.add(source);
+    if (parts[0] === 'services' && parts[2] === 'src' && parts[3] === 'entry' && name.endsWith('Main.ts')) entries.add(source);
     if (['page.tsx', 'layout.tsx', 'manifest.ts', 'route.ts'].includes(name) && parts.includes('app')) {
       entries.add(source);
     }

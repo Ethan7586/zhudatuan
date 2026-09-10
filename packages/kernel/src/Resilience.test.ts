@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { describe, expect, it, vi } from 'vitest';
 import { Bulkhead } from './Bulkhead';
 import { CircuitBreaker } from './CircuitBreaker';
@@ -63,5 +64,31 @@ describe('resilience primitives', () => {
   it('uses full jitter within the exponential ceiling', () => {
     expect(retryDelay(3, 100, 1_000, () => 0)).toBe(0);
     expect(retryDelay(3, 100, 1_000, () => 0.999)).toBeLessThanOrEqual(400);
+  });
+
+  it('keeps an awaited retry alive in a short-lived process', () => {
+    const entry = new URL('./index.ts', import.meta.url).href;
+    const source = `
+      import { Deadline, retry } from ${JSON.stringify(entry)};
+      let attempts = 0;
+      const deadline = Deadline.after(1000);
+      try {
+        const value = await retry(async () => {
+          attempts += 1;
+          if (attempts === 1) throw new Error('temporary');
+          return 'done';
+        }, {
+          mode: 'read', attempts: 2, minimumDelayMilliseconds: 20,
+          maximumDelayMilliseconds: 20, deadline, retryable: () => true,
+          random: () => 0.999
+        });
+        process.stdout.write(value);
+      } finally {
+        deadline.dispose();
+      }
+    `;
+    const result = spawnSync(process.execPath, ['--import', 'tsx', '--input-type=module', '--eval', source], { encoding: 'utf8', timeout: 5_000 });
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toBe('done');
   });
 });

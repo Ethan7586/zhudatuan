@@ -14,7 +14,7 @@ describe('EntryDialog', () => {
   it('shows the ready QR, canonical URL and exactly three entry operations', async () => {
     render(<EntryDialog record={experience('ready')} onClose={() => undefined} />);
     expect(await screen.findByRole('img', { name: '鸿泰惠民通商城二维码' })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'https://fufu.wang/s/benefits' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'https://yengze.press/s/benefits' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '复制链接' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '下载二维码' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '新窗口打开商城' })).toBeTruthy();
@@ -43,7 +43,7 @@ describe('EntryDialog', () => {
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
     const view = render(<EntryDialog record={experience('ready')} onClose={() => undefined} />);
     await user.click(await screen.findByRole('button', { name: '复制链接' }));
-    expect(writeText).toHaveBeenCalledWith('https://fufu.wang/s/benefits');
+    expect(writeText).toHaveBeenCalledWith('https://yengze.press/s/benefits');
     expect(screen.getByText('商城链接已复制')).toBeTruthy();
 
     view.unmount();
@@ -100,7 +100,7 @@ describe('EntryDialog', () => {
 });
 
 function experience(state: Experience['entry']['state']): Experience {
-  const base = { handle: 'benefits', url: 'https://fufu.wang/s/benefits' } as const;
+  const base = { handle: 'benefits', url: 'https://yengze.press/s/benefits' } as const;
   const entry: Experience['entry'] =
     state === 'ready' ? { ...base, state, releaseId: 'release:benefits', releaseVersion: 'version:benefits', contentHash: 'a'.repeat(64) } : state === 'invalid' ? { ...base, state, requestId: 'trace:entry-invalid' } : { ...base, state };
   return {

@@ -468,7 +468,10 @@ begin
   end if;
   if exists(select 1 from pg_auth_members membership
     where membership.member in(select oid from pg_roles where rolname in('zhudatuanwebapi','zhudatuansandboxbootstrap'))
-      or membership.roleid in(select oid from pg_roles where rolname in('zhudatuanwebapi','zhudatuansandboxbootstrap'))) then
+      or (membership.roleid in(select oid from pg_roles where rolname in('zhudatuanwebapi','zhudatuansandboxbootstrap'))
+        and not (membership.member=(select oid from pg_roles where rolname='postgres')
+          and membership.grantor=(select oid from pg_roles where rolname='supabase_admin')
+          and membership.admin_option and not membership.inherit_option and not membership.set_option))) then
     raise exception 'ZHUDATUAN_WEB_ROLE_INHERITS_BROAD_RUNTIME';
   end if;
   foreach table_name in array array['identity.session','checkout.session','checkout.evidence','organization.organization',

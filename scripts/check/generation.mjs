@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
+import { parse } from 'yaml';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 
 const outputs = [
@@ -52,8 +53,10 @@ const outputs = [
 ];
 
 generate();
+assertReleaseHead();
 const first = fingerprint();
 generate();
+assertReleaseHead();
 const second = fingerprint();
 if (first !== second) throw new Error('GENERATION_NOT_DETERMINISTIC');
 process.stdout.write(`generation accepted: outputs=${outputs.length} deterministic=true\n`);
@@ -76,4 +79,11 @@ function fingerprint() {
       .update(readFileSync(resolve(repositoryRoot, file)))
       .update('\0');
   return hash.digest('hex');
+}
+
+function assertReleaseHead() {
+  const contract = parse(readFileSync(resolve(repositoryRoot, 'database/contracts/ideal.yml'), 'utf8'));
+  const release = readFileSync(resolve(repositoryRoot, 'packages/config/src/Release.ts'), 'utf8');
+  const target = release.match(/TARGET_SCHEMA_HEAD = '(\d{14})'/)?.[1];
+  if (target !== contract.schemaHead?.migrationHead) throw new Error('RELEASE_SCHEMA_HEAD_DRIFT');
 }

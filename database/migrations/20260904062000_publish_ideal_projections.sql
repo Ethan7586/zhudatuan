@@ -34,6 +34,7 @@ join capability.operation operation on target=any(operation.targets)
 group by target;
 alter table reporting.clientprojection enable row level security;
 alter table reporting.clientprojection force row level security;
+create policy migrationaccess on reporting.clientprojection for all to shopmigration using(true) with check(true);
 create policy clientprojectionread on reporting.clientprojection for select to shopread,shopapp,shopjob using(true);
 revoke all on reporting.clientprojection from public;
 grant select on reporting.clientprojection to shopread,shopapp,shopjob;

@@ -11,5 +11,6 @@ export default defineConfig({
     execArgv: ['--no-experimental-webstorage'],
     include: ['src/**/*.test.{ts,tsx}'],
     environment: 'jsdom',
+    maxWorkers: 2,
   },
 });

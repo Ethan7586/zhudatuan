@@ -27,6 +27,7 @@ create index access_purposeproof_active on access.purposeproof(actor_id,purpose,
   include(scope_id,resource_type,resource_hash) where consumed_at is null;
 alter table access.purposeproof enable row level security;
 alter table access.purposeproof force row level security;
+create policy migrationaccess on access.purposeproof for all to shopmigration using(true) with check(true);
 create policy purposeproofapp on access.purposeproof for all to shopapp using(access.scope_allowed(scope_id)) with check(access.scope_allowed(scope_id));
 create policy purposeproofjob on access.purposeproof for all to shopjob using(true) with check(true);
 revoke all on access.purposeproof from public;
@@ -52,6 +53,7 @@ create index audit_sensitiveaccess_scope on audit.sensitiveaccess(scope_id,occur
   include(actor_id,purpose,resource_type,decision,trace_id);
 alter table audit.sensitiveaccess enable row level security;
 alter table audit.sensitiveaccess force row level security;
+create policy migrationaccess on audit.sensitiveaccess for all to shopmigration using(true) with check(true);
 create policy sensitiveaccessapp on audit.sensitiveaccess for select to shopapp using(access.scope_allowed(scope_id));
 create policy sensitiveaccessjob on audit.sensitiveaccess for all to shopjob using(true) with check(true);
 revoke all on audit.sensitiveaccess from public;

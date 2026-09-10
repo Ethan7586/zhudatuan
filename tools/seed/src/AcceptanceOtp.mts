@@ -1,15 +1,14 @@
-import { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
 import { HttpKmsClient } from '../../../services/commerce/src/platform/crypto/KmsClient';
+import { withMigrationOwnership } from '../../../services/commerce/src/platform/database/MigrationOwnership';
 import { localSecret } from './LocalSecrets';
 
 const environment = localSeedEnvironment();
 const purpose = process.argv[2] ?? 'login';
-if (purpose !== 'login' && purpose !== 'stepup' && purpose !== 'enrollment') throw new Error('LOCAL_CHALLENGE_PURPOSE_INVALID');
+const purposes = new Set(['login', 'stepup', 'enrollment', 'enrollment_campaign', 'invitation_acceptance', 'password_reset', 'phone_change']);
+if (!purposes.has(purpose)) throw new Error('LOCAL_CHALLENGE_PURPOSE_INVALID');
 const connectionString = await localSecret(environment.adminDatabaseConnectionRef);
-const database = new Client({ connectionString });
-await database.connect();
-try {
+const output = await withMigrationOwnership(connectionString, async (database) => {
   const result = await database.query<{ id: string; code_ciphertext: string }>(
     `select challenge.id,secret.code_ciphertext
        from identity.challenge challenge
@@ -38,20 +37,17 @@ try {
     "select permission_code,effect from access.effective_permissions($1) where permission_code in('catalog.pool.read','voucher.cardlibrary.read','voucher.cardlibrary.manage','channel.provider.read','member.profile.read','organization.layer.read') order by permission_code",
     [membership]
   );
-  process.stdout.write(
-    JSON.stringify({
-      challenge: value.id,
-      code,
-      scope,
-      accessVersion: scopeResult.rows[0]?.access_version,
-      authorization: authorization.rows[0],
-      navigation: navigation.rows[0],
-      platform: platform.rows[0],
-      scopes: scopes.rows,
-      operations: operations.rows,
-      permissions: permissions.rows,
-    })
-  );
-} finally {
-  await database.end();
-}
+  return {
+    challenge: value.id,
+    code,
+    scope,
+    accessVersion: scopeResult.rows[0]?.access_version,
+    authorization: authorization.rows[0],
+    navigation: navigation.rows[0],
+    platform: platform.rows[0],
+    scopes: scopes.rows,
+    operations: operations.rows,
+    permissions: permissions.rows,
+  };
+});
+process.stdout.write(JSON.stringify(output));

@@ -3,16 +3,14 @@ import { OperationCatalog } from '@shop/contract';
 import type { Clock } from '@shop/kernel';
 import { DomainError } from '../platform/error/DomainError';
 import type { AccessContext } from '../platform/security/AccessContext';
-import type { AuthorizationSnapshotResolver } from '../platform/security/AuthorizationSnapshot';
-import type { SessionResolver } from '../platform/security/SessionResolver';
+import type { AuthorizationResolver } from '../platform/security/AuthorizationSnapshot';
 import { StepupPolicy } from '../platform/security/StepupPolicy';
 import type { DecisionSink } from '../platform/security/DecisionSink';
 import { assertRiskAllowed, type RiskGate } from '../platform/security/RiskGate';
 
 export class AccessPipeline {
   constructor(
-    private readonly sessions: SessionResolver,
-    private readonly snapshots: AuthorizationSnapshotResolver,
+    private readonly authorization: AuthorizationResolver,
     private readonly clock: Clock,
     private readonly risk: RiskGate,
     private readonly decisions: DecisionSink,
@@ -20,18 +18,20 @@ export class AccessPipeline {
   ) {}
 
   async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string | null, deadline: number, signal: AbortSignal, resource?: string): Promise<AccessContext> {
-    const actor = await this.sessions.resolve(headers, operation);
+    const resolvedResource = resource ?? headers['x-scope-hint'];
+    const resolution = await this.authorization.resolve(headers, operation, {
+      ...(resolvedResource === undefined ? {} : { resource: resolvedResource }),
+      deadline,
+      signal,
+    });
+    const actor = resolution.actor;
     const trace = headers['x-trace-id'] ?? actor.session;
     let scope: AccessContext['scope'] | undefined;
     try {
       assertAudienceTarget(operation, actor.target);
       const now = this.clock.now();
-      const resolvedResource = resource ?? headers['x-scope-hint'];
-      const snapshot = await this.snapshots.resolve(actor, operation, {
-        ...(resolvedResource === undefined ? {} : { resource: resolvedResource }),
-        deadline,
-        signal,
-      });
+      const snapshot = resolution.snapshot;
+      if (snapshot === null) throw new DomainError('MEMBERSHIP_INACTIVE');
       const membership = snapshot.membership;
       if (!membership.active) throw new DomainError('MEMBERSHIP_INACTIVE');
       if (snapshot.credentialVersion !== actor.credentialVersion)

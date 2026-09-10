@@ -80,6 +80,7 @@ where membership.status='active' and exists(
 
 alter table identity.refreshtoken enable row level security;
 alter table identity.refreshtoken force row level security;
+create policy migrationaccess on identity.refreshtoken for all to shopmigration using(true) with check(true);
 create policy refreshtokenapp on identity.refreshtoken for all to shopapp using(true) with check(true);
 create policy refreshtokenjob on identity.refreshtoken for all to shopjob using(true) with check(true);
 revoke all on table identity.refreshtoken from public;

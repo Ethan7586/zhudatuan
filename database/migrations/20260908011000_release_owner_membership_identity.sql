@@ -1,9 +1,19 @@
 begin;
 
 create temporary table owner_membership_release_before on commit drop as
-select count(*)::bigint rows_count
-from access.membership
-where id in('membership-platform-owner-ethan-v1','membership-archive-platform-owner-ethan-v1');
+select
+  (select count(*)::bigint from access.membership
+    where id in('membership-platform-owner-ethan-v1','membership-archive-platform-owner-ethan-v1')) rows_count,
+  (select count(*)::bigint from identity.session
+    where membership_id in('membership-platform-owner-ethan-v1','membership-archive-platform-owner-ethan-v1')) session_count;
+
+create temporary table owner_membership_release_target on commit drop as
+select id from access.membership
+where id='membership-platform-owner-ethan-v1'
+  and member_id=principal_id
+  and (member_id='member-fresh-replay-ethan'
+    or member_id~'^member-registration-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
+  and organization_id='mall-demo' and client='operator' and status='suspended';
 
 do $precondition$
 declare
@@ -20,31 +30,27 @@ begin
     select 1 from access.membership
     where id='membership-platform-owner-ethan-v1'
       and not (
-        member_id='member-fresh-replay-ethan' and principal_id='member-fresh-replay-ethan'
-        and organization_id='mall-demo' and client='operator' and status='suspended'
-      )
-      and not (
         member_id='member:zhudatuan:owner:ethan:v1' and principal_id='principal:zhudatuan:owner:ethan:v1'
         and organization_id='tenant-zhudatuan' and client='operator' and status='active'
       )
+      and not exists(select 1 from owner_membership_release_target)
   ) then
     raise exception 'OWNER_MEMBERSHIP_RELEASE_COLLISION';
   end if;
-  if exists(
-    select 1 from access.membership
-    where id='membership-platform-owner-ethan-v1'
-      and member_id='member-fresh-replay-ethan' and principal_id='member-fresh-replay-ethan'
-      and organization_id='mall-demo' and client='operator' and status='suspended'
-  ) and exists(select 1 from access.membership where id='membership-archive-platform-owner-ethan-v1') then
+  if exists(select 1 from owner_membership_release_target)
+    and (
+      exists(select 1 from access.membership where id='membership-archive-platform-owner-ethan-v1')
+      or exists(select 1 from access.membershiprole where membership_id='membership-archive-platform-owner-ethan-v1')
+      or exists(select 1 from access.scopegrant where membership_id='membership-archive-platform-owner-ethan-v1')
+      or exists(select 1 from identity.session where membership_id='membership-archive-platform-owner-ethan-v1')
+    ) then
     raise exception 'OWNER_MEMBERSHIP_ARCHIVE_COLLISION';
   end if;
 
-  if exists(
-    select 1 from access.membership
-    where id='membership-platform-owner-ethan-v1'
-      and member_id='member-fresh-replay-ethan' and principal_id='member-fresh-replay-ethan'
-      and organization_id='mall-demo' and client='operator' and status='suspended'
-  ) then
+  if exists(select 1 from owner_membership_release_target) then
+    if exists(select 1 from identity.session where membership_id='membership-platform-owner-ethan-v1' and revoked_at is null) then
+      raise exception 'OWNER_MEMBERSHIP_RELEASE_ACTIVE_SESSION';
+    end if;
     for dependency in
       select namespace.nspname schema_name,relation.relname table_name,column_name.attname column_name
       from pg_constraint reference
@@ -54,6 +60,7 @@ begin
       join unnest(reference.confkey) with ordinality referenced_column(attnum,position) using(position)
       join pg_attribute column_name on column_name.attrelid=relation.oid and column_name.attnum=referencing.attnum
       where reference.contype='f' and reference.confrelid='access.membership'::regclass
+        and not (namespace.nspname='identity' and relation.relname='session' and column_name.attname='membership_id')
     loop
       execute format('select exists(select 1 from %I.%I where %I=$1)',dependency.schema_name,dependency.table_name,dependency.column_name)
         into referenced using 'membership-platform-owner-ethan-v1';
@@ -66,31 +73,30 @@ $precondition$;
 update access.membershiprole
 set membership_id='membership-archive-platform-owner-ethan-v1'
 where membership_id='membership-platform-owner-ethan-v1'
-  and exists(
-    select 1 from access.membership
-    where id='membership-platform-owner-ethan-v1'
-      and member_id='member-fresh-replay-ethan' and principal_id='member-fresh-replay-ethan'
-      and organization_id='mall-demo' and client='operator' and status='suspended'
-  );
+  and exists(select 1 from owner_membership_release_target);
 
 update access.scopegrant
 set id=replace(id,'scope:membership-platform-owner-ethan-v1:','scope:membership-archive-platform-owner-ethan-v1:'),
   membership_id='membership-archive-platform-owner-ethan-v1'
 where membership_id='membership-platform-owner-ethan-v1'
-  and exists(
-    select 1 from access.membership
-    where id='membership-platform-owner-ethan-v1'
-      and member_id='member-fresh-replay-ethan' and principal_id='member-fresh-replay-ethan'
-      and organization_id='mall-demo' and client='operator' and status='suspended'
-  );
+  and exists(select 1 from owner_membership_release_target);
+
+alter table identity.session drop constraint session_membership_fk;
+update identity.session
+set membership_id='membership-archive-platform-owner-ethan-v1'
+where membership_id='membership-platform-owner-ethan-v1'
+  and exists(select 1 from owner_membership_release_target);
 
 alter table access.membership disable trigger access_membership_principal_immutable;
 update access.membership
 set id='membership-archive-platform-owner-ethan-v1'
 where id='membership-platform-owner-ethan-v1'
-  and member_id='member-fresh-replay-ethan' and principal_id='member-fresh-replay-ethan'
-  and organization_id='mall-demo' and client='operator' and status='suspended';
+  and exists(select 1 from owner_membership_release_target);
 alter table access.membership enable trigger access_membership_principal_immutable;
+
+alter table identity.session add constraint session_membership_fk
+  foreign key(membership_id) references access.membership(id) not valid;
+alter table identity.session validate constraint session_membership_fk;
 
 select runtime.record_migration_evidence(
   '20260908011000',before.rows_count,after.rows_count,0,0,
@@ -120,6 +126,7 @@ begin
   if exists(select 1 from access.membership where id='membership-archive-platform-owner-ethan-v1') and (
     exists(select 1 from access.membershiprole where membership_id='membership-platform-owner-ethan-v1')
     or exists(select 1 from access.scopegrant where membership_id='membership-platform-owner-ethan-v1')
+    or exists(select 1 from identity.session where membership_id='membership-platform-owner-ethan-v1')
   ) then raise exception 'OWNER_MEMBERSHIP_ARCHIVE_CHILDREN_REMAIN'; end if;
   if not exists(
     select 1 from pg_trigger
@@ -129,6 +136,10 @@ begin
     select count(*) from access.membership
     where id in('membership-platform-owner-ethan-v1','membership-archive-platform-owner-ethan-v1')
   ) then raise exception 'OWNER_MEMBERSHIP_RELEASE_COUNT_MISMATCH'; end if;
+  if (select session_count from owner_membership_release_before)<>(
+    select count(*) from identity.session
+    where membership_id in('membership-platform-owner-ethan-v1','membership-archive-platform-owner-ethan-v1')
+  ) then raise exception 'OWNER_MEMBERSHIP_RELEASE_SESSION_COUNT_MISMATCH'; end if;
   if not exists(select 1 from runtime.schemahead where artifact='commerce' and migration_head='20260908011000'
     and migration_count=(select count(*) from runtime.schemaversion)) then raise exception 'OWNER_MEMBERSHIP_RELEASE_HEAD_INVALID'; end if;
 end

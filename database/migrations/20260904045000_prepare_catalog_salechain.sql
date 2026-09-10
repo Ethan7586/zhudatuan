@@ -30,6 +30,7 @@ create index catalog_salechain_scope on catalog.salechainhead(scope_id,published
   include(listing_id,product_id,sku_id,pool_id,version);
 alter table catalog.salechainhead enable row level security;
 alter table catalog.salechainhead force row level security;
+create policy migrationaccess on catalog.salechainhead for all to shopmigration using(true) with check(true);
 create policy salechainapp on catalog.salechainhead for select to shopapp using(access.scope_allowed(scope_id));
 create policy salechainjob on catalog.salechainhead for all to shopjob using(true) with check(true);
 revoke all on catalog.salechainhead from public;

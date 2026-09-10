@@ -1,80 +1,17 @@
 import { MEMBER_CODE_SECONDS } from '@shop/contract/verification';
 import { miniappPagePath, readMiniappRoute } from '../../generated/PageBinding';
-import type { RouteMatch } from '../../generated/RouteBinding';
-import type { MembershipChoice, MiniappRuntime } from '../../runtime/MiniappRuntime';
 import { routeFromOptions } from '../../runtime/DeepLink';
 import { navigateMiniapp, type MiniappNavigationItem } from '../../runtime/Navigation';
-import type { MiniappInstance } from '../../platform/Wechat';
 import { randomToken } from '../../platform/Random';
 import { MemberCodeGateway } from './infrastructure/MemberCodeGateway';
-import type { MemberIdentity, MiniappMemberCode } from './model/MemberCode';
+import type { MemberIdentity } from './model/MemberCode';
 import { refreshWaitSeconds, remainingSeconds } from './model/MemberCode';
 import { MemberCodeManifest } from './Manifest';
-
-type MemberCodePageState = 'loading' | 'ready' | 'hidden' | 'needsmobile' | 'selection' | 'verification' | 'error' | 'expired';
-
-interface PageData {
-  readonly title: string;
-  readonly description: string;
-  readonly state: MemberCodePageState;
-  readonly authenticated: boolean;
-  readonly navigation: readonly MiniappNavigationItem[];
-  readonly memberships: readonly MembershipChoice[];
-  readonly name: string;
-  readonly mobileState: string;
-  readonly welfare: string;
-  readonly meal: string;
-  readonly modules: readonly Readonly<{ key: string; dark: boolean }>[];
-  readonly matrixSize: number;
-  readonly remaining: number;
-  readonly progress: number;
-  readonly refreshWait: number;
-  readonly busy: boolean;
-  readonly error: string;
-  readonly phoneMasked: string;
-  readonly challengeSent: boolean;
-  readonly code: string;
-  readonly bright: boolean;
-}
-
-interface PageMethods {
-  route?: RouteMatch;
-  active?: AbortController;
-  timer?: number | undefined;
-  gateway?: MemberCodeGateway;
-  memberCode?: MiniappMemberCode | undefined;
-  issueKey?: string;
-  stepupChallenge?: string;
-  onLoad(options: Readonly<Record<string, string | undefined>>): void;
-  onUnload(): void;
-  onPullDownRefresh(): void;
-  onNavigate(event: unknown): void;
-  onSignIn(): void;
-  onSignOut(): void;
-  onSelectMembership(event: unknown): void;
-  onRetry(): void;
-  onRefresh(): void;
-  onHide(): void;
-  onShow(): void;
-  onOpenSecurity(): void;
-  onToggleBrightness(): void;
-  onSendCode(): void;
-  onCodeInput(event: unknown): void;
-  onVerify(): void;
-  onShareAppMessage(): Readonly<{ title: string; path: string }>;
-  load(): Promise<void>;
-  issue(fresh: boolean): Promise<void>;
-  tick(): void;
-}
-
-const initial: PageData = Object.freeze({
-  title: '会员码', description: '到店出示动态会员码，安全确认当前福利身份。', state: 'loading', authenticated: false, navigation: Object.freeze([]), memberships: Object.freeze([]),
-  name: '', mobileState: '', welfare: '¥0.00', meal: '¥0.00', modules: Object.freeze([]), matrixSize: 0, remaining: 0, progress: 0, refreshWait: 0,
-  busy: false, error: '', phoneMasked: '', challengeSent: false, code: '', bright: false,
-});
+import { initialMemberCodePage, type PageData, type PageMethods } from './PageModel';
+import { currentRuntime, detail, failureCode, inputValue, message, money } from './PageSupport';
 
 Page<PageData, PageMethods>({
-  data: initial,
+  data: initialMemberCodePage,
   onLoad(options) {
     try {
       const route = routeFromOptions(options, readMiniappRoute({ ...options, route: options.route ?? MemberCodeManifest.viewModel.defaultRoute }));
@@ -95,20 +32,33 @@ Page<PageData, PageMethods>({
     const action = wait === 0 ? this.issue(true) : this.load();
     void action.finally(() => wx.stopPullDownRefresh());
   },
-  onNavigate(event) { navigateMiniapp(detail(event, 'path')); },
+  onNavigate(event) {
+    navigateMiniapp(detail(event, 'path'));
+  },
   onSignIn() {
     this.setData({ state: 'loading', error: '', memberships: Object.freeze([]) });
-    void currentRuntime().signIn().then((result) => result.kind === 'selection' ? this.setData({ state: 'selection', memberships: result.memberships }) : this.load()).catch((cause: unknown) => this.setData({ state: 'error', error: message(cause) }));
+    void currentRuntime()
+      .signIn()
+      .then((result) => (result.kind === 'selection' ? this.setData({ state: 'selection', memberships: result.memberships }) : this.load()))
+      .catch((cause: unknown) => this.setData({ state: 'error', error: message(cause) }));
   },
   onSignOut() {
     this.setData({ state: 'loading', error: '' });
-    void currentRuntime().signOut().then(() => this.load()).catch((cause: unknown) => this.setData({ state: 'error', error: message(cause) }));
+    void currentRuntime()
+      .signOut()
+      .then(() => this.load())
+      .catch((cause: unknown) => this.setData({ state: 'error', error: message(cause) }));
   },
   onSelectMembership(event) {
     this.setData({ state: 'loading', error: '' });
-    void currentRuntime().selectMembership(detail(event, 'id')).then(() => this.load()).catch((cause: unknown) => this.setData({ state: 'error', error: message(cause) }));
+    void currentRuntime()
+      .selectMembership(detail(event, 'id'))
+      .then(() => this.load())
+      .catch((cause: unknown) => this.setData({ state: 'error', error: message(cause) }));
   },
-  onRetry() { void (this.memberCode ? this.issue(false) : this.load()); },
+  onRetry() {
+    void (this.memberCode ? this.issue(false) : this.load());
+  },
   onRefresh() {
     if (this.data.refreshWait === 0) void this.issue(true);
   },
@@ -126,9 +76,15 @@ Page<PageData, PageMethods>({
       })
       .catch((cause: unknown) => this.setData({ busy: false, error: message(cause) }));
   },
-  onShow() { void this.issue(true); },
-  onOpenSecurity() { navigateMiniapp(miniappPagePath('miniappsecurity')); },
-  onToggleBrightness() { this.setData({ bright: !this.data.bright }); },
+  onShow() {
+    void this.issue(true);
+  },
+  onOpenSecurity() {
+    navigateMiniapp(miniappPagePath('miniappsecurity'));
+  },
+  onToggleBrightness() {
+    this.setData({ bright: !this.data.bright });
+  },
   onSendCode() {
     const gateway = this.gateway;
     if (!gateway || this.data.busy) return;
@@ -222,42 +178,13 @@ Page<PageData, PageMethods>({
 
 function publishIdentity(instance: ThisType<never> & { setData(value: Partial<PageData>): void }, identity: MemberIdentity, navigation: readonly MiniappNavigationItem[]): void {
   instance.setData({
-    state: identity.mobileVerified ? 'loading' : 'needsmobile', authenticated: true, navigation, name: identity.name, mobileState: identity.mobileVerified ? '手机号已认证' : '手机号尚未认证',
-    welfare: money(identity.welfareMinor), meal: money(identity.mealMinor), error: '',
+    state: identity.mobileVerified ? 'loading' : 'needsmobile',
+    authenticated: true,
+    navigation,
+    name: identity.name,
+    mobileState: identity.mobileVerified ? '手机号已认证' : '手机号尚未认证',
+    welfare: money(identity.welfareMinor),
+    meal: money(identity.mealMinor),
+    error: '',
   });
-}
-
-function currentRuntime(): MiniappRuntime {
-  const application = getApp<MiniappInstance>();
-  if (application.runtime !== undefined) return application.runtime;
-  throw application.startupError ?? new Error('MINIAPP_RUNTIME_UNAVAILABLE');
-}
-
-function detail(event: unknown, key: string): string {
-  const target = event !== null && typeof event === 'object' ? Reflect.get(event, 'currentTarget') : undefined;
-  const dataset = target !== null && typeof target === 'object' ? Reflect.get(target, 'dataset') : undefined;
-  const value = dataset !== null && typeof dataset === 'object' ? Reflect.get(dataset, key) : undefined;
-  if (typeof value !== 'string' || value.length === 0 || value.length > 512) throw new Error('MINIAPP_DATASET_INVALID');
-  return value;
-}
-
-function inputValue(event: unknown): string {
-  const detailValue = event !== null && typeof event === 'object' ? Reflect.get(event, 'detail') : undefined;
-  const value = detailValue !== null && typeof detailValue === 'object' ? Reflect.get(detailValue, 'value') : undefined;
-  if (typeof value !== 'string' || value.length > 6) throw new Error('MINIAPP_INPUT_INVALID');
-  return value;
-}
-
-function message(cause: unknown): string {
-  try { return currentRuntime().failure(cause).message; } catch { return '系统暂时无法完成操作，请稍后重试。'; }
-}
-
-function failureCode(cause: unknown): string {
-  if (cause === null || typeof cause !== 'object') return '';
-  const code = Reflect.get(cause, 'code');
-  return typeof code === 'string' ? code : '';
-}
-
-function money(minor: number): string {
-  return `¥${(minor / 100).toFixed(2)}`;
 }

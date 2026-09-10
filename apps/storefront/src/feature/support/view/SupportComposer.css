@@ -1,0 +1,121 @@
+.storesupportmessage ul,
+.storesupportuploads {
+  display: grid;
+  gap: var(--sw-space-0-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.storesupportmessage li,
+.storesupportuploads li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sw-space-0-5);
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1);
+}
+.storesupportmessage li :where(a, span) {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.storesupportmessage a {
+  color: var(--sw-brand);
+  font-weight: 700;
+}
+.storesupportmessage em,
+.storesupportuploads em {
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  font-style: normal;
+}
+.storesupportcomposer {
+  display: grid;
+  gap: var(--sw-space-1);
+  border-top: 0.0625rem solid var(--sw-border);
+  background: var(--sw-surface);
+  padding: var(--sw-space-1) var(--sw-space-2);
+}
+.storesupportuploads {
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+.storesupportuploads li {
+  justify-content: space-between;
+}
+.storesupportuploads li[data-state='clean'] em {
+  color: var(--sw-success-strong);
+}
+.storesupportuploads li[data-state='failed'] em,
+.storesupportuploads li[data-state='rejected'] em {
+  color: var(--sw-danger-strong);
+}
+.storesupportcomposebar {
+  display: flex;
+  align-items: end;
+  gap: var(--sw-space-1);
+}
+.storesupportcomposebar > label {
+  border-radius: var(--sw-radius-sm);
+}
+.storesupportcomposebar > label input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.storesupportcomposebar textarea {
+  min-height: var(--sw-min-touch-target);
+  flex: 1;
+  resize: vertical;
+  border: 0.0625rem solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  color: var(--sw-text);
+  padding: var(--sw-space-1);
+}
+.storesupportcomposebar textarea:focus {
+  border-color: var(--sw-brand);
+  outline: none;
+  box-shadow: var(--sw-shadow-card);
+}
+.storesupportcomposebar > button {
+  display: inline-flex;
+  min-width: 5.5rem;
+  min-height: var(--sw-min-touch-target);
+  align-items: center;
+  justify-content: center;
+  gap: var(--sw-space-0-5);
+  border: 0;
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-brand);
+  color: var(--sw-surface);
+  font-weight: 800;
+}
+.storesupportcomposebar > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.storesupportcomposernote {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+}
+.storesupportcomposernote .danger {
+  color: var(--sw-danger-strong);
+}
+.storesupportcomposernote button {
+  border: 0;
+  background: transparent;
+  color: var(--sw-danger-strong);
+  font-weight: 800;
+  text-decoration: underline;
+}

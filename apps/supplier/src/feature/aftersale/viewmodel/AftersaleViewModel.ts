@@ -33,9 +33,8 @@ function returnActions(item: OperatorRecord | undefined): readonly OperatorActio
   const state = operatorText(item, 'state');
   const version = operatorNumber(item, 'version');
   if (version === undefined) return Object.freeze([]);
-  if (state === 'authorized' || state === 'intransit') return Object.freeze([
-    operation('receive', '确认到仓', '确认供应商仓库已收到退货包裹。', version, [actionField('tracking', '退货物流单号', { kind: 'scan', required: false, maximumLength: 128 })]),
-  ]);
+  if (state === 'authorized' || state === 'intransit')
+    return Object.freeze([operation('receive', '确认到仓', '确认供应商仓库已收到退货包裹。', version, [actionField('tracking', '退货物流单号', { kind: 'scan', required: false, maximumLength: 128 })])]);
   if (state !== 'received') return Object.freeze([]);
   return Object.freeze([
     operation('accept', '质检通过', '商品符合退货验收标准。', version, [actionField('note', '质检备注', { kind: 'textarea', required: false, maximumLength: 1000 })]),
@@ -44,15 +43,22 @@ function returnActions(item: OperatorRecord | undefined): readonly OperatorActio
 }
 
 function operation(id: string, label: string, description: string, expectedVersion: number, fields: readonly ReturnType<typeof actionField>[], tone: 'primary' | 'danger' = 'primary'): OperatorAction {
-  return Object.freeze({ id, label, description, confirmation: `${description}提交后会记录当前供应商操作人员。`, tone, requiresSelection: true, identityScope: true, expectedVersion, fields: Object.freeze([...fields]) });
+  return Object.freeze({ id, label, description, confirmation: `${description}提交后会记录当前供应商操作人员。`, tone, requiresSelection: true, expectedVersion, fields: Object.freeze([...fields]) });
 }
 
 function returnProjection(value: unknown) {
-  return operatorCollection(value, operatorItems(value).map((item) => operatorRow({
-    key: operatorText(item, 'id'), title: `退货 ${operatorText(item, 'order_number') || operatorText(item, 'aftersale_id')}`,
-    detail: `${operatorText(item, 'member_masked')} · ${Array.isArray(item.lines) ? item.lines.length : 0} 个退货明细`,
-    statusLabel: returnStatus(operatorText(item, 'state')), timestamp: operatorText(item, 'updated_at'),
-  })));
+  return operatorCollection(
+    value,
+    operatorItems(value).map((item) =>
+      operatorRow({
+        key: operatorText(item, 'id'),
+        title: `退货 ${operatorText(item, 'order_number') || operatorText(item, 'aftersale_id')}`,
+        detail: `${operatorText(item, 'member_masked')} · ${Array.isArray(item.lines) ? item.lines.length : 0} 个退货明细`,
+        statusLabel: returnStatus(operatorText(item, 'state')),
+        timestamp: operatorText(item, 'updated_at'),
+      })
+    )
+  );
 }
 
 function returnStatus(value: string): string {

@@ -1,0 +1,184 @@
+.productflowoverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--sw-brand-ink) 58%, transparent);
+  backdrop-filter: blur(3px);
+}
+.productflowmodal {
+  width: min(560px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  outline: none;
+}
+.productflowdialog {
+  position: relative;
+  width: 100%;
+  max-height: inherit;
+  overflow: auto;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 12px;
+  background: var(--sw-surface);
+  box-shadow: 0 24px 70px color-mix(in srgb, var(--sw-brand-ink) 28%, transparent);
+  outline: none;
+}
+.productflowcontent {
+  display: block;
+  min-width: 0;
+}
+.productflowcontent > header,
+.productflowcontent > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--sw-border);
+}
+.productflowcontent > footer {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--sw-border);
+  border-bottom: 0;
+}
+.productflowcontent > footer .shopbutton {
+  min-width: 6rem;
+}
+.productflowcontent > header p,
+.productflowcontent > header h2 {
+  margin: 0;
+}
+.productflowcontent > header p {
+  color: var(--sw-brand);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.productflowcontent > header h2 {
+  margin-top: 3px;
+  font-size: 19px;
+}
+.productflowcontent > header > .productflowclose {
+  width: var(--sw-control-touch-target);
+  min-width: var(--sw-control-touch-target);
+  min-height: var(--sw-control-touch-target);
+  border: 0;
+  background: transparent;
+  color: var(--sw-muted);
+  padding: 0;
+}
+.productflowclose svg {
+  width: var(--sw-icon-size-md);
+  height: var(--sw-icon-size-md);
+}
+.productflowbody {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+.productflowbody > label {
+  display: grid;
+  gap: 6px;
+  color: var(--sw-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.productcategoryfield {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+.productcategoryfield > legend {
+  margin-bottom: 6px;
+  padding: 0;
+  color: var(--sw-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.productcategoryselect {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  min-width: 0;
+}
+.productcategoryselect .shopbutton {
+  min-width: 6rem;
+  white-space: nowrap;
+}
+.productcategoryhelp,
+.productcategoryreason,
+.productcategorycreator p {
+  margin: 0;
+  color: var(--sw-muted);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-body);
+  overflow-wrap: anywhere;
+}
+.productcategoryreason {
+  color: var(--sw-text-secondary);
+}
+.productcategoryissue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  color: var(--sw-danger);
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-body);
+  overflow-wrap: anywhere;
+}
+.productcategoryissue span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.productcategorycreator {
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-commerce-warm);
+  padding: 14px;
+}
+.productcategorycreatorhead,
+.productcategorycreatoractions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.productcategorycreatorhead > div {
+  min-width: 0;
+}
+.productcategorycreatorhead strong {
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body-sm);
+}
+.productcategorycreator > label {
+  display: grid;
+  gap: 6px;
+  color: var(--sw-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.productcategorycreatoractions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+.productcategorycreatoractions .shopbutton {
+  min-width: 7rem;
+}
+.productflowbody input,
+.productflowbody select {
+  min-height: 38px;
+  border: 1px solid var(--sw-border-strong);
+  border-radius: 7px;
+  background: var(--sw-surface);
+  padding: 0 11px;
+  color: var(--sw-text);
+}

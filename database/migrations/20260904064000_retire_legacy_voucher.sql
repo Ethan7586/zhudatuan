@@ -34,6 +34,7 @@ select 'voucherretirement:legacy','organization-platform-root','organization-pla
 from voucher.migrationsource;
 alter table voucher.retirement enable row level security;
 alter table voucher.retirement force row level security;
+create policy migrationaccess on voucher.retirement for all to shopmigration using(true) with check(true);
 create policy voucherretirementread on voucher.retirement for select to shopread,shopjob using(true);
 revoke all on voucher.retirement from public,shopapp;
 grant select on voucher.retirement to shopread,shopjob;

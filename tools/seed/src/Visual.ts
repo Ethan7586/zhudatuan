@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import { Client } from 'pg';
+import type { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
+import { withMigrationOwnership } from '../../../services/commerce/src/platform/database/MigrationOwnership';
 import { HttpObjectStore } from '../../../services/commerce/src/platform/object/ObjectStore';
 import { localSecret } from './LocalSecrets';
 import { LOCAL_OWNER } from './LocalOwner';
@@ -9,7 +10,6 @@ import { LOCAL_PRICEBOOK } from './LocalPricing';
 
 const environment = localSeedEnvironment();
 const [connectionString, objectToken] = await Promise.all([localSecret(environment.adminDatabaseConnectionRef), localSecret(environment.objectStoreTokenRef)]);
-const database = new Client({ connectionString });
 const objects = new HttpObjectStore(environment.objectStoreEndpoint, objectToken);
 const products = Object.freeze([
   Object.freeze({
@@ -51,22 +51,14 @@ const products = Object.freeze([
 ] as const);
 const covers = await Promise.all(products.map((product) => ensureCover(product)));
 
-await database.connect();
-try {
-  await database.query('begin');
+await withMigrationOwnership(connectionString, async (database) => {
   await database.query(`insert into catalog.category(id,parent_id,code,name,status,sort_order)
     values('category:visual:benefit',null,'visual-benefit','员工精选','active',10)
     on conflict(id) do update set code=excluded.code,name=excluded.name,status='active',sort_order=excluded.sort_order`);
   for (const [index, product] of products.entries()) await ensureProduct(database, product, covers[index]!, index);
   await assertVisualSeed(database);
-  await database.query('commit');
-  process.stdout.write(`LOCAL_VISUAL_SEEDED products=${products.length}\n`);
-} catch (cause) {
-  await database.query('rollback');
-  throw cause;
-} finally {
-  await database.end();
-}
+});
+process.stdout.write(`LOCAL_VISUAL_SEEDED products=${products.length}\n`);
 
 async function ensureCover(product: (typeof products)[number]): Promise<string> {
   const bytes = await readFile(product.coverFile);

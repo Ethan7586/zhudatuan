@@ -1,10 +1,11 @@
 import { Button, useResourceQuery } from '@shop/design';
 import { SessionRuntime } from './SessionRuntime';
-import { Router } from '../route/Router';
+import { preloadStorefrontRoute, Router } from '../route/Router';
 import { BrowserRouter } from 'react-router';
 import { readEntryPath } from '../route/EntryPath';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { DependencyProvider } from './DependencyContext';
+import { storefrontDependencies } from './Modules';
 
 export function App() {
   let entry;
@@ -17,11 +18,15 @@ export function App() {
 }
 
 function StorefrontRuntime({ entry }: Readonly<{ entry: ReturnType<typeof readEntryPath> }>) {
-  const load = useCallback(async (signal: AbortSignal) => {
-    const module = await import('./Dependencies');
-    if (signal.aborted) throw signal.reason;
-    return module.createDependencies(entry.handle);
-  }, [entry.handle]);
+  useEffect(() => preloadStorefrontRoute(entry.path), [entry.path]);
+  const load = useCallback(
+    async (signal: AbortSignal) => {
+      const module = await storefrontDependencies.load();
+      if (signal.aborted) throw signal.reason;
+      return module.createDependencies(entry.handle);
+    },
+    [entry.handle]
+  );
   const query = useResourceQuery(`storefrontdependencies:${entry.handle}`, load);
   if (query.data === undefined) {
     if (query.error !== undefined) {
@@ -29,11 +34,17 @@ function StorefrontRuntime({ entry }: Readonly<{ entry: ReturnType<typeof readEn
         <main className="storefrontloading" role="alert">
           <strong>商城暂时未能载入</strong>
           <p>请检查网络后重新尝试。</p>
-          <Button tone="primary" onPress={query.reload}>重新载入</Button>
+          <Button tone="primary" onPress={query.reload}>
+            重新载入
+          </Button>
         </main>
       );
     }
-    return <main className="storefrontloading" role="status">正在准备商城服务…</main>;
+    return (
+      <main className="storefrontloading" role="status">
+        正在准备商城服务…
+      </main>
+    );
   }
   return (
     <DependencyProvider value={query.data}>

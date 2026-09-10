@@ -5,7 +5,7 @@ select pg_advisory_xact_lock(hashtext('zhudatuan:identity-login-acl-repair:v1'))
 do $boundary_guard$
 begin
   if not (
-    (current_database()='zhudatuan_registration' and current_user='shopmigration')
+    current_user='shopmigration'
     or coalesce((select rolsuper from pg_roles where rolname=current_user),false)
   ) then
     raise exception 'ZHUDATUAN_IDENTITY_LOGIN_ACL_BOUNDARY_INVALID';

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { aftersaleViewModel } from '../feature/aftersale/viewmodel/AftersaleViewModel';
+import { accountViewModel } from '../feature/account/viewmodel/AccountViewModel';
 import { catalogViewModel } from '../feature/catalog/viewmodel/CatalogViewModel';
 import { connectionViewModel } from '../feature/connection/viewmodel/ConnectionViewModel';
 import { fulfillmentViewModel } from '../feature/fulfillment/viewmodel/FulfillmentViewModel';
@@ -14,12 +15,25 @@ import { supportViewModel } from '../feature/support/viewmodel/SupportViewModel'
 afterEach(() => vi.unstubAllGlobals());
 
 describe('supplier workflow', () => {
+  it('ends the current supplier session from the account workspace', async () => {
+    const sessionDelete = vi.fn().mockResolvedValue({ session: 'session:one', revokedAt: '2026-09-10T00:00:00Z' });
+    const action = accountViewModel.actions!({}, {} as never)[0]!;
+    expect(action).toMatchObject({ id: 'logout', identityScope: true, tone: 'danger' });
+    await expect(accountViewModel.execute!({ identity: { sessionDelete } } as never, { csrfToken: 'csrf:supplier' } as never, {} as never, {}, undefined, action, {})).resolves.toMatchObject({ sessionEnded: true, refresh: false });
+    expect(sessionDelete).toHaveBeenCalledWith({ body: {} }, { csrfToken: 'csrf:supplier' });
+  });
+
   it('creates a scoped draft and only exposes edit and review submission', async () => {
     const create = vi.fn().mockResolvedValue({ id: 'product:one' });
     const update = vi.fn().mockResolvedValue({});
     const route = { id: 'suppliercatalog', parameters: { scopeKind: 'supplier', scopeId: 'supplier:one' } } as const;
     const createAction = catalogViewModel.actions!({ items: [] }, route as never).find(({ id }) => id === 'create')!;
-    const created = await catalogViewModel.execute!({ catalog: { productsCreate: create } } as never, {} as never, route as never, { items: [] }, undefined, createAction, { title: '员工礼盒', category: '食品', type: 'physical', description: '供应商商品' });
+    const created = await catalogViewModel.execute!({ catalog: { productsCreate: create } } as never, {} as never, route as never, { items: [] }, undefined, createAction, {
+      title: '员工礼盒',
+      category: '食品',
+      type: 'physical',
+      description: '供应商商品',
+    });
     expect(create).toHaveBeenCalledWith({ body: { category: '食品', title: '员工礼盒', type: 'physical', attributes: { description: '供应商商品' } } }, {});
     expect(created.destination).toContain('/catalog/product%3Aone');
 
@@ -46,7 +60,15 @@ describe('supplier workflow', () => {
     const create = vi.fn().mockResolvedValue({ id: 'import:stock', state: 'queued', total_count: 0, cursor_value: 0, success_count: 0, failure_count: 0, created_at: '2026-09-07T00:00:00Z', updated_at: '2026-09-07T00:00:00Z' });
     const action = inventoryViewModel.actions!({}, {} as never).find(({ id }) => id === 'import')!;
     const file = new File(['sku,onhand\nSKU1,5'], 'stock.csv', { type: 'text/csv' });
-    Object.defineProperty(file, 'stream', { value: () => new ReadableStream({ start(controller) { controller.enqueue(new TextEncoder().encode('sku,onhand\nSKU1,5')); controller.close(); } }) });
+    Object.defineProperty(file, 'stream', {
+      value: () =>
+        new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode('sku,onhand\nSKU1,5'));
+            controller.close();
+          },
+        }),
+    });
     await inventoryViewModel.execute!({ runtime: { uploadsCreate: upload }, inventory: { importsCreate: create } } as never, {} as never, {} as never, {}, undefined, action, { file });
     expect(upload).toHaveBeenCalledOnce();
     expect(create).toHaveBeenCalledWith({ body: expect.objectContaining({ objectRef: 'object:stock', fileName: 'stock.csv', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) }) }, {});
@@ -60,7 +82,10 @@ describe('supplier workflow', () => {
 
     const ship = vi.fn().mockResolvedValue({});
     const ready = { items: [{ ...work.items[0], state: 'ready', version: 4 }], count: 1 };
-    await fulfillmentViewModel.execute!({ fulfillment: { shipmentsCreate: ship } } as never, {} as never, {} as never, ready, 'fulfillment:one', fulfillmentViewModel.actions!(ready, {} as never, 'fulfillment:one')[0]!, { tracking: 'SF100', carrier: '顺丰' });
+    await fulfillmentViewModel.execute!({ fulfillment: { shipmentsCreate: ship } } as never, {} as never, {} as never, ready, 'fulfillment:one', fulfillmentViewModel.actions!(ready, {} as never, 'fulfillment:one')[0]!, {
+      tracking: 'SF100',
+      carrier: '顺丰',
+    });
     expect(ship).toHaveBeenCalledWith({ path: { fulfillmentid: 'fulfillment:one' }, body: { tracking: 'SF100', carrier: '顺丰' } }, { expectedVersion: 4 });
 
     const inspect = vi.fn().mockResolvedValue({});

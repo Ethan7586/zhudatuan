@@ -1,0 +1,62 @@
+@container (max-width: 68rem) {
+  .producttoolbar {
+    flex-wrap: wrap;
+  }
+  .producttoolspacer {
+    display: none;
+  }
+}
+@media (max-width: 1199px) {
+  .productpage[data-drawer='open'] {
+    width: 100%;
+  }
+  .producttoolbar {
+    flex-wrap: wrap;
+  }
+  .producttoolspacer {
+    display: none;
+  }
+}
+@media (max-width: 1023px) {
+  .productfilterdisclosure > summary {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--sw-text);
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .productfilterdisclosure > summary::marker {
+    color: var(--sw-brand);
+  }
+  .productfilterdisclosure > summary small {
+    color: var(--sw-muted);
+    font-size: var(--sw-font-size-caption);
+    font-weight: var(--sw-font-weight-regular);
+    text-align: right;
+  }
+  .productfilterdisclosure[open] > summary {
+    border-bottom: 1px solid var(--sw-border);
+  }
+  .productfilterdisclosure:not([open]) > .producttoolbar {
+    display: none;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .producttoolbar {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .productsearchfield {
+    width: 100%;
+    min-width: 0;
+    grid-column: 1 / -1;
+  }
+  .productselectcontrol,
+  .productselectcontrol select,
+  .producttoolbutton {
+    width: 100%;
+  }
+}

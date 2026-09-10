@@ -22,10 +22,15 @@ export interface AuthorizationSnapshot {
   readonly capabilityVersion: number;
 }
 
-export interface AuthorizationSnapshotResolver {
+export interface AuthorizationResolution {
+  readonly actor: Actor;
+  readonly snapshot: AuthorizationSnapshot | null;
+}
+
+export interface AuthorizationResolver {
   resolve(
-    actor: Actor,
+    headers: Readonly<Record<string, string>>,
     operation: string,
     options: Readonly<{ resource?: string | undefined; deadline: number; signal: AbortSignal }>
-  ): Promise<AuthorizationSnapshot>;
+  ): Promise<AuthorizationResolution>;
 }

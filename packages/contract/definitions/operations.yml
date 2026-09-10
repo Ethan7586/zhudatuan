@@ -404,7 +404,7 @@ operations:
       - VALIDATION_FAILED
     idempotencyScope: none
     expectedVersion: none
-    timeout: 300
+    timeout: 3000
     rateClass: health
     risk: low
     resourceResolver: none
@@ -3941,7 +3941,7 @@ operations:
       - VERSION_CONFLICT
     idempotencyScope: actor-operation-scope
     expectedVersion: required
-    timeout: 3000
+    timeout: 300
     rateClass: critical
     risk: critical
     resourceResolver: qualification.resource
@@ -18247,7 +18247,7 @@ operations:
     errorUnion: [ACCESS_VERSION_STALE, AUTHENTICATION_REQUIRED, CONTRACT_VERSION_UNSUPPORTED, INTERNAL_ERROR, NAVIGATION_CATALOG_MISMATCH, NAVIGATION_EMPTY, NAVIGATION_SCOPE_DENIED, RATE_LIMITED, SCOPE_DENIED, VALIDATION_FAILED]
     idempotencyScope: none
     expectedVersion: none
-    timeout: 300
+    timeout: 3000
     rateClass: read
     risk: low
     resourceResolver: navigation.resource

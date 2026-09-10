@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { StorefrontAddress } from './StorefrontAddress';
 
-const config = Object.freeze({ origin: 'https://fufu.wang', entryPath: '/s' });
+const config = Object.freeze({ origin: 'https://yengze.press', entryPath: '/s' });
 
 describe('StorefrontAddress', () => {
   it('constructs the one canonical public address', () => {
     expect(StorefrontAddress.from('zhudatuan-employee', config)).toEqual({
       handle: 'zhudatuan-employee',
-      url: 'https://fufu.wang/s/zhudatuan-employee',
+      url: 'https://yengze.press/s/zhudatuan-employee',
     });
   });
 

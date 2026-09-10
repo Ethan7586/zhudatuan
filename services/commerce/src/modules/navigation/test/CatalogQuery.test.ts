@@ -76,7 +76,7 @@ function createQuery(catalog: CatalogReadPort): CatalogQuery {
       Object.freeze({
         application: 'application:one',
         handle: 'mall-one',
-        url: 'https://fufu.wang/s/mall-one',
+        url: 'https://yengze.press/s/mall-one',
         mall: 'mall:one',
         pool: 'pool:one',
         release: 'release:one',

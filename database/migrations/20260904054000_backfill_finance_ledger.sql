@@ -7,6 +7,17 @@ begin
 end
 $precondition$;
 
+do $policy$
+begin
+  if not exists(
+    select 1 from pg_policies
+    where schemaname='finance' and tablename='postingreference' and policyname='migrationaccess'
+  ) then
+    execute 'create policy migrationaccess on finance.postingreference for all to shopmigration using(true) with check(true)';
+  end if;
+end
+$policy$;
+
 insert into finance.postingreference(
   tenant_id,scope_id,source_kind,source_id,economic_leg,journal_id,currency,amount_minor,source_hash,posted_by,posted_at,version)
 select leg.scope_id,leg.scope_id,'event',leg.owner_event_id,leg.economic_leg_id,leg.journal_id,leg.currency,leg.amount_minor,

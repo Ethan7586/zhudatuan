@@ -46,9 +46,9 @@ for each row execute function ordering.protect_order_snapshot();
 create trigger ordering_line_immutable before update or delete on ordering.line
 for each row execute function runtime.reject_receipt_mutation();
 
-do $hardcut$
+do $hardcut_objects$
 declare legacy text[]:=array['zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap','zhudatuanwebapi',
-  'zhudatuanpurchaseapi','zhudatuansandboxbootstrap']; item record; role_name text;
+  'zhudatuanpurchaseapi','zhudatuansandboxbootstrap']; item record;
 begin
   for item in select schemaname,tablename,policyname from pg_policies
     where roles::text[]&&legacy loop
@@ -61,14 +61,68 @@ begin
       and pg_get_functiondef(procedure.oid)~'zhudatuan(identity|web|purchase|sandbox|bootstrap)' loop
     execute format('drop function if exists %I.%I(%s) cascade',item.schema_name,item.proname,item.arguments);
   end loop;
+end $hardcut_objects$;
+
+-- Role DDL is cluster-scoped and cannot run after SET ROLE has activated the
+-- deliberately unprivileged migration owner. Return to the authenticated
+-- deployment session only after owner-scoped objects have been removed,
+-- reject any unsafe legacy role, and restore the migration boundary at once.
+reset role;
+
+do $session_role_guard$
+declare legacy constant text[]:=array['zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap','zhudatuanwebapi',
+  'zhudatuanpurchaseapi','zhudatuansandboxbootstrap'];
+begin
+  if current_user<>session_user
+    or not coalesce((select rolcreaterole from pg_roles where rolname=current_user),false)
+    or not pg_has_role(current_user,'shopmigration','set') then
+    raise exception 'ROLE_HARDCUT_SESSION_ROLE_INVALID';
+  end if;
+  if exists(select 1 from pg_roles where rolname=any(legacy)
+    and (rolcanlogin or rolinherit or rolsuper or rolcreatedb or rolcreaterole or rolreplication or rolbypassrls)) then
+    raise exception 'ROLE_HARDCUT_LEGACY_ROLE_UNSAFE';
+  end if;
+end
+$session_role_guard$;
+
+do $grant_role_control$
+declare legacy text[]:=array['zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap','zhudatuanwebapi',
+  'zhudatuanpurchaseapi','zhudatuansandboxbootstrap']; role_name text;
+begin
   foreach role_name in array legacy loop
     if exists(select 1 from pg_roles where rolname=role_name) then
-      execute format('alter role %I nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls',role_name);
+      execute format('grant %I to shopmigration with inherit true, set true',role_name);
+    end if;
+  end loop;
+end $grant_role_control$;
+
+set role shopmigration;
+
+do $hardcut_grants$
+declare legacy text[]:=array['zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap','zhudatuanwebapi',
+  'zhudatuanpurchaseapi','zhudatuansandboxbootstrap']; role_name text;
+begin
+  foreach role_name in array legacy loop
+    if exists(select 1 from pg_roles where rolname=role_name) then
       execute format('drop owned by %I',role_name);
+    end if;
+  end loop;
+end $hardcut_grants$;
+
+reset role;
+
+do $hardcut_roles$
+declare legacy text[]:=array['zhudatuanidentityapi','zhudatuanidentityjob','zhudatuanbootstrap','zhudatuanwebapi',
+  'zhudatuanpurchaseapi','zhudatuansandboxbootstrap']; role_name text;
+begin
+  foreach role_name in array legacy loop
+    if exists(select 1 from pg_roles where rolname=role_name) then
       execute format('drop role %I',role_name);
     end if;
   end loop;
-end $hardcut$;
+end $hardcut_roles$;
+
+set role shopmigration;
 
 alter table runtime.migrationevidence add constraint runtime_migration_recovery_command
   check(recovery_sql~'^(select|begin;|update)') not valid;

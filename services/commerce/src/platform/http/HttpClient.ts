@@ -91,7 +91,6 @@ async function boundedBody(response: Response, maximum: number): Promise<ArrayBu
 
 function phaseTimer(controller: AbortController, milliseconds: number): ReturnType<typeof setTimeout> {
   const timer = setTimeout(() => controller.abort(), Math.max(1, milliseconds));
-  timer.unref?.();
   return timer;
 }
 

@@ -31,6 +31,7 @@ create index reporting_snapshot_scope on reporting.snapshot(scope_id,report,wate
   include(row_count,checksum,object_reference,retention_until);
 alter table reporting.snapshot enable row level security;
 alter table reporting.snapshot force row level security;
+create policy migrationaccess on reporting.snapshot for all to shopmigration using(true) with check(true);
 create policy snapshotapp on reporting.snapshot for select to shopapp using(access.scope_allowed(scope_id));
 create policy snapshotjob on reporting.snapshot for all to shopjob using(true) with check(true);
 revoke all on reporting.snapshot from public;

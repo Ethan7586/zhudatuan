@@ -760,6 +760,18 @@ create policy voucherjob on voucher.activationattempt for all to shopjob using(t
 revoke all on voucher.activationattempt from public;
 grant select,insert,update,delete on voucher.activationattempt to shopapp,shopjob;
 
+do $migrationaccess$
+declare target text;
+begin
+  foreach target in array array[
+    'product','productversion','credentialpool','credential','stockrequest','issueorder','issuebatch','issueitem','voucher',
+    'holder','timeline','tenderhold','redemption','refund','actionbatch','actionitem','searchsnapshot','searchsnapshotitem','activationattempt'
+  ] loop
+    execute format('create policy migrationaccess on voucher.%I for all to shopmigration using(true) with check(true)',target);
+  end loop;
+end
+$migrationaccess$;
+
 delete from capability.dependency where capability_id in('voucher.cardlibraries.read','voucher.cardlibraries.create','voucher.cardlibraries.allocate','voucher.imports.read','voucher.programs.read','voucher.programs.manage','voucher.reserves.read','voucher.reserves.request','voucher.reserves.decide','voucher.batches.read','voucher.batches.issue','voucher.batches.retry','voucher.status.batch','voucher.statusbatches.read','voucher.bindings.read','voucher.bindings.manage','voucher.redemptions.read','voucher.history.read','voucher.redemptions.reverse') or depends_on_id in('voucher.cardlibraries.read','voucher.cardlibraries.create','voucher.cardlibraries.allocate','voucher.imports.read','voucher.programs.read','voucher.programs.manage','voucher.reserves.read','voucher.reserves.request','voucher.reserves.decide','voucher.batches.read','voucher.batches.issue','voucher.batches.retry','voucher.status.batch','voucher.statusbatches.read','voucher.bindings.read','voucher.bindings.manage','voucher.redemptions.read','voucher.history.read','voucher.redemptions.reverse');
 delete from capability.entitlementhistory where capability_id in('voucher.cardlibraries.read','voucher.cardlibraries.create','voucher.cardlibraries.allocate','voucher.imports.read','voucher.programs.read','voucher.programs.manage','voucher.reserves.read','voucher.reserves.request','voucher.reserves.decide','voucher.batches.read','voucher.batches.issue','voucher.batches.retry','voucher.status.batch','voucher.statusbatches.read','voucher.bindings.read','voucher.bindings.manage','voucher.redemptions.read','voucher.history.read','voucher.redemptions.reverse');
 delete from capability.entitlement where capability_id in('voucher.cardlibraries.read','voucher.cardlibraries.create','voucher.cardlibraries.allocate','voucher.imports.read','voucher.programs.read','voucher.programs.manage','voucher.reserves.read','voucher.reserves.request','voucher.reserves.decide','voucher.batches.read','voucher.batches.issue','voucher.batches.retry','voucher.status.batch','voucher.statusbatches.read','voucher.bindings.read','voucher.bindings.manage','voucher.redemptions.read','voucher.history.read','voucher.redemptions.reverse');
@@ -833,6 +845,15 @@ on conflict(membership_id,permission_id) do update set effect=case when access.m
 
 insert into access.separationrule(id,left_permission,right_permission,reason,state,version,created_at,updated_at)
 values('separationrule:vouchercredentialissue','voucher.credential.manage','voucher.issue.manage','凭证生产与卡券发放必须职责分离','active',1,clock_timestamp(),clock_timestamp());
+delete from access.rolepermission mapping
+using access.permission permission,access.role role
+where mapping.role_id=role.id and role.kind<>'owner' and mapping.permission_id=permission.id
+  and mapping.effect='allow' and permission.code='voucher.issue.manage'
+  and exists(
+    select 1 from access.rolepermission paired
+    join access.permission leftpermission on leftpermission.id=paired.permission_id
+    where paired.role_id=mapping.role_id and paired.effect='allow' and leftpermission.code='voucher.credential.manage'
+  );
 update access.permission set status='retired',name_zh='旧卡券权限（已硬切）'
 where code in('voucher.batch.read','voucher.binding.manage','voucher.binding.read','voucher.cardlibrary.allocate','voucher.cardlibrary.create','voucher.cardlibrary.manage','voucher.cardlibrary.read',
   'voucher.history.read','voucher.issue','voucher.program.manage','voucher.program.read','voucher.redemption.reverse','voucher.reserve.decide','voucher.reserve.read','voucher.reserve.request','voucher.status.manage');

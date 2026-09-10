@@ -8,6 +8,7 @@ export * from './Network';
 export * from './Navigation';
 export * from './IdentityProvider';
 export * from './ProviderEnvironment';
+export * from './ProviderCatalogEnvironment';
 export * from './ProviderWorkerEnvironment';
 export * from './Release';
 export * from './SmokeEnvironment';

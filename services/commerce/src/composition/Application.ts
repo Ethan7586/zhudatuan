@@ -3,9 +3,7 @@ import type { Telemetry } from '@shop/telemetry';
 import { apiChallengeCodeRef, apiReturnTargets, apiStorefrontOrigin, type ApiEnvironment, type JobsEnvironment } from '@shop/config/server';
 import { AccessPipeline } from '../pipeline/AccessPipeline';
 import { CSRF_PROTECTOR, CsrfProtector } from '../platform/security/CsrfProtector';
-import { PgSessionResolver } from '../platform/security/PgSessionResolver';
-import { ReadAuthorizationSnapshot } from '../modules/access/application/service/ReadAuthorizationSnapshot';
-import { PgAuthorizationRepository } from '../modules/access/infrastructure/persistence/PgAuthorizationRepository';
+import { PgAuthorizationResolver } from '../platform/security/PgAuthorizationResolver';
 import type { PreauthResolver } from '../platform/security/PreauthResolver';
 import { OPERATION_POLICY, SecureOperationPolicy } from '../pipeline/OperationPolicy';
 import { createPool, type DatabasePool } from '../platform/database/Pool';
@@ -135,9 +133,10 @@ export async function createApplication(environment: ApiEnvironment | JobsEnviro
   const verifier = new SignatureVerifier(manifestKey);
   const extensions = new ExtensionRegistry(verifier);
   const extensionLoader = workload === 'api' ? extensionCatalog() : null;
-  const risk = new RiskCheckAdapter(pool);
+  const queryPool = apiQueryPool(pool, workload);
+  const risk = new RiskCheckAdapter(pool, queryPool);
   const transactions = new PgTransactionManager(pool);
-  const decisions = workload === 'api' ? new PgDecisionSink(transactions, new PgSessionSecurity()) : null;
+  const decisions = workload === 'api' ? new PgDecisionSink(pool, transactions, new PgSessionSecurity()) : null;
   const preauth: PreauthResolver | null =
     workload !== 'api'
       ? null
@@ -151,10 +150,9 @@ export async function createApplication(environment: ApiEnvironment | JobsEnviro
   const invitationKeyVersions = security === null ? Object.freeze([]) : new InvitationHasher(security.invitation).versions();
   const auditRepository = new PgAuditRepository();
   const audit = new RecordAudit(auditRepository);
-  const queryPool = apiQueryPool(pool, workload);
   const access =
     queryPool !== null && decisions !== null && preauth !== null
-      ? new AccessPipeline(new PgSessionResolver(pool), new ReadAuthorizationSnapshot(new PgAuthorizationRepository(), new PgTransactionManager(queryPool), telemetry), new SystemClock(), risk, decisions)
+      ? new AccessPipeline(new PgAuthorizationResolver(queryPool, telemetry), new SystemClock(), risk, decisions)
       : null;
   return {
     pool,

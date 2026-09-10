@@ -52,6 +52,7 @@ services:
       LOCAL_TLS_CERT_FILE: /workspace/infrastructure/container/local/.tls/local.crt
       LOCAL_OBJECTS_PORT: '8445'
       LOCAL_OBJECTS_DIRECTORY: /workspace/infrastructure/container/local/data/objects
+      LOCAL_OBJECTS_PUBLIC_BASE_URL: https://127.0.0.1:8445
       LOCAL_OBJECTS_TOKEN_FILE: /run/secrets/objects
     entrypoint: ['/bin/sh', '-ec', 'export LOCAL_OBJECTS_TOKEN="$$(cat /run/secrets/objects)"; exec "$$@"', '--']
     secrets: [objects]

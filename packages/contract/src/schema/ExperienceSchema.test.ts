@@ -14,9 +14,9 @@ const summary = Object.freeze({
   headSequence: 3,
   publishedSequence: 2,
   theme: { preset: 'shop', primaryColor: '#2563eb', accentColor: '#f97316', logoObjectRef: null, faviconObjectRef: null },
-  domain: { mode: 'platform', address: 'https://fufu.wang/s/mall-one', state: 'ready' },
+  domain: { mode: 'platform', address: 'https://yengze.press/s/mall-one', state: 'ready' },
   updatedAt: '2026-09-01T00:00:00.000Z',
-  entry: { handle: 'mall-one', url: 'https://fufu.wang/s/mall-one', state: 'ready', releaseId: 'release:one', releaseVersion: 'version:two', contentHash: 'a'.repeat(64) },
+  entry: { handle: 'mall-one', url: 'https://yengze.press/s/mall-one', state: 'ready', releaseId: 'release:one', releaseVersion: 'version:two', contentHash: 'a'.repeat(64) },
 });
 
 describe('experience entry contract', () => {
@@ -36,16 +36,16 @@ describe('experience entry contract', () => {
   it('requires release facts only for ready and forbids fabricated release facts otherwise', () => {
     const missingRelease = Object.fromEntries(Object.entries(summary.entry).filter(([key]) => key !== 'releaseId'));
     expect(schema.safeParse({ items: [{ ...summary, entry: missingRelease }], count: 1 }).success).toBe(false);
-    expect(schema.safeParse({ items: [{ ...summary, entry: { handle: 'mall-one', url: 'https://fufu.wang/s/mall-one', state: 'unpublished', releaseId: 'release:fake' } }], count: 1 }).success).toBe(false);
+    expect(schema.safeParse({ items: [{ ...summary, entry: { handle: 'mall-one', url: 'https://yengze.press/s/mall-one', state: 'unpublished', releaseId: 'release:fake' } }], count: 1 }).success).toBe(false);
   });
 
   it.each(['ready', 'unpublished', 'disabled', 'invalid'] as const)('accepts the complete %s state', (state) => {
-    const entry = state === 'ready' ? summary.entry : state === 'invalid' ? { handle: 'mall-one', url: 'https://fufu.wang/s/mall-one', state, requestId: 'request:one' } : { handle: 'mall-one', url: 'https://fufu.wang/s/mall-one', state };
+    const entry = state === 'ready' ? summary.entry : state === 'invalid' ? { handle: 'mall-one', url: 'https://yengze.press/s/mall-one', state, requestId: 'request:one' } : { handle: 'mall-one', url: 'https://yengze.press/s/mall-one', state };
     expect(schema.safeParse({ items: [{ ...summary, entry }], count: 1 }).success).toBe(true);
   });
 
   it('rejects insecure URLs and malformed hashes', () => {
-    expect(schema.safeParse({ items: [{ ...summary, entry: { ...summary.entry, url: 'http://fufu.wang/s/mall-one' } }], count: 1 }).success).toBe(false);
+    expect(schema.safeParse({ items: [{ ...summary, entry: { ...summary.entry, url: 'http://yengze.press/s/mall-one' } }], count: 1 }).success).toBe(false);
     expect(schema.safeParse({ items: [{ ...summary, entry: { ...summary.entry, url: 'http://127.0.0.1:3000/s/mall-one' } }], count: 1 }).success).toBe(true);
     expect(schema.safeParse({ items: [{ ...summary, entry: { ...summary.entry, url: 'http://localhost:3000/s/mall-one' } }], count: 1 }).success).toBe(false);
     expect(schema.safeParse({ items: [{ ...summary, entry: { ...summary.entry, contentHash: 'hash' } }], count: 1 }).success).toBe(false);

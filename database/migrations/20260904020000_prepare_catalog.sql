@@ -23,6 +23,7 @@ create index runtime_import_errors_report on runtime.import_errors(import_id,row
 
 alter table runtime.import_errors enable row level security;
 alter table runtime.import_errors force row level security;
+create policy migrationaccess on runtime.import_errors for all to shopmigration using(true) with check(true);
 create policy importerrorsapp on runtime.import_errors for select to shopapp using(access.scope_allowed(scope_id));
 create policy importerrorsjob on runtime.import_errors for all to shopjob using(true) with check(true);
 revoke all on runtime.import_errors from public;
@@ -49,35 +50,109 @@ alter table catalog.sku validate constraint catalog_sku_version_positive;
 alter table catalog.pool validate constraint catalog_pool_version_positive;
 alter table catalog.listing validate constraint catalog_listing_version_positive;
 
+do $duplicatepayload$
+begin
+  if exists(
+    select 1
+    from catalog.importjob job
+    join catalog.importrow row on row.job_id=job.id
+    group by job.scope_id,job.sha256,row.row_number
+    having count(distinct row.payload::text)>1
+  ) then
+    raise exception 'CATALOG_IMPORT_DUPLICATE_PAYLOAD_CONFLICT';
+  end if;
+end
+$duplicatepayload$;
+
+create temporary table catalogimportmap on commit drop as
+with ranked as (
+  select source.id,source.scope_id,source.sha256,
+    first_value(source.id) over(
+      partition by source.scope_id,source.sha256
+      order by
+        (source.state='completed' and source.failure_count=0 and source.success_count=source.total_count) desc,
+        source.cursor_value desc,source.success_count desc,source.failure_count asc,source.updated_at desc,source.id desc
+    ) canonical_id
+  from catalog.importjob source
+)
+select ranked.id source_id,'import:'||split_part(ranked.canonical_id,':',2) target_id,
+  ranked.id=ranked.canonical_id canonical
+from ranked;
+create unique index catalogimportmap_source on catalogimportmap(source_id);
+create index catalogimportmap_target on catalogimportmap(target_id,canonical);
+
 insert into runtime.imports(id,tenant_id,scope_id,owner,kind,object_key,file_hash,file_name,media_type,size_bytes,state,
   rows_total,rows_processed,rows_succeeded,rows_failed,checkpoint,error_report_key,idempotency_key,version,created_by,updated_by,
   created_at,updated_at,retention_until)
-select 'import:'||split_part(source.id,':',2),source.scope_id,source.scope_id,'catalog','product',source.object_ref,source.sha256,
+select mapping.target_id,source.scope_id,source.scope_id,'catalog','product',source.object_ref,source.sha256,
   'catalog.csv','text/csv',1,case source.state when 'validating' then 'preflight' when 'reporting' then 'running'
     when 'completed' then 'succeeded' else source.state end,source.total_count,source.cursor_value,source.success_count,source.failure_count,
   source.validation_summary||jsonb_build_object('migratedFrom',source.id,'sizeBackfill','unknown')||
     case when source.last_error is null then '{}'::jsonb else jsonb_build_object('lastError',source.last_error) end||
-    case when source.report_sha256 is null then '{}'::jsonb else jsonb_build_object('reportSha256',source.report_sha256,'reportSize',source.report_size) end,
-  source.report_object_ref,'import:'||split_part(source.id,':',2),greatest(source.cursor_value,1),'migration:catalog','migration:catalog',
+    case when source.report_sha256 is null then '{}'::jsonb else jsonb_build_object('reportSha256',source.report_sha256,'reportSize',source.report_size) end||
+    jsonb_build_object(
+      'legacyAttempts',(
+        select jsonb_agg(
+          jsonb_build_object(
+            'id',attempt.id,'state',attempt.state,'total',attempt.total_count,'processed',attempt.cursor_value,
+            'succeeded',attempt.success_count,'failed',attempt.failure_count,'validation',attempt.validation_summary,
+            'lastError',attempt.last_error,'reportObjectRef',attempt.report_object_ref,
+            'reportSha256',attempt.report_sha256,'reportSize',attempt.report_size,
+            'createdAt',attempt.created_at,'updatedAt',attempt.updated_at,
+            'errors',(
+              select coalesce(jsonb_agg(jsonb_build_object(
+                'row',error.row_number,'reason',error.reason_code,'field',error.field,'detail',error.detail
+              ) order by error.row_number,error.reason_code),'[]'::jsonb)
+              from catalog.importerror error where error.job_id=attempt.id
+            )
+          ) order by attempt.created_at,attempt.id
+        )
+        from catalog.importjob attempt
+        where attempt.scope_id=source.scope_id and attempt.sha256=source.sha256
+      )
+    ),
+  source.report_object_ref,mapping.target_id,greatest(source.cursor_value,1),'migration:catalog','migration:catalog',
   source.created_at,source.updated_at,greatest(source.updated_at,clock_timestamp())+interval '90 days'
-from catalog.importjob source on conflict(id) do nothing;
+from catalog.importjob source
+join catalogimportmap mapping on mapping.source_id=source.id and mapping.canonical
+on conflict(id) do nothing;
 
 insert into runtime.import_chunks(id,tenant_id,scope_id,import_id,sequence,row_start,row_end,payload_hash,payload,state,
   fencing_token,checkpoint,error_count,version,created_at,updated_at)
-select 'importchunk:'||split_part(row.job_id,':',2)||':'||((row.row_number-2)/500)::integer,job.scope_id,job.scope_id,
-  'import:'||split_part(row.job_id,':',2),((row.row_number-2)/500)::integer,min(row.row_number),max(row.row_number),
+select 'importchunk:'||split_part(mapping.target_id,':',2)||':'||((row.row_number-2)/500)::integer,job.scope_id,job.scope_id,
+  mapping.target_id,((row.row_number-2)/500)::integer,min(row.row_number),max(row.row_number),
   encode(public.digest(jsonb_agg(jsonb_build_object('row',row.row_number,'payload',row.payload) order by row.row_number)::text,'sha256'),'hex'),
   jsonb_agg(jsonb_build_object('row',row.row_number,'payload',row.payload) order by row.row_number),
   case when max(row.row_number)-1<=job.cursor_value then 'succeeded' else 'pending' end,null,'{}'::jsonb,
   0,1,job.created_at,job.updated_at
-from catalog.importrow row join catalog.importjob job on job.id=row.job_id
-group by row.job_id,job.scope_id,job.cursor_value,job.created_at,job.updated_at,((row.row_number-2)/500)::integer;
+from catalog.importrow row
+join catalog.importjob job on job.id=row.job_id
+join catalogimportmap mapping on mapping.source_id=job.id and mapping.canonical
+group by mapping.target_id,job.scope_id,job.cursor_value,job.created_at,job.updated_at,((row.row_number-2)/500)::integer;
 
 insert into runtime.import_errors(import_id,scope_id,row_number,reason_code,field,detail)
-select 'import:'||split_part(job_id,':',2),scope_id,row_number,reason_code,field,to_jsonb(detail) from catalog.importerror;
+select mapping.target_id,error.scope_id,error.row_number,error.reason_code,error.field,to_jsonb(error.detail)
+from catalog.importerror error
+join catalogimportmap mapping on mapping.source_id=error.job_id and mapping.canonical;
 
-update runtime.job target set payload=jsonb_set(target.payload,'{import}',to_jsonb('import:'||split_part(target.payload->>'import',':',2)))
-where target.kind='catalogimport' and target.payload->>'import' like 'catalogimport:%';
+update runtime.job target set payload=jsonb_set(target.payload,'{import}',to_jsonb(mapping.target_id))
+from catalogimportmap mapping
+where target.kind='catalogimport' and target.payload->>'import'=mapping.source_id;
+
+do $importaudit$
+begin
+  if (select count(*) from catalogimportmap where canonical)<>(select count(distinct target_id) from catalogimportmap) then
+    raise exception 'CATALOG_IMPORT_CANONICAL_MAPPING_INVALID';
+  end if;
+  if (select count(*) from catalogimportmap)<>(
+    select coalesce(sum(jsonb_array_length(import.checkpoint->'legacyAttempts')),0)
+    from runtime.imports import
+    where exists(select 1 from catalogimportmap mapping where mapping.target_id=import.id)
+  ) then
+    raise exception 'CATALOG_IMPORT_ATTEMPT_AUDIT_MISMATCH';
+  end if;
+end
+$importaudit$;
 
 do $scope$
 declare source text;

@@ -46,7 +46,7 @@ create_role shopprovider "$(read_secret "$SHOPPROVIDER_PASSWORD_FILE")"
 psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 --command "alter role shopprovider noinherit"
 create_replay_role shopmigration
 psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 --command "alter role shopmigration nologin inherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls"
-psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 --command "grant shopmigration to $POSTGRES_USER"
+psql --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" --set ON_ERROR_STOP=1 --command "grant shopmigration to $POSTGRES_USER with set true, inherit false"
 
 for role in $MODULE_DATABASE_ROLES; do
   create_replay_role "$role"

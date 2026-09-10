@@ -6,6 +6,8 @@ export const LOCAL_OWNER = Object.freeze({
   principal: 'principal:zhudatuan:owner:ethan:v1',
   member: 'member:zhudatuan:owner:ethan:v1',
   membership: 'membership-platform-owner-ethan-v1',
+  mobile: '+8613424327586',
+  mobileMasked: '134****7586',
   tenant: 'tenant-zhudatuan',
   distributor: 'distributor-local-zhudatuan',
   enterprise: 'enterprise-zhudatuan',

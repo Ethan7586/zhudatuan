@@ -24,7 +24,7 @@ const ELEVATED_REPLAY_FILES = new Set([
   '20260829109000_runtime_role_hardcut.sql',
 ]);
 const REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION =
-  /\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260828183000' and version<>'20260829040000'\) then\n    raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_FUTURE_HEAD_INVALID';\n  end if;/;
+  /\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260828183000'\n      and version not in\('20260828190000','20260829040000'\)\) then\n    raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_FUTURE_HEAD_INVALID';\n  end if;/;
 const REGISTRATION_ASSERTION_OMISSIONS = new Map([
   [INVITATION_SCOPE, /\ndo \$assert\$ begin\n  if access\.resource_scope\('identity\.invitations\.create',[\s\S]*?\nend \$assert\$;\n/],
   ['20260821069000_add_store_management.sql', /\n  select id into membership from access\.membership[\s\S]*?STORE_CREATE_SCOPE_UNRESOLVED'; end if;\n/],
@@ -33,6 +33,12 @@ const REGISTRATION_ASSERTION_OMISSIONS = new Map([
   ['20260821076000_grant_platform_cockpit_reads.sql', /\ndo \$assert\$[\s\S]*?\n\$assert\$;\n/],
   ['20260821078000_complete_experience_application.sql', /\n  if exists\(\n    select 1 from unnest\(required_operations\)[\s\S]*?PLATFORM_OWNER_EXPERIENCE_OPERATION_MISSING';\n  end if;\n/],
 ]);
+const LOCAL_ROLE_BOUNDARIES = new Map([
+  ['20260829109000_runtime_role_hardcut.sql', { resets: 2, sets: 2 }],
+  ['20260904010000_prepare_module_schemas.sql', { resets: 1, sets: 1 }],
+  ['20260910013000_grant_digest_dependency.sql', { resets: 1, sets: 1 }],
+]);
+const DIGEST_DEPENDENCY = '20260910013000_grant_digest_dependency.sql';
 const INVENTORY_CUTOVER = '20260820133000_inventory_single_source_cutover.sql';
 const SECURE_STAGE = '20260821026000_backfill_domain_data.sql';
 const PROVIDER_HARDCUT = '20260830150000_hardcut_provider_ids.sql';
@@ -127,9 +133,11 @@ try {
     }
     if (name === SECURE_STAGE) await stageFreshReplaySecrets(database);
     if (name === PROVIDER_HARDCUT) await seedProviderHardcutUpgrade(database);
+    if (name === DIGEST_DEPENDENCY && replayRole === undefined) await stageDigestExtensionReplay(database);
     const source = await readFile(join(MIGRATIONS, name), 'utf8');
     const omission = REGISTRATION_ASSERTION_OMISSIONS.get(name);
-    const sql = mode === '--registration-fresh' && omission ? omitExactEnvironmentAssertion(source, omission, name) : source;
+    const environmentSql = mode === '--registration-fresh' && omission ? omitExactEnvironmentAssertion(source, omission, name) : source;
+    const sql = replayRole === undefined ? preserveReplaySessionRole(environmentSql, name) : environmentSql;
     const elevatedReplay = replayRole !== undefined && ELEVATED_REPLAY_FILES.has(name);
     if (elevatedReplay) await execute(database, 'reset role', 'migration boundary elevation');
     try {
@@ -196,7 +204,7 @@ async function openDatabase() {
 async function verifyInventory(files, history) {
   const duplicates = duplicateVersions(files);
   if (duplicates.size) throw new Error(`duplicate migration versions: ${JSON.stringify([...duplicates])}`);
-  if (history.algorithm !== 'sha256' || history.count !== history.migrations.length || history.count !== 316 || history.migrations.at(-1)?.file.slice(0, 14) !== history.head) throw new Error('HISTORICAL_MIGRATION_MANIFEST_INVALID');
+  if (history.algorithm !== 'sha256' || history.count !== history.migrations.length || history.migrations.at(-1)?.file.slice(0, 14) !== history.head) throw new Error('HISTORICAL_MIGRATION_MANIFEST_INVALID');
   const historical = files.filter((name) => name.slice(0, 14) <= history.head);
   if (JSON.stringify(historical) !== JSON.stringify(history.migrations.map((item) => item.file))) throw new Error('HISTORICAL_MIGRATION_FILESET_DRIFT');
   for (const item of history.migrations) {
@@ -228,6 +236,23 @@ function omitExactEnvironmentAssertion(source, assertion, file) {
   return source.replace(assertion, '\n');
 }
 
+function preserveReplaySessionRole(source, file) {
+  const expected = LOCAL_ROLE_BOUNDARIES.get(file);
+  if (expected === undefined) return source;
+  const resets = source.match(/^reset role;$/gm)?.length ?? 0;
+  const sets = source.match(/^set role shopmigration;$/gm)?.length ?? 0;
+  if (resets !== expected.resets || sets !== expected.sets) throw new Error(`MIGRATION_ROLE_BOUNDARY_DRIFT:${file}`);
+  let replay = source.replace(/^reset role;\n/gm, '').replace(/^set role shopmigration;\n/gm, '');
+  if (file !== DIGEST_DEPENDENCY) return replay;
+  const migrationRole = "  if current_user<>'shopmigration'\n    or not pg_has_role(session_user,'shopmigration','set') then";
+  const replayRole = "  if current_user<>session_user\n    or not pg_has_role(session_user,'shopmigration','set') then";
+  const restoredRole = "  if current_user<>'shopmigration' then";
+  const restoredReplayRole = '  if current_user<>session_user then';
+  if (!replay.includes(migrationRole) || !replay.includes(restoredRole)) throw new Error(`MIGRATION_ROLE_ASSERTION_DRIFT:${file}`);
+  replay = replay.replace(migrationRole, replayRole).replace(restoredRole, restoredReplayRole);
+  return replay;
+}
+
 async function execute(database, sql, label) {
   try {
     await database.exec(sql);
@@ -244,6 +269,18 @@ async function seedBootstrapPrecondition(database) {
     insert into public.members(id,user_id,primary_identifier,status) values('member-fresh-replay-ethan','user-fresh-replay-ethan','local_username:ethan','active');
     insert into public.member_login_aliases(provider,subject,member_id) values('local_username','ethan','member-fresh-replay-ethan');`,
     'bootstrap precondition'
+  );
+}
+
+async function stageDigestExtensionReplay(database) {
+  await execute(
+    database,
+    `create schema if not exists extensions;
+    create function extensions.digest(value text,algorithm text) returns bytea
+      language sql immutable strict parallel safe as $function$ select public.digest(value,algorithm) $function$;
+    create function extensions.digest(value bytea,algorithm text) returns bytea
+      language sql immutable strict parallel safe as $function$ select public.digest(value,algorithm) $function$;`,
+    'digest extension replay'
   );
 }
 
@@ -1337,6 +1374,14 @@ async function verifyObjectContract(database) {
     .filter((entry) => entry.kind === 'schema')
     .map((entry) => entry.id)
     .sort();
+  const privilegeSchemas = [
+    ...new Set([
+      ...schemas,
+      ...entries
+        .filter((entry) => entry.kind === 'grant' && auditedRoles.has(entry.role) && typeof entry.target === 'string')
+        .map((entry) => (entry.objectType === 'schema' ? entry.target : entry.target.split('.')[0])),
+    ]),
+  ].sort();
   const expected = new Map([
     ['schema', new Set(schemas)],
     ['table', new Set(entries.filter((entry) => entry.kind === 'table').map((entry) => entry.id))],
@@ -1432,7 +1477,9 @@ async function verifyObjectContract(database) {
       from pg_namespace namespace where namespace.nspname=any($1::text[])),
     tables as (select schemaname,tablename,tableowner owner from pg_tables where schemaname=any($1::text[])),
     views as (select schemaname,viewname,viewowner owner from pg_views where schemaname=any($1::text[])),
-    functions as (select procedure.oid,procedure.oid::regprocedure::text signature,procedure.proowner::regrole::text owner
+    functions as (select procedure.oid,
+      namespace.nspname||'.'||procedure.proname||substring(procedure.oid::regprocedure::text from position('(' in procedure.oid::regprocedure::text)) signature,
+      procedure.proowner::regrole::text owner
       from pg_proc procedure join pg_namespace namespace on namespace.oid=procedure.pronamespace where namespace.nspname=any($1::text[]))
     select role||':schema:'||schema||':'||lower(privilege) id from roles cross join schemas cross join schema_privilege
       where role<>owner and has_schema_privilege(role,schema,privilege)
@@ -1445,7 +1492,7 @@ async function verifyObjectContract(database) {
     union all
     select role||':function:'||replace(signature,' ','')||':execute' from roles cross join functions
       where role<>owner and has_function_privilege(role,oid,'EXECUTE')`,
-    [schemas]
+    [privilegeSchemas]
   );
   compareSet(
     'grant',

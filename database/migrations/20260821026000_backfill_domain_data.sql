@@ -600,7 +600,7 @@ select source.id::text,source.journal_id::text,'account:'||md5(source.mall_id||'
 from public.finance_journal_entries source;
 
 insert into finance.journal(id,reference_type,reference_id,currency,period,state,description,posted_at,version)
-select 'legacy-ledger:'||source.id,'benefit_ledger',source.id,'CNY',to_char(source.created_at at time zone 'UTC','YYYY-MM'),'posted',
+select 'legacy-ledger:'||source.id,'benefit.ledger',source.id,'CNY',to_char(source.created_at at time zone 'UTC','YYYY-MM'),'posted',
   source.business_type,source.created_at,0 from public.account_ledgers source;
 insert into finance.entry(id,journal_id,account_id,side,amount_minor,created_at)
 select 'legacy-ledger-benefit:'||source.id,'legacy-ledger:'||source.id,'benefit:'||source.account_id,

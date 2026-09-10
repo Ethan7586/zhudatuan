@@ -257,6 +257,7 @@ update runtime.outbox set event_type='payment.captured'
 where event_type='payment.succeeded' and event_version=1;
 delete from runtime.event where type='payment.succeeded' and version=1;
 
+create policy migrationread on runtime.mvpauthority for select to shopmigration using(true);
 alter table runtime.mvpauthority disable row level security;
 update runtime.mvpauthority
 set checksum=encode(public.digest('packages/contract/definitions/operations.yml:269','sha256'),'hex'),
@@ -287,6 +288,7 @@ begin
     select namespace.nspname schema_name,relation.relname object_name,relation.relkind
     from pg_class relation join pg_namespace namespace on namespace.oid=relation.relnamespace
     where namespace.nspname not in('pg_catalog','information_schema','public','supabase_migrations')
+      and namespace.nspowner='shopmigration'::regrole
       and namespace.nspname not like 'pg\_%' escape '\'
       and relation.relkind in('r','p','v','m','S')
       and not exists(select 1 from pg_depend dependency where dependency.classid='pg_class'::regclass
@@ -316,6 +318,7 @@ begin
     from pg_proc procedure join pg_namespace namespace on namespace.oid=procedure.pronamespace
     where procedure.prokind='f' and not procedure.prosecdef
       and namespace.nspname not in('pg_catalog','information_schema','public','supabase_migrations')
+      and namespace.nspowner='shopmigration'::regrole
       and namespace.nspname not like 'pg\_%' escape '\'
       and not exists(select 1 from pg_depend dependency where dependency.classid='pg_proc'::regclass
         and dependency.objid=procedure.oid and dependency.deptype='e')
@@ -325,6 +328,7 @@ begin
   for item in
     select namespace.nspname schema_name from pg_namespace namespace
     where namespace.nspname not in('pg_catalog','information_schema','public','supabase_migrations')
+      and namespace.nspowner='shopmigration'::regrole
       and namespace.nspname not like 'pg\_%' escape '\'
       and exists(select 1 from pg_class relation where relation.relnamespace=namespace.oid)
       and not exists(select 1 from pg_depend dependency where dependency.classid='pg_namespace'::regclass
@@ -388,5 +392,7 @@ begin
   end if;
 end
 $assert$;
+
+drop policy migrationread on runtime.mvpauthority;
 
 commit;

@@ -4,12 +4,12 @@ import { NAVIGATION_SECURITY_KEY } from '../../platform/secret/SecretStore';
 import { TELEMETRY } from '../../platform/telemetry/Telemetry';
 import { PgTransactionAccess } from '../../platform/database/PgTransactionAccess';
 import { defineModule } from '../../composition/DefinedModule';
-import { MEMBERSHIP_READ_PORT, NAVIGATION_ACCESS_PORT } from '../access/public';
+import { MEMBERSHIP_READ_PORT } from '../access/public';
 import { BENEFIT_READ_PORT } from '../benefit/public';
 import { NAVIGATION_CAPABILITY_PORT } from '../capability/public';
 import { CATALOG_READ_PORT } from '../catalog/public';
 import { EXPERIENCE_READ_PORT } from '../experience/public';
-import { IDENTITY_READ_PORT, MEMBERSHIP_CONTEXT_PORT } from '../identity/public';
+import { IDENTITY_READ_PORT } from '../identity/public';
 import { INVENTORY_READ_PORT } from '../inventory/public';
 import { MEMBER_READ_PORT } from '../member/public';
 import { ORDER_READ_PORT } from '../order/public';
@@ -48,10 +48,7 @@ export const NavigationModule = defineModule(Manifest, {
     const cache = new RedisNavigationCache(context.service(CACHE), secret, context.service(TELEMETRY));
     const invalidator = new NavigationInvalidator(cache, secret, clock);
     const projector = new NavigationProjector(
-      context.ports.get(MEMBERSHIP_CONTEXT_PORT),
-      context.ports.get(NAVIGATION_ACCESS_PORT),
       context.ports.get(NAVIGATION_ORGANIZATION_PORT),
-      context.ports.get(NAVIGATION_CAPABILITY_PORT),
       clock,
       secret,
       NAVIGATION_CATALOG,

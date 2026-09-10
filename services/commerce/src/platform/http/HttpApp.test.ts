@@ -108,13 +108,13 @@ describe('HttpApp contract handshake', () => {
   });
 
   it('rejects a stale authenticated API cookie on public registration without its matching CSRF token', async () => {
-    const response = await new HttpApp(routes('identity.invitations.resolve'), ['https://passport.fufu.wang'], csrf).handle(
-      new Request('https://api.fufu.wang/api/v1/identity/invitations/resolve', {
+    const response = await new HttpApp(routes('identity.invitations.resolve'), ['https://passport.yengze.press'], csrf).handle(
+      new Request('https://api.yengze.press/api/v1/identity/invitations/resolve', {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
           cookie: '__Host-storefront-session=stale-session; __Host-storefront-csrf=api-host-only-token',
-          origin: 'https://passport.fufu.wang',
+          origin: 'https://passport.yengze.press',
           'x-contract-version': CONTRACT_VERSION,
           'x-client-target': 'storefront',
         },
@@ -222,8 +222,8 @@ describe('HttpApp contract handshake', () => {
   });
 
   it('rejects canonical public registration without an approved browser origin', async () => {
-    const response = await new HttpApp(routes('identity.invitations.resolve'), ['https://passport.fufu.wang'], csrf).handle(
-      new Request('https://api.fufu.wang/api/v1/identity/invitations/resolve', {
+    const response = await new HttpApp(routes('identity.invitations.resolve'), ['https://passport.yengze.press'], csrf).handle(
+      new Request('https://api.yengze.press/api/v1/identity/invitations/resolve', {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-contract-version': CONTRACT_VERSION, 'x-client-target': 'storefront' },
         body: '{}',

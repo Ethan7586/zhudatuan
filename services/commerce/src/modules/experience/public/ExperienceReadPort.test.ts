@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { withReadTransaction } from '../../../test/TransactionFixture';
 import { PgEntryRepository } from '../infrastructure/persistence/PgEntryRepository';
 
-const storefront = Object.freeze({ origin: 'https://fufu.wang', entryPath: '/s' });
+const storefront = Object.freeze({ origin: 'https://yengze.press', entryPath: '/s' });
 
 describe('storefront entry resolver', () => {
   it('resolves one canonical handle through the security-definer boundary', async () => {
@@ -26,7 +26,7 @@ describe('storefront entry resolver', () => {
     await expect(withReadTransaction(query, (context) => new PgEntryRepository(storefront).resolve(context, 'mall-one'))).resolves.toMatchObject({
       application: 'application:one',
       handle: 'mall-one',
-      url: 'https://fufu.wang/s/mall-one',
+      url: 'https://yengze.press/s/mall-one',
       mall: 'mall:one',
       release: 'release:one',
     });

@@ -1,6 +1,4 @@
 import { createRequestContext } from '@shop/sdk/context';
-import { hashFile } from '@shop/sdk/files';
-import { uploadObject } from '@shop/sdk/objects';
 import { createFetchCatalog, createFetchCatalogFacetsRead, createFetchCatalogListingsRead, createFetchCatalogPoolsRead, createFetchCatalogProductDetailRead } from '@shop/sdk/catalog';
 import { createFetchRuntime } from '@shop/sdk/runtime';
 import type { Listing, Pool, PoolAllocationKind, ProductBatchAction, ProductDetailSection, ProductDraft } from '../model/Product';
@@ -8,7 +6,8 @@ import type { ProductImport } from '../model/ProductImport';
 import type { ProductCommand, ProductImportPort, ProductPort, ProductQuery, ProductRequest } from '../public';
 import { ProductMapper } from './ProductMapper';
 import { ImportUploadGateway } from '../../../shared/import/ImportUploadGateway';
-import { productImageContentType } from '../model/ProductImagePolicy';
+import { ProductImageUploader } from './ProductImageUploader';
+import { productBatchItems, productId, productVersion } from './ProductCommandValue';
 
 export interface ProductGatewayConfig {
   readonly apiBaseUrl: string;
@@ -23,6 +22,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
   private readonly detail;
   private readonly pools;
   private readonly runtime;
+  private readonly images;
 
   constructor(
     private readonly config: ProductGatewayConfig,
@@ -35,6 +35,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
     this.detail = createFetchCatalogProductDetailRead(config.apiBaseUrl);
     this.pools = createFetchCatalogPoolsRead(config.apiBaseUrl);
     this.runtime = createFetchRuntime(config.apiBaseUrl);
+    this.images = new ProductImageUploader(this.catalog, (request, signal) => this.command(request, undefined, signal));
   }
 
   async readProducts(request: ProductRequest, query: ProductQuery, signal: AbortSignal) {
@@ -76,21 +77,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
   }
 
   async uploadProductImage(request: ProductCommand, file: File, signal?: AbortSignal, progress?: Parameters<ProductPort['uploadProductImage']>[3]) {
-    const contentType = productImageContentType(file);
-    const sha256 = await hashFile(file, signal, (processed) => progress?.({ stage: 'checking', processed, total: file.size }));
-    const intent = await this.catalog.mediauploadsCreate({ body: { name: file.name, contentType, size: file.size, sha256 } }, this.command(request, undefined, signal));
-    progress?.({ stage: 'uploading', processed: 0, total: file.size });
-    await uploadObject({
-      url: intent.upload.url,
-      headers: intent.upload.headers,
-      body: file,
-      ...(progress === undefined ? {} : { progress: (processed: number, total: number) => progress({ stage: 'uploading', processed, total }) }),
-      ...(signal === undefined ? {} : { signal }),
-    }).catch(() => {
-      throw new Error('商品图片上传失败，请检查网络后直接重试；已选择的图片会保留。');
-    });
-    const { upload: _upload, ...image } = intent;
-    return Object.freeze(image);
+    return this.images.upload(request, file, signal, progress);
   }
 
   async createProduct(request: ProductCommand, draft: ProductDraft) {
@@ -125,15 +112,15 @@ export class ProductGateway implements ProductPort, ProductImportPort {
     if (listings.length !== 1) throw new Error('VALIDATION_FAILED');
     const listing = listings[0]!;
     const input = { path: { listingid: listing.id }, body: {} } as const;
-    return published ? this.catalog.listingsPublish(input, this.command(request, version(listing.version))) : this.catalog.listingsUnpublish(input, this.command(request, version(listing.version)));
+    return published ? this.catalog.listingsPublish(input, this.command(request, productVersion(listing.version))) : this.catalog.listingsUnpublish(input, this.command(request, productVersion(listing.version)));
   }
 
   async previewProductBatch(request: ProductCommand, listings: readonly Listing[], action: ProductBatchAction) {
-    return this.mapper.batch(await this.catalog.listingsBatch({ body: { phase: 'preview', items: batchItems(listings), action } }, this.command(request)));
+    return this.mapper.batch(await this.catalog.listingsBatch({ body: { phase: 'preview', items: productBatchItems(listings), action } }, this.command(request)));
   }
 
   async executeProductBatch(request: ProductCommand, listings: readonly Listing[], action: ProductBatchAction, previewHash: string) {
-    return this.mapper.batch(await this.catalog.listingsBatch({ body: { phase: 'execute', items: batchItems(listings), action, previewHash } }, this.command(request)));
+    return this.mapper.batch(await this.catalog.listingsBatch({ body: { phase: 'execute', items: productBatchItems(listings), action, previewHash } }, this.command(request)));
   }
 
   async publishPrice(request: ProductCommand, listing: Listing, amountMinor: number, expectedVersion: number) {
@@ -141,7 +128,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
   }
 
   async changeListingPool(request: ProductCommand, listing: Listing, pool: string | null) {
-    return this.catalog.listingsPoolSet({ path: { listingid: listing.id }, body: { pool } }, this.command(request, version(listing.version)));
+    return this.catalog.listingsPoolSet({ path: { listingid: listing.id }, body: { pool } }, this.command(request, productVersion(listing.version)));
   }
 
   async allocatePool(request: ProductCommand, source: Pool, targetScope: string, kind: PoolAllocationKind, name: string) {
@@ -186,19 +173,4 @@ export class ProductGateway implements ProductPort, ProductImportPort {
       ...(signal === undefined ? {} : { signal }),
     });
   }
-}
-
-function batchItems(listings: readonly Listing[]) {
-  return listings.map(({ id, version: value }) => ({ id, expectedVersion: version(value) }));
-}
-
-function productId(listing: Listing): string {
-  if (typeof listing.product_id !== 'string' || listing.product_id === '') throw new Error('VALIDATION_FAILED');
-  return listing.product_id;
-}
-
-function version(value: string | number): number {
-  const parsed = Number(value);
-  if (!Number.isSafeInteger(parsed) || parsed < 0) throw new Error('VALIDATION_FAILED');
-  return parsed;
 }

@@ -9,7 +9,6 @@ const redeemAction = Object.freeze({
   description: '扫描凭证与本机设备码，完成一次性防重放核销。',
   confirmation: '请当面核对顾客凭证；成功后凭证状态会立即变更。',
   tone: 'primary',
-  identityScope: true,
   fields: Object.freeze([actionField('voucher', '顾客凭证', { kind: 'scan', maximumLength: 255 }), actionField('device', '本机设备码', { kind: 'scan', maximumLength: 512 })]),
 } as const);
 

@@ -16,7 +16,7 @@ describe('AccessPipeline audience boundary', () => {
       code: 'PERMISSION_DENIED',
       details: { reason: 'AUDIENCE_TARGET_MISMATCH', audience: 'console', target },
     });
-    expect(fixture.snapshot).not.toHaveBeenCalled();
+    expect(fixture.authorization).toHaveBeenCalledOnce();
     expect(fixture.decisions).toHaveBeenCalledWith(
       expect.objectContaining({
         operation: 'access.center.read',
@@ -43,8 +43,8 @@ describe('AccessPipeline audience boundary', () => {
       actor: { target: 'storefront' },
       scope: OWNER,
     });
-    expect(fixture.snapshot).toHaveBeenCalledWith(
-      expect.objectContaining({ membership: 'membership:one' }),
+    expect(fixture.authorization).toHaveBeenCalledWith(
+      {},
       'member.profile.read',
       expect.objectContaining({ deadline: expect.any(Number), signal: expect.any(AbortSignal) })
     );
@@ -86,9 +86,10 @@ function accessFixture(target: Actor['target'], operation: OperationId, permissi
     permissions: Object.freeze({ allows: new Set([permission]), denies: new Set<string>() }),
     scopes: [{ effect: 'allow' as const, scope, effective: '2026-08-26T00:00:00.000Z', expires: null }],
   });
-  const snapshot = vi.fn(async () => Object.freeze({ membership: membershipAccess, scope, capabilities: new Set([operation]), capabilityVersion: 1, credentialVersion, organization: 'organization:one', target, roles: Object.freeze([]) }));
+  const snapshot = Object.freeze({ membership: membershipAccess, scope, capabilities: new Set([operation]), capabilityVersion: 1, credentialVersion, organization: 'organization:one', target, roles: Object.freeze([]) });
+  const authorization = vi.fn(async () => Object.freeze({ actor, snapshot }));
   const risk = vi.fn(async () => ({ outcome: riskOutcome, safeReason: riskOutcome === 'allow' ? 'policy' : 'signal', decision: null }) as const);
   const decisions = vi.fn(async () => undefined);
-  const pipeline = new AccessPipeline({ resolve: vi.fn(async () => actor) }, { resolve: snapshot }, { now: () => NOW }, { evaluate: risk }, { append: decisions });
-  return { pipeline, snapshot, risk, decisions };
+  const pipeline = new AccessPipeline({ resolve: authorization }, { now: () => NOW }, { evaluate: risk }, { append: decisions });
+  return { pipeline, authorization, risk, decisions };
 }

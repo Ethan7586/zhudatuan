@@ -60,7 +60,6 @@ create index identity_preauth_invitation_expiry on identity.preauth(purpose,stat
 create policy jobdefinitionmigration on runtime.jobdefinition for all to shopmigration using(true) with check(true);
 insert into runtime.jobdefinition(kind,owner,queue,concurrency,timeout_ms,retry_attempts,lease_seconds,resource_lease,dead_letter,runbook)
 values('invitationcleanup','identity','maintenance',2,60000,8,90,false,'runtime.deadletter','docs/operations/invitationcleanup.md');
-drop policy jobdefinitionmigration on runtime.jobdefinition;
 update runtime.schemaversion set checksum='da6a692837b03e7b15416e82788e3b0764e277644e7e57c6b900cba0c048a57d'
 where version='20260830105000';
 
@@ -83,5 +82,7 @@ do $assert$ begin
     raise exception 'INVITATION_CLEANUP_JOB_INVALID';
   end if;
 end $assert$;
+
+drop policy jobdefinitionmigration on runtime.jobdefinition;
 
 commit;

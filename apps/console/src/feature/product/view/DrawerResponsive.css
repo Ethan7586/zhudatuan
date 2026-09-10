@@ -1,0 +1,19 @@
+@media (max-width: 1023px) {
+  .productdraweroverlay {
+    inset: 0;
+  }
+  .productdrawer {
+    width: 100%;
+    border-left: 0;
+  }
+  .productdrawerheader {
+    padding-inline: 15px;
+  }
+  .productdrawerbody {
+    padding-inline: 15px;
+  }
+  .productdrawertabs {
+    overflow-x: auto;
+    grid-template-columns: repeat(5, minmax(88px, 1fr));
+  }
+}

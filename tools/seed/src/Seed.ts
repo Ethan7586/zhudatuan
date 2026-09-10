@@ -1,5 +1,6 @@
 import { createHash, createHmac } from 'node:crypto';
-import { Client } from 'pg';
+import { withMigrationOwnership } from '../../../services/commerce/src/platform/database/MigrationOwnership';
+import type { Client } from 'pg';
 import { localSeedEnvironment } from '@shop/config/server';
 import { PasswordPolicy } from '../../../services/commerce/src/modules/identity/domain/policy/PasswordPolicy';
 import { HttpKmsClient } from '../../../services/commerce/src/platform/crypto/KmsClient';
@@ -13,20 +14,17 @@ import { ensureLocalPricebook, LOCAL_PRICEBOOK } from './LocalPricing';
 import { syncMemberProjection } from './MemberProjection';
 import { serializeExperience } from '@shop/contract';
 import { EMPLOYEE_PERMISSIONS } from './RolePermissions';
+import { releaseRetiredAcceptanceSubject } from './AcceptanceIdentity';
 
 const environment = localSeedEnvironment();
 const [connectionString, password, identityKey] = await Promise.all([localSecret(environment.adminDatabaseConnectionRef), localSecret(environment.ethanPasswordRef), localSecret(environment.identityKeyRef)]);
 const passwordHash = await new PasswordPolicy().hash(password);
 const subjectHash = createHmac('sha256', identityKey).update('ethan').digest('hex');
-const mobile = '+8613800138000';
+const mobile = LOCAL_OWNER.mobile;
 const mobileSubjectHash = createHmac('sha256', identityKey).update(mobile).digest('hex');
 const kms = new HttpKmsClient(environment.kmsEndpoint, environment.kmsBearerToken);
 const mobileEnvelope = await kms.encrypt('pii', 'identity/mobile', mobile, { principal: LOCAL_OWNER.principal });
-const client = new Client({ connectionString });
-await client.connect();
-
-try {
-  await client.query('begin');
+await withMigrationOwnership(connectionString, async (client) => {
   await removeReplayFixtures(client);
   await ensureLocalOwner(client);
   await ensureLocalDistributor(client);
@@ -34,12 +32,14 @@ try {
   await ensureLocalOperator(client, { passwordHash, identityKey, kms });
   const principalId = LOCAL_OWNER.principal;
   await client.query(
-    `update member.profile set mobile_ciphertext=$2,mobile_token=$3,mobile_masked='138****8000',updated_at=clock_timestamp(),version=version+1
+    `update member.profile set mobile_ciphertext=$2,mobile_token=$3,mobile_masked=$5,updated_at=clock_timestamp(),version=version+1
     where id=$1 and principal_id=$4`,
-    [LOCAL_OWNER.member, mobileEnvelope.ciphertext, mobileEnvelope.fingerprint, principalId]
+    [LOCAL_OWNER.member, mobileEnvelope.ciphertext, mobileEnvelope.fingerprint, principalId, LOCAL_OWNER.mobileMasked]
   );
   await syncMemberProjection(client, LOCAL_OWNER.member);
   await client.query("delete from identity.credential where principal_id=$1 and provider in('password','otp')", [principalId]);
+  await releaseRetiredAcceptanceSubject(client, 'password', subjectHash, principalId);
+  await releaseRetiredAcceptanceSubject(client, 'otp', mobileSubjectHash, principalId);
   await client.query(
     `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,rotated_at,created_at)
     values('credential:password:zhudatuan-owner-ethan:v1',$1,'password',$2,$3,'active',clock_timestamp(),clock_timestamp())`,
@@ -120,14 +120,8 @@ try {
   await assertEmployeePermissions(client, storefrontMembership);
   await assertLocalOwnership(client);
   await assertLocalSurfaceAccess(client);
-  await client.query('commit');
-  process.stdout.write('LOCAL_BASELINE_SEEDED tenant=1 enterprise=1 mall=1 store=1 supplier=1 ethan=1 checker=1 operator=1\n');
-} catch (cause) {
-  await client.query('rollback');
-  throw cause;
-} finally {
-  await client.end();
-}
+});
+process.stdout.write('LOCAL_BASELINE_SEEDED tenant=1 enterprise=1 mall=1 store=1 supplier=1 ethan=1 checker=1 operator=1\n');
 
 async function ensureLocalListings(database: Client): Promise<void> {
   await database.query(`update cart.item item set listing_id='listing:'||listing.scope_id||':'||listing.sku_id
@@ -424,8 +418,6 @@ async function removeReplayFixtures(database: Client): Promise<void> {
   await database.query("delete from extension.activationhistory where installation_id like 'extension:hardcut:%'");
   await database.query("delete from extension.installation where id like 'extension:hardcut:%'");
   await database.query("delete from channel.connection where id like 'connection:hardcut:%'");
-  await database.query("delete from extension.contractversion where extension_id in('supplier','charge','tmall')");
-  await database.query("delete from extension.manifest where id in('supplier','charge','tmall')");
   await database.query("delete from extension.installation where extension_id='replayprovider'");
   await database.query("delete from extension.contractversion where extension_id='replayprovider'");
   await database.query("delete from extension.manifest where id='replayprovider'");

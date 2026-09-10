@@ -204,6 +204,7 @@ function infrastructureEnvironment(): string {
     [LOCAL_ENVIRONMENT_KEYS.kmsPort]: '8444',
     [LOCAL_ENVIRONMENT_KEYS.objectsPort]: '8445',
     [LOCAL_ENVIRONMENT_KEYS.objectsDirectory]: join(local, 'data', 'objects'),
+    [LOCAL_ENVIRONMENT_KEYS.objectsPublicBaseUrl]: 'https://127.0.0.1:8445',
     [LOCAL_ENVIRONMENT_KEYS.composeProject]: composeProject,
     [LOCAL_ENVIRONMENT_KEYS.postgresPort]: String(postgresPort),
     [LOCAL_ENVIRONMENT_KEYS.redisPort]: String(redisPort),

@@ -29,10 +29,12 @@ describe('SupplierApp operational journey', () => {
     await user.click(screen.getByRole('button', { name: /确认由当前供应商承接订单/ }));
     await user.click(screen.getByRole('button', { name: '确认接单' }));
 
-    await waitFor(() => expect(transition).toHaveBeenCalledWith(
-      { path: { fulfillmentid: 'fulfillment:1' }, body: { action: 'accept' } },
-      expect.objectContaining({ scope: { kind: 'supplier', id: 'supplier:one' }, expectedVersion: 3, idempotencyKey: expect.stringMatching(/^[0-9a-f-]{36}$/) })
-    ));
+    await waitFor(() =>
+      expect(transition).toHaveBeenCalledWith(
+        { path: { fulfillmentid: 'fulfillment:1' }, body: { action: 'accept' } },
+        expect.objectContaining({ scope: { kind: 'supplier', id: 'supplier:one' }, csrfToken: 'csrf:supplier', expectedVersion: 3, idempotencyKey: expect.stringMatching(/^[0-9a-f-]{36}$/) })
+      )
+    );
     expect(await screen.findByText('接单成功，平台履约状态已同步更新。')).toBeTruthy();
   });
 
@@ -40,7 +42,10 @@ describe('SupplierApp operational journey', () => {
     window.history.replaceState(null, '', '/scopes/supplier/supplier%3Aone/orders');
     Object.defineProperty(navigator, 'onLine', { configurable: true, value: true });
     Object.defineProperty(window, 'scrollTo', { configurable: true, value: vi.fn() });
-    const transition = vi.fn().mockRejectedValueOnce(new ApiError('STEPUP_REQUIRED', 403, 'request:stepup')).mockResolvedValue({});
+    const transition = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiError('STEPUP_REQUIRED', 403, 'request:stepup'))
+      .mockResolvedValue({});
     const complete = vi.fn().mockResolvedValue({});
     const client = { ...clientFixture(transition), identity: { ...clientFixture(transition).identity, stepupStart: vi.fn().mockResolvedValue({ id: 'challenge:one' }), stepupComplete: complete } };
     const user = userEvent.setup();
@@ -64,20 +69,54 @@ function clientFixture(transition: ReturnType<typeof vi.fn>) {
     navigation: { treeRead: vi.fn().mockResolvedValue(navigation()) },
     member: { profileRead: vi.fn().mockResolvedValue({ id: 'member:one', display_name: '王小明', employee_no: 'S100', status: 'active' }) },
     fulfillment: {
-      workitemsRead: vi.fn().mockResolvedValueOnce({ items: [workItem('submitted', 3)], count: 1 }).mockResolvedValueOnce({ items: [workItem('accepted', 4)], count: 1 }),
+      workitemsRead: vi
+        .fn()
+        .mockResolvedValueOnce({ items: [workItem('submitted', 3)], count: 1 })
+        .mockResolvedValueOnce({ items: [workItem('accepted', 4)], count: 1 }),
       workitemsTransition: transition,
     },
   };
 }
 
 function session() {
-  return { target: 'supplier', actor: 'principal:one', session: 'session:one', membership: 'membership:one', scope: { kind: 'supplier', id: 'supplier:one' }, scopes: [{ kind: 'supplier', id: 'supplier:one' }], accessVersion: 1, permissions: [], capabilities: [], assurance: { level: 2 }, security: { hasLocalCredential: true, phoneMasked: '138****0000', passwordChangedAt: null }, syncedAt: '2026-09-07T00:00:00Z' };
+  return {
+    target: 'supplier',
+    actor: 'principal:one',
+    session: 'session:one',
+    membership: 'membership:one',
+    scope: { kind: 'supplier', id: 'supplier:one' },
+    scopes: [{ kind: 'supplier', id: 'supplier:one' }],
+    accessVersion: 1,
+    permissions: [],
+    capabilities: [],
+    assurance: { level: 2 },
+    security: { hasLocalCredential: true, phoneMasked: '138****0000', passwordChangedAt: null },
+    syncedAt: '2026-09-07T00:00:00Z',
+    csrf: 'csrf:supplier',
+  };
 }
 
 function navigation() {
-  return { target: 'supplier', scope: { kind: 'supplier', id: 'supplier:one' }, catalogVersion: NAVIGATION_CATALOG_HASH, defaultKey: 'supplierorders', nodes: [{ key: 'supplierorders', title: '订单处理', children: [], experience: { disabled: false, placement: 'primary', routeKey: 'supplierorders' } }] };
+  return {
+    target: 'supplier',
+    scope: { kind: 'supplier', id: 'supplier:one' },
+    catalogVersion: NAVIGATION_CATALOG_HASH,
+    defaultKey: 'supplierorders',
+    nodes: [{ key: 'supplierorders', title: '订单处理', children: [], experience: { disabled: false, placement: 'primary', routeKey: 'supplierorders' } }],
+  };
 }
 
 function workItem(state: string, version: number) {
-  return { id: 'fulfillment:1', order_id: 'order:1', order_number: 'SO1', member_masked: '会员 001001', state, kind: 'shipment', priority: 'normal', version, lines: [{ line: 'line:1', sku: 'SKU1', title: '员工礼盒', quantity: 1, packed: 0 }], updated_at: '2026-09-07T08:00:00Z' };
+  return {
+    id: 'fulfillment:1',
+    order_id: 'order:1',
+    order_number: 'SO1',
+    member_masked: '会员 001001',
+    state,
+    kind: 'shipment',
+    priority: 'normal',
+    version,
+    lines: [{ line: 'line:1', sku: 'SKU1', title: '员工礼盒', quantity: 1, packed: 0 }],
+    updated_at: '2026-09-07T08:00:00Z',
+  };
 }

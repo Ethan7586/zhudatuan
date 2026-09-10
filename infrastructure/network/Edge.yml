@@ -16,21 +16,21 @@ resolution:
   cacheSeconds: 60
 routes:
   api:
-    host: api.fufu.wang
+    host: api.yengze.press
     service: shop-api
     paths: [/api/v1, /health]
   storefront:
-    host: fufu.wang
+    host: yengze.press
     artifact: storefront
     entryPath: /s
     fallback: index.html
-  auth: { host: passport.fufu.wang, artifact: auth }
-  console: { host: console.fufu.wang, artifact: console }
-  miniapp: { host: miniapp.fufu.wang, artifact: miniapp }
-  store: { host: store.fufu.wang, artifact: store }
-  supplier: { host: supplier.fufu.wang, artifact: supplier }
-  upload: { host: upload.fufu.wang, service: object-upload, authentication: signedurl, publicRead: false }
-  download: { host: download.fufu.wang, service: object-download, authentication: signedurl, publicList: false }
+  auth: { host: passport.yengze.press, artifact: auth }
+  console: { host: console.yengze.press, artifact: console }
+  miniapp: { host: miniapp.yengze.press, artifact: miniapp }
+  store: { host: store.yengze.press, artifact: store }
+  supplier: { host: supplier.yengze.press, artifact: supplier }
+  upload: { host: upload.yengze.press, service: object-upload, authentication: signedurl, publicRead: false }
+  download: { host: download.yengze.press, service: object-download, authentication: signedurl, publicList: false }
 headers:
   hsts: max-age=63072000; includeSubDomains
   contentTypeOptions: nosniff

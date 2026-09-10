@@ -27,6 +27,7 @@ insert into runtime.mvpauthority(id,source,source_range,checksum,expected_count,
 alter table runtime.mvpauthority enable row level security;
 alter table runtime.mvpauthority force row level security;
 create policy jobread on runtime.mvpauthority for select to shopjob using(true);
+create policy migrationread on runtime.mvpauthority for select to shopmigration using(true);
 grant select on runtime.mvpauthority to shopjob;
 
 update runtime.contractcatalog set checksum=encode(public.digest('commerce:3.0.0:mvp:263','sha256'),'hex'),
@@ -43,5 +44,7 @@ do $assert$ begin
   if exists(select 1 from runtime.operation where id in('identity.members.create','identity.members.reset','identity.wechat.session',
     'identity.wechat.bind','invoice.operatorprofiles.read','finance.audit.read')) then raise exception 'LEGACY_OPERATION_REMAINS'; end if;
 end $assert$;
+
+drop policy migrationread on runtime.mvpauthority;
 
 commit;

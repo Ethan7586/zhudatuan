@@ -1,9 +1,9 @@
-import { localSecurityEnvironment } from '@shop/config/server';
+import { localSecretStoreEnvironment } from '@shop/config/server';
 import { startLocalHttps, workloadBearerPreflight } from '../../localinfra/src/Http';
 import { secretStoreHandler } from './Handler';
 import { SecretCatalog } from './SecretCatalog';
 
-const environment = localSecurityEnvironment();
+const environment = localSecretStoreEnvironment();
 const catalog = await SecretCatalog.load(environment.secretsFile);
 
 await startLocalHttps(
@@ -15,5 +15,6 @@ await startLocalHttps(
     keyFile: environment.tlsKeyFile,
   },
   1024,
-  workloadBearerPreflight(environment.secretStoreBearerToken)
+  workloadBearerPreflight(environment.secretStoreBearerToken),
+  environment.bindHost
 );

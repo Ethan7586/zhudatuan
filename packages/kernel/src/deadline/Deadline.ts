@@ -20,7 +20,6 @@ export class Deadline {
     const expire = () => this.controller.abort(new Error('DEADLINE_EXCEEDED'));
     const delay = Math.max(0, Math.min(MAX_TIMER_MILLISECONDS, expiresAt - now()));
     this.timer = setTimeout(expire, delay);
-    this.timer.unref?.();
     if (parent) {
       const abort = () => this.controller.abort(errorCause(parent.reason, 'REQUEST_ABORTED'));
       if (parent.aborted) abort();

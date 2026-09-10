@@ -12,6 +12,7 @@ export * from './Executor';
 export * from './Hash';
 export * from './Id';
 export * from './IdGenerator';
+export * from './LazyModule';
 export * from './Mobile';
 export * from './Money';
 export * from './OrganizationReference';

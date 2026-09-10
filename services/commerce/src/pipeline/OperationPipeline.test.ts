@@ -6,7 +6,7 @@ import { HttpStream } from '../platform/http/HttpStream';
 describe('OperationPipeline redirect contract', () => {
   it('validates Location as the generated output and keeps the HTTP body empty', async () => {
     const pipeline = new OperationPipeline(
-      { get: () => ({ handle: () => Promise.resolve({ status: 303, headers: { location: 'https://fufu.wang/' } }) }) } as never,
+      { get: () => ({ handle: () => Promise.resolve({ status: 303, headers: { location: 'https://yengze.press/' } }) }) } as never,
       {
         authorize: () =>
           Promise.resolve({
@@ -25,7 +25,7 @@ describe('OperationPipeline redirect contract', () => {
       passthroughExecutor() as never
     );
 
-    await expect(pipeline.execute('identity.federations.complete', request())).resolves.toEqual({ status: 303, body: undefined, headers: { location: 'https://fufu.wang/' } });
+    await expect(pipeline.execute('identity.federations.complete', request())).resolves.toEqual({ status: 303, body: undefined, headers: { location: 'https://yengze.press/' } });
   });
 
   it('rejects a redirect without Location before it reaches the HTTP boundary', async () => {

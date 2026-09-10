@@ -10,9 +10,7 @@ export const catalogViewModel = defineSupplierViewModel({
   title: '商品提交',
   description: '维护本供应商商品草稿并提交平台审核；平台上架状态和其他供应商数据不可修改。',
   read: (client, context, route) =>
-    route.id === 'supplierproduct'
-      ? client.catalog.productDetailRead({ path: { productid: route.parameters.productId }, query: { section: 'core' } }, context)
-      : client.catalog.listingsRead({ query: { limit: 50 } }, context),
+    route.id === 'supplierproduct' ? client.catalog.productDetailRead({ path: { productid: route.parameters.productId }, query: { section: 'core' } }, context) : client.catalog.listingsRead({ query: { limit: 50 } }, context),
   project: (value, route) => (route.id === 'supplierproduct' ? productProjection(value) : catalogProjection(value)),
   actions: (value, route, selectedKey) => (route.id === 'supplierproduct' ? productActions(operatorRecord(value)) : catalogActions(selectedOperatorRecord(value, selectedKey))),
   execute: async (client, context, route, value, selectedKey, action, input) => {
@@ -28,10 +26,17 @@ export const catalogViewModel = defineSupplierViewModel({
       }
       if (action.id === 'create') {
         const description = optionalText(input, 'description', 2000);
-        const created = await client.catalog.productsCreate({ body: {
-          category: requiredText(input, 'category', 255), title: requiredText(input, 'title', 300), type: productType(input),
-          ...(description === undefined ? {} : { attributes: { description } }),
-        } }, context);
+        const created = await client.catalog.productsCreate(
+          {
+            body: {
+              category: requiredText(input, 'category', 255),
+              title: requiredText(input, 'title', 300),
+              type: productType(input),
+              ...(description === undefined ? {} : { attributes: { description } }),
+            },
+          },
+          context
+        );
         return { message: '商品草稿已创建，请继续完善并提交审核。', destination: productPath(route.parameters, created.id), refresh: false };
       }
       const selected = selectedOperatorRecord(value, selectedKey);
@@ -48,9 +53,17 @@ export const catalogViewModel = defineSupplierViewModel({
       return { message: '商品已提交平台审核。审核通过后由平台决定发布范围。' };
     }
     if (action.id === 'edit' && ['draft', 'review'].includes(operatorText(product, 'status'))) {
-      await client.catalog.productsUpdate({ path: { productid: route.parameters.productId }, body: {
-        title: requiredText(input, 'title', 300), category: requiredText(input, 'category', 255), attributes: productAttributes(input),
-      } }, { ...context, expectedVersion: version });
+      await client.catalog.productsUpdate(
+        {
+          path: { productid: route.parameters.productId },
+          body: {
+            title: requiredText(input, 'title', 300),
+            category: requiredText(input, 'category', 255),
+            attributes: productAttributes(input),
+          },
+        },
+        { ...context, expectedVersion: version }
+      );
       return { message: '商品资料已保存。' };
     }
     throw new Error('当前商品状态不允许执行此操作。');
@@ -59,15 +72,26 @@ export const catalogViewModel = defineSupplierViewModel({
 
 function catalogActions(item: OperatorRecord | undefined): readonly OperatorAction[] {
   const create = Object.freeze({
-    id: 'create', label: '新建商品', description: '创建仅属于当前供应商的商品草稿。', tone: 'primary' as const, identityScope: true,
+    id: 'create',
+    label: '新建商品',
+    description: '创建仅属于当前供应商的商品草稿。',
+    tone: 'primary' as const,
     fields: Object.freeze([
-      actionField('title', '商品名称', { maximumLength: 300 }), actionField('category', '商品分类名称或编号'),
+      actionField('title', '商品名称', { maximumLength: 300 }),
+      actionField('category', '商品分类名称或编号'),
       actionField('type', '商品类型', { kind: 'choice', value: 'physical', choices: PRODUCT_TYPE_OPTIONS }),
       actionField('description', '商品说明', { kind: 'textarea', required: false, maximumLength: 2000 }),
     ]),
   });
   const imports = [
-    Object.freeze({ id: 'import', label: '批量导入商品', description: '上传 CSV/XLSX 创建可追踪的商品导入任务。', confirmation: '上传完成不代表导入完成，请使用任务编号查询服务端处理结果。', tone: 'primary' as const, identityScope: true, fields: Object.freeze([actionField('file', '商品文件', { kind: 'file' })]) }),
+    Object.freeze({
+      id: 'import',
+      label: '批量导入商品',
+      description: '上传 CSV/XLSX 创建可追踪的商品导入任务。',
+      confirmation: '上传完成不代表导入完成，请使用任务编号查询服务端处理结果。',
+      tone: 'primary' as const,
+      fields: Object.freeze([actionField('file', '商品文件', { kind: 'file' })]),
+    }),
     Object.freeze({ id: 'importstatus', label: '查询导入结果', description: '查看商品导入成功、失败和错误报告。', tone: 'secondary' as const, fields: Object.freeze([actionField('job', '导入任务编号')]) }),
   ];
   const product = item && operatorText(item, 'product_id');
@@ -80,7 +104,11 @@ function productActions(item: OperatorRecord | undefined): readonly OperatorActi
   const version = operatorNumber(item, 'version');
   if (version === undefined) return Object.freeze([]);
   const edit = Object.freeze({
-    id: 'edit', label: '保存商品资料', description: '修改名称、分类和展示信息。', tone: 'primary' as const, expectedVersion: version, identityScope: true,
+    id: 'edit',
+    label: '保存商品资料',
+    description: '修改名称、分类和展示信息。',
+    tone: 'primary' as const,
+    expectedVersion: version,
     fields: Object.freeze([
       actionField('title', '商品名称', { maximumLength: 300, value: operatorText(item, 'title') }),
       actionField('category', '商品分类名称或编号', { value: operatorText(item, 'category_id') }),
@@ -89,7 +117,20 @@ function productActions(item: OperatorRecord | undefined): readonly OperatorActi
       actionField('subtitle', '商品副标题', { required: false, maximumLength: 300, value: operatorText(item, 'subtitle') }),
     ]),
   });
-  const submit = operatorText(item, 'status') === 'draft' ? [Object.freeze({ id: 'submit', label: '提交平台审核', description: '锁定当前版本并交由平台审核，不会直接上架。', confirmation: '确认商品资料完整。提交后平台将进行审核，但不会自动发布。', tone: 'primary' as const, expectedVersion: version, identityScope: true, fields: Object.freeze([]) })] : [];
+  const submit =
+    operatorText(item, 'status') === 'draft'
+      ? [
+          Object.freeze({
+            id: 'submit',
+            label: '提交平台审核',
+            description: '锁定当前版本并交由平台审核，不会直接上架。',
+            confirmation: '确认商品资料完整。提交后平台将进行审核，但不会自动发布。',
+            tone: 'primary' as const,
+            expectedVersion: version,
+            fields: Object.freeze([]),
+          }),
+        ]
+      : [];
   return Object.freeze([edit, ...submit]);
 }
 
@@ -98,19 +139,43 @@ function catalogProjection(value: unknown) {
   if (items.length === 0) {
     const job = operatorRecord(value);
     const id = job && operatorText(job, 'id');
-    if (id) return operatorCollection(value, [operatorRow({ key: id, title: `商品导入 ${id}`, detail: `总计 ${operatorNumber(job!, 'total_count') ?? 0} · 成功 ${operatorNumber(job!, 'success_count') ?? 0} · 失败 ${operatorNumber(job!, 'failure_count') ?? 0}`, statusLabel: importStatus(operatorText(job!, 'state')), timestamp: operatorText(job!, 'updated_at') })]);
+    if (id)
+      return operatorCollection(value, [
+        operatorRow({
+          key: id,
+          title: `商品导入 ${id}`,
+          detail: `总计 ${operatorNumber(job!, 'total_count') ?? 0} · 成功 ${operatorNumber(job!, 'success_count') ?? 0} · 失败 ${operatorNumber(job!, 'failure_count') ?? 0}`,
+          statusLabel: importStatus(operatorText(job!, 'state')),
+          timestamp: operatorText(job!, 'updated_at'),
+        }),
+      ]);
   }
-  return operatorCollection(value, items.map((item) => operatorRow({
-    key: operatorText(item, 'id'), title: operatorText(item, 'title'),
-    detail: `${operatorText(item, 'code') || '编码待映射'} · ${operatorText(item, 'category_name') || '分类待完善'} · ${sourceLabel(operatorText(item, 'source'))}`,
-    statusLabel: productStatus(operatorText(item, 'status')), timestamp: operatorText(item, 'cursor_sort'),
-  })));
+  return operatorCollection(
+    value,
+    items.map((item) =>
+      operatorRow({
+        key: operatorText(item, 'id'),
+        title: operatorText(item, 'title'),
+        detail: `${operatorText(item, 'code') || '编码待映射'} · ${operatorText(item, 'category_name') || '分类待完善'} · ${sourceLabel(operatorText(item, 'source'))}`,
+        statusLabel: productStatus(operatorText(item, 'status')),
+        timestamp: operatorText(item, 'cursor_sort'),
+      })
+    )
+  );
 }
 
 function productProjection(value: unknown) {
   const item = operatorRecord(value);
   if (!item) return operatorCollection(value, []);
-  return operatorCollection(value, [operatorRow({ key: operatorText(item, 'id'), title: operatorText(item, 'title'), detail: `${typeLabel(operatorText(item, 'product_type'))} · 分类 ${operatorText(item, 'category_id')}`, statusLabel: productStatus(operatorText(item, 'status')), timestamp: operatorText(item, 'updatedAt') })]);
+  return operatorCollection(value, [
+    operatorRow({
+      key: operatorText(item, 'id'),
+      title: operatorText(item, 'title'),
+      detail: `${typeLabel(operatorText(item, 'product_type'))} · 分类 ${operatorText(item, 'category_id')}`,
+      statusLabel: productStatus(operatorText(item, 'status')),
+      timestamp: operatorText(item, 'updatedAt'),
+    }),
+  ]);
 }
 
 function productAttributes(input: ActionInput) {
@@ -130,8 +195,12 @@ function productPath(parameters: Readonly<Record<string, string>>, productId: st
   return resolveRoutePath('supplierproduct', { scopeKind: parameters.scopeKind!, scopeId: parameters.scopeId!, productId });
 }
 
-function sourceLabel(value: string): string { return value === 'self' ? '本地商品' : value ? `${value} 渠道` : '来源待确认'; }
-function typeLabel(value: string): string { return presentProductType(value); }
+function sourceLabel(value: string): string {
+  return value === 'self' ? '本地商品' : value ? `${value} 渠道` : '来源待确认';
+}
+function typeLabel(value: string): string {
+  return presentProductType(value);
+}
 function productStatus(value: string): string {
   if (value === 'draft') return '草稿';
   if (value === 'review' || value === 'pending') return '平台审核中';
@@ -139,4 +208,6 @@ function productStatus(value: string): string {
   if (value === 'archived' || value === 'retired') return '已归档';
   return '状态待同步';
 }
-function importStatus(value: string): string { return value === 'completed' ? '导入完成' : value === 'failed' || value === 'rejected' ? '导入失败' : value === 'running' ? '正在导入' : '等待处理'; }
+function importStatus(value: string): string {
+  return value === 'completed' ? '导入完成' : value === 'failed' || value === 'rejected' ? '导入失败' : value === 'running' ? '正在导入' : '等待处理';
+}

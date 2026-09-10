@@ -46,6 +46,7 @@ select tenant_id,scope_id,'partner.customer',id,'CU'||upper(substr(encode(public
   encode(public.digest(lower(id),'sha256'),'hex'),'backfill','migration:reference',clock_timestamp(),1 from partner.customer;
 alter table runtime.businessreference enable row level security;
 alter table runtime.businessreference force row level security;
+create policy migrationaccess on runtime.businessreference for all to shopmigration using(true) with check(true);
 create policy businessreferenceapp on runtime.businessreference for select to shopapp using(access.scope_allowed(scope_id));
 create policy businessreferencejob on runtime.businessreference for all to shopjob using(true) with check(true);
 revoke all on runtime.businessreference from public;

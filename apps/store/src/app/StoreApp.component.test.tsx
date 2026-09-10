@@ -45,7 +45,7 @@ describe('StoreApp operational journey', () => {
     await waitFor(() =>
       expect(transition).toHaveBeenCalledWith(
         { path: { fulfillmentid: 'fulfillment:1' }, body: { action: 'accept' } },
-        expect.objectContaining({ scope: { kind: 'store', id: 'store:one' }, expectedVersion: 3, idempotencyKey: expect.stringMatching(/^storecommand:/) })
+        expect.objectContaining({ scope: { kind: 'store', id: 'store:one' }, csrfToken: 'csrf:store', expectedVersion: 3, idempotencyKey: expect.stringMatching(/^storecommand:/) })
       )
     );
     expect(await screen.findByText('接单成功，任务状态已由服务端更新。')).toBeTruthy();
@@ -102,6 +102,7 @@ function session() {
     assurance: { level: 2 },
     security: { hasLocalCredential: true, phoneMasked: '138****0000', passwordChangedAt: null },
     syncedAt: '2026-09-07T00:00:00Z',
+    csrf: 'csrf:store',
   };
 }
 

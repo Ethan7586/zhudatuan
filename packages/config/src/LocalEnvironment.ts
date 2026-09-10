@@ -1,6 +1,7 @@
 import { bearerToken, distinctValues, integerValue, processEnvironment, requiredValue, type EnvironmentSource } from './Environment';
 
 export const LOCAL_ENVIRONMENT_KEYS = Object.freeze({
+  bindHost: 'LOCAL_BIND_HOST',
   tlsKeyFile: 'LOCAL_TLS_KEY_FILE',
   tlsCertificateFile: 'LOCAL_TLS_CERT_FILE',
   secretsFile: 'LOCAL_SECRETS_FILE',
@@ -13,6 +14,7 @@ export const LOCAL_ENVIRONMENT_KEYS = Object.freeze({
   objectsPort: 'LOCAL_OBJECTS_PORT',
   objectsDirectory: 'LOCAL_OBJECTS_DIRECTORY',
   objectsToken: 'LOCAL_OBJECTS_TOKEN',
+  objectsPublicBaseUrl: 'LOCAL_OBJECTS_PUBLIC_BASE_URL',
   providerPort: 'LOCAL_PROVIDER_PORT',
   composeProject: 'LOCAL_COMPOSE_PROJECT',
   postgresPort: 'LOCAL_POSTGRES_PORT',
@@ -28,6 +30,7 @@ export const LOCAL_ENVIRONMENT_KEYS = Object.freeze({
   adminDatabaseConnectionRef: 'LOCAL_ADMIN_DATABASE_CONNECTION_REF',
   migrationDatabaseConnectionRef: 'MIGRATION_DATABASE_CONNECTION_REF',
   ethanPasswordRef: 'LOCAL_ETHAN_PASSWORD_REF',
+  apiEndpoint: 'LOCAL_API_ENDPOINT',
 } as const);
 
 export const LOCAL_SECRET_REFS = Object.freeze({
@@ -47,11 +50,13 @@ export const LOCAL_CREDENTIAL_KEYS = Object.freeze({
 } as const);
 
 export interface LocalInfrastructureEnvironment {
+  readonly bindHost: LocalBindHost;
   readonly kmsBearerToken: string;
   readonly kmsMasterKey: string;
   readonly kmsPort: number;
   readonly objectsDirectory: string;
   readonly objectsPort: number;
+  readonly objectsPublicBaseUrl: string;
   readonly objectsToken: string;
   readonly secretsFile: string;
   readonly secretsPort: number;
@@ -72,8 +77,10 @@ export interface LocalLaunchEnvironment {
 }
 
 export interface LocalObjectEnvironment {
+  readonly bindHost: LocalBindHost;
   readonly objectsDirectory: string;
   readonly objectsPort: number;
+  readonly objectsPublicBaseUrl: string;
   readonly objectsToken: string;
   readonly tlsCertificateFile: string;
   readonly tlsKeyFile: string;
@@ -84,6 +91,7 @@ export interface LocalProviderEnvironment {
 }
 
 export interface LocalSeedEnvironment {
+  readonly apiEndpoint: string;
   readonly adminDatabaseConnectionRef: string;
   readonly ethanPasswordRef: string;
   readonly identityKeyRef: string;
@@ -97,10 +105,8 @@ export interface LocalSeedEnvironment {
   readonly serviceVersion: string;
 }
 
-export interface LocalSecurityEnvironment {
-  readonly kmsBearerToken: string;
-  readonly kmsMasterKey: string;
-  readonly kmsPort: number;
+export interface LocalSecretStoreEnvironment {
+  readonly bindHost: LocalBindHost;
   readonly secretsFile: string;
   readonly secretsPort: number;
   readonly secretStoreBearerToken: string;
@@ -108,19 +114,40 @@ export interface LocalSecurityEnvironment {
   readonly tlsKeyFile: string;
 }
 
-export function localSecurityEnvironment(source: EnvironmentSource = processEnvironment()): LocalSecurityEnvironment {
-  const kmsBearerToken = bearerToken(source.LOCAL_KMS_BEARER_TOKEN, 'LOCAL_KMS_BEARER_TOKEN_INVALID');
-  const secretStoreBearerToken = bearerToken(source.LOCAL_SECRET_STORE_BEARER_TOKEN, 'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID');
-  distinctValues(kmsBearerToken, secretStoreBearerToken, 'LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
+export interface LocalKmsEnvironment {
+  readonly bindHost: LocalBindHost;
+  readonly kmsBearerToken: string;
+  readonly kmsMasterKey: string;
+  readonly kmsPort: number;
+  readonly tlsCertificateFile: string;
+  readonly tlsKeyFile: string;
+}
+
+export function localSecretStoreEnvironment(source: EnvironmentSource = processEnvironment()): LocalSecretStoreEnvironment {
   return Object.freeze({
+    bindHost: localBindHost(source.LOCAL_BIND_HOST),
     tlsKeyFile: requiredValue(source.LOCAL_TLS_KEY_FILE, 'LOCAL_TLS_KEY_FILE_MISSING'),
     tlsCertificateFile: requiredValue(source.LOCAL_TLS_CERT_FILE, 'LOCAL_TLS_CERT_FILE_MISSING'),
     secretsFile: requiredValue(source.LOCAL_SECRETS_FILE, 'LOCAL_SECRETS_FILE_MISSING'),
     secretsPort: integerValue(source.LOCAL_SECRETS_PORT, 8443, 1024, 65_535, 'LOCAL_SECRETS_PORT_INVALID'),
+    secretStoreBearerToken: bearerToken(source.LOCAL_SECRET_STORE_BEARER_TOKEN, 'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID'),
+  });
+}
+
+function verificationApiEndpoint(value: string | undefined): string {
+  const selected = value?.trim() || 'http://127.0.0.1:3001';
+  if (selected === 'http://127.0.0.1:3001' || selected === 'http://api:3001') return selected;
+  return secureEndpoint(selected, 'LOCAL_API_ENDPOINT_INVALID');
+}
+
+export function localKmsEnvironment(source: EnvironmentSource = processEnvironment()): LocalKmsEnvironment {
+  return Object.freeze({
+    bindHost: localBindHost(source.LOCAL_BIND_HOST),
+    tlsKeyFile: requiredValue(source.LOCAL_TLS_KEY_FILE, 'LOCAL_TLS_KEY_FILE_MISSING'),
+    tlsCertificateFile: requiredValue(source.LOCAL_TLS_CERT_FILE, 'LOCAL_TLS_CERT_FILE_MISSING'),
     kmsPort: integerValue(source.LOCAL_KMS_PORT, 8444, 1024, 65_535, 'LOCAL_KMS_PORT_INVALID'),
     kmsMasterKey: requiredValue(source.LOCAL_KMS_MASTER_KEY, 'LOCAL_KMS_MASTER_KEY_MISSING'),
-    kmsBearerToken,
-    secretStoreBearerToken,
+    kmsBearerToken: bearerToken(source.LOCAL_KMS_BEARER_TOKEN, 'LOCAL_KMS_BEARER_TOKEN_INVALID'),
   });
 }
 
@@ -129,6 +156,7 @@ export function localInfrastructureEnvironment(source: EnvironmentSource = proce
   const secretStoreBearerToken = bearerToken(source.LOCAL_SECRET_STORE_BEARER_TOKEN, 'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearerToken, secretStoreBearerToken, 'LOCAL_WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   return Object.freeze({
+    bindHost: localBindHost(source.LOCAL_BIND_HOST),
     tlsKeyFile: requiredValue(source.LOCAL_TLS_KEY_FILE, 'LOCAL_TLS_KEY_FILE_MISSING'),
     tlsCertificateFile: requiredValue(source.LOCAL_TLS_CERT_FILE, 'LOCAL_TLS_CERT_FILE_MISSING'),
     secretsFile: requiredValue(source.LOCAL_SECRETS_FILE, 'LOCAL_SECRETS_FILE_MISSING'),
@@ -139,6 +167,7 @@ export function localInfrastructureEnvironment(source: EnvironmentSource = proce
     secretStoreBearerToken,
     objectsPort: integerValue(source.LOCAL_OBJECTS_PORT, 8445, 1024, 65_535, 'LOCAL_OBJECTS_PORT_INVALID'),
     objectsDirectory: requiredValue(source.LOCAL_OBJECTS_DIRECTORY, 'LOCAL_OBJECTS_DIRECTORY_MISSING'),
+    objectsPublicBaseUrl: secureEndpoint(source.LOCAL_OBJECTS_PUBLIC_BASE_URL, 'LOCAL_OBJECTS_PUBLIC_BASE_URL_INVALID'),
     objectsToken: requiredValue(source.LOCAL_OBJECTS_TOKEN, 'LOCAL_OBJECTS_TOKEN_MISSING'),
   });
 }
@@ -160,10 +189,12 @@ export function localLaunchEnvironment(source: EnvironmentSource = processEnviro
 
 export function localObjectEnvironment(source: EnvironmentSource = processEnvironment()): LocalObjectEnvironment {
   return Object.freeze({
+    bindHost: localBindHost(source.LOCAL_BIND_HOST),
     tlsKeyFile: requiredValue(source.LOCAL_TLS_KEY_FILE, 'LOCAL_TLS_KEY_FILE_MISSING'),
     tlsCertificateFile: requiredValue(source.LOCAL_TLS_CERT_FILE, 'LOCAL_TLS_CERT_FILE_MISSING'),
     objectsPort: integerValue(source.LOCAL_OBJECTS_PORT, 8445, 1024, 65_535, 'LOCAL_OBJECTS_PORT_INVALID'),
     objectsDirectory: requiredValue(source.LOCAL_OBJECTS_DIRECTORY, 'LOCAL_OBJECTS_DIRECTORY_MISSING'),
+    objectsPublicBaseUrl: secureEndpoint(source.LOCAL_OBJECTS_PUBLIC_BASE_URL, 'LOCAL_OBJECTS_PUBLIC_BASE_URL_INVALID'),
     objectsToken: requiredValue(source.LOCAL_OBJECTS_TOKEN, 'LOCAL_OBJECTS_TOKEN_MISSING'),
   });
 }
@@ -178,6 +209,7 @@ export function localSeedEnvironment(source: EnvironmentSource = processEnvironm
   const secretStoreBearerToken = bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
   distinctValues(kmsBearerToken, secretStoreBearerToken, 'WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   return Object.freeze({
+    apiEndpoint: verificationApiEndpoint(source.LOCAL_API_ENDPOINT),
     secretStoreEndpoint,
     adminDatabaseConnectionRef: reference(source.LOCAL_ADMIN_DATABASE_CONNECTION_REF, 'LOCAL_ADMIN_DATABASE_CONNECTION_REF_INVALID'),
     ethanPasswordRef: reference(source.LOCAL_ETHAN_PASSWORD_REF, 'LOCAL_ETHAN_PASSWORD_REF_INVALID'),
@@ -202,4 +234,12 @@ function secureEndpoint(value: string | undefined, code: string): string {
   const selected = requiredValue(value, code);
   if (!selected.startsWith('https://')) throw new Error(code);
   return selected.replace(/\/$/, '');
+}
+
+export type LocalBindHost = '127.0.0.1' | '0.0.0.0';
+
+function localBindHost(value: string | undefined): LocalBindHost {
+  const selected = value?.trim() || '127.0.0.1';
+  if (selected !== '127.0.0.1' && selected !== '0.0.0.0') throw new Error('LOCAL_BIND_HOST_INVALID');
+  return selected;
 }

@@ -183,6 +183,7 @@ begin
   foreach target in array array['jobs','job_attempts','leases','imports','import_chunks','exports','deadletters'] loop
     execute format('alter table runtime.%I enable row level security',target);
     execute format('alter table runtime.%I force row level security',target);
+    execute format('create policy migrationaccess on runtime.%I for all to shopmigration using(true) with check(true)',target);
     execute format('create policy appscope on runtime.%I for all to shopapp using(access.scope_allowed(scope_id)) with check(access.scope_allowed(scope_id))',target);
     execute format('create policy jobscope on runtime.%I for all to shopjob using(true) with check(true)',target);
     execute format('revoke all on table runtime.%I from public',target);

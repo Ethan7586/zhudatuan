@@ -51,7 +51,7 @@ describe('identity federation callback', () => {
       clientid: 'client',
       secretref: 'identity/oidc/client',
       status: 'enabled',
-      redirecturi: `https://api.fufu.wang/api/v1/identity/federations/${PROVIDER}/callback`,
+      redirecturi: `https://api.yengze.press/api/v1/identity/federations/${PROVIDER}/callback`,
       scopes: ['openid'],
       version: 1,
       createdat: '2026-08-30T00:00:00.000Z',
@@ -76,7 +76,7 @@ describe('identity federation callback', () => {
       nonces,
       kms as never,
       { issue: vi.fn() } as never,
-      { verify: vi.fn(() => ({ url: 'https://console.fufu.wang/security', proof: 'proof', expiresAt: '2026-08-30T00:01:00.000Z', target: 'console' })) } as never,
+      { verify: vi.fn(() => ({ url: 'https://console.yengze.press/security', proof: 'proof', expiresAt: '2026-08-30T00:01:00.000Z', target: 'console' })) } as never,
       { directoryBindings: vi.fn() } as never,
       {} as never,
       new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds),
@@ -86,7 +86,7 @@ describe('identity federation callback', () => {
 
     const response = await callback(service);
 
-    expect(response).toMatchObject({ status: 303, headers: { location: 'https://console.fufu.wang/security' } });
+    expect(response).toMatchObject({ status: 303, headers: { location: 'https://console.yengze.press/security' } });
     expect(kms.encrypt).toHaveBeenCalledWith('pii', 'identity/federatedsubject', JSON.stringify({ subject: 'provider-subject', claims: {} }), { principal: 'principal:one', provider: PROVIDER });
     expect(links.create).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ principal: 'principal:one', membership: 'membership:one', provider: PROVIDER, ciphertext: 'subject-envelope' }));
     expect(repository.complete).toHaveBeenCalledWith(expect.anything(), TRANSACTION, 3);
@@ -125,7 +125,7 @@ describe('identity federation callback', () => {
       clientid: 'client',
       secretref: 'identity/oidc/client',
       status: 'enabled',
-      redirecturi: `https://api.fufu.wang/api/v1/identity/federations/${PROVIDER}/callback`,
+      redirecturi: `https://api.yengze.press/api/v1/identity/federations/${PROVIDER}/callback`,
       scopes: ['openid'],
       version: 1,
       createdat: '2026-08-30T00:00:00.000Z',
@@ -144,7 +144,7 @@ describe('identity federation callback', () => {
       {
         issue: vi.fn(async () => ({ session: 'session:one', membership: 'membership:one', target: 'console', expiresin: 3600, headers: { 'set-cookie': '__Host-console-session=opaque; Path=/; Secure; HttpOnly; SameSite=Strict' } })),
       } as never,
-      { verify: vi.fn(() => ({ url: 'https://console.fufu.wang', proof: 'signed-return-target', expiresAt: '2026-08-30T00:01:00.000Z', target: 'console' })) } as never,
+      { verify: vi.fn(() => ({ url: 'https://console.yengze.press', proof: 'signed-return-target', expiresAt: '2026-08-30T00:01:00.000Z', target: 'console' })) } as never,
       { directoryBindings: vi.fn() } as never,
       {} as never,
       new SessionCookieAdapter(RUNTIME_LIMITS.authentication.session.ttlSeconds),
@@ -204,7 +204,7 @@ describe('identity federation callback', () => {
       clientid: 'client',
       secretref: 'identity/oidc/client',
       status: 'enabled',
-      redirecturi: `https://api.fufu.wang/api/v1/identity/federations/${PROVIDER}/callback`,
+      redirecturi: `https://api.yengze.press/api/v1/identity/federations/${PROVIDER}/callback`,
       scopes: ['openid'],
       version: 1,
       createdat: '2026-08-30T00:00:00.000Z',

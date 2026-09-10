@@ -26,6 +26,7 @@ create table experience.releasehead(
 );
 alter table experience.releasehead enable row level security;
 alter table experience.releasehead force row level security;
+create policy migrationaccess on experience.releasehead for all to shopmigration using(true) with check(true);
 create policy releaseheadapp on experience.releasehead for select to shopapp using(access.scope_allowed(scope_id));
 create policy releaseheadjob on experience.releasehead for all to shopjob using(true) with check(true);
 revoke all on experience.releasehead from public;
