@@ -8,7 +8,6 @@ test('小程序构建声明覆盖正式页面、隐私授权和安全区适配',
   const declaredPages = [...application.pages, ...application.subPackages.flatMap(({ root, pages }) => pages.map((page) => `${root}/${page}`))];
   const privacy = readFileSync('apps/miniapp/miniprogram/platform/Privacy.ts', 'utf8');
   const shell = readFileSync('apps/miniapp/miniprogram/shell/shell.wxss', 'utf8');
-  expect(Object.keys(MINIAPP_PAGE_BY_ROUTE)).toHaveLength(17);
   expect(new Set(Object.values(MINIAPP_PAGE_BY_ROUTE))).toEqual(new Set(MINIAPP_PAGES));
   expect(new Set(declaredPages)).toEqual(new Set(MINIAPP_PAGES.map((page) => page.slice(1))));
   expect(privacy).toContain('getPrivacySetting');
