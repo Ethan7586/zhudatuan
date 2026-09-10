@@ -1,45 +1,123 @@
-.productdrawerheaderactions {
-  display: flex;
-  flex: 0 0 auto;
+.productdrawerfooter {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 88px;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 6px;
-}
-.productdrawerfulldetail {
-  display: inline-flex;
-  flex: 0 0 auto;
-  min-height: 36px;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--sw-border-strong);
-  border-radius: 7px;
+  gap: 16px;
+  border-top: 1px solid var(--sw-border);
   background: var(--sw-surface);
-  color: var(--sw-brand);
-  padding: 0 10px;
-  font-size: 11px;
-  font-weight: 600;
+  padding: 12px 20px;
+}
+.productdrawernextcopy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.productdrawernextcopy span {
+  color: var(--sw-brand-dark);
+  font-size: var(--sw-font-size-overline);
+  font-weight: var(--sw-font-weight-bold);
+  letter-spacing: var(--sw-letter-spacing-wide);
+}
+.productdrawernextcopy strong {
+  overflow: hidden;
+  color: var(--sw-text);
+  font-size: var(--sw-font-size-body-sm);
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
-.productdrawerfulldetail:hover {
-  border-color: var(--sw-brand);
-  background: var(--sw-brand-soft);
-}
-.productdrawerfulldetail svg {
-  width: 15px;
-  height: 15px;
-}
-.productdrawerresource > [role='status'] {
-  margin: 0;
+.productdrawernextcopy small {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--sw-muted);
-  font-size: 11px;
+  font-size: var(--sw-font-size-caption);
+  line-height: var(--sw-line-height-caption);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
-@media (max-width: 540px) {
-  .productdrawerfulldetail {
-    width: var(--sw-control-touch-target);
-    min-width: var(--sw-control-touch-target);
-    min-height: var(--sw-control-touch-target);
-    padding: 0;
-  }
-  .productdrawerfulldetail span {
-    display: none;
-  }
+.productdrawerfooteractions {
+  display: flex;
+  align-items: center;
+  gap: var(--sw-space-1);
+}
+.productnextaction {
+  min-width: 8rem;
+}
+.productcommandhint {
+  display: inline-flex;
+  min-width: 0;
+}
+.productcommandhint > .shopbutton {
+  width: 100%;
+}
+.productmoreactions {
+  position: relative;
+}
+.productmoreactions > summary {
+  box-sizing: border-box;
+  display: inline-flex;
+  min-width: 6rem;
+  min-height: var(--sw-control-touch-target);
+  align-items: center;
+  justify-content: center;
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-sm);
+  background: var(--sw-surface);
+  color: var(--sw-text-secondary);
+  padding: 0 var(--sw-control-padding);
+  font-size: var(--sw-font-size-body-sm);
+  font-weight: var(--sw-font-weight-bold);
+  white-space: nowrap;
+  cursor: pointer;
+  list-style: none;
+}
+.productmoreactions > summary::-webkit-details-marker {
+  display: none;
+}
+.productmoreactions > summary::after {
+  margin-left: var(--sw-space-1);
+  content: '⌃';
+}
+.productmoreactions[open] > summary {
+  border-color: var(--sw-brand-light);
+  background: var(--sw-brand-faint);
+  color: var(--sw-brand-dark);
+}
+.productmoreactions > div {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--sw-space-1));
+  z-index: var(--sw-layer-popover);
+  display: grid;
+  width: 12rem;
+  gap: var(--sw-space-0-5);
+  border: var(--sw-border-width) solid var(--sw-border);
+  border-radius: var(--sw-radius-md);
+  background: var(--sw-surface);
+  box-shadow: var(--sw-shadow-floating);
+  padding: var(--sw-space-1);
+}
+.productmoreactions > div .productcommandhint,
+.productmoreactions > div .shopbutton {
+  width: 100%;
+  justify-content: flex-start;
+}
+.productjourney {
+  margin-bottom: var(--sw-space-2);
+}
+.productjourney .shopjourneyguide {
+  gap: var(--sw-space-1);
+  border-color: var(--sw-brand-light);
+  background: var(--sw-brand-faint);
+  padding: var(--sw-space-1-5);
+}
+.productjourney .shopjourneyguide header h2 {
+  font-size: var(--sw-font-size-body);
+  line-height: var(--sw-line-height-body);
+}
+.productjourneyhint {
+  margin: 0;
+  line-height: var(--sw-line-height-body-sm);
 }

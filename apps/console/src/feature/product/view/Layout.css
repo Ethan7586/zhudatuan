@@ -66,7 +66,6 @@
   text-align: right;
 }
 .productaction:not(.shopbutton),
-.productdrawerfooter button,
 .productbatchcontent footer button {
   display: inline-flex;
   min-height: var(--sw-control-touch-target);
@@ -82,12 +81,11 @@
   font-weight: 600;
 }
 .productaction:not(.shopbutton) svg,
-.productdrawerfooter button svg {
+.productbatchcontent footer button svg {
   width: 16px;
   height: 16px;
 }
 .productactionprimary:not(.shopbutton),
-.productdrawerfooter .productactionprimary,
 .productbatchcontent footer .productactionprimary {
   border-color: var(--sw-brand);
   background: var(--sw-brand);
@@ -98,7 +96,7 @@
   --shop-button-min-height: var(--sw-control-touch-target);
 }
 .productheroactions .shopbutton:disabled,
-.productdrawerfooter button:disabled {
+.productbatchcontent footer button:disabled {
   opacity: 0.72;
 }
 .producttabs {

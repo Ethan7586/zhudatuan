@@ -74,6 +74,28 @@ describe('ProductPoolViewModel', () => {
     expect(target.textContent).toBe('主打团福利商城');
   });
 
+  it('offers only pools owned by the current business scope as allocation sources', async () => {
+    const enterprisePool: Pool = { ...pools[0]!, id: 'pool:enterprise', scope_id: enterpriseScope.id, name: '集团总池' };
+    const mallPool: Pool = { ...pools[1]!, id: 'pool:mall', scope_id: governedMall.id, name: '商城自有池' };
+    setup(undefined, vi.fn(), vi.fn(), enterpriseContext, enterpriseContext.scopes, undefined, vi.fn(), [mallPool, enterprisePool]);
+
+    expect(await screen.findByRole('button', { name: /集团总池/ })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /商城自有池/ })).toBeNull();
+    expect(screen.getByText(/将在“主打团”创建“主打团渠道商品池”/)).toBeTruthy();
+  });
+
+  it('continues one product from its current pool to mall delivery without asking the operator to choose the task or pool again', async () => {
+    const execute = vi.fn().mockResolvedValue({ version: 6 });
+    setup(listing, vi.fn(), execute, deliveryContext, deliveryContext.scopes, 'deliver');
+
+    expect(await screen.findByLabelText('1. 选择投放商城')).toHaveProperty('value', 'mall:one');
+    expect(screen.queryByRole('radiogroup', { name: '商品池任务' })).toBeNull();
+    expect(screen.getByText(/将随“当前商品池”投放到“华东福利商城”/)).toBeTruthy();
+    await userEvent.setup().click(screen.getByRole('button', { name: '投放到商城' }));
+
+    await waitFor(() => expect(execute).toHaveBeenCalledWith(expect.anything(), pools[0], { operation: OP_CATALOG_POOLS_ATTACH, target: 'mall:one' }));
+  });
+
   it('does not execute a listing pool change without the generated operation access', async () => {
     const move = vi.fn();
     const denied = { ...context, session: { ...context.session, capabilities: [OP_CATALOG_POOLS_READ] } };
@@ -84,12 +106,24 @@ describe('ProductPoolViewModel', () => {
     expect(screen.getByRole('button', { name: '确认移入' }).hasAttribute('disabled')).toBe(true);
     expect(move).not.toHaveBeenCalled();
   });
+
+  it('requests fresh identity verification before a high-assurance pool operation', async () => {
+    const execute = vi.fn();
+    const requestStepup = vi.fn();
+    const lowAssurance = { ...globalContext, session: { ...globalContext.session, assurance: { level: 1 as const } } };
+    setup(undefined, vi.fn(), execute, lowAssurance, lowAssurance.scopes, undefined, requestStepup);
+
+    await userEvent.setup().click(await screen.findByRole('button', { name: '创建派生池' }));
+
+    expect(requestStepup).toHaveBeenCalledTimes(1);
+    expect(execute).not.toHaveBeenCalled();
+  });
 });
 
-function setup(current: Listing | undefined, move: ReturnType<typeof vi.fn>, execute = vi.fn(), value: ConsoleContext = context, targets = value.scopes) {
+function setup(current: Listing | undefined, move: ReturnType<typeof vi.fn>, execute = vi.fn(), value: ConsoleContext = context, targets = value.scopes, intent?: 'deliver', requestStepup = vi.fn(), poolValues: readonly Pool[] = pools) {
   let sequence = 0;
   const dependencies = {
-    readPools: { execute: vi.fn(() => Promise.resolve({ items: pools, count: pools.length })) },
+    readPools: { execute: vi.fn(() => Promise.resolve({ items: poolValues, count: poolValues.length })) },
     readPoolTargets: { execute: vi.fn(() => Promise.resolve(targets)) },
     changePool: { move, execute },
     createIdentity: () => `command:${++sequence}`,
@@ -97,7 +131,7 @@ function setup(current: Listing | undefined, move: ReturnType<typeof vi.fn>, exe
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   render(
     <QueryClientProvider client={client}>
-      <Harness listing={current} context={value} dependencies={dependencies} />
+      <Harness listing={current} context={value} dependencies={dependencies} requestStepup={requestStepup} {...(intent === undefined ? {} : { intent })} />
     </QueryClientProvider>
   );
 }
@@ -109,14 +143,20 @@ function commandIdentity(value: unknown): string {
   return identity;
 }
 
-function Harness({ listing: current, context: value, dependencies }: Readonly<{ listing: Listing | undefined; context: ConsoleContext; dependencies: ProductDependencies }>) {
-  const viewmodel = useProductPoolViewModel(true, current, value, dependencies, () => undefined);
+function Harness({
+  listing: current,
+  context: value,
+  dependencies,
+  requestStepup,
+  intent,
+}: Readonly<{ listing: Listing | undefined; context: ConsoleContext; dependencies: ProductDependencies; requestStepup: () => void; intent?: 'deliver' }>) {
+  const viewmodel = useProductPoolViewModel(true, current, value, dependencies, requestStepup, () => undefined, intent);
   return <PoolDialog viewmodel={viewmodel} onClose={() => undefined} />;
 }
 
 const pools: readonly Pool[] = [
-  { id: 'pool:current', kind: 'private', name: '当前商品池', status: 'active', version: 2, item_count: 3 },
-  { id: 'pool:target', kind: 'channel', name: '目标渠道池', status: 'active', version: 5, item_count: 6 },
+  { id: 'pool:current', scope_id: 'mall:one', kind: 'private', name: '当前商品池', status: 'active', version: 2, item_count: 3 },
+  { id: 'pool:target', scope_id: 'mall:one', kind: 'channel', name: '目标渠道池', status: 'active', version: 5, item_count: 6 },
 ];
 const listing: Listing = listingFixture({ pool_id: 'pool:current', status: 'unpublished' });
 const scope = { kind: 'mall', id: 'mall:one', tenant: 'tenant:one', name: '华东福利商城' } as const;
@@ -145,6 +185,14 @@ const globalContext: ConsoleContext = {
     ...context.session,
     permissions: ['catalog.pool.read', 'catalog.pool.manage', 'catalog.pool.allocate'],
     capabilities: [OP_CATALOG_POOLS_READ, OP_CATALOG_POOLS_ALLOCATE, OP_CATALOG_POOLS_ATTACH, OP_CATALOG_POOLS_DETACH],
+  },
+};
+const deliveryContext: ConsoleContext = {
+  ...context,
+  session: {
+    ...context.session,
+    permissions: ['catalog.pool.read', 'catalog.pool.manage'],
+    capabilities: [OP_CATALOG_POOLS_READ, OP_CATALOG_POOLS_ATTACH],
   },
 };
 const enterpriseScope = { kind: 'enterprise', id: 'enterprise:governed', tenant: 'tenant:one', name: '主打团' } as const;

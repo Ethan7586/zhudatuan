@@ -22,7 +22,7 @@ export function ProductHeader({ title, onCreate, onPools, onImport, canCreate, c
         <div>
           <p className="producteyebrow">商品运营</p>
           <h1>{title}</h1>
-          <p>统一维护商品主档、规格、价格、库存、上下架状态与商品池投放关系。</p>
+          <p>按“商品资料 → 商品池 → 商城投放 → 销售条件 → 上架”依次完成，系统会提示唯一下一步。</p>
         </div>
         <div className="productheroactionarea">
           <div className="productheroactions" role="group" aria-label="商品管理操作">
@@ -32,14 +32,18 @@ export function ProductHeader({ title, onCreate, onPools, onImport, canCreate, c
             </Button>
             <Button className="productaction" onPress={onPools} isDisabled={!canPools} {...(!canPools && poolReason !== undefined ? { 'aria-describedby': 'productactionreason' } : {})}>
               <ProductIcon name="inventory" />
-              商品池
+              管理商品池
             </Button>
             <Button className="productaction" tone="primary" onPress={onCreate} isDisabled={!canCreate} {...(!canCreate && createReason !== undefined ? { 'aria-describedby': 'productactionreason' } : {})}>
               <ProductIcon name="plus" />
-              新建商品
+              开始上架商品
             </Button>
           </div>
-          {reasons.length === 0 ? null : <p id="productactionreason" className="productheroreason">{reasons.join('；')}</p>}
+          {reasons.length === 0 ? null : (
+            <p id="productactionreason" className="productheroreason">
+              {reasons.join('；')}
+            </p>
+          )}
         </div>
         <p id="productcontractnotice" className="sr-only">
           商品池和商品写操作使用服务端受控操作、权限、版本校验与回执合同。

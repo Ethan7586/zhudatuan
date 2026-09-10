@@ -182,18 +182,6 @@
     border-radius: var(--sw-radius-sm);
     background: var(--sw-brand-faint);
   }
-  .productdrawerfooter {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .productdrawerfooter > button,
-  .productdrawerfooter > button:first-child,
-  .productdrawerfooter > button:last-child {
-    min-width: 0;
-  }
-  .productdrawerfooter > button:last-child {
-    grid-column: 1 / -1;
-  }
   .productrowactions button,
   .productselectionbar button,
   .productheroactions button,

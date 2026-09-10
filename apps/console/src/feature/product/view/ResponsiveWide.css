@@ -7,6 +7,9 @@
   }
 }
 @media (max-width: 1199px) {
+  .productpage {
+    transition: none;
+  }
   .productpage[data-drawer='open'] {
     width: 100%;
   }

@@ -5,6 +5,7 @@ import { useStepup } from '../../../entity/session/StepupContext';
 import { ProductPage } from '../view/ProductPage';
 import { useProductViewModel } from '../viewmodel/ProductViewModel';
 import { useProductImportViewModel } from '../viewmodel/ProductImportViewModel';
+import { useProductStockViewModel } from '../viewmodel/ProductStockViewModel';
 import '../view/Layout.css';
 import '../view/Table.css';
 import '../view/Pagination.css';
@@ -17,6 +18,7 @@ import '../view/DetailPanels.css';
 import '../view/Toolbar.css';
 import '../view/ProductImport.css';
 import '../view/ProductBatch.css';
+import '../view/ProductStock.css';
 import '../view/Responsive.css';
 
 export function Component() {
@@ -26,5 +28,6 @@ export function Component() {
   const requestStepup = useStepup().request;
   const viewmodel = useProductViewModel(context, dependencies.product, requestStepup);
   const importmodel = useProductImportViewModel(context, dependencies.product, requestStepup);
-  return <ProductPage title={title} viewmodel={viewmodel} importmodel={importmodel} />;
+  const stockmodel = useProductStockViewModel(context, dependencies.product, requestStepup, () => viewmodel.resource.refresh());
+  return <ProductPage title={title} viewmodel={viewmodel} importmodel={importmodel} stockmodel={stockmodel} />;
 }

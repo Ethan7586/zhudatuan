@@ -16,3 +16,6 @@ export type ProductDraft = OperationBodyFor<'CatalogProductsCreateInput'>;
 export type ProductImage = NonNullable<ProductDraft['image']>;
 export type ProductImageProgress = Readonly<{ stage: 'checking' | 'uploading'; processed: number; total: number }>;
 export type PoolAllocationKind = NonNullable<OperationBodyFor<'CatalogPoolsAllocateInput'>['kind']>;
+export type ProductStockPage = DeepReadonly<OperationOutputFor<'inventory.availability.read'>>;
+export type ProductStock = ProductStockPage['items'][number];
+export type ProductStockSource = ProductStock['sources'][number];

@@ -124,6 +124,6 @@ function ProductActionMessage({ action }: Readonly<{ action: ProductAction }>) {
         确认{presentProductAction(action.operation).verb}“{action.listing.title}”？该操作使用当前列表版本进行并发校验。
       </p>
     );
-  if (action.operation === OP_CATALOG_PRODUCTS_CREATE) return <p className="productflownote">商品先以草稿创建；商品规格与商品池投放由后续独立流程完成。</p>;
+  if (action.operation === OP_CATALOG_PRODUCTS_CREATE) return <p className="productflownote">保存后系统会自动返回上架主流程，并带你完成商品池关联、商城投放和销售条件。</p>;
   return null;
 }

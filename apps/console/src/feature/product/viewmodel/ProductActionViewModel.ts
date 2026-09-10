@@ -13,7 +13,7 @@ import { canUseOperation, requiredAssurance } from '../../../shared/security/Ope
 import { productCommand } from './ProductCommand';
 import { useProductCategoryViewModel } from './ProductCategoryViewModel';
 
-export function useProductActionViewModel(action: ProductAction | null, context: ConsoleContext, dependencies: ProductDependencies, requestStepup: () => void, onDone: () => void) {
+export function useProductActionViewModel(action: ProductAction | null, context: ConsoleContext, dependencies: ProductDependencies, requestStepup: () => void, onDone: (receipt: ProductActionReceipt) => void) {
   const listing = action !== null && 'listing' in action ? action.listing : undefined;
   const allowed = action === null || canUseOperation(context, action.operation);
   const [title, setTitle] = useState(listing?.title ?? '');
@@ -76,7 +76,7 @@ export function useProductActionViewModel(action: ProductAction | null, context:
         return dependencies.executeAction.execute(request, { operation: action.operation, listing: action.listing, expectedVersion: action.expectedVersion, body: { amountMinor: priceMinor(amount), currency: 'CNY' } });
       return dependencies.executeAction.execute(request, action);
     },
-    onSuccess: onDone,
+    onSuccess: (receipt) => onDone(receipt),
     onSettled: () => {
       setPhase('idle');
       setImageProgress(undefined);
@@ -137,6 +137,7 @@ export function useProductActionViewModel(action: ProductAction | null, context:
 }
 
 export type ProductActionViewModel = ReturnType<typeof useProductActionViewModel>;
+type ProductActionReceipt = Awaited<ReturnType<ProductDependencies['executeAction']['execute']>>;
 
 function priceMinor(value: string): number {
   const parsed = Number(value);

@@ -12,7 +12,9 @@ import type { ReadFacets } from '../../feature/product/application/ReadFacets';
 import type { ReadPools } from '../../feature/product/application/ReadPools';
 import type { ReadPoolTargets } from '../../feature/product/application/ReadPoolTargets';
 import type { ReadProduct } from '../../feature/product/application/ReadProduct';
+import type { ReadProductStock } from '../../feature/product/application/ReadProductStock';
 import type { ReadProducts } from '../../feature/product/application/ReadProducts';
+import type { RestockProduct } from '../../feature/product/application/RestockProduct';
 import type { UploadProductImage } from '../../feature/product/application/UploadProductImage';
 import type { ProductImportTemplate } from '../../feature/product/model/ProductImport';
 import type { ProductImportPort, ProductPort } from '../../feature/product/public';
@@ -22,6 +24,7 @@ export interface ProductDependencies {
   readonly gateway: ProductPort & ProductImportPort;
   readonly readProducts: ReadProducts;
   readonly readProduct: ReadProduct;
+  readonly readStock: ReadProductStock;
   readonly readPools: ReadPools;
   readonly readPoolTargets: ReadPoolTargets;
   readonly readCategories: ReadCategories;
@@ -32,6 +35,7 @@ export interface ProductDependencies {
   readonly executeBatch: ExecuteProductBatch;
   readonly changePool: ChangePool;
   readonly uploadImage: UploadProductImage;
+  readonly restock: RestockProduct;
   readonly executeAction: ExecuteProductAction;
   readonly createImport: CreateProductImport;
   readonly readImport: ReadProductImport;

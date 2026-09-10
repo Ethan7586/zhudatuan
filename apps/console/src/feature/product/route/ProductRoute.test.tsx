@@ -98,7 +98,9 @@ describe('Product route', () => {
         <QueryClientProvider client={client}>
           <DependencyProvider value={createConsoleDependencies()}>
             <ConsoleContextProvider value={context}>
-              <StepupProvider controller={stepup}><Component /></StepupProvider>
+              <StepupProvider controller={stepup}>
+                <Component />
+              </StepupProvider>
             </ConsoleContextProvider>
           </DependencyProvider>
         </QueryClientProvider>
@@ -126,7 +128,9 @@ describe('Product route', () => {
         <QueryClientProvider client={client}>
           <DependencyProvider value={createConsoleDependencies()}>
             <ConsoleContextProvider value={context}>
-              <StepupProvider controller={stepup}><Component /></StepupProvider>
+              <StepupProvider controller={stepup}>
+                <Component />
+              </StepupProvider>
             </ConsoleContextProvider>
           </DependencyProvider>
         </QueryClientProvider>
@@ -150,7 +154,9 @@ describe('Product route', () => {
         <QueryClientProvider client={client}>
           <DependencyProvider value={createConsoleDependencies()}>
             <ConsoleContextProvider value={context}>
-              <StepupProvider controller={stepup}><Component /></StepupProvider>
+              <StepupProvider controller={stepup}>
+                <Component />
+              </StepupProvider>
             </ConsoleContextProvider>
           </DependencyProvider>
         </QueryClientProvider>
@@ -162,9 +168,7 @@ describe('Product route', () => {
   });
 
   it('keeps an unmapped supplier row inspectable without requesting a nonexistent product detail', async () => {
-    server.use(
-      http.get('*/api/v1/catalog/listings', () => HttpResponse.json({ items: [sourceListingFixture()], count: 1 }))
-    );
+    server.use(http.get('*/api/v1/catalog/listings', () => HttpResponse.json({ items: [sourceListingFixture()], count: 1 })));
     renderRoute(context);
 
     await userEvent.setup().click(await screen.findByText('渠道福利礼盒'));
@@ -177,8 +181,8 @@ describe('Product route', () => {
   it('explains and disables every write entry for a read-only product operator', async () => {
     renderRoute(readonlyContext);
 
-    expect((await screen.findByRole('button', { name: '新建商品' })).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('button', { name: '商品池' }).hasAttribute('disabled')).toBe(true);
+    expect((await screen.findByRole('button', { name: '开始上架商品' })).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: '管理商品池' }).hasAttribute('disabled')).toBe(true);
     expect(screen.getByRole('button', { name: '导入商品' }).hasAttribute('disabled')).toBe(true);
     await screen.findByText('办公福利礼盒');
     await userEvent.setup().click(screen.getByRole('checkbox', { name: '选择 办公福利礼盒' }));
@@ -194,7 +198,9 @@ function renderRoute(value: ConsoleContext) {
       <QueryClientProvider client={client}>
         <DependencyProvider value={createConsoleDependencies()}>
           <ConsoleContextProvider value={value}>
-            <StepupProvider controller={stepup}><Component /></StepupProvider>
+            <StepupProvider controller={stepup}>
+              <Component />
+            </StepupProvider>
           </ConsoleContextProvider>
         </DependencyProvider>
       </QueryClientProvider>

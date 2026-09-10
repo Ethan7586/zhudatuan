@@ -4,6 +4,7 @@ import './Molecule.css';
 export interface JourneyStep {
   readonly title: string;
   readonly detail: string;
+  readonly state?: 'pending' | 'current' | 'complete' | 'blocked';
 }
 
 export interface JourneyGuideProps {
@@ -23,8 +24,8 @@ export function JourneyGuide({ eyebrow, title, steps, footer }: Readonly<Journey
       </header>
       <ol>
         {steps.map((step, index) => (
-          <li key={`${step.title}:${index}`}>
-            <span aria-hidden="true">{index + 1}</span>
+          <li key={`${step.title}:${index}`} data-state={step.state ?? 'pending'} {...(step.state === 'current' ? { 'aria-current': 'step' as const } : {})}>
+            <span aria-hidden="true">{step.state === 'complete' ? '✓' : index + 1}</span>
             <div>
               <strong>{step.title}</strong>
               <small>{step.detail}</small>

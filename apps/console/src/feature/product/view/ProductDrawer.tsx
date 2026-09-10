@@ -1,22 +1,15 @@
 import type { OperationId } from '@shop/contract';
-import {
-  OP_CATALOG_LISTINGS_POOL_SET,
-  OP_CATALOG_LISTINGS_PRICE_SET,
-  OP_CATALOG_LISTINGS_PUBLISH,
-  OP_CATALOG_LISTINGS_UNPUBLISH,
-  OP_CATALOG_PRODUCT_DETAIL_READ,
-  OP_CATALOG_PRODUCTS_ARCHIVE,
-  OP_CATALOG_PRODUCTS_UPDATE,
-} from '@shop/contract/ids';
-import { editableProductStatus } from '@shop/presentation';
+import { OP_CATALOG_LISTINGS_POOL_SET, OP_CATALOG_PRODUCT_DETAIL_READ } from '@shop/contract/ids';
 import { Dialog as AriaDialog, Heading, Modal, ModalOverlay } from 'react-aria-components';
 import { ProductDrawerPanels, type ProductDrawerTab } from './ProductDrawerPanels';
 import { ProductIcon } from './ProductIcon';
 import type { Listing, ProductDetail } from '../model/Product';
 import { StatusBadge } from './ProductTable';
 import type { ProductAction } from '../model/ProductAction';
-import { canChangeListingPublication, isManagedListing, isPublishedListing, productVersion } from '../model/ProductAction';
 import type { ProductDetailViewModel } from '../viewmodel/ProductDetailViewModel';
+import { productJourney } from '../model/ProductJourney';
+import { ProductJourney } from './ProductJourney';
+import { ProductDrawerActions } from './ProductDrawerActions';
 
 const tabs: readonly Readonly<{ key: ProductDrawerTab; label: string }>[] = Object.freeze([
   { key: 'overview', label: '概览' },
@@ -35,11 +28,13 @@ interface ProductDrawerProps {
   readonly onClose: () => void;
   readonly onDetail: (listing: Listing) => void;
   readonly onAction: (action: ProductAction) => void;
-  readonly onPool: (listing: Listing) => void;
+  readonly onPool: (listing: Listing, intent?: 'move' | 'deliver') => void;
+  readonly onInventory: (listing: Listing) => void;
+  readonly onQualification: (listing: Listing) => void;
   readonly canUse: (operation: OperationId) => boolean;
 }
 
-export function ProductDrawer({ listing, tab, detail, sections, onTab, onClose, onDetail, onAction, onPool, canUse }: ProductDrawerProps) {
+export function ProductDrawer({ listing, tab, detail, sections, onTab, onClose, onDetail, onAction, onPool, onInventory, onQualification, canUse }: ProductDrawerProps) {
   return (
     <ModalOverlay
       className="productdraweroverlay"
@@ -53,7 +48,20 @@ export function ProductDrawer({ listing, tab, detail, sections, onTab, onClose, 
         <AriaDialog className="productdrawercontent" aria-label={listing?.title ?? '商品详情'}>
           {({ close }) =>
             listing === undefined ? null : (
-              <ProductDrawerContent listing={listing} tab={tab} {...(detail === undefined ? {} : { detail })} sections={sections} onTab={onTab} onClose={close} onDetail={onDetail} onAction={onAction} onPool={onPool} canUse={canUse} />
+              <ProductDrawerContent
+                listing={listing}
+                tab={tab}
+                {...(detail === undefined ? {} : { detail })}
+                sections={sections}
+                onTab={onTab}
+                onClose={close}
+                onDetail={onDetail}
+                onAction={onAction}
+                onPool={onPool}
+                onInventory={onInventory}
+                onQualification={onQualification}
+                canUse={canUse}
+              />
             )
           }
         </AriaDialog>
@@ -72,6 +80,8 @@ function ProductDrawerContent({
   onDetail,
   onAction,
   onPool,
+  onInventory,
+  onQualification,
   canUse,
 }: Readonly<{
   listing: Listing;
@@ -82,22 +92,15 @@ function ProductDrawerContent({
   onClose: () => void;
   onDetail: (listing: Listing) => void;
   onAction: (action: ProductAction) => void;
-  onPool: (listing: Listing) => void;
+  onPool: (listing: Listing, intent?: 'move' | 'deliver') => void;
+  onInventory: (listing: Listing) => void;
+  onQualification: (listing: Listing) => void;
   canUse: (operation: OperationId) => boolean;
 }>) {
-  const published = isPublishedListing(listing.status);
-  const publicationOperation = published ? OP_CATALOG_LISTINGS_UNPUBLISH : OP_CATALOG_LISTINGS_PUBLISH;
-  const publicationAllowed = canUse(publicationOperation);
-  const canChangePublication = publicationAllowed && isManagedListing(listing) && canChangeListingPublication(listing.status, detail?.status);
-  const expectedVersion = sections.core.condition === 'ready' ? productVersion(detail?.version) : undefined;
   const hasProduct = typeof listing.product_id === 'string' && listing.product_id !== '';
   const canReadDetail = canUse(OP_CATALOG_PRODUCT_DETAIL_READ);
-  const canChangePrice = canUse(OP_CATALOG_LISTINGS_PRICE_SET);
-  const canArchive = canUse(OP_CATALOG_PRODUCTS_ARCHIVE);
-  const canEdit = canUse(OP_CATALOG_PRODUCTS_UPDATE);
   const canPool = canUse(OP_CATALOG_LISTINGS_POOL_SET);
-  const price = sections.pricing.condition === 'ready' ? sections.pricing.data?.prices.find((item) => item.scope === listing.scope_id && item.sku === listing.sku_id) : undefined;
-  const priceVersion = sections.pricing.condition === 'ready' ? (price === undefined ? 0 : productVersion(price.priceVersion)) : undefined;
+  const journey = productJourney(listing);
   return (
     <>
       <header className="productdrawerheader">
@@ -124,10 +127,13 @@ function ProductDrawerContent({
             aria-label="打开完整商品详情"
             disabled={!hasProduct || !canReadDetail}
             title={!hasProduct ? '渠道商品尚未映射到商品主档' : !canReadDetail ? '当前账号没有查看完整商品详情的权限。' : undefined}
-            onClick={() => onDetail(listing)}
+            onClick={() => {
+              onClose();
+              onDetail(listing);
+            }}
           >
             <ProductIcon name="eye" />
-            <span>打开完整详情</span>
+            <span>完整商品详情</span>
           </button>
           <button className="productdrawerclose" type="button" aria-label="关闭商品详情" onClick={onClose}>
             <ProductIcon name="close" />
@@ -142,62 +148,32 @@ function ProductDrawerContent({
         ))}
       </div>
       <div id="productdrawerpanel" className="productdrawerbody" role="tabpanel" aria-labelledby={`producttab-${tab}`}>
-        <ProductDrawerPanels tab={tab} listing={listing} detail={detail} sections={sections} onPool={onPool} canPool={canPool} />
+        {tab === 'overview' ? <ProductJourney journey={journey} /> : null}
+        <ProductDrawerPanels
+          tab={tab}
+          listing={listing}
+          detail={detail}
+          sections={sections}
+          onPool={(target) => {
+            onClose();
+            onPool(target, 'move');
+          }}
+          canPool={canPool}
+        />
       </div>
-      <footer className="productdrawerfooter">
-        <button type="button" onClick={onClose}>
-          关闭
-        </button>
-        <button
-          type="button"
-          disabled={!canChangePublication}
-          title={!publicationAllowed ? '当前账号没有上架或下架商品的权限。' : !canChangePublication ? (!isManagedListing(listing) ? '渠道商品尚未映射，不能直接上架或下架' : '请先把商品状态设为启用') : undefined}
-          onClick={() => {
-            onClose();
-            onAction({ operation: publicationOperation, listing });
-          }}
-        >
-          {published ? '下架' : '上架'}
-        </button>
-        <button
-          type="button"
-          disabled={priceVersion === undefined || !canChangePrice}
-          title={!canChangePrice ? '当前账号没有设置商品价格的权限。' : priceVersion === undefined ? '正在读取当前售价版本' : undefined}
-          onClick={() => {
-            if (priceVersion === undefined) return;
-            onClose();
-            onAction({ operation: OP_CATALOG_LISTINGS_PRICE_SET, listing, expectedVersion: priceVersion });
-          }}
-        >
-          设置价格
-        </button>
-        <button
-          type="button"
-          disabled={expectedVersion === undefined || !hasProduct || !canArchive}
-          title={!hasProduct ? '渠道商品尚未映射到商品主档' : !canArchive ? '当前账号没有归档商品的权限。' : expectedVersion === undefined ? '正在读取商品主档版本' : undefined}
-          onClick={() => {
-            if (expectedVersion === undefined) return;
-            onClose();
-            onAction({ operation: OP_CATALOG_PRODUCTS_ARCHIVE, listing, expectedVersion });
-          }}
-        >
-          归档
-        </button>
-        <button
-          className="productactionprimary"
-          type="button"
-          disabled={expectedVersion === undefined || !hasProduct || !canEdit}
-          title={!hasProduct ? '渠道商品尚未映射到商品主档' : !canEdit ? '当前账号没有编辑商品的权限。' : expectedVersion === undefined ? '正在读取商品主档版本' : undefined}
-          onClick={() => {
-            if (expectedVersion === undefined) return;
-            onClose();
-            onAction({ operation: OP_CATALOG_PRODUCTS_UPDATE, listing, status: editableProductStatus(detail?.status), expectedVersion });
-          }}
-        >
-          <ProductIcon name="edit" />
-          编辑商品
-        </button>
-      </footer>
+      <ProductDrawerActions
+        listing={listing}
+        {...(detail === undefined ? {} : { detail })}
+        sections={sections}
+        journey={journey}
+        onClose={onClose}
+        onDetail={onDetail}
+        onAction={onAction}
+        onPool={onPool}
+        onInventory={onInventory}
+        onQualification={onQualification}
+        canUse={canUse}
+      />
     </>
   );
 }

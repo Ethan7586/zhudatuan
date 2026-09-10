@@ -5,20 +5,21 @@ import type { Pool } from '../model/Product';
 import { isManagedListing } from '../model/ProductAction';
 import { ProductIcon } from './ProductIcon';
 import { ProductFlowModal } from './ProductFlowModal';
-import { poolGuidance, poolSubmitLabel } from './PoolPresentation';
+import { poolDialogTitle, poolGuidance, poolSubmitLabel } from './PoolPresentation';
+import { PoolResult } from './PoolResult';
 
 export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: ProductPoolViewModel; onClose: () => void }>) {
   const listingMode = viewmodel.listing !== undefined;
   const listingPool = viewmodel.listing !== undefined && isManagedListing(viewmodel.listing) ? viewmodel.listing.pool_id : null;
   const listingPoolName = listingPool === null ? null : (viewmodel.pools.find((pool) => pool.id === listingPool)?.name ?? '当前商品池');
-  const targetName = viewmodel.malls.find((mall) => mall.id === viewmodel.target)?.name ?? '所选商城';
   const sourceLabel = listingMode ? '目标商品池' : '来源商品池';
-  const needsPool = viewmodel.operation !== 'remove';
+  const needsPool = viewmodel.operation !== 'remove' && viewmodel.operation !== 'deliver';
+  const title = poolDialogTitle(viewmodel.listing, viewmodel.operation, listingPool);
   return (
-    <ProductFlowModal open={viewmodel.open} label={listingMode ? '商品投池' : '商品池管理'} onClose={onClose} dismissable={!viewmodel.submitting} className="productpooldialog">
+    <ProductFlowModal open={viewmodel.open} label={title} onClose={onClose} dismissable={!viewmodel.submitting} className="productpooldialog">
       <form
         className="productflowcontent"
-        aria-label={listingMode ? '商品投池' : '商品池管理'}
+        aria-label={title}
         onSubmit={(event) => {
           event.preventDefault();
           viewmodel.submit();
@@ -26,8 +27,8 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
       >
         <header>
           <div>
-            <p>{listingMode ? '商品投放' : '商品池治理'}</p>
-            <h2>{listingMode ? '商品投池' : '商品池管理'}</h2>
+            <p>{listingMode ? '商品上架主流程' : '商品池治理'}</p>
+            <h2>{title}</h2>
           </div>
           <Button className="productflowclose" tone="quiet" onPress={onClose} aria-label="关闭商品池窗口">
             <ProductIcon name="close" />
@@ -48,25 +49,27 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
               <small>商品池负责组织和分发供给，本身不会绕过价格、库存、资格与上架校验。</small>
             </section>
           )}
-          <PoolTasks listingMode={listingMode} listingPool={listingPool} viewmodel={viewmodel} />
+          {viewmodel.guided ? null : <PoolTasks listingMode={listingMode} listingPool={listingPool} viewmodel={viewmodel} />}
           {needsPool ? (
             <fieldset className="productpoolfield">
-              <legend>2. 选择{sourceLabel}</legend>
+              <legend>
+                {viewmodel.guided ? '1' : '2'}. 选择{sourceLabel}
+              </legend>
               <p>{poolGuidance(viewmodel.operation)}</p>
               <section className="productpoolsummary" role="group" aria-label={sourceLabel}>
                 {viewmodel.loading ? (
                   <p>正在读取商品池…</p>
-                ) : viewmodel.pools.length === 0 ? (
-                  <p>当前范围暂无可用商品池。</p>
+                ) : viewmodel.options.length === 0 ? (
+                  <p>{listingMode ? '当前商品范围暂无可用商品池。' : '当前管理范围暂无可用商品池，请先准备本级总池。'}</p>
                 ) : (
-                  viewmodel.pools.map((pool) => <PoolCard key={pool.id} pool={pool} selected={viewmodel.selected?.id === pool.id} disabled={listingMode && pool.id === listingPool} onSelect={viewmodel.select} />)
+                  viewmodel.options.map((pool) => <PoolCard key={pool.id} pool={pool} selected={viewmodel.selected?.id === pool.id} disabled={listingMode && pool.id === listingPool} onSelect={viewmodel.select} />)
                 )}
               </section>
             </fieldset>
           ) : null}
-          {!listingMode && viewmodel.operation !== 'allocate' ? (
+          {(!listingMode && viewmodel.operation !== 'allocate') || viewmodel.operation === 'deliver' ? (
             <label>
-              3. 目标商城
+              {viewmodel.guided ? '1. 选择投放商城' : '3. 目标商城'}
               <select value={viewmodel.target} onChange={(event) => viewmodel.setTarget(event.target.value)}>
                 {viewmodel.malls.map((scope) => (
                   <option key={scope.id} value={scope.id}>
@@ -92,7 +95,15 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
               </label>
             </>
           ) : null}
-          <PoolResult operation={viewmodel.operation} listingTitle={viewmodel.listing?.title} currentPoolName={listingPoolName} selectedPool={viewmodel.selected} targetName={targetName} kind={viewmodel.kind} name={viewmodel.name} />
+          <PoolResult
+            operation={viewmodel.operation}
+            listingTitle={viewmodel.listing?.title}
+            currentPoolName={listingPoolName}
+            selectedPool={viewmodel.selected}
+            targetName={viewmodel.targetName}
+            kind={viewmodel.kind}
+            name={viewmodel.name}
+          />
           {viewmodel.error === undefined ? null : (
             <p role="alert" className="productflowerror">
               {viewmodel.error}
@@ -161,50 +172,5 @@ function PoolCard({ pool, selected, disabled, onSelect }: Readonly<{ pool: Pool;
         {presentProductPoolKind(pool.kind)} · {pool.item_count} 件商品{disabled ? ' · 当前所在' : ''}
       </span>
     </Button>
-  );
-}
-
-function PoolResult({
-  operation,
-  listingTitle,
-  currentPoolName,
-  selectedPool,
-  targetName,
-  kind,
-  name,
-}: Readonly<{
-  operation: PoolMode;
-  listingTitle: string | undefined;
-  currentPoolName: string | null;
-  selectedPool: Pool | undefined;
-  targetName: string;
-  kind: ProductPoolViewModel['kind'];
-  name: string;
-}>) {
-  const selectedName = selectedPool?.name ?? '尚未选择的商品池';
-  let title = '';
-  let description = '';
-  if (operation === 'move') {
-    title = `“${listingTitle ?? '当前商品'}”将移入“${selectedName}”`;
-    description = '仅草稿或已下架商品可以调整商品池；系统会校验当前版本，避免覆盖他人的修改。';
-  } else if (operation === 'remove') {
-    title = `“${listingTitle ?? '当前商品'}”将移出“${currentPoolName ?? '当前商品池'}”`;
-    description = '移出后商品不再属于该池；如需销售，请重新投池并完成价格、库存、资格和上架检查。';
-  } else if (operation === 'allocate') {
-    title = `将在“${targetName}”创建“${name.trim() || '尚未命名的商品池'}”`;
-    description = `系统会复制“${selectedName}”中的 ${selectedPool?.item_count ?? 0} 件商品，创建独立的${kind === 'markup' ? '加价商品池' : '渠道商品池'}；来源池不会被修改。`;
-  } else if (operation === 'attach') {
-    title = `“${selectedName}”将投放到“${targetName}”`;
-    description = '目标商城将可以使用池内商品；商品仍需具备有效价格、库存和资格，并完成上架后才会对消费者可见。';
-  } else {
-    title = `“${targetName}”将停止使用“${selectedName}”`;
-    description = '该商城将不再从此池获得商品供给；本次操作不会改动来源池，也不会删除历史订单。';
-  }
-  return (
-    <section className="productpoolresult" aria-label="执行结果预览" aria-live="polite">
-      <span>执行后</span>
-      <strong>{title}</strong>
-      <p>{description}</p>
-    </section>
   );
 }

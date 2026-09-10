@@ -1,6 +1,7 @@
 import { createRequestContext } from '@shop/sdk/context';
 import { createFetchCatalog, createFetchCatalogFacetsRead, createFetchCatalogListingsRead, createFetchCatalogPoolsRead, createFetchCatalogProductDetailRead } from '@shop/sdk/catalog';
 import { createFetchRuntime } from '@shop/sdk/runtime';
+import { createFetchInventoryAvailabilityRead } from '@shop/sdk/inventory';
 import type { Listing, Pool, PoolAllocationKind, ProductBatchAction, ProductDetailSection, ProductDraft } from '../model/Product';
 import type { ProductImport } from '../model/ProductImport';
 import type { ProductCommand, ProductImportPort, ProductPort, ProductQuery, ProductRequest } from '../public';
@@ -8,12 +9,7 @@ import { ProductMapper } from './ProductMapper';
 import { ImportUploadGateway } from '../../../shared/import/ImportUploadGateway';
 import { ProductImageUploader } from './ProductImageUploader';
 import { productBatchItems, productId, productVersion } from './ProductCommandValue';
-
-export interface ProductGatewayConfig {
-  readonly apiBaseUrl: string;
-  readonly clientVersion: string;
-  readonly catalogVersion: string;
-}
+import type { ProductGatewayConfig } from './ProductGatewayConfig';
 
 export class ProductGateway implements ProductPort, ProductImportPort {
   private readonly catalog;
@@ -23,6 +19,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
   private readonly pools;
   private readonly runtime;
   private readonly images;
+  private readonly availability;
 
   constructor(
     private readonly config: ProductGatewayConfig,
@@ -36,6 +33,7 @@ export class ProductGateway implements ProductPort, ProductImportPort {
     this.pools = createFetchCatalogPoolsRead(config.apiBaseUrl);
     this.runtime = createFetchRuntime(config.apiBaseUrl);
     this.images = new ProductImageUploader(this.catalog, (request, signal) => this.command(request, undefined, signal));
+    this.availability = createFetchInventoryAvailabilityRead(config.apiBaseUrl);
   }
 
   async readProducts(request: ProductRequest, query: ProductQuery, signal: AbortSignal) {
@@ -70,6 +68,10 @@ export class ProductGateway implements ProductPort, ProductImportPort {
 
   async readCategories(request: ProductRequest, signal: AbortSignal) {
     return this.mapper.categories(await this.catalog.categoriesRead({ query: { limit: 100 } }, this.context(request, signal)));
+  }
+
+  async readStock(request: ProductRequest, sku: string, signal?: AbortSignal) {
+    return this.availability({ query: { sku } }, this.context(request, signal));
   }
 
   async createCategory(request: ProductCommand, body: Readonly<{ name: string; parent: string | null; sort: number }>) {

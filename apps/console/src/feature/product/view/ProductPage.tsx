@@ -2,6 +2,7 @@ import { WorkspacePage } from '@shop/design';
 import type { ProductViewModel } from '../viewmodel/ProductViewModel';
 import { OP_CATALOG_PRODUCTS_CREATE } from '@shop/contract/ids';
 import type { ProductImportViewModel } from '../viewmodel/ProductImportViewModel';
+import type { ProductStockViewModel } from '../viewmodel/ProductStockViewModel';
 import { PoolDialog } from './PoolDialog';
 import { ProductColumnSettings } from './ProductColumnSettings';
 import { ProductDialog } from './ProductDialog';
@@ -14,8 +15,9 @@ import { ProductImportDialog } from './ProductImportDialog';
 import { ProductBatchDialog } from './ProductBatchDialog';
 import { FilterDisclosure } from './FilterDisclosure';
 import { presentProductStatus } from './ProductStatus';
+import { ProductStockDialog } from './ProductStockDialog';
 
-export function ProductPage({ title, viewmodel, importmodel }: Readonly<{ title: string; viewmodel: ProductViewModel; importmodel: ProductImportViewModel }>) {
+export function ProductPage({ title, viewmodel, importmodel, stockmodel }: Readonly<{ title: string; viewmodel: ProductViewModel; importmodel: ProductImportViewModel; stockmodel: ProductStockViewModel }>) {
   const drawerOpen = viewmodel.drawer.listing !== undefined && viewmodel.action.action === null;
   return (
     <WorkspacePage
@@ -74,6 +76,8 @@ export function ProductPage({ title, viewmodel, importmodel }: Readonly<{ title:
             onDetail={viewmodel.actions.openDetail}
             onAction={viewmodel.actions.openAction}
             onPool={viewmodel.actions.openPools}
+            onInventory={stockmodel.actions.open}
+            onQualification={viewmodel.actions.openQualification}
             canUse={viewmodel.access.canOperation}
           />
           <ProductColumnSettings open={viewmodel.columnsopen} visible={viewmodel.columns} onChange={viewmodel.actions.toggleColumn} onClose={viewmodel.actions.closeColumns} />
@@ -81,6 +85,7 @@ export function ProductPage({ title, viewmodel, importmodel }: Readonly<{ title:
           <PoolDialog viewmodel={viewmodel.pool} onClose={viewmodel.actions.closePools} />
           <ProductImportDialog viewmodel={importmodel} />
           <ProductBatchDialog viewmodel={viewmodel.batch} />
+          <ProductStockDialog viewmodel={stockmodel} />
         </>
       }
     >

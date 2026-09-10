@@ -1,10 +1,10 @@
 import { presentError, resourceCondition, resourceState } from '@shop/presentation';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { OP_CATALOG_POOLS_ATTACH, OP_QUALIFICATION_CENTER_READ } from '@shop/contract/ids';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import type { ProductDependencies } from '../../../app/Dependencies';
 import type { ConsoleContext } from '../../../entity/session/ConsoleSession';
-import { defineQueryState, integerQuery, optionalQuery, stringQuery } from '../../../shared/query/QueryState';
 import { usePreference } from '../../../shared/preference/PreferenceState';
 import type { Listing } from '../model/Product';
 import type { ProductAction } from '../model/ProductAction';
@@ -12,30 +12,18 @@ import { toggleSelection, visibleSelection } from '../model/ProductSelection';
 import type { ProductFilter } from '../model/ProductFilter';
 import { EMPTY_PRODUCT_FILTER } from '../model/ProductFilter';
 import type { ProductColumnKey } from '../view/ProductTable';
-import { useProductActionViewModel } from './ProductActionViewModel';
 import { useProductBatchViewModel } from './ProductBatchViewModel';
 import { useProductDrawerViewModel } from './ProductDrawerViewModel';
-import { useProductPoolViewModel } from './ProductPoolViewModel';
-import { productDetailKey, productFacetKey, productKey } from './ProductQueryKey';
+import type { PoolMode } from './ProductPoolViewModel';
+import { productFacetKey, productKey } from './ProductQueryKey';
 import { PRODUCT_COLUMN_PREFERENCE } from './ProductColumns';
 import { scopeRoutePath } from '../../../shared/url/ScopePath';
 import { normalizeProductFacets } from './ProductFacetMapper';
 import { productAccess } from './ProductAccess';
-
-const productQuery = defineQueryState({
-  q: stringQuery('', 255),
-  category: stringQuery('', 255),
-  supplier: stringQuery('', 255),
-  mall: stringQuery('', 255),
-  status: stringQuery('', 64),
-  limit: integerQuery(50, [20, 50, 100]),
-  page: integerQuery(1),
-  cursor: optionalQuery(),
-  selected: optionalQuery(255),
-});
+import { productQuery } from './ProductQueryState';
+import { useProductWorkflows } from './ProductWorkflows';
 
 export function useProductViewModel(context: ConsoleContext, dependencies: ProductDependencies, requestStepup: () => void) {
-  const client = useQueryClient();
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
   const url = productQuery.read(search);
@@ -49,11 +37,7 @@ export function useProductViewModel(context: ConsoleContext, dependencies: Produ
   const filterfacets = useMemo(() => normalizeProductFacets(facets.data, context), [context, facets.data]);
   const rows = useMemo(() => query.data?.items ?? [], [query.data?.items]);
   const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
-  const [action, setAction] = useState<ProductAction | null>(null);
-  const [poolsopen, setPoolsOpen] = useState(false);
-  const [poollisting, setPoolListing] = useState<Listing>();
   const [columnsopen, setColumnsOpen] = useState(false);
-  const [message, setMessage] = useState<string>();
   const preference = useMemo(
     () =>
       Object.freeze({
@@ -72,8 +56,19 @@ export function useProductViewModel(context: ConsoleContext, dependencies: Produ
   const access = productAccess(context);
   const selectedid = url.selected;
   const selectedlisting = rows.find((item) => item.id === selectedid);
+  const workflows = useProductWorkflows(
+    context,
+    dependencies,
+    requestStepup,
+    rows,
+    limit,
+    () => void query.refetch(),
+    () => {
+      cursors.current = new Map([[1, undefined]]);
+    }
+  );
   const batch = useProductBatchViewModel(context, dependencies, requestStepup, (receipt) => {
-    setMessage(receipt.failed > 0 ? `批量操作完成：${receipt.count} 项成功，${receipt.failed} 项失败；可在收据中仅重试失败项。` : `批量操作完成：${receipt.count} 项全部成功。`);
+    workflows.commands.notify(receipt.failed > 0 ? `批量操作完成：${receipt.count} 项成功，${receipt.failed} 项失败；可在收据中仅重试失败项。` : `批量操作完成：${receipt.count} 项全部成功。`);
     setSelected(new Set(receipt.items.filter(({ state: itemState }) => itemState === 'failed').map(({ id }) => id)));
     void query.refetch();
   });
@@ -83,21 +78,6 @@ export function useProductViewModel(context: ConsoleContext, dependencies: Produ
     setSelected(new Set());
     setSearch(next);
   };
-  const closeAction = () => setAction(null);
-  const actionvm = useProductActionViewModel(action, context, dependencies, requestStepup, () => {
-    const productid = action !== null && 'listing' in action && typeof action.listing.product_id === 'string' ? action.listing.product_id : undefined;
-    closeAction();
-    setMessage('商品操作已完成');
-    void query.refetch();
-    if (productid !== undefined) void client.invalidateQueries({ queryKey: productDetailKey(context, productid) });
-  });
-  const poolvm = useProductPoolViewModel(poolsopen, poollisting, context, dependencies, () => {
-    setPoolsOpen(false);
-    setPoolListing(undefined);
-    setMessage(poollisting === undefined ? '商品池操作已完成' : '商品投池关系已更新');
-    void query.refetch();
-    if (poollisting !== undefined && typeof poollisting.product_id === 'string') void client.invalidateQueries({ queryKey: productDetailKey(context, poollisting.product_id) });
-  });
   const drawervm = useProductDrawerViewModel(selectedlisting, context, dependencies);
   const error = query.error === null ? undefined : presentError(query.error).message;
   const faceterror = facets.error === null ? undefined : presentError(facets.error).message;
@@ -124,12 +104,12 @@ export function useProductViewModel(context: ConsoleContext, dependencies: Produ
     columns,
     selected: visible,
     selectedid,
-    message,
+    message: workflows.message,
     access,
     batch,
     drawer: drawervm,
-    action: actionvm,
-    pool: poolvm,
+    action: workflows.action,
+    pool: workflows.pool,
     columnsopen,
     actions: Object.freeze({
       changeFilter: setFilterDraft,
@@ -170,17 +150,17 @@ export function useProductViewModel(context: ConsoleContext, dependencies: Produ
           rows.filter((row) => visible.has(row.id))
         ),
       openAction: (value: ProductAction | null) => {
-        if (value === null || access.canOperation(value.operation)) setAction(value);
+        if (value === null || access.canOperation(value.operation)) workflows.commands.openAction(value);
       },
-      closeAction,
-      openPools: (listing?: Listing) => {
-        if (listing === undefined ? !access.canManagePools : !access.canMoveListing) return;
-        setPoolListing(listing);
-        setPoolsOpen(true);
+      closeAction: workflows.commands.closeAction,
+      openPools: (listing?: Listing, intent?: PoolMode) => {
+        if (listing === undefined ? !access.canManagePools : intent === 'deliver' ? !access.canOperation(OP_CATALOG_POOLS_ATTACH) : !access.canMoveListing) return;
+        workflows.commands.openPools(listing, intent);
       },
-      closePools: () => {
-        setPoolsOpen(false);
-        setPoolListing(undefined);
+      closePools: workflows.commands.closePools,
+      openQualification: (_listing: Listing) => {
+        if (!access.canOperation(OP_QUALIFICATION_CENTER_READ)) return;
+        void navigate(scopeRoutePath(context.scope, 'consolequalification'));
       },
       openColumns: () => setColumnsOpen(true),
       closeColumns: () => setColumnsOpen(false),

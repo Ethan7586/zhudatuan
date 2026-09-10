@@ -61,8 +61,10 @@ import { ReadCategories } from '../../feature/product/application/ReadCategories
 import { ReadPools } from '../../feature/product/application/ReadPools';
 import { ReadPoolTargets } from '../../feature/product/application/ReadPoolTargets';
 import { ReadProduct } from '../../feature/product/application/ReadProduct';
+import { ReadProductStock } from '../../feature/product/application/ReadProductStock';
 import { ReadProductImport } from '../../feature/product/application/ReadProductImport';
 import { ReadProducts } from '../../feature/product/application/ReadProducts';
+import { RestockProduct } from '../../feature/product/application/RestockProduct';
 import { UploadProductImage } from '../../feature/product/application/UploadProductImage';
 import type { ProductImportPort, ProductPort } from '../../feature/product/public';
 import { CancelTask } from '../../feature/task/application/CancelTask';
@@ -78,6 +80,7 @@ import { BrowserPreference } from '../../shared/preference/BrowserPreference';
 import { ScopeGateway } from '../../shared/scope/ScopeGateway';
 import type { ImportRegistryPort } from '../registry/ImportRegistry';
 import type { CoreDependencies } from './CoreDependency';
+import { InventoryRestockWorkflow } from './InventoryRestockWorkflow';
 import { lazyPort } from './LazyPort';
 export * from './CoreDependency';
 export type { ProductDependencies } from './ProductDependencies';
@@ -96,6 +99,9 @@ export function createCoreDependencies(imports: ImportRegistryPort): CoreDepende
   const scopes = new ScopeGateway(appConfig.apiBaseUrl);
   const task = lazyPort<TaskPort>(() => import('../../feature/task/infrastructure/TaskGateway').then(({ TaskGateway }) => new TaskGateway(appConfig.apiBaseUrl)));
   const preferences = new BrowserPreference();
+  const readTasks = new ReadTasks(task);
+  const createTaskImport = new CreateImport(task, imports);
+  const confirmTaskImport = new ConfirmImport(task);
   return Object.freeze({
     cockpit: Object.freeze({ port: cockpit, read: new ReadCockpit(cockpit) }),
     control: Object.freeze({ port: control, read: new ReadControl(control) }),
@@ -160,6 +166,7 @@ export function createCoreDependencies(imports: ImportRegistryPort): CoreDepende
       gateway: product,
       readProducts: new ReadProducts(product),
       readProduct: new ReadProduct(product),
+      readStock: new ReadProductStock(product),
       readPools: new ReadPools(product),
       readPoolTargets: new ReadPoolTargets(scopes),
       readCategories: new ReadCategories(product),
@@ -170,6 +177,7 @@ export function createCoreDependencies(imports: ImportRegistryPort): CoreDepende
       executeBatch: new ExecuteProductBatch(product),
       changePool: new ChangePool(product),
       uploadImage: new UploadProductImage(product),
+      restock: new RestockProduct(new InventoryRestockWorkflow(createTaskImport, readTasks, confirmTaskImport, createIdempotencyKey)),
       executeAction: new ExecuteProductAction(product),
       createImport: new CreateProductImport(product),
       readImport: new ReadProductImport(product),
@@ -181,11 +189,11 @@ export function createCoreDependencies(imports: ImportRegistryPort): CoreDepende
     task: Object.freeze({
       registry: imports,
       port: task,
-      list: new ReadTasks(task),
+      list: readTasks,
       readProviders: new ReadImportProviders(task),
-      createImport: new CreateImport(task, imports),
+      createImport: createTaskImport,
       cancel: new CancelTask(task),
-      confirm: new ConfirmImport(task),
+      confirm: confirmTaskImport,
       retry: new RetryTask(task),
       createIdentity: createIdempotencyKey,
     }),
