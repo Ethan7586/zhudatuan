@@ -1,4 +1,21 @@
+import { chineseProviderLabel } from '@shop/presentation';
 import type { ChannelConnection } from '../model/Channel';
+
+const regions: Readonly<Record<string, string>> = Object.freeze({
+  cn: '中国大陆',
+  china: '中国大陆',
+  global: '全球',
+  hk: '中国香港',
+  overseas: '海外',
+});
+
+export function channelRegionLabel(region: string): string {
+  return regions[region.toLowerCase()] ?? '已配置服务区域';
+}
+
+export function channelConnectionLabel(connection: Pick<ChannelConnection, 'provider' | 'region'>): string {
+  return `${chineseProviderLabel(connection.provider)} · ${channelRegionLabel(connection.region)}`;
+}
 
 const healthMessages: Readonly<Record<string, string>> = Object.freeze({
   CIRCUIT_OPEN: '该服务商的保护机制已暂时断开请求，请稍后重新测试。',

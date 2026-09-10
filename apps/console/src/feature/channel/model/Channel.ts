@@ -44,6 +44,8 @@ export interface ChannelSync {
   readonly type: 'sync';
   readonly id: string;
   readonly connection: string;
+  readonly provider: string;
+  readonly region: string;
   readonly kind: SyncKind;
   readonly state: SyncState;
   readonly cursor: string | null;

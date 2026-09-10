@@ -5,6 +5,7 @@ import type { ChannelConnection, ChannelOperation, ChannelSync } from '../model/
 import { canCancel, canReplay, connectionActions } from '../model/ChannelPolicy';
 import type { ChannelViewModel } from '../viewmodel/ChannelViewModel';
 import { ConnectionHealth } from './ConnectionHealth';
+import { channelConnectionLabel, channelRegionLabel } from './ChannelPresentation';
 
 export function ChannelTable({ model }: Readonly<{ model: ChannelViewModel }>) {
   if (model.view === 'connections') return <DataTable caption="渠道连接" rows={model.rows.filter(isConnection)} columns={connectionColumns(model)} rowKey={(row) => row.id} />;
@@ -20,7 +21,7 @@ function connectionColumns(model: ChannelViewModel): readonly DataColumn<Channel
       render: (row) => (
         <>
           <strong>{chineseProviderLabel(row.provider)}</strong>
-          <small>{row.id}</small>
+          <small>{channelRegionLabel(row.region)}</small>
         </>
       ),
     },
@@ -58,9 +59,7 @@ function connectionColumns(model: ChannelViewModel): readonly DataColumn<Channel
       render: (row) => (
         <>
           <span>{row.hasSecret ? '密钥引用已配置' : '无远程密钥'}</span>
-          <small>
-            {row.region} · Contract {row.contractVersion}
-          </small>
+          <small>{channelRegionLabel(row.region)} · 凭据仅存服务端</small>
         </>
       ),
     },
@@ -107,11 +106,11 @@ function syncColumns(model: ChannelViewModel): readonly DataColumn<ChannelSync>[
       render: (row) => (
         <>
           <strong>{chineseDomainLabel(row.kind)}</strong>
-          <small>{row.id}</small>
+          <small>{channelConnectionLabel(row)}</small>
         </>
       ),
     },
-    { key: 'connection', label: '连接', render: (row) => row.connection },
+    { key: 'connection', label: '渠道连接', render: (row) => channelConnectionLabel(row) },
     {
       key: 'state',
       label: '状态',
@@ -141,7 +140,7 @@ function syncColumns(model: ChannelViewModel): readonly DataColumn<ChannelSync>[
       render: (row) => (
         <>
           {formatDate(row.watermark)}
-          <small>{row.cursor ? `游标 ${row.cursor}` : '无续传游标'}</small>
+          <small>{row.cursor ? '可从上次进度继续' : '首次完整同步'}</small>
         </>
       ),
     },
@@ -151,7 +150,7 @@ function syncColumns(model: ChannelViewModel): readonly DataColumn<ChannelSync>[
       render: (row) => (
         <>
           {formatDate(row.completedAt ?? row.startedAt)}
-          <small>v{row.version}</small>
+          <small>服务端状态已同步</small>
         </>
       ),
     },
@@ -176,7 +175,7 @@ function operationColumns(model: ChannelViewModel): readonly DataColumn<ChannelO
       render: (row) => (
         <>
           <strong>{chineseProviderLabel(row.provider)}</strong>
-          <small>{row.kind}</small>
+          <small>{chineseDomainLabel(row.kind, '渠道操作')}</small>
         </>
       ),
     },
@@ -185,8 +184,8 @@ function operationColumns(model: ChannelViewModel): readonly DataColumn<ChannelO
       label: '业务引用',
       render: (row) => (
         <>
-          <span>{row.internalReference}</span>
-          <small>{row.externalReference ?? '无外部回执'}</small>
+          <span>{row.externalReference ?? '等待服务商回执'}</span>
+          <small>{row.externalReference ? '服务商业务回执' : '平台内部引用已安全保存'}</small>
         </>
       ),
     },

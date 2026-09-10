@@ -13,8 +13,7 @@ import { channelOperation, validateChannelAction } from './ChannelValidation';
 export function useChannelActionViewModel(action: ChannelAction | null, context: ConsoleContext, dependencies: ChannelDependencies, requestStepup: () => void, done: (command: ChannelCommand) => void) {
   const providers = dependencies.registry.all();
   const [provider, setProvider] = useState(providers[0]?.id ?? '');
-  const [configuration, setConfiguration] = useState<ConnectionValues>(() => providers[0] ? initialConnectionValues(providers[0]) : Object.freeze({}));
-  const [connection, setConnection] = useState('');
+  const [configuration, setConfiguration] = useState<ConnectionValues>(() => (providers[0] ? initialConnectionValues(providers[0]) : Object.freeze({})));
   const [syncKind, setSyncKind] = useState<SyncKind>('catalog');
   const [cursor, setCursor] = useState('');
   const [start, setStart] = useState('');
@@ -26,11 +25,9 @@ export function useChannelActionViewModel(action: ChannelAction | null, context:
   const [identity, setIdentity] = useState(dependencies.createIdentity);
   const actionIdentity = identify(action);
   const initialProvider = action?.kind === 'update' ? action.connection.provider : (providers[0]?.id ?? '');
-  const initialConnection = action?.kind === 'startsync' ? (action.connection?.id ?? '') : '';
   useEffect(() => {
     setProvider(initialProvider);
     setConfiguration(initialProvider && dependencies.registry.has(initialProvider) ? actionValues(dependencies.registry.get(initialProvider), action) : Object.freeze({}));
-    setConnection(initialConnection);
     setSyncKind('catalog');
     setCursor('');
     setStart('');
@@ -40,13 +37,13 @@ export function useChannelActionViewModel(action: ChannelAction | null, context:
     setProof('');
     setConfirmed(false);
     setIdentity(dependencies.createIdentity());
-  }, [action, actionIdentity, dependencies, initialConnection, initialProvider]);
+  }, [action, actionIdentity, dependencies, initialProvider]);
   const registration = providers.find((candidate) => candidate.id === provider);
-  const draft = useMemo<ConnectionDraft>(() => registration ? buildConnectionDraft(registration, configuration) : emptyDraft(provider), [configuration, provider, registration]);
+  const draft = useMemo<ConnectionDraft>(() => (registration ? buildConnectionDraft(registration, configuration) : emptyDraft(provider)), [configuration, provider, registration]);
   const sync = useMemo<SyncDraft>(
     () =>
       Object.freeze({
-        connection: connection.trim(),
+        connection: action?.kind === 'startsync' ? action.connection.id : '',
         kind: syncKind,
         ...(cursor.trim() ? { cursor: cursor.trim() } : {}),
         ...(start ? { start } : {}),
@@ -54,7 +51,7 @@ export function useChannelActionViewModel(action: ChannelAction | null, context:
         ...(timezone.trim() ? { timezone: timezone.trim() } : {}),
         ...(partner.trim() ? { partner: partner.trim() } : {}),
       }),
-    [connection, cursor, end, partner, start, syncKind, timezone]
+    [action, cursor, end, partner, start, syncKind, timezone]
   );
   const command = useMemo(() => buildCommand(action, draft, sync, proof, identity), [action, draft, identity, proof, sync]);
   const validation = validateChannelAction(action, registration, draft, sync, proof, confirmed);
@@ -88,7 +85,6 @@ export function useChannelActionViewModel(action: ChannelAction | null, context:
     registration,
     provider,
     configuration,
-    connection,
     syncKind,
     cursor,
     start,
@@ -105,7 +101,6 @@ export function useChannelActionViewModel(action: ChannelAction | null, context:
     actions: Object.freeze({
       provider: chooseProvider,
       field: (key: string, value: string) => reset(setConfiguration)(Object.freeze({ ...configuration, [key]: value })),
-      connection: reset(setConnection),
       syncKind: reset(setSyncKind),
       cursor: reset(setCursor),
       start: reset(setStart),
@@ -133,7 +128,9 @@ function buildCommand(action: ChannelAction | null, draft: ConnectionDraft, sync
   return { kind: action.kind, operation: action.operation.id, proof, identity };
 }
 
-function emptyDraft(provider: string): ConnectionDraft { return Object.freeze({ provider, region: '', healthOperation: '', endpoints: Object.freeze({}), secretRef: '' }); }
+function emptyDraft(provider: string): ConnectionDraft {
+  return Object.freeze({ provider, region: '', healthOperation: '', endpoints: Object.freeze({}), secretRef: '' });
+}
 
 function actionValues(provider: ReturnType<ChannelDependencies['registry']['get']>, action: ChannelAction | null): ConnectionValues {
   const values = initialConnectionValues(provider);

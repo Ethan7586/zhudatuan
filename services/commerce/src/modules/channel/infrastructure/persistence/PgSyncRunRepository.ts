@@ -28,7 +28,7 @@ export class PgSyncRunRepository implements SyncRunRepository {
   async read(context: ReadTransactionContext, scope: string, page: Parameters<SyncRunRepository['read']>[2]) {
     const database = this.transactions.database(context);
     const result = await this.transactions.database(context).query(
-      `select run.id,run.connection_id,run.kind,run.state,run.cursor_value,run.input_hash,run.input,run.error_summary,
+      `select run.id,run.connection_id,connection.provider,connection.region,run.kind,run.state,run.cursor_value,run.input_hash,run.input,run.error_summary,
       run.watermark,run.pulled_count,run.accepted_count,run.rejected_count,run.phase,run.failure_class,run.failure_code,
       run.failure_retryable,run.started_at,run.completed_at,run.version,coalesce(run.started_at,'infinity')::text cursor_sort
       from channel.syncrun run join channel.connection connection on connection.id=run.connection_id where connection.scope_id=$1

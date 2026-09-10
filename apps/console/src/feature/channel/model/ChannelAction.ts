@@ -6,6 +6,6 @@ export type ChannelAction =
   | Readonly<{ kind: 'test'; connection: ChannelConnection }>
   | Readonly<{ kind: 'enable'; connection: ChannelConnection }>
   | Readonly<{ kind: 'disable'; connection: ChannelConnection }>
-  | Readonly<{ kind: 'startsync'; connection?: ChannelConnection }>
+  | Readonly<{ kind: 'startsync'; connection: ChannelConnection }>
   | Readonly<{ kind: 'cancelsync'; sync: ChannelSync }>
   | Readonly<{ kind: 'replay'; operation: ChannelOperation }>;

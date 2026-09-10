@@ -12,7 +12,7 @@ export function ChannelPage({ title, model }: Readonly<{ title: string; model: C
   return (
     <section className="channelpage">
       <PageHeader
-        eyebrow="Provider · 连接、同步与外部回执"
+        eyebrow="服务商接入 · 同步与外部回执"
         title={title}
         description="11 个 MVP 服务商共享同一安全连接模型；密钥仅以引用提交，游标仅在服务端持久化成功后推进。"
         context={<p className="channelcontext">当前范围：{model.scope}</p>}
@@ -23,7 +23,6 @@ export function ChannelPage({ title, model }: Readonly<{ title: string; model: C
                 创建连接
               </Button>
             ) : null}
-            {model.permissions.startSync ? <Button onPress={() => model.actions.startSync()}>启动同步</Button> : null}
             <Button onPress={model.actions.refresh}>刷新</Button>
           </>
         }

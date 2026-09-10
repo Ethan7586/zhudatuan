@@ -44,6 +44,8 @@ export class ChannelMapper {
             type: 'sync' as const,
             id: row.id,
             connection: row.connection_id,
+            provider: row.provider,
+            region: row.region,
             kind: row.kind,
             state: row.state,
             cursor: row.cursor_value,

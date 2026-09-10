@@ -20,6 +20,8 @@ describe('ChannelViewModel boundaries', () => {
         {
           id: 'sync:one',
           connection_id: 'connection:one',
+          provider: 'jdproduct',
+          region: 'cn',
           kind: 'catalog',
           state: 'queued',
           cursor_value: null,
@@ -38,6 +40,6 @@ describe('ChannelViewModel boundaries', () => {
       ],
       count: 1,
     });
-    expect(page.items[0]).toMatchObject({ type: 'sync', version: 8 });
+    expect(page.items[0]).toMatchObject({ type: 'sync', provider: 'jdproduct', region: 'cn', version: 8 });
   });
 });

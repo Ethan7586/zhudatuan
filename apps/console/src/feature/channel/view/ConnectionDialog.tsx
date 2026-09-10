@@ -2,6 +2,7 @@ import { Dialog } from '@shop/design';
 import type { ChannelActionViewModel } from '../viewmodel/ChannelActionViewModel';
 import { ChannelDialogFooter } from './ChannelDialogFooter';
 import { ConnectionFields } from './ConnectionFields';
+import { channelConnectionLabel } from './ChannelPresentation';
 
 export function ConnectionDialog({ model, onClose }: Readonly<{ model: ChannelActionViewModel; onClose: () => void }>) {
   const action = model.action;
@@ -25,7 +26,7 @@ export function ConnectionDialog({ model, onClose }: Readonly<{ model: ChannelAc
       >
         {action.kind === 'update' ? (
           <p className="channelnotice">
-            连接 {action.connection.id} · 当前版本 v{action.connection.version}。更新后回到草稿状态，必须重新完成真实连通性测试。
+            {channelConnectionLabel(action.connection)} · 当前配置第 {action.connection.version} 版。更新后回到草稿状态，必须重新完成真实连通性测试。
           </p>
         ) : null}
         <label>
@@ -46,11 +47,16 @@ export function ConnectionDialog({ model, onClose }: Readonly<{ model: ChannelAc
           <section className="channelnotice" aria-label="渠道能力说明">
             <strong>{provider.business}</strong>
             <p>{provider.help}</p>
-            <small>配置 Schema：{provider.form.schema} · 配置分组：{provider.settings.join('、')} · 能力：{provider.capabilities.join('、')}</small>
+            <small>
+              需要配置：{provider.settings.join('、')} · 已支持 {provider.capabilities.length} 项渠道能力
+            </small>
           </section>
         ) : null}
         <ConnectionFields model={model} updating={action.kind === 'update'} />
-        <Review model={model} text={action.kind === 'create' ? `将在“${model.configuration.region ?? '待填写'}”区域创建 ${provider?.name ?? model.provider}连接。` : '将完整替换公开连接配置并使现有连接回到草稿状态；留空的密钥引用保持不变。'} />
+        <Review
+          model={model}
+          text={action.kind === 'create' ? `将在“${model.configuration.region ?? '待填写'}”区域创建 ${provider?.name ?? model.provider}连接。` : '将完整替换公开连接配置并使现有连接回到草稿状态；留空的密钥引用保持不变。'}
+        />
         {model.error ? <p role="alert">{model.error}</p> : null}
         <ChannelDialogFooter busy={model.busy} blocked={Boolean(model.validation)} needsStepup={model.assurance < model.required} onClose={onClose} />
       </form>

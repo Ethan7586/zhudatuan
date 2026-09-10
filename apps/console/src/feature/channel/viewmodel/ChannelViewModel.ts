@@ -1,4 +1,4 @@
-import { type Receipt, queryCondition, safeQueryError } from '@shop/presentation';
+import { chineseDomainLabel, chineseProviderLabel, type Receipt, queryCondition, safeQueryError } from '@shop/presentation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
@@ -76,7 +76,7 @@ export function useChannelViewModel(context: ConsoleContext, dependencies: Chann
         test: (connection: ChannelConnection) => setAction({ kind: 'test', connection }),
         enable: (connection: ChannelConnection) => setAction({ kind: 'enable', connection }),
         disable: (connection: ChannelConnection) => setAction({ kind: 'disable', connection }),
-        startSync: (connection?: ChannelConnection) => setAction({ kind: 'startsync', ...(connection ? { connection } : {}) }),
+        startSync: (connection: ChannelConnection) => setAction({ kind: 'startsync', connection }),
         cancelSync: (sync: ChannelSync) => setAction({ kind: 'cancelsync', sync }),
         replay: (operation: ChannelOperation) => setAction({ kind: 'replay', operation }),
         closeAction: () => setAction(null),
@@ -112,7 +112,11 @@ function targetView(command: ChannelCommand): ChannelView {
   return command.kind === 'startsync' || command.kind === 'cancelsync' ? 'syncs' : command.kind === 'replay' ? 'operations' : 'connections';
 }
 function reference(command: ChannelCommand): string {
-  return command.kind === 'create' ? command.draft.provider : command.kind === 'startsync' ? command.draft.connection : command.kind === 'cancelsync' ? command.sync : command.kind === 'replay' ? command.operation : command.connection;
+  if (command.kind === 'create') return chineseProviderLabel(command.draft.provider);
+  if (command.kind === 'startsync') return `${chineseDomainLabel(command.draft.kind)}同步`;
+  if (command.kind === 'cancelsync') return '渠道同步任务';
+  if (command.kind === 'replay') return '渠道外部操作';
+  return '渠道连接';
 }
 function receiptMessage(command: ChannelCommand): string {
   return command.kind === 'test'

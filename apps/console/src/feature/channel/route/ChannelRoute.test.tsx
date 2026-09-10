@@ -32,10 +32,14 @@ describe('Channel route', () => {
     expect(screen.getByRole('button', { name: '真实测试' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: '启用' })).toBeNull();
     expect(screen.getByText('密钥引用已配置')).toBeTruthy();
+    expect(screen.getAllByText('中国大陆').length).toBeGreaterThan(0);
+    expect(screen.queryByText('connection:one')).toBeNull();
   });
 
   it('keeps one provider failure inside its connection row while the workspace remains usable', async () => {
-    server.use(http.get('*/api/v1/channels/connections', () => HttpResponse.json({ items: [{ ...connection(), status: 'degraded', health_state: 'degraded', health_reason: 'CIRCUIT_OPEN', checked_at: '2026-09-03T00:02:00.000Z' }], count: 1 })));
+    server.use(
+      http.get('*/api/v1/channels/connections', () => HttpResponse.json({ items: [{ ...connection(), status: 'degraded', health_state: 'degraded', health_reason: 'CIRCUIT_OPEN', checked_at: '2026-09-03T00:02:00.000Z' }], count: 1 }))
+    );
     renderChannel();
     expect(await screen.findByText('该服务商的保护机制已暂时断开请求，请稍后重新测试。')).toBeTruthy();
     expect(screen.getByRole('button', { name: '创建连接' })).toBeTruthy();
@@ -45,7 +49,19 @@ describe('Channel route', () => {
 
 function renderChannel() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  render(<MemoryRouter><QueryClientProvider client={client}><DependencyProvider value={createConsoleDependencies()}><ConsoleContextProvider value={context}><StepupProvider controller={{ request: vi.fn() }}><Component /></StepupProvider></ConsoleContextProvider></DependencyProvider></QueryClientProvider></MemoryRouter>);
+  render(
+    <MemoryRouter>
+      <QueryClientProvider client={client}>
+        <DependencyProvider value={createConsoleDependencies()}>
+          <ConsoleContextProvider value={context}>
+            <StepupProvider controller={{ request: vi.fn() }}>
+              <Component />
+            </StepupProvider>
+          </ConsoleContextProvider>
+        </DependencyProvider>
+      </QueryClientProvider>
+    </MemoryRouter>
+  );
 }
 
 const permissions = ['channel.connection.read', 'channel.connection.manage', 'channel.sync.read', 'channel.sync.manage', 'channel.operation.read', 'channel.operation.replay'];

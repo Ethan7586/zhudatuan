@@ -66,6 +66,12 @@ const sync = strictObject({
   completed_at: nullableTime,
   version,
 });
+const syncRead = strictObject({
+  ...sync.shape,
+  provider: string(),
+  region: string(),
+  cursor_sort: string(),
+});
 const providerOperation = strictObject({
   id: string(),
   provider: string(),
@@ -132,7 +138,7 @@ export const CHANNEL_OUTPUT_SCHEMAS = {
   ChannelConnectionsDisableOutput: connectionControl,
   ChannelWebhooksReceiveOutput: strictObject({ webhook: string(), state: string(), replayed: literal([true, false]) }),
   ChannelSyncrunsStartOutput: sync,
-  ChannelSyncrunsReadOutput: pageOutput(strictObject({ ...sync.shape, cursor_sort: string() })),
+  ChannelSyncrunsReadOutput: pageOutput(syncRead),
   ChannelSyncrunsCancelOutput: sync,
   ChannelOperationsReadOutput: pageOutput(providerOperation),
   ChannelOperationsReplayOutput: strictObject({ operation: string(), state: literal('queued') }),
