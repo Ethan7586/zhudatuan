@@ -5,7 +5,11 @@ import { PGlite } from '@electric-sql/pglite';
 import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
 import { Client } from 'pg';
 import { parse } from 'yaml';
-import { OWNERSHIP_CUTOVER, ownerInheritanceSql } from '../../services/commerce/src/platform/database/MigrationOwnership.ts';
+import {
+  MIGRATION_ROLE_HARDENING_SQL,
+  OWNERSHIP_CUTOVER,
+  ownerInheritanceSql,
+} from '../../services/commerce/src/platform/database/MigrationOwnership.ts';
 import { repositoryRoot } from '../lib/RepositoryRoot.mjs';
 
 const ROOT = repositoryRoot;
@@ -165,7 +169,7 @@ try {
       ownerInheritanceEnabled = false;
     }
     if (replayRole !== undefined) await execute(database, 'reset role', 'database verification elevation');
-    await execute(database, 'alter role shopmigration nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls', 'database migration role hardening');
+    await execute(database, MIGRATION_ROLE_HARDENING_SQL, 'database migration role hardening');
     if (mode === '--registration-fresh') await reconcileRegistrationReplayBoundary(database);
     await verifyTarget(database);
     if (mode === '--mvp-kernel') {

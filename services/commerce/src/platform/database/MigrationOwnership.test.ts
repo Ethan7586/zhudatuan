@@ -1,9 +1,14 @@
 import type { QueryResult, QueryResultRow } from 'pg';
 import { describe, expect, it } from 'vitest';
 
-import { executeWithMigrationOwnership, type MigrationOwnershipClient } from './MigrationOwnership';
+import { executeWithMigrationOwnership, MIGRATION_ROLE_HARDENING_SQL, type MigrationOwnershipClient } from './MigrationOwnership';
 
 describe('migration ownership transaction', () => {
+  it('keeps the migration role noninheriting outside a scoped ownership lease', () => {
+    expect(MIGRATION_ROLE_HARDENING_SQL).toContain(' noinherit ');
+    expect(MIGRATION_ROLE_HARDENING_SQL).not.toMatch(/\snologin inherit\s/);
+  });
+
   it('leases module ownership only inside the guarded transaction', async () => {
     const database = fakeDatabase();
     const result = await executeWithMigrationOwnership(database.client, async (client) => {

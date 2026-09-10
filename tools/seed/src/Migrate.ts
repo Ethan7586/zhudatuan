@@ -3,6 +3,7 @@ import { localSeedEnvironment } from '@shop/config/server';
 import { localSecret } from './LocalSecrets';
 import { run } from './Process';
 import { MIGRATION_PHASES } from '@shop/config/server';
+import { MIGRATION_ROLE_HARDENING_SQL } from '../../../services/commerce/src/platform/database/MigrationOwnership';
 
 const environment = localSeedEnvironment();
 const adminConnection = await localSecret(environment.adminDatabaseConnectionRef);
@@ -16,7 +17,7 @@ await withAdmin(adminConnection, async (admin) => {
     await admin.query(`alter database "${databaseName}" owner to shopmigration`);
     await run(process.execPath, ['scripts/audit/database-contracts.mjs', '--postgres-fresh', adminConnection, 'shopmigration']);
   }
-  await admin.query('alter role shopmigration nologin inherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls');
+  await admin.query(MIGRATION_ROLE_HARDENING_SQL);
 });
 try {
   await run('npm', ['run', 'build:commerce']);
@@ -25,7 +26,7 @@ try {
   }
 } finally {
   await withAdmin(adminConnection, async (admin) => {
-    await admin.query('alter role shopmigration nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls');
+    await admin.query(MIGRATION_ROLE_HARDENING_SQL);
   });
 }
 process.stdout.write('LOCAL_MIGRATIONS_READY\n');

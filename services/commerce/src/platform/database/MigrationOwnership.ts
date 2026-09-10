@@ -1,6 +1,8 @@
 import { Client, type QueryResult, type QueryResultRow } from 'pg';
 
 export const OWNERSHIP_CUTOVER = '20260904065000_finalize_constraints.sql';
+export const MIGRATION_ROLE_HARDENING_SQL =
+  'alter role shopmigration nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls';
 
 export interface MigrationOwnershipClient {
   connect(): Promise<void>;
