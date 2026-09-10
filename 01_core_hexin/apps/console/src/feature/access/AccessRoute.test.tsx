@@ -4,11 +4,12 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { Component } from './AccessRoute';
+import { MemberAccessWorkspace } from './MemberAccessWorkspace';
 
 interface WireRole {
   id: string;
@@ -57,6 +58,7 @@ const server = setupServer(
     reads += 1;
     return HttpResponse.json({ items: members, count: members.length, roles });
   }),
+  http.get('*/api/v1/members', () => HttpResponse.json({ items: [], count: 0 })),
   http.get('*/api/v1/member/invitations', () => HttpResponse.json({
     items: invitationRecords,
     count: invitationRecords.length,
@@ -123,7 +125,8 @@ describe('custom identity and permission directory', () => {
     expect(screen.queryByText('身份目录读取失败')).toBeNull();
   });
 
-  it('separates governance and custom identities and renders the complete authoritative permission catalog', async () => {
+  it('keeps the authoritative permission catalog collapsed and mounts one category on demand', async () => {
+    const user = userEvent.setup();
     renderWorkspace();
 
     expect(await screen.findByRole('heading', { name: '编辑身份' })).toBeTruthy();
@@ -134,8 +137,49 @@ describe('custom identity and permission directory', () => {
     expect(screen.getByRole('heading', { name: '治理身份' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '自定义业务身份' })).toBeTruthy();
     expect(screen.getByText('平台 Owner')).toBeTruthy();
-    expect(screen.getAllByRole('checkbox')).toHaveLength(PERMISSION_CATALOG.length);
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^运行状态/ }));
+    expect(screen.getAllByRole('checkbox')).toHaveLength(PERMISSION_CATALOG.filter(({ category }) => category === 'runtime').length);
+    expect(screen.getByRole('checkbox', { name: /runtime\.health\.read/ })).toBeTruthy();
+    const runtimeGroup = document.getElementById('permission-runtime');
+    expect(runtimeGroup).toBeTruthy();
+    await user.click(within(runtimeGroup as HTMLElement).getByText('运行状态'));
+    expect(screen.queryByRole('checkbox', { name: /runtime\.health\.read/ })).toBeNull();
     expect(screen.queryByText(/Smart Wing|智慧翼|築店|租户/)).toBeNull();
+  });
+
+  it('mounts only permission matches while filtering', async () => {
+    const user = userEvent.setup();
+    renderWorkspace();
+    await screen.findByRole('heading', { name: '编辑身份' });
+
+    await user.type(screen.getByPlaceholderText('输入权限代码'), 'finance.overview.read');
+
+    expect(screen.getByRole('checkbox', { name: /finance\.overview\.read/ })).toBeTruthy();
+    expect(screen.queryByRole('checkbox', { name: /order\.read/ })).toBeNull();
+    expect(screen.getAllByRole('checkbox')).toHaveLength(1);
+  });
+
+  it('reuses the member page access directory cache when entering identity permissions', async () => {
+    const user = userEvent.setup();
+    renderSwitchWorkspace();
+    await screen.findByRole('heading', { name: '管理与权限控制中心' });
+    await waitFor(() => expect(reads).toBe(1));
+
+    await user.click(screen.getByRole('button', { name: '身份与权限' }));
+
+    expect(await screen.findByRole('heading', { name: '编辑身份' })).toBeTruthy();
+    expect(reads).toBe(1);
+  });
+
+  it('keeps the explicit member refresh authoritative', async () => {
+    const user = userEvent.setup();
+    renderSwitchWorkspace();
+    await waitFor(() => expect(reads).toBe(1));
+
+    await user.click(screen.getByRole('button', { name: '刷新' }));
+
+    await waitFor(() => expect(reads).toBe(2));
   });
 
   it('creates a freely named identity with finance, order, and product permissions and verifies it by rereading', async () => {
@@ -146,7 +190,11 @@ describe('custom identity and permission directory', () => {
     await user.click(screen.getByRole('button', { name: '＋ 新建自定义身份' }));
     const name = screen.getByPlaceholderText('例如：财务');
     await user.type(name, '财务');
-    expect(screen.getAllByRole('checkbox').filter((item) => (item as HTMLInputElement).checked)).toHaveLength(0);
+    expect(screen.queryAllByRole('checkbox').filter((item) => (item as HTMLInputElement).checked)).toHaveLength(0);
+    const permissionOverview = within(screen.getByRole('region', { name: '选择功能权限' }));
+    await user.click(permissionOverview.getByRole('button', { name: /^财务/ }));
+    await user.click(permissionOverview.getByRole('button', { name: /^订单与售后/ }));
+    await user.click(permissionOverview.getByRole('button', { name: /^商品/ }));
     await user.click(screen.getByRole('checkbox', { name: /finance\.overview\.read/ }));
     await user.click(screen.getByRole('checkbox', { name: /order\.read/ }));
     await user.click(screen.getByRole('checkbox', { name: /catalog\.product\.manage/ }));
@@ -171,6 +219,7 @@ describe('custom identity and permission directory', () => {
     expect(writes[0]?.body).toEqual({ name: '财务主管', permissions: ['finance.overview.read', 'order.read'] });
     expect(writes[0]?.expectedVersion).toBe('"1"');
 
+    await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^商品/ }));
     await user.click(screen.getByRole('checkbox', { name: /catalog\.product\.manage/ }));
     await user.click(screen.getByRole('button', { name: '保存身份' }));
     await waitFor(() => expect(writes).toHaveLength(2));
@@ -190,6 +239,7 @@ describe('custom identity and permission directory', () => {
     renderWorkspace();
     await screen.findByRole('heading', { name: '编辑身份' });
 
+    await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^商品/ }));
     await user.click(screen.getByRole('checkbox', { name: /catalog\.product\.manage/ }));
     await user.click(screen.getByRole('button', { name: '保存身份' }));
 
@@ -335,6 +385,22 @@ function renderWorkspace(value: ConsoleContext = context, entry = '/scopes/tenan
     <MemoryRouter initialEntries={[entry]}>
       <QueryClientProvider client={client}>
         <ConsoleContextProvider value={value}><Component /></ConsoleContextProvider>
+      </QueryClientProvider>
+    </MemoryRouter>,
+  );
+}
+
+function renderSwitchWorkspace() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  return render(
+    <MemoryRouter initialEntries={['/scopes/tenant/tenant%3Aone/settings/members']}>
+      <QueryClientProvider client={client}>
+        <ConsoleContextProvider value={context}>
+          <Routes>
+            <Route path="/scopes/:scopeKind/:scopeId/settings/members" element={<MemberAccessWorkspace primary="members" />} />
+            <Route path="/scopes/:scopeKind/:scopeId/settings/access" element={<Component />} />
+          </Routes>
+        </ConsoleContextProvider>
       </QueryClientProvider>
     </MemoryRouter>,
   );
