@@ -41,6 +41,24 @@ test('visual integrity permits explicitly declared multiline selection cards', a
   await expectVisualIntegrity(page);
 });
 
+test('visual integrity ignores controls nested below every closed disclosure ancestor', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setContent(`
+    <main>
+      <details>
+        <summary style="width:120px;height:44px">筛选与查找</summary>
+        <details style="display:block;position:fixed;left:20px;top:100px">
+          <summary id="nested" style="width:120px;height:44px">更多条件</summary>
+        </details>
+      </details>
+      <div style="position:fixed;z-index:2;left:20px;top:100px;width:120px;height:44px;background:white">表格标题</div>
+    </main>
+  `);
+
+  expect((await page.locator('#nested').boundingBox())?.width).toBeGreaterThan(1);
+  expect(await inspectVisualIntegrity(page)).toEqual([]);
+});
+
 test('visual integrity accepts accessible ellipsis and rejects unlabeled clipping', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.setContent(`

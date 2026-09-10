@@ -196,10 +196,11 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
 
     function visuallyPresented(element: HTMLElement): boolean {
       if (element.closest('.sr-only,[hidden],[inert],[aria-hidden="true"]')) return false;
-      const closed = element.closest('details:not([open])');
-      if (closed) {
+      let closed = element.closest<HTMLDetailsElement>('details:not([open])');
+      while (closed) {
         const summary = closed.querySelector(':scope > summary');
         if (!summary?.contains(element)) return false;
+        closed = closed.parentElement?.closest<HTMLDetailsElement>('details:not([open])') ?? null;
       }
       let ancestor: HTMLElement | null = element;
       while (ancestor) {
