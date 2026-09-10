@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, dirname, join, relative } from 'node:path';
 import { test } from 'node:test';
 import { OperationCatalog, type OperationId } from '@shop/contract';
 import { PERMISSION_CATALOG } from '@shop/authz';
@@ -14,6 +14,7 @@ export interface JourneyEvidence {
 }
 
 const root = process.cwd();
+const commerceModuleFiles = files(join(root, '01_core_hexin/services/commerce/src/modules'), '.ts');
 const migrationText = sourceTree('02_platform_pingtai/database/supabase/migrations', '.sql');
 const objectContract = source('02_platform_pingtai/database/contracts/objects.yml');
 const operationController = source('01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts');
@@ -29,7 +30,7 @@ export function journey(requirement: `MVP${number}`, evidence: JourneyEvidence):
       const operation = OperationCatalog.get(id);
       assert.ok(sdkOperations.has(id), `${id} has no generated named SDK method`);
       assert.ok(operation.requirements.includes(requirement), `${id} does not trace to ${requirement}`);
-      assert.match(source(`01_core_hexin/services/commerce/src/modules/${operation.module}/${title(operation.module)}Module.ts`), new RegExp(operation.module, 'i'));
+      assert.match(source(ownerModulePath(operation.module)), new RegExp(operation.module, 'i'));
     }
   });
 
@@ -56,7 +57,7 @@ export function journey(requirement: `MVP${number}`, evidence: JourneyEvidence):
   test(`${requirement} downstream failure is explicit and recoverable`, () => {
     const modules = new Set(evidence.operations.map((id) => OperationCatalog.get(id).module));
     for (const module of modules) {
-      const text = sourceTree(`01_core_hexin/services/commerce/src/modules/${module}`, '.ts');
+      const text = sourceTree(ownerModuleDirectory(module), '.ts');
       assert.doesNotMatch(text, /catch\s*\{\s*return\s+(?:\[\]|\{\s*success:\s*true)/);
     }
     assert.match(migrationText, /deadletter|failed_at/i);
@@ -87,16 +88,34 @@ function source(relative: string): string {
 
 function sourceTree(relative: string, suffix: string): string {
   const directory = join(root, relative);
+  return files(directory, suffix).map((file) => readFileSync(file, 'utf8')).join('\n');
+}
+
+function files(directory: string, suffix: string): string[] {
   const files: string[] = [];
   const walk = (path: string): void => {
     for (const entry of readdirSync(path, { withFileTypes: true })) {
       const target = join(path, entry.name);
       if (entry.isDirectory()) walk(target);
-      else if (entry.name.endsWith(suffix)) files.push(readFileSync(target, 'utf8'));
+      else if (entry.name.endsWith(suffix)) files.push(target);
     }
   };
   walk(directory);
-  return files.join('\n');
+  return files;
+}
+
+function ownerModulePath(module: string): string {
+  const fileName = `${title(module)}Module.ts`;
+  const matches = commerceModuleFiles.filter((path) => basename(path) === fileName);
+  const layered = matches.filter((path) => basename(dirname(path)) === '05_interface_jieru');
+  const candidates = layered.length ? layered : matches;
+  assert.equal(candidates.length, 1, `${module} owner module path must resolve uniquely: ${candidates.join(', ')}`);
+  return relative(root, candidates[0]!);
+}
+
+function ownerModuleDirectory(module: string): string {
+  const ownerDirectory = dirname(ownerModulePath(module));
+  return basename(ownerDirectory) === '05_interface_jieru' ? dirname(ownerDirectory) : ownerDirectory;
 }
 
 function title(value: string): string {
