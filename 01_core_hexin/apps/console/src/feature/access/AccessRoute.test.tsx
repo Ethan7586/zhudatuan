@@ -106,6 +106,23 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('custom identity and permission directory', () => {
+  it('accepts the authoritative L1 Owner assignment source', async () => {
+    const member = memberFixture();
+    server.use(http.get('*/api/v1/access/center', () => HttpResponse.json({
+      items: [{ ...member, roles: [{
+        ...assignment('role-l1-owner-v1:tenant-zhudatuan', 'L1 Owner', mallScope, 'direct'),
+        scope_source: 'l1_owner',
+      }] }],
+      count: 1,
+      roles,
+    })));
+
+    renderWorkspace();
+
+    expect(await screen.findByRole('heading', { name: '编辑身份' })).toBeTruthy();
+    expect(screen.queryByText('身份目录读取失败')).toBeNull();
+  });
+
   it('separates governance and custom identities and renders the complete authoritative permission catalog', async () => {
     renderWorkspace();
 

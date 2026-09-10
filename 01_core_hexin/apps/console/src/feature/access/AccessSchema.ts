@@ -3,11 +3,14 @@ import { ScopeSchema } from '../../entity/session/ConsoleSession';
 import { DatabaseIntegerSchema } from '../../shared/schema/DatabaseInteger';
 import { pageEnvelope } from '../../shared/schema/PageEnvelope';
 
+export const AccessScopeSourceSchema = z.enum(['direct', 'inherited', 'l1_owner']);
+const AccessEditableScopeSourceSchema = z.enum(['direct', 'inherited']);
+
 export const AccessRoleAssignmentSchema = z.object({
   role: z.string().min(1),
   name: z.string().min(1),
   scope: ScopeSchema,
-  scope_source: z.enum(['direct', 'inherited']),
+  scope_source: AccessScopeSourceSchema,
   effective_at: z.string().min(1),
   expires: z.string().nullable(),
 });
@@ -23,6 +26,7 @@ export const AccessMembershipSchema = z.object({
 export const AccessRoleMemberSchema = AccessRoleAssignmentSchema.omit({ role: true, name: true }).extend({
   membership: z.string().min(1), member_id: z.string().min(1), display_name: z.string().min(1),
   employee_no: z.string().nullable(), access_version: DatabaseIntegerSchema,
+  scope_source: AccessEditableScopeSourceSchema,
 });
 export const AccessRoleSchema = z.object({
   id: z.string().min(1),
@@ -35,7 +39,7 @@ export const AccessRoleSchema = z.object({
   editable: z.boolean(),
   members: z.array(AccessRoleMemberSchema).default([]),
   scopes: z.array(z.object({
-    scope: ScopeSchema, source: z.enum(['direct', 'inherited']), member_count: DatabaseIntegerSchema,
+    scope: ScopeSchema, source: AccessEditableScopeSourceSchema, member_count: DatabaseIntegerSchema,
   })).default([]),
 }).passthrough();
 export const AccessPageSchema = pageEnvelope(AccessMembershipSchema).extend({ roles: z.array(AccessRoleSchema) });
