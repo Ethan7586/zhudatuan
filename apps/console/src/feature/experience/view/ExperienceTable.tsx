@@ -43,7 +43,7 @@ function applicationColumns(
             <button type="button" onClick={() => onOpen(row)} aria-label={`查看${row.name}详情`}>
               {row.name}
             </button>
-            <code>{chineseReference('应用', row.code)}</code>
+            <small>{applicationDescriptor(row)}</small>
           </span>
         </div>
       ),
@@ -130,4 +130,9 @@ function applicationColumns(
       ),
     },
   ]);
+}
+
+function applicationDescriptor(row: Experience): string {
+  const brand = row.brandName?.trim();
+  return brand ? `品牌：${brand}` : '消费者商城应用';
 }

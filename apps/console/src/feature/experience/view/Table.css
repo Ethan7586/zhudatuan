@@ -73,12 +73,11 @@
 .commerceidentity button:hover {
   color: var(--sw-brand);
 }
-.commerceidentity code,
-.commercebinding code {
+.commerceidentity small {
   overflow: hidden;
-  color: var(--sw-disabled);
+  color: var(--sw-muted);
   font: inherit;
-  font-size: 8px;
+  font-size: var(--sw-font-size-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

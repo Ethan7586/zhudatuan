@@ -113,7 +113,7 @@
     min-width: 0;
   }
   .commerceidentity button,
-  .commerceidentity code,
+  .commerceidentity small,
   .commercebinding span,
   .commercepublication span {
     max-width: 100%;

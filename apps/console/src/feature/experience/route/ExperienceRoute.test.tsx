@@ -42,6 +42,8 @@ describe('Experience governance workspace', () => {
     expect(screen.getByText('平台治理视角：智慧翼平台')).toBeTruthy();
     expect(screen.getAllByText('静序').length).toBeGreaterThan(0);
     expect(screen.getAllByText('域名正常').length).toBeGreaterThan(0);
+    expect(screen.getByText('品牌：鸿泰福利')).toBeTruthy();
+    expect(screen.queryByText(/应用 \d{4} \d{4}/)).toBeNull();
     expect(screen.queryByText(/建店方案/)).toBeNull();
 
     await user.click(screen.getByRole('button', { name: '查看鸿泰惠民通详情' }));
