@@ -13,7 +13,6 @@ describe('HomePage approved storefront composition', () => {
   it('keeps the mobile information hierarchy and every shortcut connected to a real action', () => {
     const openFeature = vi.fn();
     const navigatePage = vi.fn();
-    const switchMall = vi.fn();
     const product = presentProduct(productFixture({ title: '员工关怀礼盒', categoryId: 'category:care' }));
     const viewmodel = {
       user: profileFixture({ phoneVerified: false }),
@@ -22,7 +21,7 @@ describe('HomePage approved storefront composition', () => {
       retryProfile: vi.fn(),
       currentMall: mall('mall:one', 'membership:one', '智慧翼测试企业'),
       malls: [mall('mall:one', 'membership:one', '智慧翼测试企业'), mall('mall:two', 'membership:two', '智慧翼协作企业')],
-      switchMall,
+      switchMall: vi.fn(),
       presentationProducts: [product],
       presentationCategories: [{ id: 'category:care', code: 'care', name: '员工关怀', count: 1, iconName: 'Gift', description: '1 件可见商品' }],
       catalogState: 'ready',
@@ -39,14 +38,12 @@ describe('HomePage approved storefront composition', () => {
 
     render(<HomePage viewmodel={viewmodel} page={page} />);
 
-    const identity = screen.getByLabelText('当前企业福利商城');
     const mobile = document.querySelector<HTMLElement>('[data-home-layout="mobile"]');
     expect(mobile).not.toBeNull();
     const account = within(mobile!).getByRole('region', { name: '测试会员' });
     const shortcuts = screen.getByRole('navigation', { name: '商城快捷入口' });
     const hero = screen.getByRole('heading', { name: '员工专享福利季' });
     const scenes = screen.getByRole('heading', { name: '福利场景' });
-    expect(follows(identity, account)).toBe(true);
     expect(follows(account, shortcuts)).toBe(true);
     expect(follows(shortcuts, hero)).toBe(true);
     expect(follows(hero, scenes)).toBe(true);
@@ -59,8 +56,6 @@ describe('HomePage approved storefront composition', () => {
     expect(openFeature.mock.calls).toEqual([['账户流水'], ['电子卡券'], ['客服中心'], ['账号安全']]);
     fireEvent.click(screen.getByRole('button', { name: /企业专区/ }));
     expect(navigatePage).toHaveBeenCalledWith('catalog');
-    fireEvent.click(screen.getByRole('button', { name: /智慧翼协作企业/ }));
-    expect(switchMall).toHaveBeenCalledWith('membership:two');
   });
 });
 

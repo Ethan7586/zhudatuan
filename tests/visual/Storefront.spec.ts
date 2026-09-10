@@ -36,6 +36,11 @@ for (const viewport of VISUAL_VIEWPORTS) {
         resetVisual(page);
         await page.goto(url(template));
         await expectUsable(page);
+        if (viewport.width < 1024) {
+          const landingHeader = page.locator('[data-storefront-mobile-home]');
+          if (routeid === 'storehome') await expect(landingHeader).toBeVisible();
+          else await expect(landingHeader).toHaveCount(0);
+        }
       });
     }
   });
@@ -123,7 +128,7 @@ function url(template: string): string {
 
 async function expectMobileHomePattern(page: import('@playwright/test').Page) {
   const landmarks = [
-    page.getByRole('region', { name: '当前企业福利商城' }),
+    page.locator('[data-storefront-mobile-home]'),
     page.locator('[data-home-layout="mobile"]').getByRole('region'),
     page.getByRole('navigation', { name: '商城快捷入口' }),
     page.locator('main h1').first(),

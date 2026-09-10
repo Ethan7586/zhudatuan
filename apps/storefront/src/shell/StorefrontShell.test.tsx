@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { useShellViewModel } from './ShellViewModel';
 import { StorefrontShell } from './StorefrontShell';
@@ -20,7 +20,10 @@ describe('StorefrontShell', () => {
 
     expect(screen.getAllByText('员工关怀')).toHaveLength(2);
     expect(screen.getByLabelText('搜索商城商品')).toBeTruthy();
-    expect(screen.getByLabelText('移动端搜索商城商品')).toBeTruthy();
+    const mobile = document.querySelector<HTMLElement>('[data-storefront-mobile-home]');
+    expect(mobile).not.toBeNull();
+    expect(within(mobile!).getByLabelText('移动端搜索商城商品')).toBeTruthy();
+    expect(within(mobile!).getByLabelText('当前企业福利商城')).toBeTruthy();
     expect(screen.getByLabelText('客服中心')).toBeTruthy();
     expect(screen.getAllByLabelText('消息通知')).toHaveLength(2);
     expect(screen.getAllByLabelText('购物车，共 108 件')).toHaveLength(2);
@@ -28,19 +31,36 @@ describe('StorefrontShell', () => {
     expect(screen.getByLabelText('账户余额概览')).toBeTruthy();
     expect(screen.getByText('¥50.00')).toBeTruthy();
     expect(screen.getByText('¥9.11')).toBeTruthy();
-    expect(screen.getByText('第二福利商城')).toBeTruthy();
+    expect(screen.getAllByText('第二福利商城')).toHaveLength(2);
     expect(screen.getByText('安全退出')).toBeTruthy();
     expect(screen.getByRole('navigation', { name: '移动端主要导航' })).toBeTruthy();
     expect(screen.getByTestId('quickview-state').textContent).toBe('true');
 
     fireEvent.click(screen.getByLabelText('客服中心'));
-    fireEvent.click(screen.getByText('第二福利商城'));
+    fireEvent.click(within(mobile!).getByText('第二福利商城'));
     fireEvent.click(screen.getByText('安全退出'));
     fireEvent.submit(screen.getByLabelText('搜索商城商品').closest('form')!);
     expect(viewmodel.actions.navigate).toHaveBeenCalledWith('/support');
     expect(viewmodel.actions.switchMall).toHaveBeenCalledWith('membership:two');
     expect(viewmodel.actions.logout).toHaveBeenCalledOnce();
     expect(viewmodel.actions.search).toHaveBeenCalledWith('');
+  });
+
+  it('keeps the commerce header on landing pages and lets task pages use their own focused title', () => {
+    const { rerender } = render(
+      <StorefrontShell viewmodel={model()}>
+        <p>首页正文</p>
+      </StorefrontShell>
+    );
+    expect(document.querySelector('[data-storefront-mobile-home]')).not.toBeNull();
+
+    rerender(
+      <StorefrontShell viewmodel={model({ pathname: '/orders' })}>
+        <h1>我的订单</h1>
+      </StorefrontShell>
+    );
+    expect(document.querySelector('[data-storefront-mobile-home]')).toBeNull();
+    expect(screen.getByRole('heading', { name: '我的订单' })).toBeTruthy();
   });
 
   it('does not render capabilities missing from navigation configuration', () => {

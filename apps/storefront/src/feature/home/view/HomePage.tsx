@@ -4,7 +4,6 @@ import { AccountSummary } from './AccountSummary';
 import { CategoryGrid } from './CategoryGrid';
 import { DefaultHome } from './DefaultHome';
 import { HomeShortcuts } from './HomeShortcuts';
-import { MallSelector } from './MallSelector';
 import { PublishedPage } from './PublishedPage';
 import { experiencePath } from '../../../entity/session/model/PublishedExperience';
 
@@ -20,7 +19,6 @@ export function HomePage({ viewmodel, page }: Readonly<{ viewmodel: ReturnType<t
   return (
     <div className="bg-[var(--sw-background)] px-3 py-4 sm:px-5">
       <div className="mx-auto grid max-w-[1280px] gap-4 lg:grid-cols-[220px_1fr_260px]">
-        <MallSelector viewmodel={viewmodel} />
         <div data-home-layout="mobile" className="lg:hidden">
           <AccountSummary viewmodel={viewmodel} />
         </div>
