@@ -70,6 +70,7 @@ const order = {
       sku: 'SKU-VERIFIED-1',
       listing: 'listing:1',
       title: '权威商品标题',
+      image: null,
       quantity: 2,
       unitMinor: 6_400,
       totalMinor: 12_800,
