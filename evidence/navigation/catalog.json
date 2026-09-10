@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "hash": "b09829c6b6da59cd97705b8e7df536dcad6e7990cd89df31037e905dbf7cc690",
+  "hash": "42741cb554f4b9d51e3a85f479a427acb3935db7f9df52e141b3cfc35d26685d",
   "routes": [
     {
       "id": "authlogin",
@@ -481,12 +481,17 @@
       "group": null,
       "default": false,
       "requirements": [
+        "MVPPLATFORM",
+        "MVPGROUPPOOL",
         "MVPGROUPORDER",
-        "MVPMALLORDER",
         "MVPGROUPVOUCHER",
-        "MVPMALLVOUCHER",
         "MVPGROUPFINANCE",
-        "MVPMALLFINANCE"
+        "MVPGROUPSETTING",
+        "MVPMALLPOOL",
+        "MVPMALLORDER",
+        "MVPMALLVOUCHER",
+        "MVPMALLFINANCE",
+        "MVPMALLSETTING"
       ]
     },
     {
@@ -1581,12 +1586,17 @@
       "permission": "runtime.task.read",
       "capability": "runtime.jobs.read",
       "featureFlags": [
+        "MVPPLATFORM",
+        "MVPGROUPPOOL",
         "MVPGROUPORDER",
-        "MVPMALLORDER",
         "MVPGROUPVOUCHER",
-        "MVPMALLVOUCHER",
         "MVPGROUPFINANCE",
-        "MVPMALLFINANCE"
+        "MVPGROUPSETTING",
+        "MVPMALLPOOL",
+        "MVPMALLORDER",
+        "MVPMALLVOUCHER",
+        "MVPMALLFINANCE",
+        "MVPMALLSETTING"
       ],
       "experience": {
         "icon": "task",
@@ -2478,12 +2488,17 @@
       "permission": "runtime.task.read",
       "capability": "runtime.jobs.read",
       "featureFlags": [
+        "MVPPLATFORM",
+        "MVPGROUPPOOL",
         "MVPGROUPORDER",
-        "MVPMALLORDER",
         "MVPGROUPVOUCHER",
-        "MVPMALLVOUCHER",
         "MVPGROUPFINANCE",
-        "MVPMALLFINANCE"
+        "MVPGROUPSETTING",
+        "MVPMALLPOOL",
+        "MVPMALLORDER",
+        "MVPMALLVOUCHER",
+        "MVPMALLFINANCE",
+        "MVPMALLSETTING"
       ],
       "experience": {
         "icon": "task",

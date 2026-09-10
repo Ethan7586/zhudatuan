@@ -123,6 +123,25 @@ describe('generated navigation catalog', () => {
     }
   });
 
+  it('keeps the task center reachable from every workflow that can launch an import', () => {
+    const expected = new Set([
+      'MVPPLATFORM',
+      'MVPGROUPPOOL',
+      'MVPGROUPORDER',
+      'MVPGROUPVOUCHER',
+      'MVPGROUPFINANCE',
+      'MVPGROUPSETTING',
+      'MVPMALLPOOL',
+      'MVPMALLORDER',
+      'MVPMALLVOUCHER',
+      'MVPMALLFINANCE',
+      'MVPMALLSETTING',
+    ]);
+    for (const key of ['grouptasks', 'malltasks'] as const) {
+      expect(new Set(NAVIGATION_BY_KEY.get(key)?.featureFlags)).toEqual(expected);
+    }
+  });
+
   it('projects every configured deep link with a reversible breadcrumb and stable sibling order', () => {
     const permissions = new Set(NAVIGATION_CATALOG.flatMap((node) => (node.permission === null ? [] : [node.permission])));
     const capabilities = new Set(NAVIGATION_CATALOG.map(({ capability }) => capability));

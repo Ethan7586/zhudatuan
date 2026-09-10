@@ -5,7 +5,7 @@ declare violation text;
 begin
   if not exists(
     select 1 from runtime.schemahead
-    where artifact='commerce' and contract_version='5.0.0' and migration_head='20260910012000'
+    where artifact='commerce' and contract_version='5.0.0' and migration_head='20260910013000'
   ) then raise exception 'IDEAL_SCHEMA_HEAD_INVALID'; end if;
 
   select namespace.nspname into violation

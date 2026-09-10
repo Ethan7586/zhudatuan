@@ -417,12 +417,17 @@ routes:
     path: /scopes/:scopeKind/:scopeId/tasks
     feature: task
     requirements:
+      - MVPPLATFORM
+      - MVPGROUPPOOL
       - MVPGROUPORDER
-      - MVPMALLORDER
       - MVPGROUPVOUCHER
-      - MVPMALLVOUCHER
       - MVPGROUPFINANCE
+      - MVPGROUPSETTING
+      - MVPMALLPOOL
+      - MVPMALLORDER
+      - MVPMALLVOUCHER
       - MVPMALLFINANCE
+      - MVPMALLSETTING
   - id: miniapphome
     surface: miniapp
     path: /
