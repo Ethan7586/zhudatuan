@@ -52,6 +52,7 @@ let writes: Readonly<{ body: Readonly<{ name: string; permissions: string[] }>; 
 let assignmentWrites: Readonly<{ body: RoleAssignmentBody; expectedVersion: string | null; roleId: string }>[] = [];
 let conflict = false;
 let reads = 0;
+let invitationReads = 0;
 
 const server = setupServer(
   http.get('*/api/v1/access/center', () => {
@@ -59,10 +60,10 @@ const server = setupServer(
     return HttpResponse.json({ items: members, count: members.length, roles });
   }),
   http.get('*/api/v1/members', () => HttpResponse.json({ items: [], count: 0 })),
-  http.get('*/api/v1/member/invitations', () => HttpResponse.json({
-    items: invitationRecords,
-    count: invitationRecords.length,
-  })),
+  http.get('*/api/v1/member/invitations', () => {
+    invitationReads += 1;
+    return HttpResponse.json({ items: invitationRecords, count: invitationRecords.length });
+  }),
   http.put('*/api/v1/access/roles/:roleId', async ({ request, params }) => {
     const body = await request.json() as RoleWriteBody | RoleAssignmentBody | Readonly<{ action: 'delete' }>;
     if (conflict) return HttpResponse.json({ code: 'VERSION_CONFLICT', message: 'stale role version', requestId: 'request:conflict' }, { status: 409 });
@@ -100,6 +101,7 @@ beforeEach(() => {
   assignmentWrites = [];
   conflict = false;
   reads = 0;
+  invitationReads = 0;
 });
 afterEach(() => {
   cleanup();
@@ -130,10 +132,9 @@ describe('custom identity and permission directory', () => {
     renderWorkspace();
 
     expect(await screen.findByRole('heading', { name: '编辑身份' })).toBeTruthy();
-    expect(screen.getByRole('navigation', { name: '管理与权限工作台' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '成员' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '身份与权限' }).getAttribute('aria-current')).toBe('page');
-    expect(screen.getByRole('button', { name: '邀请记录' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '角色模板' })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: '管理与权限工作台' })).toBeNull();
+    expect(screen.getByRole('button', { name: '返回成员目录' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '治理身份' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: '自定义业务身份' })).toBeTruthy();
     expect(screen.getByText('平台 Owner')).toBeTruthy();
@@ -163,10 +164,10 @@ describe('custom identity and permission directory', () => {
   it('reuses the member page access directory cache when entering identity permissions', async () => {
     const user = userEvent.setup();
     renderSwitchWorkspace();
-    await screen.findByRole('heading', { name: '成员' });
+    await screen.findByRole('heading', { name: '管理与权限' });
     await waitFor(() => expect(reads).toBe(1));
 
-    await user.click(screen.getByRole('button', { name: '身份与权限' }));
+    await user.click(screen.getByRole('button', { name: '角色模板' }));
 
     expect(await screen.findByRole('heading', { name: '编辑身份' })).toBeTruthy();
     expect(reads).toBe(1);
@@ -180,6 +181,56 @@ describe('custom identity and permission directory', () => {
     await user.click(screen.getByRole('button', { name: '刷新成员名单' }));
 
     await waitFor(() => expect(reads).toBe(2));
+  });
+
+  it('keeps ordinary members separate and nests administrator tools inside administrator details', async () => {
+    members = [{
+      ...memberFixture(), id: 'membership:consumer', member_id: 'member:consumer', display_name: '普通消费者',
+      roles: [assignment('role-consumer', 'L6 消费者', mallScope, 'direct')],
+    }, {
+      ...memberFixture(), id: 'membership:administrator', member_id: 'member:administrator', display_name: '小白管理员',
+      roles: [assignment('role-finance', '财务观察', mallScope, 'direct')],
+    }];
+    invitationRecords = [{
+      id: 'invite:administrator', scope: 'tenant:one', scope_name: '主打团商户', label: '管理员发出的邀请',
+      governance_level: 'administrator', created_by: 'membership:administrator', created_by_name: '小白管理员',
+      accepted_membership_id: null, invitee_name: '受邀管理员', destination_masked: '138****0000',
+      max_uses: 1, use_count: 0, starts_at: '2026-09-10T12:00:00.000Z', expires_at: '2026-09-17T12:00:00.000Z',
+      accepted_at: null, status: 'active', created_at: '2026-09-10T12:00:00.000Z', version: '0',
+    }, {
+      id: 'invite:other', scope: 'tenant:one', scope_name: '主打团商户', label: '其他人的邀请',
+      governance_level: 'administrator', created_by: 'membership:other', created_by_name: '其他管理员',
+      accepted_membership_id: null, invitee_name: '不应出现', destination_masked: '139****0000',
+      max_uses: 1, use_count: 0, starts_at: '2026-09-10T12:00:00.000Z', expires_at: '2026-09-17T12:00:00.000Z',
+      accepted_at: null, status: 'active', created_at: '2026-09-10T12:00:00.000Z', version: '0',
+    }];
+    const user = userEvent.setup();
+    renderSwitchWorkspace();
+
+    expect(await screen.findByRole('heading', { name: '管理与权限' })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: '管理与权限工作台' })).toBeNull();
+    expect(screen.getByRole('button', { name: '角色模板' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '邀请管理' })).toBeTruthy();
+
+    const consumerRow = await screen.findByRole('row', { name: '查看成员 普通消费者' });
+    const administratorRow = await screen.findByRole('row', { name: '查看成员 小白管理员' });
+    expect(within(consumerRow).getByText('非管理员')).toBeTruthy();
+    expect(within(administratorRow).getByText('财务观察')).toBeTruthy();
+
+    await user.click(consumerRow);
+    expect(screen.getByRole('heading', { name: '成员详情' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '授予管理权限' })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: '管理员档案' })).toBeNull();
+
+    await user.click(administratorRow);
+    expect(screen.getByRole('heading', { name: '管理员详情' })).toBeTruthy();
+    expect(screen.getByRole('navigation', { name: '管理员档案' })).toBeTruthy();
+    expect(invitationReads).toBe(0);
+
+    await user.click(screen.getByRole('tab', { name: '邀请记录' }));
+    expect(await screen.findByText('受邀管理员')).toBeTruthy();
+    expect(screen.queryByText('不应出现')).toBeNull();
+    expect(invitationReads).toBe(1);
   });
 
   it('creates a freely named identity with finance, order, and product permissions and verifies it by rereading', async () => {

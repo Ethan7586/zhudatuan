@@ -3,10 +3,11 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+import { Component as AccessComponent } from '../access/AccessRoute';
 import { Component } from './MemberRoute';
 
 const writes: Array<Readonly<{ body: unknown; headers: Headers }>> = [];
@@ -45,7 +46,8 @@ describe('member administrator invitation', () => {
     renderRoute(ownerContext);
     await screen.findByRole('table', { name: '成员管理' });
 
-    await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
+    await user.click(screen.getByRole('button', { name: '邀请管理' }));
+    await user.click(await screen.findByRole('button', { name: '邀请新成员' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
     const level = within(dialog).getByRole('group', { name: '管理员级别' });
     expect((within(level).getByRole('radio', { name: /^普通管理员/ }) as HTMLInputElement).checked).toBe(true);
@@ -70,7 +72,7 @@ describe('member administrator invitation', () => {
     expect(within(receipt).getByRole('button', { name: '已复制' })).toBeTruthy();
     expect((await within(receipt).findByRole('status')).textContent).toContain('已复制到剪贴板');
     await user.click(within(receipt).getByRole('button', { name: '我已保存，关闭' }));
-    await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
+    await user.click(screen.getByRole('button', { name: '邀请新成员' }));
     expect(await screen.findByRole('dialog', { name: '生成管理员邀请码' })).toBeTruthy();
     expect(screen.queryByText('A'.repeat(10))).toBeNull();
   });
@@ -79,7 +81,8 @@ describe('member administrator invitation', () => {
     const user = userEvent.setup();
     renderRoute(ownerContext);
     await screen.findByRole('table', { name: '成员管理' });
-    await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
+    await user.click(screen.getByRole('button', { name: '邀请管理' }));
+    await user.click(await screen.findByRole('button', { name: '邀请新成员' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
 
     await user.click(within(dialog).getByRole('radio', { name: /^高级管理员/ }));
@@ -102,7 +105,8 @@ describe('member administrator invitation', () => {
     };
     renderRoute(seniorContext);
     await screen.findByRole('table', { name: '成员管理' });
-    await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
+    await user.click(screen.getByRole('button', { name: '邀请管理' }));
+    await user.click(await screen.findByRole('button', { name: '邀请新成员' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
 
     expect(within(dialog).queryByRole('group', { name: '管理员级别' })).toBeNull();
@@ -120,7 +124,8 @@ describe('member administrator invitation', () => {
     renderRoute(platformOwnerContext);
     await screen.findByRole('table', { name: '成员管理' });
 
-    await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
+    await user.click(screen.getByRole('button', { name: '邀请管理' }));
+    await user.click(await screen.findByRole('button', { name: '邀请新成员' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
     await user.selectOptions(within(dialog).getByLabelText('目标租户'), 'tenant-zhudatuan');
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
@@ -156,10 +161,13 @@ describe('member administrator invitation', () => {
   });
 
   it.each(missingEvidenceCases)('hides the write entry when %s evidence is missing', async (_name, sessionPatch) => {
+    const user = userEvent.setup();
     renderRoute({ ...ownerContext, session: { ...ownerContext.session, ...sessionPatch } });
     await screen.findByRole('table', { name: '成员管理' });
 
-    expect(screen.queryByRole('button', { name: '生成管理员邀请码' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: '邀请管理' }));
+    expect(await screen.findByRole('heading', { name: '邀请管理' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '邀请新成员' })).toBeNull();
     expect(writes).toHaveLength(0);
   });
 
@@ -168,7 +176,8 @@ describe('member administrator invitation', () => {
     server.use(http.post('*/api/v1/identity/invitations', () => HttpResponse.json({ id: 'invite:broken', code: 'short' }, { status: 201 })));
     renderRoute(ownerContext);
     await screen.findByRole('table', { name: '成员管理' });
-    await user.click(screen.getByRole('button', { name: '生成管理员邀请码' }));
+    await user.click(screen.getByRole('button', { name: '邀请管理' }));
+    await user.click(await screen.findByRole('button', { name: '邀请新成员' }));
     const dialog = await screen.findByRole('dialog');
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
     await user.click(within(dialog).getByRole('button', { name: '生成邀请码' }));
@@ -230,10 +239,13 @@ describe('Owner member registration reset', () => {
 function renderRoute(context: ConsoleContext) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={['/scopes/tenant/tenant%3Aone/settings/members']}>
       <QueryClientProvider client={client}>
         <ConsoleContextProvider value={context}>
-          <Component />
+          <Routes>
+            <Route path="/scopes/:scopeKind/:scopeId/settings/members" element={<Component />} />
+            <Route path="/scopes/:scopeKind/:scopeId/settings/access" element={<AccessComponent />} />
+          </Routes>
         </ConsoleContextProvider>
       </QueryClientProvider>
     </MemoryRouter>

@@ -1,15 +1,15 @@
 import { Badge, Button, MasterDetail, MasterItem, Surface, WorkspaceHero } from '@shop/design';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
+import { scopePath } from '../../shared/url/ScopePath';
 import { MemberInvitationDialog } from '../member/MemberInvitationDialog';
 import { memberInvitationAvailable } from '../member/MemberInvitationCommand';
 import { ACCESS_QUERY_STALE_TIME_MS, accessKey, readAccess } from './AccessQuery';
 import type { AccessRole } from './AccessSchema';
 import { roleCommandAvailable } from './AccessRoleCommand';
-import { AccessWorkspaceTabs } from './AccessWorkspaceTabs';
 import { invitationRecordsAvailable, invitationRecordsKey, readInvitationRecords } from './InvitationRecordsQuery';
 import type { InvitationRecord } from './InvitationRecordsSchema';
 import { RoleEditor, type RoleEditorRecord } from './RoleEditor';
@@ -17,6 +17,7 @@ import './role-access-workspace.css';
 
 export function RoleAccessWorkspace() {
   const context = useConsoleContext();
+  const navigate = useNavigate();
   const [search] = useSearchParams();
   const [selectedId, setSelectedId] = useState<string>();
   const [draftId, setDraftId] = useState<string>();
@@ -63,18 +64,16 @@ export function RoleAccessWorkspace() {
     <section className="roleaccessworkspace" aria-label="自定义身份与权限工作台">
       <WorkspaceHero
         className="roleaccesshero"
-        eyebrow="MEMBERS & PERMISSIONS · CUSTOM IDENTITY"
-        title="管理与权限"
-        description="像 Discord 一样先命名自定义身份，再从权威目录自由组合跨功能权限。"
-        actions={invitationEnabled ? <Button tone="primary" onPress={() => setInvitationOpen(true)}>邀请新成员</Button> : undefined}
+        eyebrow={section === 'invitations' ? 'MANAGEMENT · INVITATIONS' : 'MANAGEMENT · ROLE TEMPLATES'}
+        title={section === 'invitations' ? '邀请管理' : '角色模板'}
+        description={section === 'invitations' ? '管理当前范围内的管理员邀请与使用状态。' : '定义可复用的管理角色、功能权限与数据范围。'}
+        actions={<><Button onPress={() => void navigate(scopePath(context.scope, 'settings/members'))}>返回成员目录</Button>{section === 'invitations' && invitationEnabled ? <Button tone="primary" onPress={() => setInvitationOpen(true)}>邀请新成员</Button> : null}</>}
       />
 
-      <Surface className="roleaccessprinciple" depth="flat" padding="default" radius="large">
+      {section === 'roles' ? <Surface className="roleaccessprinciple" depth="flat" padding="default" radius="large">
         <span aria-hidden="true">✓</span>
         <div><strong>身份是权限容器，不是固定职位</strong><p>名称由商户自由定义；权限独立组合，每次成员分配都直接指定或继承明确范围。</p></div>
-      </Surface>
-
-      <AccessWorkspaceTabs current={section} />
+      </Surface> : null}
 
       {section === 'invitations' ? (
         <InvitationRecordsPanel
