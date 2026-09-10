@@ -26,6 +26,7 @@ export const accessModule = {
         'identity.stepup.start',
         'identity.stepup.complete',
         'member.invitations.read',
+        'audit.records.read',
       ],
       presentation: { title: '权限中心', summary: '成员角色、授权范围和 Access Version' },
     },

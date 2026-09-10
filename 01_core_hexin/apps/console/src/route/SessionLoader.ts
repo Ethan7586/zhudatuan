@@ -45,8 +45,12 @@ export function scopeShouldRevalidate({
   formMethod,
   defaultShouldRevalidate,
 }: Pick<ShouldRevalidateFunctionArgs, 'currentUrl' | 'nextUrl' | 'formMethod' | 'defaultShouldRevalidate'>): boolean {
-  if (formMethod === undefined && currentUrl.pathname === nextUrl.pathname && currentUrl.search !== nextUrl.search) return false;
+  if (formMethod === undefined && scopeRouteKey(currentUrl) === scopeRouteKey(nextUrl)) return false;
   return defaultShouldRevalidate;
+}
+
+function scopeRouteKey(url: URL): string | undefined {
+  return url.pathname.match(/^\/scopes\/[^/]+\/[^/]+/)?.[0];
 }
 
 export async function landingLoader({ request }: LoaderFunctionArgs) {

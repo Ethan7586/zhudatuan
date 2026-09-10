@@ -44,10 +44,9 @@ describe('member administrator invitation', () => {
     const writeText = vi.fn(() => Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
     renderRoute(ownerContext);
-    await screen.findByRole('table', { name: '成员管理' });
+    await screen.findByRole('table', { name: '管理员目录' });
 
-    await user.click(screen.getByRole('button', { name: '邀请管理' }));
-    await user.click(await screen.findByRole('button', { name: '邀请新成员' }));
+    await user.click(screen.getByRole('button', { name: '邀请管理员' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
     const level = within(dialog).getByRole('group', { name: '管理员级别' });
     expect((within(level).getByRole('radio', { name: /^普通管理员/ }) as HTMLInputElement).checked).toBe(true);
@@ -72,7 +71,7 @@ describe('member administrator invitation', () => {
     expect(within(receipt).getByRole('button', { name: '已复制' })).toBeTruthy();
     expect((await within(receipt).findByRole('status')).textContent).toContain('已复制到剪贴板');
     await user.click(within(receipt).getByRole('button', { name: '我已保存，关闭' }));
-    await user.click(screen.getByRole('button', { name: '邀请新成员' }));
+    await user.click(screen.getByRole('button', { name: '邀请管理员' }));
     expect(await screen.findByRole('dialog', { name: '生成管理员邀请码' })).toBeTruthy();
     expect(screen.queryByText('A'.repeat(10))).toBeNull();
   });
@@ -80,9 +79,8 @@ describe('member administrator invitation', () => {
   it('lets an Owner select a senior administrator and shows the real level in the receipt', async () => {
     const user = userEvent.setup();
     renderRoute(ownerContext);
-    await screen.findByRole('table', { name: '成员管理' });
-    await user.click(screen.getByRole('button', { name: '邀请管理' }));
-    await user.click(await screen.findByRole('button', { name: '邀请新成员' }));
+    await screen.findByRole('table', { name: '管理员目录' });
+    await user.click(screen.getByRole('button', { name: '邀请管理员' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
 
     await user.click(within(dialog).getByRole('radio', { name: /^高级管理员/ }));
@@ -104,9 +102,8 @@ describe('member administrator invitation', () => {
       },
     };
     renderRoute(seniorContext);
-    await screen.findByRole('table', { name: '成员管理' });
-    await user.click(screen.getByRole('button', { name: '邀请管理' }));
-    await user.click(await screen.findByRole('button', { name: '邀请新成员' }));
+    await screen.findByRole('table', { name: '管理员目录' });
+    await user.click(screen.getByRole('button', { name: '邀请管理员' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
 
     expect(within(dialog).queryByRole('group', { name: '管理员级别' })).toBeNull();
@@ -122,10 +119,9 @@ describe('member administrator invitation', () => {
   it('keeps the platform entry visible and creates the invitation for the selected tenant', async () => {
     const user = userEvent.setup();
     renderRoute(platformOwnerContext);
-    await screen.findByRole('table', { name: '成员管理' });
+    await screen.findByRole('table', { name: '管理员目录' });
 
-    await user.click(screen.getByRole('button', { name: '邀请管理' }));
-    await user.click(await screen.findByRole('button', { name: '邀请新成员' }));
+    await user.click(screen.getByRole('button', { name: '邀请管理员' }));
     const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
     await user.selectOptions(within(dialog).getByLabelText('目标租户'), 'tenant-zhudatuan');
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
@@ -136,7 +132,7 @@ describe('member administrator invitation', () => {
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('platform:one');
   });
 
-  it('merges every member returned by the member and access directories', async () => {
+  it('merges every operator returned by the member and access directories', async () => {
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json({
       items: [
         accessMembership('membership:employee', '测试员工'),
@@ -154,20 +150,18 @@ describe('member administrator invitation', () => {
       },
     });
 
-    const table = await screen.findByRole('table', { name: '成员管理' });
+    const table = await screen.findByRole('table', { name: '管理员目录' });
     expect(await within(table).findByText('测试员工')).toBeTruthy();
     expect(within(table).getByText('不应出现在本页')).toBeTruthy();
-    expect(screen.getByText('当前页 2 位 · 共 2 位成员')).toBeTruthy();
+    expect(screen.getByText('当前页 2 位 · 共 2 位管理员')).toBeTruthy();
   });
 
   it.each(missingEvidenceCases)('hides the write entry when %s evidence is missing', async (_name, sessionPatch) => {
     const user = userEvent.setup();
     renderRoute({ ...ownerContext, session: { ...ownerContext.session, ...sessionPatch } });
-    await screen.findByRole('table', { name: '成员管理' });
+    await screen.findByRole('table', { name: '管理员目录' });
 
-    await user.click(screen.getByRole('button', { name: '邀请管理' }));
-    expect(await screen.findByRole('heading', { name: '邀请管理' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: '邀请新成员' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '邀请管理员' })).toBeNull();
     expect(writes).toHaveLength(0);
   });
 
@@ -175,9 +169,8 @@ describe('member administrator invitation', () => {
     const user = userEvent.setup();
     server.use(http.post('*/api/v1/identity/invitations', () => HttpResponse.json({ id: 'invite:broken', code: 'short' }, { status: 201 })));
     renderRoute(ownerContext);
-    await screen.findByRole('table', { name: '成员管理' });
-    await user.click(screen.getByRole('button', { name: '邀请管理' }));
-    await user.click(await screen.findByRole('button', { name: '邀请新成员' }));
+    await screen.findByRole('table', { name: '管理员目录' });
+    await user.click(screen.getByRole('button', { name: '邀请管理员' }));
     const dialog = await screen.findByRole('dialog');
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
     await user.click(within(dialog).getByRole('button', { name: '生成邀请码' }));
@@ -191,9 +184,9 @@ describe('Owner member registration reset', () => {
   it('verifies the Owner password, resets without physical deletion and opens a fresh invitation flow', async () => {
     const user = userEvent.setup();
     renderRoute(ownerContext);
-    await screen.findByRole('table', { name: '成员管理' });
+    await screen.findByRole('table', { name: '管理员目录' });
 
-    await user.click(screen.getByRole('row', { name: '查看成员 测试员工' }));
+    await user.click(screen.getByRole('row', { name: '查看管理员 测试员工' }));
     await user.click(screen.getByRole('button', { name: '重置注册身份' }));
     const dialog = await screen.findByRole('dialog', { name: '重置注册身份' });
     expect(within(dialog).getByText('这不是物理删除会员资料')).toBeTruthy();
@@ -218,8 +211,8 @@ describe('Owner member registration reset', () => {
   it.each(resetMissingEvidenceCases)('hides reset actions when %s evidence is missing', async (_name, sessionPatch) => {
     const user = userEvent.setup();
     renderRoute({ ...ownerContext, session: { ...ownerContext.session, ...sessionPatch } });
-    await screen.findByRole('table', { name: '成员管理' });
-    await user.click(screen.getByRole('row', { name: '查看成员 测试员工' }));
+    await screen.findByRole('table', { name: '管理员目录' });
+    await user.click(screen.getByRole('row', { name: '查看管理员 测试员工' }));
 
     expect(screen.queryByRole('button', { name: '重置注册身份' })).toBeNull();
     expect(resetWrites).toHaveLength(0);
@@ -229,8 +222,8 @@ describe('Owner member registration reset', () => {
     const user = userEvent.setup();
     server.use(http.get('*/api/v1/members', () => HttpResponse.json(memberPage({ reset_allowed: false, reset_block_reason: 'OWNER_PROTECTED' }))));
     renderRoute(ownerContext);
-    await screen.findByRole('table', { name: '成员管理' });
-    await user.click(screen.getByRole('row', { name: '查看成员 测试员工' }));
+    await screen.findByRole('table', { name: '管理员目录' });
+    await user.click(screen.getByRole('row', { name: '查看管理员 测试员工' }));
 
     expect(screen.queryByRole('button', { name: '重置注册身份' })).toBeNull();
   });

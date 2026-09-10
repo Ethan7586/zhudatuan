@@ -1,12 +1,12 @@
 {
-  "name": "智慧翼统一登录",
-  "short_name": "智慧翼",
-  "description": "智慧翼企业福利商城",
+  "name": "MORVIA 统一账号认证",
+  "short_name": "MORVIA",
+  "description": "MORVIA · zhudatuan 主打团统一身份认证",
   "lang": "zh-CN",
   "start_url": "../",
   "scope": "../",
   "display": "standalone",
-  "background_color": "#F5F7FA",
+  "background_color": "#F4F5F8",
   "theme_color": "#143A8F",
   "icons": [
     {
