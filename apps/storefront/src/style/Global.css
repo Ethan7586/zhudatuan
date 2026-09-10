@@ -20,6 +20,7 @@ body {
 }
 
 .storefronttheme {
+  --storefront-mobile-navigation-height: calc(4.25rem + max(0.35rem, env(safe-area-inset-bottom)));
   min-height: 100dvh;
 }
 

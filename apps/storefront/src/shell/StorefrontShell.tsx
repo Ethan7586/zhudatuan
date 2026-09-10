@@ -10,7 +10,7 @@ type ViewModel = ReturnType<typeof useShellViewModel>;
 
 export function StorefrontShell({ viewmodel, children }: Readonly<{ viewmodel: ViewModel; children: ReactNode }>) {
   return (
-    <div className="min-h-dvh bg-[var(--sw-background)] pb-20 text-content md:pb-0">
+    <div className="min-h-dvh bg-[var(--sw-background)] pb-[var(--storefront-mobile-navigation-height)] text-content md:pb-0">
       <a href="#storefront-content" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[100] focus:rounded-lg focus:bg-surface focus:p-3">
         跳到主要内容
       </a>
