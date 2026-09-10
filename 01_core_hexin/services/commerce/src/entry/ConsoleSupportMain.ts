@@ -9,7 +9,7 @@ import { supportRoutes } from '../modules/support/05_interface_jieru/http/Suppor
 
 export const CONSOLE_SUPPORT_OPERATIONS = Object.freeze([
   'runtime.health.live', 'runtime.health.ready', 'runtime.health.startup',
-  'support.cases.read', 'support.messages.read', 'support.messages.send',
+  'support.cases.create', 'support.cases.read', 'support.messages.read', 'support.messages.send',
 ] as const satisfies readonly OperationId[]);
 
 const environment: ApiEnvironment = Object.freeze({
