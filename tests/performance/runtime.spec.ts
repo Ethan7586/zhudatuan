@@ -52,7 +52,9 @@ test('runtime budgets enforce keyset and database connection ceilings', () => {
   assert.equal(RUNTIME_LIMITS.sql.defaultRows, 50);
   assert.equal(RUNTIME_LIMITS.sql.maximumRows, 200);
   const used = Object.values(RUNTIME_LIMITS.pool).reduce((sum, profile) => sum + profile.maximumConnections, 0);
+  const sessionUsed = Math.max(RUNTIME_LIMITS.pool.query.maximumConnections + RUNTIME_LIMITS.pool.command.maximumConnections, RUNTIME_LIMITS.pool.worker.maximumConnections, RUNTIME_LIMITS.pool.migration.maximumConnections);
   assert.ok(used * 100 <= RUNTIME_LIMITS.poolBudget.databaseMaximumConnections * RUNTIME_LIMITS.poolBudget.maximumUtilizationPercent);
+  assert.ok(sessionUsed * 100 <= RUNTIME_LIMITS.poolBudget.sessionMaximumConnections * RUNTIME_LIMITS.poolBudget.maximumUtilizationPercent);
   assert.ok(RUNTIME_LIMITS.poolBudget.maximumUtilizationPercent <= 70);
 });
 

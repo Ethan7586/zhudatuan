@@ -10,6 +10,8 @@ describe('database pool profiles', () => {
     expect(query.max).toBe(RUNTIME_LIMITS.pool.query.maximumConnections);
     expect(command.max).toBe(RUNTIME_LIMITS.pool.command.maximumConnections);
     expect(worker.max).toBe(RUNTIME_LIMITS.pool.worker.maximumConnections);
+    expect(query.max + command.max).toBeLessThan(RUNTIME_LIMITS.poolBudget.sessionMaximumConnections);
+    expect(worker.max).toBeLessThan(RUNTIME_LIMITS.poolBudget.sessionMaximumConnections);
     expect(new Set([query.application_name, command.application_name, worker.application_name]).size).toBe(3);
     expect(query.options).toContain(`statement_timeout=${RUNTIME_LIMITS.pool.query.statementTimeoutMilliseconds}`);
     expect(query.options).toContain('jit=off');

@@ -508,13 +508,17 @@ function validate(cacheDocument, capacityDocument, telemetryDocument, networkDoc
   }
   const budget = capacityDocument.runtime.poolBudget;
   const connections = Object.values(capacityDocument.runtime.pool).reduce((sum, profile) => sum + profile.maximumConnections, 0);
+  const sessionConnections = Math.max(capacityDocument.runtime.pool.query.maximumConnections + capacityDocument.runtime.pool.command.maximumConnections, capacityDocument.runtime.pool.worker.maximumConnections, capacityDocument.runtime.pool.migration.maximumConnections);
   if (
     !Number.isSafeInteger(budget.databaseMaximumConnections) ||
     budget.databaseMaximumConnections < 1 ||
+    !Number.isSafeInteger(budget.sessionMaximumConnections) ||
+    budget.sessionMaximumConnections < 1 ||
     !Number.isSafeInteger(budget.maximumUtilizationPercent) ||
     budget.maximumUtilizationPercent < 1 ||
     budget.maximumUtilizationPercent > 70 ||
-    connections * 100 > budget.databaseMaximumConnections * budget.maximumUtilizationPercent
+    connections * 100 > budget.databaseMaximumConnections * budget.maximumUtilizationPercent ||
+    sessionConnections * 100 > budget.sessionMaximumConnections * budget.maximumUtilizationPercent
   ) {
     throw new Error(`POOL_BUDGET_EXCEEDED:${connections}/${budget.databaseMaximumConnections}`);
   }

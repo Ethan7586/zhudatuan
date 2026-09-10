@@ -23,7 +23,8 @@ for (const [name, value] of Object.entries({ malls: 1000, members: 10000000, pro
 const profiles = Object.values(capacity.runtime.pool);
 const poolConnections = profiles.reduce((sum, profile) => sum + profile.maximumConnections, 0);
 const budget = capacity.runtime.poolBudget;
-if (poolConnections * 100 > budget.databaseMaximumConnections * budget.maximumUtilizationPercent || budget.maximumUtilizationPercent > 70) {
+const sessionConnections = Math.max(capacity.runtime.pool.query.maximumConnections + capacity.runtime.pool.command.maximumConnections, capacity.runtime.pool.worker.maximumConnections, capacity.runtime.pool.migration.maximumConnections);
+if (poolConnections * 100 > budget.databaseMaximumConnections * budget.maximumUtilizationPercent || sessionConnections * 100 > budget.sessionMaximumConnections * budget.maximumUtilizationPercent || budget.maximumUtilizationPercent > 70) {
   violation('config/capacity.yml', 'POOL_BUDGET_EXCEEDED', `${poolConnections}/${budget.databaseMaximumConnections}`);
 }
 if (capacity.runtime.sql.defaultRows !== 50 || capacity.runtime.sql.maximumRows !== 200) {
@@ -70,7 +71,7 @@ if (!versioned.includes('CACHE_CATALOG[name].key')) {
 if (violations.length) {
   console.error(violations.join('\n'));
   process.exitCode = 1;
-} else console.log(`performance accepted=true pool=${poolConnections}/${budget.databaseMaximumConnections} sql=50/200 violations=0`);
+} else console.log(`performance accepted=true pool=${poolConnections}/${budget.databaseMaximumConnections} session=${sessionConnections}/${budget.sessionMaximumConnections} sql=50/200 violations=0`);
 
 function violation(location, code, detail) {
   violations.push(`code=${code} location=${location} detail=${detail}`);

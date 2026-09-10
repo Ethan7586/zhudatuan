@@ -133,6 +133,7 @@ runtime:
       maximumAttempts: 10
   poolBudget:
     databaseMaximumConnections: 100
+    sessionMaximumConnections: 15
     maximumUtilizationPercent: 70
   sql:
     defaultRows: 50
@@ -172,21 +173,21 @@ runtime:
     reconnectMaximumMilliseconds: 30000
   pool:
     query:
-      maximumConnections: 24
+      maximumConnections: 6
       connectionTimeoutMilliseconds: 3000
       idleTimeoutMilliseconds: 30000
       statementTimeoutMilliseconds: 5000
       idleTransactionTimeoutMilliseconds: 15000
       jit: false
     command:
-      maximumConnections: 20
+      maximumConnections: 4
       connectionTimeoutMilliseconds: 3000
       idleTimeoutMilliseconds: 30000
       statementTimeoutMilliseconds: 10000
       idleTransactionTimeoutMilliseconds: 15000
       jit: false
     worker:
-      maximumConnections: 24
+      maximumConnections: 10
       connectionTimeoutMilliseconds: 5000
       idleTimeoutMilliseconds: 30000
       statementTimeoutMilliseconds: 120000

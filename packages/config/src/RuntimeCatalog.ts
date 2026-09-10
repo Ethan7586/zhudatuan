@@ -1,5 +1,5 @@
 // Generated from config/cache.yml and config/capacity.yml. Do not edit.
-export const CONFIG_CHECKSUM = '7429b21c6e429575ee317ce3b88ad34a795e62b5e1194f317e23731a6ac38686' as const;
+export const CONFIG_CHECKSUM = '63362d19da8bd9a45f219a3a004c66c8b18eb79a9feef5382dbd2a3c5ddcbb16' as const;
 
 export const BROWSER_QUERY_POLICY = Object.freeze({
   "query": {
@@ -349,6 +349,7 @@ export const RUNTIME_LIMITS = Object.freeze({
   },
   "poolBudget": {
     "databaseMaximumConnections": 100,
+    "sessionMaximumConnections": 15,
     "maximumUtilizationPercent": 70
   },
   "sql": {
@@ -393,7 +394,7 @@ export const RUNTIME_LIMITS = Object.freeze({
   },
   "pool": {
     "query": {
-      "maximumConnections": 24,
+      "maximumConnections": 6,
       "connectionTimeoutMilliseconds": 3000,
       "idleTimeoutMilliseconds": 30000,
       "statementTimeoutMilliseconds": 5000,
@@ -401,7 +402,7 @@ export const RUNTIME_LIMITS = Object.freeze({
       "jit": false
     },
     "command": {
-      "maximumConnections": 20,
+      "maximumConnections": 4,
       "connectionTimeoutMilliseconds": 3000,
       "idleTimeoutMilliseconds": 30000,
       "statementTimeoutMilliseconds": 10000,
@@ -409,7 +410,7 @@ export const RUNTIME_LIMITS = Object.freeze({
       "jit": false
     },
     "worker": {
-      "maximumConnections": 24,
+      "maximumConnections": 10,
       "connectionTimeoutMilliseconds": 5000,
       "idleTimeoutMilliseconds": 30000,
       "statementTimeoutMilliseconds": 120000,
