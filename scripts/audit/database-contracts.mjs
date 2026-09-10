@@ -21,6 +21,7 @@ const ELEVATED_REPLAY_FILES = new Set([
   '20260828183000_zhudatuan_runtime_readiness_repair.sql',
   '20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql',
   '20260829054500_zhudatuan_identity_login_acl_repair.sql',
+  '20260904065000_finalize_constraints.sql',
 ]);
 const REGISTRATION_BOOTSTRAP_REPLAY_FUTURE_HEAD_ASSERTION =
   /\n  if exists\(select 1 from runtime\.schemaversion\n    where version>'20260828183000'\n      and version not in\('20260828190000','20260829040000'\)\) then\n    raise exception 'ZHUDATUAN_REGISTRATION_BOOTSTRAP_REPAIR_FUTURE_HEAD_INVALID';\n  end if;/;
