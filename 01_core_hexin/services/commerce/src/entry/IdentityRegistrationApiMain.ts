@@ -18,8 +18,7 @@ import {
 } from '../modules/identity/05_interface_jieru/http/IdentityOperations';
 import { FINANCE_OPERATOR_READ_OPERATION_IDS } from '../modules/finance/FinanceReadOperations';
 import { IdentityOperatorFinanceModule } from '../modules/finance/IdentityOperatorFinanceModule';
-import { MEMBER_OPERATOR_READ_OPERATION_IDS } from '../modules/member/03_application_yingyong/MemberReadOperations';
-import { IdentityOperatorMemberModule } from '../modules/member/05_interface_jieru/IdentityOperatorMemberModule';
+import { IdentityOperatorMemberModule, MEMBER_IDENTITY_OPERATOR_OPERATION_IDS } from '../modules/member/05_interface_jieru/IdentityOperatorMemberModule';
 import { IdentityOperatorNotificationModule } from '../modules/notification/IdentityOperatorNotificationModule';
 import { NOTIFICATION_OPERATOR_READ_OPERATION_IDS } from '../modules/notification/NotificationReadOperations';
 import {
@@ -43,7 +42,7 @@ const identityOperationIds = runtime.wechatIdentityEnabled
 const operationIds = Object.freeze([
   ...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS,
   ...identityOperationIds,
-  ...MEMBER_OPERATOR_READ_OPERATION_IDS,
+  ...MEMBER_IDENTITY_OPERATOR_OPERATION_IDS,
   ...ACCESS_OPERATOR_READ_OPERATION_IDS,
   ...FINANCE_OPERATOR_READ_OPERATION_IDS,
   ...REFERRAL_OPERATOR_READ_OPERATION_IDS,
