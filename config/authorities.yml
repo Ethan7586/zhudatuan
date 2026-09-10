@@ -73,7 +73,7 @@ owners:
 visuals:
   logicalSource: RepositoryAuthority config/visuals.yml
   repositoryRelativePath: config/visuals.yml
-  sha256: fbe1e8525b932b723e3cf2feb939b8fff4f4f0e8a73fac83240b70d5dc018a5d
+  sha256: 786157f996069ad57163c5074b9a954478ac778c10444c530883445edda88ce0
 navigation:
   logicalSource: RepositoryAuthority config/navigation.yml
   repositoryRelativePath: config/navigation.yml
