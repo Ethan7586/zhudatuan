@@ -13,8 +13,8 @@ export interface RuntimeImportRow extends Record<string, unknown> {
   readonly cursor_value?: number | string;
   readonly success_count?: number | string;
   readonly failure_count?: number | string;
-  readonly created_at?: string;
-  readonly updated_at?: string;
+  readonly created_at?: Date | string;
+  readonly updated_at?: Date | string;
   readonly validation_summary?: Readonly<Record<string, unknown>>;
   readonly last_error?: string | null;
   readonly errors?: readonly Readonly<{ row_number: number; reason_code: string; field: string | null; detail: unknown }>[];
@@ -46,8 +46,8 @@ export function runtimeImportCreated(row: RuntimeImportRow): RuntimeImportCreate
     cursor_value: Number(row.cursor_value ?? 0),
     success_count: Number(row.success_count ?? 0),
     failure_count: Number(row.failure_count ?? 0),
-    created_at: String(row.created_at),
-    updated_at: String(row.updated_at),
+    created_at: timestamp(row.created_at),
+    updated_at: timestamp(row.updated_at),
   });
 }
 
@@ -71,4 +71,11 @@ function runtimeImportState(value: string): ImportState {
   if (value === 'preflight' || value === 'scanning' || value === 'rejected') return value === 'rejected' ? 'failed' : 'validating';
   if (value === 'succeeded') return 'completed';
   return value as ImportState;
+}
+
+function timestamp(value: Date | string | undefined): string {
+  if (value === undefined) throw new Error('RUNTIME_IMPORT_TIME_INVALID');
+  const parsed = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(parsed.getTime())) throw new Error('RUNTIME_IMPORT_TIME_INVALID');
+  return parsed.toISOString();
 }
