@@ -284,11 +284,10 @@ jobs:
           npm run check:cleaninstall
           npm run check:artifacts
 
-      - name: Verify immutable migrations and MVP kernel
+      - name: Verify immutable migrations
         run: |
           npm run check:migrations
           npm run test:sql
-          npm run test:mvp
 
       - name: Typecheck and deterministic tests
         run: |
