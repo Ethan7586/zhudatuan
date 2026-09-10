@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { LOCAL_AUTH_ORIGIN, LOCAL_CONSOLE_ORIGIN, LOCAL_STOREFRONT_ORIGIN, type AuthTarget } from '@shop/config/client';
-import { localSeedEnvironment } from '@shop/config/server';
+import { LOCAL_SECRET_REFS, localSeedEnvironment } from '@shop/config/server';
 import { localSecret } from '../../tools/seed/src/LocalSecrets';
 import { Client } from 'pg';
 import { HttpKmsClient } from '../../services/commerce/src/platform/crypto/KmsClient';
@@ -42,6 +42,16 @@ export async function completePasswordSignIn(page: Page): Promise<void> {
   const password = await localSecret(localSeedEnvironment().ethanPasswordRef);
   await accountField.fill(account);
   await page.getByLabel('密码', { exact: true }).fill(password);
+  await page.getByRole('checkbox', { name: /我已阅读并同意/ }).check();
+  await page.getByRole('button', { name: /登录并进入/ }).click();
+}
+
+export async function completeOtpSignIn(page: Page): Promise<void> {
+  await page.getByRole('tab', { name: '验证码登录' }).click();
+  await page.getByLabel('登录账号或已绑定手机号').fill(account);
+  await page.getByRole('button', { name: '获取验证码' }).click();
+  await expect(page.getByText(/验证码发送请求已提交/)).toBeVisible();
+  await page.getByLabel('短信验证码').fill(await localSecret(LOCAL_SECRET_REFS.identityChallengeCode));
   await page.getByRole('checkbox', { name: /我已阅读并同意/ }).check();
   await page.getByRole('button', { name: /登录并进入/ }).click();
 }

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { LOCAL_API_ORIGIN, LOCAL_AUTH_ORIGIN, LOCAL_CONSOLE_ORIGIN, LOCAL_STOREFRONT_ORIGIN } from '@shop/config/client';
 import { expectWcagAA } from './Accessibility';
-import { completePasswordSignIn, expectResponsivePage, signInConsole, signInStorefront } from './Environment';
+import { completeOtpSignIn, completePasswordSignIn, expectResponsivePage, signInConsole, signInStorefront } from './Environment';
 
 test('真实 API 健康门禁与未知路径失败语义有效', async ({ request }) => {
   const health = await request.get(`${LOCAL_API_ORIGIN}/health/ready`);
@@ -62,3 +62,34 @@ test('运营人员深链登录后建立真实平台 Scope 并读取中控台', a
   await expectResponsivePage(page);
   await expectWcagAA(page);
 });
+
+test('员工密码登录建立两小时会话并可显式安全退出', async ({ page }) => {
+  await page.goto(`${LOCAL_AUTH_ORIGIN}/?target=storefront&returnpath=%2Fs%2Fzhudatuan-local%2Fprofile`);
+  await completePasswordSignIn(page);
+  await page.waitForURL(`${LOCAL_STOREFRONT_ORIGIN}/s/zhudatuan-local/profile`);
+  await expectSessionLifetime(page, 'storefront');
+  await expect(page.getByRole('heading', { name: 'Ethan' })).toBeVisible();
+  await page.getByRole('button', { name: '退出', exact: true }).click();
+  await page.waitForURL(new RegExp(`^${LOCAL_AUTH_ORIGIN.replaceAll('.', '\\.')}/`));
+  await expect(page.getByRole('heading', { name: '统一账号认证' })).toBeVisible();
+});
+
+test('运营人员使用本地固定验证码登录并可显式安全退出', async ({ page }) => {
+  await page.goto(`${LOCAL_AUTH_ORIGIN}/?target=console&returnpath=%2Fscopes%2Fplatform%2Forganization-platform-root%2Fcontrol`);
+  await completeOtpSignIn(page);
+  await page.waitForURL(new RegExp(`^${LOCAL_CONSOLE_ORIGIN.replaceAll('.', '\\.')}/scopes/`));
+  await expectSessionLifetime(page, 'console');
+  await page.getByRole('button', { name: /打开 Ethan 的账户菜单/ }).click();
+  await page.getByRole('button', { name: '退出登录' }).click();
+  await page.waitForURL(new RegExp(`^${LOCAL_AUTH_ORIGIN.replaceAll('.', '\\.')}/`));
+  await expect(page.getByRole('heading', { name: '统一账号认证' })).toBeVisible();
+});
+
+async function expectSessionLifetime(page: Parameters<typeof expectResponsivePage>[0], target: 'storefront' | 'console'): Promise<void> {
+  const cookie = (await page.context().cookies()).find(({ name }) => name === `__Host-${target}-session`);
+  expect(cookie).toBeDefined();
+  expect(cookie).toMatchObject({ domain: '127.0.0.1', path: '/', httpOnly: true, secure: true, sameSite: 'Strict' });
+  const remaining = (cookie?.expires ?? 0) - Date.now() / 1_000;
+  expect(remaining).toBeGreaterThan(7_080);
+  expect(remaining).toBeLessThanOrEqual(7_200);
+}
