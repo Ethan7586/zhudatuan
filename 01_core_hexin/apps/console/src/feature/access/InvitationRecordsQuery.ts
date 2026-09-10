@@ -11,9 +11,7 @@ export const invitationRecordsKey = (context: ConsoleContext) => Object.freeze([
 ] as const);
 
 export function invitationRecordsAvailable(context: ConsoleContext): boolean {
-  const level = context.session.governance?.level;
-  return (level === 'owner' || level === 'senior_administrator')
-    && context.session.permissions.includes('identity.invitation.manage')
+  return context.session.permissions.includes('identity.invitation.manage')
     && context.session.capabilities.includes('member.invitations.read');
 }
 

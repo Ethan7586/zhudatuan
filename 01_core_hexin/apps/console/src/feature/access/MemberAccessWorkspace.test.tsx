@@ -53,11 +53,15 @@ afterAll(() => server.close());
 describe('member directory pagination', () => {
   it('keeps the current page visible while the next cursor page loads', async () => {
     const user = userEvent.setup();
-    renderWorkspace();
+    const view = renderWorkspace();
 
     expect((await screen.findAllByText('第一页成员')).length).toBeGreaterThan(0);
+    expect(view.container.querySelector('.storefrontmembersworkspace')).not.toBeNull();
+    expect(view.container.querySelector('.storefrontmemberstage')).not.toBeNull();
+    await user.click(screen.getByRole('row', { name: '查看成员 第一页成员' }));
     expect(screen.getByText('治理邀请人')).toBeTruthy();
     expect(screen.getByText('Ethan')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '全屏查看成员目录' }));
     await user.click(screen.getByRole('button', { name: '下一页' }));
 
     expect(screen.getAllByText('第一页成员').length).toBeGreaterThan(0);

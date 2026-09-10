@@ -163,7 +163,7 @@ describe('custom identity and permission directory', () => {
   it('reuses the member page access directory cache when entering identity permissions', async () => {
     const user = userEvent.setup();
     renderSwitchWorkspace();
-    await screen.findByRole('heading', { name: '管理与权限控制中心' });
+    await screen.findByRole('heading', { name: '成员' });
     await waitFor(() => expect(reads).toBe(1));
 
     await user.click(screen.getByRole('button', { name: '身份与权限' }));
@@ -177,7 +177,7 @@ describe('custom identity and permission directory', () => {
     renderSwitchWorkspace();
     await waitFor(() => expect(reads).toBe(1));
 
-    await user.click(screen.getByRole('button', { name: '刷新' }));
+    await user.click(screen.getByRole('button', { name: '刷新成员名单' }));
 
     await waitFor(() => expect(reads).toBe(2));
   });
@@ -305,6 +305,30 @@ describe('custom identity and permission directory', () => {
     expect(within(table).getByText('生效中')).toBeTruthy();
     expect(within(table).getByText('已使用')).toBeTruthy();
     expect(within(table).getByText('已作废')).toBeTruthy();
+  });
+
+  it('reads invitation records for an administrator with the granted permission and capability', async () => {
+    invitationRecords = [{
+      id: 'invite:administrator', scope: 'tenant:one', scope_name: '主打团商户', label: '管理员发起的邀请',
+      governance_level: 'administrator', created_by: 'membership:administrator', created_by_name: '小白管理员',
+      accepted_membership_id: null, invitee_name: null, destination_masked: '138****0000',
+      max_uses: 1, use_count: 0, starts_at: '2026-09-10T12:00:00.000Z', expires_at: '2026-09-17T12:00:00.000Z',
+      accepted_at: null, status: 'active', created_at: '2026-09-10T12:00:00.000Z', version: '0',
+    }];
+    const administrator = {
+      ...context,
+      session: {
+        ...context.session,
+        governance: { level: 'administrator' as const, exactOwner: false, organization: 'tenant:one' },
+      },
+    };
+
+    renderWorkspace(administrator, '/scopes/tenant/tenant%3Aone/settings/access?section=invitations');
+
+    const table = await screen.findByRole('table', { name: '邀请记录，共 1 条' });
+    expect(within(table).getByText('138****0000')).toBeTruthy();
+    expect(within(table).getByText('小白管理员')).toBeTruthy();
+    expect(screen.queryByText('无权读取邀请记录')).toBeNull();
   });
 
   it('assigns two custom identities to one member and rereads their overlaid permissions and Access Version', async () => {
