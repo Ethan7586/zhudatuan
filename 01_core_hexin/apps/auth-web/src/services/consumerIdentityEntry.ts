@@ -12,6 +12,7 @@ export type IdentityEntry =
       application: string;
       target: string;
       storefrontOrigin: string;
+      adminTarget: string;
     }>
   | Readonly<{
       kind: 'operator';
@@ -19,6 +20,8 @@ export type IdentityEntry =
       target: string;
       adminOrigin: string;
       displayName: string;
+      consumerApplication: string;
+      consumerTarget: string;
     }>;
 
 export function resolveConsumerIdentityEntry(
@@ -43,6 +46,7 @@ export function resolveIdentityEntry(
   if (consumer !== null) {
     return Object.freeze({
       kind: 'consumer', nodeId: node.nodeId, ...consumer, storefrontOrigin: node.storefrontOrigin,
+      adminTarget: node.adminTarget,
     });
   }
 
@@ -60,5 +64,6 @@ export function resolveIdentityEntry(
   return Object.freeze({
     kind: 'operator', nodeId: node.nodeId, target: node.adminTarget,
     adminOrigin: node.adminOrigin, displayName: node.displayName,
+    consumerApplication: node.consumerApplication, consumerTarget: node.consumerTarget,
   });
 }

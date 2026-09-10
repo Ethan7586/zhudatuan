@@ -14,6 +14,7 @@ import {
   type CanonicalInvitation,
 } from '../services/canonicalRegistration';
 import { useIdentityActions } from './useIdentityActions';
+import { MorviaIdentityShell } from './MorviaIdentityShell';
 
 type PageMode = 'login' | 'register' | 'reset';
 type OperatorActionKey =
@@ -28,7 +29,9 @@ export const OperatorIdentityPage: React.FC<Readonly<{
   target: string;
   expectedOrigin: string;
   displayName: string;
-}>> = ({ target, expectedOrigin, displayName: nodeDisplayName }) => {
+  brand: 'morvia' | 'hongtai';
+  onAudienceSwitch: () => void;
+}>> = ({ target, expectedOrigin, displayName: nodeDisplayName, brand, onAudienceSwitch }) => {
   const search = typeof window === 'undefined' ? '' : window.location.search;
   const params = new URLSearchParams(search);
   const initialInvite = params.get('invite')?.trim().toUpperCase() ?? '';
@@ -230,22 +233,22 @@ export const OperatorIdentityPage: React.FC<Readonly<{
   const registrationBusy = identityActions.isBusy('operator-register');
   const resetCodeBusy = identityActions.isBusy('operator-reset-code');
   const resetBusy = identityActions.isBusy('operator-reset');
+  const modeTitle = mode === 'login' ? '欢迎回来' : mode === 'register' ? '加入运营团队' : '找回账号访问';
+  const modeDescription = mode === 'login'
+    ? '使用宏泰甄选运营账号进入工作台'
+    : mode === 'register'
+      ? '通过企业邀请码创建你的运营账号'
+      : '验证绑定手机号后重新设置密码';
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4 sm:p-8">
-      <section className="w-full max-w-lg overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-2xl shadow-slate-900/10">
-        <header className="bg-gradient-to-br from-[var(--sw-brand)] to-[var(--sw-brand-dark)] p-7 text-white sm:p-9">
-          <div className="flex items-center gap-3">
-            <img src={`${import.meta.env.BASE_URL}brand/brand-mark.svg`} alt="" className="h-12 w-12 rounded-2xl shadow-md" />
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200">Unified Identity</p>
-              <h1 className="mt-1 text-2xl font-black">{productName}</h1>
-            </div>
-          </div>
-          <p className="mt-5 text-sm leading-6 text-blue-100">统一账号、统一会话；登录后按会员身份进入对应工作台。</p>
-        </header>
+    <>
+      <MorviaIdentityShell audience="operator" brand={brand} contextLabel={productName} onAudienceSwitch={onAudienceSwitch}>
+        <div className="mb-7">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--sw-brand)]">管理员渠道</p>
+          <h2 className="mt-2 font-['MORVIA_Title'] text-3xl font-bold tracking-[-0.035em] text-[#111111]">{modeTitle}</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-500">{modeDescription}</p>
+        </div>
 
-        <div className="p-6 sm:p-8">
           <div className="mb-6 grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-semibold">
             <ModeButton active={mode === 'login'} onClick={() => changeMode('login')}>登录</ModeButton>
             <ModeButton active={mode === 'register'} onClick={() => changeMode('register')}>邀请注册</ModeButton>
@@ -310,8 +313,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
               <SubmitButton busy={resetBusy} onPointerDown={() => identityActions.pointerDown('operator-reset')} icon={<KeyRound className="h-4 w-4" />}>重置密码</SubmitButton>
             </form>
           )}
-        </div>
-      </section>
+      </MorviaIdentityShell>
 
       {policy !== null && invite !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
@@ -324,7 +326,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
           </div>
         </div>
       )}
-    </main>
+    </>
   );
 };
 

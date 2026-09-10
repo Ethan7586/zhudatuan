@@ -1,7 +1,6 @@
 /**
- * 智慧翼企业福利商城 - 应用入口 App.tsx
- * 正式统一登录入口
- * 技术服务方：雍彻科技
+ * MORVIA · zhudatuan 主打团 - 统一身份应用入口
+ * 技术服务方：SGSYEN TECH
  */
 
 import React from 'react';
@@ -13,14 +12,40 @@ import { resolveIdentityEntry } from './services/consumerIdentityEntry';
 export default function App() {
   const search = typeof window === 'undefined' ? '' : window.location.search;
   const hostname = typeof window === 'undefined' ? '' : window.location.hostname;
-  const entry = resolveIdentityEntry(search, hostname);
+  const [entry, setEntry] = React.useState(() => resolveIdentityEntry(search, hostname));
+
+  React.useEffect(() => {
+    if (entry === null) return;
+    document.title = `${entry.kind === 'operator' ? '管理员登录' : '会员登录'}｜MORVIA`;
+  }, [entry]);
+
+  const switchAudience = () => {
+    if (entry === null || typeof window === 'undefined') return;
+    const nextSearch = entry.kind === 'operator'
+      ? `?surface=web&application=${encodeURIComponent(entry.consumerApplication)}&target=${encodeURIComponent(entry.consumerTarget)}`
+      : `?target=${encodeURIComponent(entry.adminTarget)}`;
+    const nextEntry = resolveIdentityEntry(nextSearch, hostname);
+    if (nextEntry === null) return;
+    window.history.replaceState(null, '', nextSearch);
+    setEntry(nextEntry);
+  };
   return (
     <MallProvider>
       {entry === null
         ? <InvalidIdentityEntryPage hostname={hostname} />
         : entry.kind === 'operator'
-          ? <OperatorIdentityPage target={entry.target} expectedOrigin={entry.adminOrigin} displayName={entry.displayName} />
-          : <ConsumerIdentityPage application={entry.application} />}
+          ? <OperatorIdentityPage
+              target={entry.target}
+              expectedOrigin={entry.adminOrigin}
+              displayName={entry.displayName}
+              brand={entry.nodeId === 'node:hbbtzn:l1' ? 'hongtai' : 'morvia'}
+              onAudienceSwitch={switchAudience}
+            />
+          : <ConsumerIdentityPage
+              application={entry.application}
+              brand={entry.nodeId === 'node:hbbtzn:l1' ? 'hongtai' : 'morvia'}
+              onAudienceSwitch={switchAudience}
+            />}
     </MallProvider>
   );
 }
