@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react';
 import { Brand, NavigationIcon } from '@shop/design';
 import type { ConsoleNavigationNode } from '../entity/session/ConsoleSession';
 import { SETTINGS_SECTIONS, settingsSectionForRoute } from '../shared/navigation/SettingsSection';
@@ -15,8 +16,12 @@ export interface NavigationTreeProps {
 }
 
 export function NavigationTree({ active, collapsed, displayName, roleLabel, nodes, onNavigate, onDismiss, onToggle }: NavigationTreeProps) {
+  const navigation = useRef<HTMLElement>(null);
   const primary = nodes.filter((node) => node.experience.placement === 'primary');
   const secondary = nodes.filter((node) => node.experience.placement === 'secondary');
+  useLayoutEffect(() => {
+    navigation.current?.querySelector<HTMLElement>('[aria-current="page"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [active, collapsed]);
   return (
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
       <div className="sidebarbrand">
@@ -33,7 +38,7 @@ export function NavigationTree({ active, collapsed, displayName, roleLabel, node
         </button>
       </div>
       <div className="sidebarnavtitle">工作台工作流</div>
-      <nav aria-label="工作台与治理系统" className="sidebarnavigation">
+      <nav ref={navigation} aria-label="工作台与治理系统" className="sidebarnavigation">
         {primary.map((node) => (
           <NavigationBranch key={node.key} node={node} active={active} collapsed={collapsed} onNavigate={onNavigate} depth={0} />
         ))}
