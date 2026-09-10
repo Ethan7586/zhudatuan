@@ -9,6 +9,7 @@ import { formatDate } from '../../shared/ui/Format';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';
 import { MemberInvitationDialog } from '../member/MemberInvitationDialog';
+import { memberInvitationAvailable } from '../member/MemberInvitationCommand';
 import { memberKey, readMembers } from '../member/MemberQuery';
 import { MemberRegistrationResetDialog } from '../member/MemberRegistrationResetDialog';
 import type { Member } from '../member/MemberSchema';
@@ -56,6 +57,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
     staleTime: ACCESS_QUERY_STALE_TIME_MS,
   });
   const invitationSummaryReadable = invitationRecordsAvailable(context);
+  const invitationWritable = memberInvitationAvailable(context);
   const invitationSummaryQuery = useInfiniteQuery({
     queryKey: invitationRecordsKey(context),
     queryFn: ({ signal, pageParam }) => readInvitationRecords(context, pageParam, signal),
@@ -127,7 +129,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
           </div>
           <div className="storefrontmemberherometa">
             <button type="button" onClick={() => void navigate(scopePath(context.scope, 'settings/access'))}>角色模板</button>
-            <button type="button" data-tone="primary" onClick={() => setInvitationOpen(true)}>邀请管理员</button>
+            {invitationWritable ? <button type="button" data-tone="primary" onClick={() => setInvitationOpen(true)}>邀请管理员</button> : null}
           </div>
         </header>
 
