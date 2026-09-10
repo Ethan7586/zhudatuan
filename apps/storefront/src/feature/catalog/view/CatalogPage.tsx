@@ -42,7 +42,7 @@ export function CatalogPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
             <QuickFilter active={filters.subsidyOnly} onClick={() => updateFilters({ subsidyOnly: !filters.subsidyOnly })} label="企业专享" />
           </div>
         </header>
-        <div className="mt-4 grid grid-cols-[88px_minmax(0,1fr)] items-start gap-2 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-4">
+        <div className="mt-4 grid grid-cols-[minmax(88px,min-content)_minmax(0,1fr)] items-start gap-2 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-4">
           <aside className="sticky top-36 min-w-0 lg:hidden">
             <CategorySelector categories={viewmodel.presentationCategories} selected={filters.category} onSelect={(category) => updateFilters({ category })} mode="rail" />
           </aside>

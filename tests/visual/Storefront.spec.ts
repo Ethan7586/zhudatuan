@@ -4,8 +4,8 @@ import { parse } from 'yaml';
 import { LOCAL_STOREFRONT_ORIGIN } from '@shop/config/client';
 import { ROUTES } from '../../apps/storefront/src/generated/RouteBinding';
 import { signInStorefront } from '../browser/Environment';
-import { expectWcagAA } from '../browser/Accessibility';
-import { VISUAL_VIEWPORTS } from '../../scripts/check/VisualIntegrity';
+import { applyDoubleTextScale, expectWcagAA } from '../browser/Accessibility';
+import { expectVisualReady, VISUAL_VIEWPORTS } from '../../scripts/check/VisualIntegrity';
 import { expectUsable, fillRoute, prepareVisual, resetVisual } from './Runtime';
 
 for (const viewport of VISUAL_VIEWPORTS) {
@@ -43,14 +43,15 @@ for (const viewport of VISUAL_VIEWPORTS) {
 
 test('三主题权威、中文长文案和 200% 字号不会造成水平裁切', async ({ page }) => {
   await prepareVisual(page, { width: 390, height: 844 });
-  await signInStorefront(page, '/catalog');
+  await signInStorefront(page, ROUTES.storecatalog);
+  await expectVisualReady(page);
   expect(parse(readFileSync('config/visuals.yml', 'utf8')).themes).toEqual(['shop', 'market', 'governance']);
   await page.locator('main').evaluate((main) => {
     const paragraph = document.createElement('p');
     paragraph.textContent = '这是用于验证福利商城在超长中文业务说明、异常金额和大字号环境下仍然能够完整阅读并顺利操作的验收文案。'.repeat(4);
     main.prepend(paragraph);
   });
-  await page.addStyleTag({ content: 'html{font-size:200% !important}' });
+  await applyDoubleTextScale(page);
   await expectUsable(page);
 });
 

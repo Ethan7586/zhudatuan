@@ -15,13 +15,13 @@ export function ProductCard({ product, open, add }: Readonly<{ product: Presente
           <h3 className="line-clamp-2 min-h-10 text-xs font-bold leading-5 sm:text-sm" data-visual-copy="truncate" title={product.title}>
             {product.title}
           </h3>
-          <span className={`mt-2 flex items-start gap-1 text-[10px] ${availability.canPurchase ? 'text-success-strong' : 'text-warning-strong'}`}>
+          <span className={`mt-2 flex items-start gap-1 text-xs ${availability.canPurchase ? 'text-success-strong' : 'text-warning-strong'}`}>
             <Icon size={12} className="mt-0.5 shrink-0" aria-hidden="true" />
-            <span className="line-clamp-2">{availability.availabilityText}</span>
+            <span>{availability.availabilityText}</span>
           </span>
         </div>
       </button>
-      <div className="flex items-center justify-between gap-1 px-2 pb-2 sm:gap-2 sm:px-3 sm:pb-3">
+      <div className="flex items-center justify-between gap-[4px] px-[8px] pb-[8px] sm:gap-2 sm:px-3 sm:pb-3">
         {product.saleability.reasons.includes('price_unavailable') ? <b className="text-xs text-warning-strong">报价暂不可用</b> : <b className="text-xs text-danger sm:text-base">¥{formatMinor(product.priceWelfareMinor)}</b>}
         <button
           type="button"
@@ -29,7 +29,7 @@ export function ProductCard({ product, open, add }: Readonly<{ product: Presente
           onClick={() => add(product)}
           aria-label={`将${product.title}加入购物车`}
           title={availability.canPurchase ? '加入购物车' : availability.availabilityText}
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand text-inverse disabled:cursor-not-allowed disabled:bg-disabled"
+          className="grid h-[44px] w-[44px] shrink-0 place-items-center rounded-full bg-brand text-inverse disabled:cursor-not-allowed disabled:bg-disabled"
         >
           <Plus size={18} aria-hidden="true" />
         </button>

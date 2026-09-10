@@ -20,8 +20,22 @@ body {
 }
 
 .storefronttheme {
-  --storefront-mobile-navigation-height: calc(4.25rem + max(0.35rem, env(safe-area-inset-bottom)));
+  --storefront-mobile-navigation-height: calc(68px + max(6px, env(safe-area-inset-bottom)));
   min-height: 100dvh;
+}
+
+.storefrontbrandhome .swbrand {
+  gap: 12px;
+}
+
+.storefrontbrandhome .swbrand-mark img {
+  width: 44px;
+  height: 44px;
+}
+
+.storefrontbottomaction {
+  font-size: clamp(12px, 0.75rem, 18px);
+  line-height: 20px;
 }
 
 .storefronttheme[data-published-theme='true'] {
