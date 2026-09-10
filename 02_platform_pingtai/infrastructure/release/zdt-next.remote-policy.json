@@ -6,6 +6,10 @@
   "incomingRoot": "/opt/ai-delivery/incoming",
   "lockRoot": "/run/lock/ai-delivery",
   "auditRoot": "/var/log/ai-delivery",
+  "rollbackRoot": "/opt/ai-delivery/rollback",
+  "caddyConfig": "/etc/caddy/Caddyfile",
+  "minimumFreeBytes": 16106127360,
+  "lifecycleUnits": ["zhudatuan-release-policy.timer", "zhudatuan-release-policy.path"],
   "staleLockSeconds": 3600,
   "readiness": { "timeoutMs": 30000, "intervalMs": 500, "attemptTimeoutMs": 3000, "hardFailureGraceMs": 1000 },
   "protectedProcesses": [

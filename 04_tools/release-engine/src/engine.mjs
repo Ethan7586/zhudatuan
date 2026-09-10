@@ -116,37 +116,41 @@ export async function deployCommand(adapter, options) {
     }
   }
   const paths = statePaths(adapter);
-  const lockDirectories = [
-    ...(environment === 'production' ? [join(paths.locks, 'production.lock')] : []),
-    ...nodes.map((node) => join(paths.locks, 'nodes', `${node}.lock`)),
-    ...deployments.map(({ nodeKey, artifact }) => join(paths.locks, 'targets', nodeKey, `${artifact.target}.lock`)),
-  ];
-  const release = await acquireLocks(lockDirectories, {
-    project: adapter.project,
-    phase: `deploy:${environment}`,
-    sourceSha: packageSet.sourceSha,
-    nodes,
-    targets: [...new Set(deployments.map(({ artifact }) => artifact.target))].sort(),
-    services: [...new Set(deployments.map(({ deployment }) => deployment.service))].sort(),
-  });
-  try {
-    const results = [];
-    for (const item of deployments) results.push(await executeDeployment(adapter, item, environment, options));
-    const timings = aggregateDeployTimings(results);
-    timings.package = packageSet.timings?.package ?? 0;
-    timings.total = elapsed(started);
-    const result = { schema: 'ai.delivery.deploy.v1', project: adapter.project, environment, sourceSha: packageSet.sourceSha, results, timings, traffic: aggregateDeployTraffic(results), completedAt: new Date().toISOString() };
-    await writeJson(join(dirname(packagePath), `deploy-${environment}.json`), result);
-    return result;
-  } finally {
-    await release();
+  const results = [];
+  for (const item of deployments) {
+    const release = await acquireLocks([
+      join(paths.locks, 'nodes', `${item.nodeKey}.lock`),
+      join(paths.locks, 'targets', item.nodeKey, `${item.artifact.target}.lock`),
+    ], {
+      project: adapter.project,
+      phase: `deploy:${environment}`,
+      sourceSha: packageSet.sourceSha,
+      node: item.nodeKey,
+      target: item.artifact.target,
+      service: item.deployment.service,
+    });
+    try {
+      results.push({ ok: true, ...(await executeDeployment(adapter, item, environment, options)) });
+    } catch (error) {
+      results.push({ ok: false, node: item.nodeKey, target: item.artifact.target, environment, error: { code: error.code ?? 'DEPLOYMENT_FAILED', message: error.message, details: error.details ?? {} } });
+    } finally {
+      await release();
+    }
   }
+  const successful = results.filter((item) => item.ok);
+  const timings = aggregateDeployTimings(successful);
+  timings.package = packageSet.timings?.package ?? 0;
+  timings.total = elapsed(started);
+  const result = { schema: 'ai.delivery.deploy.v1', project: adapter.project, environment, sourceSha: packageSet.sourceSha, finalStatus: results.every((item) => item.ok) ? 'success' : successful.length > 0 ? 'partial-failure' : 'failure', results, timings, traffic: aggregateDeployTraffic(successful), completedAt: new Date().toISOString() };
+  await writeJson(join(dirname(packagePath), `deploy-${environment}.json`), result);
+  invariant(result.finalStatus === 'success', 'DEPLOYMENT_OBJECTS_FAILED', 'One or more independently locked deployment objects failed', result);
+  return result;
 }
 
 export async function installCommand(adapter, options) {
   const started = performance.now();
   const mode = options.mode ?? 'agent';
-  invariant(['agent', 'runtime-candidate', 'verify'].includes(mode), 'INSTALL_MODE_INVALID', `Unsupported install mode: ${mode}`);
+  invariant(['agent-candidate', 'agent', 'runtime-candidate', 'verify'].includes(mode), 'INSTALL_MODE_INVALID', `Unsupported install mode: ${mode}`);
   const nodeScope = mode === 'runtime-candidate' ? required(options.node, 'INSTALL_NODE_REQUIRED') : 'all';
   invariant(nodeScope === 'all' || Boolean(adapter.nodes[nodeScope]), 'INSTALL_NODE_UNKNOWN', `Unknown install node: ${nodeScope}`);
   await assertWorktreeClean(adapter.projectRoot);
@@ -196,7 +200,7 @@ export async function installCommand(adapter, options) {
   invariant(remoteHash.output.trim().split(/\s+/)[0] === archiveSha256, 'INSTALL_ARCHIVE_HASH_MISMATCH', 'Remote installation archive hash differs');
   await runCommand({ name: `install-directory:${mode}`, argv: ['ssh', host, 'mkdir', '-p', remoteRoot], timeoutMs: 30_000 }, basicContext(adapter));
   await runCommand({ name: `install-extract:${mode}`, argv: ['ssh', host, 'tar', '-xzf', remoteArchive, '-C', remoteRoot], timeoutMs: 120_000 }, basicContext(adapter));
-  const installed = await runCommand({ name: `install-apply:${mode}`, argv: ['ssh', host, 'flock', '-n', '/run/lock/ai-delivery-bootstrap.lock', 'bash', `${remoteRoot}/02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh`, mode, remoteRoot, nodeScope], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+  const installed = await runCommand({ name: `install-apply:${mode}`, argv: ['ssh', host, 'flock', '-n', `/run/lock/ai-delivery/${adapter.project}-bootstrap.lock`, 'bash', `${remoteRoot}/02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh`, mode, remoteRoot, nodeScope], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
   await runCommand({ name: `install-cleanup:${mode}`, argv: ['ssh', host, 'rm', '-f', remoteArchive], timeoutMs: 30_000 }, basicContext(adapter));
   return {
     schema: 'ai.delivery.install.v1',
@@ -312,9 +316,25 @@ async function executeDeployment(adapter, item, environment, options) {
   const stagedRemote = parseCommandJson(staged);
   let result = staged;
   let activated = null;
+  let preflight = null;
+  let externalBefore = null;
+  let externalAfter = null;
   if (environment === 'production') {
-    activated = await runCommand({ name: `activate:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'activate', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--approval', `${adapter.project}:${item.artifact.sourceSha}`, '--expected-current', lookupResult.current ?? 'none'], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+    const preflightCommand = await runCommand({ name: `preflight:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'preflight', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+    preflight = parseCommandJson(preflightCommand);
+    externalBefore = await externalDomainSnapshot(adapter);
+    const activateArgv = ['ssh', host, remoteAgent, 'activate', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--approval', `${adapter.project}:${item.artifact.sourceSha}`, '--expected-current', preflight.result.rollbackPoint.pointers.current ?? 'none'];
+    if (preflight.result.caddySemantic?.digest) activateArgv.push('--expected-caddy-semantic', preflight.result.caddySemantic.digest);
+    activated = await runCommand({ name: `activate:${item.nodeKey}:${item.artifact.target}`, argv: activateArgv, timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
     result = activated;
+    externalAfter = await externalDomainSnapshot(adapter);
+    const domainDifferences = compareDomainSnapshots(externalBefore, externalAfter);
+    if (domainDifferences.length > 0) {
+      const rolledBack = await runCommand({ name: `external-acceptance-rollback:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'rollback', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+      const afterRollback = await externalDomainSnapshot(adapter);
+      const rollbackDifferences = compareDomainSnapshots(externalBefore, afterRollback);
+      throw new DeliveryError('EXTERNAL_ACCEPTANCE_CHANGED', 'External domain baseline changed; target was rolled back', { domainDifferences, rollbackDifferences, before: externalBefore, after: externalAfter, afterRollback, rollback: parseCommandJson(rolledBack), activation: parseCommandJson(activated) });
+    }
   }
   const activatedRemote = activated ? parseCommandJson(activated) : null;
   const activationTimings = activatedRemote?.result?.timings ?? {};
@@ -338,10 +358,30 @@ async function executeDeployment(adapter, item, environment, options) {
       isolation: activationTimings.isolation ?? 0,
       remoteTotal: activated?.durationMs ?? 0,
     },
-    remote: { lookup: lookupRemote, stage: stagedRemote, activate: activatedRemote, final: parseCommandJson(result) },
+    receipt: activatedRemote?.result?.receipt ? { ...activatedRemote.result.receipt, externalAcceptance: { status: 'passed', count: externalAfter.length, before: externalBefore, after: externalAfter, differences: [] } } : null,
+    remote: { lookup: lookupRemote, stage: stagedRemote, preflight, activate: activatedRemote, final: parseCommandJson(result) },
     pointerRoot: item.deployment.pointerRoot,
     service: item.deployment.service,
   };
+}
+
+async function externalDomainSnapshot(adapter) {
+  const domains = adapter.productionAcceptance?.domains ?? [];
+  invariant(domains.length === 15 && new Set(domains).size === 15, 'PRODUCTION_DOMAIN_BASELINE_INVALID', 'Production acceptance requires exactly 15 unique domains');
+  const observations = await Promise.all(domains.map(async (host) => {
+    try {
+      const response = await fetch(`https://${host}/`, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(adapter.productionAcceptance?.timeoutMs ?? 12_000) });
+      return { host, status: response.status, statusText: response.statusText || '' };
+    } catch (error) {
+      return { host, status: null, statusText: 'NO_HTTP_STATUS', error: error?.cause?.code ?? error?.name ?? 'FETCH_FAILED' };
+    }
+  }));
+  return observations.sort((left, right) => left.host.localeCompare(right.host));
+}
+
+function compareDomainSnapshots(before, after) {
+  const prior = new Map(before.map((item) => [item.host, `${item.status ?? ''}:${item.statusText}`]));
+  return after.filter((item) => prior.get(item.host) !== `${item.status ?? ''}:${item.statusText}`).map((item) => ({ host: item.host, before: prior.get(item.host), after: `${item.status ?? ''}:${item.statusText}` }));
 }
 
 function aggregateDeployTimings(results) {

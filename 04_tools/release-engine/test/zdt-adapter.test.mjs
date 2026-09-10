@@ -9,6 +9,18 @@ const systemdRoot = join(projectRoot, '02_platform_pingtai/infrastructure/zhudat
 const adapter = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8'));
 const policy = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8'));
 
+test('production acceptance is fixed to the protected fifteen-domain baseline', () => {
+  assert.equal(adapter.productionAcceptance.domains.length, 15);
+  assert.equal(new Set(adapter.productionAcceptance.domains).size, 15);
+  assert.deepEqual(adapter.productionAcceptance.domains.slice(0, 6), [
+    'accounts.zhudatuan.com', 'api.zhudatuan.com', 'console.zhudatuan.com',
+    'labs.zhudatuan.com', 'www.zhudatuan.com', 'zhudatuan.com',
+  ]);
+  assert.equal(policy.caddyConfig, '/etc/caddy/Caddyfile');
+  assert.equal(policy.minimumFreeBytes, 15 * 1024 ** 3);
+  assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
+});
+
 test('build and remote adapters agree on every pointer and process', () => {
   for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
     for (const [target, deployment] of Object.entries(node.deployments)) {
@@ -137,6 +149,8 @@ test('runtime installer cannot restart or cut over a service', async () => {
   assert.doesNotMatch(source, /systemctl\s+(restart|start|reload)\b/);
   assert.doesNotMatch(source, /pm2\s+(restart|start|reload|startOrReload)\b/);
   assert.match(source, /systemctl daemon-reload/);
+  assert.match(source, /agent-candidate/);
+  assert.match(source, /candidate validated without installation/);
   assert.match(source, /i-2zeewhay0farxq8lucrd/);
   assert.match(source, /latest\/meta-data\/instance-id/);
   assert.match(source, /node_scope.*hbbtzn-l1/);
