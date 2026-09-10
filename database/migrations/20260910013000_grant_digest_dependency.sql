@@ -12,9 +12,8 @@ begin
   if exists(select 1 from runtime.schemaversion where version='20260910013000') then
     raise exception 'DIGEST_DEPENDENCY_ALREADY_APPLIED';
   end if;
-  if to_regnamespace('extensions') is null
-    or to_regprocedure('extensions.digest(text,text)') is null
-    or to_regprocedure('extensions.digest(bytea,text)') is null then
+  if to_regprocedure('public.digest(text,text)') is null
+    or to_regprocedure('public.digest(bytea,text)') is null then
     raise exception 'DIGEST_EXTENSION_MISSING';
   end if;
 end
@@ -26,10 +25,10 @@ do $grant_dependency$
 declare target record;
 begin
   if current_user<>session_user
-    or not exists(select 1 from pg_namespace where nspname='extensions' and nspowner::regrole=current_user::regrole)
+    or not pg_has_role(current_user,(select nspowner from pg_namespace where nspname='public'),'set')
     or exists(
       select 1 from pg_proc
-      where oid in('extensions.digest(text,text)'::regprocedure,'extensions.digest(bytea,text)'::regprocedure)
+      where oid in('public.digest(text,text)'::regprocedure,'public.digest(bytea,text)'::regprocedure)
         and proowner::regrole<>current_user::regrole
     ) then
     raise exception 'DIGEST_EXTENSION_OWNER_INVALID';
@@ -43,9 +42,9 @@ begin
     ) roles
     order by role_name
   loop
-    execute format('grant usage on schema extensions to %I',target.role_name);
+    execute format('grant usage on schema public to %I',target.role_name);
     execute format(
-      'grant execute on function extensions.digest(text,text),extensions.digest(bytea,text) to %I',
+      'grant execute on function public.digest(text,text),public.digest(bytea,text) to %I',
       target.role_name
     );
   end loop;
@@ -60,8 +59,8 @@ select runtime.record_migration_evidence(
   2,
   0,
   0,
-  'select namespace.nspname,procedure.proname,pg_get_function_identity_arguments(procedure.oid),procedure.proowner::regrole from pg_proc procedure join pg_namespace namespace on namespace.oid=procedure.pronamespace where namespace.nspname=''extensions'' and procedure.proname=''digest'' order by 3;',
-  'select role_name from (select owner_role role_name from runtime.moduleauthority union all select ''shopmigration'' union all select ''shopapp'' union all select ''shopjob'') roles where not has_schema_privilege(role_name,''extensions'',''usage'') or not has_function_privilege(role_name,''extensions.digest(text,text)'',''execute'') or not has_function_privilege(role_name,''extensions.digest(bytea,text)'',''execute'') order by role_name;'
+  'select namespace.nspname,procedure.proname,pg_get_function_identity_arguments(procedure.oid),procedure.proowner::regrole from pg_proc procedure join pg_namespace namespace on namespace.oid=procedure.pronamespace where namespace.nspname=''public'' and procedure.proname=''digest'' order by 3;',
+  'select role_name from (select owner_role role_name from runtime.moduleauthority union all select ''shopmigration'' union all select ''shopapp'' union all select ''shopjob'') roles where not has_schema_privilege(role_name,''public'',''usage'') or not has_function_privilege(role_name,''public.digest(text,text)'',''execute'') or not has_function_privilege(role_name,''public.digest(bytea,text)'',''execute'') order by role_name;'
 );
 
 insert into runtime.schemaversion(version,checksum)
@@ -89,16 +88,16 @@ begin
       union all select 'shopjob'
     ) roles
   loop
-    if not has_schema_privilege(target.role_name,'extensions','usage')
-      or not has_function_privilege(target.role_name,'extensions.digest(text,text)','execute')
-      or not has_function_privilege(target.role_name,'extensions.digest(bytea,text)','execute') then
+    if not has_schema_privilege(target.role_name,'public','usage')
+      or not has_function_privilege(target.role_name,'public.digest(text,text)','execute')
+      or not has_function_privilege(target.role_name,'public.digest(bytea,text)','execute') then
       raise exception 'DIGEST_DEPENDENCY_PRIVILEGE_INVALID:%',target.role_name;
     end if;
   end loop;
   if exists(
     select 1 from pg_proc procedure
     join pg_namespace namespace on namespace.oid=procedure.pronamespace
-    cross join lateral regexp_matches(procedure.prosrc,'extensions\.([a-zA-Z_][a-zA-Z0-9_]*)','g') reference(name)
+    cross join lateral regexp_matches(procedure.prosrc,'public\.([a-zA-Z_][a-zA-Z0-9_]*)','g') reference(name)
     where namespace.nspname in(select schema_name from runtime.moduleauthority)
       and reference.name[1]<>'digest'
   ) then raise exception 'UNAPPROVED_EXTENSION_FUNCTION_DEPENDENCY'; end if;

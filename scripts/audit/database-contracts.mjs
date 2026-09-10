@@ -134,7 +134,6 @@ try {
     }
     if (name === SECURE_STAGE) await stageFreshReplaySecrets(database);
     if (name === PROVIDER_HARDCUT) await seedProviderHardcutUpgrade(database);
-    if (name === DIGEST_DEPENDENCY && replayRole === undefined) await stageDigestExtensionReplay(database);
     if (replayRole !== undefined && !ownerInheritanceEnabled && name >= OWNERSHIP_CUTOVER) {
       await execute(database, 'reset role', 'module ownership lease elevation');
       await execute(database, ownerInheritanceSql(true), 'module ownership lease');
@@ -286,18 +285,6 @@ async function seedBootstrapPrecondition(database) {
     insert into public.members(id,user_id,primary_identifier,status) values('member-fresh-replay-ethan','user-fresh-replay-ethan','local_username:ethan','active');
     insert into public.member_login_aliases(provider,subject,member_id) values('local_username','ethan','member-fresh-replay-ethan');`,
     'bootstrap precondition'
-  );
-}
-
-async function stageDigestExtensionReplay(database) {
-  await execute(
-    database,
-    `create schema if not exists extensions;
-    create function extensions.digest(value text,algorithm text) returns bytea
-      language sql immutable strict parallel safe as $function$ select public.digest(value,algorithm) $function$;
-    create function extensions.digest(value bytea,algorithm text) returns bytea
-      language sql immutable strict parallel safe as $function$ select public.digest(value,algorithm) $function$;`,
-    'digest extension replay'
   );
 }
 
