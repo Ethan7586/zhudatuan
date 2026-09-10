@@ -3,6 +3,7 @@
   width: min(58rem, calc(100% - 1.5rem));
   height: clamp(38rem, calc(100dvh - 8rem), 58rem);
   margin: var(--sw-space-3) auto;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto minmax(0, 1fr) auto;
   overflow: hidden;
   border: 0.0625rem solid var(--sw-border);
