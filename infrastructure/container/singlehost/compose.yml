@@ -269,7 +269,9 @@ services:
     env_file:
       - /opt/smart-wiston/shared/config/seed.env
       - *release-environment
-    environment: { NODE_EXTRA_CA_CERTS: /run/secrets/runtimeca }
+    environment:
+      ACCEPTANCE_ASSET_DIRECTORY: /app/acceptance/products
+      NODE_EXTRA_CA_CERTS: /run/secrets/runtimeca
     secrets: *workload-secrets
     depends_on:
       secretstore: { condition: service_healthy }

@@ -1,14 +1,15 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import type { Client } from 'pg';
-import { localSeedEnvironment } from '@shop/config/server';
+import { visualSeedEnvironment } from '@shop/config/server';
 import { withMigrationOwnership } from '../../../services/commerce/src/platform/database/MigrationOwnership';
 import { HttpObjectStore } from '../../../services/commerce/src/platform/object/ObjectStore';
 import { localSecret } from './LocalSecrets';
 import { LOCAL_OWNER } from './LocalOwner';
 import { LOCAL_PRICEBOOK } from './LocalPricing';
 
-const environment = localSeedEnvironment();
+const environment = visualSeedEnvironment();
 const [connectionString, objectToken] = await Promise.all([localSecret(environment.adminDatabaseConnectionRef), localSecret(environment.objectStoreTokenRef)]);
 const objects = new HttpObjectStore(environment.objectStoreEndpoint, objectToken);
 const products = Object.freeze([
@@ -22,7 +23,7 @@ const products = Object.freeze([
     compare: 15_800,
     account: 'welfare',
     coverPath: 'catalog/visual/care.jpg',
-    coverFile: new URL('../../../apps/storefront/public/products/care.jpg', import.meta.url),
+    coverFile: join(environment.acceptanceAssetDirectory, 'care.jpg'),
   }),
   Object.freeze({
     id: 'product:visual:meal',
@@ -34,7 +35,7 @@ const products = Object.freeze([
     compare: 3_000,
     account: 'meal',
     coverPath: 'catalog/visual/meal.jpg',
-    coverFile: new URL('../../../apps/storefront/public/products/meal.jpg', import.meta.url),
+    coverFile: join(environment.acceptanceAssetDirectory, 'meal.jpg'),
   }),
   Object.freeze({
     id: 'product:visual:movie',
@@ -46,7 +47,7 @@ const products = Object.freeze([
     compare: 6_000,
     account: 'welfare',
     coverPath: 'catalog/visual/movie.jpg',
-    coverFile: new URL('../../../apps/storefront/public/products/movie.jpg', import.meta.url),
+    coverFile: join(environment.acceptanceAssetDirectory, 'movie.jpg'),
   }),
 ] as const);
 const covers = await Promise.all(products.map((product) => ensureCover(product)));

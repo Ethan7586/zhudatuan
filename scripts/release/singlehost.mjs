@@ -22,6 +22,7 @@ if (clientManifest.clients.map(({ id }) => id).join(',') !== clients.join(',')) 
 
 mkdirSync(outputRoot, { recursive: false, mode: 0o755 });
 for (const client of clients) copyTree(join(root, 'apps', client, 'dist'), join(outputRoot, 'apps', client));
+copyTree(join(root, 'apps', 'storefront', 'public', 'products'), join(outputRoot, 'acceptance', 'products'));
 copyTree(join(root, 'database', 'migrations'), join(outputRoot, 'database', 'migrations'));
 copyTree(join(root, 'database', 'contracts'), join(outputRoot, 'database', 'contracts'));
 copyTree(join(root, 'infrastructure', 'container', 'singlehost'), join(outputRoot, 'deployment'));

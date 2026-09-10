@@ -22,7 +22,7 @@
     "docs/architecture/福利商城理想方案20260904.md",
     "docs/architecture/福利商城代码修改清单20260904.md"
   ],
-  "count": 2577,
+  "count": 2579,
   "coverage": {
     "manifest": 81,
     "viewmodel": 211,
@@ -31,7 +31,7 @@
     "test": 328,
     "binding": 12
   },
-  "treeSha256": "5e3adef465ecc9c30b36451371367f10a533bab088cff0530d264010005e3ad1",
+  "treeSha256": "096ace215a0b0406fa08c5a89c2e08a86be01c0e53cca4b65b7dd49db54f3d5b",
   "entries": [
     {
       "path": "apps/auth/.env.example",
@@ -15142,8 +15142,8 @@
     {
       "path": "packages/config/src/index.test.ts",
       "kind": "test",
-      "sha256": "b812098f865576d88003f1d8021e55d23e0cdcbe96b8824945b315591ffd0d72",
-      "size": 14496,
+      "sha256": "f6ad788d3a3aa499ea67efe72e4ea9889f8be8d28285469c7fc2125413382144",
+      "size": 14985,
       "mode": "0644"
     },
     {
@@ -15200,6 +15200,13 @@
       "kind": "support",
       "sha256": "7ada3ccfb9fd21f28cc8ff8724a098c8576147a5c76b85dda6bd3205229b5782",
       "size": 1169,
+      "mode": "0644"
+    },
+    {
+      "path": "packages/config/src/PathEnvironment.ts",
+      "kind": "support",
+      "sha256": "b13ad56a8b39c83f7129d8cd58d5e3b626506bd3acae6f55364e7836ab2a61ff",
+      "size": 359,
       "mode": "0644"
     },
     {
@@ -15261,8 +15268,8 @@
     {
       "path": "packages/config/src/ServerEnvironment.ts",
       "kind": "support",
-      "sha256": "c7a287b4d0e9416242eb12de7ad9e763261d8efcf12308209b2bc2c3b076dfc9",
-      "size": 624,
+      "sha256": "c4bf6473c9383d208590ceed38ddb66908fd463eb47bf425462d3045550267e5",
+      "size": 665,
       "mode": "0644"
     },
     {
@@ -15284,6 +15291,13 @@
       "kind": "support",
       "sha256": "009ae6dfa4e4dd980d9ccd0ea26566379bbf4effb14b905c53ff191f6ef47596",
       "size": 301,
+      "mode": "0644"
+    },
+    {
+      "path": "packages/config/src/VisualSeedEnvironment.ts",
+      "kind": "support",
+      "sha256": "4cf0056fc066bfba040b874669f94eb699419554b674d28f89058b1ebe39e5be",
+      "size": 770,
       "mode": "0644"
     },
     {

@@ -14,4 +14,5 @@ export * from './Release';
 export * from './SmokeEnvironment';
 export * from './WechatApplication';
 export * from './WecomProvider';
+export * from './VisualSeedEnvironment';
 export * from './WorkerEnvironment';

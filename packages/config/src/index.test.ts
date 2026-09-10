@@ -34,6 +34,7 @@ import {
   validateApiEnvironment,
   validateJobsEnvironment,
   validateProviderWorkerEnvironment,
+  visualSeedEnvironment,
 } from './ServerEnvironment';
 import { relativeRoutePath } from './RoutePath';
 import { providerConnectionConfig } from './ProviderConfig';
@@ -196,6 +197,7 @@ describe('canonical runtime configuration', () => {
     expect(() => localComposeEnvironment({ LOCAL_POSTGRES_PORT: '80' })).toThrow('LOCAL_POSTGRES_PORT_INVALID');
     expect(localProviderEnvironment({}).providerPort).toBe(9080);
     const seed = {
+      ACCEPTANCE_ASSET_DIRECTORY: '/private/acceptance/products',
       SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8443',
       LOCAL_ADMIN_DATABASE_CONNECTION_REF: 'shop/local/database/admin',
       SECRET_STORE_BEARER_TOKEN: secretStoreBearerToken,
@@ -213,8 +215,11 @@ describe('canonical runtime configuration', () => {
       apiEndpoint: 'http://127.0.0.1:3001',
       serviceVersion: 'local-test',
     });
+    expect(visualSeedEnvironment(seed).acceptanceAssetDirectory).toBe('/private/acceptance/products');
     expect(localSeedEnvironment({ ...seed, LOCAL_API_ENDPOINT: 'http://api:3001' }).apiEndpoint).toBe('http://api:3001');
     expect(() => localSeedEnvironment({ ...seed, LOCAL_API_ENDPOINT: 'http://attacker.example:3001' })).toThrow('LOCAL_API_ENDPOINT_INVALID');
+    expect(() => visualSeedEnvironment({ ...seed, ACCEPTANCE_ASSET_DIRECTORY: '../products' })).toThrow('ACCEPTANCE_ASSET_DIRECTORY_INVALID');
+    expect(() => visualSeedEnvironment({ ...seed, ACCEPTANCE_ASSET_DIRECTORY: '/private/../products' })).toThrow('ACCEPTANCE_ASSET_DIRECTORY_INVALID');
   });
 
   it('owns Auth and Storefront origins, versions and local exceptions in one fail-closed source', () => {

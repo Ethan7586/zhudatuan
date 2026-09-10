@@ -37,7 +37,7 @@
     "local:verify-services": "node --env-file=infrastructure/container/local/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/localinfra/src/Verify.ts",
     "local:migrate": "node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/Migrate.ts",
     "local:seed": "node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/Seed.ts",
-    "local:seed:visual": "node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/Visual.ts",
+    "local:seed:visual": "ACCEPTANCE_ASSET_DIRECTORY=\"$PWD/apps/storefront/public/products\" node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/Visual.ts",
     "local:seed:journey": "node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/Journey.ts",
     "local:verify": "node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/Verify.ts",
     "local:credentials": "node --env-file=services/commerce/.env.local --import tsx tools/localinfra/src/Launch.ts --import tsx tools/seed/src/AcceptanceCredentials.mts",
