@@ -22,7 +22,7 @@ $precondition$;
 reset role;
 
 do $grant_dependency$
-declare target record;
+declare extensionfunction record; target record;
 begin
   if current_user<>session_user
     or not pg_has_role(current_user,(select nspowner from pg_namespace where nspname='public'),'set')
@@ -30,9 +30,24 @@ begin
       select 1 from pg_proc
       where oid in('public.digest(text,text)'::regprocedure,'public.digest(bytea,text)'::regprocedure)
         and proowner::regrole<>current_user::regrole
-    ) then
+  ) then
     raise exception 'DIGEST_EXTENSION_OWNER_INVALID';
   end if;
+  for extensionfunction in
+    select format('%I.%I(%s)',namespace.nspname,procedure.proname,
+      pg_get_function_identity_arguments(procedure.oid)) signature
+    from pg_depend catalogdependency
+    join pg_extension extension on extension.oid=catalogdependency.refobjid
+    join pg_proc procedure on procedure.oid=catalogdependency.objid
+    join pg_namespace namespace on namespace.oid=procedure.pronamespace
+    where catalogdependency.classid='pg_proc'::regclass
+      and catalogdependency.refclassid='pg_extension'::regclass
+      and catalogdependency.deptype='e'
+      and extension.extname='pgcrypto'
+    order by namespace.nspname,procedure.proname,procedure.oid
+  loop
+    execute format('revoke all privileges on function %s from public',extensionfunction.signature);
+  end loop;
   for target in
     select distinct role_name from (
       select owner_role role_name from runtime.moduleauthority
@@ -94,6 +109,19 @@ begin
       raise exception 'DIGEST_DEPENDENCY_PRIVILEGE_INVALID:%',target.role_name;
     end if;
   end loop;
+  if exists(
+    select 1
+    from pg_depend catalogdependency
+    join pg_extension extension on extension.oid=catalogdependency.refobjid
+    join pg_proc procedure on procedure.oid=catalogdependency.objid
+    cross join lateral aclexplode(coalesce(procedure.proacl,acldefault('f',procedure.proowner))) privilege
+    where catalogdependency.classid='pg_proc'::regclass
+      and catalogdependency.refclassid='pg_extension'::regclass
+      and catalogdependency.deptype='e'
+      and extension.extname='pgcrypto'
+      and privilege.grantee=0
+      and privilege.privilege_type='EXECUTE'
+  ) then raise exception 'DIGEST_PUBLIC_EXECUTE_REMAINS'; end if;
   if exists(
     select 1 from pg_proc procedure
     join pg_namespace namespace on namespace.oid=procedure.pronamespace
