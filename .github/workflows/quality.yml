@@ -52,6 +52,13 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Install release plan dependency
+        run: |
+          started_at="$(date +%s)"
+          npm install --prefix 04_tools/release-engine esbuild@0.28.1 --no-save --package-lock=false --ignore-scripts --no-audit --no-fund
+          elapsed_seconds="$(( $(date +%s) - started_at ))"
+          printf 'Minimal esbuild install: %ss\n' "$elapsed_seconds" | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Resolve immutable base and head
         id: refs
         env:

@@ -9,7 +9,7 @@ import {
   materializeSflConsoleArtifact,
   resolveConsoleAppConfig,
 } from '@shop/config/sfl-console-runtime';
-import consoleReleaseDeclaration from '../../../02_platform_pingtai/config/console-node-manifests.json' with { type: 'json' };
+import { SFL_CONSOLE_RELEASE_DECLARATION } from '@shop/config/sfl-node-registry';
 import { readConsoleArtifact, validateConsoleArtifactManifest } from '../../../04_tools/scripts/release/console-artifact.mjs';
 import { consoleImmutableArtifactDigest } from '../../../04_tools/scripts/release/console-digest.mjs';
 
@@ -17,7 +17,7 @@ const root = resolve(import.meta.dirname, '../../..');
 const sourceSha = 'a'.repeat(40);
 
 async function manifest(sourceTree = 'clean', immutableArtifactDigest = `sha256:${'b'.repeat(64)}`) {
-  return await materializeSflConsoleArtifact(consoleReleaseDeclaration, {
+  return await materializeSflConsoleArtifact(SFL_CONSOLE_RELEASE_DECLARATION, {
     source_sha: sourceSha,
     build_id: 'console:test:single-build',
     source_tree: sourceTree,
@@ -35,17 +35,17 @@ test('one raw Console production build works without node-specific API or identi
       ...process.env,
       SHOP_BUILD_COMMIT: sourceSha,
       SHOP_BUILD_DIRTY: 'false',
-      VITE_API_BASE_URL: '',
-      VITE_AUTH_BASE_URL: '',
+      VITE_API_BASE_URL: 'http://127.0.0.1:3001',
+      VITE_AUTH_BASE_URL: 'http://127.0.0.1:3002',
       VITE_CLIENT_VERSION: '1.0.0',
     },
   });
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   const dist = resolve(root, '01_core_hexin/apps/console/dist');
   const artifact = await readConsoleArtifact(dist, { expectedCommit: sourceSha, requireClean: true });
-  const l0 = resolveConsoleAppConfig(artifact.manifest, 'console.zhudatuan.com');
+  const l0 = resolveConsoleAppConfig(artifact.manifest, 'console.fufu.wang');
   const l1 = resolveConsoleAppConfig(artifact.manifest, 'console.hbbtzn.com');
-  assert.equal(l0.apiBaseUrl, 'https://api.zhudatuan.com');
+  assert.equal(l0.apiBaseUrl, 'https://api.fufu.wang');
   assert.equal(l1.apiBaseUrl, 'https://api.hbbtzn.com');
   assert.equal(l0.sourceSha, l1.sourceSha);
   assert.equal(l0.immutableArtifactDigest, l1.immutableArtifactDigest);
@@ -67,7 +67,7 @@ test('Console artifact binds the final immutable payload to two full generic Nod
     const immutableArtifactDigest = consoleImmutableArtifactDigest(directory);
     writeFileSync(join(directory, 'console-build.json'), JSON.stringify(await manifest('clean', immutableArtifactDigest)));
     const artifact = await readConsoleArtifact(directory, { expectedCommit: sourceSha, requireClean: true });
-    const l0 = resolveConsoleAppConfig(artifact.manifest, 'console.zhudatuan.com');
+    const l0 = resolveConsoleAppConfig(artifact.manifest, 'console.fufu.wang');
     const l1 = resolveConsoleAppConfig(artifact.manifest, 'console.hbbtzn.com');
     assert.equal(l0.nodeContext.signed_level, 'L0');
     assert.equal(l1.nodeContext.signed_level, 'L1');

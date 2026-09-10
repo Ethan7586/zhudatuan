@@ -91,7 +91,7 @@ describe('PgSessionResolver realm account projection', () => {
     const resolver = new PgSessionResolver({ query } as never);
     const headers = bindRequestNodeContext(
       Object.freeze({ authorization: `Bearer ${'t'.repeat(32)}` }),
-      resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.zhudatuan.com'),
+      resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufu.wang'),
     );
 
     await expect(resolver.resolve(headers))
@@ -100,7 +100,7 @@ describe('PgSessionResolver realm account projection', () => {
 
   it('rejects an L0 cookie on L1 without a write and still accepts it on L0', async () => {
     const query = vi.fn(async (text: string, values: readonly unknown[]) => ({
-      rows: values[1] === 'api.zhudatuan.com' ? [{
+      rows: values[1] === 'api.fufu.wang' ? [{
         actor_id: 'principal:shared', account_id: 'account:l0', realm_id: 'realm:l0',
         session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
         access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
@@ -114,10 +114,10 @@ describe('PgSessionResolver realm account projection', () => {
     )))
       .rejects.toThrow('AUTHENTICATION_REQUIRED');
     await expect(resolver.resolve(bindRequestNodeContext(
-      Object.freeze({ cookie }), resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.zhudatuan.com'),
+      Object.freeze({ cookie }), resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufu.wang'),
     )))
       .resolves.toMatchObject({ account: 'account:l0', realm: 'realm:l0', session: 'session:l0' });
-    expect(query.mock.calls.map((call) => call[1]?.[1])).toEqual(['api.hbbtzn.com', 'api.zhudatuan.com']);
+    expect(query.mock.calls.map((call) => call[1]?.[1])).toEqual(['api.hbbtzn.com', 'api.fufu.wang']);
     expect(query.mock.calls.every((call) => call[0].trimStart().startsWith('select '))).toBe(true);
   });
 });

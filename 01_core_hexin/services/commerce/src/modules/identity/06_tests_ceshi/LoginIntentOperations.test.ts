@@ -75,7 +75,7 @@ function action() {
 }
 
 function request(body: Record<string, unknown>): OperationRequest {
-  const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.zhudatuan.com');
+  const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.fufu.wang');
   const scope = { kind: 'platform' as const, id: 'organization-platform-root', path: [] };
   return {
     type: 'identity.loginintents.create',
@@ -102,7 +102,7 @@ function request(body: Record<string, unknown>): OperationRequest {
     input: {
       path: {},
       query: {},
-      headers: { host: 'api.zhudatuan.com' },
+      headers: { host: 'api.fufu.wang' },
       body,
       rawBody: JSON.stringify(body),
       deadline: Date.now() + 1_000,

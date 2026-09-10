@@ -40,7 +40,7 @@ describe('NodeServer NodeContext ingress', () => {
     const server = listen(outerHandler, 0, '127.0.0.1', resolver);
     await server.ready;
     try {
-      const response = await nodeRequest(server.port(), 'api.zhudatuan.com', '/api/v1/identity/sessions', 'POST', {
+      const response = await nodeRequest(server.port(), 'api.fufu.wang', '/api/v1/identity/sessions', 'POST', {
         'x-zdt-identity-entry-host': 'api.hbbtzn.com',
         'x-sfl-node-id': 'node:hbbtzn:l1',
         'x-sfl-node-manifest-id': 'manifest:hbbtzn:l1:v1',

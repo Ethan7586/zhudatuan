@@ -18,7 +18,7 @@ const runtimeConnection = process.env.SHOP_TEST_DATABASE_URL;
 const appConnection = process.env.SHOP_TEST_APP_DATABASE_URL;
 const IDENTITY_KEY = 'sfl95-identity-key';
 const SESSION_KEY = 'sfl95-session-key';
-const nodes = [node('l0'), node('l1')];
+const nodes = [node('node:zhudatuan:l0'), node('node:hbbtzn:l1')];
 
 interface NodeSpec {
   readonly id: string;

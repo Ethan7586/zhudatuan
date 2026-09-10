@@ -13,7 +13,8 @@ export const definition = Object.freeze({
   permissions: ['channel.foodvoucher.operate'],
   configSchema: 'provider.foodvoucher.v1',
   eventSubscriptions: ['ProviderWebhookReceived'],
-  secretRefs: ['credential'],
+  // Matches createCakeuncleClient authentication and createPorts webhook verification.
+  secretRefs: ['channelNo', 'channelKey', 'webhookSecret'],
   limits: STANDARD_PROVIDER_LIMITS,
 } as const satisfies UnsignedProviderManifest);
 

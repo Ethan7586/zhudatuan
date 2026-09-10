@@ -13,7 +13,8 @@ export const definition = Object.freeze({
   permissions: ['channel.book.operate'],
   configSchema: 'provider.book.v1',
   eventSubscriptions: ['ProviderWebhookReceived'],
-  secretRefs: ['credential'],
+  // Matches createWenxuanClient authentication; secret also verifies provider webhooks.
+  secretRefs: ['keyId', 'secret'],
   limits: STANDARD_PROVIDER_LIMITS,
 } as const satisfies UnsignedProviderManifest);
 

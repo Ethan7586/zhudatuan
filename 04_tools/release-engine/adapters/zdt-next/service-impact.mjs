@@ -14,7 +14,7 @@ export async function resolveImpact({ adapter, changes }) {
     format: 'esm',
     metafile: true,
     outdir: '.ai-delivery/impact-analysis',
-    packages: 'bundle',
+    packages: 'external',
     platform: 'node',
     plugins: [await workspaceResolver(adapter.projectRoot)],
     sourcemap: false,

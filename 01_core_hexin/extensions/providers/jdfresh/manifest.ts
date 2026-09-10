@@ -13,7 +13,8 @@ export const definition = Object.freeze({
   permissions: ['channel.jdfresh.operate'],
   configSchema: 'provider.jdfresh.v1',
   eventSubscriptions: ['ProviderWebhookReceived'],
-  secretRefs: ['credential'],
+  // Matches createJdClient authentication and createPorts webhook verification.
+  secretRefs: ['keyId', 'privateKey', 'webhookSecret'],
   limits: STANDARD_PROVIDER_LIMITS,
 } as const satisfies UnsignedProviderManifest);
 

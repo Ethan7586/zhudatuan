@@ -13,7 +13,8 @@ export const definition = Object.freeze({
   permissions: ['channel.directcharge.operate'],
   configSchema: 'provider.directcharge.v1',
   eventSubscriptions: ['ProviderWebhookReceived'],
-  secretRefs: ['credential'],
+  // Matches createWanlianClient authentication and createPorts webhook verification.
+  secretRefs: ['keyId', 'privateKey', 'webhookSecret'],
   limits: STANDARD_PROVIDER_LIMITS,
 } as const satisfies UnsignedProviderManifest);
 
