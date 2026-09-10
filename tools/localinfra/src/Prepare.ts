@@ -38,10 +38,17 @@ interface PreparedSecrets {
 await Promise.all([mkdir(tls, { recursive: true }), mkdir(join(local, 'data', 'objects'), { recursive: true }), mkdir(composeSecrets, { recursive: true })]);
 await prepareCertificate();
 const prepared = await loadOrCreateSecrets(rotate);
-await writePrivate(credentialsFile, `${JSON.stringify({
-  [LOCAL_CREDENTIAL_KEYS.kmsBearerToken]: prepared.kmsBearerToken,
-  [LOCAL_CREDENTIAL_KEYS.secretStoreBearerToken]: prepared.secretStoreBearerToken,
-}, null, 2)}\n`);
+await writePrivate(
+  credentialsFile,
+  `${JSON.stringify(
+    {
+      [LOCAL_CREDENTIAL_KEYS.kmsBearerToken]: prepared.kmsBearerToken,
+      [LOCAL_CREDENTIAL_KEYS.secretStoreBearerToken]: prepared.secretStoreBearerToken,
+    },
+    null,
+    2
+  )}\n`
+);
 await Promise.all([
   writePrivate(join(composeSecrets, 'postgresadmin'), required(prepared.catalog, LOCAL_SECRET_REFS.postgresAdmin)),
   writePrivate(join(composeSecrets, 'postgresapi'), required(prepared.catalog, LOCAL_SECRET_REFS.postgresApi)),
@@ -315,19 +322,12 @@ async function persistedBearerTokens(): Promise<
     secretStoreBearerToken?: string;
   }>
 > {
-  const [infrastructure, commerce, credentials] = await Promise.all([
-    readEnvironment(infrastructureEnvironmentFile),
-    readEnvironment(commerceEnvironmentFile),
-    readCredentials(credentialsFile),
-  ]);
+  const [infrastructure, commerce, credentials] = await Promise.all([readEnvironment(infrastructureEnvironmentFile), readEnvironment(commerceEnvironmentFile), readCredentials(credentialsFile)]);
   const serverSecret = stableCredential(
     [credentials[LOCAL_CREDENTIAL_KEYS.secretStoreBearerToken], infrastructure[LOCAL_ENVIRONMENT_KEYS.secretStoreBearerToken], commerce.SECRET_STORE_BEARER_TOKEN],
     'LOCAL_SECRET_STORE_BEARER_TOKEN_DRIFT'
   );
-  const serverKms = stableCredential(
-    [credentials[LOCAL_CREDENTIAL_KEYS.kmsBearerToken], infrastructure[LOCAL_ENVIRONMENT_KEYS.kmsBearerToken], commerce.KMS_BEARER_TOKEN],
-    'LOCAL_KMS_BEARER_TOKEN_DRIFT'
-  );
+  const serverKms = stableCredential([credentials[LOCAL_CREDENTIAL_KEYS.kmsBearerToken], infrastructure[LOCAL_ENVIRONMENT_KEYS.kmsBearerToken], commerce.KMS_BEARER_TOKEN], 'LOCAL_KMS_BEARER_TOKEN_DRIFT');
   return Object.freeze({
     ...(serverKms ? { kmsBearerToken: bearerToken(serverKms, 'LOCAL_KMS_BEARER_TOKEN_INVALID') } : {}),
     ...(serverSecret ? { secretStoreBearerToken: bearerToken(serverSecret, 'LOCAL_SECRET_STORE_BEARER_TOKEN_INVALID') } : {}),

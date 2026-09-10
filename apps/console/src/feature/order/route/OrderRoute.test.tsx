@@ -1120,7 +1120,8 @@ describe('Order route', () => {
     await user.clear(amount);
     await user.type(amount, '10.00');
     await user.type(within(action).getByLabelText('退款依据'), '订单差额退回');
-    await user.type(within(action).getByLabelText('一次性复核凭证'), 'p'.repeat(43));
+    await user.click(within(action).getByLabelText('一次性复核凭证'));
+    await user.paste('p'.repeat(43));
     await user.click(within(action).getByRole('checkbox'));
     await user.click(within(action).getByRole('button', { name: '提交退款' }));
     expect(await within(action).findByText('退款任务已受理')).toBeTruthy();
@@ -1129,7 +1130,8 @@ describe('Order route', () => {
     await user.click(await within(dialog).findByRole('button', { name: '处理恢复事项' }));
     action = screen.getByRole('dialog', { name: /处理支付恢复事项/ });
     await user.type(within(action).getByLabelText('处理依据'), '重新核对支付渠道结果');
-    await user.type(within(action).getByLabelText('一次性复核凭证'), 'r'.repeat(43));
+    await user.click(within(action).getByLabelText('一次性复核凭证'));
+    await user.paste('r'.repeat(43));
     await user.click(within(action).getByRole('checkbox'));
     await user.click(within(action).getByRole('button', { name: '提交恢复' }));
     expect(await within(action).findByText('恢复请求已受理')).toBeTruthy();

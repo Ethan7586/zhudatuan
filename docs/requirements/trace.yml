@@ -1,6 +1,6 @@
 source: RepositoryAuthority docs/福利商城功能清单.xlsx
 workbookSha256: 48b2a8ea94b9b20d2599772d8fe1871637f48dbbbc3408e09e0ea8a1822e7436
-navigationCatalogSha256: b09829c6b6da59cd97705b8e7df536dcad6e7990cd89df31037e905dbf7cc690
+navigationCatalogSha256: 42741cb554f4b9d51e3a85f479a427acb3935db7f9df52e141b3cfc35d26685d
 contractSha256: 8d0af97921650e963c858e13b7660d73b0d7d9a0ed0a8a0108e064f7e834fb55
 journeyCatalogSha256: 63325ab3955bc65b7d2cc383eefdaea0968b302ddaa86b2d196b4be26589d4e8
 generated: true
@@ -68,6 +68,7 @@ requirements:
       - consoleproductdetail
       - consoleproducts
       - consolesettings
+      - consoletasks
       - consolevouchers
     routes:
       - /scopes/:scopeKind/:scopeId/control
@@ -75,6 +76,7 @@ requirements:
       - /scopes/:scopeKind/:scopeId/products
       - /scopes/:scopeKind/:scopeId/products/:productId
       - /scopes/:scopeKind/:scopeId/settings
+      - /scopes/:scopeKind/:scopeId/tasks
       - /scopes/:scopeKind/:scopeId/vouchers
     directOperations:
       - catalog.pools.read
@@ -3898,6 +3900,7 @@ requirements:
       - consoleimporttask
       - consoleproductdetail
       - consoleproducts
+      - consoletasks
       - suppliercatalog
       - supplierinventory
       - supplierpricing
@@ -3910,6 +3913,7 @@ requirements:
       - /scopes/:scopeKind/:scopeId/pricing
       - /scopes/:scopeKind/:scopeId/products
       - /scopes/:scopeKind/:scopeId/products/:productId
+      - /scopes/:scopeKind/:scopeId/tasks
     directOperations:
       - catalog.pools.read
     transitiveOperations:
@@ -9459,6 +9463,7 @@ requirements:
       - consolequalification
       - consolerisk
       - consolesettings
+      - consoletasks
       - supplieraccount
     routes:
       - /scopes/:scopeKind/:scopeId/account
@@ -9475,6 +9480,7 @@ requirements:
       - /scopes/:scopeKind/:scopeId/settings/partners
       - /scopes/:scopeKind/:scopeId/settings/partners/qualifications
       - /scopes/:scopeKind/:scopeId/settings/risk
+      - /scopes/:scopeKind/:scopeId/tasks
     directOperations:
       - access.center.read
     transitiveOperations:
@@ -12140,6 +12146,7 @@ requirements:
       - consoleimporttask
       - consoleproductdetail
       - consoleproducts
+      - consoletasks
       - miniappcatalog
       - miniappproduct
       - storecatalog
@@ -12154,6 +12161,7 @@ requirements:
       - /scopes/:scopeKind/:scopeId/inventory
       - /scopes/:scopeKind/:scopeId/products
       - /scopes/:scopeKind/:scopeId/products/:productId
+      - /scopes/:scopeKind/:scopeId/tasks
     directOperations:
       - catalog.pools.read
     transitiveOperations:
@@ -17886,6 +17894,7 @@ requirements:
       - consolequalification
       - consolerisk
       - consolesettings
+      - consoletasks
       - miniappnotifications
       - miniappprofile
       - miniappsecurity
@@ -17916,6 +17925,7 @@ requirements:
       - /scopes/:scopeKind/:scopeId/settings/partners
       - /scopes/:scopeKind/:scopeId/settings/partners/qualifications
       - /scopes/:scopeKind/:scopeId/settings/risk
+      - /scopes/:scopeKind/:scopeId/tasks
     directOperations:
       - access.center.read
     transitiveOperations:

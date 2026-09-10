@@ -69,6 +69,18 @@ export async function completeConsoleStepup(page: Page): Promise<void> {
   await page.locator('main:visible').first().waitFor({ state: 'visible' });
 }
 
+export async function completeStorefrontStepup(page: Page): Promise<void> {
+  const dialog = page.getByRole('dialog', { name: '确认是你本人操作' });
+  await expect(dialog).toBeVisible();
+  const challengeResponse = page.waitForResponse((response) => response.request().method() === 'POST' && response.url().endsWith('/api/v1/identity/stepup/challenges'));
+  await dialog.getByRole('button', { name: '发送验证码' }).click();
+  const payload = (await (await challengeResponse).json()) as Readonly<{ id?: unknown }>;
+  if (typeof payload.id !== 'string') throw new Error('BROWSER_STEPUP_CHALLENGE_INVALID');
+  await dialog.getByLabel('二次验证验证码').fill(await localStepupCode(payload.id));
+  await dialog.getByRole('button', { name: '确认验证' }).click();
+  await expect(dialog).toBeHidden();
+}
+
 export async function expectResponsivePage(page: Page): Promise<void> {
   await page.locator('main:visible').first().waitFor({ state: 'visible' });
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);

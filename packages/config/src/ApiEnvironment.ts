@@ -123,9 +123,7 @@ export function validateApiEnvironment(source: ApiEnvironment | EnvironmentSourc
 }
 
 function validateProductionNetwork(source: ApiEnvironment | EnvironmentSource): void {
-  const allowed = apiAllowedOrigins(source)
-    .slice()
-    .sort();
+  const allowed = apiAllowedOrigins(source).slice().sort();
   const expectedAllowed = Object.values(CLIENT_ORIGINS).sort();
   if (allowed.join(',') !== expectedAllowed.join(',')) throw new Error('PRODUCTION_ALLOWED_ORIGINS_INVALID');
   const targets = apiReturnTargets(source);

@@ -54,24 +54,26 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
   });
 
   afterAll(async () => {
-    await admin.query("delete from runtime.outbox where trace_id like $1 or aggregate_id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query(
-      `delete from identity.preauth preauth using identity.invitationclaim claim
+    await admin.query('delete from runtime.outbox where trace_id like $1 or aggregate_id like $1', [`${prefix}%`]).catch(() => undefined);
+    await admin
+      .query(
+        `delete from identity.preauth preauth using identity.invitationclaim claim
       where preauth.reference_id=claim.id::text and claim.invitation_id like $1`,
-      [`${prefix}%`]
-    ).catch(() => undefined);
-    await admin.query("delete from identity.preauth where reference_id like $1 or principal_id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from identity.invitationclaim where invitation_id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from identity.invitation where id like $1", [`${prefix}%`]).catch(() => undefined);
+        [`${prefix}%`]
+      )
+      .catch(() => undefined);
+    await admin.query('delete from identity.preauth where reference_id like $1 or principal_id like $1', [`${prefix}%`]).catch(() => undefined);
+    await admin.query('delete from identity.invitationclaim where invitation_id like $1', [`${prefix}%`]).catch(() => undefined);
+    await admin.query('delete from identity.invitation where id like $1', [`${prefix}%`]).catch(() => undefined);
     await admin.query('delete from identity.registrationpolicy where id=$1', [registrationPolicy]).catch(() => undefined);
-    await admin.query("delete from identity.challenge where id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from identity.session where id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from access.scopegrant where membership_id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from access.membershiprole where membership_id like $1", [`${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from access.membership where id like $1 or id like $2", [`${prefix}%`, `membership:${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from member.profile where id like $1 or id like $2", [`${prefix}%`, `member:${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from identity.credential where principal_id like $1 or principal_id like $2", [`${prefix}%`, `principal:${prefix}%`]).catch(() => undefined);
-    await admin.query("delete from identity.principal where id like $1 or id like $2", [`${prefix}%`, `principal:${prefix}%`]).catch(() => undefined);
+    await admin.query('delete from identity.challenge where id like $1', [`${prefix}%`]).catch(() => undefined);
+    await admin.query('delete from identity.session where id like $1', [`${prefix}%`]).catch(() => undefined);
+    await admin.query('delete from access.scopegrant where membership_id like $1', [`${prefix}%`]).catch(() => undefined);
+    await admin.query('delete from access.membershiprole where membership_id like $1', [`${prefix}%`]).catch(() => undefined);
+    await admin.query('delete from access.membership where id like $1 or id like $2', [`${prefix}%`, `membership:${prefix}%`]).catch(() => undefined);
+    await admin.query('delete from member.profile where id like $1 or id like $2', [`${prefix}%`, `member:${prefix}%`]).catch(() => undefined);
+    await admin.query('delete from identity.credential where principal_id like $1 or principal_id like $2', [`${prefix}%`, `principal:${prefix}%`]).catch(() => undefined);
+    await admin.query('delete from identity.principal where id like $1 or id like $2', [`${prefix}%`, `principal:${prefix}%`]).catch(() => undefined);
     await Promise.allSettled([pool.end(), admin.end()]);
   });
 
@@ -122,38 +124,43 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
   it('never reserves invitation capacity above max uses', async () => {
     const invitation = `${prefix}:invitation`;
     const repository = new PgInvitationRepository();
-    await transactions.write(options('identity.invitations.create', 'invitation-create'), (context) => repository.create(context, {
-      id: invitation,
-      kind: 'campaign',
-      target: 'storefront',
-      organization,
-      membership: null,
-      principal: null,
-      recipientHash: null,
-      token: { hash: Buffer.alloc(32, 7), version: `concurrency.${suffix}` },
-      issuer: issuerMembership,
-      issuerAccessVersion: 1,
-      grantDigest: hash('grant'),
-      assurance: 1,
-      maxUses: 1,
-      expiresAt: new Date(Date.now() + 60_000),
-      policy: registrationPolicy,
-      termsHash,
-      reason: '验证并发邀请码容量不会超额',
-    }));
+    await transactions.write(options('identity.invitations.create', 'invitation-create'), (context) =>
+      repository.create(context, {
+        id: invitation,
+        kind: 'campaign',
+        target: 'storefront',
+        organization,
+        membership: null,
+        principal: null,
+        recipientHash: null,
+        token: { hash: Buffer.alloc(32, 7), version: `concurrency.${suffix}` },
+        issuer: issuerMembership,
+        issuerAccessVersion: 1,
+        grantDigest: hash('grant'),
+        assurance: 1,
+        maxUses: 1,
+        expiresAt: new Date(Date.now() + 60_000),
+        policy: registrationPolicy,
+        termsHash,
+        reason: '验证并发邀请码容量不会超额',
+      })
+    );
     const locked = await transactions.read(options('identity.invitations.resolve', 'invitation-read'), (context) => repository.find(context, [{ hash: Buffer.alloc(32, 7), version: `concurrency.${suffix}` }], 'storefront'));
-    const reserve = (request: string, fill: number) => transactions.write(options('identity.invitations.resolve', request), (context) => repository.reserve(context, locked, {
-      claim: randomUUID(),
-      preauth: createHash('sha256').update(`${prefix}:preauth:${fill}`).digest(),
-      browser: Buffer.alloc(32, fill + 2),
-      device: Buffer.alloc(32, fill + 4),
-      recipient: null,
-      principal: null,
-      proof: 'terms',
-      state: 'reserved',
-      authorization: { stateHash: hash(`state:${fill}`), nonceHash: hash(`nonce:${fill}`), challenge: 'c'.repeat(43) },
-      returnTarget: `${prefix}:return`,
-    }));
+    const reserve = (request: string, fill: number) =>
+      transactions.write(options('identity.invitations.resolve', request), (context) =>
+        repository.reserve(context, locked, {
+          claim: randomUUID(),
+          preauth: createHash('sha256').update(`${prefix}:preauth:${fill}`).digest(),
+          browser: Buffer.alloc(32, fill + 2),
+          device: Buffer.alloc(32, fill + 4),
+          recipient: null,
+          principal: null,
+          proof: 'terms',
+          state: 'reserved',
+          authorization: { stateHash: hash(`state:${fill}`), nonceHash: hash(`nonce:${fill}`), challenge: 'c'.repeat(43) },
+          returnTarget: `${prefix}:return`,
+        })
+      );
 
     await expectExactlyOne([reserve('invitation-one', 11), reserve('invitation-two', 21)]);
     const claims = await admin.query<{ count: number }>("select count(*)::int count from identity.invitationclaim where invitation_id=$1 and state in('reserved','proofpending','proved')", [invitation]);
@@ -165,16 +172,18 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
     const browser = Buffer.alloc(32, 31);
     const device = Buffer.alloc(32, 32);
     const memberships = [candidate(issuerMembership, '验收身份一'), candidate(`${prefix}:candidate`, '验收身份二')];
-    const created = await transactions.write(options('identity.federations.callback', 'selection-create'), (context) => repository.create(context, {
-      principal: issuerPrincipal,
-      target: 'storefront',
-      memberships,
-      returnTarget: `${prefix}:return`,
-      authorization: { stateHash: hash('selection-state'), nonceHash: hash('selection-nonce'), challenge: 'd'.repeat(43) },
-      assurance: 1,
-      browser,
-      device,
-    }));
+    const created = await transactions.write(options('identity.federations.callback', 'selection-create'), (context) =>
+      repository.create(context, {
+        principal: issuerPrincipal,
+        target: 'storefront',
+        memberships,
+        returnTarget: `${prefix}:return`,
+        authorization: { stateHash: hash('selection-state'), nonceHash: hash('selection-nonce'), challenge: 'd'.repeat(43) },
+        assurance: 1,
+        browser,
+        device,
+      })
+    );
     const consume = (request: string) => transactions.write(options('identity.federations.complete', request), (context) => repository.consume(context, created.id, browser, device, issuerMembership));
 
     await expectExactlyOne([consume('selection-one'), consume('selection-two')]);
@@ -189,19 +198,20 @@ describe.runIf(endpointAvailable)('Identity single-consumption concurrency', () 
     const subjectHash = hash(`${prefix}:subject`);
     const mobileHash = hash(`${prefix}:mobile`);
     const employee = `employee-${suffix}`;
-    const enroll = (request: string) => transactions.write(options('identity.enrollments.complete', request), async (context) => {
-      await members.lockMobile(context, mobileHash);
-      const existing = await enrollments.findPrincipal(context, subjectHash);
-      const mobileOwner = await members.mobileOwner(context, mobileHash);
-      if (existing !== null || mobileOwner !== null) throw new DomainError('IDENTITY_ALREADY_EXISTS');
-      const principal = `principal:${prefix}:${request}`;
-      const member = `member:${prefix}:${request}`;
-      const membership = `membership:${prefix}:${request}`;
-      await enrollments.createPendingPrincipal(context, { principal, createdAt: new Date() });
-      await members.createPending(context, { member, principal, display: '并发注册员工', mobileCiphertext: 'ciphertext', mobileFingerprint: mobileHash, mobileMasked: '138****0000' });
-      await access.createStorefrontMembership(context, { membership, member, principal, organization, issuer: issuerMembership, issuerAccessVersion: 1, employeeNo: employee, department: null });
-      return Object.freeze({ principal, member, membership });
-    });
+    const enroll = (request: string) =>
+      transactions.write(options('identity.enrollments.complete', request), async (context) => {
+        await members.lockMobile(context, mobileHash);
+        const existing = await enrollments.findPrincipal(context, subjectHash);
+        const mobileOwner = await members.mobileOwner(context, mobileHash);
+        if (existing !== null || mobileOwner !== null) throw new DomainError('IDENTITY_ALREADY_EXISTS');
+        const principal = `principal:${prefix}:${request}`;
+        const member = `member:${prefix}:${request}`;
+        const membership = `membership:${prefix}:${request}`;
+        await enrollments.createPendingPrincipal(context, { principal, createdAt: new Date() });
+        await members.createPending(context, { member, principal, display: '并发注册员工', mobileCiphertext: 'ciphertext', mobileFingerprint: mobileHash, mobileMasked: '138****0000' });
+        await access.createStorefrontMembership(context, { membership, member, principal, organization, issuer: issuerMembership, issuerAccessVersion: 1, employeeNo: employee, department: null });
+        return Object.freeze({ principal, member, membership });
+      });
 
     await expectExactlyOne([enroll('enrollment-one'), enroll('enrollment-two')]);
     const counts = await admin.query<{ principals: number; members: number; memberships: number }>(
@@ -234,10 +244,11 @@ function candidate(id: string, displayName: string) {
 
 async function expectExactlyOne(operations: readonly Promise<unknown>[]): Promise<void> {
   const results = await Promise.allSettled(operations);
-  const failures = results
-    .filter((result): result is PromiseRejectedResult => result.status === 'rejected')
-    .map(({ reason }) => reason instanceof Error ? `${reason.name}:${reason.message}` : String(reason));
-  expect(results.filter(({ status }) => status === 'fulfilled'), failures.join(', ')).toHaveLength(1);
+  const failures = results.filter((result): result is PromiseRejectedResult => result.status === 'rejected').map(({ reason }) => (reason instanceof Error ? `${reason.name}:${reason.message}` : String(reason)));
+  expect(
+    results.filter(({ status }) => status === 'fulfilled'),
+    failures.join(', ')
+  ).toHaveLength(1);
   expect(failures).toHaveLength(1);
 }
 
