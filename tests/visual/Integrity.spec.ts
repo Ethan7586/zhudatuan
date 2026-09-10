@@ -45,11 +45,13 @@ test('visual integrity accepts accessible ellipsis and rejects unlabeled clippin
   await page.setViewportSize({ width: 390, height: 844 });
   await page.setContent(`
     <button data-visual-copy="truncate" aria-label="查看完整商品名称" style="width:120px;min-height:44px"><span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">这是一个非常长的商品完整名称</span></button>
+    <p id="lineclamp" data-visual-copy="truncate" title="这是一个保留完整说明的两行商品名称" style="display:-webkit-box;width:80px;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2">这是一个保留完整说明的两行商品名称</p>
     <span id="unlabeled" style="display:block;width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">这段文案没有可访问的完整说明</span>
   `);
 
   const issues = await inspectVisualIntegrity(page);
   expect(issues.filter(({ element }) => element.includes('button'))).toEqual([]);
+  expect(issues.filter(({ element }) => element === 'p#lineclamp')).toEqual([]);
   expect(issues.some(({ kind, element }) => kind === 'textclipped' && element === 'span#unlabeled')).toBe(true);
 });
 

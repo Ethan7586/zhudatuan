@@ -16,6 +16,7 @@ describe('ProductCard', () => {
 
     const details = screen.getByRole('button', { name: /^测试商品/ });
     expect(details.getAttribute('data-visual-copy')).toBe('multiline');
+    expect(screen.getByRole('heading', { name: '测试商品' }).getAttribute('title')).toBe('测试商品');
     fireEvent.click(details);
     fireEvent.click(screen.getByRole('button', { name: '将测试商品加入购物车' }));
     expect(open).toHaveBeenCalledWith('product-one');

@@ -120,10 +120,14 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
       if (exposedIdentity && element.closest('[data-visual-identity="required"]') === null) {
         issues.push({ kind: 'technicalidentity', element: identify(element), text: exposedIdentity, actual: 'internal identity exposed without an explicit business requirement' });
       }
-      const clippedX = copyOwners.some((owner) => hiddenOverflow(getComputedStyle(owner).overflowX) && owner.scrollWidth > owner.clientWidth + 1);
-      const clippedY = copyOwners.some((owner) => hiddenOverflow(getComputedStyle(owner).overflowY) && owner.scrollHeight > owner.clientHeight + 1);
-      const permittedCopyClipping = permittedTruncation(element, style) || copyOwners.some((owner) => permittedTruncation(owner, getComputedStyle(owner)));
-      if ((clippedX || clippedY) && !permittedCopyClipping) {
+      const clippedOwners = copyOwners.filter((owner) => {
+        const ownerStyle = getComputedStyle(owner);
+        return (hiddenOverflow(ownerStyle.overflowX) && owner.scrollWidth > owner.clientWidth + 1) || (hiddenOverflow(ownerStyle.overflowY) && owner.scrollHeight > owner.clientHeight + 1);
+      });
+      const unpermittedClipping = clippedOwners.some((owner) => !permittedTruncation(owner, getComputedStyle(owner)));
+      const clippedX = clippedOwners.some((owner) => owner.scrollWidth > owner.clientWidth + 1);
+      const clippedY = clippedOwners.some((owner) => owner.scrollHeight > owner.clientHeight + 1);
+      if (unpermittedClipping && !permittedTruncation(element, style)) {
         issues.push({
           kind: 'textclipped',
           element: identify(element),
@@ -233,7 +237,8 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
 
     function permittedTruncation(element: HTMLElement, style: CSSStyleDeclaration): boolean {
       const owner = element.closest<HTMLElement>('[data-visual-copy="truncate"]');
-      if (owner === null || style.textOverflow !== 'ellipsis') return false;
+      const clampedLines = Number.parseInt(style.getPropertyValue('-webkit-line-clamp'), 10);
+      if (owner === null || (style.textOverflow !== 'ellipsis' && !(Number.isFinite(clampedLines) && clampedLines > 0))) return false;
       const fullCopy = owner.getAttribute('aria-label') ?? owner.getAttribute('title');
       return (fullCopy ?? '').trim().length > 0;
     }

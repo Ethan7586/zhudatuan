@@ -12,7 +12,9 @@ export function ProductCard({ product, open, add }: Readonly<{ product: Presente
       <button type="button" data-visual-copy="multiline" onClick={() => open(product.productId)} className="block w-full text-left">
         <ProductMedia source={product.image} alt={product.title} className="aspect-square w-full object-cover" emptyClassName="grid aspect-square place-items-center bg-subtle text-xs text-muted" />
         <div className="p-2 sm:p-3">
-          <h3 className="line-clamp-2 min-h-10 text-xs font-bold leading-5 sm:text-sm">{product.title}</h3>
+          <h3 className="line-clamp-2 min-h-10 text-xs font-bold leading-5 sm:text-sm" data-visual-copy="truncate" title={product.title}>
+            {product.title}
+          </h3>
           <span className={`mt-2 flex items-start gap-1 text-[10px] ${availability.canPurchase ? 'text-success-strong' : 'text-warning-strong'}`}>
             <Icon size={12} className="mt-0.5 shrink-0" aria-hidden="true" />
             <span className="line-clamp-2">{availability.availabilityText}</span>
