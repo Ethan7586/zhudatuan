@@ -527,7 +527,7 @@ function manageRequest(reconciliation: string, actor: string, expectedVersion: n
 }
 
 const baseSchema = `
-  create schema finance; create schema channel; create schema payment; create schema ordering; create schema runtime;
+  create schema finance; create schema channel; create schema payment; create schema ordering; create schema fulfillment; create schema runtime;
   create table runtime.schemaversion(version text primary key,checksum char(64) not null);
   create table channel.statement(id text primary key,provider text not null,scope_id text not null,partner_id text not null,
     period_start date not null,period_end date not null,timezone text not null,object_ref text not null,sha256 char(64) not null);
@@ -546,6 +546,8 @@ const baseSchema = `
     check(state in('matched','difference','resolutionpending','resolved')),reason_code text,evidence jsonb not null,resolution jsonb,
     resolved_by text,approved_by text,resolved_at timestamptz,approved_at timestamptz,version bigint not null default 0);
   create table ordering.orderrecord(id text primary key,scope_id text not null);
+  create table fulfillment.fulfillmentorder(
+    id text primary key,external_reference text,amount_minor bigint check(amount_minor is null or amount_minor>=0));
   create table payment.intent(id text primary key,order_id text not null references ordering.orderrecord(id),currency char(3) not null,
     provider_reference text not null);
   create table payment.payment(id text primary key,intent_id text not null references payment.intent(id),amount_minor bigint not null,

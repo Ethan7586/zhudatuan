@@ -57,12 +57,12 @@ describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
     });
   });
 
-  it('authorizes the platform Owner personal profile through the production PostgreSQL resolvers', async () => {
+  it('keeps the platform Owner operator on organization scope for member-only profile access', async () => {
     const client = new Client({ ...(connection === undefined ? {} : { connectionString: connection }), connectionTimeoutMillis: 5_000, statement_timeout: 15_000 });
     await client.connect();
     try {
-      const owner = await client.query<{ membership_id: string; member_id: string; access_version: number; account_id: string; realm_id: string }>(`
-        select platformowner.membership_id,membership.member_id,membership.access_version,membership.account_id,membership.realm_id
+      const owner = await client.query<{ membership_id: string; member_id: string; organization_id: string; access_version: number; account_id: string; realm_id: string }>(`
+        select platformowner.membership_id,membership.member_id,membership.organization_id,membership.access_version,membership.account_id,membership.realm_id
         from access.platformowner platformowner
         join access.membership membership on membership.id=platformowner.membership_id and membership.status='active'
         where platformowner.singleton=true and platformowner.state='active'`);
@@ -92,15 +92,14 @@ describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
         { append: async (decision) => { decisions.push(decision); } },
       );
 
-      const access = await pipeline.authorize({}, 'member.profile.read', 'member.profile.read');
-
-      expect(access.membership.id).toBe(row.membership_id);
-      expect(access.scope).toMatchObject({ kind: 'owner', id: row.member_id });
-      expect(access.capabilities).toContain('member.profile.read');
+      await expect(new PgScopeResolver(database).resolve(actor, 'member.profile.read')).resolves.toMatchObject({
+        kind: 'tenant', id: row.organization_id,
+      });
+      await expect(pipeline.authorize({}, 'member.profile.read', 'member.profile.read', undefined)).rejects.toThrow('SCOPE_DENIED');
       expect(decisions).toContainEqual(expect.objectContaining({
         operation: 'member.profile.read',
-        outcome: 'allow',
-        reason: 'POLICY_ALLOWED',
+        outcome: 'deny',
+        reason: 'SCOPE_DENIED',
       }));
     } finally {
       await client.end();
