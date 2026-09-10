@@ -15,10 +15,17 @@ import {
 interface SupportConversationProps {
   readonly canSend: boolean;
   readonly backPath: string;
+  readonly canCreateCase: boolean;
   readonly caseId?: string;
   readonly condition: ResourceCondition;
+  readonly createCaseError?: string;
+  readonly createUnavailableReason: string;
+  readonly creatingCase: boolean;
+  readonly creatingCasePending: boolean;
   readonly error?: string;
   readonly messages: readonly SupportMessage[];
+  readonly onCancelCreate: () => void;
+  readonly onCreateCase: (draft: Readonly<{ subject: string; message: string }>) => Promise<void>;
   readonly nextCursor?: string;
   readonly onNext: (cursor: string) => void;
   readonly onRetry: () => void;
@@ -52,6 +59,9 @@ export function SupportConversation(props: SupportConversationProps) {
       nearBottom: element.scrollHeight - element.scrollTop - element.clientHeight < 80 };
   };
 
+  if (props.creatingCase) return <SupportCaseComposer canCreate={props.canCreateCase} creating={props.creatingCasePending}
+    unavailableReason={props.createUnavailableReason} onCancel={props.onCancelCreate} onCreate={props.onCreateCase}
+    {...(props.createCaseError === undefined ? {} : { error: props.createCaseError })} />;
   if (props.caseId === undefined) return <ConversationWelcome />;
   const title = props.selectedCase?.subject ?? `工单 ${shortIdentifier(props.caseId)}`;
   return (
@@ -85,6 +95,59 @@ export function SupportConversation(props: SupportConversationProps) {
         unavailableReason={props.sendUnavailableReason} onSend={props.onSend} />
     </section>
   );
+}
+
+function SupportCaseComposer({ canCreate, creating, error, unavailableReason, onCancel, onCreate }: Readonly<{
+  canCreate: boolean;
+  creating: boolean;
+  error?: string;
+  unavailableReason: string;
+  onCancel: () => void;
+  onCreate: (draft: Readonly<{ subject: string; message: string }>) => Promise<void>;
+}>) {
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const ready = canCreate && !creating && subject.trim().length > 0 && message.trim().length > 0;
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!ready) return;
+    try {
+      await onCreate({ subject, message });
+    } catch {
+      // The mutation keeps this local draft intact and renders the error below.
+    }
+  };
+  return (
+    <section className="supportconversation supportnewcase" aria-labelledby="supportnewcasetitle">
+      <header className="supportconversationheader supportnewcaseheader">
+        <div><span className="supportnewcaseicon" aria-hidden="true"><NewConversationMark /></span>
+          <div><h2 id="supportnewcasetitle">新建工单</h2><p>直接在工作台里开始一段新的服务对话</p></div>
+        </div>
+        <button type="button" onClick={onCancel} aria-label="关闭新建工单">×</button>
+      </header>
+      <form className="supportnewcaseform" onSubmit={(event) => { void submit(event); }}>
+        <div className="supportnewcaseintro"><span>新对话</span><strong>需要处理什么问题？</strong>
+          <p>写下简洁标题和第一条留言，创建后会直接进入会话。</p></div>
+        <label><span>工单标题</span><input autoFocus value={subject} maxLength={120} disabled={!canCreate || creating}
+          onChange={(event) => setSubject(event.target.value)} placeholder="例如：退款进度需要核实" /></label>
+        <label><span>第一条留言</span><textarea value={message} maxLength={4000} rows={7} disabled={!canCreate || creating}
+          onChange={(event) => setMessage(event.target.value)} placeholder="补充问题经过、关联信息和期望处理结果…" /></label>
+        <div className="supportnewcasemeta"><span>应用内</span><span>普通优先级</span><em>{message.length}/4000</em></div>
+        <div className="supportnewcaseactions">
+          <span role="status" aria-live="polite">{creating ? '正在创建…' : error ?? (!canCreate ? unavailableReason : '')}</span>
+          <button type="button" onClick={onCancel} disabled={creating}>取消</button>
+          <button type="submit" disabled={!ready}>{creating ? '创建中' : '创建并进入会话'}</button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+function NewConversationMark() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5.25 5.75h13.5a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2H10l-4.75 2.5v-2.5a2 2 0 0 1-2-2v-8.5a2 2 0 0 1 2-2Z" />
+    <path d="M12 9v6M9 12h6" />
+  </svg>;
 }
 
 function MessageBubble({ message, showDate }: Readonly<{ message: SupportMessage; showDate: boolean }>) {

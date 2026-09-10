@@ -12,11 +12,15 @@ import {
 } from './SupportPresentation';
 
 interface SupportCaseRailProps {
+  readonly canCreate: boolean;
   readonly cases: readonly SupportCase[];
   readonly condition: ResourceCondition;
   readonly count: number;
+  readonly createUnavailableReason: string;
+  readonly creating: boolean;
   readonly error?: string;
   readonly nextCursor?: string;
+  readonly onCreate: () => void;
   readonly onNext: (cursor: string) => void;
   readonly onRetry: () => void;
   readonly selectedCaseId?: string;
@@ -51,7 +55,10 @@ export function SupportCaseRail(props: SupportCaseRailProps) {
             {stateOptions.map((value) => <option key={value} value={value}>{supportStateLabel(value)}</option>)}
           </select>
         </label>
-        <button type="button" onClick={props.onRetry} aria-label="刷新工单队列" title="刷新工单队列">↻</button>
+        <button className="supportcasecreate" type="button" aria-label={props.creating ? '关闭新建工单' : '新建工单'}
+          aria-pressed={props.creating} disabled={!props.canCreate && !props.creating}
+          title={props.canCreate || props.creating ? (props.creating ? '关闭新建工单' : '新建工单') : props.createUnavailableReason}
+          onClick={props.onCreate}><NewConversationIcon /></button>
       </div>
       <div className="supportcasepagehint">搜索与状态筛选仅作用于当前页 {props.cases.length} 条工单</div>
       <div className="supportcaseviewport">
@@ -70,6 +77,13 @@ export function SupportCaseRail(props: SupportCaseRailProps) {
       </div>}
     </aside>
   );
+}
+
+function NewConversationIcon() {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5.25 5.75h13.5a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2H10l-4.75 2.5v-2.5a2 2 0 0 1-2-2v-8.5a2 2 0 0 1 2-2Z" />
+    <path d="M12 9v6M9 12h6" />
+  </svg>;
 }
 
 function isQueueError(condition: ResourceCondition): boolean {

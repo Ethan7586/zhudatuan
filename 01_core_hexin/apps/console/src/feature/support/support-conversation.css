@@ -75,3 +75,33 @@
 .supportconversationwelcome p { margin: 14px 0 4px; color: var(--support-blue); font-size: 11px; font-weight: 800; }
 .supportconversationwelcome h2 { margin: 0; color: var(--support-ink); font-size: 18px; }
 .supportconversationwelcome > span:last-child { max-width: 360px; margin-top: 8px; color: var(--support-muted); font-size: 12px; line-height: 1.6; }
+
+.supportnewcase { grid-template-rows: 64px minmax(0, 1fr); }
+.supportnewcaseheader > button { display: grid; width: 32px; height: 32px; place-items: center; border: 0; border-radius: 7px; background: transparent; color: #75839a; font-size: 23px; line-height: 1; }
+.supportnewcaseheader > button:hover { background: #f1f4f8; color: var(--support-ink); }
+.supportnewcaseicon { display: grid; width: 36px; height: 36px; flex: 0 0 36px; place-items: center; border: 1px solid #cfe1ff; border-radius: 10px; background: var(--support-blue-soft); color: var(--support-blue); }
+.supportnewcaseicon svg { width: 21px; height: 21px; }
+.supportnewcaseform { width: min(100%, 720px); justify-self: center; align-self: start; display: grid; gap: 18px; padding: clamp(34px, 7vh, 72px) 38px 38px; }
+.supportnewcaseintro { display: grid; gap: 5px; margin-bottom: 3px; }
+.supportnewcaseintro > span { width: max-content; border-radius: 999px; background: var(--support-blue-soft); color: var(--support-blue); padding: 4px 9px; font-size: 10px; font-weight: 800; }
+.supportnewcaseintro strong { color: var(--support-ink); font-size: 21px; letter-spacing: -.02em; }
+.supportnewcaseintro p { margin: 0; color: var(--support-muted); font-size: 12px; line-height: 1.6; }
+.supportnewcaseform > label { display: grid; gap: 8px; color: #394963; font-size: 12px; font-weight: 800; }
+.supportnewcaseform input,
+.supportnewcaseform textarea { width: 100%; border: 1px solid #d8e0eb; border-radius: 9px; outline: 0; background: #fff; color: var(--support-ink); padding: 0 14px; font: inherit; font-size: 13px; transition: border-color .15s ease, box-shadow .15s ease; }
+.supportnewcaseform input { height: 42px; }
+.supportnewcaseform textarea { min-height: 146px; resize: vertical; padding-block: 12px; line-height: 1.6; }
+.supportnewcaseform input:focus,
+.supportnewcaseform textarea:focus { border-color: var(--support-blue); box-shadow: 0 0 0 3px rgb(15 111 255 / 10%); }
+.supportnewcaseform input::placeholder,
+.supportnewcaseform textarea::placeholder { color: #a2adbd; }
+.supportnewcaseform input:disabled,
+.supportnewcaseform textarea:disabled { background: #f4f6f9; color: #8e9aae; cursor: not-allowed; }
+.supportnewcasemeta { display: flex; align-items: center; gap: 7px; margin-top: -10px; color: #8996aa; font-size: 10px; }
+.supportnewcasemeta span { border-radius: 5px; background: #f0f3f7; padding: 3px 7px; }
+.supportnewcasemeta em { margin-left: auto; font-style: normal; }
+.supportnewcaseactions { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 9px; border-top: 1px solid var(--support-border); padding-top: 16px; }
+.supportnewcaseactions > span { color: var(--support-danger); font-size: 11px; }
+.supportnewcaseactions > button { min-height: 36px; border: 1px solid #d4dce8; border-radius: 7px; background: #fff; color: #53617a; padding: 0 14px; font: inherit; font-size: 12px; font-weight: 700; }
+.supportnewcaseactions > button[type='submit'] { min-width: 132px; border-color: var(--support-blue); background: var(--support-blue); color: #fff; }
+.supportnewcaseactions > button:disabled { border-color: #dce3ec; background: #e7ebf1; color: #9aa6b8; cursor: not-allowed; }
