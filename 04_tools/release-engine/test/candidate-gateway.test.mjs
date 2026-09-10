@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import { parseOriginalCommand, validateAgentArguments } from '../remote/candidate-gateway.mjs';
+
+const engineSource = await readFile(new URL('../src/engine.mjs', import.meta.url), 'utf8');
 
 const identity = [
   '--project', 'zdt-next',
@@ -26,6 +29,10 @@ test('candidate gateway confines uploads to the incoming directory', () => {
     { kind: 'scp', path: '/opt/ai-delivery/incoming/zdt-next--hbbtzn-l1--storefront--abc.tar.gz' },
   );
   assert.throws(() => parseOriginalCommand('scp -t /etc/sudoers'), { code: 'COMMAND_ENTRYPOINT_DENIED' });
+});
+
+test('candidate uploads use the forced-command compatible SCP protocol', () => {
+  assert.match(engineSource, /return \['scp', '-O', \.\.\.endpoint\.identityArgs/);
 });
 
 test('candidate gateway rejects shell syntax and approval arguments', () => {
