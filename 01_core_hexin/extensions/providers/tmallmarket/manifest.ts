@@ -13,7 +13,8 @@ export const definition = Object.freeze({
   permissions: ['channel.tmallmarket.operate'],
   configSchema: 'provider.tmallmarket.v1',
   eventSubscriptions: ['ProviderWebhookReceived'],
-  secretRefs: ['credential'],
+  // Matches createTmallClient authentication; secret also verifies provider webhooks.
+  secretRefs: ['keyId', 'secret'],
   limits: STANDARD_PROVIDER_LIMITS,
 } as const satisfies UnsignedProviderManifest);
 

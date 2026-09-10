@@ -13,7 +13,8 @@ export const definition = Object.freeze({
   permissions: ['channel.movie.operate'],
   configSchema: 'provider.movie.v1',
   eventSubscriptions: ['ProviderWebhookReceived'],
-  secretRefs: ['credential'],
+  // Matches createWanlianClient authentication and createPorts webhook verification.
+  secretRefs: ['keyId', 'privateKey', 'webhookSecret'],
   limits: STANDARD_PROVIDER_LIMITS,
 } as const satisfies UnsignedProviderManifest);
 
