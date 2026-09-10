@@ -7,6 +7,7 @@ import type { ProductActionViewModel } from '../viewmodel/ProductActionViewModel
 import { ProductIcon } from './ProductIcon';
 import { ProductImageField } from './ProductImageField';
 import { ProductCategoryField } from './ProductCategoryField';
+import { ProductFlowModal } from './ProductFlowModal';
 
 export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: ProductActionViewModel; onClose: () => void }>) {
   const action = viewmodel.action;
@@ -16,15 +17,14 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
     if (action?.operation === OP_CATALOG_PRODUCTS_CREATE || action?.operation === OP_CATALOG_PRODUCTS_UPDATE) titleInput.current?.focus();
     if (action?.operation === OP_CATALOG_LISTINGS_PRICE_SET) priceInput.current?.focus();
   }, [action]);
-  if (action === null) return null;
   const submit = (event: FormEvent) => {
     event.preventDefault();
     viewmodel.submit();
   };
+  if (action === null) return null;
   return (
-    <div className="productflowoverlay">
-      <button className="productflowbackdrop" type="button" onClick={onClose} aria-label="关闭商品操作窗口" disabled={viewmodel.submitting} />
-      <form className="productflowdialog" aria-label={presentProductAction(action.operation).title} onSubmit={submit}>
+    <ProductFlowModal open label={presentProductAction(action.operation).title} onClose={onClose} dismissable={!viewmodel.submitting}>
+      <form className="productflowcontent" aria-label={presentProductAction(action.operation).title} onSubmit={submit}>
         <header>
           <div>
             <p>商品操作</p>
@@ -112,7 +112,7 @@ export function ProductDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Prod
           </Button>
         </footer>
       </form>
-    </div>
+    </ProductFlowModal>
   );
 }
 

@@ -51,6 +51,7 @@ export function ProductImageField({ current, image, error, canChoose, permission
             ref={input}
             className="productimageinput"
             type="file"
+            hidden
             accept="image/jpeg,image/png,.jpg,.jpeg,.png"
             aria-label="选择商品图片"
             aria-describedby={description}

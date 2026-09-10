@@ -1,6 +1,9 @@
 import type { ProductBatch } from '../model/Product';
 import type { ProductBatchViewModel } from '../viewmodel/ProductBatchViewModel';
+import { Button } from '@shop/design';
 import { presentCatalogGap, presentProductBatchAction, presentProductBatchState } from '@shop/presentation';
+import { ProductFlowModal } from './ProductFlowModal';
+import { ProductIcon } from './ProductIcon';
 
 export function ProductBatchDialog({ viewmodel }: Readonly<{ viewmodel: ProductBatchViewModel }>) {
   const draft = viewmodel.draft;
@@ -8,17 +11,16 @@ export function ProductBatchDialog({ viewmodel }: Readonly<{ viewmodel: ProductB
   const result = viewmodel.receipt ?? viewmodel.preview;
   const action = presentProductBatchAction(draft.action);
   return (
-    <div className="productflowoverlay">
-      <button className="productflowbackdrop" type="button" onClick={viewmodel.actions.close} aria-label="关闭商品批量操作窗口" disabled={viewmodel.busy} />
-      <section className="productflowdialog productbatchdialog" role="dialog" aria-modal="true" aria-labelledby="productbatchtitle">
+    <ProductFlowModal open label={`批量${action}`} onClose={viewmodel.actions.close} dismissable={!viewmodel.busy} className="productbatchdialog">
+      <section className="productflowcontent">
         <header>
           <div>
             <p>服务端预检 · 逐项收据</p>
             <h2 id="productbatchtitle">批量{action}</h2>
           </div>
-          <button type="button" onClick={viewmodel.actions.close} aria-label="关闭商品批量操作窗口" disabled={viewmodel.busy}>
-            ×
-          </button>
+          <Button className="productflowclose" tone="quiet" onPress={viewmodel.actions.close} aria-label="关闭商品批量操作窗口" isDisabled={viewmodel.busy}>
+            <ProductIcon name="close" />
+          </Button>
         </header>
         <div className="productflowbody productbatchcontent">
           {viewmodel.busy && result === undefined ? <BatchLoading action={action} /> : null}
@@ -39,9 +41,9 @@ export function ProductBatchDialog({ viewmodel }: Readonly<{ viewmodel: ProductB
                 <section>
                   <h3>需要二次验证</h3>
                   <p>批量发布属于高风险操作，请先完成二次验证。</p>
-                  <button type="button" onClick={viewmodel.actions.stepup}>
+                  <Button type="button" onPress={viewmodel.actions.stepup}>
                     立即验证
-                  </button>
+                  </Button>
                 </section>
               ) : null}
             </>
@@ -49,7 +51,7 @@ export function ProductBatchDialog({ viewmodel }: Readonly<{ viewmodel: ProductB
           <BatchFooter viewmodel={viewmodel} />
         </div>
       </section>
-    </div>
+    </ProductFlowModal>
   );
 }
 
@@ -105,23 +107,23 @@ function BatchFooter({ viewmodel }: Readonly<{ viewmodel: ProductBatchViewModel 
   const receipt = viewmodel.receipt;
   return (
     <footer>
-      <button type="button" onClick={viewmodel.actions.close} disabled={viewmodel.busy}>
+      <Button type="button" onPress={viewmodel.actions.close} isDisabled={viewmodel.busy}>
         {receipt ? '完成' : '取消'}
-      </button>
+      </Button>
       {(!preview || viewmodel.executeFailed) && !viewmodel.busy ? (
-        <button type="button" className="productactionprimary" onClick={viewmodel.actions.preview}>
+        <Button type="button" tone="primary" onPress={viewmodel.actions.preview}>
           重新预检
-        </button>
+        </Button>
       ) : null}
       {preview && !receipt && !viewmodel.executeFailed ? (
-        <button type="button" className="productactionprimary" onClick={viewmodel.actions.execute} disabled={viewmodel.busy || preview.count < 1 || !viewmodel.confirmed}>
+        <Button type="button" tone="primary" onPress={viewmodel.actions.execute} isDisabled={viewmodel.busy || preview.count < 1 || !viewmodel.confirmed}>
           {viewmodel.busy ? '正在执行…' : `确认执行 ${preview.count} 项`}
-        </button>
+        </Button>
       ) : null}
       {receipt && receipt.failed > 0 ? (
-        <button type="button" className="productactionprimary" onClick={viewmodel.actions.retry} disabled={viewmodel.busy}>
+        <Button type="button" tone="primary" onPress={viewmodel.actions.retry} isDisabled={viewmodel.busy}>
           仅重试 {receipt.failed} 个失败项
-        </button>
+        </Button>
       ) : null}
     </footer>
   );

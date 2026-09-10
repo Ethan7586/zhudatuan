@@ -69,7 +69,7 @@
 .productdrawerfooter button,
 .productbatchcontent footer button {
   display: inline-flex;
-  min-height: 38px;
+  min-height: var(--sw-control-touch-target);
   align-items: center;
   justify-content: center;
   gap: 7px;

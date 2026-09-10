@@ -4,9 +4,9 @@ import type { PoolMode, ProductPoolViewModel } from '../viewmodel/ProductPoolVie
 import type { Pool } from '../model/Product';
 import { isManagedListing } from '../model/ProductAction';
 import { ProductIcon } from './ProductIcon';
+import { ProductFlowModal } from './ProductFlowModal';
 
 export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: ProductPoolViewModel; onClose: () => void }>) {
-  if (!viewmodel.open) return null;
   const listingMode = viewmodel.listing !== undefined;
   const listingPool = viewmodel.listing !== undefined && isManagedListing(viewmodel.listing) ? viewmodel.listing.pool_id : null;
   const listingPoolName = listingPool === null ? null : (viewmodel.pools.find((pool) => pool.id === listingPool)?.name ?? '当前商品池');
@@ -14,10 +14,9 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
   const sourceLabel = listingMode ? '目标商品池' : '来源商品池';
   const needsPool = viewmodel.operation !== 'remove';
   return (
-    <div className="productflowoverlay">
-      <button className="productflowbackdrop" type="button" onClick={onClose} aria-label="关闭商品池窗口" />
+    <ProductFlowModal open={viewmodel.open} label={listingMode ? '商品投池' : '商品池管理'} onClose={onClose} dismissable={!viewmodel.submitting} className="productpooldialog">
       <form
-        className="productflowdialog productpooldialog"
+        className="productflowcontent"
         aria-label={listingMode ? '商品投池' : '商品池管理'}
         onSubmit={(event) => {
           event.preventDefault();
@@ -112,7 +111,7 @@ export function PoolDialog({ viewmodel, onClose }: Readonly<{ viewmodel: Product
           </Button>
         </footer>
       </form>
-    </div>
+    </ProductFlowModal>
   );
 }
 
