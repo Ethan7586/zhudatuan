@@ -10,7 +10,7 @@ import { ShieldCheck, Lock, QrCode, Globe, Building2, CheckCircle2, AlertCircle,
 import { useMallContext } from '../context/MallContext';
 import { Membership, PreAuthContext } from '../types';
 import { defaultTermsAccepted } from '../services/termsAcceptance';
-import { loginCanonicalConsole } from '../services/canonicalIdentity';
+import { createCanonicalPasswordResetChallenge, loginCanonicalConsole, resetCanonicalPassword } from '../services/canonicalIdentity';
 import { currentIdentityNode } from '../services/identityNodeEnvironment';
 import {
   loginWithPassword,
@@ -168,12 +168,9 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setFormError('');
     try {
-      const response = await fetch('/api/v1/auth/security/otp', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ mobile: resetForm.mobile, purpose: 'password_reset' }) });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error?.message || '验证码发送失败');
-      const developmentCode = import.meta.env.DEV && typeof payload?.debugCode === 'string' ? payload.debugCode : '';
-      setResetForm((current) => ({ ...current, challengeId: payload.challengeId, code: developmentCode || current.code }));
-      setRegistrationNotice(developmentCode ? `开发环境验证码：${developmentCode}` : '验证码已发送');
+      const challenge = await createCanonicalPasswordResetChallenge(resetForm.mobile);
+      setResetForm((current) => ({ ...current, challengeId: challenge.challengeId }));
+      setRegistrationNotice('验证码已发送');
     } catch (error: any) {
       setFormError(error.message || '验证码发送失败');
     } finally {
@@ -188,13 +185,7 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setFormError('');
     try {
-      const response = await fetch('/api/v1/auth/password/reset', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ mobile: resetForm.mobile, challengeId: resetForm.challengeId, code: resetForm.code, newPassword: resetForm.password }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error?.message || '密码重置失败');
+      await resetCanonicalPassword(resetForm.challengeId, resetForm.code, resetForm.password);
       setIdentifier(resetForm.mobile);
       setPassword(resetForm.password);
       setResetOpen(false);
