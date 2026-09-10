@@ -386,6 +386,7 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
     function technicalIdentity(text: string): string | null {
       if (!text) return null;
       const patterns = [
+        /\b(?!(?:https?|mailto|tel|sms):)[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*:[A-Za-z0-9][A-Za-z0-9.:/_-]*\b/i,
         /\b(?:address|application|benefit(?:account)?|campaign|cart|case|channel|checkout|department|enterprise|fulfillment|invoice|journal|listing|mall|member|membership|order|organization|partner|payment|permission|pool|principal|product|promotion|provider|quote|reconciliation|role|scope|settlement|shipment|sku|stock(?:item)?|store|supplier|tenant|ticket|voucher|warehouse):[A-Za-z0-9][A-Za-z0-9.:/_-]*\b/i,
         /\b(?:application|department|enterprise|listing|mall|member|membership|organization|pool|product|sku|stock|tenant)-[A-Za-z0-9][A-Za-z0-9_-]{2,}\b/i,
         /\b[A-Z]{2,}_[A-Z0-9]+(?:_[A-Z0-9]+)+\b/,
