@@ -359,12 +359,13 @@ describe('finance reconciliation PostgreSQL contract', () => {
     ]);
   });
 
-  it('rejects an unsupported statement provider before mutating reconciliation state', async () => {
+  it('accepts normalized statements from any provider with Statement capability', async () => {
     await paymentFact(database, { id: 'provider-boundary', external: 'wx-provider-boundary', total: 80, wechat: 80 });
-    await expect(reconcile(database, 'provider-boundary', statement([['wx-provider-boundary', 'payment', 80]]), 'supplier-channel')).rejects.toThrow('FINANCE_RECONCILIATION_PROVIDER_UNSUPPORTED');
-    const unchanged = await database.query<{ state: string }>(`select state from finance.reconciliation
+    // Reconciliation sources are provider-agnostic after the Statement capability normalizes their files.
+    await reconcile(database, 'provider-boundary', statement([['wx-provider-boundary', 'payment', 80]]), 'supplier-channel');
+    const reconciled = await database.query<{ state: string }>(`select state from finance.reconciliation
       where id='reconciliation:provider-boundary'`);
-    expect(unchanged.rows[0]?.state).toBe('received');
+    expect(reconciled.rows[0]?.state).toBe('balanced');
   });
 
   it.each(['fee', 'adjustment', 'fulfillment'])('rejects unsupported %s lines in both parser and database', async (kind) => {

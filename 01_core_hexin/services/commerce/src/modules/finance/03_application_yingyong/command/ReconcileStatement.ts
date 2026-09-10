@@ -7,19 +7,22 @@ export class ReconcileStatement {
   constructor(private readonly pool: DatabasePool, private readonly objects: ObjectStore) {}
 
   async execute(id: string): Promise<void> {
-    const loaded = await this.pool.query<Source>(`update finance.reconciliation reconciliation set state='matching'
-      from channel.statement statement where reconciliation.id=$1 and reconciliation.statement_ref=statement.id
-      and reconciliation.state in('received','matching','difference') returning reconciliation.scope_id,reconciliation.statement_hash,
-      statement.object_ref,statement.period_start::text,statement.period_end::text`, [id]);
+    const loaded = await this.pool.query<Source>(`select reconciliation.scope_id,reconciliation.statement_hash,
+      statement.object_ref,statement.period_start::text,statement.period_end::text,statement.timezone
+      from finance.reconciliation reconciliation join channel.statement statement on statement.id=reconciliation.statement_ref
+      where reconciliation.id=$1 and reconciliation.state in('received','matching','difference')`, [id]);
     const source = loaded.rows[0];
     if (!source) throw new Error('RECONCILIATION_NOT_RUNNABLE');
     const bytes = await this.objects.read(source.object_ref, 64*1024*1024);
     if (createHash('sha256').update(bytes).digest('hex') !== source.statement_hash) throw new Error('STATEMENT_INTEGRITY_FAILED');
     const rows = parseCsv(bytes, 1_000_000);
-    const totals = validate(rows);
+    const totals = validate(rows, source);
     const client = await this.pool.connect();
     try {
       await client.query('begin');
+      const claimed = await client.query(`update finance.reconciliation set state='matching'
+        where id=$1 and state in('received','matching','difference') returning id`, [id]);
+      if (!claimed.rows[0]) throw new Error('RECONCILIATION_NOT_RUNNABLE');
       for (let offset = 0; offset < rows.length; offset += 5_000) {
         const values = rows.slice(offset, offset+5_000).map((row, index) => ({ sequence: offset+index+1,reference: row.reference,
           kind: row.type,amount: Number(row.amountMinor),tax: row.taxMinor === undefined ? 0 : Number(row.taxMinor),currency: row.currency,
@@ -38,8 +41,9 @@ export class ReconcileStatement {
         join finance.statementline line on line.id=item.statement_line_id where item.reconciliation_id=$1`, [id]);
       const summary = internal.rows[0]!;
       const providerNet = totals.payments-totals.refunds;
-      const result = await client.query(`update finance.reconciliation set debit_minor=$2,credit_minor=$3,difference_minor=$2-$3,
-        evidence=$4::jsonb,state=case when $5=0 and $2=$3 then 'balanced' else 'difference' end,updated_at=clock_timestamp(),
+      const result = await client.query(`update finance.reconciliation set debit_minor=$2::bigint,credit_minor=$3::bigint,
+        difference_minor=$2::bigint-$3::bigint,evidence=$4::jsonb,
+        state=case when $5::integer=0 and $2::bigint=$3::bigint then 'balanced' else 'difference' end,updated_at=clock_timestamp(),
         version=version+1 where id=$1 and state='matching' returning *`, [id, providerNet, summary.net,
         JSON.stringify({ rowCount: rows.length,provider: totals,internalNet: summary.net,differences: summary.differences,
           statementHash: source.statement_hash }),summary.differences]);
@@ -66,15 +70,16 @@ async function match(database: Database, id: string, scope: string): Promise<voi
         from finance.statementline line join finance.journal journal on journal.reference_id=line.external_reference
         join finance.entry entry on entry.journal_id=journal.id where line.reconciliation_id=$1 and journal.scope_id=$2 group by line.id,journal.id),
     matched as(select distinct on(line_id) * from candidates order by line_id,priority,internal_id)
-    insert into finance.reconciliationitem(id,reconciliation_id,statement_line_id,scope_id,internal_type,internal_id,external_minor,
+    insert into finance.reconciliationitem(id,reconciliation_id,statement_line_id,scope_id,kind,internal_type,internal_id,external_minor,
       internal_minor,difference_minor,state,reason_code,evidence,version)
-    select 'reconciliationitem:'||line.id,$1,line.id,$2,matched.internal_type,matched.internal_id,line.amount_minor,
+    select 'reconciliationitem:'||line.id,$1,line.id,$2,line.kind,matched.internal_type,matched.internal_id,line.amount_minor,
       coalesce(matched.internal_minor,0),line.amount_minor-coalesce(matched.internal_minor,0),
       case when matched.internal_id is not null and line.amount_minor=matched.internal_minor then 'matched' else 'difference' end,
       case when matched.internal_id is null then 'INTERNAL_REFERENCE_MISSING' when line.amount_minor<>matched.internal_minor then 'AMOUNT_MISMATCH' end,
-      jsonb_build_object('externalReference',line.external_reference,'kind',line.kind,'rawHash',line.raw_hash),0
+      jsonb_build_object('externalReference',line.external_reference,'kind',line.kind,'rawHash',line.raw_hash,
+        'source','provider_statement'),0
     from finance.statementline line left join matched on matched.line_id=line.id where line.reconciliation_id=$1
-    on conflict(statement_line_id) do update set internal_type=excluded.internal_type,internal_id=excluded.internal_id,
+    on conflict(statement_line_id) do update set kind=excluded.kind,internal_type=excluded.internal_type,internal_id=excluded.internal_id,
       internal_minor=excluded.internal_minor,difference_minor=excluded.difference_minor,state=excluded.state,reason_code=excluded.reason_code,
       evidence=excluded.evidence,version=finance.reconciliationitem.version+1`, [id, scope]);
 }
@@ -86,13 +91,19 @@ async function difference(database: Database, id: string, scope: string, amount:
   [`event:${digest(`finance:reconciliation:${id}`)}`, id, scope, amount, count]);
 }
 
-function validate(rows: readonly Readonly<Record<string, unknown>>[]): Readonly<{ payments: number; refunds: number }> {
+function validate(rows: readonly Readonly<Record<string, unknown>>[], source: Source): Readonly<{ payments: number; refunds: number }> {
+  const calendar = statementCalendar(source.timezone);
   const references = new Set<string>(); let payments = 0; let refunds = 0;
   for (const row of rows) {
     const reference = text(row.reference, 'STATEMENT_REFERENCE_REQUIRED');
     if (references.has(reference)) throw new Error('STATEMENT_REFERENCE_DUPLICATE');
     references.add(reference);
     const amount = positive(row.amountMinor, 'STATEMENT_AMOUNT_INVALID');
+    nonnegative(row.taxMinor ?? '0', 'STATEMENT_TAX_INVALID');
+    if (row.occurredAt !== undefined && row.occurredAt !== ''
+      && !withinPeriod(row.occurredAt, source.period_start, source.period_end, calendar)) {
+      throw new Error('STATEMENT_OCCURRED_AT_OUTSIDE_PERIOD');
+    }
     if (row.currency !== 'CNY') throw new Error('STATEMENT_CURRENCY_UNSUPPORTED');
     if (row.type === 'payment') payments += amount;
     else if (row.type === 'refund') refunds += amount;
@@ -103,9 +114,29 @@ function validate(rows: readonly Readonly<Record<string, unknown>>[]): Readonly<
 }
 
 interface Source { readonly scope_id: string; readonly statement_hash: string; readonly object_ref: string;
-  readonly period_start: string; readonly period_end: string }
+  readonly period_start: string; readonly period_end: string; readonly timezone: string }
 interface Database { query<R extends Record<string, unknown> = Record<string, unknown>>(text: string,
   values?: readonly unknown[]): Promise<Readonly<{ rows: readonly R[] }>> }
 function text(value: unknown, code: string): string { if (typeof value !== 'string' || !value) throw new Error(code); return value; }
-function positive(value: unknown, code: string): number { const parsed = Number(value); if (!Number.isSafeInteger(parsed) || parsed <= 0) throw new Error(code); return parsed; }
+function positive(value: unknown, code: string): number {
+  if (typeof value !== 'string' || !/^[1-9][0-9]*$/.test(value)) throw new Error(code);
+  const parsed = Number(value); if (!Number.isSafeInteger(parsed)) throw new Error(code); return parsed;
+}
+function nonnegative(value: unknown, code: string): number {
+  if (typeof value !== 'string' || !/^(0|[1-9][0-9]*)$/.test(value)) throw new Error(code);
+  const parsed = Number(value); if (!Number.isSafeInteger(parsed)) throw new Error(code); return parsed;
+}
+function statementCalendar(timezone: string): Intl.DateTimeFormat {
+  try {
+    return new Intl.DateTimeFormat('en-US', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' });
+  } catch { throw new Error('STATEMENT_OCCURRED_AT_OUTSIDE_PERIOD'); }
+}
+function withinPeriod(value: unknown, start: string, end: string, calendar: Intl.DateTimeFormat): boolean {
+  if (typeof value !== 'string') return false;
+  const instant = new Date(value);
+  if (!Number.isFinite(instant.getTime())) return false;
+  const parts = Object.fromEntries(calendar.formatToParts(instant).map((part) => [part.type, part.value]));
+  const date = `${parts.year}-${parts.month}-${parts.day}`;
+  return date >= start && date <= end;
+}
 function digest(value: string): string { return createHash('sha256').update(value).digest('hex').slice(0, 32); }
