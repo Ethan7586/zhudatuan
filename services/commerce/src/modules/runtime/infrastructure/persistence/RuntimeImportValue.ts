@@ -67,7 +67,7 @@ function runtimeImportReport(row: RuntimeImportRow): RuntimeImportRecord['report
   return Object.freeze({ reference: row.report_object_ref, sha256: row.report_sha256, size });
 }
 
-function runtimeImportState(value: string): ImportState {
+export function runtimeImportState(value: string): ImportState {
   if (value === 'preflight' || value === 'scanning' || value === 'rejected') return value === 'rejected' ? 'failed' : 'validating';
   if (value === 'succeeded') return 'completed';
   return value as ImportState;

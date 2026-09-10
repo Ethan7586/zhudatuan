@@ -4,7 +4,7 @@ import type { ReadTransactionContext, WriteTransactionContext } from '../../../.
 import type { ImportPort, RuntimeImportChunk, RuntimeImportCreated, RuntimeImportRecord, RuntimeStagedChunk } from '../../public/ImportPort';
 import { IMPORT_CAPACITY } from '@shop/config/runtime';
 import { PgImportEvidence } from './PgImportEvidence';
-import { runtimeImportCreated, runtimeImportDigest, runtimeImportMetadata, runtimeImportRecord, type RuntimeImportRow } from './RuntimeImportValue';
+import { runtimeImportCreated, runtimeImportDigest, runtimeImportMetadata, runtimeImportRecord, runtimeImportState, type RuntimeImportRow } from './RuntimeImportValue';
 export class PgRuntimeImportStore {
   protected readonly evidence: PgImportEvidence;
   constructor(protected readonly transactions = new PgTransactionAccess()) {
@@ -56,7 +56,7 @@ export class PgRuntimeImportStore {
           scope: row.scope_id,
           reference: row.object_key,
           sha256: row.file_hash,
-          state: runtimeImportCreated(row).state,
+          state: runtimeImportState(row.state),
           authorization: Object.freeze({ ...(row.authorization_snapshot ?? {}) }),
           metadata: runtimeImportMetadata(row.checkpoint),
           confirmed: typeof row.checkpoint?.confirmedAt === 'string',

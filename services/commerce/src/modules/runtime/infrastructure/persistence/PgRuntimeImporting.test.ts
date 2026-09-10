@@ -100,6 +100,38 @@ describe('PgRuntimeImporting', () => {
     expect(found?.body).not.toHaveProperty('report_object_ref');
   });
 
+  it('projects a worker target without requiring API presentation timestamps', async () => {
+    const query = vi.fn(async () => ({
+      rows: [
+        {
+          id: 'import:one',
+          scope_id: 'mall:one',
+          owner: 'inventory',
+          object_key: 'object:one',
+          file_hash: 'a'.repeat(64),
+          state: 'preflight',
+          checkpoint: { metadata: { source: 'singleproduct' }, confirmedAt: '2026-09-10T00:00:00.000Z' },
+          authorization_snapshot: { actor: 'principal:one' },
+          report_object_ref: null,
+          report_sha256: null,
+          report_size: null,
+        },
+      ],
+      rowCount: 1,
+    }));
+
+    await expect(new PgRuntimeImporting(access(query)).find(context, 'import:one', 'inventory')).resolves.toEqual({
+      id: 'import:one',
+      scope: 'mall:one',
+      reference: 'object:one',
+      sha256: 'a'.repeat(64),
+      state: 'validating',
+      authorization: { actor: 'principal:one' },
+      metadata: { source: 'singleproduct' },
+      confirmed: true,
+    });
+  });
+
   it('fails closed when report metadata is partially persisted', async () => {
     const query = vi.fn(async () => ({
       rows: [
