@@ -60,8 +60,8 @@ function ProviderCard({ provider, model }: Readonly<{ provider: FederationProvid
       </header>
       <dl>
         <div>
-          <dt>连接标识</dt>
-          <dd>{provider.id}</dd>
+          <dt>适用账号</dt>
+          <dd>{audience(provider.type)}</dd>
         </div>
         <div>
           <dt>密钥</dt>
@@ -101,6 +101,9 @@ function symbol(type: FederationType): string {
 }
 function description(type: FederationType): string {
   return type === 'oidc' ? '通过标准授权码流程与企业身份源联通' : type === 'wechat' ? '面向微信用户的可信身份登录' : '面向企业成员的组织身份登录';
+}
+function audience(type: FederationType): string {
+  return type === 'wechat' ? '微信消费者账号' : type === 'oidc' ? '企业统一身份账号' : '企业成员账号';
 }
 function healthLabel(status: FederationHealth['status']): string {
   return status === 'healthy' ? '连接健康' : status === 'degraded' ? '服务降级' : '当前不可用';

@@ -28,6 +28,8 @@ describe('FederationRoute', () => {
     fireEvent.click(action);
     expect(request).toHaveBeenCalledOnce();
     expect(screen.getByText('密钥')).toBeTruthy();
+    expect(screen.getByText('企业统一身份账号')).toBeTruthy();
+    expect(screen.queryByText(provider.id)).toBeNull();
     expect(screen.queryByText(/secret/i)).toBeNull();
   });
 
