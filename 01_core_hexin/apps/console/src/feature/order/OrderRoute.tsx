@@ -1,5 +1,5 @@
-import { MetricCard, MetricGrid, Surface } from '@shop/design';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -12,7 +12,7 @@ import { OrderDrawer } from './OrderDrawer';
 import { OrderExceptionWorkbench } from './OrderExceptionWorkbench';
 import { emptyOrderFilter, OrderFilterForm } from './OrderFilter';
 import { OrderIcon } from './OrderIcon';
-import { OrderPageHeader } from './OrderPageHeader';
+import { OrderDirectoryActions, OrderPageHeader } from './OrderPageHeader';
 import { isOrderPreviewContext, orderKey, readOrders, type OrderQuery } from './OrderQuery';
 import { defaultOrderColumns, OrderTable, type OrderColumnKey } from './OrderTable';
 import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
@@ -28,11 +28,13 @@ import './order-exception-list.css';
 import './order-exception-timeline.css';
 import './order-exception-action.css';
 import './order-exception-responsive.css';
+import './order-member-vi.css';
 
 const emptyChecked: ReadonlySet<string> = new Set();
 
 export function Component() {
   const context = useConsoleContext();
+  const mallName = context.scope.name?.trim() || '当前商城';
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams();
@@ -145,40 +147,30 @@ export function Component() {
     return <>
       <OrderExceptionWorkbench page={page} isPending={query.isPending} isFetching={query.isFetching} error={error}
         onBack={() => selectView('all')} onRefresh={refresh} onOpenOrder={openOrder} onOpenSystem={(route) => navigate(route)} />
-      {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled onTab={selectTab} onClose={closeOrder} />}
+      {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled mallName={mallName} onTab={selectTab} onClose={closeOrder} />}
     </>;
   }
 
   return (
-    <section className="orderworkspace" aria-labelledby="ordermanagementtitle">
-      <OrderPageHeader previewEnabled={previewEnabled} isFetching={query.isFetching} pageCount={page?.items.length ?? 0} onRefresh={refresh} />
+    <section className="orderworkspace" data-detail-open={selected !== undefined} aria-labelledby="ordermanagementtitle">
+      <OrderPageHeader mallName={mallName} />
 
-      <section className="ordervi12section" aria-labelledby="ordermetricstitle">
-            <header className="ordervi12sectionhead">
-              <p className="swoverline">订单概览</p>
-              <h2 id="ordermetricstitle">当前页订单态势</h2>
-            </header>
-            <MetricGrid columns="four">
-              <MetricCard label="当前页订单" value={page === undefined ? '—' : pageOrders.length} trend={query.isFetching ? '同步中' : '已同步'} description="当前筛选结果" tone="info" icon={<OrderIcon name="order" />} />
-              <MetricCard label="已支付" value={page === undefined ? '—' : paidCount} trend="当前页" description="支付状态" tone="success" icon={<OrderIcon name="check" />} />
-              <MetricCard label="待履约" value={page === undefined ? '—' : fulfillmentCount} trend="需跟进" description="当前页未完成履约" tone="warning" icon={<OrderIcon name="truck" />} />
-              <MetricCard
-                label="售后或取消"
-                value={page === undefined ? '—' : attentionCount}
-                trend={attentionCount === 0 ? '稳定' : '需关注'}
-                description="售后和取消订单"
-                tone={attentionCount === 0 ? 'neutral' : 'danger'}
-                icon={<OrderIcon name="clock" />}
-              />
-            </MetricGrid>
-          </section>
+      <div className="orderoverview" aria-label="当前页订单概览">
+        <OrderMetric label="当前页订单" value={page === undefined ? '—' : pageOrders.length} tone="blue" icon={<OrderIcon name="order" />} />
+        <OrderMetric label="本页已支付" value={page === undefined ? '—' : paidCount} tone="success" icon={<OrderIcon name="check" />} />
+        <OrderMetric label="本页待履约" value={page === undefined ? '—' : fulfillmentCount} tone="warning" icon={<OrderIcon name="truck" />} />
+        <OrderMetric label="售后或取消" value={page === undefined ? '—' : attentionCount} tone={attentionCount === 0 ? 'purple' : 'danger'} icon={<OrderIcon name="clock" />} />
+      </div>
 
-          <section className="ordervi12section" aria-labelledby="orderworkspacetitle">
-            <header className="ordervi12sectionhead">
-              <p className="swoverline">订单管理</p>
-              <h2 id="orderworkspacetitle">订单列表</h2>
-            </header>
-            <Surface className="ordervi12listsurface" depth="raised" padding="none" radius="extraLarge">
+      <div className="orderstage" data-detail-open={selected !== undefined}>
+        <section className="orderdirectorypanel" aria-labelledby="orderworkspacetitle">
+          <header className="orderpanelheading">
+            <div>
+              <h2 id="orderworkspacetitle">订单目录</h2>
+              <span>{page === undefined ? '—' : page.count}</span>
+            </div>
+            <OrderDirectoryActions previewEnabled={previewEnabled} isFetching={query.isFetching} pageCount={page?.items.length ?? 0} onRefresh={refresh} />
+          </header>
               <div className="ordervi12statusbar">
                 <OrderStatusTabs active={view} previewEnabled={previewEnabled} page={page} onChange={selectView} />
               </div>
@@ -237,15 +229,25 @@ export function Component() {
                     onCheck={toggleChecked}
                     onCheckAll={togglePage}
                     onOpen={openOrder}
+                    mallName={mallName}
                   />
                 )}
               </div>
 
               {page === undefined ? null : <OrderPagination count={page.count} total={previewPage?.total} page={previewPage?.page} previousCursor={previewPage?.previousCursor} nextCursor={page.nextCursor} onCursor={setCursor} />}
-            </Surface>
-          </section>
-      {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled={previewEnabled} onTab={selectTab} onClose={closeOrder} />}
+        </section>
+        {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled={previewEnabled} mallName={mallName} onTab={selectTab} onClose={closeOrder} />}
+      </div>
     </section>
+  );
+}
+
+function OrderMetric({ label, value, tone, icon }: Readonly<{ label: string; value: string | number; tone: 'blue' | 'purple' | 'success' | 'warning' | 'danger'; icon: ReactNode }>) {
+  return (
+    <article className="orderoverviewitem" data-tone={tone}>
+      {icon}
+      <div><span>{label}</span><strong>{value}</strong></div>
+    </article>
   );
 }
 

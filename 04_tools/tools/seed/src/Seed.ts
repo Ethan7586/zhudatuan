@@ -23,7 +23,8 @@ await client.connect();
 try {
   await client.query('begin');
   await removeReplayFixtures(client);
-  const principal = await client.query<{ id: string }>(`select principal.id
+  const principal = await client.query<{ id: string; account_id: string; realm_id: string }>(`select principal.id,
+      membership.account_id,membership.realm_id
     from access.platformowner owner
     join access.membership membership on membership.id=owner.membership_id and membership.status='active'
     join member.profile profile on profile.id=membership.member_id and profile.status='active'
@@ -31,10 +32,15 @@ try {
     where owner.singleton=true and owner.state='active'
     for update of principal`);
   const principalId = principal.rows[0]?.id;
-  if (!principalId) throw new Error('LOCAL_ETHAN_PRINCIPAL_MISSING');
+  const accountId = principal.rows[0]?.account_id;
+  const realmId = principal.rows[0]?.realm_id;
+  if (!principalId || !accountId || !realmId) throw new Error('LOCAL_ETHAN_PRINCIPAL_MISSING');
   await client.query("delete from identity.credential where principal_id=$1 and provider='password'", [principalId]);
-  await client.query(`insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,rotated_at,created_at)
-    values('credential:password:ethan-local',$1,'password',$2,$3,'active',clock_timestamp(),clock_timestamp())`, [principalId, subjectHash, passwordHash]);
+  await client.query(`insert into identity.credential(
+      id,principal_id,provider,subject_hash,secret_hash,status,rotated_at,created_at,account_id,realm_id
+    ) values(
+      'credential:password:ethan-local',$1,'password',$2,$3,'active',clock_timestamp(),clock_timestamp(),$4,$5
+    )`, [principalId, subjectHash, passwordHash, accountId, realmId]);
   await client.query(`update identity.principal set credential_version=credential_version+1,updated_at=clock_timestamp(),version=version+1 where id=$1`, [principalId]);
 
   const operator = await client.query<{ member_id: string; organization_id: string }>(`select membership.member_id,membership.organization_id

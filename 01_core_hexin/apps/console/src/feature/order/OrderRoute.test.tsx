@@ -140,11 +140,12 @@ describe('Order route', () => {
     expect(screen.getByRole('note').textContent).toContain('订单、财务、商品为明线，现金结果用于核验财务');
     expect(screen.getByText('服务端筛选 · 更新时间未提供')).toBeTruthy();
     expect(screen.getByText('本页 1 条 · 全量总数不可用')).toBeTruthy();
-    expect(screen.getByText('member:verified-1')).toBeTruthy();
-    expect(screen.getByText('mall:verified-1')).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: '财务流' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: '商品流' })).toBeTruthy();
-    expect(screen.getByRole('columnheader', { name: '现金暗线' })).toBeTruthy();
+    expect(screen.queryByText('member:verified-1')).toBeNull();
+    expect(screen.queryByText('mall:verified-1')).toBeNull();
+    expect(screen.getByText('消费者信息未提供')).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: '金额' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: '商品' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: '支付' })).toBeTruthy();
     expect(screen.queryByText('不应泄漏的演示会员')).toBeNull();
     expect(screen.queryByText('不应泄漏的演示支付方式')).toBeNull();
     expect(screen.getByRole('button', { name: '全部订单' }).textContent).toBe('全部订单');
@@ -155,12 +156,12 @@ describe('Order route', () => {
     expect(placed.disabled).toBe(false);
 
     await userEvent.setup().click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
-    const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
-    expect(within(dialog).getByRole('heading', { name: '四流合一' })).toBeTruthy();
-    expect(within(dialog).getByText(/没有事实来源的结算、路径和里程碑不会推测/)).toBeTruthy();
-    expect(within(dialog).getAllByText('当前读模型未提供').length).toBeGreaterThan(0);
-    expect(within(dialog).getByText(/当前读模型未提供审计时间线/)).toBeTruthy();
-    expect(within(dialog).queryByText('不应泄漏的演示说明')).toBeNull();
+    const detail = await screen.findByRole('complementary', { name: new RegExp(order.order_number) });
+    expect(within(detail).getByRole('heading', { name: '四流合一' })).toBeTruthy();
+    expect(within(detail).getByText(/没有事实来源的结算、路径和里程碑不会推测/)).toBeTruthy();
+    expect(within(detail).getAllByText('当前读模型未提供').length).toBeGreaterThan(0);
+    expect(within(detail).getByText(/当前读模型未返回真实状态事件时间线/)).toBeTruthy();
+    expect(within(detail).queryByText('不应泄漏的演示说明')).toBeNull();
   });
 
   it('turns the preview exception view into a vertical responsibility workflow', async () => {
@@ -200,7 +201,7 @@ describe('Order route', () => {
     expect(within(actionPanel).getByRole('button', { name: '进入财务与对账台处理' })).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: '查看完整订单详情' }));
-    expect(await screen.findByRole('dialog', { name: new RegExp(order.order_number) })).toBeTruthy();
+    expect(await screen.findByRole('complementary', { name: new RegExp(order.order_number) })).toBeTruthy();
     expect(postRequests).toHaveLength(0);
   });
 
@@ -222,32 +223,32 @@ describe('Order route', () => {
     expect(listRead?.searchParams.get('payment')).toBe('paid');
   });
 
-  it('opens the React Aria dialog from both the explicit view action and the row using the internal ID in the URL', async () => {
+  it('opens the split-view detail from both the explicit view action and the row while preserving URL state', async () => {
     const user = userEvent.setup();
     renderRoute('/orders?campaign=keep');
     await screen.findByRole('table', { name: '订单列表' });
 
     await user.click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
-    expect(await screen.findByRole('dialog', { name: new RegExp(order.order_number) })).toBeTruthy();
+    expect(await screen.findByRole('complementary', { name: new RegExp(order.order_number) })).toBeTruthy();
     expect(currentParams().get('selected')).toBe(order.id);
     expect(currentParams().get('campaign')).toBe('keep');
     expect(getRequests.some((url) => url.searchParams.get('limit') === '1' && url.searchParams.get('order') === order.id)).toBe(true);
 
     await user.click(screen.getByRole('button', { name: '关闭订单详情' }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('complementary')).toBeNull());
     expect(currentParams().get('selected')).toBeNull();
 
     const row = screen.getByRole('row', { name: new RegExp(order.order_number) });
     row.focus();
     await user.keyboard('{Enter}');
-    expect(await screen.findByRole('dialog', { name: new RegExp(order.order_number) })).toBeTruthy();
+    expect(await screen.findByRole('complementary', { name: new RegExp(order.order_number) })).toBeTruthy();
     expect(currentParams().get('selected')).toBe(order.id);
   });
 
   it('supports all five drawer tabs by keyboard and click, then closes without losing unrelated URL state', async () => {
     const user = userEvent.setup();
     renderRoute(`/orders?selected=${encodeURIComponent(order.id)}&campaign=keep`);
-    const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
+    const dialog = await screen.findByRole('complementary', { name: new RegExp(order.order_number) });
     const overview = within(dialog).getByRole('tab', { name: '订单概览' });
     const products = within(dialog).getByRole('tab', { name: '商品与履约' });
     const payment = within(dialog).getByRole('tab', { name: '支付与退款' });
@@ -272,7 +273,7 @@ describe('Order route', () => {
     expect(within(dialog).getByRole('heading', { name: '金额与支付' })).toBeTruthy();
 
     await user.click(within(dialog).getByRole('button', { name: '关闭订单详情' }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(screen.queryByRole('complementary')).toBeNull());
     expect(currentParams().get('selected')).toBeNull();
     expect(currentParams().get('tab')).toBeNull();
     expect(currentParams().get('campaign')).toBe('keep');
@@ -280,7 +281,7 @@ describe('Order route', () => {
 
   it('restores the selected order and detail tab from the initial URL', async () => {
     renderRoute(`/orders?selected=${encodeURIComponent(order.id)}&tab=payment&campaign=restore`);
-    const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
+    const dialog = await screen.findByRole('complementary', { name: new RegExp(order.order_number) });
 
     expect(within(dialog).getByRole('tab', { name: '支付与退款' }).getAttribute('aria-selected')).toBe('true');
     expect(within(dialog).getByRole('heading', { name: '支付快照' })).toBeTruthy();
@@ -374,7 +375,7 @@ describe('Order route', () => {
     await user.keyboard(' ');
     expect(await screen.findByText(/已选择 1 条当前页订单/)).toBeTruthy();
     expect(rowCheckbox.checked).toBe(true);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('complementary')).toBeNull();
     expect(currentParams().get('selected')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: '列设置' }));
@@ -382,7 +383,7 @@ describe('Order route', () => {
     const productColumn = within(settings).getByRole<HTMLInputElement>('checkbox', { name: '商品流' });
     expect(productColumn.checked).toBe(true);
     await user.click(productColumn);
-    expect(screen.queryByRole('columnheader', { name: '商品流' })).toBeNull();
+    expect(screen.queryByRole('columnheader', { name: '商品' })).toBeNull();
     await user.click(within(settings).getByRole('button', { name: '完成' }));
     expect(screen.queryByRole('region', { name: '订单列表列设置' })).toBeNull();
   });
@@ -437,7 +438,7 @@ describe('Order route', () => {
     await user.click(rowMore);
 
     await user.click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
-    const dialog = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
+    const dialog = await screen.findByRole('complementary', { name: new RegExp(order.order_number) });
     const more = within(dialog).getByRole<HTMLButtonElement>('button', { name: '更多' });
     const fulfill = within(dialog).getByRole<HTMLButtonElement>('button', { name: '确认发货' });
     expect(more.disabled).toBe(true);
@@ -458,7 +459,7 @@ describe('Order route', () => {
     await openAndCloseSafePreview(user, screen.getByRole('button', { name: `订单 ${order.order_number} 更多操作` }), `订单操作预览 ${order.order_number}`);
 
     await user.click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
-    const drawer = await screen.findByRole('dialog', { name: new RegExp(order.order_number) });
+    const drawer = await screen.findByRole('complementary', { name: new RegExp(order.order_number) });
     await openAndCloseSafePreview(user, within(drawer).getByRole('button', { name: '更多' }), '更多订单操作');
     await openAndCloseSafePreview(user, within(drawer).getByRole('button', { name: '确认发货' }), '确认发货预览');
 

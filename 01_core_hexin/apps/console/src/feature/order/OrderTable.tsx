@@ -15,6 +15,7 @@ export function OrderTable({
   visible,
   checked,
   activeOrder,
+  mallName,
   onCheck,
   onCheckAll,
   onOpen,
@@ -24,6 +25,7 @@ export function OrderTable({
   visible: ReadonlySet<OrderColumnKey>;
   checked: ReadonlySet<string>;
   activeOrder?: string;
+  mallName: string;
   onCheck: (id: string) => void;
   onCheckAll: () => void;
   onOpen: (id: string) => void;
@@ -38,20 +40,20 @@ export function OrderTable({
             <th className="ordercheckcell" scope="col">
               <input type="checkbox" aria-label="选择本页订单" checked={allChecked} onChange={onCheckAll} />
             </th>
-            <th scope="col">订单流 / 时间</th>
-            {visible.has('member') ? <th scope="col">会员 / 节点</th> : null}
-            {visible.has('finance') ? <th scope="col">财务流</th> : null}
-            {visible.has('product') ? <th scope="col">商品流</th> : null}
-            {visible.has('payment') ? <th scope="col">现金暗线</th> : null}
-            {visible.has('fulfillment') ? <th scope="col">商品履约</th> : null}
-            {visible.has('aftersale') ? <th scope="col">售后</th> : null}
-            {visible.has('sla') ? <th scope="col">SLA</th> : null}
-            <th scope="col">操作</th>
+            <th className="orderidentitycol" scope="col">订单 / 时间</th>
+            {visible.has('member') ? <th className="ordermembercol" scope="col">消费者</th> : null}
+            {visible.has('finance') ? <th className="orderfinancecol" scope="col">金额</th> : null}
+            {visible.has('product') ? <th className="orderproductcol" scope="col">商品</th> : null}
+            {visible.has('payment') ? <th className="orderpaymentcol" scope="col">支付</th> : null}
+            {visible.has('fulfillment') ? <th className="orderfulfillmentcol" scope="col">履约</th> : null}
+            {visible.has('aftersale') ? <th className="orderaftersalecol" scope="col">售后</th> : null}
+            {visible.has('sla') ? <th className="orderslacol" scope="col">SLA</th> : null}
+            <th className="orderactioncol" scope="col">操作</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((order) => (
-            <OrderRow key={order.id} order={order} previewEnabled={previewEnabled} visible={visible} checked={checked.has(order.id)} active={activeOrder === order.id} onCheck={() => onCheck(order.id)} onOpen={() => onOpen(order.id)} />
+            <OrderRow key={order.id} order={order} previewEnabled={previewEnabled} visible={visible} checked={checked.has(order.id)} active={activeOrder === order.id} mallName={mallName} onCheck={() => onCheck(order.id)} onOpen={() => onOpen(order.id)} />
           ))}
         </tbody>
       </table>
@@ -65,6 +67,7 @@ function OrderRow({
   visible,
   checked,
   active,
+  mallName,
   onCheck,
   onOpen,
 }: Readonly<{
@@ -73,6 +76,7 @@ function OrderRow({
   visible: ReadonlySet<OrderColumnKey>;
   checked: boolean;
   active: boolean;
+  mallName: string;
   onCheck: () => void;
   onOpen: () => void;
 }>) {
@@ -84,6 +88,8 @@ function OrderRow({
       className={active ? 'isactive' : undefined}
       tabIndex={0}
       aria-current={active ? 'true' : undefined}
+      aria-selected={active}
+      aria-expanded={active}
       onClick={onOpen}
       onKeyDown={(event) => {
         if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
@@ -95,22 +101,22 @@ function OrderRow({
       <td className="ordercheckcell">
         <input type="checkbox" aria-label={`选择订单 ${order.order_number}`} checked={checked} onClick={(event) => event.stopPropagation()} onChange={onCheck} />
       </td>
-      <td>
+      <td className="orderidentitycol">
         <div className="orderprimarycell">
           <strong>{order.order_number}</strong>
           <span>{lifecycleLabel(order.lifecycle_state)} · {formatOrderTime(order.created_at)}</span>
         </div>
       </td>
       {visible.has('member') ? (
-        <td>
+        <td className="ordermembercol">
           <div className="orderprimarycell">
-            <strong>{preview?.memberName ?? order.member_id ?? '会员显示名不可用'}</strong>
-            <span>{preview?.enterpriseName ?? order.mall_id ?? order.scope_id ?? '节点归属未返回'}</span>
+            <strong>{preview?.memberName ?? '消费者信息未提供'}</strong>
+            <span>{preview?.enterpriseName ?? mallName}</span>
           </div>
         </td>
       ) : null}
       {visible.has('finance') ? (
-        <td>
+        <td className="orderfinancecol">
           <div className="orderprimarycell">
             <strong>{formatMinor(order.total_minor, order.currency)}</strong>
             <span>{financeLabel(order)}</span>
@@ -118,20 +124,20 @@ function OrderRow({
         </td>
       ) : null}
       {visible.has('product') ? (
-        <td>
+        <td className="orderproductcol">
           <div className="orderproductcell">
             <span className="orderproductthumb">
               <OrderIcon name="package" />
             </span>
             <span>
               <strong>{product.title}</strong>
-              <small>{product.detail} · {inventoryLabel(order)}</small>
+              <small>{inventoryLabel(order)}</small>
             </span>
           </div>
         </td>
       ) : null}
       {visible.has('payment') ? (
-        <td>
+        <td className="orderpaymentcol">
           <div className="orderprimarycell">
             <span className={`orderstatustext tone-${paymentTone(order.payment_state)}`}>
               <i />
@@ -142,15 +148,15 @@ function OrderRow({
         </td>
       ) : null}
       {visible.has('fulfillment') ? (
-        <td>
+        <td className="orderfulfillmentcol">
           <StatusPill icon="truck" label={fulfillmentLabel(order.fulfillment_state)} tone={fulfillmentTone(order.fulfillment_state)} />
         </td>
       ) : null}
       {visible.has('aftersale') ? (
-        <td>{order.aftersale_state === 'none' ? <span className="ordermutetext">无售后</span> : <StatusPill icon="clock" label={aftersaleLabel(order.aftersale_state)} tone={aftersaleTone(order.aftersale_state)} />}</td>
+        <td className="orderaftersalecol">{order.aftersale_state === 'none' ? <span className="ordermutetext">无售后</span> : <StatusPill icon="clock" label={aftersaleLabel(order.aftersale_state)} tone={aftersaleTone(order.aftersale_state)} />}</td>
       ) : null}
       {visible.has('sla') ? (
-        <td>
+        <td className="orderslacol">
           {preview?.slaMinutes === undefined ? (
             <span className="ordermutetext" title="当前读模型未返回 SLA">
               未提供
@@ -163,7 +169,7 @@ function OrderRow({
           )}
         </td>
       ) : null}
-      <td>
+      <td className="orderactioncol">
         <div className="orderrowactions">
           <button
             type="button"

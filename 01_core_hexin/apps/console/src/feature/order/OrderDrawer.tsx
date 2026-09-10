@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { Button, Dialog as AriaDialog, Heading, Modal, ModalOverlay, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
+import { useEffect, useRef, useState } from 'react';
+import { Button, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
 import { OrderDrawerPanel } from './OrderDrawerPanel';
 import { OrderIcon } from './OrderIcon';
-import { formatOrderTime, fulfillmentLabel, fulfillmentTone, paymentLabel, paymentTone, previewRecord } from './OrderPresentation';
+import { aftersaleLabel, aftersaleTone, formatOrderTime, fulfillmentLabel, fulfillmentTone, lifecycleLabel, paymentLabel, paymentTone } from './OrderPresentation';
 import { OrderPreviewAction } from './OrderPreviewAction';
 import { OrderDetailTabSchema, type OrderDetailTab } from './OrderSchema';
 
@@ -22,16 +22,19 @@ export function OrderDrawer({
   orderId,
   tab,
   previewEnabled,
+  mallName,
   onTab,
   onClose,
 }: Readonly<{
   orderId: string;
   tab: OrderDetailTab;
   previewEnabled: boolean;
+  mallName: string;
   onTab: (tab: OrderDetailTab) => void;
   onClose: () => void;
 }>) {
   const context = useConsoleContext();
+  const detailRef = useRef<HTMLElement>(null);
   const [copied, setCopied] = useState(false);
   const query = useQuery({
     queryKey: orderDetailKey(context, orderId),
@@ -39,8 +42,16 @@ export function OrderDrawer({
     enabled: orderId !== '',
   });
   const order = query.data;
-  const preview = order === undefined ? undefined : previewRecord(order, previewEnabled);
   const error = safeQueryError(query.error);
+
+  useEffect(() => {
+    detailRef.current?.focus({ preventScroll: true });
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [onClose, orderId]);
 
   const copyNumber = () => {
     if (order === undefined || navigator.clipboard === undefined) return;
@@ -54,37 +65,28 @@ export function OrderDrawer({
   };
 
   return (
-    <ModalOverlay
-      className="orderdraweroverlay"
-      isOpen
-      isDismissable
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      <Modal className="orderdrawermodal">
-        <AriaDialog className="orderdrawer" aria-label={`订单详情 ${order?.order_number ?? orderId}`}>
+    <aside ref={detailRef} className="orderdrawer" aria-label={`订单详情 ${order?.order_number ?? '正在读取'}`} tabIndex={-1}>
           <header className="orderdrawerheader">
             <div>
               <p>订单详情</p>
               <div className="orderdrawertitleline">
-                <Heading slot="title" id="orderdrawertitle">
+                <h2 id="orderdrawertitle">
                   {order?.order_number ?? '正在读取订单'}
-                </Heading>
+                </h2>
                 <button type="button" onClick={copyNumber} disabled={order === undefined} aria-label={copied ? '订单号已复制' : '复制订单号'}>
                   <OrderIcon name={copied ? 'check' : 'copy'} />
                 </button>
               </div>
-              {order === undefined ? (
-                <span className="ordermutetext">内部订单 ID：{orderId}</span>
-              ) : (
+              {order === undefined ? null : (
                 <>
                   <div className="orderdrawerbadges">
+                    <span className="orderstatuspill tone-brand">{lifecycleLabel(order.lifecycle_state)}</span>
                     <span className={`orderstatuspill tone-${paymentTone(order.payment_state)}`}>{paymentLabel(order.payment_state)}</span>
                     <span className={`orderstatuspill tone-${fulfillmentTone(order.fulfillment_state)}`}>{fulfillmentLabel(order.fulfillment_state)}</span>
+                    <span className={`orderstatuspill tone-${aftersaleTone(order.aftersale_state)}`}>{aftersaleLabel(order.aftersale_state)}</span>
                   </div>
                   <span className="ordermutetext">
-                    {preview?.mallName ?? order.mall_id ?? '商城显示名不可用'} · {formatOrderTime(order.created_at)}
+                    {mallName} · {formatOrderTime(order.created_at)}
                   </span>
                 </>
               )}
@@ -132,7 +134,7 @@ export function OrderDrawer({
               {!query.isPending && !query.isError && order === undefined ? (
                 <section className="orderdrawerempty" role="status">
                   <strong>未找到订单</strong>
-                  <p>当前详情读取只支持内部订单 ID 精确匹配，不支持使用展示订单号反查。</p>
+                  <p>当前详情只支持订单精确匹配，请返回目录后重试。</p>
                 </section>
               ) : null}
               {order === undefined ? null : <OrderDrawerPanel order={order} tab={tab} previewEnabled={previewEnabled} />}
@@ -187,8 +189,6 @@ export function OrderDrawer({
               {() => <p className="orderpreviewdetail">订单版本 {order?.version ?? '不可用'} 已读取；正式执行仍需 Preview → Confirm → Step-up → Execute → Reread → Receipt。</p>}
             </OrderPreviewAction>
           </footer>
-        </AriaDialog>
-      </Modal>
-    </ModalOverlay>
+    </aside>
   );
 }

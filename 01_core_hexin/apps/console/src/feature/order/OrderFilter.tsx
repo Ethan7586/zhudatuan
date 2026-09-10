@@ -43,7 +43,7 @@ export function OrderFilterForm({ value, onApply, onColumns, columnsOpen }: Orde
       <TextField className="ordersearchfield">
         <Label className="sr-only">订单搜索</Label>
         <OrderIcon name="search" />
-        <Input {...form.register('order')} aria-describedby="orderfilterboundary" placeholder="输入订单号或内部订单 ID" />
+        <Input {...form.register('order')} aria-describedby="orderfilterboundary" placeholder="输入订单号" />
         <button className="ordersearchsubmit" type="submit" aria-label="筛选订单">
           <OrderIcon name="arrowRight" />
         </button>

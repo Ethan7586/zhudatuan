@@ -426,6 +426,16 @@ objects:
     owner: deployment
     source: 02_platform_pingtai/database/supabase/migrations/20260829211000_platform_owner_transfer.sql
     operationalOwner: deployment
+  - id: deployment.is_independent_registration_database
+    kind: function
+    owner: deployment
+    source: 02_platform_pingtai/infrastructure/local/postgres-init.sh
+    operationalOwner: deployment
+  - id: deployment.registration_bootstrap_boundary
+    kind: function
+    owner: deployment
+    source: 02_platform_pingtai/infrastructure/local/postgres-init.sh
+    operationalOwner: deployment
   - id: deployment.sandbox_catalog_bootstrap_boundary
     kind: function
     owner: deployment
@@ -17713,6 +17723,14 @@ objects:
     objectType: function
     target: deployment.bootstrap_zhudatuan_owner(text,text,text,text,text)
     privilege: execute
+  - id: zhudatuanbootstrap:function:deployment.registration_bootstrap_boundary(text):execute
+    kind: grant
+    owner: deployment
+    source: 02_platform_pingtai/infrastructure/local/postgres-init.sh
+    role: zhudatuanbootstrap
+    objectType: function
+    target: deployment.registration_bootstrap_boundary(text)
+    privilege: execute
   - id: zhudatuanbootstrap:function:deployment.zhudatuan_owner_bootstrap_state(text):execute
     kind: grant
     owner: deployment
@@ -26156,6 +26174,11 @@ objects:
     owner: checkout
     source: 02_platform_pingtai/database/supabase/migrations/20260821019000_create_cart_checkout_order.sql
     rls: true
+  - id: deployment.boundary
+    kind: table
+    owner: deployment
+    source: 02_platform_pingtai/infrastructure/local/postgres-init.sh
+    rls: false
   - id: experience.application
     kind: table
     owner: experience

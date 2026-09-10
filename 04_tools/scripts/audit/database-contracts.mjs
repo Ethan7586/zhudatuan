@@ -13,6 +13,13 @@ const HISTORY = join(ROOT, '02_platform_pingtai', 'database', 'contracts', 'hist
 const OBJECTS = join(ROOT, '02_platform_pingtai', 'database', 'contracts', 'objects.yml');
 const BOOTSTRAP = '20260817191000_bootstrap_ethan_platform_owner.sql';
 const OWNER_RECONCILIATION = '20260820132000_platform_owner_reconciliation.sql';
+const AUTONODE_IDENTITY_POST_HISTORY = '20260909062000_provision_autonode_identity_realm.sql';
+const AUTONODE_IDENTITY_POST_HISTORY_STATEMENTS = Object.freeze([
+  'profile=registration-only/v1',
+  'source_sha256=64537e9bbe5e9fc9022fe76f9a34e03b273ab12be07ba7e94128adb72a8d452c',
+  'executed_sha256=64537e9bbe5e9fc9022fe76f9a34e03b273ab12be07ba7e94128adb72a8d452c',
+  'reason=append-only post-history migration executed byte-for-byte',
+]);
 const OWNER_FIXTURE_BOUNDARY = '20260829060000_zhudatuan_operator_invitation_registration.sql';
 const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
 const REGISTRATION_ASSERTION_OMISSIONS = new Map([
@@ -237,7 +244,14 @@ try {
     }
     if (name === SECURE_STAGE) await stageFreshReplaySecrets(database);
     await execute(database, await readFile(join(MIGRATIONS,name),'utf8'), `migration ${name}`);
-    await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0,14),name]);
+    if (name === AUTONODE_IDENTITY_POST_HISTORY) {
+      await database.query(
+        'insert into supabase_migrations.schema_migrations(version,name,statements) values($1,$2,$3)',
+        [name.slice(0,14),name,AUTONODE_IDENTITY_POST_HISTORY_STATEMENTS],
+      );
+    } else {
+      await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0,14),name]);
+    }
     applied += 1;
   }
   if (mode !== '--inventory-cutover-unsafe') {
@@ -513,10 +527,12 @@ async function verifyObjectContract(database) {
   const contract = parse(await readFile(OBJECTS, 'utf8'));
   const entries = Array.isArray(contract?.objects) ? contract.objects : [];
   const schemas = entries.filter((entry) => entry.kind === 'schema').map((entry) => entry.id).sort();
+  const tableEntries = entries.filter((entry) => entry.kind === 'table');
+  const expectedTableRls = new Map(tableEntries.map((entry) => [entry.id, entry.rls === true]));
   const grantRoles = [...new Set(entries.filter((entry) => entry.kind === 'grant').map((entry) => entry.role))].sort();
   const expected = new Map([
     ['schema', new Set(schemas)],
-    ['table', new Set(entries.filter((entry) => entry.kind === 'table').map((entry) => entry.id))],
+    ['table', new Set(tableEntries.map((entry) => entry.id))],
     ['view', new Set(entries.filter((entry) => entry.kind === 'view').map((entry) => entry.id))],
     ['function', new Set(entries.filter((entry) => entry.kind === 'function').map((entry) => entry.id))],
     ['trigger', new Set(entries.filter((entry) => entry.kind === 'trigger').map((entry) => entry.id))],
@@ -550,7 +566,10 @@ async function verifyObjectContract(database) {
   compareSet('function', expected.get('function'), functionRows.rows.map((row) => row.id));
   compareSet('trigger', expected.get('trigger'), triggerRows.rows.map((row) => row.id));
   compareSet('policy', expected.get('policy'), policyRows.rows.map((row) => row.id));
-  if (tableRows.rows.some((row) => !row.rls)) throw new Error('DATABASE_OBJECT_RLS_DRIFT');
+  const tableRlsDrift = tableRows.rows
+    .filter((row) => expectedTableRls.get(row.id) !== row.rls)
+    .map((row) => ({ id: row.id, expected: expectedTableRls.get(row.id), actual: row.rls }));
+  if (tableRlsDrift.length) throw new Error(`DATABASE_OBJECT_RLS_DRIFT:${JSON.stringify(tableRlsDrift)}`);
 
   const roleRows = await database.query(`with roles(role) as (select unnest($2::text[])),
     table_privilege(privilege) as (values('SELECT'),('INSERT'),('UPDATE'),('DELETE'),('TRUNCATE'),('REFERENCES'),('TRIGGER')),

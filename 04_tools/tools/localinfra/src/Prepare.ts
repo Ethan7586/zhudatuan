@@ -182,12 +182,12 @@ function commerceEnvironment(values: Readonly<Record<string, string>>): string {
     API_PORT: '3001',
     API_ALLOWED_ORIGINS: 'http://localhost:3000,http://127.0.0.1:3000,http://localhost:3002,http://127.0.0.1:3002,http://localhost:5173,http://127.0.0.1:5173',
     AUTH_RETURN_TARGETS: JSON.stringify({
-      console: 'http://localhost:5173',
-      'console-hbbtzn': 'http://localhost:5173',
-      storefront: 'http://localhost:3000',
-      'storefront-hbbtzn': 'http://localhost:3000',
-      store: 'http://localhost:5173/entrances/store',
-      supplier: 'http://localhost:5173/entrances/supplier',
+      console: 'http://127.0.0.1:5173',
+      'console-hbbtzn': 'http://127.0.0.1:5173',
+      storefront: 'http://127.0.0.1:3000',
+      'storefront-hbbtzn': 'http://127.0.0.1:3000',
+      store: 'http://127.0.0.1:5173/entrances/store',
+      supplier: 'http://127.0.0.1:5173/entrances/supplier',
     }),
     DATABASE_API_CONNECTION_REF: 'shop/local/database/api',
     DATABASE_JOB_CONNECTION_REF: 'shop/local/database/jobs',
@@ -260,7 +260,7 @@ function localIdentityNodeRegistry(): string {
   return JSON.stringify({
     version: 2,
     nodes: [{
-      nodeId: 'local', nodeProfile: 'operating_mall', mallId: 'mall-local', displayName: '本地身份节点',
+      nodeId: 'node:zhudatuan:l0', nodeProfile: 'operating_mall', mallId: 'mall-zhudatuan', displayName: '本地身份节点',
       accountsOrigin: 'http://127.0.0.1:3002',
       apiOrigin: 'http://127.0.0.1:3001', consumerApiOrigin: 'http://127.0.0.1:3001',
       adminOrigin: 'http://127.0.0.1:5173', storefrontOrigin: 'http://127.0.0.1:3000',

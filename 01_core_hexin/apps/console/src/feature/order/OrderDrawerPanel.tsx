@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { formatMinor } from '../../shared/ui/Format';
-import { appConfig } from '../../shared/config/AppConfig';
 import { OrderIcon } from './OrderIcon';
 import { aftersaleLabel, financeLabel, formatOrderTime, fulfillmentLabel, inventoryLabel, lifecycleLabel, paymentLabel, previewRecord } from './OrderPresentation';
 import type { OrderDetailTab, OrderRecord } from './OrderSchema';
@@ -33,12 +32,10 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
       <FourFlowSummary order={order} />
       <MilestoneChain order={order} previewEnabled={previewEnabled} />
 
-      <DetailSection title="节点归属与路径">
+      <DetailSection title="消费者信息">
         <div className="orderdetailgrid">
-          <Info label="订单商城" value={order.mall_id ?? order.scope_id ?? '未返回'} />
-          <Info label="当前运营节点" value={`${appConfig.nodeManifest.signed_level} · ${appConfig.nodeManifest.node_id}`} />
-          <Info label="治理父节点" value={appConfig.nodeManifest.parent_node_id ?? 'L0 无父节点'} />
-          <Info label="交易上下游" value="路径快照尚未写入本订单" />
+          <Info label="消费者" value={preview?.memberName ?? '当前读模型未提供'} />
+          <Info label="联系方式" value="当前读模型未提供" />
         </div>
       </DetailSection>
 
@@ -55,7 +52,7 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
                 <span>
                   <strong>{line.title}</strong>
                   <small>
-                    {line.sku} ×{line.quantity}
+                    规格 {line.sku} · 数量 {line.quantity}
                   </small>
                 </span>
                 <b>{formatMinor(line.payableMinor, order.currency)}</b>
@@ -77,9 +74,8 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
       <DetailSection title="履约">
         <div className="orderdetailgrid">
           <Info label="履约状态" value={fulfillmentLabel(order.fulfillment_state)} />
-          <Info label="履约 ID" value={preview?.fulfillmentId ?? '当前读模型未提供'} />
-          <Info label="供应方" value={preview?.supplierName ?? '当前读模型未提供'} />
-          <Info label="收货信息" value={preview?.addressSummary ?? '当前读模型未提供'} />
+          <Info label="供应方" value={preview?.supplierName ?? '未关联'} />
+          <Info label="收货信息" value={preview?.addressSummary ?? '暂无'} />
         </div>
       </DetailSection>
 
@@ -89,7 +85,7 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
           '当前读模型未提供审计时间线'
         ) : (
           <>
-            <strong>{preview.operation.id}</strong> · {preview.operation.label}
+            <strong>{preview.operation.label}</strong> · {formatOrderTime(preview.operation.at)}
           </>
         )}
       </p>
@@ -99,17 +95,8 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
 
 function MilestoneChain({ order, previewEnabled }: Readonly<{ order: OrderRecord; previewEnabled: boolean }>) {
   const preview = previewRecord(order, previewEnabled);
-  const paid = ['paid', 'partially_refunded', 'refunded'].includes(order.payment_state);
-  const milestones =
-    preview?.milestones ??
-    ([
-      { key: 'placed', label: '下单', state: 'complete', at: formatOrderTime(order.created_at) },
-      { key: 'paid', label: '支付', state: paid ? 'complete' : 'current', at: undefined },
-      { key: 'reserved', label: '库存锁定', state: 'pending', at: undefined },
-      { key: 'unshipped', label: '待发货', state: order.fulfillment_state === 'allocated' ? 'current' : 'pending', at: undefined },
-      { key: 'shipping', label: '待收货', state: order.fulfillment_state === 'shipped' ? 'current' : 'pending', at: undefined },
-      { key: 'completed', label: '完成', state: order.lifecycle_state === 'completed' ? 'complete' : 'pending', at: undefined },
-    ] as const);
+  const milestones = preview?.milestones ?? [];
+  if (milestones.length === 0) return <Unavailable text="当前读模型未返回真实状态事件时间线。" />;
   return (
     <ol className="ordermilestones" aria-label="订单状态链">
       {milestones.map((item) => (
@@ -143,9 +130,7 @@ function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
                 </span>
                 <div>
                   <strong>{line.title}</strong>
-                  <small>
-                    SKU {line.sku} · Listing {line.listing}
-                  </small>
+                  <small>规格 {line.sku}</small>
                   <small>
                     数量 {line.quantity} · 单价 {formatMinor(line.unitMinor, order.currency)}
                   </small>
@@ -162,8 +147,8 @@ function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
           <Unavailable text="当前授权范围没有返回库存占用记录。" />
         ) : (
           <div className="orderdetailgrid">
-            {reservations.map((reservation) => (
-              <Info key={reservation.id} label={reservation.stockItem} value={`${reservation.state} · ${reservation.quantity} 件`} />
+            {reservations.map((reservation, index) => (
+              <Info key={reservation.id} label={`库存占用 ${index + 1}`} value={`${reservation.state} · ${reservation.quantity} 件`} />
             ))}
           </div>
         )}
@@ -227,7 +212,6 @@ function AftersalePanel({ order }: Readonly<{ order: OrderRecord }>) {
       <DetailSection title="售后状态">
         <div className="orderdetailgrid">
           <Info label="聚合售后状态" value={aftersaleLabel(order.aftersale_state)} />
-          <Info label="订单版本" value={String(order.version)} />
         </div>
       </DetailSection>
       <Unavailable text="当前合同不能按订单读取完整售后单、审批记录或责任人，不能用前端分页过滤替代。" />
@@ -247,7 +231,6 @@ function OperationsPanel({ order, previewEnabled }: Readonly<{ order: OrderRecor
           <article className={`orderoperation is-${operation.status}`}>
             <OrderIcon name={icon} />
             <div>
-              <strong>{operation.id}</strong>
               <span>{operation.label}</span>
               <small>{formatOrderTime(operation.at)}</small>
             </div>
