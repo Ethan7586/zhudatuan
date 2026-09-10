@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -12,7 +11,7 @@ import { OrderDrawer } from './OrderDrawer';
 import { OrderExceptionWorkbench } from './OrderExceptionWorkbench';
 import { emptyOrderFilter, OrderFilterForm } from './OrderFilter';
 import { OrderIcon } from './OrderIcon';
-import { OrderDirectoryActions, OrderPageHeader } from './OrderPageHeader';
+import { OrderDirectoryActions } from './OrderPageHeader';
 import { isOrderPreviewContext, orderKey, readOrders, type OrderQuery } from './OrderQuery';
 import { defaultOrderColumns, OrderTable, type OrderColumnKey } from './OrderTable';
 import { OrderDetailTabSchema, OrderFilterSchema, OrderListFilterSchema, OrderViewSchema, type OrderDetailTab, type OrderListFilter, type OrderView } from './OrderSchema';
@@ -59,10 +58,6 @@ export function Component() {
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<OrderColumnKey>>(() => new Set(defaultOrderColumns));
   const previewPage = previewEnabled && page?.preview?.source === 'local-preview' ? page.preview : undefined;
-  const pageOrders = page?.items ?? [];
-  const paidCount = pageOrders.filter((order) => order.payment_state === 'paid').length;
-  const fulfillmentCount = pageOrders.filter((order) => !['delivered', 'completed'].includes(order.fulfillment_state)).length;
-  const attentionCount = pageOrders.filter((order) => order.aftersale_state !== 'none' || order.lifecycle_state === 'cancelled').length;
   const error = safeQueryError(query.error);
   const unauthenticated = query.error !== null && errorStatus(query.error) === 401;
 
@@ -152,22 +147,12 @@ export function Component() {
   }
 
   return (
-    <section className="orderworkspace" data-detail-open={selected !== undefined} aria-labelledby="ordermanagementtitle">
-      <OrderPageHeader mallName={mallName} />
-
-      <div className="orderoverview" aria-label="当前页订单概览">
-        <OrderMetric label="当前页订单" value={page === undefined ? '—' : pageOrders.length} tone="blue" icon={<OrderIcon name="order" />} />
-        <OrderMetric label="本页已支付" value={page === undefined ? '—' : paidCount} tone="success" icon={<OrderIcon name="check" />} />
-        <OrderMetric label="本页待履约" value={page === undefined ? '—' : fulfillmentCount} tone="warning" icon={<OrderIcon name="truck" />} />
-        <OrderMetric label="售后或取消" value={page === undefined ? '—' : attentionCount} tone={attentionCount === 0 ? 'purple' : 'danger'} icon={<OrderIcon name="clock" />} />
-      </div>
-
+    <section className="orderworkspace" data-detail-open={selected !== undefined} aria-label="订单管理">
       <div className="orderstage" data-detail-open={selected !== undefined}>
         <section className="orderdirectorypanel" aria-labelledby="orderworkspacetitle">
           <header className="orderpanelheading">
             <div>
-              <h2 id="orderworkspacetitle">订单目录</h2>
-              <span>{page === undefined ? '—' : page.count}</span>
+              <h2 id="orderworkspacetitle">共 {page === undefined ? '—' : page.count} 条订单</h2>
             </div>
             <OrderDirectoryActions previewEnabled={previewEnabled} isFetching={query.isFetching} pageCount={page?.items.length ?? 0} onRefresh={refresh} />
           </header>
@@ -239,15 +224,6 @@ export function Component() {
         {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled={previewEnabled} mallName={mallName} onTab={selectTab} onClose={closeOrder} />}
       </div>
     </section>
-  );
-}
-
-function OrderMetric({ label, value, tone, icon }: Readonly<{ label: string; value: string | number; tone: 'blue' | 'purple' | 'success' | 'warning' | 'danger'; icon: ReactNode }>) {
-  return (
-    <article className="orderoverviewitem" data-tone={tone}>
-      {icon}
-      <div><span>{label}</span><strong>{value}</strong></div>
-    </article>
   );
 }
 

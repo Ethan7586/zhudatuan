@@ -27,10 +27,10 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
     <div className="orderdrawerstack">
       <section className="ordersummarynote">
         <p>{preview?.summary ?? `订单为${lifecycleLabel(order.lifecycle_state)}状态；订单、财务、商品为明线，现金结果用于核验财务。`}</p>
-        {!previewEnabled ? <small>所有状态来自当前授权节点的权威订单读模型；没有事实来源的结算、路径和里程碑不会推测。</small> : <small>本地预览数据 · 不作为生产业务真值</small>}
+        {!previewEnabled ? <small>流程仅展示当前订单快照；没有事实来源的结算、路径和事件时间不会推测。</small> : <small>本地预览数据 · 不作为生产业务真值</small>}
       </section>
-      <FourFlowSummary order={order} />
       <MilestoneChain order={order} previewEnabled={previewEnabled} />
+      <FourFlowSummary order={order} />
 
       <DetailSection title="消费者信息">
         <div className="orderdetailgrid">
@@ -95,21 +95,59 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
 
 function MilestoneChain({ order, previewEnabled }: Readonly<{ order: OrderRecord; previewEnabled: boolean }>) {
   const preview = previewRecord(order, previewEnabled);
-  const milestones = preview?.milestones ?? [];
-  if (milestones.length === 0) return <Unavailable text="当前读模型未返回真实状态事件时间线。" />;
+  const milestones = preview?.milestones ?? snapshotFlow(order);
   return (
-    <ol className="ordermilestones" aria-label="订单状态链">
-      {milestones.map((item) => (
-        <li key={item.key} className={`is-${item.state}`}>
-          <span>
-            <OrderIcon name={item.state === 'complete' ? 'check' : item.key === 'unshipped' ? 'truck' : 'package'} />
-          </span>
-          <strong>{item.label}</strong>
-          <small>{item.at === undefined ? (preview === undefined && item.key === 'reserved' ? '不可用' : '—') : formatOrderTime(item.at)}</small>
-        </li>
-      ))}
-    </ol>
+    <section className="orderflow" aria-labelledby="orderflowtitle">
+      <div className="orderflowheading">
+        <h3 id="orderflowtitle">订单流程</h3>
+        <span>{preview === undefined ? '当前订单快照' : '事件时间线'}</span>
+      </div>
+      <ol className="ordermilestones" aria-label="订单流程">
+        {milestones.map((item) => {
+          const detail = item.at === undefined ? '—' : item.at.includes('T') ? formatOrderTime(item.at) : item.at;
+          return (
+          <li key={item.key} className={`is-${item.state}`} aria-label={`${item.label}：${flowStateLabel(item.state)}，${detail}`}>
+            <span>
+              <OrderIcon name={item.state === 'complete' ? 'check' : item.key === 'fulfillment' || item.key === 'unshipped' ? 'truck' : item.state === 'warning' ? 'clock' : 'package'} />
+            </span>
+            <strong>{item.label}</strong>
+            <small>
+              <b>{flowStateLabel(item.state)}</b>
+              {' · '}
+              {detail}
+            </small>
+          </li>
+          );
+        })}
+      </ol>
+    </section>
   );
+}
+
+function flowStateLabel(state: 'complete' | 'current' | 'pending' | 'warning'): string {
+  return ({ complete: '已完成', current: '当前', pending: '等待', warning: '异常' } as const)[state];
+}
+
+function snapshotFlow(order: OrderRecord) {
+  const paymentState = order.payment_state === 'failed'
+    ? 'warning'
+    : ['paid', 'partially_refunded', 'refunded'].includes(order.payment_state) ? 'complete' : 'current';
+  const fulfillmentState = ['cancelled', 'returned'].includes(order.fulfillment_state)
+    ? 'warning'
+    : order.fulfillment_state === 'delivered' ? 'complete' : paymentState === 'complete' ? 'current' : 'pending';
+  const aftersaleState = order.aftersale_state === 'resolved'
+    ? 'complete'
+    : order.aftersale_state === 'rejected' ? 'warning' : order.aftersale_state === 'none' ? 'pending' : 'current';
+  const completionState = order.lifecycle_state === 'completed' || order.lifecycle_state === 'closed'
+    ? 'complete'
+    : order.lifecycle_state === 'cancelled' ? 'warning' : 'pending';
+  return [
+    { key: 'placed', label: '下单', state: 'complete' as const, at: formatOrderTime(order.created_at) },
+    { key: 'payment', label: '支付', state: paymentState, at: paymentLabel(order.payment_state) },
+    { key: 'fulfillment', label: '履约', state: fulfillmentState, at: fulfillmentLabel(order.fulfillment_state) },
+    { key: 'aftersale', label: '售后', state: aftersaleState, at: aftersaleLabel(order.aftersale_state) },
+    { key: 'completion', label: '完成', state: completionState, at: lifecycleLabel(order.lifecycle_state) },
+  ] as const;
 }
 
 function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
@@ -209,9 +247,25 @@ function aftersaleKindLabel(kind: 'cancel' | 'return' | 'refund' | 'exchange' | 
 function AftersalePanel({ order }: Readonly<{ order: OrderRecord }>) {
   return (
     <div className="orderdrawerstack">
+      {order.aftersale_state === 'none' ? (
+        <div className="orderaftersaleempty">
+          <OrderIcon name="check" />
+          <span>
+            <strong>当前订单暂无售后</strong>
+            <small>订单仍可按支付与履约状态继续核验</small>
+          </span>
+        </div>
+      ) : null}
       <DetailSection title="售后状态">
         <div className="orderdetailgrid">
           <Info label="聚合售后状态" value={aftersaleLabel(order.aftersale_state)} />
+          <Info label="订单状态" value={lifecycleLabel(order.lifecycle_state)} />
+        </div>
+      </DetailSection>
+      <DetailSection title="关联状态">
+        <div className="orderdetailgrid">
+          <Info label="支付状态" value={paymentLabel(order.payment_state)} />
+          <Info label="履约状态" value={fulfillmentLabel(order.fulfillment_state)} />
         </div>
       </DetailSection>
       <Unavailable text="当前合同不能按订单读取完整售后单、审批记录或责任人，不能用前端分页过滤替代。" />

@@ -1,21 +1,6 @@
 import { OrderIcon } from './OrderIcon';
 import { OrderPreviewAction } from './OrderPreviewAction';
 
-export function OrderPageHeader({ mallName }: Readonly<{ mallName: string }>) {
-  return (
-    <header className="orderpageheader">
-      <div>
-        <h1 id="ordermanagementtitle">订单管理系统</h1>
-        <p>集中查看订单、支付、履约与售后状态</p>
-      </div>
-      <div className="orderpageheadermeta">
-        <span>当前商城 <strong>{mallName}</strong></span>
-        <em>只读目录</em>
-      </div>
-    </header>
-  );
-}
-
 export function OrderDirectoryActions({
   previewEnabled,
   isFetching,
