@@ -76,64 +76,52 @@ export class ConfirmCheckout {
     const payable = Money.of(frozen.payableMinor, frozen.currency);
     assertTenderTotal(frozen, payable);
     const orderScope = frozen.cart.mall === accessScope.id ? accessScope : await this.organization.scope(transaction, frozen.cart.mall);
-    let reservationStarted = false;
-    try {
-      lock.advance('inventory');
-      reservationStarted = true;
-      await this.reservations.inventoryHold(transaction, order, frozen);
-      lock.advance('voucher');
-      await this.reservations.voucherHold(transaction, order, frozen);
-      lock.advance('marketing');
-      await this.reservations.marketingHold(transaction, order, frozen, iso(session.expiresAt));
-      lock.advance('benefit');
-      await this.reservations.benefitHold(transaction, order, frozen);
-      lock.advance('order');
-      const snapshots = orderSnapshots(frozen);
-      const saved = await this.orders.create(transaction, {
-        id: order,
-        scope: frozen.cart.mall,
-        member: frozen.cart.member,
-        checkout: session.checkout,
-        money: payable,
-        evidence: { quote: session.quoteId, signature: session.quoteHash, dependencies: frozen.evidence, confirmationRisk: current.evidence.risk, selection: frozen.selection, tenders: frozen.tenders },
-        address: snapshots.address,
-        invoice: snapshots.invoice,
-        delivery: frozen.selection.delivery,
-        experienceVersion: experienceVersion(frozen),
-        lines: frozen.lines,
-      });
-      lock.advance('payment');
-      const prepared = await this.payment.prepare(transaction, {
-        order,
-        orderNumber: saved.number,
-        scope: frozen.cart.mall,
-        mall: frozen.cart.mall,
-        member: frozen.cart.member,
-        currency: payable.currency.code,
-        amountMinor: payable.minor,
-        idempotency,
-        tenders: frozen.tenders,
-      });
-      const snapshot = paymentSnapshot(this.checkout, frozen, orderScope, order, saved.number);
-      const payment = await this.payment.capture(transaction, { payment: prepared, order, scope: frozen.cart.mall, mall: frozen.cart.mall, member: frozen.cart.member, currency: payable.currency.code, amountMinor: payable.minor, snapshot });
-      lock.advance('finance');
-      await this.orders.scheduleExpiry(transaction, order, frozen.cart.mall);
-      await this.session.confirm(transaction, session.checkout);
-      await this.cart.convert(transaction, session.cartId);
-      lock.advance('audit');
-      lock.advance('outbox');
-      await appendCheckoutEvents(this.outbox, transaction, request, { checkout: session.checkout, quote: session.quoteId, order, intent: prepared.intent, snapshot, payload: frozen });
-      lock.complete();
-      return { status: 201, body: { order: saved.record, payment }, headers: { etag: '"0"' } };
-    } catch (cause) {
-      if (!reservationStarted) throw cause;
-      try {
-        await this.reservations.release(transaction, order);
-      } catch (releaseCause) {
-        throw new AggregateError([cause, releaseCause], 'CHECKOUT_COMPENSATION_FAILED');
-      }
-      throw cause;
-    }
+    lock.advance('inventory');
+    await this.reservations.inventoryHold(transaction, order, frozen);
+    lock.advance('voucher');
+    await this.reservations.voucherHold(transaction, order, frozen);
+    lock.advance('marketing');
+    await this.reservations.marketingHold(transaction, order, frozen, iso(session.expiresAt));
+    lock.advance('benefit');
+    await this.reservations.benefitHold(transaction, order, frozen);
+    lock.advance('order');
+    const snapshots = orderSnapshots(frozen);
+    const saved = await this.orders.create(transaction, {
+      id: order,
+      scope: frozen.cart.mall,
+      member: frozen.cart.member,
+      checkout: session.checkout,
+      money: payable,
+      evidence: { quote: session.quoteId, signature: session.quoteHash, dependencies: frozen.evidence, confirmationRisk: current.evidence.risk, selection: frozen.selection, tenders: frozen.tenders },
+      address: snapshots.address,
+      invoice: snapshots.invoice,
+      delivery: frozen.selection.delivery,
+      experienceVersion: experienceVersion(frozen),
+      lines: frozen.lines,
+    });
+    lock.advance('payment');
+    const prepared = await this.payment.prepare(transaction, {
+      order,
+      orderNumber: saved.number,
+      scope: frozen.cart.mall,
+      mall: frozen.cart.mall,
+      member: frozen.cart.member,
+      currency: payable.currency.code,
+      amountMinor: payable.minor,
+      idempotency,
+      tenders: frozen.tenders,
+    });
+    const snapshot = paymentSnapshot(this.checkout, frozen, orderScope, order, saved.number);
+    const payment = await this.payment.capture(transaction, { payment: prepared, order, scope: frozen.cart.mall, mall: frozen.cart.mall, member: frozen.cart.member, currency: payable.currency.code, amountMinor: payable.minor, snapshot });
+    lock.advance('finance');
+    await this.orders.scheduleExpiry(transaction, order, frozen.cart.mall);
+    await this.session.confirm(transaction, session.checkout);
+    await this.cart.convert(transaction, session.cartId);
+    lock.advance('audit');
+    lock.advance('outbox');
+    await appendCheckoutEvents(this.outbox, transaction, request, { checkout: session.checkout, quote: session.quoteId, order, intent: prepared.intent, snapshot, payload: frozen });
+    lock.complete();
+    return { status: 201, body: { order: saved.record, payment }, headers: { etag: '"0"' } };
   }
 
   finalizeRequest(input: OperationInputFor<'order.orders.create'>, context: FinalizeContext<'order.orders.create'>, result: OperationReply<OperationOutputFor<'order.orders.create'>>) {

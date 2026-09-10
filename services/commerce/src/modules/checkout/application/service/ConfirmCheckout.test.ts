@@ -21,15 +21,13 @@ describe('checkout confirmation', () => {
     expect(lockQuote).toHaveBeenCalledWith(expect.anything(), 'quote:one', 'member:one', 'mall:one', expect.stringMatching(/^[0-9a-f]{64}$/));
   });
 
-  it('releases inventory, voucher, marketing and benefit holds when a later step fails', async () => {
+  it('keeps the original failure authoritative so the transaction manager can roll back every hold', async () => {
     const quote = frozenQuote();
-    const release = vi.fn();
     const reservations = {
       inventoryHold: vi.fn(),
       voucherHold: vi.fn(),
       marketingHold: vi.fn(),
       benefitHold: vi.fn(),
-      release,
     };
     const usecase = service({
       checkout: { selection: () => quote.selection, restore: () => quote, read: async () => quote },
@@ -65,13 +63,11 @@ describe('checkout confirmation', () => {
     expect(reservations.voucherHold).toHaveBeenCalledOnce();
     expect(reservations.marketingHold).toHaveBeenCalledOnce();
     expect(reservations.benefitHold).toHaveBeenCalledOnce();
-    expect(release).toHaveBeenCalledOnce();
   });
 
-  it('runs idempotent reverse release when inventory reservation fails after starting', async () => {
+  it('keeps an inventory reservation failure intact for the transaction manager', async () => {
     const quote = frozenQuote();
     const failure = new Error('INVENTORY_FAULT_INJECTED');
-    const release = vi.fn();
     const orders = { create: vi.fn() };
     const usecase = service({
       checkout: { selection: () => quote.selection, restore: () => quote, read: async () => quote },
@@ -92,7 +88,7 @@ describe('checkout confirmation', () => {
       },
       pricing: { quote: async () => ({ id: 'quote:one', member: 'member:one', mall: 'mall:one', payload: quote, signature: 'signed' }) },
       cart: { lockActive: vi.fn() },
-      reservations: { inventoryHold: vi.fn().mockRejectedValue(failure), voucherHold: vi.fn(), marketingHold: vi.fn(), benefitHold: vi.fn(), release },
+      reservations: { inventoryHold: vi.fn().mockRejectedValue(failure), voucherHold: vi.fn(), marketingHold: vi.fn(), benefitHold: vi.fn() },
       orders,
       organization: { scope: async () => scopeSnapshot() },
     });
@@ -103,7 +99,6 @@ describe('checkout confirmation', () => {
         (transaction) => usecase.execute(request(), transaction)
       )
     ).rejects.toBe(failure);
-    expect(release).toHaveBeenCalledOnce();
     expect(orders.create).not.toHaveBeenCalled();
   });
 

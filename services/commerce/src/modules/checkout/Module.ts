@@ -16,7 +16,7 @@ import { MARKETING_READ_PORT, MARKETING_RESERVE_PORT } from '../marketing/public
 import { MEMBER_ADDRESS_PORT } from '../member/public';
 import { ORDER_INTENT_PORT } from '../order/public';
 import { ORGANIZATION_READ_PORT } from '../organization/public';
-import { CHECKOUT_HOLD_PORT, CHECKOUT_PAYMENT_PORT } from '../payment/public';
+import { CHECKOUT_PAYMENT_PORT } from '../payment/public';
 import { CHECKOUT_PRICING_PORT } from '../pricing/public';
 import { CHECKOUT_QUALIFICATION_PORT } from '../qualification/public';
 import { RISK_DECISION_PORT } from '../risk/public';
@@ -74,7 +74,7 @@ export const CheckoutModule = defineModule(Manifest, {
     const outbox = new PgOutbox(new PgTransactionManager(pool));
     const creator = new QuoteCreator(checkout, pricing, sessions, outbox, new SystemClock());
     const current = new CurrentQuoteReader(members, checkout, sessions, pricing);
-    const reservations = new CheckoutReservations(inventory, voucher, marketing, benefit, context.ports.get(CHECKOUT_HOLD_PORT));
+    const reservations = new CheckoutReservations(inventory, voucher, marketing, benefit);
     const confirmation = new ConfirmCheckout(checkout, members, sessions, pricing, context.ports.get(CHECKOUT_CART_PORT), reservations, orders, payment, context.ports.get(ORGANIZATION_READ_PORT), outbox);
     const quotes = new PgQuoteRepository(transactions, creator, current);
     const checkouts = new PgCheckoutRepository(transactions, confirmation);

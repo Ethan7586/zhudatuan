@@ -2,7 +2,6 @@ import type { WriteTransactionContext } from '../../../../platform/database/Tran
 import type { BenefitGateway } from '../../../benefit/public';
 import type { CheckoutInventoryPort } from '../../../inventory/public';
 import type { MarketingReservePort } from '../../../marketing/public';
-import type { PaymentHoldReleasePort } from '../../../payment/public';
 import type { CheckoutQuote } from '../../domain/model/CheckoutQuote';
 import { byReference, integer, text } from '../../domain/policy/ConfirmQuotePolicy';
 
@@ -15,8 +14,7 @@ export class CheckoutReservations {
     private readonly inventory: CheckoutInventoryPort,
     private readonly voucher: VoucherHoldPort,
     private readonly marketing: MarketingReservePort,
-    private readonly benefit: Pick<BenefitGateway, 'reserve'>,
-    private readonly holds: PaymentHoldReleasePort
+    private readonly benefit: Pick<BenefitGateway, 'reserve'>
   ) {}
 
   inventoryHold(context: WriteTransactionContext, order: string, quote: CheckoutQuote): Promise<void> {
@@ -58,9 +56,5 @@ export class CheckoutReservations {
       quote.cart.mall,
       tenders.map(({ reference, amountMinor }) => ({ reference: reference!, amountMinor }))
     );
-  }
-
-  release(context: WriteTransactionContext, order: string): Promise<void> {
-    return this.holds.release(context, order);
   }
 }
