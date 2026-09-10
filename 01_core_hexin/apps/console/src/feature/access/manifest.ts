@@ -3,7 +3,7 @@ import type { ConsoleModuleManifest } from '../../entity/navigation/ConsoleModul
 export const accessModule = {
   id: 'access',
   status: 'enabled',
-  navigation: { placement: 'main', group: 'organization', order: 100, label: '会员与权限', icon: 'members' },
+  navigation: { placement: 'main', group: 'organization', order: 100, label: '管理与权限', icon: 'members' },
   routes: [
     {
       id: 'access.index',
