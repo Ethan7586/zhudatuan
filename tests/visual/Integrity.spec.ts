@@ -119,3 +119,19 @@ test('visual integrity reports text outside control boundaries, occluded control
   expect(issues.map(({ kind }) => kind)).toEqual(expect.arrayContaining(['controlcopyboundary', 'controloccluded', 'imagefailure']));
   expect(issues.some(({ kind, element }) => kind === 'controloccluded' && element === 'button#recoverable')).toBe(false);
 });
+
+test('visual integrity checks the visible portion of controls inside scrolling regions', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setContent(`
+    <main>
+      <div style="position:absolute;left:0;top:0;width:200px;height:100px;overflow:auto">
+        <div style="height:80px"></div>
+        <button id="partial" style="width:120px;height:44px">部分可见操作</button>
+        <button id="outside" style="width:120px;height:44px">滚动后可见操作</button>
+      </div>
+      <div style="position:absolute;left:0;top:100px;width:200px;height:80px;background:white">相邻区域</div>
+    </main>
+  `);
+
+  await expectVisualIntegrity(page);
+});

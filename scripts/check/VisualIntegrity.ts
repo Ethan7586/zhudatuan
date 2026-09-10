@@ -79,15 +79,7 @@ export function inspectVisualReadiness(page: Page): Promise<readonly string[]> {
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
       return (
-        style.display !== 'none' &&
-        style.visibility !== 'hidden' &&
-        Number(style.opacity) !== 0 &&
-        rect.width > 1 &&
-        rect.height > 1 &&
-        rect.right > 0 &&
-        rect.bottom > 0 &&
-        rect.left < window.innerWidth &&
-        rect.top < window.innerHeight
+        style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) !== 0 && rect.width > 1 && rect.height > 1 && rect.right > 0 && rect.bottom > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight
       );
     }
   });
@@ -320,14 +312,41 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
     }
 
     function occludingElement(element: HTMLElement, rect: DOMRect): HTMLElement | null {
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      if (centerX < 0 || centerX > document.documentElement.clientWidth || centerY < 0 || centerY > document.documentElement.clientHeight) return null;
+      const visible = visibleRectangle(element, rect);
+      if (visible === null) return null;
+      const centerX = visible.left + (visible.right - visible.left) / 2;
+      const centerY = visible.top + (visible.bottom - visible.top) / 2;
       const top = document.elementFromPoint(centerX, centerY);
       if (!(top instanceof HTMLElement) || element === top || element.contains(top) || top.contains(element)) return null;
       const blocker = fixedLayer(top);
       if (blocker && fixedLayer(element) === null && canScrollClear(rect, blocker.getBoundingClientRect())) return null;
       return top;
+    }
+
+    function visibleRectangle(element: HTMLElement, rect: DOMRect): Readonly<{ left: number; right: number; top: number; bottom: number }> | null {
+      let left = Math.max(0, rect.left);
+      let right = Math.min(document.documentElement.clientWidth, rect.right);
+      let top = Math.max(0, rect.top);
+      let bottom = Math.min(document.documentElement.clientHeight, rect.bottom);
+      let ancestor = element.parentElement;
+      while (ancestor && ancestor !== document.body) {
+        const style = getComputedStyle(ancestor);
+        const bounds = ancestor.getBoundingClientRect();
+        if (clipsOverflow(style.overflowX)) {
+          left = Math.max(left, bounds.left);
+          right = Math.min(right, bounds.right);
+        }
+        if (clipsOverflow(style.overflowY)) {
+          top = Math.max(top, bounds.top);
+          bottom = Math.min(bottom, bounds.bottom);
+        }
+        ancestor = ancestor.parentElement;
+      }
+      return right - left > 1 && bottom - top > 1 ? { left, right, top, bottom } : null;
+    }
+
+    function clipsOverflow(value: string): boolean {
+      return hiddenOverflow(value) || value === 'auto' || value === 'scroll';
     }
 
     function fixedLayer(element: HTMLElement): HTMLElement | null {
