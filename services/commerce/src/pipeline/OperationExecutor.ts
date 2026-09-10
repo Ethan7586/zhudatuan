@@ -11,7 +11,7 @@ import type { AuditDecorator } from './AuditDecorator';
 import type { ExecutionContext, FinalizeContext, HandlerContext } from './HandlerContext';
 import type { IdempotencyClaim, IdempotencyRepository } from './IdempotencyRepository';
 import { executionRequestHash } from './OperationHash';
-import type { DurableOperationHandler, OperationHandler, OperationReply, RegisteredOperationHandler } from './OperationHandler';
+import type { DurableOperationHandler, OperationHandler, OperationReply, RegisteredOperationHandler, StatelessOperationHandler } from './OperationHandler';
 
 import { appendEvents, assertHandlerMode, executionIdentity, idempotencyClaim, idempotencyResponse, makerCheckerInput, requiresIdempotency, resourceOf, transactionOptions, transactionScope } from './OperationContext';
 export interface MakerCheckerGuard {
@@ -46,8 +46,22 @@ export class OperationExecutor {
 
   execute<TKey extends OperationId>(handler: RegisteredOperationHandler<TKey>, input: OperationInputFor<TKey>, execution: ExecutionContext<TKey>): Promise<OperationReply<OperationOutputFor<TKey>>> {
     if (handler.operation !== execution.operation) throw new Error(`HANDLER_OPERATION_MISMATCH:${execution.operation}`);
+    if ('transaction' in handler && handler.transaction === 'none') return this.stateless(handler, input, execution);
     if ('prepare' in handler) return this.durable(handler, input, execution);
     return this.standard(handler, input, execution);
+  }
+
+  private async stateless<TKey extends OperationId>(handler: StatelessOperationHandler<TKey>, input: OperationInputFor<TKey>, execution: ExecutionContext<TKey>): Promise<OperationReply<OperationOutputFor<TKey>>> {
+    const operation = OperationCatalog.get(handler.operation);
+    assertHandlerMode(operation.method, handler);
+    if (operation.method !== 'GET' || operation.permission !== null || operation.idempotencyScope !== 'none' || !operation.idempotent) {
+      throw new Error(`STATELESS_HANDLER_FORBIDDEN:${handler.operation}`);
+    }
+    if (execution.signal.aborted) throw execution.signal.reason ?? new Error('OPERATION_ABORTED');
+    if (!Number.isFinite(execution.deadline) || execution.deadline <= Date.now()) throw new Error('DEADLINE_EXCEEDED');
+    const reply = await handler.execute(input, execution);
+    if ((reply.events?.length ?? 0) > 0) throw new Error('READ_HANDLER_EVENT_FORBIDDEN');
+    return reply;
   }
 
   private standard<TKey extends OperationId>(handler: OperationHandler<TKey, 'read' | 'write'>, input: OperationInputFor<TKey>, execution: ExecutionContext<TKey>): Promise<OperationReply<OperationOutputFor<TKey>>> {
@@ -55,7 +69,9 @@ export class OperationExecutor {
     assertHandlerMode(operation.method, handler);
     const auditedRead = operation.method === 'GET' && operation.permission !== null && ['high', 'critical'].includes(permissionDefinition(operation.permission).risk);
     if (handler.mode === 'read' && !auditedRead) {
-      return this.transactions.read(transactionOptions(execution, undefined, handler.isolation), (transaction) => (handler as OperationHandler<TKey, 'read'>).execute(input, Object.freeze({ ...execution, transaction }) as HandlerContext<TKey>));
+      return this.transactions.read(transactionOptions(execution, undefined, handler.isolation), (transaction) =>
+        (handler as OperationHandler<TKey, 'read'>).execute(input, Object.freeze({ ...execution, transaction }) as HandlerContext<TKey>)
+      );
     }
     return this.transactions.write(transactionOptions(execution, undefined, handler.isolation), async (transaction) => {
       const claim = requiresIdempotency(operation) ? idempotencyClaim(execution, input) : undefined;
@@ -104,7 +120,10 @@ export class OperationExecutor {
         }
         return Object.freeze({ result });
       };
-      const committed = handler.mode === 'write' || auditedRead ? await this.transactions.write(transactionOptions(execution, routedScope, handler.isolation), transact) : await this.transactions.read(transactionOptions(execution, routedScope, handler.isolation), transact);
+      const committed =
+        handler.mode === 'write' || auditedRead
+          ? await this.transactions.write(transactionOptions(execution, routedScope, handler.isolation), transact)
+          : await this.transactions.read(transactionOptions(execution, routedScope, handler.isolation), transact);
       if ('replay' in committed) return committed.replay;
       checkpointed = true;
 

@@ -1,9 +1,9 @@
 import { randomBytes } from 'node:crypto';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { DomainError } from '../../../../platform/error/DomainError';
-import type { IdentityAction } from '../model/IdentityAction';
+import type { IdentityStatelessAction } from '../model/IdentityAction';
 import type { ReturnTargetPort } from '../port/ReturnTargetPort';
-import type { RegistrationPolicyRepository } from '../port/RegistrationPolicyRepository';
+import type { RegistrationPolicySnapshot } from '../port/RegistrationPolicySnapshot';
 import { passwordPolicyView } from './PasswordPolicyView';
 import { registrationPolicyView } from './RegistrationPolicyView';
 import { isOperationTarget } from '@shop/contract';
@@ -13,11 +13,11 @@ const METHODS = Object.freeze(['password', 'otp', 'federation'] as const);
 export class ReadIdentityBootstrap {
   constructor(
     private readonly targets: ReturnTargetPort,
-    private readonly registrations: RegistrationPolicyRepository
+    private readonly registrations: RegistrationPolicySnapshot
   ) {}
 
-  action(): IdentityAction<'read'> {
-    return async (request, database) => {
+  action(): IdentityStatelessAction<'identity.bootstrap.read'> {
+    return async (request, context) => {
       const requested = request.input.headers['x-client-target'];
       if (!isOperationTarget(requested)) throw new DomainError('VALIDATION_FAILED');
       const supplied = request.input.query.returntarget;
@@ -29,7 +29,7 @@ export class ReadIdentityBootstrap {
       if (target.target !== requested) throw new DomainError('VALIDATION_FAILED');
       const csrf = randomBytes(32).toString('base64url');
       const policy = RUNTIME_LIMITS.authentication;
-      const legal = await this.registrations.current(database);
+      const legal = await this.registrations.current(context);
       if (!legal) throw new DomainError('INTERNAL_ERROR');
       return Object.freeze({
         status: 200,

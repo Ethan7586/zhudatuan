@@ -1,9 +1,12 @@
 import type { OperationRequest, OperationResult } from '../../../../pipeline/OperationRequest';
+import type { ExecutionContext } from '../../../../pipeline/HandlerContext';
 import type { ReadTransactionContext, TransactionMode, WriteTransactionContext } from '../../../../platform/database/TransactionContext';
 
 type IdentityTransaction<TMode extends TransactionMode> = TMode extends 'write' ? WriteTransactionContext : ReadTransactionContext;
 
 export type IdentityAction<TMode extends TransactionMode = 'write'> = (request: OperationRequest, context: IdentityTransaction<TMode>) => Promise<OperationResult>;
+
+export type IdentityStatelessAction<TKey extends import('@shop/contract').OperationId> = (request: OperationRequest, context: ExecutionContext<TKey>) => Promise<OperationResult>;
 
 export interface IdentityLifecycle<TPreparation = unknown, TLoaded = undefined, TMode extends TransactionMode = 'write'> {
   load?(request: OperationRequest, context: ReadTransactionContext): Promise<TLoaded>;

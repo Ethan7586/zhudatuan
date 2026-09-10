@@ -1,5 +1,5 @@
 import type { OperationId, OperationInputFor, OperationOutputFor } from '@shop/contract';
-import type { CommitContext, FinalizeContext, HandlerContext, PrepareContext, WriteHandlerContext } from './HandlerContext';
+import type { CommitContext, ExecutionContext, FinalizeContext, HandlerContext, PrepareContext, WriteHandlerContext } from './HandlerContext';
 import type { TransactionMode } from '../platform/database/TransactionContext';
 import type { TransactionIsolation } from '../platform/database/TransactionManager';
 import type { DomainEvent } from '@shop/kernel';
@@ -17,6 +17,13 @@ export interface OperationHandler<TKey extends OperationId = OperationId, TMode 
   readonly mode: TMode;
   readonly isolation?: TransactionIsolation;
   execute(input: OperationInputFor<TKey>, context: TMode extends 'write' ? WriteHandlerContext<TKey> : HandlerContext<TKey>): Promise<OperationReply<OperationOutputFor<TKey>>>;
+}
+
+export interface StatelessOperationHandler<TKey extends OperationId = OperationId> {
+  readonly operation: TKey;
+  readonly mode: 'read';
+  readonly transaction: 'none';
+  execute(input: OperationInputFor<TKey>, context: ExecutionContext<TKey>): Promise<OperationReply<OperationOutputFor<TKey>>>;
 }
 
 export interface DurableCommit<TCheckpoint, TOutput> {
@@ -38,4 +45,4 @@ export interface DurableOperationHandler<TKey extends OperationId = OperationId,
   discard?(prepared: TPrepared, cause: unknown): Promise<void>;
 }
 
-export type RegisteredOperationHandler<TKey extends OperationId = OperationId> = OperationHandler<TKey, TransactionMode> | DurableOperationHandler<TKey, unknown, unknown, TransactionMode, unknown>;
+export type RegisteredOperationHandler<TKey extends OperationId = OperationId> = OperationHandler<TKey, TransactionMode> | StatelessOperationHandler<TKey> | DurableOperationHandler<TKey, unknown, unknown, TransactionMode, unknown>;

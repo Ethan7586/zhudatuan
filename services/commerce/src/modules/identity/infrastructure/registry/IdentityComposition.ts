@@ -53,6 +53,7 @@ import { PgEnrollmentRepository } from '../persistence/PgEnrollmentRepository';
 import { PgIdentityEvent } from '../persistence/PgIdentityEvent';
 import { PgCredentialRepository } from '../persistence/PgCredentialRepository';
 import { PgRegistrationPolicyRepository } from '../persistence/PgRegistrationPolicyRepository';
+import { PgRegistrationPolicySnapshot } from '../persistence/PgRegistrationPolicySnapshot';
 import { PgRegistrationResetRepository } from '../persistence/PgRegistrationResetRepository';
 import { CredentialRegistry } from './CredentialRegistry';
 import { composeFederation } from './FederationComposition';
@@ -96,6 +97,7 @@ export function composeIdentity(context: ModuleContext) {
   const invitationFailures = new InvitationFailure(events);
   const credentials = new PgCredentialRepository();
   const registrations = new PgRegistrationPolicyRepository();
+  const registrationSnapshot = new PgRegistrationPolicySnapshot(pool);
   const registrationResets = new PgRegistrationResetRepository();
   const protector = new FederationProtector(keys.session);
   const preauth = new PgPreauthResolver(pool, protector);
@@ -230,7 +232,7 @@ export function composeIdentity(context: ModuleContext) {
     stepUpStart: [stepup.start()],
     stepUpComplete: [stepup.complete()],
     stepUpDisable: [stepup.disable()],
-    bootstrapRead: [new ReadIdentityBootstrap(returns, registrations).action()],
+    bootstrapRead: [new ReadIdentityBootstrap(returns, registrationSnapshot).action()],
     providersRead: [new ReadIdentityProviders(providers, returns).action()],
     providersCenterRead: [providers],
     federationStart: [new StartFederation(federation).lifecycle()],

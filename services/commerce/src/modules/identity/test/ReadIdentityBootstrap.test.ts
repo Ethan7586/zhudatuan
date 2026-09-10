@@ -1,7 +1,7 @@
 import { identityClientSchema } from '@shop/contract/identityschema';
 import { describe, expect, it, vi } from 'vitest';
 import type { OperationRequest } from '../../../pipeline/OperationRequest';
-import type { ReadTransactionContext } from '../../../platform/database/TransactionContext';
+import type { ExecutionContext } from '../../../pipeline/HandlerContext';
 import { ReadIdentityBootstrap } from '../application/service/ReadIdentityBootstrap';
 
 describe('ReadIdentityBootstrap', () => {
@@ -20,11 +20,10 @@ describe('ReadIdentityBootstrap', () => {
           privacy_body: '隐私政策正文',
           terms_hash: 'terms-hash',
         })),
-        read: vi.fn(),
       }
     ).action();
 
-    const result = await action(request(), {} as ReadTransactionContext);
+    const result = await action(request(), execution());
     const body = result.body as Record<string, unknown>;
     const password = body.password as Record<string, unknown>;
 
@@ -51,5 +50,19 @@ function request(): OperationRequest {
       signal: new AbortController().signal,
     },
     security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:bootstrap' },
+  };
+}
+
+function execution(): ExecutionContext<'identity.bootstrap.read'> {
+  return {
+    requestId: 'request:bootstrap',
+    traceId: 'trace:bootstrap',
+    deadline: Date.now() + 1_000,
+    signal: new AbortController().signal,
+    operation: 'identity.bootstrap.read',
+    security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:bootstrap' },
+    headers: { 'x-client-target': 'storefront' },
+    rawBody: '',
+    publicActor: `public:${'a'.repeat(64)}`,
   };
 }

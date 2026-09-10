@@ -5,9 +5,58 @@ import type { TransactionManager, TransactionOptions } from '../platform/databas
 import { AuditDecorator } from './AuditDecorator';
 import type { IdempotencyRepository } from './IdempotencyRepository';
 import { OperationExecutor } from './OperationExecutor';
-import type { OperationHandler } from './OperationHandler';
+import type { OperationHandler, StatelessOperationHandler } from './OperationHandler';
 
 describe('OperationExecutor', () => {
+  it('executes an explicitly stateless public GET without opening a database transaction', async () => {
+    const transactionOrder: string[] = [];
+    const execute = vi.fn(async () => ({ status: 200, body: {} as OperationOutputFor<'identity.bootstrap.read'> }));
+    const executor = new OperationExecutor(
+      fakeTransactions(transactionOrder),
+      { claim: vi.fn(), checkpoint: async () => undefined, complete: async () => undefined },
+      { verify: async () => undefined },
+      new AuditDecorator({ append: async () => undefined }),
+      { append: async () => undefined }
+    );
+    const handler: StatelessOperationHandler<'identity.bootstrap.read'> = {
+      operation: 'identity.bootstrap.read',
+      mode: 'read',
+      transaction: 'none',
+      execute,
+    };
+
+    const context = {
+      ...execution('observability.clienterrors.create'),
+      operation: 'identity.bootstrap.read' as const,
+      headers: { 'x-client-target': 'storefront' },
+      security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:1' } as const,
+    };
+    await expect(executor.execute(handler, {} as OperationInputFor<'identity.bootstrap.read'>, context)).resolves.toMatchObject({ status: 200 });
+    expect(execute).toHaveBeenCalledOnce();
+    expect(transactionOrder).toEqual([]);
+  });
+
+  it('rejects stateless handlers for operations that require authorization permissions', async () => {
+    const executor = new OperationExecutor(
+      fakeTransactions([]),
+      { claim: vi.fn(), checkpoint: async () => undefined, complete: async () => undefined },
+      { verify: async () => undefined },
+      new AuditDecorator({ append: async () => undefined }),
+      { append: async () => undefined }
+    );
+    const handler = {
+      operation: 'member.profile.read' as const,
+      mode: 'read' as const,
+      transaction: 'none' as const,
+      execute: vi.fn(),
+    };
+
+    await expect(executor.execute(handler, {} as OperationInputFor<'member.profile.read'>, { ...execution('observability.clienterrors.create'), operation: 'member.profile.read' } as never)).rejects.toThrow(
+      'STATELESS_HANDLER_FORBIDDEN:member.profile.read'
+    );
+    expect(handler.execute).not.toHaveBeenCalled();
+  });
+
   it('executes write concerns in one transaction and returns the typed reply', async () => {
     const order: string[] = [];
     const commands: unknown[] = [];
