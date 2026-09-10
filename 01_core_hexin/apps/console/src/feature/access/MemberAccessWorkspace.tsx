@@ -375,7 +375,8 @@ function MemberIcon({ name }: Readonly<{ name: MemberIconName }>) {
 function mergeRows(members: readonly Member[], access: readonly AccessMembership[], currentMembershipId: string): readonly MemberAccessRow[] {
   const memberById = new Map(members.map((member) => [member.membership_id, member]));
   const accessById = new Map(access.map((membership) => [membership.id, membership]));
-  return [...memberById.keys()].map((id) => {
+  const ids = new Set([...memberById.keys(), ...accessById.keys()]);
+  return [...ids].map((id) => {
     const member = memberById.get(id);
     const membership = accessById.get(id);
     const administrator = member !== undefined || id === currentMembershipId;

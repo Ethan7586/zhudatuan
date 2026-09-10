@@ -189,9 +189,6 @@ describe('custom identity and permission directory', () => {
       governance: false, editable: true, members: [], scopes: [],
     }];
     members = [{
-      ...memberFixture(), id: 'membership:consumer', member_id: 'member:consumer', display_name: '普通消费者',
-      roles: [assignment('role-consumer', 'L6 消费者', mallScope, 'direct')],
-    }, {
       ...memberFixture(), id: 'membership:owner', member_id: 'member:administrator', display_name: '小白管理员',
       roles: [assignment('role-finance', '财务观察', mallScope, 'direct')],
     }];

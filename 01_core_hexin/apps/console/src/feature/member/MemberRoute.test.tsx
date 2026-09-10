@@ -132,7 +132,7 @@ describe('member administrator invitation', () => {
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('platform:one');
   });
 
-  it('keeps access-only memberships out of the administrator directory', async () => {
+  it('merges every operator returned by the member and access directories', async () => {
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json({
       items: [
         accessMembership('membership:employee', '测试员工'),
@@ -152,8 +152,8 @@ describe('member administrator invitation', () => {
 
     const table = await screen.findByRole('table', { name: '管理员目录' });
     expect(await within(table).findByText('测试员工')).toBeTruthy();
-    expect(within(table).queryByText('不应出现在本页')).toBeNull();
-    expect(screen.getByText('当前页 1 位 · 共 1 位管理员')).toBeTruthy();
+    expect(within(table).getByText('不应出现在本页')).toBeTruthy();
+    expect(screen.getByText('当前页 2 位 · 共 2 位管理员')).toBeTruthy();
   });
 
   it.each(missingEvidenceCases)('hides the write entry when %s evidence is missing', async (_name, sessionPatch) => {
