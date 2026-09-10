@@ -36,10 +36,11 @@ describe('storefront member workspace', () => {
     renderRoute();
     const table = await screen.findByRole('table', { name: '商城会员名单' });
 
-    expect(screen.getByRole('heading', { level: 1, name: '测试商城 · 商城会员' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: '商城会员' })).toBeTruthy();
     expect(within(table).getByText('测试消费者')).toBeTruthy();
     expect(within(table).getByText('188****8866')).toBeTruthy();
-    expect(within(table).getByText('L6 · 消费身份')).toBeTruthy();
+    expect(within(table).getByText('消费者')).toBeTruthy();
+    expect(screen.queryByText(/L6|membership:storefront:test/)).toBeNull();
     expect(within(table).getAllByText('已绑定')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: /邀请码|角色编辑|重置/ })).toBeNull();
 
@@ -60,11 +61,40 @@ describe('storefront member workspace', () => {
     await screen.findByRole('table', { name: '商城会员名单' });
 
     holdRefresh = true;
-    await user.click(screen.getByRole('button', { name: '刷新' }));
-    expect(await screen.findByText('刷新中…')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '刷新会员名单' }));
+    expect(await screen.findByRole('button', { name: '正在刷新会员名单' })).toBeTruthy();
     expect(screen.getByRole('table', { name: '商城会员名单' })).toBeTruthy();
     releaseRefresh?.();
-    await waitFor(() => expect(screen.getByRole('button', { name: '刷新' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: '刷新会员名单' })).toBeTruthy());
+  });
+
+  it('switches between the full directory and the selected member view without exposing internal identity fields', async () => {
+    const user = userEvent.setup();
+    renderRoute();
+    const row = await screen.findByRole('row', { name: '查看会员 测试消费者' });
+
+    expect(row.getAttribute('aria-expanded')).toBe('false');
+    await user.click(row);
+
+    const detail = screen.getByRole('complementary', { name: '会员详情' });
+    expect(detail.getAttribute('aria-hidden')).toBe('false');
+    expect(screen.getByRole('heading', { level: 2, name: '会员详情' })).toBeTruthy();
+    expect(within(detail).getByText('测试商城')).toBeTruthy();
+    expect(screen.queryByText('membership:storefront:test')).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: '全屏查看会员目录' }));
+    expect(detail.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('filters the current page by real WeChat binding state', async () => {
+    const user = userEvent.setup();
+    renderRoute();
+    await screen.findByRole('table', { name: '商城会员名单' });
+
+    await user.click(screen.getByRole('button', { name: '微信未绑定' }));
+    expect(await screen.findByText('当前页没有符合此绑定状态的会员。')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '微信已绑定' }));
+    expect(await screen.findByRole('row', { name: '查看会员 测试消费者' })).toBeTruthy();
   });
 
   it('shows the real empty and error states without fallback rows', async () => {
@@ -82,11 +112,12 @@ describe('storefront member workspace', () => {
     expect(screen.queryByText('测试消费者')).toBeNull();
   });
 
-  it('turns every table row into a wrapping card on narrow screens', () => {
+  it('defines desktop split motion, narrow-screen slide motion and reduced-motion fallback', () => {
     const css = readFileSync('src/feature/storefront-member/storefront-member.css', 'utf8');
-    expect(css).toMatch(/@media \(max-width: 52rem\)[\s\S]*\.storefrontmembertablewrap tr,[\s\S]*display: block;/);
-    expect(css).toMatch(/\.storefrontmembertablewrap td \{[\s\S]*grid-template-columns: minmax\(7rem, 34%\) minmax\(0, 1fr\);/);
-    expect(css).toMatch(/overflow-wrap: anywhere;/);
+    expect(css).toMatch(/\.storefrontmemberstage\[data-detail-open='true'\][\s\S]*grid-template-columns:/);
+    expect(css).toMatch(/@media \(max-width: 75rem\)[\s\S]*translateX\(34px\)/);
+    expect(css).toMatch(/@media \(max-width: 42rem\)[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto auto;/);
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*transition: none !important;/);
   });
 });
 

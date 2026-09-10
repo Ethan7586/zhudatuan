@@ -12,6 +12,6 @@ export const storefrontMembersModule = {
     kind: 'entry',
     lazy: () => import('./StorefrontMemberRoute'),
     operations: ['member.storefront.members.read'],
-    presentation: { title: '商城会员', summary: '当前商城的消费者 Membership 名单' },
+    presentation: { title: '商城会员', summary: '当前商城的消费者会员名单' },
   }],
 } as const satisfies ConsoleModuleManifest<'storefront-members'>;
