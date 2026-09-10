@@ -131,7 +131,7 @@ describe('member administrator invitation', () => {
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('platform:one');
   });
 
-  it('keeps the member page authoritative when access details contain memberships from another page', async () => {
+  it('merges every member returned by the member and access directories', async () => {
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json({
       items: [
         accessMembership('membership:employee', '测试员工'),
@@ -151,9 +151,8 @@ describe('member administrator invitation', () => {
 
     const table = await screen.findByRole('table', { name: '成员管理' });
     expect(await within(table).findByText('测试员工')).toBeTruthy();
-    expect(within(table).queryByText('不应出现在本页')).toBeNull();
-    expect(within(table).queryByText('membership:off-page')).toBeNull();
-    expect(within(table).getByText('本页 1 条')).toBeTruthy();
+    expect(within(table).getByText('不应出现在本页')).toBeTruthy();
+    expect(screen.getByText('当前页 2 位 · 共 2 位成员')).toBeTruthy();
   });
 
   it.each(missingEvidenceCases)('hides the write entry when %s evidence is missing', async (_name, sessionPatch) => {
@@ -185,6 +184,7 @@ describe('Owner member registration reset', () => {
     renderRoute(ownerContext);
     await screen.findByRole('table', { name: '成员管理' });
 
+    await user.click(screen.getByRole('row', { name: '查看成员 测试员工' }));
     await user.click(screen.getByRole('button', { name: '重置注册身份' }));
     const dialog = await screen.findByRole('dialog', { name: '重置注册身份' });
     expect(within(dialog).getByText('这不是物理删除会员资料')).toBeTruthy();
@@ -207,17 +207,21 @@ describe('Owner member registration reset', () => {
   });
 
   it.each(resetMissingEvidenceCases)('hides reset actions when %s evidence is missing', async (_name, sessionPatch) => {
+    const user = userEvent.setup();
     renderRoute({ ...ownerContext, session: { ...ownerContext.session, ...sessionPatch } });
     await screen.findByRole('table', { name: '成员管理' });
+    await user.click(screen.getByRole('row', { name: '查看成员 测试员工' }));
 
     expect(screen.queryByRole('button', { name: '重置注册身份' })).toBeNull();
     expect(resetWrites).toHaveLength(0);
   });
 
   it('hides reset actions for a server-protected identity', async () => {
+    const user = userEvent.setup();
     server.use(http.get('*/api/v1/members', () => HttpResponse.json(memberPage({ reset_allowed: false, reset_block_reason: 'OWNER_PROTECTED' }))));
     renderRoute(ownerContext);
     await screen.findByRole('table', { name: '成员管理' });
+    await user.click(screen.getByRole('row', { name: '查看成员 测试员工' }));
 
     expect(screen.queryByRole('button', { name: '重置注册身份' })).toBeNull();
   });
