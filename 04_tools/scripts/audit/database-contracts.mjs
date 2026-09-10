@@ -172,6 +172,7 @@ const REPAIR_FILES = [
   '20260909063000_reprovision_disabled_autonode_identity_realm.sql',
   '20260909160000_route_identity_notifications_by_node.sql',
   '20260909203000_switch_l0_public_domain_to_fufu.sql',
+  '20260909204000_reconcile_l0_public_domain_migration_ledger.sql',
   '20260911010000_add_storefront_member_custom_profile.sql',
 ];
 

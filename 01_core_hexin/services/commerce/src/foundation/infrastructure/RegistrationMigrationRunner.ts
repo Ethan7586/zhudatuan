@@ -48,6 +48,8 @@ const REGISTRATION_TARGET_CHECKSUM = '64c42c5aaf749e69c5b1b54f020038d06688d67bb8
 const REGISTRATION_TARGET_FILE = '20260911010000_add_storefront_member_custom_profile.sql';
 const AUTONODE_IDENTITY_VERSION = '20260909062000';
 const AUTONODE_IDENTITY_CHECKSUM = '3fd8550c8331373bce69345128c464f331fcc0ca57d873621091905641c1e638';
+const L0_PUBLIC_DOMAIN_VERSION = '20260909203000';
+const L0_PUBLIC_DOMAIN_CHECKSUM = '31ed21bd9351a3678742c2b0c10a1a2b725cbbfef09d5888b609569a2f3610ba';
 const REGISTRATION_DATABASE = 'zhudatuan_registration';
 const REGISTRATION_MIGRATION_ROLE = 'shopmigration';
 const MIGRATION_FILE = /^\d{14}_[a-z0-9_]+\.sql$/;
@@ -92,6 +94,8 @@ export class RegistrationMigrationRunner {
         }
         if (version === AUTONODE_IDENTITY_VERSION
           && await this.deferMissingAutonodeIdentityLedgerToManagedRepair(client)) continue;
+        if (version === L0_PUBLIC_DOMAIN_VERSION
+          && await this.deferMissingL0PublicDomainLedgerToManagedRepair(client)) continue;
         if (file === BACKFILL) await this.stageSecrets(client);
         if (execution.sql !== null) await client.query(execution.sql);
         await client.query(
@@ -179,6 +183,32 @@ export class RegistrationMigrationRunner {
     if (state?.marker_present !== true) return false;
     if (state.marker_exact !== true || state.recoverable !== true) {
       throw new Error('REGISTRATION_MIGRATION_AUTONODE_LEDGER_RECOVERY_INVALID');
+    }
+    return true;
+  }
+
+  private async deferMissingL0PublicDomainLedgerToManagedRepair(client: PoolClient): Promise<boolean> {
+    const result = await client.query<{
+      readonly marker_exact: boolean;
+      readonly marker_present: boolean;
+      readonly recoverable: boolean;
+    }>(`select
+      exists(select 1 from runtime.schemaversion where version=$1) marker_present,
+      exists(select 1 from runtime.schemaversion where version=$1 and checksum=$2) marker_exact,
+      (select count(*) from identity.realmentry where realm_id='realm:l0')=3
+        and exists(select 1 from identity.realmentry where realm_id='realm:l0' and host='accounts.fufu.wang' and kind='accounts' and status='active')
+        and exists(select 1 from identity.realmentry where realm_id='realm:l0' and host='api.fufu.wang' and kind='api' and status='active')
+        and exists(select 1 from identity.realmentry where realm_id='realm:l0' and host='fufu.wang' and kind='storefront' and status='active')
+        and (select count(*) from identity.realmtarget where realm_id='realm:l0')=4
+        and exists(select 1 from identity.realmtarget where realm_id='realm:l0' and target='console' and return_origin='https://console.fufu.wang')
+        and exists(select 1 from identity.realmtarget where realm_id='realm:l0' and target='store' and return_origin='https://console.fufu.wang/entrances/store')
+        and exists(select 1 from identity.realmtarget where realm_id='realm:l0' and target='supplier' and return_origin='https://console.fufu.wang/entrances/supplier')
+        and exists(select 1 from identity.realmtarget where realm_id='realm:l0' and target='storefront' and return_origin='https://fufu.wang')
+        recoverable`, [L0_PUBLIC_DOMAIN_VERSION, L0_PUBLIC_DOMAIN_CHECKSUM]);
+    const state = result.rows[0];
+    if (state?.marker_present !== true) return false;
+    if (state.marker_exact !== true || state.recoverable !== true) {
+      throw new Error('REGISTRATION_MIGRATION_L0_PUBLIC_DOMAIN_LEDGER_RECOVERY_INVALID');
     }
     return true;
   }
