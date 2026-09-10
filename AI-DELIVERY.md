@@ -18,6 +18,11 @@ npm run release -- rollback --node <node> --target <target>
 
 任何 AI 在发布前必须先运行 `plan`，并以计划输出的等级、目标、测试、产物、指针和重启范围为准。无法分类的改动关闭式升级为 A3。
 
+> **校验前移（2026-09-11）：** 所有测试 / typecheck / build / package 在 PR 的 `Affected Delivery` CI 里跑完，合并到 `zdt-next` 时自动把候选制品暂存到阿里云。
+> **AI 会话的活到「合并 + CI 绿」为止**，不在本地 build / test / deploy，不做浏览器 QA，不为部署单独取证。
+> **生产切流只走 `Deploy` 工作流**（GitHub Actions → Run workflow，或 `scripts/deploy-now.sh`）：记回滚点 → 原子切 `current` → 重启一个目标服务 → 等 READY（起不来自动弹回）。默认不打 15 域名基线、不做 caddy diff；需要时工作流勾 `external_baseline`。
+> `full_a3` CI job 已于 2026-09-11 移除；被判 A3 的改动同样停在「合并 + CI 绿」，不在本地跑 A3 全量流程。
+
 ## 四条通道
 
 | 等级 | 适用范围 | 目标时间 | 禁止事项 |

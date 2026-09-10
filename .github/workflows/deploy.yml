@@ -1,0 +1,109 @@
+name: Deploy
+
+# 秒级切流：只把 CI 已经校验并暂存好的候选制品切成 current，重启一个目标服务。
+# 不跑测试、不构建、不打包、不浏览器验收、不打 15 域名基线、不做 caddy diff。
+# 触发本工作流（Run workflow / scripts/deploy-now.sh）即为 Ethan 的生产授权。
+
+on:
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: 要切上生产的 zdt-next commit（留空=最新 zdt-next）
+        required: false
+        type: string
+      external_baseline:
+        description: 切流后额外跑 15 域名基线 + 漂移自动回滚（默认关）
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: zdt-next-deploy
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22.22.0
+  RELEASE_NODE: hbbtzn-l1
+
+jobs:
+  cutover:
+    name: 切流 hbbtzn-l1
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      ZDT_RELEASE_SSH_HOST: root@123.57.232.253
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.head_sha || 'zdt-next' }}
+
+      - name: 解析目标 SHA
+        id: sha
+        run: |
+          sha="$(git rev-parse HEAD)"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          printf '目标 commit: `%s` — %s\n' "$sha" "$(git log -1 --format=%s)" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: 取回 CI 已校验的候选制品
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run_id="$(gh run list --workflow 'Affected Delivery' --branch zdt-next \
+            --json databaseId,headSha,conclusion \
+            -q "[.[] | select(.headSha==\"${{ steps.sha.outputs.sha }}\" and .conclusion==\"success\")][0].databaseId")"
+          if [ -z "$run_id" ] || [ "$run_id" = "null" ]; then
+            echo "::error::找不到该 SHA 对应的绿色 Affected Delivery 运行；请先合并 PR 并等 CI 通过。"
+            exit 1
+          fi
+          gh run download "$run_id" -n "release-candidate-${{ steps.sha.outputs.sha }}" -D .
+          test -f .ci-release/package.json
+
+      - name: 安装发布引擎依赖
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: 配置切流 SSH
+        env:
+          RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+        run: |
+          test -n "$RELEASE_SSH_KEY"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$RELEASE_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          ssh-keyscan -H 123.57.232.253 >> "$HOME/.ssh/known_hosts"
+
+      - name: 生产切流
+        id: cutover
+        run: |
+          node 04_tools/release-engine/cli.mjs deploy \
+            --package .ci-release/package.json \
+            --node "$RELEASE_NODE" \
+            --environment production \
+            --approve-production "zdt-next:${{ steps.sha.outputs.sha }}" \
+            ${{ inputs.external_baseline && '--external-baseline' || '' }} \
+            --format json | tee .ci-release/deploy-production.json
+
+      - name: 记录切流回执
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-production-${{ steps.sha.outputs.sha }}
+          path: .ci-release/deploy-production.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: 摘要
+        if: always()
+        run: |
+          if [ -f .ci-release/deploy-production.json ]; then
+            node -e "const r=require('./.ci-release/deploy-production.json');const t=r.result?.timings||{};console.log('切流结果：'+(r.result?.finalStatus||r.error?.code||'unknown'));console.log('计时：'+Object.entries(t).map(([k,v])=>k+'='+v+'ms').join(' '));" >> "$GITHUB_STEP_SUMMARY" || true
+          fi
