@@ -16,6 +16,7 @@ import { useIdentityActions } from './useIdentityActions';
 import { MorviaIdentityShell } from './MorviaIdentityShell';
 
 type IdentityMode = 'login' | 'register' | 'reset';
+type RecoveryStep = 'account' | 'verify' | 'password' | 'success';
 type ConsumerActionKey = 'consumer-login' | 'consumer-register' | 'consumer-reset-code' | 'consumer-reset';
 
 export const ConsumerIdentityPage: React.FC<{
@@ -32,6 +33,7 @@ export const ConsumerIdentityPage: React.FC<{
   const [resetCode, setResetCode] = useState('');
   const [resetChallenge, setResetChallenge] = useState('');
   const [resetConfirm, setResetConfirm] = useState('');
+  const [recoveryStep, setRecoveryStep] = useState<RecoveryStep>('account');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [policy, setPolicy] = useState<'terms' | 'privacy' | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -61,9 +63,11 @@ export const ConsumerIdentityPage: React.FC<{
     setNotice('');
     setConfirmPassword('');
     setResetConfirm('');
+    if (next === 'reset') setRecoveryStep('account');
     if (next !== 'reset') {
       setResetCode('');
       setResetChallenge('');
+      setRecoveryStep('account');
     }
   };
 
@@ -123,10 +127,18 @@ export const ConsumerIdentityPage: React.FC<{
         onSuccess: (challenge) => {
           setResetChallenge(challenge.challengeId);
           setResetCode('');
+          setRecoveryStep('verify');
         },
         onError: (error) => setFormError(messageOf(error)),
       },
     );
+  };
+
+  const continueResetVerification = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (resetCode.length !== 6) return setFormError('请输入完整的 6 位短信验证码');
+    setFormError('');
+    setRecoveryStep('password');
   };
 
   const resetPassword = (event: React.FormEvent<HTMLFormElement>) => {
@@ -142,13 +154,13 @@ export const ConsumerIdentityPage: React.FC<{
       {
         onSuccess: () => {
           setPassword('');
-          setResetCode('');
-          setResetChallenge('');
           setResetConfirm('');
-          setNotice('密码已重置，请使用新密码登录');
-          setMode('login');
+          setRecoveryStep('success');
         },
-        onError: (error) => setFormError(messageOf(error)),
+        onError: (error) => {
+          setRecoveryStep('verify');
+          setFormError(messageOf(error));
+        },
       },
     );
   };
@@ -156,22 +168,29 @@ export const ConsumerIdentityPage: React.FC<{
   const organizationName = context?.organizationName ?? '宏泰甄选';
   const submitting = identityActions.isBusy(mode === 'login' ? 'consumer-login' : mode === 'register' ? 'consumer-register' : 'consumer-reset');
   const resetCodeBusy = identityActions.isBusy('consumer-reset-code');
-  const resetStarted = resetChallenge !== '';
   const maskedMobile = maskMobile(mobile);
   const modeTitle = mode === 'login'
     ? organizationName
     : mode === 'register'
       ? '创建会员账号'
-      : resetStarted
-        ? '验证手机号'
-        : '找回您的会员账号';
+      : recoveryStep === 'account'
+        ? '找回您的会员账号'
+        : recoveryStep === 'verify'
+          ? '验证手机号'
+          : recoveryStep === 'password'
+            ? '设置新密码'
+            : '密码已更新';
   const modeDescription = mode === 'login'
     ? '登录后进入个人中心与福利商城'
     : mode === 'register'
       ? '使用手机号创建你的会员账号'
-      : resetStarted
-        ? `验证码已发送至 ${maskedMobile}，请完成身份验证`
-        : '输入与会员账号绑定的手机号，我们将发送验证码';
+      : recoveryStep === 'account'
+        ? '输入与会员账号绑定的手机号，我们将发送验证码'
+        : recoveryStep === 'verify'
+          ? `验证码已发送至 ${maskedMobile}，请完成身份验证`
+          : recoveryStep === 'password'
+            ? '手机号验证成功，请为会员账号设置一个新密码'
+            : '现在可以使用新密码登录宏泰甄选';
   const busyLabel = mode === 'login' ? '正在登录…' : mode === 'register' ? '正在创建账号…' : '正在重置密码…';
 
   return (
@@ -185,11 +204,6 @@ export const ConsumerIdentityPage: React.FC<{
           <h2 className="mt-2 font-['MORVIA_Title'] text-3xl font-bold tracking-[-0.035em] text-[#111111]">{modeTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-500">{modeDescription}</p>
         </div>
-
-          {mode !== 'reset' && <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 text-xs font-semibold" role="tablist" aria-label="会员账号认证">
-            <button type="button" role="tab" aria-selected={mode === 'login'} onClick={() => switchMode('login')} className={`rounded-lg px-3 py-2.5 transition ${mode === 'login' ? 'bg-white text-[var(--sw-brand)] shadow-sm' : 'text-slate-500'}`}>登录</button>
-            <button type="button" role="tab" aria-selected={mode === 'register'} onClick={() => switchMode('register')} className={`rounded-lg px-3 py-2.5 transition ${mode === 'register' ? 'bg-white text-[var(--sw-brand)] shadow-sm' : 'text-slate-500'}`}>注册</button>
-          </div>}
 
           {((mode === 'register' && contextError) || formError) && (
             <div role="alert" className="mb-5 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-800">
@@ -210,13 +224,16 @@ export const ConsumerIdentityPage: React.FC<{
               {mode === 'register' ? '登录手机号（付款时验证）' : '登录手机号'}
               <input type="tel" inputMode="tel" autoComplete="tel" required value={mobile} onChange={(event) => setMobile(event.target.value)} placeholder="请输入 11 位手机号" className="w-full rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none transition focus:border-[var(--sw-brand)] focus:ring-2 focus:ring-blue-100" />
             </label>
-            <label className="block space-y-1.5 text-xs font-semibold text-slate-700">
-              {mode === 'register' ? '设置密码' : '密码'}
+            <div className="block space-y-1.5 text-xs font-semibold text-slate-700">
+              <span className="flex items-center justify-between">
+                <span>{mode === 'register' ? '设置密码' : '密码'}</span>
+                {mode === 'login' && <button type="button" onClick={() => switchMode('reset')} className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-[11px] font-bold text-[var(--sw-brand)] shadow-sm transition hover:border-blue-300 hover:bg-blue-100">忘记密码？</button>}
+              </span>
               <span className="relative block">
                 <input type={showPassword ? 'text' : 'password'} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} required minLength={mode === 'register' ? PASSWORD_MIN_LENGTH : undefined} maxLength={PASSWORD_MAX_LENGTH} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={mode === 'register' ? PASSWORD_POLICY_HINT : '请输入密码'} className="w-full rounded-xl border border-slate-200 px-3.5 py-3 pr-11 text-sm outline-none transition focus:border-[var(--sw-brand)] focus:ring-2 focus:ring-blue-100" />
                 <button type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? '隐藏密码' : '显示密码'} className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-slate-400 hover:text-slate-700">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button>
               </span>
-            </label>
+            </div>
 
             {mode === 'register' && (
               <>
@@ -241,20 +258,20 @@ export const ConsumerIdentityPage: React.FC<{
               {submitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : mode === 'login' ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
               {submitting ? busyLabel : mode === 'login' ? '登录并进入商城' : '创建账号并进入商城'}
             </button>
-            {mode === 'login' && (
-              <button type="button" onClick={() => switchMode('reset')} className="w-full text-center text-xs font-semibold text-[var(--sw-brand)] hover:underline">忘记密码？使用手机号找回</button>
-            )}
+            {mode === 'login' && <button type="button" onClick={() => switchMode('register')} className="flex w-full items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-3 text-sm font-bold text-[var(--sw-brand)] shadow-sm transition hover:border-blue-300 hover:bg-blue-50"><UserPlus className="h-4 w-4" />注册会员</button>}
+            {mode === 'register' && <button type="button" onClick={() => switchMode('login')} className="flex w-full items-center justify-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-[var(--sw-brand)]"><ArrowLeft className="h-3.5 w-3.5" />返回登录</button>}
           </form>}
 
           {mode === 'reset' && (
             <div>
-              <div className="mb-6 flex items-center gap-2" aria-label={`找回密码第 ${resetStarted ? 2 : 1} 步，共 2 步`}>
+              {recoveryStep !== 'success' && <div className="mb-6 flex items-center gap-2" aria-label={`找回密码第 ${recoveryStep === 'account' ? 1 : recoveryStep === 'verify' ? 2 : 3} 步，共 3 步`}>
                 <span className="h-1.5 flex-1 rounded-full bg-[var(--sw-brand)]" />
-                <span className={`h-1.5 flex-1 rounded-full ${resetStarted ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
-                <span className="ml-2 text-[11px] font-semibold text-slate-400">{resetStarted ? '2 / 2' : '1 / 2'}</span>
-              </div>
+                <span className={`h-1.5 flex-1 rounded-full ${recoveryStep !== 'account' ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
+                <span className={`h-1.5 flex-1 rounded-full ${recoveryStep === 'password' ? 'bg-[var(--sw-brand)]' : 'bg-slate-200'}`} />
+                <span className="ml-2 text-[11px] font-semibold text-slate-400">{recoveryStep === 'account' ? '1 / 3' : recoveryStep === 'verify' ? '2 / 3' : '3 / 3'}</span>
+              </div>}
 
-              {!resetStarted && (
+              {recoveryStep === 'account' && (
                 <form onSubmit={(event) => { event.preventDefault(); sendResetCode(); }} className="space-y-5">
                   <label className="block space-y-2 text-xs font-semibold text-slate-700">
                     手机号
@@ -270,11 +287,11 @@ export const ConsumerIdentityPage: React.FC<{
                 </form>
               )}
 
-              {resetStarted && (
-                <form onSubmit={resetPassword} className="space-y-4">
+              {recoveryStep === 'verify' && (
+                <form onSubmit={continueResetVerification} className="space-y-4">
                   <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
                     <span className="flex items-center gap-2 text-xs font-semibold text-slate-700"><Smartphone className="h-4 w-4 text-[var(--sw-brand)]" />{maskedMobile}</span>
-                    <button type="button" onClick={() => { setResetChallenge(''); setResetCode(''); setFormError(''); }} className="text-xs font-semibold text-[var(--sw-brand)] hover:underline">更换手机号</button>
+                    <button type="button" onClick={() => { setResetChallenge(''); setResetCode(''); setFormError(''); setRecoveryStep('account'); }} className="text-xs font-semibold text-[var(--sw-brand)] hover:underline">更换手机号</button>
                   </div>
                   <label className="block space-y-1.5 text-xs font-semibold text-slate-700">
                     短信验证码
@@ -283,6 +300,18 @@ export const ConsumerIdentityPage: React.FC<{
                   <div className="flex items-center justify-between text-xs text-slate-500">
                     <span>没有收到验证码？</span>
                     <button type="button" disabled={resetCodeBusy} onPointerDown={() => identityActions.pointerDown('consumer-reset-code')} onClick={sendResetCode} className="font-semibold text-[var(--sw-brand)] hover:underline disabled:opacity-50">{resetCodeBusy ? '正在发送…' : '重新发送'}</button>
+                  </div>
+                  <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/15 transition hover:bg-[var(--sw-brand-dark)]">
+                    验证并继续<ChevronRight className="h-4 w-4" />
+                  </button>
+                </form>
+              )}
+
+              {recoveryStep === 'password' && (
+                <form onSubmit={resetPassword} className="space-y-4">
+                  <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                    <span className="flex items-center gap-2 text-xs font-semibold text-emerald-800"><CheckCircle2 className="h-4 w-4" />{maskedMobile}</span>
+                    <span className="text-[11px] font-bold text-emerald-700">已验证</span>
                   </div>
                   <label className="block space-y-1.5 text-xs font-semibold text-slate-700">
                     新密码
@@ -302,7 +331,21 @@ export const ConsumerIdentityPage: React.FC<{
                 </form>
               )}
 
-              <button type="button" onClick={() => switchMode('login')} className="mt-5 flex w-full items-center justify-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-[var(--sw-brand)]"><ArrowLeft className="h-3.5 w-3.5" />返回登录</button>
+              {recoveryStep === 'success' && (
+                <div className="py-6 text-center">
+                  <span className="mx-auto grid h-20 w-20 place-items-center rounded-full bg-emerald-50 text-emerald-600 ring-[12px] ring-emerald-50/60"><CheckCircle2 className="h-9 w-9" /></span>
+                  <p className="mt-7 text-sm leading-6 text-slate-500">会员资料和订单不会受到影响。</p>
+                  <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left"><span className="block text-[11px] font-bold text-slate-700">会员账号</span><span className="mt-1 block text-xs text-slate-500">{maskedMobile}</span></div>
+                  <button type="button" onClick={() => switchMode('login')} className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/15">使用新密码登录<ChevronRight className="h-4 w-4" /></button>
+                </div>
+              )}
+
+              {recoveryStep !== 'success' && <button type="button" onClick={() => {
+                if (recoveryStep === 'password') setRecoveryStep('verify');
+                else if (recoveryStep === 'verify') setRecoveryStep('account');
+                else switchMode('login');
+                setFormError('');
+              }} className="mt-5 flex w-full items-center justify-center gap-1.5 text-xs font-semibold text-slate-500 transition hover:text-[var(--sw-brand)]"><ArrowLeft className="h-3.5 w-3.5" />{recoveryStep === 'account' ? '返回登录' : '返回上一步'}</button>}
             </div>
           )}
       </MorviaIdentityShell>
