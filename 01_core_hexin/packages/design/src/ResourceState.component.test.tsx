@@ -1,5 +1,6 @@
 import { isValidElement } from 'react';
 import { describe, expect, it } from 'vitest';
+import { ContextualAccessDenied } from './AccessDenied';
 import { Empty } from './Empty';
 import { ErrorView } from './Error';
 import { ResourceState, resourceCondition, resourceConditions, type ResourceCondition } from './ResourceState';
@@ -7,7 +8,7 @@ import { ResourceState, resourceCondition, resourceConditions, type ResourceCond
 describe('resource state contract', () => {
   it('exposes the complete asynchronous state union', () => {
     expect(resourceConditions).toEqual([
-      'loading', 'empty', 'ready', 'refreshing', 'stale', 'denied',
+      'loading', 'empty', 'ready', 'refreshing', 'stale', 'unauthenticated', 'denied',
       'notfound', 'conflict', 'ratelimited', 'offline', 'failure', 'retry',
     ]);
   });
@@ -23,7 +24,14 @@ describe('resource state contract', () => {
     expect(resourceCondition(data, rows, error)).toBe(expected);
   });
 
-  it.each(['denied', 'notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)(
+  it('renders denied as an explicit access boundary', () => {
+    const result = ResourceState({ condition: 'denied', error: 'FAILURE_CODE', retry: () => undefined, children: 'ready' });
+    expect(isValidElement(result)).toBe(true);
+    if (!isValidElement(result)) throw new Error('RESOURCE_STATE_ELEMENT_REQUIRED');
+    expect(result.type).toBe(ContextualAccessDenied);
+  });
+
+  it.each(['notfound', 'conflict', 'ratelimited', 'offline', 'failure'] as const)(
     'renders %s as an explicit error boundary',
     (condition: ResourceCondition) => {
       const result = ResourceState({ condition, error: 'FAILURE_CODE', retry: () => undefined, children: 'ready' });
