@@ -18,7 +18,7 @@ describe('Console navigation selector', () => {
       { moduleId: 'channels', label: '渠道接入系统', icon: 'channel', order: 70 },
       { moduleId: 'vouchers', label: '卡券治理台', icon: 'voucher', order: 80 },
       { moduleId: 'finance', label: '财务与对账台', icon: 'finance', order: 90 },
-      { moduleId: 'access', label: '会员与权限', icon: 'members', order: 100 },
+      { moduleId: 'access', label: '管理与权限', icon: 'members', order: 100 },
       { moduleId: 'qualification', label: '系统治理台', icon: 'system', order: 110 },
     ]);
     expect(items.filter(({ placement }) => placement === 'bottom')).toEqual([

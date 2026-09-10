@@ -15,7 +15,7 @@ export function AccessWorkspaceTabs({ current }: Readonly<{ current: AccessWorks
   const context = useConsoleContext();
   const navigate = useNavigate();
   return (
-    <nav className="accessworkspacetabs" aria-label="会员与权限工作台">
+    <nav className="accessworkspacetabs" aria-label="管理与权限工作台">
       {tabs.map((tab) => (
         <button
           key={tab.id}

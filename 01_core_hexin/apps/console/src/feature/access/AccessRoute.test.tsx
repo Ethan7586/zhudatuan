@@ -127,7 +127,7 @@ describe('custom identity and permission directory', () => {
     renderWorkspace();
 
     expect(await screen.findByRole('heading', { name: '编辑身份' })).toBeTruthy();
-    expect(screen.getByRole('navigation', { name: '会员与权限工作台' })).toBeTruthy();
+    expect(screen.getByRole('navigation', { name: '管理与权限工作台' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '成员' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '身份与权限' }).getAttribute('aria-current')).toBe('page');
     expect(screen.getByRole('button', { name: '邀请记录' })).toBeTruthy();

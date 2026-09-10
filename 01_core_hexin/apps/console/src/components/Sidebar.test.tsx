@@ -68,7 +68,7 @@ describe('Sidebar commerce navigation', () => {
 
     expect(labels).toEqual([
       '经营驾驶舱', '数据报表', '商城管理', '商品管理', '订单管理系统', '分销返佣系统',
-      '渠道接入系统', '卡券治理台', '财务与对账台', '会员与权限', '系统治理台',
+      '渠道接入系统', '卡券治理台', '财务与对账台', '管理与权限', '系统治理台',
     ]);
     expect(primaryNavigation.nextElementSibling).toBe(profile);
     expect(profile?.nextElementSibling).toBe(supportNavigation);

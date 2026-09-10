@@ -37,7 +37,7 @@ const categoryLabels = Object.freeze({
   runtime: '平台运行',
   identity: '身份与登录',
   organization: '组织治理',
-  access: '会员与权限',
+  access: '管理与权限',
   capability: '功能授权',
   partner: '商户生态',
   member: '会员管理',

@@ -63,7 +63,7 @@ export function RoleAccessWorkspace() {
       <WorkspaceHero
         className="roleaccesshero"
         eyebrow="MEMBERS & PERMISSIONS · CUSTOM IDENTITY"
-        title="会员与权限"
+        title="管理与权限"
         description="像 Discord 一样先命名自定义身份，再从权威目录自由组合跨功能权限。"
         actions={invitationEnabled ? <Button tone="primary" onPress={() => setInvitationOpen(true)}>邀请新成员</Button> : undefined}
       />

@@ -80,7 +80,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
         <header className="memberaccesshero">
           <div>
             <span>MEMBERSHIP · RBAC · DATA SCOPE</span>
-            <h1 id="memberaccessworkspacetitle">会员与权限控制中心</h1>
+            <h1 id="memberaccessworkspacetitle">管理与权限控制中心</h1>
             <p>成员资料、角色叠加、明确禁止、数据范围、Owner 保护与授权审计统一管理</p>
           </div>
           <div className="memberaccessheroactions">

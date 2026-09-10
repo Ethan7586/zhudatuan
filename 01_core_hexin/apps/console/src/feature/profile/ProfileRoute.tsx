@@ -206,7 +206,7 @@ function roleAssignmentState(canRead: boolean, pending: boolean, failed: boolean
   if (pending) return { ready: false, label: '正在读取', description: '正在读取当前身份分配。', tone: 'neutral' as const };
   if (failed) return { ready: false, label: '读取失败', description: '身份分配暂时无法读取，请稍后重试。', tone: 'warning' as const };
   if (!found) return { ready: false, label: '未找到', description: '当前会员未出现在此范围的身份列表中。', tone: 'warning' as const };
-  return { ready: true, label: '已同步', description: '来自会员与权限中心。', tone: 'success' as const };
+  return { ready: true, label: '已同步', description: '来自管理与权限中心。', tone: 'success' as const };
 }
 
 function phoneLabel(masked: string | null | undefined, bound: boolean | undefined): string {
