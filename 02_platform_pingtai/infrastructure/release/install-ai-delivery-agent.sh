@@ -9,8 +9,8 @@ if [[ "$mode" == /* ]]; then
   mode=agent
 fi
 case "$mode" in
-  agent|runtime-candidate|verify) ;;
-  *) printf 'usage: %s [agent|runtime-candidate|verify] [repo-root]\n' "$0" >&2; exit 64 ;;
+  agent-candidate|agent|runtime-candidate|verify) ;;
+  *) printf 'usage: %s [agent-candidate|agent|runtime-candidate|verify] [repo-root]\n' "$0" >&2; exit 64 ;;
 esac
 case "$node_scope" in
   all|zhudatuan-l0|hbbtzn-l1) ;;
@@ -31,6 +31,11 @@ policy_source="$repo_root/02_platform_pingtai/infrastructure/release/zdt-next.re
 unit_source="$repo_root/02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd"
 node --check "$agent_source"
 node -e 'const fs=require("node:fs"); const p=JSON.parse(fs.readFileSync(process.argv[1])); if(p.schema!=="ai.delivery.remote-policy.v1"||p.project!=="zdt-next") process.exit(1)' "$policy_source"
+
+if [[ "$mode" == agent-candidate ]]; then
+  printf 'AI delivery agent candidate validated without installation, pointer, process, service, or traffic changes: project=zdt-next source=%s\n' "$repo_root"
+  exit 0
+fi
 
 if [[ "$mode" == verify ]]; then
   cmp -s "$agent_source" /usr/local/lib/ai-delivery/agent.mjs

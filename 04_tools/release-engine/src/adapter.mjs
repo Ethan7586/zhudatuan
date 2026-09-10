@@ -23,6 +23,8 @@ export function validateAdapter(adapter) {
   invariant(typeof adapter.fallbackTarget === 'string' && adapter.targets[adapter.fallbackTarget]?.kind === 'core', 'ADAPTER_FALLBACK_TARGET_INVALID', 'Adapter requires a core fallbackTarget');
   invariant(Array.isArray(adapter.rules) && adapter.rules.length > 0, 'ADAPTER_RULES_INVALID', 'Adapter classification rules are required');
   invariant(adapter.nodes && typeof adapter.nodes === 'object', 'ADAPTER_NODES_INVALID', 'Adapter nodes are required');
+  invariant(Array.isArray(adapter.productionAcceptance?.domains) && adapter.productionAcceptance.domains.length === 15, 'ADAPTER_PRODUCTION_DOMAINS_INVALID', 'Adapter requires exactly 15 production acceptance domains');
+  invariant(new Set(adapter.productionAcceptance.domains).size === 15, 'ADAPTER_PRODUCTION_DOMAINS_DUPLICATE', 'Production acceptance domains must be unique');
   validateCommands(adapter.buildPreflight, adapter.project, 'buildPreflight');
   for (const [resolverId, resolver] of Object.entries(adapter.impactResolvers ?? {})) {
     invariant(typeof resolver?.module === 'string' && resolver.module.length > 0, 'ADAPTER_IMPACT_RESOLVER_INVALID', `Impact resolver ${resolverId} needs a module`);

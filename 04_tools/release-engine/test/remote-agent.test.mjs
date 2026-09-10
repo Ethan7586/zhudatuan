@@ -18,10 +18,19 @@ test('stages, activates, rolls back and reports status with immutable releases',
   const staged = await invoke(fixture, 'stage', first);
   assert.ok(staged.result.timings.total >= 0);
   assert.equal((await lstat(staged.result.release)).mode & 0o777, 0o755);
+  const preflight = await invoke(fixture, 'preflight', first);
+  assert.equal(preflight.result.capacity.status, 'passed');
+  assert.equal(preflight.result.artifact.sourceSha, first.sourceSha);
+  assert.equal(preflight.result.rollbackPoint.pointers.current, null);
   const activated = await invoke(fixture, 'activate', first);
   assert.ok(activated.result.timings.health >= 0);
   assert.ok(activated.result.timings.total >= activated.result.timings.cutover);
   assert.equal(activated.result.restart.commandCount, 0);
+  assert.equal(activated.result.receipt.schema, 'ai.delivery.receipt.v1');
+  assert.equal(activated.result.receipt.finalStatus, 'success');
+  assert.equal(activated.result.receipt.nonTargetProcesses.unchanged, true);
+  assert.equal(activated.result.receipt.capacity.status, 'passed');
+  assert.ok(activated.result.receipt.rollbackPoint.directory.startsWith(fixture.pointerRoot));
   const firstCurrent = await readlink(join(fixture.pointerRoot, 'current'));
   assert.match(firstCurrent, new RegExp(first.treeDigest.slice(7)));
 
@@ -38,9 +47,17 @@ test('stages, activates, rolls back and reports status with immutable releases',
   const status = await invoke(fixture, 'status', second);
   assert.equal(status.result.current, firstCurrent);
   assert.equal(status.result.runtime, null);
+  assert.equal('production' in status.result.locks, false);
   const verified = await invoke(fixture, 'verify', second);
   assert.equal(verified.result.current, firstCurrent);
   assert.equal(verified.result.checks.length, 1);
+});
+
+test('server locks are scoped by project, node and target without a production-wide lock', async () => {
+  const source = await readFile(agent, 'utf8');
+  assert.doesNotMatch(source, /production\.lock/);
+  assert.match(source, /join\(lockRoot, 'projects', safeName\(context\.project\)\)/);
+  assert.match(source, /join\(projectLockRoot, 'targets', safeName\(context\.node\), `\$\{safeName\(context\.target\)\}\.lock`\)/);
 });
 
 test('repairs DynamicUser traversal modes for stage, activation and rollback without widening artifact files', async () => {

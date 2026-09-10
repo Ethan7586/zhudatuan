@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { appendFile, chmod, copyFile, cp, link, lstat, mkdir, readFile, readlink, readdir, rename, rm, symlink, writeFile } from 'node:fs/promises';
+import { appendFile, chmod, copyFile, cp, link, lstat, mkdir, readFile, readlink, readdir, rename, rm, statfs, symlink, writeFile } from 'node:fs/promises';
 import { hostname } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -46,6 +46,7 @@ try {
   if (action === 'lookup') result = await lookup(context, options);
   else if (action === 'reuse') result = await withLocks(context, false, () => reuse(context, options), { version: options.treeDigest, operation: 'reuse-artifact' });
   else if (action === 'stage') result = await withLocks(context, false, () => stage(context, options), { version: options.treeDigest });
+  else if (action === 'preflight') result = await preflight(context);
   else if (action === 'seed') result = await withLocks(context, true, () => seed(context, options), { version: options.sourceSha, operation: 'seed-layout' });
   else if (action === 'activate') result = await withLocks(context, true, () => activate(context, options), { version: options.approval?.split(':').at(-1) });
   else if (action === 'rollback') result = await withLocks(context, true, () => rollback(context), { operation: 'rollback' });
@@ -352,10 +353,12 @@ async function activate(context, options) {
   assert(options.approval === expectedApproval, 'PRODUCTION_APPROVAL_INVALID', { expectedApproval });
   const candidateStarted = Date.now();
   await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: candidate, currentDir: await pointer(root, 'current') ?? '', ...contextSummary(context) });
+  const capacity = await capacityEvidence(context, manifest.archive?.bytes ?? manifest.totalBytes ?? 0);
   await chmod(candidate, 0o755);
   timings.candidate = Date.now() - candidateStarted;
   const snapshotStarted = Date.now();
   const protectedBefore = await protectedProcessSnapshot(context);
+  const pointersBefore = await pointerSnapshot(root);
   const previousCurrent = await pointer(root, 'current');
   const expectedCurrent = options.expectedCurrent === 'none' ? null : required(options.expectedCurrent, 'EXPECTED_CURRENT_REQUIRED');
   assert(previousCurrent === expectedCurrent, 'CURRENT_POINTER_CHANGED', { expected: expectedCurrent, actual: previousCurrent });
@@ -363,6 +366,11 @@ async function activate(context, options) {
   const targetProcessBefore = await processId(context.deployment.restart);
   const previousRuntime = await pointer(root, 'runtime');
   const candidateRuntime = await dependencyLayerPath(context, manifest.dependencyLayer);
+  const caddyBefore = await caddySemanticEvidence(context.policy);
+  if (options.expectedCaddySemantic) assert(caddyBefore?.digest === options.expectedCaddySemantic, 'CADDY_SEMANTIC_CHANGED_BEFORE_CUTOVER', { expected: options.expectedCaddySemantic, actual: caddyBefore?.digest });
+  const rollbackPoint = previousCurrent === candidate
+    ? { status: 'not-required', reason: 'candidate-is-already-current', pointers: pointersBefore }
+    : await recordRollbackPoint(context, manifest, pointersBefore, caddyBefore);
   await ensureTraversablePointerRoot(context);
   timings.snapshot = Date.now() - snapshotStarted;
   let activationRestart = restartEvidence(context.deployment.restart, false);
@@ -371,6 +379,8 @@ async function activate(context, options) {
     timings.health = readiness.durationMs;
     const isolationStarted = Date.now();
     const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+    const caddyAfter = await caddySemanticEvidence(context.policy);
+    assert(caddyAfter?.digest === caddyBefore?.digest, 'CADDY_SEMANTIC_CHANGED', { before: caddyBefore?.digest, after: caddyAfter?.digest });
     timings.isolation = Date.now() - isolationStarted;
     timings.total = Date.now() - started;
     return {
@@ -386,6 +396,7 @@ async function activate(context, options) {
       cutoverMs: timings.health + timings.isolation,
       timings,
       protectedProcesses: { before: protectedBefore, after: protectedAfter },
+      receipt: await deploymentReceipt(context, manifest, { pointersBefore, rollbackPoint, capacity, caddyBefore, caddyAfter, readiness, targetProcessBefore, targetProcessAfter: await processId(context.deployment.restart), protectedBefore, protectedAfter, finalStatus: 'success' }),
     };
   }
   let readiness;
@@ -409,6 +420,8 @@ async function activate(context, options) {
     const isolationStarted = Date.now();
     protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
     timings.isolation = Date.now() - isolationStarted;
+    const caddyAfter = await caddySemanticEvidence(context.policy);
+    assert(caddyAfter?.digest === caddyBefore?.digest, 'CADDY_SEMANTIC_CHANGED', { before: caddyBefore?.digest, after: caddyAfter?.digest });
   } catch (candidateError) {
     activationRestart = candidateError?.details?.restart ?? activationRestart;
     timings.health = candidateError?.details?.durationMs ?? 0;
@@ -477,6 +490,19 @@ async function activate(context, options) {
         total: activationRestart.commandCount + rollback.restart.commandCount,
       },
     };
+    details.receipt = await deploymentReceipt(context, manifest, {
+      pointersBefore,
+      rollbackPoint,
+      capacity,
+      caddyBefore,
+      caddyAfter: await caddySemanticEvidence(context.policy).catch((error) => ({ status: 'capture-failed', digest: null, error: errorEvidence(error) })),
+      readiness: candidateError?.details?.readiness ?? { status: 'failed', error: errorEvidence(candidateError) },
+      targetProcessBefore,
+      targetProcessAfter: details.targetProcess.after,
+      protectedBefore,
+      protectedAfter,
+      finalStatus: rollbackFailure ? 'rollback-failed' : 'rolled-back',
+    });
     if (rollbackFailure) throw failure('CUTOVER_FAILED_ROLLBACK_UNHEALTHY', details);
     throw failure('CUTOVER_FAILED_AND_ROLLED_BACK', details);
   }
@@ -494,6 +520,25 @@ async function activate(context, options) {
     timings,
     targetProcess: { before: targetProcessBefore, after: await processId(context.deployment.restart) },
     protectedProcesses: { before: protectedBefore, after: protectedAfter },
+    receipt: await deploymentReceipt(context, manifest, { pointersBefore, rollbackPoint, capacity, caddyBefore, caddyAfter: await caddySemanticEvidence(context.policy), readiness, targetProcessBefore, targetProcessAfter: await processId(context.deployment.restart), protectedBefore, protectedAfter, finalStatus: 'success' }),
+  };
+}
+
+async function preflight(context) {
+  const root = context.deployment.pointerRoot;
+  assertAllowedRoot(context.policy, root);
+  const candidate = await pointer(root, 'candidate');
+  assert(candidate, 'CANDIDATE_MISSING');
+  const manifest = JSON.parse(await readFile(join(candidate, 'AI_DELIVERY_ARTIFACT.json'), 'utf8'));
+  const started = performance.now();
+  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: candidate, currentDir: await pointer(root, 'current') ?? '', ...contextSummary(context) });
+  return {
+    candidate,
+    artifact: artifactSummary(manifest),
+    capacity: await capacityEvidence(context, manifest.archive?.bytes ?? manifest.totalBytes ?? 0),
+    rollbackPoint: { pointers: await pointerSnapshot(root), targetProcess: await processId(context.deployment.restart), protectedProcesses: await protectedProcessSnapshot(context) },
+    caddySemantic: await caddySemanticEvidence(context.policy),
+    durationMs: elapsedMs(started),
   };
 }
 
@@ -533,6 +578,7 @@ async function rollback(context) {
 async function status(context) {
   const root = context.deployment.pointerRoot;
   const lockRoot = context.policy.lockRoot ?? '/run/lock/ai-delivery';
+  const projectLockRoot = join(lockRoot, 'projects', safeName(context.project));
   return {
     pointerRoot: root,
     candidate: await statusPointer(root, 'candidate'),
@@ -542,9 +588,8 @@ async function status(context) {
     previousRuntime: await statusPointer(root, 'previous-runtime'),
     restart: context.deployment.restart,
     locks: {
-      production: await readLock(join(lockRoot, 'production.lock')),
-      node: await readLock(join(lockRoot, 'nodes', `${safeName(context.node)}.lock`)),
-      target: await readLock(join(lockRoot, 'targets', `${safeName(context.node)}--${safeName(context.target)}.lock`)),
+      node: await readLock(join(projectLockRoot, 'nodes', `${safeName(context.node)}.lock`)),
+      target: await readLock(join(projectLockRoot, 'targets', safeName(context.node), `${safeName(context.target)}.lock`)),
     },
   };
 }
@@ -587,12 +632,12 @@ async function dependencyLayerPath(context, layer) {
   return path;
 }
 
-async function withLocks(context, production, work, details = {}) {
+async function withLocks(context, _production, work, details = {}) {
   const lockRoot = context.policy.lockRoot ?? '/run/lock/ai-delivery';
+  const projectLockRoot = join(lockRoot, 'projects', safeName(context.project));
   const paths = [
-    ...(production ? [join(lockRoot, 'production.lock')] : []),
-    join(lockRoot, 'nodes', `${safeName(context.node)}.lock`),
-    join(lockRoot, 'targets', `${safeName(context.node)}--${safeName(context.target)}.lock`),
+    join(projectLockRoot, 'nodes', `${safeName(context.node)}.lock`),
+    join(projectLockRoot, 'targets', safeName(context.node), `${safeName(context.target)}.lock`),
   ];
   const releases = [];
   try {
@@ -601,6 +646,78 @@ async function withLocks(context, production, work, details = {}) {
   } finally {
     for (const release of releases.reverse()) await release();
   }
+}
+
+async function pointerSnapshot(root) {
+  return Object.fromEntries(await Promise.all(['candidate', 'current', 'previous', 'rollback', 'runtime', 'previous-runtime'].map(async (name) => [name, await pointer(root, name)])));
+}
+
+async function capacityEvidence(context, artifactBytes) {
+  const stats = await statfs(context.deployment.pointerRoot).catch(() => statfs(dirname(context.deployment.pointerRoot)));
+  const freeBytes = Number(stats.bavail) * Number(stats.bsize);
+  const minimumFreeBytes = context.policy.minimumFreeBytes ?? 15 * 1024 ** 3;
+  assert(freeBytes - artifactBytes >= minimumFreeBytes, 'CAPACITY_CHECK_FAILED', { freeBytes, artifactBytes, minimumFreeBytes });
+  return { status: 'passed', freeBytes, artifactBytes, minimumFreeBytes };
+}
+
+async function caddySemanticEvidence(policy) {
+  if (!policy.caddyConfig) return { status: 'not-configured', digest: null, config: null };
+  const adapted = await command(['caddy', 'adapt', '--config', policy.caddyConfig, '--adapter', 'caddyfile'], { timeoutMs: 30_000 });
+  return { status: 'unchanged', digest: digest(adapted.stdout), config: policy.caddyConfig };
+}
+
+async function recordRollbackPoint(context, manifest, pointers, caddySemantic) {
+  const root = context.policy.rollbackRoot ?? join(context.deployment.pointerRoot, 'rollback-points');
+  assertAllowedRoot(context.policy, root);
+  const id = `${Date.now()}-${safeName(context.node)}-${safeName(context.target)}-${manifest.sourceSha.slice(0, 12)}`;
+  const directory = join(root, safeName(context.project), id);
+  await mkdir(directory, { recursive: true, mode: 0o700 });
+  let caddyBackup = null;
+  if (context.policy.caddyConfig) {
+    caddyBackup = join(directory, 'Caddyfile');
+    await copyFile(context.policy.caddyConfig, caddyBackup);
+    await chmod(caddyBackup, 0o600);
+  }
+  const evidence = { id, directory, pointers, caddyBackup, caddySemantic, createdAt: new Date().toISOString() };
+  await writeFile(join(directory, 'rollback-point.json'), `${JSON.stringify(evidence, null, 2)}\n`, { mode: 0o600 });
+  return evidence;
+}
+
+function artifactSummary(manifest) {
+  return { sourceSha: manifest.sourceSha, treeDigest: manifest.treeDigest, manifestDigest: manifest.manifestDigest, archiveSha256: manifest.archive?.sha256 ?? null, archiveBytes: manifest.archive?.bytes ?? null };
+}
+
+async function deploymentReceipt(context, manifest, evidence) {
+  const pointersAfter = await pointerSnapshot(context.deployment.pointerRoot);
+  const lifecycle = await lifecycleEvidence(context.policy);
+  return {
+    schema: 'ai.delivery.receipt.v1',
+    version: `${manifest.sourceSha}-${manifest.treeDigest.slice(7, 19)}`,
+    sourceSha: manifest.sourceSha,
+    ...contextSummary(context),
+    artifact: artifactSummary(manifest),
+    pointers: { before: evidence.pointersBefore, after: pointersAfter },
+    rollbackPoint: evidence.rollbackPoint,
+    targetProcess: { before: evidence.targetProcessBefore, after: evidence.targetProcessAfter },
+    nonTargetProcesses: { before: evidence.protectedBefore, after: evidence.protectedAfter, unchanged: stableJson(evidence.protectedBefore) === stableJson(evidence.protectedAfter) },
+    capacity: evidence.capacity,
+    ready: evidence.readiness,
+    caddySemantic: { before: evidence.caddyBefore, after: evidence.caddyAfter, unchanged: evidence.caddyBefore?.digest === evidence.caddyAfter?.digest },
+    automaticCleanup: lifecycle,
+    finalStatus: evidence.finalStatus,
+    completedAt: new Date().toISOString(),
+  };
+}
+
+async function lifecycleEvidence(policy) {
+  const units = policy.lifecycleUnits ?? [];
+  if (units.length === 0) return { mode: 'existing-lifecycle', status: 'not-configured', units: [] };
+  const states = [];
+  for (const unit of units) {
+    const active = await command(['systemctl', 'is-active', unit], { timeoutMs: 10_000, acceptExitCodes: [0, 3] });
+    states.push({ unit, active: active.stdout.trim() });
+  }
+  return { mode: 'existing-lifecycle', status: states.every((item) => item.active === 'active') ? 'armed' : 'degraded', units: states };
 }
 
 async function acquireDirectoryLock(path, context, staleSeconds, details) {
