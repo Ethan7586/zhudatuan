@@ -1,4 +1,5 @@
 import { ArrowLeft, RefreshCw, ShieldAlert } from 'lucide-react';
+import { Button } from '@shop/design';
 import { chineseReference } from '@shop/presentation';
 import type { useAfterSaleViewModel } from '../viewmodel/AfterSaleViewModel';
 import { AfterSaleForm } from './AfterSaleForm';
@@ -23,9 +24,9 @@ export function AfterSalePage({ viewmodel }: Readonly<{ viewmodel: ReturnType<ty
             <div role="alert" className="flex items-center rounded-lg bg-danger-surface p-3 font-bold text-danger-strong">
               {error}
               {state === 'failed' ? (
-                <button type="button" onClick={actions.refresh} className="ml-auto underline">
+                <Button tone="quiet" onPress={actions.refresh} className="ml-auto shrink-0">
                   重试
-                </button>
+                </Button>
               ) : null}
             </div>
           ) : null}
