@@ -22,6 +22,7 @@ import { EnrollmentPolicy } from '../../domain/policy/EnrollmentPolicy';
 import type { InvitationRedeemer } from './InvitationRedeemer';
 import type { Telemetry } from '@shop/telemetry';
 import type { InvitationFailure } from './InvitationFailure';
+import type { MembershipDestination } from './MembershipDestination';
 import { concealEnrollmentAccess as concealAccess, maskEnrollmentSubject as mask, type EnrollmentDraft, type EnrollmentInvitationScope } from './EnrollmentData';
 
 export class EnrollIdentity {
@@ -34,6 +35,7 @@ export class EnrollIdentity {
     private readonly identityKey: string,
     private readonly sessionKey: string,
     private readonly tickets: AuthTicketPort,
+    private readonly destinations: MembershipDestination,
     private readonly challenges: ChallengePort,
     private readonly linkcases: LinkCaseRepository,
     private readonly redeemer: InvitationRedeemer,
@@ -219,8 +221,13 @@ export class EnrollIdentity {
     await this.redeemer.consume(database, invitation, { session: session?.session ?? null, assurance: 2, trace: preauth.trace, principal, membership, claim: { id: preauth.reference, version: claim.version } });
     await this.events.publish(database, 'identity.enrollment.completed', 'membership', membership, invitation.state.organization, preauth.trace, { invitationId: invitation.state.id, membershipId: membership });
     if (session === null) return { status: 201, body: { kind: 'enrolled', target: 'storefront' }, headers: { 'x-clear-cookie': this.cookies.preauth('', 0) } };
+    const destination = await this.destinations.resolve(database, {
+      target: 'storefront',
+      returnTarget: prepared.returnTarget,
+      organization: invitation.state.organization,
+    });
     const ticket = await this.tickets.issue(requireWriteTransaction(database), session.session, 'storefront', prepared.authorization);
-    return { status: 201, body: { kind: 'session', ticket: ticket.ticket, returnTarget: prepared.returnTarget }, headers: { ...session.headers, 'x-clear-cookie': this.cookies.preauth('', 0) } };
+    return { status: 201, body: { kind: 'session', ticket: ticket.ticket, returnTarget: destination.proof }, headers: { ...session.headers, 'x-clear-cookie': this.cookies.preauth('', 0) } };
   }
 
   private subject(value: string): string {

@@ -149,6 +149,7 @@ export function composeIdentity(context: ModuleContext) {
     keys.identity,
     keys.session,
     tickets,
+    destinations,
     challenges,
     linkcases,
     redeemer,

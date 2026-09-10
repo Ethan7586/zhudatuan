@@ -163,6 +163,7 @@ describe('campaign enrollment invitation', () => {
       'identity-key-value-at-least-thirty-two-bytes',
       'session-key-value-at-least-thirty-two-bytes',
       { issue: vi.fn() } as never,
+      { resolve: vi.fn() } as never,
       challenges as never,
       {} as never,
       redeemer,
