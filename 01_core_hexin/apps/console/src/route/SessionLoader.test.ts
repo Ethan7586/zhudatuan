@@ -40,7 +40,7 @@ beforeEach(() => {
 });
 
 describe('scope loader revalidation', () => {
-  it('does not reload the parent session for cursor-only navigation', () => {
+  it('does not reload the parent session while navigating inside the same scope', () => {
     const currentUrl = new URL('https://console.zhudatuan.com/scopes/platform/organization-platform-root/settings/members');
     const nextUrl = new URL(`${currentUrl.href}?cursor=page%3A2`);
 
@@ -50,6 +50,17 @@ describe('scope loader revalidation', () => {
     expect(scopeShouldRevalidate({
       currentUrl,
       nextUrl: new URL('https://console.zhudatuan.com/scopes/platform/organization-platform-root/settings/profile'),
+      defaultShouldRevalidate: true,
+    })).toBe(false);
+    expect(scopeShouldRevalidate({
+      currentUrl,
+      nextUrl: new URL('https://console.zhudatuan.com/scopes/mall/mall%3Aother/storefront-members'),
+      defaultShouldRevalidate: true,
+    })).toBe(true);
+    expect(scopeShouldRevalidate({
+      currentUrl,
+      nextUrl,
+      formMethod: 'POST',
       defaultShouldRevalidate: true,
     })).toBe(true);
   });
