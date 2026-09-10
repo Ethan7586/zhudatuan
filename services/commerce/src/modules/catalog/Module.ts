@@ -53,6 +53,8 @@ import { ProductMedia } from './application/service/ProductMedia';
 import { CategoriesReadHandler } from './application/handler/CategoriesReadHandler';
 import { CategoriesCreateHandler } from './application/handler/CategoriesCreateHandler';
 import { PgCategoryRepository } from './infrastructure/persistence/PgCategoryRepository';
+import { StorefrontCatalogMedia } from './application/service/StorefrontCatalogMedia';
+import type { CatalogReadPort } from './public/CatalogReadPort';
 
 export const CatalogModule = defineModule(Manifest, {
   jobs: createJobs,
@@ -93,7 +95,11 @@ export const CatalogModule = defineModule(Manifest, {
       new ImportsReadHandler(imports, objects),
     ];
   },
-  ports: (context) => [...catalogPorts(new PgCatalogFacade(context.service(DATABASE_POOL).workload(readDatabaseWorkload(context.workload))))],
+  ports: (context) => {
+    const facade = new PgCatalogFacade(context.service(DATABASE_POOL).workload(readDatabaseWorkload(context.workload)));
+    const storefront = new StorefrontCatalogMedia(facade, new ProductMedia(context.ports.get(ASSET_PORT)));
+    return [...catalogPorts(facade, storefront)];
+  },
   jobPorts: (context) => {
     const facade = new PgCatalogFacade(context.service(DATABASE_POOL));
     return [
@@ -105,13 +111,13 @@ export const CatalogModule = defineModule(Manifest, {
   },
   providerPorts: [{ token: PROVIDER_CATALOG_PORT, value: new CatalogSourcePort() }],
 });
-function catalogPorts(facade: PgCatalogFacade) {
+function catalogPorts(facade: PgCatalogFacade, storefront: CatalogReadPort) {
   return [
     { token: REFERRAL_CATALOG_PORT, value: facade },
     { token: CART_CATALOG_PORT, value: facade },
     { token: CHECKOUT_CATALOG_PORT, value: facade },
     { token: EXPERIENCE_CATALOG_PORT, value: facade },
-    { token: CATALOG_READ_PORT, value: facade },
+    { token: CATALOG_READ_PORT, value: storefront },
     { token: CATALOG_DIMENSION_PORT, value: facade },
     { token: MEMBER_CATALOG_PORT, value: facade },
   ] as const;
