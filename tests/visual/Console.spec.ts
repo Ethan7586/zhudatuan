@@ -148,11 +148,17 @@ test('Console 窄屏页脚只保留服务状态且不覆盖工作区', async ({ 
 });
 
 test('Console 平板和手机壳层控件保持完整触控目标', async ({ page }) => {
-  await prepareVisual(page, { width: 768, height: 1024 });
+  await prepareVisual(page, visualViewport('tabletwideportrait'));
   await signInConsole(page);
   await page.goto(`${LOCAL_CONSOLE_ORIGIN}${path(ROUTES.consoleproducts, 'enterprise')}`);
   await expectUsable(page);
   await expect.poll(() => minimumHeight(page, '.commandtrigger, #consolescope, #consoleperiod')).toBeGreaterThanOrEqual(44);
+  await expect(page.getByRole('button', { name: '打开主导航' })).toBeVisible();
+  await page.getByRole('button', { name: '打开主导航' }).click();
+  await expect(page.locator('.consoleworkspace')).toHaveAttribute('inert', '');
+  await expect(page.getByRole('button', { name: '关闭主导航', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '关闭主导航', exact: true }).click();
+  await expect(page.locator('.consoleworkspace')).not.toHaveAttribute('inert', '');
 
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator('.commandtrigger')).toBeHidden();
@@ -414,4 +420,10 @@ async function minimumWidth(page: import('@playwright/test').Page, selector: str
 
 async function allCopyFits(page: import('@playwright/test').Page, selector: string): Promise<boolean> {
   return page.locator(selector).evaluateAll((elements) => elements.every((element) => element.scrollWidth <= element.clientWidth + 1 && element.scrollHeight <= element.clientHeight + 1));
+}
+
+function visualViewport(name: string): Readonly<{ width: number; height: number }> {
+  const viewport = VISUAL_VIEWPORTS.find((candidate) => candidate.name === name);
+  if (!viewport) throw new Error(`VISUAL_VIEWPORT_MISSING:${name}`);
+  return viewport;
 }

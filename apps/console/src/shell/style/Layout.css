@@ -78,12 +78,16 @@ body:has(.consolelayout[data-visual-theme='console-v1']) {
   .consoleheader .commandtrigger {
     width: 100%;
   }
+  .consoleheader .commandtrigger kbd,
+  .consoleheader .languageindicator {
+    display: none;
+  }
   .consolelayout[data-visual-theme='console-v1'] .scopebar .scopestatus {
     display: none;
   }
 }
 
-@media (max-width: 48rem) {
+@media (max-width: 54rem) {
   .consolelayout,
   .consolelayout[data-sidebar='collapsed'] {
     grid-template-columns: minmax(0, 1fr);
@@ -146,6 +150,10 @@ body:has(.consolelayout[data-visual-theme='console-v1']) {
   .consolelayout .consoleheader {
     grid-template-columns: auto minmax(0, 1fr) auto;
     padding-inline: var(--sw-space-1-5);
+  }
+  .consolelayout .consoleheader .consolebreadcrumb {
+    display: flex;
+    align-items: center;
   }
   .consolelayout .consoleheader .commandtrigger {
     height: var(--sw-control-touch-target);

@@ -83,6 +83,7 @@ const expectedViewports = {
   desktop1440: [1440, 900],
   desktop1366: [1366, 768],
   tabletlandscape: [1024, 768],
+  tabletwideportrait: [834, 1112],
   tabletportrait: [768, 1024],
   mobile390: [390, 844],
   mobile375: [375, 812],

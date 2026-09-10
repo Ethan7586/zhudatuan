@@ -41,6 +41,9 @@ viewports:
   tabletlandscape:
     width: 1024
     height: 768
+  tabletwideportrait:
+    width: 834
+    height: 1112
   tabletportrait:
     width: 768
     height: 1024
