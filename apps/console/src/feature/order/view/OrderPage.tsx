@@ -1,4 +1,5 @@
 import { lazy, Suspense } from 'react';
+import { ResponsiveDisclosure } from '../../../shared/view/ResponsiveDisclosure';
 import type { ListViewModel } from '../viewmodel/ListViewModel';
 import { AfterSalePanel } from './AfterSalePanel';
 import { OrderColumnSettings } from './OrderColumnSettings';
@@ -27,13 +28,17 @@ export function OrderPage({ title, viewmodel }: Readonly<{ title: string; viewmo
       </p>
       <OrderStatusTabs active={view} facets={page?.facets} onChange={actions.selectView} />
       <div className="orderfilterarea">
-        <details className="orderfilterdisclosure">
-          <summary>
-            <span>筛选与查找</span>
-            <small>{activeFilterCount(filter) === 0 ? '按订单、状态或商城查找' : `已启用 ${activeFilterCount(filter)} 个条件`}</small>
-          </summary>
+        <ResponsiveDisclosure
+          className="orderfilterdisclosure"
+          summary={
+            <>
+              <span>筛选与查找</span>
+              <small>{activeFilterCount(filter) === 0 ? '按订单、状态或商城查找' : `已启用 ${activeFilterCount(filter)} 个条件`}</small>
+            </>
+          }
+        >
           <OrderFilterForm value={filter} malls={malls} onApply={actions.applyFilter} onColumns={actions.toggleColumns} columnsOpen={columnsopen} />
-        </details>
+        </ResponsiveDisclosure>
         <OrderColumnSettings open={columnsopen} visible={columns} onToggle={actions.toggleColumn} onClose={actions.closeColumns} />
         <div className="orderfiltermeta">
           <span>当前条件由服务端实时筛选</span>
