@@ -33,7 +33,7 @@ export class PgAccountingPort implements AccountingPort {
     const result = await database.query<{ journal: string }>(`select finance.post($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11::timestamptz) journal`, [
       command.scopeId,
       reference.value.event,
-      reference.value.aggregateId,
+      reference.value.eventId,
       command.currency,
       command.description,
       command.debit.code,

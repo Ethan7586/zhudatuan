@@ -25,7 +25,7 @@ describe('finance public ports', () => {
 
     await expect(withWriteTransaction(query, (context) => new PgAccountingPort().post(context, command))).resolves.toBe('journal:one');
 
-    expect(query).toHaveBeenCalledWith(expect.stringContaining('select finance.post'), ['mall:one', 'payment.captured', 'payment:one', 'CNY', '支付入账', 'cash', 'asset', 'commerce.clearing', 'income', 100, '2026-09-06T00:00:00.000Z']);
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('select finance.post'), ['mall:one', 'payment.captured', 'event:one', 'CNY', '支付入账', 'cash', 'asset', 'commerce.clearing', 'income', 100, '2026-09-06T00:00:00.000Z']);
     expect(query).toHaveBeenCalledWith(expect.stringContaining('insert into finance.economicleg'), ['event:one', 'capture', 'journal:one', 'mall:one', 'CNY', 100, '2026-09-06T00:00:00.000Z']);
   });
 
