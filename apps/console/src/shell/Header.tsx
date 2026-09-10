@@ -28,7 +28,27 @@ export interface HeaderProps {
 type HeaderPanel = 'account' | 'command' | null;
 
 export function Header(props: HeaderProps) {
-  const { title, summary, scopeLabel, displayName, assuranceLevel, syncedAt, loggingOut, disablingStepup, logoutError, stepupError, taskCenter, destinations, notification, support, onLogout, onStepup, onDisableStepup, onNavigate, onOpenNavigation } = props;
+  const {
+    title,
+    summary,
+    scopeLabel,
+    displayName,
+    assuranceLevel,
+    syncedAt,
+    loggingOut,
+    disablingStepup,
+    logoutError,
+    stepupError,
+    taskCenter,
+    destinations,
+    notification,
+    support,
+    onLogout,
+    onStepup,
+    onDisableStepup,
+    onNavigate,
+    onOpenNavigation,
+  } = props;
   const [panel, setPanel] = useState<HeaderPanel>(null);
   const [commandQuery, setCommandQuery] = useState('');
   const commandInput = useRef<HTMLInputElement>(null);
@@ -74,7 +94,9 @@ export function Header(props: HeaderProps) {
         </button>
         <strong>{title}</strong>
         <i aria-hidden="true">/</i>
-        <span className="consoleheadersummary">{summary}</span>
+        <span className="consoleheadersummary" data-visual-copy="truncate" title={summary}>
+          {summary}
+        </span>
       </div>
 
       <div className="commandarea">

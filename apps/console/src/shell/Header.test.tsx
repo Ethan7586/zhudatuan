@@ -6,6 +6,15 @@ import { Header, type HeaderProps } from './Header';
 afterEach(cleanup);
 
 describe('Header secondary verification', () => {
+  it('keeps the complete route summary available when the header truncates it', () => {
+    const summary = '设置 / 审批规则 / 审批模板详情 · 主打团';
+    render(<Header {...props({ summary })} />);
+
+    const routeSummary = screen.getByText(summary);
+    expect(routeSummary.getAttribute('data-visual-copy')).toBe('truncate');
+    expect(routeSummary.getAttribute('title')).toBe(summary);
+  });
+
   it('opens secondary verification for a base session', () => {
     const onStepup = vi.fn();
     render(<Header {...props({ assuranceLevel: 2, onStepup })} />);
