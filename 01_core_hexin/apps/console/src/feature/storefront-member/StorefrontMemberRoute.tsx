@@ -1,17 +1,40 @@
 import { Empty, ResourceState, type ResourceCondition } from '@shop/design';
-import type { StorefrontMember } from '@shop/contract';
+import type {
+  StorefrontMember,
+  StorefrontMemberDetail,
+  StorefrontMemberInvitee,
+  StorefrontMemberOrder,
+} from '@shop/contract';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { useSearchParams } from 'react-router';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { scopeDisplayName } from '../../entity/session/ScopePresentation';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { formatDate } from '../../shared/ui/Format';
 import { pageCursor } from '../../shared/url/PageCursor';
-import { readStorefrontMembers, storefrontMemberKey } from './StorefrontMemberQuery';
+import { scopePath } from '../../shared/url/ScopePath';
+import { aftersaleLabel, fulfillmentLabel, paymentLabel } from '../order/OrderPresentation';
+import {
+  readStorefrontMemberDetail,
+  readStorefrontMemberInvitees,
+  readStorefrontMemberOrders,
+  readStorefrontMembers,
+  storefrontMemberDetailKey,
+  storefrontMemberInviteesKey,
+  storefrontMemberKey,
+  storefrontMemberOrdersKey,
+} from './StorefrontMemberQuery';
 import './storefront-member.css';
 
 type MemberFilter = 'all' | 'wechat-bound' | 'wechat-unbound';
+type MemberDetailTab = 'profile' | 'referrals' | 'orders';
+interface MemberPageQuery<T> {
+  readonly data: { readonly items: readonly T[]; readonly nextCursor?: string | undefined } | undefined;
+  readonly error: Error | null;
+  readonly isFetching: boolean;
+  readonly refetch: () => Promise<unknown>;
+}
 type MemberIconName = 'close' | 'expand' | 'member' | 'mobile' | 'refresh' | 'search' | 'wechat';
 
 export function Component() {
@@ -233,58 +256,275 @@ function MemberDetail({ member, mallName, open, onClose }: Readonly<{
   open: boolean;
   onClose: () => void;
 }>) {
+  const context = useConsoleContext();
+  const navigate = useNavigate();
   const detailRef = useRef<HTMLElement>(null);
+  const memberId = member?.membership_id ?? '';
+  const [tab, setTab] = useState<MemberDetailTab>('profile');
+  const [inviteeCursors, setInviteeCursors] = useState<readonly (string | undefined)[]>([undefined]);
+  const [orderCursors, setOrderCursors] = useState<readonly (string | undefined)[]>([undefined]);
+  const inviteeCursor = inviteeCursors.at(-1);
+  const orderCursor = orderCursors.at(-1);
+  const detailQuery = useQuery({
+    queryKey: storefrontMemberDetailKey(context, memberId),
+    queryFn: ({ signal }) => readStorefrontMemberDetail(context, memberId, signal),
+    enabled: open && memberId !== '',
+  });
+  const inviteesQuery = useQuery({
+    queryKey: storefrontMemberInviteesKey(context, memberId, inviteeCursor),
+    queryFn: ({ signal }) => readStorefrontMemberInvitees(context, memberId, inviteeCursor, signal),
+    enabled: open && memberId !== '' && tab === 'referrals',
+  });
+  const ordersQuery = useQuery({
+    queryKey: storefrontMemberOrdersKey(context, memberId, orderCursor),
+    queryFn: ({ signal }) => readStorefrontMemberOrders(context, memberId, orderCursor, signal),
+    enabled: open && memberId !== '' && tab === 'orders',
+  });
+
   useEffect(() => {
     if (open) detailRef.current?.focus({ preventScroll: true });
   }, [open]);
+  useEffect(() => {
+    setTab('profile');
+    setInviteeCursors([undefined]);
+    setOrderCursors([undefined]);
+  }, [memberId]);
+
+  const detail = detailQuery.data;
+  const visibleMember = detail ?? member;
+  const detailError = safeQueryError(detailQuery.error);
   return (
     <aside ref={detailRef} className="storefrontmemberdetail" aria-hidden={!open} aria-label="会员详情" tabIndex={-1}>
       <header className="storefrontmemberpanelheading">
         <div><h2>会员详情</h2><span data-tone="purple">消费者</span></div>
         <IconButton label="关闭会员详情" icon="close" onPress={onClose} tabIndex={open ? 0 : -1} />
       </header>
-      {member === null ? null : <div className="storefrontmemberdetailbody">
+      {visibleMember === null ? null : <div className="storefrontmemberdetailbody">
         <section className="storefrontmemberidentitycard">
-          <i>{member.display_name.slice(0, 1)}</i>
+          <i>{visibleMember.display_name.slice(0, 1)}</i>
           <div>
-            <h3>{member.display_name}</h3>
-            <p>{member.mobile_masked}</p>
+            <h3>{visibleMember.display_name}</h3>
+            <p>{visibleMember.mobile_masked}</p>
           </div>
-          <StatusState status={member.membership_status} />
+          <StatusState status={visibleMember.membership_status} />
         </section>
 
-        <dl className="storefrontmemberfacts">
-          <Fact label="消费身份" value="消费者" />
-          <Fact label="当前状态" value={membershipLabel(member.membership_status)} tone={member.membership_status === 'active' ? 'success' : 'muted'} />
-          <Fact label="手机绑定" value={member.mobile_bound ? '已绑定' : '未绑定'} tone={member.mobile_bound ? 'success' : 'muted'} />
-          <Fact label="微信绑定" value={member.wechat_bound ? '已绑定' : '未绑定'} tone={member.wechat_bound ? 'success' : 'muted'} />
-          <Fact label="所属商城" value={mallName} />
-          <Fact label="入会时间" value={formatDate(member.joined_at)} />
-        </dl>
+        <div className="storefrontmembertags" aria-label="会员标签">
+          <span>消费者</span>
+          <span data-tone={visibleMember.membership_status === 'active' ? 'success' : 'muted'}>{membershipLabel(visibleMember.membership_status)}</span>
+          {visibleMember.mobile_bound ? <span data-tone="success">手机已绑定</span> : null}
+          {visibleMember.wechat_bound ? <span data-tone="purple">微信已绑定</span> : null}
+        </div>
 
-        <section className="storefrontmemberrecord">
-          <h3>会员记录</h3>
-          <div>
-            <i />
-            <time dateTime={member.joined_at ?? undefined}>{formatDate(member.joined_at)}</time>
-            <p><strong>加入{mallName}</strong><span>成为商城会员</span></p>
-          </div>
-          <div data-muted={!member.mobile_bound}>
-            <i />
-            <span>{member.mobile_bound ? '已完成' : '暂无'}</span>
-            <p><strong>手机绑定</strong><span>{member.mobile_bound ? member.mobile_masked : '尚未绑定手机'}</span></p>
-          </div>
-          <div data-muted={!member.wechat_bound}>
-            <i />
-            <span>{member.wechat_bound ? '已完成' : '暂无'}</span>
-            <p><strong>微信绑定</strong><span>{member.wechat_bound ? '已绑定微信账号' : '尚未绑定微信'}</span></p>
-          </div>
-        </section>
+        <nav className="storefrontmemberdetailtabs" aria-label="会员档案">
+          <DetailTab selected={tab === 'profile'} onPress={() => setTab('profile')}>个人资料</DetailTab>
+          <DetailTab selected={tab === 'referrals'} onPress={() => setTab('referrals')}>邀请关系</DetailTab>
+          <DetailTab selected={tab === 'orders'} onPress={() => setTab('orders')}>个人订单</DetailTab>
+        </nav>
 
-        <p className="storefrontmembernotice">会员资料来自真实业务数据，本页面仅供查看</p>
+        {detail === undefined && detailError === undefined ? <DetailLoading /> : null}
+        {detailError === undefined ? null : (
+          <DetailError message={detailError} onRetry={() => void detailQuery.refetch()} />
+        )}
+        {detail === undefined ? null : <div className="storefrontmembertabcontent" key={tab}>
+          {tab === 'profile' ? <ProfileTab detail={detail} mallName={mallName} /> : null}
+          {tab === 'referrals' ? (
+            <ReferralTab
+              detail={detail}
+              query={inviteesQuery}
+              page={inviteeCursors.length}
+              onPrevious={() => setInviteeCursors((current) => current.slice(0, -1))}
+              onNext={(next) => setInviteeCursors((current) => [...current, next])}
+            />
+          ) : null}
+          {tab === 'orders' ? (
+            <OrdersTab
+              detail={detail}
+              query={ordersQuery}
+              page={orderCursors.length}
+              onOpen={(id) => void navigate(scopePath(context.scope, `orders/${encodeURIComponent(id)}`))}
+              onPrevious={() => setOrderCursors((current) => current.slice(0, -1))}
+              onNext={(next) => setOrderCursors((current) => [...current, next])}
+            />
+          ) : null}
+        </div>}
+
+        <p className="storefrontmembernotice">会员档案来自当前商城真实业务数据，本页面仅供查看</p>
       </div>}
     </aside>
   );
+}
+
+function DetailTab({ selected, children, onPress }: Readonly<{
+  selected: boolean;
+  children: string;
+  onPress: () => void;
+}>) {
+  return <button type="button" role="tab" aria-selected={selected} onClick={onPress}>{children}</button>;
+}
+
+function ProfileTab({ detail, mallName }: Readonly<{ detail: StorefrontMemberDetail; mallName: string }>) {
+  return <>
+    <section className="storefrontmemberdetailsection">
+      <header><h3>系统资料</h3><span>只读</span></header>
+      <dl className="storefrontmemberfacts">
+        <Fact label="显示名称" value={detail.display_name} />
+        <Fact label="脱敏手机号" value={detail.mobile_masked} />
+        <Fact label="当前状态" value={membershipLabel(detail.membership_status)} tone={detail.membership_status === 'active' ? 'success' : 'muted'} />
+        <Fact label="手机绑定" value={detail.mobile_bound ? '已绑定' : '未绑定'} tone={detail.mobile_bound ? 'success' : 'muted'} />
+        <Fact label="微信绑定" value={detail.wechat_bound ? '已绑定' : '未绑定'} tone={detail.wechat_bound ? 'success' : 'muted'} />
+        <Fact label="所属商城" value={mallName} />
+        <Fact label="入会时间" value={formatDate(detail.joined_at)} />
+      </dl>
+    </section>
+    <section className="storefrontmemberplaceholder">
+      <div><h3>自定义资料</h3><span>第二批接入</span></div>
+      <p>当前没有可读取的商城自定义字段。</p>
+    </section>
+    <section className="storefrontmemberplaceholder">
+      <div><h3>自定义标签</h3><span>第二批接入</span></div>
+      <p>系统标签已显示在会员姓名下方，自定义标签将在下一批接入。</p>
+    </section>
+  </>;
+}
+
+function ReferralTab({ detail, query, page, onPrevious, onNext }: Readonly<{
+  detail: StorefrontMemberDetail;
+  query: MemberPageQuery<StorefrontMemberInvitee>;
+  page: number;
+  onPrevious: () => void;
+  onNext: (cursor: string) => void;
+}>) {
+  const error = safeQueryError(query.error);
+  const inviter = detail.inviter;
+  return <>
+    <section className="storefrontmemberdetailsection">
+      <header><h3>邀请人</h3><span>{inviter?.relationship_status === 'expired' ? '关系已过期' : inviter === null ? '暂无' : '关系有效'}</span></header>
+      {inviter === null ? <div className="storefrontmemberemptyline">该会员暂无邀请人</div> : (
+        <article className="storefrontmemberinviter">
+          <i>{inviter.display_name.slice(0, 1)}</i>
+          <div><strong>{inviter.display_name}</strong><span>{inviter.mobile_masked}</span></div>
+          <time dateTime={inviter.bound_at}>绑定于 {formatDate(inviter.bound_at)}</time>
+        </article>
+      )}
+    </section>
+    <section className="storefrontmemberdetailsection">
+      <header><h3>他邀请的会员</h3><strong>{detail.invited_count}</strong></header>
+      <PagedResource query={query} label="被邀请会员">
+        <InviteeList rows={query.data?.items ?? []} />
+      </PagedResource>
+      <DetailPagination
+        page={page}
+        fetching={query.isFetching}
+        nextCursor={query.data?.nextCursor}
+        onPrevious={onPrevious}
+        onNext={onNext}
+      />
+    </section>
+  </>;
+}
+
+function InviteeList({ rows }: Readonly<{ rows: readonly StorefrontMemberInvitee[] }>) {
+  if (rows.length === 0) return <div className="storefrontmemberemptyline">暂未邀请其他会员</div>;
+  return <div className="storefrontmemberrelationlist">
+    {rows.map((invitee) => <article key={invitee.membership_id}>
+      <i>{invitee.display_name.slice(0, 1)}</i>
+      <div><strong>{invitee.display_name}</strong><span>{invitee.mobile_masked}</span></div>
+      <time dateTime={invitee.bound_at}>{formatDate(invitee.bound_at)}</time>
+      <span data-tone={invitee.relationship_status}>{invitee.relationship_status === 'active' ? '关系有效' : '关系已过期'}</span>
+    </article>)}
+  </div>;
+}
+
+function OrdersTab({ detail, query, page, onOpen, onPrevious, onNext }: Readonly<{
+  detail: StorefrontMemberDetail;
+  query: MemberPageQuery<StorefrontMemberOrder>;
+  page: number;
+  onOpen: (id: string) => void;
+  onPrevious: () => void;
+  onNext: (cursor: string) => void;
+}>) {
+  return <>
+    <section className="storefrontmemberorderoverview">
+      <div><span>订单数量</span><strong>{detail.order_count}</strong></div>
+      <div><span>最近下单</span><strong>{detail.latest_order_at === null ? '暂无' : formatDate(detail.latest_order_at)}</strong></div>
+    </section>
+    <section className="storefrontmemberdetailsection">
+      <header><h3>最近订单</h3><span>按下单时间排序</span></header>
+      <PagedResource query={query} label="个人订单">
+        <OrderList rows={query.data?.items ?? []} onOpen={onOpen} />
+      </PagedResource>
+      <DetailPagination
+        page={page}
+        fetching={query.isFetching}
+        nextCursor={query.data?.nextCursor}
+        onPrevious={onPrevious}
+        onNext={onNext}
+      />
+    </section>
+  </>;
+}
+
+function OrderList({ rows, onOpen }: Readonly<{
+  rows: readonly StorefrontMemberOrder[];
+  onOpen: (id: string) => void;
+}>) {
+  if (rows.length === 0) return <div className="storefrontmemberemptyline">该会员暂无订单</div>;
+  return <div className="storefrontmemberorderlist">
+    {rows.map((order) => <button key={order.id} type="button" onClick={() => onOpen(order.id)}>
+      <div><strong>{order.order_number}</strong><time dateTime={order.created_at}>{formatDate(order.created_at)}</time></div>
+      <b>{formatMoney(order.total_minor, order.currency)}</b>
+      <span>{paymentLabel(order.payment_state)}</span>
+      <span>{fulfillmentLabel(order.fulfillment_state)}</span>
+      <span data-muted={order.aftersale_state === 'none'}>{aftersaleLabel(order.aftersale_state)}</span>
+    </button>)}
+  </div>;
+}
+
+function PagedResource({ query, label, children }: Readonly<{
+  query: MemberPageQuery<unknown>;
+  label: string;
+  children: ReactNode;
+}>) {
+  const error = safeQueryError(query.error);
+  if (query.data !== undefined && query.data.items.length === 0 && error === undefined) return children;
+  return <ResourceState
+    condition={resourceState(query.data, query.isFetching, error)}
+    {...(error === undefined ? {} : { error })}
+    retry={() => void query.refetch()}
+    resourceLabel={label}
+  >{children}</ResourceState>;
+}
+
+function DetailPagination({ page, fetching, nextCursor, onPrevious, onNext }: Readonly<{
+  page: number;
+  fetching: boolean;
+  nextCursor: string | undefined;
+  onPrevious: () => void;
+  onNext: (cursor: string) => void;
+}>) {
+  if (page === 1 && nextCursor === undefined) return null;
+  return <footer className="storefrontmemberdetailpagination">
+    <button type="button" disabled={page === 1 || fetching} onClick={onPrevious}>上一页</button>
+    <span>第 {page} 页</span>
+    <button type="button" disabled={nextCursor === undefined || fetching} onClick={() => {
+      if (nextCursor !== undefined) onNext(nextCursor);
+    }}>下一页</button>
+  </footer>;
+}
+
+function DetailLoading() {
+  return <div className="storefrontmemberdetailloading" role="status">正在读取完整会员档案…</div>;
+}
+
+function DetailError({ message, onRetry }: Readonly<{ message: string; onRetry: () => void }>) {
+  return <div className="storefrontmemberdetailerror" role="alert">
+    <p>{message}</p><button type="button" onClick={onRetry}>重新加载</button>
+  </div>;
+}
+
+function formatMoney(minor: string, currency: string): string {
+  return new Intl.NumberFormat('zh-CN', { style: 'currency', currency }).format(Number(minor) / 100);
 }
 
 function Fact({ label, value, tone }: Readonly<{ label: string; value: string; tone?: 'muted' | 'success' }>) {

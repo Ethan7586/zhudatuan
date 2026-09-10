@@ -1,5 +1,10 @@
 import { PGlite } from '@electric-sql/pglite';
-import { StorefrontMemberPageSchema } from '@shop/contract';
+import {
+  StorefrontMemberDetailSchema,
+  StorefrontMemberInviteePageSchema,
+  StorefrontMemberOrderPageSchema,
+  StorefrontMemberPageSchema,
+} from '@shop/contract';
 import type { QueryResult } from 'pg';
 import { describe, expect, it, vi } from 'vitest';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
@@ -69,6 +74,7 @@ describe('storefront member directory boundary', () => {
     const database = new PGlite();
     try {
       await database.exec(`create schema access; create schema member; create schema identity;
+        create schema referral; create schema ordering;
         create table member.profile(
           id text primary key,principal_id text not null,display_name text not null,mobile_ciphertext text,
           mobile_token text,mobile_masked text not null
@@ -80,9 +86,20 @@ describe('storefront member directory boundary', () => {
         create table identity.federatedidentity(
           id text primary key,principal_id text,membership_id text,provider text not null,status text not null
         );
+        create table referral.member(id text primary key,scope_id text not null,member_id text not null);
+        create table referral.binding(
+          id text primary key,scope_id text not null,customer_member_id text not null,referral_member_id text not null,
+          bound_at timestamptz not null,expires_at timestamptz
+        );
+        create table ordering.orderrecord(
+          id text primary key,order_number text not null,total_minor bigint not null,currency char(3) not null,
+          payment_state text not null,fulfillment_state text not null,aftersale_state text not null,
+          member_id text not null,mall_id text not null,created_at timestamptz not null
+        );
         insert into member.profile values
           ('member:shared','principal:shared','测试消费者甲','18800008866','token:8866','188****8866'),
           ('member:wechat','principal:wechat','测试消费者乙','17700007755','token:7755','177****7755'),
+          ('member:inviter','principal:inviter','邀请人丙','15500005544','token:5544','155****5544'),
           ('member:foreign','principal:foreign','范围外记录','16600006644','token:6644','166****6644');
         insert into access.membership values
           ('membership:storefront:one','member:shared','mall:one','storefront','active','2026-09-06T08:00:00Z'),
@@ -95,7 +112,19 @@ describe('storefront member directory boundary', () => {
         insert into identity.federatedidentity values
           ('identity:operator','principal:shared','membership:operator:same-principal','wechat','active'),
           ('identity:revoked','principal:shared','membership:storefront:one','wechat','revoked'),
-          ('identity:storefront','principal:wechat','membership:storefront:two','wechat','active');`);
+          ('identity:storefront','principal:wechat','membership:storefront:two','wechat','active');
+        insert into referral.member values
+          ('referral:inviter','mall:one','member:inviter'),
+          ('referral:target','mall:one','member:shared'),
+          ('referral:other','mall:two','member:shared');
+        insert into referral.binding values
+          ('binding:target','mall:one','member:shared','referral:inviter','2026-09-06T07:00:00Z',null),
+          ('binding:invitee','mall:one','member:wechat','referral:target','2026-09-07T07:00:00Z',null),
+          ('binding:foreign','mall:two','member:foreign','referral:other','2026-09-08T07:00:00Z',null);
+        insert into ordering.orderrecord values
+          ('order:target','HT20260906001',12900,'CNY','paid','shipped','none','member:shared','mall:one','2026-09-06T10:00:00Z'),
+          ('order:other-member','HT20260907001',9900,'CNY','paid','delivered','none','member:wechat','mall:one','2026-09-07T10:00:00Z'),
+          ('order:other-mall','HT20260908001',8800,'CNY','paid','delivered','none','member:shared','mall:two','2026-09-08T10:00:00Z');`);
 
       const action = memberOperatorReadActions()['member.storefront.members.read'];
       if (typeof action !== 'function') throw new Error('STOREFRONT_MEMBER_READ_ACTION_MISSING');
@@ -126,6 +155,43 @@ describe('storefront member directory boundary', () => {
         storefrontRequest('mall:one', { limit: '1', cursor: first.nextCursor! }), database as unknown as OperationDatabase,
       )).body);
       expect(second.items.map(({ membership_id }) => membership_id)).toEqual(['membership:storefront:one']);
+
+      const detailAction = memberOperatorReadActions()['member.storefront.detail.read'];
+      const inviteesAction = memberOperatorReadActions()['member.storefront.invitees.read'];
+      const ordersAction = memberOperatorReadActions()['member.storefront.orders.read'];
+      if (typeof detailAction !== 'function' || typeof inviteesAction !== 'function' || typeof ordersAction !== 'function') {
+        throw new Error('STOREFRONT_MEMBER_PROFILE_ACTION_MISSING');
+      }
+      const detail = StorefrontMemberDetailSchema.parse((await detailAction(
+        storefrontProfileRequest('member.storefront.detail.read', 'mall:one', 'membership:storefront:one'),
+        database as unknown as OperationDatabase,
+      )).body);
+      expect(detail).toMatchObject({
+        display_name: '测试消费者甲', invited_count: 1, order_count: 1,
+        latest_order_at: '2026-09-06T10:00:00.000Z',
+        inviter: { display_name: '邀请人丙', mobile_masked: '155****5544', relationship_status: 'active' },
+      });
+
+      const invitees = StorefrontMemberInviteePageSchema.parse((await inviteesAction(
+        storefrontProfileRequest('member.storefront.invitees.read', 'mall:one', 'membership:storefront:one'),
+        database as unknown as OperationDatabase,
+      )).body);
+      expect(invitees.items).toMatchObject([{
+        membership_id: 'membership:storefront:two', display_name: '测试消费者乙', relationship_status: 'active',
+      }]);
+      expect(JSON.stringify(invitees)).not.toContain('范围外记录');
+
+      const orders = StorefrontMemberOrderPageSchema.parse((await ordersAction(
+        storefrontProfileRequest('member.storefront.orders.read', 'mall:one', 'membership:storefront:one'),
+        database as unknown as OperationDatabase,
+      )).body);
+      expect(orders.items).toEqual([{
+        id: 'order:target', order_number: 'HT20260906001', total_minor: '12900', currency: 'CNY',
+        payment_state: 'paid', fulfillment_state: 'shipped', aftersale_state: 'none',
+        created_at: '2026-09-06T10:00:00.000Z',
+      }]);
+      expect(JSON.stringify(orders)).not.toContain('HT20260907001');
+      expect(JSON.stringify(orders)).not.toContain('HT20260908001');
     } finally {
       await database.close();
     }
@@ -179,6 +245,22 @@ function storefrontRequest(
     access: { scope: { id: scope, kind } },
     input: {
       path: {}, query, headers: {}, body: null, rawBody: '',
+      deadline: Date.now() + 5_000, signal: new AbortController().signal,
+    },
+  } as unknown as OperationRequest;
+}
+
+function storefrontProfileRequest(
+  type: 'member.storefront.detail.read' | 'member.storefront.invitees.read' | 'member.storefront.orders.read',
+  scope: string,
+  membershipid: string,
+  query: Readonly<Record<string, string>> = {},
+): OperationRequest {
+  return {
+    type,
+    access: { scope: { id: scope, kind: 'mall' } },
+    input: {
+      path: { membershipid }, query, headers: {}, body: null, rawBody: '',
       deadline: Date.now() + 5_000, signal: new AbortController().signal,
     },
   } as unknown as OperationRequest;

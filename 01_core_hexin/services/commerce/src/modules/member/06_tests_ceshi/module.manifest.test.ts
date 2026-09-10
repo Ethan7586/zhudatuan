@@ -9,8 +9,11 @@ describe('member module manifest', () => {
   });
 
   it('declares member operations and entrypoints', () => {
-    expect(memberManifest.operations).toHaveLength(8);
+    expect(memberManifest.operations).toHaveLength(11);
     expect(memberManifest.operations).toContain('member.storefront.members.read');
+    expect(memberManifest.operations).toContain('member.storefront.detail.read');
+    expect(memberManifest.operations).toContain('member.storefront.invitees.read');
+    expect(memberManifest.operations).toContain('member.storefront.orders.read');
     expect(memberManifest.entrypoints.http).toEqual(['memberOperations', 'memberOperatorReadOperations']);
     expect(memberManifest.entrypoints.jobs).toEqual(['memberimport']);
   });
