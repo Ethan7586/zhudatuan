@@ -1,8 +1,8 @@
 begin;
 select pg_advisory_xact_lock(hashtext('member:storefront-custom-profile:v1'));
 do $precondition$ begin
-  if not exists(select 1 from runtime.schemaversion where version='20260909203000' and checksum='31ed21bd9351a3678742c2b0c10a1a2b725cbbfef09d5888b609569a2f3610ba')
-    or exists(select 1 from runtime.schemaversion where version>'20260909203000') then raise exception 'STOREFRONT_MEMBER_CUSTOM_PROFILE_PREDECESSOR_INVALID'; end if;
+  if not exists(select 1 from runtime.schemaversion where version='20260909204000' and checksum='c2d12536aa4e832a343551634941cc008082d02e5e7a3fcd134201a81799c258')
+    or exists(select 1 from runtime.schemaversion where version>'20260909204000') then raise exception 'STOREFRONT_MEMBER_CUSTOM_PROFILE_PREDECESSOR_INVALID'; end if;
 end $precondition$;
 create table member.storefrontcustomtag(
   organization_id text not null,id text not null,name text not null,color text not null check(color in('blue','purple','green','orange','pink','gray')),
