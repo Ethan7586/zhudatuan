@@ -15,22 +15,6 @@ import { UpdateMall } from '../../feature/experience/application/UpdateMall';
 import { ValidateVersion } from '../../feature/experience/application/ValidateVersion';
 import { MallDraftStore } from '../../feature/experience/infrastructure/MallDraftStore';
 import type { ExperiencePort, MallPort } from '../../feature/experience/public';
-import { CreateFinanceImport } from '../../feature/finance/application/CreateFinanceImport';
-import { ExecuteFinanceAction } from '../../feature/finance/application/ExecuteFinanceAction';
-import { ManagePolicy } from '../../feature/finance/application/ManagePolicy';
-import { ManageReconciliation } from '../../feature/finance/application/ManageReconciliation';
-import { ManageRepair } from '../../feature/finance/application/ManageRepair';
-import { PreviewPolicy } from '../../feature/finance/application/PreviewPolicy';
-import { ReadFacets } from '../../feature/finance/application/ReadFacets';
-import { ReadFinanceAudit } from '../../feature/finance/application/ReadFinanceAudit';
-import { ReadFinanceImport } from '../../feature/finance/application/ReadFinanceImport';
-import { ReadFinanceImportProviders } from '../../feature/finance/application/ReadFinanceImportProviders';
-import { ReadOverview } from '../../feature/finance/application/ReadOverview';
-import { ReadPolicies } from '../../feature/finance/application/ReadPolicies';
-import { ReadReconciliations } from '../../feature/finance/application/ReadReconciliations';
-import { ReadRepairs } from '../../feature/finance/application/ReadRepairs';
-import { ReadSection } from '../../feature/finance/application/ReadSection';
-import type { FinancePort } from '../../feature/finance/public';
 import { ApplyAfterSaleDecision } from '../../feature/order/application/ApplyAfterSaleDecision';
 import { CancelOrder } from '../../feature/order/application/CancelOrder';
 import { CreateOrderExport } from '../../feature/order/application/CreateOrderExport';
@@ -79,19 +63,18 @@ import { appConfig } from '../../shared/config/AppConfig';
 import { BrowserPreference } from '../../shared/preference/BrowserPreference';
 import { ScopeGateway } from '../../shared/scope/ScopeGateway';
 import type { ImportRegistryPort } from '../registry/ImportRegistry';
-import type { CoreDependencies } from './CoreDependency';
+import type { CoreDependencies, FinanceDependencies } from './CoreDependency';
 import { InventoryRestockWorkflow } from './InventoryRestockWorkflow';
 import { lazyPort } from './LazyPort';
 export * from './CoreDependency';
 export type { ProductDependencies } from './ProductDependencies';
 
-export function createCoreDependencies(imports: ImportRegistryPort): CoreDependencies {
+export function createCoreDependencies(imports: ImportRegistryPort, finance: FinanceDependencies): CoreDependencies {
   const cockpit = lazyPort<CockpitPort>(() => import('../../feature/cockpit/infrastructure/CockpitGateway').then(({ CockpitGateway }) => new CockpitGateway(appConfig.apiBaseUrl)));
   const control = lazyPort<ControlPort>(() => import('../../feature/control/infrastructure/ControlGateway').then(({ ControlGateway }) => new ControlGateway(appConfig.apiBaseUrl)));
   const experience = lazyPort<ExperiencePort>(() => import('../../feature/experience/infrastructure/ExperienceGateway').then(({ ExperienceGateway }) => new ExperienceGateway(appConfig.apiBaseUrl)));
   const malls = lazyPort<MallPort>(() => import('../../feature/experience/infrastructure/MallGateway').then(({ MallGateway }) => new MallGateway(appConfig.apiBaseUrl)));
   const drafts = new MallDraftStore();
-  const finance = lazyPort<FinancePort>(() => import('../../feature/finance/infrastructure/FinanceGateway').then(({ FinanceGateway }) => new FinanceGateway(appConfig.apiBaseUrl)));
   const order = lazyPort<OrderPort>(() => import('../../feature/order/infrastructure/OrderGateway').then(({ OrderGateway }) => new OrderGateway(appConfig.apiBaseUrl)));
   const product = lazyPort<ProductPort & ProductImportPort>(() =>
     import('../../feature/product/infrastructure/ProductGateway').then(({ ProductGateway }) => new ProductGateway({ apiBaseUrl: appConfig.apiBaseUrl, clientVersion: appConfig.clientVersion, catalogVersion: NAVIGATION_CATALOG_HASH }))
@@ -121,25 +104,7 @@ export function createCoreDependencies(imports: ImportRegistryPort): CoreDepende
       restore: new RestoreVersion(experience),
       createIdentity: createIdempotencyKey,
     }),
-    finance: Object.freeze({
-      port: finance,
-      readOverview: new ReadOverview(finance),
-      readFacets: new ReadFacets(finance),
-      readAudit: new ReadFinanceAudit(finance),
-      readSection: new ReadSection(finance),
-      readReconciliations: new ReadReconciliations(finance),
-      manageReconciliation: new ManageReconciliation(finance),
-      execute: new ExecuteFinanceAction(finance),
-      createImport: new CreateFinanceImport(finance),
-      readImport: new ReadFinanceImport(finance),
-      readImportProviders: new ReadFinanceImportProviders(finance),
-      readPolicies: new ReadPolicies(finance),
-      readRepairs: new ReadRepairs(finance),
-      previewPolicy: new PreviewPolicy(finance),
-      managePolicy: new ManagePolicy(finance),
-      manageRepair: new ManageRepair(finance),
-      createIdentity: createIdempotencyKey,
-    }),
+    finance,
     order: Object.freeze({
       port: order,
       readList: new ReadOrders(order),

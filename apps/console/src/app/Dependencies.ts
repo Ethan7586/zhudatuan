@@ -1,4 +1,5 @@
 import { createCoreDependencies } from './dependency/CoreDependencies';
+import { createFinanceDependencies } from './dependency/FinanceDependencies';
 import { createServiceDependencies } from './dependency/ServiceDependencies';
 import { createSettingsDependencies } from './dependency/SettingsDependencies';
 import { createSessionDependencies } from './dependency/SessionDependencies';
@@ -16,10 +17,5 @@ export type { ImportRegistryPort } from './registry/ImportRegistry';
 export type { ExtensionRegistryPort } from './registry/ExtensionRegistry';
 
 export function createConsoleDependencies(registries: ConsoleRegistries = consoleRegistries): ConsoleDependencies {
-  return composeConsoleDependencies(
-    createCoreDependencies(registries.imports),
-    createServiceDependencies(registries.approval, registries.extensions),
-    createSettingsDependencies(),
-    createSessionDependencies()
-  );
+  return composeConsoleDependencies(createCoreDependencies(registries.imports, createFinanceDependencies()), createServiceDependencies(registries.approval, registries.extensions), createSettingsDependencies(), createSessionDependencies());
 }

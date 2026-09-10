@@ -10,6 +10,7 @@ export interface ConsoleApplication {
 
 const modules = Object.freeze({
   component: new LazyModule(() => import('./ConsoleApp')),
+  finance: new LazyModule(() => import('./dependency/FinanceDependencies')),
   service: new LazyModule(() => import('./dependency/ServiceDependencies')),
   settings: new LazyModule(() => import('./dependency/SettingsDependencies')),
   session: new LazyModule(() => import('./dependency/SessionDependencies')),
@@ -23,11 +24,17 @@ export async function loadConsoleApplication(supplied?: ConsoleDependencies): Pr
 }
 
 async function createDefaultDependencies(): Promise<ConsoleDependencies> {
-  const [{ createServiceDependencies }, { createSettingsDependencies }, { createSessionDependencies }, { consoleRegistries }] = await Promise.all([
+  const [{ createFinanceDependencies }, { createServiceDependencies }, { createSettingsDependencies }, { createSessionDependencies }, { consoleRegistries }] = await Promise.all([
+    modules.finance.load(),
     modules.service.load(),
     modules.settings.load(),
     modules.session.load(),
     modules.registries.load(),
   ]);
-  return composeConsoleDependencies(createCoreDependencies(consoleRegistries.imports), createServiceDependencies(consoleRegistries.approval, consoleRegistries.extensions), createSettingsDependencies(), createSessionDependencies());
+  return composeConsoleDependencies(
+    createCoreDependencies(consoleRegistries.imports, createFinanceDependencies()),
+    createServiceDependencies(consoleRegistries.approval, consoleRegistries.extensions),
+    createSettingsDependencies(),
+    createSessionDependencies()
+  );
 }
