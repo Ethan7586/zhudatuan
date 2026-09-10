@@ -10,6 +10,7 @@ test('visual integrity accepts semantic card tables and explicit scroll regions'
       <details><summary style="width:80px;height:44px">更多</summary><button style="width:20px;height:20px">隐藏操作</button></details>
       <button style="width:88px;height:44px">正常操作</button>
       <button data-visual-copy="multiline" style="width:200px;min-height:50px"><span style="display:grid;line-height:1.2"><strong style="font-size:20px">智慧翼</strong><small style="font-size:12px">福利商城</small></span></button>
+      <section inert><button style="width:20px;height:20px">弹层后的背景操作</button></section>
     </main>
   `);
 
@@ -75,6 +76,8 @@ test('visual readiness waits until route and resource placeholders are replaced 
     }, 100);
   });
   await expectVisualReady(page);
+  expect(await inspectVisualReadiness(page)).toEqual([]);
+  await page.setContent('<main>身份验证弹层</main><aside inert><p role="status">正在加载已隔离的背景内容…</p></aside>');
   expect(await inspectVisualReadiness(page)).toEqual([]);
 });
 

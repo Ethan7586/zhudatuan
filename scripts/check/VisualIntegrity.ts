@@ -75,7 +75,7 @@ export function inspectVisualReadiness(page: Page): Promise<readonly string[]> {
     return blockers;
 
     function presented(element: HTMLElement): boolean {
-      if (element.closest('.sr-only,[hidden],[aria-hidden="true"]')) return false;
+      if (element.closest('.sr-only,[hidden],[inert],[aria-hidden="true"]')) return false;
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
       return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) !== 0 && rect.width > 1 && rect.height > 1;
@@ -189,7 +189,7 @@ export function inspectVisualIntegrity(page: Page): Promise<readonly VisualInteg
     return issues;
 
     function visuallyPresented(element: HTMLElement): boolean {
-      if (element.closest('.sr-only,[hidden],[aria-hidden="true"]')) return false;
+      if (element.closest('.sr-only,[hidden],[inert],[aria-hidden="true"]')) return false;
       const closed = element.closest('details:not([open])');
       if (closed) {
         const summary = closed.querySelector(':scope > summary');
