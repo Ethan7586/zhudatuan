@@ -588,7 +588,7 @@ function identifierSource(prefix: 'OP' | 'PERM', values: readonly string[], sour
 }
 
 function operationPolicySource(values: readonly OperationDefinition[]): string {
-  const policies = values.map(({ id, version, title, method, path, capability, permission, assuranceLevel, makerChecker, expectedVersion, concurrencyPolicy, executionMode, auditLevel, sensitiveFields, lifecycle, errorUnion }) => ({
+  const policies = values.map(({ id, version, title, method, path, capability, permission, scopeKinds, assuranceLevel, makerChecker, expectedVersion, concurrencyPolicy, executionMode, auditLevel, sensitiveFields, lifecycle, errorUnion }) => ({
     id,
     version,
     title,
@@ -596,6 +596,7 @@ function operationPolicySource(values: readonly OperationDefinition[]): string {
     path,
     capability,
     permission,
+    scopeKinds,
     assuranceLevel,
     makerChecker,
     expectedVersion,

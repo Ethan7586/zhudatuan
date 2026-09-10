@@ -4,7 +4,12 @@ import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 
 export function canUseOperation(context: ConsoleContext, operation: OperationId): boolean {
   const definition = operationPolicy(operation);
-  return context.session.capabilities.includes(definition.capability) && (definition.permission === null || context.session.permissions.includes(definition.permission));
+  const scopes = definition.scopeKinds as readonly string[];
+  return (
+    context.session.capabilities.includes(definition.capability) &&
+    (definition.permission === null || context.session.permissions.includes(definition.permission)) &&
+    (scopes.includes(context.scope.kind) || scopes.includes('self') || scopes.includes('owner'))
+  );
 }
 
 export function assertOperationAccess(context: ConsoleContext, operation: OperationId, proof?: string): void {
