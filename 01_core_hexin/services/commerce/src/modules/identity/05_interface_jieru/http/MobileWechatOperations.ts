@@ -98,6 +98,9 @@ export function mobileWechatOperations(runtime: RealmOperationContext): Operatio
           const credential = await database.query<{ id: string }>(`select id from identity.credential
             where account_id=$1 and realm_id=$2 and provider='password' and status='active' for update`, [account.accountId, account.realmId]);
           if (!credential.rows[0]) throw new Error('CREDENTIAL_NOT_FOUND');
+          await database.query(`update identity.credential set subject_hash=$2,rotated_at=clock_timestamp()
+            where id=$1 and account_id=$3 and realm_id=$4 and provider='password' and status='active'`,
+          [credential.rows[0].id, destinationHash, account.accountId, account.realmId]);
           const result = await memberPort.changeMobile(database, access.actor.id, envelope.ciphertext, envelope.fingerprint, maskMobile(mobile));
           await database.query(`update identity.assurance set expires_at=least(coalesce(expires_at,clock_timestamp()),clock_timestamp())
             where account_id=$1 and realm_id=$2 and method='phone_otp' and (expires_at is null or expires_at>clock_timestamp())`,

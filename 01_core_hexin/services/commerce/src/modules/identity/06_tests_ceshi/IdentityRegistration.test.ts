@@ -116,7 +116,7 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('update member.profile set mobile_ciphertext'))).toBe(false);
   });
 
-  it('revokes every session after password-proven first mobile enrollment', async () => {
+  it('updates the login subject and revokes every session after password-proven first mobile enrollment', async () => {
     const harness = registrationHarness({ challengeAccepted: true, subjectExists: false,
       mobileCiphertext: null, passwordEvidence: true });
 
@@ -126,7 +126,9 @@ describe('canonical member registration security boundary', () => {
     const revocation = harness.queries.find(({ text }) => text.includes("revoked_reason='mobile_changed'"));
     expect(revocation?.text).not.toContain('id<>');
     expect(revocation?.values).toEqual(['account:stepup:l0', 'realm:l0']);
-    expect(harness.queries.some(({ text }) => text.includes('update identity.credential set subject_hash'))).toBe(false);
+    const credential = harness.queries.find(({ text }) => text.includes('update identity.credential set subject_hash'));
+    expect(credential?.text).toContain("provider='password' and status='active'");
+    expect(credential?.values).toContain(subjectDigest(SUBJECT));
   });
 
   it('delegates the dynamic Owner under a resolved self scope to the atomic database boundary', async () => {
