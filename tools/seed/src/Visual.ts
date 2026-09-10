@@ -8,6 +8,7 @@ import { HttpObjectStore } from '../../../services/commerce/src/platform/object/
 import { localSecret } from './LocalSecrets';
 import { LOCAL_OWNER } from './LocalOwner';
 import { LOCAL_PRICEBOOK } from './LocalPricing';
+import { LOCAL_CATALOG } from './LocalCatalog';
 
 const environment = visualSeedEnvironment();
 const [connectionString, objectToken] = await Promise.all([localSecret(environment.adminDatabaseConnectionRef), localSecret(environment.objectStoreTokenRef)]);
@@ -107,6 +108,12 @@ async function ensureProduct(client: Client, product: (typeof products)[number],
     values('pool-local-zhudatuan',$1,'included','visual-v1','2026-09-01T00:00:00Z')
     on conflict(pool_id,sku_id) do update set state='included',source_version='visual-v1'`,
     [product.sku]
+  );
+  await client.query(
+    `insert into catalog.poolitem(pool_id,sku_id,state,source_version,added_at)
+    values($1,$2,'included','visual-v1','2026-09-01T00:00:00Z')
+    on conflict(pool_id,sku_id) do update set state='included',source_version='visual-v1'`,
+    [LOCAL_CATALOG.enterprisePool, product.sku]
   );
   await client.query(
     `insert into pricing.price(id,book_id,sku_id,amount_minor,compare_minor,effective_at,expires_at)

@@ -58,7 +58,7 @@ export const price = strictObject({
 });
 
 export const pool = strictObject({ id: text, scope_id: text, kind: literal(['global', 'channel', 'private', 'markup']), name: text, status: literal(['draft', 'active', 'disabled']), version: entityVersion });
-export const poolRead = strictObject({ id: text, kind: string(), name: text, status: string(), version: entityVersion, item_count: unsigned });
+export const poolRead = strictObject({ id: text, scope_id: text, kind: string(), name: text, status: string(), version: entityVersion, item_count: unsigned });
 export const category = strictObject({
   id: text,
   parent_id: nullableText,

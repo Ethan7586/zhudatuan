@@ -161,7 +161,7 @@ function command(kind: string): ProductCommand {
 }
 
 const listing: Listing = listingFixture();
-const pool: Pool = { id: 'pool:one', kind: 'private', name: '办公用品池', status: 'active', version: 9, item_count: 1 };
+const pool: Pool = { id: 'pool:one', scope_id: 'mall:one', kind: 'private', name: '办公用品池', status: 'active', version: 9, item_count: 1 };
 const productRecord = {
   id: 'product:one',
   scope_id: 'mall:one',

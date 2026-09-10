@@ -15,6 +15,7 @@ import { syncMemberProjection } from './MemberProjection';
 import { serializeExperience } from '@shop/contract';
 import { EMPLOYEE_PERMISSIONS } from './RolePermissions';
 import { releaseRetiredAcceptanceSubject } from './AcceptanceIdentity';
+import { LOCAL_CATALOG } from './LocalCatalog';
 
 const environment = localSeedEnvironment();
 const [connectionString, password, identityKey] = await Promise.all([localSecret(environment.adminDatabaseConnectionRef), localSecret(environment.ethanPasswordRef), localSecret(environment.identityKeyRef)]);
@@ -133,7 +134,8 @@ async function ensureLocalListings(database: Client): Promise<void> {
   await database.query(`update ordering.aftersaleline line set listing_id='listing:'||listing.scope_id||':'||listing.sku_id
     from catalog.listing listing where line.listing_id=listing.id and listing.id like 'listing-local:%'`);
   await database.query(`update catalog.listing set id='listing:'||scope_id||':'||sku_id where id like 'listing-local:%'`);
-  await database.query(`insert into catalog.listing(id,scope_id,pool_id,sku_id,title,status,effective_at,expires_at,version,created_at,updated_at)
+  await database.query(
+    `insert into catalog.listing(id,scope_id,pool_id,sku_id,title,status,effective_at,expires_at,version,created_at,updated_at)
     select distinct on(pool.scope_id,item.sku_id)
       'listing:'||pool.scope_id||':'||item.sku_id,pool.scope_id,pool.id,item.sku_id,product.title,'published',
       '1970-01-01T00:00:00Z',null,1,clock_timestamp(),clock_timestamp()
@@ -141,14 +143,16 @@ async function ensureLocalListings(database: Client): Promise<void> {
     join catalog.poolitem item on item.pool_id=pool.id and item.state='included'
     join catalog.sku sku on sku.id=item.sku_id and sku.status='active'
     join catalog.product product on product.id=sku.product_id and product.status='active'
-    where pool.status='active'
-    order by pool.scope_id,item.sku_id,case when pool.id='pool-local-zhudatuan' then 0 else 1 end,pool.id
+    where pool.id=$1 and pool.status='active'
+    order by pool.scope_id,item.sku_id,pool.id
     on conflict(scope_id,sku_id) do update set pool_id=excluded.pool_id,title=excluded.title,status='published',
       effective_at=excluded.effective_at,expires_at=null,
       version=catalog.listing.version+case when (catalog.listing.pool_id,catalog.listing.title,catalog.listing.status,catalog.listing.effective_at,catalog.listing.expires_at)
         is distinct from (excluded.pool_id,excluded.title,excluded.status,excluded.effective_at,excluded.expires_at) then 1 else 0 end,
       updated_at=case when (catalog.listing.pool_id,catalog.listing.title,catalog.listing.status,catalog.listing.effective_at,catalog.listing.expires_at)
-        is distinct from (excluded.pool_id,excluded.title,excluded.status,excluded.effective_at,excluded.expires_at) then clock_timestamp() else catalog.listing.updated_at end`);
+        is distinct from (excluded.pool_id,excluded.title,excluded.status,excluded.effective_at,excluded.expires_at) then clock_timestamp() else catalog.listing.updated_at end`,
+    [LOCAL_CATALOG.mallPool]
+  );
 }
 
 async function ensureLocalSourceListings(database: Client): Promise<void> {
@@ -291,6 +295,20 @@ async function ensureLocalMallCatalog(database: Client): Promise<void> {
     `insert into catalog.poolbinding(mall_id,pool_id,listing_kind,status,effective_at,created_at)
     values('mall-zhudatuan','pool-local-zhudatuan','selected','active','1970-01-01T00:00:00Z',clock_timestamp())
     on conflict(mall_id,pool_id) do update set status='active',effective_at=excluded.effective_at,expires_at=null`
+  );
+  await database.query(
+    `insert into catalog.pool(id,scope_id,kind,name,status,version)
+    values($1,$2,'global','主打团 · 集团总池','active',1)
+    on conflict(id) do update set scope_id=excluded.scope_id,kind=excluded.kind,name=excluded.name,status='active',version=greatest(catalog.pool.version,1)`,
+    [LOCAL_CATALOG.enterprisePool, LOCAL_OWNER.enterprise]
+  );
+  await database.query(`delete from catalog.poolitem where pool_id=$1`, [LOCAL_CATALOG.enterprisePool]);
+  await database.query(
+    `insert into catalog.poolitem(pool_id,sku_id,state,source_version,added_at)
+    select $1,source.sku_id,'included',source.source_version,clock_timestamp()
+    from catalog.poolitem source where source.pool_id=$2 and source.state='included' and source.sku_id like 'sku:%'
+    on conflict(pool_id,sku_id) do update set state='included',source_version=excluded.source_version,added_at=excluded.added_at`,
+    [LOCAL_CATALOG.enterprisePool, LOCAL_CATALOG.mallPool]
   );
   await database.query(
     `insert into experience.application(id,mall_id,code,public_slug,name,status,is_primary,head_version_id,created_at,updated_at,version)

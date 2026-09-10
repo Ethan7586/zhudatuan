@@ -12326,6 +12326,9 @@
                 "name": {
                   "type": "string"
                 },
+                "scope_id": {
+                  "type": "string"
+                },
                 "status": {
                   "type": "string"
                 },
@@ -12337,6 +12340,7 @@
               },
               "required": [
                 "id",
+                "scope_id",
                 "kind",
                 "name",
                 "status",

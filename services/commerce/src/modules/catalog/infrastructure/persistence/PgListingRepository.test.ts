@@ -6,6 +6,19 @@ import { PgListingRepository } from './PgListingRepository';
 const context = {} as WriteTransactionContext;
 
 describe('PgListingRepository publication persistence', () => {
+  it('counts only mall scopes as storefront coverage', async () => {
+    const query = vi.fn(async (_sql: string, _values?: readonly unknown[]) => result([]));
+    const repository = new PgListingRepository({ database: () => ({ query }) as unknown as SqlExecutor } as unknown as PgTransactionAccess, { visible: vi.fn(async () => ['enterprise:one', 'mall:one']) } as never);
+
+    await repository.read(context, { scope: 'enterprise:one', scopeKind: 'enterprise', actorTarget: 'console', query: '', category: '', product: '', pool: '', supplier: '', mall: '', status: '', page: { sort: null, id: null, fetch: 51 } });
+
+    const sql = String(query.mock.calls[0]?.[0]);
+    expect(sql).toContain("organization.kind='mall'");
+    expect(sql).toContain('join targetmall on targetmall.id=covered.scope_id');
+    expect(sql).toContain('(select count(*)::integer from targetmall) mall_total');
+    expect(sql).not.toContain('cardinality($1::text[])::integer mall_total');
+  });
+
   it('reads supplier listings from the exact supplier scope without hierarchy expansion', async () => {
     const query = vi.fn(async (_sql: string, _values?: readonly unknown[]) => result([]));
     const visible = vi.fn();

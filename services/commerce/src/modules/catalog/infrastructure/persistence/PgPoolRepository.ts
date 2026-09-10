@@ -14,7 +14,7 @@ export class PgPoolRepository implements PoolRepository {
     const database = this.transactions.database(context);
     const visible = await this.scopes.visible(context, scope, false);
     const result = await database.query(
-      `select pool.id,pool.kind,pool.name,pool.status,pool.version,count(item.sku_id) filter(where item.state='included')::integer item_count
+      `select pool.id,pool.scope_id,pool.kind,pool.name,pool.status,pool.version,count(item.sku_id) filter(where item.state='included')::integer item_count
       from catalog.pool pool left join catalog.poolitem item on item.pool_id=pool.id where (pool.scope_id=any($1::text[])
       or exists(select 1 from catalog.poolbinding binding where binding.pool_id=pool.id and binding.mall_id=any($1::text[]) and binding.status='active'
         and (binding.effective_at is null or binding.effective_at<=clock_timestamp()) and (binding.expires_at is null or binding.expires_at>clock_timestamp())))

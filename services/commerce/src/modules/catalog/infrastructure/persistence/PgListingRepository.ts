@@ -18,7 +18,9 @@ export class PgListingRepository implements ListingRepository, ListingFacetRepos
     }
     const scopes = await this.scopes.visible(context, filter.scope, filter.scopeKind === 'store');
     const result = await database.query(
-      `select listing.id,listing.scope_id,$1::text[] visible_scopes,listing.pool_id,listing.sku_id,listing.title,listing.status,listing.effective_at,listing.expires_at,
+      `with targetmall as materialized(
+        select organization.id from organization.organization organization where organization.id=any($1::text[]) and organization.kind='mall'
+      ) select listing.id,listing.scope_id,$1::text[] visible_scopes,listing.pool_id,listing.sku_id,listing.title,listing.status,listing.effective_at,listing.expires_at,
       listing.version,listing.updated_at cursor_sort,sku.code,product.id product_id,product.product_type,product.attributes->>'coverObject' cover_object,product.attributes->>'coverUrl' cover_url,
       product.attributes->>'subtitle' subtitle,product.category_id,category.name category_name,
       case when product.owner_partner_id is null then 'self' else 'partner' end source,product.owner_partner_id source_partner_id,pool.name pool_name,
@@ -28,7 +30,8 @@ export class PgListingRepository implements ListingRepository, ListingFacetRepos
         select listing.scope_id union all select binding.mall_id from catalog.poolbinding binding where binding.pool_id=listing.pool_id
         and binding.status='active' and (binding.effective_at is null or binding.effective_at<=clock_timestamp())
         and (binding.expires_at is null or binding.expires_at>clock_timestamp())
-      ) covered where covered.scope_id=any($1::text[])),0)::integer mall_count,cardinality($1::text[])::integer mall_total,
+      ) covered join targetmall on targetmall.id=covered.scope_id),0)::integer mall_count,
+      (select count(*)::integer from targetmall) mall_total,
       coalesce(product.attributes->'regionIds','[]'::jsonb) region_ids
       from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id join catalog.product product on product.id=sku.product_id
       join catalog.category category on category.id=product.category_id left join catalog.pool pool on pool.id=listing.pool_id where listing.scope_id=any($1::text[])
