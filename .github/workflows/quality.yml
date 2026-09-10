@@ -233,7 +233,10 @@ jobs:
   full_a3:
     name: full A3 quality lane
     needs: plan
-    if: needs.plan.outputs.deploy_required == 'true' && needs.plan.outputs.lane == 'A3'
+    # A3 暂停 2026-09-11：planner 误判 src/entry/* 为 unclassified、无单服务 target、每轮约 40 分钟。
+    # 待重做高效版（planner 规则 + 增量缓存 + 单服务 target）后恢复。
+    # 恢复用条件：needs.plan.outputs.deploy_required == 'true' && needs.plan.outputs.lane == 'A3'
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
