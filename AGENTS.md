@@ -83,14 +83,15 @@
    只读规划可以在独立 worktree 并行，但不得部署、提交或改业务源码。
 4. **先估时，再开工。** 纯前端简单功能（不新增后端契约、数据库或权限，最多 3 个页面）
    的默认时间盒为：取证 10 分钟、实现 25 分钟、定向测试 15 分钟、typecheck/build 10 分钟；
-   本地合计最多 60 分钟。静态部署与生产冒烟另给 20 分钟。预计超过 90 分钟的任务必须先拆批，
+   本地合计最多 60 分钟。**会话到「合并进 zdt-next 且 CI 绿」为止，不含任何本地/生产部署动作**
+   （部署是 Ethan 触发 Deploy 工作流，见第四节）。预计超过 90 分钟的任务必须先拆批，
    未经 Ethan 同意不得作为一个会话直接开工。
 5. **禁止静默拖延。** 连续 10 分钟没有可观察进展（文件 diff、命令结果或测试结果），
    或实际工时超过估时 25%，必须立即停止扩项，用不超过 10 行回报：已完成、卡点、现有 diff、
    剩余时间和下一步。不得继续无边界检索、重读或“再想一轮”。
-6. **阶段性收口。** 实现完成后只允许：定向测试 → typecheck → 一次 production build →
-   部署验收。失败时只修该失败；禁止顺手重构、加功能、扩大测试范围。每个阶段只发一条简短状态，
-   不写长篇过程报告。
+6. **阶段性收口。** 实现完成后只允许：定向测试 → typecheck → 一次 build → 提交推送开 PR。
+   **不在本地跑全量回归、不重复 CI 已做的事、不做浏览器 QA、不碰生产。** 失败时只修该失败；
+   禁止顺手重构、加功能、扩大测试范围。每个阶段只发一条简短状态，不写长篇过程报告。
 7. **控制 token。** 精确使用 `rg`、有限 `sed` 和截断输出；同一文件不重复读取；
    先跑受影响测试，完整体检最多在最终验收跑一次。命令输出、diff 和日志只保留与判定有关的部分。
 
@@ -98,39 +99,40 @@
 `01_core_hexin/services/commerce/src/modules/member/IdentityOperatorMemberModule.ts` 的
 `defineSelectedModule` 显式白名单模式。
 
-## 四、部署流程（已验证）
+## 四、部署流程（秒级切流）
+
+**一切校验在 PR / CI 阶段完成。部署阶段只切流：不跑测试、不构建、不打包、不浏览器验收、不打域名基线、不做 caddy diff。**
 
 ```
-0 记录回滚点 + cp -a 备份 /etc/caddy/Caddyfile 并核对哈希
-1 上传候选 release，不切 current
-2 切 current，只重启目标服务；禁止顺带重启其他服务
-  ReadyMain 须 30 秒内输出 READY；其他服务 MainPID 必须逐位未变
-3 就地改配置 → 出归一化 caddy adapt diff → 人工确认 → 才 install + reload
-4 外部独立验收，与部署前基线逐行 diff
+合并 PR 到 zdt-next
+  → CI（Affected Delivery）自动：定向测试 + typecheck + build + package + 把候选制品暂存到阿里云（~2 分钟）
+  → 触发 Deploy 工作流（GitHub Actions → Run workflow，或 scripts/deploy-now.sh）
+  → 发布引擎：记回滚点 → 原子切 current → 重启该一个目标服务 → 等 READY（起不来自动弹回）
 ```
+
+- **会话的活到「合并进 zdt-next 且 CI 绿」为止。** 不在本地 `npm install` / build / test / package / deploy，不做浏览器 QA，不为部署单独做取证；旧测试断言过时就单独修，不在部署流程里扩到全量。
+- 切流只动一个节点的 `current` 指针 + 重启一个服务，结构上不触碰 `/etc/caddy/Caddyfile` 与 `hbbtzn.com` 的 9 个站点块。
+- 极少数要完整外部验收：`npm run release -- deploy … --external-baseline` 单次开启 15 域名基线 + 漂移自动回滚，默认关闭。
 
 ## 五、闸门设计规则
 
-**闸门必须直接测量你要验证的那件事，不能测下游副产品。跑之前把全部可能结果列成穷举表，事后不增删。**
+**闸门只在 PR / CI 阶段跑，不在部署阶段跑。** 闸门必须直接测量你要验证的那件事，不能测下游副产品。
 
 - `diff` 返回退出码 `1` 是"有差异"的正常状态，不是失败；`rc=2` 才是失败
-- 验证路由是否生效，判据是**不是 404/502**。`HttpApp.ts` 顺序为
-  路由匹配(404) → CSRF(403) → 契约版本(426) → handler(401)，
-  不带 `x-contract-version: 1.0.0` 的请求永远到不了 401
-- 验证语义改动用 `caddy adapt` 归一化 JSON diff，不要比对文件哈希
+- 验证路由是否生效，判据是**不是 404/502**（`HttpApp.ts` 顺序：路由匹配 404 → CSRF 403 → 契约版本 426 → handler 401）
 
 2026-08-30 夜三次回滚，无一是部署失败，全部是闸门写错。
 
-## 六、外部验证方法
+## 六、外部验证方法（按需，非部署必经）
 
-本机 Clash 会劫持 DNS 造成假性不可达，必须绕开代理直连 IP：
+需要手工直连生产核对时（本机 Clash 会劫持 DNS，必须绕开代理直连 IP）：
 
 ```bash
 printf 'GET %s HTTP/1.1\r\nHost: %s\r\nx-contract-version: 1.0.0\r\nConnection: close\r\n\r\n' "$path" "$host" \
   | openssl s_client -connect 123.57.232.253:443 -servername "$host" -quiet 2>/dev/null | head -1
 ```
 
-部署前对全部 15 个域名打基线快照，部署后逐行 diff，只有刻意改动的那行允许变化。
+15 域名基线 diff 不再是部署必经步骤；仅在 `--external-baseline` 显式开启时由发布引擎自动执行。
 ---
 # zdt-next · Codex 工作规则
 
