@@ -81,6 +81,9 @@ describe('identity registration API entrypoint', () => {
       'identity.wechat.bind',
       'member.members.read',
       'member.storefront.members.read',
+      'member.storefront.detail.read',
+      'member.storefront.invitees.read',
+      'member.storefront.orders.read',
       'member.invitations.read',
       'member.imports.read',
       'access.center.read',
@@ -195,6 +198,12 @@ describe('identity registration API entrypoint', () => {
     expect(bootstrapped.routes.match('POST', '/api/v1/identity/wechat/bindings')?.operation).toBe('identity.wechat.bind');
     expect(bootstrapped.routes.match('GET', '/api/v1/identity/sessions')).toBeNull();
     expect(bootstrapped.routes.match('GET', '/api/v1/members')?.operation).toBe('member.members.read');
+    expect(bootstrapped.routes.match('GET', '/api/v1/member/storefront-members/membership%3Aone')?.operation)
+      .toBe('member.storefront.detail.read');
+    expect(bootstrapped.routes.match('GET', '/api/v1/member/storefront-members/membership%3Aone/invitees')?.operation)
+      .toBe('member.storefront.invitees.read');
+    expect(bootstrapped.routes.match('GET', '/api/v1/member/storefront-members/membership%3Aone/orders')?.operation)
+      .toBe('member.storefront.orders.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/members/imports/x')?.operation).toBe('member.imports.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/access/center')?.operation).toBe('access.center.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/finance/entries')?.operation).toBe('finance.entries.read');

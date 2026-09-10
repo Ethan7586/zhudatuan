@@ -1,4 +1,10 @@
-import { StorefrontMemberPageSchema, type OperationId } from '@shop/contract';
+import {
+  StorefrontMemberDetailSchema,
+  StorefrontMemberInviteePageSchema,
+  StorefrontMemberOrderPageSchema,
+  StorefrontMemberPageSchema,
+  type OperationId,
+} from '@shop/contract';
 import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
 import { ModuleOperations, requireAccess, rowResult, type OperationActions } from '../../../foundation/application/ModuleOperations';
@@ -9,6 +15,9 @@ import { requireGovernanceContext } from '../../../foundation/security/AccessCon
 export const MEMBER_OPERATOR_READ_OPERATION_IDS = Object.freeze([
   'member.members.read',
   'member.storefront.members.read',
+  'member.storefront.detail.read',
+  'member.storefront.invitees.read',
+  'member.storefront.orders.read',
   'member.invitations.read',
   'member.imports.read',
 ] as const satisfies readonly OperationId[]);
@@ -108,6 +117,91 @@ export function memberOperatorReadActions(): OperationActions {
       [access.scope.id, query, page.sort, page.fetch]);
       const response = keysetResult(result, page, 'membership_id', 'membership_id');
       return { ...response, body: StorefrontMemberPageSchema.parse(response.body) };
+    },
+    'member.storefront.detail.read': async (request, database) => {
+      const access = requireAccess(request);
+      if (access.scope.kind !== 'mall') throw new Error('SCOPE_NOT_ALLOWED_FOR_OPERATION');
+      const result = await database.query(`select membership.id membership_id,profile.display_name,profile.mobile_masked,
+        case membership.client when 'storefront' then 'L6' end identity_level,
+        case membership.client when 'storefront' then 'consumer' end identity_kind,
+        membership.status membership_status,profile.mobile_token is not null mobile_bound,
+        exists(select 1 from identity.federatedidentity identity
+          where identity.membership_id=membership.id and identity.provider='wechat' and identity.status='active') wechat_bound,
+        case when membership.joined_at is null then null else to_char(membership.joined_at at time zone 'UTC',
+          'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') end joined_at,
+        case when inviter_binding.id is null then null else jsonb_build_object(
+          'display_name',inviter_profile.display_name,'mobile_masked',inviter_profile.mobile_masked,
+          'bound_at',to_char(inviter_binding.bound_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+          'expires_at',case when inviter_binding.expires_at is null then null else to_char(
+            inviter_binding.expires_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') end,
+          'relationship_status',case when inviter_binding.expires_at is not null
+            and inviter_binding.expires_at<=clock_timestamp() then 'expired' else 'active' end) end inviter,
+        coalesce((select count(*)::int from referral.member referral_owner
+          join referral.binding invited_binding on invited_binding.scope_id=referral_owner.scope_id
+            and invited_binding.referral_member_id=referral_owner.id
+          join access.membership invited_membership on invited_membership.organization_id=membership.organization_id
+            and invited_membership.client='storefront' and invited_membership.member_id=invited_binding.customer_member_id
+          where referral_owner.scope_id=membership.organization_id and referral_owner.member_id=membership.member_id),0) invited_count,
+        coalesce((select count(*)::int from ordering.orderrecord orders
+          where orders.mall_id=membership.organization_id and orders.member_id=membership.member_id),0) order_count,
+        (select to_char(max(orders.created_at) at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+          from ordering.orderrecord orders
+          where orders.mall_id=membership.organization_id and orders.member_id=membership.member_id) latest_order_at
+        from access.membership membership
+        join member.profile profile on profile.id=membership.member_id
+        left join lateral(select binding.* from referral.binding binding
+          where binding.scope_id=membership.organization_id and binding.customer_member_id=membership.member_id
+          order by binding.bound_at desc,binding.id desc limit 1) inviter_binding on true
+        left join referral.member inviter_member on inviter_member.scope_id=inviter_binding.scope_id
+          and inviter_member.id=inviter_binding.referral_member_id
+        left join member.profile inviter_profile on inviter_profile.id=inviter_member.member_id
+        where membership.id=$2 and membership.organization_id=$1 and membership.client='storefront'`,
+      [access.scope.id, request.input.path.membershipid!]);
+      const response = rowResult(result);
+      return { ...response, body: StorefrontMemberDetailSchema.parse(response.body) };
+    },
+    'member.storefront.invitees.read': async (request, database) => {
+      const access = requireAccess(request);
+      if (access.scope.kind !== 'mall') throw new Error('SCOPE_NOT_ALLOWED_FOR_OPERATION');
+      const page = queryPage(request, 50);
+      const result = await database.query(`with target as(
+        select membership.member_id from access.membership membership
+        where membership.id=$2 and membership.organization_id=$1 and membership.client='storefront'
+      ) select invited_membership.id membership_id,invited_profile.display_name,invited_profile.mobile_masked,
+        invited_membership.status membership_status,
+        to_char(binding.bound_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') bound_at,
+        case when binding.expires_at is null then null else to_char(
+          binding.expires_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') end expires_at,
+        case when binding.expires_at is not null and binding.expires_at<=clock_timestamp()
+          then 'expired' else 'active' end relationship_status
+        from target
+        join referral.member referral_owner on referral_owner.scope_id=$1 and referral_owner.member_id=target.member_id
+        join referral.binding binding on binding.scope_id=$1 and binding.referral_member_id=referral_owner.id
+        join access.membership invited_membership on invited_membership.organization_id=$1
+          and invited_membership.client='storefront' and invited_membership.member_id=binding.customer_member_id
+        join member.profile invited_profile on invited_profile.id=invited_membership.member_id
+        where ($3::timestamptz is null or (binding.bound_at,invited_membership.id)<($3::timestamptz,$4))
+        order by binding.bound_at desc,invited_membership.id desc limit $5`,
+      [access.scope.id, request.input.path.membershipid!, page.sort, page.id, page.fetch]);
+      const response = keysetResult(result, page, 'bound_at', 'membership_id');
+      return { ...response, body: StorefrontMemberInviteePageSchema.parse(response.body) };
+    },
+    'member.storefront.orders.read': async (request, database) => {
+      const access = requireAccess(request);
+      if (access.scope.kind !== 'mall') throw new Error('SCOPE_NOT_ALLOWED_FOR_OPERATION');
+      const page = queryPage(request, 50);
+      const result = await database.query(`with target as(
+        select membership.member_id from access.membership membership
+        where membership.id=$2 and membership.organization_id=$1 and membership.client='storefront'
+      ) select orders.id,orders.order_number,orders.total_minor::text total_minor,orders.currency,
+        orders.payment_state,orders.fulfillment_state,orders.aftersale_state,
+        to_char(orders.created_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') created_at
+        from target join ordering.orderrecord orders on orders.mall_id=$1 and orders.member_id=target.member_id
+        where ($3::timestamptz is null or (orders.created_at,orders.id)<($3::timestamptz,$4))
+        order by orders.created_at desc,orders.id desc limit $5`,
+      [access.scope.id, request.input.path.membershipid!, page.sort, page.id, page.fetch]);
+      const response = keysetResult(result, page, 'created_at', 'id');
+      return { ...response, body: StorefrontMemberOrderPageSchema.parse(response.body) };
     },
     'member.invitations.read': async (request, database) => {
       const access = requireAccess(request);
