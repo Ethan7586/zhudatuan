@@ -281,8 +281,9 @@ async function executeDeployment(adapter, item, environment, options) {
   if (transport.kind === 'local') return localDeploy(adapter, item, environment);
   const candidateEndpoint = remoteEndpoint(transport, 'candidate');
   const incomingName = `${adapter.project}--${item.nodeKey}--${item.artifact.target}--${item.artifact.archive.sha256.slice(7)}`;
-  const incoming = `${transport.incomingRoot ?? '/opt/ai-delivery/incoming'}/${incomingName}.tar.gz`;
-  const incomingManifest = `${transport.incomingRoot ?? '/opt/ai-delivery/incoming'}/${incomingName}.artifact.json`;
+  const uploadRoot = transport.uploadRoot ?? transport.incomingRoot ?? '/opt/ai-delivery/uploads';
+  const incoming = `${uploadRoot}/${incomingName}.tar.gz`;
+  const incomingManifest = `${uploadRoot}/${incomingName}.artifact.json`;
   const identityArgs = [
     '--project', adapter.project,
     '--node', item.nodeKey,

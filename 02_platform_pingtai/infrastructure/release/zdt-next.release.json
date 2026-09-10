@@ -24,6 +24,7 @@
     "operatorHostEnv": "ZDT_RELEASE_OPERATOR_SSH_HOST",
     "operatorIdentityFileEnv": "ZDT_RELEASE_OPERATOR_SSH_IDENTITY_FILE",
     "operatorAgent": "/usr/local/lib/ai-delivery/agent.mjs",
+    "uploadRoot": "/opt/ai-delivery/uploads",
     "incomingRoot": "/opt/ai-delivery/incoming",
     "uploadTimeoutMs": 600000,
     "deployTimeoutMs": 600000

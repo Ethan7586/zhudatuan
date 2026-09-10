@@ -23,11 +23,23 @@ test('candidate gateway accepts only candidate and read-only agent actions', () 
   }
 });
 
-test('candidate gateway confines uploads to the incoming directory', () => {
+test('candidate gateway confines untrusted files to the upload directory', () => {
   assert.deepEqual(
-    parseOriginalCommand('scp -t /opt/ai-delivery/incoming/zdt-next--hbbtzn-l1--storefront--abc.tar.gz'),
-    { kind: 'scp', path: '/opt/ai-delivery/incoming/zdt-next--hbbtzn-l1--storefront--abc.tar.gz' },
+    parseOriginalCommand('scp -t /opt/ai-delivery/uploads/zdt-next--hbbtzn-l1--storefront--abc.tar.gz'),
+    { kind: 'scp', path: '/opt/ai-delivery/uploads/zdt-next--hbbtzn-l1--storefront--abc.tar.gz' },
   );
+  assert.doesNotThrow(() => validateAgentArguments([
+    'stage', '--project', 'zdt-next', '--node', 'hbbtzn-l1', '--target', 'storefront',
+    '--archive', '/opt/ai-delivery/uploads/artifact.tar.gz',
+    '--manifest', '/opt/ai-delivery/uploads/artifact.json',
+    '--sha256', 'b'.repeat(64), '--tree-digest', `sha256:${'c'.repeat(64)}`,
+  ]));
+  assert.throws(() => validateAgentArguments([
+    'stage', '--project', 'zdt-next', '--node', 'hbbtzn-l1', '--target', 'storefront',
+    '--archive', '/opt/ai-delivery/incoming/artifact.tar.gz',
+    '--manifest', '/opt/ai-delivery/incoming/artifact.json',
+    '--sha256', 'b'.repeat(64), '--tree-digest', `sha256:${'c'.repeat(64)}`,
+  ]), { code: 'UPLOAD_PATH_REQUIRED' });
   assert.throws(() => parseOriginalCommand('scp -t /etc/sudoers'), { code: 'COMMAND_ENTRYPOINT_DENIED' });
 });
 

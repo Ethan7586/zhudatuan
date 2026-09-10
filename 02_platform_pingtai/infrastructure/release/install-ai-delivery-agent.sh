@@ -62,7 +62,8 @@ if [[ "$mode" == access-candidate ]]; then
   chmod 0440 "$candidate_sudoers"
   visudo -cf "$candidate_sudoers" >/dev/null
   install -o root -g root -m 0440 "$candidate_sudoers" /etc/sudoers.d/ai-delivery-zdt-candidate
-  install -d -o "$candidate_user" -g "$candidate_user" -m 0700 /opt/ai-delivery/incoming
+  install -d -o root -g root -m 0700 /opt/ai-delivery/incoming
+  install -d -o "$candidate_user" -g "$candidate_user" -m 0700 /opt/ai-delivery/uploads
   [[ "$(stat -c '%U:%a' /usr/local/lib/ai-delivery/agent.mjs)" == root:755 ]] || { printf 'candidate account must not own the executor\n' >&2; exit 1; }
   [[ "$(stat -c '%U:%a' /etc/ai-delivery/projects/zdt-next.json)" == root:644 ]] || { printf 'candidate account must not own the policy\n' >&2; exit 1; }
   printf 'Candidate-only SSH identity installed: user=%s actions=lookup,reuse,stage,status,verify production-actions=denied\n' "$candidate_user"

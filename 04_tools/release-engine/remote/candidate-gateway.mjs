@@ -1,12 +1,14 @@
 #!/usr/bin/env node
-import { stat, rm } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { chmod, copyFile, lstat, mkdir, rm } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { resolve } from 'node:path';
+import { basename, join, resolve } from 'node:path';
 
 const GATEWAY = '/usr/local/sbin/ai-delivery-candidate';
 const AGENT = '/usr/local/lib/ai-delivery/agent.mjs';
-const INCOMING = '/opt/ai-delivery/incoming/';
+const UPLOADS = '/opt/ai-delivery/uploads/';
+const ADMITTED = '/opt/ai-delivery/incoming/';
 const MAX_UPLOAD_BYTES = 160 * 1024 * 1024;
 const CANDIDATE_ACTIONS = new Set(['lookup', 'reuse', 'stage', 'status', 'verify']);
 const ALLOWED_FLAGS = new Set([
@@ -17,7 +19,7 @@ const ALLOWED_FLAGS = new Set([
 
 export function parseOriginalCommand(original) {
   const command = String(original ?? '').trim();
-  const scp = command.match(/^scp -t(?: --)? (\/opt\/ai-delivery\/incoming\/[A-Za-z0-9_.-]+)$/);
+  const scp = command.match(/^scp -t(?: --)? (\/opt\/ai-delivery\/uploads\/[A-Za-z0-9_.-]+)$/);
   if (scp) return { kind: 'scp', path: scp[1] };
   if (!/^[A-Za-z0-9_./:@+ =-]+$/.test(command)) throw denied('COMMAND_CHARACTERS_DENIED');
   const tokens = command.split(/ +/);
@@ -50,7 +52,7 @@ export function validateAgentArguments(args) {
       if (!values.has(flag)) throw denied('STAGE_ARGUMENT_REQUIRED', { flag });
     }
     for (const flag of ['--archive', '--manifest']) {
-      if (!values.get(flag).startsWith(INCOMING)) throw denied('INCOMING_PATH_REQUIRED', { flag });
+      if (!values.get(flag).startsWith(UPLOADS)) throw denied('UPLOAD_PATH_REQUIRED', { flag });
     }
   }
   return { action, values };
@@ -58,16 +60,22 @@ export function validateAgentArguments(args) {
 
 async function main() {
   if (process.getuid?.() === 0 && process.argv[2] === '--agent') {
-    const args = process.argv.slice(3);
+    let args = process.argv.slice(3);
     validateAgentArguments(args);
-    process.exitCode = await run(AGENT, args);
+    const admitted = args[0] === 'stage' ? await admitStageFiles(args) : [];
+    if (admitted.length > 0) args = rewriteStagePaths(args, admitted);
+    try {
+      process.exitCode = await run(AGENT, args);
+    } finally {
+      await Promise.all(admitted.map(({ destination }) => rm(destination, { force: true })));
+    }
     return;
   }
   const request = parseOriginalCommand(process.env.SSH_ORIGINAL_COMMAND);
   if (request.kind === 'scp') {
     process.exitCode = await run('/usr/bin/scp', ['-t', request.path]);
     if (process.exitCode === 0) {
-      const uploaded = await stat(request.path);
+      const uploaded = await lstat(request.path);
       if (!uploaded.isFile() || uploaded.size > MAX_UPLOAD_BYTES) {
         await rm(request.path, { force: true });
         throw denied('UPLOAD_SIZE_DENIED', { bytes: uploaded.size, maxBytes: MAX_UPLOAD_BYTES });
@@ -76,6 +84,33 @@ async function main() {
     return;
   }
   process.exitCode = await run('/usr/bin/sudo', ['-n', '--', GATEWAY, '--agent', ...request.args]);
+}
+
+async function admitStageFiles(args) {
+  await mkdir(ADMITTED, { recursive: true, mode: 0o700 });
+  const admitted = [];
+  try {
+    for (const flag of ['--archive', '--manifest']) {
+      const source = args[args.indexOf(flag) + 1];
+      const uploaded = await lstat(source);
+      if (!uploaded.isFile() || uploaded.isSymbolicLink() || uploaded.size > MAX_UPLOAD_BYTES) throw denied('UPLOAD_FILE_DENIED', { flag });
+      const destination = join(ADMITTED, `${process.pid}-${Date.now()}-${basename(source)}`);
+      await copyFile(source, destination, constants.COPYFILE_EXCL);
+      await chmod(destination, 0o400);
+      await rm(source, { force: true });
+      admitted.push({ flag, destination });
+    }
+  } catch (error) {
+    await Promise.all(admitted.map(({ destination }) => rm(destination, { force: true })));
+    throw error;
+  }
+  return admitted;
+}
+
+function rewriteStagePaths(args, admitted) {
+  const rewritten = [...args];
+  for (const { flag, destination } of admitted) rewritten[rewritten.indexOf(flag) + 1] = destination;
+  return rewritten;
 }
 
 function run(command, args) {
