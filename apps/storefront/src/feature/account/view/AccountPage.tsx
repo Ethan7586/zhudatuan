@@ -84,11 +84,16 @@ export function AccountPage({ viewmodel }: Readonly<{ viewmodel: ReturnType<type
           <h2 className="mb-3 text-lg font-black">账户服务</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {actions.map(({ label, icon: Icon, ...item }) => (
-              <button type="button" key={label} onClick={item.run} className="flex min-h-20 items-center gap-3 rounded-2xl border border-edge p-4 text-left text-sm font-bold hover:border-brand hover:bg-brand-light">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-light text-brand">
+              <button
+                type="button"
+                key={label}
+                onClick={item.run}
+                className="flex min-h-24 min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-edge px-2 py-3 text-center text-sm font-bold hover:border-brand hover:bg-brand-light sm:min-h-20 sm:flex-row sm:justify-start sm:gap-3 sm:p-4 sm:text-left"
+              >
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-light text-brand">
                   <Icon size={18} />
                 </span>
-                {label}
+                <span className="whitespace-nowrap">{label}</span>
               </button>
             ))}
           </div>
