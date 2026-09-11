@@ -80,7 +80,7 @@ export function Component() {
     </Suspense>
   );
   return (
-    <section className="cockpitpage" aria-label="生意看板">
+    <section className="cockpitpage" aria-label="生意看板" data-workspace="business-overview">
       <CockpitHero period={period} {...(selected === undefined ? {} : { perspective: selected })}
         busy={perspectives.isFetching || query.isFetching} onPeriodChange={setPeriod} onRefresh={() => { void query.refetch(); }} />
       <BusinessPerspectiveBar partners={perspectives.data ?? []} {...(supplier === undefined ? {} : { selected: supplier })}
