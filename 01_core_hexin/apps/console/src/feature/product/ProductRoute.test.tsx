@@ -113,6 +113,16 @@ describe('Product governance workspace', () => {
     expect(requests).toHaveLength(1);
   });
 
+  it('does not refetch an already unfiltered catalog when reset is pressed', async () => {
+    const user = userEvent.setup();
+    renderProductRoute(mallContext);
+    await screen.findByRole('table', { name: '商品列表' });
+
+    await user.click(screen.getByRole('button', { name: '重置' }));
+
+    expect(requests).toHaveLength(1);
+  });
+
   it('shows real SKU quantity and filters the complete management statuses', async () => {
     const user = userEvent.setup();
     server.use(http.get('*/api/v1/catalog/listings', async ({ request }) => {

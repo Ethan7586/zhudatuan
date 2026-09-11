@@ -24,7 +24,7 @@ export function ProductFilterForm({ value, preview, onApply, onColumns }: Produc
   const previewEnabled = preview?.kind === 'console-product-v1';
   const reset = () => {
     form.reset(emptyFilter);
-    onApply(emptyFilter);
+    if (Object.values(value).some((entry) => entry !== '')) onApply(emptyFilter);
   };
 
   return (

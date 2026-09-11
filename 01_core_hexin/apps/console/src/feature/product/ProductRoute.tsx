@@ -71,6 +71,7 @@ export function Component() {
     queryFn: ({ signal }) => readProducts(context, filter, signal),
     placeholderData: keepPreviousData,
     staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
   });
   const error = safeQueryError(query.error);
   const condition = queryCondition({
