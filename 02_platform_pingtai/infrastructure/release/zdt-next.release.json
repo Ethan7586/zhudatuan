@@ -351,7 +351,7 @@
         "catalog-media": { "pointerRoot": "/opt/ai-delivery/content/zdt-next/hbbtzn-l1/catalog-media", "service": "none", "restart": "none", "productionEnabled": false, "productionDisabledReason": "media origin binding must be installed by the one-time A3 migration" },
         "storefront": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/storefront", "service": "sfl-storefront@hbbtzn-l1.service" },
         "auth-web": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/auth-web", "service": "none", "restart": "none" },
-        "console": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/console", "service": "none", "restart": "none", "productionEnabled": false, "productionDisabledReason": "serving pointer not proven" },
+        "console": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/console", "service": "none", "restart": "none" },
         "identity-api": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/identity-api", "service": "sfl-identity-api@hbbtzn-l1.service" },
         "purchase-api": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/purchase-api", "service": "sfl-purchase-api@hbbtzn-l1.service" },
         "web-api": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/web-api", "service": "sfl-web-api@hbbtzn-l1.service" },
