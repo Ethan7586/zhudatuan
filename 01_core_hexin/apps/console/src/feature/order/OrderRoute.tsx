@@ -95,11 +95,14 @@ export function Component() {
       next.delete('cursor');
       resetChecked();
     });
-  const openOrder = (id: string) =>
+  const openOrder = (id: string) => {
+    const order = page?.items.find((item) => item.id === id);
+    if (order !== undefined) queryClient.setQueryData(orderDetailKey(context, id), order);
     updateSearch((next) => {
       next.set('selected', id);
       next.delete('tab');
     });
+  };
   const closeOrder = () =>
     updateSearch((next) => {
       next.delete('selected');

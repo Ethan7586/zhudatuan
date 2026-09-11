@@ -276,7 +276,7 @@ describe('Order route', () => {
     expect(await screen.findByRole('complementary', { name: new RegExp(order.order_number) })).toBeTruthy();
     expect(currentParams().get('selected')).toBe(order.id);
     expect(currentParams().get('campaign')).toBe('keep');
-    expect(getRequests.some((url) => url.searchParams.get('limit') === '1' && url.searchParams.get('order') === order.id)).toBe(true);
+    expect(getRequests.some((url) => url.searchParams.get('limit') === '1' && url.searchParams.get('order') === order.id)).toBe(false);
 
     await user.click(screen.getByRole('button', { name: '关闭订单详情' }));
     await waitFor(() => expect(screen.queryByRole('complementary')).toBeNull());
