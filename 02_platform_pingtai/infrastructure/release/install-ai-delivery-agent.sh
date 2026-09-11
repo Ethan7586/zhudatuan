@@ -76,14 +76,14 @@ if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
     /opt/zhudatuan/targets/payment-jobs/current
   )
   units+=(
-    zhudatuan-api.service
+    sfl-identity-api@.service
     zhudatuan-console-support.service
-    zhudatuan-purchase-api.service
-    zhudatuan-web-api.service
-    zhudatuan-catalog-api.service
-    zhudatuan-catalog-jobs.service
-    zhudatuan-payment-webhook-api.service
-    zhudatuan-payment-jobs.service
+    sfl-purchase-api@.service
+    sfl-web-api@.service
+    sfl-catalog-api@.service
+    sfl-catalog-jobs@.service
+    sfl-payment-webhook-api@.service
+    sfl-payment-jobs@.service
   )
 fi
 if [[ "$node_scope" == all || "$node_scope" == hbbtzn-l1 ]]; then
@@ -103,6 +103,14 @@ for pointer in "${required_pointers[@]}"; do
   target_parent="${target_root%/*}"
   chmod 0755 "$target_parent" "$target_root"
 done
+
+if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
+  for target in identity-api purchase-api web-api catalog-api catalog-jobs payment-webhook-api payment-jobs; do
+    bridge_root="/opt/sfl/nodes/zhudatuan-l0/targets/$target"
+    install -d -m 0755 "$bridge_root"
+    ln -sfn "/opt/zhudatuan/targets/$target/current" "$bridge_root/current"
+  done
+fi
 
 for unit in "${units[@]}"; do install -m 0644 "$unit_source/$unit" "/etc/systemd/system/$unit"; done
 if [[ "$node_scope" == hbbtzn-l1 ]]; then

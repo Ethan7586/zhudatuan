@@ -206,28 +206,10 @@ https://:4430 {
 		respond `{"status":"ready","nodeId":"node:hbbtzn:l1","manifestId":"manifest:hbbtzn:l1:v1"}` 200
 	}
 
-	@identityRuntime {
-		host accounts.hbbtzn.com
-		path /identity-runtime.json
-	}
-	handle @identityRuntime {
-		root * /opt/sfl/nodes/hbbtzn-l1/runtime
-		file_server
-	}
-
 	@accounts host accounts.hbbtzn.com
 	handle @accounts {
 		root * /opt/sfl/nodes/hbbtzn-l1/targets/auth-web/current/static
 		try_files {path} /index.html
-		file_server
-	}
-
-	@consoleRuntime {
-		host console.hbbtzn.com
-		path /console-runtime.json
-	}
-	handle @consoleRuntime {
-		root * /opt/sfl/nodes/hbbtzn-l1/runtime
 		file_server
 	}
 

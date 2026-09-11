@@ -22,6 +22,7 @@ async function main() {
       'purchase-port': { type: 'string' },
       'webhook-port': { type: 'string' },
       'support-port': { type: 'string' },
+      'omit-runtime-config': { type: 'boolean' },
     },
     strict: true,
   });
@@ -46,7 +47,9 @@ async function main() {
     }
     ports.support = support;
   }
-  const expected = gatewayConfiguration(manifest, nodeRoot, ports);
+  const expected = gatewayConfiguration(manifest, nodeRoot, ports, {
+    runtimeConfigRoutes: values['omit-runtime-config'] !== true,
+  });
   if (values.check) {
     const actual = await readFile(values.check, 'utf8');
     if (actual !== expected) throw new Error(`SFL_GATEWAY_CONFIGURATION_STALE:${values.check}`);
@@ -112,11 +115,13 @@ export function gatewayConfiguration(manifest, nodeRoot, ports, options = {}) {
 `\thandle @identityApi {\n${proxy(ports.identity)}\n\t}\n\n` +
 `\t@gatewayHealth {\n\t\thost ${apiHost}\n\t\tpath /health/gateway\n\t}\n` +
 `\thandle @gatewayHealth {\n\t\theader Content-Type application/json\n\t\trespond \`${JSON.stringify({ status: 'ready', nodeId: manifest.node_id, manifestId: manifest.manifest_id })}\` 200\n\t}\n\n` +
-`\t@identityRuntime {\n\t\thost ${identityHosts.join(' ')}\n\t\tpath /identity-runtime.json\n\t}\n` +
+`${options.runtimeConfigRoutes === false ? '' : `\t@identityRuntime {\n\t\thost ${identityHosts.join(' ')}\n\t\tpath /identity-runtime.json\n\t}\n` +
 `\thandle @identityRuntime {\n\t\troot * ${nodeRoot}/runtime\n\t\tfile_server\n\t}\n\n` +
+``}` +
 `\t@accounts host ${identityHosts.join(' ')}\n\thandle @accounts {\n\t\troot * ${nodeRoot}/targets/auth-web/current/static\n\t\ttry_files {path} /index.html\n\t\tfile_server\n\t}\n\n` +
-`\t@consoleRuntime {\n\t\thost ${consoleHosts.join(' ')}\n\t\tpath /console-runtime.json\n\t}\n` +
+`${options.runtimeConfigRoutes === false ? '' : `\t@consoleRuntime {\n\t\thost ${consoleHosts.join(' ')}\n\t\tpath /console-runtime.json\n\t}\n` +
 `\thandle @consoleRuntime {\n\t\troot * ${nodeRoot}/runtime\n\t\tfile_server\n\t}\n\n` +
+``}` +
 `\t@console host ${consoleHosts.join(' ')}\n\thandle @console {\n\t\troot * ${nodeRoot}/targets/console/current/static\n\t\ttry_files {path} /index.html\n\t\tfile_server\n\t}\n\n` +
 `\t@storefront host ${storefrontHosts.join(' ')}\n\thandle @storefront {\n${proxy(ports.storefront)}\n\t}\n\n` +
 `\thandle {\n\t\theader Content-Type application/json\n\t\trespond \`{"code":"NODE_BOUNDARY_HOST_MISMATCH"}\` 421\n\t}\n}\n`;
