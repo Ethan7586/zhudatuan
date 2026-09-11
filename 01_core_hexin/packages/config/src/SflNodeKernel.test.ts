@@ -10,11 +10,13 @@ import {
   generateNodeManifestRegistry,
   hasValidNodeManifestDigest,
   nodeContextOf,
+  parseAuthoritativeNodeContext,
   parseHostedNodeProvisioningRequest,
   parseHostedNodeProvisioningResult,
   parseNodeContext,
   parseNodeManifest,
   parseNodeManifestRegistry,
+  parseNodeScopeRecord,
   parseSflNodeTopology,
   resolveNodeRecord,
   resolveNodeManifestByHost,
@@ -453,6 +455,37 @@ describe('SFL node kernel', () => {
     expect(result).toMatchObject({ sovereignty_tier: 'hosted', node_profile: 'consumer', relation_version: 1, replayed: true });
     expect(Object.keys(result)).not.toEqual(expect.arrayContaining([
       'manifest_id', 'domain_bindings', 'gateway_port', 'runtime_instance_id', 'release_pointer_ref',
+    ]));
+  });
+
+  it('parses authoritative persisted context and indexed scope rows without sovereign resources', () => {
+    const context = parseAuthoritativeNodeContext({
+      line_id: 'line:fixture',
+      node_id: 'node:fixture:hosted:l6',
+      parent_node_id: 'node:fixture:l5',
+      signed_level: 'L6',
+      sovereignty_tier: 'hosted',
+      node_profile: 'consumer',
+      realm_id: 'realm:fixture-hosted-l6',
+      mall_id: null,
+      host_sovereign_node_id: 'node:fixture:l0',
+      relation_version: 2,
+      effective_at: relationChangedAt,
+      status: 'active',
+    });
+    const scope = parseNodeScopeRecord({
+      line_id: context.line_id,
+      node_id: context.parent_node_id,
+      distance: 1,
+      relation_version: 1,
+      effective_at: relationEffectiveAt,
+      status: 'active',
+    });
+
+    expect(context).toMatchObject({ node_profile: 'consumer', relation_version: 2, mall_id: null });
+    expect(scope).toMatchObject({ node_id: context.parent_node_id, distance: 1 });
+    expect(Object.keys(context)).not.toEqual(expect.arrayContaining([
+      'manifest_id', 'resource_binding_set_ref', 'secret_binding_set_ref', 'payment_binding_refs', 'release_pointer_ref',
     ]));
   });
 
