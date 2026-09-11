@@ -32,6 +32,8 @@ interface SessionRow {
   readonly mall_id: string | null;
   readonly host_sovereign_node_id: string;
 }
+type LegacySessionRow = Omit<SessionRow,
+  'entry_realm_id' | 'line_id' | 'node_id' | 'parent_node_id' | 'signed_level' | 'node_profile' | 'mall_id' | 'host_sovereign_node_id'>;
 interface MembershipRow {
   readonly id: string;
   readonly active: boolean;
@@ -49,8 +51,25 @@ export class PgSessionResolver implements RuntimeSessionResolver {
     const token = bearer(headers.authorization) ?? cookie(headers.cookie, 'shop_session');
     if (!token) throw new Error('AUTHENTICATION_REQUIRED');
     const nodeContext = sessionNodeContext(headers);
-    const result = await this.pool.query<SessionRow>('select actor_id,account_id,realm_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at,entry_realm_id,line_id,node_id,parent_node_id,signed_level,node_profile,mall_id,host_sovereign_node_id from identity.resolve_session($1,$2)',
-      [createHash('sha256').update(token).digest('hex'), nodeContext.host]);
+    const parameters = [createHash('sha256').update(token).digest('hex'), nodeContext.host];
+    let result: Readonly<{ rows: readonly SessionRow[] }>;
+    try {
+      result = await this.pool.query<SessionRow>('select actor_id,account_id,realm_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at,entry_realm_id,line_id,node_id,parent_node_id,signed_level,node_profile,mall_id,host_sovereign_node_id from identity.resolve_session($1,$2)', parameters);
+    } catch (cause) {
+      if (!isLegacySessionProjection(cause)) throw cause;
+      const legacy = await this.pool.query<LegacySessionRow>('select actor_id,account_id,realm_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at from identity.resolve_session($1,$2)', parameters);
+      const row = legacy.rows[0];
+      if (!row) throw new Error('AUTHENTICATION_REQUIRED');
+      if (!row.account_id || !row.realm_id) throw new Error('AUTH_REALM_CONTEXT_MISSING');
+      if (row.realm_id !== nodeContext.realm.ref) throw new Error('AUTH_REALM_MISMATCH');
+      return {
+        id: row.actor_id, account: row.account_id, realm: row.realm_id, nodeContext,
+        session: row.session_id, membership: row.membership_id,
+        credentialVersion: row.credential_version, accessVersion: row.access_version,
+        target: row.target,
+        assurance: { level: row.assurance_level, ...(row.assurance_verified_at === null ? {} : { verified: row.assurance_verified_at }) },
+      };
+    }
     const row = result.rows[0];
     if (!row) throw new Error('AUTHENTICATION_REQUIRED');
     if (!row.account_id || !row.realm_id) throw new Error('AUTH_REALM_CONTEXT_MISSING');
@@ -82,6 +101,12 @@ export class PgSessionResolver implements RuntimeSessionResolver {
       assurance: { level: row.assurance_level, ...(row.assurance_verified_at === null ? {} : { verified: row.assurance_verified_at }) },
     };
   }
+}
+
+function isLegacySessionProjection(cause: unknown): boolean {
+  return cause instanceof Error
+    && 'code' in cause && cause.code === '42703'
+    && cause.message.includes('entry_realm_id');
 }
 
 export class PgMembershipResolver implements MembershipResolver {
