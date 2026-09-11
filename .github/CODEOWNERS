@@ -1,0 +1,9 @@
+# CODEOWNERS 本身只能由 Ethan 批准修改，避免保护规则被绕开。
+/.github/CODEOWNERS @Ethan7586
+
+# 订单管理正式 VI：页面、交互、样式、模型与回归测试统一保护。
+/01_core_hexin/apps/console/src/feature/order/ @Ethan7586
+
+# 订单后台真实读模型：保护责任人操作记录及订单详情数据契约。
+/01_core_hexin/services/commerce/src/modules/webbusiness/WebOrderOperations.ts @Ethan7586
+/01_core_hexin/services/commerce/src/modules/webbusiness/WebOrderOperations.test.ts @Ethan7586
