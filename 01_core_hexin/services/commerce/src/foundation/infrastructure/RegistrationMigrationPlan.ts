@@ -13,6 +13,9 @@ interface Transformation {
 }
 
 const PROFILE = 'registration-only/v1';
+const RECONCILED_PROFILE = 'registration-reconciled/v1';
+const IDENTITY_RUNTIME_REPAIR = '20260912180000_reconcile_identity_runtime_state.sql';
+const RECONCILED_REASON = 'production runtime objects reconciled from verified existing state';
 const HISTORY_HEAD = '20260820133000';
 const LEGACY_GENERIC_LEDGER_SOURCES = new Map<string, string>([
   ['20260831150000_identity_experience_application_commands.sql', '4810ba8bc5cb49b67a648e788f70f5c0cc2b10910fb3d168a797a37806b0e3c7'],
@@ -113,8 +116,17 @@ export function registrationMigrationLedgerMatches(
   existingStatements: readonly string[] | null,
   execution: RegistrationMigrationExecution,
 ): boolean {
-  if (existingName !== execution.ledgerName) return false;
   const statements = existingStatements ?? [];
+  if (existingName === `registration-reconciled:${file}` && execution.kind === 'original') {
+    const sourceDigest = execution.ledgerStatements.find((statement) => statement.startsWith('source_sha256='));
+    return sourceDigest !== undefined && JSON.stringify(statements) === JSON.stringify([
+      `profile=${RECONCILED_PROFILE}`,
+      sourceDigest,
+      `repair=${IDENTITY_RUNTIME_REPAIR}`,
+      `reason=${RECONCILED_REASON}`,
+    ]);
+  }
+  if (existingName !== execution.ledgerName) return false;
   if (JSON.stringify(statements) === JSON.stringify(execution.ledgerStatements)) return true;
   const legacySourceDigest = LEGACY_GENERIC_LEDGER_SOURCES.get(file);
   return statements.length === 0 && legacySourceDigest !== undefined && execution.kind === 'original'
