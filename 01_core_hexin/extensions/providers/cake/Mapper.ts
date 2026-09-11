@@ -83,7 +83,7 @@ export function cakeLeafPaths(categories: readonly CakeCategory[], rootId: strin
 
 export function parseCakeProductPage(response: JsonObject, path: CakeCategoryPath): CakeProductPage {
   const data = object(response.data, 'CAKE_PRODUCTS_DATA_INVALID');
-  const total = cakeuncleNonnegativeInteger(required(data.total_num, 'CAKE_PRODUCTS_TOTAL_INVALID'), 'CAKE_PRODUCTS_TOTAL_INVALID');
+  const total = cakeuncleNonnegativeInteger(numericText(data.total_num, 'CAKE_PRODUCTS_TOTAL_INVALID'), 'CAKE_PRODUCTS_TOTAL_INVALID');
   const products = array(data.products, 'CAKE_PRODUCTS_INVALID');
   const specs: CakeSpecSnapshot[] = [];
   const seen = new Set<string>();
@@ -245,6 +245,11 @@ function array(value: JsonValue | undefined, code: string): readonly JsonValue[]
 function required(value: JsonValue | undefined, code: string): string {
   if (typeof value !== 'string' || !value.trim()) throw new Error(code);
   return value.trim();
+}
+
+function numericText(value: JsonValue | undefined, code: string): string {
+  if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) return String(value);
+  return required(value, code);
 }
 
 function optional(value: JsonValue | undefined): string | undefined {
