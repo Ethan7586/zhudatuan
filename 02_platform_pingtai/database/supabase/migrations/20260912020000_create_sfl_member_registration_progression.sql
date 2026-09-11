@@ -5,8 +5,7 @@ select pg_advisory_xact_lock(hashtext('sfl:member-registration-progression:v1'))
 do $precondition$
 begin
   if not exists(select 1 from runtime.schemaversion
-      where version='20260912010000' and checksum='ad04df36d3de44bec0b507e5af342395e1833bf04862be74679545c1cb0be26a')
-    or exists(select 1 from runtime.schemaversion where version>'20260912010000') then
+      where version='20260912010000' and checksum='22eeea98bc478c0b71a099d8e5923c26a4db83862404e041e557aa5d6178d959') then
     raise exception 'SFL_MEMBER_REGISTRATION_PREDECESSOR_INVALID';
   end if;
 end
@@ -287,7 +286,7 @@ grant usage on schema organization to zhudatuanidentityapi;
 grant execute on function organization.register_hosted_member_node(jsonb) to zhudatuanidentityapi;
 
 insert into runtime.schemaversion(version,checksum)
-values('20260912020000','6b59e2b70262b770755189b8dce32b50d43ce818b8d9fe153c55ef3a7b8d9a8b');
+values('20260912020000','389ff2a1a97ebb792c544fe47f825586f70282542b928158ec59bd6b4114a922');
 
 do $assert$
 begin
@@ -299,7 +298,7 @@ begin
     or has_table_privilege('zhudatuanidentityapi','organization.membernoderegistration','select,insert,update,delete')
     or has_table_privilege('zhudatuanidentityapi','organization.memberregistrationboundary','select,insert,update,delete')
     or not exists(select 1 from runtime.schemaversion where version='20260912020000'
-      and checksum='6b59e2b70262b770755189b8dce32b50d43ce818b8d9fe153c55ef3a7b8d9a8b') then
+      and checksum='389ff2a1a97ebb792c544fe47f825586f70282542b928158ec59bd6b4114a922') then
     raise exception 'SFL_MEMBER_REGISTRATION_MIGRATION_INCOMPLETE';
   end if;
 end

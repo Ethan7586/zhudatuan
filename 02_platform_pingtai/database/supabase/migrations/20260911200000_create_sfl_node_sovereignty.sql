@@ -5,8 +5,7 @@ select pg_advisory_xact_lock(hashtext('sfl:node-sovereignty:v1'));
 do $precondition$
 begin
   if not exists(select 1 from runtime.schemaversion
-      where version='20260911010000' and checksum='33504f898d2ba5f955ffd8c87584f57fa18d6d7290c567639049fc4f24f2a350')
-    or exists(select 1 from runtime.schemaversion where version>'20260911010000') then
+      where version='20260911010000' and checksum='33504f898d2ba5f955ffd8c87584f57fa18d6d7290c567639049fc4f24f2a350') then
     raise exception 'SFL_NODE_SOVEREIGNTY_PREDECESSOR_INVALID';
   end if;
   if to_regclass('organization.node') is not null or to_regclass('organization.noderelation') is not null then
@@ -120,7 +119,7 @@ select 'line:zhudatuan:commerce:v1',realm.node_id,
 from identity.realm realm where realm.id in('realm:l0','realm:l1');
 
 insert into runtime.schemaversion(version,checksum)
-values('20260911200000','979aa14647c0dc13d5f99f72a23dbbc83dd335b889a2365299fd07540efc44d5');
+values('20260911200000','274fbae4f0176717cba91b800040d830952b9326b1a629f2af1f73ad5de4f419');
 
 do $assert$
 begin
@@ -129,7 +128,7 @@ begin
     or (select count(*) from organization.noderelation where superseded_at is null
       and node_id in('node:zhudatuan:l0','node:hbbtzn:l1'))<>2
     or not exists(select 1 from runtime.schemaversion where version='20260911200000'
-      and checksum='979aa14647c0dc13d5f99f72a23dbbc83dd335b889a2365299fd07540efc44d5') then
+      and checksum='274fbae4f0176717cba91b800040d830952b9326b1a629f2af1f73ad5de4f419') then
     raise exception 'SFL_NODE_SOVEREIGNTY_MIGRATION_INCOMPLETE';
   end if;
 end

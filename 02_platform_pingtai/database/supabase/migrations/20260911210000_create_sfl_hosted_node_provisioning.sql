@@ -5,8 +5,7 @@ select pg_advisory_xact_lock(hashtext('sfl:hosted-node-provisioning:v1'));
 do $precondition$
 begin
   if not exists(select 1 from runtime.schemaversion
-      where version='20260911200000' and checksum='979aa14647c0dc13d5f99f72a23dbbc83dd335b889a2365299fd07540efc44d5')
-    or exists(select 1 from runtime.schemaversion where version>'20260911200000') then
+      where version='20260911200000' and checksum='274fbae4f0176717cba91b800040d830952b9326b1a629f2af1f73ad5de4f419') then
     raise exception 'SFL_HOSTED_NODE_PROVISIONING_PREDECESSOR_INVALID';
   end if;
 end
@@ -213,7 +212,7 @@ grant usage on schema organization to zhudatuanprovisioningapi;
 grant execute on function organization.provision_hosted_node(jsonb) to zhudatuanprovisioningapi;
 
 insert into runtime.schemaversion(version,checksum)
-values('20260911210000','a3561e7d4973268a80f0e49d9fdd36808d75c0e7f0ad8360139cc6d5f3b64340');
+values('20260911210000','2b4f5c28f492da1e4969b791a9dabcbcb43a27f321a08ad4bbc1af5243bc9a70');
 
 do $assert$
 begin
@@ -224,7 +223,7 @@ begin
     or not has_function_privilege('zhudatuanprovisioningapi','organization.provision_hosted_node(jsonb)','execute')
     or has_table_privilege('zhudatuanprovisioningapi','organization.hostednodeprovisioning','select,insert,update,delete')
     or not exists(select 1 from runtime.schemaversion where version='20260911210000'
-      and checksum='a3561e7d4973268a80f0e49d9fdd36808d75c0e7f0ad8360139cc6d5f3b64340') then
+      and checksum='2b4f5c28f492da1e4969b791a9dabcbcb43a27f321a08ad4bbc1af5243bc9a70') then
     raise exception 'SFL_HOSTED_NODE_PROVISIONING_MIGRATION_INCOMPLETE';
   end if;
 end

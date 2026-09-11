@@ -5,8 +5,7 @@ select pg_advisory_xact_lock(hashtext('sfl:node-context-scope:v1'));
 do $precondition$
 begin
   if not exists(select 1 from runtime.schemaversion
-      where version='20260911210000' and checksum='a3561e7d4973268a80f0e49d9fdd36808d75c0e7f0ad8360139cc6d5f3b64340')
-    or exists(select 1 from runtime.schemaversion where version>'20260911210000') then
+      where version='20260911210000' and checksum='2b4f5c28f492da1e4969b791a9dabcbcb43a27f321a08ad4bbc1af5243bc9a70') then
     raise exception 'SFL_NODE_CONTEXT_SCOPE_PREDECESSOR_INVALID';
   end if;
   if to_regclass('organization.nodeclosure') is not null then
@@ -189,7 +188,7 @@ grant execute on function organization.resolve_node_scope_descendants(text,text)
 grant execute on function organization.resolve_node_scope_subtree(text,text) to zhudatuanprovisioningapi;
 
 insert into runtime.schemaversion(version,checksum)
-values('20260912010000','ad04df36d3de44bec0b507e5af342395e1833bf04862be74679545c1cb0be26a');
+values('20260912010000','22eeea98bc478c0b71a099d8e5923c26a4db83862404e041e557aa5d6178d959');
 
 do $assert$
 begin
@@ -203,7 +202,7 @@ begin
     or has_function_privilege('public','organization.resolve_node_context(text)','execute')
     or not has_function_privilege('zhudatuanprovisioningapi','organization.resolve_node_context(text)','execute')
     or not exists(select 1 from runtime.schemaversion where version='20260912010000'
-      and checksum='ad04df36d3de44bec0b507e5af342395e1833bf04862be74679545c1cb0be26a') then
+      and checksum='22eeea98bc478c0b71a099d8e5923c26a4db83862404e041e557aa5d6178d959') then
     raise exception 'SFL_NODE_CONTEXT_SCOPE_MIGRATION_INCOMPLETE';
   end if;
 end
