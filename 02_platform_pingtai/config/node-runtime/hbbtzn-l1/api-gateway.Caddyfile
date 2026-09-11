@@ -193,7 +193,7 @@ https://:4430 {
 
 	@accounts host accounts.hbbtzn.com
 	handle @accounts {
-		root * /opt/sfl/nodes/hbbtzn-l1/current/01_core_hexin/apps/auth-web/dist
+		root * /opt/sfl/nodes/hbbtzn-l1/targets/auth-web/current/static
 		try_files {path} /index.html
 		file_server
 	}
