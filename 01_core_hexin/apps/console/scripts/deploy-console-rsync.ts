@@ -17,7 +17,7 @@ const currentConsoleDist = `${currentRelease}/${consoleDistSuffix}`;
 const currentVersionPath = `${currentConsoleDist}/console-version.json`;
 const currentBuildPath = `${currentConsoleDist}/console-build.json`;
 const currentSourceSha = remoteFileExists(currentVersionPath)
-  ? parseConsoleVersion(JSON.parse(ssh(['sed', '-n', '1,80p', currentVersionPath]))).sourceSha
+  ? parseConsoleVersion(JSON.parse(ssh(['cat', currentVersionPath]))).sourceSha
   : readCurrentBuildSha(currentBuildPath);
 
 assertConsoleDeploymentCandidate(
@@ -44,7 +44,7 @@ process.stdout.write(`${JSON.stringify({
 })}\n`);
 
 function readCurrentBuildSha(path: string): string {
-  const value = JSON.parse(ssh(['sed', '-n', '1,80p', path])) as { source_sha?: unknown };
+  const value = JSON.parse(ssh(['cat', path])) as { source_sha?: unknown };
   if (typeof value.source_sha !== 'string' || !/^[0-9a-f]{40}$/.test(value.source_sha)) {
     throw new Error('CONSOLE_PRODUCTION_SOURCE_SHA_INVALID');
   }
