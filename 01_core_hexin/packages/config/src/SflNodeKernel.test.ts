@@ -10,6 +10,7 @@ import {
   generateNodeManifestRegistry,
   hasValidNodeManifestDigest,
   nodeContextOf,
+  parseActiveRealmMembershipContext,
   parseAuthoritativeNodeContext,
   parseHostedNodeProvisioningRequest,
   parseHostedNodeProvisioningResult,
@@ -491,6 +492,20 @@ describe('SFL node kernel', () => {
       ...common, outcome: 'level_boundary', inviter_node_id: nodeId('l11'), node_id: null, parent_node_id: null,
       signed_level: null, relation_version: null, membership_id: null, effective_at: null, accepted_at: null,
     })).toMatchObject({ outcome: 'level_boundary', node_id: null });
+  });
+
+  it('parses one active Realm Membership without merging another Realm context', () => {
+    const context = parseActiveRealmMembershipContext({
+      entry_realm_id: 'realm:mall-a', current_realm_id: 'realm:member-a', account_id: 'account:a',
+      active_membership_id: 'membership:a', line_id: 'line:a', node_id: 'node:member-a:l6',
+      parent_node_id: 'node:mall-a:l1', signed_level: 'L6', sovereignty_tier: 'hosted',
+      node_profile: 'consumer', mall_id: null, host_sovereign_node_id: 'node:mall-a:l1',
+      relation_version: 3, effective_at: relationEffectiveAt, access_version: 7, status: 'active',
+    });
+    expect(context).toMatchObject({ current_realm_id: 'realm:member-a', active_membership_id: 'membership:a',
+      line_id: 'line:a', relation_version: 3, access_version: 7 });
+    expect(() => parseActiveRealmMembershipContext({ ...context, active_membership_id: 'membership:b',
+      extra_membership_id: 'membership:a' })).toThrow('SFL_ACTIVE_MEMBERSHIP_CONTEXT_INVALID');
   });
 
   it('parses authoritative persisted context and indexed scope rows without sovereign resources', () => {

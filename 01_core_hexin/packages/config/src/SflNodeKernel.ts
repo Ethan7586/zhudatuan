@@ -160,6 +160,26 @@ export interface MemberNodeRegistrationResult {
   readonly replayed: boolean;
 }
 
+/** One server-resolved Realm account and its only active Membership for the current session/request. */
+export interface ActiveRealmMembershipContext {
+  readonly entry_realm_id: string;
+  readonly current_realm_id: string;
+  readonly account_id: string;
+  readonly active_membership_id: string;
+  readonly line_id: string;
+  readonly node_id: string;
+  readonly parent_node_id: string | null;
+  readonly signed_level: SignedLevel;
+  readonly sovereignty_tier: SovereigntyTier;
+  readonly node_profile: NodeProfile;
+  readonly mall_id: string | null;
+  readonly host_sovereign_node_id: string;
+  readonly relation_version: number;
+  readonly effective_at: string;
+  readonly access_version: number;
+  readonly status: NodeLifecycleStatus;
+}
+
 export interface DomainBindingRef {
   readonly host: string;
   readonly binding_ref: VersionedRef;
@@ -355,6 +375,24 @@ const MEMBER_NODE_REGISTRATION_RESULT_KEYS = [
   'request_hash',
   'created_at',
   'replayed',
+] as const;
+const ACTIVE_REALM_MEMBERSHIP_CONTEXT_KEYS = [
+  'entry_realm_id',
+  'current_realm_id',
+  'account_id',
+  'active_membership_id',
+  'line_id',
+  'node_id',
+  'parent_node_id',
+  'signed_level',
+  'sovereignty_tier',
+  'node_profile',
+  'mall_id',
+  'host_sovereign_node_id',
+  'relation_version',
+  'effective_at',
+  'access_version',
+  'status',
 ] as const;
 const NODE_MANIFEST_KEYS = [
   'schema_version',
@@ -745,6 +783,39 @@ export function parseMemberNodeRegistrationResult(value: unknown): MemberNodeReg
     request_hash: requestHash,
     created_at: parseCanonicalTimestamp(record.created_at),
     replayed: record.replayed,
+  });
+}
+
+export function parseActiveRealmMembershipContext(value: unknown): ActiveRealmMembershipContext {
+  const record = exactRecord(value, ACTIVE_REALM_MEMBERSHIP_CONTEXT_KEYS, 'SFL_ACTIVE_MEMBERSHIP_CONTEXT_INVALID');
+  const relationVersion = Number(record.relation_version);
+  const accessVersion = Number(record.access_version);
+  const sovereigntyTier = canonicalText(record.sovereignty_tier, 'sovereignty_tier');
+  const nodeProfile = parseNodeProfile(record.node_profile);
+  if (!Number.isSafeInteger(relationVersion) || relationVersion < 1
+    || !Number.isSafeInteger(accessVersion) || accessVersion < 1) {
+    throw new Error('SFL_ACTIVE_MEMBERSHIP_CONTEXT_VERSION_INVALID');
+  }
+  if ((sovereigntyTier !== 'sovereign' && sovereigntyTier !== 'hosted') || nodeProfile === null) {
+    throw new Error('SFL_ACTIVE_MEMBERSHIP_CONTEXT_NODE_INVALID');
+  }
+  return Object.freeze({
+    entry_realm_id: canonicalText(record.entry_realm_id, 'entry_realm_id'),
+    current_realm_id: canonicalText(record.current_realm_id, 'current_realm_id'),
+    account_id: canonicalText(record.account_id, 'account_id'),
+    active_membership_id: canonicalText(record.active_membership_id, 'active_membership_id'),
+    line_id: canonicalText(record.line_id, 'line_id'),
+    node_id: canonicalText(record.node_id, 'node_id'),
+    parent_node_id: parseNullableText(record.parent_node_id, 'parent_node_id'),
+    signed_level: parseSignedLevel(record.signed_level),
+    sovereignty_tier: sovereigntyTier,
+    node_profile: nodeProfile,
+    mall_id: parseNullableText(record.mall_id, 'mall_id'),
+    host_sovereign_node_id: canonicalText(record.host_sovereign_node_id, 'host_sovereign_node_id'),
+    relation_version: relationVersion,
+    effective_at: parseCanonicalTimestamp(record.effective_at),
+    access_version: accessVersion,
+    status: parseLifecycleStatus(record.status),
   });
 }
 

@@ -10,7 +10,7 @@ import { memberPort, type MemberInvite } from '../../../member';
 import { organizationPort } from '../../../organization';
 import { canonicalMobile } from '../../02_domain_yewu/models_moxing/IdentitySubject';
 import { resolveBoundMobileAccount } from '../../03_application_yingyong/services_fuwu/SmsLogin';
-import { resolveRealmApplication, resolveRealmContext, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
+import { resolveActiveMembershipContext, resolveRealmApplication, resolveRealmContext, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
 import {
   registrationReference,
   requireValidInvite,
@@ -63,10 +63,12 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           }
           let principal = typeof body.principal === 'string' ? body.principal : null;
           let account: string | null = null;
+          let challengeRealmId = realm.realmId;
           if (purpose === 'registration' || purpose === 'login' || purpose === 'password_reset') {
             const bound = await resolveBoundMobileAccount(database, realm.realmId, [destinationHash, mobileLookup!.fingerprint, legacyMobileToken!]);
             principal = bound?.principal_id ?? null;
             account = bound?.account_id ?? null;
+            challengeRealmId = bound?.realm_id ?? realm.realmId;
           }
           const result = await database.query(
             `with challenge as (
@@ -74,7 +76,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           values($1,$2,$3,$4,$5,0,clock_timestamp()+interval '10 minutes',clock_timestamp(),$10,$11) returning id,purpose,expires_at
         ), secret as (insert into identity.challengesecret(challenge_id,code_ciphertext,code_key_version,destination_ciphertext,destination_key_version,created_at)
           values($1,$6,$7,$8,$9,clock_timestamp())) select * from challenge`,
-            [id, principal, purpose, destinationHash, codeDigest(id, registrationHash === undefined ? code : `${code}:${registrationHash}`), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion, realm.realmId, account]
+            [id, principal, purpose, destinationHash, codeDigest(id, registrationHash === undefined ? code : `${code}:${registrationHash}`), envelope.ciphertext, envelope.keyVersion, recipient.ciphertext, recipient.keyVersion, challengeRealmId, account]
           );
           await database.query(
             `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
@@ -83,7 +85,8 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             [`job:notify:${id}`, notificationScope ?? null, id, purpose === 'login' ? principal : 'public-challenge']
           );
           await publishIdentityEvent(database, 'identity.challenge.started', id, 'identity', request.input.idempotency!, {
-            challenge: id, destination: destinationHash, purpose, realm: realm.realmId, ...(account === null ? {} : { account }),
+            challenge: id, destination: destinationHash, purpose, realm: challengeRealmId,
+            entryRealm: realm.realmId, ...(account === null ? {} : { account }),
           });
           const saved = result.rows[0];
           if (!saved) throw new Error('CHALLENGE_CREATE_FAILED');
@@ -143,19 +146,21 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           await database.query('select pg_advisory_xact_lock(hashtext($1))', [`${realm.realmId}:${subjectHash}`]);
           const mobileTokens = [subjectHash, mobile.fingerprint, createHash('sha256').update(subject).digest('hex')];
           const boundAccount = await resolveBoundMobileAccount(database, realm.realmId, mobileTokens);
-          let existing = await database.query<{ account_id: string; principal_id: string; credential_version: number }>(
-            `select account.id account_id,account.legacy_principal_id principal_id,account.credential_version
+          let existing = await database.query<{ account_id: string; realm_id: string; principal_id: string; credential_version: number }>(
+            `select account.id account_id,account.realm_id,account.legacy_principal_id principal_id,account.credential_version
             from identity.credential credential join identity.account account
               on account.id=credential.account_id and account.realm_id=credential.realm_id
-            where credential.realm_id=$1 and credential.provider='password' and credential.subject_hash=$2
+            where identity.realm_contains_account_realm($1,credential.realm_id)
+              and credential.provider='password' and credential.subject_hash=$2
               and credential.status='active' and account.status='active'
             order by credential.created_at,credential.id limit 1 for update of credential,account`,
             [realm.realmId, subjectHash]
           );
           if (boundAccount !== null && existing.rows[0]?.account_id !== boundAccount.account_id) {
-            existing = await database.query<{ account_id: string; principal_id: string; credential_version: number }>(
-              `select account.id account_id,account.legacy_principal_id principal_id,account.credential_version
-              from identity.account account where account.id=$1 and account.realm_id=$2 and account.status='active'
+            existing = await database.query<{ account_id: string; realm_id: string; principal_id: string; credential_version: number }>(
+              `select account.id account_id,account.realm_id,account.legacy_principal_id principal_id,account.credential_version
+              from identity.account account where account.id=$1
+                and identity.realm_contains_account_realm($2,account.realm_id) and account.status='active'
                 and exists (select 1 from identity.credential credential where credential.account_id=account.id
                   and credential.realm_id=account.realm_id and credential.provider='password' and credential.status='active')
               for update of account`,
@@ -169,7 +174,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           if (!deferredPhoneVerification) {
             await consumeChallenge(database, textField(body, 'challenge'), textField(body, 'code'),
               (challenge, code) => codeDigest(challenge, `${code}:${registrationHash}`), undefined,
-              { purpose: 'registration', destinationHash: subjectHash, realmId: realm.realmId });
+              { purpose: 'registration', destinationHash: subjectHash, realmId: existing.rows[0]?.realm_id ?? realm.realmId });
           }
           let registrationTarget: MemberInvite;
           let applicationReturnTarget: ReturnType<typeof authTarget> | undefined;
@@ -225,6 +230,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           if (existing.rows[0]) {
             resolvedPrincipal = existing.rows[0].principal_id;
             resolvedAccount = existing.rows[0].account_id;
+            accountRealm = existing.rows[0].realm_id;
             credentialVersion = existing.rows[0].credential_version;
             const profile = await database.query<{ id: string }>(
               `select id from member.profile where principal_id=$1 and status='active' for update`,
@@ -239,8 +245,9 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                   [resolvedMember, operatorRealm!.membershipOrganizationId, realm.realmId, resolvedAccount]
                 )
               : await database.query<Record<string, unknown>>(
-                  `select * from access.membership where member_id=$1 and organization_id=$2 and client='storefront'`,
-                  [resolvedMember, organization]
+                  `select * from access.membership where member_id=$1 and organization_id=$2 and client='storefront'
+                    and realm_id=$3 and account_id=$4`,
+                  [resolvedMember, organization, accountRealm, resolvedAccount]
                 );
             if (current.rows[0] && current.rows[0].status !== 'active') reject(403, 'MEMBERSHIP_INACTIVE');
             if (current.rows[0] && registrationTarget.target_client === 'operator') reject(409, 'IDENTITY_SUBJECT_EXISTS');
@@ -250,7 +257,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                   governanceParentMembership: registrationTarget.created_by,
                   member: resolvedMember,
                   principal: resolvedPrincipal,
-                  realm: realm.realmId,
+                  realm: accountRealm,
                   account: resolvedAccount,
                   operatorOrganization: operatorRealm!.membershipOrganizationId,
                   managementOrganization: organization,
@@ -262,7 +269,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                   member: resolvedMember,
                   principal: resolvedPrincipal,
                   organization,
-                  realm: realm.realmId,
+                  realm: accountRealm,
                   account: resolvedAccount,
                   role: registrationTarget.role_id,
                   scopeKind,
@@ -369,6 +376,9 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             where membership.id=any($1::text[]) and membership.realm_id=$2 and membership.account_id=$3`,
             [realmMemberships, accountRealm, resolvedAccount]);
           if (boundMemberships.rows.length !== realmMemberships.length) throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
+          const activeContext = await resolveActiveMembershipContext(
+            database, realm.realmId, resolvedAccount, registeredMembership,
+          );
           if (typeof body.wechatToken === 'string') {
             await bindWechat(database, tokenHash(body.wechatToken), resolvedPrincipal, registeredMembership, accountRealm, resolvedAccount);
           }
@@ -384,6 +394,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           const responseBody = {
             ...result,
             ...(memberNodeRegistration === null ? {} : memberNodeRegistration),
+            active_context: activeContext,
             ...(registrationTarget.governance_level === null ? {} : { governanceLevel: registrationTarget.governance_level }),
           };
           if (authorization === null) return { status: 201, body: responseBody };
@@ -421,7 +432,8 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           await publishIdentityEvent(database, 'identity.session.created', session, registeredMembership, request.input.idempotency!, {
             principal: resolvedPrincipal,
             account: resolvedAccount,
-            realm: realm.realmId,
+            realm: accountRealm,
+            entryRealm: realm.realmId,
             membership: registeredMembership,
             assurance: sessionAssurance,
             loginMethod: deferredPhoneVerification ? 'registration_password' : 'registration_otp',

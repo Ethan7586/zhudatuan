@@ -395,6 +395,30 @@ describe('canonical member registration security boundary', () => {
     expect(ticket?.values.slice(7)).toEqual(session?.values.slice(11, 13));
   });
 
+  it('logs into one hosted member Realm selected by the storefront entry Realm', async () => {
+    const password = 'Current!Password1';
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, storefrontAvailable: true,
+      boundMobilePrincipal: 'principal:hosted-member', boundMobileRealm: 'realm:member-hongtai',
+      credentialSecret: await new PasswordPolicy().hash(password),
+      loginMembershipRows: [{ id: 'membership:member-hongtai', access_version: 1, client: 'storefront',
+        organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43' }],
+      storefrontOrganizationId: 'mall:d1708f04df2dd8a61736852c4900fb43' });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
+      target: 'storefront', application: 'zdt-l1-verify',
+    }, 'hbbtzn.com'));
+
+    expect(response).toMatchObject({ status: 201, body: {
+      membership: 'membership:member-hongtai',
+      active_context: { entry_realm_id: 'realm:l1', current_realm_id: 'realm:member-hongtai',
+        active_membership_id: 'membership:member-hongtai', node_id: 'node:bound-member:l6' },
+    } });
+    const membership = harness.queries.find(({ text }) => text.includes('select membership.id,membership.access_version'));
+    expect(membership?.values.slice(0, 2)).toEqual(['account:principal:hosted-member:l1', 'realm:member-hongtai']);
+    const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
+    expect(session?.values.slice(11, 13)).toEqual(['realm:member-hongtai', 'account:principal:hosted-member:l1']);
+  });
+
   it.each([
     ['api.zhudatuan.com', 'storefront', 'zdt-l1-verify'],
     ['hbbtzn.com', 'storefront', 'zhudatuan-storefront'],
@@ -1103,7 +1127,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
   storefrontAvailable?: boolean;
   storefrontOrganizationId?: string;
   mobileCiphertext?: string | null; passwordEvidence?: boolean; exactOwner?: boolean;
-  challengePrincipal?: string | null; boundMobilePrincipal?: string | null;
+  challengePrincipal?: string | null; boundMobilePrincipal?: string | null; boundMobileRealm?: string;
   credentialSecret?: string; ownerPasswordRotation?: boolean; loginMemberships?: boolean;
   loginMembershipRows?: ReadonlyArray<Readonly<{ id: string; access_version: number; client: string; organization_id: string }>>;
   existingMembership?: boolean; wechatGrant?: boolean; wechatConflict?: boolean; wechatUpdate?: boolean }>): Readonly<{
@@ -1155,10 +1179,10 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       if (text.startsWith('select request_hash,state,response')) {
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }
-      if (text.includes('select account.id account_id,account.legacy_principal_id principal_id,account.credential_version')
+      if (text.includes('select account.id account_id,account.realm_id,account.legacy_principal_id principal_id,account.credential_version')
         && text.includes('credential.subject_hash=$2') && !text.includes('credential.secret_hash')) {
         return result(input.subjectExists ? [{ account_id: 'account:existing-phone:l0',
-          principal_id: 'principal:existing-phone', credential_version: 4 }] : []);
+          realm_id: input.boundMobileRealm ?? 'realm:l0', principal_id: 'principal:existing-phone', credential_version: 4 }] : []);
       }
       if (text.includes('from experience.application application') && text.includes('application.public_slug=$1')) {
         const l1 = values[0] === 'zdt-l1-verify';
@@ -1174,7 +1198,8 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         }] : []);
       }
       if (text.includes('from identity.account account where account.id=$1')) {
-        return result([{ account_id: String(values[0]), principal_id: input.boundMobilePrincipal ?? 'principal:existing-phone', credential_version: 4 }]);
+        return result([{ account_id: String(values[0]), realm_id: input.boundMobileRealm ?? String(values[1]),
+          principal_id: input.boundMobilePrincipal ?? 'principal:existing-phone', credential_version: 4 }]);
       }
       if (text.includes('select principal_id from identity.credential')) {
         return result([{ principal_id: input.challengePrincipal ?? 'principal:password-reset' }]);
@@ -1186,13 +1211,14 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           input.challengePrincipal,
         ].filter((principal, index, all): principal is string => principal !== null && principal !== undefined
           && all.indexOf(principal) === index);
-        return result(principals.map((principal_id) => ({ account_id: `account:${principal_id}:${String(values[0]).slice(6)}`, realm_id: String(values[0]),
+        return result(principals.map((principal_id) => ({ account_id: `account:${principal_id}:${String(values[0]).slice(6)}`,
+          realm_id: input.boundMobileRealm ?? String(values[0]),
           principal_id, credential_version: 4 })));
       }
       if (text.includes('account.credential_version,credential.secret_hash')) {
         const principal = input.boundMobilePrincipal ?? 'principal:password-login';
         return result(input.credentialSecret ? [{ account_id: String(values[2] ?? `account:${principal}:${String(values[0]).slice(6)}`),
-          realm_id: String(values[0]), principal_id: principal,
+          realm_id: input.boundMobileRealm ?? String(values[0]), principal_id: principal,
           secret_hash: input.credentialSecret, credential_version: 2 }] : []);
       }
       if (text.includes('select membership.id,membership.access_version,membership.client')) {
@@ -1265,6 +1291,29 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           signed_level: targetLevel, relation_version: 1, host_sovereign_node_id: request.registration_host_node_id,
           realm_id: request.realm_id, membership_id: request.membership_id, effective_at: at, accepted_at: at,
           idempotency_key: request.idempotency_key, request_hash: 'a'.repeat(64), created_at: at, replayed: false,
+        }]);
+      }
+      if (text.includes('identity.resolve_active_membership_context')) {
+        const registrationQuery = [...queries].reverse().find((query) => query.text.includes('organization.register_hosted_member_node'));
+        const registrationRequest = registrationQuery === undefined
+          ? undefined
+          : JSON.parse(String(registrationQuery.values[0])) as Record<string, string>;
+        const currentRealm = registrationRequest?.realm_id ?? input.boundMobileRealm ?? String(values[0]);
+        const boundHosted = input.boundMobileRealm !== undefined && input.boundMobileRealm !== String(values[0]);
+        const nodeId = registrationRequest === undefined
+          ? (boundHosted ? 'node:bound-member:l6'
+            : String(values[0]).includes('l1') ? 'node:hbbtzn:l1' : 'node:zhudatuan:l0')
+          : `node:${registrationRequest.node_key}:${registrationRequest.registration_origin === 'invitation' ? 'l7' : 'l6'}`;
+        const hosted = registrationRequest !== undefined || boundHosted;
+        return result([{
+          entry_realm_id: String(values[0]), current_realm_id: currentRealm, account_id: String(values[1]),
+          active_membership_id: String(values[2]), line_id: 'line:zhudatuan:commerce:v1', node_id: nodeId,
+          parent_node_id: hosted ? (registrationRequest?.registration_origin === 'invitation'
+            ? 'node:inviter:l6' : 'node:hbbtzn:l1') : null,
+          signed_level: hosted ? (registrationRequest?.registration_origin === 'invitation' ? 'L7' : 'L6') : 'L1',
+          sovereignty_tier: hosted ? 'hosted' : 'sovereign', node_profile: hosted ? 'consumer' : 'operating_mall',
+          mall_id: hosted ? null : 'mall:l1-hongtai', host_sovereign_node_id: 'node:hbbtzn:l1',
+          relation_version: 1, effective_at: '2026-09-12T02:00:00.000Z', access_version: 1, status: 'active',
         }]);
       }
       if (text.includes('select mobile_ciphertext from identity.account')) {

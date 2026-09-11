@@ -9,6 +9,17 @@ import {
 } from './AccessContext';
 import { PgMembershipResolver, PgScopeResolver, PgSessionResolver } from './PgAccessResolvers';
 
+const l1SessionNode = {
+  entry_realm_id: 'realm:l1', line_id: 'line:zhudatuan:commerce:v1', node_id: 'node:hbbtzn:l1',
+  parent_node_id: 'node:zhudatuan:l0', signed_level: 'L1', node_profile: 'operating_mall',
+  mall_id: 'mall:d1708f04df2dd8a61736852c4900fb43', host_sovereign_node_id: 'node:hbbtzn:l1',
+} as const;
+const l0SessionNode = {
+  entry_realm_id: 'realm:l0', line_id: 'line:zhudatuan:commerce:v1', node_id: 'node:zhudatuan:l0',
+  parent_node_id: null, signed_level: 'L0', node_profile: 'operating_mall', mall_id: 'mall-zhudatuan',
+  host_sovereign_node_id: 'node:zhudatuan:l0',
+} as const;
+
 describe('PostgreSQL access NodeContext continuity', () => {
   it('reuses the request context for session realm, actor, access, and data scope', async () => {
     const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
@@ -25,6 +36,7 @@ describe('PostgreSQL access NodeContext continuity', () => {
         target: 'console',
         assurance_level: 1,
         assurance_verified_at: null,
+        ...l1SessionNode,
       }],
     });
     const actor = await new PgSessionResolver({ query: sessionQuery } as never).resolve(headers);
@@ -39,11 +51,11 @@ describe('PostgreSQL access NodeContext continuity', () => {
       .resolve(actor, 'catalog.listings.read');
     const access = { actor, scope: resolvedScope } as AccessContext;
 
-    expect(actor.nodeContext).toBe(nodeContext);
+    expect(actor.nodeContext).toMatchObject({ node_id: nodeContext.node_id, realm: { ref: nodeContext.realm.ref } });
     expect(actor.realm).toBe(nodeContext.realm.ref);
     expect(actor.account).toBe('account:l1');
-    expect(requireScopeNodeContext(resolvedScope)).toBe(nodeContext);
-    expect(requireAccessNodeContext(access)).toBe(nodeContext);
+    expect(requireScopeNodeContext(resolvedScope)).toBe(actor.nodeContext);
+    expect(requireAccessNodeContext(access)).toBe(actor.nodeContext);
     expect(sessionQuery.mock.calls[0]?.[0]).toContain('actor_id,account_id,realm_id,session_id');
     expect(sessionQuery.mock.calls[0]?.[0]).toContain('identity.resolve_session($1,$2)');
     expect(sessionQuery.mock.calls[0]?.[1]).toEqual([expect.any(String), nodeContext.host]);
@@ -51,12 +63,37 @@ describe('PostgreSQL access NodeContext continuity', () => {
 });
 
 describe('PgSessionResolver realm account projection', () => {
+  it('activates the hosted Membership node while retaining the server-resolved entry host', async () => {
+    const entryContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const query = vi.fn().mockResolvedValue({ rows: [{
+      actor_id: 'principal:shared', account_id: 'account:member-a', realm_id: 'realm:member-a',
+      session_id: 'session:member-a', membership_id: 'membership:member-a', credential_version: 2,
+      access_version: 4, target: 'storefront', assurance_level: 2, assurance_verified_at: null,
+      ...l1SessionNode, node_id: 'node:member-a:l6', parent_node_id: 'node:hbbtzn:l1', signed_level: 'L6',
+      node_profile: 'consumer', mall_id: null,
+    }] });
+    const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'m'.repeat(32)}` }), entryContext);
+
+    const actor = await new PgSessionResolver({ query } as never).resolve(headers);
+    expect(actor).toMatchObject({
+      account: 'account:member-a', realm: 'realm:member-a', membership: 'membership:member-a',
+      nodeContext: { host: entryContext.host, line_id: l1SessionNode.line_id, node_id: 'node:member-a:l6',
+        parent_node_id: 'node:hbbtzn:l1', signed_level: 'L6', realm: { ref: 'realm:member-a' } },
+    });
+    const scopeQuery = vi.fn().mockResolvedValue({ rows: [{ scope: {
+      kind: 'self', id: 'member:member-a', tenant: 'node:member-a:l6', path: [],
+    } }] });
+    await new PgScopeResolver({ query: scopeQuery } as never).resolve(actor, 'benefit.balance.read');
+    expect(scopeQuery.mock.calls[0]?.[1]?.slice(0, 2)).toEqual(['membership:member-a', 'benefit.balance.read']);
+  });
+
   it('projects the account and realm selected by the database session boundary', async () => {
     const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
     const query = vi.fn().mockResolvedValue({ rows: [{
       actor_id: 'principal:shared', account_id: 'account:l1', realm_id: 'realm:l1',
       session_id: 'session:l1', membership_id: 'membership:l1', credential_version: 7,
       access_version: 3, target: 'console', assurance_level: 1, assurance_verified_at: null,
+      ...l1SessionNode,
     }] });
     const resolver = new PgSessionResolver({ query } as never);
     const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'t'.repeat(32)}` }), nodeContext);
@@ -76,6 +113,7 @@ describe('PgSessionResolver realm account projection', () => {
       actor_id: 'principal:shared', account_id: 'account:l0', realm_id: 'realm:l0',
       session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
       access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
+      ...l0SessionNode,
     }] });
     const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'x'.repeat(32)}` }), nodeContext);
 
@@ -87,6 +125,7 @@ describe('PgSessionResolver realm account projection', () => {
       actor_id: 'principal:shared', account_id: null, realm_id: 'realm:l0',
       session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
       access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
+      ...l0SessionNode,
     }] });
     const resolver = new PgSessionResolver({ query } as never);
     const headers = bindRequestNodeContext(
@@ -104,6 +143,7 @@ describe('PgSessionResolver realm account projection', () => {
         actor_id: 'principal:shared', account_id: 'account:l0', realm_id: 'realm:l0',
         session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
         access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
+        ...l0SessionNode,
       }] : [],
     }));
     const resolver = new PgSessionResolver({ query } as never);

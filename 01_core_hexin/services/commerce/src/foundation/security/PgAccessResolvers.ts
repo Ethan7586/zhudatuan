@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { MembershipAccess, Scope, ScopeGrant } from '@shop/authz';
+import type { NodeProfile, SignedLevel } from '@shop/config/sfl-node-kernel';
 import type { DatabasePool } from '../persistence/Pool';
 import type { AccessVersionResolver, CapabilityResolver, MembershipResolver, MembershipSnapshot } from './AccessPipeline';
 import {
@@ -22,6 +23,14 @@ interface SessionRow {
   readonly target: Actor['target'];
   readonly assurance_level: number;
   readonly assurance_verified_at: Date | null;
+  readonly entry_realm_id: string;
+  readonly line_id: string;
+  readonly node_id: string;
+  readonly parent_node_id: string | null;
+  readonly signed_level: SignedLevel;
+  readonly node_profile: NodeProfile;
+  readonly mall_id: string | null;
+  readonly host_sovereign_node_id: string;
 }
 interface MembershipRow {
   readonly id: string;
@@ -40,17 +49,31 @@ export class PgSessionResolver implements RuntimeSessionResolver {
     const token = bearer(headers.authorization) ?? cookie(headers.cookie, 'shop_session');
     if (!token) throw new Error('AUTHENTICATION_REQUIRED');
     const nodeContext = sessionNodeContext(headers);
-    const result = await this.pool.query<SessionRow>('select actor_id,account_id,realm_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at from identity.resolve_session($1,$2)',
+    const result = await this.pool.query<SessionRow>('select actor_id,account_id,realm_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at,entry_realm_id,line_id,node_id,parent_node_id,signed_level,node_profile,mall_id,host_sovereign_node_id from identity.resolve_session($1,$2)',
       [createHash('sha256').update(token).digest('hex'), nodeContext.host]);
     const row = result.rows[0];
     if (!row) throw new Error('AUTHENTICATION_REQUIRED');
     if (!row.account_id || !row.realm_id) throw new Error('AUTH_REALM_CONTEXT_MISSING');
-    if (row.realm_id !== nodeContext.realm.ref) throw new Error('AUTH_REALM_MISMATCH');
+    if (row.entry_realm_id !== nodeContext.realm.ref) throw new Error('AUTH_REALM_MISMATCH');
+    const activeNode = Object.freeze({
+      line_id: row.line_id,
+      node_id: row.node_id,
+      parent_node_id: row.parent_node_id,
+      signed_level: row.signed_level,
+      node_profile: row.node_profile,
+      mall_id: row.mall_id,
+      host_node_id: row.node_id === row.host_sovereign_node_id ? null : row.host_sovereign_node_id,
+    });
+    const activeNodeContext = Object.freeze({
+      ...nodeContext,
+      ...activeNode,
+      realm: Object.freeze({ ...nodeContext.realm, ref: row.realm_id }),
+    });
     return {
       id: row.actor_id,
       account: row.account_id,
       realm: row.realm_id,
-      nodeContext,
+      nodeContext: activeNodeContext,
       session: row.session_id,
       membership: row.membership_id,
       credentialVersion: row.credential_version,

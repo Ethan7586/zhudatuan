@@ -19,7 +19,8 @@ export async function resolveBoundMobileAccount(
   const matches = await database.query<SmsLoginPrincipal>(
     `select account.id account_id,account.realm_id,account.legacy_principal_id principal_id,account.credential_version
       from identity.account account
-      where account.realm_id=$1 and account.status='active' and account.legacy_principal_id is not null and (
+      where identity.realm_contains_account_realm($1,account.realm_id)
+        and account.status='active' and account.legacy_principal_id is not null and (
         account.mobile_token=any($2::text[])
         or exists (select 1 from identity.credential credential where credential.account_id=account.id
           and credential.realm_id=account.realm_id and credential.provider='password' and credential.status='active'
@@ -44,7 +45,8 @@ export async function resolvePasswordLoginCredential(
         account.credential_version,credential.secret_hash
       from identity.credential credential join identity.account account
         on account.id=credential.account_id and account.realm_id=credential.realm_id
-      where credential.realm_id=$1 and credential.provider='password' and credential.status='active' and account.status='active'
+      where identity.realm_contains_account_realm($1,credential.realm_id)
+        and credential.provider='password' and credential.status='active' and account.status='active'
         and (($3::text is null and credential.subject_hash=$2) or ($3::text is not null and credential.account_id=$3))
       order by credential.created_at,credential.id limit 1 for update of credential,account`,
     [input.realmId, input.subjectHash, mobileAccount?.account_id ?? null]
@@ -61,7 +63,8 @@ export async function verifySmsLoginChallenge(
       from identity.challenge challenge join identity.account account
         on account.id=challenge.account_id and account.realm_id=challenge.realm_id
       where challenge.id=$1 and challenge.code_hash=$2 and challenge.consumed_at is null
-        and challenge.expires_at>clock_timestamp() and challenge.realm_id=$3
+        and challenge.expires_at>clock_timestamp()
+        and identity.realm_contains_account_realm($3,challenge.realm_id)
         and challenge.purpose='login' and challenge.destination_hash=$4 and account.status='active'
       for update of challenge,account`,
     [input.id, input.codeHash, input.realmId, input.destinationHash]
