@@ -9,7 +9,7 @@ import { productKey, readProducts, type ProductQuery } from '../product/ProductQ
 import { supplyPartnersFromListingPage } from './SupplyChainModel';
 import './supply-chain.css';
 
-const supplyQuery: ProductQuery = Object.freeze({ q: '', category: '', status: '', limit: 100, preview: true });
+const supplyQuery: ProductQuery = Object.freeze({ q: '', category: '', status: '', limit: 20, preview: true });
 
 export function Component() {
   const context = useConsoleContext();
@@ -20,10 +20,13 @@ export function Component() {
     queryFn: ({ signal }) => readProducts(context, supplyQuery, signal),
     placeholderData: keepPreviousData,
     staleTime: 5 * 60_000,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
   const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
     hasData: query.data !== undefined, empty: false, stale: query.isStale });
   const error = safeQueryError(query.error);
+  const unavailable = query.data === undefined && query.error !== null;
   const partners = useMemo(() => supplyPartnersFromListingPage(query.data), [query.data]);
   const visiblePartners = useMemo(() => {
     const normalized = queryText.trim().toLocaleLowerCase('zh-CN');
@@ -51,9 +54,10 @@ export function Component() {
       </header>
       <div className="supplysearch"><span aria-hidden="true">⌕</span><input value={queryText} onChange={(event) => setQueryText(event.target.value)}
         placeholder="搜索供应商、渠道商、品牌方或生产商" aria-label="搜索供应链伙伴" /></div>
-      <ResourceState condition={condition === 'loading' ? 'ready' : condition}
+      <ResourceState condition={condition === 'loading' || unavailable ? 'ready' : condition}
         {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
-        {query.data === undefined ? <SupplySkeleton /> : partners.length === 0 ? <SupplyEmpty onProducts={() => { void navigate(scopePath(context.scope, 'products')); }} /> : (
+        {unavailable ? <SupplyUnavailable retry={() => { void query.refetch(); }} />
+          : query.data === undefined ? <SupplySkeleton /> : partners.length === 0 ? <SupplyEmpty onProducts={() => { void navigate(scopePath(context.scope, 'products')); }} /> : (
           <div className="supplysplit">
             <section className="supplylist" aria-label="供货伙伴">
               <div className="supplylisthead"><span>供货伙伴</span><span>主体类型</span><span>供应商品</span></div>
@@ -76,6 +80,10 @@ export function Component() {
 
 function SupplyEmpty({ onProducts }: Readonly<{ onProducts: () => void }>) {
   return <div className="supplyempty"><span aria-hidden="true">◇</span><h1>暂未发现供货伙伴</h1><p>商品建立真实供货关系后，供应商和渠道商会自动出现在这里。</p><button type="button" onClick={onProducts}>查看商品管理</button></div>;
+}
+
+function SupplyUnavailable({ retry }: Readonly<{ retry: () => void }>) {
+  return <div className="supplyempty" role="status"><span aria-hidden="true">↻</span><h1>供应数据暂未同步</h1><p>页面已经可以使用，你可以立即重试本次读取。</p><button type="button" onClick={retry}>重新读取</button></div>;
 }
 
 function SupplySkeleton() {
