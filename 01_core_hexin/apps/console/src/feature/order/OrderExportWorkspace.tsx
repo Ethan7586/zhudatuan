@@ -96,12 +96,12 @@ export function OrderExportWorkspace({ context, mallName, pageIds, selectedIds, 
   return (
     <section className="orderexportworkspace" aria-labelledby="orderexporttitle">
       <header className="orderexporthero">
-        <button type="button" className="orderexportback" onClick={onClose}><OrderIcon name="arrowLeft" />返回订单列表</button>
         <div>
           <p>订单管理 / 导出订单</p>
           <h1 id="orderexporttitle">导出订单</h1>
           <span>按照真实订单筛选快照生成文件；任务在后台处理，完成后可直接下载。</span>
         </div>
+        <button type="button" className="orderexportback" onClick={onClose}><OrderIcon name="arrowLeft" />返回订单列表</button>
       </header>
 
       <div className="orderexportgrid">
