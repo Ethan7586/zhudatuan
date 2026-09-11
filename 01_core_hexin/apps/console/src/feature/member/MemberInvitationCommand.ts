@@ -12,7 +12,7 @@ export interface MemberInvitationAuthority {
 }
 
 export function memberInvitationAvailable(context: ConsoleContext, fallback?: MemberInvitationAuthority): boolean {
-  const level = context.session.governance?.level ?? fallback?.level;
+  const level = fallback?.level ?? context.session.governance?.level;
   return (level === 'owner' || level === 'senior_administrator')
     && context.session.csrf !== undefined;
 }
@@ -24,7 +24,7 @@ export function memberInvitationLevelAvailable(
 ): boolean {
   if (!memberInvitationAvailable(context, fallback)) return false;
   if (governanceLevel === 'administrator') return true;
-  const authority = context.session.governance ?? fallback;
+  const authority = fallback ?? context.session.governance;
   return authority?.level === 'owner' && authority.exactOwner;
 }
 

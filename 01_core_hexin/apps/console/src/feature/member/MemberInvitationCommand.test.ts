@@ -171,6 +171,24 @@ describe('member invitation command', () => {
     expect(requests).toHaveLength(1);
   });
 
+  it('prefers the current authoritative directory identity over stale session governance', async () => {
+    const staleGovernance = {
+      ...context,
+      session: {
+        ...context.session,
+        governance: { level: 'administrator' as const, exactOwner: false, organization: 'tenant:one' },
+      },
+    };
+    const owner = { level: 'owner' as const, exactOwner: true };
+
+    expect(memberInvitationAvailable(staleGovernance, owner)).toBe(true);
+    await createMemberInvitation(staleGovernance, {
+      label: '目录 Owner 创建邀请', destination: '13800138000', governanceLevel: 'senior_administrator', maxUses: 1, validityDays: 7,
+    }, owner);
+
+    expect(bodies[0]).toMatchObject({ governanceLevel: 'senior_administrator' });
+  });
+
   it('keeps the ordinary invitation command available to a senior administrator', async () => {
     const senior = {
       ...context,
