@@ -1,97 +1,569 @@
+.dialogpanel:has(.memberinvitationform),
+.dialogpanel:has(.memberinvitationreceipt) {
+  width: min(54rem, calc(100vw - 2rem));
+}
+
+.dialogcontent:has(.memberinvitationform) > header,
+.dialogcontent:has(.memberinvitationreceipt) > header {
+  padding: 1.25rem 1.5rem;
+}
+
+.dialogbody:has(.memberinvitationform),
+.dialogbody:has(.memberinvitationreceipt) {
+  padding: 0;
+}
+
 .memberinvitationform,
 .memberinvitationreceipt {
   display: grid;
-  gap: var(--sw-space-2);
+  color: #0b1d35;
 }
 
-.memberinvitationtarget {
+.memberinvitationbody {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem;
+}
+
+.memberinvitationintro {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  border: 1px solid #dbe6f5;
+  border-radius: 10px;
+  background: #f7faff;
+  padding: 0.875rem 1rem;
+}
+
+.memberinvitationintroicon,
+.memberinvitationreceiptheading > span {
+  display: grid;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9px;
+  background: #e8f0ff;
+  color: #1758e8;
+  place-items: center;
+}
+
+.memberinvitationintroicon svg,
+.memberinvitationreceiptheading svg,
+.memberinvitationlevelicon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.memberinvitationintro p,
+.memberinvitationintro strong,
+.memberinvitationreceiptheading p,
+.memberinvitationreceiptheading strong {
   margin: 0;
-  color: var(--sw-text-secondary);
-  font-size: var(--sw-font-size-body-sm);
+}
+
+.memberinvitationintro p {
+  color: #60718a;
+  font-size: 0.875rem;
+}
+
+.memberinvitationintro strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #1649aa;
+  font-size: 0.8125rem;
+}
+
+.memberinvitationgrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.9fr);
+  gap: 1.25rem;
+}
+
+.memberinvitationlevels {
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.memberinvitationlevels legend,
+.memberinvitationfield > label {
+  margin: 0 0 0.5rem;
+  color: #243852;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.memberinvitationlevels > div,
+.memberinvitationdetails {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.memberinvitationlevel {
+  position: relative;
+  display: grid !important;
+  grid-template-columns: 2.375rem minmax(0, 1fr) 1.125rem;
+  align-items: start;
+  gap: 0.75rem !important;
+  min-height: 7.25rem;
+  margin: 0 !important;
+  border: 1px solid #d7e0ec;
+  border-radius: 10px;
+  background: #fff;
+  padding: 1rem;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.memberinvitationlevel:hover {
+  border-color: #8eaff7;
+}
+
+.memberinvitationlevel[data-selected='true'] {
+  border-color: #1f5eff;
+  background: #f3f7ff;
+  box-shadow: 0 0 0 2px rgb(31 94 255 / 10%);
+}
+
+.memberinvitationlevel:has(input:focus-visible) {
+  outline: 3px solid rgb(31 94 255 / 22%);
+  outline-offset: 2px;
+}
+
+.memberinvitationlevel input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.memberinvitationlevelicon {
+  display: grid;
+  width: 2.375rem;
+  height: 2.375rem;
+  border-radius: 8px;
+  background: #edf3ff;
+  color: #1f5eff;
+  place-items: center;
+}
+
+.memberinvitationlevelcopy,
+.memberinvitationlevelcopy > span {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.memberinvitationlevelcopy > span {
+  grid-template-columns: minmax(0, max-content) minmax(0, max-content);
+  align-items: center;
+}
+
+.memberinvitationlevelcopy strong {
+  font-size: 0.9375rem;
+}
+
+.memberinvitationlevelcopy small {
+  width: fit-content;
+  border-radius: 5px;
+  background: #e8f0ff;
+  color: #1758e8;
+  padding: 0.1875rem 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.memberinvitationlevelcopy em {
+  color: #60718a;
+  font-size: 0.8125rem;
+  font-style: normal;
+  line-height: 1.65;
+}
+
+.memberinvitationlevel > i {
+  display: grid;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1px solid #aebbcf;
+  border-radius: 50%;
+  background: #fff;
+  place-items: center;
+}
+
+.memberinvitationlevel[data-selected='true'] > i {
+  border: 0.3125rem solid #1f5eff;
+}
+
+.memberinvitationfield {
+  display: grid;
+}
+
+.memberinvitationfield input,
+.memberinvitationfield select {
+  min-height: 2.875rem;
+  margin: 0;
+  border-color: #cbd6e5;
+  border-radius: 8px;
+  color: #132b49;
+  font-size: 0.875rem;
+}
+
+.memberinvitationfield input:focus,
+.memberinvitationfield select:focus {
+  border-color: #1f5eff;
+  outline: 3px solid rgb(31 94 255 / 12%);
+}
+
+.memberinvitationfield input[aria-invalid='true'],
+.memberinvitationfield select[aria-invalid='true'] {
+  border-color: #c63f3f;
+}
+
+.memberinvitationfieldhint,
+.memberinvitationfielderror {
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.memberinvitationfieldhint {
+  color: #718199;
+}
+
+.memberinvitationfielderror {
+  color: #b72e2e;
+  font-weight: 700;
+}
+
+.memberinvitationpolicy {
+  overflow: hidden;
+  border: 1px solid #dce5f1;
+  border-radius: 10px;
+  background: #fbfcfe;
+}
+
+.memberinvitationpolicyheading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid #e4ebf4;
+  background: #f3f7fc;
+  padding: 0.75rem 1rem;
+}
+
+.memberinvitationpolicyheading div {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+}
+
+.memberinvitationpolicyheading span,
+.memberinvitationpolicyheading small {
+  color: #6a7b92;
+  font-size: 0.75rem;
+}
+
+.memberinvitationpolicyheading strong {
+  font-size: 0.875rem;
+}
+
+.memberinvitationpolicy dl,
+.memberinvitationreceiptdetails {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+}
+
+.memberinvitationpolicy dl > div,
+.memberinvitationreceiptdetails > div {
+  min-width: 0;
+  padding: 0.875rem 1rem;
+}
+
+.memberinvitationpolicy dt,
+.memberinvitationreceiptdetails dt {
+  color: #74839a;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.memberinvitationpolicy dd,
+.memberinvitationreceiptdetails dd {
+  overflow-wrap: anywhere;
+  margin: 0.3125rem 0 0;
+  color: #172d4b;
+  font-size: 0.8125rem;
+  font-weight: 700;
 }
 
 .memberinvitationerror {
   margin: 0;
-  border-radius: var(--sw-radius-sm);
-  background: var(--sw-danger-surface);
-  color: var(--sw-danger-strong);
-  padding: var(--sw-space-1-5);
+  border: 1px solid #efc4c4;
+  border-radius: 8px;
+  background: #fff5f5;
+  color: #a82e2e;
+  padding: 0.75rem 0.875rem;
+  font-size: 0.8125rem;
 }
 
-.memberinvitationreceipt > div:first-of-type {
+.memberinvitationfooter {
+  align-items: center;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  margin: 0 !important;
+  border-top: 1px solid #e2e9f2 !important;
+  background: #fbfcfe;
+  padding: 1rem 1.5rem !important;
+}
+
+.memberinvitationfootnote {
+  margin: 0;
+  color: #6b7b91;
+  font-size: 0.75rem;
+}
+
+.memberinvitationactions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.625rem;
+}
+
+.memberinvitationactions .shopbutton,
+.memberinvitationreceipt footer .shopbutton {
+  min-height: 2.75rem;
+}
+
+.memberinvitationformpending .memberinvitationbody {
+  opacity: 0.74;
+}
+
+.memberinvitationreceipt {
+  gap: 1.25rem;
+  padding: 1.5rem;
+}
+
+.memberinvitationreceiptheading {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.memberinvitationreceiptheading > span {
+  background: #e7f7ef;
+  color: #168553;
+}
+
+.memberinvitationreceiptheading strong {
+  font-size: 1rem;
+}
+
+.memberinvitationreceiptheading p {
+  margin-top: 0.25rem;
+  color: #66768d;
+  font-size: 0.8125rem;
+}
+
+.memberinvitationcode {
   display: grid;
   width: 100%;
-  gap: var(--sw-space-1);
-  border: 0.0625rem solid var(--sw-brand);
-  border-radius: var(--sw-radius-md);
-  background: var(--sw-brand-light);
-  padding: var(--sw-space-2);
+  gap: 0.5rem;
+  border: 1px solid #1f5eff;
+  border-radius: 10px;
+  background: #f2f6ff;
+  padding: 1.125rem 1.25rem;
   text-align: left;
   cursor: pointer;
 }
 
 .memberinvitationcode:hover {
-  border-color: var(--sw-brand-dark);
+  border-color: #1649c9;
+  background: #edf3ff;
 }
 
 .memberinvitationcode:focus-visible {
-  outline: var(--sw-focus-ring-width) solid var(--sw-focus-ring-color);
-  outline-offset: var(--sw-focus-ring-offset);
+  outline: 3px solid rgb(31 94 255 / 22%);
+  outline-offset: 2px;
 }
 
 .memberinvitationcode[data-copy-state='copied'] {
-  border-color: var(--sw-success);
-  background: var(--sw-success-surface);
+  border-color: #168553;
+  background: #effaf5;
 }
 
-.memberinvitationcode small {
-  color: var(--sw-brand-dark);
-  font-size: var(--sw-font-size-caption);
-  font-weight: var(--sw-font-weight-bold);
-}
-
-.memberinvitationcode[data-copy-state='copied'] small {
-  color: var(--sw-success-strong);
-}
-
-.memberinvitationreceipt span,
-.memberinvitationreceipt dt {
-  color: var(--sw-text-secondary);
-  font-size: var(--sw-font-size-caption);
+.memberinvitationcode > span,
+.memberinvitationlinkpreview > span {
+  color: #586c88;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
-.memberinvitationreceipt code {
+.memberinvitationcode code {
+  color: #124ccf;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
   overflow-wrap: anywhere;
-  color: var(--sw-brand-dark);
-  font-size: var(--sw-font-size-h3);
-  font-weight: 700;
-  letter-spacing: 0.04em;
   user-select: all;
 }
 
-.memberinvitationreceipt dl {
+.memberinvitationcode small {
+  color: #1758e8;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.memberinvitationcode[data-copy-state='copied'] code,
+.memberinvitationcode[data-copy-state='copied'] small {
+  color: #137149;
+}
+
+.memberinvitationreceiptdetails {
+  overflow: hidden;
+  border: 1px solid #dce5f1;
+  border-radius: 10px;
+  background: #fbfcfe;
+}
+
+.memberinvitationreceiptdetails > div + div {
+  border-left: 1px solid #e4ebf4;
+}
+
+.memberinvitationlinkpreview {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: var(--sw-space-1);
+  gap: 0.375rem;
+  border: 1px solid #dce5f1;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.75rem 0.875rem;
+}
+
+.memberinvitationlinkpreview code {
+  overflow: hidden;
+  color: #34506f;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: all;
+}
+
+.memberinvitationcopystatus {
   margin: 0;
+  border-radius: 8px;
+  background: #effaf5;
+  color: #137149;
+  padding: 0.75rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
 }
 
-.memberinvitationreceipt dl > div {
-  border: 0.0625rem solid var(--sw-border);
-  border-radius: var(--sw-radius-sm);
-  padding: var(--sw-space-1-5);
-}
-
-.memberinvitationreceipt dd {
-  margin: var(--sw-space-0-5) 0 0;
+.memberinvitationcopystatus[data-status='failed'] {
+  background: #fff7e8;
+  color: #9b5a00;
 }
 
 .memberinvitationreceipt footer {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: var(--sw-space-1);
-  border-top: 0.0625rem solid var(--sw-border);
-  padding-top: var(--sw-space-2);
+  gap: 0.625rem;
+  border-top: 1px solid #e2e9f2;
+  padding-top: 1.25rem;
+}
+
+@media (max-width: 48rem) {
+  .dialogpanel:has(.memberinvitationform),
+  .dialogpanel:has(.memberinvitationreceipt) {
+    width: 100%;
+    max-height: 94vh;
+  }
+
+  .dialogcontent:has(.memberinvitationform) > header,
+  .dialogcontent:has(.memberinvitationreceipt) > header {
+    padding: 1rem;
+  }
+
+  .memberinvitationbody,
+  .memberinvitationreceipt {
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .memberinvitationgrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .memberinvitationlevel {
+    min-height: 0;
+    padding: 0.875rem;
+  }
+
+  .memberinvitationlevelcopy > span {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .memberinvitationpolicy dl,
+  .memberinvitationreceiptdetails {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .memberinvitationpolicy dl > div:last-child,
+  .memberinvitationreceiptdetails > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .memberinvitationreceiptdetails > div + div {
+    border-left: 0;
+  }
+
+  .memberinvitationfooter {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 0.875rem 1rem !important;
+  }
+
+  .memberinvitationactions,
+  .memberinvitationreceipt footer {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .memberinvitationactions .shopbutton,
+  .memberinvitationreceipt footer .shopbutton {
+    width: 100%;
+    min-height: 2.875rem;
+  }
+}
+
+@media (max-width: 28rem) {
+  .memberinvitationintro {
+    align-items: flex-start;
+  }
+
+  .memberinvitationpolicyheading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .memberinvitationpolicy dl,
+  .memberinvitationreceiptdetails {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .memberinvitationpolicy dl > div:last-child,
+  .memberinvitationreceiptdetails > div:last-child {
+    grid-column: auto;
+  }
+
+  .memberinvitationcode code {
+    font-size: 1.35rem;
+    letter-spacing: 0.08em;
+  }
 }

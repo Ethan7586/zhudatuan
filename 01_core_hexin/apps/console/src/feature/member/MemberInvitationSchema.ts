@@ -20,7 +20,7 @@ export const MemberInvitationCommandSchema = z.strictObject({
   tenantId: z.string().min(1).max(255).optional(),
 });
 
-export const MemberInvitationReceiptSchema = z.strictObject({
+export const MemberInvitationReceiptSchema = z.object({
   id: z.string().min(1),
   code: z.string().regex(/^[0-9A-F]{10}$/),
   label: z.string().min(2).max(80),

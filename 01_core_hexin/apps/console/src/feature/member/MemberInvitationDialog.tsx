@@ -1,10 +1,20 @@
 import { Button, Dialog, Form } from '@shop/design';
+import { ApiError } from '@shop/sdk';
 import { useMutation } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+import { appConfig } from '../../shared/config/AppConfig';
+import { Icon } from '../../shared/ui/Icon';
 import { createMemberInvitation } from './MemberInvitationCommand';
-import { MemberInvitationDraftSchema } from './MemberInvitationSchema';
+import { MemberInvitationDraftSchema, type MemberInvitationDraft } from './MemberInvitationSchema';
 import './MemberInvitation.css';
+
+const DEFAULT_LABEL = '宏泰甄选管理员邀请';
+
+type InvitationField = 'destination' | 'label' | 'tenantId';
+type FieldErrors = Partial<Record<InvitationField, string>>;
+type CopyTarget = 'code' | 'link';
+type CopyFeedback = Readonly<{ target: CopyTarget; status: 'copied' | 'failed' }> | undefined;
 
 export function MemberInvitationDialog({
   context,
@@ -15,201 +25,365 @@ export function MemberInvitationDialog({
   open: boolean;
   onClose: () => void;
 }>) {
-  const [validationError, setValidationError] = useState<string>();
-  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
-  const mutation = useMutation({ mutationFn: (draft: Parameters<typeof createMemberInvitation>[1]) => createMemberInvitation(context, draft) });
+  const [governanceLevel, setGovernanceLevel] = useState<MemberInvitationDraft['governanceLevel']>('administrator');
+  const [destination, setDestination] = useState('');
+  const [label, setLabel] = useState(DEFAULT_LABEL);
+  const [validityDays, setValidityDays] = useState(7);
+  const [tenantId, setTenantId] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState<string>();
+  const [copyFeedback, setCopyFeedback] = useState<CopyFeedback>();
+  const mutation = useMutation({
+    mutationFn: (draft: MemberInvitationDraft) => createMemberInvitation(context, draft),
+    onError: (error) => {
+      const presentation = invitationErrorPresentation(error, context.scope.kind === 'platform');
+      setFieldErrors(presentation.fields);
+      setFormError(presentation.form);
+    },
+  });
   const receipt = mutation.data;
+  const submittedDraft = mutation.variables;
   const tenantScopes = context.scopes.filter((scope) => scope.kind === 'tenant' && scope.id === 'tenant-zhudatuan');
   const canSelectSenior = context.session.governance?.level === 'owner' && context.session.governance.exactOwner;
+  const selectedScope = invitationScope(context, context.scope.kind === 'platform' ? tenantId : undefined);
+  const submittedScope = invitationScope(context, submittedDraft?.tenantId);
+
+  const reset = () => {
+    mutation.reset();
+    setGovernanceLevel('administrator');
+    setDestination('');
+    setLabel(DEFAULT_LABEL);
+    setValidityDays(7);
+    setTenantId('');
+    setFieldErrors({});
+    setFormError(undefined);
+    setCopyFeedback(undefined);
+  };
 
   const resetAndClose = () => {
-    mutation.reset();
-    setValidationError(undefined);
-    setCopyState('idle');
+    reset();
     onClose();
   };
 
   const requestClose = () => {
-    if (mutation.isPending || receipt !== undefined) return;
+    if (mutation.isPending) return;
     resetAndClose();
+  };
+
+  const clearError = (field: InvitationField) => {
+    setFieldErrors((current) => ({ ...current, [field]: undefined }));
+    setFormError(undefined);
+    if (mutation.error !== null) mutation.reset();
   };
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setValidationError(undefined);
-    setCopyState('idle');
-    const form = new FormData(event.currentTarget);
+    if (mutation.isPending) return;
+    setFieldErrors({});
+    setFormError(undefined);
+    setCopyFeedback(undefined);
     const draft = MemberInvitationDraftSchema.safeParse({
-      label: form.get('label'),
-      destination: form.get('destination'),
-      governanceLevel: form.get('governanceLevel'),
-      maxUses: form.get('maxUses'),
-      validityDays: form.get('validityDays'),
-      ...(context.scope.kind === 'platform' ? { tenantId: form.get('tenantId') } : {}),
+      label,
+      destination,
+      governanceLevel,
+      maxUses: 1,
+      validityDays,
+      ...(context.scope.kind === 'platform' ? { tenantId } : {}),
     });
     if (!draft.success) {
-      setValidationError('请检查目标租户、受邀手机号、邀请名称与有效期。');
+      const nextErrors = invitationFieldErrors(draft.error.issues);
+      setFieldErrors(nextErrors);
+      if (Object.keys(nextErrors).length === 0) setFormError('邀请信息不完整，请检查后重试。');
       return;
     }
     mutation.mutate(draft.data);
   };
 
-  const copy = async () => {
-    const code = receipt?.code;
-    if (code === undefined || navigator.clipboard === undefined) {
-      setCopyState('failed');
+  const copy = async (value: string | undefined, target: CopyTarget) => {
+    if (value === undefined || navigator.clipboard === undefined) {
+      setCopyFeedback({ target, status: 'failed' });
       return;
     }
     try {
-      await navigator.clipboard.writeText(code);
-      setCopyState('copied');
+      await navigator.clipboard.writeText(value);
+      setCopyFeedback({ target, status: 'copied' });
     } catch {
-      setCopyState('failed');
+      setCopyFeedback({ target, status: 'failed' });
     }
   };
 
+  const invitationLink = receipt === undefined ? undefined : memberInvitationLink(receipt.code);
+  const visibleFieldErrors = fieldErrors;
+  const visibleFormError = formError ?? (mutation.error === null ? undefined : '邀请生成失败，请确认信息后重试。');
+
   return (
-    <Dialog open={open} title={receipt === undefined ? '生成管理员邀请码' : '邀请码已生成'} eyebrow="CONSOLE ADMINISTRATOR INVITATION" dismissable={!mutation.isPending && receipt === undefined} onClose={requestClose}>
+    <Dialog
+      open={open}
+      title={receipt === undefined ? '邀请管理员' : '管理员邀请已生成'}
+      eyebrow="HONGTAI ADMIN ACCESS"
+      dismissable={!mutation.isPending}
+      onClose={requestClose}
+    >
       {receipt === undefined ? (
-        <Form className={`command memberinvitationform${mutation.isPending ? ' memberinvitationformpending' : ''}`} label="生成管理员邀请码" onSubmit={submit}>
+        <Form className={`command memberinvitationform${mutation.isPending ? ' memberinvitationformpending' : ''}`} label="邀请管理员" validationBehavior="aria" onSubmit={submit}>
           <div className="memberinvitationbody">
+            <header className="memberinvitationintro">
+              <div className="memberinvitationintroicon"><Icon name="shield" /></div>
+              <div>
+                <p>设置管理员身份、手机号和有效期，生成后即可发送邀请。</p>
+                <strong>{selectedScope.label}</strong>
+              </div>
+            </header>
+
             <div className="memberinvitationgrid">
-              <section className="memberinvitationintro">
-                <p className="commandhint">
-                  <span className="memberinvitationhinticon" aria-hidden="true">
-                    i
-                  </span>
-                  <span>{canSelectSenior
-                    ? '请选择管理员级别并绑定受邀手机号。普通管理员注册后等待授权；高级管理员获得当前范围的全部业务功能，但不能任命同级或管理 Owner。'
-                    : '邀请固定创建待授权普通管理员并绑定受邀手机号，仅可使用一次。受邀人完成手机验证后会同时获得购物身份与零业务权限的 Console 身份。'}</span>
-                </p>
+              <fieldset className="memberinvitationlevels">
+                <legend>管理员级别</legend>
+                <div>
+                  <label className="memberinvitationlevel" data-selected={governanceLevel === 'administrator'}>
+                    <input
+                      name="governanceLevel"
+                      type="radio"
+                      value="administrator"
+                      checked={governanceLevel === 'administrator'}
+                      disabled={mutation.isPending}
+                      onChange={() => setGovernanceLevel('administrator')}
+                    />
+                    <span className="memberinvitationlevelicon"><Icon name="member" /></span>
+                    <span className="memberinvitationlevelcopy">
+                      <span><strong>普通管理员</strong><small>注册后等待授权</small></span>
+                      <em>完成注册后进入管理后台，再由 Owner 或高级管理员分配角色、权限与数据范围。</em>
+                    </span>
+                    <i aria-hidden="true" />
+                  </label>
+                  {canSelectSenior ? (
+                    <label className="memberinvitationlevel" data-selected={governanceLevel === 'senior_administrator'}>
+                      <input
+                        name="governanceLevel"
+                        type="radio"
+                        value="senior_administrator"
+                        checked={governanceLevel === 'senior_administrator'}
+                        disabled={mutation.isPending}
+                        onChange={() => setGovernanceLevel('senior_administrator')}
+                      />
+                      <span className="memberinvitationlevelicon"><Icon name="shield" /></span>
+                      <span className="memberinvitationlevelcopy">
+                        <span><strong>高级管理员</strong><small>当前范围全部业务权限</small></span>
+                        <em>可管理当前商户业务，但不能管理 Owner，也不能任命同级管理员。</em>
+                      </span>
+                      <i aria-hidden="true" />
+                    </label>
+                  ) : null}
+                </div>
+              </fieldset>
+
+              <section className="memberinvitationdetails" aria-label="邀请信息">
                 {context.scope.kind === 'platform' ? (
-                  <label>
-                    目标租户
-                    <select name="tenantId" defaultValue="" required autoFocus>
-                      <option value="" disabled>
-                        请选择目标租户
-                      </option>
-                      {tenantScopes.map((scope) => (
-                        <option key={scope.id} value={scope.id}>
-                          {scope.name ?? scope.id}
-                        </option>
-                      ))}
+                  <div className="memberinvitationfield">
+                    <label htmlFor="memberinvitationtenant">授权范围</label>
+                    <select
+                      id="memberinvitationtenant"
+                      name="tenantId"
+                      value={tenantId}
+                      disabled={mutation.isPending}
+                      aria-invalid={visibleFieldErrors.tenantId === undefined ? undefined : true}
+                      aria-describedby={visibleFieldErrors.tenantId === undefined ? undefined : 'memberinvitationtenanterror'}
+                      autoFocus
+                      onChange={(event) => { setTenantId(event.target.value); clearError('tenantId'); }}
+                    >
+                      <option value="" disabled>请选择目标租户</option>
+                      {tenantScopes.map((scope) => <option key={scope.id} value={scope.id}>{scope.name ?? scope.id}</option>)}
                     </select>
-                  </label>
-                ) : (
-                  <p className="memberinvitationtarget">
-                    授权范围：<strong>{context.scope.name ?? context.scope.id}</strong>
-                  </p>
-                )}
-                {canSelectSenior ? (
-                  <fieldset className="memberinvitationlevels">
-                    <legend>管理员级别</legend>
-                    <div>
-                      <label>
-                        <input name="governanceLevel" type="radio" value="administrator" defaultChecked />
-                        <span><strong>普通管理员</strong><small>注册后等待分配身份、权限与范围</small></span>
-                      </label>
-                      <label>
-                        <input name="governanceLevel" type="radio" value="senior_administrator" />
-                        <span><strong>高级管理员</strong><small>全部业务功能，不可任命同级或管理 Owner</small></span>
-                      </label>
-                    </div>
-                  </fieldset>
-                ) : <input name="governanceLevel" type="hidden" value="administrator" />}
-              </section>
-              <section className="memberinvitationdetails">
-                <label>
-                  受邀管理员手机号
-                  <input name="destination" type="tel" inputMode="tel" pattern="1[3-9][0-9]{9}" placeholder="请输入 11 位手机号" required />
-                </label>
-                <label>
-                  邀请名称
-                  <input name="label" defaultValue="管理员邀请" minLength={2} maxLength={80} required autoFocus={context.scope.kind !== 'platform'} />
-                </label>
-                <section className="memberinvitationpolicy" aria-label="邀请规则">
-                  <p>邀请规则</p>
-                  <div>
-                    <span>可使用次数</span>
-                    <strong>1 次</strong>
-                    <input name="maxUses" type="hidden" value="1" />
+                    {visibleFieldErrors.tenantId === undefined ? null : <small id="memberinvitationtenanterror" className="memberinvitationfielderror">{visibleFieldErrors.tenantId}</small>}
                   </div>
-                  <label>
-                    <span>有效期</span>
-                    <select name="validityDays" defaultValue="7">
-                      <option value="1">1 天</option>
-                      <option value="3">3 天</option>
-                      <option value="7">7 天</option>
-                      <option value="30">30 天</option>
-                      <option value="90">90 天</option>
-                    </select>
-                  </label>
-                </section>
-                {validationError === undefined && mutation.error === null ? null : (
-                  <p className="memberinvitationerror" role="alert">
-                    {validationError ?? '邀请码生成失败。请确认当前范围、权限与登录状态后重试。'}
-                  </p>
-                )}
+                ) : null}
+
+                <div className="memberinvitationfield">
+                  <label htmlFor="memberinvitationdestination">受邀管理员手机号</label>
+                  <input
+                    id="memberinvitationdestination"
+                    name="destination"
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    value={destination}
+                    disabled={mutation.isPending}
+                    placeholder="请输入受邀管理员的 11 位手机号"
+                    aria-invalid={visibleFieldErrors.destination === undefined ? undefined : true}
+                    aria-describedby={`memberinvitationdestinationhint${visibleFieldErrors.destination === undefined ? '' : ' memberinvitationdestinationerror'}`}
+                    autoFocus={context.scope.kind !== 'platform'}
+                    onChange={(event) => { setDestination(event.target.value); clearError('destination'); }}
+                  />
+                  <small id="memberinvitationdestinationhint" className="memberinvitationfieldhint">该邀请仅限此手机号完成注册。</small>
+                  {visibleFieldErrors.destination === undefined ? null : <small id="memberinvitationdestinationerror" className="memberinvitationfielderror">{visibleFieldErrors.destination}</small>}
+                </div>
+
+                <div className="memberinvitationfield">
+                  <label htmlFor="memberinvitationlabel">邀请名称</label>
+                  <input
+                    id="memberinvitationlabel"
+                    name="label"
+                    value={label}
+                    disabled={mutation.isPending}
+                    maxLength={80}
+                    aria-invalid={visibleFieldErrors.label === undefined ? undefined : true}
+                    aria-describedby={visibleFieldErrors.label === undefined ? undefined : 'memberinvitationlabelerror'}
+                    onChange={(event) => { setLabel(event.target.value); clearError('label'); }}
+                  />
+                  {visibleFieldErrors.label === undefined ? null : <small id="memberinvitationlabelerror" className="memberinvitationfielderror">{visibleFieldErrors.label}</small>}
+                </div>
+
+                <div className="memberinvitationfield">
+                  <label htmlFor="memberinvitationvalidity">有效期</label>
+                  <select
+                    id="memberinvitationvalidity"
+                    name="validityDays"
+                    value={validityDays}
+                    disabled={mutation.isPending}
+                    onChange={(event) => setValidityDays(Number(event.target.value))}
+                  >
+                    <option value="1">1 天</option>
+                    <option value="3">3 天</option>
+                    <option value="7">7 天</option>
+                    <option value="30">30 天</option>
+                    <option value="90">90 天</option>
+                  </select>
+                </div>
               </section>
             </div>
+
+            <section className="memberinvitationpolicy" aria-labelledby="memberinvitationpolicytitle">
+              <div className="memberinvitationpolicyheading">
+                <div><span>邀请摘要</span><strong id="memberinvitationpolicytitle">生成前确认</strong></div>
+                <small>仅用于当前管理范围</small>
+              </div>
+              <dl>
+                <div><dt>管理员身份</dt><dd>{governanceLabel(governanceLevel)}</dd></div>
+                <div><dt>授权范围</dt><dd>{selectedScope.name}</dd></div>
+                <div><dt>绑定手机号</dt><dd>{destination === '' ? '待填写' : maskPhone(destination)}</dd></div>
+                <div><dt>可使用次数</dt><dd>1 次</dd></div>
+                <div><dt>到期时间</dt><dd>{previewExpiry(validityDays)}</dd></div>
+              </dl>
+            </section>
+
+            {visibleFormError === undefined ? null : <p className="memberinvitationerror" role="alert">{visibleFormError}</p>}
           </div>
-          <footer>
-            <p className="memberinvitationfootnote">生成后邀请码仅显示一次，请及时复制保存。</p>
+
+          <footer className="memberinvitationfooter">
+            <p className="memberinvitationfootnote">邀请码仅显示一次，请生成后立即复制或发送。</p>
             <div className="memberinvitationactions">
-              <Button onPress={requestClose} isDisabled={mutation.isPending}>
-                取消
-              </Button>
-              <Button type="submit" tone="primary" isPending={mutation.isPending}>
-                {mutation.isPending ? '正在生成…' : '生成邀请码'}
+              <Button type="button" onPress={requestClose} isDisabled={mutation.isPending}>取消</Button>
+              <Button type="submit" tone="primary" isPending={mutation.isPending} isDisabled={mutation.isPending}>
+                {mutation.isPending ? '正在生成…' : '生成管理员邀请'}
               </Button>
             </div>
           </footer>
         </Form>
       ) : (
         <section className="memberinvitationreceipt" aria-live="polite">
-          <p className="notice">邀请码只在本次成功回执中显示。关闭后无法再次查看，请现在复制并通过可信渠道发送。</p>
+          <header className="memberinvitationreceiptheading">
+            <span><Icon name="shield" /></span>
+            <div><strong>管理员邀请已生成</strong><p>请复制邀请码或邀请链接，并发送给受邀管理员。</p></div>
+          </header>
+
           <button
             type="button"
             className="memberinvitationcode"
-            data-copy-state={copyState}
-            aria-label={copyState === 'copied' ? '管理员邀请码已复制' : '复制管理员邀请码'}
-            onClick={() => {
-              void copy();
-            }}
+            data-copy-state={copyFeedback?.target === 'code' ? copyFeedback.status : 'idle'}
+            aria-label={copyFeedback?.target === 'code' && copyFeedback.status === 'copied' ? '管理员邀请码已复制' : '复制管理员邀请码'}
+            onClick={() => { void copy(receipt.code, 'code'); }}
           >
             <span>管理员邀请码</span>
             <code>{receipt.code}</code>
-            <small>{copyState === 'copied' ? '✓ 已复制' : '点击邀请码即可复制'}</small>
+            <small>{copyFeedback?.target === 'code' && copyFeedback.status === 'copied' ? '已复制' : '点击复制'}</small>
           </button>
-          <dl>
-            <div>
-              <dt>身份</dt>
-              <dd>{receipt.governanceLevel === 'senior_administrator' ? '高级管理员' : '待授权普通管理员'}</dd>
-            </div>
-            <div>
-              <dt>次数</dt>
-              <dd>{receipt.max_uses} 次</dd>
-            </div>
-            <div>
-              <dt>到期</dt>
-              <dd>{new Date(receipt.expires_at).toLocaleString('zh-CN')}</dd>
-            </div>
+
+          <dl className="memberinvitationreceiptdetails">
+            <div><dt>管理员身份</dt><dd>{governanceLabel(receipt.governanceLevel ?? submittedDraft?.governanceLevel ?? 'administrator')}</dd></div>
+            <div><dt>绑定手机号</dt><dd>{maskPhone(submittedDraft?.destination ?? '')}</dd></div>
+            <div><dt>授权范围</dt><dd>{submittedScope.name}</dd></div>
+            <div><dt>使用次数</dt><dd>{receipt.max_uses} 次</dd></div>
+            <div><dt>到期时间</dt><dd>{formatDate(receipt.expires_at)}</dd></div>
           </dl>
-          {copyState === 'idle' ? null : <p role="status">{copyState === 'copied' ? '已复制到剪贴板。' : '无法访问剪贴板，请手动复制。'}</p>}
+
+          <div className="memberinvitationlinkpreview">
+            <span>管理员注册链接</span>
+            <code>{invitationLink}</code>
+          </div>
+
+          {copyFeedback === undefined ? null : (
+            <p className="memberinvitationcopystatus" data-status={copyFeedback.status} role="status">
+              {copyFeedback.status === 'copied'
+                ? copyFeedback.target === 'code' ? '邀请码已复制，可以直接发送。' : '邀请链接已复制，可以直接发送。'
+                : '复制失败，请手动选择上方邀请码或链接后复制。'}
+            </p>
+          )}
+
           <footer>
-            <Button
-              onPress={() => {
-                void copy();
-              }}
-            >
-              {copyState === 'copied' ? '已复制' : copyState === 'failed' ? '复制失败，重试' : '复制邀请码'}
+            <Button type="button" onPress={() => { void copy(receipt.code, 'code'); }}>
+              {copyFeedback?.target === 'code' && copyFeedback.status === 'copied' ? '邀请码已复制' : '复制邀请码'}
             </Button>
-            <Button tone="primary" onPress={resetAndClose}>
-              我已保存，关闭
+            <Button type="button" onPress={() => { void copy(invitationLink, 'link'); }}>
+              {copyFeedback?.target === 'link' && copyFeedback.status === 'copied' ? '链接已复制' : '复制邀请链接'}
             </Button>
+            <Button type="button" tone="primary" onPress={resetAndClose}>完成</Button>
           </footer>
         </section>
       )}
     </Dialog>
   );
+}
+
+function invitationFieldErrors(issues: readonly Readonly<{ path: readonly PropertyKey[] }>[]): FieldErrors {
+  return issues.reduce<FieldErrors>((errors, issue) => {
+    const field = issue.path[0];
+    if (field === 'destination') errors.destination = '请输入正确的 11 位手机号。';
+    if (field === 'label') errors.label = '邀请名称请填写 2–80 个字符。';
+    if (field === 'tenantId') errors.tenantId = '请选择可用的邀请范围。';
+    return errors;
+  }, {});
+}
+
+function invitationErrorPresentation(error: unknown, scopeSelectable: boolean): Readonly<{ fields: FieldErrors; form?: string }> {
+  if (error === null || error === undefined) return { fields: {} };
+  const code = error instanceof ApiError ? error.code.toUpperCase() : error instanceof Error ? error.message.toUpperCase() : '';
+  if (code.includes('DESTINATION') || code.includes('PHONE') || code.includes('MOBILE')) return { fields: { destination: '该手机号不可用，请核对后重试。' } };
+  if (code.includes('LABEL')) return { fields: { label: '邀请名称不完整，请修改后重试。' } };
+  if (code.includes('TENANT') || code.includes('SCOPE')) return scopeSelectable
+    ? { fields: { tenantId: '邀请范围不可用，请重新选择。' } }
+    : { fields: {}, form: '当前邀请范围不可用，请刷新页面后重试。' };
+  if (code.includes('LEVEL_NOT_AVAILABLE') || (error instanceof ApiError && error.status === 403)) return { fields: {}, form: '当前身份不能邀请该级别管理员。' };
+  if (code.includes('INVITATION_NOT_AVAILABLE') || code.includes('CSRF_MISSING')) return { fields: {}, form: '当前邀请范围不可用，请刷新页面后重试。' };
+  if (error instanceof TypeError || (error instanceof ApiError && error.status >= 500)) return { fields: {}, form: '网络请求失败，请稍后重试。' };
+  return { fields: {}, form: '邀请生成失败，请确认信息后重试。' };
+}
+
+function invitationScope(context: ConsoleContext, tenantId?: string): Readonly<{ name: string; label: string }> {
+  const scope = context.scope.kind === 'platform'
+    ? context.scopes.find((candidate) => candidate.kind === 'tenant' && candidate.id === tenantId)
+    : context.scope;
+  const name = scope?.name ?? scope?.id ?? '请选择授权范围';
+  const kind = scope?.kind === 'platform' ? '平台管理范围' : scope?.kind === 'store' ? '门店管理范围' : '商城管理范围';
+  return { name, label: `${name} · ${kind}` };
+}
+
+function governanceLabel(level: MemberInvitationDraft['governanceLevel']): string {
+  return level === 'senior_administrator' ? '高级管理员' : '普通管理员';
+}
+
+function maskPhone(value: string): string {
+  return /^1[3-9]\d{9}$/.test(value) ? `${value.slice(0, 3)} **** ${value.slice(-4)}` : value || '未返回';
+}
+
+function previewExpiry(validityDays: number): string {
+  return `${validityDays} 天后 · ${formatDate(new Date(Date.now() + validityDays * 86_400_000).toISOString())}`;
+}
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function memberInvitationLink(code: string): string {
+  const url = new URL(appConfig.identityEntryUrl, window.location.origin);
+  url.searchParams.set('invite', code);
+  return url.toString();
 }

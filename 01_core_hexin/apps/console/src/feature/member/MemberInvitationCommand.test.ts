@@ -70,6 +70,36 @@ describe('member invitation command', () => {
     expect(value.governanceLevel).toBeUndefined();
   });
 
+  it('accepts additive receipt fields from a newer server', async () => {
+    server.use(http.post('*/api/v1/identity/invitations', () => HttpResponse.json({
+      ...receipt(),
+      destination_masked: '138 **** 8000',
+      scope_name: '宏泰甄选',
+      server_extension: { delivery: 'ready' },
+    }, { status: 201 })));
+
+    const value = await createMemberInvitation(context, {
+      label: '普通管理员邀请', destination: '13800138000', governanceLevel: 'administrator', maxUses: 1, validityDays: 7,
+    });
+
+    expect(value.code).toBe('A'.repeat(10));
+  });
+
+  it('accepts additive receipt fields from a newer server', async () => {
+    server.use(http.post('*/api/v1/identity/invitations', () => HttpResponse.json({
+      ...receipt(),
+      destination_masked: '138 **** 8000',
+      scope_name: '宏泰甄选',
+      server_extension: { delivery: 'ready' },
+    }, { status: 201 })));
+
+    const value = await createMemberInvitation(context, {
+      label: '普通管理员邀请', destination: '13800138000', governanceLevel: 'administrator', maxUses: 1, validityDays: 7,
+    });
+
+    expect(value.code).toBe('A'.repeat(10));
+  });
+
   it('keeps the platform scope and sends the selected tenant to the backend', async () => {
     const platformScope = { kind: 'platform', id: 'platform:one' } as const;
     const platformContext = { ...context, scope: platformScope, scopes: [platformScope, ...context.scopes] };
@@ -187,7 +217,7 @@ function receipt() {
     label: '普通管理员邀请',
     target: 'console',
     governanceLevel: 'administrator',
-    max_uses: 2,
+    max_uses: 1,
     use_count: 0,
     starts_at: now,
     expires_at: new Date(Date.now() + 259_200_000).toISOString(),

@@ -41,13 +41,13 @@ afterAll(() => server.close());
 describe('member administrator invitation', () => {
   it('creates a fixed zero-permission administrator invitation and forgets the code on close', async () => {
     const user = userEvent.setup();
-    const writeText = vi.fn(() => Promise.resolve());
+    const writeText = vi.fn((_value: string) => Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
     renderRoute(ownerContext);
     await screen.findByRole('table', { name: '管理员目录' });
 
     await user.click(screen.getByRole('button', { name: '邀请管理员' }));
-    const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
+    const dialog = await screen.findByRole('dialog', { name: '邀请管理员' });
     const level = within(dialog).getByRole('group', { name: '管理员级别' });
     expect((within(level).getByRole('radio', { name: /^普通管理员/ }) as HTMLInputElement).checked).toBe(true);
     expect((within(level).getByRole('radio', { name: /^高级管理员/ }) as HTMLInputElement).checked).toBe(false);
@@ -55,9 +55,9 @@ describe('member administrator invitation', () => {
     await user.clear(within(dialog).getByLabelText('邀请名称'));
     await user.type(within(dialog).getByLabelText('邀请名称'), '集团运营邀请');
     await user.selectOptions(within(dialog).getByLabelText('有效期'), '3');
-    await user.click(within(dialog).getByRole('button', { name: '生成邀请码' }));
+    await user.click(within(dialog).getByRole('button', { name: '生成管理员邀请' }));
 
-    const receipt = await screen.findByRole('dialog', { name: '邀请码已生成' });
+    const receipt = await screen.findByRole('dialog', { name: '管理员邀请已生成' });
     expect(within(receipt).getByText('A'.repeat(10))).toBeTruthy();
     expect(writes[0]?.body).toMatchObject({ label: '集团运营邀请', destination: '13800138000', targetClient: 'operator', governanceLevel: 'administrator', maxUses: 1 });
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('tenant:one');
@@ -66,13 +66,15 @@ describe('member administrator invitation', () => {
 
     await user.click(within(receipt).getByRole('button', { name: '复制邀请码' }));
     expect(writeText).toHaveBeenCalledWith('A'.repeat(10));
-    expect(within(receipt).getByText('✓ 已复制')).toBeTruthy();
+    expect(within(receipt).getAllByText('已复制').length).toBeGreaterThan(0);
     expect(within(receipt).getByRole('button', { name: '管理员邀请码已复制' })).toBeTruthy();
-    expect(within(receipt).getByRole('button', { name: '已复制' })).toBeTruthy();
-    expect((await within(receipt).findByRole('status')).textContent).toContain('已复制到剪贴板');
-    await user.click(within(receipt).getByRole('button', { name: '我已保存，关闭' }));
+    expect(within(receipt).getByRole('button', { name: '邀请码已复制' })).toBeTruthy();
+    expect((await within(receipt).findByRole('status')).textContent).toContain('邀请码已复制');
+    await user.click(within(receipt).getByRole('button', { name: '复制邀请链接' }));
+    expect(String(writeText.mock.calls[1]?.[0])).toContain('invite=AAAAAAAAAA');
+    await user.click(within(receipt).getByRole('button', { name: '完成' }));
     await user.click(screen.getByRole('button', { name: '邀请管理员' }));
-    expect(await screen.findByRole('dialog', { name: '生成管理员邀请码' })).toBeTruthy();
+    expect(await screen.findByRole('dialog', { name: '邀请管理员' })).toBeTruthy();
     expect(screen.queryByText('A'.repeat(10))).toBeNull();
   });
 
@@ -81,13 +83,13 @@ describe('member administrator invitation', () => {
     renderRoute(ownerContext);
     await screen.findByRole('table', { name: '管理员目录' });
     await user.click(screen.getByRole('button', { name: '邀请管理员' }));
-    const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
+    const dialog = await screen.findByRole('dialog', { name: '邀请管理员' });
 
     await user.click(within(dialog).getByRole('radio', { name: /^高级管理员/ }));
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
-    await user.click(within(dialog).getByRole('button', { name: '生成邀请码' }));
+    await user.click(within(dialog).getByRole('button', { name: '生成管理员邀请' }));
 
-    const receipt = await screen.findByRole('dialog', { name: '邀请码已生成' });
+    const receipt = await screen.findByRole('dialog', { name: '管理员邀请已生成' });
     expect(writes[0]?.body).toMatchObject({ governanceLevel: 'senior_administrator' });
     expect(within(receipt).getByText('高级管理员')).toBeTruthy();
   });
@@ -104,15 +106,15 @@ describe('member administrator invitation', () => {
     renderRoute(seniorContext);
     await screen.findByRole('table', { name: '管理员目录' });
     await user.click(screen.getByRole('button', { name: '邀请管理员' }));
-    const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
+    const dialog = await screen.findByRole('dialog', { name: '邀请管理员' });
 
-    expect(within(dialog).queryByRole('group', { name: '管理员级别' })).toBeNull();
+    expect(within(dialog).getByRole('group', { name: '管理员级别' })).toBeTruthy();
     expect(within(dialog).queryByRole('radio', { name: /^高级管理员/ })).toBeNull();
-    expect(within(dialog).getByText(/固定创建待授权普通管理员/)).toBeTruthy();
+    expect(within(dialog).getByText(/完成注册后进入管理后台/)).toBeTruthy();
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
-    await user.click(within(dialog).getByRole('button', { name: '生成邀请码' }));
+    await user.click(within(dialog).getByRole('button', { name: '生成管理员邀请' }));
 
-    await screen.findByRole('dialog', { name: '邀请码已生成' });
+    await screen.findByRole('dialog', { name: '管理员邀请已生成' });
     expect(writes[0]?.body).toMatchObject({ governanceLevel: 'administrator' });
   });
 
@@ -122,12 +124,12 @@ describe('member administrator invitation', () => {
     await screen.findByRole('table', { name: '管理员目录' });
 
     await user.click(screen.getByRole('button', { name: '邀请管理员' }));
-    const dialog = await screen.findByRole('dialog', { name: '生成管理员邀请码' });
-    await user.selectOptions(within(dialog).getByLabelText('目标租户'), 'tenant-zhudatuan');
+    const dialog = await screen.findByRole('dialog', { name: '邀请管理员' });
+    await user.selectOptions(within(dialog).getByLabelText('授权范围'), 'tenant-zhudatuan');
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
-    await user.click(within(dialog).getByRole('button', { name: '生成邀请码' }));
+    await user.click(within(dialog).getByRole('button', { name: '生成管理员邀请' }));
 
-    await screen.findByRole('dialog', { name: '邀请码已生成' });
+    await screen.findByRole('dialog', { name: '管理员邀请已生成' });
     expect(writes[0]?.body).toMatchObject({ tenantId: 'tenant-zhudatuan', destination: '13800138000', targetClient: 'operator' });
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('platform:one');
   });
@@ -173,9 +175,9 @@ describe('member administrator invitation', () => {
     await user.click(screen.getByRole('button', { name: '邀请管理员' }));
     const dialog = await screen.findByRole('dialog');
     await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
-    await user.click(within(dialog).getByRole('button', { name: '生成邀请码' }));
+    await user.click(within(dialog).getByRole('button', { name: '生成管理员邀请' }));
 
-    expect((await screen.findByRole('alert')).textContent).toContain('邀请码生成失败');
+    expect((await screen.findByRole('alert')).textContent).toContain('邀请生成失败');
     expect(screen.queryByText('short')).toBeNull();
   });
 });
@@ -205,7 +207,7 @@ describe('Owner member registration reset', () => {
     expect(JSON.stringify(resetWrites[0]?.body)).not.toContain('Owner!Password1');
 
     await user.click(within(receipt).getByRole('button', { name: '生成新的管理员邀请码' }));
-    expect(await screen.findByRole('dialog', { name: '生成管理员邀请码' })).toBeTruthy();
+    expect(await screen.findByRole('dialog', { name: '邀请管理员' })).toBeTruthy();
   });
 
   it.each(resetMissingEvidenceCases)('hides reset actions when %s evidence is missing', async (_name, sessionPatch) => {
