@@ -8,6 +8,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { Component as AccessComponent } from '../access/AccessRoute';
+import { MemberInvitationDialog } from './MemberInvitationDialog';
 import { Component } from './MemberRoute';
 
 const writes: Array<Readonly<{ body: unknown; headers: Headers }>> = [];
@@ -39,6 +40,30 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('member administrator invitation', () => {
+  it('shows the senior administrator option when the authoritative directory identifies the current member as Owner', async () => {
+    const staleGovernanceContext: ConsoleContext = {
+      ...ownerContext,
+      session: {
+        ...ownerContext.session,
+        governance: { level: 'administrator', exactOwner: false, organization: 'tenant:one' },
+      },
+    };
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    render(
+      <QueryClientProvider client={client}>
+        <MemberInvitationDialog
+          context={staleGovernanceContext}
+          authority={{ level: 'owner', exactOwner: true }}
+          open
+          onClose={() => undefined}
+        />
+      </QueryClientProvider>,
+    );
+
+    const dialog = await screen.findByRole('dialog', { name: '邀请管理员' });
+    expect(within(dialog).getByRole('radio', { name: /^高级管理员/ })).toBeTruthy();
+  });
+
   it('creates a fixed zero-permission administrator invitation and forgets the code on close', async () => {
     const user = userEvent.setup();
     const writeText = vi.fn((_value: string) => Promise.resolve());
@@ -158,8 +183,15 @@ describe('member administrator invitation', () => {
     expect(screen.getByText('当前页 2 位 · 共 2 位管理员')).toBeTruthy();
   });
 
-  it.each(missingEvidenceCases)('hides the write entry when %s evidence is missing', async (_name, sessionPatch) => {
-    const user = userEvent.setup();
+  it.each(legacyInvitationEvidenceCases)('keeps the write entry when stale %s evidence is missing', async (_name, sessionPatch) => {
+    renderRoute({ ...ownerContext, session: { ...ownerContext.session, ...sessionPatch } });
+    await screen.findByRole('table', { name: '管理员目录' });
+
+    expect(screen.getByRole('button', { name: '邀请管理员' })).toBeTruthy();
+    expect(writes).toHaveLength(0);
+  });
+
+  it.each(missingInvitationAuthorityCases)('hides the write entry when %s evidence is missing', async (_name, sessionPatch) => {
     renderRoute({ ...ownerContext, session: { ...ownerContext.session, ...sessionPatch } });
     await screen.findByRole('table', { name: '管理员目录' });
 
@@ -251,9 +283,11 @@ const tenantScope = { kind: 'tenant', id: 'tenant:one', tenant: 'tenant:one', na
 const secondTenantScope = { kind: 'tenant', id: 'tenant-smart-wing', tenant: 'tenant-smart-wing', name: '智慧翼租户' } as const;
 const zhudatuanTenantScope = { ...tenantScope, id: 'tenant-zhudatuan', tenant: 'tenant-zhudatuan', name: '主打团' } as const;
 const platformScope = { kind: 'platform', id: 'platform:one', name: '福利商城平台' } as const;
-const missingEvidenceCases: ReadonlyArray<readonly [string, Partial<ConsoleContext['session']>]> = [
+const legacyInvitationEvidenceCases: ReadonlyArray<readonly [string, Partial<ConsoleContext['session']>]> = [
   ['permission', { permissions: [] }],
   ['capability', { capabilities: [] }],
+];
+const missingInvitationAuthorityCases: ReadonlyArray<readonly [string, Partial<ConsoleContext['session']>]> = [
   ['csrf', { csrf: undefined }],
   ['governance', { governance: { level: 'administrator', exactOwner: false, organization: 'tenant:one' } }],
 ];
