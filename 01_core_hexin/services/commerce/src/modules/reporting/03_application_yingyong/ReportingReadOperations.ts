@@ -17,7 +17,7 @@ interface MetricRecord {
   readonly unit: MetricRow['unit'];
   readonly watermark: string;
   readonly projectionVersion: number;
-  readonly cursorTime: string;
+  readonly cursorTime: string | Date;
   readonly cursorId: string;
 }
 
@@ -91,8 +91,12 @@ function metricPage(rows: readonly MetricRecord[], page: QueryPage): OperationRe
   const visible = more ? rows.slice(0, page.limit) : rows;
   const last = visible.at(-1);
   const items = visible.map(({ cursorTime: _time, cursorId: _id, ...metric }) => metric);
-  const nextCursor = more && last ? encodeCursor({ sort: last.cursorTime, id: last.cursorId }) : undefined;
+  const nextCursor = more && last ? encodeCursor({ sort: cursorText(last.cursorTime), id: cursorText(last.cursorId) }) : undefined;
   return { status: 200, body: { items, count: items.length, ...(nextCursor ? { nextCursor } : {}) } };
+}
+
+function cursorText(value: string | Date): string {
+  return value instanceof Date ? value.toISOString() : value;
 }
 
 function period(request: OperationRequest): ReportPeriod {
