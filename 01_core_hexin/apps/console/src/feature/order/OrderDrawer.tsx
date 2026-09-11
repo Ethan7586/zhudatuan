@@ -1,23 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import { Button, Tab, TabList, TabPanel, Tabs } from 'react-aria-components';
+import { Button } from 'react-aria-components';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { formatMinor } from '../../shared/ui/Format';
 import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
+import { OrderDetailTabs } from './OrderDetailTabs';
 import { OrderDrawerPanel } from './OrderDrawerPanel';
 import { OrderIcon } from './OrderIcon';
 import { aftersaleLabel, aftersaleTone, formatOrderTime, fulfillmentLabel, fulfillmentTone, lifecycleLabel, paymentLabel, paymentTone } from './OrderPresentation';
 import { OrderPreviewAction } from './OrderPreviewAction';
-import { OrderDetailTabSchema, type OrderDetailTab } from './OrderSchema';
-
-const tabs: readonly Readonly<{ key: OrderDetailTab; label: string }>[] = Object.freeze([
-  { key: 'overview', label: '订单概览' },
-  { key: 'products', label: '商品与履约' },
-  { key: 'payment', label: '支付与退款' },
-  { key: 'aftersale', label: '售后' },
-  { key: 'operations', label: '操作记录' },
-]);
+import type { OrderDetailTab } from './OrderSchema';
 
 export function OrderDrawer({
   orderId,
@@ -109,22 +102,7 @@ export function OrderDrawer({
             )}
           </header>
 
-          <Tabs
-            className="orderdrawertabsystem"
-            selectedKey={tab}
-            onSelectionChange={(key) => {
-              const parsed = OrderDetailTabSchema.safeParse(key);
-              if (parsed.success) onTab(parsed.data);
-            }}
-          >
-            <TabList className="orderdrawertabs" aria-label="订单详情分类">
-              {tabs.map((item) => (
-                <Tab key={item.key} id={item.key}>
-                  {item.label}
-                </Tab>
-              ))}
-            </TabList>
-            <TabPanel id={tab} className="orderdrawerbody">
+          <OrderDetailTabs selected={tab} onSelectionChange={onTab}>
               {query.isPending ? (
                 <p className="orderdrawerstate" role="status">
                   正在读取订单权威快照…
@@ -151,8 +129,7 @@ export function OrderDrawer({
                 </section>
               ) : null}
               {order === undefined ? null : <OrderDrawerPanel order={order} tab={tab} previewEnabled={previewEnabled} />}
-            </TabPanel>
-          </Tabs>
+          </OrderDetailTabs>
 
           <footer className="orderdrawerfooter">
             <p id="orderactionboundary" className="sr-only">

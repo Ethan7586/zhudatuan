@@ -954,8 +954,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   .producttabs button,
   .orderstatustabs button,
   .financetabs button,
-  .productdrawertabs button,
-  .orderdrawertabs [role='tab']
+  .productdrawertabs button
 ):hover {
   color: var(--vi-brand);
   background: linear-gradient(180deg, transparent, rgb(31 94 255 / 3%));
@@ -1283,8 +1282,7 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
 }
 
 body:has(.consolelayout[data-visual-theme='admin-web-v1']) :where(
-  .productdrawertabs,
-  .orderdrawertabs
+  .productdrawertabs
 ) {
   background: #fff;
 }

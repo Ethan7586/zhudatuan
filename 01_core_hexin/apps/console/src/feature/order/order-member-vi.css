@@ -174,14 +174,6 @@
 .orderdrawermeta { display: flex; flex-wrap: wrap; gap: 8px 24px; color: #a9c0e6; font-size: 13px; line-height: 20px; }
 .orderdrawermeta span { display: inline-flex; gap: 6px; }
 .orderdrawermeta strong { color: #fff; font-weight: 700; }
-.orderdrawertabs { min-height: 60px; align-items: center; gap: 8px; overflow-x: auto; border-bottom-color: var(--order-border); padding: 0 20px; scrollbar-width: none; }
-.orderdrawertabs::-webkit-scrollbar { display: none; }
-.orderdrawertabs [role='tab'] { display: inline-flex; min-height: 40px; flex: 0 0 auto; align-items: center; justify-content: center; border-radius: 9px; padding: 2px 13px 0; background: transparent; color: #596882; font-size: 14px; font-weight: 700; line-height: 20px; white-space: nowrap; transition: color .18s ease, background .18s ease; }
-.orderdrawertabs [role='tab']:hover { background: #f4f7fb; color: #34445f; }
-.orderdrawertabs [role='tab'][aria-selected='true'] { background: var(--order-blue-soft); color: var(--order-blue); }
-.orderdrawertabs [role='tab'][aria-selected='true']::after { display: none; }
-.orderdrawertabs [role='tab']:focus-visible,
-.orderdrawertabs [role='tab'][aria-selected='true']:focus-visible { border-radius: 9px; outline: 2px solid rgb(15 111 255 / 18%); outline-offset: -3px; box-shadow: none; }
 .orderdrawerbody { min-height: 0; overflow: auto; background: #fff; padding: 20px 22px 28px; }
 .orderdrawerstack { gap: 12px; color: var(--order-copy); font-size: 13px; line-height: 1.55; animation: order-tab-in .18s ease both; }
 .ordersummarynote { border: 1px solid #dbe4f1; border-radius: 10px; background: #f9fbfe; padding: 13px 16px; }
@@ -356,8 +348,6 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) .orderworkspace .orde
   .orderdraweramount strong { font-size: 22px; }
   .orderdrawermeta { display: grid; gap: 5px; }
   .orderdrawerbody { padding: 20px 16px 24px; }
-  .orderdrawertabs { min-height: 52px; gap: 4px; padding-inline: 8px; }
-  .orderdrawertabs [role='tab'] { min-height: 52px; padding-inline: 10px; font-size: 13px; }
   .orderdetailgrid { grid-template-columns: minmax(0, 1fr); }
   .orderdetailgrid > div { border-right: 0; }
   .orderdrawerfooter { flex-wrap: wrap; }

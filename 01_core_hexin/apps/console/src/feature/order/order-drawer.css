@@ -73,49 +73,6 @@
   font-size: var(--sw-font-size-caption);
 }
 
-.orderdrawertabsystem {
-  display: grid;
-  min-height: 0;
-  grid-template-rows: auto minmax(0, 1fr);
-}
-.orderdrawertabs {
-  display: flex;
-  overflow-x: auto;
-  border-bottom: 0.0625rem solid var(--sw-border);
-  padding: 0 var(--sw-space-2);
-}
-.orderdrawertabs [role='tab'] {
-  position: relative;
-  min-height: 3.25rem;
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--sw-text-secondary);
-  padding: 0 var(--sw-space-1-5);
-  font-size: var(--sw-font-size-caption);
-}
-.orderdrawertabs [role='tab'][aria-selected='true'] {
-  background: transparent;
-  color: var(--sw-brand);
-  font-weight: 700;
-}
-.orderdrawertabs [role='tab'][aria-selected='true']:hover,
-.orderdrawertabs [role='tab'][aria-selected='true']:focus-visible {
-  outline: 0;
-  background: transparent;
-  box-shadow: none;
-}
-.orderdrawertabs [role='tab'][aria-selected='true']::after {
-  position: absolute;
-  right: var(--sw-space-1);
-  bottom: 0;
-  left: var(--sw-space-1);
-  height: 0.1875rem;
-  border-radius: var(--sw-radius-full);
-  background: var(--sw-brand);
-  content: '';
-}
 .orderdrawerbody {
   min-height: 0;
   overflow-y: auto;
