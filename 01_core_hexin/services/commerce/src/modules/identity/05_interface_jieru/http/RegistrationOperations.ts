@@ -123,11 +123,17 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             membership: `membership:${randomUUID()}`,
             operatorMembership: `membership:${randomUUID()}`,
             credential: `credential:${randomUUID()}`,
+            registration: `registration:${randomUUID()}`,
+            registrationBusinessNumber: `SFLREG-${randomUUID().replaceAll('-', '').slice(0, 16).toUpperCase()}`,
+            registrationNodeKey: `member-${randomUUID()}`,
+            registrationRealm: `realm:member-${randomUUID()}`,
             scopes: [`scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`, `scope:${randomUUID()}`] as const,
           };
         },
         execute: async (request, database, prepared) => atomicIdentityMutation(database, async () => {
-          const { body, subject, password, principal, account, mobile, authorization, loginIntent, assurance, member, membership, operatorMembership, credential, scopes } = prepared;
+          const { body, subject, password, principal, account, mobile, authorization, loginIntent, assurance, member, membership,
+            operatorMembership, credential, registration: registrationId, registrationBusinessNumber, registrationNodeKey,
+            registrationRealm, scopes } = prepared;
           const realm = await resolveRealmNode(database, request.input.headers.host);
           const requestedReturnTarget = authorization === null || typeof body.target !== 'string' ? undefined : authTarget(body.target);
           if (authorization !== null && (requestedReturnTarget === undefined || authMembershipTarget(requestedReturnTarget) !== 'storefront')) {
@@ -168,7 +174,10 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           let registrationTarget: MemberInvite;
           let applicationReturnTarget: ReturnType<typeof authTarget> | undefined;
           if (registration.kind === 'invite') {
-            registrationTarget = await requireValidInvite(memberPort.consumeInvite(database, registrationHash, subjectHash, operatorMembership));
+            registrationTarget = await requireValidInvite(memberPort.registrationInvite(database, registrationHash, subjectHash));
+            if (registrationTarget.target_client === 'operator') {
+              registrationTarget = await requireValidInvite(memberPort.consumeInvite(database, registrationHash, subjectHash, operatorMembership));
+            }
           } else {
             const storefront = await requireValidStorefront(memberPort.storefrontRegistration(database, registration.value));
             const applicationRealm = await resolveRealmApplication(database, realm.realmId, storefront.application_slug);
@@ -209,6 +218,8 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           let resolvedMember = member;
           let credentialVersion = 1;
           let result: Readonly<Record<string, unknown>>;
+          let memberNodeRegistration: Awaited<ReturnType<typeof memberPort.registerHostedMemberNode>> | null = null;
+          let accountRealm = realm.realmId;
           const scopeKind = registrationTarget.target_client === 'storefront'
             ? await organizationPort.kind(database, organization) : 'tenant';
           if (existing.rows[0]) {
@@ -259,18 +270,55 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                 }));
           } else {
             if (password === null) throw new Error('PASSWORD_POLICY_REJECTED');
+            if (registrationTarget.target_client === 'storefront') {
+              memberNodeRegistration = await requireValidInvite(memberPort.registerHostedMemberNode(database, {
+                registration_id: registrationId,
+                business_number: registrationBusinessNumber,
+                idempotency_key: request.input.idempotency!,
+                registration_origin: registration.kind === 'invite' ? 'invitation' : 'direct',
+                registration_host_node_id: realm.nodeId,
+                invitation_token_hash: registration.kind === 'invite' ? registrationHash : null,
+                business_identity_hash: subjectHash,
+                node_key: registrationNodeKey,
+                realm_id: registrationRealm,
+                membership_id: membership,
+                requested_by: principal,
+                trace_id: request.input.headers['x-request-id'] ?? `registration:${request.input.idempotency!}`,
+              }));
+              if (memberNodeRegistration.outcome === 'level_boundary') {
+                return {
+                  status: 409,
+                  body: {
+                    code: 'SFL_REGISTRATION_LEVEL_BOUNDARY',
+                    outcome: memberNodeRegistration.outcome,
+                    registration_id: memberNodeRegistration.registration_id,
+                    business_number: memberNodeRegistration.business_number,
+                    registration_origin: memberNodeRegistration.registration_origin,
+                    registration_host_node_id: memberNodeRegistration.registration_host_node_id,
+                    invitation_id: memberNodeRegistration.invitation_id,
+                    inviter_node_id: memberNodeRegistration.inviter_node_id,
+                    inviter_membership_id: memberNodeRegistration.inviter_membership_id,
+                    line_id: memberNodeRegistration.line_id,
+                    host_sovereign_node_id: memberNodeRegistration.host_sovereign_node_id,
+                    request_hash: memberNodeRegistration.request_hash,
+                    created_at: memberNodeRegistration.created_at,
+                  },
+                };
+              }
+              accountRealm = memberNodeRegistration.realm_id;
+            }
             await database.query(`insert into identity.principal(id,status,created_at,updated_at) values($1,'active',clock_timestamp(),clock_timestamp())`, [principal]);
             await database.query(
               `insert into identity.account(id,realm_id,legacy_principal_id,status,credential_version,assurance_level,
                 mobile_ciphertext,mobile_token,mobile_masked,phone_verified_at,created_at,updated_at)
               values($1,$2,$3,'active',1,$4,$5,$6,$7,$8,clock_timestamp(),clock_timestamp())`,
-              [account, realm.realmId, principal, deferredPhoneVerification ? 1 : 2, mobile.ciphertext, mobile.fingerprint,
+              [account, accountRealm, principal, deferredPhoneVerification ? 1 : 2, mobile.ciphertext, mobile.fingerprint,
                 `${subject.slice(0, 3)}****${subject.slice(-4)}`, deferredPhoneVerification ? null : new Date()]
             );
             await database.query(
               `insert into identity.credential(id,principal_id,provider,subject_hash,secret_hash,status,created_at,realm_id,account_id)
             values($1,$2,'password',$3,$4,'active',clock_timestamp(),$5,$6)`,
-              [credential, principal, subjectHash, password, realm.realmId, account]
+              [credential, principal, subjectHash, password, accountRealm, account]
             );
             await memberPort.create(database, {
               member,
@@ -285,7 +333,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
               await database.query(
                 `insert into identity.assurance(id,principal_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
                 values($1,$2,'phone_otp',2,$3,clock_timestamp(),clock_timestamp()+interval '365 days',$4,$5)`,
-                [assurance, principal, subjectHash, realm.realmId, account]
+                [assurance, principal, subjectHash, accountRealm, account]
               );
             }
             result = registrationTarget.target_client === 'operator'
@@ -294,7 +342,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                   governanceParentMembership: registrationTarget.created_by,
                   member,
                   principal,
-                  realm: realm.realmId,
+                  realm: accountRealm,
                   account,
                   operatorOrganization: operatorRealm!.membershipOrganizationId,
                   managementOrganization: organization,
@@ -306,7 +354,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                   member,
                   principal,
                   organization,
-                  realm: realm.realmId,
+                  realm: accountRealm,
                   account,
                   role: registrationTarget.role_id,
                   scopeKind,
@@ -319,15 +367,15 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             from access.membership membership join identity.realm realm
               on realm.id=membership.realm_id and realm.node_profile=membership.node_profile and realm.status='active'
             where membership.id=any($1::text[]) and membership.realm_id=$2 and membership.account_id=$3`,
-            [realmMemberships, realm.realmId, resolvedAccount]);
+            [realmMemberships, accountRealm, resolvedAccount]);
           if (boundMemberships.rows.length !== realmMemberships.length) throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
           if (typeof body.wechatToken === 'string') {
-            await bindWechat(database, tokenHash(body.wechatToken), resolvedPrincipal, registeredMembership, realm.realmId, resolvedAccount);
+            await bindWechat(database, tokenHash(body.wechatToken), resolvedPrincipal, registeredMembership, accountRealm, resolvedAccount);
           }
           await publishIdentityEvent(database, 'identity.member.registered', resolvedPrincipal, organization, request.input.idempotency!, {
             principal: resolvedPrincipal,
             account: resolvedAccount,
-            realm: realm.realmId,
+            realm: accountRealm,
             member: resolvedMember,
             membership: registeredMembership,
             ...(registrationTarget.target_client === 'operator' ? { operatorMembership } : {}),
@@ -335,6 +383,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           });
           const responseBody = {
             ...result,
+            ...(memberNodeRegistration === null ? {} : memberNodeRegistration),
             ...(registrationTarget.governance_level === null ? {} : { governanceLevel: registrationTarget.governance_level }),
           };
           if (authorization === null) return { status: 201, body: responseBody };
@@ -351,13 +400,13 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             [session, resolvedPrincipal, registeredMembership, tokenHash(token), credentialVersion, accessVersion,
               digest(request.input.headers['x-peer-address'] ?? 'unknown'), String(request.input.headers['user-agent'] ?? 'unknown').slice(0, 512),
               String(request.input.headers['x-device-id'] ?? 'browser').slice(0, 128), sessionAssurance,
-              realm.realmId, resolvedAccount, applicationReturnTarget ?? requestedReturnTarget!]
+              accountRealm, resolvedAccount, applicationReturnTarget ?? requestedReturnTarget!]
           );
           if (!deferredPhoneVerification) {
             await database.query(
               `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
               values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours',$5,$6)`,
-              [`assurance:${randomUUID()}`, resolvedPrincipal, session, createHash('sha256').update(textField(body, 'challenge')).digest('hex'), realm.realmId, resolvedAccount]
+              [`assurance:${randomUUID()}`, resolvedPrincipal, session, createHash('sha256').update(textField(body, 'challenge')).digest('hex'), accountRealm, resolvedAccount]
             );
           }
           const consumedIntent = loginIntent === undefined ? undefined : (await database.query<{

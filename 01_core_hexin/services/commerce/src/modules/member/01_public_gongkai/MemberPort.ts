@@ -1,3 +1,9 @@
+import {
+  parseMemberNodeRegistrationRequest,
+  parseMemberNodeRegistrationResult,
+  type MemberNodeRegistrationRequest,
+  type MemberNodeRegistrationResult,
+} from '@shop/config/sfl-node-kernel';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
 
 export interface MemberInvite {
@@ -99,6 +105,40 @@ export class MemberPort {
         and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
         and policy.terms_hash=invite.terms_hash`, [token, destinationHash]);
     if (!result.rows[0]) throw new Error('INVITE_INVALID');
+  }
+
+  async registrationInvite(database: OperationDatabase, token: string, destinationHash: string): Promise<MemberInvite> {
+    const result = await database.query<MemberInvite>(`select invite.id,invite.organization_id,invite.created_by,invite.role_id,
+      invite.terms_hash,invite.target_client,invite.storefront_organization_id,
+      case when invite.target_client='operator' then (select role.id from access.role role
+        where role.scope_id=invite.storefront_organization_id and role.name='商城会员' and role.status='active'
+        order by role.id limit 1) else invite.role_id end storefront_role_id,
+      case when invite.target_client='operator' and invite.role_id='role-senior-administrator-v1:'||invite.organization_id
+        then 'senior_administrator' when invite.target_client='operator' then 'administrator' end governance_level
+      from member.invite invite
+      join identity.registrationpolicy policy on policy.id=invite.registration_policy_id
+      join organization.organization organization on organization.id=invite.organization_id
+      where invite.token_hash=$1 and invite.status='active' and invite.effective_at<=clock_timestamp()
+        and invite.expires_at>clock_timestamp() and invite.use_count<invite.max_uses
+        and (invite.allowed_destination_hash is null or invite.allowed_destination_hash=$2)
+        and ${registrationInviteBoundary()}
+        and policy.effective_at<=clock_timestamp() and (policy.retired_at is null or policy.retired_at>clock_timestamp())
+        and policy.terms_hash=invite.terms_hash`, [token, destinationHash]);
+    const invitation = result.rows[0];
+    if (!invitation) throw new Error('INVITE_INVALID');
+    return invitation;
+  }
+
+  async registerHostedMemberNode(database: OperationDatabase,
+    input: MemberNodeRegistrationRequest): Promise<MemberNodeRegistrationResult> {
+    const request = parseMemberNodeRegistrationRequest(input);
+    const result = await database.query<Record<string, unknown>>(
+      'select * from organization.register_hosted_member_node($1::jsonb)',
+      [JSON.stringify(request)],
+    );
+    const row = result.rows[0];
+    if (!row) throw new Error('SFL_MEMBER_REGISTRATION_FAILED');
+    return parseMemberNodeRegistrationResult(row);
   }
 
   async consumeInvite(database: OperationDatabase, token: string, destinationHash: string,

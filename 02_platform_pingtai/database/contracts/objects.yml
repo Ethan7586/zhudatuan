@@ -888,6 +888,11 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql
     operationalOwner: organization
+  - id: organization.register_hosted_member_node
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912020000_create_sfl_member_registration_progression.sql
+    operationalOwner: organization
   - id: organization.refresh_node_closure
     kind: function
     owner: organization
@@ -26753,6 +26758,16 @@ objects:
     kind: table
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql
+    rls: false
+  - id: organization.membernoderegistration
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912020000_create_sfl_member_registration_progression.sql
+    rls: false
+  - id: organization.memberregistrationboundary
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912020000_create_sfl_member_registration_progression.sql
     rls: false
   - id: organization.node
     kind: table
