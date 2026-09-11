@@ -31,7 +31,7 @@ export function webReportingOperations(context: ModuleContext): ModuleOperations
       const application = queryText(request, 'applicationid');
       const result = await database.query<MetricRecord>(`select fact.metric_id code,fact.metric_version version,fact.scope_id scope,
         jsonb_build_object('from',fact.period_start,'to',fact.period_end,'timezone',fact.timezone) period,fact.dimensions,
-        fact.value_numeric::float8 value,metric.unit,fact.watermark,fact.projection_version::float8 "projectionVersion",
+        fact.value_numeric::float8 value,metric.unit,fact.watermark,CAST(fact.projection_version AS float8) "projectionVersion",
         fact.period_end "cursorTime",fact.metric_id||':'||md5(fact.dimensions::text) "cursorId"
         from reporting.fact fact join reporting.metric metric on metric.id=fact.metric_id and metric.version=fact.metric_version
         where fact.scope_id=$1 and ($2::text is null or fact.dimensions->>'application'=$2)

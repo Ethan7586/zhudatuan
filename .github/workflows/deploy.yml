@@ -84,6 +84,7 @@ jobs:
       - name: 生产切流
         id: cutover
         run: |
+          set -o pipefail
           node 04_tools/release-engine/cli.mjs deploy \
             --package .ci-release/package.json \
             --node "$RELEASE_NODE" \
@@ -91,6 +92,7 @@ jobs:
             --approve-production "zdt-next:${{ steps.sha.outputs.sha }}" \
             ${{ inputs.external_baseline && '--external-baseline' || '' }} \
             --format json | tee .ci-release/deploy-production.json
+          node -e "const r=require('./.ci-release/deploy-production.json');if(r.finalStatus!=='success'){console.error('切流失败：'+(r.finalStatus||r.error?.code||'unknown'));process.exit(1)}"
 
       - name: 记录切流回执
         if: always()
@@ -105,5 +107,5 @@ jobs:
         if: always()
         run: |
           if [ -f .ci-release/deploy-production.json ]; then
-            node -e "const r=require('./.ci-release/deploy-production.json');const t=r.result?.timings||{};console.log('切流结果：'+(r.result?.finalStatus||r.error?.code||'unknown'));console.log('计时：'+Object.entries(t).map(([k,v])=>k+'='+v+'ms').join(' '));" >> "$GITHUB_STEP_SUMMARY" || true
+            node -e "const r=require('./.ci-release/deploy-production.json');const t=r.timings||{};console.log('切流结果：'+(r.finalStatus||r.error?.code||'unknown'));console.log('计时：'+Object.entries(t).map(([k,v])=>k+'='+v+'ms').join(' '));" >> "$GITHUB_STEP_SUMMARY" || true
           fi
