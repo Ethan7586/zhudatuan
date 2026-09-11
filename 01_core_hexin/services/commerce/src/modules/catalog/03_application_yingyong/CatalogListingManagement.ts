@@ -36,6 +36,7 @@ export function catalogListingPageResult<T extends QueryResultRow>(
   result: QueryResult<T>,
   page: QueryPage,
   summary: CatalogListingStatusSummary | undefined,
+  preview?: unknown,
 ): OperationResult {
   const paged = keysetResult(result, page, 'cursor_sort');
   if (paged.body === null || typeof paged.body !== 'object' || Array.isArray(paged.body)) {
@@ -53,6 +54,7 @@ export function catalogListingPageResult<T extends QueryResultRow>(
         published: counts.published,
         unpublished: counts.unpublished,
       },
+      ...(preview === undefined ? {} : { preview }),
     },
   };
 }

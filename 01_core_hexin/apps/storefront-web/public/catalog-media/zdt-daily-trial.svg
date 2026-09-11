@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-labelledby="title desc">
+  <title id="title">主打团供应商日用体验装</title>
+  <desc id="desc">蓝白色主打团日用体验装商品封面</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eef6ff"/>
+      <stop offset="1" stop-color="#dcecff"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2176ff"/>
+      <stop offset="1" stop-color="#1558d6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#1558d6" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect width="800" height="800" rx="72" fill="url(#background)"/>
+  <circle cx="680" cy="116" r="150" fill="#fff" opacity=".45"/>
+  <circle cx="112" cy="702" r="190" fill="#fff" opacity=".35"/>
+  <g filter="url(#shadow)">
+    <rect x="142" y="126" width="516" height="548" rx="48" fill="#fff"/>
+    <rect x="142" y="126" width="516" height="132" rx="48" fill="url(#brand)"/>
+    <path d="M142 212h516v46H142z" fill="url(#brand)"/>
+  </g>
+  <g fill="none" stroke="#2474f5" stroke-linecap="round" stroke-linejoin="round" stroke-width="18">
+    <path d="M298 378h204l-18 166H316z"/>
+    <path d="M338 378c5-48 26-74 62-74s57 26 62 74"/>
+    <path d="M354 452h92M400 406v92"/>
+  </g>
+  <text x="400" y="190" fill="#fff" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif" font-size="46" font-weight="750" text-anchor="middle">主打团供应商</text>
+  <text x="400" y="610" fill="#17345f" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif" font-size="42" font-weight="720" text-anchor="middle">日用体验装</text>
+  <text x="400" y="650" fill="#6c84a5" font-family="-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif" font-size="22" text-anchor="middle">直接供货 · 价格透明 · 库存可查</text>
+</svg>

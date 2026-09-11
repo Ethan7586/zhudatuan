@@ -33,7 +33,8 @@ describe('web order read model', () => {
     expect(read?.text).toContain("milestone.evidence->>'actor'");
     expect(read?.text).toContain('aftersale.requested_by');
     expect(read?.text).toContain('review.actor_id');
-    expect(read?.text).toContain('member.profile');
+    expect(read?.text).not.toContain('member.profile');
+    expect(read?.text).toContain('null::text actor_name');
     expect(read?.text).toContain('orders.order_number=$5');
     expect(read?.text).toContain("orders.payment_state=$8");
     expect(read?.text).toContain("$13='aftersale'");
