@@ -15,11 +15,11 @@ source:
 
 deployment:
   releaseEligible: false
-  isolation: dedicated
+  isolation: branded-edge-shared-business-kernel
   profile: deployment/aliyun.yml
 
 data:
-  isolation: dedicated-database
+  isolation: shared-database-node-and-mall-scoped
   crossProjectMigration: forbidden
 
 approval:

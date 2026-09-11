@@ -1,5 +1,6 @@
 export const serviceTargets = Object.freeze({
   'identity-api': ['IdentityRegistrationApiMain', 'IdentityRegistrationApiReadyMain'],
+  'support-api': ['ConsoleSupportMain'],
   'purchase-api': ['PurchaseApiMain', 'PurchaseApiReadyMain'],
   'web-api': ['WebBusinessApiMain', 'WebBusinessApiReadyMain'],
   'catalog-api': ['CatalogOperatorApiMain', 'CatalogOperatorApiReadyMain'],

@@ -67,6 +67,7 @@ if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
     /opt/zhudatuan/targets/storefront/current
     /opt/zhudatuan/targets/storefront/runtime
     /opt/zhudatuan/targets/identity-api/current
+    /opt/zhudatuan/targets/support-api/current
     /opt/zhudatuan/targets/purchase-api/current
     /opt/zhudatuan/targets/web-api/current
     /opt/zhudatuan/targets/catalog-api/current
@@ -76,6 +77,7 @@ if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
   )
   units+=(
     zhudatuan-api.service
+    zhudatuan-console-support.service
     zhudatuan-purchase-api.service
     zhudatuan-web-api.service
     zhudatuan-catalog-api.service
@@ -89,24 +91,10 @@ if [[ "$node_scope" == all || "$node_scope" == hbbtzn-l1 ]]; then
     /opt/sfl/nodes/hbbtzn-l1/targets/storefront/current
     /opt/sfl/nodes/hbbtzn-l1/targets/storefront/runtime
     /opt/sfl/nodes/hbbtzn-l1/targets/auth-web/current
-    /opt/sfl/nodes/hbbtzn-l1/targets/identity-api/current
-    /opt/sfl/nodes/hbbtzn-l1/targets/purchase-api/current
-    /opt/sfl/nodes/hbbtzn-l1/targets/web-api/current
-    /opt/sfl/nodes/hbbtzn-l1/targets/catalog-api/current
-    /opt/sfl/nodes/hbbtzn-l1/targets/catalog-jobs/current
-    /opt/sfl/nodes/hbbtzn-l1/targets/payment-webhook-api/current
-    /opt/sfl/nodes/hbbtzn-l1/targets/payment-jobs/current
   )
   units+=(
     sfl-api-gateway@.service
     sfl-storefront@.service
-    sfl-identity-api@.service
-    sfl-purchase-api@.service
-    sfl-web-api@.service
-    sfl-catalog-api@.service
-    sfl-catalog-jobs@.service
-    sfl-payment-webhook-api@.service
-    sfl-payment-jobs@.service
   )
 fi
 for pointer in "${required_pointers[@]}"; do
@@ -118,15 +106,10 @@ done
 
 for unit in "${units[@]}"; do install -m 0644 "$unit_source/$unit" "/etc/systemd/system/$unit"; done
 if [[ "$node_scope" == hbbtzn-l1 ]]; then
-  gateway_runtime=/opt/sfl/nodes/hbbtzn-l1/runtime/api-gateway.Caddyfile
-  gateway_candidate="${gateway_runtime}.candidate"
-  gateway_backup="${gateway_runtime}.pre-auth-pointer-$(date -u +%Y%m%dT%H%M%SZ)"
+  gateway_candidate=/etc/ai-delivery/candidates/hbbtzn-l1.api-gateway.Caddyfile
   install -o root -g zhudatuan -m 0640 "$gateway_source" "$gateway_candidate"
   caddy validate --config "$gateway_candidate" --adapter caddyfile
-  cp -a "$gateway_runtime" "$gateway_backup"
-  mv "$gateway_candidate" "$gateway_runtime"
-  systemctl restart sfl-api-gateway@hbbtzn-l1.service
-  printf 'Gateway config reloaded for %s; rollback=%s\n' "$node_scope" "$gateway_backup"
+  printf 'Gateway candidate validated for %s without installation, reload, or traffic changes.\n' "$node_scope"
 fi
 if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
   install -m 0644 "$repo_root/02_platform_pingtai/infrastructure/zhudatuan/aliyun/ecosystem.config.cjs" /etc/ai-delivery/candidates/zdt-next.ecosystem.config.cjs

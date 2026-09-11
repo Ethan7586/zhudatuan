@@ -2,8 +2,8 @@ schema: sfl.node-deployment.v1
 project: hbbtzn
 provider: aliyun
 enabled: true
-mode: node-scoped-shared-kernel
-deploymentState: compatibility-active-pending-sfl-1.6-cutover
+mode: branded-node-shared-business-kernel
+deploymentState: shared-kernel-candidate-not-cut-over
 
 node:
   nodeId: node:hbbtzn:l1
@@ -23,45 +23,47 @@ domains:
 
 isolation:
   dataScope: realm-and-mall-scoped
-  databaseTopology: shared-registration-database
+  databaseTopology: shared-host-database
   resourceBindings: node-scoped
   secretBindings: node-scoped
   paymentBindings: node-scoped
   callbackBindings: node-scoped
-  releasePointer: independent
-  rollbackPointer: independent
+  brandedEdgeReleasePointer: independent
+  businessKernelReleasePointer: host-node-owned
+  businessExecutionHostNodeId: node:zhudatuan:l0
 
 runtime:
   releasePointer: /opt/sfl/nodes/hbbtzn-l1/current
+  requestContextResolution: preserved-host-to-server-node-context
   services:
     - unit: sfl-storefront@hbbtzn-l1.service
       responsibility: storefront
-    - unit: sfl-catalog-api@hbbtzn-l1.service
-      responsibility: catalog-api
-    - unit: sfl-catalog-jobs@hbbtzn-l1.service
-      responsibility: catalog-jobs
-    - unit: sfl-catalog-object-store@hbbtzn-l1.service
-      responsibility: catalog-object-store
-    - unit: sfl-web-api@hbbtzn-l1.service
-      responsibility: web-business-api
-    - unit: sfl-identity-api@hbbtzn-l1.service
-      responsibility: identity-api
-      port: 4433
-    - unit: sfl-purchase-api@hbbtzn-l1.service
-      responsibility: purchase-api
-      port: 4434
-    - unit: sfl-payment-webhook-api@hbbtzn-l1.service
-      responsibility: payment-webhook-api
-      port: 4436
-    - unit: sfl-payment-jobs@hbbtzn-l1.service
-      responsibility: node-scoped-payment-jobs
     - unit: sfl-identity-notification-jobs@hbbtzn-l1.service
-      responsibility: node-scoped-identity-notification-jobs
+      responsibility: identity-realm-notification-jobs
     - unit: sfl-api-gateway@hbbtzn-l1.service
       responsibility: node-local-tls-gateway
       port: 4430
     - unit: sfl-cloudflared@hbbtzn-l1.service
       responsibility: node-owned-edge-tunnel
+  sharedBusinessServices:
+    - unit: zhudatuan-api.service
+      responsibility: identity-api
+      port: 4321
+    - unit: zhudatuan-web-api.service
+      responsibility: web-business-api
+      port: 4322
+    - unit: zhudatuan-purchase-api.service
+      responsibility: purchase-api
+      port: 4323
+    - unit: zhudatuan-console-support.service
+      responsibility: support-api
+      port: 4324
+    - unit: zhudatuan-payment-webhook-api.service
+      responsibility: payment-webhook-api
+      port: 4326
+    - unit: zhudatuan-catalog-api.service
+      responsibility: catalog-api
+      port: 4331
 
 targetEdge:
   standard: SFL-1.6
@@ -74,7 +76,7 @@ targetEdge:
   workerRouteCount: 0
 
 compatibility:
-  status: production-active-candidate-retired
+  status: node-local-business-runtimes-production-active-pending-retirement
   boundary: SFL-COMPAT-01
   edgeWorker: hbbtzn-alias
   retirementOrder:
@@ -90,6 +92,14 @@ compatibility:
     - responsibility: purchase
       unit: zhudatuan-purchase-api.service
       canonicalNodeResolution: trusted-public-host-to-NodeContext
+  retirementTargets:
+    - sfl-catalog-api@hbbtzn-l1.service
+    - sfl-catalog-jobs@hbbtzn-l1.service
+    - sfl-web-api@hbbtzn-l1.service
+    - sfl-identity-api@hbbtzn-l1.service
+    - sfl-purchase-api@hbbtzn-l1.service
+    - sfl-payment-webhook-api@hbbtzn-l1.service
+    - sfl-payment-jobs@hbbtzn-l1.service
   forbiddenClaims:
     - dedicated-physical-database
     - production-worker-retired-before-cutover-evidence
