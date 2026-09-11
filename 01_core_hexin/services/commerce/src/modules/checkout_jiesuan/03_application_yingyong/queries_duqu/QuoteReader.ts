@@ -24,6 +24,8 @@ interface LineRow {
   readonly price_version: string | null; readonly stockitem_id: string | null; readonly onhand: number | null;
   readonly safety: number | null; readonly reserved: number | null; readonly stock_version: number | null; readonly provider: string | null;
   readonly partner_id: string | null;
+  readonly supplier_relationship_id: string | null; readonly contract_id: string | null; readonly contract_hash: string | null;
+  readonly fulfillment_party_id: string | null; readonly settlement_party_id: string | null; readonly invoice_party_id: string | null;
 }
 interface PolicyRow {
   readonly id: string; readonly version: number; readonly rule_hash: string; readonly rule: Record<string, unknown>;
@@ -101,7 +103,11 @@ export class QuoteReader {
       listing.title listing_title,listing.version::float8 listing_version,listing.status listing_status,product.id product_id,product.product_type,
       product.category_id,product.version::float8 product_version,sku.version::float8 sku_version,price.amount_minor::float8 unit_minor,
       price.effective_at::text price_version,stock.id stockitem_id,stock.onhand::float8 onhand,stock.safety::float8 safety,
-      stock.reserved::float8 reserved,stock.version::float8 stock_version,source.provider,product.owner_partner_id partner_id
+      stock.reserved::float8 reserved,stock.version::float8 stock_version,source.provider,product.owner_partner_id partner_id,
+      agreement.id supplier_relationship_id,agreement.contract_ref contract_id,agreement.contract_hash,
+      case when agreement.capabilities ? 'fulfillment' then product.owner_partner_id end fulfillment_party_id,
+      case when agreement.capabilities ? 'settlement' then product.owner_partner_id end settlement_party_id,
+      case when agreement.capabilities ? 'invoice' then product.owner_partner_id end invoice_party_id
       from cart.item item left join catalog.listing listing on listing.id=item.listing_id and listing.scope_id=$2
         and listing.status='published' and (listing.effective_at is null or listing.effective_at<=clock_timestamp())
         and (listing.expires_at is null or listing.expires_at>clock_timestamp())
@@ -117,7 +123,12 @@ export class QuoteReader {
         order by candidate.onhand-candidate.safety-coalesce(sum(reservation.quantity) filter(where reservation.state='active'
           and reservation.expires_at>clock_timestamp()),0) desc,candidate.id limit 1) stock on true
       left join lateral(select provider from catalog.sourcelisting where sku_id=item.sku_id and scope_id=$2 and status='mapped'
-        order by observed_at desc,id limit 1) source on true where item.cart_id=$1 order by item.sku_id,item.listing_id`, [cart.id, cart.mall_id]);
+        order by observed_at desc,id limit 1) source on true
+      left join lateral(select agreement.id,agreement.contract_ref,agreement.contract_hash,agreement.capabilities
+        from partner.agreement agreement where agreement.partner_id=product.owner_partner_id and agreement.mall_id=$2 and agreement.status='active'
+          and agreement.effective_at<=clock_timestamp() and (agreement.expires_at is null or agreement.expires_at>clock_timestamp())
+        order by agreement.effective_at desc,agreement.id limit 1) agreement on true
+      where item.cart_id=$1 order by item.sku_id,item.listing_id`, [cart.id, cart.mall_id]);
     return result.rows;
   }
 
@@ -136,7 +147,9 @@ export class QuoteReader {
     return Object.freeze({ listing: source.listing_id, sku: source.sku_id, product: source.product_id ?? '', productType: source.product_type ?? 'unknown',
       category: source.category_id ?? '', title: source.listing_title ?? source.listing_id, quantity: source.quantity, unitMinor: unit,
       totalMinor: unit * source.quantity, discountMinor: 0, payableMinor: unit * source.quantity, provider: source.provider,
-      partner: source.partner_id, stockitem: source.stockitem_id,
+      partner: source.partner_id, supplierRelationship: source.supplier_relationship_id, contract: source.contract_id,
+      contractHash: source.contract_hash, fulfillmentParty: source.fulfillment_party_id, settlementParty: source.settlement_party_id,
+      invoiceParty: source.invoice_party_id, stockitem: source.stockitem_id,
       versions: Object.freeze({ listing: source.listing_version ?? -1, product: source.product_version ?? -1, sku: source.sku_version ?? -1,
         price: source.price_version ?? '', stock: source.stock_version ?? -1 }), accepted: reasons.length === 0, reasons: Object.freeze(reasons) });
   }

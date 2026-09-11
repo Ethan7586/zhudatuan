@@ -16,15 +16,15 @@ export class FulfillmentPort {
         sum(line.payable_minor),$4||':'||suborder.id,clock_timestamp(),clock_timestamp(),0
       from ordering.suborder suborder join ordering.orderrecord orders on orders.id=suborder.order_id and orders.mall_id=$1 and orders.member_id=$2
       join ordering.line line on line.order_id=suborder.order_id
-        and line.provider is not distinct from suborder.provider and line.partner_id is not distinct from suborder.partner_id
+        and line.route_id is not distinct from suborder.route_id
       join catalog.sku sku on sku.id=line.sku_id join catalog.product product on product.id=sku.product_id where suborder.order_id=$3
       group by suborder.id,suborder.provider,suborder.partner_id,orders.scope_id
       on conflict(mall_id,source_effect_id,suborder_id) do nothing returning id`,
     [input.mall, input.member, input.order, input.payment]);
     await database.query(`insert into fulfillment.line(mall_id,fulfillment_id,order_line_id,quantity)
       select fulfillment.mall_id,fulfillment.id,line.id,line.quantity from fulfillment.fulfillmentorder fulfillment join ordering.line line
-      on line.order_id=fulfillment.order_id and line.provider is not distinct from fulfillment.provider
-      and line.partner_id is not distinct from fulfillment.partner_id where fulfillment.mall_id=$1 and fulfillment.order_id=$2
+      on line.order_id=fulfillment.order_id join ordering.suborder suborder on suborder.id=fulfillment.suborder_id
+      and line.route_id is not distinct from suborder.route_id where fulfillment.mall_id=$1 and fulfillment.order_id=$2
       on conflict(mall_id,fulfillment_id,order_line_id) do nothing`, [input.mall, input.order]);
     return fulfillments.rows.map(({ id }) => id);
   }

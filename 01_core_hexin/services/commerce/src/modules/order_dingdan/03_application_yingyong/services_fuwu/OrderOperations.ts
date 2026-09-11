@@ -82,8 +82,12 @@ export function orderOperations(context: ModuleContext): ModuleOperations {
       const row = loaded.rows[0];
       if (!row) throw new Error('RESOURCE_NOT_FOUND');
       new Order(row.id, row.lifecycle_state, row.payment_state, row.fulfillment_state, row.aftersale_state).assertAftersaleAllowed();
-      const result = await database.query(`insert into ordering.aftersale(id,order_id,line_id,kind,state,quantity,amount_minor,reason,requested_by,requested_membership_id,created_at,updated_at,version)
-        values($1,$2,$3,$4,'requested',$5,$6,$7,$8,$9,clock_timestamp(),clock_timestamp(),0) returning *`, [`aftersale:${randomUUID()}`, row.id,
+      const result = await database.query(`insert into ordering.aftersale(id,order_id,line_id,kind,state,quantity,amount_minor,reason,requested_by,
+        requested_membership_id,route_snapshot,created_at,updated_at,version)
+        select $1,$2,$3,$4,'requested',$5,$6,$7,$8,$9,case when $3::text is null then jsonb_build_object('scope','order','routes',
+          coalesce((select jsonb_agg(line.route_snapshot order by line.id) from ordering.line line where line.order_id=$2),'[]'::jsonb))
+          else (select line.route_snapshot from ordering.line line where line.order_id=$2 and line.id=$3) end,
+          clock_timestamp(),clock_timestamp(),0 returning *`, [`aftersale:${randomUUID()}`, row.id,
         body.line ?? null, body.kind ?? 'refund', body.quantity ?? null, body.amountMinor ?? null, textField(body, 'reason', 1000), access.actor.id, access.membership.id]);
       await database.query("update ordering.orderrecord set aftersale_state='requested',version=version+1,updated_at=clock_timestamp() where id=$1", [row.id]);
       return rowResult(result, 201);

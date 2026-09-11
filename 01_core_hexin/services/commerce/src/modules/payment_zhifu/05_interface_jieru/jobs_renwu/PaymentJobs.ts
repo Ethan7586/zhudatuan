@@ -5,6 +5,7 @@ import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { providerOccurredAt, type PaymentGateway, type ProviderRefundObservation } from '../../01_public_gongkai/ports_jiekou/PaymentGateway';
 import { PaymentReference } from '../../02_domain_yewu/models_moxing/PaymentReference';
 import { PaymentSettlement, releaseOrderHolds } from '../../03_application_yingyong/services_fuwu/PaymentSettlement';
+import { allocatePaymentToEconomicLegs } from '../../03_application_yingyong/services_fuwu/PaymentAllocation';
 import { RefundPlanner } from '../../03_application_yingyong/services_fuwu/RefundPlanner';
 import { RefundSettlement } from '../../03_application_yingyong/services_fuwu/RefundSettlement';
 import { PaymentLifecycle } from '../../02_domain_yewu/policies_guize/PaymentLifecycle';
@@ -140,8 +141,9 @@ export class PaymentJobProcessor implements JobProcessor {
         encode(public.digest($10::jsonb::text,'sha256'),'hex'))`,
     [`capture:${selected.intent}`, selected.scope_id, selected.mall_id, selected.member_id, selected.order_id, selected.currency,
       selected.provider_minor, `late:${selected.intent}`, occurredAt, JSON.stringify(effect)]);
-    await database.query(`insert into payment.allocation(mall_id,payment_id,target_type,target_id,amount_minor,currency)
-      values($1,$2,'order',$3,$4,$5)`, [selected.mall_id, payment, selected.order_id, selected.provider_minor, selected.currency]);
+    await allocatePaymentToEconomicLegs(database, {
+      mall: selected.mall_id, payment, order: selected.order_id, amountMinor: selected.provider_minor, currency: selected.currency,
+    });
     await orderPort.markLatePaid(database, selected.order_id);
     const refund = await this.refunds.create(database, { id: `refund:late:${selected.intent}`, payment, amountMinor: selected.provider_minor,
       idempotency: `late:${selected.intent}`, reason: 'latepayment', mall: selected.mall_id });

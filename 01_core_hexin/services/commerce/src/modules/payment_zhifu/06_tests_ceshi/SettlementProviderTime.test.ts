@@ -60,8 +60,10 @@ describe('PaymentSettlement provider accounting time', () => {
 
     const financial = fixture.calls.find((call) => call.sql.includes('insert into runtime.outbox') && call.values[1] === 'payment.succeeded');
     const order = fixture.calls.find((call) => call.sql.includes('insert into runtime.outbox') && call.values[1] === 'order.paid');
+    const allocation = fixture.calls.find((call) => call.sql.includes("'supplier_economic_leg'"));
     expect(financial?.values[6]).toBe(monthEnd);
     expect(order?.values[6]).toBeNull();
+    expect(allocation?.values).toEqual(['mall:one', 'payment:intent:one', 'order:one', 1000, 'CNY']);
     expect(dependencies.voucherConsume).toHaveBeenCalledOnce();
   });
 
