@@ -888,6 +888,36 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql
     operationalOwner: organization
+  - id: organization.refresh_node_closure
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    operationalOwner: organization
+  - id: organization.resolve_node_context
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    operationalOwner: organization
+  - id: organization.resolve_node_scope_ancestors
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    operationalOwner: organization
+  - id: organization.resolve_node_scope_descendants
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    operationalOwner: organization
+  - id: organization.resolve_node_scope_self
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    operationalOwner: organization
+  - id: organization.resolve_node_scope_subtree
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    operationalOwner: organization
   - id: organization.validate_noderelation_version
     kind: function
     owner: organization
@@ -26729,6 +26759,11 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql
     rls: false
+  - id: organization.nodeclosure
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    rls: false
   - id: organization.noderelation
     kind: table
     owner: organization
@@ -27623,6 +27658,11 @@ objects:
     kind: trigger
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql
+    operationalOwner: organization
+  - id: organization.noderelation.noderelation_closure_refresh
+    kind: trigger
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
     operationalOwner: organization
   - id: payment.attempt.payment_attempt_provider_effect_immutable
     kind: trigger

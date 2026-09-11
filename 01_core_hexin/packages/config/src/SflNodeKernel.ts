@@ -69,6 +69,32 @@ export interface SflNodeTopology {
 
 export interface ResolvedNodeRecord extends NodeRecord, NodeRelationRecord {}
 
+/** Server-authoritative node facts resolved from persisted node and current relation rows. */
+export interface AuthoritativeNodeContext {
+  readonly line_id: string;
+  readonly node_id: string;
+  readonly parent_node_id: string | null;
+  readonly signed_level: SignedLevel;
+  readonly sovereignty_tier: SovereigntyTier;
+  readonly node_profile: NodeProfile;
+  readonly realm_id: string;
+  readonly mall_id: string | null;
+  readonly host_sovereign_node_id: string;
+  readonly relation_version: number;
+  readonly effective_at: string;
+  readonly status: NodeLifecycleStatus;
+}
+
+/** One indexed closure result relative to a resolved node. */
+export interface NodeScopeRecord {
+  readonly line_id: string;
+  readonly node_id: string;
+  readonly distance: number;
+  readonly relation_version: number;
+  readonly effective_at: string;
+  readonly status: NodeLifecycleStatus;
+}
+
 export interface HostedNodeProvisioningRequest {
   readonly idempotency_key: string;
   readonly node_id: string;
@@ -203,6 +229,28 @@ const NODE_RELATION_KEYS = [
   'relation_version',
   'effective_at',
   'superseded_at',
+] as const;
+const AUTHORITATIVE_NODE_CONTEXT_KEYS = [
+  'line_id',
+  'node_id',
+  'parent_node_id',
+  'signed_level',
+  'sovereignty_tier',
+  'node_profile',
+  'realm_id',
+  'mall_id',
+  'host_sovereign_node_id',
+  'relation_version',
+  'effective_at',
+  'status',
+] as const;
+const NODE_SCOPE_RECORD_KEYS = [
+  'line_id',
+  'node_id',
+  'distance',
+  'relation_version',
+  'effective_at',
+  'status',
 ] as const;
 const NODE_TOPOLOGY_KEYS = ['schema_version', 'nodes', 'relations'] as const;
 const HOSTED_NODE_PROVISIONING_REQUEST_KEYS = [
@@ -403,6 +451,61 @@ export function parseNodeRelationRecord(value: unknown): NodeRelationRecord {
     relation_version: relationVersion as number,
     effective_at: effectiveAt,
     superseded_at: supersededAt,
+  });
+}
+
+export function parseAuthoritativeNodeContext(value: unknown): AuthoritativeNodeContext {
+  const record = exactRecord(value, AUTHORITATIVE_NODE_CONTEXT_KEYS, 'SFL_AUTHORITATIVE_NODE_CONTEXT_INVALID');
+  const node = parseNodeRecord({
+    line_id: record.line_id,
+    node_id: record.node_id,
+    sovereignty_tier: record.sovereignty_tier,
+    node_profile: record.node_profile,
+    realm_id: record.realm_id,
+    mall_id: record.mall_id,
+    status: record.status,
+    created_at: record.effective_at,
+  });
+  const relation = parseNodeRelationRecord({
+    line_id: record.line_id,
+    node_id: record.node_id,
+    parent_node_id: record.parent_node_id,
+    original_parent_node_id: record.parent_node_id,
+    signed_level: record.signed_level,
+    host_sovereign_node_id: record.host_sovereign_node_id,
+    relation_version: record.relation_version,
+    effective_at: record.effective_at,
+    superseded_at: null,
+  });
+  return Object.freeze({
+    line_id: node.line_id,
+    node_id: node.node_id,
+    parent_node_id: relation.parent_node_id,
+    signed_level: relation.signed_level,
+    sovereignty_tier: node.sovereignty_tier,
+    node_profile: node.node_profile,
+    realm_id: node.realm_id,
+    mall_id: node.mall_id,
+    host_sovereign_node_id: relation.host_sovereign_node_id,
+    relation_version: relation.relation_version,
+    effective_at: relation.effective_at,
+    status: node.status,
+  });
+}
+
+export function parseNodeScopeRecord(value: unknown): NodeScopeRecord {
+  const record = exactRecord(value, NODE_SCOPE_RECORD_KEYS, 'SFL_NODE_SCOPE_RECORD_INVALID');
+  if (!Number.isSafeInteger(record.distance) || (record.distance as number) < 0
+    || !Number.isSafeInteger(record.relation_version) || (record.relation_version as number) < 1) {
+    throw new Error('SFL_NODE_SCOPE_RECORD_INVALID');
+  }
+  return Object.freeze({
+    line_id: canonicalText(record.line_id, 'line_id'),
+    node_id: canonicalText(record.node_id, 'node_id'),
+    distance: record.distance as number,
+    relation_version: record.relation_version as number,
+    effective_at: parseCanonicalTimestamp(record.effective_at),
+    status: parseLifecycleStatus(record.status),
   });
 }
 
