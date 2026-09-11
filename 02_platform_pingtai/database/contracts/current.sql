@@ -34,6 +34,10 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('access.center.read','access','GET','/api/v1/access/center','1.0.0'),
   ('access.roles.manage','access','PUT','/api/v1/access/roles/{roleid}','1.0.0'),
   ('access.scopes.manage','access','PUT','/api/v1/access/memberships/{membershipid}/scopes','1.0.0'),
+  ('access.administrators.members.read','access','GET','/api/v1/access/administrator-members','1.0.0'),
+  ('access.administrators.member.read','access','GET','/api/v1/access/administrator-members/{nodeid}','1.0.0'),
+  ('access.administrators.scopes.manage','access','PUT','/api/v1/access/administrators/{membershipid}/segment-scope','1.0.0'),
+  ('access.administrators.members.note','access','POST','/api/v1/access/administrator-members/{nodeid}/notes','1.0.0'),
   ('capability.assignments.read','capability','GET','/api/v1/capabilities/assignments','1.0.0'),
   ('capability.assignments.manage','capability','PUT','/api/v1/capabilities/assignments/{assignmentid}','1.0.0'),
   ('partner.partners.read','partner','GET','/api/v1/partners','1.0.0'),
@@ -282,6 +286,8 @@ insert into runtime.event(type,version,owner,schema_ref) values
   ('access.owner.transfer.initiated',1,'access','contract://events/access.owner.transfer.initiated/v1'),
   ('access.owner.transferred',1,'access','contract://events/access.owner.transferred/v1'),
   ('access.owner.transfer.cancelled',1,'access','contract://events/access.owner.transfer.cancelled/v1'),
+  ('access.administrator.scope.changed',1,'access','contract://events/access.administrator.scope.changed/v1'),
+  ('access.administrator.member.noted',1,'access','contract://events/access.administrator.member.noted/v1'),
   ('catalog.listing.published',1,'catalog','contract://events/catalog.listing.published/v1'),
   ('inventory.stock.changed',1,'inventory','contract://events/inventory.stock.changed/v1'),
   ('inventory.stock.reserved',1,'inventory','contract://events/inventory.stock.reserved/v1'),
@@ -569,6 +575,10 @@ insert into capability.capability(id,kind,name,version,status) values
   ('access.center.read','operation','access.center.read',1,'active'),
   ('access.roles.manage','operation','access.roles.manage',1,'active'),
   ('access.scopes.manage','operation','access.scopes.manage',1,'active'),
+  ('access.administrators.members.read','operation','access.administrators.members.read',1,'active'),
+  ('access.administrators.member.read','operation','access.administrators.member.read',1,'active'),
+  ('access.administrators.scopes.manage','operation','access.administrators.scopes.manage',1,'active'),
+  ('access.administrators.members.note','operation','access.administrators.members.note',1,'active'),
   ('capability.assignments.read','operation','capability.assignments.read',1,'active'),
   ('capability.assignments.manage','operation','capability.assignments.manage',1,'active'),
   ('partner.partners.read','operation','partner.partners.read',1,'active'),
@@ -838,6 +848,10 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('access.center.read','access.center.read','access.center.read','operator'),
   ('access.roles.manage','access.roles.manage','access.role.manage','operator'),
   ('access.scopes.manage','access.scopes.manage','access.scope.manage','operator'),
+  ('access.administrators.members.read','access.administrators.members.read','member.read','operator'),
+  ('access.administrators.member.read','access.administrators.member.read','member.read','operator'),
+  ('access.administrators.scopes.manage','access.administrators.scopes.manage','access.scope.manage','operator'),
+  ('access.administrators.members.note','access.administrators.members.note','member.manage','operator'),
   ('capability.assignments.read','capability.assignments.read','capability.assignment.read','operator'),
   ('capability.assignments.manage','capability.assignments.manage','capability.assignment.manage','operator'),
   ('partner.partners.read','partner.partners.read','partner.read','operator'),
@@ -1389,6 +1403,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','d713b9ed518863b3129459fbd01bfa039de0815a13fe1d8828e25e38b73ef3bd');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','7e214353f1f511ad1a1313b9c60a84e28ad10c9a97dccdd1769629a5da48a992');
 
 commit;

@@ -91,6 +91,8 @@ describe('identity registration API entrypoint', () => {
       'member.storefront.custom.read',
       'member.storefront.custom.manage',
       'access.center.read',
+      'access.administrators.members.read',
+      'access.administrators.member.read',
       'finance.entries.read',
       'finance.statements.read',
       'finance.reconciliations.read',

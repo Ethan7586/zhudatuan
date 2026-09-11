@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [],
+  "files": [
+    "src/foundation/security/AdministratorContextResolver.ts",
+    "src/foundation/security/AdministratorContextResolver.test.ts",
+    "src/modules/access/03_application_yingyong/AdministratorSegmentOperations.ts",
+    "src/modules/access/03_application_yingyong/AccessOperations.ts",
+    "src/modules/access/03_application_yingyong/AccessReadOperations.ts",
+    "src/modules/access/06_tests_ceshi/AdministratorSegmentOperations.test.ts"
+  ]
+}
