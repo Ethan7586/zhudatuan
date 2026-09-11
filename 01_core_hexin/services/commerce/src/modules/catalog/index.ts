@@ -9,5 +9,11 @@ export {
   catalogSourcePort,
   type CatalogSourceInput,
 } from './01_public_gongkai/CatalogSourcePort';
+export {
+  catalogSourceProjection,
+  CatalogSourceProjection,
+  type CatalogSourceProjectionInput,
+  type CatalogSourceProjectionResult,
+} from './03_application_yingyong/CatalogSourceProjection';
 export type { CatalogSku } from './03_application_yingyong/port/CatalogSku';
 export { catalogManifest } from './module.manifest';

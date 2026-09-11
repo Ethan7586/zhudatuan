@@ -22,6 +22,7 @@ describe('cake read ports', () => {
     expect(batch.records).toHaveLength(2);
     expect(batch.records[0]).toMatchObject({ externalId: '1001', payload: {
       schema: 'cakeuncle.physical-sku.v1', provider: 'cake', productId: '100', specId: '1001',
+      description: '商品描述',
       amountMinor: 9990, compareMinor: 12900, onhand: CAKEUNCLE_UNLIMITED_ONHAND, unlimited: true,
       supportsGreeting: true,
     } });

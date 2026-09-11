@@ -5,7 +5,7 @@ import type { ClaimedJob, JobProcessor } from '../../../../foundation/applicatio
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { SecretStore } from '../../../../foundation/infrastructure/SecretStore';
 import { ExternalMapping } from '../../02_domain_yewu/model/ExternalMapping';
-import { catalogSourcePort } from '../../../catalog';
+import { catalogSourcePort, catalogSourceProjection } from '../../../catalog';
 import { pricingPort } from '../../../pricing';
 import { inventoryPort } from '../../../inventory';
 import { FinancePort } from '../../../finance';
@@ -69,6 +69,14 @@ export class ChannelJobProcessor implements JobProcessor {
         [`source:${digest(`${run.scope_id}:${run.provider}:${external}:${version}`)}`, run.provider, run.scope_id, external, version, serialized, hash]);
         await catalogSourcePort.accept(client, { id: `listing:${digest(`${run.scope_id}:${run.provider}:${external}`)}`,
           provider: run.provider, external, scope: run.scope_id, version, payload: serialized, hash });
+        await catalogSourceProjection.project(client, {
+          provider: run.provider,
+          scope: run.scope_id,
+          region: run.region,
+          external,
+          version,
+          payload: source,
+        });
       }
       await this.finish(client, job, run, batch.records.length, batch.errors.length, batch.complete, batch.nextCursor ?? null, batch.errors);
       await client.query('commit');
