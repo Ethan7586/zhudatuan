@@ -70,8 +70,17 @@ describe('Product governance workspace', () => {
       </MemoryRouter>,
     );
     await screen.findByRole('table', { name: '商品列表' });
-    await user.click(screen.getByRole('button', { name: /核心商品product:1/ }));
-    expect(await screen.findByRole('dialog', { name: '核心商品' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: /核心商品sku:1/ }));
+    const detail = await screen.findByRole('complementary', { name: '核心商品 商品详情' });
+    expect(within(detail).getByRole('heading', { name: '商品生命周期' })).toBeTruthy();
+    await user.click(within(detail).getByRole('tab', { name: 'SKU与库存' }));
+    expect(within(detail).getByRole('heading', { name: 'SKU与库存' })).toBeTruthy();
+    await user.click(within(detail).getByRole('tab', { name: '商城与售价' }));
+    expect(within(detail).getByRole('heading', { name: '商城售价尚未同步' })).toBeTruthy();
+    await user.click(within(detail).getByRole('tab', { name: '来源与供货' }));
+    expect(within(detail).getByRole('heading', { name: '来源与供货' })).toBeTruthy();
+    await user.click(within(detail).getByRole('tab', { name: '变更记录' }));
+    expect(within(detail).getByRole('heading', { name: '暂无变更记录' })).toBeTruthy();
 
     server.use(http.get('*/api/v1/catalog/listings', () => HttpResponse.json(
       { code: 'PRODUCT_READ_DENIED', requestId: 'request:revoked' },
@@ -82,7 +91,7 @@ describe('Product governance workspace', () => {
     const access = await screen.findByRole('region', { name: '没有权限' });
     await waitFor(() => expect(document.activeElement).toBe(access));
     expect(within(access).getByText('「商品管理」不可访问')).toBeTruthy();
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.queryByRole('complementary', { name: '核心商品 商品详情' })).toBeNull();
     expect(screen.queryByRole('table', { name: '商品列表' })).toBeNull();
     expect(screen.queryByRole('heading', { level: 1, name: '商品目录' })).toBeNull();
     expect(screen.queryByRole('region', { name: '商品筛选' })).toBeNull();
@@ -127,6 +136,19 @@ describe('Product governance workspace', () => {
     await user.click(screen.getByRole('button', { name: '重置' }));
 
     expect(requests).toHaveLength(1);
+  });
+
+  it('treats a missing historical publication task as an idle workspace', async () => {
+    server.use(http.get('*/api/v1/catalog/imports/:id', () => HttpResponse.json({
+      code: 'RESOURCE_SCOPE_NOT_FOUND',
+      requestId: 'request:missing-publication',
+    }, { status: 404 })));
+
+    renderProductRoute(mallContext);
+
+    await screen.findByRole('table', { name: '商品列表' });
+    await waitFor(() => expect(screen.queryByText('发布任务状态读取失败，请刷新页面后重试。')).toBeNull());
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('shows real SKU quantity and filters the complete management statuses', async () => {

@@ -9,6 +9,7 @@ const skeletonRows = Object.freeze([0, 1, 2, 3, 4, 5]);
 
 interface ProductTableProps {
   readonly rows: readonly Listing[];
+  readonly compact?: boolean;
   readonly previewEnabled: boolean;
   readonly visibleColumns: ReadonlySet<ProductColumnKey>;
   readonly selected: ReadonlySet<string>;
@@ -23,11 +24,11 @@ interface ProductTableProps {
   readonly onPublication: (row: Listing, action: ListingPublicationAction) => void;
 }
 
-export function ProductTable({ rows, previewEnabled, visibleColumns, selected, activeId, onToggle, onToggleAll, onOpen,
+export function ProductTable({ rows, compact = false, previewEnabled, visibleColumns, selected, activeId, onToggle, onToggleAll, onOpen,
   onBatchPreview, canPublish, canUnpublish, publicationPending, onPublication }: ProductTableProps) {
   const allSelected = rows.length > 0 && rows.every((row) => selected.has(row.id));
   return (
-    <section className="producttablecard" aria-labelledby="productlisttitle">
+    <section className="producttablecard" data-compact={compact ? 'true' : undefined} aria-labelledby="productlisttitle">
       <h2 id="productlisttitle" className="sr-only">
         商品列表
       </h2>
@@ -50,14 +51,14 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
                 <input type="checkbox" aria-label="选择本页商品" checked={allSelected} onChange={onToggleAll} />
               </th>
               <th>商品信息</th>
-              {visibleColumns.has('category') ? <th>分类 / 供应商</th> : null}
-              {visibleColumns.has('sku') ? <th>SKU 数量</th> : null}
-              {visibleColumns.has('malls') ? <th>商城覆盖</th> : null}
-              {visibleColumns.has('price') ? <th>售价</th> : null}
-              {visibleColumns.has('stock') ? <th>库存</th> : null}
-              {visibleColumns.has('status') ? <th>状态</th> : null}
-              {visibleColumns.has('updated') ? <th>更新时间</th> : null}
-              <th>操作</th>
+              {visibleColumns.has('category') ? <th className="productcolumncategory">分类 / 供应商</th> : null}
+              {visibleColumns.has('sku') ? <th className="productcolumnsku">SKU 数量</th> : null}
+              {visibleColumns.has('malls') ? <th className="productcolumnmalls">商城覆盖</th> : null}
+              {visibleColumns.has('price') ? <th className="productcolumnprice">售价</th> : null}
+              {visibleColumns.has('stock') ? <th className="productcolumnstock">库存</th> : null}
+              {visibleColumns.has('status') ? <th className="productcolumnstatus">状态</th> : null}
+              {visibleColumns.has('updated') ? <th className="productcolumnupdated">更新时间</th> : null}
+              <th className="productcolumnactions">操作</th>
             </tr>
           </thead>
           <tbody>
@@ -85,28 +86,28 @@ export function ProductTable({ rows, previewEnabled, visibleColumns, selected, a
                         }}
                       >
                         <strong>{row.title}</strong>
-                        <span>{preview?.spu ?? row.product_id}</span>
+                        <span>{preview?.spu ?? row.code ?? row.sku_id} · {row.sku_count ?? '—'} SKU</span>
                       </button>
                     </div>
                   </td>
                   {visibleColumns.has('category') ? (
-                    <td>
+                    <td className="productcolumncategory">
                       <CellPair primary={preview?.categoryName ?? productType(row.product_type)} secondary={preview?.supplier.name ?? '供应商合同待补'} unavailable={preview === undefined} />
                     </td>
                   ) : null}
-                  {visibleColumns.has('sku') ? <td>{preview === undefined
+                  {visibleColumns.has('sku') ? <td className="productcolumnsku">{preview === undefined
                     ? row.sku_count === undefined ? <Unavailable /> : formatCount(row.sku_count)
                     : `${preview.skuCount}/${preview.skuTotal}`}</td> : null}
-                  {visibleColumns.has('malls') ? <td>{preview === undefined ? <Unavailable /> : `${preview.mallCount}/${preview.mallTotal}`}</td> : null}
-                  {visibleColumns.has('price') ? <td className="productmoney">{preview?.priceCents == null ? <Unavailable /> : formatMoney(preview.priceCents)}</td> : null}
-                  {visibleColumns.has('stock') ? <td>{preview?.inventory == null ? <Unavailable /> : formatCount(preview.inventory)}</td> : null}
+                  {visibleColumns.has('malls') ? <td className="productcolumnmalls">{preview === undefined ? <Unavailable /> : `${preview.mallCount}/${preview.mallTotal}`}</td> : null}
+                  {visibleColumns.has('price') ? <td className="productmoney productcolumnprice">{preview?.priceCents == null ? <Unavailable /> : formatMoney(preview.priceCents)}</td> : null}
+                  {visibleColumns.has('stock') ? <td className="productcolumnstock">{preview?.inventory == null ? <Unavailable /> : formatCount(preview.inventory)}</td> : null}
                   {visibleColumns.has('status') ? (
-                    <td>
+                    <td className="productcolumnstatus">
                       <StatusBadge status={managementStatus} />
                     </td>
                   ) : null}
-                  {visibleColumns.has('updated') ? <td className="producttime">{formatTime(row.cursor_sort)}</td> : null}
-                  <td>
+                  {visibleColumns.has('updated') ? <td className="producttime productcolumnupdated">{formatTime(row.cursor_sort)}</td> : null}
+                  <td className="productcolumnactions">
                     <div className="productrowactions">
                       <button
                         type="button"

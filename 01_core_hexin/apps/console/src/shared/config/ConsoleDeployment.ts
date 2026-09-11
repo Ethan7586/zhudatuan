@@ -28,18 +28,6 @@ export function parseConsoleVersion(value: unknown): ConsoleVersion {
   return Object.freeze({ schema: CONSOLE_VERSION_SCHEMA, sourceBranch, sourceSha, builtAt, sourceTree, buildId });
 }
 
-export function assertConsoleDeploymentCandidate(
-  candidate: ConsoleVersion,
-  latestZdtNextSha: string,
-  currentProductionSha: string,
-  isAncestor: (ancestor: string, descendant: string) => boolean,
-): void {
-  if (candidate.sourceBranch !== 'zdt-next') throw new Error('CONSOLE_DEPLOY_SOURCE_BRANCH_NOT_ZDT_NEXT');
-  if (candidate.sourceTree !== 'clean') throw new Error('CONSOLE_DEPLOY_SOURCE_TREE_DIRTY');
-  if (candidate.sourceSha !== latestZdtNextSha) throw new Error('CONSOLE_DEPLOY_DIST_NOT_LATEST_ZDT_NEXT');
-  if (!isAncestor(currentProductionSha, candidate.sourceSha)) throw new Error('CONSOLE_DEPLOY_WOULD_REPLACE_NEWER_PRODUCTION');
-}
-
 function requiredText(value: unknown, code: string): string {
   if (typeof value !== 'string' || value.trim() === '') throw new Error(code);
   return value.trim();
