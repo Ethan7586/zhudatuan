@@ -205,6 +205,7 @@ const REPAIR_FILES = [
   '20260912120000_create_zhudatuan_supplier_network.sql',
   '20260912130000_create_supplier_analytics_perspective.sql',
   '20260912140000_index_catalog_reverse_lookups.sql',
+  '20260912150000_create_sfl_administrator_segment_scope.sql',
 ];
 
 const mode = process.argv[2];

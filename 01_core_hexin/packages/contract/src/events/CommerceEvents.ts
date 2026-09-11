@@ -12,6 +12,8 @@ export const COMMERCE_EVENTS = Object.freeze([
   eventContract({"type":"access.owner.transfer.initiated","version":1,"module":"access"}),
   eventContract({"type":"access.owner.transferred","version":1,"module":"access"}),
   eventContract({"type":"access.owner.transfer.cancelled","version":1,"module":"access"}),
+  eventContract({"type":"access.administrator.scope.changed","version":1,"module":"access"}),
+  eventContract({"type":"access.administrator.member.noted","version":1,"module":"access"}),
   eventContract({"type":"catalog.listing.published","version":1,"module":"catalog"}),
   eventContract({"type":"inventory.stock.changed","version":1,"module":"inventory"}),
   eventContract({"type":"inventory.stock.reserved","version":1,"module":"inventory"}),
