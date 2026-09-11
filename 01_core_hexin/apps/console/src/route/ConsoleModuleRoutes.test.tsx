@@ -120,7 +120,7 @@ function fixtureModule(
       placement: 'main',
       group: 'overview',
       order: 10,
-      label: '经营驾驶舱',
+      label: '生意看板',
       icon: 'trend',
     },
     routes: [
@@ -130,7 +130,7 @@ function fixtureModule(
         kind: 'entry',
         lazy,
         operations: [],
-        presentation: { title: '经营驾驶舱', summary: '经营数据、宏观和细节趋势' },
+        presentation: { title: '生意看板', summary: '销售结果、经营趋势与待办事项' },
       },
       {
         id: 'cockpit.redirect',
@@ -138,7 +138,7 @@ function fixtureModule(
         kind: 'redirect',
         redirectTo: 'cockpit',
         operations: [],
-        presentation: { title: '经营驾驶舱', summary: '经营数据、宏观和细节趋势' },
+        presentation: { title: '生意看板', summary: '销售结果、经营趋势与待办事项' },
       },
     ],
   };

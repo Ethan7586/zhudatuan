@@ -133,7 +133,7 @@ describe('ScopeShell route handles', () => {
 
     expect(await screen.findByRole('button', { name: '商品管理' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: '财务与对账台' })).toBeNull();
-    expect(screen.queryByRole('button', { name: '经营驾驶舱' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '生意看板' })).toBeNull();
     expect(screen.getByRole('button', { name: '个人中心：测试运营' })).toBeTruthy();
   });
 

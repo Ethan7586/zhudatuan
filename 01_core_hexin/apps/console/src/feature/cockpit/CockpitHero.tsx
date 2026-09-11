@@ -1,24 +1,23 @@
-import type { CockpitSales } from './CockpitSchema';
+import { Button, WorkspaceHero } from '@shop/design';
+import type { CockpitPeriod } from './CockpitQuery';
 
 export interface CockpitHeroProps {
-  readonly sales: CockpitSales;
   readonly perspective?: Readonly<{ name: string; channel: string }>;
+  readonly period: CockpitPeriod;
+  readonly busy?: boolean;
+  readonly onPeriodChange: (period: CockpitPeriod) => void;
+  readonly onRefresh: () => void;
 }
 
-export function CockpitHero({ sales, perspective }: CockpitHeroProps) {
-  const period = sales.period;
+export function CockpitHero({ perspective, period, busy, onPeriodChange, onRefresh }: CockpitHeroProps) {
   return (
-    <section className="cockpithero" aria-labelledby="cockpittitle">
-      <div>
-        <p className="cockpiteyebrow">{perspective === undefined ? 'BUSINESS PERFORMANCE' : 'SUPPLIER PERFORMANCE'}</p>
-        <h1 id="cockpittitle">{perspective === undefined ? '经营驾驶舱' : `${perspective.name}经营驾驶舱`}</h1>
-        <p className="cockpitconclusion">{sales.conclusion ?? '经营结论等待服务端权威读模型。'}</p>
-        <p className="cockpitperiod">{perspective === undefined ? '' : `${perspective.channel} · `}{period === undefined ? '统计周期未返回' : `${period.from}—${period.to}`}</p>
-      </div>
-      <svg className="cockpitheroicon" viewBox="0 0 92 72" role="img" aria-label="经营趋势">
-        <path d="M10 57 31 36l14 12 29-31" />
-        <path d="M61 17h13v13M10 65h70" />
-      </svg>
-    </section>
+    <WorkspaceHero className="cockpithero" title={perspective === undefined ? '生意看板' : `${perspective.name}生意看板`}
+      description={perspective === undefined ? '今天卖了多少、还有什么要处理，一眼看清。'
+        : `${perspective.channel} · 只看当前供应商的销售、履约与结算结果。`}
+      actions={<><label className="cockpitperiodfield">统计周期<select value={period}
+        onChange={(event) => onPeriodChange(event.target.value as CockpitPeriod)}>
+        <option value="realtime">今天</option><option value="yesterday">昨日</option>
+        <option value="7days">近 7 日</option><option value="30days">近 30 日</option>
+      </select></label><Button onPress={onRefresh}>{busy ? '正在刷新' : '刷新数据'}</Button></>} />
   );
 }
