@@ -140,7 +140,7 @@ describe('Product governance workspace', () => {
     renderProductRoute(mallContext);
     const table = await screen.findByRole('table', { name: '商品列表' });
 
-    expect(screen.getByText('当前范围内共 4 件商品')).toBeTruthy();
+    expect(screen.getByText('4', { selector: '.productherotitle strong' })).toBeTruthy();
     expect(within(table).getByRole('cell', { name: '3' })).toBeTruthy();
     for (const label of ['待完善', '待审核', '已上架', '已下架']) {
       expect(screen.getByRole<HTMLButtonElement>('button', { name: new RegExp(`^${label}`) }).disabled).toBe(false);
