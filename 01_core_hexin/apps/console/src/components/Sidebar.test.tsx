@@ -21,9 +21,17 @@ describe('Sidebar commerce navigation', () => {
     const labels = within(navigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
     expect(labels).not.toContain('商家服务中心');
     expect(labels.indexOf('商城管理')).toBeLessThan(labels.indexOf('商品管理'));
+    expect(labels.indexOf('商品管理')).toBeLessThan(labels.indexOf('供应链管理'));
+    expect(labels.indexOf('供应链管理')).toBeLessThan(labels.indexOf('订单管理系统'));
 
     await user.click(screen.getByRole('button', { name: '商城管理' }));
     expect(onNavigate).toHaveBeenCalledWith('applications');
+  });
+
+  it('shows the supplier product workspace without exposing internal supply-chain management', () => {
+    const items = selectConsoleNavigationItems(consoleModules, 'supplier');
+    expect(items.find(({ moduleId }) => moduleId === 'products')?.label).toBe('供货工作台');
+    expect(items.some(({ moduleId }) => moduleId === 'supply-chain')).toBe(false);
   });
 
   it('shows the merchant service center only in platform navigation', async () => {
@@ -67,7 +75,7 @@ describe('Sidebar commerce navigation', () => {
     const supportNavigation = screen.getByRole('navigation', { name: '服务中心' });
 
     expect(labels).toEqual([
-      '经营驾驶舱', '数据报表', '商城管理', '商品管理', '订单管理系统', '分销返佣系统',
+      '经营驾驶舱', '数据报表', '商城管理', '商品管理', '供应链管理', '订单管理系统', '分销返佣系统',
       '渠道接入系统', '卡券治理台', '财务与对账台', '管理与权限', '系统治理台',
     ]);
     expect(primaryNavigation.nextElementSibling).toBe(profile);

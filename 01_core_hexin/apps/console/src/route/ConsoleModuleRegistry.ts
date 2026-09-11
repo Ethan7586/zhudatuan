@@ -7,6 +7,7 @@ import { controlModule } from '../feature/control/manifest';
 import { financeModule } from '../feature/finance/manifest';
 import { ordersModule } from '../feature/order/manifest';
 import { productsModule } from '../feature/product/manifest';
+import { supplyChainModule } from '../feature/supply-chain/manifest';
 import { qualificationModule } from '../feature/qualification/manifest';
 import { referralModule } from '../feature/referral/manifest';
 import { reportsModule } from '../feature/report/manifest';
@@ -85,6 +86,7 @@ export const consoleModuleRegistry = defineConsoleModuleRegistry([
   controlModule,
   applicationsModule,
   productsModule,
+  supplyChainModule,
   ordersModule,
   referralModule,
   channelsModule,

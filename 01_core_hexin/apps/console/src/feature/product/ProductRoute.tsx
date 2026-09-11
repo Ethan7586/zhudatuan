@@ -50,6 +50,7 @@ export function Component() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useSearchParams();
+  const partnerWorkspace = context.scope.kind === 'supplier' || context.scope.kind === 'brand';
   const previewScope = context.scope.kind === 'platform' && context.scope.id === 'platform:preview';
   const limitValue = Number(search.get('limit') ?? 50);
   const limit = pageSizes.has(limitValue) ? limitValue : 50;
@@ -299,7 +300,7 @@ export function Component() {
   const canPrevious = page === 2 || (page > 2 && cursorTrail.current.has(page - 1));
 
   if (condition === 'denied') {
-    return <ResourceState condition="denied" resourceLabel="商品管理"
+    return <ResourceState condition="denied" resourceLabel={partnerWorkspace ? '供货工作台' : '商品管理'}
       {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}><span /></ResourceState>;
   }
 
@@ -308,6 +309,7 @@ export function Component() {
       <ProductCatalogHeader
         {...(query.data === undefined ? {} : { page: query.data })}
         previewEnabled={previewEnabled}
+        partnerWorkspace={partnerWorkspace}
         status={filter.status ?? ''}
         exportReady={query.data !== undefined}
         writeEnabled={writeEnabled}
@@ -356,8 +358,8 @@ export function Component() {
               onToggleAll={toggleAll}
               onOpen={openDrawer}
               onBatchPreview={() => setBatchOpen(true)}
-              canPublish={canManageListing(context, 'publish')}
-              canUnpublish={canManageListing(context, 'unpublish')}
+              canPublish={!partnerWorkspace && canManageListing(context, 'publish')}
+              canUnpublish={!partnerWorkspace && canManageListing(context, 'unpublish')}
               {...(publication.isPending && publication.variables !== undefined
                 ? { publicationPending: publication.variables.listing.id } : {})}
               onPublication={(listing, action) => publication.mutate({ listing, action })}

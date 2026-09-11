@@ -1,5 +1,5 @@
 export type ShellIconName = 'applications' | 'bell' | 'building' | 'channel' | 'chevron' | 'collapse' | 'control'
-  | 'finance' | 'menu' | 'members' | 'orders' | 'products' | 'search' | 'support' | 'system' | 'tasks' | 'trend' | 'voucher';
+  | 'finance' | 'menu' | 'members' | 'orders' | 'products' | 'search' | 'supply' | 'support' | 'system' | 'tasks' | 'trend' | 'voucher';
 
 const paths: Readonly<Record<ShellIconName, readonly string[]>> = Object.freeze({
   applications: ['M4 4h6v6H4z', 'M14 4h6v6h-6z', 'M4 14h6v6H4z', 'M14 14h6v6h-6z'],
@@ -15,6 +15,7 @@ const paths: Readonly<Record<ShellIconName, readonly string[]>> = Object.freeze(
   orders: ['M3 7h11v10H3z', 'M14 10h4l3 3v4h-7z', 'M6 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4', 'M18 19a2 2 0 1 0 0-4 2 2 0 0 0 0 4'],
   products: ['m12 2 9 5-9 5-9-5z', 'm3 7 9 5 9-5', 'M3 7v10l9 5 9-5V7', 'M12 12v10'],
   search: ['M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16', 'm21 21-4.35-4.35'],
+  supply: ['M7 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6', 'M17 23a3 3 0 1 0 0-6 3 3 0 0 0 0 6', 'M17 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6', 'M9.7 5.5h4.6', 'm8.6 8.8 6.8 6.4', 'M7 8.5v7a3 3 0 0 0 3 3h4'],
   support: ['M20.25 11.25c0 4.06-3.69 7.1-8.25 7.1-1.04 0-2.04-.16-2.94-.46L4.8 20.1l1.1-4.04a6.55 6.55 0 0 1-2.15-4.81c0-4.06 3.69-7.1 8.25-7.1s8.25 3.04 8.25 7.1Z', 'm8.65 11.3 2.18 2.05 4.72-4.55'],
   system: ['M12 2 4 2v5c0 5.1-2.7 8.8-4 10-1.3-1.2-4-4.9-4-10V4z', 'm9 12 2 2 4-4'],
   tasks: ['M5 4h14v16H5z', 'm8 9 2 2 4-4', 'M8 15h8'],

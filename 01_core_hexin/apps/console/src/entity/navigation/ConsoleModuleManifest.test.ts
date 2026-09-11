@@ -81,7 +81,7 @@ void invalidNoneNavigation;
 describe('ConsoleModuleManifest', () => {
   it('publishes the approved module id set and narrows known ids', () => {
     expect(consoleModuleIds).toEqual([
-      'cockpit', 'control', 'applications', 'products', 'orders', 'referral', 'channels',
+      'cockpit', 'control', 'applications', 'products', 'supply-chain', 'orders', 'referral', 'channels',
       'vouchers', 'finance', 'storefront-members', 'access', 'qualification', 'reports', 'support',
     ]);
     expect(isConsoleModuleId('products')).toBe(true);

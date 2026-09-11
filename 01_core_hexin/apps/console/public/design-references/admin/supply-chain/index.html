@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>宏泰甄选｜供应链管理交互原型</title>
+    <script src="./styles.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">宏</span>
+          <span><strong>宏泰甄选</strong><small>商城总后台</small></span>
+        </div>
+        <div class="sidebar-caption">工作台工作流</div>
+        <nav id="mainNav" aria-label="主导航"></nav>
+        <div class="sidebar-spacer"></div>
+        <div class="profile-mini">
+          <span class="avatar">E</span>
+          <span><strong id="profileName">Ethan</strong><small id="profileMeta">个人中心 · 宏泰甄选</small></span>
+        </div>
+        <button class="side-link bottom-link" type="button"><span>◉</span> 服务中心</button>
+      </aside>
+
+      <div class="page-shell">
+        <header class="topbar">
+          <div></div>
+          <div class="topbar-actions">
+            <label class="global-search"><span>⌕</span><input aria-label="全局搜索" placeholder="搜索工作台、任务或快捷命令…" /></label>
+            <button class="task-pill" type="button">任务 <b>3</b></button>
+            <button class="plain-button" type="button">中文</button>
+            <button class="bell" type="button" aria-label="通知">♧</button>
+            <span class="top-avatar">E</span>
+            <span class="account"><strong>Ethan</strong><small id="accountScope">商城 · 宏泰甄选</small></span>
+          </div>
+        </header>
+
+        <div class="scopebar">
+          <label class="scope-select">
+            <select id="scopeSwitch" aria-label="切换体验角色">
+              <option value="internal">宏泰甄选 / 供应链管理</option>
+              <option value="partner">甜觅蛋糕供应链 / 供货工作台</option>
+            </select>
+          </label>
+          <button class="range-button" type="button">近 30 天⌄</button>
+          <span class="sync-status">数据更新于 19:10</span>
+        </div>
+
+        <main>
+          <section id="internalView" class="workspace" aria-label="供应链管理"></section>
+          <section id="partnerView" class="workspace" aria-label="供货工作台" hidden></section>
+        </main>
+      </div>
+    </div>
+
+    <div id="modalBackdrop" class="modal-backdrop" hidden>
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <header><div><span class="eyebrow" id="modalEyebrow"></span><h2 id="modalTitle"></h2></div><button class="icon-button" data-close-modal aria-label="关闭">×</button></header>
+        <div id="modalBody" class="modal-body"></div>
+        <footer><button class="button secondary" data-close-modal type="button">取消</button><button id="modalPrimary" class="button primary" type="button"></button></footer>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

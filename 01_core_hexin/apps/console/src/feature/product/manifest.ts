@@ -3,7 +3,10 @@ import type { ConsoleModuleManifest } from '../../entity/navigation/ConsoleModul
 export const productsModule = {
   id: 'products',
   status: 'enabled',
-  navigation: { placement: 'main', group: 'commerce', order: 40, label: '商品管理', icon: 'products' },
+  navigation: {
+    placement: 'main', group: 'commerce', order: 40, label: '商品管理', icon: 'products',
+    labelByScopeKind: { supplier: '供货工作台', brand: '供货工作台' },
+  },
   routes: [
     {
       id: 'products.index',
@@ -12,7 +15,13 @@ export const productsModule = {
       lazy: () => import('./ProductRoute'),
       operations: ['catalog.listings.read', 'catalog.imports.create', 'catalog.imports.read',
         'catalog.listings.publish', 'catalog.listings.unpublish', 'catalog.listings.batch'],
-      presentation: { title: '商品管理', summary: '商品数量、SKU、审核与上下架状态' },
+      presentation: {
+        title: '商品管理', summary: '商品数量、SKU、审核与上下架状态',
+        byScopeKind: {
+          supplier: { title: '供货工作台', summary: '维护本企业商品并查看平台采用状态' },
+          brand: { title: '供货工作台', summary: '维护本品牌商品并查看平台采用状态' },
+        },
+      },
     },
     {
       id: 'products.detail',

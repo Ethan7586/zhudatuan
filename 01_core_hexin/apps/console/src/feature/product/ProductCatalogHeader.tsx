@@ -4,6 +4,7 @@ import { ProductIcon } from './ProductIcon';
 interface ProductCatalogHeaderProps {
   readonly page?: ListingPage;
   readonly previewEnabled: boolean;
+  readonly partnerWorkspace: boolean;
   readonly status: string;
   readonly onStatus: (status: string) => void;
   readonly exportReady: boolean;
@@ -27,7 +28,7 @@ const tabs = Object.freeze([
   { key: 'unpublished', label: '已下架' },
 ] as const);
 
-export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, exportReady, writeEnabled, releaseDisabledReason,
+export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, status, onStatus, exportReady, writeEnabled, releaseDisabledReason,
   releasePending, publicationTask, releaseFeedback, onImport, onCreate, onExport, onRelease, onRetry }: ProductCatalogHeaderProps) {
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
   const coreTotal = preview === undefined ? page?.total_count : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
@@ -39,12 +40,12 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
     <>
       <header className="producthero">
         <div>
-          <p className="producteyebrow">CATALOG OPERATIONS</p>
-          <h1>商品管理</h1>
-          <p>{description}</p>
+          <p className="producteyebrow">{partnerWorkspace ? '供货工作台' : 'CATALOG OPERATIONS'}</p>
+          <h1>{partnerWorkspace ? '我的商品' : '商品管理'}</h1>
+          <p>{partnerWorkspace ? `自主维护商品资料并查看平台采用状态 · ${description}` : description}</p>
         </div>
-        <div className="productheroactions" role="group" aria-label="商品管理操作">
-          <div className="productreleasecontrol">
+        <div className="productheroactions" role="group" aria-label={partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>
+          {partnerWorkspace ? null : <div className="productreleasecontrol">
             <button className="productaction productactionprimary" type="button"
               disabled={releaseDisabledReason !== undefined}
               aria-describedby={releaseDisabledReason === undefined && releaseFeedback === undefined ? undefined : 'productreleasestate'}
@@ -73,9 +74,9 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
                 )}
               </div>
             )}
-          </div>
+          </div>}
           <button className="productaction" type="button" disabled={!writeEnabled} onClick={onImport}
-            title={writeEnabled ? '上传 catalog-package/v1 标准货盘包' : '请切换到有商品导入权限的商城范围'}>
+            title={writeEnabled ? '批量导入本企业商品' : '当前范围没有商品导入权限'}>
             <ProductIcon name="upload" />批量导入
           </button>
           <button className="productaction" type="button" disabled={!exportReady} onClick={onExport}
@@ -83,12 +84,12 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
             <ProductIcon name="download" />导出当前页
           </button>
           <button className="productaction" type="button" disabled={!writeEnabled} onClick={onCreate}
-            title={writeEnabled ? '手工录入单个商品并保存为草稿' : '请切换到有商品导入权限的商城范围'}>
+            title={writeEnabled ? '手工录入单个商品并保存为草稿' : '当前范围没有商品创建权限'}>
             <ProductIcon name="plus" />新建商品
           </button>
         </div>
         <p id="productcontractnotice" className="sr-only">
-          商品写操作只在当前 Access Pipeline 已授权的商城范围内可用。
+          商品写操作只在当前 Access Pipeline 已授权的范围内可用。
         </p>
       </header>
       <nav className="producttabs" aria-label="商品状态">
@@ -98,7 +99,7 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
           const disabled = tab.key !== '' && !previewEnabled && page?.status_counts === undefined;
           return (
             <button key={tab.key || 'all'} type="button" aria-current={status === tab.key ? 'page' : undefined} disabled={disabled} title={disabled ? '正在读取状态统计' : undefined} onClick={() => onStatus(tab.key)}>
-              {tab.label}
+              {partnerWorkspace ? partnerTabLabel(tab.key, tab.label) : tab.label}
               {count === undefined ? null : <strong>{formatCount(count)}</strong>}
             </button>
           );
@@ -106,6 +107,14 @@ export function ProductCatalogHeader({ page, previewEnabled, status, onStatus, e
       </nav>
     </>
   );
+}
+
+function partnerTabLabel(key: (typeof tabs)[number]['key'], fallback: string): string {
+  if (key === '') return '全部商品';
+  if (key === 'pending_review') return '审核中';
+  if (key === 'published') return '已采用';
+  if (key === 'unpublished') return '未采用';
+  return fallback;
 }
 
 function formatCount(value: number): string {
