@@ -22,14 +22,11 @@ export async function resolveActiveMembershipContext(
   membershipId: string,
 ): Promise<ActiveRealmMembershipContext> {
   const parameters = [entryRealmId, accountId, membershipId];
-  let result: Readonly<{ rows: readonly Record<string, unknown>[] }>;
-  try {
-    result = await database.query<Record<string, unknown>>(
-      'select * from identity.resolve_active_membership_context($1,$2,$3)', parameters,
-    );
-  } catch (cause) {
-    if (!isMissingActiveMembershipResolver(cause)) throw cause;
-    result = await database.query<Record<string, unknown>>(`select $1::text entry_realm_id,account.realm_id current_realm_id,
+  const resolver = await database.query<{ available: boolean }>(
+    `select to_regprocedure('identity.resolve_active_membership_context(text,text,text)') is not null available`,
+  );
+  const result = resolver.rows[0]?.available === false
+    ? await database.query<Record<string, unknown>>(`select $1::text entry_realm_id,account.realm_id current_realm_id,
       account.id account_id,membership.id active_membership_id,node.line_id,node.id node_id,
       relation.parent_node_id,relation.signed_level,node.sovereignty_tier,node.node_profile,node.mall_id,
       relation.host_sovereign_node_id,relation.relation_version::integer,
@@ -41,17 +38,13 @@ export async function resolveActiveMembershipContext(
       join organization.noderelation relation on relation.line_id=node.line_id and relation.node_id=node.id
         and relation.superseded_at is null
       where account.id=$2 and membership.id=$3 and account.realm_id=$1
-        and account.status='active' and membership.status='active' and node.status='active'`, parameters);
-  }
+        and account.status='active' and membership.status='active' and node.status='active'`, parameters)
+    : await database.query<Record<string, unknown>>(
+      'select * from identity.resolve_active_membership_context($1,$2,$3)', parameters,
+    );
   const found = result.rows[0];
   if (!found || result.rows.length !== 1) throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
   return parseActiveRealmMembershipContext(found);
-}
-
-function isMissingActiveMembershipResolver(cause: unknown): boolean {
-  return cause instanceof Error
-    && 'code' in cause && cause.code === '42883'
-    && cause.message.includes('resolve_active_membership_context');
 }
 
 export async function resolveRealmNode(database: OperationDatabase, hostHeader: string | undefined): Promise<RealmNodeContext> {
