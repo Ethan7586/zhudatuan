@@ -9,7 +9,9 @@ import { productKey, readProducts, type ProductQuery } from '../product/ProductQ
 import { supplyPartnersFromListingPage, type SupplyPartnerSummary } from './SupplyChainModel';
 import './supply-chain.css';
 
-const supplyQuery: ProductQuery = Object.freeze({ q: '', category: '', status: '', limit: 100, preview: true });
+const supplyQuery: ProductQuery = Object.freeze({
+  q: '', category: '', status: '', limit: 1, preview: true, view: 'supply-network',
+});
 
 export function Component() {
   const context = useConsoleContext();

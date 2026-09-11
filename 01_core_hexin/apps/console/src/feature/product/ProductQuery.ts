@@ -15,6 +15,7 @@ export interface ProductQuery {
   readonly cursor?: string;
   readonly limit?: number;
   readonly preview?: boolean;
+  readonly view?: 'supply-network';
 }
 
 export const productKey = (context: ConsoleContext, filter: ProductQuery) =>
@@ -32,6 +33,7 @@ export const productKey = (context: ConsoleContext, filter: ProductQuery) =>
     filter.cursor ?? null,
     filter.limit ?? 50,
     filter.preview ?? false,
+    filter.view ?? '',
   ] as const);
 
 export async function readProducts(context: ConsoleContext, filter: ProductQuery, signal: AbortSignal) {
@@ -45,6 +47,7 @@ export async function readProducts(context: ConsoleContext, filter: ProductQuery
         ...(filter.preview && filter.mall !== undefined && filter.mall !== '' ? { mall: filter.mall } : {}),
         ...(filter.status !== undefined && filter.status !== '' ? { status: filter.status } : {}),
         ...(filter.cursor === undefined ? {} : { cursor: filter.cursor }),
+        ...(filter.view === undefined ? {} : { view: filter.view }),
       },
     },
     consoleRequest(context.scope, signal, context.session.accessVersion)
