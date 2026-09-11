@@ -159,7 +159,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
                   closeDetail();
                 }}
               >
-                全部管理员（{rows.length}）
+                {`全部管理员（${rows.length}）`}
               </FilterButton>
               <FilterButton
                 active={directoryFilter === 'senior'}
