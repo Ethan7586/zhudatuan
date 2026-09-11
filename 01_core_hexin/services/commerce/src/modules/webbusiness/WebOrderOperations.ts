@@ -83,23 +83,22 @@ export function webOrderOperations(context: ModuleContext): ModuleOperations {
           'actor_id',operation.actor_id,'actor_name',operation.actor_name,'membership_id',operation.membership_id,
           'occurred_at',operation.occurred_at,'result',operation.result) order by operation.occurred_at desc,operation.id desc) items
           from (select 'placed:'||orders.id id,'placed' kind,orders.member_id actor_id,
-              (select profile.display_name from member.profile profile where profile.id=orders.member_id limit 1) actor_name,
+              null::text actor_name,
               orders.participant_membership_id membership_id,orders.created_at occurred_at,'created' result
             union all
             select milestone.id,'shipment',nullif(milestone.evidence->>'actor',''),
-              (select profile.display_name from member.profile profile
-                where profile.principal_id=nullif(milestone.evidence->>'actor','') limit 1),null,
+              null::text,null,
               milestone.occurred_at,milestone.state from fulfillment.fulfillmentorder fulfillment
               join fulfillment.milestone milestone on milestone.fulfillment_id=fulfillment.id
               where fulfillment.order_id=orders.id and milestone.kind='shipment'
             union all
             select aftersale.id,'aftersale_request',aftersale.requested_by,
-              (select profile.display_name from member.profile profile where profile.principal_id=aftersale.requested_by limit 1),
+              null::text,
               aftersale.requested_membership_id,aftersale.created_at,aftersale.state
               from ordering.aftersale aftersale where aftersale.order_id=orders.id
             union all
             select review.id,case when review.next_state='approved' then 'aftersale_approved' else 'aftersale_rejected' end,
-              review.actor_id,(select profile.display_name from member.profile profile where profile.principal_id=review.actor_id limit 1),
+              review.actor_id,null::text,
               review.membership_id,review.occurred_at,review.next_state from ordering.reviewaction review
               join ordering.aftersale aftersale on aftersale.id=review.aftersale_id
               where aftersale.order_id=orders.id and review.next_state in('approved','rejected')) operation) operations on true where (
