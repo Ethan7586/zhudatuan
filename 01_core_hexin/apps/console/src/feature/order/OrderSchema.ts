@@ -164,6 +164,15 @@ export const OrderSchema = z.object({
     id: z.string(), referenceType: z.string(), referenceId: z.string(), state: z.string(), currency: z.string(),
     postedAt: z.nullable(z.string()), entries: z.array(z.object({ accountId: z.string(), side: z.string(), amountMinor: DatabaseIntegerSchema })),
   }))),
+  operations: z.optional(z.array(z.object({
+    id: z.string().check(z.minLength(1)),
+    kind: z.enum(['placed', 'shipment', 'aftersale_request', 'aftersale_approved', 'aftersale_rejected']),
+    actor_id: z.nullable(z.string()),
+    actor_name: z.nullable(z.string()),
+    membership_id: z.nullable(z.string()),
+    occurred_at: z.string().check(z.minLength(1)),
+    result: z.string().check(z.minLength(1)),
+  }))),
   preview: z.optional(OrderPreviewSchema),
 });
 

@@ -43,6 +43,11 @@ const order = {
     { id: 'reservation:1', stockItem: 'stock:SKU-VERIFIED-1', quantity: 2, state: 'active', expiresAt: '2026-08-26T10:00:00.000Z' },
   ],
   aftersales: [],
+  operations: [
+    { id: 'placed:1', kind: 'placed', actor_id: 'member:verified-1', actor_name: '测试消费者', membership_id: 'membership:consumer', occurred_at: '2026-08-26T08:30:00.000Z', result: 'created' },
+    { id: 'shipment:1', kind: 'shipment', actor_id: 'principal:warehouse-1', actor_name: '测试仓配员', membership_id: null, occurred_at: '2026-08-26T08:50:00.000Z', result: 'shipped' },
+    { id: 'review:1', kind: 'aftersale_approved', actor_id: 'principal:reviewer-1', actor_name: '测试审核员', membership_id: 'membership:reviewer', occurred_at: '2026-08-26T09:00:00.000Z', result: 'approved' },
+  ],
   preview: {
     source: 'local-preview',
     memberName: '不应泄漏的演示会员',
@@ -325,7 +330,14 @@ describe('Order route', () => {
     await user.click(aftersale);
     expect(within(dialog).getByRole('heading', { name: '售后状态' })).toBeTruthy();
     await user.click(operations);
-    expect(within(dialog).getByRole('heading', { name: '最近 Operation' })).toBeTruthy();
+    expect(within(dialog).getByRole('heading', { name: '操作记录' })).toBeTruthy();
+    expect(within(dialog).getByText('测试消费者')).toBeTruthy();
+    expect(within(dialog).getByText('测试仓配员')).toBeTruthy();
+    expect(within(dialog).getByText('测试审核员')).toBeTruthy();
+    expect(within(dialog).getByText('下单人')).toBeTruthy();
+    expect(within(dialog).getByText('发货人')).toBeTruthy();
+    expect(within(dialog).getAllByText('审核人')).toHaveLength(1);
+    expect(within(dialog).queryByText('演示 Operation')).toBeNull();
     await user.click(overview);
     expect(within(dialog).getByRole('heading', { name: '金额与支付' })).toBeTruthy();
 

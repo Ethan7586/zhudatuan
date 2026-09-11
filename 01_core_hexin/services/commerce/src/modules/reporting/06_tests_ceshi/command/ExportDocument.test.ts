@@ -12,7 +12,7 @@ describe('order export documents', () => {
       [['SW202609110001', 'member:ethan', 42569]],
     );
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(Buffer.from(content));
+    await workbook.xlsx.load(content as unknown as Parameters<typeof workbook.xlsx.load>[0]);
     const sheet = workbook.getWorksheet('订单');
 
     expect(sheet?.getRow(1).values).toEqual([undefined, '订单号', '消费会员', '订单金额（分）']);

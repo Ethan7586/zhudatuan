@@ -353,26 +353,52 @@ function AftersalePanel({ order }: Readonly<{ order: OrderRecord }>) {
 }
 
 function OperationsPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord; previewEnabled: boolean }>) {
-  const operation = previewRecord(order, previewEnabled)?.operation;
-  const icon = operation?.status === 'failed' ? 'close' : operation?.status === 'pending' ? 'clock' : 'check';
+  const operations = order.operations ?? [];
   return (
-    <div className="orderdrawerstack">
-      <DetailSection title="最近 Operation">
-        {operation === undefined ? (
-          <Unavailable text="当前订单读模型没有 Operation 或审计时间线。" />
-        ) : (
-          <article className={`orderoperation is-${operation.status}`}>
-            <OrderIcon name={icon} />
-            <div>
-              <span>{operation.label}</span>
-              <small>{formatOrderTime(operation.at)}</small>
-            </div>
-          </article>
-        )}
-      </DetailSection>
-      <Unavailable text="生产最终动作必须完成 Preview → Confirm → Step-up → Execute → Reread → Receipt 后才能写入这里。" />
-    </div>
+    <DetailSection title="操作记录">
+      {operations.length === 0 ? (
+        <Unavailable text={previewEnabled ? '当前预览订单没有责任人操作记录。' : '当前订单没有可读取的责任人操作记录。'} />
+      ) : (
+        <div className="orderoperationtimeline" aria-label="订单责任人操作时间线">
+          {operations.map((operation) => {
+            const presentation = operationPresentation(operation.kind, operation.result);
+            return (
+              <article className="orderoperationitem" key={operation.id}>
+                <span className={`orderoperationmarker is-${presentation.tone}`} aria-hidden="true">
+                  <OrderIcon name={presentation.icon} />
+                </span>
+                <div className="orderoperationcontent">
+                  <header>
+                    <strong>{presentation.action}</strong>
+                    <span className={`orderoperationresult is-${presentation.tone}`}>{presentation.result}</span>
+                  </header>
+                  <div className="orderoperationmeta">
+                    <span className="orderoperationrole">{presentation.role}</span>
+                    <b>{operation.actor_name ?? operation.actor_id ?? '主体未记录'}</b>
+                    <time dateTime={operation.occurred_at}>{formatOrderTime(operation.occurred_at)}</time>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </DetailSection>
   );
+}
+
+function operationPresentation(kind: NonNullable<OrderRecord['operations']>[number]['kind'], result: string) {
+  const resultLabels: Readonly<Record<string, string>> = {
+    created: '已创建', shipped: '已发货', approved: '已通过', rejected: '已驳回', requested: '待审核',
+  };
+  const base = {
+    placed: { action: '提交订单', role: '下单人', icon: 'order' as const, tone: 'complete' },
+    shipment: { action: '确认发货', role: '发货人', icon: 'package' as const, tone: 'complete' },
+    aftersale_request: { action: '提交售后申请', role: '申请人', icon: 'clock' as const, tone: 'pending' },
+    aftersale_approved: { action: '售后审核通过', role: '审核人', icon: 'check' as const, tone: 'complete' },
+    aftersale_rejected: { action: '售后审核驳回', role: '审核人', icon: 'close' as const, tone: 'failed' },
+  }[kind];
+  return { ...base, result: resultLabels[result] ?? result };
 }
 
 function DetailSection({ title, children }: Readonly<{ title: string; children: ReactNode }>) {
