@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { Component } from './OrderRoute';
@@ -125,6 +125,7 @@ const server = setupServer(
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   server.resetHandlers();
   sessionStorage.clear();
   getRequests.length = 0;
@@ -483,7 +484,7 @@ describe('Order route', () => {
     expect(moreFilters.disabled).toBe(false);
     expect(rowMore.disabled).toBe(true);
     await user.click(exportButton);
-    expect(await screen.findByRole('heading', { name: '导出订单', level: 1 })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '订单导出', level: 1 })).toBeTruthy();
     await user.click(screen.getByRole('button', { name: '返回订单列表' }));
     await screen.findByRole('table', { name: '订单列表' });
     await user.click(rowMore);
@@ -502,6 +503,7 @@ describe('Order route', () => {
 
   it('creates a field-aware export task and exposes the server download', async () => {
     let exportBody: Record<string, unknown> | undefined;
+    const download = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined);
     const task = { id: 'export:order-one', state: 'queued', recordCount: 0, filter: {}, createdAt: '2026-09-11T10:00:00.000Z', generatedAt: null, errorCode: null };
     server.use(
       http.post('*/api/v1/orders/exports', async ({ request }) => {
@@ -519,10 +521,32 @@ describe('Order route', () => {
     await user.click(screen.getByRole('button', { name: '导出订单' }));
     await user.click(screen.getByRole('button', { name: '创建导出任务' }));
 
-    expect((await screen.findByRole('link', { name: '下载文件' })).getAttribute('href')).toBe('https://download.test/orders.xlsx');
+    await user.click(await screen.findByRole('button', { name: '下载文件' }));
+    expect(download).toHaveBeenCalledOnce();
+    expect(download.mock.instances[0]?.href).toBe('https://download.test/orders.xlsx');
     expect(exportBody?.format).toBe('xlsx');
     expect(exportBody?.range).toBe('filter');
     expect(exportBody?.fields).toEqual(expect.arrayContaining(['orderNumber', 'memberId', 'productNames', 'refundMinor']));
+  });
+
+  it('restores recent order exports from the server when the export workspace opens', async () => {
+    const task = {
+      id: 'export:history-one', state: 'completed', recordCount: 13, filter: { range: 'filter', format: 'xlsx', fields: ['orderNumber'] },
+      createdAt: '2026-09-11T09:00:00.000Z', generatedAt: '2026-09-11T09:00:02.000Z', errorCode: null,
+    };
+    server.use(http.get('*/api/v1/orders', ({ request }) => {
+      const url = new URL(request.url);
+      return HttpResponse.json(url.searchParams.get('exports') === 'true' ? { ...listPage, exports: [task] } : listPage);
+    }));
+    const user = userEvent.setup();
+    renderRoute();
+    await screen.findByRole('table', { name: '订单列表' });
+    await user.click(screen.getByRole('button', { name: '导出订单' }));
+
+    const history = await screen.findByRole('region', { name: '导出记录' });
+    expect(within(history).getByText('13')).toBeTruthy();
+    expect(within(history).getByRole('button', { name: '下载文件' })).toBeTruthy();
+    expect(screen.getByText(/跨会话保留/)).toBeTruthy();
   });
 
   it('opens and closes every preview-only order action without sending a write request', async () => {

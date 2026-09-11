@@ -26,7 +26,7 @@ export class ExportJobRunner implements JobProcessor {
     try {
       const header = exportHeader(selected.report, selected.filter);
       const workbookRows: unknown[][] = [];
-      if (format === 'csv') await upload.append(encode(`${header.map(csv).join(',')}\n`));
+      if (format === 'csv') await upload.append(encode(`${serializeCsvRow(header)}\n`));
       let cursor = selected.cursor;
       for (;;) {
         if (signal.aborted) throw signal.reason;
@@ -34,12 +34,12 @@ export class ExportJobRunner implements JobProcessor {
         if (page.length === 0) break;
         for (const row of page) { cursor = row.key; workbookRows.push([...row.values]); }
         if (format === 'csv') {
-          await upload.append(encode(`${page.map((row) => row.values.map(csv).join(',')).join('\n')}\n`));
+          await upload.append(encode(`${page.map((row) => serializeCsvRow(row.values)).join('\n')}\n`));
           workbookRows.length = 0;
         }
         await repository.advanceExport(id, cursor!, page.length);
       }
-      if (format === 'xlsx') await upload.append(await xlsx(header, workbookRows));
+      if (format === 'xlsx') await upload.append(await createXlsxDocument(header, workbookRows));
       const stored = await upload.complete();
       const verified = await this.objects.inspect(stored.reference);
       if (verified.scan !== 'clean' || verified.sha256 !== stored.sha256 || verified.size !== stored.size || verified.contentType !== contentType) {
@@ -60,8 +60,9 @@ function csv(value: unknown): string {
   const safe = /^[=+\-@]/.test(raw) ? `'${raw}` : raw;
   return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"','""')}"` : safe;
 }
+export function serializeCsvRow(values: readonly unknown[]): string { return values.map(csv).join(','); }
 function encode(value: string): Uint8Array { return new TextEncoder().encode(value); }
-async function xlsx(header: readonly string[], rows: readonly unknown[][]): Promise<Uint8Array> {
+export async function createXlsxDocument(header: readonly string[], rows: readonly unknown[][]): Promise<Uint8Array> {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet('订单');
   sheet.addRow([...header]);

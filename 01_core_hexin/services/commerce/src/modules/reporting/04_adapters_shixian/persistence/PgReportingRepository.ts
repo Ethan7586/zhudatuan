@@ -50,9 +50,15 @@ export class PgReportingRepository implements ReportingPort {
     return result.rows[0] ? exportJob(result.rows[0]) : null;
   }
 
+  async exports(scope: string, report: ExportReport, fetch: number): Promise<readonly ExportJob[]> {
+    const result = await this.database.query<ExportRecord>(`${exportSelect()} where job.scope_id=$1 and job.report=$2
+      order by job.created_at desc limit $3`, [scope, report, fetch]);
+    return result.rows.map(exportJob);
+  }
+
   async createExport(input: Readonly<{ id: string; scope: string; report: ExportReport; filter: Readonly<Record<string, unknown>>;
-    actor: string; membership: string; trace: string }>): Promise<ExportJob> {
-    const authorization = JSON.stringify({ actor: input.actor, membership: input.membership, scope: input.scope, trace: input.trace });
+    actor: string; membership: string; scopeKind: string; trace: string }>): Promise<ExportJob> {
+    const authorization = JSON.stringify({ actor: input.actor, membership: input.membership, scope: input.scope, scopeKind: input.scopeKind, trace: input.trace });
     const result = await this.database.query<ExportRecord>(`insert into reporting.export(id,scope_id,report,filter,authorization_snapshot,state,cursor,record_count,
       created_at) values($1,$2,$3,$4::jsonb,$5::jsonb,'queued',null,0,clock_timestamp()) returning id,scope_id scope,report,filter,state,cursor,
       record_count "recordCount",object_ref "objectReference",sha256 "objectHash",object_size "objectSize",scan_state "scanState",
@@ -160,7 +166,14 @@ export class PgReportingRepository implements ReportingPort {
     if (report === 'orders') {
       const values = orderExportFields(filter).map((field) => ORDER_EXPORT_SQL[field]).join(',');
       const result = await this.database.query<{ key: string; values: unknown[] }>(`select orders.id key,jsonb_build_array(${values}) values
-        from reporting.export job join ordering.orderrecord orders on orders.scope_id=job.scope_id where job.id=$1
+        from reporting.export job join ordering.orderrecord orders on (
+          (job.authorization_snapshot->>'scopeKind'='owner' and orders.member_id=job.scope_id)
+          or (job.authorization_snapshot->>'scopeKind'='supplier' and exists(select 1 from fulfillment.fulfillmentorder where order_id=orders.id and partner_id=job.scope_id))
+          or (job.authorization_snapshot->>'scopeKind'='store' and exists(select 1 from fulfillment.fulfillmentorder where order_id=orders.id and store_id=job.scope_id))
+          or (coalesce(job.authorization_snapshot->>'scopeKind','mall') not in('owner','supplier','store') and (orders.mall_id=job.scope_id or exists(
+            select 1 from organization.unitclosure closure where closure.ancestor_id=job.scope_id and closure.descendant_id=orders.mall_id
+          )))
+        ) where job.id=$1
         and ($2::text is null or orders.id>$2)
         and (not job.filter?'orderIds' or orders.id in(select jsonb_array_elements_text(job.filter->'orderIds')))
         and (not job.filter?'order' or job.filter->>'order'='' or orders.order_number=job.filter->>'order' or orders.id=job.filter->>'order')

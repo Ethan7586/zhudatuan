@@ -149,7 +149,9 @@ export function Component() {
       mallName={mallName}
       pageIds={pageIds}
       selectedIds={[...checked]}
+      initialTasks={page?.exports ?? []}
       filter={{ ...filter, view }}
+      onReloadHistory={async () => { await query.refetch(); }}
       onClose={() => updateSearch((next) => next.delete('mode'))}
     />;
   }

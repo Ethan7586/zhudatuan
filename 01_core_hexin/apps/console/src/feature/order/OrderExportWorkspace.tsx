@@ -6,7 +6,6 @@ import {
   createOrderExport,
   ORDER_EXPORT_FIELDS,
   readOrderExport,
-  taskStorageKey,
   type OrderExportDraft,
   type OrderExportField,
   type OrderExportFormat,
@@ -20,24 +19,26 @@ const FIELD_GROUPS = Object.freeze([
   ['fulfillment', '履约信息'], ['aftersale', '售后信息'],
 ] as const);
 
-export function OrderExportWorkspace({ context, mallName, pageIds, selectedIds, filter, onClose }: Readonly<{
+export function OrderExportWorkspace({ context, mallName, pageIds, selectedIds, initialTasks, filter, onReloadHistory, onClose }: Readonly<{
   context: ConsoleContext;
   mallName: string;
   pageIds: readonly string[];
   selectedIds: readonly string[];
+  initialTasks: readonly OrderExportTask[];
   filter: Readonly<Record<string, unknown>>;
+  onReloadHistory: () => Promise<void>;
   onClose: () => void;
 }>) {
-  const storageKey = taskStorageKey(context);
   const [range, setRange] = useState<ExportRange>(selectedIds.length > 0 ? 'selected' : 'filter');
   const [format, setFormat] = useState<OrderExportFormat>('xlsx');
   const [filename, setFilename] = useState(() => `订单明细_${dateStamp()}`);
   const [fields, setFields] = useState<ReadonlySet<OrderExportField>>(() => new Set(ORDER_EXPORT_FIELDS.map(([key]) => key)));
-  const [taskIds, setTaskIds] = useState<readonly string[]>(() => loadTaskIds(storageKey));
-  const [tasks, setTasks] = useState<readonly OrderExportTask[]>([]);
+  const [taskIds, setTaskIds] = useState<readonly string[]>(() => initialTasks.map((task) => task.id));
+  const [tasks, setTasks] = useState<readonly OrderExportTask[]>(initialTasks);
   const [creating, setCreating] = useState(false);
+  const [downloading, setDownloading] = useState<string>();
   const [error, setError] = useState<string>();
-  const hasPendingTask = tasks.length < taskIds.length || tasks.some((task) => task.state === 'queued' || task.state === 'running');
+  const hasPendingTask = tasks.some((task) => task.state === 'queued' || task.state === 'running');
 
   const refreshTasks = useCallback(async (ids: readonly string[]) => {
     if (ids.length === 0) return;
@@ -50,7 +51,10 @@ export function OrderExportWorkspace({ context, mallName, pageIds, selectedIds, 
     }));
   }, [context]);
 
-  useEffect(() => { sessionStorage.setItem(storageKey, JSON.stringify(taskIds.slice(0, 20))); }, [storageKey, taskIds]);
+  useEffect(() => {
+    setTasks((current) => mergeTasks(initialTasks, current));
+    setTaskIds((current) => uniqueIds([...initialTasks.map((task) => task.id), ...current]));
+  }, [initialTasks]);
   useEffect(() => {
     void refreshTasks(taskIds);
     if (taskIds.length === 0 || !hasPendingTask) return;
@@ -87,6 +91,21 @@ export function OrderExportWorkspace({ context, mallName, pageIds, selectedIds, 
     }
   };
 
+  const download = async (id: string) => {
+    setDownloading(id);
+    setError(undefined);
+    try {
+      const task = await readOrderExport(context, id);
+      setTasks((current) => [task, ...current.filter((item) => item.id !== task.id)]);
+      if (task.download === undefined) throw new Error('下载文件尚未生成，请稍后重试');
+      startDownload(task.download.url, filenameFor(task));
+    } catch (cause) {
+      setError(cause instanceof Error ? safeQueryError(cause) : 'REQUEST_FAILED');
+    } finally {
+      setDownloading(undefined);
+    }
+  };
+
   const toggleField = (field: OrderExportField) => setFields((current) => {
     const next = new Set(current);
     if (next.has(field)) next.delete(field); else next.add(field);
@@ -96,10 +115,12 @@ export function OrderExportWorkspace({ context, mallName, pageIds, selectedIds, 
   return (
     <section className="orderexportworkspace" aria-labelledby="orderexporttitle">
       <header className="orderexporthero">
-        <div>
-          <p>订单管理 / 导出订单</p>
-          <h1 id="orderexporttitle">导出订单</h1>
-          <span>按照真实订单筛选快照生成文件；任务在后台处理，完成后可直接下载。</span>
+        <div className="orderexportidentity">
+          <span className="orderexportheroicon"><OrderIcon name="download" /></span>
+          <div>
+            <h1 id="orderexporttitle">订单导出</h1>
+            <span>按真实订单快照生成文件，任务在后台处理，完成后可直接下载。</span>
+          </div>
         </div>
         <button type="button" className="orderexportback" onClick={onClose}><OrderIcon name="arrowLeft" />返回订单列表</button>
       </header>
@@ -158,10 +179,10 @@ export function OrderExportWorkspace({ context, mallName, pageIds, selectedIds, 
       </div>
 
       <section className="orderexporthistory" aria-labelledby="orderexporthistorytitle">
-        <header><div><h2 id="orderexporthistorytitle">导出记录</h2><p>当前浏览器最近创建的任务，状态和下载地址来自服务端。</p></div><button type="button" onClick={() => { void refreshTasks(taskIds); }}><OrderIcon name="refresh" />刷新</button></header>
+        <header><div><h2 id="orderexporthistorytitle">导出记录</h2><p>当前商城最近 20 条任务，跨会话保留，下载时自动刷新有效地址。</p></div><button type="button" onClick={() => { void onReloadHistory(); void refreshTasks(taskIds); }}><OrderIcon name="refresh" />刷新</button></header>
         {taskIds.length === 0 ? <div className="orderexportempty"><OrderIcon name="download" /><strong>还没有导出任务</strong><span>完成上方设置后创建第一份订单文件。</span></div> : (
           <div className="orderexporttablewrap"><table><thead><tr><th>创建时间</th><th>范围</th><th>格式</th><th>记录数</th><th>状态</th><th>操作</th></tr></thead><tbody>
-            {tasks.map((task) => <ExportTaskRow key={task.id} task={task} onRetry={(retryDraft) => { void create(retryDraft); }} />)}
+            {tasks.map((task) => <ExportTaskRow key={task.id} task={task} downloading={downloading === task.id} onDownload={(id) => { void download(id); }} onRetry={(retryDraft) => { void create(retryDraft); }} />)}
           </tbody></table></div>
         )}
       </section>
@@ -177,11 +198,15 @@ function RangeOption({ value, checked, disabled, title, detail, onChange }: Read
   return <label data-selected={checked || undefined} data-disabled={disabled || undefined}><input type="radio" name="export-range" checked={checked} disabled={disabled} onChange={() => onChange(value)} /><span><strong>{title}</strong><small>{detail}</small></span></label>;
 }
 
-function ExportTaskRow({ task, onRetry }: Readonly<{ task: OrderExportTask; onRetry: (draft: OrderExportDraft) => void }>) {
+function ExportTaskRow({ task, downloading, onDownload, onRetry }: Readonly<{ task: OrderExportTask; downloading: boolean; onDownload: (id: string) => void; onRetry: (draft: OrderExportDraft) => void }>) {
   const format = task.filter.format === 'csv' ? 'csv' : 'xlsx';
   const fields = Array.isArray(task.filter.fields) ? task.filter.fields.filter(isOrderExportField) : ORDER_EXPORT_FIELDS.map(([key]) => key);
   const filename = typeof task.filter.filename === 'string' ? task.filter.filename : `订单明细_${dateStamp()}`;
-  return <tr><td>{formatTime(task.createdAt)}</td><td>{rangeLabel(task.filter.range === 'page' || task.filter.range === 'selected' ? task.filter.range : 'filter')}</td><td>{format.toUpperCase()}</td><td>{task.recordCount}</td><td><span className="orderexportstate" data-state={task.state}>{stateLabel(task.state)}</span>{task.errorCode === null ? null : <small>{task.errorCode}</small>}</td><td>{task.download === undefined ? <button type="button" disabled={task.state !== 'failed'} onClick={() => onRetry({ format, filename, fields, filter: task.filter })}>{task.state === 'failed' ? '重新创建' : '处理中'}</button> : <a href={task.download.url}>下载文件</a>}</td></tr>;
+  const retryable = task.state === 'failed' || task.state === 'expired';
+  const action = task.state === 'completed'
+    ? <button type="button" disabled={downloading} onClick={() => onDownload(task.id)}>{downloading ? '准备下载…' : '下载文件'}</button>
+    : <button type="button" disabled={!retryable} onClick={() => onRetry({ format, filename, fields, filter: task.filter })}>{retryable ? '重新创建' : '处理中'}</button>;
+  return <tr><td>{formatTime(task.createdAt)}</td><td>{rangeLabel(task.filter.range === 'page' || task.filter.range === 'selected' ? task.filter.range : 'filter')}</td><td>{format.toUpperCase()}</td><td>{task.recordCount}</td><td><span className="orderexportstate" data-state={task.state}>{stateLabel(task.state)}</span>{task.errorCode === null ? null : <small>{task.errorCode}</small>}</td><td>{action}</td></tr>;
 }
 
 function isOrderExportField(value: unknown): value is OrderExportField { return typeof value === 'string' && ORDER_EXPORT_FIELDS.some(([key]) => key === value); }
@@ -189,4 +214,21 @@ function rangeLabel(range: ExportRange): string { return range === 'filter' ? '�
 function stateLabel(state: OrderExportTask['state']): string { return ({ queued: '排队中', running: '生成中', completed: '已完成', failed: '失败', expired: '已过期' })[state]; }
 function formatTime(value: string): string { const date = new Date(value); return Number.isNaN(date.getTime()) ? value : date.toLocaleString('zh-CN', { hour12: false }); }
 function dateStamp(): string { return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date()).replaceAll('/', ''); }
-function loadTaskIds(key: string): readonly string[] { try { const value = JSON.parse(sessionStorage.getItem(key) ?? '[]'); return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string').slice(0, 20) : []; } catch { return []; } }
+function uniqueIds(ids: readonly string[]): readonly string[] { return [...new Set(ids)].slice(0, 20); }
+function mergeTasks(primary: readonly OrderExportTask[], secondary: readonly OrderExportTask[]): readonly OrderExportTask[] {
+  const tasks = new Map(secondary.map((task) => [task.id, task]));
+  primary.forEach((task) => tasks.set(task.id, task));
+  return [...tasks.values()].sort((left, right) => right.createdAt.localeCompare(left.createdAt)).slice(0, 20);
+}
+function filenameFor(task: OrderExportTask): string {
+  const format = task.filter.format === 'csv' ? 'csv' : 'xlsx';
+  const name = typeof task.filter.filename === 'string' && task.filter.filename.trim() !== '' ? task.filter.filename.trim() : `订单明细_${dateStamp()}`;
+  return `${name.replace(/\.(csv|xlsx)$/i, '')}.${format}`;
+}
+function startDownload(url: string, filename: string): void {
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.rel = 'noopener';
+  anchor.click();
+}
