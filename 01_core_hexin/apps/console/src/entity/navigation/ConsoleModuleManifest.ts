@@ -7,6 +7,7 @@ export const consoleModuleIds = [
   'control',
   'applications',
   'products',
+  'supply-chain',
   'orders',
   'referral',
   'channels',
@@ -29,6 +30,7 @@ export type NavigationIconName =
   | 'control'
   | 'building'
   | 'products'
+  | 'supply'
   | 'orders'
   | 'channel'
   | 'voucher'

@@ -83,12 +83,12 @@ describe('ConsoleModuleRegistry', () => {
 });
 
 describe('registered Console modules', () => {
-  it('registers the 14 approved owners in order with one entry each', () => {
+  it('registers the 15 approved owners in order with one entry each', () => {
     expect(consoleModules.map(({ id }) => id)).toEqual([
-      'cockpit', 'control', 'applications', 'products', 'orders', 'referral', 'channels',
+      'cockpit', 'control', 'applications', 'products', 'supply-chain', 'orders', 'referral', 'channels',
       'vouchers', 'finance', 'storefront-members', 'access', 'qualification', 'reports', 'support',
     ]);
-    expect(consoleModuleById.size).toBe(14);
+    expect(consoleModuleById.size).toBe(15);
     expect(consoleModuleRegistryIssues(consoleModules)).toEqual([]);
     for (const module of consoleModules) {
       expect(module.routes.filter(({ kind }) => kind === 'entry'), module.id).toHaveLength(1);
@@ -104,7 +104,7 @@ describe('registered Console modules', () => {
     const paths = routes.map(({ path }) => path);
 
     expect(routes.filter(({ kind }) => kind === 'redirect')).toHaveLength(0);
-    expect(routes.filter(({ kind }) => kind !== 'redirect')).toHaveLength(33);
+    expect(routes.filter(({ kind }) => kind !== 'redirect')).toHaveLength(34);
     expect(new Set(routeIds).size).toBe(routeIds.length);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -112,7 +112,7 @@ describe('registered Console modules', () => {
   it('preserves enabled defaults with the platform-only merchant service entry', () => {
     expect(consoleModules.every(({ status }) => status === 'enabled')).toBe(true);
     expect(consoleModules.filter(({ navigation }) => navigation.placement === 'main').map(({ id }) => id)).toEqual([
-      'cockpit', 'control', 'applications', 'products', 'orders', 'referral', 'channels',
+      'cockpit', 'control', 'applications', 'products', 'supply-chain', 'orders', 'referral', 'channels',
       'vouchers', 'finance', 'storefront-members', 'access', 'qualification', 'reports',
     ]);
     expect(consoleModuleById.get('reports')?.navigation).toMatchObject({
@@ -131,6 +131,7 @@ describe('registered Console modules', () => {
       'src/feature/control/manifest.ts',
       'src/feature/application/manifest.ts',
       'src/feature/product/manifest.ts',
+      'src/feature/supply-chain/manifest.ts',
       'src/feature/order/manifest.ts',
       'src/feature/referral/manifest.ts',
       'src/feature/channel/manifest.ts',
@@ -150,7 +151,7 @@ describe('registered Console modules', () => {
     const transitionEdges = literalEdges.filter(({ target }) => target?.startsWith('../'))
       .sort((left, right) => `${left.source}:${left.target}`.localeCompare(`${right.source}:${right.target}`));
 
-    expect(literalEdges).toHaveLength(32);
+    expect(literalEdges).toHaveLength(33);
     expect(transitionEdges).toEqual([
       { source: 'src/feature/access/manifest.ts', target: '../importing/ImportRoute' },
       { source: 'src/feature/access/manifest.ts', target: '../member/MemberRoute' },

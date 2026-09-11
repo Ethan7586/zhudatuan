@@ -5,7 +5,7 @@ import { consoleModules } from '../../route/ConsoleModuleRegistry';
 import { selectConsoleNavigationItems } from './ConsoleNavigation';
 
 describe('Console navigation selector', () => {
-  it('derives the 11 ordinary main items and bottom support in navigation order', () => {
+  it('derives the 12 ordinary main items and bottom support in navigation order', () => {
     const items = selectConsoleNavigationItems(consoleModules, 'enterprise');
 
     expect(items.filter(({ placement }) => placement === 'main').map(({ moduleId, label, icon, order }) => ({ moduleId, label, icon, order }))).toEqual([
@@ -13,6 +13,7 @@ describe('Console navigation selector', () => {
       { moduleId: 'reports', label: '数据报表', icon: 'trend', order: 15 },
       { moduleId: 'applications', label: '築店 · 商城管理', icon: 'building', order: 30 },
       { moduleId: 'products', label: '商品管理', icon: 'products', order: 40 },
+      { moduleId: 'supply-chain', label: '供应链管理', icon: 'supply', order: 45 },
       { moduleId: 'orders', label: '订单管理系统', icon: 'orders', order: 50 },
       { moduleId: 'referral', label: '分销返佣系统', icon: 'channel', order: 60 },
       { moduleId: 'channels', label: '渠道接入系统', icon: 'channel', order: 70 },
@@ -69,7 +70,7 @@ describe('Console navigation selector', () => {
   it('shows only modules whose entry operation is available to the current session', () => {
     const items = selectConsoleNavigationItems(consoleModules, 'enterprise', ['catalog.listings.read', 'support.cases.read']);
 
-    expect(items.map(({ moduleId }) => moduleId)).toEqual(['products', 'support']);
+    expect(items.map(({ moduleId }) => moduleId)).toEqual(['products', 'supply-chain', 'support']);
   });
 
   it('shows the independent storefront member entry only for mall scopes with its read capability', () => {
