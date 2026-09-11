@@ -10,7 +10,6 @@ vi.mock('@shop/config/sfl-node-kernel', async (importOriginal) => ({
 
 describe('active Realm Membership compatibility', () => {
   it('uses the legacy projection when the database resolver is not installed yet', async () => {
-    const missingFunction = Object.assign(new Error('function identity.resolve_active_membership_context does not exist'), { code: '42883' });
     const row = {
       entry_realm_id: 'realm:l0', current_realm_id: 'realm:l0', account_id: 'account:one',
       active_membership_id: 'membership:one', line_id: 'line:one', node_id: 'node:one', parent_node_id: null,
@@ -19,7 +18,7 @@ describe('active Realm Membership compatibility', () => {
       access_version: 1, status: 'active',
     };
     const query = vi.fn()
-      .mockRejectedValueOnce(missingFunction)
+      .mockResolvedValueOnce({ rows: [{ available: false }], rowCount: 1 } as unknown as QueryResult)
       .mockResolvedValueOnce({ rows: [row], rowCount: 1 } as unknown as QueryResult);
 
     await expect(resolveActiveMembershipContext({ query } as unknown as OperationDatabase,
@@ -27,6 +26,7 @@ describe('active Realm Membership compatibility', () => {
       current_realm_id: 'realm:l0', active_membership_id: 'membership:one',
     });
     expect(query).toHaveBeenCalledTimes(2);
+    expect(query.mock.calls[0]?.[0]).toContain('to_regprocedure');
     expect(query.mock.calls[1]?.[0]).toContain("account.realm_id=$1");
   });
 });
