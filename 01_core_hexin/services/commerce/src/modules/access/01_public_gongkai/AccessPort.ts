@@ -25,16 +25,13 @@ export interface ImportedMembership {
 export interface OperatorRegistrationMembership {
   readonly operatorMembership: string;
   readonly governanceParentMembership: string;
-  readonly storefrontMembership: string;
   readonly member: string;
   readonly principal: string;
   readonly realm: string;
   readonly account: string;
   readonly operatorOrganization: string;
-  readonly storefrontOrganization: string;
+  readonly managementOrganization: string;
   readonly operatorRole: string;
-  readonly storefrontRole: string;
-  readonly storefrontScopes: readonly [string, string, string];
   readonly operatorScopes: readonly [string, string];
 }
 
@@ -82,17 +79,6 @@ export class AccessPort {
   }
 
   async createOperatorRegistration(database: OperationDatabase, input: OperatorRegistrationMembership): Promise<Readonly<Record<string, unknown>>> {
-    await this.createRegistration(database, {
-      membership: input.storefrontMembership,
-      member: input.member,
-      principal: input.principal,
-      organization: input.storefrontOrganization,
-      realm: input.realm,
-      account: input.account,
-      role: input.storefrontRole,
-      scopeKind: 'mall',
-      scopes: input.storefrontScopes,
-    });
     const membership = await database.query(`insert into access.membership(
       id,member_id,organization_id,client,status,access_version,joined_at,governance_parent_membership_id,
       realm_id,account_id,node_profile)
@@ -104,7 +90,7 @@ export class AccessPort {
       ($1,$2,transaction_timestamp()),($1,'role:self',transaction_timestamp())`, [input.operatorMembership, input.operatorRole]);
     await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
       ($1,$2,'tenant',$3,$3,'allow',transaction_timestamp(),1),($4,$2,'self',$5,$5,'allow',transaction_timestamp(),1)`,
-    [input.operatorScopes[0], input.operatorMembership, input.operatorOrganization, input.operatorScopes[1], `self:${input.principal}`]);
+    [input.operatorScopes[0], input.operatorMembership, input.managementOrganization, input.operatorScopes[1], `self:${input.principal}`]);
     const row = membership.rows[0];
     if (!row) throw new Error('MEMBERSHIP_CREATE_FAILED');
     return row;

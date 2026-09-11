@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomInt, randomUUID } from 'node:crypto';
 import type { OperationId } from '@shop/contract';
-import { operationLifecycle, reject, rowResult, type OperationActions } from '../../../../foundation/application/ModuleOperations';
+import { operationLifecycle, reject, type OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, secretField, textField } from '../../../../foundation/interface/Validation';
 import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransaction';
 import { atomicIdentityMutation, bindWechat, publishIdentityEvent, tokenHash } from '../../04_adapters_shixian/persistence_cunchu/IdentityPersistence';
@@ -10,7 +10,7 @@ import { memberPort, type MemberInvite } from '../../../member';
 import { organizationPort } from '../../../organization';
 import { canonicalMobile } from '../../02_domain_yewu/models_moxing/IdentitySubject';
 import { resolveBoundMobileAccount } from '../../03_application_yingyong/services_fuwu/SmsLogin';
-import { resolveRealmApplication, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
+import { resolveRealmApplication, resolveRealmContext, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
 import {
   registrationReference,
   requireValidInvite,
@@ -41,7 +41,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           const registration = purpose === 'registration' ? registrationReference(body) : undefined;
           const registrationHash = registration === undefined ? undefined
             : digest(registration.kind === 'invite' ? registration.value : `storefront:${registration.value}`);
-          const resolvesBoundMobile = purpose === 'login' || purpose === 'password_reset';
+          const resolvesBoundMobile = purpose === 'registration' || purpose === 'login' || purpose === 'password_reset';
           const legacyMobileToken = resolvesBoundMobile ? createHash('sha256').update(destination).digest('hex') : undefined;
           const [envelope, recipient, mobileLookup] = await Promise.all([
             kms.encrypt('identity/challenge', code, { challenge: id, purpose }),
@@ -63,7 +63,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           }
           let principal = typeof body.principal === 'string' ? body.principal : null;
           let account: string | null = null;
-          if (purpose === 'login' || purpose === 'password_reset') {
+          if (purpose === 'registration' || purpose === 'login' || purpose === 'password_reset') {
             const bound = await resolveBoundMobileAccount(database, realm.realmId, [destinationHash, mobileLookup!.fingerprint, legacyMobileToken!]);
             principal = bound?.principal_id ?? null;
             account = bound?.account_id ?? null;
@@ -85,7 +85,12 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           await publishIdentityEvent(database, 'identity.challenge.started', id, 'identity', request.input.idempotency!, {
             challenge: id, destination: destinationHash, purpose, realm: realm.realmId, ...(account === null ? {} : { account }),
           });
-          return rowResult(result, 202);
+          const saved = result.rows[0];
+          if (!saved) throw new Error('CHALLENGE_CREATE_FAILED');
+          return {
+            status: 202,
+            body: { ...saved, ...(purpose === 'registration' ? { identity_exists: account !== null } : {}) },
+          };
         },
       }),
       'identity.members.create': operationLifecycle({
@@ -93,8 +98,10 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           const body = bodyRecord(request);
           const subject = canonicalMobile(textField(body, 'subject'));
           const principal = `principal:${randomUUID()}`;
+          const requestedPassword = typeof body.password === 'string' && body.password.length > 0
+            ? secretField(body, 'password', 128) : null;
           const [password, mobile] = await Promise.all([
-            passwords.hash(secretField(body, 'password', 128)),
+            requestedPassword === null ? Promise.resolve(null) : passwords.hash(requestedPassword),
             kms.encrypt('identity/mobile', subject, { principal }),
           ]);
           const authorization = body.authorization === undefined ? null : AuthTransaction.start(body.authorization);
@@ -150,7 +157,6 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             );
             if (!existing.rows[0]) reject(409, 'IDENTITY_SUBJECT_EXISTS');
           }
-          if (existing.rows[0] && authorization === null) reject(409, 'IDENTITY_SUBJECT_EXISTS');
           const registration = registrationReference(body);
           const registrationHash = digest(registration.kind === 'invite' ? registration.value : `storefront:${registration.value}`);
           const deferredPhoneVerification = registration.kind === 'storefront' && body.phoneVerification === 'checkout';
@@ -188,14 +194,23 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             }
           }
           if (authorization !== null && registrationTarget.target_client !== 'storefront') throw new Error('AUTH_RETURN_TARGET_INVALID');
+          if (existing.rows[0] && authorization === null && registrationTarget.target_client !== 'operator') {
+            reject(409, 'IDENTITY_SUBJECT_EXISTS');
+          }
           const organization = registrationTarget.organization_id;
+          const operatorRealm = registrationTarget.target_client === 'operator'
+            ? await resolveRealmContext(database, request.input.headers.host, 'console') : undefined;
+          if (operatorRealm !== undefined && (operatorRealm.surface !== 'admin' || operatorRealm.membershipClient !== 'operator')) {
+            throw new Error('AUTH_REALM_MISMATCH');
+          }
           if (body.termsAccepted !== true || body.termsHash !== registrationTarget.terms_hash) throw new Error('TERMS_ACCEPTANCE_REQUIRED');
           let resolvedPrincipal = principal;
           let resolvedAccount = account;
           let resolvedMember = member;
           let credentialVersion = 1;
           let result: Readonly<Record<string, unknown>>;
-          const scopeKind = await organizationPort.kind(database, organization);
+          const scopeKind = registrationTarget.target_client === 'storefront'
+            ? await organizationPort.kind(database, organization) : 'tenant';
           if (existing.rows[0]) {
             resolvedPrincipal = existing.rows[0].principal_id;
             resolvedAccount = existing.rows[0].account_id;
@@ -206,23 +221,44 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             );
             if (!profile.rows[0]) throw new Error('MEMBER_PROFILE_NOT_FOUND');
             resolvedMember = profile.rows[0].id;
-            const current = await database.query<Record<string, unknown>>(
-              `select * from access.membership where member_id=$1 and organization_id=$2 and client='storefront'`,
-              [resolvedMember, organization]
-            );
+            const current = registrationTarget.target_client === 'operator'
+              ? await database.query<Record<string, unknown>>(
+                  `select * from access.membership where member_id=$1 and organization_id=$2 and client='operator'
+                    and realm_id=$3 and account_id=$4`,
+                  [resolvedMember, operatorRealm!.membershipOrganizationId, realm.realmId, resolvedAccount]
+                )
+              : await database.query<Record<string, unknown>>(
+                  `select * from access.membership where member_id=$1 and organization_id=$2 and client='storefront'`,
+                  [resolvedMember, organization]
+                );
             if (current.rows[0] && current.rows[0].status !== 'active') reject(403, 'MEMBERSHIP_INACTIVE');
-            result = current.rows[0] ?? await accessPort.createRegistration(database, {
-              membership,
-              member: resolvedMember,
-              principal: resolvedPrincipal,
-              organization,
-              realm: realm.realmId,
-              account: resolvedAccount,
-              role: registrationTarget.role_id,
-              scopeKind,
-              scopes: [scopes[0], scopes[1], scopes[2]],
-            });
+            if (current.rows[0] && registrationTarget.target_client === 'operator') reject(409, 'IDENTITY_SUBJECT_EXISTS');
+            result = current.rows[0] ?? (registrationTarget.target_client === 'operator'
+              ? await accessPort.createOperatorRegistration(database, {
+                  operatorMembership,
+                  governanceParentMembership: registrationTarget.created_by,
+                  member: resolvedMember,
+                  principal: resolvedPrincipal,
+                  realm: realm.realmId,
+                  account: resolvedAccount,
+                  operatorOrganization: operatorRealm!.membershipOrganizationId,
+                  managementOrganization: organization,
+                  operatorRole: registrationTarget.role_id,
+                  operatorScopes: [scopes[3], scopes[4]],
+                })
+              : await accessPort.createRegistration(database, {
+                  membership,
+                  member: resolvedMember,
+                  principal: resolvedPrincipal,
+                  organization,
+                  realm: realm.realmId,
+                  account: resolvedAccount,
+                  role: registrationTarget.role_id,
+                  scopeKind,
+                  scopes: [scopes[0], scopes[1], scopes[2]],
+                }));
           } else {
+            if (password === null) throw new Error('PASSWORD_POLICY_REJECTED');
             await database.query(`insert into identity.principal(id,status,created_at,updated_at) values($1,'active',clock_timestamp(),clock_timestamp())`, [principal]);
             await database.query(
               `insert into identity.account(id,realm_id,legacy_principal_id,status,credential_version,assurance_level,
@@ -254,18 +290,15 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             }
             result = registrationTarget.target_client === 'operator'
               ? await accessPort.createOperatorRegistration(database, {
-                  storefrontMembership: membership,
                   operatorMembership,
                   governanceParentMembership: registrationTarget.created_by,
                   member,
                   principal,
                   realm: realm.realmId,
                   account,
-                  operatorOrganization: organization,
-                  storefrontOrganization: registrationTarget.storefront_organization_id!,
+                  operatorOrganization: operatorRealm!.membershipOrganizationId,
+                  managementOrganization: organization,
                   operatorRole: registrationTarget.role_id,
-                  storefrontRole: registrationTarget.storefront_role_id,
-                  storefrontScopes: [scopes[0], scopes[1], scopes[2]],
                   operatorScopes: [scopes[3], scopes[4]],
                 })
               : await accessPort.createRegistration(database, {
@@ -281,9 +314,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                 });
           }
           const registeredMembership = String(result.id);
-          const realmMemberships = registrationTarget.target_client === 'operator'
-            ? [registeredMembership, operatorMembership]
-            : [registeredMembership];
+          const realmMemberships = [registeredMembership];
           const boundMemberships = await database.query<{ id: string }>(`select membership.id
             from access.membership membership join identity.realm realm
               on realm.id=membership.realm_id and realm.node_profile=membership.node_profile and realm.status='active'

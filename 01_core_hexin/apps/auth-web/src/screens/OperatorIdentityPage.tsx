@@ -48,6 +48,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
   const [displayName, setDisplayName] = useState('');
   const [registrationCode, setRegistrationCode] = useState('');
   const [registrationChallenge, setRegistrationChallenge] = useState('');
+  const [registrationIdentityExists, setRegistrationIdentityExists] = useState<boolean | null>(null);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [policy, setPolicy] = useState<'terms' | 'privacy' | null>(null);
@@ -115,11 +116,13 @@ export const OperatorIdentityPage: React.FC<Readonly<{
           setResolvedInviteCode(normalized);
           setAcceptedTerms(false);
           setRegistrationChallenge('');
+          setRegistrationIdentityExists(null);
           setNotice(`邀请码已确认：${resolved.organizationName}`);
         },
         onError: (reason) => {
           setInvite(null);
           setResolvedInviteCode('');
+          setRegistrationIdentityExists(null);
           setError(messageOf(reason));
         },
       },
@@ -143,7 +146,10 @@ export const OperatorIdentityPage: React.FC<Readonly<{
           setInvite(resolved);
           setResolvedInviteCode(normalized);
           setRegistrationChallenge(challenge.challengeId);
-          setNotice('验证码已经发送，请填写最新收到的 6 位验证码');
+          setRegistrationIdentityExists(challenge.identityExists);
+          setNotice(challenge.identityExists
+            ? '已识别现有统一身份。验证手机号后将新增独立管理员身份，不影响消费者会员。'
+            : '验证码已经发送，请填写最新收到的 6 位验证码');
         },
         onError: (reason) => setError(messageOf(reason)),
       },
@@ -154,16 +160,16 @@ export const OperatorIdentityPage: React.FC<Readonly<{
     event.preventDefault();
     if (invite === null || resolvedInviteCode !== inviteCode.trim().toUpperCase()) return setError('请先验证当前邀请码');
     if (!registrationChallenge) return setError('请先获取验证码');
-    if (!passwordMeetsPolicy(password)) return setError(PASSWORD_POLICY_MESSAGE);
-    if (password !== confirmPassword) return setError('两次输入的密码不一致');
+    if (registrationIdentityExists === null) return setError('请重新获取验证码以确认统一身份状态');
+    if (!registrationIdentityExists && !passwordMeetsPolicy(password)) return setError(PASSWORD_POLICY_MESSAGE);
+    if (!registrationIdentityExists && password !== confirmPassword) return setError('两次输入的密码不一致');
     if (!acceptedTerms) return setError('请先阅读并同意服务协议与隐私政策');
     setError('');
     identityActions.run(
       'operator-register',
       (signal) => createCanonicalMember({
         subject: identifier,
-        password,
-        displayName,
+        ...(registrationIdentityExists ? {} : { password, displayName }),
         inviteCode,
         challengeId: registrationChallenge,
         code: registrationCode,
@@ -182,7 +188,9 @@ export const OperatorIdentityPage: React.FC<Readonly<{
           }
           setPassword('');
           setConfirmPassword('');
-          setNotice('账号已经创建，请使用手机号和刚才设置的密码登录');
+          setNotice(registrationIdentityExists
+            ? '独立管理员身份已经开通，请使用原统一身份密码登录'
+            : '统一身份和管理员身份已经创建，请使用手机号和刚才设置的密码登录');
           setMode('login');
         },
         onError: (reason) => setError(messageOf(reason)),
@@ -237,7 +245,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
   const modeDescription = mode === 'login'
     ? '使用宏泰甄选运营账号进入工作台'
     : mode === 'register'
-      ? '通过企业邀请码创建你的运营账号'
+      ? '通过企业邀请码开通独立管理员身份'
       : '验证绑定手机号后重新设置密码';
 
   return (
@@ -282,22 +290,26 @@ export const OperatorIdentityPage: React.FC<Readonly<{
           {mode === 'register' && (
             <form onSubmit={register} className="space-y-4">
               <div className="flex gap-2">
-                <input required value={inviteCode} onChange={(event) => { setInviteCode(event.target.value.toUpperCase()); setInvite(null); }} placeholder="企业邀请码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm uppercase outline-none focus:ring-2 focus:ring-blue-100" />
+                <input required value={inviteCode} onChange={(event) => { setInviteCode(event.target.value.toUpperCase()); setInvite(null); setRegistrationChallenge(''); setRegistrationIdentityExists(null); }} placeholder="企业邀请码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm uppercase outline-none focus:ring-2 focus:ring-blue-100" />
                 <button type="button" disabled={inviteBusy || !inviteCode.trim()} onPointerDown={() => identityActions.pointerDown('operator-invite')} onClick={() => loadInvite()} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50">验证邀请码</button>
               </div>
-              <TextField label="姓名" value={displayName} onChange={setDisplayName} autoComplete="name" />
-              <TextField label="手机号" value={identifier} onChange={setIdentifier} autoComplete="tel" inputMode="tel" />
+              {registrationIdentityExists !== true && <TextField label="姓名" value={displayName} onChange={setDisplayName} autoComplete="name" />}
+              <TextField label="手机号" value={identifier} onChange={(value) => { setIdentifier(value); setRegistrationChallenge(''); setRegistrationIdentityExists(null); }} autoComplete="tel" inputMode="tel" />
               <div className="flex gap-2">
                 <input required inputMode="numeric" maxLength={6} value={registrationCode} onChange={(event) => setRegistrationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6 位验证码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100" />
                 <button type="button" disabled={registrationCodeBusy || !identifier.trim() || !inviteCode.trim()} onPointerDown={() => identityActions.pointerDown('operator-registration-code')} onClick={sendRegistrationCode} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50"><Send className="mr-1 inline h-3.5 w-3.5" />获取验证码</button>
               </div>
-              <PasswordField label="设置密码" value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />
-              <PasswordField label="确认密码" value={confirmPassword} onChange={setConfirmPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />
+              {registrationIdentityExists !== true && (
+                <>
+                  <PasswordField label="设置密码" value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />
+                  <PasswordField label="确认密码" value={confirmPassword} onChange={setConfirmPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />
+                </>
+              )}
               <label className="flex items-start gap-2 text-xs leading-5 text-slate-500">
                 <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} disabled={invite === null} className="mt-0.5 h-4 w-4 accent-[var(--sw-brand)]" />
                 <span>我已阅读并同意<button type="button" disabled={invite === null} onClick={() => setPolicy('terms')} className="text-[var(--sw-brand)] disabled:text-slate-400">《用户服务协议》</button>和<button type="button" disabled={invite === null} onClick={() => setPolicy('privacy')} className="text-[var(--sw-brand)] disabled:text-slate-400">《隐私保护政策》</button></span>
               </label>
-              <SubmitButton busy={registrationBusy} disabled={invite === null || !acceptedTerms} onPointerDown={() => identityActions.pointerDown('operator-register')} icon={<UserPlus className="h-4 w-4" />}>创建统一账号</SubmitButton>
+              <SubmitButton busy={registrationBusy} disabled={invite === null || !acceptedTerms} onPointerDown={() => identityActions.pointerDown('operator-register')} icon={<UserPlus className="h-4 w-4" />}>{registrationIdentityExists ? '开通管理员身份' : '创建统一账号与管理员身份'}</SubmitButton>
             </form>
           )}
 
