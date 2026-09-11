@@ -2,11 +2,14 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
+import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { scopePath } from '../../shared/url/ScopePath';
+import { BusinessPerspectiveBar } from '../supply-chain/BusinessPerspectiveBar';
+import { readSupplierPerspectives, supplierPerspectiveKey } from '../supply-chain/SupplierPerspectiveQuery';
 import { CockpitHero } from './CockpitHero';
 import { CockpitMetrics } from './CockpitMetrics';
 import { cockpitKey, cockpitPeriods, readCockpit, type CockpitPeriod } from './CockpitQuery';
-import type { BusinessInsight, CockpitSales } from './CockpitSchema';
+import type { BusinessInsight, CockpitData, CockpitSales } from './CockpitSchema';
 import './cockpit.css';
 
 const CockpitDeferred = lazy(() => import('./CockpitDeferred'));
@@ -22,12 +25,18 @@ const LazyAccessDeniedActionsProvider = lazy(async () => {
 export function Component() {
   const context = useConsoleContext();
   const navigate = useNavigate();
-  const [search] = useSearchParams();
+  const [search, setSearch] = useSearchParams();
   const requested = search.get('period');
   const period: CockpitPeriod = cockpitPeriods.includes(requested as CockpitPeriod) ? requested as CockpitPeriod : '30days';
+  const supplier = search.get('supplier') ?? undefined;
+  const perspectives = useQuery({
+    queryKey: supplierPerspectiveKey(context),
+    queryFn: ({ signal }) => readSupplierPerspectives(context, signal),
+    staleTime: 5 * 60_000,
+  });
   const query = useQuery({
-    queryKey: cockpitKey(context, period),
-    queryFn: ({ signal }) => readCockpit(context, period, signal),
+    queryKey: cockpitKey(context, period, supplier),
+    queryFn: ({ signal }) => readCockpit(context, period, signal, supplier),
   });
   const error = safeQueryError(query.error);
   const condition = queryCondition({
@@ -41,7 +50,12 @@ export function Component() {
   const openInsight = (insight: BusinessInsight) => {
     if (insight.target !== undefined) void navigate(scopePath(context.scope, insight.target));
   };
-  const content = query.data === undefined ? undefined : <CockpitContent sales={query.data.summary.sales} onOpenInsight={openInsight} />;
+  const setPerspective = (next?: string) => {
+    const value = new URLSearchParams(search);
+    if (next === undefined) value.delete('supplier'); else value.set('supplier', next);
+    setSearch(value);
+  };
+  const content = query.data === undefined ? undefined : <CockpitContent summary={query.data.summary} onOpenInsight={openInsight} />;
   const resource = content === undefined && query.isPending ? <span role="status">正在加载经营驾驶舱…</span> : condition === 'ready' ? content : (
     <Suspense fallback={content ?? <span role="status">正在加载经营驾驶舱…</span>}>
       <LazyAccessDeniedActionsProvider actions={{
@@ -61,65 +75,30 @@ export function Component() {
   );
   return (
     <section className="cockpitpage" aria-label="经营驾驶舱">
+      <BusinessPerspectiveBar partners={perspectives.data ?? []} {...(supplier === undefined ? {} : { selected: supplier })}
+        busy={perspectives.isFetching || query.isFetching} onSelect={setPerspective} />
       {resource}
     </section>
   );
 }
 
-function queryCondition(input: Readonly<{
-  pending: boolean;
-  fetching: boolean;
-  error: Error | null;
-  hasData: boolean;
-  empty: boolean;
-  stale: boolean;
-}>) {
-  if (input.pending) return 'loading' as const;
-  if (input.error !== null) {
-    const status = apiError(input.error)?.status;
-    if (status === 401) return 'unauthenticated' as const;
-    if (status === 403) return 'denied' as const;
-    if (!navigator.onLine) return input.hasData ? 'stale' as const : 'offline' as const;
-    if (input.fetching) return 'retry' as const;
-    if (input.hasData) return 'stale' as const;
-    if (status === 404) return 'notfound' as const;
-    if (status === 409 || status === 412) return 'conflict' as const;
-    if (status === 429) return 'ratelimited' as const;
-    return 'failure' as const;
-  }
-  if (!input.hasData || input.empty) return 'empty' as const;
-  if (input.fetching) return 'refreshing' as const;
-  if (input.stale) return 'stale' as const;
-  return 'ready' as const;
-}
-
-function safeQueryError(error: Error | null): string | undefined {
-  if (error === null) return undefined;
-  const api = apiError(error);
-  return api === undefined ? (navigator.onLine ? 'REQUEST_FAILED' : 'NETWORK_OFFLINE') : `${api.code} · 请求 ${api.requestId}`;
-}
-
-function apiError(error: Error): Readonly<{ status: number; code: string; requestId: string }> | undefined {
-  const value = error as Error & Partial<{ status: number; code: string; requestId: string }>;
-  return value.name === 'ApiError' && typeof value.status === 'number' && typeof value.code === 'string'
-    && typeof value.requestId === 'string' ? { status: value.status, code: value.code, requestId: value.requestId } : undefined;
-}
-
-function CockpitContent({ sales, onOpenInsight }: Readonly<{
-  sales: CockpitSales;
+function CockpitContent({ summary, onOpenInsight }: Readonly<{
+  summary: CockpitData['summary'];
   onOpenInsight: (insight: BusinessInsight) => void;
 }>) {
+  const sales = summary.sales;
   return (
     <div className="cockpitstack">
-      <CockpitHero sales={sales} />
-      <CockpitMetrics sales={sales} />
-      <DeferredCockpitDetails sales={sales} onOpenInsight={onOpenInsight} />
+      <CockpitHero sales={sales} {...(summary.perspective === undefined ? {} : { perspective: summary.perspective })} />
+      <CockpitMetrics sales={sales} {...(summary.operations === undefined ? {} : { operations: summary.operations })} />
+      <DeferredCockpitDetails sales={sales} supplierView={summary.perspective !== undefined} onOpenInsight={onOpenInsight} />
     </div>
   );
 }
 
-function DeferredCockpitDetails({ sales, onOpenInsight }: Readonly<{
+function DeferredCockpitDetails({ sales, supplierView, onOpenInsight }: Readonly<{
   sales: CockpitSales;
+  supplierView: boolean;
   onOpenInsight: (insight: BusinessInsight) => void;
 }>) {
   const [ready, setReady] = useState(false);
@@ -136,7 +115,7 @@ function DeferredCockpitDetails({ sales, onOpenInsight }: Readonly<{
   if (!ready) return <div className="cockpitdeferred" aria-hidden="true" />;
   return (
     <Suspense fallback={<div className="cockpitdeferred" aria-hidden="true" />}>
-      <CockpitDeferred sales={sales} onOpenInsight={onOpenInsight} />
+      <CockpitDeferred sales={sales} supplierView={supplierView} onOpenInsight={onOpenInsight} />
     </Suspense>
   );
 }

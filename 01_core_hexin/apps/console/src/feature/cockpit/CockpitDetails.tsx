@@ -1,10 +1,10 @@
 import type { BusinessEvent, BusinessInsight, MallPerformance } from './CockpitSchema';
 
-export function MallComparison({ malls }: Readonly<{ malls: readonly MallPerformance[] }>) {
+export function MallComparison({ malls, supplierView = false }: Readonly<{ malls: readonly MallPerformance[]; supplierView?: boolean }>) {
   const maximum = Math.max(...malls.map((mall) => mall.salesCents), 1);
   return (
     <section className="cockpitcard mallcomparison" aria-labelledby="mallcomparisontitle">
-      <h2 id="mallcomparisontitle">商城经营对比</h2>
+      <h2 id="mallcomparisontitle">{supplierView ? '合作商城表现' : '商城经营对比'}</h2>
       <div className="mallhead"><span>商城</span><span>净成交额</span><span>退款率</span></div>
       {malls.length === 0 ? <p className="cockpitempty">暂无权威商城对比</p> : malls.map((mall) => <article key={mall.id}>
         <div className="mallrow"><strong>{mall.name}</strong><span>{money(mall.salesCents)}</span>

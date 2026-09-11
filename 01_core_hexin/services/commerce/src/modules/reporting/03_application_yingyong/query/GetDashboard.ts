@@ -20,21 +20,25 @@ export function metricOperation(factory: ReportingFactory<OperationDatabase>, po
       const page = queryPage(request);
       const selectedPeriod = period(request);
       const application = queryText(request, 'applicationid');
+      const supplier = queryText(request, 'supplierid');
+      const selectedDimension = supplier === null ? dimension : supplierSection(request) ?? dimension;
       const cacheable = application === null && page.sort === null;
       const projection = cacheable ? await pool.query<{ version: number }>(`select version::integer from runtime.projectionoffset
         where projection='commerce' and shard=$1`, [access.scope.id]) : null;
       const version = projection?.rows[0]?.version ?? 0;
-      const key = cacheable ? VersionedKey.create('reporting', { scope: access.scope.id, metric: dimension ?? 'dashboard', period: selectedPeriod,
-        projectionversion: version }) : null;
+      const key = cacheable ? VersionedKey.create('reporting', { scope: access.scope.id, supplier: supplier ?? 'all',
+        metric: selectedDimension ?? 'dashboard', period: selectedPeriod, projectionversion: version }) : null;
       const cached = key ? await cache.get<OperationResult>(key) : null;
-      return { access, page, selectedPeriod, application, key, cached };
+      return { access, page, selectedPeriod, application, supplier, selectedDimension, key, cached };
     },
     shortCircuit: (_request, prepared) => prepared.cached ?? undefined,
     execute: async (_request, database, prepared) => {
       const repository = factory(database);
-      const rows = await repository.metrics({ scope: prepared.access.scope.id, dimension, period: prepared.selectedPeriod,
-        application: prepared.application, cursorTime: prepared.page.sort, cursorId: prepared.page.id, fetch: prepared.page.fetch });
-      const summary = dimension === null ? await repository.cockpit(prepared.access.scope.id) : undefined;
+      const rows = await repository.metrics({ scope: prepared.access.scope.id, dimension: prepared.selectedDimension,
+        period: prepared.selectedPeriod, application: prepared.application, supplier: prepared.supplier,
+        cursorTime: prepared.page.sort, cursorId: prepared.page.id, fetch: prepared.page.fetch });
+      const summary = dimension === null
+        ? await repository.cockpit(prepared.access.scope.id, prepared.supplier, prepared.selectedPeriod) : undefined;
       return metricPage(rows, prepared.page.limit, summary);
     },
     finalize: async (_request, result, prepared) => {
@@ -65,4 +69,12 @@ function queryText(request: OperationRequest, name: string): string | null {
   if (value === undefined) return null;
   if (!value || value.length > 100) throw new Error('REPORT_FILTER_INVALID');
   return value;
+}
+
+function supplierSection(request: OperationRequest): ReportDimension | null {
+  const value = queryText(request, 'suppliersection');
+  if (value === null) return null;
+  if (value === 'sales' || value === 'product' || value === 'category' || value === 'channel'
+    || value === 'fulfillment' || value === 'settlement') return value;
+  throw new Error('REPORT_SUPPLIER_SECTION_INVALID');
 }

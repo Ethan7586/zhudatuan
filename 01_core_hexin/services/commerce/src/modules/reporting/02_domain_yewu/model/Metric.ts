@@ -14,13 +14,15 @@ export type MetricUnit = Metric['unit'];
 
 export type ReportPeriod = 'realtime' | 'yesterday' | '7days' | '30days';
 
-export type ReportDimension = 'sales' | 'product' | 'mall' | 'category' | 'channel' | 'powderclass' | 'voucher';
+export type ReportDimension = 'sales' | 'product' | 'mall' | 'category' | 'channel' | 'powderclass' | 'voucher'
+  | 'fulfillment' | 'settlement';
 
 export interface MetricQuery {
   readonly scope: string;
   readonly period: ReportPeriod;
   readonly dimension: ReportDimension | null;
   readonly application: string | null;
+  readonly supplier: string | null;
   readonly cursorTime: string | null;
   readonly cursorId: string | null;
   readonly fetch: number;
@@ -50,5 +52,11 @@ export interface CockpitSummary {
     trend: readonly Readonly<{ date: string; salesCents: number; orderCount: number }>[];
     categories: readonly Readonly<{ name: string; salesCents: number; share: number }>[];
     topProducts: readonly never[];
+  }>;
+  readonly perspective?: Readonly<{ kind: 'supplier'; id: string; name: string; channel: string }>;
+  readonly operations?: Readonly<{
+    pendingFulfillmentCount: number;
+    payableSettlementCents: number;
+    paidSettlementCents: number;
   }>;
 }

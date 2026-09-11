@@ -21,12 +21,24 @@ interface ExportRecord {
 export class PgReportingRepository implements ReportingPort {
   constructor(private readonly database: OperationDatabase) {}
 
-  async cockpit(scope: string): Promise<CockpitSummary> {
-    const result = await this.database.query<{ summary: CockpitSummary }>('select reporting.cockpit($1) summary', [scope]);
+  async cockpit(scope: string, supplier: string | null, period: MetricQuery['period']): Promise<CockpitSummary> {
+    const result = await this.database.query<{ summary: CockpitSummary }>(
+      'select reporting.cockpit($1,$2,$3) summary', [scope, supplier, period]);
     return required(result.rows[0], 'REPORT_COCKPIT_FAILED').summary;
   }
 
   async metrics(query: MetricQuery): Promise<readonly MetricRow[]> {
+    if (query.supplier !== null && query.dimension !== null) {
+      const result = await this.database.query<MetricRecord>(`select code,version,scope,period,dimensions,value,unit,
+        watermark,"projectionVersion","cursorTime","cursorId" from (
+          select item.code,item.version,item.scope,item.period,item.dimensions,item.value,item.unit,
+            item.watermark,item.projection_version "projectionVersion",item.cursor_time "cursorTime",item.cursor_id "cursorId"
+          from reporting.supplier_metric_rows($1,$2,$3,$4) item
+        ) rows where ($5::timestamptz is null or ("cursorTime","cursorId")<($5::timestamptz,$6))
+        order by "cursorTime" desc,"cursorId" desc limit $7`,
+      [query.scope, query.supplier, query.dimension, query.period, query.cursorTime, query.cursorId, query.fetch]);
+      return result.rows.map((row) => Object.freeze(row));
+    }
     const result = await this.database.query<MetricRecord>(`select fact.metric_id code,fact.metric_version version,fact.scope_id scope,
       jsonb_build_object('from',fact.period_start,'to',fact.period_end,'timezone',fact.timezone) period,fact.dimensions,
       fact.value_numeric::float8 value,metric.unit, fact.watermark, fact.projection_version "projectionVersion",

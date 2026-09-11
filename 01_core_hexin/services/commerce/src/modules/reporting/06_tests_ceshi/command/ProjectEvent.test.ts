@@ -43,6 +43,7 @@ describe('reporting event projection', () => {
     expect(repository.projected).toHaveLength(18);
     expect(repository.projected.filter(({ code }) => code === 'powderclass.amount')).toHaveLength(3);
     expect(repository.projected.some(({ scope }) => scope === 'partner:1')).toBe(true);
+    expect(repository.projected.filter(({ scope }) => scope === 'partner:1').every(({ dimensions }) => dimensions.supplier === 'partner:1')).toBe(true);
     expect(repository.paid).toEqual({ order: 'order:1', amount: 900 });
     expect(repository.completed).toEqual([event]);
   });

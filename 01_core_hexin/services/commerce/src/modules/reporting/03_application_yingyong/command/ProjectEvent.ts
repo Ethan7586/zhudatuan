@@ -66,7 +66,8 @@ export class ProjectEvent {
   private line(scope: string, mall: string, application: string, period: Readonly<{ from: string; to: string; timezone: string }>,
     line: Readonly<Record<string, unknown>>, watermark: string): readonly Metric[] {
     const amount = integer(line.payableMinor, 'REPORT_LINE_AMOUNT_INVALID');
-    const common = { mall, application };
+    const supplier = typeof line.partner === 'string' && line.partner ? line.partner : undefined;
+    const common = { mall, application, ...(supplier === undefined ? {} : { supplier }) };
     return Object.freeze([
       projectedMetric('product.amount', scope, period, { ...common, product: text(line.product, 'REPORT_PRODUCT_REQUIRED') }, amount, 'minor', watermark),
       projectedMetric('category.amount', scope, period, { ...common, category: text(line.category, 'REPORT_CATEGORY_REQUIRED') }, amount, 'minor', watermark),

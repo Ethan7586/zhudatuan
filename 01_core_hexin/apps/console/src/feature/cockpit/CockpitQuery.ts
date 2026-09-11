@@ -6,14 +6,14 @@ export type CockpitPeriod = (typeof cockpitPeriods)[number];
 const DOCUMENT_PREFETCH_HANDOFF_MS = 180;
 const DOCUMENT_PREFETCH_TIMEOUT = Symbol('DOCUMENT_PREFETCH_TIMEOUT');
 
-export const cockpitKey = (context: ConsoleContext, period: CockpitPeriod) => Object.freeze([
-  'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'reporting.dashboard.read', period,
+export const cockpitKey = (context: ConsoleContext, period: CockpitPeriod, supplier?: string) => Object.freeze([
+  'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'reporting.dashboard.read', period, supplier ?? 'all',
 ] as const);
 
-export async function readCockpit(context: ConsoleContext, period: CockpitPeriod, signal: AbortSignal) {
+export async function readCockpit(context: ConsoleContext, period: CockpitPeriod, signal: AbortSignal, supplier?: string) {
   const prefetch = typeof window === 'undefined' ? undefined : window.__consoleCockpitPrefetch;
   if (typeof window !== 'undefined') delete window.__consoleCockpitPrefetch;
-  const prefetched = await consumeDocumentPrefetch(prefetch, signal);
+  const prefetched = supplier === undefined ? await consumeDocumentPrefetch(prefetch, signal) : undefined;
   const matches = prefetched?.scopeKind === context.scope.kind
     && prefetched.scopeId === context.scope.id
     && prefetched.accessVersion === context.session.accessVersion
@@ -22,18 +22,18 @@ export async function readCockpit(context: ConsoleContext, period: CockpitPeriod
     const parsed = CockpitSchema.safeParse(prefetched.value);
     if (parsed.success) return parsed.data;
   }
-  const value = await readCockpitFromSdk(context, period, signal);
+  const value = await readCockpitFromSdk(context, period, signal, supplier);
   return CockpitSchema.parse(value);
 }
 
-async function readCockpitFromSdk(context: ConsoleContext, period: CockpitPeriod, signal: AbortSignal) {
+async function readCockpitFromSdk(context: ConsoleContext, period: CockpitPeriod, signal: AbortSignal, supplier?: string) {
   const [{ createFetchReportingDashboardRead }, { consoleRequest }, { appConfig }] = await Promise.all([
     import('@shop/sdk/reporting'),
     import('../../shared/api/Client'),
     import('../../shared/config/AppConfig'),
   ]);
   return createFetchReportingDashboardRead(appConfig.apiBaseUrl)(
-    { query: { period, limit: 100 } },
+    { query: { period, limit: 100, ...(supplier === undefined ? {} : { supplierid: supplier }) } },
     consoleRequest(context.scope, signal, context.session.accessVersion),
   );
 }

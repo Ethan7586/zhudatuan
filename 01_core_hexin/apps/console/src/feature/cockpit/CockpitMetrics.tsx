@@ -1,12 +1,20 @@
 import type { CockpitSales } from './CockpitSchema';
 
-export function CockpitMetrics({ sales }: Readonly<{ sales: CockpitSales }>) {
+export function CockpitMetrics({ sales, operations }: Readonly<{
+  sales: CockpitSales;
+  operations?: Readonly<{ pendingFulfillmentCount: number; payableSettlementCents: number }>;
+}>) {
   const deltas = sales.deltas;
-  const metrics = [
+  const metrics = operations === undefined ? [
     { label: '净成交额', value: formatMinor(sales.periodSalesCents), delta: ratio(deltas?.netSalesRatio), tone: growthTone(deltas?.netSalesRatio) },
     { label: '支付订单', value: formatCount(sales.periodPaidOrderCount), delta: ratio(deltas?.paidOrdersRatio), tone: growthTone(deltas?.paidOrdersRatio) },
     { label: '客单价', value: formatMinor(sales.averageOrderValueCents), delta: ratio(deltas?.averageOrderRatio), tone: growthTone(deltas?.averageOrderRatio) },
     { label: '退款率', value: percent(deltas?.refundRate), delta: points(deltas?.refundRateDeltaPoints), tone: inverseTone(deltas?.refundRateDeltaPoints) },
+  ] : [
+    { label: '供应成交额', value: formatMinor(sales.periodSalesCents), delta: ratio(deltas?.netSalesRatio), tone: growthTone(deltas?.netSalesRatio) },
+    { label: '供应订单', value: formatCount(sales.periodPaidOrderCount), delta: ratio(deltas?.paidOrdersRatio), tone: growthTone(deltas?.paidOrdersRatio) },
+    { label: '待履约', value: formatCount(operations.pendingFulfillmentCount), delta: operations.pendingFulfillmentCount > 0 ? '需要处理' : '当前无待办', tone: operations.pendingFulfillmentCount > 0 ? 'negative' as const : 'positive' as const },
+    { label: '待结算', value: formatMinor(operations.payableSettlementCents), delta: '按供应协议归集', tone: 'neutral' as const },
   ];
   return (
     <section className="cockpitmetricband" aria-label="经营摘要">

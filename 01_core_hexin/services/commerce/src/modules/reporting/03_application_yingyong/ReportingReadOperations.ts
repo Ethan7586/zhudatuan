@@ -54,6 +54,19 @@ function metricAction(dimension: ReportDimension): OperationAction {
     const page = queryPage(request);
     const selectedPeriod = period(request);
     const application = queryText(request, 'applicationid');
+    const supplier = queryText(request, 'supplierid');
+    const selectedDimension = supplier === null ? dimension : supplierSection(request) ?? dimension;
+    if (supplier !== null) {
+      const result = await database.query<MetricRecord>(`select code,version,scope,period,dimensions,value,unit,
+        watermark,"projectionVersion","cursorTime","cursorId" from (
+          select item.code,item.version,item.scope,item.period,item.dimensions,item.value,item.unit,
+            item.watermark,item.projection_version "projectionVersion",item.cursor_time "cursorTime",item.cursor_id "cursorId"
+          from reporting.supplier_metric_rows($1,$2,$3,$4) item
+        ) rows where ($5::timestamptz is null or ("cursorTime","cursorId")<($5::timestamptz,$6))
+        order by "cursorTime" desc,"cursorId" desc limit $7`,
+      [access.scope.id, supplier, selectedDimension, selectedPeriod, page.sort, page.id, page.fetch]);
+      return metricPage(result.rows, page);
+    }
     const result = await database.query<MetricRecord>(`select fact.metric_id code,fact.metric_version version,
       fact.scope_id scope,jsonb_build_object('from',fact.period_start,'to',fact.period_end,'timezone',fact.timezone) period,
       fact.dimensions,fact.value_numeric::float8 value,metric.unit,fact.watermark,fact.projection_version "projectionVersion",
@@ -95,4 +108,12 @@ function queryText(request: OperationRequest, name: string): string | null {
   if (value === undefined) return null;
   if (!value || value.length > 100) throw new Error('REPORT_FILTER_INVALID');
   return value;
+}
+
+function supplierSection(request: OperationRequest): ReportDimension | null {
+  const value = queryText(request, 'suppliersection');
+  if (value === null) return null;
+  if (value === 'sales' || value === 'product' || value === 'category' || value === 'channel'
+    || value === 'fulfillment' || value === 'settlement') return value;
+  throw new Error('REPORT_SUPPLIER_SECTION_INVALID');
 }

@@ -9,5 +9,6 @@ export const ReportMetricSchema = z.object({
 }).passthrough();
 export const ReportPageSchema = pageEnvelope(ReportMetricSchema);
 export type ReportMetric = z.infer<typeof ReportMetricSchema>;
-export type ReportView = 'sales' | 'products' | 'malls' | 'categories' | 'channels' | 'powderclass' | 'voucher';
+export type ReportView = 'sales' | 'products' | 'malls' | 'categories' | 'channels' | 'powderclass' | 'voucher'
+  | 'fulfillment' | 'settlements';
 export type ReportPeriod = 'realtime' | 'yesterday' | '7days' | '30days';

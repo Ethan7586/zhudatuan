@@ -72,6 +72,12 @@ export interface CockpitData {
     availableStock: number;
     orderCount: number;
     afterSaleCount: number;
+    perspective?: Readonly<{ kind: 'supplier'; id: string; name: string; channel: string }>;
+    operations?: Readonly<{
+      pendingFulfillmentCount: number;
+      payableSettlementCents: number;
+      paidSettlementCents: number;
+    }>;
     sales: CockpitSales;
   }>;
 }
@@ -93,7 +99,17 @@ function isCockpitData(value: unknown): value is CockpitData {
     || !nonNegativeInteger(value.count) || !optionalNonEmpty(value.nextCursor) || !isRecord(value.summary)) return false;
   const summary = value.summary;
   return finite(summary.catalogCount) && finite(summary.availableStock) && finite(summary.orderCount)
-    && finite(summary.afterSaleCount) && isSales(summary.sales);
+    && finite(summary.afterSaleCount) && (summary.perspective === undefined || isPerspective(summary.perspective))
+    && (summary.operations === undefined || isOperations(summary.operations)) && isSales(summary.sales);
+}
+
+function isPerspective(value: unknown): value is NonNullable<CockpitData['summary']['perspective']> {
+  return isRecord(value) && value.kind === 'supplier' && nonEmpty(value.id) && nonEmpty(value.name) && nonEmpty(value.channel);
+}
+
+function isOperations(value: unknown): value is NonNullable<CockpitData['summary']['operations']> {
+  return isRecord(value) && nonNegativeInteger(value.pendingFulfillmentCount)
+    && finite(value.payableSettlementCents) && finite(value.paidSettlementCents);
 }
 
 function isMetric(value: unknown): value is CockpitMetric {

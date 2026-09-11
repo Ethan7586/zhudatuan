@@ -9,8 +9,9 @@ const DeferredMalls = memo(MallComparison);
 const DeferredEvents = memo(BusinessEvents);
 const DeferredInsights = memo(BusinessInsights);
 
-export default function CockpitDeferred({ sales, onOpenInsight }: Readonly<{
+export default function CockpitDeferred({ sales, supplierView = false, onOpenInsight }: Readonly<{
   sales: CockpitSales;
+  supplierView?: boolean;
   onOpenInsight: (insight: BusinessInsight) => void;
 }>) {
   const [stage, setStage] = useState(0);
@@ -23,7 +24,7 @@ export default function CockpitDeferred({ sales, onOpenInsight }: Readonly<{
     <div className="cockpitdeferred">
       <div className="cockpitprimarygrid">
         {stage >= 1 ? <DeferredTrend sales={sales} /> : null}
-        {stage >= 2 ? <DeferredMalls malls={sales.malls ?? []} /> : null}
+        {stage >= 2 ? <DeferredMalls malls={sales.malls ?? []} supplierView={supplierView} /> : null}
       </div>
       <div className="cockpitsecondarygrid">
         {stage >= 3 ? <DeferredEvents events={sales.events ?? []} /> : null}
