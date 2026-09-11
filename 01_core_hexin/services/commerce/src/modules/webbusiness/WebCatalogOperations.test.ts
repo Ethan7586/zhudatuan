@@ -14,7 +14,7 @@ describe('web catalog management read', () => {
       pending_review: 7,
       published: 1,
       unpublished: 2,
-    }] : []);
+    }] : text.includes('console_supply_network') ? [{ preview: { kind: 'console-product-v1' } }] : []);
     const read = webCatalogActions()['catalog.listings.read'];
     if (typeof read !== 'function') throw new Error('WEB_CATALOG_LISTING_READ_ACTION_MISSING');
 
@@ -28,11 +28,14 @@ describe('web catalog management read', () => {
     expect(result).toMatchObject({ body: {
       total_count: 12,
       status_counts: { needs_attention: 2, pending_review: 7, published: 1, unpublished: 2 },
+      preview: { kind: 'console-product-v1' },
     } });
 
     const summaryRead = calls.find(({ text }) => text.includes('count(*) filter'))!;
     expect(summaryRead.text).toContain('organization.unitclosure');
     expect(summaryRead.values).toEqual(['mall:hongtai', '', '', '', '', false]);
+    expect(calls.find(({ text }) => text.includes('console_supply_network'))?.values).toEqual(['mall:hongtai']);
+    expect(calls.find(({ text }) => text.includes('console_supply_network'))?.values).toEqual(['mall:hongtai']);
   });
 });
 

@@ -167,13 +167,34 @@ const ProductPreviewFacetSchema = z.object({
   count: z.int().check(z.nonnegative()),
 });
 
+const ProductSupplierPreviewFacetSchema = z.object({
+  value: z.string().check(z.minLength(1)),
+  label: z.string().check(z.minLength(1)),
+  count: z.int().check(z.nonnegative()),
+  productCount: z.optional(DatabaseIntegerSchema),
+  skuCount: z.optional(DatabaseIntegerSchema),
+  trialProductCount: z.optional(DatabaseIntegerSchema),
+  publishedCount: z.optional(DatabaseIntegerSchema),
+  availableStock: z.optional(DatabaseIntegerSchema),
+  inventoryValueMinor: z.optional(DatabaseIntegerSchema),
+  minPriceMinor: z.optional(z.nullable(DatabaseIntegerSchema)),
+  maxPriceMinor: z.optional(z.nullable(DatabaseIntegerSchema)),
+  channel: z.optional(z.string().check(z.minLength(1))),
+  settlementMode: z.optional(z.string().check(z.minLength(1))),
+  agreementStatus: z.optional(z.string().check(z.minLength(1))),
+  contractRef: z.optional(z.nullable(z.string())),
+  capabilities: z.optional(z.array(z.string())),
+  effectiveAt: z.optional(z.nullable(z.string())),
+  lastSyncedAt: z.optional(z.nullable(z.string())),
+});
+
 const ProductPagePreviewSchema = z.object({
   kind: z.string().check(z.minLength(1)),
   totalCount: z.int().check(z.nonnegative()),
   asOf: z.string().check(z.minLength(1)),
   facets: z.object({
     categories: z.array(ProductPreviewFacetSchema),
-    suppliers: z.array(ProductPreviewFacetSchema),
+    suppliers: z.array(ProductSupplierPreviewFacetSchema),
     malls: z.array(ProductPreviewFacetSchema),
     statuses: z.array(ProductPreviewFacetSchema),
   }),
