@@ -54,7 +54,7 @@ const RegistrationAuthenticationSchema = z.strictObject({
   }),
 });
 
-const MembershipSchema = z.strictObject({
+const MembershipSchema = z.object({
   id: z.string().min(1),
   member_id: z.string().min(1),
   organization_id: z.string().min(1),
