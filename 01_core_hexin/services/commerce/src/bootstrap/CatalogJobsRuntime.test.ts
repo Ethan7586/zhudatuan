@@ -8,7 +8,7 @@ describe('catalog jobs runtime', () => {
     const pool = {} as DatabasePool;
     const objects = {} as ObjectStore;
     expect(createCatalogJobs(pool, objects, 'catalog-test', 'mall:hongtai').map(({ id }) => id)).toEqual([
-      'catalogimport', 'catalogpublication',
+      'catalogimport', 'catalogpublication', 'export',
     ]);
   });
 
