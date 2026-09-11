@@ -4,24 +4,6 @@ import type { OperationDatabase } from '../../../foundation/application/ModuleOp
 import { MemberPort } from '../01_public_gongkai/MemberPort';
 
 describe('MemberPort invitation constraints', () => {
-  it('delegates consumer identity creation to the hosted-node database operation', async () => {
-    const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{
-      node_id: 'node:consumer-one:l7', parent_node_id: 'node:consumer-parent:l6', signed_level: 'L7',
-    }]));
-    const port = new MemberPort();
-    const effectiveAt = new Date('2026-09-12T00:00:00.000Z');
-
-    await expect(port.provisionStorefrontNode({ query } as unknown as OperationDatabase, {
-      membership: 'membership:one', inviterMembership: 'membership:parent', requestedBy: 'principal:one',
-      traceId: 'trace:one', idempotencyKey: 'node:one', effectiveAt,
-    })).resolves.toMatchObject({ signed_level: 'L7' });
-
-    expect(String(query.mock.calls[0]?.[0])).toContain('organization.provision_storefront_member_node');
-    expect(query.mock.calls[0]?.[1]).toEqual([
-      'membership:one', 'membership:parent', 'principal:one', 'trace:one', 'node:one', effectiveAt,
-    ]);
-  });
-
   it('resolves a published storefront and its active registration policy without an invite', async () => {
     const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{
       application_id: 'application:one', application_slug: 'mall-one', organization_id: 'mall:one',

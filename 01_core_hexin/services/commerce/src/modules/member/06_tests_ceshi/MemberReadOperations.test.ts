@@ -81,7 +81,7 @@ describe('storefront member directory boundary', () => {
         );
         create table access.membership(
           id text primary key,member_id text not null,organization_id text not null,client text not null,
-          status text not null,joined_at timestamptz,node_id text
+          status text not null,joined_at timestamptz
         );
         create table organization.organization(id text primary key,name text not null);
         create table organization.node(
@@ -89,6 +89,9 @@ describe('storefront member directory boundary', () => {
         );
         create table organization.noderelation(
           node_id text not null,parent_node_id text,signed_level text not null,superseded_at timestamptz
+        );
+        create table organization.membernoderegistration(
+          membership_id text primary key,node_id text not null unique
         );
         create table identity.federatedidentity(
           id text primary key,principal_id text,membership_id text,provider text not null,status text not null
@@ -122,14 +125,18 @@ describe('storefront member directory boundary', () => {
           ('node:wechat:l8','node:shared:l7','L8',null),
           ('node:foreign:l6','node:mall-one:l1','L6',null);
         insert into access.membership values
-          ('membership:storefront:one','member:shared','mall:one','storefront','active','2026-09-06T08:00:00Z','node:shared:l7'),
-          ('membership:operator:same-principal','member:shared','mall:one','operator','active','2026-09-06T08:00:00Z',null),
-          ('membership:storefront:two','member:wechat','mall:one','storefront','invited',null,'node:wechat:l8'),
-          ('membership:storefront:inviter','member:inviter','mall:one','storefront','active','2026-09-04T08:00:00Z','node:inviter:l6'),
-          ('membership:store:one','member:foreign','mall:one','store','active','2026-09-05T08:00:00Z',null),
-          ('membership:supplier:one','member:foreign','mall:one','supplier','active','2026-09-05T08:00:00Z',null),
-          ('membership:storefront:other-mall','member:foreign','mall:two','storefront','active','2026-09-05T08:00:00Z','node:foreign:l6'),
-          ('membership:storefront:l0','member:foreign','organization-platform-root','storefront','active','2026-09-05T08:00:00Z','node:foreign:l6');
+          ('membership:storefront:one','member:shared','mall:one','storefront','active','2026-09-06T08:00:00Z'),
+          ('membership:operator:same-principal','member:shared','mall:one','operator','active','2026-09-06T08:00:00Z'),
+          ('membership:storefront:two','member:wechat','mall:one','storefront','invited',null),
+          ('membership:storefront:inviter','member:inviter','mall:one','storefront','active','2026-09-04T08:00:00Z'),
+          ('membership:store:one','member:foreign','mall:one','store','active','2026-09-05T08:00:00Z'),
+          ('membership:supplier:one','member:foreign','mall:one','supplier','active','2026-09-05T08:00:00Z'),
+          ('membership:storefront:other-mall','member:foreign','mall:two','storefront','active','2026-09-05T08:00:00Z'),
+          ('membership:storefront:l0','member:foreign','organization-platform-root','storefront','active','2026-09-05T08:00:00Z');
+        insert into organization.membernoderegistration values
+          ('membership:storefront:one','node:shared:l7'),
+          ('membership:storefront:two','node:wechat:l8'),
+          ('membership:storefront:inviter','node:inviter:l6');
         insert into identity.federatedidentity values
           ('identity:operator','principal:shared','membership:operator:same-principal','wechat','active'),
           ('identity:revoked','principal:shared','membership:storefront:one','wechat','revoked'),

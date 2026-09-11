@@ -108,7 +108,8 @@ export function memberOperatorReadActions(): OperationActions {
           'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') end joined_at
         from access.membership membership
         join member.profile profile on profile.id=membership.member_id
-        join organization.node node on node.id=membership.node_id and node.node_profile='consumer'
+        join organization.membernoderegistration registration on registration.membership_id=membership.id
+        join organization.node node on node.id=registration.node_id and node.node_profile='consumer'
         join organization.noderelation relation on relation.node_id=node.id and relation.superseded_at is null
           and relation.signed_level in('L6','L7','L8','L9','L10','L11')
         where membership.organization_id=$1 and membership.client='storefront'
@@ -156,16 +157,19 @@ export function memberOperatorReadActions(): OperationActions {
           where orders.mall_id=membership.organization_id and orders.member_id=membership.member_id) latest_order_at
         from access.membership membership
         join member.profile profile on profile.id=membership.member_id
-        join organization.node node on node.id=membership.node_id and node.node_profile='consumer'
+        join organization.membernoderegistration registration on registration.membership_id=membership.id
+        join organization.node node on node.id=registration.node_id and node.node_profile='consumer'
         join organization.noderelation relation on relation.node_id=node.id and relation.superseded_at is null
           and relation.signed_level in('L6','L7','L8','L9','L10','L11')
         join organization.node parent_node on parent_node.id=relation.parent_node_id
         join organization.noderelation parent_relation on parent_relation.node_id=parent_node.id
           and parent_relation.superseded_at is null
-        left join access.membership parent_membership on parent_membership.node_id=parent_node.id
+        left join organization.membernoderegistration parent_registration on parent_registration.node_id=parent_node.id
+        left join access.membership parent_membership on parent_membership.id=parent_registration.membership_id
           and parent_membership.organization_id=membership.organization_id and parent_membership.client='storefront'
         left join member.profile parent_profile on parent_profile.id=parent_membership.member_id
-        left join organization.organization parent_organization on parent_organization.id=parent_node.mall_id
+        left join organization.organization parent_organization on parent_organization.id=case
+          when parent_node.node_profile='operating_mall' then membership.organization_id else parent_node.mall_id end
         left join lateral(select binding.* from referral.binding binding
           where binding.scope_id=membership.organization_id and binding.customer_member_id=membership.member_id
           order by binding.bound_at desc,binding.id desc limit 1) inviter_binding on true
@@ -196,7 +200,9 @@ export function memberOperatorReadActions(): OperationActions {
         join referral.binding binding on binding.scope_id=$1 and binding.referral_member_id=referral_owner.id
         join access.membership invited_membership on invited_membership.organization_id=$1
           and invited_membership.client='storefront' and invited_membership.member_id=binding.customer_member_id
-        join organization.noderelation invited_relation on invited_relation.node_id=invited_membership.node_id
+        join organization.membernoderegistration invited_registration
+          on invited_registration.membership_id=invited_membership.id
+        join organization.noderelation invited_relation on invited_relation.node_id=invited_registration.node_id
           and invited_relation.superseded_at is null and invited_relation.signed_level in('L7','L8','L9','L10','L11')
         join member.profile invited_profile on invited_profile.id=invited_membership.member_id
         where ($3::timestamptz is null or (binding.bound_at,invited_membership.id)<($3::timestamptz,$4))

@@ -5,7 +5,6 @@ import type { OperationRequest } from '../../../foundation/application/Operation
 import { ModuleOperations, requireAccess, rowResult, type OperationActions, type OperationDatabase } from '../../../foundation/application/ModuleOperations';
 import { bodyRecord, integerField, keysetResult, optionalText, queryPage, textField } from '../../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
-import { memberPort } from '../../member';
 
 const MEMBER_STATES = ['pending', 'active', 'disqualified'] as const;
 const COMMISSION_STATES = ['pending', 'settling', 'settled', 'reversed'] as const;
@@ -249,17 +248,6 @@ export function referralOperationActions(): OperationActions {
       );
       const winner = result.rows[0];
       if (!winner) throw new Error('REFERRAL_BINDING_FAILED');
-      if (winner.created) {
-        const access = requireAccess(request);
-        await memberPort.bindStorefrontParent(database, {
-          scope: self.scope,
-          member: self.member,
-          referralMember: winner.winner_referral_member_id,
-          requestedBy: access.actor.id,
-          traceId: request.input.idempotency!,
-          effectiveAt: new Date(winner.bound_at),
-        });
-      }
       return {
         status: winner.created ? 201 : 200,
         body: { ...winner, candidate_won: winner.winner_referral_member_id === candidate },

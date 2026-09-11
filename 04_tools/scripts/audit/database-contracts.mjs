@@ -198,7 +198,10 @@ const REPAIR_FILES = [
   '20260911200000_create_sfl_node_sovereignty.sql',
   '20260911210000_create_sfl_hosted_node_provisioning.sql',
   '20260912010000_create_sfl_node_context_scope.sql',
-  '20260912120000_bind_storefront_members_to_hosted_nodes.sql',
+  '20260912020000_create_sfl_member_registration_progression.sql',
+  '20260912120000_create_zhudatuan_supplier_network.sql',
+  '20260912130000_create_supplier_analytics_perspective.sql',
+  '20260912140000_index_catalog_reverse_lookups.sql',
 ];
 
 const mode = process.argv[2];

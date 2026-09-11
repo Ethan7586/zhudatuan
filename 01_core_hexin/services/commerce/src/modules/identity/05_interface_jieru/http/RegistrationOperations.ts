@@ -369,16 +369,6 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                 });
           }
           const registeredMembership = String(result.id);
-          if (registrationTarget.target_client === 'storefront') {
-            await memberPort.provisionStorefrontNode(database, {
-              membership: registeredMembership,
-              inviterMembership: registration.kind === 'invite' ? registrationTarget.created_by || null : null,
-              requestedBy: resolvedPrincipal,
-              traceId: request.input.idempotency!,
-              idempotencyKey: `storefront-member-node:${registeredMembership}`,
-              effectiveAt: new Date(),
-            });
-          }
           const realmMemberships = [registeredMembership];
           const boundMemberships = await database.query<{ id: string }>(`select membership.id
             from access.membership membership join identity.realm realm

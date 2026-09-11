@@ -41,60 +41,7 @@ export interface MemberProfile {
   readonly mobileMasked?: string;
 }
 
-export interface StorefrontMemberNodeInput {
-  readonly membership: string;
-  readonly inviterMembership: string | null;
-  readonly requestedBy: string;
-  readonly traceId: string;
-  readonly idempotencyKey: string;
-  readonly effectiveAt: Date;
-}
-
-export interface StorefrontMemberParentInput {
-  readonly scope: string;
-  readonly member: string;
-  readonly referralMember: string;
-  readonly requestedBy: string;
-  readonly traceId: string;
-  readonly effectiveAt: Date;
-}
-
 export class MemberPort {
-  async bindStorefrontParent(database: OperationDatabase, input: StorefrontMemberParentInput): Promise<void> {
-    await database.query(`select node_id,parent_node_id,signed_level,relation_version
-      from organization.bind_storefront_member_parent($1,$2,$3,$4,$5,$6)`, [
-      input.scope,
-      input.member,
-      input.referralMember,
-      input.requestedBy,
-      input.traceId,
-      input.effectiveAt,
-    ]);
-  }
-
-  async provisionStorefrontNode(database: OperationDatabase, input: StorefrontMemberNodeInput): Promise<Readonly<{
-    node_id: string;
-    parent_node_id: string;
-    signed_level: `L${6 | 7 | 8 | 9 | 10 | 11}`;
-  }>> {
-    const result = await database.query<{
-      node_id: string;
-      parent_node_id: string;
-      signed_level: `L${6 | 7 | 8 | 9 | 10 | 11}`;
-    }>(`select node_id,parent_node_id,signed_level
-      from organization.provision_storefront_member_node($1,$2,$3,$4,$5,$6)`, [
-      input.membership,
-      input.inviterMembership,
-      input.requestedBy,
-      input.traceId,
-      input.idempotencyKey,
-      input.effectiveAt,
-    ]);
-    const node = result.rows[0];
-    if (!node) throw new Error('STOREFRONT_MEMBER_NODE_PROVISIONING_FAILED');
-    return node;
-  }
-
   async storefrontRegistration(database: OperationDatabase, applicationSlug: string): Promise<StorefrontRegistrationContext | undefined> {
     const result = await database.query<StorefrontRegistrationContext>(`select application.id application_id,
       application.public_slug application_slug,binding.mall_id organization_id,organization.name organization_name,
