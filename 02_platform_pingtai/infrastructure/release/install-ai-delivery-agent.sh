@@ -125,10 +125,7 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
   caddy validate --config "$gateway_candidate" --adapter caddyfile
   cp -a "$gateway_runtime" "$gateway_backup"
   mv "$gateway_candidate" "$gateway_runtime"
-  runuser -u zhudatuan -- env \
-    XDG_DATA_HOME=/opt/sfl/nodes/hbbtzn-l1/runtime/caddy-data \
-    XDG_CONFIG_HOME=/opt/sfl/nodes/hbbtzn-l1/runtime/caddy-config \
-    caddy reload --config "$gateway_runtime" --adapter caddyfile
+  caddy reload --config "$gateway_runtime" --adapter caddyfile
   printf 'Gateway config reloaded for %s; rollback=%s\n' "$node_scope" "$gateway_backup"
 fi
 if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
