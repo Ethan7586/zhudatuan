@@ -183,6 +183,15 @@ test('keeps release policy and deploy workflow changes in the delivery-tooling l
   assert.deepEqual(classified.targets, []);
 });
 
+test('routes the legacy session projection bridge only to identity and web APIs', async () => {
+  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const classified = classifyChanges(commerceAdapter, [
+    change('01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts'),
+  ]);
+  assert.equal(classified.lane, 'A2');
+  assert.deepEqual(classified.targets, ['identity-api', 'web-api']);
+});
+
 test('routes the hbbtzn support entry to the shared support runtime', async () => {
   const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const plan = await createPlan(commerceAdapter, {
