@@ -141,7 +141,7 @@ export function stockBatch(keys: readonly string[], snapshots: ReadonlyMap<strin
 function mapSpec(product: JsonObject, spec: JsonObject, productId: string, productName: string, externalId: string): CakeSpecSnapshot {
   const amountMinor = cakeuncleMinor(required(spec.price, 'CAKE_SPEC_PRICE_INVALID'), 'CAKE_SPEC_PRICE_INVALID');
   const marketMinor = cakeuncleMinor(required(spec.market_price, 'CAKE_SPEC_MARKET_PRICE_INVALID'), 'CAKE_SPEC_MARKET_PRICE_INVALID');
-  if (marketMinor !== 0 && marketMinor < amountMinor) throw new Error('CAKE_SPEC_MARKET_PRICE_INVALID');
+  const compareMinor = marketMinor >= amountMinor ? marketMinor : 0;
   const clearingPriceMinor = cakeuncleMinor(required(spec.clearing_price, 'CAKE_SPEC_CLEARING_PRICE_INVALID'), 'CAKE_SPEC_CLEARING_PRICE_INVALID');
   const stock = stockValue(required(spec.stock, 'CAKE_SPEC_STOCK_INVALID'));
   const categoryIds = ['cat_id', 'cat_id2', 'cat_id3'].map((key) => optional(product[key])).filter(isString);
@@ -166,14 +166,14 @@ function mapSpec(product: JsonObject, spec: JsonObject, productId: string, produ
     supportsGreeting: greeting(product.is_greeting),
     currency: 'CNY',
     amountMinor,
-    ...(marketMinor === 0 ? {} : { compareMinor: marketMinor }),
+    ...(compareMinor === 0 ? {} : { compareMinor }),
     onhand: stock.onhand,
     unlimited: stock.unlimited,
     charges: Object.freeze(charges(product.charges)),
   }) satisfies JsonObject;
   const version = createHash('sha256').update(JSON.stringify(payload)).digest('hex');
   return Object.freeze({ externalId, version, payload, amountMinor,
-    ...(marketMinor === 0 ? {} : { compareMinor: marketMinor }), clearingPriceMinor,
+    ...(compareMinor === 0 ? {} : { compareMinor }), clearingPriceMinor,
     onhand: stock.onhand, unlimited: stock.unlimited });
 }
 

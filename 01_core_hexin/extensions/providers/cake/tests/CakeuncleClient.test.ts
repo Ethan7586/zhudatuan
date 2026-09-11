@@ -56,17 +56,25 @@ describe('cake read ports', () => {
     const client = new CakeReadClient(transport, { categoryOperation: 'cake.category.1', rootCategoryId: '1' });
     await expect(client.pullCatalog(context)).rejects.toThrow('CAKE_SPEC_STOCK_INVALID');
   });
+
+  it('keeps the sale price and omits a supplier market price that is lower than it', async () => {
+    const client = new CakeReadClient(new MockTransport('-9999999', '90.00'),
+      { categoryOperation: 'cake.category.1', rootCategoryId: '1' });
+    const batch = await client.pullCatalog(context);
+    expect(batch.records[0]?.payload).toMatchObject({ amountMinor: 9990 });
+    expect(batch.records[0]?.payload).not.toHaveProperty('compareMinor');
+  });
 });
 
 class MockTransport implements CakeuncleTransport {
   readonly invocations: CakeuncleInvocation[] = [];
-  constructor(private readonly firstStock = '-9999999') {}
+  constructor(private readonly firstStock = '-9999999', private readonly firstMarketPrice = '129.00') {}
 
   invoke(_context: ProviderCallContext, invocation: CakeuncleInvocation): Promise<JsonObject> {
     this.invocations.push(invocation);
     if (invocation.operation === 'cake.categories') return Promise.resolve(categoriesResponse);
     const leaf = invocation.body?.cat_id3;
-    if (leaf === '3') return Promise.resolve(productsResponse(this.firstStock));
+    if (leaf === '3') return Promise.resolve(productsResponse(this.firstStock, this.firstMarketPrice));
     if (leaf === '4') return Promise.resolve({ code: '200', msg: 'ok', data: { total_num: '0', products: [] } });
     throw new Error('UNEXPECTED_INVOCATION');
   }
@@ -86,7 +94,7 @@ const categoriesResponse: JsonObject = {
   ],
 };
 
-function productsResponse(firstStock: string): JsonObject {
+function productsResponse(firstStock: string, firstMarketPrice = '129.00'): JsonObject {
   return {
     code: '200',
     msg: 'ok',
@@ -112,7 +120,7 @@ function productsResponse(firstStock: string): JsonObject {
         carousel_image: { m_path: 'https://img.test/m.jpg', l_path: '', s_path: '' },
         detail_image: { m_path: '', l_path: '', s_path: '' },
         specs: [
-          { spec_id: '1001', spec_name: '六寸', price: '99.90', market_price: '129.00', gift: '',
+          { spec_id: '1001', spec_name: '六寸', price: '99.90', market_price: firstMarketPrice, gift: '',
             spec_description: '六寸规格', stock: firstStock, tastes: '奶油,巧克力', clearing_price: '80.00',
             spec_img: 'https://img.test/spec-1.jpg' },
           { spec_id: '1002', spec_name: '八寸', price: '159.00', market_price: '199.00', gift: '',
