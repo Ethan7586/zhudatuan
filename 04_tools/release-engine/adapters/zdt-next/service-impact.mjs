@@ -39,11 +39,14 @@ export async function resolveImpact({ adapter, changes }) {
     }
   }
   const unresolved = [...changed].filter((path) => !found.has(path));
-  if (impacted.size > 0 && unresolved.length === 0) {
+  if (impacted.size > 0) {
     const targets = [...impacted].sort();
-    const reason = targets.length === 1
+    const selection = targets.length === 1
       ? `dependency graph selects only ${targets[0]}`
       : `dependency graph selects ${targets.join(', ')}`;
+    const reason = unresolved.length === 0
+      ? selection
+      : `${selection}; ${unresolved.length} changed file(s) are outside production entry graphs`;
     return { lane: 'A2', targets, reasons: [reason] };
   }
   return {

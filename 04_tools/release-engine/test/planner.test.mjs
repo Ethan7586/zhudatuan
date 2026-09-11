@@ -128,7 +128,7 @@ test('uses the real commerce dependency graph for shared source changes', async 
   });
   assert.equal(sharedTest.lane, 'A3');
   assert.deepEqual(sharedTest.targets, ['core']);
-  assert.match(sharedTest.reasons.join('\n'), /dependency graph unresolved/);
+  assert.match(sharedTest.reasons.join('\n'), /shared commerce dependency/);
   assert.equal(typeof sharedTest.planDigest, 'string');
 });
 
@@ -140,10 +140,12 @@ test('keeps order export console and commerce changes out of A3', async () => {
     files: [
       '01_core_hexin/apps/console/src/feature/order/OrderExportWorkspace.tsx',
       '01_core_hexin/services/commerce/src/modules/reporting/ReportingModule.ts',
+      '01_core_hexin/services/commerce/src/modules/reporting/04_adapters_shixian/persistence/PgReportingRepository.ts',
+      '01_core_hexin/services/commerce/src/modules/reporting/05_interface_jieru/job/ExportJobRunner.ts',
       '01_core_hexin/services/commerce/src/modules/reporting/06_tests_ceshi/command/ExportDocument.test.ts',
     ],
   });
   assert.equal(orderExport.lane, 'A2');
-  assert.deepEqual(orderExport.targets, ['catalog-jobs', 'console', 'web-api']);
+  assert.deepEqual(orderExport.targets, ['catalog-jobs', 'console', 'payment-jobs']);
   assert.doesNotMatch(orderExport.reasons.join('\n'), /A3/);
 });
