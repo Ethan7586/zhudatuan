@@ -67,6 +67,7 @@ describe('storefront member read contract', () => {
   it('accepts complete profile, invitation and order read models without exposing member profile ids', () => {
     const detail = {
       ...page.items[0],
+      parent: { kind: 'mall', display_name: '宏泰甄选', identity_level: 'L1' },
       inviter: {
         display_name: '邀请人', mobile_masked: '155****5544', bound_at: '2026-09-06T08:00:00.000Z',
         expires_at: null, relationship_status: 'active',
@@ -79,7 +80,7 @@ describe('storefront member read contract', () => {
     expect(StorefrontMemberInviteePageSchema.parse({
       items: [{
         membership_id: 'membership:invitee', display_name: '被邀请人', mobile_masked: '177****7755',
-        membership_status: 'active', bound_at: '2026-09-06T08:00:00.000Z', expires_at: null,
+        membership_status: 'active', identity_level: 'L7', bound_at: '2026-09-06T08:00:00.000Z', expires_at: null,
         relationship_status: 'active',
       }],
       count: 1,
@@ -93,6 +94,10 @@ describe('storefront member read contract', () => {
       count: 1,
     })).toBeTruthy();
     expect(() => StorefrontMemberDetailSchema.parse({ ...detail, member_id: 'member:internal' })).toThrow();
+    expect(StorefrontMemberPageSchema.parse({
+      ...page,
+      items: [{ ...page.items[0], identity_level: 'L11' }],
+    }).items[0]?.identity_level).toBe('L11');
   });
 
   it('accepts mall-defined tags, seven field types and persisted custom values', () => {

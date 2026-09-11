@@ -78,7 +78,7 @@ describe('PgGovernanceResolver canonical Owner identity', () => {
 describe('governance identity inference audit', () => {
   it('keeps node Owner projection principal-based while preserving exact ownership', async () => {
     const source = await readFile(join(process.cwd(),
-      '../../../02_platform_pingtai/database/supabase/migrations/20260911163000_project_authoritative_owner_to_node_console.sql'), 'utf8');
+      '../../../02_platform_pingtai/database/supabase/migrations/20260911170000_project_authoritative_owner_to_node_console.sql'), 'utf8');
 
     expect(source).toContain("actor_membership.client='operator'");
     expect(source).toContain('authoritative_owner.principal_id=resolved.actor_principal_id');

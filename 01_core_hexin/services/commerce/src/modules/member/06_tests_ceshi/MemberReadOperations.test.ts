@@ -74,7 +74,7 @@ describe('storefront member directory boundary', () => {
     const database = new PGlite();
     try {
       await database.exec(`create schema access; create schema member; create schema identity;
-        create schema referral; create schema ordering;
+        create schema referral; create schema ordering; create schema organization;
         create table member.profile(
           id text primary key,principal_id text not null,display_name text not null,mobile_ciphertext text,
           mobile_token text,mobile_masked text not null
@@ -82,6 +82,16 @@ describe('storefront member directory boundary', () => {
         create table access.membership(
           id text primary key,member_id text not null,organization_id text not null,client text not null,
           status text not null,joined_at timestamptz
+        );
+        create table organization.organization(id text primary key,name text not null);
+        create table organization.node(
+          id text primary key,node_profile text not null,mall_id text,status text not null
+        );
+        create table organization.noderelation(
+          node_id text not null,parent_node_id text,signed_level text not null,superseded_at timestamptz
+        );
+        create table organization.membernoderegistration(
+          membership_id text primary key,node_id text not null unique
         );
         create table identity.federatedidentity(
           id text primary key,principal_id text,membership_id text,provider text not null,status text not null
@@ -101,14 +111,32 @@ describe('storefront member directory boundary', () => {
           ('member:wechat','principal:wechat','测试消费者乙','17700007755','token:7755','177****7755'),
           ('member:inviter','principal:inviter','邀请人丙','15500005544','token:5544','155****5544'),
           ('member:foreign','principal:foreign','范围外记录','16600006644','token:6644','166****6644');
+        insert into organization.organization values('mall:one','测试商城'),('mall:two','范围外商城');
+        insert into organization.node values
+          ('node:mall-one:l1','operating_mall','mall:one','active'),
+          ('node:inviter:l6','consumer',null,'active'),
+          ('node:shared:l7','consumer',null,'active'),
+          ('node:wechat:l8','consumer',null,'active'),
+          ('node:foreign:l6','consumer',null,'active');
+        insert into organization.noderelation values
+          ('node:mall-one:l1',null,'L1',null),
+          ('node:inviter:l6','node:mall-one:l1','L6',null),
+          ('node:shared:l7','node:inviter:l6','L7',null),
+          ('node:wechat:l8','node:shared:l7','L8',null),
+          ('node:foreign:l6','node:mall-one:l1','L6',null);
         insert into access.membership values
           ('membership:storefront:one','member:shared','mall:one','storefront','active','2026-09-06T08:00:00Z'),
           ('membership:operator:same-principal','member:shared','mall:one','operator','active','2026-09-06T08:00:00Z'),
           ('membership:storefront:two','member:wechat','mall:one','storefront','invited',null),
+          ('membership:storefront:inviter','member:inviter','mall:one','storefront','active','2026-09-04T08:00:00Z'),
           ('membership:store:one','member:foreign','mall:one','store','active','2026-09-05T08:00:00Z'),
           ('membership:supplier:one','member:foreign','mall:one','supplier','active','2026-09-05T08:00:00Z'),
           ('membership:storefront:other-mall','member:foreign','mall:two','storefront','active','2026-09-05T08:00:00Z'),
           ('membership:storefront:l0','member:foreign','organization-platform-root','storefront','active','2026-09-05T08:00:00Z');
+        insert into organization.membernoderegistration values
+          ('membership:storefront:one','node:shared:l7'),
+          ('membership:storefront:two','node:wechat:l8'),
+          ('membership:storefront:inviter','node:inviter:l6');
         insert into identity.federatedidentity values
           ('identity:operator','principal:shared','membership:operator:same-principal','wechat','active'),
           ('identity:revoked','principal:shared','membership:storefront:one','wechat','revoked'),
@@ -132,9 +160,10 @@ describe('storefront member directory boundary', () => {
       const page = StorefrontMemberPageSchema.parse(response.body);
 
       expect(page.items.map(({ membership_id }) => membership_id)).toEqual([
-        'membership:storefront:two', 'membership:storefront:one',
+        'membership:storefront:two', 'membership:storefront:one', 'membership:storefront:inviter',
       ]);
-      expect(page.items[0]).toMatchObject({ identity_level: 'L6', identity_kind: 'consumer', wechat_bound: true });
+      expect(page.items[0]).toMatchObject({ identity_level: 'L8', identity_kind: 'consumer', wechat_bound: true });
+      expect(page.items[1]).toMatchObject({ identity_level: 'L7' });
       expect(page.items[1]).toMatchObject({
         display_name: '测试消费者甲', mobile_masked: '188****8866', mobile_bound: true, wechat_bound: false,
       });
@@ -169,6 +198,7 @@ describe('storefront member directory boundary', () => {
       expect(detail).toMatchObject({
         display_name: '测试消费者甲', invited_count: 1, order_count: 1,
         latest_order_at: '2026-09-06T10:00:00.000Z',
+        parent: { kind: 'member', display_name: '邀请人丙', identity_level: 'L6' },
         inviter: { display_name: '邀请人丙', mobile_masked: '155****5544', relationship_status: 'active' },
       });
 
@@ -177,7 +207,8 @@ describe('storefront member directory boundary', () => {
         database as unknown as OperationDatabase,
       )).body);
       expect(invitees.items).toMatchObject([{
-        membership_id: 'membership:storefront:two', display_name: '测试消费者乙', relationship_status: 'active',
+        membership_id: 'membership:storefront:two', display_name: '测试消费者乙',
+        identity_level: 'L8', relationship_status: 'active',
       }]);
       expect(JSON.stringify(invitees)).not.toContain('范围外记录');
 

@@ -7,7 +7,7 @@ const storefrontMemberFields = {
     z.minLength(1),
     z.refine((value) => value.includes('*'), { error: 'MASKED_MOBILE_REQUIRED' }),
   ),
-  identity_level: z.literal('L6'),
+  identity_level: z.enum(['L6', 'L7', 'L8', 'L9', 'L10', 'L11']),
   identity_kind: z.literal('consumer'),
   membership_status: z.enum(['invited', 'active', 'suspended', 'left']),
   mobile_bound: z.boolean(),
@@ -31,8 +31,15 @@ export const StorefrontMemberInviterSchema = z.strictObject({
   relationship_status: z.enum(['active', 'expired']),
 });
 
+export const StorefrontMemberParentSchema = z.strictObject({
+  kind: z.enum(['mall', 'member']),
+  display_name: z.string().check(z.minLength(1)),
+  identity_level: z.enum(['L0', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9', 'L10']),
+});
+
 export const StorefrontMemberDetailSchema = z.strictObject({
   ...storefrontMemberFields,
+  parent: StorefrontMemberParentSchema,
   inviter: z.nullable(StorefrontMemberInviterSchema),
   invited_count: z.int().check(z.nonnegative()),
   order_count: z.int().check(z.nonnegative()),
@@ -44,6 +51,7 @@ export const StorefrontMemberInviteeSchema = z.strictObject({
   display_name: z.string().check(z.minLength(1)),
   mobile_masked: z.string().check(z.minLength(1)),
   membership_status: z.enum(['invited', 'active', 'suspended', 'left']),
+  identity_level: z.enum(['L7', 'L8', 'L9', 'L10', 'L11']),
   bound_at: z.string().check(z.minLength(1)),
   expires_at: z.nullable(z.string().check(z.minLength(1))),
   relationship_status: z.enum(['active', 'expired']),
