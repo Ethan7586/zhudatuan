@@ -142,9 +142,12 @@ export function catalogActions(context: ModuleContext): OperationActions {
         from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
         join catalog.product product on product.id=sku.product_id where listing.scope_id=$1
         and ($2='' or listing.title ilike '%'||$2||'%' or sku.code ilike '%'||$2||'%') and ($3='' or product.category_id=$3)
-        and ($4='' or product.id=$4) and ($5='' or listing.pool_id=$5)`,
+      and ($4='' or product.id=$4) and ($5='' or listing.pool_id=$5)`,
       [access.scope.id, query, category, product, pool]);
-      return catalogListingPageResult(result, page, summary.rows[0]);
+      const preview = await database.query<{ preview: unknown }>(
+        'select catalog.console_supply_network($1) preview', [access.scope.id],
+      );
+      return catalogListingPageResult(result, page, summary.rows[0], preview.rows[0]?.preview);
     },
     'catalog.listings.publish': async (request, database) => setListingPublication(request, database, 'published'),
     'catalog.listings.unpublish': async (request, database) => setListingPublication(request, database, 'unpublished'),

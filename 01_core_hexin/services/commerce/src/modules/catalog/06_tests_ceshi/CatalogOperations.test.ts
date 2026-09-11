@@ -58,7 +58,7 @@ describe('catalog mall command boundaries', () => {
       pending_review: 1,
       published: 1,
       unpublished: 1,
-    }] : []);
+    }] : text.includes('console_supply_network') ? [{ preview: { kind: 'console-product-v1' } }] : []);
     const actions = catalogActions({ container: { get: () => ({}) } } as unknown as ModuleContext);
     const read = actions['catalog.listings.read'];
     if (typeof read !== 'function') throw new Error('CATALOG_LISTING_READ_ACTION_MISSING');
@@ -74,9 +74,12 @@ describe('catalog mall command boundaries', () => {
     expect(readResult).toMatchObject({ body: {
       total_count: 4,
       status_counts: { needs_attention: 1, pending_review: 1, published: 1, unpublished: 1 },
+      preview: { kind: 'console-product-v1' },
     } });
     const summaryRead = readCalls.find(({ text }) => text.includes('count(*) filter'))!;
     expect(summaryRead.values).toEqual(['mall:hongtai', '', '', '', '']);
+    expect(readCalls.find(({ text }) => text.includes('console_supply_network'))?.values).toEqual(['mall:hongtai']);
+    expect(readCalls.find(({ text }) => text.includes('console_supply_network'))?.values).toEqual(['mall:hongtai']);
 
     const publishCalls: QueryCall[] = [];
     const publicationDatabase = recordingDatabase(publishCalls, (text) => text.startsWith('with selected_pool')
