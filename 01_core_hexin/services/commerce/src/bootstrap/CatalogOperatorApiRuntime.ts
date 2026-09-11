@@ -20,6 +20,7 @@ import { SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { requireActorNodeContext } from '../foundation/security/AccessContext';
 import { NodeBoundScopeResolver } from '../foundation/security/NodeBoundScopeResolver';
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
 import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver';
@@ -31,7 +32,7 @@ import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persiste
 import { RiskCheckAdapter } from '../modules/risk';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import type { Container } from './Container';
-import { bindServerNodeManifestRegistry, singleNodeManifestRegistry } from './ApiBootstrap';
+import { bindServerNodeManifestRegistry, runtimeNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import { NODE_DATABASE_ROLE, NODE_MANIFEST } from './NodeRuntime';
 
@@ -55,7 +56,7 @@ export interface CatalogOperatorApiRuntime {
 }
 
 export function bindCatalogOperatorNodeManifest(container: Container, manifest: NodeManifest): void {
-  bindServerNodeManifestRegistry(container, singleNodeManifestRegistry(manifest));
+  bindServerNodeManifestRegistry(container, runtimeNodeManifestRegistry(manifest));
 }
 
 export async function createCatalogOperatorApiRuntime(
@@ -93,7 +94,8 @@ export async function createCatalogOperatorApiRuntime(
     new PgSessionResolver(pool),
     new PgMembershipResolver(pool),
     new PgAccessVersionResolver(pool),
-    new NodeBoundScopeResolver(new PgScopeResolver(pool), manifest.data_scope_ref.ref),
+    new NodeBoundScopeResolver(new PgScopeResolver(pool),
+      manifest.signed_level === 'L0' ? (actor) => requireActorNodeContext(actor).scope.ref : manifest.data_scope_ref.ref),
     new PgCapabilityResolver(pool),
     new SystemClock(),
     risk,

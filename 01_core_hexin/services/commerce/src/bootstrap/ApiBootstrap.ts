@@ -42,6 +42,10 @@ export function singleNodeManifestRegistry(manifest: NodeManifest): NodeManifest
   });
 }
 
+export function runtimeNodeManifestRegistry(manifest: NodeManifest): NodeManifestRegistry {
+  return manifest.signed_level === 'L0' ? SERVER_NODE_MANIFEST_REGISTRY : singleNodeManifestRegistry(manifest);
+}
+
 export interface ApiBootstrapOptions {
   readonly modules: readonly CommerceModule[];
   readonly extensions: ExtensionRegistry;
@@ -77,7 +81,20 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
     ?? (container.has(NODE_MANIFEST_REGISTRY) ? container.get(NODE_MANIFEST_REGISTRY) : undefined);
   container.freeze();
   const nodeContextResolver = nodeManifestRegistry === undefined ? undefined : createNodeContextResolver(nodeManifestRegistry);
-  return Object.freeze({ app: new HttpApp(routes, options.allowedOrigins, undefined, undefined, new OperationMetrics(options.telemetry),
+  const allowedOrigins = nodeManifestRegistry === undefined
+    ? options.allowedOrigins
+    : expandRuntimeOrigins(options.allowedOrigins, nodeManifestRegistry);
+  return Object.freeze({ app: new HttpApp(routes, allowedOrigins, undefined, undefined, new OperationMetrics(options.telemetry),
     options.gateEngine, nodeContextResolver),
     modules: modules.catalog(), routes, nodeContextResolver });
+}
+
+function expandRuntimeOrigins(origins: readonly string[], registry: NodeManifestRegistry): readonly string[] {
+  const surfaces = new Set(registry.manifests.flatMap((manifest) => manifest.domain_bindings
+    .filter((binding) => origins.includes(`https://${binding.host}`))
+    .map((binding) => binding.surface_ref)));
+  if (surfaces.size === 0) return origins;
+  return Object.freeze([...new Set([...origins, ...registry.manifests.flatMap((manifest) => manifest.domain_bindings
+    .filter((binding) => surfaces.has(binding.surface_ref))
+    .map((binding) => `https://${binding.host}`))])]);
 }

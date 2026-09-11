@@ -20,6 +20,7 @@ import { WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { requireActorNodeContext } from '../foundation/security/AccessContext';
 import { NodeBoundScopeResolver } from '../foundation/security/NodeBoundScopeResolver';
 import {
   PgAccessVersionResolver,
@@ -38,7 +39,7 @@ import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persiste
 import { WebRiskCheckAdapter } from '../modules/webbusiness/WebRiskCheckAdapter';
 import { WebBusinessScopeResolver } from '../modules/webbusiness/WebBusinessScopeResolver';
 import type { Container } from './Container';
-import { bindServerNodeManifestRegistry, singleNodeManifestRegistry } from './ApiBootstrap';
+import { bindServerNodeManifestRegistry, runtimeNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import { NODE_DATABASE_ROLE, NODE_MANIFEST } from './NodeRuntime';
 
@@ -103,7 +104,7 @@ export async function createWebBusinessApiRuntime(
     new PgAccessVersionResolver(pool),
     new NodeBoundScopeResolver(
       scopeResolver,
-      manifest.data_scope_ref.ref,
+      manifest.signed_level === 'L0' ? (actor) => requireActorNodeContext(actor).scope.ref : manifest.data_scope_ref.ref,
       (actor) => scopeResolver.resolveStorefrontScope(actor),
     ),
     new PgCapabilityResolver(pool),
@@ -132,7 +133,7 @@ export async function createWebBusinessApiRuntime(
     telemetry,
     gateEngine,
     configure(container: Container) {
-      bindServerNodeManifestRegistry(container, singleNodeManifestRegistry(manifest));
+      bindServerNodeManifestRegistry(container, runtimeNodeManifestRegistry(manifest));
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);

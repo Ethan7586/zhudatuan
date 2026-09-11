@@ -43,7 +43,7 @@ import { PurchaseSessionResolver } from '../modules/purchase/PurchaseSessionReso
 import { WebBusinessScopeResolver } from '../modules/webbusiness/WebBusinessScopeResolver';
 import { WebRiskCheckAdapter } from '../modules/webbusiness/WebRiskCheckAdapter';
 import type { Container } from './Container';
-import { bindServerNodeManifestRegistry, singleNodeManifestRegistry } from './ApiBootstrap';
+import { bindServerNodeManifestRegistry, runtimeNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import { NODE_DATABASE_ROLE, NODE_MANIFEST } from './NodeRuntime';
 
@@ -143,7 +143,7 @@ export async function createPurchaseApiRuntime(environment: PurchaseApiEnvironme
     extensions,
     telemetry,
     configure(container: Container) {
-      bindServerNodeManifestRegistry(container, singleNodeManifestRegistry(manifest));
+      bindServerNodeManifestRegistry(container, runtimeNodeManifestRegistry(manifest));
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);
