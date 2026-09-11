@@ -131,4 +131,17 @@ describe('registration migration execution plan', () => {
     const execution = registrationMigrationExecution(file, 'begin; select 1; commit;');
     expect(registrationMigrationLedgerMatches(file, execution.ledgerName, [], execution)).toBe(false);
   });
+
+  it('accepts only the exact transparent identity runtime reconciliation record', async () => {
+    const file = '20260912030000_create_sfl_multi_realm_membership.sql';
+    const execution = registrationMigrationExecution(file, await readFile(migration(file), 'utf8'));
+    const statements = [
+      'profile=registration-reconciled/v1',
+      'source_sha256=031939070132c1af56a8bd4c55797d49079399b61fdba86d0ff2a741a8b47366',
+      'repair=20260912180000_reconcile_identity_runtime_state.sql',
+      'reason=production runtime objects reconciled from verified existing state',
+    ];
+    expect(registrationMigrationLedgerMatches(file, `registration-reconciled:${file}`, statements, execution)).toBe(true);
+    expect(registrationMigrationLedgerMatches(file, `registration-reconciled:${file}`, [...statements, 'drift'], execution)).toBe(false);
+  });
 });
