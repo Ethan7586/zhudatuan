@@ -57,7 +57,7 @@
 .productdraweridentity p {
   margin: 0;
   color: #7c8aa0;
-  font-size: 10px;
+  font-size: 12px;
 }
 .productdrawermeta {
   display: flex;
@@ -153,8 +153,8 @@
   background: #f3f7ff;
   color: #526582;
   padding: 8px 10px;
-  font-size: 10px;
-  line-height: 16px;
+  font-size: 12px;
+  line-height: 18px;
 }
 .productconclusion {
   margin: 0;
@@ -202,14 +202,14 @@
   overflow: hidden;
   width: 100%;
   color: #334155;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .productflowstep span {
   color: #7c8aa0;
-  font-size: 9px;
+  font-size: 11px;
 }
 .productflowstep[data-tone='success'] > i {
   border-color: #b5e4d1;
@@ -250,8 +250,8 @@
 .productblocker p {
   margin: 1px 0 0;
   color: #9a6a2b;
-  font-size: 10px;
-  line-height: 16px;
+  font-size: 12px;
+  line-height: 18px;
 }
 .productblocker button {
   display: inline-flex;
@@ -262,7 +262,7 @@
   background: transparent;
   color: #1557ec;
   padding: 0;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
 }

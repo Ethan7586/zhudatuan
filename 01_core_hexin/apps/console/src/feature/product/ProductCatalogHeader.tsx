@@ -32,23 +32,35 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, s
   releasePending, publicationTask, releaseFeedback, onImport, onCreate, onExport, onRelease, onRetry }: ProductCatalogHeaderProps) {
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
   const coreTotal = preview === undefined ? page?.total_count : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
-  const description = coreTotal === undefined ? '正在读取当前范围商品总量与管理状态。' : `当前范围内共 ${formatCount(coreTotal)} 件商品`;
   const pendingReviewCount = page?.status_counts?.pending_review;
   const noPendingReview = releaseDisabledReason === '当前商城没有待审核商品';
+  const releaseStateVisible = publicationTask !== undefined || releaseFeedback !== undefined
+    || (releaseDisabledReason !== undefined && !noPendingReview);
+  const releaseMessage = releaseFeedback?.message ?? (noPendingReview ? undefined : releaseDisabledReason);
 
   return (
     <>
       <header className="producthero">
-        <div>
-          <p className="producteyebrow">{partnerWorkspace ? '供货工作台' : 'CATALOG OPERATIONS'}</p>
-          <h1>{partnerWorkspace ? '我的商品' : '商品管理'}</h1>
-          <p>{partnerWorkspace ? `自主维护商品资料并查看平台采用状态 · ${description}` : description}</p>
+        <div className="productherotitle">
+          <div>
+            <h1>{partnerWorkspace ? '我的商品' : '商品目录'}</h1>
+            {coreTotal === undefined ? null : <strong>{formatCount(coreTotal)}</strong>}
+            <small>{partnerWorkspace ? '维护商品资料与平台采用状态' : '点击商品查看资料、供应关系与上下架记录'}</small>
+          </div>
         </div>
         <div className="productheroactions" role="group" aria-label={partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>
-          {partnerWorkspace ? null : <div className="productreleasecontrol">
-            <button className="productaction productactionprimary" type="button"
+          <button className="productaction" type="button" disabled={!writeEnabled} onClick={onImport}
+            title={writeEnabled ? '批量导入本企业商品' : '当前范围没有商品导入权限'}>
+            <ProductIcon name="upload" />批量导入
+          </button>
+          <button className="productaction" type="button" disabled={!exportReady} onClick={onExport}
+            title={exportReady ? '仅导出当前已加载页，不包含其他分页' : '等待当前页加载完成'}>
+            <ProductIcon name="download" />导出当前页
+          </button>
+          {partnerWorkspace ? null : (
+            <button className="productaction productreleaseaction" type="button"
               disabled={releaseDisabledReason !== undefined}
-              aria-describedby={releaseDisabledReason === undefined && releaseFeedback === undefined ? undefined : 'productreleasestate'}
+              aria-describedby={releaseStateVisible ? 'productreleasestate' : undefined}
               onClick={onRelease}
               title={releaseDisabledReason === undefined ? '一次审核并上架当前商城全部合格商品'
                 : noPendingReview ? '当前没有待审核商品，新增待审核商品后即可使用' : `暂不可用：${releaseDisabledReason}`}>
@@ -58,32 +70,8 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, s
                 : releasePending ? '正在创建上架任务…'
                   : `一键审核上架${pendingReviewCount === undefined || pendingReviewCount === 0 ? '' : ` ${formatCount(pendingReviewCount)}`}`}
             </button>
-            {publicationTask === undefined && releaseFeedback === undefined && releaseDisabledReason === undefined ? null : (
-              <div id="productreleasestate" className="productreleasestate">
-                {publicationTask === undefined ? null : (
-                  <PublicationTaskStatus task={publicationTask} retryPending={releasePending} onRetry={onRetry} />
-                )}
-                {releaseFeedback === undefined ? null : (
-                  <p className={`productreleasefeedback productreleasefeedback${releaseFeedback.tone}`}
-                    role={releaseFeedback.tone === 'error' ? 'alert' : 'status'}>{releaseFeedback.message}</p>
-                )}
-                {releaseDisabledReason === undefined ? null : (
-                  <p className={`productreleasefeedback ${noPendingReview ? 'productreleasefeedbackempty' : 'productreleasefeedbackdisabled'}`}>
-                    {noPendingReview ? '当前没有待审核商品' : `暂不可用：${releaseDisabledReason}`}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>}
-          <button className="productaction" type="button" disabled={!writeEnabled} onClick={onImport}
-            title={writeEnabled ? '批量导入本企业商品' : '当前范围没有商品导入权限'}>
-            <ProductIcon name="upload" />批量导入
-          </button>
-          <button className="productaction" type="button" disabled={!exportReady} onClick={onExport}
-            title={exportReady ? '仅导出当前已加载页，不包含其他分页' : '等待当前页加载完成'}>
-            <ProductIcon name="download" />导出当前页
-          </button>
-          <button className="productaction" type="button" disabled={!writeEnabled} onClick={onCreate}
+          )}
+          <button className="productaction productcreateaction" type="button" disabled={!writeEnabled} onClick={onCreate}
             title={writeEnabled ? '手工录入单个商品并保存为草稿' : '当前范围没有商品创建权限'}>
             <ProductIcon name="plus" />新建商品
           </button>
@@ -92,7 +80,19 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, s
           商品写操作只在当前 Access Pipeline 已授权的范围内可用。
         </p>
       </header>
-      <nav className="producttabs" aria-label="商品状态">
+      {!partnerWorkspace && releaseStateVisible ? (
+        <section id="productreleasestate" className="productreleasestate" aria-label="商品发布状态">
+          {publicationTask === undefined ? null : (
+            <PublicationTaskStatus task={publicationTask} retryPending={releasePending} onRetry={onRetry} />
+          )}
+          {releaseMessage === undefined ? null : (
+            <p className={`productreleasefeedback ${releaseFeedback?.tone === 'success'
+              ? 'productreleasefeedbacksuccess' : 'productreleasefeedbackerror'}`}
+              role={releaseFeedback?.tone === 'error' ? 'alert' : 'status'}>{releaseMessage}</p>
+          )}
+        </section>
+      ) : null}
+      <nav className="producttabs" aria-label="按商品状态筛选">
         {tabs.map((tab) => {
           const count = tab.key === '' ? coreTotal : preview?.facets.statuses.find((facet) => facet.value === tab.key)?.count
             ?? page?.status_counts?.[tab.key];

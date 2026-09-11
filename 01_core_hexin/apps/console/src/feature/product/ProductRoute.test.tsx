@@ -50,7 +50,9 @@ describe('Product governance workspace', () => {
     }));
     renderProductRoute(mallContext);
 
-    expect(screen.getByRole('heading', { level: 1, name: '商品管理' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: '商品目录' })).toBeTruthy();
+    expect(screen.queryByText('CATALOG OPERATIONS')).toBeNull();
+    expect(screen.queryByRole('button', { name: '更多条件' })).toBeNull();
     expect(screen.getByRole('status', { name: '正在加载商品列表' })).toBeTruthy();
     expect(await screen.findByRole('table', { name: '商品列表' })).toBeTruthy();
   });
@@ -82,7 +84,7 @@ describe('Product governance workspace', () => {
     expect(within(access).getByText('「商品管理」不可访问')).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByRole('table', { name: '商品列表' })).toBeNull();
-    expect(screen.queryByRole('heading', { level: 1, name: '商品管理' })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 1, name: '商品目录' })).toBeNull();
     expect(screen.queryByRole('region', { name: '商品筛选' })).toBeNull();
     expect(screen.queryByText('核心商品')).toBeNull();
     expect(screen.queryByRole('button', { name: '新建商品' })).toBeNull();
@@ -106,10 +108,14 @@ describe('Product governance workspace', () => {
     expect(writes).toHaveLength(0);
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '新建商品' }).disabled).toBe(true);
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '批量导入' }).disabled).toBe(true);
+    expect(screen.getByRole('columnheader', { name: '商品信息' })).toBeTruthy();
+    expect(screen.queryByRole('columnheader', { name: '售价' })).toBeNull();
+    expect(screen.queryByRole('columnheader', { name: '库存' })).toBeNull();
+    expect(screen.queryByRole('columnheader', { name: '商城覆盖' })).toBeNull();
     const release = screen.getByRole<HTMLButtonElement>('button', { name: '一键审核上架 1' });
     expect(release.disabled).toBe(true);
     expect(release.title).toBe('暂不可用：请先切换到商城范围');
-    expect(screen.getByText('暂不可用：请先切换到商城范围')).toBeTruthy();
+    expect(screen.getByText('请先切换到商城范围')).toBeTruthy();
     expect(requests).toHaveLength(1);
   });
 
@@ -190,6 +196,8 @@ describe('Product governance workspace', () => {
 
     const release = screen.getByRole<HTMLButtonElement>('button', { name: '一键审核上架 1' });
     await waitFor(() => expect(release.disabled).toBe(false));
+    expect(release.classList.contains('productreleaseaction')).toBe(true);
+    expect(screen.getByRole('button', { name: '新建商品' }).classList.contains('productcreateaction')).toBe(true);
     expect(release.title).toBe('一次审核并上架当前商城全部合格商品');
     expect(screen.queryByText(/^暂不可用：/)).toBeNull();
     await user.click(release);
@@ -207,7 +215,7 @@ describe('Product governance workspace', () => {
     const completedRelease = screen.getByRole<HTMLButtonElement>('button', { name: '一键审核上架' });
     expect(completedRelease.disabled).toBe(true);
     expect(completedRelease.title).toBe('当前没有待审核商品，新增待审核商品后即可使用');
-    expect(screen.getByText('当前没有待审核商品')).toBeTruthy();
+    expect(screen.queryByText('当前没有待审核商品')).toBeNull();
     expect(screen.queryByText('暂不可用：当前商城没有待审核商品')).toBeNull();
     expect(maximumConcurrentReads).toBe(1);
     expect(requests).toHaveLength(2);
