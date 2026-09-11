@@ -4,13 +4,13 @@ import { CockpitBootstrapRoute } from './CockpitBootstrapRoute';
 export const cockpitModule = {
   id: 'cockpit',
   status: 'enabled',
-  navigation: { placement: 'main', group: 'overview', order: 10, label: '经营驾驶舱', icon: 'trend' },
+  navigation: { placement: 'main', group: 'overview', order: 10, label: '生意看板', icon: 'trend' },
   routes: [{
     id: 'cockpit.index',
     path: 'cockpit',
     kind: 'entry',
     lazy: async () => ({ Component: CockpitBootstrapRoute }),
     operations: ['reporting.dashboard.read'],
-    presentation: { title: '经营驾驶舱', summary: '经营数据、宏观和细节趋势' },
+    presentation: { title: '生意看板', summary: '销售结果、经营趋势与待办事项' },
   }],
 } as const satisfies ConsoleModuleManifest<'cockpit'>;

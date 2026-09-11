@@ -55,9 +55,15 @@ export function Component() {
     if (next === undefined) value.delete('supplier'); else value.set('supplier', next);
     setSearch(value);
   };
+  const setPeriod = (next: CockpitPeriod) => {
+    const value = new URLSearchParams(search);
+    value.set('period', next);
+    setSearch(value);
+  };
+  const selected = perspectives.data?.find(({ id }) => id === supplier);
   const content = query.data === undefined ? undefined : <CockpitContent summary={query.data.summary} onOpenInsight={openInsight} />;
-  const resource = content === undefined && query.isPending ? <span role="status">正在加载经营驾驶舱…</span> : condition === 'ready' ? content : (
-    <Suspense fallback={content ?? <span role="status">正在加载经营驾驶舱…</span>}>
+  const resource = content === undefined && query.isPending ? <span className="cockpitloading" role="status">正在加载生意看板…</span> : condition === 'ready' ? content : (
+    <Suspense fallback={content ?? <span className="cockpitloading" role="status">正在加载生意看板…</span>}>
       <LazyAccessDeniedActionsProvider actions={{
         onReturnToWorkspace: () => { void navigate(scopePath(context.scope, 'cockpit')); },
         onRelogin: () => {
@@ -66,7 +72,7 @@ export function Component() {
           });
         },
       }}>
-        <LazyResourceState condition={condition} resourceLabel="经营驾驶舱" {...(error === undefined ? {} : { error })}
+        <LazyResourceState condition={condition} resourceLabel="生意看板" {...(error === undefined ? {} : { error })}
           retry={() => { void query.refetch(); }}>
           {content ?? <span />}
         </LazyResourceState>
@@ -74,7 +80,9 @@ export function Component() {
     </Suspense>
   );
   return (
-    <section className="cockpitpage" aria-label="经营驾驶舱">
+    <section className="cockpitpage" aria-label="生意看板">
+      <CockpitHero period={period} {...(selected === undefined ? {} : { perspective: selected })}
+        busy={perspectives.isFetching || query.isFetching} onPeriodChange={setPeriod} onRefresh={() => { void query.refetch(); }} />
       <BusinessPerspectiveBar partners={perspectives.data ?? []} {...(supplier === undefined ? {} : { selected: supplier })}
         busy={perspectives.isFetching || query.isFetching} onSelect={setPerspective} />
       {resource}
@@ -89,7 +97,9 @@ function CockpitContent({ summary, onOpenInsight }: Readonly<{
   const sales = summary.sales;
   return (
     <div className="cockpitstack">
-      <CockpitHero sales={sales} {...(summary.perspective === undefined ? {} : { perspective: summary.perspective })} />
+      <section className="cockpitbrief" aria-label="本期生意结论"><span>本期结论</span>
+        <strong>{sales.conclusion ?? '经营数据已按统一口径归集。'}</strong>
+        <small>{sales.period === undefined ? '统计周期以当前筛选为准' : `${sales.period.from}—${sales.period.to}`}</small></section>
       <CockpitMetrics sales={sales} {...(summary.operations === undefined ? {} : { operations: summary.operations })} />
       <DeferredCockpitDetails sales={sales} supplierView={summary.perspective !== undefined} onOpenInsight={onOpenInsight} />
     </div>

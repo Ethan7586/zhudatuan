@@ -1,10 +1,10 @@
+import { Button, ResourceState, WorkspaceHero } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
-import type { DataColumn } from '../../shared/ui/DataTable';
+import { DataTable, type DataColumn } from '../../shared/ui/DataTable';
 import { formatDate, formatMinor } from '../../shared/ui/Format';
-import { PagedResource } from '../../shared/ui/PagedResource';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { BusinessPerspectiveBar } from '../supply-chain/BusinessPerspectiveBar';
 import { readSupplierPerspectives, supplierPerspectiveKey } from '../supply-chain/SupplierPerspectiveQuery';
@@ -45,20 +45,49 @@ export function Component() {
     if (nextSupplier !== undefined && ['malls', 'powderclass', 'voucher'].includes(view)) next.set('view', 'sales');
     setSearch(next); };
   const viewOptions = supplier === undefined ? allViewOptions : supplierViewOptions;
-  return <section className="reportpage"><BusinessPerspectiveBar partners={perspectives.data ?? []}
-    {...(supplier === undefined ? {} : { selected: supplier })} busy={perspectives.isFetching || query.isFetching} onSelect={setPerspective} />
-    <PagedResource title={selected === undefined ? '数据报表' : `${selected.name}数据报表`} eyebrow="SMART WING REPORTING"
-    description={selected === undefined ? '从统一经营口径查看销售、商品、商城、分类与渠道表现。'
-      : `只统计 ${selected.name} 在当前商城中的真实商品、订单、履约与结算数据。`}
-    condition={condition} {...(error === undefined ? {} : { error })} rows={data?.items ?? []} columns={columns} rowKey={(row) => `${row.code}:${row.version}:${JSON.stringify(row.dimensions)}`}
-    count={data?.count ?? 0} {...(data?.nextCursor === undefined ? {} : { nextCursor: data.nextCursor })}
-    actions={<><label className="inlinefield">报表<select value={view} onChange={(event) => setFilter('view', event.target.value)}>
-      {viewOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-      <label className="inlinefield">周期<select value={period} onChange={(event) => setFilter('period', event.target.value)}>
-        <option value="realtime">实时</option><option value="yesterday">昨日</option><option value="7days">近 7 日</option>
-        <option value="30days">近 30 日</option></select></label></>}
-    retry={() => { void query.refetch(); }} next={(next) => setSearch(pageCursor(search, next))} /></section>;
+  const activeView = viewOptions.find((option) => option.value === view)?.label ?? '销售';
+  const title = selected === undefined ? '数据报表' : `${selected.name}数据报表`;
+  return <section className="reportpage" aria-label={title}>
+    <WorkspaceHero className="reporthero" title={title}
+      description={selected === undefined ? '按商品、供应商、渠道和结算状态，看清每一笔生意。'
+        : `只统计 ${selected.name} 在当前商城中的销售、履约与结算数据。`}
+      actions={<Button onPress={() => { void query.refetch(); }}>{query.isFetching ? '正在刷新' : '刷新数据'}</Button>} />
+    <BusinessPerspectiveBar partners={perspectives.data ?? []}
+      {...(supplier === undefined ? {} : { selected: supplier })} busy={perspectives.isFetching || query.isFetching} onSelect={setPerspective} />
+    <div className="reportworkspace">
+      <aside className="reportdirectory" aria-label="报表目录">
+        <header><div><h2>看什么</h2><p>{supplier === undefined ? '全部经营口径' : '供应商经营口径'}</p></div>
+          <span>{viewOptions.length}</span></header>
+        <nav>{viewOptions.map((option) => <button key={option.value} type="button" aria-current={view === option.value ? 'page' : undefined}
+          onClick={() => setFilter('view', option.value)}><i aria-hidden="true" />{option.label}<span>›</span></button>)}</nav>
+      </aside>
+      <section className="reportresults" aria-labelledby="reportresulttitle">
+        <header><div><h2 id="reportresulttitle">{activeView}</h2><p>{reportDescription(view, selected?.name)}</p></div>
+          <span className={`reportdatasource reportdatasource-${condition}`}><i aria-hidden="true" />
+            {query.isFetching ? '正在同步' : `${data?.count ?? 0} 条结果`}</span></header>
+        <div className="reporttoolbar" role="group" aria-label="统计周期">
+          <span>统计周期</span>{periodOptions.map((option) => <button key={option.value} type="button"
+            aria-pressed={period === option.value} onClick={() => setFilter('period', option.value)}>{option.label}</button>)}
+        </div>
+        <ResourceState condition={condition} resourceLabel={title} {...(error === undefined ? {} : { error })}
+          retry={() => { void query.refetch(); }}>
+          <div className="reporttablearea">
+            <DataTable caption={`${title} · ${activeView}`} columns={columns} rows={data?.items ?? []}
+              rowKey={(row) => `${row.code}:${row.version}:${JSON.stringify(row.dimensions)}`} />
+            <div className="reportpagination"><span>本页 {data?.count ?? 0} 条</span><Button
+              onPress={() => { if (data?.nextCursor !== undefined) setSearch(pageCursor(search, data.nextCursor)); }}
+              isDisabled={data?.nextCursor === undefined}>下一页</Button></div>
+          </div>
+        </ResourceState>
+      </section>
+    </div>
+  </section>;
 }
+
+const periodOptions: readonly Readonly<{ value: ReportPeriod; label: string }>[] = [
+  { value: 'realtime', label: '今天' }, { value: 'yesterday', label: '昨日' },
+  { value: '7days', label: '近 7 日' }, { value: '30days', label: '近 30 日' },
+];
 
 const allViewOptions: readonly Readonly<{ value: ReportView; label: string }>[] = [
   { value: 'sales', label: '销售' }, { value: 'products', label: '商品' }, { value: 'malls', label: '商城' },
@@ -80,4 +109,14 @@ function metricLabel(row: ReportMetric): string {
 function dimensionLabel(row: ReportMetric): string {
   return row.dimensions.label ?? row.dimensions.productName ?? row.dimensions.categoryName
     ?? row.dimensions.channel ?? row.dimensions.supplierName ?? '全部经营';
+}
+
+function reportDescription(view: ReportView, supplier?: string): string {
+  const prefix = supplier === undefined ? '' : `${supplier} · `;
+  const descriptions: Record<ReportView, string> = {
+    sales: '成交金额与支付订单', products: '每件商品带来的成交贡献', malls: '各商城的成交表现',
+    categories: '不同商品类别的销售结构', channels: '不同供应渠道的成交表现', powderclass: '粉类商品经营结构',
+    voucher: '卡券消费金额与核销次数', fulfillment: '待处理、履约中和已完成订单', settlements: '待确认、待付款和已结算金额',
+  };
+  return `${prefix}${descriptions[view]}`;
 }

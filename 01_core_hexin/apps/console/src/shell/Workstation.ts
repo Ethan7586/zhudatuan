@@ -10,7 +10,7 @@ export interface Workstation {
 }
 
 export const workstations: readonly Workstation[] = Object.freeze([
-  { key: 'cockpit', title: '经营驾驶舱', summary: '经营数据、宏观和细节趋势', icon: 'chart' },
+  { key: 'cockpit', title: '生意看板', summary: '销售结果、经营趋势与待办事项', icon: 'chart' },
   { key: 'control', title: '中控台', summary: '系统效率、处理能力和恢复状态', icon: 'gauge' },
   { key: 'products', title: '商品管理', summary: '核心商品、可售状态和批量任务', icon: 'product' },
   { key: 'orders', title: '订单管理', summary: '订单、履约、售后和异常时间线', icon: 'orders' },
