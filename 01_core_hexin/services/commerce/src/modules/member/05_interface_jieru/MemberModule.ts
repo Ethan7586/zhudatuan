@@ -5,5 +5,6 @@ export {
   MemberPort,
   memberPort,
   type HostedMallOpeningAuthority,
+  type SovereignUpgradeAuthority,
   type MemberInvite,
 } from '../01_public_gongkai/MemberPort';

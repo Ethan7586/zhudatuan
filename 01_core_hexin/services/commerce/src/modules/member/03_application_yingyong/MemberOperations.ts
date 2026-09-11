@@ -7,6 +7,7 @@ import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
 import { accessPort } from '../../access';
 import { addressPort } from '../../checkout_jiesuan';
 import { hostedMallOpeningAction } from './HostedMallOpeningOperation';
+import { sovereignUpgradeAction } from './SovereignUpgradeOperation';
 import { memberImportOperations } from './MemberImportOperations';
 import { memberCustomProfileActions } from './MemberCustomProfileOperations';
 import { memberOperatorReadActions } from './MemberReadOperations';
@@ -28,6 +29,7 @@ export function memberOperations(context: ModuleContext): ModuleOperations {
         where membership.id=$1 and membership.status='active'`, [access.membership.id]));
     },
     'member.malls.open': hostedMallOpeningAction,
+    'member.sovereignty.upgrade': sovereignUpgradeAction,
     'member.addresses.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request, 100);

@@ -1,10 +1,14 @@
 import {
   parseHostedMallOpeningRequest,
   parseHostedMallOpeningResult,
+  parseSovereignUpgradeRequest,
+  parseSovereignUpgradeResult,
   parseMemberNodeRegistrationRequest,
   parseMemberNodeRegistrationResult,
   type HostedMallOpeningRequest,
   type HostedMallOpeningResult,
+  type SovereignUpgradeRequest,
+  type SovereignUpgradeResult,
   type MemberNodeRegistrationRequest,
   type MemberNodeRegistrationResult,
 } from '@shop/config/sfl-node-kernel';
@@ -51,6 +55,8 @@ export interface HostedMallOpeningAuthority {
   readonly realm_id: string;
   readonly node_id: string;
 }
+
+export type SovereignUpgradeAuthority = HostedMallOpeningAuthority;
 
 export class MemberPort {
   async storefrontRegistration(database: OperationDatabase, applicationSlug: string): Promise<StorefrontRegistrationContext | undefined> {
@@ -172,6 +178,28 @@ export class MemberPort {
       throw new Error('SFL_HOSTED_MALL_OPENING_CONTEXT_MISMATCH');
     }
     return opened;
+  }
+
+  async upgradeHostedMallToSovereign(
+    database: OperationDatabase,
+    authority: SovereignUpgradeAuthority,
+    input: SovereignUpgradeRequest,
+  ): Promise<SovereignUpgradeResult> {
+    const request = parseSovereignUpgradeRequest(input);
+    const result = await database.query<Record<string, unknown>>(
+      'select * from organization.upgrade_hosted_mall_to_sovereign($1,$2,$3::jsonb)',
+      [authority.membership_id, authority.node_id, JSON.stringify(request)],
+    );
+    const row = result.rows[0];
+    if (!row) throw new Error('SFL_SOVEREIGN_UPGRADE_FAILED');
+    const upgraded = parseSovereignUpgradeResult(row);
+    if (upgraded.principal_id !== authority.principal_id
+      || upgraded.membership_id !== authority.membership_id
+      || upgraded.realm_id !== authority.realm_id
+      || upgraded.node_id !== authority.node_id) {
+      throw new Error('SFL_SOVEREIGN_UPGRADE_CONTEXT_MISMATCH');
+    }
+    return upgraded;
   }
 
   async consumeInvite(database: OperationDatabase, token: string, destinationHash: string,

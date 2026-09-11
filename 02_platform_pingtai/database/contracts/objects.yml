@@ -921,6 +921,17 @@ objects:
     source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
     callers:
       - 01_core_hexin/services/commerce/src/modules/member/01_public_gongkai/MemberPort.ts
+  - id: organization.rollback_sovereign_upgrade
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql
+    operationalOwner: organization
+  - id: organization.upgrade_hosted_mall_to_sovereign
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql
+    callers:
+      - 01_core_hexin/services/commerce/src/modules/member/01_public_gongkai/MemberPort.ts
   - id: organization.refresh_node_closure
     kind: function
     owner: organization
@@ -27659,6 +27670,16 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
     rls: false
+  - id: organization.domainbinding
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql
+    rls: false
+  - id: organization.domainbindingset
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql
+    rls: false
   - id: organization.malloperatingentitybinding
     kind: table
     owner: organization
@@ -27683,6 +27704,31 @@ objects:
     kind: table
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
+    rls: false
+  - id: organization.nodemanifestversion
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql
+    rls: false
+  - id: organization.noderesourcebindingset
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql
+    rls: false
+  - id: organization.nodesovereigntyversion
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql
+    rls: false
+  - id: organization.sovereignupgrade
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql
+    rls: false
+  - id: organization.sovereignupgradestep
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql
     rls: false
   - id: organization.nodeclosure
     kind: table

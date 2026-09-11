@@ -122,6 +122,7 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "member.invitations.read",
   "member.profile.read",
   "member.malls.open",
+  "member.sovereignty.upgrade",
   "member.addresses.read",
   "member.addresses.manage",
   "member.imports.create",

@@ -3,6 +3,7 @@ export {
   MemberPort,
   memberPort,
   type HostedMallOpeningAuthority,
+  type SovereignUpgradeAuthority,
   type MemberInvite,
   type MemberProfile,
   type StorefrontRegistrationContext,

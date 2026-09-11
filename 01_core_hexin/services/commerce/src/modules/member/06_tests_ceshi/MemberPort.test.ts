@@ -157,6 +157,40 @@ describe('MemberPort invitation constraints', () => {
       [authority.membership_id, authority.node_id, JSON.stringify(request)],
     );
   });
+
+  it('upgrades only the active server node while the request carries resource intent', async () => {
+    const authority = {
+      principal_id: 'principal:one', membership_id: 'membership:one', realm_id: 'realm:one', node_id: 'node:one:l8',
+    } as const;
+    const request = {
+      idempotency_key: 'upgrade:one', brand_ref: 'brand:one:v1', public_api_host: 'api.one.example.com',
+      storefront_host: 'shop.one.example.com', accounts_host: 'accounts.one.example.com',
+      console_host: 'console.one.example.com', payment_callback_host: 'pay.one.example.com',
+      edge_binding_ref: 'edge:one:v1', tunnel_ref: 'tunnel:one:v1', gateway_ref: 'gateway:one:v1',
+      runtime_identity_ref: 'runtime:one:v1', data_scope_ref: 'scope:one:v1',
+      secret_binding_set_ref: 'secrets:one:v1', payment_binding_ref: 'payment:one:v1',
+      callback_binding_ref: 'callback:one:v1', runtime_config_ref: 'runtime-config:one:v1',
+    } as const;
+    const query = vi.fn(async () => result([{
+      business_number: 'SFLSOV-ONE', upgrade_id: 'upgrade:one', idempotency_key: request.idempotency_key,
+      request_hash: 'd'.repeat(64), ...authority, mall_id: 'mall:one', operating_entity_id: 'enterprise:one',
+      line_id: 'line:one', signed_level: 'L8', parent_node_id: 'node:parent:l7',
+      original_parent_node_id: 'node:parent:l7', previous_host_sovereign_node_id: 'node:root:l0',
+      host_sovereign_node_id: authority.node_id, source_tier: 'hosted', target_tier: 'sovereign',
+      node_profile: 'operating_mall', status: 'upgraded', previous_relation_version: 1, active_relation_version: 2,
+      sovereignty_version: 1, domain_binding_set_version: 1, resource_binding_version: 1, manifest_version: 1,
+      manifest_digest: `sha256:${'e'.repeat(64)}`, manifest_summary: { surface_count: 5 }, recoverable: true,
+      upgraded_at: '2026-09-12T04:00:00.000Z', replayed: false,
+    }]));
+
+    await expect(new MemberPort().upgradeHostedMallToSovereign(
+      { query } as unknown as OperationDatabase, authority, request,
+    )).resolves.toMatchObject({ node_id: authority.node_id, mall_id: 'mall:one', target_tier: 'sovereign' });
+    expect(query).toHaveBeenCalledWith(
+      'select * from organization.upgrade_hosted_mall_to_sovereign($1,$2,$3::jsonb)',
+      [authority.membership_id, authority.node_id, JSON.stringify(request)],
+    );
+  });
 });
 
 function result(rows: readonly Record<string, unknown>[]): QueryResult {
