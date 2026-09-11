@@ -60,6 +60,7 @@ interface CompatibilityRow {
   readonly purchase: boolean;
   readonly relations: boolean;
   readonly functions: boolean;
+  readonly selected_reads: boolean;
   readonly selected_writes: boolean;
   readonly forbidden_privileges: boolean;
 }
@@ -180,6 +181,7 @@ export async function purchaseRuntimeCompatibility(
       to_regclass('runtime.schemaversion'),to_regclass('runtime.idempotency'),to_regclass('runtime.outbox'),to_regclass('runtime.job'),
       to_regclass('identity.session'),to_regclass('access.membership'),to_regclass('access.decisionaudit'),to_regclass('member.profile'),
       to_regclass('organization.organization'),to_regclass('organization.unitclosure'),to_regclass('audit.record'),
+      to_regclass('partner.agreement'),
       to_regclass('catalog.product'),to_regclass('catalog.sku'),to_regclass('catalog.listing'),to_regclass('catalog.sourcelisting'),
       to_regclass('pricing.pricebook'),to_regclass('pricing.price'),to_regclass('pricing.quote'),to_regclass('cart.cart'),to_regclass('cart.item'),
       to_regclass('checkout.address'),to_regclass('checkout.session'),to_regclass('checkout.evidence'),
@@ -205,6 +207,8 @@ export async function purchaseRuntimeCompatibility(
       to_regprocedure('benefit.purchase_reserve(text,text,text,text,text[],bigint[])'),
       to_regprocedure('benefit.purchase_consume(text,text,text,text,text,bigint)')
     ],null) is null functions,
+    has_schema_privilege(current_user,'partner','USAGE')
+      and has_table_privilege(current_user,'partner.agreement','SELECT') selected_reads,
     has_table_privilege(current_user,'runtime.idempotency','SELECT')
       and has_table_privilege(current_user,'runtime.idempotency','INSERT')
       and not has_table_privilege(current_user,'runtime.idempotency','UPDATE')
@@ -310,7 +314,7 @@ export async function purchaseRuntimeCompatibility(
   const state = result.rows[0];
   if (!state || state.current_user !== expectedRole || state.session_user !== expectedRole || !state.role_safe
     || !state.writable || !state.schema || !state.contract || !state.purchase || !state.relations || !state.functions
-    || !state.selected_writes || !state.forbidden_privileges) {
+    || !state.selected_reads || !state.selected_writes || !state.forbidden_privileges) {
     throw new Error(`PURCHASE_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }
   return Object.freeze(state);
