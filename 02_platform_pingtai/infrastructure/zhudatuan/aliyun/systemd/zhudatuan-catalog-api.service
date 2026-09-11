@@ -13,7 +13,7 @@ Group=zhudatuan
 WorkingDirectory=/opt/zhudatuan/targets/catalog-api/current
 Environment=NODE_ENV=production
 Environment=CATALOG_OPERATOR_API_PROFILE=catalog-operator-only
-Environment=API_PORT=4324
+Environment=API_PORT=4331
 Environment=API_BIND_HOST=127.0.0.1
 EnvironmentFile=/opt/zhudatuan/shared/catalog-api.env
 ExecStart=/usr/bin/node service/CatalogOperatorApiMain.js

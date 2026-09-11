@@ -82,7 +82,10 @@ assert.match(gateway, /host api\.hbbtzn\.com/);
 assert.match(gateway, /@storefrontPublicCatalog\s*\{\s*host h5\.hbbtzn\.com hbbtzn\.com mall\.hbbtzn\.com www\.hbbtzn\.com\s*method GET HEAD OPTIONS\s*path \/api\/v1\/catalog\/public\/products\*/);
 assert.match(gateway, /@catalogBatch/);
 assert.match(gateway, /path \/api\/v1\/catalog\/listings\/batches/);
-for (const port of [4431, 4432, 4433, 4434, 4436]) assert.match(gateway, new RegExp(`reverse_proxy 127\\.0\\.0\\.1:${port}`));
+for (const port of [4321, 4322, 4323, 4324, 4326, 4331]) assert.match(gateway, new RegExp(`reverse_proxy 127\\.0\\.0\\.1:${port}`));
+for (const port of [4431, 4432, 4433, 4434, 4436]) assert.doesNotMatch(gateway, new RegExp(`reverse_proxy 127\\.0\\.0\\.1:${port}`));
+assert.match(gateway, /@supportApi/);
+assert.match(gateway, /path \/api\/v1\/support \/api\/v1\/support\/\*/);
 assert.match(gateway, /header_up Host \{http\.request\.host\}/);
 for (const header of ['X-Sfl-Node-Id', 'X-Sfl-Node-Manifest-Id', 'X-Zdt-Identity-Entry-Host']) {
   assert.match(gateway, new RegExp(`header_up -${header}`));
@@ -90,22 +93,11 @@ for (const header of ['X-Sfl-Node-Id', 'X-Sfl-Node-Manifest-Id', 'X-Zdt-Identity
 assert.match(gateway, /NODE_BOUNDARY_HOST_MISMATCH/);
 assert.match(gateway, /421/);
 
-const l1Environments = [
-  ['identity-api.env.example', 'API_PORT', '4433'],
-  ['purchase-api.env.example', 'API_PORT', '4434'],
-  ['payment-webhook-api.env.example', 'API_PORT', '4436'],
-];
-for (const [file, key, value] of l1Environments) {
-  const source = await text('02_platform_pingtai', 'config', 'node-runtime', 'hbbtzn-l1', file);
-  assert.match(source, new RegExp(`^${key}=${value}$`, 'm'));
-  assert.match(source, /^NODE_MANIFEST_ID=manifest:hbbtzn:l1:v1$/m);
-  assert.match(source, /^NODE_RELEASE_POINTER_REF=\/opt\/sfl\/nodes\/hbbtzn-l1\/current$/m);
-  assert.doesNotMatch(source, /zhudatuan\/nodes\/l0\//);
-}
-const jobsEnvironment = await text('02_platform_pingtai', 'config', 'node-runtime', 'hbbtzn-l1', 'payment-jobs.env.example');
-assert.match(jobsEnvironment, /^JOB_RUNTIME_PROFILE=payment-only$/m);
-assert.match(jobsEnvironment, /^NODE_MANIFEST_ID=manifest:hbbtzn:l1:v1$/m);
-assert.doesNotMatch(jobsEnvironment, /zhudatuan\/nodes\/l0\//);
+const hbbtznDeployment = await text('02_platform_pingtai', 'infrastructure', 'projects_xiangmu', 'hbbtzn', 'deployment', 'aliyun.yml');
+assert.match(hbbtznDeployment, /^mode: branded-node-shared-business-kernel$/m);
+assert.match(hbbtznDeployment, /^\s+businessExecutionHostNodeId: node:zhudatuan:l0$/m);
+assert.match(hbbtznDeployment, /^\s+requestContextResolution: preserved-host-to-server-node-context$/m);
+assert.match(hbbtznDeployment, /^\s+- unit: zhudatuan-console-support\.service$/m);
 
 for (const unit of ['api-gateway', 'cloudflared', 'identity-api', 'purchase-api', 'payment-webhook-api', 'payment-jobs']) {
   const source = await text('02_platform_pingtai', 'infrastructure', 'zhudatuan', 'aliyun', 'systemd', `sfl-${unit}@.service`);

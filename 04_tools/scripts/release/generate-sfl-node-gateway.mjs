@@ -21,6 +21,7 @@ async function main() {
       'identity-port': { type: 'string' },
       'purchase-port': { type: 'string' },
       'webhook-port': { type: 'string' },
+      'support-port': { type: 'string' },
     },
     strict: true,
   });
@@ -28,7 +29,7 @@ async function main() {
   const manifest = JSON.parse(await readFile(values.manifest, 'utf8'));
   const instance = values.instance ?? nodeInstance(manifest.node_id);
   const nodeRoot = values['node-root'] ?? `/opt/sfl/nodes/${instance}`;
-  const expected = gatewayConfiguration(manifest, nodeRoot, Object.fromEntries(
+  const ports = Object.fromEntries(
     ['gateway', 'storefront', 'catalog', 'web', 'identity', 'purchase', 'webhook'].map((name) => {
       const raw = values[`${name}-port`];
       const port = Number(raw);
@@ -37,7 +38,15 @@ async function main() {
       }
       return [name, port];
     }),
-  ));
+  );
+  if (values['support-port'] !== undefined) {
+    const support = Number(values['support-port']);
+    if (!Number.isSafeInteger(support) || support < 1 || support > 65_535) {
+      throw new Error('SFL_GATEWAY_SUPPORT_PORT_INVALID');
+    }
+    ports.support = support;
+  }
+  const expected = gatewayConfiguration(manifest, nodeRoot, ports);
   if (values.check) {
     const actual = await readFile(values.check, 'utf8');
     if (actual !== expected) throw new Error(`SFL_GATEWAY_CONFIGURATION_STALE:${values.check}`);
@@ -97,16 +106,18 @@ export function gatewayConfiguration(manifest, nodeRoot, ports, options = {}) {
 `\thandle @catalogPublication {\n${proxy(ports.catalog)}\n\t}\n\n` +
 `\t@paymentWebhook {\n\t\thost ${apiHost}\n\t\tmethod POST\n\t\tpath /api/v1/webhooks/wechat/payment\n\t}\n` +
 `\thandle @paymentWebhook {\n${proxy(ports.webhook)}\n\t}\n\n` +
+`${ports.support ? `\t@supportApi {\n\t\thost ${apiHost}\n\t\tpath /api/v1/support /api/v1/support/*\n\t}\n` +
+`\thandle @supportApi {\n${proxy(ports.support)}\n\t}\n\n` : ''}` +
 `\t@identityApi {\n\t\thost ${apiHost}\n\t\tpath /api/v1/*\n\t}\n` +
 `\thandle @identityApi {\n${proxy(ports.identity)}\n\t}\n\n` +
 `\t@gatewayHealth {\n\t\thost ${apiHost}\n\t\tpath /health/gateway\n\t}\n` +
 `\thandle @gatewayHealth {\n\t\theader Content-Type application/json\n\t\trespond \`${JSON.stringify({ status: 'ready', nodeId: manifest.node_id, manifestId: manifest.manifest_id })}\` 200\n\t}\n\n` +
 `\t@identityRuntime {\n\t\thost ${identityHosts.join(' ')}\n\t\tpath /identity-runtime.json\n\t}\n` +
 `\thandle @identityRuntime {\n\t\troot * ${nodeRoot}/runtime\n\t\tfile_server\n\t}\n\n` +
-`\t@accounts host ${identityHosts.join(' ')}\n\thandle @accounts {\n\t\troot * ${nodeRoot}/current/01_core_hexin/apps/auth-web/dist\n\t\ttry_files {path} /index.html\n\t\tfile_server\n\t}\n\n` +
+`\t@accounts host ${identityHosts.join(' ')}\n\thandle @accounts {\n\t\troot * ${nodeRoot}/targets/auth-web/current/static\n\t\ttry_files {path} /index.html\n\t\tfile_server\n\t}\n\n` +
 `\t@consoleRuntime {\n\t\thost ${consoleHosts.join(' ')}\n\t\tpath /console-runtime.json\n\t}\n` +
 `\thandle @consoleRuntime {\n\t\troot * ${nodeRoot}/runtime\n\t\tfile_server\n\t}\n\n` +
-`\t@console host ${consoleHosts.join(' ')}\n\thandle @console {\n\t\troot * ${nodeRoot}/current/01_core_hexin/apps/console/dist\n\t\ttry_files {path} /index.html\n\t\tfile_server\n\t}\n\n` +
+`\t@console host ${consoleHosts.join(' ')}\n\thandle @console {\n\t\troot * ${nodeRoot}/targets/console/current/static\n\t\ttry_files {path} /index.html\n\t\tfile_server\n\t}\n\n` +
 `\t@storefront host ${storefrontHosts.join(' ')}\n\thandle @storefront {\n${proxy(ports.storefront)}\n\t}\n\n` +
 `\thandle {\n\t\theader Content-Type application/json\n\t\trespond \`{"code":"NODE_BOUNDARY_HOST_MISMATCH"}\` 421\n\t}\n}\n`;
 }

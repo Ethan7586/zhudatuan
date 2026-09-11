@@ -2,6 +2,7 @@ import { matchesAny } from './glob.mjs';
 import { digest } from './stable.mjs';
 import { changedFiles, currentHead, resolveGitRef } from './git.mjs';
 import { invariant } from './errors.mjs';
+import { resolveDeployment } from './adapter.mjs';
 
 const rank = Object.freeze({ NONE: -1, A0: 0, A1: 1, A2: 2, A3: 3 });
 
@@ -191,24 +192,35 @@ function materializeActions(adapter, targets, selectedNodes, changes) {
     build.push(...decorateCommands(target.build, targetId, changed));
     artifactInputs.push(...target.artifactInputs.map((input) => ({ ...input, target: targetId })));
   }
-  const deployments = selectedNodes.flatMap((nodeKey) => targets.map((targetId) => {
-    const deployment = adapter.nodes[nodeKey].deployments[targetId];
-    return {
-      node: nodeKey,
-      nodeId: adapter.nodes[nodeKey].nodeId,
-      realmId: adapter.nodes[nodeKey].realmId,
-      target: targetId,
-      pointerRoot: deployment.pointerRoot,
-      currentPointer: `${deployment.pointerRoot}/current`,
-      previousPointer: `${deployment.pointerRoot}/previous`,
-      service: deployment.service,
-      restart: deployment.restart ?? 'systemd',
-      health: deployment.health ?? [],
-      productionEnabled: deployment.productionEnabled ?? true,
-      productionDisabledReason: deployment.productionDisabledReason ?? null,
-    };
-  }));
-  return { preflight, tests, typecheck, build, artifactInputs, deployments };
+  const deployments = new Map();
+  for (const requestedNode of selectedNodes) {
+    for (const targetId of targets) {
+      const resolved = resolveDeployment(adapter, requestedNode, targetId);
+      const { executionNode, deployment } = resolved;
+      const key = `${executionNode}:${targetId}`;
+      const existing = deployments.get(key);
+      if (existing) {
+        existing.requestedNodes.push(requestedNode);
+        continue;
+      }
+      deployments.set(key, {
+        node: executionNode,
+        nodeId: resolved.node.nodeId,
+        realmId: resolved.node.realmId,
+        requestedNodes: [requestedNode],
+        target: targetId,
+        pointerRoot: deployment.pointerRoot,
+        currentPointer: `${deployment.pointerRoot}/current`,
+        previousPointer: `${deployment.pointerRoot}/previous`,
+        service: deployment.service,
+        restart: deployment.restart ?? 'systemd',
+        health: deployment.health ?? [],
+        productionEnabled: deployment.productionEnabled ?? true,
+        productionDisabledReason: deployment.productionDisabledReason ?? null,
+      });
+    }
+  }
+  return { preflight, tests, typecheck, build, artifactInputs, deployments: [...deployments.values()] };
 }
 
 function decorateCommands(commands = [], target, changedFiles) {

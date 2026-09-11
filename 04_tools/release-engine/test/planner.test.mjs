@@ -149,3 +149,37 @@ test('keeps order export console and commerce changes out of A3', async () => {
   assert.deepEqual(orderExport.targets, ['catalog-jobs', 'console', 'payment-jobs']);
   assert.doesNotMatch(orderExport.reasons.join('\n'), /A3/);
 });
+
+test('deploys hosted node business targets once through their sovereign runtime host', async () => {
+  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(commerceAdapter, {
+    from: 'HEAD',
+    to: 'HEAD',
+    files: ['01_core_hexin/services/commerce/src/modules/member/05_interface_jieru/IdentityOperatorMemberModule.ts'],
+    nodes: ['hbbtzn-l1', 'zhudatuan-l0'],
+  });
+  assert.deepEqual(plan.targets, ['identity-api']);
+  assert.equal(plan.actions.deployments.length, 1);
+  const deployment = plan.actions.deployments[0];
+  assert.equal(deployment.node, 'zhudatuan-l0');
+  assert.equal(deployment.nodeId, 'node:zhudatuan:l0');
+  assert.deepEqual(deployment.requestedNodes, ['hbbtzn-l1', 'zhudatuan-l0']);
+  assert.equal(deployment.target, 'identity-api');
+  assert.equal(deployment.service, 'zhudatuan-api.service');
+});
+
+test('routes the hbbtzn support entry to the shared support runtime', async () => {
+  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(commerceAdapter, {
+    from: 'HEAD',
+    to: 'HEAD',
+    files: ['01_core_hexin/services/commerce/src/entry/ConsoleSupportMain.ts'],
+    nodes: ['hbbtzn-l1'],
+  });
+  assert.deepEqual(plan.targets, ['support-api']);
+  const deployment = plan.actions.deployments[0];
+  assert.equal(deployment.node, 'zhudatuan-l0');
+  assert.deepEqual(deployment.requestedNodes, ['hbbtzn-l1']);
+  assert.equal(deployment.target, 'support-api');
+  assert.equal(deployment.service, 'zhudatuan-console-support.service');
+});
