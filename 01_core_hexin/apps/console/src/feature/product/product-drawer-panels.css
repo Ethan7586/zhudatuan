@@ -18,7 +18,7 @@
 }
 .productfacts dt {
   color: #7c8aa0;
-  font-size: 9px;
+  font-size: 11px;
 }
 .productfacts dd {
   display: flex;
@@ -27,7 +27,7 @@
   overflow: hidden;
   margin: 3px 0 0;
   color: #334155;
-  font-size: 10px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -62,7 +62,7 @@
   overflow: hidden;
   border: 1px solid #e2e8f0;
   border-radius: 7px;
-  font-size: 10px;
+  font-size: 12px;
 }
 .productmallstatus th,
 .productmallstatus td {
@@ -87,7 +87,7 @@
 .productlistingversion {
   margin: -3px 0 0;
   color: #94a3b8;
-  font-size: 9px;
+  font-size: 11px;
 }
 .productdrawersection {
   display: grid;
@@ -99,8 +99,8 @@
   background: #f5f8ff;
   color: #526582;
   padding: 9px 10px;
-  font-size: 10px;
-  line-height: 17px;
+  font-size: 12px;
+  line-height: 18px;
 }
 .productboundarynote.iswarning {
   border-left-color: #f59e0b;
@@ -130,7 +130,7 @@
   align-items: start;
   gap: 8px;
   color: #64748b;
-  font-size: 9px;
+  font-size: 11px;
 }
 .productchanges li i {
   width: 10px;
@@ -152,7 +152,7 @@
 }
 .productchanges li strong {
   color: #334155;
-  font-size: 10px;
+  font-size: 12px;
 }
 .productchanges li span {
   margin-top: 3px;
@@ -198,9 +198,9 @@
 }
 .productdetailunavailable dt {
   color: #7c8aa0;
-  font-size: 9px;
+  font-size: 11px;
 }
 .productdetailunavailable dd {
   margin: 3px 0 0;
-  font-size: 10px;
+  font-size: 12px;
 }

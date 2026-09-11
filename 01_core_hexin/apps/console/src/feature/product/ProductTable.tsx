@@ -161,7 +161,11 @@ export function ProductTableSkeleton() {
 function ProductThumbnail({ row, tone }: Readonly<{ row: Listing; tone?: string }>) {
   return (
     <span className="productthumbnail" data-tone={tone ?? 'neutral'}>
-      {row.cover_url == null || row.cover_url === '' ? <ProductIcon name="cube" /> : <img src={row.cover_url} alt="" />}
+      <ProductIcon name="cube" />
+      {row.cover_url == null || row.cover_url === '' ? null : (
+        <img src={row.cover_url} alt="" loading="lazy" decoding="async"
+          onError={(event) => { event.currentTarget.hidden = true; }} />
+      )}
     </span>
   );
 }

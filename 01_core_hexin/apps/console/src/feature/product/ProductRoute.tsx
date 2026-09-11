@@ -29,6 +29,7 @@ import './product-drawer-panels.css';
 import './product-responsive.css';
 
 const allColumns: readonly ProductColumnKey[] = Object.freeze(['category', 'sku', 'malls', 'price', 'stock', 'status', 'updated']);
+const coreColumns: readonly ProductColumnKey[] = Object.freeze(['category', 'sku', 'status', 'updated']);
 const pageSizes = new Set([20, 50, 100]);
 const publicationRefreshInterval = 1_000;
 const productCsvColumns: readonly CsvColumn<Listing>[] = Object.freeze([
@@ -95,7 +96,7 @@ export function Component() {
   const [publicationDiscoveryPending, setPublicationDiscoveryPending] = useState(() =>
     readPublicationTaskHint(context) !== undefined);
   const [pageVisible, setPageVisible] = useState(() => document.visibilityState !== 'hidden');
-  const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<ProductColumnKey>>(() => new Set(allColumns));
+  const [visibleColumns, setVisibleColumns] = useState<ReadonlySet<ProductColumnKey>>(() => new Set(previewScope ? allColumns : coreColumns));
   const cursorTrail = useRef(new Map<number, string | undefined>([[1, undefined]]));
   const launchedPublicationTasks = useRef(new Set<string>());
   const publicationStates = useRef(new Map<string, CatalogPublicationTask['state']>());

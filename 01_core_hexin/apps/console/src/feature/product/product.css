@@ -1,11 +1,11 @@
 .productpage {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid #e4e9f0;
-  border-radius: 10px;
+  border: 1px solid #d7dbe5;
+  border-radius: 12px;
   background: #fff;
-  color: #172033;
-  box-shadow: 0 1px 4px rgb(7 24 47 / 3%);
+  color: #16233b;
+  box-shadow: 0 1px 2px rgb(17 17 17 / 3%), 0 12px 30px rgb(13 45 114 / 5%);
   font-variant-numeric: tabular-nums;
   transition: width 180ms ease;
 }
@@ -14,55 +14,63 @@
 }
 .producthero {
   display: flex;
-  min-height: 128px;
+  min-height: 72px;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 22px 18px 17px;
+  gap: 20px;
+  border-bottom: 1px solid #edf1f6;
+  padding: 14px 20px;
 }
-.producthero > div:first-child {
+.productherotitle {
   min-width: 0;
 }
+.productherotitle > div {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-content: start;
+  column-gap: 9px;
+  row-gap: 1px;
+}
 .producthero h1 {
-  margin: 2px 0 0;
-  color: #111827;
-  font-size: 27px;
-  line-height: 36px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-}
-.producthero > div:first-child > p:last-child {
   margin: 0;
-  color: #64748b;
-  font-size: 13px;
+  color: #10203b;
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
-.producteyebrow {
-  margin: 0;
-  color: #1557ec;
-  font-size: 10px;
-  line-height: 16px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
+.productherotitle strong {
+  display: grid;
+  min-width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: #edf2fb;
+  color: #143a8f;
+  padding: 0 8px;
+  font-size: 12px;
+  place-items: center;
+}
+.productherotitle small {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .productheroactions {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 10px;
-}
-.productreleasecontrol {
-  display: grid;
-  min-width: 0;
-  width: min(360px, 32vw);
-  gap: 6px;
-}
-.productreleasecontrol .productaction {
-  width: 100%;
+  gap: 8px;
 }
 .productreleasefeedback {
   margin: 0;
-  font-size: 11px;
-  line-height: 16px;
+  font-size: 12px;
+  line-height: 20px;
   text-align: left;
 }
 .productreleasefeedbackdisabled { color: #9a3412; }
@@ -72,11 +80,12 @@
 .productreleasestate {
   display: grid;
   min-width: 0;
-  padding: 7px 9px;
-  border: 1px solid #dbe4f0;
-  border-radius: 7px;
-  background: #f8fafc;
-  gap: 6px;
+  margin: 10px 20px 0;
+  padding: 9px 12px;
+  border: 1px solid #f0d8cf;
+  border-radius: 8px;
+  background: #fff9f6;
+  gap: 7px;
 }
 .productpublicationtask {
   display: grid;
@@ -85,8 +94,8 @@
 }
 .productpublicationtask {
   color: #334155;
-  font-size: 11px;
-  line-height: 16px;
+  font-size: 12px;
+  line-height: 18px;
 }
 .productpublicationmeta,
 .productpublicationphase,
@@ -125,8 +134,8 @@
   align-items: center;
   gap: 8px;
   color: #1d4ed8;
-  font-size: 11px;
-  line-height: 16px;
+  font-size: 12px;
+  line-height: 18px;
   text-align: right;
 }
 .productreleaseprogress progress {
@@ -180,15 +189,15 @@
 .productdrawerfooter button,
 .productbatchpreview footer button {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 40px;
   align-items: center;
   justify-content: center;
   gap: 7px;
   border: 1px solid #1f5eff;
-  border-radius: 6px;
+  border-radius: 7px;
   background: #fff;
   color: #1557ec;
-  padding: 0 16px;
+  padding: 0 13px;
   font-size: 12px;
   font-weight: 600;
 }
@@ -207,6 +216,35 @@
   color: #fff;
   box-shadow: 0 3px 8px rgb(31 94 255 / 16%);
 }
+.productcreateaction {
+  border-color: #143a8f;
+  background: #143a8f;
+  color: #fff;
+  box-shadow: 0 3px 8px rgb(20 58 143 / 16%);
+}
+.productreleaseaction {
+  border-color: #c8d7ed;
+  color: #143a8f;
+}
+.productaction:hover:not(:disabled) {
+  border-color: #143a8f;
+  background: #f5f8fd;
+}
+.productcreateaction:hover:not(:disabled) {
+  background: #102f76;
+  color: #fff;
+}
+.productaction:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.productaction:focus-visible,
+.producttabs button:focus-visible,
+.producttoolbar button:focus-visible,
+.producttoolbar input:focus-visible,
+.producttoolbar select:focus-visible {
+  outline: 3px solid rgb(47 111 237 / 24%);
+  outline-offset: 2px;
+}
 .productheroactions button:disabled,
 .productdrawerfooter button:disabled {
   cursor: not-allowed;
@@ -215,23 +253,24 @@
 }
 .producttabs {
   display: flex;
-  min-height: 47px;
-  align-items: end;
-  gap: 24px;
+  min-height: 54px;
+  align-items: center;
+  gap: 8px;
   border-bottom: 1px solid #e2e8f0;
-  padding: 0 18px;
+  padding: 10px 20px;
 }
 .producttabs button {
-  position: relative;
   display: inline-flex;
-  min-height: 47px;
+  min-height: 32px;
   align-items: center;
   gap: 7px;
-  border: 0;
-  background: transparent;
-  color: #475569;
-  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: #f1f4f8;
+  color: #5f6f88;
+  padding: 0 13px;
   font-size: 13px;
+  font-weight: 700;
   white-space: nowrap;
 }
 .producttabs button strong {
@@ -240,44 +279,35 @@
   font-weight: 650;
 }
 .producttabs button[aria-current='page'] {
-  color: #1557ec;
-  font-weight: 700;
-}
-.producttabs button[aria-current='page']::after {
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 2px;
-  border-radius: 2px 2px 0 0;
-  background: #1f5eff;
-  content: '';
+  border-color: #143a8f;
+  background: #143a8f;
+  color: #fff;
 }
 .producttabs button:disabled {
   opacity: 0.58;
 }
 .productcontrols {
-  margin: 15px 16px 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid #e2e8f0;
   background: #fff;
 }
 .producttoolbar {
   display: flex;
-  min-height: 56px;
+  min-height: 58px;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 10px 16px 6px;
 }
 .productsearchfield {
   display: flex;
-  width: min(330px, 34vw);
+  width: min(380px, 38vw);
   min-width: 220px;
-  height: 36px;
+  height: 38px;
   align-items: center;
   gap: 8px;
   border: 1px solid #d8e0eb;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #fff;
   color: #64748b;
   padding-left: 10px;
@@ -295,7 +325,7 @@
   outline: 0;
   background: transparent;
   color: #172033;
-  font-size: 11px;
+  font-size: 12px;
 }
 .productsearchfield input::placeholder,
 .productcompactfield input::placeholder {
@@ -318,10 +348,10 @@
 .productselectcontrol {
   position: relative;
   display: flex;
-  height: 36px;
+  height: 38px;
   align-items: center;
   border: 1px solid #d8e0eb;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #fff;
 }
 .productselectcontrol select {
@@ -333,7 +363,7 @@
   background: transparent;
   color: #475569;
   padding: 0 28px 0 10px;
-  font-size: 11px;
+  font-size: 12px;
   cursor: pointer;
 }
 .productselectcontrol > svg {
@@ -352,28 +382,28 @@
 .productcompactfield {
   display: block;
   width: 86px;
-  height: 36px;
+  height: 38px;
 }
 .productcompactfield input {
   width: 100%;
   height: 100%;
   border: 1px solid #d8e0eb;
-  border-radius: 6px;
+  border-radius: 8px;
   outline: 0;
   padding: 0 10px;
-  font-size: 11px;
+  font-size: 12px;
 }
 .producttoolbutton {
   display: inline-flex;
-  min-height: 36px;
+  min-height: 38px;
   align-items: center;
   gap: 5px;
   border: 1px solid #d8e0eb;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #fff;
   color: #475569;
   padding: 0 10px;
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .producttoolbutton svg {
@@ -384,12 +414,12 @@
   width: 12px;
 }
 .productreset {
-  min-height: 36px;
+  min-height: 38px;
   border: 0;
   background: transparent;
   color: #1557ec;
   padding: 0 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
 }
 .producttoolspacer {
@@ -397,15 +427,14 @@
 }
 .productservertime {
   display: flex;
-  height: 24px;
+  min-height: 28px;
   align-items: center;
   justify-content: flex-end;
   gap: 6px;
   margin: 0;
-  border-top: 1px solid #edf1f6;
   color: #7c8aa0;
-  padding: 0 11px;
-  font-size: 10px;
+  padding: 0 18px 8px;
+  font-size: 11px;
 }
 .productservertime span {
   width: 6px;

@@ -12,12 +12,6 @@ export interface ProductFilterProps {
 }
 
 const emptyFilter: ProductFilter = Object.freeze({ q: '', category: '', supplier: '', mall: '', status: '' });
-const managementStatuses = Object.freeze([
-  ['needs_attention', '待完善'],
-  ['pending_review', '待审核'],
-  ['published', '已上架'],
-  ['unpublished', '已下架'],
-] as const);
 
 export function ProductFilterForm({ value, preview, onApply, onColumns }: ProductFilterProps) {
   const form = useForm<ProductFilter>({ resolver: zodResolver(ProductFilterSchema), values: value });
@@ -34,6 +28,7 @@ export function ProductFilterForm({ value, preview, onApply, onColumns }: Produc
         void form.handleSubmit(onApply)(event);
       }}
     >
+      <input type="hidden" {...form.register('status')} />
       <TextField className="productsearchfield">
         <Label className="sr-only">商品搜索</Label>
         <ProductIcon name="search" />
@@ -52,16 +47,12 @@ export function ProductFilterForm({ value, preview, onApply, onColumns }: Produc
         </TextField>
       )}
 
-      <PreviewSelect label="供应商" disabled={!previewEnabled} registration={form.register('supplier')} options={preview?.facets.suppliers.map((facet) => [facet.value, facet.label]) ?? []} />
-      <PreviewSelect label="商城范围" disabled={!previewEnabled} registration={form.register('mall')} options={preview?.facets.malls.map((facet) => [facet.value, facet.label]) ?? []} />
-      <PreviewSelect label="状态" disabled={false} registration={form.register('status')}
-        options={preview?.facets.statuses.map((facet) => [facet.value, facet.label]) ?? managementStatuses} />
-
-      <button className="producttoolbutton" type="button" disabled aria-label="更多条件" title="需要更多服务端过滤合同">
-        <ProductIcon name="filter" />
-        更多筛选
-        <ProductIcon name="chevron" />
-      </button>
+      {previewEnabled ? (
+        <>
+          <PreviewSelect label="供应商" disabled={false} registration={form.register('supplier')} options={preview.facets.suppliers.map((facet) => [facet.value, facet.label])} />
+          <PreviewSelect label="商城范围" disabled={false} registration={form.register('mall')} options={preview.facets.malls.map((facet) => [facet.value, facet.label])} />
+        </>
+      ) : null}
       <button className="productreset" type="button" onClick={reset}>
         重置
       </button>
@@ -71,7 +62,7 @@ export function ProductFilterForm({ value, preview, onApply, onColumns }: Produc
         列设置
       </button>
       <p id="previewfilterboundary" className="sr-only">
-        供应商和商城范围筛选只在本地预览数据中可用；状态筛选由正式商品列表提供。
+        供应商和商城范围筛选只在对应数据合同可用时展示；状态筛选由商品状态导航提供。
       </p>
     </Form>
   );
