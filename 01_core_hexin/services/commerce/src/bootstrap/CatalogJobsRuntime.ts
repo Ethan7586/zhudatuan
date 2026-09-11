@@ -16,6 +16,7 @@ import { JobMetrics } from '../foundation/telemetry/JobMetrics';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import { CatalogImportProcessor } from '../modules/catalog/05_interface_jieru/job/CatalogImportJob';
 import { CatalogPublicationProcessor } from '../modules/catalog/05_interface_jieru/job/CatalogPublicationJob';
+import { ExportJobRunner } from '../modules/reporting/05_interface_jieru/job/ExportJobRunner';
 
 export interface CatalogJobsEnvironment {
   readonly APP_ENV: string;
@@ -121,6 +122,18 @@ export function createCatalogJobs(pool: DatabasePool, objects: ObjectStore, work
     retryMaximum: 60_000,
     scope,
   });
+  const exportConfiguration: JobRunnerConfig = Object.freeze({
+    worker: `${worker}:export`,
+    owner: 'reporting',
+    batch: 2,
+    lease: 180,
+    concurrency: 2,
+    attempts: 8,
+    poll: 1_000,
+    deadline: 120_000,
+    retryMinimum: 250,
+    retryMaximum: 60_000,
+  });
   return Object.freeze([
     new QueueJob(
       'catalogimport',
@@ -135,6 +148,14 @@ export function createCatalogJobs(pool: DatabasePool, objects: ObjectStore, work
       pool,
       configuration,
       new CatalogPublicationProcessor(pool),
+      undefined,
+      new JobMetrics(commerceTelemetry()),
+    ),
+    new QueueJob(
+      'export',
+      pool,
+      exportConfiguration,
+      new ExportJobRunner(pool, objects, exportConfiguration.attempts),
       undefined,
       new JobMetrics(commerceTelemetry()),
     ),
