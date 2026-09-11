@@ -5,9 +5,10 @@ import type { OrderProjection, ProjectionEvent } from '../02_domain_yewu/model/P
 export interface ReportingPort {
   metrics(query: MetricQuery): Promise<readonly MetricRow[]>;
   cockpit(scope: string): Promise<CockpitSummary>;
+  exports(scope: string, report: ExportReport, fetch: number): Promise<readonly ExportJob[]>;
   export(id: string, scope: string): Promise<ExportJob | null>;
   createExport(input: Readonly<{ id: string; scope: string; report: ExportReport; filter: Readonly<Record<string, unknown>>;
-    actor: string; membership: string; trace: string }>): Promise<ExportJob>;
+    actor: string; membership: string; scopeKind: string; trace: string }>): Promise<ExportJob>;
   claimEvent(event: string): Promise<ProjectionEvent | null>;
   period(occurredAt: string, timezone: string): Promise<Readonly<{ from: string; to: string }>>;
   addMetrics(metrics: readonly Metric[]): Promise<void>;

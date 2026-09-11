@@ -1,10 +1,12 @@
 .orderexportworkspace { min-height: calc(100vh - 8rem); padding: 1.75rem; background: #f5f8fd; color: var(--sw-text); }
-.orderexporthero { display: flex; align-items: flex-start; gap: 1.25rem; max-width: 90rem; margin: 0 auto 1.5rem; }
-.orderexporthero > div { display: grid; flex: 1; min-width: 0; gap: .25rem; }
-.orderexporthero p, .orderexporthero h1, .orderexporthero span { margin: 0; }
-.orderexporthero p { color: var(--sw-brand); font-size: .8125rem; font-weight: 700; }
-.orderexporthero h1 { font-size: 1.5rem; line-height: 1.25; }
-.orderexporthero span { color: var(--sw-muted); font-size: .875rem; }
+.orderexporthero { display: flex; align-items: center; gap: 1.25rem; max-width: 90rem; margin: 0 auto 1.5rem; }
+.orderexportidentity { display: flex; flex: 1; min-width: 0; align-items: center; gap: .75rem; }
+.orderexportidentity > div { display: grid; min-width: 0; gap: .125rem; }
+.orderexportidentity h1, .orderexportidentity span { margin: 0; }
+.orderexportidentity h1 { font-size: 1.25rem; font-weight: 750; line-height: 1.4; letter-spacing: -.01em; }
+.orderexportidentity > div > span { color: var(--sw-muted); font-size: .8125rem; line-height: 1.5; }
+.orderexportheroicon { display: grid; width: 2.25rem; height: 2.25rem; flex: 0 0 auto; place-items: center; border-radius: .625rem; background: #eaf2ff; color: var(--sw-brand); }
+.orderexportheroicon svg { width: 1.125rem; height: 1.125rem; }
 .orderexportback, .orderexporthistory button { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .5rem; border: .0625rem solid var(--sw-border); border-radius: .625rem; background: var(--sw-surface); color: var(--sw-text-secondary); padding: 0 1rem; font-weight: 650; }
 .orderexportback { flex: 0 0 auto; margin-left: auto; }
 .orderexportback svg, .orderexporthistory button svg { width: 1rem; height: 1rem; }

@@ -9,3 +9,7 @@ export function createReportingExport(request: OperationRequest, database: Opera
   filter: Readonly<Record<string, unknown>>) {
   return new CreateExport((transaction) => new PgReportingRepository(transaction)).execute(request, database, report, filter);
 }
+
+export function listReportingExports(database: OperationDatabase, scope: string, report: ExportReport, fetch = 20) {
+  return new PgReportingRepository(database).exports(scope, report, fetch);
+}

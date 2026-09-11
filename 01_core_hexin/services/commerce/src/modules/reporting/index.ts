@@ -11,5 +11,5 @@ export type {
   ReportPeriod,
 } from './02_domain_yewu/model/Metric';
 export type { DailyPeriod, OrderProjection, ProjectionEvent } from './02_domain_yewu/model/Projection';
-export { createReportingExport } from './04_adapters_shixian/CreateReportingExport';
+export { createReportingExport, listReportingExports } from './04_adapters_shixian/CreateReportingExport';
 export { reportingManifest } from './module.manifest';

@@ -42,7 +42,7 @@ export async function createOrderExport(context: ConsoleContext, draft: OrderExp
     { body: { ...draft.filter, format: draft.format, filename: draft.filename, fields: draft.fields } },
     consoleCommand(context.scope, { accessVersion: context.session.accessVersion, ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }), ...(signal === undefined ? {} : { signal }) }),
   );
-  return parseTask(value);
+  return parseOrderExportTask(value);
 }
 
 export async function readOrderExport(context: ConsoleContext, id: string, signal?: AbortSignal): Promise<OrderExportTask> {
@@ -50,14 +50,10 @@ export async function readOrderExport(context: ConsoleContext, id: string, signa
     { path: { exportid: id } },
     consoleRequest(context.scope, signal, context.session.accessVersion),
   );
-  return parseTask(value);
+  return parseOrderExportTask(value);
 }
 
-export function taskStorageKey(context: ConsoleContext): string {
-  return `console:order-exports:${context.scope.kind}:${context.scope.id}`;
-}
-
-function parseTask(value: unknown): OrderExportTask {
+export function parseOrderExportTask(value: unknown): OrderExportTask {
   const row = record(value, '导出任务响应无效');
   const state = string(row.state, '导出任务状态缺失');
   if (!['queued', 'running', 'completed', 'failed', 'expired'].includes(state)) throw new Error('导出任务状态无效');

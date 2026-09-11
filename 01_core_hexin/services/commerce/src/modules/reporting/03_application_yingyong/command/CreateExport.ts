@@ -13,7 +13,7 @@ export class CreateExport {
     if (JSON.stringify(filter).length > 16_384) throw new Error('REPORT_FILTER_TOO_LARGE');
     const access = requireAccess(request);
     return this.factory(database).createExport({ id: `export:${randomUUID()}`, scope: access.scope.id, report, filter,
-      actor: access.actor.id, membership: access.membership.id, trace: access.trace });
+      actor: access.actor.id, membership: access.membership.id, scopeKind: access.scope.kind, trace: access.trace });
   }
 }
 

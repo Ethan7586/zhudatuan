@@ -3,6 +3,7 @@ import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { consoleRequest } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
 import { OrderPageSchema, type OrderFilter, type OrderListFilter, type OrderView } from './OrderSchema';
+import { parseOrderExportTask } from './OrderExportQuery';
 
 const ordersRead = createFetchOrderOrdersRead(appConfig.apiBaseUrl);
 export const ORDER_PAGE_LIMIT = 50;
@@ -45,9 +46,14 @@ export async function readOrders(context: ConsoleContext, filter: OrderQuery, si
         ...(filter.fulfillment ? { fulfillment: filter.fulfillment } : {}),
         ...(filter.mall ? { mall: filter.mall } : {}),
         ...(filter.view !== undefined && filter.view !== 'all' ? { view: filter.view } : {}),
+        exports: 'true',
       },
     },
     consoleRequest(context.scope, signal, context.session.accessVersion)
   );
-  return OrderPageSchema.parse(value);
+  const page = OrderPageSchema.parse(value);
+  const exports = value !== null && typeof value === 'object' && !Array.isArray(value) && Array.isArray((value as Record<string, unknown>).exports)
+    ? (value as Record<string, unknown>).exports as unknown[]
+    : [];
+  return Object.freeze({ ...page, exports: Object.freeze(exports.map(parseOrderExportTask)) });
 }

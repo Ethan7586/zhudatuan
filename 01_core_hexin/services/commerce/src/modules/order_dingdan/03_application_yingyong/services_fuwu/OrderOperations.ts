@@ -13,7 +13,7 @@ import { VoucherPort } from '../../../voucher';
 import { Order, type AftersaleState, type CommerceState, type FulfillmentState, type PaymentState } from '../../02_domain_yewu/models_moxing/Order';
 import { confirmOrderReceiptOperations } from '../commands_xieru/ConfirmOrderReceipt';
 import { PlaceOrder } from '../commands_xieru/PlaceOrder';
-import { createReportingExport } from '../../../reporting';
+import { createReportingExport, listReportingExports } from '../../../reporting';
 
 interface OrderRow { readonly id: string; readonly lifecycle_state: CommerceState; readonly payment_state: PaymentState; readonly fulfillment_state: FulfillmentState; readonly aftersale_state: AftersaleState }
 
@@ -42,7 +42,9 @@ export function orderOperations(context: ModuleContext): ModuleOperations {
         or (not $1::boolean and not $3 and not $4 and exists(select 1 from organization.unitclosure closure where closure.ancestor_id=$2 and closure.descendant_id=orders.mall_id))
         ) and ($5='' or orders.id=$5) and ($6::timestamptz is null or (orders.created_at,orders.id)<($6::timestamptz,$7))
         group by orders.id order by orders.created_at desc,orders.id desc limit $8`, [owner, access.scope.id, supplier, store, order, page.sort, page.id, page.fetch]);
-      return keysetResult(result, page, 'created_at');
+      const response = keysetResult(result, page, 'created_at');
+      if (queryValue(request.input.query.exports) !== 'true') return response;
+      return { ...response, exports: await listReportingExports(database, access.scope.id, 'orders', 20) };
     },
     ...confirmOrderReceiptOperations(),
     'order.reminders.create': async (request, database) => {
