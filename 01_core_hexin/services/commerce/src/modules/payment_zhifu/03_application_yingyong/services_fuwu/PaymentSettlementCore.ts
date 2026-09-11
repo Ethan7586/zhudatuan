@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { allocatePaymentToEconomicLegs } from './PaymentAllocation';
 
 export interface SettlementBenefit {
   consume(database: OperationDatabase, order: string, account: string, amountMinor: number): Promise<void>;
@@ -87,8 +88,9 @@ export class PaymentSettlementCore {
       await database.query(`insert into payment.capture(id,scope_id,mall_id,member_id,order_id,source,currency,amount_minor,state,idempotency_key,
         completed_at,created_at) values($1,$2,$3,$4,$5,$6,$7,$8,'succeeded',$9,clock_timestamp(),clock_timestamp())`,
       [`capture:${target.intent}`, target.scope, target.mall, target.member, target.order, source, target.currency, target.amountMinor, target.intent]);
-      await database.query(`insert into payment.allocation(mall_id,payment_id,target_type,target_id,amount_minor,currency)
-        values($1,$2,'order',$3,$4,$5)`, [target.mall, payment, target.order, target.amountMinor, target.currency]);
+      await allocatePaymentToEconomicLegs(database, {
+        mall: target.mall, payment, order: target.order, amountMinor: target.amountMinor, currency: target.currency,
+      });
     }
     await this.orders.markPaid(database, target.order);
     const fulfillments = await this.fulfillment.create(database, {

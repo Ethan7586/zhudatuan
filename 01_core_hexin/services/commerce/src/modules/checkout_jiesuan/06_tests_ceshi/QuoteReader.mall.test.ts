@@ -52,6 +52,8 @@ function quoteDatabase(historyQueries: unknown[][], historySql: string[]): Opera
           listing_version: 1, listing_status: 'published', product_id: 'product:one', product_type: 'digital', category_id: 'category:one',
           product_version: 1, sku_version: 1, unit_minor: 100, price_version: 'price:1', stockitem_id: 'stock:one',
           onhand: 10, safety: 0, reserved: 0, stock_version: 1, provider: null, partner_id: null,
+          supplier_relationship_id: null, contract_id: null, contract_hash: null, fulfillment_party_id: null,
+          settlement_party_id: null, invoice_party_id: null,
         }];
       } else if (text.includes('from qualification.policy policy')) {
         rows = [{

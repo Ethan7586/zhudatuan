@@ -56,6 +56,15 @@ export const OrderSchema = z.object({
   scope_id: z.optional(z.string().check(z.minLength(1))),
   member_id: z.optional(z.string().check(z.minLength(1))),
   mall_id: z.optional(z.string().check(z.minLength(1))),
+  transaction_id: z.optional(z.nullable(z.string().check(z.minLength(1)))),
+  correlation_id: z.optional(z.nullable(z.string().check(z.minLength(1)))),
+  operating_node_id: z.optional(z.nullable(z.string().check(z.minLength(1)))),
+  operating_line_id: z.optional(z.nullable(z.string().check(z.minLength(1)))),
+  participant_node_id: z.optional(z.nullable(z.string().check(z.minLength(1)))),
+  participant_membership_id: z.optional(z.nullable(z.string().check(z.minLength(1)))),
+  participant_realm_id: z.optional(z.nullable(z.string().check(z.minLength(1)))),
+  participant_account_id: z.optional(z.nullable(z.string().check(z.minLength(1)))),
+  participant_snapshot: z.optional(z.nullable(z.record(z.string(), z.unknown()))),
   total_minor: DatabaseIntegerSchema,
   currency: z.string().check(z.minLength(3), z.maxLength(3)),
   payment_state: z.enum(['unpaid', 'authorizing', 'paid', 'partially_refunded', 'refunded', 'failed']),
@@ -79,9 +88,36 @@ export const OrderSchema = z.object({
         payableMinor: DatabaseIntegerSchema,
         provider: z.optional(z.nullable(z.string())),
         partner: z.optional(z.nullable(z.string())),
+        product: z.optional(z.nullable(z.string())),
+        routeId: z.optional(z.nullable(z.string())),
+        routeVersion: z.optional(z.nullable(DatabaseIntegerSchema)),
+        operatingNodeId: z.optional(z.nullable(z.string())),
+        participantNodeId: z.optional(z.nullable(z.string())),
+        participantMembershipId: z.optional(z.nullable(z.string())),
+        supplierId: z.optional(z.nullable(z.string())),
+        supplierRelationshipId: z.optional(z.nullable(z.string())),
+        contractId: z.optional(z.nullable(z.string())),
+        contractHash: z.optional(z.nullable(z.string())),
+        fulfillmentPartyId: z.optional(z.nullable(z.string())),
+        settlementPartyId: z.optional(z.nullable(z.string())),
+        invoicePartyId: z.optional(z.nullable(z.string())),
+        routeSnapshot: z.optional(z.nullable(z.record(z.string(), z.unknown()))),
       })
     )
   ),
+  economic_legs: z.optional(z.array(z.object({
+    id: z.string().check(z.minLength(1)),
+    routeId: z.nullable(z.string()),
+    routeVersion: z.nullable(DatabaseIntegerSchema),
+    supplierId: z.nullable(z.string()),
+    supplierRelationshipId: z.nullable(z.string()),
+    contractId: z.nullable(z.string()),
+    fulfillmentPartyId: z.nullable(z.string()),
+    settlementPartyId: z.nullable(z.string()),
+    invoicePartyId: z.nullable(z.string()),
+    amountMinor: z.nullable(DatabaseIntegerSchema),
+    state: z.string(),
+  }))),
   inventory_reservations: z.optional(
     z.array(
       z.object({
@@ -105,9 +141,29 @@ export const OrderSchema = z.object({
         reason: z.string(),
         requestedAt: z.string().check(z.minLength(1)),
         updatedAt: z.string().check(z.minLength(1)),
+        routeSnapshot: z.optional(z.nullable(z.record(z.string(), z.unknown()))),
       })
     )
   ),
+  fulfillments: z.optional(z.array(z.object({
+    id: z.string(), suborderId: z.string(), provider: z.nullable(z.string()), partnerId: z.nullable(z.string()),
+    storeId: z.nullable(z.string()), kind: z.string(), state: z.string(), externalReference: z.nullable(z.string()),
+    paymentId: z.nullable(z.string()), amountMinor: z.nullable(DatabaseIntegerSchema), createdAt: z.nullable(z.string()),
+    updatedAt: z.nullable(z.string()), lines: z.array(z.object({ lineId: z.string(), quantity: DatabaseIntegerSchema })),
+    milestones: z.array(z.object({ id: z.string(), kind: z.string(), state: z.string(), occurredAt: z.string() })),
+  }))),
+  payment_fact: z.optional(z.nullable(z.object({
+    intentId: z.string(), intentState: z.string(), amountMinor: DatabaseIntegerSchema, currency: z.string(),
+    paymentId: z.nullable(z.string()), paymentState: z.nullable(z.string()), capturedMinor: z.nullable(DatabaseIntegerSchema),
+    refundedMinor: z.nullable(DatabaseIntegerSchema),
+    allocations: z.array(z.object({ targetType: z.string(), targetId: z.string(), amountMinor: DatabaseIntegerSchema, currency: z.string() })),
+    refunds: z.array(z.object({ id: z.string(), aftersaleId: z.nullable(z.string()), state: z.string(), amountMinor: DatabaseIntegerSchema,
+      currency: z.string(), reason: z.string() })),
+  }))),
+  finance_facts: z.optional(z.array(z.object({
+    id: z.string(), referenceType: z.string(), referenceId: z.string(), state: z.string(), currency: z.string(),
+    postedAt: z.nullable(z.string()), entries: z.array(z.object({ accountId: z.string(), side: z.string(), amountMinor: DatabaseIntegerSchema })),
+  }))),
   preview: z.optional(OrderPreviewSchema),
 });
 
@@ -148,4 +204,5 @@ export type OrderRecord = z.infer<typeof OrderSchema>;
 export type OrderLine = NonNullable<OrderRecord['lines']>[number];
 export type OrderInventoryReservation = NonNullable<OrderRecord['inventory_reservations']>[number];
 export type OrderAftersale = NonNullable<OrderRecord['aftersales']>[number];
+export type OrderEconomicLeg = NonNullable<OrderRecord['economic_legs']>[number];
 export type OrderPage = z.infer<typeof OrderPageSchema>;

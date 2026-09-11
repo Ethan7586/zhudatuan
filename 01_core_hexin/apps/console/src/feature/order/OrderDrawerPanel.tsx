@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { formatMinor } from '../../shared/ui/Format';
 import { OrderIcon } from './OrderIcon';
-import { aftersaleLabel, financeLabel, formatOrderTime, fulfillmentLabel, inventoryLabel, lifecycleLabel, paymentLabel, previewRecord } from './OrderPresentation';
+import { aftersaleLabel, formatOrderTime, fulfillmentLabel, lifecycleLabel, paymentLabel, previewRecord } from './OrderPresentation';
 import type { OrderDetailTab, OrderRecord } from './OrderSchema';
 
 export function OrderDrawerPanel({
@@ -38,8 +38,10 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
 
       <DetailSection title="消费者信息">
         <div className="orderdetailgrid">
-          <Info label="消费者" value={preview?.memberName ?? '当前读模型未提供'} />
-          <Info label="联系方式" value="当前读模型未提供" />
+          <Info label="消费者" value={preview?.memberName ?? order.member_id ?? '当前读模型未提供'} />
+          <Info label="消费会员身份" value={order.participant_membership_id ?? '历史订单未冻结'} />
+          <Info label="参与节点" value={order.participant_node_id ?? '历史订单未冻结'} />
+          <Info label="身份域 / 账号" value={[order.participant_realm_id, order.participant_account_id].filter(Boolean).join(' / ') || '历史订单未冻结'} />
         </div>
       </DetailSection>
 
@@ -58,6 +60,7 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
                   <small>
                     规格 {line.sku} · 数量 {line.quantity}
                   </small>
+                  <small>{line.supplierId === null || line.supplierId === undefined ? '供应商未冻结' : `供应商 ${line.supplierId}`}</small>
                 </span>
                 <b>{formatMinor(line.payableMinor, order.currency)}</b>
               </div>
@@ -65,6 +68,8 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
           )}
         </div>
       </DetailSection>
+
+      <EconomicLegs order={order} />
 
       <DetailSection title="金额与支付">
         <div className="orderdetailgrid">
@@ -175,7 +180,10 @@ function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
                   <small>
                     数量 {line.quantity} · 单价 {formatMinor(line.unitMinor, order.currency)}
                   </small>
-                  <small>履约来源 {line.provider ?? line.partner ?? '当前未提供'}</small>
+                  <small>供应商 {line.supplierId ?? line.partner ?? '历史订单未冻结'}</small>
+                  <small>合同 {line.contractId ?? '历史订单未冻结'}</small>
+                  <small>经营路径 {line.routeId === null || line.routeId === undefined ? '历史订单未冻结' : `${line.routeId} · v${line.routeVersion ?? '—'}`}</small>
+                  <small>履约责任 {line.fulfillmentPartyId ?? '合同未指定'} · 结算责任 {line.settlementPartyId ?? '合同未指定'}</small>
                 </div>
                 <b>{formatMinor(line.payableMinor, order.currency)}</b>
               </article>
@@ -212,33 +220,60 @@ function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
 
 function PaymentPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord; previewEnabled: boolean }>) {
   const preview = previewRecord(order, previewEnabled);
+  const payment = order.payment_fact;
+  const journals = order.finance_facts ?? [];
   return (
     <div className="orderdrawerstack">
       <DetailSection title="支付快照">
         <div className="orderdetailgrid">
           <Info label="订单应付" value={formatMinor(order.total_minor, order.currency)} />
-          <Info label="财务状态" value={financeLabel(order)} />
-          <Info label="现金结果" value={paymentLabel(order.payment_state)} />
-          <Info label="实付金额" value={preview === undefined ? '当前读模型未提供' : formatMinor(preview.paidMinor, order.currency)} />
+          <Info label="支付意图" value={payment?.intentId ?? '当前没有支付意图'} />
+          <Info label="现金结果" value={payment?.paymentState ?? paymentLabel(order.payment_state)} />
+          <Info label="实付金额" value={payment?.capturedMinor === null || payment?.capturedMinor === undefined
+            ? preview === undefined ? '当前读模型未提供' : formatMinor(preview.paidMinor, order.currency)
+            : formatMinor(payment.capturedMinor, order.currency)} />
+          <Info label="已退款" value={payment?.refundedMinor === null || payment?.refundedMinor === undefined ? '—' : formatMinor(payment.refundedMinor, order.currency)} />
+          <Info label="财务凭证" value={journals.length === 0 ? '尚未形成' : `${journals.length} 笔 · ${journals.map(({ state }) => state).join(' / ')}`} />
           <Info label="支付方式" value={preview?.paymentMethod ?? '当前读模型未提供'} />
           <Info label="福利账户" value={preview === undefined ? '当前读模型未提供' : formatMinor(preview.benefitMinor, order.currency)} />
           <Info label="微信支付" value={preview === undefined ? '当前读模型未提供' : formatMinor(preview.wechatMinor, order.currency)} />
         </div>
       </DetailSection>
-      <Unavailable text="支付 ID、可退余额与退款明细未由当前订单读合同提供；退款动作保持关闭。" />
+      {payment === null || payment === undefined ? <Unavailable text="当前订单尚未形成支付事实。" /> : null}
     </div>
   );
 }
 
 function FourFlowSummary({ order }: Readonly<{ order: OrderRecord }>) {
+  const routeCount = new Set((order.lines ?? []).map(({ routeId }) => routeId).filter(Boolean)).size;
+  const fulfillmentCount = order.fulfillments?.length ?? 0;
+  const journalCount = order.finance_facts?.length ?? 0;
   return (
     <DetailSection title="四流合一">
       <div className="orderdetailgrid">
         <Info label="订单流" value={lifecycleLabel(order.lifecycle_state)} />
-        <Info label="财务流" value={`${formatMinor(order.total_minor, order.currency)} · ${financeLabel(order)}`} />
-        <Info label="商品流" value={`${fulfillmentLabel(order.fulfillment_state)} · ${inventoryLabel(order)} · ${aftersaleLabel(order.aftersale_state)}`} />
-        <Info label="现金暗线" value={paymentLabel(order.payment_state)} />
+        <Info label="商品流" value={`${order.lines?.length ?? 0} 个商品行 · ${routeCount} 条经营路径 · ${fulfillmentCount} 个履约单`} />
+        <Info label="现金流" value={order.payment_fact?.paymentState ?? order.payment_fact?.intentState ?? paymentLabel(order.payment_state)} />
+        <Info label="财务流" value={journalCount === 0 ? '尚未形成凭证' : `${journalCount} 笔权威凭证`} />
       </div>
+    </DetailSection>
+  );
+}
+
+function EconomicLegs({ order }: Readonly<{ order: OrderRecord }>) {
+  const legs = order.economic_legs ?? [];
+  return (
+    <DetailSection title="供应商经济腿">
+      {legs.length === 0 ? (
+        <Unavailable text="历史订单尚未冻结供应商经济腿。" />
+      ) : (
+        <div className="orderdetailgrid">
+          {legs.map((leg) => (
+            <Info key={leg.id} label={leg.supplierId ?? '商城自营'}
+              value={`${formatMinor(leg.amountMinor ?? 0, order.currency)} · ${leg.contractId ?? '合同未指定'} · ${leg.state}`} />
+          ))}
+        </div>
+      )}
     </DetailSection>
   );
 }
@@ -248,6 +283,7 @@ function aftersaleKindLabel(kind: 'cancel' | 'return' | 'refund' | 'exchange' | 
 }
 
 function AftersalePanel({ order }: Readonly<{ order: OrderRecord }>) {
+  const aftersales = order.aftersales ?? [];
   return (
     <div className="orderdrawerstack">
       {order.aftersale_state === 'none' ? (
@@ -271,7 +307,18 @@ function AftersalePanel({ order }: Readonly<{ order: OrderRecord }>) {
           <Info label="履约状态" value={fulfillmentLabel(order.fulfillment_state)} />
         </div>
       </DetailSection>
-      <Unavailable text="当前合同不能按订单读取完整售后单、审批记录或责任人，不能用前端分页过滤替代。" />
+      <DetailSection title="原路售后">
+        {aftersales.length === 0 ? (
+          <Unavailable text="当前订单没有售后记录。" />
+        ) : (
+          <div className="orderdetailgrid">
+            {aftersales.map((aftersale) => (
+              <Info key={aftersale.id} label={`${aftersaleKindLabel(aftersale.kind)} · ${aftersale.state}`}
+                value={`${aftersale.lineId ?? '整单'} · ${aftersale.routeSnapshot === null || aftersale.routeSnapshot === undefined ? '历史订单未冻结路径' : '已绑定原商品路径'}`} />
+            ))}
+          </div>
+        )}
+      </DetailSection>
     </div>
   );
 }

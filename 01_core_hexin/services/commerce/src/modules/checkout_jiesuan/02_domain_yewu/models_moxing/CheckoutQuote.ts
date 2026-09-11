@@ -25,6 +25,12 @@ export interface QuoteLine {
   readonly payableMinor: number;
   readonly provider: string | null;
   readonly partner: string | null;
+  readonly supplierRelationship: string | null;
+  readonly contract: string | null;
+  readonly contractHash: string | null;
+  readonly fulfillmentParty: string | null;
+  readonly settlementParty: string | null;
+  readonly invoiceParty: string | null;
   readonly stockitem: string | null;
   readonly versions: Readonly<Record<string, string | number>>;
   readonly accepted: boolean;

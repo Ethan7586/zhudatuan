@@ -21,9 +21,12 @@ describe('Fulfillment mall identity', () => {
     expect(ids).toEqual(['fulfillment:a']);
     expect(calls[0]?.text).toContain('fulfillmentorder(id,mall_id,member_id,provider_scope_id');
     expect(calls[0]?.text).toContain('orders.mall_id=$1 and orders.member_id=$2');
+    expect(calls[0]?.text).toContain('line.route_id is not distinct from suborder.route_id');
     expect(calls[0]?.text).toContain('on conflict(mall_id,source_effect_id,suborder_id)');
     expect(calls[0]?.values).toEqual(['mall:a', 'member:a', 'order:a', 'payment:a']);
     expect(calls[1]?.text).toContain('fulfillment.line(mall_id,fulfillment_id,order_line_id');
+    expect(calls[1]?.text).toContain('suborder.id=fulfillment.suborder_id');
+    expect(calls[1]?.text).toContain('line.route_id is not distinct from suborder.route_id');
     expect(calls[1]?.text).toContain('where fulfillment.mall_id=$1 and fulfillment.order_id=$2');
   });
 
