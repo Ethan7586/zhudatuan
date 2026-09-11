@@ -10,6 +10,7 @@ export const memberManifest = defineModuleManifest({
   operations: [
     'member.profile.read',
     'member.malls.open',
+    'member.sovereignty.upgrade',
     'member.addresses.read',
     'member.addresses.manage',
     'member.members.read',

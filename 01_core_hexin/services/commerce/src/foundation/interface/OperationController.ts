@@ -57,6 +57,7 @@ export const CONTROLLER_OPERATION_IDS = Object.freeze([
   'member.invitations.read',
   'member.profile.read',
   'member.malls.open',
+  'member.sovereignty.upgrade',
   'member.addresses.read',
   'member.addresses.manage',
   'member.imports.create',

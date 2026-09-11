@@ -7,6 +7,7 @@ export const WEB_ORGANIZATION_OPERATION_IDS = Object.freeze([
 export const WEB_MEMBER_OPERATION_IDS = Object.freeze([
   'member.profile.read',
   'member.malls.open',
+  'member.sovereignty.upgrade',
   'member.addresses.read',
   'member.addresses.manage',
 ] as const satisfies readonly OperationId[]);
