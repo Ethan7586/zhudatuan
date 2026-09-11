@@ -56,5 +56,23 @@ Ethan 的硬法。任何会话、任何 agent 必须遵守。看到违反，改�
 | 部署引擎拒绝 | "生产指针尚未接入 / productionEnabled:false" | 发布引擎那套没接 console/auth-web | **别管引擎。** 部署 = rsync（第 2 条）|
 | worktree 被外部清掉 | "任务专属 worktree 在测试通过后被外部清理" | 别的进程 / 清理动了 `/private/tmp` 或 `.codex/worktrees` | 重建同路径继续；别在 `/private/tmp` 放要紧的东西 |
 | 上批"完成"其实没完 | "第一批完成"→其实只本地 commit 未推送 | 会话之间凭报告叠加 | 开工前核对上批**实际**到哪级；以 Ethan 的话为准（第 3 条）|
+| 分支数看着吓人 | "远程分支 135 条" | `git branch -r` 之类的命令把本地配置的**所有** remote 加在一起数，本仓库有 `mainrepo`（指向 `06_history_lishi/` 本地历史存档，不受分支上限约束）| 只认 `git ls-remote --heads origin \| wc -l`，别的 remote 不算数 |
 
 **判断口径**：真代码 bug 约占 30%（stale 期望 + 路径 + 版本号），70% 是上面这些工具链摩擦 + AI 过度小心。撞到这一栏里的东西，一句话带过，继续，不写长篇"失败分析"。
+
+## 7 · 完成分级 L0–L6
+
+防止"以为做完了、其实只到一半"。报告完成必须标级别 + 证据，不写长篇过程。
+
+| 级别 | 意思 | 证据 |
+|---|---|---|
+| L0 | 本地写完代码 | — |
+| L1 | 本地定向测试 / typecheck 过了 | 命令输出 |
+| L2 | 本地 commit 了 | commit SHA |
+| L3 | 推到远程了 | 远程分支存在 |
+| L4 | 开了 PR，等 CI / 评审 | PR 号 |
+| L5 | 合入 `zdt-next`，CI（Affected Delivery）绿 | trunk SHA + CI run 链接 |
+| L6 | 已通过 Deploy 工作流 / `scripts/deploy-now.sh` 切上生产 | 部署回执（commit SHA 对上线上实际版本即可，不要求 15 域名全扫）|
+
+会话的活默认到 L5 为止（第 4 条）。L6 是 Ethan 触发的，不是会话自己往上冲的目标。
+开始新一批前，先核对上一批**实际**到哪级，不在未达级别的批次上叠加（第 3 条）。
