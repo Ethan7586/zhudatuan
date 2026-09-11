@@ -34,8 +34,8 @@ describe('web business API runtime', () => {
       forbidden_writes: true,
     };
     const pool = (state: typeof healthy) => ({ query: async (sql: string, values: readonly unknown[]) => {
-      expect(sql).toContain("not has_schema_privilege(current_user,'payment','USAGE')");
-      expect(sql).toContain("not has_schema_privilege(current_user,'finance','USAGE')");
+      expect(sql).toContain("grantrow.table_schema in('payment','finance')");
+      expect(sql).toContain("grantrow.privilege_type in('INSERT','UPDATE','DELETE','TRUNCATE','TRIGGER','REFERENCES')");
       expect(sql).toContain("to_regprocedure('access.web_storefront_scope(text,text)')");
       expect(sql).toContain("to_regprocedure('access.resolve_scope(text,text,text,text)')");
       expect(sql).toContain("to_regprocedure('access.web_risk_scope_allowed(text)')");

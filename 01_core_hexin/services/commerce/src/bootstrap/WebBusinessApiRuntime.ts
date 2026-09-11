@@ -214,8 +214,9 @@ export async function webBusinessRuntimeCompatibility(
       and has_table_privilege(current_user,'audit.archiveref','SELECT') selected_writes,
     not has_table_privilege(current_user,'ordering.orderrecord','INSERT,UPDATE,DELETE')
       and not has_table_privilege(current_user,'ordering.line','INSERT,UPDATE,DELETE')
-      and not has_schema_privilege(current_user,'payment','USAGE')
-      and not has_schema_privilege(current_user,'finance','USAGE')
+      and not exists(select 1 from information_schema.role_table_grants grantrow
+        where grantrow.grantee=current_user and grantrow.table_schema in('payment','finance')
+          and grantrow.privilege_type in('INSERT','UPDATE','DELETE','TRUNCATE','TRIGGER','REFERENCES'))
       and has_function_privilege(current_user,'benefit.web_ledger(text,text)','EXECUTE') forbidden_writes`,
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, WEB_BUSINESS_SCHEMA_VERSION, WEB_BUSINESS_SCHEMA_CHECKSUM]);
   const state = result.rows[0];
