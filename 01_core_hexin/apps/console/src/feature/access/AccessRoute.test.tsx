@@ -65,7 +65,7 @@ const server = setupServer(
     return HttpResponse.json({ items: invitationRecords, count: invitationRecords.length });
   }),
   http.put('*/api/v1/access/roles/:roleId', async ({ request, params }) => {
-    const body = await request.json() as RoleWriteBody | RoleAssignmentBody | Readonly<{ action: 'delete' }>;
+    const body = (await request.json()) as RoleWriteBody | RoleAssignmentBody | Readonly<{ action: 'delete' }>;
     if (conflict) return HttpResponse.json({ code: 'VERSION_CONFLICT', message: 'stale role version', requestId: 'request:conflict' }, { status: 409 });
     if ('action' in body) {
       if (body.action === 'delete') return HttpResponse.json(deleteRole(String(params.roleId)));
@@ -76,9 +76,16 @@ const server = setupServer(
     const current = roles.find(({ id }) => id === params.roleId);
     const version = current === undefined ? 0 : Number(current.version) + 1;
     const saved: WireRole = {
-      id: String(params.roleId), name: body.name, permissions: body.permissions, status: 'active', version: String(version),
-      member_count: current?.member_count ?? '0', governance: false, editable: true,
-      members: current?.members ?? [], scopes: current?.scopes ?? [],
+      id: String(params.roleId),
+      name: body.name,
+      permissions: body.permissions,
+      status: 'active',
+      version: String(version),
+      member_count: current?.member_count ?? '0',
+      governance: false,
+      editable: true,
+      members: current?.members ?? [],
+      scopes: current?.scopes ?? [],
     };
     roles = [...roles.filter(({ id }) => id !== saved.id), saved];
     const affected = members.flatMap((member) => {
@@ -89,7 +96,7 @@ const server = setupServer(
     });
     syncRoleMetadata();
     return HttpResponse.json({ ...roles.find(({ id }) => id === saved.id), affected_memberships: affected });
-  }),
+  })
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -112,14 +119,25 @@ afterAll(() => server.close());
 describe('custom identity and permission directory', () => {
   it('accepts the authoritative L1 Owner assignment source', async () => {
     const member = memberFixture();
-    server.use(http.get('*/api/v1/access/center', () => HttpResponse.json({
-      items: [{ ...member, roles: [{
-        ...assignment('role-l1-owner-v1:tenant-zhudatuan', 'L1 Owner', mallScope, 'direct'),
-        scope_source: 'l1_owner',
-      }] }],
-      count: 1,
-      roles,
-    })));
+    server.use(
+      http.get('*/api/v1/access/center', () =>
+        HttpResponse.json({
+          items: [
+            {
+              ...member,
+              roles: [
+                {
+                  ...assignment('role-l1-owner-v1:tenant-zhudatuan', 'L1 Owner', mallScope, 'direct'),
+                  scope_source: 'l1_owner',
+                },
+              ],
+            },
+          ],
+          count: 1,
+          roles,
+        })
+      )
+    );
 
     renderWorkspace();
 
@@ -134,17 +152,17 @@ describe('custom identity and permission directory', () => {
     await openRolePermissions();
     expect(screen.getAllByRole('heading', { name: '角色模板' }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('navigation', { name: '管理与权限工作台' })).toBeNull();
-    expect(screen.getByRole('button', { name: '返回成员目录' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '治理身份' })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: '自定义角色' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '返回管理员' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: '角色列表' })).toBeTruthy();
+    expect(screen.getByRole('complementary', { name: '权限影响预览' })).toBeTruthy();
+    expect(within(screen.getByRole('region', { name: '选择功能权限' })).getAllByRole('button')).toHaveLength(4);
     expect(screen.getByText('平台 Owner')).toBeTruthy();
     expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
-    await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^运行状态/ }));
-    expect(screen.getAllByRole('checkbox')).toHaveLength(PERMISSION_CATALOG.filter(({ category }) => category === 'runtime').length);
+    await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^系统设置/ }));
+    expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('checkbox').length).toBeLessThan(PERMISSION_CATALOG.length);
     expect(screen.getByRole('checkbox', { name: /runtime\.health\.read/ })).toBeTruthy();
-    const runtimeGroup = document.getElementById('permission-runtime');
-    expect(runtimeGroup).toBeTruthy();
-    await user.click(within(runtimeGroup as HTMLElement).getByText('运行状态'));
+    await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^系统设置/ }));
     expect(screen.queryByRole('checkbox', { name: /runtime\.health\.read/ })).toBeNull();
     expect(screen.queryByText(/Smart Wing|智慧翼|築店|租户/)).toBeNull();
   });
@@ -184,33 +202,99 @@ describe('custom identity and permission directory', () => {
   });
 
   it('keeps ordinary members separate and nests administrator tools inside administrator details', async () => {
-    roles = [...roles, {
-      id: 'role-consumer', name: '商城会员', status: 'active', version: '1', permissions: ['order.read'], member_count: '1',
-      governance: false, editable: true, members: [], scopes: [],
-    }];
-    members = [{
-      ...memberFixture(), id: 'membership:owner', member_id: 'member:administrator', display_name: '小白管理员',
-      roles: [assignment('role-finance', '财务观察', mallScope, 'direct')],
-    }];
-    invitationRecords = [{
-      id: 'invite:administrator', scope: 'tenant:one', scope_name: '主打团商户', label: '管理员发出的邀请',
-      governance_level: 'administrator', created_by: 'membership:owner', created_by_name: '小白管理员',
-      accepted_membership_id: null, invitee_name: '受邀管理员', destination_masked: '138****0000',
-      max_uses: 1, use_count: 0, starts_at: '2026-09-10T12:00:00.000Z', expires_at: '2026-09-17T12:00:00.000Z',
-      accepted_at: null, status: 'active', created_at: '2026-09-10T12:00:00.000Z', version: '0',
-    }, {
-      id: 'invite:other', scope: 'tenant:one', scope_name: '主打团商户', label: '其他人的邀请',
-      governance_level: 'administrator', created_by: 'membership:other', created_by_name: '其他管理员',
-      accepted_membership_id: null, invitee_name: '不应出现', destination_masked: '139****0000',
-      max_uses: 1, use_count: 0, starts_at: '2026-09-10T12:00:00.000Z', expires_at: '2026-09-17T12:00:00.000Z',
-      accepted_at: null, status: 'active', created_at: '2026-09-10T12:00:00.000Z', version: '0',
-    }];
-    server.use(http.get('*/api/v1/members', () => HttpResponse.json({ items: [{
-      id: 'member:administrator', display_name: '小白管理员', status: 'active', membership_id: 'membership:owner',
-      employee_no: null, membership_status: 'active', access_version: 7, joined_at: '2026-09-02T03:28:35.000Z',
-      principal_id: 'principal:administrator', principal_version: 1, client: 'operator', login_identity_bound: true,
-      reset_allowed: false, reset_block_reason: null, governance_parent_membership_id: 'membership:root', governance_parent_name: 'Ethan',
-    }], count: 1 })));
+    roles = [
+      ...roles,
+      {
+        id: 'role-consumer',
+        name: '商城会员',
+        status: 'active',
+        version: '1',
+        permissions: ['order.read'],
+        member_count: '1',
+        governance: false,
+        editable: true,
+        members: [],
+        scopes: [],
+      },
+    ];
+    members = [
+      {
+        ...memberFixture(),
+        id: 'membership:owner',
+        member_id: 'member:administrator',
+        display_name: '小白管理员',
+        roles: [assignment('role-finance', '财务观察', mallScope, 'direct')],
+      },
+    ];
+    invitationRecords = [
+      {
+        id: 'invite:administrator',
+        scope: 'tenant:one',
+        scope_name: '主打团商户',
+        label: '管理员发出的邀请',
+        governance_level: 'administrator',
+        created_by: 'membership:owner',
+        created_by_name: '小白管理员',
+        accepted_membership_id: null,
+        invitee_name: '受邀管理员',
+        destination_masked: '138****0000',
+        max_uses: 1,
+        use_count: 0,
+        starts_at: '2026-09-10T12:00:00.000Z',
+        expires_at: '2026-09-17T12:00:00.000Z',
+        accepted_at: null,
+        status: 'active',
+        created_at: '2026-09-10T12:00:00.000Z',
+        version: '0',
+      },
+      {
+        id: 'invite:other',
+        scope: 'tenant:one',
+        scope_name: '主打团商户',
+        label: '其他人的邀请',
+        governance_level: 'administrator',
+        created_by: 'membership:other',
+        created_by_name: '其他管理员',
+        accepted_membership_id: null,
+        invitee_name: '不应出现',
+        destination_masked: '139****0000',
+        max_uses: 1,
+        use_count: 0,
+        starts_at: '2026-09-10T12:00:00.000Z',
+        expires_at: '2026-09-17T12:00:00.000Z',
+        accepted_at: null,
+        status: 'active',
+        created_at: '2026-09-10T12:00:00.000Z',
+        version: '0',
+      },
+    ];
+    server.use(
+      http.get('*/api/v1/members', () =>
+        HttpResponse.json({
+          items: [
+            {
+              id: 'member:administrator',
+              display_name: '小白管理员',
+              status: 'active',
+              membership_id: 'membership:owner',
+              employee_no: null,
+              membership_status: 'active',
+              access_version: 7,
+              joined_at: '2026-09-02T03:28:35.000Z',
+              principal_id: 'principal:administrator',
+              principal_version: 1,
+              client: 'operator',
+              login_identity_bound: true,
+              reset_allowed: false,
+              reset_block_reason: null,
+              governance_parent_membership_id: 'membership:root',
+              governance_parent_name: 'Ethan',
+            },
+          ],
+          count: 1,
+        })
+      )
+    );
     const user = userEvent.setup();
     renderSwitchWorkspace();
 
@@ -226,7 +310,7 @@ describe('custom identity and permission directory', () => {
     await user.click(administratorRow);
     expect(screen.getByRole('heading', { name: '管理员详情' })).toBeTruthy();
     expect(screen.getByRole('navigation', { name: '管理员档案' })).toBeTruthy();
-    expect(invitationReads).toBe(1);
+    expect(invitationReads).toBe(0);
 
     await user.click(screen.getByRole('tab', { name: '邀请记录' }));
     expect(await screen.findByText('受邀管理员')).toBeTruthy();
@@ -239,15 +323,14 @@ describe('custom identity and permission directory', () => {
     renderWorkspace();
     await openRolePermissions();
 
-    await user.click(screen.getByRole('button', { name: '＋ 新建角色' }));
+    await user.click(screen.getByRole('button', { name: '新建角色' }));
     const name = screen.getByPlaceholderText('例如：财务管理员');
     await user.type(name, '财务');
     expect(screen.queryAllByRole('checkbox').filter((item) => (item as HTMLInputElement).checked)).toHaveLength(0);
     const permissionOverview = within(screen.getByRole('region', { name: '选择功能权限' }));
     await user.click(permissionOverview.getByRole('button', { name: /^财务/ }));
-    await user.click(permissionOverview.getByRole('button', { name: /^订单与售后/ }));
-    await user.click(permissionOverview.getByRole('button', { name: /^商品/ }));
     await user.click(screen.getByRole('checkbox', { name: /finance\.overview\.read/ }));
+    await user.click(permissionOverview.getByRole('button', { name: /^订单与售后/ }));
     await user.click(screen.getByRole('checkbox', { name: /order\.read/ }));
     await user.click(screen.getByRole('checkbox', { name: /catalog\.product\.manage/ }));
     await user.click(screen.getByRole('button', { name: '保存修改' }));
@@ -272,9 +355,15 @@ describe('custom identity and permission directory', () => {
     expect(writes[0]?.body).toEqual({ name: '财务主管', permissions: ['finance.overview.read', 'order.read'] });
     expect(writes[0]?.expectedVersion).toBe('"1"');
 
-    await waitFor(() => expect(within(screen.getByRole('navigation', { name: '角色详情' })).getByRole('button', { name: '角色概览' }).getAttribute('aria-selected')).toBe('true'));
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole('navigation', { name: '角色详情' }))
+          .getByRole('button', { name: '权限配置' })
+          .getAttribute('aria-selected')
+      ).toBe('true')
+    );
     await openRolePermissions('财务主管');
-    await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^商品/ }));
+    await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^订单与售后/ }));
     await user.click(screen.getByRole('checkbox', { name: /catalog\.product\.manage/ }));
     await user.click(screen.getByRole('button', { name: '保存修改' }));
     await waitFor(() => expect(writes).toHaveLength(2));
@@ -294,7 +383,7 @@ describe('custom identity and permission directory', () => {
     renderWorkspace();
     await openRolePermissions();
 
-    await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^商品/ }));
+    await user.click(within(screen.getByRole('region', { name: '选择功能权限' })).getByRole('button', { name: /^订单与售后/ }));
     await user.click(screen.getByRole('checkbox', { name: /catalog\.product\.manage/ }));
     await user.click(screen.getByRole('button', { name: '保存修改' }));
 
@@ -327,31 +416,76 @@ describe('custom identity and permission directory', () => {
     expect(screen.getByText('无权读取身份目录')).toBeTruthy();
     view.unmount();
 
-    invitationRecords = [{
-      id: 'invite:one', scope: 'tenant:one', scope_name: '主打团商户', label: '134****7586',
-      governance_level: 'senior_administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
-      accepted_membership_id: null, invitee_name: null, destination_masked: '134****7586',
-      max_uses: 1, use_count: 0, starts_at: '2026-09-02T12:00:00.000Z', expires_at: '2026-09-09T12:00:00.000Z',
-      accepted_at: null, status: 'active', created_at: '2026-09-02T12:00:00.000Z', version: '0',
-    }, {
-      id: 'invite:used', scope: 'tenant:one', scope_name: '主打团商户', label: '李厚亿 · 134****7586',
-      governance_level: 'senior_administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
-      accepted_membership_id: 'membership:li', invitee_name: '李厚亿', destination_masked: '134****7586',
-      max_uses: 1, use_count: 1, starts_at: '2026-09-01T12:00:00.000Z', expires_at: '2026-09-08T12:00:00.000Z',
-      accepted_at: '2026-09-02T10:00:00.000Z', status: 'used', created_at: '2026-09-01T12:00:00.000Z', version: '1',
-    }, {
-      id: 'invite:revoked', scope: 'tenant:one', scope_name: '主打团商户', label: '历史记录，邀请对象不可还原',
-      governance_level: 'administrator', created_by: 'membership:owner', created_by_name: 'Ethan',
-      accepted_membership_id: null, invitee_name: null, destination_masked: null,
-      max_uses: 1, use_count: 0, starts_at: '2026-08-31T12:00:00.000Z', expires_at: '2026-09-07T12:00:00.000Z',
-      accepted_at: null, status: 'revoked', created_at: '2026-08-31T12:00:00.000Z', version: '1',
-    }];
+    invitationRecords = [
+      {
+        id: 'invite:one',
+        scope: 'tenant:one',
+        scope_name: '主打团商户',
+        label: '134****7586',
+        governance_level: 'senior_administrator',
+        created_by: 'membership:owner',
+        created_by_name: 'Ethan',
+        accepted_membership_id: null,
+        invitee_name: null,
+        destination_masked: '134****7586',
+        max_uses: 1,
+        use_count: 0,
+        starts_at: '2026-09-02T12:00:00.000Z',
+        expires_at: '2026-09-09T12:00:00.000Z',
+        accepted_at: null,
+        status: 'active',
+        created_at: '2026-09-02T12:00:00.000Z',
+        version: '0',
+      },
+      {
+        id: 'invite:used',
+        scope: 'tenant:one',
+        scope_name: '主打团商户',
+        label: '李厚亿 · 134****7586',
+        governance_level: 'senior_administrator',
+        created_by: 'membership:owner',
+        created_by_name: 'Ethan',
+        accepted_membership_id: 'membership:li',
+        invitee_name: '李厚亿',
+        destination_masked: '134****7586',
+        max_uses: 1,
+        use_count: 1,
+        starts_at: '2026-09-01T12:00:00.000Z',
+        expires_at: '2026-09-08T12:00:00.000Z',
+        accepted_at: '2026-09-02T10:00:00.000Z',
+        status: 'used',
+        created_at: '2026-09-01T12:00:00.000Z',
+        version: '1',
+      },
+      {
+        id: 'invite:revoked',
+        scope: 'tenant:one',
+        scope_name: '主打团商户',
+        label: '历史记录，邀请对象不可还原',
+        governance_level: 'administrator',
+        created_by: 'membership:owner',
+        created_by_name: 'Ethan',
+        accepted_membership_id: null,
+        invitee_name: null,
+        destination_masked: null,
+        max_uses: 1,
+        use_count: 0,
+        starts_at: '2026-08-31T12:00:00.000Z',
+        expires_at: '2026-09-07T12:00:00.000Z',
+        accepted_at: null,
+        status: 'revoked',
+        created_at: '2026-08-31T12:00:00.000Z',
+        version: '1',
+      },
+    ];
     renderWorkspace(context, '/scopes/tenant/tenant%3Aone/settings/access?section=invitations');
     expect(screen.getByRole('heading', { name: '邀请记录' })).toBeTruthy();
     const table = await screen.findByRole('table', { name: '邀请记录，共 3 条' });
-    expect(within(table).getAllByRole('columnheader').map(({ textContent }) => textContent)).toEqual([
-      '被邀请人', '邀请人', '管理员级别', '状态', '创建时间', '接受时间',
-    ]);
+    expect(
+      within(table)
+        .getAllByRole('columnheader')
+        .map(({ textContent }) => textContent)
+    ).toEqual(['被邀请人', '邀请人', '管理员级别', '状态', '创建时间', '接受时间']);
     expect(within(table).getAllByRole('row')).toHaveLength(4);
     const liRow = within(table).getByText('李厚亿 · 134****7586').closest('tr');
     expect(liRow).not.toBeNull();
@@ -364,13 +498,28 @@ describe('custom identity and permission directory', () => {
   });
 
   it('reads invitation records for an administrator with the granted permission and capability', async () => {
-    invitationRecords = [{
-      id: 'invite:administrator', scope: 'tenant:one', scope_name: '主打团商户', label: '管理员发起的邀请',
-      governance_level: 'administrator', created_by: 'membership:administrator', created_by_name: '小白管理员',
-      accepted_membership_id: null, invitee_name: null, destination_masked: '138****0000',
-      max_uses: 1, use_count: 0, starts_at: '2026-09-10T12:00:00.000Z', expires_at: '2026-09-17T12:00:00.000Z',
-      accepted_at: null, status: 'active', created_at: '2026-09-10T12:00:00.000Z', version: '0',
-    }];
+    invitationRecords = [
+      {
+        id: 'invite:administrator',
+        scope: 'tenant:one',
+        scope_name: '主打团商户',
+        label: '管理员发起的邀请',
+        governance_level: 'administrator',
+        created_by: 'membership:administrator',
+        created_by_name: '小白管理员',
+        accepted_membership_id: null,
+        invitee_name: null,
+        destination_masked: '138****0000',
+        max_uses: 1,
+        use_count: 0,
+        starts_at: '2026-09-10T12:00:00.000Z',
+        expires_at: '2026-09-17T12:00:00.000Z',
+        accepted_at: null,
+        status: 'active',
+        created_at: '2026-09-10T12:00:00.000Z',
+        version: '0',
+      },
+    ];
     const administrator = {
       ...context,
       session: {
@@ -465,9 +614,11 @@ function renderWorkspace(value: ConsoleContext = context, entry = '/scopes/tenan
   return render(
     <MemoryRouter initialEntries={[entry]}>
       <QueryClientProvider client={client}>
-        <ConsoleContextProvider value={value}><Component /></ConsoleContextProvider>
+        <ConsoleContextProvider value={value}>
+          <Component />
+        </ConsoleContextProvider>
       </QueryClientProvider>
-    </MemoryRouter>,
+    </MemoryRouter>
   );
 }
 
@@ -495,23 +646,30 @@ function renderSwitchWorkspace() {
           </Routes>
         </ConsoleContextProvider>
       </QueryClientProvider>
-    </MemoryRouter>,
+    </MemoryRouter>
   );
 }
 
 const tenantScope = { kind: 'tenant', id: 'tenant:one', tenant: 'tenant:one', name: '主打团商户' } as const;
-const mallScope: WireScope = { kind: 'mall', id: 'mall:one', tenant: tenantScope.id, name: '一号商城',
-  path: [{ kind: 'tenant', id: tenantScope.id }] };
+const mallScope: WireScope = { kind: 'mall', id: 'mall:one', tenant: tenantScope.id, name: '一号商城', path: [{ kind: 'tenant', id: tenantScope.id }] };
 const context: ConsoleContext = {
   session: {
-    actor: 'actor:owner', membership: 'membership:owner', accessVersion: 7,
+    actor: 'actor:owner',
+    membership: 'membership:owner',
+    accessVersion: 7,
     permissions: ['access.center.read', 'access.role.manage', 'access.scope.manage', 'identity.invitation.manage'],
     capabilities: ['access.center.read', 'access.roles.manage', 'access.scopes.manage', 'identity.invitations.create', 'member.invitations.read'],
     governance: { level: 'owner', exactOwner: true, organization: 'tenant:one' },
-    assurance: { level: 2 }, target: 'console', scope: tenantScope, scopes: [tenantScope, mallScope], csrf: 'csrf:test',
+    assurance: { level: 2 },
+    target: 'console',
+    scope: tenantScope,
+    scopes: [tenantScope, mallScope],
+    csrf: 'csrf:test',
     syncedAt: '2026-09-01T00:00:00.000Z',
   },
-  profile: { display_name: 'Ethan', employee_no: null }, scope: tenantScope, scopes: [tenantScope, mallScope],
+  profile: { display_name: 'Ethan', employee_no: null },
+  scope: tenantScope,
+  scopes: [tenantScope, mallScope],
 };
 
 function initialRoles(): WireRole[] {
@@ -578,7 +736,10 @@ interface WireRoleScope {
   member_count: string;
 }
 
-interface RoleWriteBody { name: string; permissions: string[] }
+interface RoleWriteBody {
+  name: string;
+  permissions: string[];
+}
 interface RoleAssignmentBody {
   action: 'assign' | 'revoke';
   membership: string;
@@ -587,14 +748,20 @@ interface RoleAssignmentBody {
   scopeSource: 'direct' | 'inherited';
 }
 
-const outsideMallScope: WireScope = { kind: 'mall', id: 'mall:outside', tenant: 'tenant:outside', name: '范围外商城',
-  path: [{ kind: 'tenant', id: 'tenant:outside' }] };
+const outsideMallScope: WireScope = { kind: 'mall', id: 'mall:outside', tenant: 'tenant:outside', name: '范围外商城', path: [{ kind: 'tenant', id: 'tenant:outside' }] };
 
 function memberFixture(): WireMembership {
   return {
-    id: 'membership:zhangsan', status: 'active', access_version: '3', member_id: 'member:zhangsan',
-    display_name: '张三', employee_no: 'EMP003', roles: [], scopes: [scopeGrant(tenantScope)],
-    denies: [], effective_permissions: [],
+    id: 'membership:zhangsan',
+    status: 'active',
+    access_version: '3',
+    member_id: 'member:zhangsan',
+    display_name: '张三',
+    employee_no: 'EMP003',
+    roles: [],
+    scopes: [scopeGrant(tenantScope)],
+    denies: [],
+    effective_permissions: [],
   };
 }
 
@@ -626,8 +793,7 @@ function updateAssignment(roleId: string, body: RoleAssignmentBody) {
   if (changed) member.access_version = String(Number(member.access_version) + 1);
   recompute(member);
   syncRoleMetadata();
-  return { action: body.action, changed, role: roleId, membership: member.id, scope,
-    scope_source: body.scopeSource, access_version: member.access_version };
+  return { action: body.action, changed, role: roleId, membership: member.id, scope, scope_source: body.scopeSource, access_version: member.access_version };
 }
 
 function deleteRole(roleId: string) {
@@ -648,8 +814,7 @@ function deleteRole(roleId: string) {
 
 function recompute(member: WireMembership) {
   const denied = new Set(member.denies);
-  member.effective_permissions = [...new Set(member.roles.flatMap((item) => roles.find(({ id }) => id === item.role)?.permissions ?? []))]
-    .filter((permission) => !denied.has(permission)).sort();
+  member.effective_permissions = [...new Set(member.roles.flatMap((item) => roles.find(({ id }) => id === item.role)?.permissions ?? []))].filter((permission) => !denied.has(permission)).sort();
 }
 
 function syncRoleMetadata() {
@@ -662,13 +827,21 @@ function syncRoleMetadata() {
       current.members.add(member.id);
       scopeMembers.set(key, current);
     });
-    return { ...role,
+    return {
+      ...role,
       member_count: String(new Set(assigned.map(({ member }) => member.id)).size),
-      members: assigned.map(({ member, item }) => ({ membership: member.id, member_id: member.member_id,
-        display_name: member.display_name, employee_no: member.employee_no, access_version: member.access_version,
-        scope: item.scope, scope_source: item.scope_source, effective_at: item.effective_at, expires: null })),
-      scopes: [...scopeMembers.values()].map((item) => ({ scope: item.scope, source: item.source,
-        member_count: String(item.members.size) })),
+      members: assigned.map(({ member, item }) => ({
+        membership: member.id,
+        member_id: member.member_id,
+        display_name: member.display_name,
+        employee_no: member.employee_no,
+        access_version: member.access_version,
+        scope: item.scope,
+        scope_source: item.scope_source,
+        effective_at: item.effective_at,
+        expires: null,
+      })),
+      scopes: [...scopeMembers.values()].map((item) => ({ scope: item.scope, source: item.source, member_count: String(item.members.size) })),
     };
   });
 }

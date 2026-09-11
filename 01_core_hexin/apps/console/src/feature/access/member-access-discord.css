@@ -9,28 +9,34 @@
   --member-muted: #667085;
   --member-border: #d7dbe5;
   --member-shadow: 0 1px 2px rgb(17 17 17 / 3%), 0 12px 30px rgb(13 45 114 / 5%);
-  gap: 14px;
-  background: #f4f5f8;
-  padding: 20px;
+  gap: 18px;
+  background: linear-gradient(180deg, #f7f9fd 0%, #f3f6fb 100%);
+  padding: 24px;
 }
 
-.memberaccesseyebrow {
-  display: block;
-  margin-bottom: 4px;
-  color: #143a8f;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .12em;
+.memberaccessworkspace .storefrontmemberhero {
+  align-items: center;
+  padding: 4px 2px 6px;
 }
-
-.memberaccessworkspace .storefrontmemberhero { align-items: flex-end; padding: 0 4px 2px; }
-.memberaccessworkspace .storefrontmemberhero h1 { color: #111; font-size: 24px; letter-spacing: -.02em; }
-.memberaccessworkspace .storefrontmemberhero p { margin-top: 7px; color: #667085; font-size: 13px; }
-.memberaccessworkspace .storefrontmemberherometa { gap: 8px; }
+.memberaccessworkspace .storefrontmemberhero h1 {
+  color: #10203b;
+  font-size: 27px;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+.memberaccessworkspace .storefrontmemberhero p {
+  margin-top: 7px;
+  color: #77839a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.memberaccessworkspace .storefrontmemberherometa {
+  gap: 8px;
+}
 .memberaccessworkspace .storefrontmemberherometa button {
-  min-height: 36px;
+  min-height: 40px;
   border: 1px solid #d7dbe5;
-  border-radius: 12px;
+  border-radius: 9px;
   background: #fff;
   color: #344054;
   padding: 0 14px;
@@ -39,77 +45,163 @@
   font-weight: 600;
   cursor: pointer;
 }
-.memberaccessworkspace .storefrontmemberherometa button:hover { border-color: #9fb2d8; color: #143a8f; }
-.memberaccessworkspace .storefrontmemberherometa button[data-tone='primary'] { border-color: #143a8f; background: #143a8f; color: #fff; }
-.memberaccessworkspace .storefrontmemberherometa button[data-tone='primary']:hover { background: #0d2d72; }
-.memberaccessworkspace .storefrontmemberherometa button:focus-visible,
-.memberaccessdetailactions button:focus-visible { outline: 3px solid rgb(40 87 189 / 16%); outline-offset: 2px; }
-
-.memberaccessworkspace .storefrontmemberoverview { gap: 12px; }
-.memberaccessworkspace .storefrontmemberoverviewitem {
-  min-height: 84px;
-  border-color: #d7dbe5;
-  border-radius: 12px;
-  padding: 15px 18px;
-  box-shadow: none;
-}
-.memberaccessworkspace .storefrontmemberoverviewitem > svg {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: #edf2fb;
+.memberaccessworkspace .storefrontmemberherometa button:hover {
+  border-color: #9fb2d8;
   color: #143a8f;
-  padding: 10px;
 }
-.memberaccessworkspace .storefrontmemberoverviewitem span { color: #667085; font-size: 12px; font-weight: 500; }
-.memberaccessworkspace .storefrontmemberoverviewitem strong { color: #111; font-size: 20px; }
-.memberaccessworkspace .storefrontmemberoverviewitem[data-tone='purple'] > svg,
-.memberaccessworkspace .storefrontmemberoverviewitem[data-tone='purple'] strong,
-.memberaccessworkspace .storefrontmemberoverviewitem[data-tone='success'] > svg,
-.memberaccessworkspace .storefrontmemberoverviewitem[data-tone='success'] strong { color: #143a8f; }
+.memberaccessworkspace .storefrontmemberherometa button[data-tone='primary'] {
+  border-color: #143a8f;
+  background: #143a8f;
+  color: #fff;
+}
+.memberaccessworkspace .storefrontmemberherometa button[data-tone='primary']:hover {
+  background: #0d2d72;
+}
+.memberaccessworkspace .storefrontmemberherometa button:focus-visible,
+.memberaccessdetailactions button:focus-visible {
+  outline: 3px solid rgb(40 87 189 / 16%);
+  outline-offset: 2px;
+}
 
-.memberaccessworkspace .storefrontmemberstage { position: relative; display: block; overflow: hidden; }
-.memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] { grid-template-columns: none; gap: 0; }
+.memberaccessworkspace .storefrontmemberstage {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+.memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] {
+  grid-template-columns: none;
+  gap: 0;
+}
 .memberaccessworkspace .storefrontmemberpanel {
   min-height: 570px;
   border-color: #d7dbe5;
-  border-radius: 20px;
+  border-radius: 14px;
   box-shadow: var(--member-shadow);
 }
-.memberaccessworkspace .storefrontmemberpanelheading { min-height: 76px; padding: 0 20px; }
-.memberaccessworkspace .storefrontmemberpanelheading h2 { color: #111; font-size: 18px; }
-.memberaccessworkspace .storefrontmemberpanelheading small { color: #667085; font-size: 11px; font-weight: 500; }
-.memberaccessworkspace .storefrontmemberpanelheading > div > span { background: #edf2fb; color: #143a8f; }
-.memberaccessworkspace .storefrontmembericonbutton { width: 36px; height: 36px; border-radius: 12px; }
+.memberaccessworkspace .storefrontmemberpanelheading {
+  min-height: 72px;
+  padding: 0 22px;
+}
+.memberaccessworkspace .storefrontmemberpanelheading h2 {
+  color: #111;
+  font-size: 18px;
+}
+.memberaccessworkspace .storefrontmemberpanelheading small {
+  color: #667085;
+  font-size: 11px;
+  font-weight: 500;
+}
+.memberaccessworkspace .storefrontmemberpanelheading > div > span {
+  background: #edf2fb;
+  color: #143a8f;
+}
+.memberaccessworkspace .storefrontmembericonbutton {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
 
-.memberaccessworkspace .storefrontmembersearch { padding: 14px 16px 10px; }
-.memberaccessworkspace .storefrontmembersearch input { height: 38px; border-color: #cfd5df; border-radius: 12px; font-size: 13px; }
-.memberaccessworkspace .storefrontmembersearch button { min-height: 36px; border-color: #143a8f; border-radius: 12px; color: #143a8f; font-weight: 600; }
-.memberaccessworkspace .storefrontmemberfilters { justify-content: flex-end; gap: 6px; padding: 0 16px 14px; }
-.memberaccessworkspace .storefrontmemberfilters button { min-height: 32px; border-radius: 10px; padding: 0 12px; font-size: 12px; font-weight: 500; }
-.memberaccessworkspace .storefrontmemberfilters button[aria-pressed='true'] { border-color: #b9c9e8; background: #edf2fb; color: #143a8f; }
+.memberaccessworkspace .storefrontmembersearch {
+  padding: 14px 16px 10px;
+}
+.memberaccessworkspace .storefrontmembersearch input {
+  height: 38px;
+  border-color: #cfd5df;
+  border-radius: 12px;
+  font-size: 13px;
+}
+.memberaccessworkspace .storefrontmembersearch button {
+  min-height: 36px;
+  border-color: #143a8f;
+  border-radius: 12px;
+  color: #143a8f;
+  font-weight: 600;
+}
+.memberaccessworkspace .storefrontmemberfilters {
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 16px 14px;
+}
+.memberaccessworkspace .storefrontmemberfilters button {
+  min-height: 34px;
+  border-radius: 999px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.memberaccessworkspace .storefrontmemberfilters button[aria-pressed='true'] {
+  border-color: #2366df;
+  background: #2366df;
+  color: #fff;
+  box-shadow: 0 5px 12px rgb(35 102 223 / 18%);
+}
 
 .memberaccessworkspace .storefrontmemberlisthead,
 .memberaccessworkspace .storefrontmemberrow,
 .memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberlisthead,
 .memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberrow {
-  grid-template-columns: minmax(190px, 1.2fr) minmax(100px, .7fr) minmax(125px, .85fr) minmax(220px, 1.5fr) minmax(85px, .55fr) minmax(105px, .7fr) 18px;
+  grid-template-columns: minmax(190px, 1.2fr) minmax(100px, 0.7fr) minmax(125px, 0.85fr) minmax(220px, 1.5fr) minmax(85px, 0.55fr) minmax(105px, 0.7fr) 18px;
   column-gap: 12px;
   padding-right: 18px;
   padding-left: 18px;
 }
-.memberaccessworkspace .storefrontmemberlisthead { min-height: 42px; background: #f7f8fa; color: #667085; font-size: 11px; font-weight: 600; }
-.memberaccessworkspace .storefrontmemberrow { min-height: 66px; color: #475467; }
-.memberaccessworkspace .storefrontmemberrow:hover { background: #f7f9fc; }
-.memberaccessworkspace .storefrontmemberperson { grid-template-columns: 36px minmax(0, 1fr); }
-.memberaccessworkspace .storefrontmemberperson > i { width: 36px; height: 36px; background: #eaf0fa; color: #143a8f; font-weight: 600; }
-.memberaccessworkspace .storefrontmemberperson strong { color: #101828; font-size: 13px; font-weight: 600; }
-.memberaccessworkspace .storefrontmemberperson small { grid-column: 2; color: #7a8496; font-size: 11px; }
-.memberaccessrole { width: fit-content; border-radius: 8px; background: #edf2fb; color: #143a8f; padding: 4px 8px; font-size: 11px; font-weight: 600; }
-.memberaccessrole[data-administrator='true'] { background: #edf2fb; color: #143a8f; }
-.memberaccessscopecol { color: #475467; font-size: 12px; }
-.memberaccesschevron { color: #98a2b3; }
-.storefrontmemberrow:hover .memberaccesschevron { color: #143a8f; }
+.memberaccessworkspace .storefrontmemberlisthead {
+  min-height: 42px;
+  background: #f7f8fa;
+  color: #667085;
+  font-size: 11px;
+  font-weight: 600;
+}
+.memberaccessworkspace .storefrontmemberrow {
+  min-height: 66px;
+  color: #475467;
+}
+.memberaccessworkspace .storefrontmemberrow:hover {
+  background: #f7f9fc;
+}
+.memberaccessworkspace .storefrontmemberperson {
+  grid-template-columns: 36px minmax(0, 1fr);
+}
+.memberaccessworkspace .storefrontmemberperson > i {
+  width: 36px;
+  height: 36px;
+  background: #eaf0fa;
+  color: #143a8f;
+  font-weight: 600;
+}
+.memberaccessworkspace .storefrontmemberperson strong {
+  color: #101828;
+  font-size: 13px;
+  font-weight: 600;
+}
+.memberaccessworkspace .storefrontmemberperson small {
+  grid-column: 2;
+  color: #7a8496;
+  font-size: 11px;
+}
+.memberaccessrole {
+  width: fit-content;
+  border-radius: 8px;
+  background: #edf2fb;
+  color: #143a8f;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.memberaccessrole[data-administrator='true'] {
+  background: #edf2fb;
+  color: #143a8f;
+}
+.memberaccessscopecol {
+  color: #475467;
+  font-size: 12px;
+}
+.memberaccesschevron {
+  color: #98a2b3;
+}
+.storefrontmemberrow:hover .memberaccesschevron {
+  color: #143a8f;
+}
 
 .memberaccessworkspace .storefrontmemberdetail {
   position: absolute;
@@ -117,44 +209,118 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: min(500px, calc(100% - 32px));
+  width: min(510px, calc(100% - 32px));
   border-color: #d7dbe5;
-  border-radius: 20px;
+  border-radius: 0 14px 14px 0;
   box-shadow: -18px 0 48px rgb(13 45 114 / 18%);
   pointer-events: none;
 }
-.memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberdetail { pointer-events: auto; }
-.memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberpanel { opacity: 1; transform: none; pointer-events: auto; }
-.memberaccessworkspace .storefrontmemberdetail .storefrontmemberpanelheading { min-height: 72px; }
-.memberaccessworkspace .storefrontmemberdetailtabs { min-height: 50px; gap: 24px; padding: 0 18px; }
-.memberaccessworkspace .storefrontmemberdetailtabs button { font-size: 13px; font-weight: 500; }
+.memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberdetail {
+  pointer-events: auto;
+}
+.memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberpanel {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.memberaccessworkspace .storefrontmemberdetail .storefrontmemberpanelheading {
+  min-height: 72px;
+}
+.memberaccessworkspace .storefrontmemberdetailtabs {
+  min-height: 50px;
+  gap: 24px;
+  padding: 0 18px;
+}
+.memberaccessworkspace .storefrontmemberdetailtabs button {
+  font-size: 13px;
+  font-weight: 500;
+}
 .memberaccessworkspace .storefrontmemberidentitycard,
-.memberaccessworkspace .storefrontmemberdetailsection { border-radius: 12px; }
-.memberaccessdetailactions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
-.memberaccessdetailactions button { min-height: 36px; border: 1px solid #d7dbe5; border-radius: 12px; background: #fff; color: #344054; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
-.memberaccessdetailactions button[data-tone='primary'] { border-color: #143a8f; background: #143a8f; color: #fff; }
-.memberaccessworkspace .storefrontmemberemptyline button { min-height: 30px; margin-top: 8px; border: 1px solid #cbd9ec; border-radius: 10px; background: #fff; color: #143a8f; padding: 0 10px; font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }
-.memberaccessworkspace .storefrontmemberemptyline button:disabled { cursor: not-allowed; opacity: .42; }
+.memberaccessworkspace .storefrontmemberdetailsection {
+  border-radius: 12px;
+}
+.memberaccessdetailactions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 14px;
+}
+.memberaccessdetailactions button {
+  min-height: 36px;
+  border: 1px solid #d7dbe5;
+  border-radius: 12px;
+  background: #fff;
+  color: #344054;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.memberaccessdetailactions button[data-tone='primary'] {
+  border-color: #143a8f;
+  background: #143a8f;
+  color: #fff;
+}
+.memberaccessworkspace .storefrontmemberemptyline button {
+  min-height: 30px;
+  margin-top: 8px;
+  border: 1px solid #cbd9ec;
+  border-radius: 10px;
+  background: #fff;
+  color: #143a8f;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.memberaccessworkspace .storefrontmemberemptyline button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
 
 @media (max-width: 1100px) {
   .memberaccessworkspace .memberaccessscopecol,
-  .memberaccessworkspace .storefrontmemberstatuscol { display: none; }
+  .memberaccessworkspace .storefrontmemberstatuscol {
+    display: none;
+  }
   .memberaccessworkspace .storefrontmemberlisthead,
   .memberaccessworkspace .storefrontmemberrow,
   .memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberlisthead,
-  .memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberrow { grid-template-columns: minmax(190px, 1.5fr) minmax(95px, .7fr) minmax(120px, 1fr) minmax(105px, .7fr) 18px; }
+  .memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberrow {
+    grid-template-columns: minmax(190px, 1.5fr) minmax(95px, 0.7fr) minmax(120px, 1fr) minmax(105px, 0.7fr) 18px;
+  }
 }
 
 @media (max-width: 760px) {
-  .memberaccessworkspace { padding: 12px; }
-  .memberaccessworkspace .storefrontmemberhero { align-items: flex-start; }
-  .memberaccessworkspace .storefrontmemberdetail { width: 100%; border-radius: 20px; }
-  .memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberpanel { opacity: 0; transform: translateX(-24px); pointer-events: none; }
-  .memberaccessworkspace .storefrontmemberherometa { flex-wrap: wrap; justify-content: flex-end; }
-  .memberaccessworkspace .storefrontmemberherometa button { min-height: 32px; padding: 0 10px; }
+  .memberaccessworkspace {
+    padding: 12px;
+  }
+  .memberaccessworkspace .storefrontmemberhero {
+    align-items: flex-start;
+  }
+  .memberaccessworkspace .storefrontmemberdetail {
+    width: 100%;
+    border-radius: 20px;
+  }
+  .memberaccessworkspace .storefrontmemberstage[data-detail-open='true'] .storefrontmemberpanel {
+    opacity: 0;
+    transform: translateX(-24px);
+    pointer-events: none;
+  }
+  .memberaccessworkspace .storefrontmemberherometa {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .memberaccessworkspace .storefrontmemberherometa button {
+    min-height: 32px;
+    padding: 0 10px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .memberaccessworkspace .storefrontmemberdetail,
-  .memberaccessworkspace .memberaccesschevron { transition: none; }
+  .memberaccessworkspace .memberaccesschevron {
+    transition: none;
+  }
 }

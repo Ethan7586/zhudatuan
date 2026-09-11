@@ -1016,7 +1016,6 @@
   .invitationrecordspanel > .shopbutton {
     width: 100%;
   }
-
 }
 
 @media (max-width: 40rem) {
@@ -1087,12 +1086,513 @@
 }
 
 /* ZHU-VI 1.6 role template workspace */
-.roleeditorv16 {
+.roleeditorv17 {
   position: relative;
   display: block;
   min-height: 46rem;
   padding-bottom: 5.25rem;
   background: #fff;
+}
+
+/* ZHU-VI 1.7 · approved administrator and role-template composition */
+.roleaccessworkspace {
+  gap: 18px;
+  background: linear-gradient(180deg, #f7f9fd 0%, #f3f6fb 100%);
+  padding: 24px;
+}
+
+.roleaccesshero {
+  align-items: center;
+  padding: 4px 2px 6px;
+}
+
+.roleaccesshero .swworkspaceheroeyebrow {
+  display: none;
+}
+.roleaccesshero .swworkspaceherotitle {
+  color: #10203b;
+  font-size: 27px;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+.roleaccesshero .swworkspaceherodescription {
+  margin-top: 7px;
+  color: #77839a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.roleaccesshero .shopbutton {
+  min-height: 40px;
+  border-radius: 9px;
+  padding-inline: 18px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.roleaccessmasterdetail {
+  min-height: 720px;
+  grid-template-columns: 320px minmax(0, 1fr);
+  border-color: #dce2ec;
+  border-radius: 14px;
+  box-shadow: 0 12px 34px rgb(25 52 91 / 7%);
+}
+
+.roleaccessmasterdetail > .swmasterdetailmaster {
+  border-right-color: #e3e7ef;
+  background: #fff;
+}
+
+.roledirectory {
+  gap: 14px;
+  padding: 22px 18px;
+}
+.roledirectory > header h2 {
+  color: #1d2a43;
+  font-size: 18px;
+}
+.roledirectory > header p {
+  margin-top: 5px;
+  color: #8a94a7;
+  font-size: 12px;
+}
+.roledirectorysearch {
+  color: transparent;
+  font-size: 0;
+}
+.roledirectorysearch input {
+  min-height: 42px;
+  border-color: #d9dfea;
+  border-radius: 9px;
+  background: #f8faff;
+  padding-inline: 14px;
+  font-size: 13px;
+  box-shadow: none;
+}
+.roledirectorylist {
+  display: grid;
+  gap: 10px;
+}
+.roledirectorylist .swmasteritem {
+  min-height: 86px;
+  border: 1px solid #e1e6ef;
+  border-radius: 10px;
+  background: #fff;
+  padding: 13px 12px;
+}
+.roledirectorylist .swmasteritem:hover {
+  border-color: #b9cced;
+  background: #f9fbff;
+}
+.roledirectorylist .swmasteritem[data-selected='true'] {
+  border-color: #bfd3f6;
+  background: #edf5ff;
+  box-shadow: none;
+}
+.roledirectorylist .swmasteritem[data-selected='true']::before {
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #2b6ef2;
+}
+.roledirectorylist .swmasteritemcopy {
+  gap: 4px;
+}
+.roledirectorylist .swmasteritemcopy > strong {
+  color: #15223b;
+  font-size: 14px;
+  font-weight: 700;
+}
+.roledirectorylist .swmasteritemcopy > small {
+  color: #8792a6;
+  font-size: 12px;
+}
+.rolestatusline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #168d64 !important;
+  font-size: 12px !important;
+}
+.rolestatusline i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #15a876;
+}
+.roleavatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #edf4ff;
+  color: #276be5;
+}
+.roleavatar[data-kind='owner'] {
+  background: #f3edff;
+  color: #8355dd;
+}
+.roleavatar svg {
+  width: 22px;
+  height: 22px;
+}
+.roleitemchevron {
+  color: #6f7c91;
+  font-size: 24px;
+  font-weight: 300;
+}
+
+.roleeditorv17 {
+  min-height: 720px;
+  padding-bottom: 76px;
+  background: #fff;
+}
+.roleprofileheader {
+  grid-template-columns: 50px minmax(0, 1fr);
+  gap: 14px;
+  min-height: 112px;
+  padding: 22px 24px 16px;
+}
+.roleprofileavatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 13px;
+}
+.roleprofileavatar svg {
+  width: 25px;
+  height: 25px;
+}
+.roleprofileavatar b {
+  font-size: 13px;
+}
+.roleprofileheader h2 {
+  color: #13213a;
+  font-size: 20px;
+  font-weight: 750;
+}
+.roleprofileheader p {
+  color: #7c879b;
+  font-size: 13px;
+}
+.roledetailtabs {
+  gap: 38px;
+  min-height: 52px;
+  padding-inline: 24px;
+}
+.roledetailtabs > button {
+  min-height: 52px;
+  color: #6f7a8e;
+  font-size: 13px;
+}
+.roledetailtabs > button[aria-selected='true'] {
+  color: #2165d8;
+  font-weight: 700;
+}
+.roledetailtabs > button[aria-selected='true']::after {
+  height: 3px;
+  background: #2b6ff2;
+}
+
+.roleeditorlayout {
+  display: grid;
+  grid-template-columns: minmax(520px, 1fr) 330px;
+  min-height: 478px;
+}
+.roleeditorbody {
+  min-width: 0;
+  padding: 24px 26px 30px;
+}
+.rolepermissionsview {
+  display: grid;
+  gap: 22px;
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+.roleeditorname {
+  max-width: 520px;
+}
+.roleeditorname > span {
+  border-radius: 10px;
+  box-shadow: none;
+}
+.rolepermissionoverview {
+  gap: 16px;
+}
+.rolepermissionoverview > header h3 {
+  color: #17243d;
+  font-size: 18px;
+  line-height: 1.35;
+}
+.rolepermissionoverview > header p {
+  margin-top: 6px;
+  color: #8590a3;
+  font-size: 12px;
+}
+.rolepermissionoverview > header label {
+  width: 190px;
+  color: transparent;
+  font-size: 0;
+}
+.rolepermissionoverview > header label input {
+  min-height: 38px;
+  border-radius: 9px;
+  background: #fafbfe;
+  font-size: 12px;
+}
+
+.rolecategorygrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.rolecategorygrid button {
+  position: relative;
+  min-height: 146px;
+  grid-template-columns: 42px minmax(0, 1fr) 20px;
+  grid-template-rows: auto 24px;
+  align-items: start;
+  gap: 10px 12px;
+  border: 1px solid #dfe4ec;
+  border-radius: 11px;
+  background: #fff;
+  padding: 17px;
+}
+.rolecategorygrid button:hover {
+  border-color: #9ab9f5;
+  background: #f9fbff;
+}
+.rolecategorygrid button[data-selected='true'] {
+  border-color: #4e83f1;
+  background: #f8fbff;
+  box-shadow: 0 0 0 2px rgb(63 117 234 / 8%);
+}
+.rolecategorygrid button > span {
+  display: grid;
+  gap: 7px;
+  white-space: normal;
+}
+.rolecategorygrid button > span strong {
+  color: #17243d;
+  font-size: 14px;
+  font-weight: 750;
+}
+.rolecategorygrid button > span small {
+  color: #7e899d;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.rolecategorygrid button > i {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #bdc7d6;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  font-style: normal;
+  place-items: center;
+}
+.rolecategorygrid button[data-selected='true'] > i {
+  border-color: #2e6ff0;
+  background: #2e6ff0;
+}
+.rolecategorygrid button > em {
+  grid-column: 1 / 3;
+  align-self: end;
+  color: #67758c;
+  font-size: 12px;
+  font-style: normal;
+}
+.rolecategorygrid button > b {
+  align-self: end;
+  color: #66758d;
+  font-size: 20px;
+  font-weight: 400;
+}
+.rolecapabilityicon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: #edf4ff;
+  color: #2d6de5;
+  place-items: center;
+}
+.rolecapabilityicon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.rolepermissiondirectory {
+  gap: 12px;
+  scroll-margin-top: 18px;
+}
+.rolepermissiondirectory > section {
+  overflow: hidden;
+  border: 1px solid #e2e7ef;
+  border-radius: 10px;
+  background: #fff;
+}
+.rolepermissiondirectory > section > header {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  background: #f7f9fc;
+  padding: 8px 12px;
+  color: #24334c;
+  font-size: 13px;
+  font-weight: 700;
+}
+.rolepermissionitems {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.rolepermissionitems label {
+  min-height: 58px;
+}
+.rolepermissionempty {
+  border: 1px dashed #dce2eb;
+  background: #fafbfd;
+  padding: 18px;
+  text-align: center;
+}
+
+.roleimpactpreview {
+  min-width: 0;
+  border-left: 1px solid #e1e6ee;
+  background: #fbfcfe;
+  padding: 26px 24px;
+}
+.roleimpactpreview h3,
+.roleimpactpreview h4,
+.roleimpactpreview p {
+  margin: 0;
+}
+.roleimpactpreview > header h3 {
+  color: #17243c;
+  font-size: 20px;
+  line-height: 1.35;
+}
+.roleimpactpreview > header p {
+  margin-top: 6px;
+  color: #929caf;
+  font-size: 12px;
+}
+.roleimpactpreview > section {
+  padding: 22px 0;
+  border-bottom: 1px solid #e7ebf1;
+}
+.roleimpactpreview > section:last-child {
+  border-bottom: 0;
+}
+.roleimpactpreview h4 {
+  color: #198a61;
+  font-size: 14px;
+}
+.roleimpactpreview section[data-tone='danger'] h4 {
+  color: #d44f5a;
+}
+.roleimpactpreview ul {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.roleimpactpreview li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  color: #4e5c73;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.roleimpactpreview li i {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #18a677;
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  place-items: center;
+}
+.roleimpactpreview section[data-tone='danger'] li i {
+  background: #e24e58;
+}
+.roleimpactpreview section > p {
+  margin-top: 12px;
+  color: #8792a5;
+  font-size: 12px;
+}
+.roleimpactmetric {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 13px;
+}
+.roleimpactmetric .rolecapabilityicon {
+  width: 36px;
+  height: 36px;
+}
+.roleimpactmetric .rolecapabilityicon svg {
+  width: 19px;
+  height: 19px;
+}
+.roleimpactmetric strong {
+  color: #334158;
+  font-size: 13px;
+}
+
+.roleoverviewv16 {
+  grid-template-columns: minmax(0, 1fr);
+}
+.roleoverviewv16 > aside {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.roleeditorsticky {
+  min-height: 76px;
+  padding: 12px 24px;
+}
+.roleeditorsticky[data-dirty='false'] i {
+  background: #b9c2d0;
+}
+.roleeditorsticky .shopbutton {
+  min-width: 112px;
+  min-height: 40px;
+  border-radius: 9px;
+}
+
+@media (max-width: 1180px) {
+  .roleaccessmasterdetail {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+  .roleeditorlayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .roleimpactpreview {
+    border-top: 1px solid #e1e6ee;
+    border-left: 0;
+  }
+}
+
+@media (max-width: 860px) {
+  .roleaccessworkspace {
+    padding: 14px;
+  }
+  .roleaccessmasterdetail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rolecategorygrid,
+  .rolepermissionitems {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rolepermissionoverview > header {
+    display: grid;
+  }
+  .rolepermissionoverview > header label {
+    width: 100%;
+  }
 }
 
 .roleprofileheader {
@@ -1573,5 +2073,62 @@
     position: sticky;
     flex-wrap: wrap;
     padding-inline: 1.25rem;
+  }
+}
+
+/* Keep the approved v1.7 measurements authoritative over the legacy v1.6 tail. */
+.roleeditorv17 .roleprofileheader {
+  grid-template-columns: 50px minmax(0, 1fr);
+  gap: 14px;
+  min-height: 112px;
+  padding: 22px 24px 16px;
+}
+.roleeditorv17 .roleprofileavatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 13px;
+}
+.roleeditorv17 .roleprofileheader h2 {
+  font-size: 20px;
+}
+.roleeditorv17 .roleprofileheader p {
+  margin-top: 5px;
+  font-size: 13px;
+}
+.roleeditorv17 .roledetailtabs {
+  gap: 38px;
+  min-height: 52px;
+  padding-inline: 24px;
+}
+.roleeditorv17 .roledetailtabs > button {
+  min-height: 52px;
+  font-size: 13px;
+}
+.roleeditorv17 .roleeditorbody {
+  min-width: 0;
+  padding: 24px 26px 30px;
+}
+.roleeditorv17 .rolepermissionsview {
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+.roleeditorv17 .roleeditorsticky {
+  min-height: 76px;
+  padding: 12px 24px;
+}
+
+@media (max-width: 860px) {
+  .roleeditorv17 .roleprofileheader {
+    grid-template-columns: 44px minmax(0, 1fr);
+    padding-inline: 18px;
+  }
+  .roleeditorv17 .roledetailtabs {
+    gap: 24px;
+    overflow-x: auto;
+    padding-inline: 18px;
+  }
+  .roleeditorv17 .roleeditorbody {
+    padding: 20px 18px 26px;
   }
 }
