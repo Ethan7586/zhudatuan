@@ -10,6 +10,8 @@ import {
   generateNodeManifestRegistry,
   hasValidNodeManifestDigest,
   nodeContextOf,
+  parseHostedNodeProvisioningRequest,
+  parseHostedNodeProvisioningResult,
   parseNodeContext,
   parseNodeManifest,
   parseNodeManifestRegistry,
@@ -387,6 +389,71 @@ describe('SFL node kernel', () => {
       ...registry,
       manifests: [{ ...manifestByLevel('L0'), node_id: nodeId('l11') }],
     })).toThrow('SFL_NODE_MANIFEST_NON_SOVEREIGN');
+  });
+
+  it('parses hosted provisioning requests without deriving profile from signed level', () => {
+    const base = {
+      idempotency_key: 'hosted-request:fixture:1',
+      node_id: 'node:fixture-hosted:l5',
+      parent_node_id: nodeId('l0'),
+      realm_id: 'realm:fixture-hosted-l5',
+      node_profile: 'consumer',
+      mall_id: null,
+      signed_level: 'L5',
+      effective_at: relationEffectiveAt,
+      requested_by: 'principal:fixture:operator',
+      trace_id: 'trace:fixture:hosted',
+    } as const;
+
+    expect(parseHostedNodeProvisioningRequest(base)).toMatchObject({ signed_level: 'L5', node_profile: 'consumer' });
+    expect(parseHostedNodeProvisioningRequest({
+      ...base,
+      idempotency_key: 'hosted-request:fixture:2',
+      node_id: 'node:fixture-hosted:l6',
+      realm_id: 'realm:fixture-hosted-l6',
+      node_profile: 'operating_mall',
+      mall_id: 'mall:fixture:hosted-l6',
+      signed_level: 'L6',
+    })).toMatchObject({ signed_level: 'L6', node_profile: 'operating_mall' });
+  });
+
+  it('rejects hosted request shapes outside the shared node model', () => {
+    const request = {
+      idempotency_key: 'hosted-request:fixture:invalid',
+      node_id: 'node:fixture-hosted:l1',
+      parent_node_id: nodeId('l0'),
+      realm_id: 'realm:fixture-hosted-invalid',
+      node_profile: 'consumer',
+      mall_id: null,
+      signed_level: 'L1',
+      effective_at: relationEffectiveAt,
+      requested_by: 'principal:fixture:operator',
+      trace_id: 'trace:fixture:hosted-invalid',
+    } as const;
+
+    expect(() => parseHostedNodeProvisioningRequest({ ...request, mall_id: 'mall:forbidden' }))
+      .toThrow('SFL_HOSTED_NODE_PROFILE_MALL_INVALID');
+    expect(() => parseHostedNodeProvisioningRequest({ ...request, signed_level: 'L0' }))
+      .toThrow('SFL_HOSTED_NODE_LEVEL_INVALID');
+    expect(() => parseHostedNodeProvisioningRequest({ ...request, parent_node_id: request.node_id }))
+      .toThrow('SFL_HOSTED_NODE_PARENT_INVALID');
+  });
+
+  it('parses a data-only hosted provisioning result and its persisted replay fact', () => {
+    const result = parseHostedNodeProvisioningResult({
+      ...node('l5', 'hosted', 'consumer', null),
+      ...relation('l5', 'l0', 'L5'),
+      idempotency_key: 'hosted-request:fixture:result',
+      request_hash: 'a'.repeat(64),
+      requested_by: 'principal:fixture:operator',
+      trace_id: 'trace:fixture:hosted-result',
+      replayed: true,
+    });
+
+    expect(result).toMatchObject({ sovereignty_tier: 'hosted', node_profile: 'consumer', relation_version: 1, replayed: true });
+    expect(Object.keys(result)).not.toEqual(expect.arrayContaining([
+      'manifest_id', 'domain_bindings', 'gateway_port', 'runtime_instance_id', 'release_pointer_ref',
+    ]));
   });
 
   it('preserves relation history and resolves exactly one parent edge per effective period', () => {

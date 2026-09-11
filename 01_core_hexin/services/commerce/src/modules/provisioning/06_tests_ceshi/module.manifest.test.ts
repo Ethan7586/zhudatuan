@@ -7,6 +7,7 @@ describe('provisioning module manifest', () => {
     expect(provisioningManifest.id).toBe('provisioning');
     expect(provisioningManifest.publicEntry).toBe('./index.ts');
     expect(provisioningManifest.provides).toEqual([]);
+    expect(provisioningPublic).toHaveProperty('HostedNodeProvisioningPort');
     expect(provisioningPublic).toHaveProperty('MallOwnerProvisioningPort');
     expect(provisioningPublic).toHaveProperty('DomainPurchaseLifecycle');
     expect(provisioningPublic).toHaveProperty('DomainPurchasePolicy');
