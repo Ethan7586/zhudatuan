@@ -46,7 +46,7 @@ export function MemberInvitationDialog({
   const receipt = mutation.data;
   const submittedDraft = mutation.variables;
   const tenantScopes = context.scopes.filter((scope) => scope.kind === 'tenant' && scope.id === 'tenant-zhudatuan');
-  const invitationAuthority = context.session.governance ?? authority;
+  const invitationAuthority = authority ?? context.session.governance;
   const canSelectSenior = invitationAuthority?.level === 'owner' && invitationAuthority.exactOwner;
   const selectedScope = invitationScope(context, context.scope.kind === 'platform' ? tenantId : undefined);
   const submittedScope = invitationScope(context, submittedDraft?.tenantId);
