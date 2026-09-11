@@ -112,24 +112,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
 
   return (
     <>
-      <section className="storefrontmembersworkspace memberaccessworkspace" aria-labelledby="memberaccessworkspacetitle">
-        <header className="storefrontmemberhero">
-          <div>
-            <h1 id="memberaccessworkspacetitle">管理与权限</h1>
-            <p>管理节点管理员身份，配置角色、权限与协作范围。</p>
-          </div>
-          <div className="storefrontmemberherometa">
-            <button type="button" onClick={() => void navigate(scopePath(context.scope, 'settings/access'))}>
-              角色模板
-            </button>
-            {invitationWritable ? (
-              <button type="button" data-tone="primary" onClick={() => setInvitationOpen(true)}>
-                邀请管理员
-              </button>
-            ) : null}
-          </div>
-        </header>
-
+      <section className="storefrontmembersworkspace memberaccessworkspace" aria-label="管理与权限">
         <div className="storefrontmemberstage" data-detail-open={detailOpen}>
           <section className="storefrontmemberpanel" aria-labelledby="memberdirectorytitle">
             <header className="storefrontmemberpanelheading">
@@ -138,7 +121,15 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
                 <span>{total}</span>
                 <small>点击管理员查看资料、身份与权限及邀请记录</small>
               </div>
-              <div className="storefrontmemberpanelactions">
+              <div className="storefrontmemberpanelactions memberaccessdirectoryactions">
+                <button type="button" onClick={() => void navigate(scopePath(context.scope, 'settings/access'))}>
+                  角色模板
+                </button>
+                {invitationWritable ? (
+                  <button type="button" data-tone="primary" onClick={() => setInvitationOpen(true)}>
+                    邀请管理员
+                  </button>
+                ) : null}
                 <IconButton label={fetching ? '正在刷新成员名单' : '刷新成员名单'} icon="refresh" loading={fetching} onPress={refresh} />
                 {detailOpen ? <IconButton label="全屏查看成员目录" icon="expand" onPress={closeDetail} /> : null}
               </div>
