@@ -10,20 +10,26 @@ import { OrderDrawerPanel } from './OrderDrawerPanel';
 import { OrderIcon } from './OrderIcon';
 import { aftersaleLabel, aftersaleTone, formatOrderTime, fulfillmentLabel, fulfillmentTone, lifecycleLabel, paymentLabel, paymentTone } from './OrderPresentation';
 import { OrderPreviewAction } from './OrderPreviewAction';
-import type { OrderDetailTab } from './OrderSchema';
+import type { OrderDetailTab, OrderRecord } from './OrderSchema';
 
 export function OrderDrawer({
   orderId,
+  initialOrder,
   tab,
   previewEnabled,
   mallName,
+  memberDirectoryPath,
+  productDirectoryPath,
   onTab,
   onClose,
 }: Readonly<{
   orderId: string;
+  initialOrder: OrderRecord | undefined;
   tab: OrderDetailTab;
   previewEnabled: boolean;
   mallName: string;
+  memberDirectoryPath: string;
+  productDirectoryPath: string;
   onTab: (tab: OrderDetailTab) => void;
   onClose: () => void;
 }>) {
@@ -35,6 +41,8 @@ export function OrderDrawer({
     queryKey: orderDetailKey(context, orderId),
     queryFn: ({ signal }) => readOrderDetail(context, orderId, signal),
     enabled: orderId !== '',
+    placeholderData: initialOrder,
+    staleTime: 30_000,
   });
   const order = query.data;
   const error = safeQueryError(query.error);
@@ -128,7 +136,8 @@ export function OrderDrawer({
                   <p>当前详情只支持订单精确匹配，请返回目录后重试。</p>
                 </section>
               ) : null}
-              {order === undefined ? null : <OrderDrawerPanel order={order} tab={tab} previewEnabled={previewEnabled} />}
+              {order === undefined ? null : <OrderDrawerPanel order={order} tab={tab} previewEnabled={previewEnabled}
+                memberDirectoryPath={memberDirectoryPath} productDirectoryPath={productDirectoryPath} />}
           </OrderDetailTabs>
 
           <footer className="orderdrawerfooter">

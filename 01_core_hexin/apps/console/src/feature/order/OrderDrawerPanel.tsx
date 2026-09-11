@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { formatMinor } from '../../shared/ui/Format';
 import { OrderIcon } from './OrderIcon';
 import { aftersaleLabel, formatOrderTime, fulfillmentLabel, lifecycleLabel, paymentLabel, previewRecord } from './OrderPresentation';
@@ -8,21 +9,36 @@ export function OrderDrawerPanel({
   order,
   tab,
   previewEnabled,
+  memberDirectoryPath,
+  productDirectoryPath,
 }: Readonly<{
   order: OrderRecord;
   tab: OrderDetailTab;
   previewEnabled: boolean;
+  memberDirectoryPath: string;
+  productDirectoryPath: string;
 }>) {
-  if (tab === 'products') return <ProductsPanel order={order} />;
+  if (tab === 'products') return <ProductsPanel order={order} productDirectoryPath={productDirectoryPath} />;
   if (tab === 'payment') return <PaymentPanel order={order} previewEnabled={previewEnabled} />;
   if (tab === 'aftersale') return <AftersalePanel order={order} />;
   if (tab === 'operations') return <OperationsPanel order={order} previewEnabled={previewEnabled} />;
-  return <OverviewPanel order={order} previewEnabled={previewEnabled} />;
+  return <OverviewPanel order={order} previewEnabled={previewEnabled} memberDirectoryPath={memberDirectoryPath} productDirectoryPath={productDirectoryPath} />;
 }
 
-function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord; previewEnabled: boolean }>) {
+function OverviewPanel({
+  order,
+  previewEnabled,
+  memberDirectoryPath,
+  productDirectoryPath,
+}: Readonly<{
+  order: OrderRecord;
+  previewEnabled: boolean;
+  memberDirectoryPath: string;
+  productDirectoryPath: string;
+}>) {
   const preview = previewRecord(order, previewEnabled);
   const lines = [...(order.lines ?? [])].sort((left, right) => left.id.localeCompare(right.id));
+  const memberLookup = order.participant_membership_id ?? order.member_id;
   return (
     <div className="orderdrawerstack">
       <section className="ordersummarynote">
@@ -36,13 +52,18 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
       <MilestoneChain order={order} previewEnabled={previewEnabled} />
       <FourFlowSummary order={order} />
 
-      <DetailSection title="消费者信息">
+      <DetailSection title="消费会员与订单归属">
         <div className="orderdetailgrid">
-          <Info label="消费者" value={preview?.memberName ?? order.member_id ?? '当前读模型未提供'} />
-          <Info label="消费会员身份" value={order.participant_membership_id ?? '历史订单未冻结'} />
+          <Info label="消费会员" value={preview?.memberName ?? order.member_id ?? '当前读模型未提供'} />
+          <Info label="订单会员身份" value={order.participant_membership_id ?? '历史订单未冻结'} />
           <Info label="参与节点" value={order.participant_node_id ?? '历史订单未冻结'} />
           <Info label="身份域 / 账号" value={[order.participant_realm_id, order.participant_account_id].filter(Boolean).join(' / ') || '历史订单未冻结'} />
         </div>
+        {memberLookup === null || memberLookup === undefined ? null : (
+          <div className="orderrelationaction">
+            <Link to={`${memberDirectoryPath}?q=${encodeURIComponent(memberLookup)}`}>查看商城会员档案</Link>
+          </div>
+        )}
       </DetailSection>
 
       <DetailSection title="商品明细">
@@ -55,12 +76,13 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
                 <span className="orderproductthumb">
                   <OrderIcon name="package" />
                 </span>
-                <span>
+                <span className="orderlinepreviewcopy">
                   <strong>{line.title}</strong>
                   <small>
                     规格 {line.sku} · 数量 {line.quantity}
                   </small>
                   <small>{line.supplierId === null || line.supplierId === undefined ? '供应商未冻结' : `供应商 ${line.supplierId}`}</small>
+                  <Link to={`${productDirectoryPath}?q=${encodeURIComponent(productLookupKey(line))}`}>查看商品</Link>
                 </span>
                 <b>{formatMinor(line.payableMinor, order.currency)}</b>
               </div>
@@ -158,7 +180,7 @@ function snapshotFlow(order: OrderRecord) {
   ] as const;
 }
 
-function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
+function ProductsPanel({ order, productDirectoryPath }: Readonly<{ order: OrderRecord; productDirectoryPath: string }>) {
   const lines = [...(order.lines ?? [])].sort((left, right) => left.id.localeCompare(right.id));
   const reservations = [...(order.inventory_reservations ?? [])].sort((left, right) => left.id.localeCompare(right.id));
   const aftersales = [...(order.aftersales ?? [])].sort((left, right) => right.requestedAt.localeCompare(left.requestedAt));
@@ -170,22 +192,25 @@ function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
         ) : (
           <div className="orderlinelist">
             {lines.map((line) => (
-              <article key={line.id}>
-                <span className="orderproductthumb">
-                  <OrderIcon name="package" />
-                </span>
-                <div>
-                  <strong>{line.title}</strong>
-                  <small>规格 {line.sku}</small>
-                  <small>
-                    数量 {line.quantity} · 单价 {formatMinor(line.unitMinor, order.currency)}
-                  </small>
-                  <small>供应商 {line.supplierId ?? line.partner ?? '历史订单未冻结'}</small>
-                  <small>合同 {line.contractId ?? '历史订单未冻结'}</small>
-                  <small>经营路径 {line.routeId === null || line.routeId === undefined ? '历史订单未冻结' : `${line.routeId} · v${line.routeVersion ?? '—'}`}</small>
-                  <small>履约责任 {line.fulfillmentPartyId ?? '合同未指定'} · 结算责任 {line.settlementPartyId ?? '合同未指定'}</small>
+              <article key={line.id} className="orderproductrecord">
+                <div className="orderproductrecordmain">
+                  <span className="orderproductthumb">
+                    <OrderIcon name="package" />
+                  </span>
+                  <span>
+                    <strong>{line.title}</strong>
+                    <small>规格 {line.sku} · 数量 {line.quantity} · 单价 {formatMinor(line.unitMinor, order.currency)}</small>
+                  </span>
+                  <b>{formatMinor(line.payableMinor, order.currency)}</b>
+                  <Link to={`${productDirectoryPath}?q=${encodeURIComponent(productLookupKey(line))}`}>查看商品</Link>
                 </div>
-                <b>{formatMinor(line.payableMinor, order.currency)}</b>
+                <div className="orderproductfacts">
+                  <Info label="商品主权" value={line.product ?? line.listing ?? '历史订单未冻结'} />
+                  <Info label="可售记录" value={line.listing ?? '历史订单未冻结'} />
+                  <Info label="经营路径" value={line.routeId === null || line.routeId === undefined ? '历史订单未冻结' : `${line.routeId} · v${line.routeVersion ?? '—'}`} />
+                  <Info label="供应与责任" value={`${line.supplierId ?? line.partner ?? '供应商未冻结'} · 履约 ${line.fulfillmentPartyId ?? '合同未指定'} · 结算 ${line.settlementPartyId ?? '合同未指定'}`} />
+                  <Info label="合同" value={line.contractId ?? '历史订单未冻结'} />
+                </div>
               </article>
             ))}
           </div>
@@ -216,6 +241,10 @@ function ProductsPanel({ order }: Readonly<{ order: OrderRecord }>) {
       <Unavailable text="运单与完整履约里程碑尚未进入统一订单读模型。" />
     </div>
   );
+}
+
+function productLookupKey(line: NonNullable<OrderRecord['lines']>[number]): string {
+  return line.product ?? line.listing ?? line.sku;
 }
 
 function PaymentPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord; previewEnabled: boolean }>) {
