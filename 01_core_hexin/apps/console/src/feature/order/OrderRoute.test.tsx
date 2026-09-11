@@ -145,7 +145,7 @@ describe('Order route', () => {
     expect(screen.getByText('本页 1 条 · 全量总数不可用')).toBeTruthy();
     expect(screen.queryByText('member:verified-1')).toBeNull();
     expect(screen.queryByText('mall:verified-1')).toBeNull();
-    expect(screen.getByText('消费者信息未提供')).toBeTruthy();
+    expect(screen.getByText('已绑定消费会员')).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: '金额' })).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: '商品' })).toBeTruthy();
     expect(screen.getByRole('columnheader', { name: '支付' })).toBeTruthy();
@@ -172,6 +172,10 @@ describe('Order route', () => {
     expect(within(flow).getByLabelText('支付：已完成，—')).toBeTruthy();
     expect(within(flow).getByLabelText('履约：进行中，—')).toBeTruthy();
     expect(within(flow).getByLabelText('售后：待进行，—')).toBeTruthy();
+    expect(within(detail).getByRole('heading', { name: '消费会员与订单归属' })).toBeTruthy();
+    expect(within(detail).getByRole('link', { name: '查看商城会员档案' }).getAttribute('href')).toBe(
+      '/scopes/enterprise/enterprise%3A1/storefront-members?q=member%3Averified-1',
+    );
     expect(within(detail).queryByText('不应泄漏的演示说明')).toBeNull();
   });
 
@@ -278,7 +282,7 @@ describe('Order route', () => {
     expect(await screen.findByRole('complementary', { name: new RegExp(order.order_number) })).toBeTruthy();
     expect(currentParams().get('selected')).toBe(order.id);
     expect(currentParams().get('campaign')).toBe('keep');
-    expect(getRequests.some((url) => url.searchParams.get('limit') === '1' && url.searchParams.get('order') === order.id)).toBe(false);
+    await waitFor(() => expect(getRequests.some((url) => url.searchParams.get('limit') === '1' && url.searchParams.get('order') === order.id)).toBe(true));
 
     await user.click(screen.getByRole('button', { name: '关闭订单详情' }));
     await waitFor(() => expect(screen.queryByRole('complementary')).toBeNull());
@@ -310,6 +314,10 @@ describe('Order route', () => {
     await user.keyboard('{ArrowRight}{Enter}');
     await waitFor(() => expect(products.getAttribute('aria-selected')).toBe('true'));
     expect(within(dialog).getByRole('heading', { name: '商品与履约快照' })).toBeTruthy();
+    expect(within(dialog).getByText('商品主权')).toBeTruthy();
+    expect(within(dialog).getByRole('link', { name: '查看商品' }).getAttribute('href')).toBe(
+      '/scopes/enterprise/enterprise%3A1/products?q=listing%3A1',
+    );
     expect(currentParams().get('tab')).toBe('products');
 
     await user.click(payment);

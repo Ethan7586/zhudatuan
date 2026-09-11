@@ -19,6 +19,7 @@ export function OrderTable({
   onCheck,
   onCheckAll,
   onOpen,
+  onIntent,
 }: Readonly<{
   rows: readonly OrderRecord[];
   previewEnabled: boolean;
@@ -29,6 +30,7 @@ export function OrderTable({
   onCheck: (id: string) => void;
   onCheckAll: () => void;
   onOpen: (id: string) => void;
+  onIntent: (id: string) => void;
 }>) {
   const allChecked = rows.length > 0 && rows.every((row) => checked.has(row.id));
   return (
@@ -53,7 +55,8 @@ export function OrderTable({
         </thead>
         <tbody>
           {rows.map((order) => (
-            <OrderRow key={order.id} order={order} previewEnabled={previewEnabled} visible={visible} checked={checked.has(order.id)} active={activeOrder === order.id} mallName={mallName} onCheck={() => onCheck(order.id)} onOpen={() => onOpen(order.id)} />
+            <OrderRow key={order.id} order={order} previewEnabled={previewEnabled} visible={visible} checked={checked.has(order.id)} active={activeOrder === order.id} mallName={mallName}
+              onCheck={() => onCheck(order.id)} onOpen={() => onOpen(order.id)} onIntent={() => onIntent(order.id)} />
           ))}
         </tbody>
       </table>
@@ -70,6 +73,7 @@ function OrderRow({
   mallName,
   onCheck,
   onOpen,
+  onIntent,
 }: Readonly<{
   order: OrderRecord;
   previewEnabled: boolean;
@@ -79,6 +83,7 @@ function OrderRow({
   mallName: string;
   onCheck: () => void;
   onOpen: () => void;
+  onIntent: () => void;
 }>) {
   const preview = previewRecord(order, previewEnabled);
   const product = productSummary(order);
@@ -91,6 +96,8 @@ function OrderRow({
       aria-selected={active}
       aria-expanded={active}
       onClick={onOpen}
+      onFocus={onIntent}
+      onMouseEnter={onIntent}
       onKeyDown={(event) => {
         if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
           event.preventDefault();
@@ -110,8 +117,8 @@ function OrderRow({
       {visible.has('member') ? (
         <td className="ordermembercol">
           <div className="orderprimarycell">
-            <strong>{preview?.memberName ?? '消费者信息未提供'}</strong>
-            <span>{preview?.enterpriseName ?? mallName}</span>
+            <strong>{preview?.memberName ?? (order.member_id === undefined ? '消费会员未冻结' : '已绑定消费会员')}</strong>
+            <span>{preview?.enterpriseName ?? (order.participant_membership_id === undefined || order.participant_membership_id === null ? mallName : '订单会员身份已冻结')}</span>
           </div>
         </td>
       ) : null}

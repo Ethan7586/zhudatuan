@@ -4,9 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { appConfig } from '../../shared/config/AppConfig';
+import { scopePath } from '../../shared/url/ScopePath';
 import { formatOrderTime } from './OrderPresentation';
 import { OrderColumnSettings } from './OrderColumnSettings';
-import { orderDetailKey } from './OrderDetailQuery';
+import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
 import { OrderDrawer } from './OrderDrawer';
 import { OrderExceptionWorkbench } from './OrderExceptionWorkbench';
 import { OrderExportWorkspace } from './OrderExportWorkspace';
@@ -48,6 +49,7 @@ export function Component() {
   const queryFilter: OrderQuery = { ...filter, view, ...(cursor === undefined ? {} : { cursor }) };
   const query = useQuery({ queryKey: orderKey(context, queryFilter), queryFn: ({ signal }) => readOrders(context, queryFilter, signal) });
   const page = query.data;
+  const selectedOrder = page?.items.find((order) => order.id === selected);
   const pageIds = useMemo(() => page?.items.map((order) => order.id) ?? [], [page?.items]);
   const selectionBoundary = `${context.scope.kind}\u0000${context.scope.id}\u0000${context.session.accessVersion}`;
   const [checkedState, setCheckedState] = useState<Readonly<{ boundary: string; ids: ReadonlySet<string> }>>(() => ({ boundary: selectionBoundary, ids: new Set() }));
@@ -99,10 +101,19 @@ export function Component() {
     });
   const openOrder = (id: string) => {
     const order = page?.items.find((item) => item.id === id);
-    if (order !== undefined) queryClient.setQueryData(orderDetailKey(context, id), order);
+    const key = orderDetailKey(context, id);
+    if (order !== undefined && queryClient.getQueryData(key) === undefined) queryClient.setQueryData(key, order);
+    void queryClient.prefetchQuery({ queryKey: key, queryFn: ({ signal }) => readOrderDetail(context, id, signal), staleTime: 0 });
     updateSearch((next) => {
       next.set('selected', id);
       next.delete('tab');
+    });
+  };
+  const prepareOrder = (id: string) => {
+    void queryClient.prefetchQuery({
+      queryKey: orderDetailKey(context, id),
+      queryFn: ({ signal }) => readOrderDetail(context, id, signal),
+      staleTime: 30_000,
     });
   };
   const closeOrder = () =>
@@ -160,7 +171,9 @@ export function Component() {
     return <>
       <OrderExceptionWorkbench page={page} isPending={query.isPending} isFetching={query.isFetching} error={error}
         onBack={() => selectView('all')} onRefresh={refresh} onOpenOrder={openOrder} onOpenSystem={(route) => navigate(route)} />
-      {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled mallName={mallName} onTab={selectTab} onClose={closeOrder} />}
+      {selected === undefined ? null : <OrderDrawer orderId={selected} initialOrder={selectedOrder} tab={detailTab} previewEnabled mallName={mallName}
+        memberDirectoryPath={scopePath(context.scope, 'storefront-members')} productDirectoryPath={scopePath(context.scope, 'products')}
+        onTab={selectTab} onClose={closeOrder} />}
     </>;
   }
 
@@ -238,6 +251,7 @@ export function Component() {
                     onCheck={toggleChecked}
                     onCheckAll={togglePage}
                     onOpen={openOrder}
+                    onIntent={prepareOrder}
                     mallName={mallName}
                   />
                 )}
@@ -245,7 +259,9 @@ export function Component() {
 
               {page === undefined ? null : <OrderPagination count={page.count} total={previewPage?.total} page={previewPage?.page} previousCursor={previewPage?.previousCursor} nextCursor={page.nextCursor} onCursor={setCursor} />}
         </section>
-        {selected === undefined ? null : <OrderDrawer orderId={selected} tab={detailTab} previewEnabled={previewEnabled} mallName={mallName} onTab={selectTab} onClose={closeOrder} />}
+        {selected === undefined ? null : <OrderDrawer orderId={selected} initialOrder={selectedOrder} tab={detailTab} previewEnabled={previewEnabled} mallName={mallName}
+          memberDirectoryPath={scopePath(context.scope, 'storefront-members')} productDirectoryPath={scopePath(context.scope, 'products')}
+          onTab={selectTab} onClose={closeOrder} />}
       </div>
     </section>
   );
