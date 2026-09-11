@@ -110,6 +110,29 @@ describe('MemberPort invitation constraints', () => {
     await expect(port.consumeInvite(database, 'invite-hash', 'wrong-destination', 'membership:accepted'))
       .rejects.toThrow('INVITE_INVALID');
   });
+
+  it('passes one hierarchy-free registration command to the database progression function', async () => {
+    const request = {
+      registration_id: 'registration:one', business_number: 'SFLREG-ONE', idempotency_key: 'registration-key',
+      registration_origin: 'direct', registration_host_node_id: 'node:host:l3', invitation_token_hash: null,
+      business_identity_hash: 'a'.repeat(64), node_key: 'member-one', realm_id: 'realm:member-one',
+      membership_id: 'membership:one', requested_by: 'principal:one', trace_id: 'trace:one',
+    } as const;
+    const at = '2026-09-12T02:00:00.000Z';
+    const query = vi.fn(async () => result([{
+      outcome: 'registered', registration_id: request.registration_id, business_number: request.business_number,
+      registration_origin: request.registration_origin, registration_host_node_id: request.registration_host_node_id,
+      invitation_id: null, inviter_node_id: null, inviter_membership_id: null, node_id: 'node:member-one:l6',
+      line_id: 'line:one', parent_node_id: request.registration_host_node_id, signed_level: 'L6', relation_version: 1,
+      host_sovereign_node_id: 'node:root:l0', realm_id: request.realm_id, membership_id: request.membership_id,
+      effective_at: at, accepted_at: at, idempotency_key: request.idempotency_key, request_hash: 'b'.repeat(64),
+      created_at: at, replayed: false,
+    }]));
+
+    await expect(new MemberPort().registerHostedMemberNode({ query } as unknown as OperationDatabase, request))
+      .resolves.toMatchObject({ signed_level: 'L6', parent_node_id: request.registration_host_node_id });
+    expect(query).toHaveBeenCalledWith('select * from organization.register_hosted_member_node($1::jsonb)', [JSON.stringify(request)]);
+  });
 });
 
 function result(rows: readonly Record<string, unknown>[]): QueryResult {

@@ -13,6 +13,8 @@ import {
   parseAuthoritativeNodeContext,
   parseHostedNodeProvisioningRequest,
   parseHostedNodeProvisioningResult,
+  parseMemberNodeRegistrationRequest,
+  parseMemberNodeRegistrationResult,
   parseNodeContext,
   parseNodeManifest,
   parseNodeManifestRegistry,
@@ -456,6 +458,39 @@ describe('SFL node kernel', () => {
     expect(Object.keys(result)).not.toEqual(expect.arrayContaining([
       'manifest_id', 'domain_bindings', 'gateway_port', 'runtime_instance_id', 'release_pointer_ref',
     ]));
+  });
+
+  it('keeps client-authored hierarchy fields out of the member registration command', () => {
+    const request = {
+      registration_id: 'registration:fixture', business_number: 'SFLREG-FIXTURE', idempotency_key: 'registration-key',
+      registration_origin: 'invitation', registration_host_node_id: nodeId('l0'), invitation_token_hash: 'a'.repeat(64),
+      business_identity_hash: 'b'.repeat(64), node_key: 'member-fixture', realm_id: 'realm:member-fixture',
+      membership_id: 'membership:fixture', requested_by: 'principal:fixture', trace_id: 'trace:fixture',
+    } as const;
+    expect(parseMemberNodeRegistrationRequest(request)).toEqual(request);
+    expect(() => parseMemberNodeRegistrationRequest({ ...request, signed_level: 'L11' }))
+      .toThrow('SFL_MEMBER_REGISTRATION_REQUEST_INVALID');
+    expect(() => parseMemberNodeRegistrationRequest({ ...request, registration_origin: 'direct' }))
+      .toThrow('SFL_MEMBER_REGISTRATION_INVITATION_INVALID');
+  });
+
+  it('parses registered and L11 boundary outcomes without inventing L12 facts', () => {
+    const common = {
+      registration_id: 'registration:fixture', business_number: 'SFLREG-FIXTURE', registration_origin: 'invitation',
+      registration_host_node_id: nodeId('l0'), invitation_id: 'invite:fixture', inviter_node_id: nodeId('l10'),
+      inviter_membership_id: 'membership:inviter', line_id: 'line:fixture:alpha',
+      host_sovereign_node_id: nodeId('l0'), realm_id: 'realm:member-fixture', idempotency_key: 'registration-key',
+      request_hash: 'c'.repeat(64), created_at: relationEffectiveAt, replayed: false,
+    } as const;
+    expect(parseMemberNodeRegistrationResult({
+      ...common, outcome: 'registered', node_id: 'node:member-fixture:l11', parent_node_id: nodeId('l10'),
+      signed_level: 'L11', relation_version: 1, membership_id: 'membership:fixture',
+      effective_at: relationEffectiveAt, accepted_at: relationEffectiveAt,
+    })).toMatchObject({ outcome: 'registered', signed_level: 'L11' });
+    expect(parseMemberNodeRegistrationResult({
+      ...common, outcome: 'level_boundary', inviter_node_id: nodeId('l11'), node_id: null, parent_node_id: null,
+      signed_level: null, relation_version: null, membership_id: null, effective_at: null, accepted_at: null,
+    })).toMatchObject({ outcome: 'level_boundary', node_id: null });
   });
 
   it('parses authoritative persisted context and indexed scope rows without sovereign resources', () => {

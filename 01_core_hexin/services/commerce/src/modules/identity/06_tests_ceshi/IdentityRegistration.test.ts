@@ -561,7 +561,8 @@ describe('canonical member registration security boundary', () => {
     expect(result).toEqual({ status: 409, body: { code: 'IDENTITY_SUBJECT_EXISTS' } });
     expect(harness.queries.some(({ text }) => text.includes('pg_advisory_xact_lock'))).toBe(true);
     expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(true);
-    expect(harness.queries.some(({ text }) => text.includes('with candidate as materialized'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('select invite.id,invite.organization_id,invite.created_by'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('with candidate as materialized'))).toBe(false);
     expect(harness.queries.some(({ text }) => text === 'rollback to savepoint identity_business_mutation')).toBe(true);
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
   });
@@ -574,7 +575,8 @@ describe('canonical member registration security boundary', () => {
 
     expect(result).toEqual({ status: 409, body: { code: 'IDENTITY_SUBJECT_EXISTS' } });
     expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(true);
-    expect(harness.queries.some(({ text }) => text.includes('with candidate as materialized'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('select invite.id,invite.organization_id,invite.created_by'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('with candidate as materialized'))).toBe(false);
     expect(harness.queries.some(({ text }) => text === 'rollback to savepoint identity_business_mutation')).toBe(true);
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
   });
@@ -600,7 +602,7 @@ describe('canonical member registration security boundary', () => {
     const rollback = harness.queries.findIndex(({ text }) => text === 'rollback to savepoint identity_business_mutation');
     for (const mutation of [
       'update identity.challenge set consumed_at',
-      'update member.invite',
+      'organization.register_hosted_member_node',
       'insert into identity.principal',
       'insert into identity.account',
       'insert into access.membership(',
@@ -628,6 +630,10 @@ describe('canonical member registration security boundary', () => {
       body: {
         organization_id: 'mall:l1-hongtai',
         client: 'storefront',
+        registration_origin: 'direct',
+        signed_level: 'L6',
+        parent_node_id: 'node:hbbtzn:l1',
+        node_id: expect.stringMatching(/^node:member-/),
         authentication: { target: 'storefront' },
       },
     });
@@ -639,6 +645,32 @@ describe('canonical member registration security boundary', () => {
     expect(membership?.values).toContain('mall:l1-hongtai');
     const roles = harness.queries.find(({ text }) => text.includes('insert into access.membershiprole'));
     expect(roles?.values).toContain('role-zhudatuan-storefront-member:mall:l1-hongtai');
+  });
+
+  it('returns an idempotent L11 invitation boundary before creating identity or membership rows', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: true,
+      subjectExists: false,
+      inviteAccepted: true,
+      registrationBoundary: true,
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(registrationRequest('registration:l11-boundary'));
+
+    expect(response).toMatchObject({
+      status: 409,
+      body: {
+        code: 'SFL_REGISTRATION_LEVEL_BOUNDARY',
+        outcome: 'level_boundary',
+        registration_origin: 'invitation',
+        inviter_node_id: 'node:inviter:l11',
+        business_number: expect.stringMatching(/^SFLREG-/),
+      },
+    });
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into access.membership('))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('organization.register_hosted_member_node'))).toBe(true);
   });
 
   it('creates an L6 password account and defers phone verification until checkout', async () => {
@@ -659,10 +691,10 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes("'phone_otp',2"))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes("set_config('app.registration_phone_verification','checkout',true)"))).toBe(true);
     const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
-    expect(session?.values.slice(9)).toEqual([1, 'realm:l1', expect.stringMatching(/^account:/), 'storefront']);
+    expect(session?.values.slice(9)).toEqual([1, expect.stringMatching(/^realm:member-/), expect.stringMatching(/^account:/), 'storefront']);
   });
 
-  it('binds a consumer-node registration with the profile derived from its realm', async () => {
+  it('binds a new membership and session to the generated consumer-node realm', async () => {
     const harness = registrationHarness({
       challengeAccepted: false,
       subjectExists: false,
@@ -670,18 +702,18 @@ describe('canonical member registration security boundary', () => {
     });
 
     const response = await identityRegistrationOperations(context(harness.pool))
-      .invoke(consumerNodePasswordRegistrationRequest('registration:consumer-node'));
+      .invoke(storefrontPasswordRegistrationRequest('registration:consumer-node'));
 
     expect(response).toMatchObject({
       status: 201,
-      body: { organization_id: 'mall-zhudatuan', client: 'storefront', authentication: { target: 'storefront' } },
+      body: { organization_id: 'mall:l1-hongtai', client: 'storefront', authentication: { target: 'storefront' } },
     });
     const binding = harness.queries.find(({ text }) => text.includes('insert into access.membership(')
       && text.includes('realm.node_profile'));
     expect(binding?.text).toContain('from identity.realm realm');
-    expect(binding?.values.slice(4, 6)).toEqual(['realm:l6', expect.stringMatching(/^account:/)]);
+    expect(binding?.values.slice(4, 6)).toEqual([expect.stringMatching(/^realm:member-/), expect.stringMatching(/^account:/)]);
     const session = harness.queries.find(({ text }) => text.includes('insert into identity.session'));
-    expect(session?.values.slice(9)).toEqual([1, 'realm:l6', expect.stringMatching(/^account:/), 'storefront']);
+    expect(session?.values.slice(9)).toEqual([1, expect.stringMatching(/^realm:member-/), expect.stringMatching(/^account:/), 'storefront']);
   });
 
   it('reuses one phone identity while creating an independent membership in another storefront', async () => {
@@ -1067,6 +1099,7 @@ function authenticatedRequest(type: OperationRequest['type'], body: Readonly<Rec
 
 function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subjectExists: boolean; inviteAccepted?: boolean; operatorInvite?: boolean;
   seniorInvite?: boolean;
+  registrationBoundary?: boolean;
   storefrontAvailable?: boolean;
   storefrontOrganizationId?: string;
   mobileCiphertext?: string | null; passwordEvidence?: boolean; exactOwner?: boolean;
@@ -1179,6 +1212,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       }
       if (text.includes('with candidate as materialized') && text.includes('update member.invite')) {
         return result(input.inviteAccepted ? [input.operatorInvite ? {
+          id: 'invite:operator', created_by: 'membership:inviter-operator',
           organization_id: 'tenant-zhudatuan',
           role_id: input.seniorInvite ? 'role-senior-administrator-v1:tenant-zhudatuan' : 'role-zhudatuan-pending-operator',
           terms_hash: 'f'.repeat(64), target_client: 'operator',
@@ -1186,10 +1220,52 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           storefront_role_id: 'role-zhudatuan-storefront-member',
           governance_level: input.seniorInvite ? 'senior_administrator' : 'administrator',
         } : {
+          id: 'invite:storefront', created_by: 'membership:inviter-l6',
           organization_id: 'mall-zhudatuan', role_id: 'role-zhudatuan-storefront-member', terms_hash: 'f'.repeat(64),
           target_client: 'storefront', storefront_organization_id: null,
           storefront_role_id: 'role-zhudatuan-storefront-member', governance_level: null,
         }] : []);
+      }
+      if (text.includes('select invite.id,invite.organization_id,invite.created_by,invite.role_id')) {
+        return result(input.inviteAccepted ? [input.operatorInvite ? {
+          id: 'invite:operator', created_by: 'membership:inviter-operator', organization_id: 'tenant-zhudatuan',
+          role_id: input.seniorInvite ? 'role-senior-administrator-v1:tenant-zhudatuan' : 'role-zhudatuan-pending-operator',
+          terms_hash: 'f'.repeat(64), target_client: 'operator',
+          storefront_organization_id: input.storefrontOrganizationId ?? 'mall-zhudatuan',
+          storefront_role_id: 'role-zhudatuan-storefront-member',
+          governance_level: input.seniorInvite ? 'senior_administrator' : 'administrator',
+        } : {
+          id: 'invite:storefront', created_by: 'membership:inviter-l6', organization_id: 'mall-zhudatuan',
+          role_id: 'role-zhudatuan-storefront-member', terms_hash: 'f'.repeat(64), target_client: 'storefront',
+          storefront_organization_id: null, storefront_role_id: 'role-zhudatuan-storefront-member', governance_level: null,
+        }] : []);
+      }
+      if (text.includes('select * from organization.register_hosted_member_node')) {
+        const request = JSON.parse(String(values[0])) as Record<string, string | null>;
+        const invited = request.registration_origin === 'invitation';
+        const targetLevel = invited ? 'L7' : 'L6';
+        const nodeId = `node:${request.node_key}:${targetLevel.toLowerCase()}`;
+        const at = '2026-09-12T02:00:00.000Z';
+        if (input.registrationBoundary) return result([{
+          outcome: 'level_boundary', registration_id: request.registration_id, business_number: request.business_number,
+          registration_origin: 'invitation', registration_host_node_id: request.registration_host_node_id,
+          invitation_id: 'invite:storefront', inviter_node_id: 'node:inviter:l11',
+          inviter_membership_id: 'membership:inviter-l11', node_id: null, line_id: 'line:zhudatuan:commerce:v1',
+          parent_node_id: null, signed_level: null, relation_version: null,
+          host_sovereign_node_id: request.registration_host_node_id, realm_id: 'realm:l0', membership_id: null,
+          effective_at: null, accepted_at: null, idempotency_key: request.idempotency_key,
+          request_hash: 'a'.repeat(64), created_at: at, replayed: false,
+        }]);
+        return result([{
+          outcome: 'registered', registration_id: request.registration_id, business_number: request.business_number,
+          registration_origin: request.registration_origin, registration_host_node_id: request.registration_host_node_id,
+          invitation_id: invited ? 'invite:storefront' : null, inviter_node_id: invited ? 'node:inviter:l6' : null,
+          inviter_membership_id: invited ? 'membership:inviter-l6' : null, node_id: nodeId,
+          line_id: 'line:zhudatuan:commerce:v1', parent_node_id: invited ? 'node:inviter:l6' : request.registration_host_node_id,
+          signed_level: targetLevel, relation_version: 1, host_sovereign_node_id: request.registration_host_node_id,
+          realm_id: request.realm_id, membership_id: request.membership_id, effective_at: at, accepted_at: at,
+          idempotency_key: request.idempotency_key, request_hash: 'a'.repeat(64), created_at: at, replayed: false,
+        }]);
       }
       if (text.includes('select mobile_ciphertext from identity.account')) {
         return result(input.mobileCiphertext === undefined ? [] : [{ mobile_ciphertext: input.mobileCiphertext }]);
@@ -1248,7 +1324,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         return result([{
           id: String(values[0]), member_id: String(values[1]), organization_id: String(values[2]),
           client: text.includes("'operator'") ? 'operator' : 'storefront', employee_no: values[3] ?? null,
-          realm_id: String(values[4]), account_id: String(values[5]), node_profile: 'operating_mall',
+          realm_id: String(values[4]), account_id: String(values[5]), node_profile: 'consumer',
           status: 'active', access_version: 1,
           joined_at: '2026-09-03T00:00:00.000Z', left_at: null,
         }]);
