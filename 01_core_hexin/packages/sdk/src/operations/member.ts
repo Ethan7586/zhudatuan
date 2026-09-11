@@ -16,6 +16,7 @@ export const MEMBER_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "member.storefront.custom.manage",
   "member.invitations.read",
   "member.profile.read",
+  "member.malls.open",
   "member.addresses.read",
   "member.addresses.manage",
   "member.imports.create",
@@ -34,6 +35,7 @@ export interface MemberOperations {
   readonly storefrontCustomManage: OperationMethod<"member.storefront.custom.manage">;
   readonly invitationsRead: OperationMethod<"member.invitations.read">;
   readonly profileRead: OperationMethod<"member.profile.read">;
+  readonly mallsOpen: OperationMethod<"member.malls.open">;
   readonly addressesRead: OperationMethod<"member.addresses.read">;
   readonly addressesManage: OperationMethod<"member.addresses.manage">;
   readonly importsCreate: OperationMethod<"member.imports.create">;
@@ -57,6 +59,7 @@ export function createMemberOperations(client: OperationExecutor): MemberOperati
     storefrontCustomManage: bindStorefrontCustomManage(client),
     invitationsRead: bindInvitationsRead(client),
     profileRead: bindProfileRead(client),
+    mallsOpen: bindMallsOpen(client),
     addressesRead: bindAddressesRead(client),
     addressesManage: bindAddressesManage(client),
     importsCreate: bindImportsCreate(client),
@@ -150,6 +153,14 @@ export function createFetchMemberProfileRead(baseUrl: string): OperationMethod<"
 
 function bindProfileRead(client: OperationExecutor): OperationMethod<"member.profile.read"> {
   return bindOperation(client, defineStructuralOperation({"id":"member.profile.read","method":"GET","path":"/api/v1/members/me","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+}
+
+export function createFetchMemberMallsOpen(baseUrl: string): OperationMethod<"member.malls.open"> {
+  return bindMallsOpen(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindMallsOpen(client: OperationExecutor): OperationMethod<"member.malls.open"> {
+  return bindOperation(client, defineStructuralOperation({"id":"member.malls.open","method":"POST","path":"/api/v1/members/me/mall","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
 }
 
 export function createFetchMemberAddressesRead(baseUrl: string): OperationMethod<"member.addresses.read"> {

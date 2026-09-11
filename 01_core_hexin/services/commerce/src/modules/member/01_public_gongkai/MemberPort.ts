@@ -1,6 +1,10 @@
 import {
+  parseHostedMallOpeningRequest,
+  parseHostedMallOpeningResult,
   parseMemberNodeRegistrationRequest,
   parseMemberNodeRegistrationResult,
+  type HostedMallOpeningRequest,
+  type HostedMallOpeningResult,
   type MemberNodeRegistrationRequest,
   type MemberNodeRegistrationResult,
 } from '@shop/config/sfl-node-kernel';
@@ -39,6 +43,13 @@ export interface MemberProfile {
   readonly mobileCiphertext?: string;
   readonly mobileFingerprint?: string;
   readonly mobileMasked?: string;
+}
+
+export interface HostedMallOpeningAuthority {
+  readonly principal_id: string;
+  readonly membership_id: string;
+  readonly realm_id: string;
+  readonly node_id: string;
 }
 
 export class MemberPort {
@@ -139,6 +150,28 @@ export class MemberPort {
     const row = result.rows[0];
     if (!row) throw new Error('SFL_MEMBER_REGISTRATION_FAILED');
     return parseMemberNodeRegistrationResult(row);
+  }
+
+  async openHostedMall(
+    database: OperationDatabase,
+    authority: HostedMallOpeningAuthority,
+    input: HostedMallOpeningRequest,
+  ): Promise<HostedMallOpeningResult> {
+    const request = parseHostedMallOpeningRequest(input);
+    const result = await database.query<Record<string, unknown>>(
+      'select * from organization.open_hosted_member_mall($1,$2,$3::jsonb)',
+      [authority.membership_id, authority.node_id, JSON.stringify(request)],
+    );
+    const row = result.rows[0];
+    if (!row) throw new Error('SFL_HOSTED_MALL_OPENING_FAILED');
+    const opened = parseHostedMallOpeningResult(row);
+    if (opened.principal_id !== authority.principal_id
+      || opened.membership_id !== authority.membership_id
+      || opened.realm_id !== authority.realm_id
+      || opened.node_id !== authority.node_id) {
+      throw new Error('SFL_HOSTED_MALL_OPENING_CONTEXT_MISMATCH');
+    }
+    return opened;
   }
 
   async consumeInvite(database: OperationDatabase, token: string, destinationHash: string,

@@ -6,6 +6,7 @@ import { KMS_CLIENT } from '../../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
 import { accessPort } from '../../access';
 import { addressPort } from '../../checkout_jiesuan';
+import { hostedMallOpeningAction } from './HostedMallOpeningOperation';
 import { memberImportOperations } from './MemberImportOperations';
 import { memberCustomProfileActions } from './MemberCustomProfileOperations';
 import { memberOperatorReadActions } from './MemberReadOperations';
@@ -26,6 +27,7 @@ export function memberOperations(context: ModuleContext): ModuleOperations {
         join organization.organization organization on organization.id=membership.organization_id
         where membership.id=$1 and membership.status='active'`, [access.membership.id]));
     },
+    'member.malls.open': hostedMallOpeningAction,
     'member.addresses.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request, 100);
