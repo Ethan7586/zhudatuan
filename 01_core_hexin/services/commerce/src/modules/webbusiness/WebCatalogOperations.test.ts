@@ -32,6 +32,9 @@ describe('web catalog management read', () => {
 
     const summaryRead = calls.find(({ text }) => text.includes('count(*) filter'))!;
     expect(summaryRead.text).toContain('organization.unitclosure');
+    expect(summaryRead.text).toContain('with classified as materialized');
+    expect(summaryRead.text).toContain("filter(where management_status='published')");
+    expect(summaryRead.text.match(/not exists\(select 1 from pricing\.pricebook/g)).toHaveLength(1);
     expect(summaryRead.values).toEqual(['mall:hongtai', '', '', '', '', false]);
     expect(calls.some(({ text }) => text.includes('console_supply_network'))).toBe(false);
   });

@@ -144,15 +144,18 @@ export function catalogActions(context: ModuleContext): OperationActions {
         [access.scope.id, query, category, product, pool, storefront, status, page.sort, page.id, page.fetch]
       );
       if (storefront) return keysetResult(result, page, 'cursor_sort');
-      const summary = await database.query<CatalogListingStatusSummary>(`select count(*)::integer total_count,
-        count(*) filter(where (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='needs_attention')::integer needs_attention,
-        count(*) filter(where (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='pending_review')::integer pending_review,
-        count(*) filter(where (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='published')::integer published,
-        count(*) filter(where (${CATALOG_LISTING_MANAGEMENT_STATUS_SQL})='unpublished')::integer unpublished
+      const summary = await database.query<CatalogListingStatusSummary>(`with classified as materialized (
+        select ${CATALOG_LISTING_MANAGEMENT_STATUS_SQL} management_status
         from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
         join catalog.product product on product.id=sku.product_id where listing.scope_id=$1
         and ($2='' or listing.title ilike '%'||$2||'%' or sku.code ilike '%'||$2||'%') and ($3='' or product.category_id=$3)
-      and ($4='' or product.id=$4) and ($5='' or listing.pool_id=$5)`,
+        and ($4='' or product.id=$4) and ($5='' or listing.pool_id=$5)
+      ) select count(*)::integer total_count,
+        count(*) filter(where management_status='needs_attention')::integer needs_attention,
+        count(*) filter(where management_status='pending_review')::integer pending_review,
+        count(*) filter(where management_status='published')::integer published,
+        count(*) filter(where management_status='unpublished')::integer unpublished
+        from classified`,
       [access.scope.id, query, category, product, pool]);
       return catalogListingPageResult(result, page, summary.rows[0]);
     },

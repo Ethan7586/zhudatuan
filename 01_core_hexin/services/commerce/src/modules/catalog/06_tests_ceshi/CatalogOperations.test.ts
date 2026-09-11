@@ -76,6 +76,9 @@ describe('catalog mall command boundaries', () => {
       status_counts: { needs_attention: 1, pending_review: 1, published: 1, unpublished: 1 },
     } });
     const summaryRead = readCalls.find(({ text }) => text.includes('count(*) filter'))!;
+    expect(summaryRead.text).toContain('with classified as materialized');
+    expect(summaryRead.text).toContain("filter(where management_status='published')");
+    expect(summaryRead.text.match(/not exists\(select 1 from pricing\.pricebook/g)).toHaveLength(1);
     expect(summaryRead.values).toEqual(['mall:hongtai', '', '', '', '']);
     expect(readCalls.some(({ text }) => text.includes('console_supply_network'))).toBe(false);
 
