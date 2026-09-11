@@ -910,6 +910,17 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql
     operationalOwner: organization
+  - id: organization.initialize_node_capability_version
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
+    operationalOwner: organization
+  - id: organization.open_hosted_member_mall
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
+    callers:
+      - 01_core_hexin/services/commerce/src/modules/member/01_public_gongkai/MemberPort.ts
   - id: organization.refresh_node_closure
     kind: function
     owner: organization
@@ -27638,6 +27649,21 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql
     rls: false
+  - id: organization.hostedmallconfiguration
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
+    rls: false
+  - id: organization.hostedmallopening
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
+    rls: false
+  - id: organization.malloperatingentitybinding
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
+    rls: false
   - id: organization.membernoderegistration
     kind: table
     owner: organization
@@ -27652,6 +27678,11 @@ objects:
     kind: table
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql
+    rls: false
+  - id: organization.nodecapabilityversion
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
     rls: false
   - id: organization.nodeclosure
     kind: table
@@ -28552,6 +28583,11 @@ objects:
     kind: trigger
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    operationalOwner: organization
+  - id: organization.noderelation.node_capability_version_initialize
+    kind: trigger
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
     operationalOwner: organization
   - id: organization.noderelation.noderelation_closure_refresh
     kind: trigger

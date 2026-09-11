@@ -9,6 +9,7 @@ export const memberManifest = defineModuleManifest({
   requires: ['identity'],
   operations: [
     'member.profile.read',
+    'member.malls.open',
     'member.addresses.read',
     'member.addresses.manage',
     'member.members.read',

@@ -2,6 +2,7 @@ export { MEMBER_CAPABILITIES, type MemberCapability } from './01_public_gongkai/
 export {
   MemberPort,
   memberPort,
+  type HostedMallOpeningAuthority,
   type MemberInvite,
   type MemberProfile,
   type StorefrontRegistrationContext,

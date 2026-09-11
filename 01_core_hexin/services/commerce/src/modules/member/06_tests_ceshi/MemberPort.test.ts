@@ -133,6 +133,30 @@ describe('MemberPort invitation constraints', () => {
       .resolves.toMatchObject({ signed_level: 'L6', parent_node_id: request.registration_host_node_id });
     expect(query).toHaveBeenCalledWith('select * from organization.register_hosted_member_node($1::jsonb)', [JSON.stringify(request)]);
   });
+
+  it('opens a Hosted mall only with authority supplied by the active server context', async () => {
+    const request = { idempotency_key: 'opening:one', mall_name: '一号商城', operating_entity_name: '一号经营主体' } as const;
+    const authority = {
+      principal_id: 'principal:one', membership_id: 'membership:one', realm_id: 'realm:one', node_id: 'node:one:l8',
+    } as const;
+    const at = '2026-09-12T03:00:00.000Z';
+    const query = vi.fn(async () => result([{
+      opening_id: 'opening:one', business_number: 'SFLMALL-ONE', idempotency_key: request.idempotency_key,
+      request_hash: 'c'.repeat(64), ...authority, mall_id: 'mall:one', operating_entity_id: 'enterprise:one',
+      line_id: 'line:one', signed_level: 'L8', parent_node_id: 'node:parent:l7',
+      original_parent_node_id: 'node:parent:l7', host_sovereign_node_id: 'node:root:l0', sovereignty_tier: 'hosted',
+      node_profile: 'operating_mall', capabilities: ['consumer', 'operating_mall'], capability_version: 2,
+      relation_version: 1, mall_version: 1, entity_binding_version: 1, configuration_version: 1,
+      payment_configuration_version: 1, status: 'active', opened_at: at, replayed: false,
+    }]));
+
+    await expect(new MemberPort().openHostedMall({ query } as unknown as OperationDatabase, authority, request))
+      .resolves.toMatchObject({ node_id: authority.node_id, membership_id: authority.membership_id, mall_id: 'mall:one' });
+    expect(query).toHaveBeenCalledWith(
+      'select * from organization.open_hosted_member_mall($1,$2,$3::jsonb)',
+      [authority.membership_id, authority.node_id, JSON.stringify(request)],
+    );
+  });
 });
 
 function result(rows: readonly Record<string, unknown>[]): QueryResult {

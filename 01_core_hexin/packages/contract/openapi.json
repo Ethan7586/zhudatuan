@@ -23900,6 +23900,162 @@
         "x-stepup": false
       }
     },
+    "/api/v1/members/me/mall": {
+      "post": {
+        "operationId": "member.malls.open",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "member.malls.open",
+        "tags": [
+          "member"
+        ],
+        "x-audience": "member",
+        "x-availability": "runtime",
+        "x-execution": "sync",
+        "x-expected-version": "optional",
+        "x-idempotency": "required",
+        "x-idempotent": false,
+        "x-permission": "member.profile.read",
+        "x-requirements": [
+          "MVP03",
+          "MVP04",
+          "MVP05",
+          "MVP06",
+          "MVP07",
+          "MVP08",
+          "MVP09",
+          "MVP10",
+          "MVP11",
+          "MVP12",
+          "MVP13",
+          "MVP14",
+          "MVP15",
+          "MVP16",
+          "MVP17",
+          "MVP18",
+          "MVP19",
+          "MVP20",
+          "MVP21",
+          "MVP22",
+          "MVP23"
+        ],
+        "x-risk": "low",
+        "x-schema-fidelity": "structural",
+        "x-scope-kinds": [
+          "owner"
+        ],
+        "x-stepup": false
+      }
+    },
     "/api/v1/notifications": {
       "get": {
         "operationId": "notification.notifications.read",

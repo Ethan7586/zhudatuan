@@ -51,6 +51,7 @@ insert into runtime.operation(id,owner,method,path,contract_version) values
   ('member.storefront.custom.manage','member','PUT','/api/v1/member/storefront-members/{membershipid}/custom-profile','1.0.0'),
   ('member.invitations.read','member','GET','/api/v1/member/invitations','1.0.0'),
   ('member.profile.read','member','GET','/api/v1/members/me','1.0.0'),
+  ('member.malls.open','member','POST','/api/v1/members/me/mall','1.0.0'),
   ('member.addresses.read','member','GET','/api/v1/members/me/addresses','1.0.0'),
   ('member.addresses.manage','member','PUT','/api/v1/members/me/addresses/{addressid}','1.0.0'),
   ('member.imports.create','member','POST','/api/v1/members/imports','1.0.0'),
@@ -584,6 +585,7 @@ insert into capability.capability(id,kind,name,version,status) values
   ('member.storefront.custom.manage','operation','member.storefront.custom.manage',1,'active'),
   ('member.invitations.read','operation','member.invitations.read',1,'active'),
   ('member.profile.read','operation','member.profile.read',1,'active'),
+  ('member.malls.open','operation','member.malls.open',1,'active'),
   ('member.addresses.read','operation','member.addresses.read',1,'active'),
   ('member.addresses.manage','operation','member.addresses.manage',1,'active'),
   ('member.imports.create','operation','member.imports.create',1,'active'),
@@ -851,6 +853,7 @@ insert into capability.operation(operation_id,capability_id,permission_code,audi
   ('member.storefront.custom.manage','member.storefront.custom.manage','member.read','operator'),
   ('member.invitations.read','member.invitations.read','identity.invitation.manage','operator'),
   ('member.profile.read','member.profile.read','member.profile.read','member'),
+  ('member.malls.open','member.malls.open','member.profile.read','member'),
   ('member.addresses.read','member.addresses.read','member.address.read','member'),
   ('member.addresses.manage','member.addresses.manage','member.address.manage','member'),
   ('member.imports.create','member.imports.create','member.import','operator'),
@@ -1383,6 +1386,6 @@ returns jsonb language sql stable security definer set search_path=channel,pg_te
   where statement.provider='private' and statement.period_start=(p_period->>'start')::date and statement.period_end=(p_period->>'end')::date
 $function$;
 
-insert into runtime.schemaversion(version,checksum) values('20260821032000','79f4c02fe449142920f100af8deeeaf6f79f5eff8ddb00aa96963d75e318e57d');
+insert into runtime.schemaversion(version,checksum) values('20260821032000','afc77aa80add6370c67d1e99ed9c45474ca590da34e3c6e56ce6a98280413720');
 
 commit;
