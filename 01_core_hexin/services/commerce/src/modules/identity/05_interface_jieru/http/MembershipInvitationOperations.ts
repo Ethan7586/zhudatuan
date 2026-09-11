@@ -59,8 +59,9 @@ export function membershipInvitationOperations(runtime: RealmOperationContext): 
         if (requestedTarget !== undefined && requestedTarget !== 'storefront' && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
         const targetClient = registrationOnly ? 'operator' : requestedTarget ?? 'storefront';
         const governanceLevel = invitationGovernanceLevel(body.governanceLevel, targetClient);
-        const invitationScope = access.scope.kind === 'platform' && targetClient === 'operator'
-          ? textField(body, 'tenantId') : access.scope.id;
+        const invitationScope = targetClient === 'operator'
+          ? operatorInvitationTenant(access, body)
+          : access.scope.id;
         if (access.scope.kind === 'platform' && targetClient === 'operator') {
           const target = await database.query<{ id: string }>(`select organization.id from organization.organization organization
           where organization.id=$1 and organization.kind='tenant' and organization.status='active'
@@ -69,20 +70,24 @@ export function membershipInvitationOperations(runtime: RealmOperationContext): 
           await database.query(`select set_config('app.scope_id',$1,true)`, [invitationScope]);
         }
         requireInvitationManager(request);
-        if (governanceLevel === 'senior_administrator' && !requireGovernanceContext(access).isExactOwner) {
+        if (governanceLevel === 'senior_administrator'
+          && requireGovernanceContext(access).governanceLevel !== 'owner') {
           reject(403, 'PERMISSION_DENIED');
         }
         if (registrationOnly && requestedTarget !== undefined && requestedTarget !== 'operator') throw new Error('INVALID_INVITATION_INPUT');
         const maxUses = integerField(body, 'maxUses', 1);
         const expiresAt = inviteExpiry(body.expiresAt);
         if (label.length < 2 || maxUses > 500 || (targetClient === 'operator' && maxUses !== 1)) throw new Error('INVALID_INVITATION_INPUT');
-        if (targetClient === 'operator' && access.scope.kind !== 'platform'
-          && (access.scope.kind !== 'tenant' || access.scope.id !== access.scope.tenant)) throw new Error('INVITATION_SCOPE_INVALID');
+        if (targetClient === 'operator' && access.scope.kind === 'mall') {
+          await database.query(`select set_config('app.scope_id',$1,true)`, [invitationScope]);
+        }
         if (targetClient === 'storefront' && access.scope.kind !== 'mall') throw new Error('INVITATION_SCOPE_INVALID');
         const destination = targetClient === 'operator' ? canonicalMobile(textField(body, 'destination', 32)) : null;
         const destinationHash = destination === null ? null : digest(destination);
-        const requestedStorefront = typeof body.storefrontOrganization === 'string' && body.storefrontOrganization.trim().length > 0
-          ? body.storefrontOrganization.trim() : null;
+        const requestedStorefront = targetClient === 'operator' && access.scope.kind === 'mall'
+          ? access.scope.id
+          : typeof body.storefrontOrganization === 'string' && body.storefrontOrganization.trim().length > 0
+            ? body.storefrontOrganization.trim() : null;
         const storefronts = targetClient === 'operator'
           ? await database.query<{ id: string }>(`select storefront.id from organization.organization storefront
             join organization.unitclosure closure on closure.descendant_id=storefront.id
@@ -211,15 +216,17 @@ export function membershipInvitationOperations(runtime: RealmOperationContext): 
           `select membership.member_id,target_governance.governance_level
           from access.membership membership
           join member.profile profile on profile.id=membership.member_id
-          cross join lateral access.resolve_governance(
+          cross join lateral access.resolve_authoritative_governance(
             membership.id,profile.principal_id,$2,$3) target_governance
           where membership.id=$1 and access.scope_allowed(membership.organization_id)
           for update of membership`,
           [membershipId, access.scope.kind, access.scope.id]
         );
         if (!target.rows[0]) throw new Error('MEMBERSHIP_NOT_FOUND');
-        if (!requireGovernanceContext(access).isExactOwner
-          && (target.rows[0].governance_level === 'owner' || target.rows[0].governance_level === 'senior_administrator')) {
+        const actorGovernance = requireGovernanceContext(access);
+        if ((target.rows[0].governance_level === 'owner' && !actorGovernance.isExactOwner)
+          || (target.rows[0].governance_level === 'senior_administrator'
+            && actorGovernance.governanceLevel !== 'owner')) {
           reject(403, 'PERMISSION_DENIED');
         }
         if (action === 'status') {
@@ -258,9 +265,17 @@ function requireInvitationManager(request: OperationRequest) {
   const permission = access.membership.grants.some((grant) => grant.permissions.includes('identity.invitation.manage'));
   if (access.actor.target !== 'console' || !access.capabilities.includes(request.type) || !permission) reject(403, 'PERMISSION_DENIED');
   const governance = requireGovernanceContext(access);
-  const invitationAuthority = governance.isExactOwner || governance.governanceLevel === 'senior_administrator';
+  const invitationAuthority = governance.governanceLevel === 'owner'
+    || governance.governanceLevel === 'senior_administrator';
   if (!invitationAuthority) reject(403, 'PERMISSION_DENIED');
   return { access, invitationAuthority };
+}
+
+function operatorInvitationTenant(access: ReturnType<typeof requireAccess>, body: Readonly<Record<string, unknown>>): string {
+  if (access.scope.kind === 'platform') return textField(body, 'tenantId');
+  if (access.scope.kind === 'tenant' && access.scope.id === access.scope.tenant) return access.scope.id;
+  if (access.scope.kind === 'mall' && access.scope.tenant !== undefined) return access.scope.tenant;
+  throw new Error('INVITATION_SCOPE_INVALID');
 }
 
 function invitationGovernanceLevel(value: unknown, targetClient: 'storefront' | 'operator'):

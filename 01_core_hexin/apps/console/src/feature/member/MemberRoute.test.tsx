@@ -40,20 +40,19 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('member administrator invitation', () => {
-  it('shows the senior administrator option when the authoritative directory identifies the current member as Owner', async () => {
-    const staleGovernanceContext: ConsoleContext = {
+  it('shows the senior administrator option when session governance projects the authoritative Owner', async () => {
+    const nodeOwnerContext: ConsoleContext = {
       ...ownerContext,
       session: {
         ...ownerContext.session,
-        governance: { level: 'administrator', exactOwner: false, organization: 'tenant:one' },
+        governance: { level: 'owner', exactOwner: false, organization: 'mall:one' },
       },
     };
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     render(
       <QueryClientProvider client={client}>
         <MemberInvitationDialog
-          context={staleGovernanceContext}
-          authority={{ level: 'owner', exactOwner: true }}
+          context={nodeOwnerContext}
           open
           onClose={() => undefined}
         />

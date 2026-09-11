@@ -9,7 +9,7 @@ import { formatDate } from '../../shared/ui/Format';
 import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';
 import { MemberInvitationDialog } from '../member/MemberInvitationDialog';
-import { memberInvitationAvailable, type MemberInvitationAuthority } from '../member/MemberInvitationCommand';
+import { memberInvitationAvailable } from '../member/MemberInvitationCommand';
 import { memberKey, readMembers } from '../member/MemberQuery';
 import { MemberRegistrationResetDialog } from '../member/MemberRegistrationResetDialog';
 import type { Member } from '../member/MemberSchema';
@@ -65,8 +65,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   const accessItems = accessQuery.data?.items ?? [];
   const memberItems = memberQuery.data?.items ?? [];
   const rows = useMemo(() => mergeRows(memberItems, accessItems, context.session.membership), [accessItems, context.session.membership, memberItems]);
-  const invitationAuthority = useMemo(() => currentInvitationAuthority(rows, context), [context, rows]);
-  const invitationWritable = memberInvitationAvailable(context, invitationAuthority);
+  const invitationWritable = memberInvitationAvailable(context);
   const normalizedFilter = filter.trim().toLocaleLowerCase('zh-CN');
   const visibleRows = useMemo(
     () =>
@@ -237,7 +236,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
         </div>
       </section>
 
-      <MemberInvitationDialog context={context} authority={invitationAuthority} open={invitationOpen} onClose={() => setInvitationOpen(false)} />
+      <MemberInvitationDialog context={context} open={invitationOpen} onClose={() => setInvitationOpen(false)} />
       <MemberRegistrationResetDialog context={context} target={resetTarget} onClose={() => setResetTarget(undefined)} onReset={() => void memberQuery.refetch()} onInvite={() => setInvitationOpen(true)} />
     </>
   );
@@ -703,13 +702,6 @@ function isSeniorAdministrator(row: MemberAccessRow): boolean {
 }
 function isSelf(row: MemberAccessRow, context: ConsoleContext): boolean {
   return row.id === context.session.membership || row.member?.membership_id === context.session.membership;
-}
-function currentInvitationAuthority(rows: readonly MemberAccessRow[], context: ConsoleContext): MemberInvitationAuthority | undefined {
-  const current = rows.find((row) => isSelf(row, context));
-  if (current === undefined) return undefined;
-  if (isOwner(current)) return { level: 'owner', exactOwner: true };
-  if (isSeniorAdministrator(current)) return { level: 'senior_administrator', exactOwner: false };
-  return undefined;
 }
 function administratorLabel(row: MemberAccessRow): string {
   if (!isAdministrator(row)) return '非管理员';
