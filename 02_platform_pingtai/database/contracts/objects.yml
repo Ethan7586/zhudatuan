@@ -883,6 +883,11 @@ objects:
     owner: notification
     source: 02_platform_pingtai/database/supabase/migrations/20260821047000_notification_lifecycle.sql
     operationalOwner: notification
+  - id: organization.validate_noderelation_version
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql
+    operationalOwner: organization
   - id: payment.reject_provider_effect_mutation
     kind: function
     owner: payment
@@ -26709,6 +26714,16 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260821014000_create_organization_partner.sql
     rls: true
+  - id: organization.node
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql
+    rls: false
+  - id: organization.noderelation
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql
+    rls: false
   - id: organization.organization
     kind: table
     owner: organization
@@ -27594,6 +27609,11 @@ objects:
     owner: member
     source: 02_platform_pingtai/database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
     operationalOwner: member
+  - id: organization.noderelation.noderelation_version_guard
+    kind: trigger
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql
+    operationalOwner: organization
   - id: payment.attempt.payment_attempt_provider_effect_immutable
     kind: trigger
     owner: payment
