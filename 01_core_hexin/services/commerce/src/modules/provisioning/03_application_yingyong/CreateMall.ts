@@ -1,6 +1,9 @@
 import { createHash } from 'node:crypto';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import { catalogProvisioningPort, type CatalogProvisioningPort } from '../../catalog';
+import {
+  catalogProvisioningPort,
+  type CatalogProvisioningPort,
+} from '../../catalog/01_public_gongkai/CatalogProvisioningPort';
 import { experienceProvisioningPort, type ExperienceProvisioningPort } from '../../experience';
 import {
   mallOrganizationProvisioningPort,
