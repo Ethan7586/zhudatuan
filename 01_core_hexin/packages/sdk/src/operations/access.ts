@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const ACCESS_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "access.center.read",
@@ -66,7 +66,7 @@ export function createFetchAccessCenterRead(baseUrl: string): OperationMethod<"a
 }
 
 function bindCenterRead(client: OperationExecutor): OperationMethod<"access.center.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.center.read","method":"GET","path":"/api/v1/access/center","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"access.center.read","method":"GET","path":"/api/v1/access/center","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessRolesManage(baseUrl: string): OperationMethod<"access.roles.manage"> {
@@ -74,7 +74,7 @@ export function createFetchAccessRolesManage(baseUrl: string): OperationMethod<"
 }
 
 function bindRolesManage(client: OperationExecutor): OperationMethod<"access.roles.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.roles.manage","method":"PUT","path":"/api/v1/access/roles/{roleid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["roleid"]}));
+  return bindOperation(client, defineContractOperation({"id":"access.roles.manage","method":"PUT","path":"/api/v1/access/roles/{roleid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessScopesManage(baseUrl: string): OperationMethod<"access.scopes.manage"> {
@@ -82,7 +82,7 @@ export function createFetchAccessScopesManage(baseUrl: string): OperationMethod<
 }
 
 function bindScopesManage(client: OperationExecutor): OperationMethod<"access.scopes.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.scopes.manage","method":"PUT","path":"/api/v1/access/memberships/{membershipid}/scopes","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["membershipid"]}));
+  return bindOperation(client, defineContractOperation({"id":"access.scopes.manage","method":"PUT","path":"/api/v1/access/memberships/{membershipid}/scopes","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessAdministratorsMembersRead(baseUrl: string): OperationMethod<"access.administrators.members.read"> {
@@ -90,7 +90,7 @@ export function createFetchAccessAdministratorsMembersRead(baseUrl: string): Ope
 }
 
 function bindAdministratorsMembersRead(client: OperationExecutor): OperationMethod<"access.administrators.members.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.administrators.members.read","method":"GET","path":"/api/v1/access/administrator-members","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"access.administrators.members.read","method":"GET","path":"/api/v1/access/administrator-members","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessAdministratorsMemberRead(baseUrl: string): OperationMethod<"access.administrators.member.read"> {
@@ -98,7 +98,7 @@ export function createFetchAccessAdministratorsMemberRead(baseUrl: string): Oper
 }
 
 function bindAdministratorsMemberRead(client: OperationExecutor): OperationMethod<"access.administrators.member.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.administrators.member.read","method":"GET","path":"/api/v1/access/administrator-members/{nodeid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["nodeid"]}));
+  return bindOperation(client, defineContractOperation({"id":"access.administrators.member.read","method":"GET","path":"/api/v1/access/administrator-members/{nodeid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessAdministratorsScopesManage(baseUrl: string): OperationMethod<"access.administrators.scopes.manage"> {
@@ -106,7 +106,7 @@ export function createFetchAccessAdministratorsScopesManage(baseUrl: string): Op
 }
 
 function bindAdministratorsScopesManage(client: OperationExecutor): OperationMethod<"access.administrators.scopes.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.administrators.scopes.manage","method":"PUT","path":"/api/v1/access/administrators/{membershipid}/segment-scope","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["membershipid"]}));
+  return bindOperation(client, defineContractOperation({"id":"access.administrators.scopes.manage","method":"PUT","path":"/api/v1/access/administrators/{membershipid}/segment-scope","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessAdministratorsMembersNote(baseUrl: string): OperationMethod<"access.administrators.members.note"> {
@@ -114,7 +114,7 @@ export function createFetchAccessAdministratorsMembersNote(baseUrl: string): Ope
 }
 
 function bindAdministratorsMembersNote(client: OperationExecutor): OperationMethod<"access.administrators.members.note"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.administrators.members.note","method":"POST","path":"/api/v1/access/administrator-members/{nodeid}/notes","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["nodeid"]}));
+  return bindOperation(client, defineContractOperation({"id":"access.administrators.members.note","method":"POST","path":"/api/v1/access/administrator-members/{nodeid}/notes","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessOwnershipRead(baseUrl: string): OperationMethod<"access.ownership.read"> {
@@ -122,7 +122,7 @@ export function createFetchAccessOwnershipRead(baseUrl: string): OperationMethod
 }
 
 function bindOwnershipRead(client: OperationExecutor): OperationMethod<"access.ownership.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.ownership.read","method":"GET","path":"/api/v1/access/ownership","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"access.ownership.read","method":"GET","path":"/api/v1/access/ownership","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessOwnershipTransfersPreview(baseUrl: string): OperationMethod<"access.ownership.transfers.preview"> {
@@ -130,7 +130,7 @@ export function createFetchAccessOwnershipTransfersPreview(baseUrl: string): Ope
 }
 
 function bindOwnershipTransfersPreview(client: OperationExecutor): OperationMethod<"access.ownership.transfers.preview"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.ownership.transfers.preview","method":"POST","path":"/api/v1/access/ownership/transfers/preview","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"access.ownership.transfers.preview","method":"POST","path":"/api/v1/access/ownership/transfers/preview","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessOwnershipTransfersCreate(baseUrl: string): OperationMethod<"access.ownership.transfers.create"> {
@@ -138,7 +138,7 @@ export function createFetchAccessOwnershipTransfersCreate(baseUrl: string): Oper
 }
 
 function bindOwnershipTransfersCreate(client: OperationExecutor): OperationMethod<"access.ownership.transfers.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.ownership.transfers.create","method":"POST","path":"/api/v1/access/ownership/transfers","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"access.ownership.transfers.create","method":"POST","path":"/api/v1/access/ownership/transfers","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessOwnershipTransfersAcceptPreview(baseUrl: string): OperationMethod<"access.ownership.transfers.accept.preview"> {
@@ -146,7 +146,7 @@ export function createFetchAccessOwnershipTransfersAcceptPreview(baseUrl: string
 }
 
 function bindOwnershipTransfersAcceptPreview(client: OperationExecutor): OperationMethod<"access.ownership.transfers.accept.preview"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.ownership.transfers.accept.preview","method":"POST","path":"/api/v1/access/ownership/transfers/{transferid}/accept/preview","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["transferid"]}));
+  return bindOperation(client, defineContractOperation({"id":"access.ownership.transfers.accept.preview","method":"POST","path":"/api/v1/access/ownership/transfers/{transferid}/accept/preview","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessOwnershipTransfersAccept(baseUrl: string): OperationMethod<"access.ownership.transfers.accept"> {
@@ -154,7 +154,7 @@ export function createFetchAccessOwnershipTransfersAccept(baseUrl: string): Oper
 }
 
 function bindOwnershipTransfersAccept(client: OperationExecutor): OperationMethod<"access.ownership.transfers.accept"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.ownership.transfers.accept","method":"POST","path":"/api/v1/access/ownership/transfers/{transferid}/accept","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["transferid"]}));
+  return bindOperation(client, defineContractOperation({"id":"access.ownership.transfers.accept","method":"POST","path":"/api/v1/access/ownership/transfers/{transferid}/accept","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessOwnershipTransfersCancel(baseUrl: string): OperationMethod<"access.ownership.transfers.cancel"> {
@@ -162,7 +162,7 @@ export function createFetchAccessOwnershipTransfersCancel(baseUrl: string): Oper
 }
 
 function bindOwnershipTransfersCancel(client: OperationExecutor): OperationMethod<"access.ownership.transfers.cancel"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.ownership.transfers.cancel","method":"POST","path":"/api/v1/access/ownership/transfers/{transferid}/cancel","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["transferid"]}));
+  return bindOperation(client, defineContractOperation({"id":"access.ownership.transfers.cancel","method":"POST","path":"/api/v1/access/ownership/transfers/{transferid}/cancel","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchAccessOwnershipTransfersCancelPreview(baseUrl: string): OperationMethod<"access.ownership.transfers.cancel.preview"> {
@@ -170,5 +170,5 @@ export function createFetchAccessOwnershipTransfersCancelPreview(baseUrl: string
 }
 
 function bindOwnershipTransfersCancelPreview(client: OperationExecutor): OperationMethod<"access.ownership.transfers.cancel.preview"> {
-  return bindOperation(client, defineStructuralOperation({"id":"access.ownership.transfers.cancel.preview","method":"POST","path":"/api/v1/access/ownership/transfers/{transferid}/cancel/preview","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["transferid"]}));
+  return bindOperation(client, defineContractOperation({"id":"access.ownership.transfers.cancel.preview","method":"POST","path":"/api/v1/access/ownership/transfers/{transferid}/cancel/preview","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }

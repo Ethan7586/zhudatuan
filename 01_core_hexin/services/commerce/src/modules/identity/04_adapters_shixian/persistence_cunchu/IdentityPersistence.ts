@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { reject, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { claimCriticalWrite, completeCriticalWrite, markEnforcedWriteResult, normalizeOperationResult } from '../../../../foundation/application/ExecutionKernel';
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { applyApiDatabaseContext } from '../../../../foundation/infrastructure/DatabaseContext';
@@ -68,24 +69,14 @@ export async function identityTransaction<T>(pool: DatabasePool, request: Operat
 }
 
 export async function beginIdempotency(database: OperationDatabase, request: OperationRequest, scope: string): Promise<OperationResult | null> {
-  const key = request.input.idempotency;
-  if (!key) throw new Error('IDEMPOTENCY_KEY_REQUIRED');
-  const hash = requestDigest(request);
-  const actor = request.access?.actor.id ?? `public:${hash.slice(0, 24)}`;
-  await database.query(`insert into runtime.idempotency(scope,actor_id,key,request_hash,state,expires_at)
-    values($1,$2,$3,$4,'started',clock_timestamp()+interval '24 hours') on conflict do nothing`, [scope, actor, key, hash]);
-  const record = await database.query<{ request_hash: string; state: string; response: OperationResult | null }>(
-    'select request_hash,state,response from runtime.idempotency where scope=$1 and actor_id=$2 and key=$3 for update', [scope, actor, key]);
-  const found = record.rows[0];
-  if (!found || found.request_hash !== hash) throw new Error('IDEMPOTENCY_KEY_REUSED');
-  return found.state === 'completed' ? found.response : null;
+  const claim = await claimCriticalWrite(database, request, 'identity', scope);
+  return claim.replay === undefined ? null : markEnforcedWriteResult(normalizeOperationResult(request, claim.replay));
 }
 
 export async function completeIdempotency(database: OperationDatabase, request: OperationRequest, scope: string, result: OperationResult): Promise<void> {
-  const hash = requestDigest(request);
-  const actor = request.access?.actor.id ?? `public:${hash.slice(0, 24)}`;
-  await database.query(`update runtime.idempotency set state='completed',response=$4::jsonb where scope=$1 and actor_id=$2 and key=$3`,
-    [scope, actor, request.input.idempotency!, JSON.stringify(result)]);
+  const claim = await claimCriticalWrite(database, request, 'identity', scope);
+  await completeCriticalWrite(database, request, claim, normalizeOperationResult(request, result));
+  markEnforcedWriteResult(result);
 }
 
 export async function publishIdentityEvent(database: OperationDatabase, type: string, aggregate: string, scope: string, trace: string, payload: unknown): Promise<void> {
@@ -94,7 +85,3 @@ export async function publishIdentityEvent(database: OperationDatabase, type: st
 }
 
 export function tokenHash(value: string): string { return createHash('sha256').update(value).digest('hex'); }
-
-function requestDigest(request: OperationRequest): string {
-  return createHash('sha256').update(JSON.stringify({ type: request.type, body: request.input.body })).digest('hex');
-}

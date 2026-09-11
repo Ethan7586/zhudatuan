@@ -1176,6 +1176,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           principal_id: String(values[1]), credential_version: 1 }]);
       }
       if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+      if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
       if (text.startsWith('select request_hash,state,response')) {
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }

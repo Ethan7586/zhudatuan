@@ -8,6 +8,9 @@ import { PgUnitOfWork } from '../infrastructure/PgUnitOfWork';
 import type { OperationRequest, OperationResult, OperationUsecase } from './OperationHandler';
 import { TransactionRunner } from './TransactionRunner';
 import type { AuditSink } from './AuditSink';
+import { ExecutionKernel, operationRequestHash } from './ExecutionKernel';
+
+export { operationRequestHash } from './ExecutionKernel';
 
 export interface OperationDatabase {
   query<R extends QueryResultRow = QueryResultRow>(text: string, values?: readonly unknown[]): Promise<QueryResult<R>>;
@@ -73,6 +76,7 @@ export class ModuleOperations implements OperationUsecase {
   private readonly actions: ReadonlyMap<OperationId, OperationEntry>;
   private readonly query: TransactionRunner;
   private readonly command: TransactionRunner;
+  private readonly kernel: ExecutionKernel;
 
   constructor(private readonly module: string, private readonly pool: DatabasePool, private readonly audit: AuditSink,
     actions: OperationActions, owned?: readonly OperationId[]) {
@@ -82,6 +86,7 @@ export class ModuleOperations implements OperationUsecase {
     if (expected.join('\n') !== actual.join('\n')) throw new Error(`MODULE_OPERATION_CATALOG_MISMATCH:${module}`);
     this.query = new TransactionRunner(new PgUnitOfWork(pool.workload('query')));
     this.command = new TransactionRunner(new PgUnitOfWork(pool.workload('command')));
+    this.kernel = new ExecutionKernel(audit, appendOperationAudit);
   }
 
   async invoke(request: OperationRequest): Promise<OperationResult> {
@@ -103,7 +108,10 @@ export class ModuleOperations implements OperationUsecase {
     try {
       const result = operation.method === 'GET'
         ? await this.read(request, execute)
-        : await this.write(request, execute);
+        : operation.writePath === 'transactional'
+          ? await this.kernel.execute(request, this.module, this.command, transactionContext(request, this.module, 'command'), execute,
+            idempotencyReplayResponse)
+          : await this.write(request, execute);
       return lifecycle?.finalize ? lifecycle.finalize(request, result, preparation) : result;
     } catch (cause) {
       await lifecycle?.discard?.(request, preparation, cause);
@@ -230,25 +238,6 @@ function transactionContext(request: OperationRequest, module: string, workload:
   return { tenant: access?.scope.tenant ?? '', membership: access?.membership.id ?? '', scope: access?.scope.id ?? `public:${module}`,
     actor: access?.actor.id ?? 'public', trace: access?.trace ?? `public:${request.type}`, workload,
     ...(serializationKeys === undefined ? {} : { serializationKeys }) } as const;
-}
-
-export function operationRequestHash(request: OperationRequest): string {
-  return digest(JSON.stringify({
-    type: request.type,
-    path: request.input.path,
-    query: request.input.query,
-    body: idempotencyBody(request),
-    expectedVersion: request.input.expectedVersion ?? null,
-  }));
-}
-
-function idempotencyBody(request: OperationRequest): unknown {
-  if (request.type !== 'identity.invitations.create'
-    || request.input.body === null
-    || typeof request.input.body !== 'object'
-    || Array.isArray(request.input.body)) return request.input.body;
-  const { destination: _destination, ...nonSensitiveBody } = request.input.body as Record<string, unknown>;
-  return { ...nonSensitiveBody, destination: '[SENSITIVE]' };
 }
 
 function digest(value: string): string { return createHash('sha256').update(value).digest('hex'); }

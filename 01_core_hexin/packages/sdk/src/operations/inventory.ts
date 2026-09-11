@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const INVENTORY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "inventory.availability.read",
@@ -33,7 +33,7 @@ export function createFetchInventoryAvailabilityRead(baseUrl: string): Operation
 }
 
 function bindAvailabilityRead(client: OperationExecutor): OperationMethod<"inventory.availability.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"inventory.availability.read","method":"GET","path":"/api/v1/inventory/availability","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"inventory.availability.read","method":"GET","path":"/api/v1/inventory/availability","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchInventoryImportsCreate(baseUrl: string): OperationMethod<"inventory.imports.create"> {
@@ -41,7 +41,7 @@ export function createFetchInventoryImportsCreate(baseUrl: string): OperationMet
 }
 
 function bindImportsCreate(client: OperationExecutor): OperationMethod<"inventory.imports.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"inventory.imports.create","method":"POST","path":"/api/v1/inventory/imports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"inventory.imports.create","method":"POST","path":"/api/v1/inventory/imports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchInventoryImportsRead(baseUrl: string): OperationMethod<"inventory.imports.read"> {
@@ -49,5 +49,5 @@ export function createFetchInventoryImportsRead(baseUrl: string): OperationMetho
 }
 
 function bindImportsRead(client: OperationExecutor): OperationMethod<"inventory.imports.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"inventory.imports.read","method":"GET","path":"/api/v1/inventory/imports","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"inventory.imports.read","method":"GET","path":"/api/v1/inventory/imports","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }

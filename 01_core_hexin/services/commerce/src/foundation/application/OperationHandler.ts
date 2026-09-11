@@ -1,5 +1,6 @@
 // Generated shell from definitions/operations.yml. Do not edit.
 import type { OperationId } from '@shop/contract';
+import { assertEnforcedWriteResult, normalizeOperationResult } from './ExecutionKernel';
 import type { AccessContext } from '../security/AccessContext';
 import type { Handler } from './Handler';
 
@@ -310,7 +311,9 @@ export interface OperationUsecase {
 export class OperationHandler implements Handler<OperationRequest, OperationResult> {
   constructor(private readonly usecase: OperationUsecase) {}
 
-  handle(request: OperationRequest): Promise<OperationResult> {
-    return this.usecase.invoke(request);
+  async handle(request: OperationRequest): Promise<OperationResult> {
+    const result = await this.usecase.invoke(request);
+    assertEnforcedWriteResult(request, result);
+    return normalizeOperationResult(request, result);
   }
 }

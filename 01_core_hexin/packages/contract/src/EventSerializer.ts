@@ -2,6 +2,7 @@
 import type { EventContract } from './EventContract';
 
 export const SERIALIZED_EVENT_TYPES = Object.freeze([
+  'runtime.operation.completed',
   'identity.session.created',
   'identity.session.revoked',
   'identity.challenge.started',

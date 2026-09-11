@@ -1156,6 +1156,54 @@ objects:
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260821046000_support_lifecycle.sql
     operationalOwner: support
+  - id: shopapp:function:access.administrator_member_visible(text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopapp
+    objectType: function
+    target: access.administrator_member_visible(text,text)
+    privilege: execute
+  - id: shopapp:function:access.change_administrator_segment_scope(text,text,bigint,jsonb):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopapp
+    objectType: function
+    target: access.change_administrator_segment_scope(text,text,bigint,jsonb)
+    privilege: execute
+  - id: shopapp:function:access.list_administrator_members(text,text,integer):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopapp
+    objectType: function
+    target: access.list_administrator_members(text,text,integer)
+    privilege: execute
+  - id: shopapp:function:access.read_administrator_member(text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopapp
+    objectType: function
+    target: access.read_administrator_member(text,text)
+    privilege: execute
+  - id: shopapp:function:access.record_administrator_member_note(text,text,bigint,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopapp
+    objectType: function
+    target: access.record_administrator_member_note(text,text,bigint,text,text,text,text)
+    privilege: execute
+  - id: shopapp:function:access.resolve_administrator_context(text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopapp
+    objectType: function
+    target: access.resolve_administrator_context(text)
+    privilege: execute
   - id: shopapp:function:access.change_zhudatuan_owner_mobile(text,text,text,text,text,text,text,text,text):execute
     kind: grant
     owner: access
@@ -9580,6 +9628,54 @@ objects:
     objectType: view
     target: benefit.balance
     privilege: select
+  - id: shopconsole:function:access.administrator_member_visible(text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopconsole
+    objectType: function
+    target: access.administrator_member_visible(text,text)
+    privilege: execute
+  - id: shopconsole:function:access.change_administrator_segment_scope(text,text,bigint,jsonb):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopconsole
+    objectType: function
+    target: access.change_administrator_segment_scope(text,text,bigint,jsonb)
+    privilege: execute
+  - id: shopconsole:function:access.list_administrator_members(text,text,integer):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopconsole
+    objectType: function
+    target: access.list_administrator_members(text,text,integer)
+    privilege: execute
+  - id: shopconsole:function:access.read_administrator_member(text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopconsole
+    objectType: function
+    target: access.read_administrator_member(text,text)
+    privilege: execute
+  - id: shopconsole:function:access.record_administrator_member_note(text,text,bigint,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopconsole
+    objectType: function
+    target: access.record_administrator_member_note(text,text,bigint,text,text,text,text)
+    privilege: execute
+  - id: shopconsole:function:access.resolve_administrator_context(text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: shopconsole
+    objectType: function
+    target: access.resolve_administrator_context(text)
+    privilege: execute
   - id: shopconsole:function:access.membership_version(text):execute
     kind: grant
     owner: access
@@ -18132,6 +18228,54 @@ objects:
     objectType: table
     target: runtime.schemaversion
     privilege: select
+  - id: zhudatuanidentityapi:function:access.administrator_member_visible(text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.administrator_member_visible(text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:access.change_administrator_segment_scope(text,text,bigint,jsonb):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.change_administrator_segment_scope(text,text,bigint,jsonb)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:access.list_administrator_members(text,text,integer):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.list_administrator_members(text,text,integer)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:access.read_administrator_member(text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.read_administrator_member(text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:access.record_administrator_member_note(text,text,bigint,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.record_administrator_member_note(text,text,bigint,text,text,text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:access.resolve_administrator_context(text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.resolve_administrator_context(text)
+    privilege: execute
   - id: zhudatuanidentityapi:function:access.cancel_owner_transfer(text,text,text,text,bigint,bigint,bigint,text):execute
     kind: grant
     owner: access
@@ -22020,6 +22164,22 @@ objects:
     objectType: function
     target: identity.resolve_session(text,text)
     privilege: execute
+  - id: zhudatuanwebapi:function:organization.open_hosted_member_mall(text,text,jsonb):execute
+    kind: grant
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: organization.open_hosted_member_mall(text,text,jsonb)
+    privilege: execute
+  - id: zhudatuanwebapi:function:organization.upgrade_hosted_mall_to_sovereign(text,text,jsonb):execute
+    kind: grant
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: organization.upgrade_hosted_mall_to_sovereign(text,text,jsonb)
+    privilege: execute
   - id: zhudatuanwebapi:function:reporting.cockpit(text,text,text):execute
     kind: grant
     owner: reporting
@@ -23036,6 +23196,14 @@ objects:
     objectType: table
     target: runtime.idempotency
     privilege: update
+  - id: zhudatuanwebapi:table:runtime.outbox:insert
+    kind: grant
+    owner: runtime
+    source: 02_platform_pingtai/database/supabase/migrations/20260912170000_create_sfl_execution_contract_kernel.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: runtime.outbox
+    privilege: insert
   - id: zhudatuanwebapi:table:runtime.schemaversion:select
     kind: grant
     owner: runtime
@@ -26272,6 +26440,10 @@ objects:
     kind: policy
     owner: runtime
     source: 02_platform_pingtai/database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: runtime.outbox.zhudatuanwebapiinsert
+    kind: policy
+    owner: runtime
+    source: 02_platform_pingtai/database/supabase/migrations/20260912170000_create_sfl_execution_contract_kernel.sql
   - id: runtime.projectionoffset.appscope
     kind: policy
     owner: runtime

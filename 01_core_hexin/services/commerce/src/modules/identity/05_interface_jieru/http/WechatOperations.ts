@@ -3,6 +3,7 @@ import type { AuditSink } from '../../../../foundation/application/AuditSink';
 import { appendOperationAudit, operationRequestHash, reject, requireAccess } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
 import type { OperationRequest, OperationResult, OperationUsecase } from '../../../../foundation/application/OperationHandler';
+import { markEnforcedWriteResult } from '../../../../foundation/application/ExecutionKernel';
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { WechatIdentity } from '../../01_public_gongkai/ports_jiekou/WechatIdentity';
@@ -19,9 +20,9 @@ export class WechatOperations implements OperationUsecase {
     private readonly kms: KmsClient, private readonly audit: AuditSink, private readonly identityKey: string, private readonly sessionKey: string,
     private readonly tickets: PgAuthTicket) {}
 
-  invoke(request: OperationRequest): Promise<OperationResult> {
-    if (request.type === 'identity.wechat.session') return this.session(request);
-    if (request.type === 'identity.wechat.bind') return this.bind(request);
+  async invoke(request: OperationRequest): Promise<OperationResult> {
+    if (request.type === 'identity.wechat.session') return markEnforcedWriteResult(await this.session(request));
+    if (request.type === 'identity.wechat.bind') return markEnforcedWriteResult(await this.bind(request));
     return this.core.invoke(request);
   }
 

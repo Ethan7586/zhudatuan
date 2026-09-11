@@ -2,6 +2,7 @@
 import { COMMERCE_EVENTS } from '@shop/contract';
 
 export const EVENT_SCHEMA_TYPES = Object.freeze([
+  'runtime.operation.completed',
   'identity.session.created',
   'identity.session.revoked',
   'identity.challenge.started',
@@ -71,6 +72,7 @@ export const EVENT_SCHEMA_TYPES = Object.freeze([
 ] as const);
 
 export const EVENT_HANDLERS = new Map<string, readonly string[]>([
+  ["runtime.operation.completed", Object.freeze([])],
   ["identity.session.created", Object.freeze(["projection"])],
   ["identity.session.revoked", Object.freeze(["projection"])],
   ["identity.challenge.started", Object.freeze([])],

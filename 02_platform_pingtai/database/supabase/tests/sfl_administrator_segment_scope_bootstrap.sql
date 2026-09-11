@@ -6,9 +6,13 @@ create schema runtime;
 create schema identity;
 create schema organization;
 create schema access;
+create schema capability;
 grant usage on schema access to shopapp,shopconsole,zhudatuanidentityapi;
 
 create table runtime.schemaversion(version text primary key,checksum char(64) not null);
+create table runtime.operation(
+  id text primary key,owner text not null,method text not null,path text not null,contract_version text not null,unique(method,path)
+);
 create table runtime.outbox(
   id text primary key,event_type text not null,event_version integer not null,aggregate_type text not null,
   aggregate_id text not null,scope_id text not null,payload jsonb not null,trace_id text not null,
@@ -40,6 +44,17 @@ create table organization.nodeclosure(
 );
 
 create table access.permission(id text primary key,code text not null unique,risk text not null,status text not null);
+create table capability.capability(
+  id text primary key,kind text not null,name text not null,version integer not null,status text not null,unique(kind,name,version)
+);
+create table capability.operation(
+  operation_id text primary key references runtime.operation(id),capability_id text not null unique references capability.capability(id),
+  permission_code text,audience text not null
+);
+create table capability.entitlement(
+  id text primary key,scope_id text not null,capability_id text not null references capability.capability(id),state text not null,
+  quota bigint,effective_at timestamptz not null,expires_at timestamptz,version bigint not null
+);
 create table access.role(id text primary key,scope_id text not null,name text not null,status text not null,version bigint not null);
 create table access.rolepermission(
   role_id text not null references access.role(id),permission_id text not null references access.permission(id),effect text not null,
@@ -58,7 +73,7 @@ create table access.membershiprole(
 );
 
 insert into runtime.schemaversion(version,checksum)
-values('20260912050000','de6dc92efc66dc4bb64ff4ed0a4e89031a357a14be22be4387ce87c75086d408');
+values('20260912050000','1cd685bc700d26773ffd1c5937c908cb5bff4d61d7c2c07a185da16dc7d5f899');
 
 insert into identity.principal(id,status) values
   ('principal:owner','active'),('principal:first','active'),('principal:second','active'),

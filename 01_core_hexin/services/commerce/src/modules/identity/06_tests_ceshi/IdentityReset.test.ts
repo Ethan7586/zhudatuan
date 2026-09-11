@@ -23,6 +23,7 @@ describe('root identity registration reset', () => {
           return rows([{ account_id: 'account:actor:l0', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }]);
         }
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+      if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
         if (text.startsWith('select request_hash,state,response')) return rows([{ request_hash: requestHash, state: 'started', response: null }]);
         if (text.includes('account.status account_status')) {
           return rows([{ member_id: 'member:target', account_id: 'account:target:l0', realm_id: 'realm:l0',
@@ -51,6 +52,7 @@ describe('root identity registration reset', () => {
       status: 200,
       body: { principal_id: 'principal:target', account_id: 'account:target:l0', status: 'reset',
         login_identity_released: true, history_retained: true, version: 8 },
+      headers: { 'x-business-number': expect.stringMatching(/^SFL-IDENTITY-/) },
     });
     expect(statements.some(({ text }) => text.includes('pg_advisory_xact_lock(hashtext($1))'))).toBe(true);
     expect(statements.some(({ text }) => text.includes('update identity.session session set') && text.includes("'identity_reset'"))).toBe(true);
@@ -72,6 +74,7 @@ describe('root identity registration reset', () => {
           return rows([{ account_id: 'account:owner:l0', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }]);
         }
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+      if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
         if (text.startsWith('select request_hash,state,response')) return rows([{ request_hash: requestHash, state: 'started', response: null }]);
         if (text.includes('account.status account_status')) {
           return rows([{ member_id: 'member:owner', account_id: 'account:owner:l0', realm_id: 'realm:l0',

@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const MARKETING_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "marketing.campaigns.read",
@@ -27,5 +27,5 @@ export function createFetchMarketingCampaignsRead(baseUrl: string): OperationMet
 }
 
 function bindCampaignsRead(client: OperationExecutor): OperationMethod<"marketing.campaigns.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"marketing.campaigns.read","method":"GET","path":"/api/v1/marketing/campaigns","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"marketing.campaigns.read","method":"GET","path":"/api/v1/marketing/campaigns","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }

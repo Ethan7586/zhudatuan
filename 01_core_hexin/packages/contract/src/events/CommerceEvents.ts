@@ -2,6 +2,7 @@
 import { eventContract } from '../EventContract';
 
 export const COMMERCE_EVENTS = Object.freeze([
+  eventContract({"type":"runtime.operation.completed","version":1,"module":"runtime"}),
   eventContract({"type":"identity.session.created","version":1,"module":"identity"}),
   eventContract({"type":"identity.session.revoked","version":1,"module":"identity"}),
   eventContract({"type":"identity.challenge.started","version":1,"module":"identity"}),

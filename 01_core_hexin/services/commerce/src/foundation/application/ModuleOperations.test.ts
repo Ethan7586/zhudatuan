@@ -226,18 +226,21 @@ describe('ModuleOperations lifecycle', () => {
   });
 
   it('uses a stable public actor so the same idempotency key cannot be reused with a different body', async () => {
-    let stored: Readonly<{ request_hash: string; state: string; response: unknown }> | undefined;
+    let stored: Readonly<{ request_hash: string; state: string; response: unknown;
+      business_number: string; execution_state: 'started' | 'completed' }> | undefined;
     let executions = 0;
     const insertedActors: unknown[] = [];
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
         if (text.includes('insert into runtime.idempotency')) {
           insertedActors.push(values[1]);
-          if (stored === undefined) stored = { request_hash: String(values[3]), state: 'started', response: null };
+          if (stored === undefined) stored = { request_hash: String(values[3]), state: 'started', response: null,
+            business_number: String(values[5]), execution_state: 'started' };
         } else if (text.startsWith('select request_hash,state,response')) {
           return { rows: stored === undefined ? [] : [stored], rowCount: stored === undefined ? 0 : 1 } as unknown as QueryResult;
         } else if (text.includes("update runtime.idempotency set state='completed'")) {
-          stored = { request_hash: stored!.request_hash, state: 'completed', response: JSON.parse(String(values[3])) };
+          stored = { ...stored!, state: 'completed', execution_state: 'completed', response: JSON.parse(String(values[3])) };
+          return { rows: [], rowCount: 1 } as unknown as QueryResult;
         }
         return { rows: [], rowCount: 0 } as unknown as QueryResult;
       },

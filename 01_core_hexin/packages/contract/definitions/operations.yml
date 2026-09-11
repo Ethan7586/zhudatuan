@@ -6,7 +6,7 @@ operations:
     path: /health/live
     audience: public
     idempotent: true
-    schema: structural
+    schema: named
     requirements: &a1
       - MVP03
       - MVP04
@@ -38,7 +38,7 @@ operations:
     path: /health/ready
     audience: public
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -49,7 +49,7 @@ operations:
     path: /health/startup
     audience: public
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -61,7 +61,7 @@ operations:
     audience: operator
     permission: runtime.health.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -72,7 +72,9 @@ operations:
     path: /api/v1/identity/sessions
     audience: public
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["application","authorization","challenge","code","loginIntent","membership","password","provider","subject","target","targetApplication","targetNodeId","targetSurface"]
+    responseFields: ["accessVersion","active_context","actor","application","assurance","authorization","callback","capabilities","code","csrf","expiresIn","governance","host","loginIntent","loginUrl","membership","memberships","mobileTokens","permissions","principal","provider","requestedTarget","returnOrigin","returnTarget","revoked","scope","scopes","security","session","sessions","sourceNode","subject","syncedAt","target","targetNode","targetRealm","targetSurface","ticket"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -84,7 +86,9 @@ operations:
     audience: member
     permission: identity.session.read
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["application","authorization","challenge","code","loginIntent","membership","password","provider","subject","target","targetApplication","targetNodeId","targetSurface"]
+    responseFields: ["accessVersion","active_context","actor","application","assurance","authorization","callback","capabilities","csrf","expiresIn","governance","host","loginIntent","loginUrl","membership","memberships","mobileTokens","permissions","principal","provider","requestedTarget","returnOrigin","returnTarget","revoked","scope","scopes","security","session","sessions","sourceNode","subject","syncedAt","target","targetNode","targetRealm","targetSurface","ticket"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -95,7 +99,9 @@ operations:
     path: /api/v1/identity/tickets/exchange
     audience: public
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["application","authorization","challenge","code","loginIntent","membership","password","provider","subject","target","targetApplication","targetNodeId","targetSurface"]
+    responseFields: ["accessVersion","active_context","actor","application","assurance","authorization","callback","capabilities","csrf","expiresIn","governance","host","loginIntent","loginUrl","membership","memberships","mobileTokens","permissions","principal","provider","requestedTarget","returnOrigin","returnTarget","revoked","scope","scopes","security","session","sessions","sourceNode","subject","syncedAt","target","targetNode","targetRealm","targetSurface","ticket"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -107,7 +113,7 @@ operations:
     audience: member
     permission: identity.session.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -119,7 +125,9 @@ operations:
     audience: member
     permission: identity.session.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["application","authorization","challenge","code","loginIntent","membership","password","provider","subject","target","targetApplication","targetNodeId","targetSurface"]
+    responseFields: ["accessVersion","active_context","actor","application","assurance","authorization","callback","capabilities","csrf","expiresIn","governance","host","loginIntent","loginUrl","membership","memberships","mobileTokens","permissions","principal","provider","requestedTarget","returnOrigin","returnTarget","revoked","scope","scopes","security","session","sessions","sourceNode","subject","syncedAt","target","targetNode","targetRealm","targetSurface"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -131,7 +139,7 @@ operations:
     audience: member
     permission: identity.session.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP21
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -144,7 +152,9 @@ operations:
     audience: member
     permission: identity.session.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["application","authorization","challenge","code","loginIntent","membership","password","provider","subject","target","targetApplication","targetNodeId","targetSurface"]
+    responseFields: ["accessVersion","active_context","actor","application","assurance","authorization","callback","capabilities","csrf","expiresIn","governance","host","loginIntent","loginUrl","membership","memberships","mobileTokens","permissions","principal","provider","requestedTarget","returnOrigin","returnTarget","revoked","scope","scopes","security","session","sessions","sourceNode","subject","syncedAt","target","targetNode","targetRealm","targetSurface"]
     requirements:
       - MVP21
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -156,7 +166,9 @@ operations:
     path: /api/v1/identity/challenges
     audience: public
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["authorization","challenge","code","destination","displayName","loginIntent","password","phoneVerification","principal","purpose","subject","target","termsAccepted","termsHash","wechatToken"]
+    responseFields: ["account","assurance","authentication","authorization","business_number","code","created_at","credential","destinationHash","envelope","expires_at","host_sovereign_node_id","id","identity_exists","invitation_id","inviter_membership_id","inviter_node_id","legacyMobileToken","line_id","loginIntent","member","membership","mobile","mobileLookup","operatorMembership","outcome","password","principal","purpose","recipient","registration","registrationBusinessNumber","registrationHash","registrationNodeKey","registrationRealm","registration_host_node_id","registration_id","registration_origin","request_hash","scopes","subject"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -167,7 +179,7 @@ operations:
     path: /api/v1/identity/invitations/resolve
     audience: public
     idempotent: false
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -179,7 +191,9 @@ operations:
     audience: operator
     permission: identity.invitation.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","departmentId","destination","displayName","employeeNo","expiresAt","governanceLevel","invite","label","maxUses","password","reason","status","storefrontOrganization","targetClient","tenantId","username"]
+    responseFields: ["access","application_id","application_slug","code","created_at","expires_at","governanceLevel","id","invitationAuthority","label","max_uses","memberId","membershipId","organization_id","organization_name","privacy_body","privacy_title","starts_at","status","target","target_client","terms_body","terms_hash","terms_title","use_count","userId","version"]
     requirements:
       - MVP13
       - MVP22
@@ -193,7 +207,9 @@ operations:
     audience: operator
     permission: identity.invitation.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","departmentId","destination","displayName","employeeNo","expiresAt","governanceLevel","invite","label","maxUses","password","reason","status","storefrontOrganization","targetClient","tenantId","username"]
+    responseFields: ["access","application_id","application_slug","code","id","invitationAuthority","label","max_uses","memberId","membershipId","organization_id","organization_name","privacy_body","privacy_title","status","target_client","terms_body","terms_hash","terms_title","use_count","userId","version"]
     requirements:
       - MVP13
       - MVP22
@@ -206,7 +222,9 @@ operations:
     path: /api/v1/identity/members
     audience: public
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["authorization","challenge","code","destination","displayName","loginIntent","password","phoneVerification","principal","purpose","subject","target","termsAccepted","termsHash","wechatToken"]
+    responseFields: ["accepted_at","access_version","account","account_id","active_context","assurance","authentication","authorization","business_number","client","code","created_at","credential","destinationHash","effective_at","employee_no","envelope","governanceLevel","host_sovereign_node_id","id","idempotency_key","invitation_id","inviter_membership_id","inviter_node_id","joined_at","left_at","legacyMobileToken","line_id","loginIntent","member","member_id","membership","membership_id","mobile","mobileLookup","node_id","node_profile","operatorMembership","organization_id","outcome","parent_node_id","password","principal","purpose","realm_id","recipient","registration","registrationBusinessNumber","registrationHash","registrationNodeKey","registrationRealm","registration_host_node_id","registration_id","registration_origin","relation_version","replayed","request_hash","scopes","signed_level","status","subject"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -218,7 +236,9 @@ operations:
     audience: operator
     permission: member.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","departmentId","destination","displayName","employeeNo","expiresAt","governanceLevel","invite","label","maxUses","password","reason","status","storefrontOrganization","targetClient","tenantId","username"]
+    responseFields: ["access","application_id","application_slug","code","id","invitationAuthority","memberId","member_id","membershipId","organization_id","organization_name","privacy_body","privacy_title","status","target_client","terms_body","terms_hash","terms_title","userId","version"]
     requirements:
       - MVP13
       - MVP22
@@ -232,7 +252,9 @@ operations:
     audience: member
     permission: identity.credential.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["challenge","code","currentPassword","newPassword"]
+    responseFields: ["access","account_id","challenge","credential_version","currentPassword","hash","history_retained","login_identity_released","principal_id","sessions_revoked","status","verified","verifiedAt","version"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -244,7 +266,7 @@ operations:
     audience: member
     permission: identity.assurance.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -257,7 +279,9 @@ operations:
     path: /api/v1/identity/password/reset
     audience: public
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["challenge","code","currentPassword","newPassword"]
+    responseFields: ["access","account_id","challenge","code","credential_version","currentPassword","hash","history_retained","login_identity_released","principal_id","sessions_revoked","status","verified","verifiedAt","version"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -269,7 +293,9 @@ operations:
     audience: member
     permission: identity.mobile.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","bindingToken","challenge","code","destination","mobile"]
+    responseFields: ["access","access_version","actionProof","code","destinationHash","display_name","envelope","expectedVersion","id","idempotencyKey","mobile","mobile_masked","operation","recipient","requestHash","resource","session_revoked","version","wechat"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -281,7 +307,9 @@ operations:
     audience: member
     permission: identity.assurance.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","bindingToken","challenge","code","destination","mobile"]
+    responseFields: ["access","actionProof","code","destinationHash","envelope","expectedVersion","expires_at","id","idempotencyKey","mobile","operation","purpose","recipient","requestHash","resource","wechat"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -293,7 +321,9 @@ operations:
     audience: member
     permission: identity.assurance.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","bindingToken","challenge","code","destination","mobile"]
+    responseFields: ["access","actionProof","assurance_level","code","destinationHash","envelope","expectedVersion","id","idempotencyKey","mobile","operation","recipient","requestHash","resource","wechat"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -304,7 +334,9 @@ operations:
     path: /api/v1/identity/wechat/sessions
     audience: public
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","application","authorization","code","mode","scene","target","url"]
+    responseFields: ["appId","authorizationUrl","bindingToken","callback","csrf","expiresIn","jsApiList","membership","nonceStr","session","signature","state","timestamp","token"]
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -317,7 +349,9 @@ operations:
     audience: member
     permission: identity.credential.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["bindingToken"]
+    responseFields: ["identity","status"]
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -330,7 +364,7 @@ operations:
     audience: operator
     permission: organization.layer.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - OMS-004
@@ -344,7 +378,9 @@ operations:
     audience: operator
     permission: organization.layer.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["code","enterpriseId","name","parentId","publicSlug"]
+    responseFields: ["applicationId","code","enterpriseId","mallId","name","organizationId","ownerMemberId","ownerMembershipId","ownerPrincipalId","parentId","poolId","publicSlug","publicationState","scopeId","state"]
     requirements:
       - MVP06
       - MVP15
@@ -358,7 +394,7 @@ operations:
     audience: operator
     permission: organization.layer.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP06
       - MVP15
@@ -372,7 +408,7 @@ operations:
     audience: operator
     permission: access.center.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -386,7 +422,9 @@ operations:
     audience: operator
     permission: access.role.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","effect","expiresAt","formerOwnerMode","formerOwnerRole","kind","membership","name","permissions","scope","scopeSource","targetMembership"]
+    responseFields: ["access_version","action","affected_memberships","changed","deleted","id","kind","membership","name","path","role","scope","scope_source","status","transfer","version"]
     requirements:
       - MVP13
       - MVP22
@@ -400,7 +438,9 @@ operations:
     audience: operator
     permission: access.scope.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","effect","expiresAt","formerOwnerMode","formerOwnerRole","kind","membership","name","permissions","scope","scopeSource","targetMembership"]
+    responseFields: ["access_version","id","kind","path","transfer"]
     requirements:
       - MVP13
       - MVP22
@@ -414,7 +454,7 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -428,7 +468,7 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -442,7 +482,9 @@ operations:
     audience: operator
     permission: access.scope.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","role_id","root_node_id","segment"]
+    responseFields: ["access_version","action","administrator_identity_id","administrator_membership_id","business_number","replayed","role_id","scope"]
     requirements:
       - MVP13
       - MVP22
@@ -456,7 +498,9 @@ operations:
     audience: operator
     permission: member.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP13
       - MVP22
@@ -470,7 +514,7 @@ operations:
     audience: operator
     permission: capability.assignment.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
       - MVP13
@@ -485,7 +529,7 @@ operations:
     audience: operator
     permission: capability.assignment.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
       - MVP13
@@ -500,7 +544,7 @@ operations:
     audience: operator
     permission: partner.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -514,7 +558,7 @@ operations:
     audience: operator
     permission: partner.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -528,7 +572,7 @@ operations:
     audience: operator
     permission: partner.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -542,7 +586,7 @@ operations:
     audience: operator
     permission: partner.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -556,7 +600,7 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -570,7 +614,7 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -584,7 +628,7 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -598,7 +642,7 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -612,7 +656,7 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -626,7 +670,7 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP13, MVP22]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -638,7 +682,9 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements: [MVP13, MVP22]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -650,7 +696,7 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP13, MVP22]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -662,7 +708,9 @@ operations:
     audience: operator
     permission: member.read
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements: [MVP13, MVP22]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -674,7 +722,7 @@ operations:
     audience: operator
     permission: identity.invitation.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -688,7 +736,7 @@ operations:
     audience: member
     permission: member.profile.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -700,7 +748,9 @@ operations:
     audience: member
     permission: member.profile.read
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["mallName","operatingEntityName"]
+    responseFields: ["business_number","capabilities","capability_version","configuration_version","entity_binding_version","host_sovereign_node_id","idempotency_key","line_id","mall_id","mall_version","membership_id","node_id","node_profile","opened_at","opening_id","operating_entity_id","original_parent_node_id","parent_node_id","payment_configuration_version","principal_id","realm_id","relation_version","replayed","request_hash","signed_level","sovereignty_tier","status"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -712,7 +762,9 @@ operations:
     audience: member
     permission: member.profile.read
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["accountsHost","brandRef","callbackBindingRef","consoleHost","dataScopeRef","edgeBindingRef","gatewayRef","paymentBindingRef","paymentCallbackHost","publicApiHost","runtimeConfigRef","runtimeIdentityRef","secretBindingSetRef","storefrontHost","tunnelRef"]
+    responseFields: ["active_relation_version","business_number","domain_binding_set_version","host_sovereign_node_id","idempotency_key","line_id","mall_id","manifest_digest","manifest_summary","manifest_version","membership_id","node_id","node_profile","operating_entity_id","original_parent_node_id","parent_node_id","previous_host_sovereign_node_id","previous_relation_version","principal_id","realm_id","recoverable","replayed","request_hash","resource_binding_version","signed_level","source_tier","sovereignty_version","status","target_tier","upgrade_id","upgraded_at"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -724,7 +776,7 @@ operations:
     audience: member
     permission: member.address.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -736,7 +788,9 @@ operations:
     audience: member
     permission: member.address.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["address","isDefault","mobile","recipient","region","status"]
+    responseFields: ["access","envelopes"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -748,7 +802,9 @@ operations:
     audience: operator
     permission: member.import
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP13
       - MVP22
@@ -762,7 +818,7 @@ operations:
     audience: operator
     permission: member.import
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -776,7 +832,7 @@ operations:
     audience: operator
     permission: qualification.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -790,7 +846,7 @@ operations:
     audience: operator
     permission: qualification.preview
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -804,7 +860,7 @@ operations:
     audience: operator
     permission: qualification.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -818,7 +874,7 @@ operations:
     audience: operator
     permission: channel.distributor.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -831,7 +887,7 @@ operations:
     audience: operator
     permission: channel.distributor.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -844,7 +900,7 @@ operations:
     audience: operator
     permission: channel.distributor.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -857,7 +913,7 @@ operations:
     audience: operator
     permission: channel.distributor.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -870,7 +926,7 @@ operations:
     audience: operator
     permission: channel.binding.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -883,7 +939,7 @@ operations:
     audience: operator
     permission: channel.quota.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -896,7 +952,7 @@ operations:
     audience: operator
     permission: catalog.pool.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -910,7 +966,7 @@ operations:
     audience: operator
     permission: catalog.pool.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP03
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -923,7 +979,7 @@ operations:
     audience: operator
     permission: catalog.pool.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP03
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -936,7 +992,7 @@ operations:
     audience: operator
     permission: catalog.pool.allocate
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -949,7 +1005,7 @@ operations:
     audience: operator
     permission: catalog.product.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -963,7 +1019,7 @@ operations:
     audience: operator
     permission: catalog.product.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -977,7 +1033,7 @@ operations:
     audience: operator
     permission: catalog.product.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -991,7 +1047,7 @@ operations:
     audience: member
     permission: catalog.listing.read
     idempotent: true
-    schema: structural
+    schema: named
     gates:
       - slot: permission
         phase: before
@@ -1009,7 +1065,7 @@ operations:
     audience: operator
     permission: catalog.listing.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -1023,7 +1079,7 @@ operations:
     audience: operator
     permission: catalog.listing.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -1037,7 +1093,7 @@ operations:
     audience: operator
     permission: catalog.listing.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -1051,7 +1107,7 @@ operations:
     audience: operator
     permission: catalog.import.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -1065,7 +1121,7 @@ operations:
     audience: operator
     permission: catalog.import.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -1079,7 +1135,7 @@ operations:
     audience: operator
     permission: pricing.rule.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -1093,7 +1149,7 @@ operations:
     audience: operator
     permission: pricing.rule.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -1107,7 +1163,7 @@ operations:
     audience: member
     permission: pricing.offer.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1119,7 +1175,7 @@ operations:
     audience: member
     permission: inventory.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1131,7 +1187,9 @@ operations:
     audience: operator
     permission: inventory.import.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP07
       - MVP16
@@ -1145,7 +1203,7 @@ operations:
     audience: operator
     permission: inventory.import.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP07
       - MVP16
@@ -1159,7 +1217,7 @@ operations:
     audience: operator
     permission: marketing.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1171,7 +1229,7 @@ operations:
     audience: operator
     permission: reporting.dashboard.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP05
       - MVP14
@@ -1186,7 +1244,7 @@ operations:
     audience: operator
     permission: reporting.sales.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP11
       - MVP20
@@ -1201,7 +1259,7 @@ operations:
     audience: operator
     permission: reporting.product.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP11
       - MVP20
@@ -1215,7 +1273,7 @@ operations:
     audience: operator
     permission: reporting.mall.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP11
       - MVP20
@@ -1229,7 +1287,7 @@ operations:
     audience: operator
     permission: reporting.category.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP11
       - MVP20
@@ -1243,7 +1301,7 @@ operations:
     audience: operator
     permission: reporting.channel.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP11
       - MVP20
@@ -1257,7 +1315,7 @@ operations:
     audience: operator
     permission: reporting.powderclass.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP11
       - MVP20
@@ -1271,7 +1329,7 @@ operations:
     audience: operator
     permission: reporting.voucher.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP11
       - MVP20
@@ -1285,7 +1343,7 @@ operations:
     audience: operator
     permission: reporting.export.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP11
       - MVP20
@@ -1299,7 +1357,7 @@ operations:
     audience: operator
     permission: reporting.export.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP11
       - MVP20
@@ -1313,7 +1371,7 @@ operations:
     audience: operator
     permission: experience.application.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP06
       - MVP15
@@ -1326,7 +1384,7 @@ operations:
     path: /api/v1/experiences/published
     audience: public
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP06
       - MVP15
@@ -1340,7 +1398,7 @@ operations:
     audience: operator
     permission: experience.application.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP06
       - MVP15
@@ -1354,7 +1412,7 @@ operations:
     audience: operator
     permission: experience.application.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP06
       - MVP15
@@ -1368,7 +1426,7 @@ operations:
     audience: operator
     permission: experience.application.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP06
       - MVP15
@@ -1382,7 +1440,7 @@ operations:
     audience: operator
     permission: experience.version.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP06
       - MVP15
@@ -1396,7 +1454,7 @@ operations:
     audience: operator
     permission: experience.version.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP06
       - MVP15
@@ -1410,7 +1468,7 @@ operations:
     audience: operator
     permission: experience.version.publish
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP06
       - MVP15
@@ -1424,7 +1482,7 @@ operations:
     audience: operator
     permission: experience.version.publish
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP06
       - MVP15
@@ -1438,7 +1496,7 @@ operations:
     audience: member
     permission: cart.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1450,7 +1508,7 @@ operations:
     audience: member
     permission: cart.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1462,7 +1520,7 @@ operations:
     audience: member
     permission: cart.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1474,7 +1532,7 @@ operations:
     audience: member
     permission: checkout.create
     idempotent: false
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1486,7 +1544,9 @@ operations:
     audience: member
     permission: order.create
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["aftersale_state","amountMinor","evidence","fulfillment_state","id","kind","lifecycle_state","line","order","order_number","payment","payment_state","quantity","reason","scene","version"]
+    responseFields: ["aftersaleState","exports","fulfillmentState","id","intent","invoke","lifecycleState","orderNumber","payment","paymentState","quote","state","version"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1498,7 +1558,7 @@ operations:
     audience: member
     permission: order.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP08
       - MVP17
@@ -1520,7 +1580,9 @@ operations:
     execution: sync
     availability: runtime
     summary: Confirm receipt after every fulfillment has shipped
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP08
       - MVP17
@@ -1535,7 +1597,9 @@ operations:
     audience: member
     permission: order.reminder.create
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["amountMinor","evidence","kind","line","quantity","reason"]
+    responseFields: ["exports"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1547,7 +1611,9 @@ operations:
     audience: operator
     permission: order.export
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["amountMinor","evidence","kind","line","quantity","reason"]
+    responseFields: ["exports"]
     requirements:
       - MVP08
       - MVP17
@@ -1562,7 +1628,7 @@ operations:
     audience: member
     permission: order.aftersale.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP08
       - MVP17
@@ -1577,7 +1643,9 @@ operations:
     audience: member
     permission: order.aftersale.apply
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["amountMinor","evidence","kind","line","quantity","reason"]
+    responseFields: ["exports"]
     requirements:
       - MVP08
       - MVP17
@@ -1592,7 +1660,9 @@ operations:
     audience: operator
     permission: order.aftersale.decide
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["amountMinor","evidence","kind","line","quantity","reason"]
+    responseFields: ["exports","id","order_id","requested_by","state","version"]
     requirements:
       - MVP08
       - MVP17
@@ -1607,7 +1677,9 @@ operations:
     audience: operator
     permission: order.aftersale.decide
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["amountMinor","evidence","kind","line","quantity","reason"]
+    responseFields: ["exports"]
     requirements:
       - MVP08
       - MVP17
@@ -1622,7 +1694,7 @@ operations:
     audience: operator
     permission: fulfillment.ship
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP08
       - MVP17
@@ -1636,7 +1708,7 @@ operations:
     audience: member
     permission: fulfillment.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1648,7 +1720,7 @@ operations:
     audience: operator
     permission: fulfillment.return.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP08
       - MVP17
@@ -1662,7 +1734,7 @@ operations:
     audience: operator
     permission: fulfillment.return.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP08
       - MVP17
@@ -1676,7 +1748,9 @@ operations:
     audience: member
     permission: payment.create
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["aftersale_state","fulfillment_state","id","lifecycle_state","order","order_number","payment","payment_state","scene","version"]
+    responseFields: ["aftersaleState","fulfillmentState","id","intent","invoke","lifecycleState","orderNumber","payment","paymentState","quote","state","version"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1688,7 +1762,7 @@ operations:
     audience: member
     permission: payment.create
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1700,7 +1774,7 @@ operations:
     audience: operator
     permission: verification.issue
     idempotent: false
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1712,7 +1786,7 @@ operations:
     audience: member
     permission: verification.issue
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1724,7 +1798,7 @@ operations:
     audience: operator
     permission: verification.verify
     idempotent: false
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1736,7 +1810,7 @@ operations:
     audience: operator
     permission: verification.verify
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1748,7 +1822,7 @@ operations:
     audience: operator
     permission: verification.verify
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1760,7 +1834,7 @@ operations:
     audience: operator
     permission: verification.verify
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -1772,7 +1846,9 @@ operations:
     audience: operator
     permission: payment.refund
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","amountMinor","order","payment","reason","scene"]
+    responseFields: ["action","case","intent","request","state"]
     requirements:
       - MVP08
       - MVP17
@@ -1786,7 +1862,7 @@ operations:
     audience: operator
     permission: payment.recovery.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP08
       - MVP17
@@ -1801,7 +1877,9 @@ operations:
     audience: operator
     permission: payment.recovery.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","amountMinor","order","payment","reason","scene"]
+    responseFields: ["action","case","intent","request","state"]
     requirements:
       - MVP08
       - MVP17
@@ -1815,7 +1893,9 @@ operations:
     path: /api/v1/webhooks/wechat/payment
     audience: provider
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["create_time","event_type","id","resource","resource_type","summary"]
+    responseFields: []
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -1828,7 +1908,7 @@ operations:
     audience: operator
     permission: voucher.cardlibrary.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -1842,7 +1922,9 @@ operations:
     audience: operator
     permission: voucher.cardlibrary.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["mode"]
+    responseFields: ["access","import","mode"]
     requirements:
       - MVP03
       - MVP09
@@ -1857,7 +1939,9 @@ operations:
     audience: operator
     permission: voucher.cardlibrary.allocate
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","approvalRequired","cardpool","count","decision","evidence","expiresAt","ids","member","name","program","reason","reserve","scope","status","validityDays","valueMinor"]
+    responseFields: []
     requirements:
       - MVP03
       - MVP04
@@ -1873,7 +1957,7 @@ operations:
     audience: operator
     permission: voucher.cardlibrary.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -1887,7 +1971,7 @@ operations:
     audience: operator
     permission: voucher.program.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -1901,7 +1985,9 @@ operations:
     audience: operator
     permission: voucher.program.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","approvalRequired","cardpool","count","decision","evidence","expiresAt","ids","member","name","program","reason","reserve","scope","status","validityDays","valueMinor"]
+    responseFields: []
     requirements:
       - MVP09
       - MVP18
@@ -1915,7 +2001,7 @@ operations:
     audience: operator
     permission: voucher.reserve.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -1929,7 +2015,9 @@ operations:
     audience: operator
     permission: voucher.reserve.request
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","approvalRequired","cardpool","count","decision","evidence","expiresAt","ids","member","name","program","reason","reserve","scope","status","validityDays","valueMinor"]
+    responseFields: []
     requirements:
       - MVP09
       - MVP18
@@ -1943,7 +2031,9 @@ operations:
     audience: operator
     permission: voucher.reserve.decide
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","approvalRequired","cardpool","count","decision","evidence","expiresAt","ids","member","name","program","reason","reserve","scope","status","validityDays","valueMinor"]
+    responseFields: []
     requirements:
       - MVP09
       - MVP18
@@ -1957,7 +2047,7 @@ operations:
     audience: operator
     permission: voucher.batch.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -1971,7 +2061,9 @@ operations:
     audience: operator
     permission: voucher.issue
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","approvalRequired","cardpool","count","decision","evidence","expiresAt","ids","member","name","program","reason","reserve","scope","status","validityDays","valueMinor"]
+    responseFields: []
     requirements:
       - MVP09
       - MVP18
@@ -1985,7 +2077,9 @@ operations:
     audience: operator
     permission: voucher.issue
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","approvalRequired","cardpool","count","decision","evidence","expiresAt","ids","member","name","program","reason","reserve","scope","status","validityDays","valueMinor"]
+    responseFields: []
     requirements:
       - MVP09
       - MVP18
@@ -1999,7 +2093,9 @@ operations:
     audience: operator
     permission: voucher.status.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","approvalRequired","cardpool","count","decision","evidence","expiresAt","ids","member","name","program","reason","reserve","scope","status","validityDays","valueMinor"]
+    responseFields: []
     requirements:
       - MVP09
       - MVP18
@@ -2013,7 +2109,7 @@ operations:
     audience: operator
     permission: voucher.history.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -2027,7 +2123,7 @@ operations:
     audience: member
     permission: voucher.binding.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -2041,7 +2137,9 @@ operations:
     audience: operator
     permission: voucher.binding.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","approvalRequired","cardpool","count","decision","evidence","expiresAt","ids","member","name","program","reason","reserve","scope","status","validityDays","valueMinor"]
+    responseFields: []
     requirements:
       - MVP09
       - MVP18
@@ -2055,7 +2153,7 @@ operations:
     audience: member
     permission: voucher.redemption.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -2069,7 +2167,7 @@ operations:
     audience: operator
     permission: voucher.history.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -2083,7 +2181,9 @@ operations:
     audience: operator
     permission: voucher.redemption.reverse
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","approvalRequired","cardpool","count","decision","evidence","expiresAt","ids","member","name","program","reason","reserve","scope","status","validityDays","valueMinor"]
+    responseFields: []
     requirements:
       - MVP09
       - MVP18
@@ -2097,7 +2197,7 @@ operations:
     audience: member
     permission: benefit.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2109,7 +2209,7 @@ operations:
     audience: member
     permission: benefit.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP21
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -2122,7 +2222,7 @@ operations:
     audience: operator
     permission: benefit.plan.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2134,7 +2234,9 @@ operations:
     audience: operator
     permission: benefit.plan.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","amountMinor","budget","currency","decision","effectiveAt","evidence","expiresAt","kind","members","name","period","plan","reason","state","timezone","totalMinor"]
+    responseFields: []
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2146,7 +2248,7 @@ operations:
     audience: operator
     permission: benefit.budget.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2158,7 +2260,9 @@ operations:
     audience: operator
     permission: benefit.budget.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","amountMinor","budget","currency","decision","effectiveAt","evidence","expiresAt","kind","members","name","period","plan","reason","state","timezone","totalMinor"]
+    responseFields: []
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2170,7 +2274,9 @@ operations:
     audience: operator
     permission: benefit.grant
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","amountMinor","budget","currency","decision","effectiveAt","evidence","expiresAt","kind","members","name","period","plan","reason","state","timezone","totalMinor"]
+    responseFields: []
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2182,7 +2288,9 @@ operations:
     audience: operator
     permission: benefit.grant.decide
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","amountMinor","budget","currency","decision","effectiveAt","evidence","expiresAt","kind","members","name","period","plan","reason","state","timezone","totalMinor"]
+    responseFields: []
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2194,7 +2302,7 @@ operations:
     audience: operator
     permission: benefit.grant.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2206,7 +2314,9 @@ operations:
     audience: operator
     permission: benefit.grant.control
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","amountMinor","budget","currency","decision","effectiveAt","evidence","expiresAt","kind","members","name","period","plan","reason","state","timezone","totalMinor"]
+    responseFields: []
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2218,7 +2328,9 @@ operations:
     audience: operator
     permission: benefit.revoke
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","amountMinor","budget","currency","decision","effectiveAt","evidence","expiresAt","kind","members","name","period","plan","reason","state","timezone","totalMinor"]
+    responseFields: []
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2230,7 +2342,7 @@ operations:
     audience: operator
     permission: benefit.lot.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2242,7 +2354,7 @@ operations:
     audience: operator
     permission: finance.overview.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP19
@@ -2256,7 +2368,7 @@ operations:
     audience: operator
     permission: finance.entry.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP19
@@ -2270,7 +2382,7 @@ operations:
     audience: operator
     permission: finance.statement.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP19
@@ -2284,7 +2396,9 @@ operations:
     audience: operator
     permission: finance.statement.export
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP10
       - MVP19
@@ -2298,7 +2412,9 @@ operations:
     audience: operator
     permission: finance.reconciliation.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP10
       - MVP19
@@ -2313,7 +2429,7 @@ operations:
     audience: operator
     permission: finance.reconciliation.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP10, MVP19, OMS-011]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2325,7 +2441,7 @@ operations:
     audience: operator
     permission: finance.settlement.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP10, MVP19, OMS-011]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2337,7 +2453,9 @@ operations:
     audience: operator
     permission: finance.settlement.decide
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","adjustment","amountMinor","decision","direction","evidence","line","reason","taxMinor"]
+    responseFields: []
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2349,7 +2467,9 @@ operations:
     audience: operator
     permission: finance.settlement.adjust
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","adjustment","amountMinor","decision","direction","evidence","line","reason","taxMinor"]
+    responseFields: []
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2361,7 +2481,7 @@ operations:
     audience: operator
     permission: finance.withdrawal.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2374,7 +2494,9 @@ operations:
     permission: finance.withdrawal.create
     idempotent: false
     expectedVersion: required
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2386,7 +2508,9 @@ operations:
     audience: operator
     permission: finance.withdrawal.decide
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["amountMinor","decision","destinationRef","evidence","reason","settlement"]
+    responseFields: []
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2398,7 +2522,9 @@ operations:
     audience: operator
     permission: finance.withdrawal.recover
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["amountMinor","decision","destinationRef","evidence","reason","settlement"]
+    responseFields: []
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2410,7 +2536,7 @@ operations:
     audience: operator
     permission: finance.hold.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2422,7 +2548,7 @@ operations:
     audience: operator
     permission: finance.period.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2434,7 +2560,9 @@ operations:
     audience: operator
     permission: finance.period.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","decision","evidence","reason"]
+    responseFields: []
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2446,7 +2574,7 @@ operations:
     audience: operator
     permission: finance.backfill.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2458,7 +2586,9 @@ operations:
     audience: operator
     permission: finance.backfill.decide
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","decision","evidence","reason"]
+    responseFields: []
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2470,7 +2600,9 @@ operations:
     audience: operator
     permission: finance.policy.manage
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","desiredState","evidence","kind","previewHash","reason","rule"]
+    responseFields: []
     requirements:
       - MVP10
       - MVP19
@@ -2485,7 +2617,9 @@ operations:
     permission: invoice.profile.manage
     idempotent: true
     expectedVersion: required
-    schema: structural
+    schema: named
+    requestFields: ["address","taxid","title"]
+    responseFields: ["access","address","taxid","title"]
     requirements:
       - MVP10
       - MVP19
@@ -2499,7 +2633,7 @@ operations:
     audience: member
     permission: invoice.profile.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP17
@@ -2515,7 +2649,9 @@ operations:
     permission: invoice.request.create
     idempotent: false
     expectedVersion: required
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP10
       - MVP19
@@ -2529,7 +2665,7 @@ operations:
     audience: operator
     permission: invoice.request.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP19
@@ -2543,7 +2679,9 @@ operations:
     audience: operator
     permission: invoice.request.cancel
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP10
       - MVP19
@@ -2557,7 +2695,9 @@ operations:
     audience: operator
     permission: invoice.request.decide
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["amountMinor","decision","evidence","lines","profile","reason","settlement"]
+    responseFields: []
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2569,7 +2709,9 @@ operations:
     audience: operator
     permission: invoice.request.red
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements: [MVP10, MVP19]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2581,7 +2723,7 @@ operations:
     audience: member
     permission: support.case.create
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2595,7 +2737,7 @@ operations:
     audience: operator
     permission: support.case.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2610,7 +2752,7 @@ operations:
     audience: operator
     permission: support.case.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2624,7 +2766,7 @@ operations:
     audience: operator
     permission: support.case.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2638,7 +2780,7 @@ operations:
     audience: operator
     permission: support.case.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2652,7 +2794,7 @@ operations:
     audience: operator
     permission: support.message.send
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2666,7 +2808,7 @@ operations:
     audience: operator
     permission: support.message.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2680,7 +2822,7 @@ operations:
     audience: operator
     permission: support.message.send
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2694,7 +2836,7 @@ operations:
     audience: operator
     permission: support.assignment.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2708,7 +2850,7 @@ operations:
     audience: operator
     permission: support.agent.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2722,7 +2864,7 @@ operations:
     audience: operator
     permission: support.agent.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP12, MVP21]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2734,7 +2876,7 @@ operations:
     audience: operator
     permission: support.account.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2748,7 +2890,7 @@ operations:
     audience: operator
     permission: support.account.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP12, MVP21]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2760,7 +2902,7 @@ operations:
     audience: operator
     permission: support.rule.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP12, MVP21]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2772,7 +2914,7 @@ operations:
     audience: operator
     permission: support.rule.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP12, MVP21]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2784,7 +2926,7 @@ operations:
     audience: operator
     permission: support.sla.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP12, MVP21]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2796,7 +2938,7 @@ operations:
     audience: operator
     permission: support.sla.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP12, MVP21]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2808,7 +2950,7 @@ operations:
     audience: operator
     permission: support.history.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2823,7 +2965,7 @@ operations:
     audience: member
     permission: notification.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -2837,7 +2979,7 @@ operations:
     audience: member
     permission: notification.preference.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2849,7 +2991,7 @@ operations:
     audience: member
     permission: notification.preference.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2861,7 +3003,7 @@ operations:
     audience: member
     permission: notification.endpoint.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2873,7 +3015,7 @@ operations:
     audience: operator
     permission: notification.template.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -2887,7 +3029,7 @@ operations:
     audience: operator
     permission: notification.template.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -2901,7 +3043,7 @@ operations:
     audience: operator
     permission: notification.announcement.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -2915,7 +3057,7 @@ operations:
     audience: operator
     permission: notification.announcement.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -2929,7 +3071,7 @@ operations:
     audience: operator
     permission: risk.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -2943,7 +3085,7 @@ operations:
     audience: operator
     permission: risk.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -2957,7 +3099,7 @@ operations:
     audience: operator
     permission: risk.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -2971,7 +3113,7 @@ operations:
     audience: operator
     permission: audit.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -2983,7 +3125,7 @@ operations:
     audience: member
     permission: observability.clienterror.create
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -2998,7 +3140,7 @@ operations:
     audience: operator
     permission: observability.clienterror.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP12
       - MVP21
@@ -3013,7 +3155,7 @@ operations:
     audience: operator
     permission: channel.connection.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP23]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -3025,7 +3167,7 @@ operations:
     audience: operator
     permission: channel.connection.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3038,7 +3180,7 @@ operations:
     audience: operator
     permission: channel.connection.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3051,7 +3193,7 @@ operations:
     audience: operator
     permission: channel.connection.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3064,7 +3206,7 @@ operations:
     audience: operator
     permission: channel.connection.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3077,7 +3219,7 @@ operations:
     audience: operator
     permission: channel.connection.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3089,7 +3231,7 @@ operations:
     path: /api/v1/channels/webhooks/{connectionid}
     audience: provider
     idempotent: true
-    schema: structural
+    schema: named
     requirements: [MVP23]
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
@@ -3101,7 +3243,7 @@ operations:
     audience: operator
     permission: channel.sync.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3114,7 +3256,7 @@ operations:
     audience: operator
     permission: channel.sync.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3127,7 +3269,7 @@ operations:
     audience: operator
     permission: channel.sync.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3140,7 +3282,7 @@ operations:
     audience: operator
     permission: channel.operation.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3153,7 +3295,7 @@ operations:
     audience: operator
     permission: channel.operation.replay
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3166,7 +3308,7 @@ operations:
     audience: operator
     permission: extension.installation.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP23
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3178,7 +3320,7 @@ operations:
     path: /api/v1/identity/storefronts/resolve
     audience: public
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP04
@@ -3212,7 +3354,9 @@ operations:
     permission: identity.registration.reset
     idempotent: true
     expectedVersion: required
-    schema: structural
+    schema: named
+    requestFields: ["challenge","code","currentPassword","newPassword"]
+    responseFields: ["access","account_id","challenge","code","currentPassword","hash","history_retained","login_identity_released","principal_id","status","verified","verifiedAt","version"]
     requirements:
       - MVP13
       - MVP22
@@ -3226,7 +3370,9 @@ operations:
     audience: member
     permission: identity.mobile.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: ["action","bindingToken","challenge","code","destination","mobile"]
+    responseFields: ["access","actionProof","code","destinationHash","envelope","expectedVersion","expires_at","id","idempotencyKey","mobile","operation","purpose","recipient","requestHash","resource","wechat"]
     requirements:
       - MVP03
       - MVP04
@@ -3259,7 +3405,7 @@ operations:
     audience: operator
     permission: access.ownership.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -3273,7 +3419,7 @@ operations:
     audience: operator
     permission: access.ownership.transfer
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -3287,7 +3433,9 @@ operations:
     audience: operator
     permission: access.ownership.transfer
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","effect","expiresAt","formerOwnerMode","formerOwnerRole","kind","membership","name","permissions","scope","scopeSource","targetMembership"]
+    responseFields: ["id","kind","path","transfer"]
     requirements:
       - MVP13
       - MVP22
@@ -3301,7 +3449,7 @@ operations:
     audience: operator
     permission: access.ownership.accept
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -3315,7 +3463,9 @@ operations:
     audience: operator
     permission: access.ownership.accept
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","effect","expiresAt","formerOwnerMode","formerOwnerRole","kind","membership","name","permissions","scope","scopeSource","targetMembership"]
+    responseFields: ["id","kind","path","transfer"]
     requirements:
       - MVP13
       - MVP22
@@ -3329,7 +3479,9 @@ operations:
     audience: operator
     permission: access.ownership.transfer
     idempotent: true
-    schema: structural
+    schema: named
+    requestFields: ["action","effect","expiresAt","formerOwnerMode","formerOwnerRole","kind","membership","name","permissions","scope","scopeSource","targetMembership"]
+    responseFields: ["id","kind","path","transfer"]
     requirements:
       - MVP13
       - MVP22
@@ -3343,7 +3495,7 @@ operations:
     audience: operator
     permission: access.ownership.transfer
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP13
       - MVP22
@@ -3357,7 +3509,7 @@ operations:
     audience: operator
     permission: referral.settings.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3370,7 +3522,7 @@ operations:
     audience: operator
     permission: referral.settings.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3383,7 +3535,7 @@ operations:
     audience: operator
     permission: referral.products.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3396,7 +3548,7 @@ operations:
     audience: operator
     permission: referral.products.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3409,7 +3561,7 @@ operations:
     audience: operator
     permission: referral.members.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3422,7 +3574,7 @@ operations:
     audience: member
     permission: referral.self.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3435,7 +3587,7 @@ operations:
     audience: operator
     permission: referral.members.approve
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3448,7 +3600,7 @@ operations:
     audience: operator
     permission: referral.members.disqualify
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3461,7 +3613,7 @@ operations:
     audience: operator
     permission: referral.bindings.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3474,7 +3626,7 @@ operations:
     audience: member
     permission: referral.self.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3487,7 +3639,7 @@ operations:
     audience: operator
     permission: referral.commissions.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3500,7 +3652,7 @@ operations:
     audience: member
     permission: referral.self.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3513,7 +3665,7 @@ operations:
     audience: member
     permission: referral.self.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3526,7 +3678,7 @@ operations:
     audience: member
     permission: referral.self.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3539,7 +3691,7 @@ operations:
     audience: member
     permission: referral.withdrawals.create
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP04
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
@@ -3552,7 +3704,7 @@ operations:
     audience: operator
     permission: finance.reconciliation.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP19
@@ -3566,7 +3718,7 @@ operations:
     audience: operator
     permission: finance.reconciliation.manage
     idempotent: false
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP19
@@ -3581,7 +3733,9 @@ operations:
     audience: operator
     permission: finance.reconciliation.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP10
       - MVP19
@@ -3596,7 +3750,9 @@ operations:
     audience: operator
     permission: finance.reconciliation.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP10
       - MVP19
@@ -3611,7 +3767,9 @@ operations:
     audience: operator
     permission: finance.reconciliation.manage
     idempotent: false
-    schema: structural
+    schema: named
+    requestFields: []
+    responseFields: []
     requirements:
       - MVP10
       - MVP19
@@ -3626,7 +3784,7 @@ operations:
     audience: operator
     permission: finance.policy.manage
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP19
@@ -3641,7 +3799,7 @@ operations:
     audience: operator
     permission: finance.policy.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP19
@@ -3655,7 +3813,7 @@ operations:
     audience: operator
     permission: audit.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP19
@@ -3669,7 +3827,7 @@ operations:
     audience: operator
     permission: invoice.profile.read
     idempotent: true
-    schema: structural
+    schema: named
     requirements:
       - MVP10
       - MVP19
@@ -3688,7 +3846,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 新增客户及联系人
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3707,7 +3865,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 更新客户及联系人
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3726,7 +3884,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 启用客户
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3745,7 +3903,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 停用客户
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3764,7 +3922,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 客户详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3783,7 +3941,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 客户列表
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3802,7 +3960,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 客户轻量选项
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3821,7 +3979,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 创建产品及首版本
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3840,7 +3998,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 创建产品新版本
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3859,7 +4017,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 启用产品
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3878,7 +4036,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 停用产品
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3897,7 +4055,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 产品详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3916,7 +4074,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 产品列表
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3935,7 +4093,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 当前产品选项
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -3954,7 +4112,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 建立凭证池
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP09
@@ -3974,7 +4132,7 @@ operations:
     execution: async
     availability: frozen
     summary: 批量生成卡号券密
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP09
@@ -3994,7 +4152,7 @@ operations:
     execution: async
     availability: frozen
     summary: 导入实体卡号
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP09
@@ -4014,7 +4172,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 关闭凭证池
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP09
@@ -4034,7 +4192,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 凭证池详情
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP09
@@ -4054,7 +4212,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 凭证池列表
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP09
@@ -4074,7 +4232,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 凭证列表
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP09
@@ -4094,7 +4252,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 凭证详情
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP09
@@ -4114,7 +4272,7 @@ operations:
     execution: async
     availability: frozen
     summary: 导出凭证资源
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP09
@@ -4134,7 +4292,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 作业进度
-    schema: structural
+    schema: named
     requirements:
       - MVP03
       - MVP09
@@ -4154,7 +4312,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 新建备券草稿
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4173,7 +4331,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 编辑备券草稿
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4192,7 +4350,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 提交备券审批
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4211,7 +4369,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 取消备券申请
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4230,7 +4388,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 备券详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4249,7 +4407,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 备券列表
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4268,7 +4426,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 可用备券选项
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4287,7 +4445,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 创建审批模板
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4306,7 +4464,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 修订审批模板
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4325,7 +4483,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 启用审批模板
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4344,7 +4502,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 停用审批模板
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4363,7 +4521,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 审批模板详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4382,7 +4540,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 审批模板列表
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4401,7 +4559,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 我的审批任务
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4420,7 +4578,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 同意审批任务
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4439,7 +4597,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 驳回审批任务
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4458,7 +4616,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 审批实例详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4477,7 +4635,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 创建发行订单
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4496,7 +4654,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 编辑发行订单
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4515,7 +4673,7 @@ operations:
     execution: async
     availability: frozen
     summary: 提交发行订单
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4534,7 +4692,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 取消发行订单
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4553,7 +4711,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 发行订单详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4572,7 +4730,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 发行订单列表
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4591,7 +4749,7 @@ operations:
     execution: async
     availability: frozen
     summary: 重试发行批次
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4610,7 +4768,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 发行批次详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4629,7 +4787,7 @@ operations:
     execution: async
     availability: frozen
     summary: 导出发行订单
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4648,7 +4806,7 @@ operations:
     execution: async
     availability: frozen
     summary: 创建批量状态操作
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4667,7 +4825,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 批量操作详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4686,7 +4844,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 批量操作列表
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4705,7 +4863,7 @@ operations:
     execution: async
     availability: frozen
     summary: 重试批量操作
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4724,7 +4882,7 @@ operations:
     execution: async
     availability: frozen
     summary: 导出批量操作
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4743,7 +4901,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 统一卡券搜索
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4761,7 +4919,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 仅券密激活
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4779,7 +4937,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 券号加券密激活
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4798,7 +4956,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 绑定最终用户
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4817,7 +4975,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 解绑最终用户
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4836,7 +4994,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 单卡详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4855,7 +5013,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 按券号查询
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4874,7 +5032,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 生命周期时间线
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4893,7 +5051,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 核销报价校验
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4912,7 +5070,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 创建金额预占
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4931,7 +5089,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 预占转消费
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4950,7 +5108,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 释放金额预占
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4969,7 +5127,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 直接核销
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -4988,7 +5146,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 部分或全额退款
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -5007,7 +5165,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 核销详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -5026,7 +5184,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 搜索筛选计数
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -5045,7 +5203,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 冻结搜索目标集
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -5064,7 +5222,7 @@ operations:
     execution: async
     availability: frozen
     summary: 创建搜索导出
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18
@@ -5083,7 +5241,7 @@ operations:
     execution: sync
     availability: frozen
     summary: 导出作业详情
-    schema: structural
+    schema: named
     requirements:
       - MVP09
       - MVP18

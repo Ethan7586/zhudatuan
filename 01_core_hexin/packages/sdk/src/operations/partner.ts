@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const PARTNER_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "partner.partners.read",
@@ -51,7 +51,7 @@ export function createFetchPartnerPartnersRead(baseUrl: string): OperationMethod
 }
 
 function bindPartnersRead(client: OperationExecutor): OperationMethod<"partner.partners.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"partner.partners.read","method":"GET","path":"/api/v1/partners","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"partner.partners.read","method":"GET","path":"/api/v1/partners","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchPartnerPartnersManage(baseUrl: string): OperationMethod<"partner.partners.manage"> {
@@ -59,7 +59,7 @@ export function createFetchPartnerPartnersManage(baseUrl: string): OperationMeth
 }
 
 function bindPartnersManage(client: OperationExecutor): OperationMethod<"partner.partners.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"partner.partners.manage","method":"PUT","path":"/api/v1/partners/{partnerid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["partnerid"]}));
+  return bindOperation(client, defineContractOperation({"id":"partner.partners.manage","method":"PUT","path":"/api/v1/partners/{partnerid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchPartnerCustomersCreate(baseUrl: string): OperationMethod<"partner.customers.create"> {
@@ -67,7 +67,7 @@ export function createFetchPartnerCustomersCreate(baseUrl: string): OperationMet
 }
 
 function bindCustomersCreate(client: OperationExecutor): OperationMethod<"partner.customers.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"partner.customers.create","method":"POST","path":"/api/v1/partners/customers","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"partner.customers.create","method":"POST","path":"/api/v1/partners/customers","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchPartnerCustomersUpdate(baseUrl: string): OperationMethod<"partner.customers.update"> {
@@ -75,7 +75,7 @@ export function createFetchPartnerCustomersUpdate(baseUrl: string): OperationMet
 }
 
 function bindCustomersUpdate(client: OperationExecutor): OperationMethod<"partner.customers.update"> {
-  return bindOperation(client, defineStructuralOperation({"id":"partner.customers.update","method":"PATCH","path":"/api/v1/partners/customers/{customerid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["customerid"]}));
+  return bindOperation(client, defineContractOperation({"id":"partner.customers.update","method":"PATCH","path":"/api/v1/partners/customers/{customerid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchPartnerCustomersEnable(baseUrl: string): OperationMethod<"partner.customers.enable"> {
@@ -83,7 +83,7 @@ export function createFetchPartnerCustomersEnable(baseUrl: string): OperationMet
 }
 
 function bindCustomersEnable(client: OperationExecutor): OperationMethod<"partner.customers.enable"> {
-  return bindOperation(client, defineStructuralOperation({"id":"partner.customers.enable","method":"POST","path":"/api/v1/partners/customers/{customerid}/enable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["customerid"]}));
+  return bindOperation(client, defineContractOperation({"id":"partner.customers.enable","method":"POST","path":"/api/v1/partners/customers/{customerid}/enable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchPartnerCustomersDisable(baseUrl: string): OperationMethod<"partner.customers.disable"> {
@@ -91,7 +91,7 @@ export function createFetchPartnerCustomersDisable(baseUrl: string): OperationMe
 }
 
 function bindCustomersDisable(client: OperationExecutor): OperationMethod<"partner.customers.disable"> {
-  return bindOperation(client, defineStructuralOperation({"id":"partner.customers.disable","method":"POST","path":"/api/v1/partners/customers/{customerid}/disable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["customerid"]}));
+  return bindOperation(client, defineContractOperation({"id":"partner.customers.disable","method":"POST","path":"/api/v1/partners/customers/{customerid}/disable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchPartnerCustomersGet(baseUrl: string): OperationMethod<"partner.customers.get"> {
@@ -99,7 +99,7 @@ export function createFetchPartnerCustomersGet(baseUrl: string): OperationMethod
 }
 
 function bindCustomersGet(client: OperationExecutor): OperationMethod<"partner.customers.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"partner.customers.get","method":"GET","path":"/api/v1/partners/customers/{customerid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["customerid"]}));
+  return bindOperation(client, defineContractOperation({"id":"partner.customers.get","method":"GET","path":"/api/v1/partners/customers/{customerid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchPartnerCustomersList(baseUrl: string): OperationMethod<"partner.customers.list"> {
@@ -107,7 +107,7 @@ export function createFetchPartnerCustomersList(baseUrl: string): OperationMetho
 }
 
 function bindCustomersList(client: OperationExecutor): OperationMethod<"partner.customers.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"partner.customers.list","method":"GET","path":"/api/v1/partners/customers","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"partner.customers.list","method":"GET","path":"/api/v1/partners/customers","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchPartnerCustomeroptionsList(baseUrl: string): OperationMethod<"partner.customeroptions.list"> {
@@ -115,5 +115,5 @@ export function createFetchPartnerCustomeroptionsList(baseUrl: string): Operatio
 }
 
 function bindCustomeroptionsList(client: OperationExecutor): OperationMethod<"partner.customeroptions.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"partner.customeroptions.list","method":"GET","path":"/api/v1/partners/customer-options","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"partner.customeroptions.list","method":"GET","path":"/api/v1/partners/customer-options","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }

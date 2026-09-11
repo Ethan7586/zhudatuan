@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const QUALIFICATION_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "qualification.center.read",
@@ -33,7 +33,7 @@ export function createFetchQualificationCenterRead(baseUrl: string): OperationMe
 }
 
 function bindCenterRead(client: OperationExecutor): OperationMethod<"qualification.center.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"qualification.center.read","method":"GET","path":"/api/v1/qualifications","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"qualification.center.read","method":"GET","path":"/api/v1/qualifications","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchQualificationDecisionsPreview(baseUrl: string): OperationMethod<"qualification.decisions.preview"> {
@@ -41,7 +41,7 @@ export function createFetchQualificationDecisionsPreview(baseUrl: string): Opera
 }
 
 function bindDecisionsPreview(client: OperationExecutor): OperationMethod<"qualification.decisions.preview"> {
-  return bindOperation(client, defineStructuralOperation({"id":"qualification.decisions.preview","method":"POST","path":"/api/v1/qualifications/decisions/preview","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"qualification.decisions.preview","method":"POST","path":"/api/v1/qualifications/decisions/preview","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchQualificationPoliciesManage(baseUrl: string): OperationMethod<"qualification.policies.manage"> {
@@ -49,5 +49,5 @@ export function createFetchQualificationPoliciesManage(baseUrl: string): Operati
 }
 
 function bindPoliciesManage(client: OperationExecutor): OperationMethod<"qualification.policies.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"qualification.policies.manage","method":"PUT","path":"/api/v1/qualifications/policies/{policyid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["policyid"]}));
+  return bindOperation(client, defineContractOperation({"id":"qualification.policies.manage","method":"PUT","path":"/api/v1/qualifications/policies/{policyid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }

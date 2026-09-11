@@ -236,6 +236,8 @@ errors:
     status: 400
   - code: BUSINESS_MODULE_CATALOG_INVALID
     status: 500
+  - code: BUSINESS_NUMBER_CONFLICT
+    status: 409
   - code: CACHE_CATALOG_INVALID
     status: 500
   - code: CACHE_ENTRY_INVALID
@@ -422,6 +424,8 @@ errors:
     status: 415
   - code: CONTRACT_DEFINITION_INVALID
     status: 500
+  - code: CONTRACT_REQUEST_INVALID
+    status: 400
   - code: CONTRACT_RESPONSE_INVALID
     status: 502
   - code: CONTRACT_VERSION_UNSUPPORTED
@@ -578,6 +582,8 @@ errors:
     status: 404
   - code: ENABLED_CONNECTION_REQUIRED
     status: 400
+  - code: ENFORCED_WRITE_PATH_BYPASSED
+    status: 500
   - code: ENTITY_ID_INVALID
     status: 400
   - code: ERROR_CATALOG_INVALID
@@ -612,6 +618,12 @@ errors:
     status: 400
   - code: EVENT_VERSION_UNSUPPORTED
     status: 400
+  - code: EXECUTION_CHECKPOINT_LOST
+    status: 409
+  - code: EXECUTION_KERNEL_NOT_REQUIRED
+    status: 500
+  - code: EXECUTION_KERNEL_PATH_INVALID
+    status: 500
   - code: EXPECTED_VERSION_INVALID
     status: 400
   - code: EXPECTED_VERSION_REQUIRED
@@ -2470,6 +2482,10 @@ errors:
     status: 500
   - code: TMALLMARKET_MANIFEST_SIGNATURE_MISSING
     status: 400
+  - code: TRANSACTION_CONTEXT_INACTIVE
+    status: 500
+  - code: TRANSACTION_CONTEXT_MISSING
+    status: 500
   - code: TRANSACTION_RETRY_EXHAUSTED
     status: 503
   - code: UNSAFE_INVENTORY_CUTOVER_PARTIAL_COMMIT

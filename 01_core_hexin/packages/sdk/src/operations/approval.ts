@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const APPROVAL_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "approval.templates.create",
@@ -54,7 +54,7 @@ export function createFetchApprovalTemplatesCreate(baseUrl: string): OperationMe
 }
 
 function bindTemplatesCreate(client: OperationExecutor): OperationMethod<"approval.templates.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"approval.templates.create","method":"POST","path":"/api/v1/approvals/templates","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"approval.templates.create","method":"POST","path":"/api/v1/approvals/templates","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchApprovalTemplatesRevise(baseUrl: string): OperationMethod<"approval.templates.revise"> {
@@ -62,7 +62,7 @@ export function createFetchApprovalTemplatesRevise(baseUrl: string): OperationMe
 }
 
 function bindTemplatesRevise(client: OperationExecutor): OperationMethod<"approval.templates.revise"> {
-  return bindOperation(client, defineStructuralOperation({"id":"approval.templates.revise","method":"POST","path":"/api/v1/approvals/templates/{templateid}/versions","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["templateid"]}));
+  return bindOperation(client, defineContractOperation({"id":"approval.templates.revise","method":"POST","path":"/api/v1/approvals/templates/{templateid}/versions","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchApprovalTemplatesEnable(baseUrl: string): OperationMethod<"approval.templates.enable"> {
@@ -70,7 +70,7 @@ export function createFetchApprovalTemplatesEnable(baseUrl: string): OperationMe
 }
 
 function bindTemplatesEnable(client: OperationExecutor): OperationMethod<"approval.templates.enable"> {
-  return bindOperation(client, defineStructuralOperation({"id":"approval.templates.enable","method":"POST","path":"/api/v1/approvals/templates/{templateid}/enable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["templateid"]}));
+  return bindOperation(client, defineContractOperation({"id":"approval.templates.enable","method":"POST","path":"/api/v1/approvals/templates/{templateid}/enable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchApprovalTemplatesDisable(baseUrl: string): OperationMethod<"approval.templates.disable"> {
@@ -78,7 +78,7 @@ export function createFetchApprovalTemplatesDisable(baseUrl: string): OperationM
 }
 
 function bindTemplatesDisable(client: OperationExecutor): OperationMethod<"approval.templates.disable"> {
-  return bindOperation(client, defineStructuralOperation({"id":"approval.templates.disable","method":"POST","path":"/api/v1/approvals/templates/{templateid}/disable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["templateid"]}));
+  return bindOperation(client, defineContractOperation({"id":"approval.templates.disable","method":"POST","path":"/api/v1/approvals/templates/{templateid}/disable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchApprovalTemplatesGet(baseUrl: string): OperationMethod<"approval.templates.get"> {
@@ -86,7 +86,7 @@ export function createFetchApprovalTemplatesGet(baseUrl: string): OperationMetho
 }
 
 function bindTemplatesGet(client: OperationExecutor): OperationMethod<"approval.templates.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"approval.templates.get","method":"GET","path":"/api/v1/approvals/templates/{templateid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["templateid"]}));
+  return bindOperation(client, defineContractOperation({"id":"approval.templates.get","method":"GET","path":"/api/v1/approvals/templates/{templateid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchApprovalTemplatesList(baseUrl: string): OperationMethod<"approval.templates.list"> {
@@ -94,7 +94,7 @@ export function createFetchApprovalTemplatesList(baseUrl: string): OperationMeth
 }
 
 function bindTemplatesList(client: OperationExecutor): OperationMethod<"approval.templates.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"approval.templates.list","method":"GET","path":"/api/v1/approvals/templates","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"approval.templates.list","method":"GET","path":"/api/v1/approvals/templates","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchApprovalTasksList(baseUrl: string): OperationMethod<"approval.tasks.list"> {
@@ -102,7 +102,7 @@ export function createFetchApprovalTasksList(baseUrl: string): OperationMethod<"
 }
 
 function bindTasksList(client: OperationExecutor): OperationMethod<"approval.tasks.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"approval.tasks.list","method":"GET","path":"/api/v1/approvals/tasks","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"approval.tasks.list","method":"GET","path":"/api/v1/approvals/tasks","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchApprovalTasksApprove(baseUrl: string): OperationMethod<"approval.tasks.approve"> {
@@ -110,7 +110,7 @@ export function createFetchApprovalTasksApprove(baseUrl: string): OperationMetho
 }
 
 function bindTasksApprove(client: OperationExecutor): OperationMethod<"approval.tasks.approve"> {
-  return bindOperation(client, defineStructuralOperation({"id":"approval.tasks.approve","method":"POST","path":"/api/v1/approvals/tasks/{taskid}/approve","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["taskid"]}));
+  return bindOperation(client, defineContractOperation({"id":"approval.tasks.approve","method":"POST","path":"/api/v1/approvals/tasks/{taskid}/approve","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchApprovalTasksReject(baseUrl: string): OperationMethod<"approval.tasks.reject"> {
@@ -118,7 +118,7 @@ export function createFetchApprovalTasksReject(baseUrl: string): OperationMethod
 }
 
 function bindTasksReject(client: OperationExecutor): OperationMethod<"approval.tasks.reject"> {
-  return bindOperation(client, defineStructuralOperation({"id":"approval.tasks.reject","method":"POST","path":"/api/v1/approvals/tasks/{taskid}/reject","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["taskid"]}));
+  return bindOperation(client, defineContractOperation({"id":"approval.tasks.reject","method":"POST","path":"/api/v1/approvals/tasks/{taskid}/reject","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchApprovalInstancesGet(baseUrl: string): OperationMethod<"approval.instances.get"> {
@@ -126,5 +126,5 @@ export function createFetchApprovalInstancesGet(baseUrl: string): OperationMetho
 }
 
 function bindInstancesGet(client: OperationExecutor): OperationMethod<"approval.instances.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"approval.instances.get","method":"GET","path":"/api/v1/approvals/instances/{instanceid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["instanceid"]}));
+  return bindOperation(client, defineContractOperation({"id":"approval.instances.get","method":"GET","path":"/api/v1/approvals/instances/{instanceid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }

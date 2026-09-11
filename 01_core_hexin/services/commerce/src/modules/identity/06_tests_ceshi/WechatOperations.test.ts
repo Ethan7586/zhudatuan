@@ -40,6 +40,7 @@ describe('wechat identity session', () => {
           application_slug: 'zhudatuan-storefront',
         }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values?.[3]);
+        if (text.includes("update runtime.idempotency set state='completed'")) return result([{}]);
         if (text.includes('select request_hash,state,response from runtime.idempotency')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
         }
@@ -99,6 +100,7 @@ describe('wechat identity session', () => {
           application_slug: 'zhudatuan-storefront',
         }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values?.[3]);
+        if (text.includes("update runtime.idempotency set state='completed'")) return result([{}]);
         if (text.includes('select request_hash,state,response from runtime.idempotency')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
         }
@@ -161,6 +163,7 @@ describe('wechat identity session', () => {
           application_slug: 'zhudatuan-storefront',
         }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values?.[3]);
+        if (text.includes("update runtime.idempotency set state='completed'")) return result([{}]);
         if (text.includes('select request_hash,state,response from runtime.idempotency')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
         }

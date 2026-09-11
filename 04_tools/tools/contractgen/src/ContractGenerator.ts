@@ -31,10 +31,17 @@ type RawOperationDefinition = Omit<OperationDefinition, 'availability' | 'execut
 }>;
 
 type NormalizedOperationDefinition = OperationDefinition & Required<Pick<OperationDefinition,
-  'availability' | 'execution' | 'expectedVersion' | 'idempotency' | 'summary'>>;
+  'availability' | 'execution' | 'expectedVersion' | 'idempotency' | 'summary' | 'title' | 'targets'
+  | 'node_profiles_allowed' | 'requestSchema' | 'responseSchema' | 'errorUnion' | 'capability'
+  | 'scope_resolver_ref' | 'idempotencyScope' | 'assuranceLevel' | 'makerChecker' | 'sensitiveFields'
+  | 'csrfPolicy' | 'originPolicy' | 'targetPolicy' | 'responseMode' | 'cachePolicy' | 'rateClass'
+  | 'timeout' | 'sdk' | 'writePath' | 'stateMachine' | 'businessNumber' | 'operationHash'>>;
 
 const root = resolve(import.meta.dirname, '../../../..');
 const definitions = resolve(root, '01_core_hexin/packages/contract/definitions');
+const CRITICAL_WRITE_DOMAINS = new Set(['access', 'benefit', 'finance', 'identity', 'inventory', 'invoice', 'member', 'order', 'payment', 'provisioning', 'voucher']);
+const DEFAULT_OPERATION_ERRORS = Object.freeze(['CONTRACT_REQUEST_INVALID', 'CONTRACT_RESPONSE_INVALID', 'IDEMPOTENCY_KEY_REQUIRED',
+  'IDEMPOTENCY_KEY_REUSED', 'STATE_INVALID', 'SCOPE_DENIED', 'VERSION_CONFLICT']);
 const rawOperations = await catalog<RawOperationDefinition>('operations.yml', 'operations');
 const operations = normalizeOperations(rawOperations);
 const runtimeOperations = operations.filter((operation) => operation.availability === 'runtime');
@@ -83,25 +90,73 @@ async function catalog<T>(name: string, key: string): Promise<readonly T[]> {
 }
 
 function normalizeOperations(values: readonly RawOperationDefinition[]): readonly NormalizedOperationDefinition[] {
-  return values.map((item) => Object.freeze({
-    id: item.id,
-    owner: item.owner,
-    method: item.method,
-    path: item.path,
-    audience: item.audience,
-    ...(item.permission === undefined ? {} : { permission: item.permission }),
-    idempotent: item.idempotent,
-    idempotency: item.idempotency ?? (item.method === 'GET' || item.audience === 'provider' ? 'none' : 'required'),
-    expectedVersion: item.expectedVersion ?? (item.method === 'GET' ? 'none' : 'optional'),
-    execution: item.execution ?? 'sync',
-    availability: item.availability ?? 'runtime',
-    summary: item.summary ?? item.id,
-    schema: item.schema,
-    ...(item.gates === undefined ? {} : {
-      gates: Object.freeze(item.gates.map((gate) => Object.freeze({ ...gate }))),
-    }),
-    requirements: Object.freeze([...item.requirements]),
-  }));
+  return values.map((item) => {
+    const idempotency = item.idempotency ?? (item.method === 'GET' || item.audience === 'provider' ? 'none' : 'required');
+    const expectedVersion = item.expectedVersion ?? (item.method === 'GET' ? 'none' : 'optional');
+    const execution = item.execution ?? 'sync';
+    const availability = item.availability ?? 'runtime';
+    const summary = item.summary ?? item.id;
+    const writePath = item.writePath ?? operationWritePath(item);
+    const permission = item.permission === undefined ? undefined : PERMISSION_CATALOG.find(({ code }) => code === item.permission);
+    const normalized = {
+      id: item.id, owner: item.owner, method: item.method, path: item.path, audience: item.audience,
+      ...(item.permission === undefined ? {} : { permission: item.permission }), idempotent: item.idempotent,
+      idempotency, expectedVersion, execution, availability, summary, schema: item.schema,
+      title: item.title ?? summary,
+      targets: Object.freeze([...(item.targets ?? operationTargets(item.audience))]),
+      node_profiles_allowed: Object.freeze([...(item.node_profiles_allowed ?? operationNodeProfiles(item.audience))]),
+      requestSchema: item.requestSchema ?? schemaName(item.id, 'Request'),
+      responseSchema: item.responseSchema ?? schemaName(item.id, 'Response'),
+      errorUnion: Object.freeze([...(item.errorUnion ?? DEFAULT_OPERATION_ERRORS)]),
+      capability: item.capability ?? item.permission ?? item.id,
+      scope_resolver_ref: item.scope_resolver_ref ?? (['public', 'provider'].includes(item.audience) ? 'scope.none.v1' : 'access.resolve_scope.v1'),
+      idempotencyScope: item.idempotencyScope ?? (writePath === 'none' ? 'none' : 'operation+realm+node+membership+business-key'),
+      assuranceLevel: item.assuranceLevel ?? (permission?.stepup ? 2 : 1),
+      makerChecker: item.makerChecker ?? false,
+      sensitiveFields: Object.freeze([...(item.sensitiveFields ?? sensitiveFields(item.id))]),
+      csrfPolicy: item.csrfPolicy ?? (['member', 'operator'].includes(item.audience) && item.method !== 'GET' ? 'session' : 'none'),
+      originPolicy: item.originPolicy ?? (['public', 'provider'].includes(item.audience) ? 'public' : 'same-node'),
+      targetPolicy: item.targetPolicy ?? (['public', 'provider'].includes(item.audience) ? 'public' : 'resolved-node'),
+      responseMode: item.responseMode ?? (item.id === 'payment.webhooks.wechat' ? 'empty' : 'json'),
+      cachePolicy: item.cachePolicy ?? (item.method === 'GET' ? (item.audience === 'public' ? 'public' : 'private') : 'none'),
+      rateClass: item.rateClass ?? permission?.risk ?? 'low', timeout: item.timeout ?? 10_000,
+      sdk: String(item.sdk ?? ''), writePath,
+      stateMachine: item.stateMachine ?? (writePath === 'none' ? 'none' : `${item.id}.execution.v1`),
+      businessNumber: item.businessNumber ?? (writePath === 'none' ? 'none' : `SFL-${item.owner.toUpperCase()}-{sha256:16}`),
+      ...(item.requestFields === undefined ? {} : { requestFields: Object.freeze([...item.requestFields]) }),
+      ...(item.responseFields === undefined ? {} : { responseFields: Object.freeze([
+        ...new Set([...item.responseFields, 'code', 'message', 'requestId', 'retryable', 'details']),
+      ]) }),
+      ...(item.gates === undefined ? {} : { gates: Object.freeze(item.gates.map((gate) => Object.freeze({ ...gate }))) }),
+      requirements: Object.freeze([...item.requirements]),
+    } satisfies Omit<NormalizedOperationDefinition, 'operationHash'>;
+    return Object.freeze({ ...normalized, operationHash: hash(JSON.stringify(stable(normalized))) });
+  });
+}
+
+function operationWritePath(item: RawOperationDefinition): NormalizedOperationDefinition['writePath'] {
+  if (item.method === 'GET' || /\.(?:read|preview|verify|quote)$/.test(item.id)) return 'none';
+  if (item.id === 'payment.webhooks.wechat') return 'provider';
+  if (item.id === 'payment.intents.create' || item.id === 'identity.wechat.session' || item.id === 'identity.wechat.bind') return 'durable';
+  return CRITICAL_WRITE_DOMAINS.has(item.id.split('.')[0]!) ? 'transactional' : 'none';
+}
+
+function operationTargets(audience: OperationDefinition['audience']): readonly string[] {
+  return audience === 'member' ? ['storefront'] : audience === 'operator' ? ['console'] : [audience];
+}
+
+function operationNodeProfiles(audience: OperationDefinition['audience']): readonly ('operating_mall' | 'consumer')[] {
+  return audience === 'provider' ? ['operating_mall'] : ['operating_mall', 'consumer'];
+}
+
+function schemaName(id: string, suffix: string): string {
+  return `${id.split('.').map((segment) => `${segment[0]!.toUpperCase()}${segment.slice(1)}`).join('')}${suffix}`;
+}
+
+function sensitiveFields(id: string): readonly string[] {
+  if (id.startsWith('identity.')) return ['password', 'code', 'token', 'proof', 'mobile', 'destination', 'bindingToken'];
+  if (id.startsWith('payment.')) return ['payer', 'providerCredential', 'rawBody'];
+  return [];
 }
 
 function validateOperations(values: readonly NormalizedOperationDefinition[], sources: readonly RawOperationDefinition[]): void {
@@ -120,7 +175,18 @@ function validateOperations(values: readonly NormalizedOperationDefinition[], so
     if (!['none', 'optional', 'required'].includes(item.expectedVersion)) throw new Error(`OPERATION_VERSION_POLICY_INVALID:${item.id}`);
     if (typeof item.idempotent !== 'boolean') throw new Error(`OPERATION_IDEMPOTENT_INVALID:${item.id}`);
     if (item.summary.trim().length === 0) throw new Error(`OPERATION_SUMMARY_INVALID:${item.id}`);
-    if (item.schema !== 'exact' && item.schema !== 'structural') throw new Error(`OPERATION_SCHEMA_INVALID:${item.id}`);
+    if (item.schema !== 'named' && item.schema !== 'structural') throw new Error(`OPERATION_SCHEMA_INVALID:${item.id}`);
+    if (item.writePath !== 'none' && item.schema !== 'named') throw new Error(`OPERATION_WRITE_SCHEMA_NOT_NAMED:${item.id}`);
+    if (item.writePath !== 'none' && item.idempotency !== 'required' && item.writePath !== 'provider') {
+      throw new Error(`OPERATION_WRITE_IDEMPOTENCY_NOT_REQUIRED:${item.id}`);
+    }
+    if (!/^[A-Z][A-Za-z0-9]+Request$/.test(item.requestSchema) || !/^[A-Z][A-Za-z0-9]+Response$/.test(item.responseSchema)) {
+      throw new Error(`OPERATION_SCHEMA_REF_INVALID:${item.id}`);
+    }
+    if (item.errorUnion.length === 0 || item.targets.length === 0 || item.node_profiles_allowed.length === 0
+      || item.scope_resolver_ref.length === 0 || item.sdk.length === 0 || item.timeout < 1) {
+      throw new Error(`OPERATION_STRONG_CONTRACT_INCOMPLETE:${item.id}`);
+    }
     for (const gate of item.gates ?? []) {
       if (!['identity', 'permission', 'risk', 'finance'].includes(gate.slot)) throw new Error(`OPERATION_GATE_SLOT_INVALID:${item.id}`);
       if (gate.phase !== 'before') throw new Error(`OPERATION_GATE_PHASE_INVALID:${item.id}`);
@@ -138,7 +204,6 @@ function validateOperations(values: readonly NormalizedOperationDefinition[], so
     if (item.method === 'GET' && (!item.idempotent || item.idempotency !== 'none' || item.expectedVersion !== 'none' || item.execution !== 'sync')) {
       throw new Error(`OPERATION_GET_POLICY_INVALID:${item.id}`);
     }
-    if (item.method === 'GET' && item.schema === 'exact') throw new Error(`OPERATION_GET_BODY_INVALID:${item.id}`);
     if (item.execution === 'async' && (item.method === 'GET' || item.idempotency !== 'required')) throw new Error(`OPERATION_ASYNC_POLICY_INVALID:${item.id}`);
     if (item.idempotency === 'required' && item.method === 'GET') throw new Error(`OPERATION_IDEMPOTENCY_METHOD_INVALID:${item.id}`);
     if (item.expectedVersion === 'required' && item.method === 'GET') throw new Error(`OPERATION_VERSION_METHOD_INVALID:${item.id}`);
@@ -315,14 +380,31 @@ function controllerSource(values: readonly OperationDefinition[]): string {
 }
 
 function hardenedHandlerSource(values: readonly OperationDefinition[]): string {
-  return handlerSource(values).replace(
+  return handlerSource(values)
+  .replace(
+    "import type { OperationId } from '@shop/contract';",
+    "import type { OperationId } from '@shop/contract';\nimport { assertEnforcedWriteResult, normalizeOperationResult } from './ExecutionKernel';"
+  )
+  .replace(
     '  readonly query: Readonly<Record<string, string | readonly string[]>>;\n  readonly body: unknown;',
     '  readonly query: Readonly<Record<string, string | readonly string[]>>;\n  readonly headers: Readonly<Record<string, string>>;\n  readonly body: unknown;\n  readonly rawBody: string;\n  readonly deadline: number;\n  readonly signal: AbortSignal;\n  /** Server-derived target used for authorization and action-proof binding. */\n  readonly resource?: string;'
+  )
+  .replace(
+    '  handle(request: OperationRequest): Promise<OperationResult> {\n    return this.usecase.invoke(request);\n  }',
+    `  async handle(request: OperationRequest): Promise<OperationResult> {
+    const result = await this.usecase.invoke(request);
+    assertEnforcedWriteResult(request, result);
+    return normalizeOperationResult(request, result);
+  }`
   );
 }
 
 function hardenedControllerSource(values: readonly OperationDefinition[]): string {
   return controllerSource(values)
+    .replace(
+      "import { OperationCatalog, type OperationId } from '@shop/contract';",
+      "import { OperationCatalog, operationSchema, type OperationId } from '@shop/contract';"
+    )
     .replace(
       'export function registerOperationRoutes(module: string, context: ModuleContext): void {',
       `export function registerOperationRoutes(module: string, context: ModuleContext): void {
@@ -348,6 +430,10 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
     )
     .replace('operationInput(operation.method, request)', 'operationInput(operation.id, request, resource)')
     .replace(
+      'const result: OperationResult = await handler.handle({ type: operation.id, input: operationInput(operation.id, request, resource), access });',
+      'const input = contractOperationInput(operation.id, operationInput(operation.id, request, resource));\n      const result: OperationResult = await handler.handle({ type: operation.id, input, access });'
+    )
+    .replace(
       'function operationInput(method: string, request: HttpRequest): OperationInput {',
       `async function operationAccess(operation: ReturnType<typeof OperationCatalog.get>, request: HttpRequest, resource: string | undefined,
   authorizer: OperationAuthorizer): Promise<AccessContext | null> {
@@ -356,7 +442,7 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
     return authorizer.authorize(request.headers, currentSession.id, currentSession.permission ?? currentSession.id, resource);
   }
   if (operation.audience === 'public' || operation.audience === 'provider') return null;
-  return authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, resource);
+  return authorizer.authorize(request.headers, operation.id, operation.permission, resource);
 }
 
 function authenticatedWechatMode(body: unknown): boolean {
@@ -378,7 +464,7 @@ function operationInput(operation: string, request: HttpRequest, resource: strin
     .replace('    ...(idempotency === undefined ? {} : { idempotency }),', '    ...(resource === undefined ? {} : { resource }), ...(idempotency === undefined ? {} : { idempotency }),')
     .replace(
       '\nfunction queryObject(parameters: URLSearchParams)',
-      "\nfunction operationResource(operation: string, request: HttpRequest): string | undefined {\n  // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.\n  if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;\n  const pathResource = Object.values(request.parameters)[0];\n  if (pathResource !== undefined) return pathResource;\n  if (!['finance.withdrawals.create', 'invoice.requests.create'].includes(operation) || request.body === null || typeof request.body !== 'object' || Array.isArray(request.body)) return undefined;\n  const settlement = Reflect.get(request.body, 'settlement');\n  return typeof settlement === 'string' && settlement.length > 0 ? settlement : undefined;\n}\n\nfunction queryObject(parameters: URLSearchParams)"
+      "\nfunction contractOperationInput(operation: OperationId, input: OperationInput): OperationInput {\n  try {\n    const contractValue = { ...(Object.keys(input.path).length === 0 ? {} : { path: input.path }), query: input.query, body: input.body };\n    const parsed = operationSchema(operation).input.parse(contractValue) as { readonly path?: Readonly<Record<string, string>>; readonly query?: OperationInput['query']; readonly body?: unknown };\n    return Object.freeze({ ...input, path: parsed.path ?? {}, query: parsed.query ?? {}, body: parsed.body });\n  } catch (cause) {\n    throw new Error(`CONTRACT_REQUEST_INVALID:${cause instanceof Error ? cause.message : 'UNKNOWN'}`, { cause });\n  }\n}\n\nfunction operationResource(operation: string, request: HttpRequest): string | undefined {\n  // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.\n  if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;\n  const pathResource = Object.values(request.parameters)[0];\n  if (operation === 'catalog.imports.read' && pathResource?.startsWith('catalogpublication:')) return undefined;\n  if (pathResource !== undefined) return pathResource;\n  if (!['finance.withdrawals.create', 'invoice.requests.create'].includes(operation) || request.body === null || typeof request.body !== 'object' || Array.isArray(request.body)) return undefined;\n  const settlement = Reflect.get(request.body, 'settlement');\n  return typeof settlement === 'string' && settlement.length > 0 ? settlement : undefined;\n}\n\nfunction queryObject(parameters: URLSearchParams)"
     );
 }
 

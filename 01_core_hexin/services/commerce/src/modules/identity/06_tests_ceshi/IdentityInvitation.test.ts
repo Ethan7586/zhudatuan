@@ -404,6 +404,7 @@ function invitationHarness(options: Readonly<{
     query: async (text: string, values: readonly unknown[] = []) => {
       queries.push({ text, values });
       if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+      if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
       if (text.startsWith('select request_hash,state,response')) return result([{ request_hash: requestHash, state: 'started', response: null }]);
       if (text.includes('access.zhudatuan_invitation_owner') || text.includes('access.zhudatuan_owner_context')) {
         return result([{ exact_owner: options.exactOwner !== false }]);
