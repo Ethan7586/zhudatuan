@@ -88,6 +88,15 @@ describe('governance identity inference audit', () => {
     expect(source).not.toContain('node:hbbtzn:l1');
   });
 
+  it('allows operator invitations to target the active mall beneath the tenant', async () => {
+    const source = await readFile(join(process.cwd(),
+      '../../../02_platform_pingtai/database/supabase/migrations/20260911180000_allow_node_mall_operator_invitations.sql'), 'utf8');
+
+    expect(source).toContain('storefront_organization_id is not null');
+    expect(source).toContain('closure.ancestor_id=member.invite.organization_id');
+    expect(source).not.toMatch(/storefront_organization_id='mall-zhudatuan'/);
+  });
+
   it('keeps identity and member business code free of duplicate Owner inference', async () => {
     const files = [
       'src/modules/identity/05_interface_jieru/http/IdentityOperations.ts',
