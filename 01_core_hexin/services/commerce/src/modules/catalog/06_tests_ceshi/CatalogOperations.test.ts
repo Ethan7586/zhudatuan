@@ -58,7 +58,7 @@ describe('catalog mall command boundaries', () => {
       pending_review: 1,
       published: 1,
       unpublished: 1,
-    }] : text.includes('console_supply_network') ? [{ preview: { kind: 'console-product-v1' } }] : []);
+    }] : []);
     const actions = catalogActions({ container: { get: () => ({}) } } as unknown as ModuleContext);
     const read = actions['catalog.listings.read'];
     if (typeof read !== 'function') throw new Error('CATALOG_LISTING_READ_ACTION_MISSING');
@@ -74,12 +74,10 @@ describe('catalog mall command boundaries', () => {
     expect(readResult).toMatchObject({ body: {
       total_count: 4,
       status_counts: { needs_attention: 1, pending_review: 1, published: 1, unpublished: 1 },
-      preview: { kind: 'console-product-v1' },
     } });
     const summaryRead = readCalls.find(({ text }) => text.includes('count(*) filter'))!;
     expect(summaryRead.values).toEqual(['mall:hongtai', '', '', '', '']);
-    expect(readCalls.find(({ text }) => text.includes('console_supply_network'))?.values).toEqual(['mall:hongtai']);
-    expect(readCalls.find(({ text }) => text.includes('console_supply_network'))?.values).toEqual(['mall:hongtai']);
+    expect(readCalls.some(({ text }) => text.includes('console_supply_network'))).toBe(false);
 
     const publishCalls: QueryCall[] = [];
     const publicationDatabase = recordingDatabase(publishCalls, (text) => text.startsWith('with selected_pool')
@@ -89,6 +87,24 @@ describe('catalog mall command boundaries', () => {
     expect(publishCalls[0]?.text).toContain('experience.binding');
     expect(publishCalls[0]?.text).toContain('coalesce(pool_id,(select pool_id from selected_pool))');
     expect(publishCalls[0]?.values).toEqual(['listing:1', 'mall:hongtai', 3, 'published']);
+  });
+
+  it('reads the supply network without loading or summarizing catalog listings', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, (text) => text.includes('console_supply_network')
+      ? [{ preview: { kind: 'console-product-v1', totalCount: 12 } }] : []);
+    const actions = catalogActions({ container: { get: () => ({}) } } as unknown as ModuleContext);
+    const read = actions['catalog.listings.read'];
+    if (typeof read !== 'function') throw new Error('CATALOG_LISTING_READ_ACTION_MISSING');
+
+    const result = await read(request('catalog.listings.read', {}, undefined, { view: 'supply-network' }), database);
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.text).toContain('console_supply_network');
+    expect(calls[0]?.values).toEqual(['mall:hongtai']);
+    expect(result).toMatchObject({ status: 200, body: {
+      items: [], count: 0, preview: { kind: 'console-product-v1', totalCount: 12 },
+    } });
   });
 
   it('queues ready draft publication for the current mall worker', async () => {

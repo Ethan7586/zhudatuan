@@ -55,6 +55,15 @@ describe('Console named read Operations', () => {
     controller.abort(new Error('SCOPE_CHANGED'));
     await expect(pending).rejects.toThrow();
   });
+
+  it('requests the compact supply-network projection without a product page payload', async () => {
+    await readProducts(context, {
+      q: '', category: '', limit: 1, preview: true, view: 'supply-network',
+    }, new AbortController().signal);
+    const request = requests[0];
+    expect(request?.searchParams.get('view')).toBe('supply-network');
+    expect(request?.searchParams.get('limit')).toBe('1');
+  });
 });
 
 function record(body: JsonBodyType) {

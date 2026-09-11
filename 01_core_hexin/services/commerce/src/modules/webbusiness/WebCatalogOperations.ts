@@ -24,8 +24,18 @@ export function webCatalogActions(): OperationActions {
       const product = queryValue(request.input.query.product);
       const poolFilter = queryValue(request.input.query.pool);
       const status = queryValue(request.input.query.status);
+      const view = queryValue(request.input.query.view);
       const storefront = access.actor.target === 'storefront';
       const page = queryPage(request);
+      if (!storefront && view === 'supply-network') {
+        const network = await database.query<{ preview: unknown }>(
+          'select catalog.console_supply_network($1) preview', [access.scope.id],
+        );
+        return { status: 200, body: {
+          items: [], count: 0,
+          ...(network.rows[0]?.preview === undefined ? {} : { preview: network.rows[0].preview }),
+        } };
+      }
       if (access.scope.kind === 'supplier') {
         const result = await database.query(
           `select source.id,source.sku_id,coalesce(product.title,source.external_id) title,
@@ -69,10 +79,7 @@ export function webCatalogActions(): OperationActions {
         and ($2='' or listing.title ilike '%'||$2||'%' or sku.code ilike '%'||$2||'%') and ($3='' or product.category_id=$3)
       and ($4='' or product.id=$4) and ($5='' or listing.pool_id=$5)`,
       [access.scope.id, query, category, product, poolFilter, access.scope.kind === 'store']);
-      const preview = await database.query<{ preview: unknown }>(
-        'select catalog.console_supply_network($1) preview', [access.scope.id],
-      );
-      return catalogListingPageResult(result, page, summary.rows[0], preview.rows[0]?.preview);
+      return catalogListingPageResult(result, page, summary.rows[0]);
     },
   };
 }
