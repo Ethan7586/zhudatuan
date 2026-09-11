@@ -77,7 +77,7 @@ end $verify$;`;
 
 async function waitForPostgres() {
   for (let attempt = 1; attempt <= 60; attempt += 1) {
-    const ready = await run('docker', ['exec', container, 'pg_isready', '-U', 'postgres', '-d', database], { allowFailure: true, quiet: true });
+    const ready = await run('docker', ['exec', container, 'psql', '-X', '-U', 'postgres', '-d', database, '-c', 'select 1'], { allowFailure: true, quiet: true });
     if (ready === 0) return;
     await new Promise((resolve) => setTimeout(resolve, 500));
   }

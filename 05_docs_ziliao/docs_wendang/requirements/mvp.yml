@@ -1500,6 +1500,10 @@ requirements:
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+      - access.administrators.members.read
+      - access.administrators.member.read
+      - access.administrators.scopes.manage
+      - access.administrators.members.note
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -2845,6 +2849,10 @@ requirements:
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+      - access.administrators.members.read
+      - access.administrators.member.read
+      - access.administrators.scopes.manage
+      - access.administrators.members.note
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read

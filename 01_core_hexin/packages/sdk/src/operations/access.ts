@@ -8,6 +8,10 @@ export const ACCESS_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "access.center.read",
   "access.roles.manage",
   "access.scopes.manage",
+  "access.administrators.members.read",
+  "access.administrators.member.read",
+  "access.administrators.scopes.manage",
+  "access.administrators.members.note",
   "access.ownership.read",
   "access.ownership.transfers.preview",
   "access.ownership.transfers.create",
@@ -21,6 +25,10 @@ export interface AccessOperations {
   readonly centerRead: OperationMethod<"access.center.read">;
   readonly rolesManage: OperationMethod<"access.roles.manage">;
   readonly scopesManage: OperationMethod<"access.scopes.manage">;
+  readonly administratorsMembersRead: OperationMethod<"access.administrators.members.read">;
+  readonly administratorsMemberRead: OperationMethod<"access.administrators.member.read">;
+  readonly administratorsScopesManage: OperationMethod<"access.administrators.scopes.manage">;
+  readonly administratorsMembersNote: OperationMethod<"access.administrators.members.note">;
   readonly ownershipRead: OperationMethod<"access.ownership.read">;
   readonly ownershipTransfersPreview: OperationMethod<"access.ownership.transfers.preview">;
   readonly ownershipTransfersCreate: OperationMethod<"access.ownership.transfers.create">;
@@ -39,6 +47,10 @@ export function createAccessOperations(client: OperationExecutor): AccessOperati
     centerRead: bindCenterRead(client),
     rolesManage: bindRolesManage(client),
     scopesManage: bindScopesManage(client),
+    administratorsMembersRead: bindAdministratorsMembersRead(client),
+    administratorsMemberRead: bindAdministratorsMemberRead(client),
+    administratorsScopesManage: bindAdministratorsScopesManage(client),
+    administratorsMembersNote: bindAdministratorsMembersNote(client),
     ownershipRead: bindOwnershipRead(client),
     ownershipTransfersPreview: bindOwnershipTransfersPreview(client),
     ownershipTransfersCreate: bindOwnershipTransfersCreate(client),
@@ -71,6 +83,38 @@ export function createFetchAccessScopesManage(baseUrl: string): OperationMethod<
 
 function bindScopesManage(client: OperationExecutor): OperationMethod<"access.scopes.manage"> {
   return bindOperation(client, defineStructuralOperation({"id":"access.scopes.manage","method":"PUT","path":"/api/v1/access/memberships/{membershipid}/scopes","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["membershipid"]}));
+}
+
+export function createFetchAccessAdministratorsMembersRead(baseUrl: string): OperationMethod<"access.administrators.members.read"> {
+  return bindAdministratorsMembersRead(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindAdministratorsMembersRead(client: OperationExecutor): OperationMethod<"access.administrators.members.read"> {
+  return bindOperation(client, defineStructuralOperation({"id":"access.administrators.members.read","method":"GET","path":"/api/v1/access/administrator-members","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+}
+
+export function createFetchAccessAdministratorsMemberRead(baseUrl: string): OperationMethod<"access.administrators.member.read"> {
+  return bindAdministratorsMemberRead(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindAdministratorsMemberRead(client: OperationExecutor): OperationMethod<"access.administrators.member.read"> {
+  return bindOperation(client, defineStructuralOperation({"id":"access.administrators.member.read","method":"GET","path":"/api/v1/access/administrator-members/{nodeid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["nodeid"]}));
+}
+
+export function createFetchAccessAdministratorsScopesManage(baseUrl: string): OperationMethod<"access.administrators.scopes.manage"> {
+  return bindAdministratorsScopesManage(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindAdministratorsScopesManage(client: OperationExecutor): OperationMethod<"access.administrators.scopes.manage"> {
+  return bindOperation(client, defineStructuralOperation({"id":"access.administrators.scopes.manage","method":"PUT","path":"/api/v1/access/administrators/{membershipid}/segment-scope","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["membershipid"]}));
+}
+
+export function createFetchAccessAdministratorsMembersNote(baseUrl: string): OperationMethod<"access.administrators.members.note"> {
+  return bindAdministratorsMembersNote(new ApiClient(baseUrl, new FetchTransport()));
+}
+
+function bindAdministratorsMembersNote(client: OperationExecutor): OperationMethod<"access.administrators.members.note"> {
+  return bindOperation(client, defineStructuralOperation({"id":"access.administrators.members.note","method":"POST","path":"/api/v1/access/administrator-members/{nodeid}/notes","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["nodeid"]}));
 }
 
 export function createFetchAccessOwnershipRead(baseUrl: string): OperationMethod<"access.ownership.read"> {
