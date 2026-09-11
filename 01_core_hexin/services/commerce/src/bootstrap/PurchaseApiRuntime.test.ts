@@ -46,7 +46,8 @@ describe('purchase API runtime', () => {
   it('requires the direct purchase role, exact marker, selected writes, and forbidden finance/provider writes', async () => {
     const healthy = {
       current_user: 'zhudatuanpurchaseapi', session_user: 'zhudatuanpurchaseapi', role_safe: true, writable: true,
-      schema: true, contract: true, purchase: true, relations: true, functions: true, selected_writes: true, forbidden_privileges: true,
+      schema: true, contract: true, purchase: true, relations: true, functions: true, selected_reads: true,
+      selected_writes: true, forbidden_privileges: true,
     };
     const pool = (state: typeof healthy) => ({ query: async (sql: string, values: readonly unknown[]) => {
       expect(sql).toContain("to_regprocedure('access.resolve_scope(text,text,text,text)')");
@@ -54,6 +55,8 @@ describe('purchase API runtime', () => {
       expect(sql).toContain("to_regprocedure('access.purchase_payment_intent_context(text,text,text,text,text)')");
       expect(sql).toContain("to_regprocedure('access.purchase_enqueue_payment_query(text,text,text,text,integer,integer)')");
       expect(sql).toContain("not has_schema_privilege(current_user,'finance','USAGE')");
+      expect(sql).toContain("has_schema_privilege(current_user,'partner','USAGE')");
+      expect(sql).toContain("has_table_privilege(current_user,'partner.agreement','SELECT')");
       expect(sql).toContain("namespace.nspname='finance' and procedure.proname='post'");
       expect(sql).toContain("has_function_privilege(current_user,procedure.oid,'EXECUTE')");
       expect(sql).not.toContain("has_function_privilege(current_user,\n        'finance.post");
@@ -83,6 +86,8 @@ describe('purchase API runtime', () => {
     await expect(assertPurchaseRuntimeCompatibility(pool({ ...healthy, session_user: 'shopmigration' })))
       .rejects.toThrow('PURCHASE_RUNTIME_COMPATIBILITY_FAILED');
     await expect(assertPurchaseRuntimeCompatibility(pool({ ...healthy, role_safe: false })))
+      .rejects.toThrow('PURCHASE_RUNTIME_COMPATIBILITY_FAILED');
+    await expect(assertPurchaseRuntimeCompatibility(pool({ ...healthy, selected_reads: false })))
       .rejects.toThrow('PURCHASE_RUNTIME_COMPATIBILITY_FAILED');
     await expect(assertPurchaseRuntimeCompatibility(pool({ ...healthy, forbidden_privileges: false })))
       .rejects.toThrow('PURCHASE_RUNTIME_COMPATIBILITY_FAILED');
