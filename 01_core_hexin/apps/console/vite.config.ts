@@ -10,6 +10,7 @@ import {
 } from '@shop/config/sfl-console-runtime';
 import { SFL_CONSOLE_RELEASE_DECLARATION } from '@shop/config/sfl-node-registry';
 import { consoleImmutableArtifactDigest } from '../../../04_tools/scripts/release/console-digest.mjs';
+import { createConsoleVersion } from './src/shared/config/ConsoleDeployment';
 
 export default defineConfig(({ command, mode }) => {
   const environment = { ...loadEnv(mode, import.meta.dirname, ''), ...process.env };
@@ -23,6 +24,7 @@ export default defineConfig(({ command, mode }) => {
       __SHOP_BUILD_BRANCH__: JSON.stringify(build.branch),
       __SHOP_BUILD_ID__: JSON.stringify(build.id),
       __SHOP_BUILD_DIRTY__: JSON.stringify(build.dirty),
+      __SHOP_BUILD_AT__: JSON.stringify(build.builtAt),
     },
     build: { manifest: true },
     server: {
@@ -50,6 +52,7 @@ interface BuildDefinition {
   readonly branch: string;
   readonly id: string;
   readonly dirty: boolean;
+  readonly builtAt: string;
 }
 
 function consoleRuntimeEvidence(build: BuildDefinition, clientVersion: string): Plugin {
@@ -62,6 +65,17 @@ function consoleRuntimeEvidence(build: BuildDefinition, clientVersion: string): 
         : resolve(import.meta.dirname, config.build.outDir);
     },
     async closeBundle() {
+      const version = createConsoleVersion({
+        sourceBranch: build.branch,
+        sourceSha: build.commit,
+        builtAt: build.builtAt,
+        sourceTree: build.dirty ? 'dirty' : 'clean',
+        buildId: build.id,
+      });
+      writeFileSync(
+        join(outputDirectory, 'console-version.json'),
+        `${JSON.stringify(version, null, 2)}\n`,
+      );
       const immutableArtifactDigest = consoleImmutableArtifactDigest(outputDirectory);
       const artifact = await materializeSflConsoleArtifact(SFL_CONSOLE_RELEASE_DECLARATION, {
         source_sha: build.commit,
@@ -85,7 +99,8 @@ function buildDefinition(environment: Readonly<Record<string, string | undefined
     ? git(['status', '--porcelain', '--untracked-files=no']).length > 0
     : environment.SHOP_BUILD_DIRTY === 'true';
   const id = environment.SHOP_BUILD_ID?.trim() || `${commit.slice(0, 12)}${dirty ? '-dirty' : ''}`;
-  return Object.freeze({ commit, branch, id, dirty });
+  const builtAt = environment.SHOP_BUILD_AT?.trim() || new Date().toISOString();
+  return Object.freeze({ commit, branch, id, dirty, builtAt });
 }
 
 function git(arguments_: readonly string[]): string {
