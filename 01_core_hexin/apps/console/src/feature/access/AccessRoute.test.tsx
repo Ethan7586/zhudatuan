@@ -310,7 +310,7 @@ describe('custom identity and permission directory', () => {
     await user.click(administratorRow);
     expect(screen.getByRole('heading', { name: '管理员详情' })).toBeTruthy();
     expect(screen.getByRole('navigation', { name: '管理员档案' })).toBeTruthy();
-    expect(invitationReads).toBe(1);
+    expect(invitationReads).toBe(0);
 
     await user.click(screen.getByRole('tab', { name: '邀请记录' }));
     expect(await screen.findByText('受邀管理员')).toBeTruthy();

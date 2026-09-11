@@ -182,7 +182,10 @@ export function RoleEditor({
                         onClick={() => {
                           setPermissionFilter('');
                           setActivePack((current) => (current === pack.id ? undefined : pack.id));
-                          requestAnimationFrame(() => document.getElementById('rolepermissiondetails')?.scrollIntoView({ block: 'nearest' }));
+                          requestAnimationFrame(() => {
+                            const details = document.getElementById('rolepermissiondetails');
+                            if (typeof details?.scrollIntoView === 'function') details.scrollIntoView({ block: 'nearest' });
+                          });
                         }}
                       >
                         <CapabilityIcon kind={pack.id} />
