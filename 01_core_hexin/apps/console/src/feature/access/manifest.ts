@@ -8,7 +8,7 @@ export const accessModule = {
     {
       id: 'access.index',
       path: 'settings/access',
-      kind: 'entry',
+      kind: 'child',
       lazy: () => import('./AccessRoute'),
       operations: [
         'access.center.read',
@@ -33,7 +33,7 @@ export const accessModule = {
     {
       id: 'access.members',
       path: 'settings/members',
-      kind: 'child',
+      kind: 'entry',
       lazy: () => import('../member/MemberRoute'),
       operations: ['member.members.read', 'identity.invitations.create', 'identity.members.reset'],
       presentation: { title: '成员管理', summary: '成员、员工号和入会状态' },

@@ -153,18 +153,18 @@
   font-weight: 600;
 }
 .memberaccessworkspace .storefrontmemberrow {
-  min-height: 66px;
+  min-height: 52px;
   color: #475467;
 }
 .memberaccessworkspace .storefrontmemberrow:hover {
   background: #f7f9fc;
 }
 .memberaccessworkspace .storefrontmemberperson {
-  grid-template-columns: 36px minmax(0, 1fr);
+  grid-template-columns: 30px minmax(0, 1fr);
 }
 .memberaccessworkspace .storefrontmemberperson > i {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   background: #eaf0fa;
   color: #143a8f;
   font-weight: 600;
