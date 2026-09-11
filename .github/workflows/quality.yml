@@ -134,6 +134,18 @@ jobs:
           include-hidden-files: true
           retention-days: 14
 
+      - name: Test affected-delivery planning changes
+        env:
+          BASE_SHA: ${{ steps.refs.outputs.base_sha }}
+          HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+        run: |
+          if git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- \
+            .github/workflows/quality.yml \
+            04_tools/release-engine \
+            02_platform_pingtai/infrastructure/release/zdt-next.release.json | grep -q .; then
+            node --test 04_tools/release-engine/test/planner.test.mjs
+          fi
+
   affected_candidate:
     name: affected tests, typecheck, build, package and candidate
     needs: plan

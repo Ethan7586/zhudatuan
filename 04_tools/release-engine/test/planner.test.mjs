@@ -36,7 +36,7 @@ test('classifies the four release lanes and documentation-only changes', () => {
   assert.equal(classifyChanges(adapter, [change('docs/readme.md')]).lane, 'NONE');
 });
 
-test('fails closed for unknown or mixed service changes', () => {
+test('fails closed for unknown changes and keeps mixed client-service targets affected', () => {
   const unknown = classifyChanges(adapter, [change('mystery/file.txt')]);
   assert.equal(unknown.lane, 'A3');
   assert.deepEqual(unknown.targets, ['core']);
@@ -47,8 +47,8 @@ test('fails closed for unknown or mixed service changes', () => {
     change('services/api/entry/Main.ts'),
     change('apps/web/App.tsx'),
   ]);
-  assert.equal(mixed.lane, 'A3');
-  assert.deepEqual(mixed.targets, ['core']);
+  assert.equal(mixed.lane, 'A2');
+  assert.deepEqual(mixed.targets, ['api', 'web']);
 });
 
 test('classifies both sides of a rename', () => {
@@ -116,9 +116,9 @@ test('uses the real commerce dependency graph for shared source changes', async 
     to: 'HEAD',
     files: ['01_core_hexin/services/commerce/src/modules/webbusiness/WebBusinessScopeResolver.ts'],
   });
-  assert.equal(multipleServices.lane, 'A3');
-  assert.deepEqual(multipleServices.targets, ['core']);
-  assert.match(multipleServices.reasons.join('\n'), /dependency graph spans purchase-api, web-api/);
+  assert.equal(multipleServices.lane, 'A2');
+  assert.deepEqual(multipleServices.targets, ['purchase-api', 'web-api']);
+  assert.match(multipleServices.reasons.join('\n'), /dependency graph selects purchase-api, web-api/);
   assert.equal(typeof multipleServices.planDigest, 'string');
 
   const sharedTest = await createPlan(commerceAdapter, {
@@ -128,6 +128,24 @@ test('uses the real commerce dependency graph for shared source changes', async 
   });
   assert.equal(sharedTest.lane, 'A3');
   assert.deepEqual(sharedTest.targets, ['core']);
-  assert.match(sharedTest.reasons.join('\n'), /dependency graph unresolved/);
+  assert.match(sharedTest.reasons.join('\n'), /shared commerce dependency/);
   assert.equal(typeof sharedTest.planDigest, 'string');
+});
+
+test('keeps order export console and commerce changes out of A3', async () => {
+  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const orderExport = await createPlan(commerceAdapter, {
+    from: 'HEAD',
+    to: 'HEAD',
+    files: [
+      '01_core_hexin/apps/console/src/feature/order/OrderExportWorkspace.tsx',
+      '01_core_hexin/services/commerce/src/modules/reporting/ReportingModule.ts',
+      '01_core_hexin/services/commerce/src/modules/reporting/04_adapters_shixian/persistence/PgReportingRepository.ts',
+      '01_core_hexin/services/commerce/src/modules/reporting/05_interface_jieru/job/ExportJobRunner.ts',
+      '01_core_hexin/services/commerce/src/modules/reporting/06_tests_ceshi/command/ExportDocument.test.ts',
+    ],
+  });
+  assert.equal(orderExport.lane, 'A2');
+  assert.deepEqual(orderExport.targets, ['catalog-jobs', 'console', 'payment-jobs']);
+  assert.doesNotMatch(orderExport.reasons.join('\n'), /A3/);
 });
