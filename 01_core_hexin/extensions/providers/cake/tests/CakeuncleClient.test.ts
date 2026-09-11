@@ -91,7 +91,7 @@ function productsResponse(firstStock: string): JsonObject {
     code: '200',
     msg: 'ok',
     data: {
-      total_num: '1',
+      total_num: 1,
       products: [{
         product_id: '100',
         brand_id: '10',
