@@ -22,7 +22,7 @@ const MembershipSelectionSchema = z.strictObject({
   })),
 });
 
-const SessionCreatedSchema = z.strictObject({
+const SessionCreatedSchema = z.object({
   session: z.string().min(1),
   csrf: z.string().min(16),
   expiresIn: z.number().int().positive(),

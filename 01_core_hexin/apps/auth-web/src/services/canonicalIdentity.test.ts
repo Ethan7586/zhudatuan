@@ -472,6 +472,7 @@ function sessionCreated(target: 'console' | 'storefront' = 'console', membership
     expiresIn: 3_600,
     membership,
     target,
+    active_context: { entry_realm_id: 'realm:l1' },
     callback: {
       ticket: SESSION_TICKET,
       state: CALLBACK_STATE,
