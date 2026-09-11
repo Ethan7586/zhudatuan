@@ -188,6 +188,7 @@ test('routes the legacy session projection bridge only to identity and web APIs'
   const classified = classifyChanges(commerceAdapter, [
     change('01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts'),
     change('01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.test.ts'),
+    change('01_core_hexin/services/commerce/src/modules/provisioning/03_application_yingyong/CreateMall.ts'),
   ]);
   assert.equal(classified.lane, 'A2');
   assert.deepEqual(classified.targets, ['identity-api', 'web-api']);
