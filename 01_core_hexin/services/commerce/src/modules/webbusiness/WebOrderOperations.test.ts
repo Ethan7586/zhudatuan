@@ -8,7 +8,7 @@ import { DATABASE_POOL, type DatabasePool } from '../../foundation/persistence/P
 import { webOrderOperations } from './WebOrderOperations';
 
 describe('web order read model', () => {
-  it('applies production filters and returns inventory and aftersales facts in the authorized scope', async () => {
+  it('applies production filters and returns inventory, aftersales and real responsibility operations in the authorized scope', async () => {
     const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
@@ -29,6 +29,11 @@ describe('web order read model', () => {
     const read = queries.find(({ text }) => text.includes('select orders.*'));
     expect(read?.text).toContain('inventory_reservations');
     expect(read?.text).toContain('aftersales');
+    expect(read?.text).toContain("'placed' kind");
+    expect(read?.text).toContain("milestone.evidence->>'actor'");
+    expect(read?.text).toContain('aftersale.requested_by');
+    expect(read?.text).toContain('review.actor_id');
+    expect(read?.text).toContain('member.profile');
     expect(read?.text).toContain('orders.order_number=$5');
     expect(read?.text).toContain("orders.payment_state=$8");
     expect(read?.text).toContain("$13='aftersale'");

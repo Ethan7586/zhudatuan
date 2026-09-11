@@ -24,7 +24,8 @@ export function webOrderOperations(context: ModuleContext): ModuleOperations {
       const result = await database.query(`select orders.*,coalesce(lines.items,'[]'::jsonb) lines,
         coalesce(legs.items,'[]'::jsonb) economic_legs,coalesce(inventory.items,'[]'::jsonb) inventory_reservations,
         coalesce(fulfillments.items,'[]'::jsonb) fulfillments,paymentfact.item payment_fact,
-        coalesce(financefacts.items,'[]'::jsonb) finance_facts,coalesce(aftersales.items,'[]'::jsonb) aftersales
+        coalesce(financefacts.items,'[]'::jsonb) finance_facts,coalesce(aftersales.items,'[]'::jsonb) aftersales,
+        coalesce(operations.items,'[]'::jsonb) operations
         from ordering.orderrecord orders
         left join lateral(select jsonb_agg(jsonb_build_object('id',line.id,'sku',line.sku_id,'listing',line.listing_id,'title',line.title_snapshot,
           'quantity',line.quantity,'unitMinor',line.unit_minor,'totalMinor',line.total_minor,'discountMinor',line.discount_minor,
@@ -77,7 +78,31 @@ export function webOrderOperations(context: ModuleContext): ModuleOperations {
           'state',aftersale.state,'quantity',aftersale.quantity,'amountMinor',aftersale.amount_minor,'reason',aftersale.reason,
           'requestedAt',aftersale.created_at,'updatedAt',aftersale.updated_at,'routeSnapshot',aftersale.route_snapshot)
           order by aftersale.created_at desc,aftersale.id desc) items
-          from ordering.aftersale aftersale where aftersale.order_id=orders.id) aftersales on true where (
+          from ordering.aftersale aftersale where aftersale.order_id=orders.id) aftersales on true
+        left join lateral(select jsonb_agg(jsonb_build_object('id',operation.id,'kind',operation.kind,
+          'actor_id',operation.actor_id,'actor_name',operation.actor_name,'membership_id',operation.membership_id,
+          'occurred_at',operation.occurred_at,'result',operation.result) order by operation.occurred_at desc,operation.id desc) items
+          from (select 'placed:'||orders.id id,'placed' kind,orders.member_id actor_id,
+              (select profile.display_name from member.profile profile where profile.id=orders.member_id limit 1) actor_name,
+              orders.participant_membership_id membership_id,orders.created_at occurred_at,'created' result
+            union all
+            select milestone.id,'shipment',nullif(milestone.evidence->>'actor',''),
+              (select profile.display_name from member.profile profile
+                where profile.principal_id=nullif(milestone.evidence->>'actor','') limit 1),null,
+              milestone.occurred_at,milestone.state from fulfillment.fulfillmentorder fulfillment
+              join fulfillment.milestone milestone on milestone.fulfillment_id=fulfillment.id
+              where fulfillment.order_id=orders.id and milestone.kind='shipment'
+            union all
+            select aftersale.id,'aftersale_request',aftersale.requested_by,
+              (select profile.display_name from member.profile profile where profile.principal_id=aftersale.requested_by limit 1),
+              aftersale.requested_membership_id,aftersale.created_at,aftersale.state
+              from ordering.aftersale aftersale where aftersale.order_id=orders.id
+            union all
+            select review.id,case when review.next_state='approved' then 'aftersale_approved' else 'aftersale_rejected' end,
+              review.actor_id,(select profile.display_name from member.profile profile where profile.principal_id=review.actor_id limit 1),
+              review.membership_id,review.occurred_at,review.next_state from ordering.reviewaction review
+              join ordering.aftersale aftersale on aftersale.id=review.aftersale_id
+              where aftersale.order_id=orders.id and review.next_state in('approved','rejected')) operation) operations on true where (
         ($1::boolean and orders.member_id=$2) or ($3 and exists(select 1 from fulfillment.fulfillmentorder where order_id=orders.id and partner_id=$2))
         or ($4 and exists(select 1 from fulfillment.fulfillmentorder where order_id=orders.id and store_id=$2))
         or (not $1::boolean and not $3 and not $4 and exists(select 1 from organization.unitclosure closure where closure.ancestor_id=$2 and closure.descendant_id=orders.mall_id))
