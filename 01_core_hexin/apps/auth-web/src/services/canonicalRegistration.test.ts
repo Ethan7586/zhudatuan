@@ -116,6 +116,7 @@ describe('canonical registration', () => {
           id: 'challenge:registration-one',
           purpose: 'registration',
           expires_at: '2026-08-28T01:10:00.000Z',
+          identity_exists: false,
         },
         202
       )
@@ -128,6 +129,7 @@ describe('canonical registration', () => {
       challengeId: 'challenge:registration-one',
       purpose: 'registration',
       expiresAt: '2026-08-28T01:10:00.000Z',
+      identityExists: false,
     });
     const [url, init] = fetchMock.mock.calls[0];
     expect(String(url)).toBe('http://127.0.0.1:3001/api/v1/identity/challenges');
@@ -173,6 +175,35 @@ describe('canonical registration', () => {
       termsHash: TERMS_HASH,
     });
     expectCanonicalHeaders(init?.headers);
+  });
+
+  it('reuses an existing identity when opening an independent operator membership', async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse({
+        ...membership(),
+        id: 'membership:operator-one',
+        organization_id: 'mall:l1-hongtai',
+        client: 'operator',
+        governanceLevel: 'senior_administrator',
+      }, 201));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(createCanonicalMember({
+      subject: '13800138000',
+      inviteCode: 'senior-invitation',
+      challengeId: 'challenge:registration-one',
+      code: '483921',
+      termsAccepted: true,
+      termsHash: TERMS_HASH,
+    })).resolves.toMatchObject({
+      membership: 'membership:operator-one',
+      organization: 'mall:l1-hongtai',
+      target: 'console',
+    });
+
+    const payload = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(payload).not.toHaveProperty('password');
+    expect(payload).not.toHaveProperty('displayName');
   });
 
   it('uses the registration OTP to establish and exchange the new storefront session immediately', async () => {

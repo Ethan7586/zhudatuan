@@ -40,6 +40,7 @@ const ChallengeSchema = z.strictObject({
   id: z.string().min(1),
   purpose: z.literal('registration'),
   expires_at: z.iso.datetime(),
+  identity_exists: z.boolean(),
 });
 
 const RegistrationAuthenticationSchema = z.strictObject({
@@ -58,7 +59,7 @@ const MembershipSchema = z.object({
   id: z.string().min(1),
   member_id: z.string().min(1),
   organization_id: z.string().min(1),
-  client: z.literal('storefront'),
+  client: z.enum(['storefront', 'operator']),
   employee_no: z.string().nullable(),
   status: z.literal('active'),
   access_version: transportInteger.pipe(z.number().positive()),
@@ -86,6 +87,7 @@ export interface CanonicalRegistrationChallenge {
   readonly challengeId: string;
   readonly purpose: 'registration';
   readonly expiresAt: string;
+  readonly identityExists: boolean;
 }
 
 export interface CanonicalStorefrontRegistration {
@@ -103,8 +105,8 @@ export interface CanonicalStorefrontRegistration {
 
 export interface CanonicalMemberRegistrationInput {
   readonly subject: string;
-  readonly password: string;
-  readonly displayName: string;
+  readonly password?: string;
+  readonly displayName?: string;
   readonly inviteCode?: string;
   readonly applicationSlug?: string;
   readonly challengeId?: string;
@@ -120,7 +122,7 @@ export interface CanonicalRegisteredMember {
   readonly membership: string;
   readonly member: string;
   readonly organization: string;
-  readonly target: 'storefront';
+  readonly target: 'storefront' | 'console';
   readonly status: 'active';
   readonly accessVersion: number;
   readonly employeeNo: string | null;
@@ -179,7 +181,12 @@ export async function createCanonicalRegistrationChallenge(destination: string, 
       signal
     )
   );
-  return Object.freeze({ challengeId: output.id, purpose: output.purpose, expiresAt: output.expires_at });
+  return Object.freeze({
+    challengeId: output.id,
+    purpose: output.purpose,
+    expiresAt: output.expires_at,
+    identityExists: output.identity_exists,
+  });
 }
 
 export async function createCanonicalMember(input: CanonicalMemberRegistrationInput, signal?: AbortSignal): Promise<CanonicalRegisteredMember> {
@@ -199,8 +206,8 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
       '/api/v1/identity/members',
       {
         subject: canonicalRegistrationMobile(input.subject),
-        password: requiredPassword(input.password),
-        displayName: requiredText(input.displayName, '请输入姓名'),
+        ...(input.password === undefined ? {} : { password: requiredPassword(input.password) }),
+        ...(input.displayName === undefined ? {} : { displayName: requiredText(input.displayName, '请输入姓名') }),
         ...memberRegistrationReference(input),
         ...verification,
         termsAccepted: true,
@@ -225,7 +232,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
     membership: output.id,
     member: output.member_id,
     organization: output.organization_id,
-    target: output.client,
+    target: output.client === 'operator' ? 'console' : 'storefront',
     status: output.status,
     accessVersion: output.access_version,
     employeeNo: output.employee_no,

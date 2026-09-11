@@ -511,6 +511,21 @@ describe('canonical member registration security boundary', () => {
     expect(challenge?.values[4]).toEqual(expect.stringMatching(/^[a-f0-9]{64}$/));
   });
 
+  it('reports an existing unified identity without creating a second account', async () => {
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: true, storefrontAvailable: true });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(challengeRequest({
+      destination: SUBJECT,
+      purpose: 'registration',
+      application: 'zdt-l1-verify',
+    }));
+
+    expect(response).toMatchObject({ status: 202, body: { identity_exists: true } });
+    const challenge = harness.queries.find(({ text }) => text.includes('with challenge as'));
+    expect(challenge?.values[1]).toBe('principal:existing-phone');
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+  });
+
   it('rejects mobile password login when the profile and credential belong to different principals', async () => {
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: true,
       boundMobilePrincipal: 'principal:owner', credentialSecret: await new PasswordPolicy().hash('Current!Password1') });
@@ -539,26 +554,28 @@ describe('canonical member registration security boundary', () => {
     expect(harness.queries.some(({ text }) => text.includes('select invite.id from member.invite'))).toBe(true);
   });
 
-  it('returns 409 for an existing subject before consuming either challenge or invitation', async () => {
-    const harness = registrationHarness({ challengeAccepted: true, subjectExists: true });
+  it('rolls back a storefront invitation when its subject already exists', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: true, inviteAccepted: true });
     const result = await identityOperations(context(harness.pool)).invoke(registrationRequest('registration:duplicate-subject'));
 
     expect(result).toEqual({ status: 409, body: { code: 'IDENTITY_SUBJECT_EXISTS' } });
     expect(harness.queries.some(({ text }) => text.includes('pg_advisory_xact_lock'))).toBe(true);
-    expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
-    expect(harness.queries.some(({ text }) => text.includes('update member.invite set use_count'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('with candidate as materialized'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text === 'rollback to savepoint identity_business_mutation')).toBe(true);
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
   });
 
-  it('returns 409 when an invited mobile is already bound to an account-name identity', async () => {
-    const harness = registrationHarness({ challengeAccepted: true, subjectExists: false,
+  it('rolls back a storefront invitation when its mobile is bound to an account-name identity', async () => {
+    const harness = registrationHarness({ challengeAccepted: true, subjectExists: false, inviteAccepted: true,
       boundMobilePrincipal: 'principal:owner-mobile' });
 
     const result = await identityOperations(context(harness.pool)).invoke(registrationRequest('registration:bound-mobile'));
 
     expect(result).toEqual({ status: 409, body: { code: 'IDENTITY_SUBJECT_EXISTS' } });
-    expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(false);
-    expect(harness.queries.some(({ text }) => text.includes('update member.invite set use_count'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('update identity.challenge set consumed_at'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('with candidate as materialized'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text === 'rollback to savepoint identity_business_mutation')).toBe(true);
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
   });
 
@@ -752,7 +769,7 @@ describe('canonical member registration security boundary', () => {
     expect(assurance?.values[2]).toBe(subjectDigest(SUBJECT));
   });
 
-  it('turns an operator invitation into separate storefront and pending-operator memberships', async () => {
+  it('turns an operator invitation into one independent pending-operator membership', async () => {
     const harness = registrationHarness({ challengeAccepted: true, subjectExists: false, inviteAccepted: true, operatorInvite: true });
 
     const response = await identityRegistrationOperations(context(harness.pool))
@@ -760,18 +777,17 @@ describe('canonical member registration security boundary', () => {
 
     expect(response).toMatchObject({ status: 201, body: { client: 'operator', governanceLevel: 'administrator' } });
     const memberships = harness.queries.filter(({ text }) => text.includes('insert into access.membership('));
-    expect(memberships).toHaveLength(2);
-    expect(memberships[0]?.text).toContain("'storefront'");
-    expect(memberships[0]?.values).toContain('mall-zhudatuan');
-    expect(memberships[1]?.text).toContain("'operator'");
-    expect(memberships[1]?.values).toContain('tenant-zhudatuan');
+    expect(memberships).toHaveLength(1);
+    expect(memberships[0]?.text).toContain("'operator'");
+    expect(memberships[0]?.values).toContain('tenant-zhudatuan');
+    expect(memberships[0]?.text).not.toContain("'storefront'");
     const invitationConsumption = harness.queries.find(({ text }) => text.includes('with candidate as materialized')
       && text.includes('update member.invite'));
     expect(invitationConsumption?.text).toContain("accepted_membership_id=case when candidate.target_client='operator' then $3");
-    expect(memberships[1]?.values).toContain(invitationConsumption?.values[2]);
+    expect(memberships[0]?.values).toContain(invitationConsumption?.values[2]);
     const roles = harness.queries.filter(({ text }) => text.includes('insert into access.membershiprole'));
-    expect(roles[0]?.values).toContain('role-zhudatuan-storefront-member');
-    expect(roles[1]?.values).toContain('role-zhudatuan-pending-operator');
+    expect(roles).toHaveLength(1);
+    expect(roles[0]?.values).toContain('role-zhudatuan-pending-operator');
   });
 
   it('turns a senior invitation into a tenant-scoped senior operator without creating Owner state', async () => {
@@ -784,11 +800,54 @@ describe('canonical member registration security boundary', () => {
 
     expect(response).toMatchObject({ status: 201, body: { client: 'operator', governanceLevel: 'senior_administrator' } });
     const roles = harness.queries.filter(({ text }) => text.includes('insert into access.membershiprole'));
-    expect(roles[1]?.values).toContain('role-senior-administrator-v1:tenant-zhudatuan');
+    expect(roles[0]?.values).toContain('role-senior-administrator-v1:tenant-zhudatuan');
     expect(harness.queries.some(({ text }) => text.includes('insert into access.platformowner'))).toBe(false);
     const operatorScopes = harness.queries.find(({ text, values }) => text.includes('insert into access.scopegrant')
       && values.includes('tenant-zhudatuan'));
     expect(operatorScopes?.text).toContain("'tenant'");
+  });
+
+  it('reuses an existing L1 identity for a senior administrator without creating a consumer membership', async () => {
+    const operatorOrganization = 'mall:d1708f04df2dd8a61736852c4900fb43';
+    const harness = registrationHarness({
+      challengeAccepted: true,
+      subjectExists: true,
+      inviteAccepted: true,
+      operatorInvite: true,
+      seniorInvite: true,
+      storefrontOrganizationId: operatorOrganization,
+    });
+    const base = registrationRequest('registration:l1-existing-senior');
+    const body = { ...(base.input.body as Readonly<Record<string, unknown>>) } as Record<string, unknown>;
+    delete body.password;
+    delete body.displayName;
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke({
+      ...base,
+      input: {
+        ...base.input,
+        headers: { ...base.input.headers, host: 'api.hbbtzn.com' },
+        body,
+      },
+    });
+
+    expect(response).toMatchObject({
+      status: 201,
+      body: { client: 'operator', organization_id: operatorOrganization, governanceLevel: 'senior_administrator' },
+    });
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.account'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into identity.credential'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('insert into member.profile'))).toBe(false);
+    const memberships = harness.queries.filter(({ text }) => text.includes('insert into access.membership('));
+    expect(memberships).toHaveLength(1);
+    expect(memberships[0]?.text).toContain("'operator'");
+    expect(memberships[0]?.values).toContain(operatorOrganization);
+    expect(memberships[0]?.text).not.toContain("'storefront'");
+    const role = harness.queries.find(({ text }) => text.includes('insert into access.membershiprole'));
+    expect(role?.values).toContain('role-senior-administrator-v1:tenant-zhudatuan');
+    const grant = harness.queries.find(({ text }) => text.includes('insert into access.scopegrant'));
+    expect(grant?.values).toContain('tenant-zhudatuan');
   });
 });
 
@@ -1122,7 +1181,8 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         return result(input.inviteAccepted ? [input.operatorInvite ? {
           organization_id: 'tenant-zhudatuan',
           role_id: input.seniorInvite ? 'role-senior-administrator-v1:tenant-zhudatuan' : 'role-zhudatuan-pending-operator',
-          terms_hash: 'f'.repeat(64), target_client: 'operator', storefront_organization_id: 'mall-zhudatuan',
+          terms_hash: 'f'.repeat(64), target_client: 'operator',
+          storefront_organization_id: input.storefrontOrganizationId ?? 'mall-zhudatuan',
           storefront_role_id: 'role-zhudatuan-storefront-member',
           governance_level: input.seniorInvite ? 'senior_administrator' : 'administrator',
         } : {
@@ -1180,6 +1240,9 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           client: 'storefront', employee_no: null, status: 'active', access_version: 3,
           joined_at: '2026-09-03T00:00:00.000Z', left_at: null,
         }] : []);
+      }
+      if (text.includes("select * from access.membership") && text.includes("client='operator'")) {
+        return result([]);
       }
       if (text.includes('insert into access.membership(') && text.includes('returning *')) {
         return result([{
