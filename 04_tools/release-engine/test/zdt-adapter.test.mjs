@@ -25,13 +25,25 @@ test('build and remote adapters agree on every pointer and process', () => {
   for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
     for (const [target, deployment] of Object.entries(node.deployments)) {
       const remote = policy.nodes[nodeKey]?.deployments?.[target];
+      if (deployment.hostedBy) {
+        assert.equal(remote, undefined, `${nodeKey}/${target} is declared only by its runtime host`);
+        const host = policy.nodes[deployment.hostedBy]?.deployments?.[target];
+        assert.ok(host, `missing runtime host deployment ${deployment.hostedBy}/${target}`);
+        assert.equal(host.pointerRoot, deployment.pointerRoot, `${nodeKey}/${target} hosted pointer`);
+        assert.equal(host.restart.name, deployment.service, `${nodeKey}/${target} hosted service`);
+        continue;
+      }
       assert.ok(remote, `missing remote deployment ${nodeKey}/${target}`);
       assert.equal(remote.pointerRoot, deployment.pointerRoot, `${nodeKey}/${target} pointer`);
       assert.equal(remote.restart.name, deployment.service, `${nodeKey}/${target} service`);
       assert.equal(remote.productionEnabled ?? true, deployment.productionEnabled ?? true, `${nodeKey}/${target} production state`);
-      assert.equal(remote.hostedBy ?? null, deployment.hostedBy ?? null, `${nodeKey}/${target} runtime host`);
     }
   }
+});
+
+test('remote policy registers each physical pointer exactly once', () => {
+  const roots = Object.values(policy.nodes).flatMap((node) => Object.values(node.deployments).map((item) => item.pointerRoot));
+  assert.equal(new Set(roots).size, roots.length);
 });
 
 test('every restartable fast target has a one-time legacy seed and production rollback baseline', () => {
