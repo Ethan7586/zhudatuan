@@ -150,7 +150,7 @@ test('keeps order export console and commerce changes out of A3', async () => {
   assert.doesNotMatch(orderExport.reasons.join('\n'), /A3/);
 });
 
-test('deploys hosted node business targets once through their sovereign runtime host', async () => {
+test('deploys each sovereign node identity runtime independently', async () => {
   const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const plan = await createPlan(commerceAdapter, {
     from: 'HEAD',
@@ -159,13 +159,28 @@ test('deploys hosted node business targets once through their sovereign runtime 
     nodes: ['hbbtzn-l1', 'zhudatuan-l0'],
   });
   assert.deepEqual(plan.targets, ['identity-api']);
-  assert.equal(plan.actions.deployments.length, 1);
-  const deployment = plan.actions.deployments[0];
-  assert.equal(deployment.node, 'zhudatuan-l0');
-  assert.equal(deployment.nodeId, 'node:zhudatuan:l0');
-  assert.deepEqual(deployment.requestedNodes, ['hbbtzn-l1', 'zhudatuan-l0']);
-  assert.equal(deployment.target, 'identity-api');
-  assert.equal(deployment.service, 'zhudatuan-api.service');
+  assert.equal(plan.actions.deployments.length, 2);
+  const hbbtzn = plan.actions.deployments.find((item) => item.node === 'hbbtzn-l1');
+  assert.equal(hbbtzn.nodeId, 'node:hbbtzn:l1');
+  assert.deepEqual(hbbtzn.requestedNodes, ['hbbtzn-l1']);
+  assert.equal(hbbtzn.target, 'identity-api');
+  assert.equal(hbbtzn.service, 'sfl-identity-api@hbbtzn-l1.service');
+  const zhudatuan = plan.actions.deployments.find((item) => item.node === 'zhudatuan-l0');
+  assert.equal(zhudatuan.nodeId, 'node:zhudatuan:l0');
+  assert.deepEqual(zhudatuan.requestedNodes, ['zhudatuan-l0']);
+  assert.equal(zhudatuan.target, 'identity-api');
+  assert.equal(zhudatuan.service, 'zhudatuan-api.service');
+});
+
+test('keeps release policy and deploy workflow changes in the delivery-tooling lane', async () => {
+  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const classified = classifyChanges(commerceAdapter, [
+    change('.github/workflows/deploy.yml'),
+    change('02_platform_pingtai/infrastructure/release/zdt-next.release.json'),
+    change('02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'),
+  ]);
+  assert.equal(classified.lane, 'NONE');
+  assert.deepEqual(classified.targets, []);
 });
 
 test('routes the hbbtzn support entry to the shared support runtime', async () => {

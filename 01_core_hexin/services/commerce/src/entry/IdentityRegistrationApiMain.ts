@@ -1,4 +1,6 @@
 import { identityRegistrationApiAllowedOrigins, identityRegistrationApiEnvironment, identityRegistrationApiPort } from '@shop/config/server';
+
+// This entry is the independently deployed identity runtime for each sovereign node.
 import { bootstrapApi } from '../bootstrap/ApiBootstrap';
 import { createIdentityRegistrationApiRuntime } from '../bootstrap/IdentityRegistrationApiRuntime';
 import { listen } from '../foundation/interface/NodeServer';

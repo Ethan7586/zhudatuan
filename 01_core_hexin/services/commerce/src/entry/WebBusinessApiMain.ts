@@ -4,6 +4,8 @@ import {
   webBusinessApiPort,
   webBusinessApiPublicMallSlug,
 } from '@shop/config/server';
+
+// This entry is the independently deployed web-business runtime for each sovereign node.
 import { bootstrapApi } from '../bootstrap/ApiBootstrap';
 import { createWebBusinessApiRuntime } from '../bootstrap/WebBusinessApiRuntime';
 import { listen } from '../foundation/interface/NodeServer';
