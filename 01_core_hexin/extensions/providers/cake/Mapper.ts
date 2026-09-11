@@ -152,6 +152,7 @@ function mapSpec(product: JsonObject, spec: JsonObject, productId: string, produ
     specId: externalId,
     productName,
     specName: required(spec.spec_name, 'CAKE_SPEC_NAME_INVALID'),
+    description: optional(product.product_description) ?? optional(product.introduce) ?? productName,
     ...(optional(product.brand_id) ? { brandId: optional(product.brand_id)! } : {}),
     ...(optional(product.brand_name) ? { brandName: optional(product.brand_name)! } : {}),
     categoryIds: Object.freeze(categoryIds),
