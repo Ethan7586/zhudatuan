@@ -24,7 +24,7 @@ class MemoryReporting implements ReportingPort {
   saveStatement(): Promise<void> { return Promise.resolve(); }
   completeEvent(event: ProjectionEvent, scopes: readonly string[]) { this.completed.push(event); return Promise.resolve(scopes.map((scope) => ({ scope, version: 1 }))); }
   claimExport(): Promise<ExportJob | null> { return Promise.resolve(null); }
-  exportRows(_id: string, _report: ExportReport, _cursor: string | null, _fetch: number): Promise<readonly ExportRow[]> { return Promise.resolve([]); }
+  exportRows(_id: string, _report: ExportReport, _filter: Readonly<Record<string, unknown>>, _cursor: string | null, _fetch: number): Promise<readonly ExportRow[]> { return Promise.resolve([]); }
   advanceExport(): Promise<void> { return Promise.resolve(); }
   completeExport(): Promise<void> { return Promise.resolve(); }
   failExport(): Promise<void> { return Promise.resolve(); }

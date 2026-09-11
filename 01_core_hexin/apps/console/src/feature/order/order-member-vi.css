@@ -300,7 +300,6 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) .orderworkspace .orde
   .orderoverviewitem > svg { width: 20px; height: 20px; }
   .orderoverviewitem strong { font-size: 19px; }
   .orderpanelheading { padding: 0 12px; }
-  .orderpanelactions [aria-label='导出订单'] { display: none; }
   .ordervi12statusbar { padding-inline: 10px; }
   .orderstatustabs button { min-height: 44px; }
   .ordercontractnote { margin-inline: 10px; }
