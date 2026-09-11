@@ -5,7 +5,7 @@ import { useState, type FormEvent } from 'react';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { appConfig } from '../../shared/config/AppConfig';
 import { Icon } from '../../shared/ui/Icon';
-import { createMemberInvitation } from './MemberInvitationCommand';
+import { createMemberInvitation, type MemberInvitationAuthority } from './MemberInvitationCommand';
 import { MemberInvitationDraftSchema, type MemberInvitationDraft } from './MemberInvitationSchema';
 import './MemberInvitation.css';
 
@@ -18,10 +18,12 @@ type CopyFeedback = Readonly<{ target: CopyTarget; status: 'copied' | 'failed' }
 
 export function MemberInvitationDialog({
   context,
+  authority,
   open,
   onClose,
 }: Readonly<{
   context: ConsoleContext;
+  authority?: MemberInvitationAuthority | undefined;
   open: boolean;
   onClose: () => void;
 }>) {
@@ -34,7 +36,7 @@ export function MemberInvitationDialog({
   const [formError, setFormError] = useState<string>();
   const [copyFeedback, setCopyFeedback] = useState<CopyFeedback>();
   const mutation = useMutation({
-    mutationFn: (draft: MemberInvitationDraft) => createMemberInvitation(context, draft),
+    mutationFn: (draft: MemberInvitationDraft) => createMemberInvitation(context, draft, authority),
     onError: (error) => {
       const presentation = invitationErrorPresentation(error, context.scope.kind === 'platform');
       setFieldErrors(presentation.fields);
@@ -44,7 +46,8 @@ export function MemberInvitationDialog({
   const receipt = mutation.data;
   const submittedDraft = mutation.variables;
   const tenantScopes = context.scopes.filter((scope) => scope.kind === 'tenant' && scope.id === 'tenant-zhudatuan');
-  const canSelectSenior = context.session.governance?.level === 'owner' && context.session.governance.exactOwner;
+  const invitationAuthority = context.session.governance ?? authority;
+  const canSelectSenior = invitationAuthority?.level === 'owner' && invitationAuthority.exactOwner;
   const selectedScope = invitationScope(context, context.scope.kind === 'platform' ? tenantId : undefined);
   const submittedScope = invitationScope(context, submittedDraft?.tenantId);
 

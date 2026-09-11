@@ -148,6 +148,18 @@ describe('member invitation command', () => {
     expect(requests).toHaveLength(0);
   });
 
+  it('uses the authoritative access-directory Owner identity when session governance is absent', async () => {
+    const withoutGovernance = { ...context, session: { ...context.session, governance: undefined } };
+    const authority = { level: 'owner' as const, exactOwner: true };
+
+    expect(memberInvitationAvailable(withoutGovernance, authority)).toBe(true);
+    await createMemberInvitation(withoutGovernance, {
+      label: '目录 Owner 创建邀请', destination: '13800138000', governanceLevel: 'senior_administrator', maxUses: 1, validityDays: 7,
+    }, authority);
+
+    expect(bodies[0]).toMatchObject({ governanceLevel: 'senior_administrator' });
+  });
+
   it('keeps the ordinary invitation command available to a senior administrator', async () => {
     const senior = {
       ...context,

@@ -38,6 +38,7 @@ const CAPABILITY_PACKS: readonly Readonly<{ id: CapabilityPackId; label: string;
 export function RoleEditor({
   context,
   role,
+  initialTab = 'permissions',
   members,
   onEdit,
   onRefresh,
@@ -47,6 +48,7 @@ export function RoleEditor({
 }: Readonly<{
   context: ConsoleContext;
   role: RoleEditorRecord;
+  initialTab?: Extract<RoleDetailTab, 'permissions' | 'members'>;
   members: readonly AccessMembership[];
   onEdit: () => void;
   onRefresh: () => Promise<Readonly<{ roles: readonly AccessRole[]; items: readonly AccessMembership[] }>>;
@@ -58,7 +60,7 @@ export function RoleEditor({
   const [permissions, setPermissions] = useState<readonly string[]>(role.permissions);
   const [permissionFilter, setPermissionFilter] = useState('');
   const [activePack, setActivePack] = useState<CapabilityPackId>();
-  const [tab, setTab] = useState<RoleDetailTab>('permissions');
+  const [tab, setTab] = useState<RoleDetailTab>(initialTab);
   const permissionSet = useMemo(() => new Set(permissions), [permissions]);
   const canWrite = role.editable && roleCommandAvailable(context);
   const normalizedName = name.trim();
