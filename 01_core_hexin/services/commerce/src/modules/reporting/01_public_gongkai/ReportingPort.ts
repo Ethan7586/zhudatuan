@@ -4,7 +4,7 @@ import type { OrderProjection, ProjectionEvent } from '../02_domain_yewu/model/P
 
 export interface ReportingPort {
   metrics(query: MetricQuery): Promise<readonly MetricRow[]>;
-  cockpit(scope: string): Promise<CockpitSummary>;
+  cockpit(scope: string, supplier: string | null, period: MetricQuery['period']): Promise<CockpitSummary>;
   exports(scope: string, report: ExportReport, fetch: number): Promise<readonly ExportJob[]>;
   export(id: string, scope: string): Promise<ExportJob | null>;
   createExport(input: Readonly<{ id: string; scope: string; report: ExportReport; filter: Readonly<Record<string, unknown>>;

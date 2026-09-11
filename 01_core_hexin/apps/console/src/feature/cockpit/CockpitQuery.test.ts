@@ -109,6 +109,20 @@ describe('cockpit document prefetch', () => {
     await expect(readCockpit(context, '30days', new AbortController().signal)).resolves.toMatchObject({ count: 0 });
     expect(api.dashboardRead).toHaveBeenCalledOnce();
   });
+
+  it('requests a supplier perspective directly and never reuses the mall prefetch', async () => {
+    window.__consoleCockpitPrefetch = resolvedPrefetch({
+      scopeKind: 'enterprise', scopeId: 'enterprise:1', accessVersion: 7, period: '30days', value: response,
+    });
+    api.dashboardRead.mockResolvedValue(response);
+
+    await readCockpit(context, '30days', new AbortController().signal, 'partner:supplier:zhudatuan');
+
+    expect(api.dashboardRead).toHaveBeenCalledWith(
+      { query: { period: '30days', limit: 100, supplierid: 'partner:supplier:zhudatuan' } },
+      expect.objectContaining({ scope: { kind: 'enterprise', id: 'enterprise:1' } }),
+    );
+  });
 });
 
 function resolvedPrefetch<T>(value: T) {

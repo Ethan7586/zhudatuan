@@ -1,0 +1,5 @@
+.reportpage { display: grid; gap: 14px; color: #172033; font-variant-numeric: tabular-nums; }
+.reportpage .featurestack { gap: 12px; }
+.reportpage table th { color: #526078; font-size: 11px; font-weight: 600; letter-spacing: .02em; }
+.reportpage table td:first-child { color: #172033; font-weight: 600; }
+.reportpage table td:nth-child(3) { color: #07182f; font-size: 14px; font-weight: 700; }
