@@ -125,7 +125,7 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
   caddy validate --config "$gateway_candidate" --adapter caddyfile
   cp -a "$gateway_runtime" "$gateway_backup"
   mv "$gateway_candidate" "$gateway_runtime"
-  caddy reload --config "$gateway_runtime" --adapter caddyfile
+  systemctl restart sfl-api-gateway@hbbtzn-l1.service
   printf 'Gateway config reloaded for %s; rollback=%s\n' "$node_scope" "$gateway_backup"
 fi
 if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
