@@ -3,7 +3,7 @@
 .orderexporthero > div { display: grid; gap: .25rem; }
 .orderexporthero p, .orderexporthero h1, .orderexporthero span { margin: 0; }
 .orderexporthero p { color: var(--sw-brand); font-size: .8125rem; font-weight: 700; }
-.orderexporthero h1 { font-size: 1.75rem; line-height: 1.25; }
+.orderexporthero h1 { font-size: 1.5rem; line-height: 1.25; }
 .orderexporthero span { color: var(--sw-muted); font-size: .875rem; }
 .orderexportback, .orderexporthistory button { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .5rem; border: .0625rem solid var(--sw-border); border-radius: .625rem; background: var(--sw-surface); color: var(--sw-text-secondary); padding: 0 1rem; font-weight: 650; }
 .orderexportback svg, .orderexporthistory button svg { width: 1rem; height: 1rem; }

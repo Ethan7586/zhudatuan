@@ -519,7 +519,7 @@ describe('Order route', () => {
     await user.click(screen.getByRole('button', { name: '导出订单' }));
     await user.click(screen.getByRole('button', { name: '创建导出任务' }));
 
-    expect(await screen.findByRole('link', { name: '下载文件' })).toHaveAttribute('href', 'https://download.test/orders.xlsx');
+    expect((await screen.findByRole('link', { name: '下载文件' })).getAttribute('href')).toBe('https://download.test/orders.xlsx');
     expect(exportBody?.format).toBe('xlsx');
     expect(exportBody?.range).toBe('filter');
     expect(exportBody?.fields).toEqual(expect.arrayContaining(['orderNumber', 'memberId', 'productNames', 'refundMinor']));
