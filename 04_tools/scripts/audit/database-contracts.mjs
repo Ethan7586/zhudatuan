@@ -20,6 +20,13 @@ const AUTONODE_IDENTITY_POST_HISTORY_STATEMENTS = Object.freeze([
   'executed_sha256=64537e9bbe5e9fc9022fe76f9a34e03b273ab12be07ba7e94128adb72a8d452c',
   'reason=append-only post-history migration executed byte-for-byte',
 ]);
+const L0_PUBLIC_DOMAIN_POST_HISTORY = '20260909203000_switch_l0_public_domain_to_fufu.sql';
+const L0_PUBLIC_DOMAIN_POST_HISTORY_STATEMENTS = Object.freeze([
+  'profile=registration-only/v1',
+  'source_sha256=a28e4337628095bfeb98f3acf4f33fa89d485c4f2913f56e1e70589a112179b1',
+  'executed_sha256=a28e4337628095bfeb98f3acf4f33fa89d485c4f2913f56e1e70589a112179b1',
+  'reason=append-only post-history migration executed byte-for-byte',
+]);
 const OWNER_FIXTURE_BOUNDARY = '20260829060000_zhudatuan_operator_invitation_registration.sql';
 const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
 const REGISTRATION_ASSERTION_OMISSIONS = new Map([
@@ -181,6 +188,21 @@ const REPAIR_FILES = [
   '20260909203000_switch_l0_public_domain_to_fufu.sql',
   '20260909204000_reconcile_l0_public_domain_migration_ledger.sql',
   '20260911010000_add_storefront_member_custom_profile.sql',
+  '20260911113000_order_participant_product_route_snapshot.sql',
+  '20260911153500_allow_web_order_four_flow_read.sql',
+  '20260911155000_allow_web_order_route_facts_read.sql',
+  '20260911163000_allow_purchase_partner_agreement_read.sql',
+  '20260911170000_project_authoritative_owner_to_node_console.sql',
+  '20260911180000_allow_node_mall_operator_invitations.sql',
+  '20260911190000_bind_operator_registration_to_realm_console.sql',
+  '20260911200000_create_sfl_node_sovereignty.sql',
+  '20260911210000_create_sfl_hosted_node_provisioning.sql',
+  '20260912010000_create_sfl_node_context_scope.sql',
+  '20260912020000_create_sfl_member_registration_progression.sql',
+  '20260912030000_create_sfl_multi_realm_membership.sql',
+  '20260912120000_create_zhudatuan_supplier_network.sql',
+  '20260912130000_create_supplier_analytics_perspective.sql',
+  '20260912140000_index_catalog_reverse_lookups.sql',
 ];
 
 const mode = process.argv[2];
@@ -217,6 +239,8 @@ try {
     create role anon nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     create role authenticated nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     create role service_role nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopmigration nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanbootstrap nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
   `, 'database role bootstrap');
   if (replayRole !== undefined) await execute(database, `set role "${replayRole}"`, 'database migration role');
   await execute(database, `
@@ -233,7 +257,10 @@ try {
       applied += 1;
       continue;
     }
-    if (name === BOOTSTRAP) await seedBootstrapPrecondition(database);
+    if (name === BOOTSTRAP) {
+      await seedDeploymentBoundary(database);
+      await seedBootstrapPrecondition(database);
+    }
     if (name === OWNER_FIXTURE_BOUNDARY) await seedOwnerGuardPrecondition(database);
     if (mode === '--inventory-cutover-unsafe' && name === INVENTORY_CUTOVER) {
       await seedUnsafeInventoryCutover(database);
@@ -244,10 +271,12 @@ try {
     }
     if (name === SECURE_STAGE) await stageFreshReplaySecrets(database);
     await execute(database, await readFile(join(MIGRATIONS,name),'utf8'), `migration ${name}`);
-    if (name === AUTONODE_IDENTITY_POST_HISTORY) {
+    if (name === AUTONODE_IDENTITY_POST_HISTORY || name === L0_PUBLIC_DOMAIN_POST_HISTORY) {
       await database.query(
         'insert into supabase_migrations.schema_migrations(version,name,statements) values($1,$2,$3)',
-        [name.slice(0,14),name,AUTONODE_IDENTITY_POST_HISTORY_STATEMENTS],
+        [name.slice(0,14),name,name === AUTONODE_IDENTITY_POST_HISTORY
+          ? AUTONODE_IDENTITY_POST_HISTORY_STATEMENTS
+          : L0_PUBLIC_DOMAIN_POST_HISTORY_STATEMENTS],
       );
     } else {
       await database.query('insert into supabase_migrations.schema_migrations(version,name) values($1,$2)', [name.slice(0,14),name]);
@@ -332,6 +361,46 @@ async function seedBootstrapPrecondition(database) {
     values('user-fresh-replay-ethan','tenant-smart-wing','enterprise-demo','department-digital','SW_FRESH_REPLAY_ETHAN','Fresh Replay Ethan','fresh-replay@example.invalid','active');
     insert into public.members(id,user_id,primary_identifier,status) values('member-fresh-replay-ethan','user-fresh-replay-ethan','local_username:ethan','active');
     insert into public.member_login_aliases(provider,subject,member_id) values('local_username','ethan','member-fresh-replay-ethan');`,'bootstrap precondition');
+}
+
+async function seedDeploymentBoundary(database) {
+  await execute(database, `
+    create schema if not exists deployment authorization shopmigration;
+    alter schema deployment owner to shopmigration;
+    create table if not exists deployment.boundary(
+      id text primary key,
+      database_name text not null,
+      sentinel_hash char(64) not null check(sentinel_hash~'^[0-9a-f]{64}$'),
+      created_at timestamptz not null default clock_timestamp()
+    );
+    alter table deployment.boundary owner to shopmigration;
+    revoke all on deployment.boundary from public;
+    insert into deployment.boundary(id,database_name,sentinel_hash)
+    values('zhudatuan-registration-v1',current_database(),repeat('0',64));
+    create or replace function deployment.registration_bootstrap_boundary(p_sentinel text)
+    returns boolean language sql stable security definer
+    set search_path=pg_catalog,deployment as $function$
+      select current_database()='zhudatuan_registration'
+        and session_user='zhudatuanbootstrap'
+        and exists(select 1 from deployment.boundary
+          where id='zhudatuan-registration-v1' and database_name=current_database()
+            and sentinel_hash=encode(pg_catalog.sha256(pg_catalog.convert_to(p_sentinel,'UTF8')),'hex'))
+    $function$;
+    create or replace function deployment.is_independent_registration_database()
+    returns boolean language sql stable security definer
+    set search_path=pg_catalog,deployment as $function$
+      select current_database()='zhudatuan_registration'
+        and exists(select 1 from deployment.boundary
+          where id='zhudatuan-registration-v1' and database_name=current_database())
+    $function$;
+    alter function deployment.registration_bootstrap_boundary(text) owner to shopmigration;
+    alter function deployment.is_independent_registration_database() owner to shopmigration;
+    revoke all on function deployment.registration_bootstrap_boundary(text) from public;
+    revoke all on function deployment.is_independent_registration_database() from public;
+    grant usage on schema deployment to zhudatuanbootstrap,shopmigration;
+    grant execute on function deployment.registration_bootstrap_boundary(text) to zhudatuanbootstrap,shopmigration;
+    grant execute on function deployment.is_independent_registration_database() to shopmigration;
+  `, 'deployment boundary bootstrap');
 }
 
 async function seedOwnerGuardPrecondition(database) {

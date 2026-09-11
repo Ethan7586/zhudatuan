@@ -261,7 +261,7 @@ function MemberDetail({ member, mallName, open, onClose }: Readonly<{
   const navigate = useNavigate();
   const detailRef = useRef<HTMLElement>(null);
   const memberId = member?.membership_id ?? '';
-  const [tab, setTab] = useState<MemberDetailTab>('profile');
+  const [tab, setTab] = useState<MemberDetailTab>('orders');
   const [inviteeCursors, setInviteeCursors] = useState<readonly (string | undefined)[]>([undefined]);
   const [orderCursors, setOrderCursors] = useState<readonly (string | undefined)[]>([undefined]);
   const inviteeCursor = inviteeCursors.at(-1);
@@ -286,7 +286,7 @@ function MemberDetail({ member, mallName, open, onClose }: Readonly<{
     if (open) detailRef.current?.focus({ preventScroll: true });
   }, [open]);
   useEffect(() => {
-    setTab('profile');
+    setTab('orders');
     setInviteeCursors([undefined]);
     setOrderCursors([undefined]);
   }, [memberId]);
@@ -318,9 +318,9 @@ function MemberDetail({ member, mallName, open, onClose }: Readonly<{
         </div>
 
         <nav className="storefrontmemberdetailtabs" aria-label="会员档案">
+          <DetailTab selected={tab === 'orders'} onPress={() => setTab('orders')}>个人订单</DetailTab>
           <DetailTab selected={tab === 'profile'} onPress={() => setTab('profile')}>个人资料</DetailTab>
           <DetailTab selected={tab === 'referrals'} onPress={() => setTab('referrals')}>邀请关系</DetailTab>
-          <DetailTab selected={tab === 'orders'} onPress={() => setTab('orders')}>个人订单</DetailTab>
         </nav>
 
         {detail === undefined && detailError === undefined ? <DetailLoading /> : null}
@@ -391,16 +391,25 @@ function ReferralTab({ detail, query, page, onPrevious, onNext }: Readonly<{
 }>) {
   const error = safeQueryError(query.error);
   const inviter = detail.inviter;
+  const parent = detail.parent;
   return <>
     <section className="storefrontmemberdetailsection">
-      <header><h3>邀请人</h3><span>{inviter?.relationship_status === 'expired' ? '关系已过期' : inviter === null ? '暂无' : '关系有效'}</span></header>
-      {inviter === null ? <div className="storefrontmemberemptyline">该会员暂无邀请人</div> : (
+      <header><h3>会员上级</h3><span>{parent.kind === 'mall' ? '自主注册归属商城' : '真实邀请关系'}</span></header>
+      <article className="storefrontmemberinviter">
+        <i>{parent.display_name.slice(0, 1)}</i>
+        <div>
+          <strong>{parent.display_name}</strong>
+          <span>{parent.kind === 'mall' ? '商城节点' : inviter?.mobile_masked ?? '消费者节点'}</span>
+        </div>
+        <b className="storefrontmemberlevel">{parent.identity_level}</b>
+      </article>
+      {parent.kind === 'member' && inviter !== null ? (
         <article className="storefrontmemberinviter">
           <i>{inviter.display_name.slice(0, 1)}</i>
-          <div><strong>{inviter.display_name}</strong><span>{inviter.mobile_masked}</span></div>
+          <div><strong>邀请绑定</strong><span>{inviter.relationship_status === 'expired' ? '关系已过期' : '关系有效'}</span></div>
           <time dateTime={inviter.bound_at}>绑定于 {formatDate(inviter.bound_at)}</time>
         </article>
-      )}
+      ) : null}
     </section>
     <section className="storefrontmemberdetailsection">
       <header><h3>他邀请的会员</h3><strong>{detail.invited_count}</strong></header>
@@ -425,7 +434,7 @@ function InviteeList({ rows }: Readonly<{ rows: readonly StorefrontMemberInvitee
       <i>{invitee.display_name.slice(0, 1)}</i>
       <div><strong>{invitee.display_name}</strong><span>{invitee.mobile_masked}</span></div>
       <time dateTime={invitee.bound_at}>{formatDate(invitee.bound_at)}</time>
-      <span data-tone={invitee.relationship_status}>{invitee.relationship_status === 'active' ? '关系有效' : '关系已过期'}</span>
+      <span data-tone={invitee.relationship_status}>{invitee.identity_level} · {invitee.relationship_status === 'active' ? '关系有效' : '关系已过期'}</span>
     </article>)}
   </div>;
 }

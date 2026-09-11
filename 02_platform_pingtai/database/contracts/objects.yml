@@ -218,7 +218,12 @@ objects:
   - id: access.registration_invite_role_allowed
     kind: function
     owner: access
-    source: 02_platform_pingtai/database/supabase/migrations/20260908013000_generalize_storefront_roles.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260905013000_registration_invite_role_projection.sql
+    operationalOwner: access
+  - id: access.resolve_authoritative_governance
+    kind: function
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260911170000_project_authoritative_owner_to_node_console.sql
     operationalOwner: access
   - id: access.resolve_governance
     kind: function
@@ -353,6 +358,11 @@ objects:
     source: 02_platform_pingtai/database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - 01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts
+  - id: catalog.console_supply_network
+    kind: function
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
+    operationalOwner: catalog
   - id: catalog.public_storefront_catalog
     kind: function
     owner: catalog
@@ -703,9 +713,7 @@ objects:
     kind: function
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql
-    callers:
-      - 01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RegistrationOperations.ts
-      - 01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/SessionTicketOperations.ts
+    operationalOwner: identity
   - id: identity.disable_node_realm
     kind: function
     owner: identity
@@ -720,12 +728,16 @@ objects:
     kind: function
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql
-    callers:
-      - 01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/SessionTicketOperations.ts
+    operationalOwner: identity
   - id: identity.notification_recipient
     kind: function
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260821047000_notification_lifecycle.sql
+    operationalOwner: identity
+  - id: identity.project_member_realm_targets
+    kind: function
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
     operationalOwner: identity
   - id: identity.protect_root_owner_credential
     kind: function
@@ -737,20 +749,15 @@ objects:
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql
     operationalOwner: identity
-  - id: identity.purge_expired_job_records
-    kind: function
-    owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
-    operationalOwner: identity
   - id: identity.provision_node_realm
     kind: function
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260909062000_provision_autonode_identity_realm.sql
     operationalOwner: identity
-  - id: identity.project_member_realm_targets
+  - id: identity.purge_expired_job_records
     kind: function
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql
     operationalOwner: identity
   - id: identity.realm_contains_account_realm
     kind: function
@@ -765,7 +772,7 @@ objects:
   - id: identity.resolve_session
     kind: function
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - 01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts
   - id: identity.rotate_zhudatuan_owner_password
@@ -903,15 +910,15 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql
     operationalOwner: organization
-  - id: organization.register_hosted_member_node
-    kind: function
-    owner: organization
-    source: 02_platform_pingtai/database/supabase/migrations/20260912020000_create_sfl_member_registration_progression.sql
-    operationalOwner: organization
   - id: organization.refresh_node_closure
     kind: function
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    operationalOwner: organization
+  - id: organization.register_hosted_member_node
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912020000_create_sfl_member_registration_progression.sql
     operationalOwner: organization
   - id: organization.resolve_node_context
     kind: function
@@ -1025,6 +1032,11 @@ objects:
     owner: reporting
     source: 02_platform_pingtai/database/supabase/migrations/20260821048000_reporting_lifecycle.sql
     operationalOwner: reporting
+  - id: reporting.supplier_metric_rows
+    kind: function
+    owner: reporting
+    source: 02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql
+    operationalOwner: reporting
   - id: risk.resource_scope
     kind: function
     owner: risk
@@ -1126,6 +1138,14 @@ objects:
     role: shopapp
     objectType: function
     target: access.registration_invite_role_allowed(text,text,text)
+    privilege: execute
+  - id: shopapp:function:access.resolve_authoritative_governance(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260911170000_project_authoritative_owner_to_node_console.sql
+    role: shopapp
+    objectType: function
+    target: access.resolve_authoritative_governance(text,text,text,text)
     privilege: execute
   - id: shopapp:function:access.resolve_governance(text,text,text,text):execute
     kind: grant
@@ -1527,10 +1547,26 @@ objects:
     objectType: function
     target: identity.notification_recipient(text)
     privilege: execute
+  - id: shopapp:function:identity.realm_contains_account_realm(text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: shopapp
+    objectType: function
+    target: identity.realm_contains_account_realm(text,text)
+    privilege: execute
+  - id: shopapp:function:identity.resolve_active_membership_context(text,text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: shopapp
+    objectType: function
+    target: identity.resolve_active_membership_context(text,text,text)
+    privilege: execute
   - id: shopapp:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
     role: shopapp
     objectType: function
     target: identity.resolve_session(text,text)
@@ -1607,6 +1643,14 @@ objects:
     objectType: function
     target: referral.has_pending_reversal(text,text)
     privilege: execute
+  - id: shopapp:function:reporting.cockpit(text,text,text):execute
+    kind: grant
+    owner: reporting
+    source: 02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql
+    role: shopapp
+    objectType: function
+    target: reporting.cockpit(text,text,text)
+    privilege: execute
   - id: shopapp:function:reporting.cockpit(text):execute
     kind: grant
     owner: reporting
@@ -1614,6 +1658,14 @@ objects:
     role: shopapp
     objectType: function
     target: reporting.cockpit(text)
+    privilege: execute
+  - id: shopapp:function:reporting.supplier_metric_rows(text,text,text,text):execute
+    kind: grant
+    owner: reporting
+    source: 02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql
+    role: shopapp
+    objectType: function
+    target: reporting.supplier_metric_rows(text,text,text,text)
     privilege: execute
   - id: shopapp:function:risk.scope_allowed(text):execute
     kind: grant
@@ -9479,6 +9531,14 @@ objects:
     objectType: function
     target: access.membership_version(text)
     privilege: execute
+  - id: shopconsole:function:access.resolve_authoritative_governance(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260911170000_project_authoritative_owner_to_node_console.sql
+    role: shopconsole
+    objectType: function
+    target: access.resolve_authoritative_governance(text,text,text,text)
+    privilege: execute
   - id: shopconsole:function:access.resolve_governance(text,text,text,text):execute
     kind: grant
     owner: access
@@ -9551,10 +9611,26 @@ objects:
     objectType: function
     target: capability.membership_operations(text)
     privilege: execute
+  - id: shopconsole:function:identity.realm_contains_account_realm(text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: shopconsole
+    objectType: function
+    target: identity.realm_contains_account_realm(text,text)
+    privilege: execute
+  - id: shopconsole:function:identity.resolve_active_membership_context(text,text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: shopconsole
+    objectType: function
+    target: identity.resolve_active_membership_context(text,text,text)
+    privilege: execute
   - id: shopconsole:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
     role: shopconsole
     objectType: function
     target: identity.resolve_session(text,text)
@@ -10183,6 +10259,14 @@ objects:
     objectType: function
     target: referral.has_pending_reversal(text,text)
     privilege: execute
+  - id: shopjob:function:reporting.cockpit(text,text,text):execute
+    kind: grant
+    owner: reporting
+    source: 02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql
+    role: shopjob
+    objectType: function
+    target: reporting.cockpit(text,text,text)
+    privilege: execute
   - id: shopjob:function:reporting.cockpit(text):execute
     kind: grant
     owner: reporting
@@ -10190,6 +10274,14 @@ objects:
     role: shopjob
     objectType: function
     target: reporting.cockpit(text)
+    privilege: execute
+  - id: shopjob:function:reporting.supplier_metric_rows(text,text,text,text):execute
+    kind: grant
+    owner: reporting
+    source: 02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql
+    role: shopjob
+    objectType: function
+    target: reporting.supplier_metric_rows(text,text,text,text)
     privilege: execute
   - id: shopjob:function:runtime.accept_inbox(text,text,text,integer,text,jsonb):execute
     kind: grant
@@ -18039,6 +18131,14 @@ objects:
     objectType: function
     target: access.registration_invite_role_allowed(text,text,text)
     privilege: execute
+  - id: zhudatuanidentityapi:function:access.resolve_authoritative_governance(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260911170000_project_authoritative_owner_to_node_console.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.resolve_authoritative_governance(text,text,text,text)
+    privilege: execute
   - id: zhudatuanidentityapi:function:access.resolve_governance(text,text,text,text):execute
     kind: grant
     owner: access
@@ -18135,6 +18235,14 @@ objects:
     objectType: function
     target: capability.membership_operations(text)
     privilege: execute
+  - id: zhudatuanidentityapi:function:catalog.console_supply_network(text):execute
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: catalog.console_supply_network(text)
+    privilege: execute
   - id: zhudatuanidentityapi:function:identity.consume_login_intent(text,text,text,text,text,text):execute
     kind: grant
     owner: identity
@@ -18151,10 +18259,26 @@ objects:
     objectType: function
     target: identity.issue_login_intent(text,text,text,text,text,text,text,text)
     privilege: execute
+  - id: zhudatuanidentityapi:function:identity.realm_contains_account_realm(text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: identity.realm_contains_account_realm(text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:identity.resolve_active_membership_context(text,text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: identity.resolve_active_membership_context(text,text,text)
+    privilege: execute
   - id: zhudatuanidentityapi:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
     role: zhudatuanidentityapi
     objectType: function
     target: identity.resolve_session(text,text)
@@ -18166,6 +18290,30 @@ objects:
     role: zhudatuanidentityapi
     objectType: function
     target: identity.rotate_zhudatuan_owner_password(text,text,text,text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:organization.register_hosted_member_node(jsonb):execute
+    kind: grant
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912020000_create_sfl_member_registration_progression.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: organization.register_hosted_member_node(jsonb)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:reporting.cockpit(text,text,text):execute
+    kind: grant
+    owner: reporting
+    source: 02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: reporting.cockpit(text,text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:reporting.supplier_metric_rows(text,text,text,text):execute
+    kind: grant
+    owner: reporting
+    source: 02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: reporting.supplier_metric_rows(text,text,text,text)
     privilege: execute
   - id: zhudatuanidentityapi:schema:access:usage
     kind: grant
@@ -18239,6 +18387,14 @@ objects:
     objectType: schema
     target: identity
     privilege: usage
+  - id: zhudatuanidentityapi:schema:inventory:usage
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
+    role: zhudatuanidentityapi
+    objectType: schema
+    target: inventory
+    privilege: usage
   - id: zhudatuanidentityapi:schema:invoice:usage
     kind: grant
     owner: invoice
@@ -18270,6 +18426,14 @@ objects:
     role: zhudatuanidentityapi
     objectType: schema
     target: organization
+    privilege: usage
+  - id: zhudatuanidentityapi:schema:pricing:usage
+    kind: grant
+    owner: pricing
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
+    role: zhudatuanidentityapi
+    objectType: schema
+    target: pricing
     privilege: usage
   - id: zhudatuanidentityapi:schema:qualification:usage
     kind: grant
@@ -19055,6 +19219,14 @@ objects:
     objectType: table
     target: identity.wechatgrant
     privilege: update
+  - id: zhudatuanidentityapi:table:inventory.stockitem:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: inventory.stockitem
+    privilege: select
   - id: zhudatuanidentityapi:table:invoice.document:select
     kind: grant
     owner: invoice
@@ -19182,6 +19354,22 @@ objects:
     role: zhudatuanidentityapi
     objectType: table
     target: organization.unitclosure
+    privilege: select
+  - id: zhudatuanidentityapi:table:pricing.price:select
+    kind: grant
+    owner: pricing
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: pricing.price
+    privilege: select
+  - id: zhudatuanidentityapi:table:pricing.pricebook:select
+    kind: grant
+    owner: pricing
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
+    role: zhudatuanidentityapi
+    objectType: table
+    target: pricing.pricebook
     privilege: select
   - id: zhudatuanidentityapi:table:qualification.policy:select
     kind: grant
@@ -19751,6 +19939,14 @@ objects:
     objectType: function
     target: access.read_provisioned_mall(text)
     privilege: execute
+  - id: zhudatuanprovisioningapi:function:access.resolve_authoritative_governance(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260911170000_project_authoritative_owner_to_node_console.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: access.resolve_authoritative_governance(text,text,text,text)
+    privilege: execute
   - id: zhudatuanprovisioningapi:function:access.resolve_governance(text,text,text,text):execute
     kind: grant
     owner: access
@@ -19799,13 +19995,77 @@ objects:
     objectType: function
     target: identity.provision_node_realm(jsonb)
     privilege: execute
+  - id: zhudatuanprovisioningapi:function:identity.realm_contains_account_realm(text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: identity.realm_contains_account_realm(text,text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:identity.resolve_active_membership_context(text,text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: identity.resolve_active_membership_context(text,text,text)
+    privilege: execute
   - id: zhudatuanprovisioningapi:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
     role: zhudatuanprovisioningapi
     objectType: function
     target: identity.resolve_session(text,text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:organization.provision_hosted_node(jsonb):execute
+    kind: grant
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: organization.provision_hosted_node(jsonb)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:organization.resolve_node_context(text):execute
+    kind: grant
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: organization.resolve_node_context(text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:organization.resolve_node_scope_ancestors(text,text):execute
+    kind: grant
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: organization.resolve_node_scope_ancestors(text,text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:organization.resolve_node_scope_descendants(text,text):execute
+    kind: grant
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: organization.resolve_node_scope_descendants(text,text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:organization.resolve_node_scope_self(text,text):execute
+    kind: grant
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: organization.resolve_node_scope_self(text,text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:organization.resolve_node_scope_subtree(text,text):execute
+    kind: grant
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: organization.resolve_node_scope_subtree(text,text)
     privilege: execute
   - id: zhudatuanprovisioningapi:schema:access:usage
     kind: grant
@@ -20271,6 +20531,14 @@ objects:
     objectType: function
     target: access.purchase_risk_scope_allowed(text)
     privilege: execute
+  - id: zhudatuanpurchaseapi:function:access.resolve_authoritative_governance(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260911170000_project_authoritative_owner_to_node_console.sql
+    role: zhudatuanpurchaseapi
+    objectType: function
+    target: access.resolve_authoritative_governance(text,text,text,text)
+    privilege: execute
   - id: zhudatuanpurchaseapi:function:access.resolve_governance(text,text,text,text):execute
     kind: grant
     owner: access
@@ -20335,10 +20603,26 @@ objects:
     objectType: function
     target: capability.membership_operations(text)
     privilege: execute
+  - id: zhudatuanpurchaseapi:function:identity.realm_contains_account_realm(text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: zhudatuanpurchaseapi
+    objectType: function
+    target: identity.realm_contains_account_realm(text,text)
+    privilege: execute
+  - id: zhudatuanpurchaseapi:function:identity.resolve_active_membership_context(text,text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: zhudatuanpurchaseapi
+    objectType: function
+    target: identity.resolve_active_membership_context(text,text,text)
+    privilege: execute
   - id: zhudatuanpurchaseapi:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
     role: zhudatuanpurchaseapi
     objectType: function
     target: identity.resolve_session(text,text)
@@ -20470,6 +20754,14 @@ objects:
     role: zhudatuanpurchaseapi
     objectType: schema
     target: organization
+    privilege: usage
+  - id: zhudatuanpurchaseapi:schema:partner:usage
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260911163000_allow_purchase_partner_agreement_read.sql
+    role: zhudatuanpurchaseapi
+    objectType: schema
+    target: partner
     privilege: usage
   - id: zhudatuanpurchaseapi:schema:payment:usage
     kind: grant
@@ -20822,6 +21114,14 @@ objects:
     role: zhudatuanpurchaseapi
     objectType: table
     target: organization.unitclosure
+    privilege: select
+  - id: zhudatuanpurchaseapi:table:partner.agreement:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260911163000_allow_purchase_partner_agreement_read.sql
+    role: zhudatuanpurchaseapi
+    objectType: table
+    target: partner.agreement
     privilege: select
   - id: zhudatuanpurchaseapi:table:payment.allocation:insert
     kind: grant
@@ -21503,6 +21803,14 @@ objects:
     objectType: function
     target: access.membership_version(text)
     privilege: execute
+  - id: zhudatuanwebapi:function:access.resolve_authoritative_governance(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260911170000_project_authoritative_owner_to_node_console.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: access.resolve_authoritative_governance(text,text,text,text)
+    privilege: execute
   - id: zhudatuanwebapi:function:access.resolve_governance(text,text,text,text):execute
     kind: grant
     owner: access
@@ -21615,6 +21923,14 @@ objects:
     objectType: function
     target: capability.membership_operations(text)
     privilege: execute
+  - id: zhudatuanwebapi:function:catalog.console_supply_network(text):execute
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: catalog.console_supply_network(text)
+    privilege: execute
   - id: zhudatuanwebapi:function:catalog.public_storefront_catalog(text,integer,integer,text):execute
     kind: grant
     owner: catalog
@@ -21623,13 +21939,37 @@ objects:
     objectType: function
     target: catalog.public_storefront_catalog(text,integer,integer,text)
     privilege: execute
+  - id: zhudatuanwebapi:function:identity.realm_contains_account_realm(text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: identity.realm_contains_account_realm(text,text)
+    privilege: execute
+  - id: zhudatuanwebapi:function:identity.resolve_active_membership_context(text,text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: identity.resolve_active_membership_context(text,text,text)
+    privilege: execute
   - id: zhudatuanwebapi:function:identity.resolve_session(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
     role: zhudatuanwebapi
     objectType: function
     target: identity.resolve_session(text,text)
+    privilege: execute
+  - id: zhudatuanwebapi:function:reporting.cockpit(text,text,text):execute
+    kind: grant
+    owner: reporting
+    source: 02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: reporting.cockpit(text,text,text)
     privilege: execute
   - id: zhudatuanwebapi:function:reporting.cockpit(text):execute
     kind: grant
@@ -21638,6 +21978,14 @@ objects:
     role: zhudatuanwebapi
     objectType: function
     target: reporting.cockpit(text)
+    privilege: execute
+  - id: zhudatuanwebapi:function:reporting.supplier_metric_rows(text,text,text,text):execute
+    kind: grant
+    owner: reporting
+    source: 02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: reporting.supplier_metric_rows(text,text,text,text)
     privilege: execute
   - id: zhudatuanwebapi:schema:access:usage
     kind: grant
@@ -21703,6 +22051,14 @@ objects:
     objectType: schema
     target: experience
     privilege: usage
+  - id: zhudatuanwebapi:schema:finance:usage
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: schema
+    target: finance
+    privilege: usage
   - id: zhudatuanwebapi:schema:fulfillment:usage
     kind: grant
     owner: fulfillment
@@ -21750,6 +22106,14 @@ objects:
     role: zhudatuanwebapi
     objectType: schema
     target: organization
+    privilege: usage
+  - id: zhudatuanwebapi:schema:payment:usage
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: schema
+    target: payment
     privilege: usage
   - id: zhudatuanwebapi:schema:pricing:usage
     kind: grant
@@ -21975,6 +22339,230 @@ objects:
     objectType: table
     target: experience.application
     privilege: select
+  - id: zhudatuanwebapi:table:finance.account:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.account
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.accountingeventrule:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.accountingeventrule
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.backfill:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.backfill
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.entry:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.entry
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.hold:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.hold
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.journal:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.journal
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.ledger:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.ledger
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.period:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.period
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.periodclose:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.periodclose
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.policy:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.policy
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.policypreview:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.policypreview
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.policyrevision:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.policyrevision
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.reconciliation:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.reconciliation
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.reconciliationitem:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.reconciliationitem
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.reconciliationrepair:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.reconciliationrepair
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.reconciliationrepairauthorization:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.reconciliationrepairauthorization
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.reconciliationrepaireffect:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.reconciliationrepaireffect
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.reconciliationrepairline:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.reconciliationrepairline
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.settlement:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.settlement
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.settlementadjustment:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.settlementadjustment
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.settlementline:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.settlementline
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.split:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.split
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.statement:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.statement
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.statementaccount:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.statementaccount
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.statementline:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.statementline
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.subledger:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.subledger
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.subledgerentry:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.subledgerentry
+    privilege: select
+  - id: zhudatuanwebapi:table:finance.withdrawal:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: finance.withdrawal
+    privilege: select
   - id: zhudatuanwebapi:table:fulfillment.fulfillmentorder:select
     kind: grant
     owner: fulfillment
@@ -21982,6 +22570,86 @@ objects:
     role: zhudatuanwebapi
     objectType: table
     target: fulfillment.fulfillmentorder
+    privilege: select
+  - id: zhudatuanwebapi:table:fulfillment.line:select
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: fulfillment.line
+    privilege: select
+  - id: zhudatuanwebapi:table:fulfillment.milestone:select
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: fulfillment.milestone
+    privilege: select
+  - id: zhudatuanwebapi:table:fulfillment.returnrecord:select
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: fulfillment.returnrecord
+    privilege: select
+  - id: zhudatuanwebapi:table:inventory.command:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: inventory.command
+    privilege: select
+  - id: zhudatuanwebapi:table:inventory.cutoverreview:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: inventory.cutoverreview
+    privilege: select
+  - id: zhudatuanwebapi:table:inventory.importerror:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: inventory.importerror
+    privilege: select
+  - id: zhudatuanwebapi:table:inventory.importjob:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: inventory.importjob
+    privilege: select
+  - id: zhudatuanwebapi:table:inventory.importrow:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: inventory.importrow
+    privilege: select
+  - id: zhudatuanwebapi:table:inventory.movement:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: inventory.movement
+    privilege: select
+  - id: zhudatuanwebapi:table:inventory.observation:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: inventory.observation
     privilege: select
   - id: zhudatuanwebapi:table:inventory.reservation:select
     kind: grant
@@ -21991,6 +22659,14 @@ objects:
     objectType: table
     target: inventory.reservation
     privilege: select
+  - id: zhudatuanwebapi:table:inventory.snapshot:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: inventory.snapshot
+    privilege: select
   - id: zhudatuanwebapi:table:inventory.stockitem:select
     kind: grant
     owner: inventory
@@ -21998,6 +22674,14 @@ objects:
     role: zhudatuanwebapi
     objectType: table
     target: inventory.stockitem
+    privilege: select
+  - id: zhudatuanwebapi:table:inventory.syncstate:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: inventory.syncstate
     privilege: select
   - id: zhudatuanwebapi:table:ordering.aftersale:select
     kind: grant
@@ -22023,6 +22707,38 @@ objects:
     objectType: table
     target: ordering.orderrecord
     privilege: select
+  - id: zhudatuanwebapi:table:ordering.reminder:select
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: ordering.reminder
+    privilege: select
+  - id: zhudatuanwebapi:table:ordering.reviewaction:select
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: ordering.reviewaction
+    privilege: select
+  - id: zhudatuanwebapi:table:ordering.stateevent:select
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: ordering.stateevent
+    privilege: select
+  - id: zhudatuanwebapi:table:ordering.suborder:select
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: ordering.suborder
+    privilege: select
   - id: zhudatuanwebapi:table:organization.organization:select
     kind: grant
     owner: organization
@@ -22038,6 +22754,142 @@ objects:
     role: zhudatuanwebapi
     objectType: table
     target: organization.unitclosure
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.allocation:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.allocation
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.attempt:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.attempt
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.capture:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.capture
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.deadletterreview:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.deadletterreview
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.effect:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.effect
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.intent:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.intent
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.intenttender:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.intenttender
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.observation:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.observation
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.payment:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.payment
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.prepay:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.prepay
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.providerattempt:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.providerattempt
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.recoverycase:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.recoverycase
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.recoveryrequest:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.recoveryrequest
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.refund:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.refund
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.refundcommand:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.refundcommand
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.refundtender:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.refundtender
+    privilege: select
+  - id: zhudatuanwebapi:table:payment.tender:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql
+    role: zhudatuanwebapi
+    objectType: table
+    target: payment.tender
     privilege: select
   - id: zhudatuanwebapi:table:pricing.price:select
     kind: grant
@@ -22194,7 +23046,7 @@ objects:
   - id: access.membership.zhudatuanidentityapiinsert
     kind: policy
     owner: access
-    source: 02_platform_pingtai/database/supabase/migrations/20260903104000_enable_provisioned_mall_registration.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260911190000_bind_operator_registration_to_realm_console.sql
   - id: access.membershipoverride.appscope
     kind: policy
     owner: access
@@ -22218,7 +23070,7 @@ objects:
   - id: access.membershiprole.zhudatuanidentityapiinsert
     kind: policy
     owner: access
-    source: 02_platform_pingtai/database/supabase/migrations/20260903104000_enable_provisioned_mall_registration.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260911190000_bind_operator_registration_to_realm_console.sql
   - id: access.owneractionproof.owneractionproof_shopapp
     kind: policy
     owner: access
@@ -22294,7 +23146,7 @@ objects:
   - id: access.scopegrant.zhudatuanidentityapiinsert
     kind: policy
     owner: access
-    source: 02_platform_pingtai/database/supabase/migrations/20260903104000_enable_provisioned_mall_registration.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260911190000_bind_operator_registration_to_realm_console.sql
   - id: audit.accessrecord.appinsert
     kind: policy
     owner: audit
@@ -23851,6 +24703,10 @@ objects:
     kind: policy
     owner: inventory
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: inventory.stockitem.identityapiread
+    kind: policy
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
   - id: inventory.stockitem.jobscope
     kind: policy
     owner: inventory
@@ -24042,15 +24898,15 @@ objects:
   - id: member.invite.zhudatuanidentityapi
     kind: policy
     owner: member
-    source: 02_platform_pingtai/database/supabase/migrations/20260903107000_merge_storefront_and_governance_invitation_visibility.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260911180000_allow_node_mall_operator_invitations.sql
   - id: member.invite.zhudatuanidentityapiinsert
     kind: policy
     owner: member
-    source: 02_platform_pingtai/database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260911180000_allow_node_mall_operator_invitations.sql
   - id: member.invite.zhudatuanidentityapiupdate
     kind: policy
     owner: member
-    source: 02_platform_pingtai/database/supabase/migrations/20260903104000_enable_provisioned_mall_registration.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260911180000_allow_node_mall_operator_invitations.sql
   - id: member.profile.appscope
     kind: policy
     owner: member
@@ -24635,6 +25491,10 @@ objects:
     kind: policy
     owner: pricing
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: pricing.price.identityapiread
+    kind: policy
+    owner: pricing
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
   - id: pricing.price.jobscope
     kind: policy
     owner: pricing
@@ -24659,6 +25519,10 @@ objects:
     kind: policy
     owner: pricing
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: pricing.pricebook.identityapiread
+    kind: policy
+    owner: pricing
+    source: 02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql
   - id: pricing.pricebook.jobscope
     kind: policy
     owner: pricing
@@ -27594,11 +28458,6 @@ objects:
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
     operationalOwner: identity
-  - id: organization.membernoderegistration.identity_project_member_realm_targets
-    kind: trigger
-    owner: organization
-    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
-    operationalOwner: identity
   - id: identity.principal.platform_owner_singleton_principal
     kind: trigger
     owner: identity
@@ -27689,15 +28548,20 @@ objects:
     owner: member
     source: 02_platform_pingtai/database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql
     operationalOwner: member
-  - id: organization.noderelation.noderelation_version_guard
+  - id: organization.membernoderegistration.identity_project_member_realm_targets
     kind: trigger
     owner: organization
-    source: 02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
     operationalOwner: organization
   - id: organization.noderelation.noderelation_closure_refresh
     kind: trigger
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql
+    operationalOwner: organization
+  - id: organization.noderelation.noderelation_version_guard
+    kind: trigger
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql
     operationalOwner: organization
   - id: payment.attempt.payment_attempt_provider_effect_immutable
     kind: trigger

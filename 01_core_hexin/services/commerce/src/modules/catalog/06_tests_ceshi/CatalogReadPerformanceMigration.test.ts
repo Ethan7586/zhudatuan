@@ -16,7 +16,7 @@ describe('商品目录反向查询索引迁移', () => {
       create table catalog.sourcelisting(id text primary key,scope_id text not null,sku_id text references catalog.sku(id));
     `);
     const migration = await readFile(resolve(process.cwd(),
-      '../../../02_platform_pingtai/database/supabase/migrations/20260912130000_index_catalog_reverse_lookups.sql'), 'utf8');
+      '../../../02_platform_pingtai/database/supabase/migrations/20260912140000_index_catalog_reverse_lookups.sql'), 'utf8');
     await database.exec(migration);
   });
 

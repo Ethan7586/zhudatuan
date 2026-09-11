@@ -205,7 +205,11 @@ for (const file of files) {
         : ['select','insert','update','delete','truncate','references','trigger']
       : declaredPrivileges;
     const roles = statement.roles.split(',').map((value) => value.trim()).filter(Boolean);
-    const targets = splitTopLevel(statement.targets).flatMap((target) => {
+    const allInSchemas = /^\s*all\s+(tables|functions)\s+in\s+schema\s+(.+)\s*$/i.exec(statement.targets);
+    const statementTargets = allInSchemas
+      ? splitTopLevel(allInSchemas[2]).map((schema) => `all ${allInSchemas[1]} in schema ${schema}`)
+      : splitTopLevel(statement.targets);
+    const targets = statementTargets.flatMap((target) => {
       const canonical = target.replace(/\s+/g, '').replaceAll('timestamptz','timestampwithtimezone');
       const allTables = /^alltablesinschema([a-z][a-z0-9]*)$/.exec(canonical);
       if (allTables) return objects.filter((item) => item.kind === 'table' && item.id.startsWith(`${allTables[1]}.`))

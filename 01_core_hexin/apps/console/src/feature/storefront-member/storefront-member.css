@@ -235,6 +235,7 @@
 .storefrontmemberinviter span,
 .storefrontmemberrelationlist article div span { color: var(--member-muted); font-size: 10px; }
 .storefrontmemberinviter time { color: var(--member-muted); font-size: 10px; white-space: nowrap; }
+.storefrontmemberlevel { border: 1px solid #d8ceff; border-radius: 5px; background: var(--member-purple-soft); color: var(--member-purple); padding: 4px 7px; font-size: 10px; font-weight: 850; }
 .storefrontmemberemptyline { margin-top: 12px; border-radius: 7px; background: #f7f9fc; color: var(--member-muted); padding: 18px; font-size: 11px; text-align: center; }
 
 .storefrontmemberrelationlist,
