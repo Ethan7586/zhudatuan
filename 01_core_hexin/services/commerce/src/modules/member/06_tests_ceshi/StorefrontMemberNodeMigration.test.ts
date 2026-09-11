@@ -167,12 +167,12 @@ insert into identity.realm(
   id,node_id,status,created_at,updated_at,node_profile,mall_id,host_node_id,host_node_profile
 ) values(
   'realm:mall-one','node:mall-one:l1','active','2026-09-01T00:00:00Z','2026-09-01T00:00:00Z',
-  'operating_mall','mall:one',null,null
+  'operating_mall',null,null,null
 );
 insert into organization.node(
   id,line_id,sovereignty_tier,node_profile,realm_id,mall_id,status,created_at,updated_at
 ) values(
-  'node:mall-one:l1','line:test','sovereign','operating_mall','realm:mall-one','mall:one','active',
+  'node:mall-one:l1','line:test','sovereign','operating_mall','realm:mall-one',null,'active',
   '2026-09-01T00:00:00Z','2026-09-01T00:00:00Z'
 );
 insert into organization.noderelation(

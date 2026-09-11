@@ -88,8 +88,12 @@ begin
   join organization.noderelation relation on relation.line_id=node.line_id and relation.node_id=node.id
     and relation.superseded_at is null
   where node.realm_id=v_membership.realm_id and node.node_profile='operating_mall'
-    and node.mall_id=v_membership.organization_id and node.status='active';
-  if not found then raise exception 'STOREFRONT_MEMBER_HOST_NODE_NOT_FOUND'; end if;
+    and node.status='active';
+  if not found then
+    raise exception 'STOREFRONT_MEMBER_HOST_NODE_NOT_FOUND'
+      using detail=format('membership=%s realm=%s organization=%s',
+        v_membership.id,v_membership.realm_id,v_membership.organization_id);
+  end if;
 
   select inviter.node_id,relation.signed_level
   into v_parent_node_id,v_parent_level
@@ -243,6 +247,16 @@ declare
   v_total integer;
   v_resolved integer;
 begin
+  if exists(
+      select 1 from access.membership membership
+      where membership.client='storefront' and membership.realm_id is not null
+        and not exists(
+          select 1 from organization.node node
+          where node.realm_id=membership.realm_id and node.node_profile='operating_mall' and node.status='active'
+        )) then
+    raise exception 'STOREFRONT_MEMBER_HOST_NODE_BACKFILL_INCOMPLETE';
+  end if;
+
   create temporary table storefront_member_node_backfill on commit drop as
   with recursive members as(
     select membership.id,membership.member_id,membership.organization_id,membership.realm_id,membership.joined_at,
@@ -255,11 +269,12 @@ begin
         and referral_member.id=binding.referral_member_id and referral_member.state='active'
       join access.membership candidate on candidate.organization_id=membership.organization_id
         and candidate.member_id=referral_member.member_id and candidate.client='storefront' and candidate.status='active'
+        and candidate.realm_id=membership.realm_id
       where binding.scope_id=membership.organization_id and binding.customer_member_id=membership.member_id
         and (binding.expires_at is null or binding.expires_at>coalesce(membership.joined_at,clock_timestamp()))
       order by binding.bound_at desc,binding.id desc limit 1
     ) inviter_membership on true
-    where membership.client='storefront'
+    where membership.client='storefront' and membership.realm_id is not null
   ), lineage as(
     select members.id,members.inviter_membership_id,0 depth,array[members.id] path
     from members where members.inviter_membership_id is null
@@ -270,7 +285,7 @@ begin
   )
   select members.*,lineage.depth from members join lineage using(id);
 
-  select count(*) into v_total from access.membership where client='storefront';
+  select count(*) into v_total from access.membership where client='storefront' and realm_id is not null;
   select count(*) into v_resolved from storefront_member_node_backfill;
   if v_resolved<>v_total then raise exception 'STOREFRONT_MEMBER_NODE_LINEAGE_UNRESOLVED'; end if;
   if exists(select 1 from storefront_member_node_backfill where depth>5) then
@@ -295,7 +310,7 @@ begin
   if exists(select 1 from access.membership membership
       left join organization.node node on node.id=membership.node_id and node.node_profile='consumer'
       left join organization.noderelation relation on relation.node_id=node.id and relation.superseded_at is null
-      where membership.client='storefront'
+      where membership.client='storefront' and membership.realm_id is not null
         and (node.id is null or relation.signed_level not in('L6','L7','L8','L9','L10','L11')))
     or not has_function_privilege('zhudatuanidentityapi',
       'organization.provision_storefront_member_node(text,text,text,text,text,timestamptz)','execute')
