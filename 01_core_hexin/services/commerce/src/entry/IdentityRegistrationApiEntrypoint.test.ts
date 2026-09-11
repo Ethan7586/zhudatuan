@@ -15,6 +15,9 @@ import { RISK_GATE } from '../foundation/security/RiskGate';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/03_application_yingyong/AccessReadOperations';
 import { IdentityOperatorAccessModule } from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
+import { AUDIT_PORT } from '../modules/audit/01_public_gongkai/AuditPort';
+import { AuditModule } from '../modules/audit/05_interface_jieru/AuditModule';
+import { auditManifest } from '../modules/audit/module.manifest';
 import { CHANNEL_OPERATOR_READ_OPERATION_IDS } from '../modules/channel/ChannelReadOperations';
 import { IdentityOperatorChannelModule } from '../modules/channel/IdentityOperatorChannelModule';
 import { EXPERIENCE_OPERATOR_OPERATION_IDS } from '../modules/experience/ExperienceOperatorOperations';
@@ -48,6 +51,7 @@ describe('identity registration API entrypoint', () => {
       ...IDENTITY_REGISTRATION_OPERATION_IDS,
       ...MEMBER_IDENTITY_OPERATOR_OPERATION_IDS,
       ...ACCESS_OPERATOR_READ_OPERATION_IDS,
+      ...auditManifest.operations,
       ...FINANCE_OPERATOR_READ_OPERATION_IDS,
       ...REFERRAL_OPERATOR_READ_OPERATION_IDS,
       ...CHANNEL_OPERATOR_READ_OPERATION_IDS,
@@ -93,6 +97,7 @@ describe('identity registration API entrypoint', () => {
       'access.center.read',
       'access.administrators.members.read',
       'access.administrators.member.read',
+      'audit.records.read',
       'finance.entries.read',
       'finance.statements.read',
       'finance.reconciliations.read',
@@ -135,6 +140,7 @@ describe('identity registration API entrypoint', () => {
       ...IDENTITY_REGISTRATION_OPERATION_IDS,
       ...MEMBER_OPERATOR_READ_OPERATION_IDS,
       ...ACCESS_OPERATOR_READ_OPERATION_IDS,
+      ...auditManifest.operations,
       ...FINANCE_OPERATOR_READ_OPERATION_IDS,
       ...REFERRAL_OPERATOR_READ_OPERATION_IDS,
       ...CHANNEL_OPERATOR_READ_OPERATION_IDS,
@@ -152,6 +158,7 @@ describe('identity registration API entrypoint', () => {
         IdentityRegistrationModule,
         IdentityOperatorMemberModule,
         IdentityOperatorAccessModule,
+        AuditModule,
         IdentityOperatorFinanceModule,
         IdentityOperatorReferralModule,
         IdentityOperatorChannelModule,
@@ -174,6 +181,7 @@ describe('identity registration API entrypoint', () => {
         });
         container.bind(DATABASE_POOL, pool);
         container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
+        container.bind(AUDIT_PORT, {} as never);
         container.bind(RISK_GATE, {} as never);
         container.bind(IDENTITY_SECURITY_KEYS, { identity: 'identity-test-key', session: 'session-test-key' });
         container.bind(KMS_CLIENT, new KmsClient('https://kms.internal', 'k'.repeat(43)));
@@ -212,6 +220,7 @@ describe('identity registration API entrypoint', () => {
       .toBe('member.storefront.orders.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/members/imports/x')?.operation).toBe('member.imports.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/access/center')?.operation).toBe('access.center.read');
+    expect(bootstrapped.routes.match('GET', '/api/v1/audits')?.operation).toBe('audit.records.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/finance/entries')?.operation).toBe('finance.entries.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/finance/statements')?.operation).toBe('finance.statements.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/finance/reconciliations')?.operation).toBe('finance.reconciliations.read');

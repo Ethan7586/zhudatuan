@@ -6,6 +6,8 @@ import { createIdentityRegistrationApiRuntime } from '../bootstrap/IdentityRegis
 import { listen } from '../foundation/interface/NodeServer';
 import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/03_application_yingyong/AccessReadOperations';
 import { IdentityOperatorAccessModule } from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
+import { AuditModule } from '../modules/audit/05_interface_jieru/AuditModule';
+import { auditManifest } from '../modules/audit/module.manifest';
 import { CHANNEL_OPERATOR_READ_OPERATION_IDS } from '../modules/channel/ChannelReadOperations';
 import { IdentityOperatorChannelModule } from '../modules/channel/IdentityOperatorChannelModule';
 import { EXPERIENCE_OPERATOR_OPERATION_IDS } from '../modules/experience/ExperienceOperatorOperations';
@@ -46,6 +48,7 @@ const operationIds = Object.freeze([
   ...identityOperationIds,
   ...MEMBER_IDENTITY_OPERATOR_OPERATION_IDS,
   ...ACCESS_OPERATOR_READ_OPERATION_IDS,
+  ...auditManifest.operations,
   ...FINANCE_OPERATOR_READ_OPERATION_IDS,
   ...REFERRAL_OPERATOR_READ_OPERATION_IDS,
   ...CHANNEL_OPERATOR_READ_OPERATION_IDS,
@@ -61,6 +64,7 @@ const bootstrapped = await bootstrapApi({
     runtime.wechatIdentityEnabled ? IdentityRegistrationModule : IdentityRegistrationCoreModule,
     IdentityOperatorMemberModule,
     IdentityOperatorAccessModule,
+    AuditModule,
     IdentityOperatorFinanceModule,
     IdentityOperatorReferralModule,
     IdentityOperatorChannelModule,

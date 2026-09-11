@@ -27,6 +27,7 @@ import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver'
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { PgDecisionSink } from '../modules/access/04_adapters_shixian/persistence/PgDecisionSink';
+import { AUDIT_PORT } from '../modules/audit/01_public_gongkai/AuditPort';
 import { RecordAudit } from '../modules/audit/03_application_yingyong/command/RecordAudit';
 import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persistence/PgAuditRepository';
 import { RiskCheckAdapter } from '../modules/risk';
@@ -106,7 +107,8 @@ export async function createIdentityRegistrationApiRuntime(
     throw cause;
   }
   const risk = new RiskCheckAdapter(pool);
-  const audit = new RecordAudit(new PgAuditRepository());
+  const auditRepository = new PgAuditRepository();
+  const audit = new RecordAudit(auditRepository);
   const access = new AccessPipeline(
     new PgSessionResolver(pool),
     new PgMembershipResolver(pool),
@@ -136,6 +138,7 @@ export async function createIdentityRegistrationApiRuntime(
       container.bind(DATABASE_POOL, pool);
       container.bind(RISK_GATE, risk);
       container.bind(AUDIT_SINK, audit);
+      container.bind(AUDIT_PORT, auditRepository);
       container.bind(SECRET_STORE, secrets);
       container.bind(IDENTITY_SECURITY_KEYS, Object.freeze({ session: sessionKey, identity: identityKey }));
       container.bind(KMS_CLIENT, new KmsClient(
