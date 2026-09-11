@@ -26,8 +26,12 @@ function OverviewPanel({ order, previewEnabled }: Readonly<{ order: OrderRecord;
   return (
     <div className="orderdrawerstack">
       <section className="ordersummarynote">
-        <p>{preview?.summary ?? `订单为${lifecycleLabel(order.lifecycle_state)}状态；订单、财务、商品为明线，现金结果用于核验财务。`}</p>
-        {!previewEnabled ? <small>流程仅展示当前订单快照；没有事实来源的结算、路径和事件时间不会推测。</small> : <small>本地预览数据 · 不作为生产业务真值</small>}
+        <div className="ordersummaryline">
+          <span aria-hidden="true"><OrderIcon name="order" /></span>
+          <strong>订单说明</strong>
+          <p>{preview?.summary ?? `订单为${lifecycleLabel(order.lifecycle_state)}状态；订单、财务、商品为明线，现金结果用于核验财务。`}</p>
+        </div>
+        <small>{!previewEnabled ? '流程仅展示当前订单快照；没有事实来源的结算、路径和事件时间不会推测。' : '本地预览数据 · 不作为生产业务真值'}</small>
       </section>
       <MilestoneChain order={order} previewEnabled={previewEnabled} />
       <FourFlowSummary order={order} />
@@ -103,18 +107,17 @@ function MilestoneChain({ order, previewEnabled }: Readonly<{ order: OrderRecord
         <span>{preview === undefined ? '当前订单快照' : '事件时间线'}</span>
       </div>
       <ol className="ordermilestones" aria-label="订单流程">
-        {milestones.map((item) => {
+        {milestones.map((item, index) => {
           const detail = item.at === undefined ? '—' : item.at.includes('T') ? formatOrderTime(item.at) : item.at;
           return (
           <li key={item.key} className={`is-${item.state}`} aria-label={`${item.label}：${flowStateLabel(item.state)}，${detail}`}>
             <span>
-              <OrderIcon name={item.state === 'complete' ? 'check' : item.key === 'fulfillment' || item.key === 'unshipped' ? 'truck' : item.state === 'warning' ? 'clock' : 'package'} />
+              {item.state === 'complete' ? <OrderIcon name="check" /> : item.state === 'warning' ? <OrderIcon name="clock" /> : index + 1}
             </span>
             <strong>{item.label}</strong>
             <small>
+              <span>{detail}</span>
               <b>{flowStateLabel(item.state)}</b>
-              {' · '}
-              {detail}
             </small>
           </li>
           );
@@ -125,7 +128,7 @@ function MilestoneChain({ order, previewEnabled }: Readonly<{ order: OrderRecord
 }
 
 function flowStateLabel(state: 'complete' | 'current' | 'pending' | 'warning'): string {
-  return ({ complete: '已完成', current: '当前', pending: '等待', warning: '异常' } as const)[state];
+  return ({ complete: '已完成', current: '进行中', pending: '待进行', warning: '异常' } as const)[state];
 }
 
 function snapshotFlow(order: OrderRecord) {
@@ -143,10 +146,10 @@ function snapshotFlow(order: OrderRecord) {
     : order.lifecycle_state === 'cancelled' ? 'warning' : 'pending';
   return [
     { key: 'placed', label: '下单', state: 'complete' as const, at: formatOrderTime(order.created_at) },
-    { key: 'payment', label: '支付', state: paymentState, at: paymentLabel(order.payment_state) },
-    { key: 'fulfillment', label: '履约', state: fulfillmentState, at: fulfillmentLabel(order.fulfillment_state) },
-    { key: 'aftersale', label: '售后', state: aftersaleState, at: aftersaleLabel(order.aftersale_state) },
-    { key: 'completion', label: '完成', state: completionState, at: lifecycleLabel(order.lifecycle_state) },
+    { key: 'payment', label: '支付', state: paymentState, at: undefined },
+    { key: 'fulfillment', label: '履约', state: fulfillmentState, at: undefined },
+    { key: 'aftersale', label: '售后', state: aftersaleState, at: undefined },
+    { key: 'completion', label: '完成', state: completionState, at: undefined },
   ] as const;
 }
 
