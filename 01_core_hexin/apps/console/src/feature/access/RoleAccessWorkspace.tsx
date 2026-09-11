@@ -19,6 +19,8 @@ export function RoleAccessWorkspace() {
   const context = useConsoleContext();
   const navigate = useNavigate();
   const [search] = useSearchParams();
+  const requestedRoleId = search.get('role') ?? undefined;
+  const requestedView = search.get('view') === 'members' ? 'members' : 'permissions';
   const [selectedId, setSelectedId] = useState<string>();
   const [draftId, setDraftId] = useState<string>();
   const [filter, setFilter] = useState('');
@@ -49,7 +51,7 @@ export function RoleAccessWorkspace() {
   const normalizedFilter = filter.trim().toLocaleLowerCase('zh-CN');
   const visibleRoles = useMemo(() => roles.filter((role) => normalizedFilter === '' || `${role.name} ${role.id} ${role.permissions.join(' ')}`.toLocaleLowerCase('zh-CN').includes(normalizedFilter)), [normalizedFilter, roles]);
   const defaultRole = visibleRoles.find(({ governance }) => !governance) ?? visibleRoles[0];
-  const selectedRole = roles.find(({ id }) => id === selectedId) ?? defaultRole;
+  const selectedRole = roles.find(({ id }) => id === (selectedId ?? requestedRoleId)) ?? defaultRole;
   const editorRecord = draftId === undefined ? (selectedRole === undefined ? undefined : toEditorRecord(selectedRole)) : newRoleDraft(draftId);
   const createRole = () => {
     const id = `role:${crypto.randomUUID()}`;
@@ -141,6 +143,7 @@ export function RoleAccessWorkspace() {
                   key={`${editorRecord.id}:${editorRecord.version ?? 'draft'}`}
                   context={context}
                   role={editorRecord}
+                  initialTab={requestedView}
                   members={query.data?.items ?? []}
                   onRefresh={refresh}
                   onEdit={() => setNotice(undefined)}

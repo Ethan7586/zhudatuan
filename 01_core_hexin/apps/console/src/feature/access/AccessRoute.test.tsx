@@ -182,13 +182,21 @@ describe('custom identity and permission directory', () => {
   it('reuses the member page access directory cache when entering identity permissions', async () => {
     const user = userEvent.setup();
     renderSwitchWorkspace();
-    await screen.findByRole('heading', { name: '管理与权限' });
+    await screen.findByRole('heading', { name: '管理员目录' });
     await waitFor(() => expect(reads).toBe(1));
 
     await user.click(screen.getByRole('button', { name: '角色模板' }));
 
     expect(await screen.findByRole('heading', { name: '财务观察' })).toBeTruthy();
     expect(reads).toBe(1);
+  });
+
+  it('opens the selected role template directly in member scheduling', async () => {
+    renderWorkspace(context, '/scopes/tenant/tenant%3Aone/settings/access?role=role-finance&view=members');
+
+    expect(await screen.findByRole('heading', { name: '财务观察' })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: '＋ 分配成员' })).toBeTruthy();
+    expect(within(screen.getByRole('navigation', { name: '角色详情' })).getByRole('button', { name: /^成员与范围/ }).getAttribute('aria-selected')).toBe('true');
   });
 
   it('keeps the explicit member refresh authoritative', async () => {
@@ -298,7 +306,7 @@ describe('custom identity and permission directory', () => {
     const user = userEvent.setup();
     renderSwitchWorkspace();
 
-    expect(await screen.findByRole('heading', { name: '管理与权限' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '管理员目录' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: '管理与权限工作台' })).toBeNull();
     expect(screen.getByRole('button', { name: '角色模板' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '邀请管理员' })).toBeTruthy();
