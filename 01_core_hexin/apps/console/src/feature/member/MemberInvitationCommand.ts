@@ -14,8 +14,6 @@ export interface MemberInvitationAuthority {
 export function memberInvitationAvailable(context: ConsoleContext, fallback?: MemberInvitationAuthority): boolean {
   const level = context.session.governance?.level ?? fallback?.level;
   return (level === 'owner' || level === 'senior_administrator')
-    && context.session.permissions.includes('identity.invitation.manage')
-    && context.session.capabilities.includes('identity.invitations.create')
     && context.session.csrf !== undefined;
 }
 
