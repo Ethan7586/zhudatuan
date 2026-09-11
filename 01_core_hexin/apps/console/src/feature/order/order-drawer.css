@@ -89,14 +89,22 @@
   min-height: 3.25rem;
   flex: 0 0 auto;
   border: 0;
+  border-radius: 0;
   background: transparent;
   color: var(--sw-text-secondary);
   padding: 0 var(--sw-space-1-5);
   font-size: var(--sw-font-size-caption);
 }
 .orderdrawertabs [role='tab'][aria-selected='true'] {
+  background: transparent;
   color: var(--sw-brand);
   font-weight: 700;
+}
+.orderdrawertabs [role='tab'][aria-selected='true']:hover,
+.orderdrawertabs [role='tab'][aria-selected='true']:focus-visible {
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .orderdrawertabs [role='tab'][aria-selected='true']::after {
   position: absolute;
