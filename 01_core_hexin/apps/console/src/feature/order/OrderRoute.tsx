@@ -154,7 +154,14 @@ export function Component() {
             <div>
               <h2 id="orderworkspacetitle">共 {page === undefined ? '—' : page.count} 条订单</h2>
             </div>
-            <OrderDirectoryActions previewEnabled={previewEnabled} isFetching={query.isFetching} pageCount={page?.items.length ?? 0} onRefresh={refresh} />
+            <OrderDirectoryActions
+              previewEnabled={previewEnabled}
+              isFetching={query.isFetching}
+              pageCount={page?.items.length ?? 0}
+              columnsOpen={columnsOpen}
+              onRefresh={refresh}
+              onColumns={() => setColumnsOpen((open) => !open)}
+            />
           </header>
               <div className="ordervi12statusbar">
                 <OrderStatusTabs active={view} previewEnabled={previewEnabled} page={page} onChange={selectView} />

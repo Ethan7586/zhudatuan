@@ -167,9 +167,9 @@ describe('Order route', () => {
     expect(within(flow).getByText('履约')).toBeTruthy();
     expect(within(flow).getByText('售后')).toBeTruthy();
     expect(within(flow).getByText('完成')).toBeTruthy();
-    expect(within(flow).getByLabelText('支付：已完成，已支付')).toBeTruthy();
-    expect(within(flow).getByLabelText('履约：当前，待发货')).toBeTruthy();
-    expect(within(flow).getByLabelText('售后：等待，无售后')).toBeTruthy();
+    expect(within(flow).getByLabelText('支付：已完成，—')).toBeTruthy();
+    expect(within(flow).getByLabelText('履约：进行中，—')).toBeTruthy();
+    expect(within(flow).getByLabelText('售后：待进行，—')).toBeTruthy();
     expect(within(detail).queryByText('不应泄漏的演示说明')).toBeNull();
   });
 
@@ -177,22 +177,22 @@ describe('Order route', () => {
     {
       name: '正常订单',
       states: { payment_state: 'paid', fulfillment_state: 'delivered', aftersale_state: 'resolved', lifecycle_state: 'completed' },
-      expected: ['支付：已完成，已支付', '履约：已完成，已完成', '售后：已完成，已完成', '完成：已完成，已完成'],
+      expected: ['支付：已完成，—', '履约：已完成，—', '售后：已完成，—', '完成：已完成，—'],
     },
     {
       name: '待付款订单',
       states: { payment_state: 'unpaid', fulfillment_state: 'unallocated', aftersale_state: 'none', lifecycle_state: 'created' },
-      expected: ['支付：当前，待付款', '履约：等待，待分配', '售后：等待，无售后', '完成：等待，已创建'],
+      expected: ['支付：进行中，—', '履约：待进行，—', '售后：待进行，—', '完成：待进行，—'],
     },
     {
       name: '异常订单',
       states: { payment_state: 'failed', fulfillment_state: 'cancelled', aftersale_state: 'rejected', lifecycle_state: 'cancelled' },
-      expected: ['支付：异常，支付失败', '履约：异常，已取消', '售后：异常，已驳回', '完成：异常，已取消'],
+      expected: ['支付：异常，—', '履约：异常，—', '售后：异常，—', '完成：异常，—'],
     },
     {
       name: '无售后订单',
       states: { payment_state: 'paid', fulfillment_state: 'allocated', aftersale_state: 'none', lifecycle_state: 'active' },
-      expected: ['支付：已完成，已支付', '履约：当前，待发货', '售后：等待，无售后', '完成：等待，进行中'],
+      expected: ['支付：已完成，—', '履约：进行中，—', '售后：待进行，—', '完成：待进行，—'],
     },
   ] as const)('renders an honest five-step flow for $name', async ({ name, states, expected }) => {
     const variant = { ...order, ...states, id: `order:${name}`, order_number: `SW-${name}` };

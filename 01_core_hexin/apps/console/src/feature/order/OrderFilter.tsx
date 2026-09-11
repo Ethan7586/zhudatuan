@@ -21,7 +21,7 @@ export const emptyOrderFilter: OrderListFilter = Object.freeze({
   mall: '',
 });
 
-export function OrderFilterForm({ value, onApply, onColumns, columnsOpen }: OrderFilterProps) {
+export function OrderFilterForm({ value, onApply }: OrderFilterProps) {
   const form = useForm<OrderListFilter>({ resolver: zodResolver(OrderListFilterSchema), values: value });
   const reset = () => {
     form.reset(emptyOrderFilter);
@@ -131,11 +131,6 @@ export function OrderFilterForm({ value, onApply, onColumns, columnsOpen }: Orde
       </OrderPreviewAction>
       <button className="orderreset" type="button" onClick={reset}>
         重置
-      </button>
-      <span className="ordertoolspacer" />
-      <button className="ordertoolbutton" type="button" onClick={onColumns} aria-expanded={columnsOpen} aria-controls="ordercolumnsettings">
-        <OrderIcon name="settings" />
-        列设置
       </button>
       <p id="orderfilterboundary" className="sr-only">
         订单号、时间、订单状态、支付状态和履约状态均由服务端筛选；结果限定在当前授权节点范围内。
