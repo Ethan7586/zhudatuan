@@ -23,6 +23,7 @@ describe('cake read ports', () => {
     expect(batch.records[0]).toMatchObject({ externalId: '1001', payload: {
       schema: 'cakeuncle.physical-sku.v1', provider: 'cake', productId: '100', specId: '1001',
       description: '商品描述',
+      imagePaths: expect.arrayContaining(['https://img.dangaoss.com/product.jpg']),
       amountMinor: 9990, compareMinor: 12900, onhand: CAKEUNCLE_UNLIMITED_ONHAND, unlimited: true,
       supportsGreeting: true,
     } });
@@ -108,7 +109,7 @@ function productsResponse(firstStock: string, firstMarketPrice = '129.00'): Json
         cat_id: '1',
         cat_id2: '2',
         cat_id3: '3',
-        image_path: 'https://img.test/product.jpg',
+        image_path: 'http://img.dangaoss.com/product.jpg',
         product_description: '商品描述',
         label_name: '生日,同城',
         is_greeting: '0',

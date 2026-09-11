@@ -210,7 +210,11 @@ function images(product: JsonObject, spec: JsonObject): readonly string[] {
     const source = object(value, 'CAKE_PRODUCT_IMAGE_INVALID');
     paths.push(optional(source.m_path), optional(source.l_path), optional(source.s_path));
   }
-  return sortedUnique(paths.filter(isString).flatMap(csv));
+  return sortedUnique(paths.filter(isString).flatMap(csv).map(secureSupplierImage));
+}
+
+function secureSupplierImage(value: string): string {
+  return value.replace(/^http:\/\/img\.dangaoss\.com\//i, 'https://img.dangaoss.com/');
 }
 
 function greeting(value: JsonValue | undefined): boolean {
