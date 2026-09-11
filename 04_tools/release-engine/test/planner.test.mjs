@@ -172,6 +172,17 @@ test('deploys each sovereign node identity runtime independently', async () => {
   assert.equal(zhudatuan.service, 'zhudatuan-api.service');
 });
 
+test('keeps release policy and deploy workflow changes in the delivery-tooling lane', async () => {
+  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const classified = classifyChanges(commerceAdapter, [
+    change('.github/workflows/deploy.yml'),
+    change('02_platform_pingtai/infrastructure/release/zdt-next.release.json'),
+    change('02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'),
+  ]);
+  assert.equal(classified.lane, 'NONE');
+  assert.deepEqual(classified.targets, []);
+});
+
 test('routes the hbbtzn support entry to the shared support runtime', async () => {
   const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const plan = await createPlan(commerceAdapter, {
