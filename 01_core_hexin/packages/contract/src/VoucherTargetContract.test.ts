@@ -15,7 +15,7 @@ describe('voucher target contract', () => {
 
   it('publishes complete routes and explicit frozen policies without enabling runtime lookup', () => {
     expect(target.every(({ path }) => path.startsWith('/api/v1/'))).toBe(true);
-    expect(target.every(({ availability, schema, summary }) => availability === 'frozen' && schema === 'structural' && summary.length > 0)).toBe(true);
+    expect(target.every(({ availability, schema, summary }) => availability === 'frozen' && schema === 'named' && summary.length > 0)).toBe(true);
     expect(new Set(target.map(({ id }) => id)).size).toBe(74);
     expect(new Set(target.map(({ method, path }) => `${method} ${path}`)).size).toBe(74);
     expect(target.filter(({ execution }) => execution === 'async')).toHaveLength(10);

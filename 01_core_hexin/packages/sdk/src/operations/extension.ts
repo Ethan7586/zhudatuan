@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const EXTENSION_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "extension.installations.read",
@@ -27,5 +27,5 @@ export function createFetchExtensionInstallationsRead(baseUrl: string): Operatio
 }
 
 function bindInstallationsRead(client: OperationExecutor): OperationMethod<"extension.installations.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"extension.installations.read","method":"GET","path":"/api/v1/extensions/installations","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"extension.installations.read","method":"GET","path":"/api/v1/extensions/installations","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }

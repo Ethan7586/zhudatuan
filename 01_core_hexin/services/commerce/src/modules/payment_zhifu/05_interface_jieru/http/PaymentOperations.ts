@@ -4,6 +4,7 @@ import { AUDIT_SINK, type AuditSink } from '../../../../foundation/application/A
 import { requireAccess } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, integerField, keysetResult, queryPage, textField } from '../../../../foundation/interface/Validation';
 import type { OperationRequest, OperationResult, OperationUsecase } from '../../../../foundation/application/OperationHandler';
+import { markEnforcedWriteResult } from '../../../../foundation/application/ExecutionKernel';
 import { KMS_CLIENT, type KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL, type DatabasePool } from '../../../../foundation/persistence/Pool';
 import { PAYMENT_GATEWAY, type PaymentGateway } from '../../01_public_gongkai/ports_jiekou/PaymentGateway';
@@ -37,12 +38,12 @@ class PaymentOperations implements OperationUsecase {
   }
 
   async invoke(request: OperationRequest): Promise<OperationResult> {
-    if (request.type === 'payment.intents.create') return this.create(request);
+    if (request.type === 'payment.intents.create') return markEnforcedWriteResult(await this.create(request));
     if (request.type === 'payment.intents.read') return this.readIntent(request);
-    if (request.type === 'payment.refunds.request') return this.refund(request);
+    if (request.type === 'payment.refunds.request') return markEnforcedWriteResult(await this.refund(request));
     if (request.type === 'payment.recoveries.read') return this.readRecoveries(request);
-    if (request.type === 'payment.recoveries.resolve') return this.resolveRecovery(request);
-    if (request.type === 'payment.webhooks.wechat') return this.webhook.handle(request);
+    if (request.type === 'payment.recoveries.resolve') return markEnforcedWriteResult(await this.resolveRecovery(request));
+    if (request.type === 'payment.webhooks.wechat') return markEnforcedWriteResult(await this.webhook.handle(request));
     throw new Error(`OPERATION_ACTION_MISSING:${request.type}`);
   }
 

@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const PROVISIONING_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "provisioning.malls.create",
@@ -30,7 +30,7 @@ export function createFetchProvisioningMallsCreate(baseUrl: string): OperationMe
 }
 
 function bindMallsCreate(client: OperationExecutor): OperationMethod<"provisioning.malls.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"provisioning.malls.create","method":"POST","path":"/api/v1/provisioning/malls","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"provisioning.malls.create","method":"POST","path":"/api/v1/provisioning/malls","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchProvisioningMallsRead(baseUrl: string): OperationMethod<"provisioning.malls.read"> {
@@ -38,5 +38,5 @@ export function createFetchProvisioningMallsRead(baseUrl: string): OperationMeth
 }
 
 function bindMallsRead(client: OperationExecutor): OperationMethod<"provisioning.malls.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"provisioning.malls.read","method":"GET","path":"/api/v1/provisioning/malls/{mallid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["mallid"]}));
+  return bindOperation(client, defineContractOperation({"id":"provisioning.malls.read","method":"GET","path":"/api/v1/provisioning/malls/{mallid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }

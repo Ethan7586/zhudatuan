@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const FINANCE_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "finance.overview.read",
@@ -105,7 +105,7 @@ export function createFetchFinanceOverviewRead(baseUrl: string): OperationMethod
 }
 
 function bindOverviewRead(client: OperationExecutor): OperationMethod<"finance.overview.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.overview.read","method":"GET","path":"/api/v1/finance/overview","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.overview.read","method":"GET","path":"/api/v1/finance/overview","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceEntriesRead(baseUrl: string): OperationMethod<"finance.entries.read"> {
@@ -113,7 +113,7 @@ export function createFetchFinanceEntriesRead(baseUrl: string): OperationMethod<
 }
 
 function bindEntriesRead(client: OperationExecutor): OperationMethod<"finance.entries.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.entries.read","method":"GET","path":"/api/v1/finance/entries","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.entries.read","method":"GET","path":"/api/v1/finance/entries","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceStatementsRead(baseUrl: string): OperationMethod<"finance.statements.read"> {
@@ -121,7 +121,7 @@ export function createFetchFinanceStatementsRead(baseUrl: string): OperationMeth
 }
 
 function bindStatementsRead(client: OperationExecutor): OperationMethod<"finance.statements.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.statements.read","method":"GET","path":"/api/v1/finance/statements","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.statements.read","method":"GET","path":"/api/v1/finance/statements","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceStatementsExport(baseUrl: string): OperationMethod<"finance.statements.export"> {
@@ -129,7 +129,7 @@ export function createFetchFinanceStatementsExport(baseUrl: string): OperationMe
 }
 
 function bindStatementsExport(client: OperationExecutor): OperationMethod<"finance.statements.export"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.statements.export","method":"POST","path":"/api/v1/finance/statements/exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.statements.export","method":"POST","path":"/api/v1/finance/statements/exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceReconciliationsManage(baseUrl: string): OperationMethod<"finance.reconciliations.manage"> {
@@ -137,7 +137,7 @@ export function createFetchFinanceReconciliationsManage(baseUrl: string): Operat
 }
 
 function bindReconciliationsManage(client: OperationExecutor): OperationMethod<"finance.reconciliations.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliations.manage","method":"PUT","path":"/api/v1/finance/reconciliations/{reconciliationid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["reconciliationid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.reconciliations.manage","method":"PUT","path":"/api/v1/finance/reconciliations/{reconciliationid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceReconciliationsRead(baseUrl: string): OperationMethod<"finance.reconciliations.read"> {
@@ -145,7 +145,7 @@ export function createFetchFinanceReconciliationsRead(baseUrl: string): Operatio
 }
 
 function bindReconciliationsRead(client: OperationExecutor): OperationMethod<"finance.reconciliations.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliations.read","method":"GET","path":"/api/v1/finance/reconciliations","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.reconciliations.read","method":"GET","path":"/api/v1/finance/reconciliations","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceSettlementsRead(baseUrl: string): OperationMethod<"finance.settlements.read"> {
@@ -153,7 +153,7 @@ export function createFetchFinanceSettlementsRead(baseUrl: string): OperationMet
 }
 
 function bindSettlementsRead(client: OperationExecutor): OperationMethod<"finance.settlements.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.settlements.read","method":"GET","path":"/api/v1/finance/settlements","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.settlements.read","method":"GET","path":"/api/v1/finance/settlements","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceSettlementsDecide(baseUrl: string): OperationMethod<"finance.settlements.decide"> {
@@ -161,7 +161,7 @@ export function createFetchFinanceSettlementsDecide(baseUrl: string): OperationM
 }
 
 function bindSettlementsDecide(client: OperationExecutor): OperationMethod<"finance.settlements.decide"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.settlements.decide","method":"POST","path":"/api/v1/finance/settlements/{settlementid}/decide","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["settlementid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.settlements.decide","method":"POST","path":"/api/v1/finance/settlements/{settlementid}/decide","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceSettlementsAdjust(baseUrl: string): OperationMethod<"finance.settlements.adjust"> {
@@ -169,7 +169,7 @@ export function createFetchFinanceSettlementsAdjust(baseUrl: string): OperationM
 }
 
 function bindSettlementsAdjust(client: OperationExecutor): OperationMethod<"finance.settlements.adjust"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.settlements.adjust","method":"POST","path":"/api/v1/finance/settlements/{settlementid}/adjust","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["settlementid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.settlements.adjust","method":"POST","path":"/api/v1/finance/settlements/{settlementid}/adjust","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceWithdrawalsRead(baseUrl: string): OperationMethod<"finance.withdrawals.read"> {
@@ -177,7 +177,7 @@ export function createFetchFinanceWithdrawalsRead(baseUrl: string): OperationMet
 }
 
 function bindWithdrawalsRead(client: OperationExecutor): OperationMethod<"finance.withdrawals.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.withdrawals.read","method":"GET","path":"/api/v1/finance/withdrawals","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.withdrawals.read","method":"GET","path":"/api/v1/finance/withdrawals","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceWithdrawalsCreate(baseUrl: string): OperationMethod<"finance.withdrawals.create"> {
@@ -185,7 +185,7 @@ export function createFetchFinanceWithdrawalsCreate(baseUrl: string): OperationM
 }
 
 function bindWithdrawalsCreate(client: OperationExecutor): OperationMethod<"finance.withdrawals.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.withdrawals.create","method":"POST","path":"/api/v1/finance/withdrawals","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.withdrawals.create","method":"POST","path":"/api/v1/finance/withdrawals","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceWithdrawalsDecide(baseUrl: string): OperationMethod<"finance.withdrawals.decide"> {
@@ -193,7 +193,7 @@ export function createFetchFinanceWithdrawalsDecide(baseUrl: string): OperationM
 }
 
 function bindWithdrawalsDecide(client: OperationExecutor): OperationMethod<"finance.withdrawals.decide"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.withdrawals.decide","method":"POST","path":"/api/v1/finance/withdrawals/{withdrawalid}/decide","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["withdrawalid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.withdrawals.decide","method":"POST","path":"/api/v1/finance/withdrawals/{withdrawalid}/decide","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceWithdrawalsRecover(baseUrl: string): OperationMethod<"finance.withdrawals.recover"> {
@@ -201,7 +201,7 @@ export function createFetchFinanceWithdrawalsRecover(baseUrl: string): Operation
 }
 
 function bindWithdrawalsRecover(client: OperationExecutor): OperationMethod<"finance.withdrawals.recover"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.withdrawals.recover","method":"POST","path":"/api/v1/finance/withdrawals/{withdrawalid}/recover","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["withdrawalid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.withdrawals.recover","method":"POST","path":"/api/v1/finance/withdrawals/{withdrawalid}/recover","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceHoldsRead(baseUrl: string): OperationMethod<"finance.holds.read"> {
@@ -209,7 +209,7 @@ export function createFetchFinanceHoldsRead(baseUrl: string): OperationMethod<"f
 }
 
 function bindHoldsRead(client: OperationExecutor): OperationMethod<"finance.holds.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.holds.read","method":"GET","path":"/api/v1/finance/holds","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.holds.read","method":"GET","path":"/api/v1/finance/holds","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinancePeriodsRead(baseUrl: string): OperationMethod<"finance.periods.read"> {
@@ -217,7 +217,7 @@ export function createFetchFinancePeriodsRead(baseUrl: string): OperationMethod<
 }
 
 function bindPeriodsRead(client: OperationExecutor): OperationMethod<"finance.periods.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.periods.read","method":"GET","path":"/api/v1/finance/periods","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.periods.read","method":"GET","path":"/api/v1/finance/periods","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinancePeriodsManage(baseUrl: string): OperationMethod<"finance.periods.manage"> {
@@ -225,7 +225,7 @@ export function createFetchFinancePeriodsManage(baseUrl: string): OperationMetho
 }
 
 function bindPeriodsManage(client: OperationExecutor): OperationMethod<"finance.periods.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.periods.manage","method":"POST","path":"/api/v1/finance/periods/{period}/manage","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["period"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.periods.manage","method":"POST","path":"/api/v1/finance/periods/{period}/manage","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceBackfillsRead(baseUrl: string): OperationMethod<"finance.backfills.read"> {
@@ -233,7 +233,7 @@ export function createFetchFinanceBackfillsRead(baseUrl: string): OperationMetho
 }
 
 function bindBackfillsRead(client: OperationExecutor): OperationMethod<"finance.backfills.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.backfills.read","method":"GET","path":"/api/v1/finance/backfills","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.backfills.read","method":"GET","path":"/api/v1/finance/backfills","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceBackfillsDecide(baseUrl: string): OperationMethod<"finance.backfills.decide"> {
@@ -241,7 +241,7 @@ export function createFetchFinanceBackfillsDecide(baseUrl: string): OperationMet
 }
 
 function bindBackfillsDecide(client: OperationExecutor): OperationMethod<"finance.backfills.decide"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.backfills.decide","method":"POST","path":"/api/v1/finance/backfills/{backfillid}/decide","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["backfillid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.backfills.decide","method":"POST","path":"/api/v1/finance/backfills/{backfillid}/decide","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinancePoliciesManage(baseUrl: string): OperationMethod<"finance.policies.manage"> {
@@ -249,7 +249,7 @@ export function createFetchFinancePoliciesManage(baseUrl: string): OperationMeth
 }
 
 function bindPoliciesManage(client: OperationExecutor): OperationMethod<"finance.policies.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.policies.manage","method":"PUT","path":"/api/v1/finance/policies/{policyid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["policyid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.policies.manage","method":"PUT","path":"/api/v1/finance/policies/{policyid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceReconciliationrepairsRead(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.read"> {
@@ -257,7 +257,7 @@ export function createFetchFinanceReconciliationrepairsRead(baseUrl: string): Op
 }
 
 function bindReconciliationrepairsRead(client: OperationExecutor): OperationMethod<"finance.reconciliationrepairs.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.read","method":"GET","path":"/api/v1/finance/reconciliation-repairs/{repairid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["repairid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.reconciliationrepairs.read","method":"GET","path":"/api/v1/finance/reconciliation-repairs/{repairid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceReconciliationrepairsPreview(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.preview"> {
@@ -265,7 +265,7 @@ export function createFetchFinanceReconciliationrepairsPreview(baseUrl: string):
 }
 
 function bindReconciliationrepairsPreview(client: OperationExecutor): OperationMethod<"finance.reconciliationrepairs.preview"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.preview","method":"POST","path":"/api/v1/finance/reconciliations/{reconciliationid}/items/{itemid}/repairs/preview","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["reconciliationid","itemid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.reconciliationrepairs.preview","method":"POST","path":"/api/v1/finance/reconciliations/{reconciliationid}/items/{itemid}/repairs/preview","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceReconciliationrepairsSubmit(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.submit"> {
@@ -273,7 +273,7 @@ export function createFetchFinanceReconciliationrepairsSubmit(baseUrl: string): 
 }
 
 function bindReconciliationrepairsSubmit(client: OperationExecutor): OperationMethod<"finance.reconciliationrepairs.submit"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.submit","method":"POST","path":"/api/v1/finance/reconciliation-repairs/{repairid}/submit","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["repairid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.reconciliationrepairs.submit","method":"POST","path":"/api/v1/finance/reconciliation-repairs/{repairid}/submit","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceReconciliationrepairsDecide(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.decide"> {
@@ -281,7 +281,7 @@ export function createFetchFinanceReconciliationrepairsDecide(baseUrl: string): 
 }
 
 function bindReconciliationrepairsDecide(client: OperationExecutor): OperationMethod<"finance.reconciliationrepairs.decide"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.decide","method":"POST","path":"/api/v1/finance/reconciliation-repairs/{repairid}/decide","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["repairid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.reconciliationrepairs.decide","method":"POST","path":"/api/v1/finance/reconciliation-repairs/{repairid}/decide","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceReconciliationrepairsReverse(baseUrl: string): OperationMethod<"finance.reconciliationrepairs.reverse"> {
@@ -289,7 +289,7 @@ export function createFetchFinanceReconciliationrepairsReverse(baseUrl: string):
 }
 
 function bindReconciliationrepairsReverse(client: OperationExecutor): OperationMethod<"finance.reconciliationrepairs.reverse"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.reconciliationrepairs.reverse","method":"POST","path":"/api/v1/finance/reconciliation-repairs/{repairid}/reverse","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["repairid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.reconciliationrepairs.reverse","method":"POST","path":"/api/v1/finance/reconciliation-repairs/{repairid}/reverse","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinancePoliciesPreview(baseUrl: string): OperationMethod<"finance.policies.preview"> {
@@ -297,7 +297,7 @@ export function createFetchFinancePoliciesPreview(baseUrl: string): OperationMet
 }
 
 function bindPoliciesPreview(client: OperationExecutor): OperationMethod<"finance.policies.preview"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.policies.preview","method":"POST","path":"/api/v1/finance/policies/{policyid}/preview","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["policyid"]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.policies.preview","method":"POST","path":"/api/v1/finance/policies/{policyid}/preview","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinancePoliciesRead(baseUrl: string): OperationMethod<"finance.policies.read"> {
@@ -305,7 +305,7 @@ export function createFetchFinancePoliciesRead(baseUrl: string): OperationMethod
 }
 
 function bindPoliciesRead(client: OperationExecutor): OperationMethod<"finance.policies.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.policies.read","method":"GET","path":"/api/v1/finance/policies","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.policies.read","method":"GET","path":"/api/v1/finance/policies","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchFinanceAuditRead(baseUrl: string): OperationMethod<"finance.audit.read"> {
@@ -313,5 +313,5 @@ export function createFetchFinanceAuditRead(baseUrl: string): OperationMethod<"f
 }
 
 function bindAuditRead(client: OperationExecutor): OperationMethod<"finance.audit.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"finance.audit.read","method":"GET","path":"/api/v1/finance/audits","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"finance.audit.read","method":"GET","path":"/api/v1/finance/audits","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }

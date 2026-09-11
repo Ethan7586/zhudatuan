@@ -3,6 +3,7 @@ import type { WechatScene } from '@shop/config/server';
 import type { AuditSink } from '../../../../foundation/application/AuditSink';
 import { requireAccess } from '../../../../foundation/application/ModuleOperations';
 import type { OperationRequest, OperationResult, OperationUsecase } from '../../../../foundation/application/OperationHandler';
+import { markEnforcedWriteResult } from '../../../../foundation/application/ExecutionKernel';
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { bodyRecord, textField } from '../../../../foundation/interface/Validation';
@@ -34,7 +35,7 @@ export class ExternalPaymentIntentOperations implements OperationUsecase {
 
   async invoke(request: OperationRequest): Promise<OperationResult> {
     if (request.type !== 'payment.intents.create') throw new Error(`OPERATION_ACTION_MISSING:${request.type}`);
-    return this.create(request);
+    return markEnforcedWriteResult(await this.create(request));
   }
 
   private async create(request: OperationRequest): Promise<OperationResult> {

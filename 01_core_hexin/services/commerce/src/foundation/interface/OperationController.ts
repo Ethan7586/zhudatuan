@@ -1,5 +1,5 @@
 // Generated shell from definitions/operations.yml. Do not edit.
-import { OperationCatalog, type OperationId } from '@shop/contract';
+import { OperationCatalog, operationSchema, type OperationId } from '@shop/contract';
 import { token } from '../../bootstrap/Container';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import type { OperationHandler, OperationInput, OperationResult } from '../application/OperationHandler';
@@ -305,7 +305,8 @@ function registerRoutes(operations: ReturnType<typeof OperationCatalog.all>, con
     context.routes.register({ operation: operation.id, handler: async (request) => {
       const resource = operationResource(operation.id, request);
       const access = await operationAccess(operation, request, resource, authorizer);
-      const result: OperationResult = await handler.handle({ type: operation.id, input: operationInput(operation.id, request, resource), access });
+      const input = contractOperationInput(operation.id, operationInput(operation.id, request, resource));
+      const result: OperationResult = await handler.handle({ type: operation.id, input, access });
       return json(result.status, result.body, result.headers);
     } });
   }
@@ -318,7 +319,7 @@ async function operationAccess(operation: ReturnType<typeof OperationCatalog.get
     return authorizer.authorize(request.headers, currentSession.id, currentSession.permission ?? currentSession.id, resource);
   }
   if (operation.audience === 'public' || operation.audience === 'provider') return null;
-  return authorizer.authorize(request.headers, operation.id, operation.permission ?? operation.id, resource);
+  return authorizer.authorize(request.headers, operation.id, operation.permission, resource);
 }
 
 function authenticatedWechatMode(body: unknown): boolean {
@@ -337,10 +338,21 @@ function operationInput(operation: string, request: HttpRequest, resource: strin
     ...(resource === undefined ? {} : { resource }), ...(idempotency === undefined ? {} : { idempotency }), ...(expectedVersion === undefined ? {} : { expectedVersion }) };
 }
 
+function contractOperationInput(operation: OperationId, input: OperationInput): OperationInput {
+  try {
+    const contractValue = { ...(Object.keys(input.path).length === 0 ? {} : { path: input.path }), query: input.query, body: input.body };
+    const parsed = operationSchema(operation).input.parse(contractValue) as { readonly path?: Readonly<Record<string, string>>; readonly query?: OperationInput['query']; readonly body?: unknown };
+    return Object.freeze({ ...input, path: parsed.path ?? {}, query: parsed.query ?? {}, body: parsed.body });
+  } catch (cause) {
+    throw new Error(`CONTRACT_REQUEST_INVALID:${cause instanceof Error ? cause.message : 'UNKNOWN'}`, { cause });
+  }
+}
+
 function operationResource(operation: string, request: HttpRequest): string | undefined {
   // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.
   if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;
   const pathResource = Object.values(request.parameters)[0];
+  if (operation === 'catalog.imports.read' && pathResource?.startsWith('catalogpublication:')) return undefined;
   if (pathResource !== undefined) return pathResource;
   if (!['finance.withdrawals.create', 'invoice.requests.create'].includes(operation) || request.body === null || typeof request.body !== 'object' || Array.isArray(request.body)) return undefined;
   const settlement = Reflect.get(request.body, 'settlement');

@@ -1,6 +1,7 @@
 import type { PoolClient, QueryResult, QueryResultRow } from 'pg';
 import type { AuditSink } from '../../../../foundation/application/AuditSink';
 import { appendOperationAudit, operationRequestHash, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { claimCriticalWrite, completeCriticalWrite, markEnforcedWriteResult, normalizeOperationResult } from '../../../../foundation/application/ExecutionKernel';
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import { applyApiDatabaseContext } from '../../../../foundation/infrastructure/DatabaseContext';
@@ -11,22 +12,17 @@ export interface PaymentDatabase {
 
 export async function claimPaymentRequest(database: OperationDatabase, request: OperationRequest, actor: string,
   scope: string): Promise<OperationResult | undefined> {
-  const key = request.input.idempotency!;
-  const hash = operationRequestHash(request);
-  await database.query(`insert into runtime.idempotency(scope,actor_id,key,request_hash,state,expires_at)
-    values($1,$2,$3,$4,'started',clock_timestamp()+interval '24 hours') on conflict do nothing`, [scope, actor, key, hash]);
-  const result = await database.query<{ request_hash: string; state: string; response: OperationResult | null }>(
-    'select request_hash,state,response from runtime.idempotency where scope=$1 and actor_id=$2 and key=$3 for update', [scope, actor, key]);
-  const record = result.rows[0];
-  if (!record || record.request_hash !== hash) throw new Error('IDEMPOTENCY_KEY_REUSED');
-  return record.state === 'completed' && record.response ? record.response : undefined;
+  const claim = await claimCriticalWrite(database, request, 'payment', scope, actor);
+  return claim.replay === undefined ? undefined : markEnforcedWriteResult(normalizeOperationResult(request, claim.replay));
 }
 
 export async function completePaymentRequest(audit: AuditSink, database: OperationDatabase, request: OperationRequest,
   result: OperationResult, actor: string, scope: string): Promise<void> {
-  await appendOperationAudit(audit, database, request, 'payment', result, actor, scope, operationRequestHash(request));
-  await database.query(`update runtime.idempotency set state='completed',response=$4::jsonb where scope=$1 and actor_id=$2 and key=$3`,
-  [scope, actor, request.input.idempotency!, JSON.stringify(result)]);
+  const claim = await claimCriticalWrite(database, request, 'payment', scope, actor);
+  const normalized = normalizeOperationResult(request, result);
+  await appendOperationAudit(audit, database, request, 'payment', normalized, actor, claim.scope, operationRequestHash(request));
+  await completeCriticalWrite(database, request, claim, normalized);
+  markEnforcedWriteResult(result);
 }
 
 export async function paymentTransaction<T>(pool: DatabasePool, request: OperationRequest,

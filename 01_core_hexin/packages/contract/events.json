@@ -1,6 +1,11 @@
 {
   "events": [
     {
+      "module": "runtime",
+      "type": "runtime.operation.completed",
+      "version": 1
+    },
+    {
       "module": "identity",
       "type": "identity.session.created",
       "version": 1

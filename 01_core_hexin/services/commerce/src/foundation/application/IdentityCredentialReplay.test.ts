@@ -21,7 +21,8 @@ describe('identity credential idempotency', () => {
     const harness = identityOperationHarness(operation, result);
     const request = identityRequest(operation);
 
-    await expect(harness.operations.invoke(request)).resolves.toEqual(result);
+    await expect(harness.operations.invoke(request)).resolves.toEqual({ ...result,
+      headers: { ...result.headers, 'x-business-number': expect.stringMatching(/^SFL-IDENTITY-/) } });
     expect(harness.persisted()).toEqual({
       status: 409,
       body: {
@@ -44,7 +45,8 @@ describe('identity credential idempotency', () => {
     const harness = identityOperationHarness('identity.invitations.create', result);
     const request = identityRequest('identity.invitations.create');
 
-    await expect(harness.operations.invoke(request)).resolves.toEqual(result);
+    await expect(harness.operations.invoke(request)).resolves.toEqual({ ...result,
+      headers: { 'x-business-number': expect.stringMatching(/^SFL-IDENTITY-/) } });
     expect(harness.persisted()).toEqual({
       status: 409,
       body: {
@@ -83,6 +85,7 @@ function identityOperationHarness(
       }
       if (text.includes("update runtime.idempotency set state='completed'")) {
         replay = JSON.parse(String(values[3])) as OperationResult;
+        return { rows: [], rowCount: 1 } as unknown as QueryResult;
       }
       return { rows: [], rowCount: 0 } as unknown as QueryResult;
     },

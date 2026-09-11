@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const PAYMENT_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "payment.intents.create",
@@ -42,7 +42,7 @@ export function createFetchPaymentIntentsCreate(baseUrl: string): OperationMetho
 }
 
 function bindIntentsCreate(client: OperationExecutor): OperationMethod<"payment.intents.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"payment.intents.create","method":"POST","path":"/api/v1/payments/intents","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"payment.intents.create","method":"POST","path":"/api/v1/payments/intents","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchPaymentIntentsRead(baseUrl: string): OperationMethod<"payment.intents.read"> {
@@ -50,7 +50,7 @@ export function createFetchPaymentIntentsRead(baseUrl: string): OperationMethod<
 }
 
 function bindIntentsRead(client: OperationExecutor): OperationMethod<"payment.intents.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"payment.intents.read","method":"GET","path":"/api/v1/payments/intents/{paymentid}","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["paymentid"]}));
+  return bindOperation(client, defineContractOperation({"id":"payment.intents.read","method":"GET","path":"/api/v1/payments/intents/{paymentid}","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchPaymentRefundsRequest(baseUrl: string): OperationMethod<"payment.refunds.request"> {
@@ -58,7 +58,7 @@ export function createFetchPaymentRefundsRequest(baseUrl: string): OperationMeth
 }
 
 function bindRefundsRequest(client: OperationExecutor): OperationMethod<"payment.refunds.request"> {
-  return bindOperation(client, defineStructuralOperation({"id":"payment.refunds.request","method":"POST","path":"/api/v1/payments/refunds","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"payment.refunds.request","method":"POST","path":"/api/v1/payments/refunds","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchPaymentRecoveriesRead(baseUrl: string): OperationMethod<"payment.recoveries.read"> {
@@ -66,7 +66,7 @@ export function createFetchPaymentRecoveriesRead(baseUrl: string): OperationMeth
 }
 
 function bindRecoveriesRead(client: OperationExecutor): OperationMethod<"payment.recoveries.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"payment.recoveries.read","method":"GET","path":"/api/v1/payments/recoveries","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"payment.recoveries.read","method":"GET","path":"/api/v1/payments/recoveries","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchPaymentRecoveriesResolve(baseUrl: string): OperationMethod<"payment.recoveries.resolve"> {
@@ -74,7 +74,7 @@ export function createFetchPaymentRecoveriesResolve(baseUrl: string): OperationM
 }
 
 function bindRecoveriesResolve(client: OperationExecutor): OperationMethod<"payment.recoveries.resolve"> {
-  return bindOperation(client, defineStructuralOperation({"id":"payment.recoveries.resolve","method":"POST","path":"/api/v1/payments/recoveries/{caseid}/resolutions","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["caseid"]}));
+  return bindOperation(client, defineContractOperation({"id":"payment.recoveries.resolve","method":"POST","path":"/api/v1/payments/recoveries/{caseid}/resolutions","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchPaymentWebhooksWechat(baseUrl: string): OperationMethod<"payment.webhooks.wechat"> {
@@ -82,5 +82,5 @@ export function createFetchPaymentWebhooksWechat(baseUrl: string): OperationMeth
 }
 
 function bindWebhooksWechat(client: OperationExecutor): OperationMethod<"payment.webhooks.wechat"> {
-  return bindOperation(client, defineStructuralOperation({"id":"payment.webhooks.wechat","method":"POST","path":"/api/v1/webhooks/wechat/payment","audience":"provider","idempotent":true,"idempotency":"none","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"payment.webhooks.wechat","method":"POST","path":"/api/v1/webhooks/wechat/payment","audience":"provider","idempotent":true,"idempotency":"none","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }

@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const CHANNEL_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "channel.distributors.create",
@@ -78,7 +78,7 @@ export function createFetchChannelDistributorsCreate(baseUrl: string): Operation
 }
 
 function bindDistributorsCreate(client: OperationExecutor): OperationMethod<"channel.distributors.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.distributors.create","method":"POST","path":"/api/v1/channels/distributors","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.distributors.create","method":"POST","path":"/api/v1/channels/distributors","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelDistributorsRead(baseUrl: string): OperationMethod<"channel.distributors.read"> {
@@ -86,7 +86,7 @@ export function createFetchChannelDistributorsRead(baseUrl: string): OperationMe
 }
 
 function bindDistributorsRead(client: OperationExecutor): OperationMethod<"channel.distributors.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.distributors.read","method":"GET","path":"/api/v1/channels/distributors","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.distributors.read","method":"GET","path":"/api/v1/channels/distributors","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelDistributorsUpdate(baseUrl: string): OperationMethod<"channel.distributors.update"> {
@@ -94,7 +94,7 @@ export function createFetchChannelDistributorsUpdate(baseUrl: string): Operation
 }
 
 function bindDistributorsUpdate(client: OperationExecutor): OperationMethod<"channel.distributors.update"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.distributors.update","method":"PATCH","path":"/api/v1/channels/distributors/{distributorid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["distributorid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.distributors.update","method":"PATCH","path":"/api/v1/channels/distributors/{distributorid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelDistributorsDisable(baseUrl: string): OperationMethod<"channel.distributors.disable"> {
@@ -102,7 +102,7 @@ export function createFetchChannelDistributorsDisable(baseUrl: string): Operatio
 }
 
 function bindDistributorsDisable(client: OperationExecutor): OperationMethod<"channel.distributors.disable"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.distributors.disable","method":"DELETE","path":"/api/v1/channels/distributors/{distributorid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["distributorid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.distributors.disable","method":"DELETE","path":"/api/v1/channels/distributors/{distributorid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelBindingsManage(baseUrl: string): OperationMethod<"channel.bindings.manage"> {
@@ -110,7 +110,7 @@ export function createFetchChannelBindingsManage(baseUrl: string): OperationMeth
 }
 
 function bindBindingsManage(client: OperationExecutor): OperationMethod<"channel.bindings.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.bindings.manage","method":"PUT","path":"/api/v1/channels/bindings/{bindingid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["bindingid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.bindings.manage","method":"PUT","path":"/api/v1/channels/bindings/{bindingid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelQuotasManage(baseUrl: string): OperationMethod<"channel.quotas.manage"> {
@@ -118,7 +118,7 @@ export function createFetchChannelQuotasManage(baseUrl: string): OperationMethod
 }
 
 function bindQuotasManage(client: OperationExecutor): OperationMethod<"channel.quotas.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.quotas.manage","method":"PUT","path":"/api/v1/channels/quotas/{quotaid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["quotaid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.quotas.manage","method":"PUT","path":"/api/v1/channels/quotas/{quotaid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelConnectionsRead(baseUrl: string): OperationMethod<"channel.connections.read"> {
@@ -126,7 +126,7 @@ export function createFetchChannelConnectionsRead(baseUrl: string): OperationMet
 }
 
 function bindConnectionsRead(client: OperationExecutor): OperationMethod<"channel.connections.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.connections.read","method":"GET","path":"/api/v1/channels/connections","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.connections.read","method":"GET","path":"/api/v1/channels/connections","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelConnectionsCreate(baseUrl: string): OperationMethod<"channel.connections.create"> {
@@ -134,7 +134,7 @@ export function createFetchChannelConnectionsCreate(baseUrl: string): OperationM
 }
 
 function bindConnectionsCreate(client: OperationExecutor): OperationMethod<"channel.connections.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.connections.create","method":"POST","path":"/api/v1/channels/connections","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.connections.create","method":"POST","path":"/api/v1/channels/connections","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelConnectionsUpdate(baseUrl: string): OperationMethod<"channel.connections.update"> {
@@ -142,7 +142,7 @@ export function createFetchChannelConnectionsUpdate(baseUrl: string): OperationM
 }
 
 function bindConnectionsUpdate(client: OperationExecutor): OperationMethod<"channel.connections.update"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.connections.update","method":"PATCH","path":"/api/v1/channels/connections/{connectionid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["connectionid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.connections.update","method":"PATCH","path":"/api/v1/channels/connections/{connectionid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelConnectionsTest(baseUrl: string): OperationMethod<"channel.connections.test"> {
@@ -150,7 +150,7 @@ export function createFetchChannelConnectionsTest(baseUrl: string): OperationMet
 }
 
 function bindConnectionsTest(client: OperationExecutor): OperationMethod<"channel.connections.test"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.connections.test","method":"POST","path":"/api/v1/channels/connections/{connectionid}/tests","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["connectionid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.connections.test","method":"POST","path":"/api/v1/channels/connections/{connectionid}/tests","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelConnectionsEnable(baseUrl: string): OperationMethod<"channel.connections.enable"> {
@@ -158,7 +158,7 @@ export function createFetchChannelConnectionsEnable(baseUrl: string): OperationM
 }
 
 function bindConnectionsEnable(client: OperationExecutor): OperationMethod<"channel.connections.enable"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.connections.enable","method":"PUT","path":"/api/v1/channels/connections/{connectionid}/enablement","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["connectionid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.connections.enable","method":"PUT","path":"/api/v1/channels/connections/{connectionid}/enablement","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelConnectionsDisable(baseUrl: string): OperationMethod<"channel.connections.disable"> {
@@ -166,7 +166,7 @@ export function createFetchChannelConnectionsDisable(baseUrl: string): Operation
 }
 
 function bindConnectionsDisable(client: OperationExecutor): OperationMethod<"channel.connections.disable"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.connections.disable","method":"DELETE","path":"/api/v1/channels/connections/{connectionid}/enablement","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["connectionid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.connections.disable","method":"DELETE","path":"/api/v1/channels/connections/{connectionid}/enablement","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelWebhooksReceive(baseUrl: string): OperationMethod<"channel.webhooks.receive"> {
@@ -174,7 +174,7 @@ export function createFetchChannelWebhooksReceive(baseUrl: string): OperationMet
 }
 
 function bindWebhooksReceive(client: OperationExecutor): OperationMethod<"channel.webhooks.receive"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.webhooks.receive","method":"POST","path":"/api/v1/channels/webhooks/{connectionid}","audience":"provider","idempotent":true,"idempotency":"none","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["connectionid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.webhooks.receive","method":"POST","path":"/api/v1/channels/webhooks/{connectionid}","audience":"provider","idempotent":true,"idempotency":"none","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelSyncrunsStart(baseUrl: string): OperationMethod<"channel.syncruns.start"> {
@@ -182,7 +182,7 @@ export function createFetchChannelSyncrunsStart(baseUrl: string): OperationMetho
 }
 
 function bindSyncrunsStart(client: OperationExecutor): OperationMethod<"channel.syncruns.start"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.syncruns.start","method":"POST","path":"/api/v1/channels/syncruns","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.syncruns.start","method":"POST","path":"/api/v1/channels/syncruns","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelSyncrunsRead(baseUrl: string): OperationMethod<"channel.syncruns.read"> {
@@ -190,7 +190,7 @@ export function createFetchChannelSyncrunsRead(baseUrl: string): OperationMethod
 }
 
 function bindSyncrunsRead(client: OperationExecutor): OperationMethod<"channel.syncruns.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.syncruns.read","method":"GET","path":"/api/v1/channels/syncruns","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.syncruns.read","method":"GET","path":"/api/v1/channels/syncruns","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelSyncrunsCancel(baseUrl: string): OperationMethod<"channel.syncruns.cancel"> {
@@ -198,7 +198,7 @@ export function createFetchChannelSyncrunsCancel(baseUrl: string): OperationMeth
 }
 
 function bindSyncrunsCancel(client: OperationExecutor): OperationMethod<"channel.syncruns.cancel"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.syncruns.cancel","method":"DELETE","path":"/api/v1/channels/syncruns/{runid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["runid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.syncruns.cancel","method":"DELETE","path":"/api/v1/channels/syncruns/{runid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelOperationsRead(baseUrl: string): OperationMethod<"channel.operations.read"> {
@@ -206,7 +206,7 @@ export function createFetchChannelOperationsRead(baseUrl: string): OperationMeth
 }
 
 function bindOperationsRead(client: OperationExecutor): OperationMethod<"channel.operations.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.operations.read","method":"GET","path":"/api/v1/channels/operations","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.operations.read","method":"GET","path":"/api/v1/channels/operations","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchChannelOperationsReplay(baseUrl: string): OperationMethod<"channel.operations.replay"> {
@@ -214,5 +214,5 @@ export function createFetchChannelOperationsReplay(baseUrl: string): OperationMe
 }
 
 function bindOperationsReplay(client: OperationExecutor): OperationMethod<"channel.operations.replay"> {
-  return bindOperation(client, defineStructuralOperation({"id":"channel.operations.replay","method":"POST","path":"/api/v1/channels/operations/{operationid}/replays","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["operationid"]}));
+  return bindOperation(client, defineContractOperation({"id":"channel.operations.replay","method":"POST","path":"/api/v1/channels/operations/{operationid}/replays","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }

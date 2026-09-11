@@ -206,6 +206,7 @@ const REPAIR_FILES = [
   '20260912130000_create_supplier_analytics_perspective.sql',
   '20260912140000_index_catalog_reverse_lookups.sql',
   '20260912150000_create_sfl_administrator_segment_scope.sql',
+  '20260912170000_create_sfl_execution_contract_kernel.sql',
 ];
 
 const mode = process.argv[2];

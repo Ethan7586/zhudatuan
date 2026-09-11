@@ -76,6 +76,7 @@ describe('identity session projection', () => {
       query: async (text: string, values: readonly unknown[] = []) => {
         queries.push({ text, values });
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+      if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
         if (text.startsWith('select request_hash,state,response')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
         }
@@ -166,6 +167,7 @@ describe('identity financial action proof issuance', () => {
             rowCount: 1 } as unknown as QueryResult;
         }
         if (text.includes('insert into runtime.idempotency')) storedHash = String(values[3]);
+      if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
         if (text.startsWith('select request_hash,state,response')) {
           return { rows: [{ request_hash: storedHash, state: 'started', response: null }], rowCount: 1 } as unknown as QueryResult;
         }
@@ -255,6 +257,7 @@ describe('administrator invitation issuance', () => {
       query: async (text: string, values: readonly unknown[] = []) => {
         if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l0', node_id: 'l0' }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+      if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
         if (text.startsWith('select request_hash,state,response')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
         }
@@ -333,6 +336,7 @@ describe('identity challenge notification queue', () => {
       query: async (text: string, values: readonly unknown[] = []) => {
         if (text.includes('from identity.realmentry entry')) return result([{ realm_id: 'realm:l1', node_id: 'node:hbbtzn:l1' }]);
         if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+      if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
         if (text.startsWith('select request_hash,state,response')) {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
         }
@@ -466,6 +470,7 @@ function memberManagementHarness(targetGovernance: 'owner' | 'senior_administrat
     query: async (text: string, values: readonly unknown[] = []) => {
       queries.push({ text, values });
       if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+      if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
       if (text.startsWith('select request_hash,state,response')) {
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }

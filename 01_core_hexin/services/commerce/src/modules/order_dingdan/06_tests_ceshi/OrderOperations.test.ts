@@ -84,6 +84,7 @@ function approvalHarness(): Readonly<{
     query: async (text: string, values: readonly unknown[] = []) => {
       queries.push({ text, values });
       if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
+      if (text.includes("update runtime.idempotency set state='completed'")) return result([{}]);
       if (text.startsWith('select request_hash,state,response')) {
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }

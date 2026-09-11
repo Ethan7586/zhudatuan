@@ -5,7 +5,7 @@ select pg_advisory_xact_lock(hashtext('sfl:administrator-segment-scope:v1'));
 do $precondition$
 begin
   if not exists(select 1 from runtime.schemaversion
-      where version='20260912050000' and checksum='de6dc92efc66dc4bb64ff4ed0a4e89031a357a14be22be4387ce87c75086d408') then
+      where version='20260912050000' and checksum='1cd685bc700d26773ffd1c5937c908cb5bff4d61d7c2c07a185da16dc7d5f899') then
     raise exception 'SFL_ADMIN_SEGMENT_SCOPE_PREDECESSOR_INVALID';
   end if;
   if to_regclass('access.administratoridentity') is not null then
@@ -432,6 +432,35 @@ grant execute on function access.resolve_administrator_context(text),access.admi
   access.change_administrator_segment_scope(text,text,bigint,jsonb),
   access.record_administrator_member_note(text,text,bigint,text,text,text,text)
   to shopapp,shopconsole,zhudatuanidentityapi;
+
+insert into runtime.operation(id,owner,method,path,contract_version) values
+  ('access.administrators.members.read','access','GET','/api/v1/access/administrator-members','1.0.0'),
+  ('access.administrators.member.read','access','GET','/api/v1/access/administrator-members/{nodeid}','1.0.0'),
+  ('access.administrators.scopes.manage','access','PUT','/api/v1/access/administrators/{membershipid}/segment-scope','1.0.0'),
+  ('access.administrators.members.note','access','POST','/api/v1/access/administrator-members/{nodeid}/notes','1.0.0')
+on conflict(id) do update set owner=excluded.owner,method=excluded.method,path=excluded.path,contract_version=excluded.contract_version;
+
+insert into capability.capability(id,kind,name,version,status)
+select operation.id,'operation',operation.id,1,'active' from runtime.operation operation
+where operation.id in('access.administrators.members.read','access.administrators.member.read',
+  'access.administrators.scopes.manage','access.administrators.members.note')
+on conflict(id) do update set kind='operation',name=excluded.name,status='active';
+
+insert into capability.operation(operation_id,capability_id,permission_code,audience) values
+  ('access.administrators.members.read','access.administrators.members.read','member.read','operator'),
+  ('access.administrators.member.read','access.administrators.member.read','member.read','operator'),
+  ('access.administrators.scopes.manage','access.administrators.scopes.manage','access.scope.manage','operator'),
+  ('access.administrators.members.note','access.administrators.members.note','member.manage','operator')
+on conflict(operation_id) do update set capability_id=excluded.capability_id,
+  permission_code=excluded.permission_code,audience=excluded.audience;
+
+insert into capability.entitlement(id,scope_id,capability_id,state,quota,effective_at,expires_at,version) values
+  ('platform:access.administrators.members.read','organization-platform-root','access.administrators.members.read','enabled',null,'1970-01-01T00:00:00Z',null,0),
+  ('platform:access.administrators.member.read','organization-platform-root','access.administrators.member.read','enabled',null,'1970-01-01T00:00:00Z',null,0),
+  ('platform:access.administrators.scopes.manage','organization-platform-root','access.administrators.scopes.manage','enabled',null,'1970-01-01T00:00:00Z',null,0),
+  ('platform:access.administrators.members.note','organization-platform-root','access.administrators.members.note','enabled',null,'1970-01-01T00:00:00Z',null,0)
+on conflict(id) do update set capability_id=excluded.capability_id,state='enabled',quota=null,
+  effective_at=excluded.effective_at,expires_at=null;
 
 insert into runtime.schemaversion(version,checksum)
 values('20260912150000','817a06476de98f3e81a24dd386874c7345867df0ad16392241c020b04034fad9');

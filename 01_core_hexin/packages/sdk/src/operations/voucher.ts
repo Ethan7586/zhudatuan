@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const VOUCHER_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "voucher.cardlibraries.read",
@@ -252,7 +252,7 @@ export function createFetchVoucherCardlibrariesRead(baseUrl: string): OperationM
 }
 
 function bindCardlibrariesRead(client: OperationExecutor): OperationMethod<"voucher.cardlibraries.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.cardlibraries.read","method":"GET","path":"/api/v1/vouchers/cardlibraries","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.cardlibraries.read","method":"GET","path":"/api/v1/vouchers/cardlibraries","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherCardlibrariesCreate(baseUrl: string): OperationMethod<"voucher.cardlibraries.create"> {
@@ -260,7 +260,7 @@ export function createFetchVoucherCardlibrariesCreate(baseUrl: string): Operatio
 }
 
 function bindCardlibrariesCreate(client: OperationExecutor): OperationMethod<"voucher.cardlibraries.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.cardlibraries.create","method":"POST","path":"/api/v1/vouchers/cardlibraries","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.cardlibraries.create","method":"POST","path":"/api/v1/vouchers/cardlibraries","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherCardlibrariesAllocate(baseUrl: string): OperationMethod<"voucher.cardlibraries.allocate"> {
@@ -268,7 +268,7 @@ export function createFetchVoucherCardlibrariesAllocate(baseUrl: string): Operat
 }
 
 function bindCardlibrariesAllocate(client: OperationExecutor): OperationMethod<"voucher.cardlibraries.allocate"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.cardlibraries.allocate","method":"POST","path":"/api/v1/vouchers/cardlibraries/{libraryid}/allocations","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["libraryid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.cardlibraries.allocate","method":"POST","path":"/api/v1/vouchers/cardlibraries/{libraryid}/allocations","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherImportsRead(baseUrl: string): OperationMethod<"voucher.imports.read"> {
@@ -276,7 +276,7 @@ export function createFetchVoucherImportsRead(baseUrl: string): OperationMethod<
 }
 
 function bindImportsRead(client: OperationExecutor): OperationMethod<"voucher.imports.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.imports.read","method":"GET","path":"/api/v1/vouchers/imports/{importid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":["importid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.imports.read","method":"GET","path":"/api/v1/vouchers/imports/{importid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherProgramsRead(baseUrl: string): OperationMethod<"voucher.programs.read"> {
@@ -284,7 +284,7 @@ export function createFetchVoucherProgramsRead(baseUrl: string): OperationMethod
 }
 
 function bindProgramsRead(client: OperationExecutor): OperationMethod<"voucher.programs.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.programs.read","method":"GET","path":"/api/v1/vouchers/programs","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.programs.read","method":"GET","path":"/api/v1/vouchers/programs","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherProgramsManage(baseUrl: string): OperationMethod<"voucher.programs.manage"> {
@@ -292,7 +292,7 @@ export function createFetchVoucherProgramsManage(baseUrl: string): OperationMeth
 }
 
 function bindProgramsManage(client: OperationExecutor): OperationMethod<"voucher.programs.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.programs.manage","method":"PUT","path":"/api/v1/vouchers/programs/{programid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["programid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.programs.manage","method":"PUT","path":"/api/v1/vouchers/programs/{programid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherReservesRead(baseUrl: string): OperationMethod<"voucher.reserves.read"> {
@@ -300,7 +300,7 @@ export function createFetchVoucherReservesRead(baseUrl: string): OperationMethod
 }
 
 function bindReservesRead(client: OperationExecutor): OperationMethod<"voucher.reserves.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.reserves.read","method":"GET","path":"/api/v1/vouchers/reserves","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.reserves.read","method":"GET","path":"/api/v1/vouchers/reserves","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherReservesRequest(baseUrl: string): OperationMethod<"voucher.reserves.request"> {
@@ -308,7 +308,7 @@ export function createFetchVoucherReservesRequest(baseUrl: string): OperationMet
 }
 
 function bindReservesRequest(client: OperationExecutor): OperationMethod<"voucher.reserves.request"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.reserves.request","method":"POST","path":"/api/v1/vouchers/reserves","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.reserves.request","method":"POST","path":"/api/v1/vouchers/reserves","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherReservesDecide(baseUrl: string): OperationMethod<"voucher.reserves.decide"> {
@@ -316,7 +316,7 @@ export function createFetchVoucherReservesDecide(baseUrl: string): OperationMeth
 }
 
 function bindReservesDecide(client: OperationExecutor): OperationMethod<"voucher.reserves.decide"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.reserves.decide","method":"PUT","path":"/api/v1/vouchers/reserves/{reserveid}/decision","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["reserveid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.reserves.decide","method":"PUT","path":"/api/v1/vouchers/reserves/{reserveid}/decision","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherBatchesRead(baseUrl: string): OperationMethod<"voucher.batches.read"> {
@@ -324,7 +324,7 @@ export function createFetchVoucherBatchesRead(baseUrl: string): OperationMethod<
 }
 
 function bindBatchesRead(client: OperationExecutor): OperationMethod<"voucher.batches.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.batches.read","method":"GET","path":"/api/v1/vouchers/batches","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.batches.read","method":"GET","path":"/api/v1/vouchers/batches","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherBatchesIssue(baseUrl: string): OperationMethod<"voucher.batches.issue"> {
@@ -332,7 +332,7 @@ export function createFetchVoucherBatchesIssue(baseUrl: string): OperationMethod
 }
 
 function bindBatchesIssue(client: OperationExecutor): OperationMethod<"voucher.batches.issue"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.batches.issue","method":"POST","path":"/api/v1/vouchers/batches","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.batches.issue","method":"POST","path":"/api/v1/vouchers/batches","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherBatchesRetry(baseUrl: string): OperationMethod<"voucher.batches.retry"> {
@@ -340,7 +340,7 @@ export function createFetchVoucherBatchesRetry(baseUrl: string): OperationMethod
 }
 
 function bindBatchesRetry(client: OperationExecutor): OperationMethod<"voucher.batches.retry"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.batches.retry","method":"POST","path":"/api/v1/vouchers/batches/{batchid}/retry","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["batchid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.batches.retry","method":"POST","path":"/api/v1/vouchers/batches/{batchid}/retry","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherStatusBatch(baseUrl: string): OperationMethod<"voucher.status.batch"> {
@@ -348,7 +348,7 @@ export function createFetchVoucherStatusBatch(baseUrl: string): OperationMethod<
 }
 
 function bindStatusBatch(client: OperationExecutor): OperationMethod<"voucher.status.batch"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.status.batch","method":"POST","path":"/api/v1/vouchers/statusbatches","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.status.batch","method":"POST","path":"/api/v1/vouchers/statusbatches","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherStatusbatchesRead(baseUrl: string): OperationMethod<"voucher.statusbatches.read"> {
@@ -356,7 +356,7 @@ export function createFetchVoucherStatusbatchesRead(baseUrl: string): OperationM
 }
 
 function bindStatusbatchesRead(client: OperationExecutor): OperationMethod<"voucher.statusbatches.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.statusbatches.read","method":"GET","path":"/api/v1/vouchers/statusbatches","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.statusbatches.read","method":"GET","path":"/api/v1/vouchers/statusbatches","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherBindingsRead(baseUrl: string): OperationMethod<"voucher.bindings.read"> {
@@ -364,7 +364,7 @@ export function createFetchVoucherBindingsRead(baseUrl: string): OperationMethod
 }
 
 function bindBindingsRead(client: OperationExecutor): OperationMethod<"voucher.bindings.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.bindings.read","method":"GET","path":"/api/v1/vouchers/bindings","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.bindings.read","method":"GET","path":"/api/v1/vouchers/bindings","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherBindingsManage(baseUrl: string): OperationMethod<"voucher.bindings.manage"> {
@@ -372,7 +372,7 @@ export function createFetchVoucherBindingsManage(baseUrl: string): OperationMeth
 }
 
 function bindBindingsManage(client: OperationExecutor): OperationMethod<"voucher.bindings.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.bindings.manage","method":"PUT","path":"/api/v1/vouchers/{voucherid}/binding","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["voucherid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.bindings.manage","method":"PUT","path":"/api/v1/vouchers/{voucherid}/binding","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherRedemptionsRead(baseUrl: string): OperationMethod<"voucher.redemptions.read"> {
@@ -380,7 +380,7 @@ export function createFetchVoucherRedemptionsRead(baseUrl: string): OperationMet
 }
 
 function bindRedemptionsRead(client: OperationExecutor): OperationMethod<"voucher.redemptions.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.redemptions.read","method":"GET","path":"/api/v1/vouchers/redemptions","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.redemptions.read","method":"GET","path":"/api/v1/vouchers/redemptions","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherHistoryRead(baseUrl: string): OperationMethod<"voucher.history.read"> {
@@ -388,7 +388,7 @@ export function createFetchVoucherHistoryRead(baseUrl: string): OperationMethod<
 }
 
 function bindHistoryRead(client: OperationExecutor): OperationMethod<"voucher.history.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.history.read","method":"GET","path":"/api/v1/vouchers/history","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.history.read","method":"GET","path":"/api/v1/vouchers/history","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherRedemptionsReverse(baseUrl: string): OperationMethod<"voucher.redemptions.reverse"> {
@@ -396,7 +396,7 @@ export function createFetchVoucherRedemptionsReverse(baseUrl: string): Operation
 }
 
 function bindRedemptionsReverse(client: OperationExecutor): OperationMethod<"voucher.redemptions.reverse"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.redemptions.reverse","method":"POST","path":"/api/v1/vouchers/redemptions/{redemptionid}/reversal","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["redemptionid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.redemptions.reverse","method":"POST","path":"/api/v1/vouchers/redemptions/{redemptionid}/reversal","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchVoucherProductsCreate(baseUrl: string): OperationMethod<"voucher.products.create"> {
@@ -404,7 +404,7 @@ export function createFetchVoucherProductsCreate(baseUrl: string): OperationMeth
 }
 
 function bindProductsCreate(client: OperationExecutor): OperationMethod<"voucher.products.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.products.create","method":"POST","path":"/api/v1/vouchers/products","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.products.create","method":"POST","path":"/api/v1/vouchers/products","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherProductsRevise(baseUrl: string): OperationMethod<"voucher.products.revise"> {
@@ -412,7 +412,7 @@ export function createFetchVoucherProductsRevise(baseUrl: string): OperationMeth
 }
 
 function bindProductsRevise(client: OperationExecutor): OperationMethod<"voucher.products.revise"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.products.revise","method":"POST","path":"/api/v1/vouchers/products/{productid}/versions","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["productid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.products.revise","method":"POST","path":"/api/v1/vouchers/products/{productid}/versions","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherProductsEnable(baseUrl: string): OperationMethod<"voucher.products.enable"> {
@@ -420,7 +420,7 @@ export function createFetchVoucherProductsEnable(baseUrl: string): OperationMeth
 }
 
 function bindProductsEnable(client: OperationExecutor): OperationMethod<"voucher.products.enable"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.products.enable","method":"POST","path":"/api/v1/vouchers/products/{productid}/enable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["productid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.products.enable","method":"POST","path":"/api/v1/vouchers/products/{productid}/enable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherProductsDisable(baseUrl: string): OperationMethod<"voucher.products.disable"> {
@@ -428,7 +428,7 @@ export function createFetchVoucherProductsDisable(baseUrl: string): OperationMet
 }
 
 function bindProductsDisable(client: OperationExecutor): OperationMethod<"voucher.products.disable"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.products.disable","method":"POST","path":"/api/v1/vouchers/products/{productid}/disable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["productid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.products.disable","method":"POST","path":"/api/v1/vouchers/products/{productid}/disable","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherProductsGet(baseUrl: string): OperationMethod<"voucher.products.get"> {
@@ -436,7 +436,7 @@ export function createFetchVoucherProductsGet(baseUrl: string): OperationMethod<
 }
 
 function bindProductsGet(client: OperationExecutor): OperationMethod<"voucher.products.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.products.get","method":"GET","path":"/api/v1/vouchers/products/{productid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["productid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.products.get","method":"GET","path":"/api/v1/vouchers/products/{productid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherProductsList(baseUrl: string): OperationMethod<"voucher.products.list"> {
@@ -444,7 +444,7 @@ export function createFetchVoucherProductsList(baseUrl: string): OperationMethod
 }
 
 function bindProductsList(client: OperationExecutor): OperationMethod<"voucher.products.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.products.list","method":"GET","path":"/api/v1/vouchers/products","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.products.list","method":"GET","path":"/api/v1/vouchers/products","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherProductoptionsList(baseUrl: string): OperationMethod<"voucher.productoptions.list"> {
@@ -452,7 +452,7 @@ export function createFetchVoucherProductoptionsList(baseUrl: string): Operation
 }
 
 function bindProductoptionsList(client: OperationExecutor): OperationMethod<"voucher.productoptions.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.productoptions.list","method":"GET","path":"/api/v1/vouchers/product-options","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.productoptions.list","method":"GET","path":"/api/v1/vouchers/product-options","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherCredentialpoolsCreate(baseUrl: string): OperationMethod<"voucher.credentialpools.create"> {
@@ -460,7 +460,7 @@ export function createFetchVoucherCredentialpoolsCreate(baseUrl: string): Operat
 }
 
 function bindCredentialpoolsCreate(client: OperationExecutor): OperationMethod<"voucher.credentialpools.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.credentialpools.create","method":"POST","path":"/api/v1/vouchers/credential-pools","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.credentialpools.create","method":"POST","path":"/api/v1/vouchers/credential-pools","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherCredentialsGenerate(baseUrl: string): OperationMethod<"voucher.credentials.generate"> {
@@ -468,7 +468,7 @@ export function createFetchVoucherCredentialsGenerate(baseUrl: string): Operatio
 }
 
 function bindCredentialsGenerate(client: OperationExecutor): OperationMethod<"voucher.credentials.generate"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.credentials.generate","method":"POST","path":"/api/v1/vouchers/credential-pools/{poolid}/generate","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"async","availability":"frozen","pathKeys":["poolid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.credentials.generate","method":"POST","path":"/api/v1/vouchers/credential-pools/{poolid}/generate","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"async","availability":"frozen"}));
 }
 
 export function createFetchVoucherCredentialsImport(baseUrl: string): OperationMethod<"voucher.credentials.import"> {
@@ -476,7 +476,7 @@ export function createFetchVoucherCredentialsImport(baseUrl: string): OperationM
 }
 
 function bindCredentialsImport(client: OperationExecutor): OperationMethod<"voucher.credentials.import"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.credentials.import","method":"POST","path":"/api/v1/vouchers/credential-pools/{poolid}/imports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"async","availability":"frozen","pathKeys":["poolid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.credentials.import","method":"POST","path":"/api/v1/vouchers/credential-pools/{poolid}/imports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"async","availability":"frozen"}));
 }
 
 export function createFetchVoucherCredentialpoolsClose(baseUrl: string): OperationMethod<"voucher.credentialpools.close"> {
@@ -484,7 +484,7 @@ export function createFetchVoucherCredentialpoolsClose(baseUrl: string): Operati
 }
 
 function bindCredentialpoolsClose(client: OperationExecutor): OperationMethod<"voucher.credentialpools.close"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.credentialpools.close","method":"POST","path":"/api/v1/vouchers/credential-pools/{poolid}/close","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["poolid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.credentialpools.close","method":"POST","path":"/api/v1/vouchers/credential-pools/{poolid}/close","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherCredentialpoolsGet(baseUrl: string): OperationMethod<"voucher.credentialpools.get"> {
@@ -492,7 +492,7 @@ export function createFetchVoucherCredentialpoolsGet(baseUrl: string): Operation
 }
 
 function bindCredentialpoolsGet(client: OperationExecutor): OperationMethod<"voucher.credentialpools.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.credentialpools.get","method":"GET","path":"/api/v1/vouchers/credential-pools/{poolid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["poolid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.credentialpools.get","method":"GET","path":"/api/v1/vouchers/credential-pools/{poolid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherCredentialpoolsList(baseUrl: string): OperationMethod<"voucher.credentialpools.list"> {
@@ -500,7 +500,7 @@ export function createFetchVoucherCredentialpoolsList(baseUrl: string): Operatio
 }
 
 function bindCredentialpoolsList(client: OperationExecutor): OperationMethod<"voucher.credentialpools.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.credentialpools.list","method":"GET","path":"/api/v1/vouchers/credential-pools","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.credentialpools.list","method":"GET","path":"/api/v1/vouchers/credential-pools","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherCredentialsList(baseUrl: string): OperationMethod<"voucher.credentials.list"> {
@@ -508,7 +508,7 @@ export function createFetchVoucherCredentialsList(baseUrl: string): OperationMet
 }
 
 function bindCredentialsList(client: OperationExecutor): OperationMethod<"voucher.credentials.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.credentials.list","method":"GET","path":"/api/v1/vouchers/credentials","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.credentials.list","method":"GET","path":"/api/v1/vouchers/credentials","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherCredentialsGet(baseUrl: string): OperationMethod<"voucher.credentials.get"> {
@@ -516,7 +516,7 @@ export function createFetchVoucherCredentialsGet(baseUrl: string): OperationMeth
 }
 
 function bindCredentialsGet(client: OperationExecutor): OperationMethod<"voucher.credentials.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.credentials.get","method":"GET","path":"/api/v1/vouchers/credentials/{credentialid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["credentialid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.credentials.get","method":"GET","path":"/api/v1/vouchers/credentials/{credentialid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherCredentialexportsCreate(baseUrl: string): OperationMethod<"voucher.credentialexports.create"> {
@@ -524,7 +524,7 @@ export function createFetchVoucherCredentialexportsCreate(baseUrl: string): Oper
 }
 
 function bindCredentialexportsCreate(client: OperationExecutor): OperationMethod<"voucher.credentialexports.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.credentialexports.create","method":"POST","path":"/api/v1/vouchers/credential-exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"async","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.credentialexports.create","method":"POST","path":"/api/v1/vouchers/credential-exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"async","availability":"frozen"}));
 }
 
 export function createFetchVoucherJobsGet(baseUrl: string): OperationMethod<"voucher.jobs.get"> {
@@ -532,7 +532,7 @@ export function createFetchVoucherJobsGet(baseUrl: string): OperationMethod<"vou
 }
 
 function bindJobsGet(client: OperationExecutor): OperationMethod<"voucher.jobs.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.jobs.get","method":"GET","path":"/api/v1/vouchers/jobs/{jobid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["jobid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.jobs.get","method":"GET","path":"/api/v1/vouchers/jobs/{jobid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherStockrequestsCreate(baseUrl: string): OperationMethod<"voucher.stockrequests.create"> {
@@ -540,7 +540,7 @@ export function createFetchVoucherStockrequestsCreate(baseUrl: string): Operatio
 }
 
 function bindStockrequestsCreate(client: OperationExecutor): OperationMethod<"voucher.stockrequests.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.stockrequests.create","method":"POST","path":"/api/v1/vouchers/stock-requests","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.stockrequests.create","method":"POST","path":"/api/v1/vouchers/stock-requests","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherStockrequestsUpdate(baseUrl: string): OperationMethod<"voucher.stockrequests.update"> {
@@ -548,7 +548,7 @@ export function createFetchVoucherStockrequestsUpdate(baseUrl: string): Operatio
 }
 
 function bindStockrequestsUpdate(client: OperationExecutor): OperationMethod<"voucher.stockrequests.update"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.stockrequests.update","method":"PATCH","path":"/api/v1/vouchers/stock-requests/{requestid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["requestid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.stockrequests.update","method":"PATCH","path":"/api/v1/vouchers/stock-requests/{requestid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherStockrequestsSubmit(baseUrl: string): OperationMethod<"voucher.stockrequests.submit"> {
@@ -556,7 +556,7 @@ export function createFetchVoucherStockrequestsSubmit(baseUrl: string): Operatio
 }
 
 function bindStockrequestsSubmit(client: OperationExecutor): OperationMethod<"voucher.stockrequests.submit"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.stockrequests.submit","method":"POST","path":"/api/v1/vouchers/stock-requests/{requestid}/submit","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["requestid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.stockrequests.submit","method":"POST","path":"/api/v1/vouchers/stock-requests/{requestid}/submit","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherStockrequestsCancel(baseUrl: string): OperationMethod<"voucher.stockrequests.cancel"> {
@@ -564,7 +564,7 @@ export function createFetchVoucherStockrequestsCancel(baseUrl: string): Operatio
 }
 
 function bindStockrequestsCancel(client: OperationExecutor): OperationMethod<"voucher.stockrequests.cancel"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.stockrequests.cancel","method":"POST","path":"/api/v1/vouchers/stock-requests/{requestid}/cancel","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["requestid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.stockrequests.cancel","method":"POST","path":"/api/v1/vouchers/stock-requests/{requestid}/cancel","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherStockrequestsGet(baseUrl: string): OperationMethod<"voucher.stockrequests.get"> {
@@ -572,7 +572,7 @@ export function createFetchVoucherStockrequestsGet(baseUrl: string): OperationMe
 }
 
 function bindStockrequestsGet(client: OperationExecutor): OperationMethod<"voucher.stockrequests.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.stockrequests.get","method":"GET","path":"/api/v1/vouchers/stock-requests/{requestid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["requestid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.stockrequests.get","method":"GET","path":"/api/v1/vouchers/stock-requests/{requestid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherStockrequestsList(baseUrl: string): OperationMethod<"voucher.stockrequests.list"> {
@@ -580,7 +580,7 @@ export function createFetchVoucherStockrequestsList(baseUrl: string): OperationM
 }
 
 function bindStockrequestsList(client: OperationExecutor): OperationMethod<"voucher.stockrequests.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.stockrequests.list","method":"GET","path":"/api/v1/vouchers/stock-requests","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.stockrequests.list","method":"GET","path":"/api/v1/vouchers/stock-requests","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherStockrequestoptionsList(baseUrl: string): OperationMethod<"voucher.stockrequestoptions.list"> {
@@ -588,7 +588,7 @@ export function createFetchVoucherStockrequestoptionsList(baseUrl: string): Oper
 }
 
 function bindStockrequestoptionsList(client: OperationExecutor): OperationMethod<"voucher.stockrequestoptions.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.stockrequestoptions.list","method":"GET","path":"/api/v1/vouchers/stock-request-options","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.stockrequestoptions.list","method":"GET","path":"/api/v1/vouchers/stock-request-options","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherIssueordersCreate(baseUrl: string): OperationMethod<"voucher.issueorders.create"> {
@@ -596,7 +596,7 @@ export function createFetchVoucherIssueordersCreate(baseUrl: string): OperationM
 }
 
 function bindIssueordersCreate(client: OperationExecutor): OperationMethod<"voucher.issueorders.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.issueorders.create","method":"POST","path":"/api/v1/vouchers/issue-orders","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.issueorders.create","method":"POST","path":"/api/v1/vouchers/issue-orders","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherIssueordersUpdate(baseUrl: string): OperationMethod<"voucher.issueorders.update"> {
@@ -604,7 +604,7 @@ export function createFetchVoucherIssueordersUpdate(baseUrl: string): OperationM
 }
 
 function bindIssueordersUpdate(client: OperationExecutor): OperationMethod<"voucher.issueorders.update"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.issueorders.update","method":"PATCH","path":"/api/v1/vouchers/issue-orders/{orderid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["orderid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.issueorders.update","method":"PATCH","path":"/api/v1/vouchers/issue-orders/{orderid}","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherIssueordersSubmit(baseUrl: string): OperationMethod<"voucher.issueorders.submit"> {
@@ -612,7 +612,7 @@ export function createFetchVoucherIssueordersSubmit(baseUrl: string): OperationM
 }
 
 function bindIssueordersSubmit(client: OperationExecutor): OperationMethod<"voucher.issueorders.submit"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.issueorders.submit","method":"POST","path":"/api/v1/vouchers/issue-orders/{orderid}/submit","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"async","availability":"frozen","pathKeys":["orderid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.issueorders.submit","method":"POST","path":"/api/v1/vouchers/issue-orders/{orderid}/submit","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"async","availability":"frozen"}));
 }
 
 export function createFetchVoucherIssueordersCancel(baseUrl: string): OperationMethod<"voucher.issueorders.cancel"> {
@@ -620,7 +620,7 @@ export function createFetchVoucherIssueordersCancel(baseUrl: string): OperationM
 }
 
 function bindIssueordersCancel(client: OperationExecutor): OperationMethod<"voucher.issueorders.cancel"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.issueorders.cancel","method":"POST","path":"/api/v1/vouchers/issue-orders/{orderid}/cancel","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["orderid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.issueorders.cancel","method":"POST","path":"/api/v1/vouchers/issue-orders/{orderid}/cancel","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherIssueordersGet(baseUrl: string): OperationMethod<"voucher.issueorders.get"> {
@@ -628,7 +628,7 @@ export function createFetchVoucherIssueordersGet(baseUrl: string): OperationMeth
 }
 
 function bindIssueordersGet(client: OperationExecutor): OperationMethod<"voucher.issueorders.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.issueorders.get","method":"GET","path":"/api/v1/vouchers/issue-orders/{orderid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["orderid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.issueorders.get","method":"GET","path":"/api/v1/vouchers/issue-orders/{orderid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherIssueordersList(baseUrl: string): OperationMethod<"voucher.issueorders.list"> {
@@ -636,7 +636,7 @@ export function createFetchVoucherIssueordersList(baseUrl: string): OperationMet
 }
 
 function bindIssueordersList(client: OperationExecutor): OperationMethod<"voucher.issueorders.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.issueorders.list","method":"GET","path":"/api/v1/vouchers/issue-orders","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.issueorders.list","method":"GET","path":"/api/v1/vouchers/issue-orders","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherIssuebatchesRetry(baseUrl: string): OperationMethod<"voucher.issuebatches.retry"> {
@@ -644,7 +644,7 @@ export function createFetchVoucherIssuebatchesRetry(baseUrl: string): OperationM
 }
 
 function bindIssuebatchesRetry(client: OperationExecutor): OperationMethod<"voucher.issuebatches.retry"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.issuebatches.retry","method":"POST","path":"/api/v1/vouchers/issue-batches/{batchid}/retry","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"async","availability":"frozen","pathKeys":["batchid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.issuebatches.retry","method":"POST","path":"/api/v1/vouchers/issue-batches/{batchid}/retry","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"async","availability":"frozen"}));
 }
 
 export function createFetchVoucherIssuebatchesGet(baseUrl: string): OperationMethod<"voucher.issuebatches.get"> {
@@ -652,7 +652,7 @@ export function createFetchVoucherIssuebatchesGet(baseUrl: string): OperationMet
 }
 
 function bindIssuebatchesGet(client: OperationExecutor): OperationMethod<"voucher.issuebatches.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.issuebatches.get","method":"GET","path":"/api/v1/vouchers/issue-batches/{batchid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["batchid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.issuebatches.get","method":"GET","path":"/api/v1/vouchers/issue-batches/{batchid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherIssueorderexportsCreate(baseUrl: string): OperationMethod<"voucher.issueorderexports.create"> {
@@ -660,7 +660,7 @@ export function createFetchVoucherIssueorderexportsCreate(baseUrl: string): Oper
 }
 
 function bindIssueorderexportsCreate(client: OperationExecutor): OperationMethod<"voucher.issueorderexports.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.issueorderexports.create","method":"POST","path":"/api/v1/vouchers/issue-order-exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"async","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.issueorderexports.create","method":"POST","path":"/api/v1/vouchers/issue-order-exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"async","availability":"frozen"}));
 }
 
 export function createFetchVoucherActionbatchesCreate(baseUrl: string): OperationMethod<"voucher.actionbatches.create"> {
@@ -668,7 +668,7 @@ export function createFetchVoucherActionbatchesCreate(baseUrl: string): Operatio
 }
 
 function bindActionbatchesCreate(client: OperationExecutor): OperationMethod<"voucher.actionbatches.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.actionbatches.create","method":"POST","path":"/api/v1/vouchers/action-batches","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"async","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.actionbatches.create","method":"POST","path":"/api/v1/vouchers/action-batches","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"async","availability":"frozen"}));
 }
 
 export function createFetchVoucherActionbatchesGet(baseUrl: string): OperationMethod<"voucher.actionbatches.get"> {
@@ -676,7 +676,7 @@ export function createFetchVoucherActionbatchesGet(baseUrl: string): OperationMe
 }
 
 function bindActionbatchesGet(client: OperationExecutor): OperationMethod<"voucher.actionbatches.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.actionbatches.get","method":"GET","path":"/api/v1/vouchers/action-batches/{actionbatchid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["actionbatchid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.actionbatches.get","method":"GET","path":"/api/v1/vouchers/action-batches/{actionbatchid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherActionbatchesList(baseUrl: string): OperationMethod<"voucher.actionbatches.list"> {
@@ -684,7 +684,7 @@ export function createFetchVoucherActionbatchesList(baseUrl: string): OperationM
 }
 
 function bindActionbatchesList(client: OperationExecutor): OperationMethod<"voucher.actionbatches.list"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.actionbatches.list","method":"GET","path":"/api/v1/vouchers/action-batches","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.actionbatches.list","method":"GET","path":"/api/v1/vouchers/action-batches","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherActionbatchesRetry(baseUrl: string): OperationMethod<"voucher.actionbatches.retry"> {
@@ -692,7 +692,7 @@ export function createFetchVoucherActionbatchesRetry(baseUrl: string): Operation
 }
 
 function bindActionbatchesRetry(client: OperationExecutor): OperationMethod<"voucher.actionbatches.retry"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.actionbatches.retry","method":"POST","path":"/api/v1/vouchers/action-batches/{actionbatchid}/retry","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"async","availability":"frozen","pathKeys":["actionbatchid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.actionbatches.retry","method":"POST","path":"/api/v1/vouchers/action-batches/{actionbatchid}/retry","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"async","availability":"frozen"}));
 }
 
 export function createFetchVoucherActionexportsCreate(baseUrl: string): OperationMethod<"voucher.actionexports.create"> {
@@ -700,7 +700,7 @@ export function createFetchVoucherActionexportsCreate(baseUrl: string): Operatio
 }
 
 function bindActionexportsCreate(client: OperationExecutor): OperationMethod<"voucher.actionexports.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.actionexports.create","method":"POST","path":"/api/v1/vouchers/action-exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"async","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.actionexports.create","method":"POST","path":"/api/v1/vouchers/action-exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"async","availability":"frozen"}));
 }
 
 export function createFetchVoucherSearchRead(baseUrl: string): OperationMethod<"voucher.search.read"> {
@@ -708,7 +708,7 @@ export function createFetchVoucherSearchRead(baseUrl: string): OperationMethod<"
 }
 
 function bindSearchRead(client: OperationExecutor): OperationMethod<"voucher.search.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.search.read","method":"GET","path":"/api/v1/vouchers/search","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.search.read","method":"GET","path":"/api/v1/vouchers/search","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherActivationsSecret(baseUrl: string): OperationMethod<"voucher.activations.secret"> {
@@ -716,7 +716,7 @@ export function createFetchVoucherActivationsSecret(baseUrl: string): OperationM
 }
 
 function bindActivationsSecret(client: OperationExecutor): OperationMethod<"voucher.activations.secret"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.activations.secret","method":"POST","path":"/api/v1/vouchers/activation/secret","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.activations.secret","method":"POST","path":"/api/v1/vouchers/activation/secret","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherActivationsNumbersecret(baseUrl: string): OperationMethod<"voucher.activations.numbersecret"> {
@@ -724,7 +724,7 @@ export function createFetchVoucherActivationsNumbersecret(baseUrl: string): Oper
 }
 
 function bindActivationsNumbersecret(client: OperationExecutor): OperationMethod<"voucher.activations.numbersecret"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.activations.numbersecret","method":"POST","path":"/api/v1/vouchers/activation/number-secret","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.activations.numbersecret","method":"POST","path":"/api/v1/vouchers/activation/number-secret","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherVouchersBind(baseUrl: string): OperationMethod<"voucher.vouchers.bind"> {
@@ -732,7 +732,7 @@ export function createFetchVoucherVouchersBind(baseUrl: string): OperationMethod
 }
 
 function bindVouchersBind(client: OperationExecutor): OperationMethod<"voucher.vouchers.bind"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.vouchers.bind","method":"POST","path":"/api/v1/vouchers/{voucherid}/bind","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["voucherid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.vouchers.bind","method":"POST","path":"/api/v1/vouchers/{voucherid}/bind","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherVouchersUnbind(baseUrl: string): OperationMethod<"voucher.vouchers.unbind"> {
@@ -740,7 +740,7 @@ export function createFetchVoucherVouchersUnbind(baseUrl: string): OperationMeth
 }
 
 function bindVouchersUnbind(client: OperationExecutor): OperationMethod<"voucher.vouchers.unbind"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.vouchers.unbind","method":"POST","path":"/api/v1/vouchers/{voucherid}/unbind","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["voucherid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.vouchers.unbind","method":"POST","path":"/api/v1/vouchers/{voucherid}/unbind","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherVouchersGet(baseUrl: string): OperationMethod<"voucher.vouchers.get"> {
@@ -748,7 +748,7 @@ export function createFetchVoucherVouchersGet(baseUrl: string): OperationMethod<
 }
 
 function bindVouchersGet(client: OperationExecutor): OperationMethod<"voucher.vouchers.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.vouchers.get","method":"GET","path":"/api/v1/vouchers/{voucherid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["voucherid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.vouchers.get","method":"GET","path":"/api/v1/vouchers/{voucherid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherVouchersGetbynumber(baseUrl: string): OperationMethod<"voucher.vouchers.getbynumber"> {
@@ -756,7 +756,7 @@ export function createFetchVoucherVouchersGetbynumber(baseUrl: string): Operatio
 }
 
 function bindVouchersGetbynumber(client: OperationExecutor): OperationMethod<"voucher.vouchers.getbynumber"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.vouchers.getbynumber","method":"GET","path":"/api/v1/vouchers/by-number/{number}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["number"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.vouchers.getbynumber","method":"GET","path":"/api/v1/vouchers/by-number/{number}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherVouchersTimeline(baseUrl: string): OperationMethod<"voucher.vouchers.timeline"> {
@@ -764,7 +764,7 @@ export function createFetchVoucherVouchersTimeline(baseUrl: string): OperationMe
 }
 
 function bindVouchersTimeline(client: OperationExecutor): OperationMethod<"voucher.vouchers.timeline"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.vouchers.timeline","method":"GET","path":"/api/v1/vouchers/{voucherid}/timeline","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["voucherid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.vouchers.timeline","method":"GET","path":"/api/v1/vouchers/{voucherid}/timeline","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherRedemptionsQuote(baseUrl: string): OperationMethod<"voucher.redemptions.quote"> {
@@ -772,7 +772,7 @@ export function createFetchVoucherRedemptionsQuote(baseUrl: string): OperationMe
 }
 
 function bindRedemptionsQuote(client: OperationExecutor): OperationMethod<"voucher.redemptions.quote"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.redemptions.quote","method":"POST","path":"/api/v1/vouchers/redemptions/quote","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.redemptions.quote","method":"POST","path":"/api/v1/vouchers/redemptions/quote","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherTenderholdsCreate(baseUrl: string): OperationMethod<"voucher.tenderholds.create"> {
@@ -780,7 +780,7 @@ export function createFetchVoucherTenderholdsCreate(baseUrl: string): OperationM
 }
 
 function bindTenderholdsCreate(client: OperationExecutor): OperationMethod<"voucher.tenderholds.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.tenderholds.create","method":"POST","path":"/api/v1/vouchers/tender-holds","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.tenderholds.create","method":"POST","path":"/api/v1/vouchers/tender-holds","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherTenderholdsConsume(baseUrl: string): OperationMethod<"voucher.tenderholds.consume"> {
@@ -788,7 +788,7 @@ export function createFetchVoucherTenderholdsConsume(baseUrl: string): Operation
 }
 
 function bindTenderholdsConsume(client: OperationExecutor): OperationMethod<"voucher.tenderholds.consume"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.tenderholds.consume","method":"POST","path":"/api/v1/vouchers/tender-holds/{holdid}/consume","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["holdid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.tenderholds.consume","method":"POST","path":"/api/v1/vouchers/tender-holds/{holdid}/consume","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherTenderholdsRelease(baseUrl: string): OperationMethod<"voucher.tenderholds.release"> {
@@ -796,7 +796,7 @@ export function createFetchVoucherTenderholdsRelease(baseUrl: string): Operation
 }
 
 function bindTenderholdsRelease(client: OperationExecutor): OperationMethod<"voucher.tenderholds.release"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.tenderholds.release","method":"POST","path":"/api/v1/vouchers/tender-holds/{holdid}/release","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["holdid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.tenderholds.release","method":"POST","path":"/api/v1/vouchers/tender-holds/{holdid}/release","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherRedemptionsCreate(baseUrl: string): OperationMethod<"voucher.redemptions.create"> {
@@ -804,7 +804,7 @@ export function createFetchVoucherRedemptionsCreate(baseUrl: string): OperationM
 }
 
 function bindRedemptionsCreate(client: OperationExecutor): OperationMethod<"voucher.redemptions.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.redemptions.create","method":"POST","path":"/api/v1/vouchers/redemptions","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.redemptions.create","method":"POST","path":"/api/v1/vouchers/redemptions","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherRefundsCreate(baseUrl: string): OperationMethod<"voucher.refunds.create"> {
@@ -812,7 +812,7 @@ export function createFetchVoucherRefundsCreate(baseUrl: string): OperationMetho
 }
 
 function bindRefundsCreate(client: OperationExecutor): OperationMethod<"voucher.refunds.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.refunds.create","method":"POST","path":"/api/v1/vouchers/redemptions/{redemptionid}/refunds","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen","pathKeys":["redemptionid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.refunds.create","method":"POST","path":"/api/v1/vouchers/redemptions/{redemptionid}/refunds","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherRedemptionsGet(baseUrl: string): OperationMethod<"voucher.redemptions.get"> {
@@ -820,7 +820,7 @@ export function createFetchVoucherRedemptionsGet(baseUrl: string): OperationMeth
 }
 
 function bindRedemptionsGet(client: OperationExecutor): OperationMethod<"voucher.redemptions.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.redemptions.get","method":"GET","path":"/api/v1/vouchers/redemptions/{redemptionid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["redemptionid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.redemptions.get","method":"GET","path":"/api/v1/vouchers/redemptions/{redemptionid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherSearchfacetsRead(baseUrl: string): OperationMethod<"voucher.searchfacets.read"> {
@@ -828,7 +828,7 @@ export function createFetchVoucherSearchfacetsRead(baseUrl: string): OperationMe
 }
 
 function bindSearchfacetsRead(client: OperationExecutor): OperationMethod<"voucher.searchfacets.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.searchfacets.read","method":"GET","path":"/api/v1/vouchers/search/facets","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.searchfacets.read","method":"GET","path":"/api/v1/vouchers/search/facets","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherSearchsnapshotsCreate(baseUrl: string): OperationMethod<"voucher.searchsnapshots.create"> {
@@ -836,7 +836,7 @@ export function createFetchVoucherSearchsnapshotsCreate(baseUrl: string): Operat
 }
 
 function bindSearchsnapshotsCreate(client: OperationExecutor): OperationMethod<"voucher.searchsnapshots.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.searchsnapshots.create","method":"POST","path":"/api/v1/vouchers/search-snapshots","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.searchsnapshots.create","method":"POST","path":"/api/v1/vouchers/search-snapshots","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }
 
 export function createFetchVoucherSearchexportsCreate(baseUrl: string): OperationMethod<"voucher.searchexports.create"> {
@@ -844,7 +844,7 @@ export function createFetchVoucherSearchexportsCreate(baseUrl: string): Operatio
 }
 
 function bindSearchexportsCreate(client: OperationExecutor): OperationMethod<"voucher.searchexports.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.searchexports.create","method":"POST","path":"/api/v1/vouchers/search-exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"async","availability":"frozen","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.searchexports.create","method":"POST","path":"/api/v1/vouchers/search-exports","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"none","execution":"async","availability":"frozen"}));
 }
 
 export function createFetchVoucherExportsGet(baseUrl: string): OperationMethod<"voucher.exports.get"> {
@@ -852,5 +852,5 @@ export function createFetchVoucherExportsGet(baseUrl: string): OperationMethod<"
 }
 
 function bindExportsGet(client: OperationExecutor): OperationMethod<"voucher.exports.get"> {
-  return bindOperation(client, defineStructuralOperation({"id":"voucher.exports.get","method":"GET","path":"/api/v1/vouchers/exports/{exportid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen","pathKeys":["exportid"]}));
+  return bindOperation(client, defineContractOperation({"id":"voucher.exports.get","method":"GET","path":"/api/v1/vouchers/exports/{exportid}","audience":"operator","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"frozen"}));
 }

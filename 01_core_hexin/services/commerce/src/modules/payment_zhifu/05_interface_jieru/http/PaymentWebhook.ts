@@ -3,6 +3,7 @@ import type { WechatScene } from '@shop/config/server';
 import { appendOperationAudit, operationRequestHash } from '../../../../foundation/application/ModuleOperations';
 import type { AuditSink } from '../../../../foundation/application/AuditSink';
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
+import { markEnforcedWriteResult } from '../../../../foundation/application/ExecutionKernel';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { PaymentGateway } from '../../01_public_gongkai/ports_jiekou/PaymentGateway';
 import { paymentProviderHeaders, paymentTransaction } from '../../03_application_yingyong/services_fuwu/PaymentOperationSupport';
@@ -66,7 +67,7 @@ export class PaymentWebhook {
       [`job:webhook:${observed.id}`, observed.kind === 'payment' ? 'paymentquery' : 'paymentrefund', scope, JSON.stringify(payload)]);
       await appendOperationAudit(this.audit, database, request, 'payment', { status: 204 }, 'provider:wechat', scope, operationRequestHash(request));
     });
-    return { status: 204 };
+    return markEnforcedWriteResult({ status: 204 });
   }
 }
 

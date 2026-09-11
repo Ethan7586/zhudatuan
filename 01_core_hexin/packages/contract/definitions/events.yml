@@ -1,5 +1,12 @@
 version: 1
 events:
+  - id: runtime.operation.completed
+    owner: runtime
+    version: 1
+    schema: contract://events/runtime.operation.completed/v1
+    serializer: 01_core_hexin/packages/contract/src/EventSerializer.ts
+    schemaRegistry: 01_core_hexin/services/commerce/src/app/events.ts
+    handlers: []
   - id: identity.session.created
     owner: identity
     version: 1

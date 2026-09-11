@@ -1,3 +1,4 @@
+import { operationSchema } from '@shop/contract';
 import type {
   HttpMethod,
   OperationAudience,
@@ -10,7 +11,6 @@ import type {
   OperationVersionPolicy,
   Schema,
 } from '@shop/contract';
-import { structuralOperationInput, structuralOperationOutput } from '@shop/contract/schema';
 import type { RequestContext } from './RequestContext';
 
 export interface OperationDescriptor<TKey extends OperationId> {
@@ -40,7 +40,7 @@ export type OperationMethod<TKey extends OperationId> = (
   context: RequestContext,
 ) => Promise<OperationOutputFor<TKey>>;
 
-export function defineStructuralOperation<TKey extends OperationId>(definition: Readonly<{
+export function defineContractOperation<TKey extends OperationId>(definition: Readonly<{
   id: TKey;
   method: HttpMethod;
   path: `/api/v1/${string}` | `/health/${string}`;
@@ -50,8 +50,8 @@ export function defineStructuralOperation<TKey extends OperationId>(definition: 
   expectedVersion: OperationVersionPolicy;
   execution: OperationExecution;
   availability: OperationAvailability;
-  pathKeys: readonly string[];
 }>): OperationDescriptor<TKey> {
+  const schemas = operationSchema(definition.id);
   return Object.freeze({
     id: definition.id,
     method: definition.method,
@@ -62,10 +62,13 @@ export function defineStructuralOperation<TKey extends OperationId>(definition: 
     expectedVersion: definition.expectedVersion,
     execution: definition.execution,
     availability: definition.availability,
-    input: structuralOperationInput(definition.pathKeys) as Schema<OperationInputFor<TKey>>,
-    output: structuralOperationOutput() as Schema<OperationOutputFor<TKey>>,
+    input: schemas.input as Schema<OperationInputFor<TKey>>,
+    output: schemas.output as Schema<OperationOutputFor<TKey>>,
   });
 }
+
+/** @deprecated Generated clients use named schemas from the contract catalog. */
+export const defineStructuralOperation = defineContractOperation;
 
 export function bindOperation<TKey extends OperationId>(
   client: OperationExecutor,

@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const IDENTITY_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "identity.sessions.create",
@@ -96,7 +96,7 @@ export function createFetchIdentitySessionsCreate(baseUrl: string): OperationMet
 }
 
 function bindSessionsCreate(client: OperationExecutor): OperationMethod<"identity.sessions.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.sessions.create","method":"POST","path":"/api/v1/identity/sessions","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.sessions.create","method":"POST","path":"/api/v1/identity/sessions","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityLoginintentsCreate(baseUrl: string): OperationMethod<"identity.loginintents.create"> {
@@ -104,7 +104,7 @@ export function createFetchIdentityLoginintentsCreate(baseUrl: string): Operatio
 }
 
 function bindLoginintentsCreate(client: OperationExecutor): OperationMethod<"identity.loginintents.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.loginintents.create","method":"POST","path":"/api/v1/identity/login-intents","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.loginintents.create","method":"POST","path":"/api/v1/identity/login-intents","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityTicketsExchange(baseUrl: string): OperationMethod<"identity.tickets.exchange"> {
@@ -112,7 +112,7 @@ export function createFetchIdentityTicketsExchange(baseUrl: string): OperationMe
 }
 
 function bindTicketsExchange(client: OperationExecutor): OperationMethod<"identity.tickets.exchange"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.tickets.exchange","method":"POST","path":"/api/v1/identity/tickets/exchange","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.tickets.exchange","method":"POST","path":"/api/v1/identity/tickets/exchange","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentitySessionRead(baseUrl: string): OperationMethod<"identity.session.read"> {
@@ -120,7 +120,7 @@ export function createFetchIdentitySessionRead(baseUrl: string): OperationMethod
 }
 
 function bindSessionRead(client: OperationExecutor): OperationMethod<"identity.session.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.session.read","method":"GET","path":"/api/v1/identity/session","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.session.read","method":"GET","path":"/api/v1/identity/session","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentitySessionDelete(baseUrl: string): OperationMethod<"identity.session.delete"> {
@@ -128,7 +128,7 @@ export function createFetchIdentitySessionDelete(baseUrl: string): OperationMeth
 }
 
 function bindSessionDelete(client: OperationExecutor): OperationMethod<"identity.session.delete"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.session.delete","method":"DELETE","path":"/api/v1/identity/session","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.session.delete","method":"DELETE","path":"/api/v1/identity/session","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentitySessionsRead(baseUrl: string): OperationMethod<"identity.sessions.read"> {
@@ -136,7 +136,7 @@ export function createFetchIdentitySessionsRead(baseUrl: string): OperationMetho
 }
 
 function bindSessionsRead(client: OperationExecutor): OperationMethod<"identity.sessions.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.sessions.read","method":"GET","path":"/api/v1/identity/sessions","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.sessions.read","method":"GET","path":"/api/v1/identity/sessions","audience":"member","idempotent":true,"idempotency":"none","expectedVersion":"none","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentitySessionsRevoke(baseUrl: string): OperationMethod<"identity.sessions.revoke"> {
@@ -144,7 +144,7 @@ export function createFetchIdentitySessionsRevoke(baseUrl: string): OperationMet
 }
 
 function bindSessionsRevoke(client: OperationExecutor): OperationMethod<"identity.sessions.revoke"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.sessions.revoke","method":"DELETE","path":"/api/v1/identity/sessions/{sessionid}","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["sessionid"]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.sessions.revoke","method":"DELETE","path":"/api/v1/identity/sessions/{sessionid}","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityChallengesCreate(baseUrl: string): OperationMethod<"identity.challenges.create"> {
@@ -152,7 +152,7 @@ export function createFetchIdentityChallengesCreate(baseUrl: string): OperationM
 }
 
 function bindChallengesCreate(client: OperationExecutor): OperationMethod<"identity.challenges.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.challenges.create","method":"POST","path":"/api/v1/identity/challenges","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.challenges.create","method":"POST","path":"/api/v1/identity/challenges","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityInvitationsRead(baseUrl: string): OperationMethod<"identity.invitations.read"> {
@@ -160,7 +160,7 @@ export function createFetchIdentityInvitationsRead(baseUrl: string): OperationMe
 }
 
 function bindInvitationsRead(client: OperationExecutor): OperationMethod<"identity.invitations.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.invitations.read","method":"POST","path":"/api/v1/identity/invitations/resolve","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.invitations.read","method":"POST","path":"/api/v1/identity/invitations/resolve","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityInvitationsCreate(baseUrl: string): OperationMethod<"identity.invitations.create"> {
@@ -168,7 +168,7 @@ export function createFetchIdentityInvitationsCreate(baseUrl: string): Operation
 }
 
 function bindInvitationsCreate(client: OperationExecutor): OperationMethod<"identity.invitations.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.invitations.create","method":"POST","path":"/api/v1/identity/invitations","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.invitations.create","method":"POST","path":"/api/v1/identity/invitations","audience":"operator","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityInvitationsRevoke(baseUrl: string): OperationMethod<"identity.invitations.revoke"> {
@@ -176,7 +176,7 @@ export function createFetchIdentityInvitationsRevoke(baseUrl: string): Operation
 }
 
 function bindInvitationsRevoke(client: OperationExecutor): OperationMethod<"identity.invitations.revoke"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.invitations.revoke","method":"DELETE","path":"/api/v1/identity/invitations/{invitationid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["invitationid"]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.invitations.revoke","method":"DELETE","path":"/api/v1/identity/invitations/{invitationid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityMembersCreate(baseUrl: string): OperationMethod<"identity.members.create"> {
@@ -184,7 +184,7 @@ export function createFetchIdentityMembersCreate(baseUrl: string): OperationMeth
 }
 
 function bindMembersCreate(client: OperationExecutor): OperationMethod<"identity.members.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.members.create","method":"POST","path":"/api/v1/identity/members","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.members.create","method":"POST","path":"/api/v1/identity/members","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityMembersManage(baseUrl: string): OperationMethod<"identity.members.manage"> {
@@ -192,7 +192,7 @@ export function createFetchIdentityMembersManage(baseUrl: string): OperationMeth
 }
 
 function bindMembersManage(client: OperationExecutor): OperationMethod<"identity.members.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.members.manage","method":"PUT","path":"/api/v1/identity/members/{membershipid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":["membershipid"]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.members.manage","method":"PUT","path":"/api/v1/identity/members/{membershipid}","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityPasswordChange(baseUrl: string): OperationMethod<"identity.password.change"> {
@@ -200,7 +200,7 @@ export function createFetchIdentityPasswordChange(baseUrl: string): OperationMet
 }
 
 function bindPasswordChange(client: OperationExecutor): OperationMethod<"identity.password.change"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.password.change","method":"PUT","path":"/api/v1/identity/password","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.password.change","method":"PUT","path":"/api/v1/identity/password","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityPasswordVerify(baseUrl: string): OperationMethod<"identity.password.verify"> {
@@ -208,7 +208,7 @@ export function createFetchIdentityPasswordVerify(baseUrl: string): OperationMet
 }
 
 function bindPasswordVerify(client: OperationExecutor): OperationMethod<"identity.password.verify"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.password.verify","method":"POST","path":"/api/v1/identity/password/verify","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.password.verify","method":"POST","path":"/api/v1/identity/password/verify","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityPasswordReset(baseUrl: string): OperationMethod<"identity.password.reset"> {
@@ -216,7 +216,7 @@ export function createFetchIdentityPasswordReset(baseUrl: string): OperationMeth
 }
 
 function bindPasswordReset(client: OperationExecutor): OperationMethod<"identity.password.reset"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.password.reset","method":"POST","path":"/api/v1/identity/password/reset","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.password.reset","method":"POST","path":"/api/v1/identity/password/reset","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityMobileManage(baseUrl: string): OperationMethod<"identity.mobile.manage"> {
@@ -224,7 +224,7 @@ export function createFetchIdentityMobileManage(baseUrl: string): OperationMetho
 }
 
 function bindMobileManage(client: OperationExecutor): OperationMethod<"identity.mobile.manage"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.mobile.manage","method":"PUT","path":"/api/v1/identity/mobile","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.mobile.manage","method":"PUT","path":"/api/v1/identity/mobile","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityStepupStart(baseUrl: string): OperationMethod<"identity.stepup.start"> {
@@ -232,7 +232,7 @@ export function createFetchIdentityStepupStart(baseUrl: string): OperationMethod
 }
 
 function bindStepupStart(client: OperationExecutor): OperationMethod<"identity.stepup.start"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.stepup.start","method":"POST","path":"/api/v1/identity/stepup/challenges","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.stepup.start","method":"POST","path":"/api/v1/identity/stepup/challenges","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityStepupComplete(baseUrl: string): OperationMethod<"identity.stepup.complete"> {
@@ -240,7 +240,7 @@ export function createFetchIdentityStepupComplete(baseUrl: string): OperationMet
 }
 
 function bindStepupComplete(client: OperationExecutor): OperationMethod<"identity.stepup.complete"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.stepup.complete","method":"POST","path":"/api/v1/identity/stepup/verifications","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.stepup.complete","method":"POST","path":"/api/v1/identity/stepup/verifications","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityWechatSession(baseUrl: string): OperationMethod<"identity.wechat.session"> {
@@ -248,7 +248,7 @@ export function createFetchIdentityWechatSession(baseUrl: string): OperationMeth
 }
 
 function bindWechatSession(client: OperationExecutor): OperationMethod<"identity.wechat.session"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.wechat.session","method":"POST","path":"/api/v1/identity/wechat/sessions","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.wechat.session","method":"POST","path":"/api/v1/identity/wechat/sessions","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityWechatBind(baseUrl: string): OperationMethod<"identity.wechat.bind"> {
@@ -256,7 +256,7 @@ export function createFetchIdentityWechatBind(baseUrl: string): OperationMethod<
 }
 
 function bindWechatBind(client: OperationExecutor): OperationMethod<"identity.wechat.bind"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.wechat.bind","method":"POST","path":"/api/v1/identity/wechat/bindings","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.wechat.bind","method":"POST","path":"/api/v1/identity/wechat/bindings","audience":"member","idempotent":true,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityStorefrontsRead(baseUrl: string): OperationMethod<"identity.storefronts.read"> {
@@ -264,7 +264,7 @@ export function createFetchIdentityStorefrontsRead(baseUrl: string): OperationMe
 }
 
 function bindStorefrontsRead(client: OperationExecutor): OperationMethod<"identity.storefronts.read"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.storefronts.read","method":"POST","path":"/api/v1/identity/storefronts/resolve","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.storefronts.read","method":"POST","path":"/api/v1/identity/storefronts/resolve","audience":"public","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityMembersReset(baseUrl: string): OperationMethod<"identity.members.reset"> {
@@ -272,7 +272,7 @@ export function createFetchIdentityMembersReset(baseUrl: string): OperationMetho
 }
 
 function bindMembersReset(client: OperationExecutor): OperationMethod<"identity.members.reset"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.members.reset","method":"PUT","path":"/api/v1/identity/members/{membershipid}/registration","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime","pathKeys":["membershipid"]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.members.reset","method":"PUT","path":"/api/v1/identity/members/{membershipid}/registration","audience":"operator","idempotent":true,"idempotency":"required","expectedVersion":"required","execution":"sync","availability":"runtime"}));
 }
 
 export function createFetchIdentityMobileChallenge(baseUrl: string): OperationMethod<"identity.mobile.challenge"> {
@@ -280,5 +280,5 @@ export function createFetchIdentityMobileChallenge(baseUrl: string): OperationMe
 }
 
 function bindMobileChallenge(client: OperationExecutor): OperationMethod<"identity.mobile.challenge"> {
-  return bindOperation(client, defineStructuralOperation({"id":"identity.mobile.challenge","method":"POST","path":"/api/v1/identity/mobile/challenges","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"identity.mobile.challenge","method":"POST","path":"/api/v1/identity/mobile/challenges","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }

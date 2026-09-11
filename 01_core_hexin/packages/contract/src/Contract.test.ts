@@ -11,7 +11,34 @@ describe('contract truth', () => {
   it('publishes one runtime schema pair for every Operation', () => {
     const operationIds = OperationCatalog.all().map(({ id }) => id).sort();
     expect(Object.keys(OPERATION_SCHEMAS).sort()).toEqual(operationIds);
-    expect(new Set(Object.values(OPERATION_SCHEMAS).map(({ fidelity }) => fidelity))).toEqual(new Set(['structural']));
+    expect(new Set(Object.values(OPERATION_SCHEMAS).map(({ fidelity }) => fidelity))).toEqual(new Set(['named']));
+  });
+
+  it('publishes complete execution and contract metadata for every enforced write', () => {
+    const writes = OperationCatalog.all().filter((operation) => operation.writePath !== 'none');
+    expect(writes.length).toBeGreaterThan(0);
+    for (const operation of writes) {
+      expect(operation).toMatchObject({
+        schema: 'named', requestSchema: expect.stringMatching(/Request$/), responseSchema: expect.stringMatching(/Response$/),
+        errorUnion: expect.arrayContaining(['CONTRACT_REQUEST_INVALID', 'CONTRACT_RESPONSE_INVALID']),
+        capability: expect.any(String), scope_resolver_ref: expect.any(String), idempotencyScope: expect.any(String),
+        assuranceLevel: expect.any(Number), sensitiveFields: expect.any(Array),
+        csrfPolicy: expect.any(String), originPolicy: expect.any(String), targetPolicy: expect.any(String),
+        responseMode: expect.any(String), cachePolicy: expect.any(String), rateClass: expect.any(String), timeout: expect.any(Number),
+        sdk: expect.any(String), stateMachine: expect.stringMatching(/\.execution\.v1$/),
+        businessNumber: expect.stringMatching(/^SFL-/), operationHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+      });
+      if (operation.writePath !== 'provider') expect(operation.idempotency).toBe('required');
+    }
+  });
+
+  it('rejects undeclared, non-finite and invalid date-like contract values', () => {
+    const exact = OPERATION_SCHEMAS['access.administrators.scopes.manage'].input;
+    expect(() => exact.parse({ path:{ membershipid:'membership:one' }, body:{ action:'grant', unexpected:true } })).toThrow('CONTRACT_FIELD_UNDECLARED');
+    const generic = OPERATION_SCHEMAS['identity.members.create'].input;
+    expect(() => generic.parse({ body:{ authorization:{ score:Number.POSITIVE_INFINITY } } })).toThrow();
+    expect(() => generic.parse({ body:{ authorization:{ createdAt:'not-a-date' } } })).toThrow('CONTRACT_DATE_INVALID');
+    expect(() => generic.parse({ body:new (class Payload { display = 'member'; })() })).toThrow();
   });
 
   it('validates path parameters and rejects undeclared input fields', () => {

@@ -2,7 +2,7 @@
 import type { OperationId } from '@shop/contract';
 import { ApiClient } from '../ApiClient';
 import { FetchTransport } from '../FetchTransport';
-import { bindOperation, defineStructuralOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
+import { bindOperation, defineContractOperation, type OperationExecutor, type OperationMethod } from '../OperationDescriptor';
 
 export const CHECKOUT_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "checkout.quote.create",
@@ -27,5 +27,5 @@ export function createFetchCheckoutQuoteCreate(baseUrl: string): OperationMethod
 }
 
 function bindQuoteCreate(client: OperationExecutor): OperationMethod<"checkout.quote.create"> {
-  return bindOperation(client, defineStructuralOperation({"id":"checkout.quote.create","method":"POST","path":"/api/v1/checkouts/quotes","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime","pathKeys":[]}));
+  return bindOperation(client, defineContractOperation({"id":"checkout.quote.create","method":"POST","path":"/api/v1/checkouts/quotes","audience":"member","idempotent":false,"idempotency":"required","expectedVersion":"optional","execution":"sync","availability":"runtime"}));
 }
