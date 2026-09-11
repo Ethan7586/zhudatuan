@@ -200,7 +200,7 @@ https://:4430 {
 
 	@console host console.hbbtzn.com
 	handle @console {
-		root * /opt/sfl/nodes/hbbtzn-l1/current/01_core_hexin/apps/console/dist
+		root * /opt/sfl/nodes/hbbtzn-l1/targets/console/current/static
 		try_files {path} /index.html
 		file_server
 	}
