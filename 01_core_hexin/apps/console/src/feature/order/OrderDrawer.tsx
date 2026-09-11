@@ -24,7 +24,7 @@ export function OrderDrawer({
   onClose,
 }: Readonly<{
   orderId: string;
-  initialOrder?: OrderRecord;
+  initialOrder: OrderRecord | undefined;
   tab: OrderDetailTab;
   previewEnabled: boolean;
   mallName: string;
