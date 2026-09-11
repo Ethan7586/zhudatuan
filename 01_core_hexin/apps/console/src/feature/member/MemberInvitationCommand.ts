@@ -6,13 +6,8 @@ import { memberInvitationCommand, MemberInvitationReceiptSchema, type MemberInvi
 
 const invitationsCreate = createFetchIdentityInvitationsCreate(appConfig.apiBaseUrl);
 
-export interface MemberInvitationAuthority {
-  readonly level: 'owner' | 'senior_administrator' | 'administrator';
-  readonly exactOwner: boolean;
-}
-
-export function memberInvitationAvailable(context: ConsoleContext, fallback?: MemberInvitationAuthority): boolean {
-  const level = fallback?.level ?? context.session.governance?.level;
+export function memberInvitationAvailable(context: ConsoleContext): boolean {
+  const level = context.session.governance?.level;
   return (level === 'owner' || level === 'senior_administrator')
     && context.session.csrf !== undefined;
 }
@@ -20,20 +15,18 @@ export function memberInvitationAvailable(context: ConsoleContext, fallback?: Me
 export function memberInvitationLevelAvailable(
   context: ConsoleContext,
   governanceLevel: MemberInvitationDraft['governanceLevel'],
-  fallback?: MemberInvitationAuthority,
 ): boolean {
-  if (!memberInvitationAvailable(context, fallback)) return false;
+  if (!memberInvitationAvailable(context)) return false;
   if (governanceLevel === 'administrator') return true;
-  const authority = fallback ?? context.session.governance;
-  return authority?.level === 'owner' && authority.exactOwner;
+  return context.session.governance?.level === 'owner';
 }
 
-export async function createMemberInvitation(context: ConsoleContext, draft: MemberInvitationDraft, authority?: MemberInvitationAuthority, signal?: AbortSignal) {
+export async function createMemberInvitation(context: ConsoleContext, draft: MemberInvitationDraft, signal?: AbortSignal) {
   const csrfToken = context.session.csrf;
   if (csrfToken === undefined) throw new Error('INVITATION_CSRF_MISSING');
-  if (!memberInvitationAvailable(context, authority)) throw new Error('INVITATION_NOT_AVAILABLE');
+  if (!memberInvitationAvailable(context)) throw new Error('INVITATION_NOT_AVAILABLE');
   const command = memberInvitationCommand(draft);
-  if (!memberInvitationLevelAvailable(context, command.governanceLevel, authority)) throw new Error('INVITATION_LEVEL_NOT_AVAILABLE');
+  if (!memberInvitationLevelAvailable(context, command.governanceLevel)) throw new Error('INVITATION_LEVEL_NOT_AVAILABLE');
   const body = command.tenantId === undefined
     ? { label: command.label, destination: command.destination, targetClient: command.targetClient, governanceLevel: command.governanceLevel, maxUses: command.maxUses, expiresAt: command.expiresAt }
     : { label: command.label, destination: command.destination, targetClient: command.targetClient, governanceLevel: command.governanceLevel, maxUses: command.maxUses, expiresAt: command.expiresAt, tenantId: command.tenantId };

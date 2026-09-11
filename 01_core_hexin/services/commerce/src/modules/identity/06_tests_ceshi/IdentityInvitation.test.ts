@@ -45,6 +45,28 @@ describe('operator invitation security boundary', () => {
     ]);
   });
 
+  it('projects the authoritative Owner through a node membership and normalizes its Mall scope', async () => {
+    const harness = invitationHarness({ exactOwner: false });
+    const access = managerAccess({
+      membership: 'membership:l1-owner',
+      isExactOwner: false,
+      governanceLevel: 'owner',
+      scope: mallScope(),
+    });
+
+    const response = await identityRegistrationOperations(context(harness.pool))
+      .invoke(createRequest(access, undefined, undefined, 'senior_administrator'));
+
+    expect(response).toMatchObject({ status: 201, body: { governanceLevel: 'senior_administrator' } });
+    const scopeNarrowing = harness.queries.find(({ text, values }) =>
+      text.includes("set_config('app.scope_id'") && values.length === 1);
+    expect(scopeNarrowing?.values).toEqual(['tenant-zhudatuan']);
+    const inserted = harness.queries.find(({ text }) => text.includes('insert into member.invite'));
+    expect(inserted?.values[1]).toBe('tenant-zhudatuan');
+    expect(inserted?.values[7]).toBe('role-senior-administrator-v1:tenant-zhudatuan');
+    expect(inserted?.values[13]).toBe('mall-zhudatuan');
+  });
+
   it('rejects a senior administrator creating a senior administrator invitation', async () => {
     const harness = invitationHarness({ exactOwner: false });
     const access = managerAccess({

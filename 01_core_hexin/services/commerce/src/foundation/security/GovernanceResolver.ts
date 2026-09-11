@@ -27,7 +27,7 @@ export class PgGovernanceResolver implements GovernanceResolver {
     const result = await this.pool.query<GovernanceRow>(
       `select governance_level,is_exact_owner,actor_membership_id,actor_principal_id,organization_id,
         owner_membership_id,scope_kind,scope_semantic_id,scope_storage_id,scope_organization_id,resolved_at
-      from access.resolve_governance($1,$2,$3,$4)`,
+      from access.resolve_authoritative_governance($1,$2,$3,$4)`,
       [membership.id, actor.id, scope.kind, scope.id]
     );
     const row = result.rows[0];

@@ -106,7 +106,7 @@ describe('governance-aware member management', () => {
 
     expect(response).toMatchObject({ status: 200, body: { id: 'membership:target', status: 'suspended' } });
     const targetRead = harness.queries.find(({ text }) => text.includes('target_governance.governance_level'));
-    expect(targetRead?.text).toContain('access.resolve_governance');
+    expect(targetRead?.text).toContain('access.resolve_authoritative_governance');
     expect(targetRead?.values).toEqual(['membership:target', 'tenant', 'tenant:one']);
   });
 
@@ -127,6 +127,16 @@ describe('governance-aware member management', () => {
 
     const response = await identityOperations(context(harness.pool)).invoke(
       memberStatusRequest(governanceAccess('owner', true))
+    );
+
+    expect(response).toMatchObject({ status: 200, body: { id: 'membership:target', status: 'suspended' } });
+  });
+
+  it('lets the authoritative Owner principal manage a senior administrator from its node membership', async () => {
+    const harness = memberManagementHarness('senior_administrator');
+
+    const response = await identityOperations(context(harness.pool)).invoke(
+      memberStatusRequest(governanceAccess('owner', false))
     );
 
     expect(response).toMatchObject({ status: 200, body: { id: 'membership:target', status: 'suspended' } });

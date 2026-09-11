@@ -28,7 +28,7 @@ describe('PgGovernanceResolver canonical Owner identity', () => {
       ownerMembershipId: ACTOR.membership,
       scope: { kind, semanticId: id, storageId },
     });
-    expect(query).toHaveBeenCalledWith(expect.stringContaining('access.resolve_governance($1,$2,$3,$4)'),
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('access.resolve_authoritative_governance($1,$2,$3,$4)'),
       [ACTOR.membership, ACTOR.id, kind, id]);
   });
 
@@ -54,6 +54,19 @@ describe('PgGovernanceResolver canonical Owner identity', () => {
     });
   });
 
+  it('projects the authoritative Owner principal onto a node operator membership without making it exact', async () => {
+    const query = vi.fn().mockResolvedValue({ rows: [{
+      ...row('mall', 'mall:one', 'mall:one', false),
+      governance_level: 'owner',
+    }] });
+    const resolver = new PgGovernanceResolver({ query } as never);
+
+    await expect(resolver.resolve(ACTOR, MEMBERSHIP, scope('mall', 'mall:one'))).resolves.toMatchObject({
+      governanceLevel: 'owner', isExactOwner: false,
+      ownerMembershipId: 'membership:real-owner',
+    });
+  });
+
   it('fails closed when the database identity does not match the authenticated actor', async () => {
     const query = vi.fn().mockResolvedValue({ rows: [{ ...row('self', ACTOR.id, `self:${ACTOR.id}`, true), actor_principal_id: 'principal:other' }] });
     const resolver = new PgGovernanceResolver({ query } as never);
@@ -63,6 +76,18 @@ describe('PgGovernanceResolver canonical Owner identity', () => {
 });
 
 describe('governance identity inference audit', () => {
+  it('keeps node Owner projection principal-based while preserving exact ownership', async () => {
+    const source = await readFile(join(process.cwd(),
+      '../../../02_platform_pingtai/database/supabase/migrations/20260911163000_project_authoritative_owner_to_node_console.sql'), 'utf8');
+
+    expect(source).toContain("actor_membership.client='operator'");
+    expect(source).toContain('authoritative_owner.principal_id=resolved.actor_principal_id');
+    expect(source).toContain('resolved.is_exact_owner');
+    expect(source).toContain("governance.governance_level in('owner','senior_administrator')");
+    expect(source).not.toContain('principal:zhudatuan:owner:ethan:v1');
+    expect(source).not.toContain('node:hbbtzn:l1');
+  });
+
   it('keeps identity and member business code free of duplicate Owner inference', async () => {
     const files = [
       'src/modules/identity/05_interface_jieru/http/IdentityOperations.ts',

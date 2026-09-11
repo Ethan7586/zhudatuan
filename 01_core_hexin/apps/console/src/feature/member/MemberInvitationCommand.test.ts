@@ -148,16 +148,14 @@ describe('member invitation command', () => {
     expect(requests).toHaveLength(0);
   });
 
-  it('uses the authoritative access-directory Owner identity when session governance is absent', async () => {
+  it('does not infer Owner authority from the directory when session governance is absent', async () => {
     const withoutGovernance = { ...context, session: { ...context.session, governance: undefined } };
-    const authority = { level: 'owner' as const, exactOwner: true };
 
-    expect(memberInvitationAvailable(withoutGovernance, authority)).toBe(true);
-    await createMemberInvitation(withoutGovernance, {
-      label: '目录 Owner 创建邀请', destination: '13800138000', governanceLevel: 'senior_administrator', maxUses: 1, validityDays: 7,
-    }, authority);
-
-    expect(bodies[0]).toMatchObject({ governanceLevel: 'senior_administrator' });
+    expect(memberInvitationAvailable(withoutGovernance)).toBe(false);
+    await expect(createMemberInvitation(withoutGovernance, {
+      label: '不应创建', destination: '13800138000', governanceLevel: 'senior_administrator', maxUses: 1, validityDays: 7,
+    })).rejects.toThrow('INVITATION_NOT_AVAILABLE');
+    expect(requests).toHaveLength(0);
   });
 
   it('does not hide Owner invitation behind stale session operation claims', async () => {
@@ -171,22 +169,27 @@ describe('member invitation command', () => {
     expect(requests).toHaveLength(1);
   });
 
-  it('prefers the current authoritative directory identity over stale session governance', async () => {
-    const staleGovernance = {
+  it('lets an authoritative Owner principal on a node membership invite a senior administrator', async () => {
+    const mallScope = { kind: 'mall' as const, id: 'mall:one', tenant: 'tenant:one', path: [] };
+    const nodeOwner = {
       ...context,
       session: {
         ...context.session,
-        governance: { level: 'administrator' as const, exactOwner: false, organization: 'tenant:one' },
+        governance: { level: 'owner' as const, exactOwner: false, organization: 'mall:one' },
+        scope: mallScope,
+        scopes: [mallScope],
       },
+      scope: mallScope,
+      scopes: [mallScope],
     };
-    const owner = { level: 'owner' as const, exactOwner: true };
 
-    expect(memberInvitationAvailable(staleGovernance, owner)).toBe(true);
-    await createMemberInvitation(staleGovernance, {
-      label: '目录 Owner 创建邀请', destination: '13800138000', governanceLevel: 'senior_administrator', maxUses: 1, validityDays: 7,
-    }, owner);
+    expect(memberInvitationAvailable(nodeOwner)).toBe(true);
+    await createMemberInvitation(nodeOwner, {
+      label: '节点 Owner 创建邀请', destination: '13800138000', governanceLevel: 'senior_administrator', maxUses: 1, validityDays: 7,
+    });
 
     expect(bodies[0]).toMatchObject({ governanceLevel: 'senior_administrator' });
+    expect(requests[0]?.headers.get('x-scope-hint')).toBe('mall:one');
   });
 
   it('keeps the ordinary invitation command available to a senior administrator', async () => {
