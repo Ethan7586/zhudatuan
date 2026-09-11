@@ -1,4 +1,8 @@
 export {
+  HostedNodeProvisioningPort,
+  hostedNodeProvisioningPort,
+} from './01_public_gongkai/HostedNodeProvisioningPort';
+export {
   MallOwnerProvisioningPort,
   mallOwnerProvisioningPort,
   type CreatedMall,

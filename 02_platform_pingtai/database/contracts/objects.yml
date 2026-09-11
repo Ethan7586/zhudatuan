@@ -883,6 +883,11 @@ objects:
     owner: notification
     source: 02_platform_pingtai/database/supabase/migrations/20260821047000_notification_lifecycle.sql
     operationalOwner: notification
+  - id: organization.provision_hosted_node
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql
+    operationalOwner: organization
   - id: organization.validate_noderelation_version
     kind: function
     owner: organization
@@ -26714,6 +26719,11 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260821014000_create_organization_partner.sql
     rls: true
+  - id: organization.hostednodeprovisioning
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql
+    rls: false
   - id: organization.node
     kind: table
     owner: organization
