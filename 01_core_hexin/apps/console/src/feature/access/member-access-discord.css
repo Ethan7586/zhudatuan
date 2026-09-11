@@ -153,7 +153,10 @@
   font-weight: 600;
 }
 .memberaccessworkspace .storefrontmemberrow {
+  height: 52px;
   min-height: 52px;
+  max-height: 52px;
+  contain-intrinsic-size: 52px;
   color: #475467;
 }
 .memberaccessworkspace .storefrontmemberrow:hover {
