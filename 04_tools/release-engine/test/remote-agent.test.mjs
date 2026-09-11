@@ -549,6 +549,21 @@ test('seeds the immutable rollback baseline once without activating a candidate'
   });
 });
 
+test('adopts an unmanaged current directory as the immutable rollback baseline', async () => {
+  const fixture = await createFixture();
+  const sourceSha = '9'.repeat(40);
+  const unmanagedCurrent = join(fixture.pointerRoot, 'current');
+  await mkdir(unmanagedCurrent, { recursive: true });
+  await writeFile(join(unmanagedCurrent, 'app.txt'), 'existing runtime\n');
+
+  const seeded = await invoke(fixture, 'seed', { sourceSha }, `fixture:seed-layout:${sourceSha}`);
+
+  const current = await readlink(join(fixture.pointerRoot, 'current'));
+  assert.equal(seeded.result.seeded, true);
+  assert.match(current, /seed-/);
+  assert.equal(await readFile(join(current, 'app.txt'), 'utf8'), 'existing runtime\n');
+});
+
 test('remote policy can block production while still accepting a candidate', async () => {
   const fixture = await createFixture();
   const artifact = await createArtifact(fixture, 'candidate-only', '4'.repeat(40));

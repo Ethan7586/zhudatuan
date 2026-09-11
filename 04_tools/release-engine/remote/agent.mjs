@@ -81,19 +81,27 @@ async function seed(context, options) {
   assertAllowedRoot(context.policy, legacyRoot);
   const root = context.deployment.pointerRoot;
   assertAllowedRoot(context.policy, root);
-  assert(!(await pointer(root, 'current')), 'CURRENT_POINTER_ALREADY_EXISTS', { root });
+  assert(!(await statusPointer(root, 'current')), 'CURRENT_POINTER_ALREADY_EXISTS', { root });
+  const currentPath = join(root, 'current');
+  const currentEntry = await lstatOrNull(currentPath);
+  const unmanagedCurrent = currentEntry?.isDirectory() === true;
+  assert(currentEntry === null || unmanagedCurrent, 'CURRENT_LAYOUT_INVALID', { root });
   await ensureTraversablePointerRoot(context);
   const protectedBefore = await protectedProcessSnapshot(context);
   const temporary = join(root, 'candidates', `.seed-${process.pid}-${Date.now()}`);
-  await mkdir(temporary, { recursive: true, mode: 0o755 });
   try {
-    for (const input of inputs) {
-      const source = resolve(legacyRoot, input.source);
-      const destination = resolve(temporary, input.destination);
-      assert(source.startsWith(`${resolve(legacyRoot)}/`), 'SEED_SOURCE_UNSAFE', { source });
-      assert(destination.startsWith(`${resolve(temporary)}/`), 'SEED_DESTINATION_UNSAFE', { destination });
-      await mkdir(dirname(destination), { recursive: true });
-      await cp(source, destination, { recursive: true, dereference: false, errorOnExist: true });
+    if (unmanagedCurrent) {
+      await cp(currentPath, temporary, { recursive: true, dereference: false, errorOnExist: true });
+    } else {
+      await mkdir(temporary, { recursive: true, mode: 0o755 });
+      for (const input of inputs) {
+        const source = resolve(legacyRoot, input.source);
+        const destination = resolve(temporary, input.destination);
+        assert(source.startsWith(`${resolve(legacyRoot)}/`), 'SEED_SOURCE_UNSAFE', { source });
+        assert(destination.startsWith(`${resolve(temporary)}/`), 'SEED_DESTINATION_UNSAFE', { destination });
+        await mkdir(dirname(destination), { recursive: true });
+        await cp(source, destination, { recursive: true, dereference: false, errorOnExist: true });
+      }
     }
     const evidence = await treeEvidence(temporary);
     await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: temporary, currentDir: '', ...contextSummary(context) });
@@ -119,7 +127,18 @@ async function seed(context, options) {
     await mkdir(dirname(release), { recursive: true });
     if (!(await exists(release))) await rename(temporary, release);
     await chmod(release, 0o755);
-    await atomicPointer(join(root, 'current'), release);
+    const displacedCurrent = unmanagedCurrent ? join(root, 'candidates', `.unmanaged-current-${process.pid}-${Date.now()}`) : null;
+    if (displacedCurrent) await rename(currentPath, displacedCurrent);
+    try {
+      await atomicPointer(currentPath, release);
+    } catch (error) {
+      if (displacedCurrent) {
+        await rm(currentPath, { recursive: true, force: true });
+        await rename(displacedCurrent, currentPath);
+      }
+      throw error;
+    }
+    if (displacedCurrent) await rm(displacedCurrent, { recursive: true, force: true });
     if (dependencyLayer) await atomicPointer(join(root, 'runtime'), dependencyLayer.path);
     await assertProtectedUnchanged(context, protectedBefore);
     return { seeded: true, current: release, runtime: dependencyLayer?.path ?? null, sourceSha, treeDigest: evidence.treeDigest };
@@ -1270,6 +1289,10 @@ async function readLock(path) {
 
 async function exists(path) {
   try { await lstat(path); return true; } catch (error) { if (error?.code === 'ENOENT') return false; throw error; }
+}
+
+async function lstatOrNull(path) {
+  try { return await lstat(path); } catch (error) { if (error?.code === 'ENOENT') return null; throw error; }
 }
 
 function isAlive(pid) {
