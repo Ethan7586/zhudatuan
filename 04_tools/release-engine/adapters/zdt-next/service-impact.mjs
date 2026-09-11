@@ -20,7 +20,9 @@ export async function resolveImpact({ adapter, changes }) {
     sourcemap: false,
     write: false,
   });
-  const changed = new Set(changes.flatMap((change) => [change.path, change.sourcePath].filter(Boolean)));
+  const changed = new Set(changes
+    .flatMap((change) => [change.path, change.sourcePath].filter(Boolean))
+    .filter((path) => !isTestFile(path)));
   const impacted = new Set();
   const found = new Set();
   for (const output of Object.values(result.metafile.outputs)) {
@@ -37,13 +39,22 @@ export async function resolveImpact({ adapter, changes }) {
     }
   }
   const unresolved = [...changed].filter((path) => !found.has(path));
-  if (impacted.size === 1 && unresolved.length === 0) {
-    const targets = [...impacted];
-    return { lane: 'A2', targets, reasons: [`dependency graph selects only ${targets[0]}`] };
+  if (impacted.size > 0 && unresolved.length === 0) {
+    const targets = [...impacted].sort();
+    const reason = targets.length === 1
+      ? `dependency graph selects only ${targets[0]}`
+      : `dependency graph selects ${targets.join(', ')}`;
+    return { lane: 'A2', targets, reasons: [reason] };
   }
   return {
     lane: 'A3',
     targets: ['core'],
     reasons: [unresolved.length > 0 ? `dependency graph unresolved: ${unresolved.join(', ')}` : `dependency graph spans ${[...impacted].sort().join(', ')}`],
   };
+}
+
+function isTestFile(path) {
+  return path.includes('/06_tests_ceshi/')
+    || path.includes('/__tests__/')
+    || /\.(?:test|spec)\.[cm]?[jt]sx?$/.test(path);
 }

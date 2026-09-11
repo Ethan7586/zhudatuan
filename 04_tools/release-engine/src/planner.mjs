@@ -107,10 +107,6 @@ export function classifyChanges(adapter, changes) {
     ambiguous = true;
     reasons.add('non-deploying rules selected deploy targets');
   }
-  if (lane === 'A2' && targets.size !== 1) {
-    lane = 'A3';
-    reasons.add(`A2 requires exactly one target; found ${targets.size}`);
-  }
   if (lane === 'A1' && targets.size !== 1) {
     lane = 'A3';
     reasons.add(`A1 requires exactly one client target; found ${targets.size}`);
@@ -131,8 +127,9 @@ export function classifyChanges(adapter, changes) {
 
 async function refineDynamicImpact(adapter, classification, changes, refs) {
   const runtimeFiles = classification.files.filter((file) => file.lane !== 'NONE');
-  const resolvers = [...new Set(runtimeFiles.flatMap((file) => file.dynamicImpact ?? []))];
-  if (runtimeFiles.length === 0 || resolvers.length !== 1 || runtimeFiles.some((file) => (file.dynamicImpact ?? []).length !== 1)) return classification;
+  const dynamicFiles = runtimeFiles.filter((file) => (file.dynamicImpact ?? []).length > 0);
+  const resolvers = [...new Set(dynamicFiles.flatMap((file) => file.dynamicImpact ?? []))];
+  if (dynamicFiles.length === 0 || resolvers.length !== 1 || dynamicFiles.some((file) => (file.dynamicImpact ?? []).length !== 1)) return classification;
   const resolverId = resolvers[0];
   const definition = adapter.impactResolvers?.[resolverId];
   if (!definition) return classification;
@@ -141,19 +138,32 @@ async function refineDynamicImpact(adapter, classification, changes, refs) {
   }
   const resolver = await import(new URL(definition.module, `file://${adapter.adapterPath}`).href);
   invariant(typeof resolver.resolveImpact === 'function', 'IMPACT_RESOLVER_INVALID', `${resolverId} must export resolveImpact`);
-  const impact = await resolver.resolveImpact({ adapter, changes, refs, definition });
+  const dynamicPaths = new Set(dynamicFiles.flatMap((file) => [file.path, file.sourcePath].filter(Boolean)));
+  const dynamicChanges = changes.filter((change) => [change.path, change.sourcePath].filter(Boolean).some((path) => dynamicPaths.has(path)));
+  const staticChanges = changes.filter((change) => !dynamicChanges.includes(change));
+  const staticClassification = classifyChanges(adapter, staticChanges);
+  if (staticClassification.lane === 'A3') return classification;
+  const impact = await resolver.resolveImpact({ adapter, changes: dynamicChanges, refs, definition });
   invariant(impact?.lane === 'A2' || impact?.lane === 'A3', 'IMPACT_RESULT_INVALID', `${resolverId} returned invalid lane`);
   if (impact.lane === 'A2') {
-    invariant(Array.isArray(impact.targets) && impact.targets.length === 1 && adapter.targets[impact.targets[0]]?.lane === 'A2', 'IMPACT_TARGET_INVALID', `${resolverId} must select exactly one A2 target`);
+    invariant(Array.isArray(impact.targets) && impact.targets.length > 0 && impact.targets.every((target) => adapter.targets[target]?.lane === 'A2'), 'IMPACT_TARGET_INVALID', `${resolverId} must select one or more A2 targets`);
   }
+  if (impact.lane === 'A3') return classification;
+  const targets = [...new Set([...staticClassification.targets, ...impact.targets])].sort();
+  const staticFiles = new Map(staticClassification.files.map((file) => [file.path, file]));
   return {
     ...classification,
-    lane: impact.lane,
-    targets: impact.lane === 'A2' ? impact.targets : [adapter.fallbackTarget],
-    reasons: [...new Set([...(impact.reasons ?? [`dynamic:${resolverId}`])])].sort(),
-    touches: classification.touches,
-    files: classification.files.map((file) => file.lane === 'NONE' ? file : { ...file, lane: impact.lane, targets: impact.lane === 'A2' ? impact.targets : [adapter.fallbackTarget] }),
-    ambiguous: impact.lane === 'A3',
+    lane: 'A2',
+    targets,
+    reasons: [...new Set([
+      ...staticClassification.reasons.filter((reason) => reason !== 'no changes'),
+      ...(impact.reasons ?? [`dynamic:${resolverId}`]),
+    ])].sort(),
+    touches: [...new Set([...staticClassification.touches, ...classification.touches])].sort(),
+    files: classification.files.map((file) => dynamicPaths.has(file.path)
+      ? { ...file, lane: 'A2', targets: impact.targets }
+      : (staticFiles.get(file.path) ?? file)),
+    ambiguous: false,
   };
 }
 
