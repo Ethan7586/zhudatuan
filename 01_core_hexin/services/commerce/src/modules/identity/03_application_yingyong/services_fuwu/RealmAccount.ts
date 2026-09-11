@@ -1,4 +1,5 @@
 import { identityEntryHost, type AuthTarget, type IdentityRealmContext } from '@shop/config/server';
+import { parseActiveRealmMembershipContext, type ActiveRealmMembershipContext } from '@shop/config/sfl-node-kernel';
 import { reject, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 
 export interface RealmNodeContext {
@@ -12,6 +13,21 @@ export interface RealmAccountContext {
   readonly realmId: string;
   readonly principalId: string;
   readonly credentialVersion: number;
+}
+
+export async function resolveActiveMembershipContext(
+  database: OperationDatabase,
+  entryRealmId: string,
+  accountId: string,
+  membershipId: string,
+): Promise<ActiveRealmMembershipContext> {
+  const result = await database.query<Record<string, unknown>>(
+    'select * from identity.resolve_active_membership_context($1,$2,$3)',
+    [entryRealmId, accountId, membershipId],
+  );
+  const found = result.rows[0];
+  if (!found || result.rows.length !== 1) throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
+  return parseActiveRealmMembershipContext(found);
 }
 
 export async function resolveRealmNode(database: OperationDatabase, hostHeader: string | undefined): Promise<RealmNodeContext> {

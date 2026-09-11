@@ -69,6 +69,7 @@
     "check:sfl-conformance": "node 04_tools/scripts/check/sfl-conformance-matrix.mjs",
     "check:sfl-node-context-scope": "node 04_tools/scripts/check/sfl-node-context-scope.pg17-fixture.mjs",
     "check:sfl-member-registration-progression": "node 04_tools/scripts/check/sfl-member-registration-progression.pg17-fixture.mjs",
+    "check:sfl-multi-realm-membership": "node 04_tools/scripts/check/sfl-multi-realm-membership.pg17-fixture.mjs",
     "check:generated": "node 04_tools/scripts/audit/generated.mjs",
     "check:errors": "node 04_tools/scripts/check/errors.mjs",
     "check:requirements": "npm run check --workspace @shop/requirementgen",

@@ -21,7 +21,7 @@ export class PgAuthTicket {
     database: OperationDatabase,
     value: unknown,
     currentSessionToken: string,
-    realm: string,
+    entryRealm: string,
   ): Promise<Readonly<{ returnTarget: SignedReturnTarget; sessionExpiresAt: Date }>> {
     const exchange = AuthTransaction.complete(value);
     const result = await database.query<{ target: AuthTarget; return_origin: string; expires_at: Date }>(`with accepted as (
@@ -30,14 +30,15 @@ export class PgAuthTicket {
         join identity.realmtarget target on target.realm_id=ticket.realm_id and target.target=ticket.target
         where ticket.token_hash=$1 and ticket.state_hash=$2 and ticket.nonce_hash=$3 and ticket.pkce_challenge=$4
           and session.token_hash=$5
-          and ticket.realm_id=$6 and session.realm_id=ticket.realm_id and session.account_id=ticket.account_id
+          and identity.realm_contains_account_realm($6,ticket.realm_id)
+          and session.realm_id=ticket.realm_id and session.account_id=ticket.account_id
           and session.auth_target=ticket.target
           and ticket.consumed_at is null and ticket.expires_at>clock_timestamp()
           and session.revoked_at is null and session.expires_at>clock_timestamp() for update of ticket
       )
         update identity.authticket ticket set consumed_at=clock_timestamp() from accepted
         where ticket.id=accepted.id returning accepted.target,accepted.return_origin,accepted.expires_at`,
-    [hash(exchange.ticket), exchange.stateHash, exchange.nonceHash, exchange.challenge, hash(currentSessionToken), realm]);
+    [hash(exchange.ticket), exchange.stateHash, exchange.nonceHash, exchange.challenge, hash(currentSessionToken), entryRealm]);
     const accepted = result.rows[0];
     if (!accepted) throw new Error('AUTH_TICKET_EXCHANGE_REJECTED');
     return Object.freeze({ returnTarget: this.signer.issue(accepted.target, accepted.return_origin), sessionExpiresAt: accepted.expires_at });

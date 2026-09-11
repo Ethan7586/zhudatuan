@@ -67,10 +67,11 @@ describe('PgAuthTicket exchange', () => {
     expect(accepted.values[4]).toBe(hash(currentSessionToken));
     expect(accepted.values).toHaveLength(6);
     expect(accepted.text).toContain('session.token_hash=$5');
-    expect(accepted.text).toContain('ticket.realm_id=$6');
+    expect(accepted.text).not.toContain('ticket.realm_id=$6');
     expect(accepted.text).toContain('target.return_origin');
     expect(accepted.text).toContain('for update of ticket');
     expect(accepted.text).toContain('update identity.authticket ticket set consumed_at=clock_timestamp()');
+    expect(accepted.text).toContain('identity.realm_contains_account_realm($6,ticket.realm_id)');
     expect(accepted.text).not.toContain('update identity.session');
     expect(queries[3]?.values).toEqual(accepted.values);
   });

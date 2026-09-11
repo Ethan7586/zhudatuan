@@ -22,6 +22,13 @@ describe('identity session projection', () => {
           return { rows: [{ account_id: 'account:one', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }],
             rowCount: 1 } as unknown as QueryResult;
         }
+        if (text.includes('identity.resolve_active_membership_context')) return result([{
+          entry_realm_id: 'realm:l0', current_realm_id: 'realm:l0', account_id: 'account:one',
+          active_membership_id: 'membership:one', line_id: 'line:zhudatuan:commerce:v1', node_id: 'node:zhudatuan:l0',
+          parent_node_id: null, signed_level: 'L0', sovereignty_tier: 'sovereign', node_profile: 'operating_mall',
+          mall_id: 'mall-zhudatuan', host_sovereign_node_id: 'node:zhudatuan:l0', relation_version: 1,
+          effective_at: '2026-09-01T00:00:00.000Z', access_version: 1, status: 'active',
+        }]);
         if (text.includes('select rotated_at from identity.credential')) return result([{ rotated_at: null }]);
         if (text.includes('select display_name,mobile_ciphertext from member.profile')) {
           return result([{ display_name: '张三', mobile_ciphertext: 'ciphertext:mobile' }]);
@@ -57,6 +64,7 @@ describe('identity session projection', () => {
         profile: { display_name: '张三', employee_no: null },
         security: { phoneMasked: '+86****8000' },
         governance: { level: 'senior_administrator', exactOwner: false, organization: 'organization:one' },
+        active_context: { current_realm_id: 'realm:l0', active_membership_id: 'membership:one' },
       },
     });
   });

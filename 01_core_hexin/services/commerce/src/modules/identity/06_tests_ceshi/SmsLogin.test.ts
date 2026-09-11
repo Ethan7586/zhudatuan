@@ -18,6 +18,14 @@ describe('SMS login database boundary', () => {
       .rejects.toThrow('IDENTITY_SUBJECT_EXISTS');
   });
 
+  it('lets an entry Realm discover only its registered hosted member account Realm', async () => {
+    const hosted = { account_id: 'account:mall-a', realm_id: 'realm:member-a', principal_id: 'principal:a', credential_version: 3 };
+    const db = database([hosted]);
+    await expect(resolveBoundMobileAccount(db, 'realm:mall-a', ['same-phone'])).resolves.toEqual(hosted);
+    expect(db.calls[0]?.text).toContain('identity.realm_contains_account_realm($1,account.realm_id)');
+    expect(db.calls[0]?.values[0]).toBe('realm:mall-a');
+  });
+
   it('keeps the original account subject as the password credential lookup', async () => {
     const db = databaseSequence([{
       account_id: 'account:l0', realm_id: 'realm:l0', principal_id: 'principal:owner', secret_hash: 'scrypt:hash', credential_version: 4,
@@ -29,6 +37,7 @@ describe('SMS login database boundary', () => {
     expect(db.calls).toHaveLength(1);
     expect(db.calls[0]?.values).toEqual(['realm:l0', 'account-hash', null]);
     expect(db.calls[0]?.text).toContain('credential.subject_hash=$2');
+    expect(db.calls[0]?.text).toContain('identity.realm_contains_account_realm($1,credential.realm_id)');
   });
 
   it('allows the same login subject to resolve different accounts and passwords in different realms', async () => {

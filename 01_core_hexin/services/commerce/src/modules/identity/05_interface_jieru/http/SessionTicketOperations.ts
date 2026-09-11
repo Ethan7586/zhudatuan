@@ -10,7 +10,7 @@ import { authMembershipTarget, authTarget, requestCookie, sessionCookies } from 
 import { memberPort } from '../../../member';
 import { canonicalIdentitySubject, canonicalMobile } from '../../02_domain_yewu/models_moxing/IdentitySubject';
 import { consumeSmsLoginChallenge, recordInvalidSmsLoginChallenge, resolvePasswordLoginCredential, verifySmsLoginChallenge } from '../../03_application_yingyong/services_fuwu/SmsLogin';
-import { currentRealmAccount, resolveRealmContext, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
+import { currentRealmAccount, resolveActiveMembershipContext, resolveRealmContext, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
 import { requireValidStorefront, type RealmOperationContext } from './RealmOperationContext';
 
 export const SESSION_TICKET_OPERATION_IDS = Object.freeze([
@@ -95,7 +95,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           where membership.account_id=$1 and membership.realm_id=$2 and membership.status='active'
             and membership.client=$3 and membership.organization_id=$4
           order by membership.id`,
-            [found.account_id, realm.realmId, realm.membershipClient, realm.membershipOrganizationId]
+            [found.account_id, found.realm_id, realm.membershipClient, realm.membershipOrganizationId]
           );
           const candidates = memberships.rows.filter((item) => item.client === realm.membershipClient
             && item.organization_id === realm.membershipOrganizationId);
@@ -117,12 +117,15 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
               },
             };
           }
+          const activeContext = await resolveActiveMembershipContext(
+            database, realm.realmId, found.account_id, membership.id,
+          );
           if (provider === 'phone_otp') {
             const consumed = await consumeSmsLoginChallenge(database, {
               id: loginChallenge!,
               codeHash: codeDigest(loginChallenge!, loginCode!),
               account: found.account_id,
-              realmId: realm.realmId,
+              realmId: found.realm_id,
               destinationHash: subject,
             });
             if (!consumed) reject(401, 'CREDENTIAL_INVALID');
@@ -146,7 +149,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
               String(request.input.headers['user-agent'] ?? 'unknown').slice(0, 512),
               String(request.input.headers['x-device-id'] ?? 'browser').slice(0, 128),
               assurance,
-              realm.realmId,
+              found.realm_id,
               found.account_id,
               realm.target,
             ]
@@ -155,7 +158,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
             await database.query(
               `insert into identity.assurance(id,principal_id,session_id,method,level,evidence_hash,verified_at,expires_at,realm_id,account_id)
               values($1,$2,$3,'phone_otp',2,$4,clock_timestamp(),clock_timestamp()+interval '12 hours',$5,$6)`,
-              [`assurance:${randomUUID()}`, found.principal_id, id, createHash('sha256').update(loginChallenge!).digest('hex'), realm.realmId, found.account_id]
+              [`assurance:${randomUUID()}`, found.principal_id, id, createHash('sha256').update(loginChallenge!).digest('hex'), found.realm_id, found.account_id]
             );
           }
           const consumedIntent = loginIntent === undefined ? undefined : (await database.query<{
@@ -173,7 +176,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
             principal: found.principal_id,
             account: found.account_id,
             membership: membership.id,
-            realm: { nodeId: realm.nodeId, surface: realm.surface },
+            realm: { entryRealmId: realm.realmId, currentRealmId: found.realm_id, nodeId: activeContext.node_id, surface: realm.surface },
             assurance,
             loginMethod: provider,
             ...(consumedIntent === undefined ? {} : {
@@ -184,8 +187,9 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           });
           const csrf = randomBytes(32).toString('base64url');
           const target = authMembershipTarget(realm.target);
-          const callback = await tickets.issue(database, id, realm.realmId, found.account_id, realm.target, authorization);
-          return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id, target, callback }, headers: sessionCookies(token, csrf, 43_200) };
+          const callback = await tickets.issue(database, id, found.realm_id, found.account_id, realm.target, authorization);
+          return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id,
+            target, callback, active_context: activeContext }, headers: sessionCookies(token, csrf, 43_200) };
         },
       }),
       'identity.loginintents.create': async (request, database) => {
@@ -256,7 +260,9 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         const scopes = [...new Map(access.membership.grants.map((grant) => [grant.scope.id, grant.scope] as const)).values()];
         const csrf = requestCookie(request.input.headers.cookie, 'shop_csrf');
         const realmAccount = await currentRealmAccount(database, access.membership.id, access.actor.id);
-        const [credential, member, accountState] = await Promise.all([
+        const entryRealmId = access.actor.nodeContext?.manifest.realm_ref.ref ?? realmAccount.realmId;
+        const [activeContext, credential, member, accountState] = await Promise.all([
+          resolveActiveMembershipContext(database, entryRealmId, realmAccount.accountId, access.membership.id),
           database.query<{ rotated_at: Date | null }>(
             `select rotated_at from identity.credential
           where account_id=$1 and realm_id=$2 and provider='password' and status='active' order by created_at desc limit 1`,
@@ -272,6 +278,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
             actor: access.actor.id,
             session: access.actor.session,
             membership: access.membership.id,
+            active_context: activeContext,
             scope: access.scope,
             scopes,
             accessVersion: access.accessVersion,
