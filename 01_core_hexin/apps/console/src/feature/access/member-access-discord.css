@@ -156,7 +156,8 @@
   height: 52px;
   min-height: 52px;
   max-height: 52px;
-  contain-intrinsic-size: 52px;
+  content-visibility: visible;
+  contain-intrinsic-size: none;
   color: #475467;
 }
 .memberaccessworkspace .storefrontmemberrow:hover {
