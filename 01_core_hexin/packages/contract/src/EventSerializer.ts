@@ -12,6 +12,8 @@ export const SERIALIZED_EVENT_TYPES = Object.freeze([
   'access.owner.transfer.initiated',
   'access.owner.transferred',
   'access.owner.transfer.cancelled',
+  'access.administrator.scope.changed',
+  'access.administrator.member.noted',
   'catalog.listing.published',
   'inventory.stock.changed',
   'inventory.stock.reserved',

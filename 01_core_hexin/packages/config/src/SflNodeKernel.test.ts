@@ -14,12 +14,16 @@ import {
   parseAuthoritativeNodeContext,
   parseHostedNodeProvisioningRequest,
   parseHostedNodeProvisioningResult,
+  parseHostedMallOpeningRequest,
+  parseHostedMallOpeningResult,
   parseMemberNodeRegistrationRequest,
   parseMemberNodeRegistrationResult,
   parseNodeContext,
   parseNodeManifest,
   parseNodeManifestRegistry,
   parseNodeScopeRecord,
+  parseSovereignUpgradeRequest,
+  parseSovereignUpgradeResult,
   parseSflNodeTopology,
   resolveNodeRecord,
   resolveNodeManifestByHost,
@@ -494,6 +498,26 @@ describe('SFL node kernel', () => {
     })).toMatchObject({ outcome: 'level_boundary', node_id: null });
   });
 
+  it('keeps Hosted mall opening authority out of the business request and parses the versioned result', () => {
+    const request = {
+      idempotency_key: 'opening:fixture', mall_name: '测试商城', operating_entity_name: '测试经营主体',
+    } as const;
+    expect(parseHostedMallOpeningRequest(request)).toEqual(request);
+    expect(() => parseHostedMallOpeningRequest({ ...request, node_id: 'node:forged:l8' }))
+      .toThrow('SFL_HOSTED_MALL_OPENING_REQUEST_INVALID');
+    const opened = parseHostedMallOpeningResult({
+      opening_id: 'opening:fixture', business_number: 'SFLMALL-FIXTURE', idempotency_key: request.idempotency_key,
+      request_hash: 'd'.repeat(64), node_id: 'node:member:l8', membership_id: 'membership:member',
+      principal_id: 'principal:member', mall_id: 'mall:member', operating_entity_id: 'enterprise:member',
+      realm_id: 'realm:member-l8', line_id: 'line:fixture', signed_level: 'L8', parent_node_id: 'node:parent:l7',
+      original_parent_node_id: 'node:parent:l7', host_sovereign_node_id: 'node:host:l0', sovereignty_tier: 'hosted',
+      node_profile: 'operating_mall', capabilities: ['consumer', 'operating_mall'], capability_version: 2,
+      relation_version: 1, mall_version: 1, entity_binding_version: 1, configuration_version: 1,
+      payment_configuration_version: 1, status: 'active', opened_at: relationEffectiveAt, replayed: false,
+    });
+    expect(opened).toMatchObject({ node_id: 'node:member:l8', signed_level: 'L8', capability_version: 2 });
+  });
+
   it('parses one active Realm Membership without merging another Realm context', () => {
     const context = parseActiveRealmMembershipContext({
       entry_realm_id: 'realm:mall-a', current_realm_id: 'realm:member-a', account_id: 'account:a',
@@ -649,5 +673,46 @@ describe('SFL node kernel', () => {
       expect(await hasValidNodeManifestDigest(manifest)).toBe(true);
       expect(await computeNodeManifestDigest(manifest)).toBe(manifest.manifest_digest);
     }
+  });
+
+  it('accepts only business resource intent for an explicit sovereign upgrade', () => {
+    const request = parseSovereignUpgradeRequest({
+      idempotency_key: 'upgrade:node:l8',
+      brand_ref: 'brand:node:l8:v1',
+      public_api_host: 'api.l8.example.com',
+      storefront_host: 'shop.l8.example.com',
+      accounts_host: 'accounts.l8.example.com',
+      console_host: 'console.l8.example.com',
+      payment_callback_host: 'pay.l8.example.com',
+      edge_binding_ref: 'edge:node:l8:v1',
+      tunnel_ref: 'tunnel:node:l8:v1',
+      gateway_ref: 'gateway:node:l8:v1',
+      runtime_identity_ref: 'runtime:node:l8:v1',
+      data_scope_ref: 'scope:node:l8:v1',
+      secret_binding_set_ref: 'secrets:node:l8:v1',
+      payment_binding_ref: 'payment:node:l8:v1',
+      callback_binding_ref: 'callback:node:l8:v1',
+      runtime_config_ref: 'runtime-config:node:l8:v1',
+    });
+    expect(request.storefront_host).toBe('shop.l8.example.com');
+    expect(() => parseSovereignUpgradeRequest({ ...request, node_id: 'forged' })).toThrow(
+      'SFL_SOVEREIGN_UPGRADE_REQUEST_INVALID',
+    );
+    expect(() => parseSovereignUpgradeRequest({ ...request, console_host: request.storefront_host })).toThrow(
+      'SFL_SOVEREIGN_UPGRADE_HOSTS_AMBIGUOUS',
+    );
+
+    expect(parseSovereignUpgradeResult({
+      business_number: 'SFLSOV-123', upgrade_id: 'upgrade:123', idempotency_key: request.idempotency_key,
+      request_hash: 'a'.repeat(64), node_id: 'node:l8', membership_id: 'membership:l8', principal_id: 'principal:l8',
+      mall_id: 'mall:l8', operating_entity_id: 'enterprise:l8', realm_id: 'realm:l8', line_id: 'line:1',
+      signed_level: 'L8', parent_node_id: 'node:l7', original_parent_node_id: 'node:l7',
+      previous_host_sovereign_node_id: 'node:l0', host_sovereign_node_id: 'node:l8', source_tier: 'hosted',
+      target_tier: 'sovereign', node_profile: 'operating_mall', status: 'upgraded', previous_relation_version: 1,
+      active_relation_version: 2, sovereignty_version: 1, domain_binding_set_version: 1,
+      resource_binding_version: 1, manifest_version: 1, manifest_digest: `sha256:${'b'.repeat(64)}`,
+      manifest_summary: { surface_count: 5, release_pointer_ref: null }, recoverable: true,
+      upgraded_at: '2026-09-12T00:00:00.000Z', replayed: false,
+    }).host_sovereign_node_id).toBe('node:l8');
   });
 });

@@ -25,12 +25,25 @@ test('build and remote adapters agree on every pointer and process', () => {
   for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
     for (const [target, deployment] of Object.entries(node.deployments)) {
       const remote = policy.nodes[nodeKey]?.deployments?.[target];
+      if (deployment.hostedBy) {
+        assert.equal(remote, undefined, `${nodeKey}/${target} is declared only by its runtime host`);
+        const host = policy.nodes[deployment.hostedBy]?.deployments?.[target];
+        assert.ok(host, `missing runtime host deployment ${deployment.hostedBy}/${target}`);
+        assert.equal(host.pointerRoot, deployment.pointerRoot, `${nodeKey}/${target} hosted pointer`);
+        assert.equal(host.restart.name, deployment.service, `${nodeKey}/${target} hosted service`);
+        continue;
+      }
       assert.ok(remote, `missing remote deployment ${nodeKey}/${target}`);
       assert.equal(remote.pointerRoot, deployment.pointerRoot, `${nodeKey}/${target} pointer`);
       assert.equal(remote.restart.name, deployment.service, `${nodeKey}/${target} service`);
       assert.equal(remote.productionEnabled ?? true, deployment.productionEnabled ?? true, `${nodeKey}/${target} production state`);
     }
   }
+});
+
+test('remote policy registers each physical pointer exactly once', () => {
+  const roots = Object.values(policy.nodes).flatMap((node) => Object.values(node.deployments).map((item) => item.pointerRoot));
+  assert.equal(new Set(roots).size, roots.length);
 });
 
 test('every restartable fast target has a one-time legacy seed and production rollback baseline', () => {
@@ -70,19 +83,26 @@ test('gateway and tunnel templates keep ordering without lifecycle propagation',
   }
 });
 
-test('every fast target has node-scoped independent pointers', () => {
+test('every fast target is either node-owned or explicitly hosted by one runtime node', () => {
   for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
     const pointers = [];
     for (const [target, deployment] of Object.entries(node.deployments)) {
       if (target === 'core') continue;
       assert.match(deployment.pointerRoot, new RegExp(`/${target.replaceAll('-', '\\-')}$`));
       assert.ok(!deployment.pointerRoot.endsWith('/current'), `${nodeKey}/${target} owns a pointer root, not a shared current`);
+      if (deployment.hostedBy) {
+        const host = adapter.nodes[deployment.hostedBy].deployments[target];
+        assert.equal(deployment.pointerRoot, host.pointerRoot, `${nodeKey}/${target} reuses host pointer`);
+        assert.equal(deployment.service, host.service, `${nodeKey}/${target} reuses host service`);
+      }
       pointers.push(deployment.pointerRoot);
     }
     assert.equal(new Set(pointers).size, pointers.length, `${nodeKey} target pointers are unique`);
   }
   const l0 = new Set(Object.values(adapter.nodes['zhudatuan-l0'].deployments).map((item) => item.pointerRoot));
-  for (const item of Object.values(adapter.nodes['hbbtzn-l1'].deployments)) assert.ok(!l0.has(item.pointerRoot), `L1 pointer is isolated: ${item.pointerRoot}`);
+  for (const item of Object.values(adapter.nodes['hbbtzn-l1'].deployments)) {
+    assert.equal(l0.has(item.pointerRoot), Boolean(item.hostedBy), `L1 pointer ownership is explicit: ${item.pointerRoot}`);
+  }
 });
 
 test('artifacts never carry the repository node_modules tree', () => {
@@ -110,6 +130,7 @@ test('service definitions use target pointers instead of node-wide code pointers
 
   const l0Units = {
     'zhudatuan-api.service': 'identity-api',
+    'zhudatuan-console-support.service': 'support-api',
     'zhudatuan-purchase-api.service': 'purchase-api',
     'zhudatuan-web-api.service': 'web-api',
     'zhudatuan-catalog-api.service': 'catalog-api',

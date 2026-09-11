@@ -4,6 +4,7 @@ import { cp, lstat, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 
 import { materializeTarget, packageTarget } from './artifact.mjs';
+import { resolveDeployment } from './adapter.mjs';
 import { DeliveryError, invariant } from './errors.mjs';
 import { assertBuildRefIsCheckedOut, assertWorktreeClean, currentHead } from './git.mjs';
 import { acquireLocks } from './lock.mjs';
@@ -102,22 +103,27 @@ export async function deployCommand(adapter, options) {
     const expected = `${adapter.project}:${packageSet.sourceSha}`;
     invariant(options.approveProduction === expected, 'PRODUCTION_APPROVAL_REQUIRED', `Production requires --approve-production ${expected}`);
   }
-  const deployments = [];
-  for (const nodeKey of nodes) {
-    const node = adapter.nodes[nodeKey];
-    invariant(Boolean(node), 'DEPLOY_NODE_UNKNOWN', `Unknown node ${nodeKey}`);
+  const deployments = new Map();
+  for (const requestedNode of nodes) {
+    invariant(Boolean(adapter.nodes[requestedNode]), 'DEPLOY_NODE_UNKNOWN', `Unknown node ${requestedNode}`);
     for (const artifact of packageSet.artifacts) {
-      const deployment = node.deployments[artifact.target];
-      invariant(Boolean(deployment), 'DEPLOY_TARGET_UNSUPPORTED', `${nodeKey} does not deploy ${artifact.target}`);
+      const resolved = resolveDeployment(adapter, requestedNode, artifact.target);
+      const { executionNode: nodeKey, node, deployment } = resolved;
       if (environment === 'production') {
         invariant(deployment.productionEnabled !== false, 'DEPLOY_PRODUCTION_DISABLED', deployment.productionDisabledReason ?? `${nodeKey}/${artifact.target} requires an external A3 procedure`, { node: nodeKey, target: artifact.target });
       }
-      deployments.push({ nodeKey, node, artifact, deployment });
+      const key = `${nodeKey}:${artifact.target}`;
+      const existing = deployments.get(key);
+      if (existing) {
+        existing.requestedNodes.push(requestedNode);
+      } else {
+        deployments.set(key, { nodeKey, node, artifact, deployment, requestedNodes: [requestedNode] });
+      }
     }
   }
   const paths = statePaths(adapter);
   const results = [];
-  for (const item of deployments) {
+  for (const item of deployments.values()) {
     const release = await acquireLocks([
       join(paths.locks, 'nodes', `${item.nodeKey}.lock`),
       join(paths.locks, 'targets', item.nodeKey, `${item.artifact.target}.lock`),

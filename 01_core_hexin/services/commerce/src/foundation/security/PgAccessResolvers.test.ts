@@ -63,6 +63,25 @@ describe('PostgreSQL access NodeContext continuity', () => {
 });
 
 describe('PgSessionResolver realm account projection', () => {
+  it('falls back to the legacy session projection while the realm migration is pending', async () => {
+    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    const missingColumn = Object.assign(new Error('column "entry_realm_id" does not exist'), { code: '42703' });
+    const query = vi.fn()
+      .mockRejectedValueOnce(missingColumn)
+      .mockResolvedValueOnce({ rows: [{
+        actor_id: 'principal:shared', account_id: 'account:l1', realm_id: 'realm:l1',
+        session_id: 'session:l1', membership_id: 'membership:l1', credential_version: 1,
+        access_version: 2, target: 'console', assurance_level: 1, assurance_verified_at: null,
+      }] });
+    const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'l'.repeat(32)}` }), nodeContext);
+
+    await expect(new PgSessionResolver({ query } as never).resolve(headers)).resolves.toMatchObject({
+      account: 'account:l1', realm: 'realm:l1', nodeContext,
+    });
+    expect(query).toHaveBeenCalledTimes(2);
+    expect(query.mock.calls[1]?.[0]).not.toContain('entry_realm_id');
+  });
+
   it('activates the hosted Membership node while retaining the server-resolved entry host', async () => {
     const entryContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
     const query = vi.fn().mockResolvedValue({ rows: [{

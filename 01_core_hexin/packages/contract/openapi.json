@@ -75,6 +75,596 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/access/administrator-members": {
+      "get": {
+        "operationId": "access.administrators.members.read",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "access.administrators.members.read",
+        "tags": [
+          "access"
+        ],
+        "x-audience": "operator",
+        "x-availability": "runtime",
+        "x-execution": "sync",
+        "x-expected-version": "none",
+        "x-idempotency": "none",
+        "x-idempotent": true,
+        "x-permission": "member.read",
+        "x-requirements": [
+          "MVP13",
+          "MVP22"
+        ],
+        "x-risk": "elevated",
+        "x-schema-fidelity": "structural",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "store",
+          "supplier",
+          "brand"
+        ],
+        "x-stepup": false
+      }
+    },
+    "/api/v1/access/administrator-members/{nodeid}": {
+      "get": {
+        "operationId": "access.administrators.member.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nodeid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "access.administrators.member.read",
+        "tags": [
+          "access"
+        ],
+        "x-audience": "operator",
+        "x-availability": "runtime",
+        "x-execution": "sync",
+        "x-expected-version": "none",
+        "x-idempotency": "none",
+        "x-idempotent": true,
+        "x-permission": "member.read",
+        "x-requirements": [
+          "MVP13",
+          "MVP22"
+        ],
+        "x-risk": "elevated",
+        "x-schema-fidelity": "structural",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "store",
+          "supplier",
+          "brand"
+        ],
+        "x-stepup": false
+      }
+    },
+    "/api/v1/access/administrator-members/{nodeid}/notes": {
+      "post": {
+        "operationId": "access.administrators.members.note",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nodeid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "access.administrators.members.note",
+        "tags": [
+          "access"
+        ],
+        "x-audience": "operator",
+        "x-availability": "runtime",
+        "x-execution": "sync",
+        "x-expected-version": "optional",
+        "x-idempotency": "required",
+        "x-idempotent": true,
+        "x-permission": "member.manage",
+        "x-requirements": [
+          "MVP13",
+          "MVP22"
+        ],
+        "x-risk": "high",
+        "x-schema-fidelity": "structural",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "store",
+          "supplier",
+          "brand"
+        ],
+        "x-stepup": false
+      }
+    },
+    "/api/v1/access/administrators/{membershipid}/segment-scope": {
+      "put": {
+        "operationId": "access.administrators.scopes.manage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "membershipid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "access.administrators.scopes.manage",
+        "tags": [
+          "access"
+        ],
+        "x-audience": "operator",
+        "x-availability": "runtime",
+        "x-execution": "sync",
+        "x-expected-version": "optional",
+        "x-idempotency": "required",
+        "x-idempotent": true,
+        "x-permission": "access.scope.manage",
+        "x-requirements": [
+          "MVP13",
+          "MVP22"
+        ],
+        "x-risk": "critical",
+        "x-schema-fidelity": "structural",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department",
+          "store",
+          "supplier",
+          "brand"
+        ],
+        "x-stepup": true
+      }
+    },
     "/api/v1/access/center": {
       "get": {
         "operationId": "access.center.read",
@@ -23893,6 +24483,318 @@
           "MVP23"
         ],
         "x-risk": "high",
+        "x-schema-fidelity": "structural",
+        "x-scope-kinds": [
+          "owner"
+        ],
+        "x-stepup": false
+      }
+    },
+    "/api/v1/members/me/mall": {
+      "post": {
+        "operationId": "member.malls.open",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "member.malls.open",
+        "tags": [
+          "member"
+        ],
+        "x-audience": "member",
+        "x-availability": "runtime",
+        "x-execution": "sync",
+        "x-expected-version": "optional",
+        "x-idempotency": "required",
+        "x-idempotent": false,
+        "x-permission": "member.profile.read",
+        "x-requirements": [
+          "MVP03",
+          "MVP04",
+          "MVP05",
+          "MVP06",
+          "MVP07",
+          "MVP08",
+          "MVP09",
+          "MVP10",
+          "MVP11",
+          "MVP12",
+          "MVP13",
+          "MVP14",
+          "MVP15",
+          "MVP16",
+          "MVP17",
+          "MVP18",
+          "MVP19",
+          "MVP20",
+          "MVP21",
+          "MVP22",
+          "MVP23"
+        ],
+        "x-risk": "low",
+        "x-schema-fidelity": "structural",
+        "x-scope-kinds": [
+          "owner"
+        ],
+        "x-stepup": false
+      }
+    },
+    "/api/v1/members/me/sovereignty": {
+      "post": {
+        "operationId": "member.sovereignty.upgrade",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonValue"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "member.sovereignty.upgrade",
+        "tags": [
+          "member"
+        ],
+        "x-audience": "member",
+        "x-availability": "runtime",
+        "x-execution": "sync",
+        "x-expected-version": "optional",
+        "x-idempotency": "required",
+        "x-idempotent": false,
+        "x-permission": "member.profile.read",
+        "x-requirements": [
+          "MVP03",
+          "MVP04",
+          "MVP05",
+          "MVP06",
+          "MVP07",
+          "MVP08",
+          "MVP09",
+          "MVP10",
+          "MVP11",
+          "MVP12",
+          "MVP13",
+          "MVP14",
+          "MVP15",
+          "MVP16",
+          "MVP17",
+          "MVP18",
+          "MVP19",
+          "MVP20",
+          "MVP21",
+          "MVP22",
+          "MVP23"
+        ],
+        "x-risk": "low",
         "x-schema-fidelity": "structural",
         "x-scope-kinds": [
           "owner"

@@ -18,6 +18,8 @@ import { WEB_BUSINESS_OPERATION_IDS } from '../modules/webbusiness/WebBusinessOp
 const APPROVED_BUSINESS_OPERATIONS = [
   'organization.layers.read',
   'member.profile.read',
+  'member.malls.open',
+  'member.sovereignty.upgrade',
   'member.addresses.read',
   'member.addresses.manage',
   'catalog.listings.read',
@@ -66,6 +68,8 @@ describe('web business API entrypoint', () => {
     });
     expect(bootstrapped.routes.catalog().map(({ operation }) => operation)).toEqual(operationIds);
     expect(bootstrapped.routes.match('GET', '/api/v1/members/me')?.operation).toBe('member.profile.read');
+    expect(bootstrapped.routes.match('POST', '/api/v1/members/me/mall')?.operation).toBe('member.malls.open');
+    expect(bootstrapped.routes.match('POST', '/api/v1/members/me/sovereignty')?.operation).toBe('member.sovereignty.upgrade');
     expect(bootstrapped.routes.match('GET', '/api/v1/catalog/listings')?.operation).toBe('catalog.listings.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/orders')?.operation).toBe('order.orders.read');
     expect(bootstrapped.routes.match('POST', '/api/v1/orders')).toBeNull();

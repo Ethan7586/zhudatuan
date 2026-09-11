@@ -12,7 +12,6 @@ import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'nod
 
 import {
   canonicalJson,
-  classifySignedLevel,
   generateNodeManifest,
 } from '../../../01_core_hexin/packages/config/src/SflNodeKernel.ts';
 import { parseSflConsoleNodeRuntime } from '../../../01_core_hexin/packages/config/src/SflNodeKernelConsole.ts';
@@ -257,7 +256,7 @@ export class FileNodeProvisioningEngine {
   }
 
   async #businessReady(request) {
-    const profile = classifySignedLevel(request.signed_level);
+    const profile = 'operating_mall';
     const plan = profile === 'operating_mall'
       ? new CreateMall().plan({
         scope: request.business.scope_id,
@@ -746,7 +745,7 @@ function stepIndex(state) {
 }
 
 function manifestSpec(request, identity, business) {
-  const profile = classifySignedLevel(request.signed_level);
+  const profile = 'operating_mall';
   const bindingSources = requestBindingSources(request);
   const mallId = profile === 'operating_mall' ? business.plan.mall : null;
   const domainBindings = Object.entries(request.domains).map(([surface, host]) => ({

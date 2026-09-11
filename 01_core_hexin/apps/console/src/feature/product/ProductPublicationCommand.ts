@@ -78,11 +78,45 @@ export async function readPublicationTask(
   signal?: AbortSignal,
 ): Promise<CatalogPublicationTask> {
   if (!canReadPublicationTask(context)) throw new Error('CATALOG_PUBLICATION_STATUS_NOT_AVAILABLE');
-  const value = await readCatalogImport(
-    { path: { importid: id } },
-    consoleRequest(context.scope, signal, context.session.accessVersion),
-  );
-  return CatalogPublicationTaskSchema.parse(value);
+  try {
+    const value = await readCatalogImport(
+      { path: { importid: id } },
+      consoleRequest(context.scope, signal, context.session.accessVersion),
+    );
+    return CatalogPublicationTaskSchema.parse(value);
+  } catch (error) {
+    if (isMissingPublicationTask(error)) return idlePublicationTask();
+    throw error;
+  }
+}
+
+function isMissingPublicationTask(error: unknown): boolean {
+  const candidate = error as Readonly<{ status?: unknown }>;
+  return candidate.status === 404;
+}
+
+function idlePublicationTask(): CatalogPublicationTask {
+  return {
+    id: null,
+    kind: 'catalogpublication',
+    scope_id: null,
+    state: 'idle',
+    action: 'publish_ready',
+    phase: 'idle',
+    total: null,
+    processed: 0,
+    succeeded: 0,
+    published: 0,
+    failed: 0,
+    skipped: 0,
+    failures: [],
+    retryable_count: 0,
+    parent_id: null,
+    started_at: null,
+    created_at: null,
+    updated_at: null,
+    completed_at: null,
+  };
 }
 
 export async function retryPublicationFailures(

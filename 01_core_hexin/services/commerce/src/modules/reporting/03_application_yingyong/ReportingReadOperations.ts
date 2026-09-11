@@ -17,7 +17,7 @@ interface MetricRecord {
   readonly unit: MetricRow['unit'];
   readonly watermark: string;
   readonly projectionVersion: number;
-  readonly cursorTime: string;
+  readonly cursorTime: string | Date;
   readonly cursorId: string;
 }
 
@@ -60,7 +60,7 @@ function metricAction(dimension: ReportDimension): OperationAction {
       const result = await database.query<MetricRecord>(`select code,version,scope,period,dimensions,value,unit,
         watermark,"projectionVersion","cursorTime","cursorId" from (
           select item.code,item.version,item.scope,item.period,item.dimensions,item.value,item.unit,
-            item.watermark,item.projection_version "projectionVersion",item.cursor_time "cursorTime",item.cursor_id "cursorId"
+            item.watermark,CAST(item.projection_version AS float8) "projectionVersion",item.cursor_time "cursorTime",item.cursor_id "cursorId"
           from reporting.supplier_metric_rows($1,$2,$3,$4) item
         ) rows where ($5::timestamptz is null or ("cursorTime","cursorId")<($5::timestamptz,$6))
         order by "cursorTime" desc,"cursorId" desc limit $7`,
@@ -69,7 +69,7 @@ function metricAction(dimension: ReportDimension): OperationAction {
     }
     const result = await database.query<MetricRecord>(`select fact.metric_id code,fact.metric_version version,
       fact.scope_id scope,jsonb_build_object('from',fact.period_start,'to',fact.period_end,'timezone',fact.timezone) period,
-      fact.dimensions,fact.value_numeric::float8 value,metric.unit,fact.watermark,fact.projection_version "projectionVersion",
+      fact.dimensions,fact.value_numeric::float8 value,metric.unit,fact.watermark,CAST(fact.projection_version AS float8) "projectionVersion",
       fact.period_end "cursorTime",fact.metric_id||':'||md5(fact.dimensions::text) "cursorId"
       from reporting.fact fact join reporting.metric metric on metric.id=fact.metric_id and metric.version=fact.metric_version
       where fact.scope_id=$1 and fact.metric_id like $2||'.%'
@@ -91,8 +91,12 @@ function metricPage(rows: readonly MetricRecord[], page: QueryPage): OperationRe
   const visible = more ? rows.slice(0, page.limit) : rows;
   const last = visible.at(-1);
   const items = visible.map(({ cursorTime: _time, cursorId: _id, ...metric }) => metric);
-  const nextCursor = more && last ? encodeCursor({ sort: last.cursorTime, id: last.cursorId }) : undefined;
+  const nextCursor = more && last ? encodeCursor({ sort: cursorText(last.cursorTime), id: cursorText(last.cursorId) }) : undefined;
   return { status: 200, body: { items, count: items.length, ...(nextCursor ? { nextCursor } : {}) } };
+}
+
+function cursorText(value: string | Date): string {
+  return value instanceof Date ? value.toISOString() : value;
 }
 
 function period(request: OperationRequest): ReportPeriod {

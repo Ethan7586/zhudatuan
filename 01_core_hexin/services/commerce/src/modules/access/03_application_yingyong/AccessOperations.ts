@@ -11,12 +11,14 @@ import { accessPort, type OwnershipProofSnapshot, type OwnershipTransferInput } 
 import { accessOperatorReadActions } from './AccessReadOperations';
 import type { OwnerAction, OwnerActionProofPayload } from '../02_domain_yewu/AccessOwnership';
 import { OwnerActionProof } from './OwnerActionProof';
+import { administratorSegmentWriteActions } from './AdministratorSegmentOperations';
 
 export function accessOperations(context: ModuleContext): ModuleOperations {
   const pool = context.container.get(DATABASE_POOL);
   const proofs = new OwnerActionProof(context.container.get(IDENTITY_SECURITY_KEYS).session);
   return new ModuleOperations('access', pool, context.container.get(AUDIT_SINK), {
     ...accessOperatorReadActions(),
+    ...administratorSegmentWriteActions(),
     'access.roles.manage': async (request, database) => {
       const access = requireAccess(request);
       const body = bodyRecord(request);

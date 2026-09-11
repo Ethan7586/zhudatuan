@@ -5,6 +5,8 @@ import { bodyRecord, keysetResult, queryPage, textField } from '../../foundation
 import { KMS_CLIENT } from '../../foundation/infrastructure/KmsClient';
 import { DATABASE_POOL } from '../../foundation/persistence/Pool';
 import { AddressPort } from '../checkout_jiesuan';
+import { hostedMallOpeningAction } from '../member/03_application_yingyong/HostedMallOpeningOperation';
+import { sovereignUpgradeAction } from '../member/03_application_yingyong/SovereignUpgradeOperation';
 import { WEB_MEMBER_OPERATION_IDS } from './WebBusinessOperationIds';
 
 export function webMemberOperations(context: ModuleContext): ModuleOperations {
@@ -17,6 +19,8 @@ export function webMemberOperations(context: ModuleContext): ModuleOperations {
       return rowResult(await database.query('select * from access.web_member_context($1,$2)',
         [access.membership.id, access.actor.session]));
     },
+    'member.malls.open': hostedMallOpeningAction,
+    'member.sovereignty.upgrade': sovereignUpgradeAction,
     'member.addresses.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request, 100);

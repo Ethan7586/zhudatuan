@@ -4,13 +4,16 @@ import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
 import { ModuleOperations, requireAccess, type OperationActions } from '../../../foundation/application/ModuleOperations';
 import { keysetResult, queryPage } from '../../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
+import { ADMINISTRATOR_SEGMENT_READ_OPERATION_IDS, administratorSegmentReadActions } from './AdministratorSegmentOperations';
 
 export const ACCESS_OPERATOR_READ_OPERATION_IDS = Object.freeze([
   'access.center.read',
+  ...ADMINISTRATOR_SEGMENT_READ_OPERATION_IDS,
 ] as const satisfies readonly OperationId[]);
 
 export function accessOperatorReadActions(): OperationActions {
   return {
+    ...administratorSegmentReadActions(),
     'access.center.read': async (request, database) => {
       const access = requireAccess(request);
       const page = queryPage(request, 500);

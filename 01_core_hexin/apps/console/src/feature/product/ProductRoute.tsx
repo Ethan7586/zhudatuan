@@ -308,7 +308,9 @@ export function Component() {
 
   return (
     <section className="productpage" data-drawer={selectedListing === undefined ? 'closed' : 'open'}>
-      <ProductCatalogHeader
+      <div className="productworkspace">
+        <div className="productdirectory">
+          <ProductCatalogHeader
         {...(query.data === undefined ? {} : { page: query.data })}
         previewEnabled={previewEnabled}
         partnerWorkspace={partnerWorkspace}
@@ -326,8 +328,8 @@ export function Component() {
         onExport={() => downloadCurrentPageCsv({ rows: query.data?.items ?? [], columns: productCsvColumns,
           filename: timestampedCsvFilename('products-current-page') })}
         onStatus={(status) => apply({ q: filter.q, category: filter.category, supplier: filter.supplier ?? '', mall: filter.mall ?? '', status })}
-      />
-      <section className="productcontrols" aria-label="商品筛选">
+          />
+          <section className="productcontrols" aria-label="商品筛选">
         <ProductFilterForm
           value={{ q: filter.q, category: filter.category, supplier: filter.supplier ?? '', mall: filter.mall ?? '', status: filter.status ?? '' }}
           {...(previewEnabled && query.data?.preview !== undefined ? { preview: query.data.preview } : {})}
@@ -338,8 +340,8 @@ export function Component() {
           <span aria-hidden="true" />
           {query.isFetching ? '正在同步服务端数据…' : query.data?.preview?.kind === 'console-product-v1' ? `服务端数据时钟：${formatRailTime(query.data.preview.asOf)}` : '服务端未返回列表数据时钟'}
         </p>
-      </section>
-      <ResourceState
+          </section>
+          <ResourceState
         condition={condition === 'loading' ? 'ready' : condition}
         {...(error === undefined ? {} : { error })}
         retry={() => {
@@ -352,6 +354,7 @@ export function Component() {
           <div className="productcatalog">
             <ProductTable
               rows={query.data.items}
+              compact={selectedListing !== undefined}
               previewEnabled={previewEnabled}
               visibleColumns={visibleColumns}
               selected={visibleSelected}
@@ -381,11 +384,13 @@ export function Component() {
             />
           </div>
         )}
-      </ResourceState>
-      {publication.error === null ? null : <p className="productcommanderror" role="alert">
-        {publication.error instanceof Error ? publication.error.message : '货架状态更新失败'}
-      </p>}
-      <ProductDrawer {...(selectedListing === undefined ? {} : { listing: selectedListing })} previewEnabled={previewEnabled} onClose={closeDrawer} />
+          </ResourceState>
+          {publication.error === null ? null : <p className="productcommanderror" role="alert">
+            {publication.error instanceof Error ? publication.error.message : '货架状态更新失败'}
+          </p>}
+        </div>
+        <ProductDrawer {...(selectedListing === undefined ? {} : { listing: selectedListing })} previewEnabled={previewEnabled} onClose={closeDrawer} />
+      </div>
       <ProductColumnSettings open={columnsOpen} visible={visibleColumns} onChange={toggleColumn} onClose={() => setColumnsOpen(false)} />
       <ProductBatchPreview open={batchOpen} rows={selectedRows} onClose={() => setBatchOpen(false)} />
       <ProductImportDialog context={context} open={importOpen} onClose={() => setImportOpen(false)} onCreated={openImportResult} />

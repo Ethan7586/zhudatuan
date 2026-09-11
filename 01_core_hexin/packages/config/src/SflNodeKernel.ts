@@ -1,4 +1,5 @@
 export const SFL_NODE_MANIFEST_SCHEMA_VERSION = 'sfl.node-manifest.v1' as const;
+export * from './AdminSegmentScope';
 export const SFL_NODE_MANIFEST_REGISTRY_SCHEMA_VERSION = 'sfl.node-manifest-registry.v1' as const;
 export const SFL_NODE_TOPOLOGY_SCHEMA_VERSION = 'sfl.node-topology.v1' as const;
 
@@ -157,6 +158,105 @@ export interface MemberNodeRegistrationResult {
   readonly idempotency_key: string;
   readonly request_hash: string;
   readonly created_at: string;
+  readonly replayed: boolean;
+}
+
+/** Business-only request. Node, Realm, lineage and Membership authority come from the active server session. */
+export interface HostedMallOpeningRequest {
+  readonly idempotency_key: string;
+  readonly mall_name: string;
+  readonly operating_entity_name: string;
+}
+
+export interface HostedMallOpeningResult {
+  readonly opening_id: string;
+  readonly business_number: string;
+  readonly idempotency_key: string;
+  readonly request_hash: string;
+  readonly node_id: string;
+  readonly membership_id: string;
+  readonly principal_id: string;
+  readonly mall_id: string;
+  readonly operating_entity_id: string;
+  readonly realm_id: string;
+  readonly line_id: string;
+  readonly signed_level: SignedLevel;
+  readonly parent_node_id: string | null;
+  readonly original_parent_node_id: string | null;
+  readonly host_sovereign_node_id: string;
+  readonly sovereignty_tier: 'hosted';
+  readonly node_profile: 'operating_mall';
+  readonly capabilities: readonly NodeProfile[];
+  readonly capability_version: number;
+  readonly relation_version: number;
+  readonly mall_version: number;
+  readonly entity_binding_version: number;
+  readonly configuration_version: number;
+  readonly payment_configuration_version: number;
+  readonly status: 'active';
+  readonly opened_at: string;
+  readonly replayed: boolean;
+}
+
+export type SovereignUpgradeStatus =
+  | 'planned'
+  | 'resources_ready'
+  | 'bindings_complete'
+  | 'upgraded'
+  | 'failed'
+  | 'rolled_back';
+
+/** Business configuration only. Node, Realm, Mall, Membership and lineage are server-authoritative. */
+export interface SovereignUpgradeRequest {
+  readonly idempotency_key: string;
+  readonly brand_ref: string;
+  readonly public_api_host: string;
+  readonly storefront_host: string;
+  readonly accounts_host: string;
+  readonly console_host: string;
+  readonly payment_callback_host: string;
+  readonly edge_binding_ref: string;
+  readonly tunnel_ref: string;
+  readonly gateway_ref: string;
+  readonly runtime_identity_ref: string;
+  readonly data_scope_ref: string;
+  readonly secret_binding_set_ref: string;
+  readonly payment_binding_ref: string;
+  readonly callback_binding_ref: string;
+  readonly runtime_config_ref: string;
+}
+
+export interface SovereignUpgradeResult {
+  readonly business_number: string;
+  readonly upgrade_id: string;
+  readonly idempotency_key: string;
+  readonly request_hash: string;
+  readonly node_id: string;
+  readonly membership_id: string;
+  readonly principal_id: string;
+  readonly mall_id: string;
+  readonly operating_entity_id: string;
+  readonly realm_id: string;
+  readonly line_id: string;
+  readonly signed_level: SignedLevel;
+  readonly parent_node_id: string | null;
+  readonly original_parent_node_id: string | null;
+  readonly previous_host_sovereign_node_id: string;
+  readonly host_sovereign_node_id: string;
+  readonly source_tier: 'hosted';
+  readonly target_tier: 'sovereign';
+  readonly node_profile: 'operating_mall';
+  readonly status: SovereignUpgradeStatus;
+  readonly previous_relation_version: number;
+  readonly active_relation_version: number;
+  readonly sovereignty_version: number;
+  readonly domain_binding_set_version: number;
+  readonly resource_binding_version: number;
+  readonly manifest_version: number;
+  readonly manifest_digest: ManifestDigest;
+  readonly manifest_summary: Readonly<Record<string, unknown>>;
+  readonly recoverable: boolean;
+  readonly upgraded_at: string;
   readonly replayed: boolean;
 }
 
@@ -374,6 +474,91 @@ const MEMBER_NODE_REGISTRATION_RESULT_KEYS = [
   'idempotency_key',
   'request_hash',
   'created_at',
+  'replayed',
+] as const;
+const HOSTED_MALL_OPENING_REQUEST_KEYS = [
+  'idempotency_key',
+  'mall_name',
+  'operating_entity_name',
+] as const;
+const HOSTED_MALL_OPENING_RESULT_KEYS = [
+  'opening_id',
+  'business_number',
+  'idempotency_key',
+  'request_hash',
+  'node_id',
+  'membership_id',
+  'principal_id',
+  'mall_id',
+  'operating_entity_id',
+  'realm_id',
+  'line_id',
+  'signed_level',
+  'parent_node_id',
+  'original_parent_node_id',
+  'host_sovereign_node_id',
+  'sovereignty_tier',
+  'node_profile',
+  'capabilities',
+  'capability_version',
+  'relation_version',
+  'mall_version',
+  'entity_binding_version',
+  'configuration_version',
+  'payment_configuration_version',
+  'status',
+  'opened_at',
+  'replayed',
+] as const;
+const SOVEREIGN_UPGRADE_REQUEST_KEYS = [
+  'idempotency_key',
+  'brand_ref',
+  'public_api_host',
+  'storefront_host',
+  'accounts_host',
+  'console_host',
+  'payment_callback_host',
+  'edge_binding_ref',
+  'tunnel_ref',
+  'gateway_ref',
+  'runtime_identity_ref',
+  'data_scope_ref',
+  'secret_binding_set_ref',
+  'payment_binding_ref',
+  'callback_binding_ref',
+  'runtime_config_ref',
+] as const;
+const SOVEREIGN_UPGRADE_RESULT_KEYS = [
+  'business_number',
+  'upgrade_id',
+  'idempotency_key',
+  'request_hash',
+  'node_id',
+  'membership_id',
+  'principal_id',
+  'mall_id',
+  'operating_entity_id',
+  'realm_id',
+  'line_id',
+  'signed_level',
+  'parent_node_id',
+  'original_parent_node_id',
+  'previous_host_sovereign_node_id',
+  'host_sovereign_node_id',
+  'source_tier',
+  'target_tier',
+  'node_profile',
+  'status',
+  'previous_relation_version',
+  'active_relation_version',
+  'sovereignty_version',
+  'domain_binding_set_version',
+  'resource_binding_version',
+  'manifest_version',
+  'manifest_digest',
+  'manifest_summary',
+  'recoverable',
+  'upgraded_at',
   'replayed',
 ] as const;
 const ACTIVE_REALM_MEMBERSHIP_CONTEXT_KEYS = [
@@ -782,6 +967,165 @@ export function parseMemberNodeRegistrationResult(value: unknown): MemberNodeReg
     idempotency_key: canonicalText(record.idempotency_key, 'idempotency_key'),
     request_hash: requestHash,
     created_at: parseCanonicalTimestamp(record.created_at),
+    replayed: record.replayed,
+  });
+}
+
+export function parseHostedMallOpeningRequest(value: unknown): HostedMallOpeningRequest {
+  const record = exactRecord(value, HOSTED_MALL_OPENING_REQUEST_KEYS, 'SFL_HOSTED_MALL_OPENING_REQUEST_INVALID');
+  return Object.freeze({
+    idempotency_key: canonicalText(record.idempotency_key, 'idempotency_key'),
+    mall_name: canonicalText(record.mall_name, 'mall_name'),
+    operating_entity_name: canonicalText(record.operating_entity_name, 'operating_entity_name'),
+  });
+}
+
+export function parseHostedMallOpeningResult(value: unknown): HostedMallOpeningResult {
+  const record = exactRecord(value, HOSTED_MALL_OPENING_RESULT_KEYS, 'SFL_HOSTED_MALL_OPENING_RESULT_INVALID');
+  const requestHash = canonicalText(record.request_hash, 'request_hash');
+  const capabilities = requiredArray(record.capabilities, 'capabilities').map(parseNodeProfile);
+  const versions = [
+    record.capability_version,
+    record.relation_version,
+    record.mall_version,
+    record.entity_binding_version,
+    record.configuration_version,
+    record.payment_configuration_version,
+  ].map(Number);
+  if (!/^[0-9a-f]{64}$/.test(requestHash)
+    || capabilities.some((profile) => profile === null)
+    || !capabilities.includes('consumer')
+    || !capabilities.includes('operating_mall')
+    || versions.some((version) => !Number.isSafeInteger(version) || version < 1)
+    || record.sovereignty_tier !== 'hosted'
+    || record.node_profile !== 'operating_mall'
+    || record.status !== 'active'
+    || typeof record.replayed !== 'boolean') {
+    throw new Error('SFL_HOSTED_MALL_OPENING_RESULT_INVALID');
+  }
+  return Object.freeze({
+    opening_id: canonicalText(record.opening_id, 'opening_id'),
+    business_number: canonicalText(record.business_number, 'business_number'),
+    idempotency_key: canonicalText(record.idempotency_key, 'idempotency_key'),
+    request_hash: requestHash,
+    node_id: canonicalText(record.node_id, 'node_id'),
+    membership_id: canonicalText(record.membership_id, 'membership_id'),
+    principal_id: canonicalText(record.principal_id, 'principal_id'),
+    mall_id: canonicalText(record.mall_id, 'mall_id'),
+    operating_entity_id: canonicalText(record.operating_entity_id, 'operating_entity_id'),
+    realm_id: canonicalText(record.realm_id, 'realm_id'),
+    line_id: canonicalText(record.line_id, 'line_id'),
+    signed_level: parseSignedLevel(record.signed_level),
+    parent_node_id: parseNullableText(record.parent_node_id, 'parent_node_id'),
+    original_parent_node_id: parseNullableText(record.original_parent_node_id, 'original_parent_node_id'),
+    host_sovereign_node_id: canonicalText(record.host_sovereign_node_id, 'host_sovereign_node_id'),
+    sovereignty_tier: 'hosted',
+    node_profile: 'operating_mall',
+    capabilities: Object.freeze(capabilities as NodeProfile[]),
+    capability_version: versions[0]!,
+    relation_version: versions[1]!,
+    mall_version: versions[2]!,
+    entity_binding_version: versions[3]!,
+    configuration_version: versions[4]!,
+    payment_configuration_version: versions[5]!,
+    status: 'active',
+    opened_at: parseCanonicalTimestamp(record.opened_at),
+    replayed: record.replayed,
+  });
+}
+
+export function parseSovereignUpgradeRequest(value: unknown): SovereignUpgradeRequest {
+  const record = exactRecord(value, SOVEREIGN_UPGRADE_REQUEST_KEYS, 'SFL_SOVEREIGN_UPGRADE_REQUEST_INVALID');
+  const hosts = [
+    record.public_api_host,
+    record.storefront_host,
+    record.accounts_host,
+    record.console_host,
+    record.payment_callback_host,
+  ].map((host, index) => sovereignUpgradeHost(host, SOVEREIGN_UPGRADE_REQUEST_KEYS[index + 2]!));
+  if (new Set(hosts).size !== hosts.length) throw new Error('SFL_SOVEREIGN_UPGRADE_HOSTS_AMBIGUOUS');
+  return Object.freeze({
+    idempotency_key: canonicalText(record.idempotency_key, 'idempotency_key'),
+    brand_ref: canonicalText(record.brand_ref, 'brand_ref'),
+    public_api_host: hosts[0]!,
+    storefront_host: hosts[1]!,
+    accounts_host: hosts[2]!,
+    console_host: hosts[3]!,
+    payment_callback_host: hosts[4]!,
+    edge_binding_ref: canonicalText(record.edge_binding_ref, 'edge_binding_ref'),
+    tunnel_ref: canonicalText(record.tunnel_ref, 'tunnel_ref'),
+    gateway_ref: canonicalText(record.gateway_ref, 'gateway_ref'),
+    runtime_identity_ref: canonicalText(record.runtime_identity_ref, 'runtime_identity_ref'),
+    data_scope_ref: canonicalText(record.data_scope_ref, 'data_scope_ref'),
+    secret_binding_set_ref: canonicalText(record.secret_binding_set_ref, 'secret_binding_set_ref'),
+    payment_binding_ref: canonicalText(record.payment_binding_ref, 'payment_binding_ref'),
+    callback_binding_ref: canonicalText(record.callback_binding_ref, 'callback_binding_ref'),
+    runtime_config_ref: canonicalText(record.runtime_config_ref, 'runtime_config_ref'),
+  });
+}
+
+export function parseSovereignUpgradeResult(value: unknown): SovereignUpgradeResult {
+  const record = exactRecord(value, SOVEREIGN_UPGRADE_RESULT_KEYS, 'SFL_SOVEREIGN_UPGRADE_RESULT_INVALID');
+  const status = record.status;
+  const statuses: readonly SovereignUpgradeStatus[] = [
+    'planned', 'resources_ready', 'bindings_complete', 'upgraded', 'failed', 'rolled_back',
+  ];
+  const versions = [
+    record.previous_relation_version,
+    record.active_relation_version,
+    record.sovereignty_version,
+    record.domain_binding_set_version,
+    record.resource_binding_version,
+    record.manifest_version,
+  ].map(Number);
+  const requestHash = canonicalText(record.request_hash, 'request_hash');
+  const manifestDigest = canonicalText(record.manifest_digest, 'manifest_digest');
+  if (!statuses.includes(status as SovereignUpgradeStatus)
+    || record.source_tier !== 'hosted'
+    || record.target_tier !== 'sovereign'
+    || record.node_profile !== 'operating_mall'
+    || !/^[0-9a-f]{64}$/.test(requestHash)
+    || !MANIFEST_DIGEST_PATTERN.test(manifestDigest)
+    || versions.some((version) => !Number.isSafeInteger(version) || version < 1)
+    || typeof record.recoverable !== 'boolean'
+    || typeof record.replayed !== 'boolean') {
+    throw new Error('SFL_SOVEREIGN_UPGRADE_RESULT_INVALID');
+  }
+  const manifestSummary = record.manifest_summary;
+  if (!manifestSummary || typeof manifestSummary !== 'object' || Array.isArray(manifestSummary)) {
+    throw new Error('SFL_SOVEREIGN_UPGRADE_MANIFEST_SUMMARY_INVALID');
+  }
+  return Object.freeze({
+    business_number: canonicalText(record.business_number, 'business_number'),
+    upgrade_id: canonicalText(record.upgrade_id, 'upgrade_id'),
+    idempotency_key: canonicalText(record.idempotency_key, 'idempotency_key'),
+    request_hash: requestHash,
+    node_id: canonicalText(record.node_id, 'node_id'),
+    membership_id: canonicalText(record.membership_id, 'membership_id'),
+    principal_id: canonicalText(record.principal_id, 'principal_id'),
+    mall_id: canonicalText(record.mall_id, 'mall_id'),
+    operating_entity_id: canonicalText(record.operating_entity_id, 'operating_entity_id'),
+    realm_id: canonicalText(record.realm_id, 'realm_id'),
+    line_id: canonicalText(record.line_id, 'line_id'),
+    signed_level: parseSignedLevel(record.signed_level),
+    parent_node_id: parseNullableText(record.parent_node_id, 'parent_node_id'),
+    original_parent_node_id: parseNullableText(record.original_parent_node_id, 'original_parent_node_id'),
+    previous_host_sovereign_node_id: canonicalText(record.previous_host_sovereign_node_id, 'previous_host_sovereign_node_id'),
+    host_sovereign_node_id: canonicalText(record.host_sovereign_node_id, 'host_sovereign_node_id'),
+    source_tier: 'hosted',
+    target_tier: 'sovereign',
+    node_profile: 'operating_mall',
+    status: status as SovereignUpgradeStatus,
+    previous_relation_version: versions[0]!,
+    active_relation_version: versions[1]!,
+    sovereignty_version: versions[2]!,
+    domain_binding_set_version: versions[3]!,
+    resource_binding_version: versions[4]!,
+    manifest_version: versions[5]!,
+    manifest_digest: manifestDigest as ManifestDigest,
+    manifest_summary: Object.freeze({ ...(manifestSummary as JsonRecord) }),
+    recoverable: record.recoverable,
+    upgraded_at: parseCanonicalTimestamp(record.upgraded_at),
     replayed: record.replayed,
   });
 }
@@ -1466,6 +1810,14 @@ function parseCanonicalTimestamp(value: unknown): string {
     throw new Error('SFL_NODE_MANIFEST_TIMESTAMP_INVALID');
   }
   return timestamp;
+}
+
+function sovereignUpgradeHost(value: unknown, field: string): string {
+  const host = canonicalText(value, field).toLowerCase();
+  if (host.length > 253 || !/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(host)) {
+    throw new Error(`SFL_SOVEREIGN_UPGRADE_HOST_INVALID:${field}`);
+  }
+  return host;
 }
 
 function parseNullableText(value: unknown, field: string): string | null {

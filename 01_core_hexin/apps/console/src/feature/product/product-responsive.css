@@ -1,90 +1,82 @@
-@media (max-width: 1160px) {
-  .productpage[data-drawer='open'] {
-    width: 100%;
-  }
-  .producthero {
-    min-height: 0;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .productherotitle {
-    width: 100%;
-  }
-  .productheroactions {
-    display: grid;
-    width: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    align-items: start;
-  }
-  .productheroactions > .productaction {
-    width: 100%;
-    white-space: nowrap;
-  }
-  .producttoolbar {
-    flex-wrap: wrap;
-  }
-  .producttoolspacer {
-    display: none;
-  }
+@media (min-width: 1900px) {
+  .productpage[data-drawer='open'] .productworkspace { grid-template-columns: minmax(560px, 36%) minmax(0, 1fr); }
+  .productdrawerbody { padding-right: 32px; padding-left: 32px; }
 }
+
+@media (max-width: 1480px) {
+  .productpage[data-drawer='open'] .productworkspace { grid-template-columns: minmax(480px, 42%) minmax(0, 1fr); }
+  .productpage[data-drawer='open'] .productcolumncategory,
+  .productpage[data-drawer='open'] .productcolumnsku,
+  .productpage[data-drawer='open'] .productcolumnmalls,
+  .productpage[data-drawer='open'] .productcolumnprice,
+  .productpage[data-drawer='open'] .productcolumnstock,
+  .productpage[data-drawer='open'] .productcolumnupdated,
+  .productpage[data-drawer='open'] .productcolumnactions { display: none; }
+  .productpage[data-drawer='open'] .producttablewrap table { min-width: 0; }
+  .productpage[data-drawer='open'] .productidentity { min-width: 210px; }
+}
+
+@media (max-width: 1180px) {
+  .productpage[data-drawer='open'] .productworkspace { display: block; }
+  .productpage[data-drawer='open'] .productdirectory { display: none; }
+  .productdrawercontent { position: static; height: calc(100dvh - 72px); min-height: 640px; }
+  .producthero { min-height: 0; align-items: flex-start; flex-direction: column; gap: 12px; }
+  .productherotitle { width: 100%; }
+  .productheroactions { display: grid; width: 100%; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .productheroactions > .productaction { width: 100%; white-space: nowrap; }
+  .producttoolbar { flex-wrap: wrap; }
+  .producttoolspacer { display: none; }
+}
+
 @media (max-width: 820px) {
-  .productheroactions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .productheroactions > .productaction {
-    width: 100%;
-  }
+  .productsummary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .productoverviewgrid { grid-template-columns: 1fr; }
+  .productavailability ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .productheroactions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
 @media (max-width: 760px) {
-  .producthero {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .productheroactions {
-    width: 100%;
-  }
-  .producttabs {
-    overflow-x: auto;
-    padding-right: 12px;
-    padding-left: 12px;
-  }
-  .productsearchfield {
-    width: 100%;
-  }
-  .productcompactfield {
-    width: calc(100% - 92px);
-    flex: 1;
-  }
-  .producttoolbar {
-    padding-right: 12px;
-    padding-left: 12px;
-  }
+  .productpage { border: 0; border-radius: 0; box-shadow: none; }
+  .producthero { padding: 16px; }
+  .producttabs,
+  .productdrawertabs { overflow-x: auto; padding-right: 12px; padding-left: 12px; }
+  .productsearchfield { width: 100%; }
+  .productcompactfield { width: calc(100% - 92px); flex: 1; }
+  .producttoolbar { padding-right: 12px; padding-left: 12px; }
   .productheroactions > .productaction,
   .producttabs button,
   .producttoolbutton,
-  .productreset {
-    min-height: 44px;
-  }
+  .productreset,
+  .productdrawertabs button { min-height: 44px; }
   .productsearchfield,
   .productselectcontrol,
-  .productcompactfield {
-    height: 44px;
-  }
-  .productherotitle small {
-    display: none;
-  }
-  .productpagination {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    padding-block: 10px;
-  }
-  .productpagebuttons {
-    justify-content: flex-start;
-  }
+  .productcompactfield { height: 44px; }
+  .productherotitle small { display: none; }
+  .productpagination { grid-template-columns: 1fr; gap: 10px; padding-block: 10px; }
+  .productpagebuttons { justify-content: flex-start; }
+  .productdrawercontent { min-height: 100dvh; height: 100dvh; }
+  .productdrawerheader { position: relative; display: block; padding: 18px 16px 16px; }
+  .productdraweridentity { padding-right: 42px; }
+  .productdrawerthumbnail { width: 52px; height: 52px; }
+  .productdraweridentity h2 { font-size: 16px; line-height: 23px; white-space: normal; }
+  .productdraweractions { position: absolute; top: 12px; right: 10px; }
+  .producteditaction { display: none; }
+  .productdrawernumber span { max-width: 190px; }
+  .productdrawermeta { gap: 7px; }
+  .productdrawerbody { padding: 16px 14px 24px; }
+  .productlifecycle { padding: 16px 14px; }
+  .productlifecycle ol { min-width: 560px; }
+  .productsummarymetric { min-height: 80px; }
+  .productinfogroup { padding: 14px; }
+  .productinfogroup dl > div { grid-template-columns: 92px minmax(0, 1fr); }
+  .productavailability ul { grid-template-columns: 1fr 1fr; }
+  .productdrawerfooter { min-height: 72px; padding: 10px 14px; }
+  .productdrawerfooter > span { display: none; }
+  .productdrawerfooter button { min-height: 44px; flex: 1; }
+  .productchanges li { grid-template-columns: 92px 14px minmax(0, 1fr); }
 }
+
 @media (prefers-reduced-motion: reduce) {
-  .productpage {
-    transition: none;
-  }
+  .productpage,
+  .productdrawertabs button { transition: none; }
 }

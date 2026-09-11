@@ -34,7 +34,7 @@ import { WECHAT_IDENTITY } from '../modules/identity/01_public_gongkai/ports_jie
 import { WechatIdentityGateway, type WechatIdentityConfiguration } from '../modules/identity/04_adapters_shixian/providers_waibu/WechatIdentityGateway';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import type { Container } from './Container';
-import { bindServerNodeManifestRegistry, singleNodeManifestRegistry } from './ApiBootstrap';
+import { bindServerNodeManifestRegistry, runtimeNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
 import { assertIdentityRuntimeDatabaseBoundary } from './LiveDatabaseBoundary';
 import { assertIdentityNodeManifestRuntime, loadIdentityNodeRuntimeDefinition } from './IdentityNodeManifestRuntime';
@@ -130,7 +130,7 @@ export async function createIdentityRegistrationApiRuntime(
     telemetry,
     wechatIdentityEnabled,
     configure(container: Container) {
-      bindServerNodeManifestRegistry(container, singleNodeManifestRegistry(manifest));
+      bindServerNodeManifestRegistry(container, runtimeNodeManifestRegistry(manifest));
       container.bind(OPERATION_HANDLERS, handlers);
       container.bind(OPERATION_AUTHORIZER, new PipelineAuthorizer(access));
       container.bind(DATABASE_POOL, pool);

@@ -1,7 +1,35 @@
 import type { QueryResult } from 'pg';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { OperationDatabase } from '../../../foundation/application/ModuleOperations';
-import { resolveRealmContext } from '../03_application_yingyong/services_fuwu/RealmAccount';
+import { resolveActiveMembershipContext, resolveRealmContext } from '../03_application_yingyong/services_fuwu/RealmAccount';
+
+vi.mock('@shop/config/sfl-node-kernel', async (importOriginal) => ({
+  ...await importOriginal<Record<string, unknown>>(),
+  parseActiveRealmMembershipContext: (value: unknown) => value,
+}));
+
+describe('active Realm Membership compatibility', () => {
+  it('uses the legacy projection when the database resolver is not installed yet', async () => {
+    const row = {
+      entry_realm_id: 'realm:l0', current_realm_id: 'realm:l0', account_id: 'account:one',
+      active_membership_id: 'membership:one', line_id: 'line:one', node_id: 'node:one', parent_node_id: null,
+      signed_level: 'L0', sovereignty_tier: 'sovereign', node_profile: 'operating_mall', mall_id: 'mall:one',
+      host_sovereign_node_id: 'node:one', relation_version: 1, effective_at: '2026-09-11T00:00:00.000Z',
+      access_version: 1, status: 'active',
+    };
+    const query = vi.fn()
+      .mockResolvedValueOnce({ rows: [{ available: false }], rowCount: 1 } as unknown as QueryResult)
+      .mockResolvedValueOnce({ rows: [row], rowCount: 1 } as unknown as QueryResult);
+
+    await expect(resolveActiveMembershipContext({ query } as unknown as OperationDatabase,
+      'realm:l0', 'account:one', 'membership:one')).resolves.toMatchObject({
+      current_realm_id: 'realm:l0', active_membership_id: 'membership:one',
+    });
+    expect(query).toHaveBeenCalledTimes(2);
+    expect(query.mock.calls[0]?.[0]).toContain('to_regprocedure');
+    expect(query.mock.calls[1]?.[0]).toContain("account.realm_id=$1");
+  });
+});
 
 describe('realm registry boundary', () => {
   it('resolves an L11 node entirely from registry rows without a compiled node list', async () => {

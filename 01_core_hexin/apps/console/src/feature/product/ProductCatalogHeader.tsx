@@ -77,7 +77,7 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, s
           </button>
         </div>
         <p id="productcontractnotice" className="sr-only">
-          商品写操作只在当前 Access Pipeline 已授权的范围内可用。
+          商品写操作仅在当前商城已授权的管理范围内可用。
         </p>
       </header>
       {!partnerWorkspace && releaseStateVisible ? (

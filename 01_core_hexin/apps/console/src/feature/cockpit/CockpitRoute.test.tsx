@@ -19,7 +19,8 @@ const context: ConsoleContext = {
   scopes: [{ kind: 'enterprise', id: 'enterprise:1' }],
 };
 
-const server = setupServer(http.get('*/api/v1/reports/dashboard', ({ request }) => {
+const server = setupServer(http.get('*/api/v1/catalog/listings', () => HttpResponse.json({ items: [], count: 0 })),
+http.get('*/api/v1/reports/dashboard', ({ request }) => {
   const url = new URL(request.url);
   if (request.headers.get('x-scope-hint') !== 'enterprise:1' || request.headers.get('x-access-version') !== '7'
     || url.searchParams.get('period') !== '30days') {
@@ -54,8 +55,8 @@ describe('Cockpit route', () => {
     render(<MemoryRouter initialEntries={['/?period=30days']}><QueryClientProvider client={client}>
       <ConsoleContextProvider value={context}><Component /></ConsoleContextProvider>
     </QueryClientProvider></MemoryRouter>);
-    expect(await screen.findByRole('heading', { level: 1, name: '经营驾驶舱' })).toBeTruthy();
-    expect(screen.getByText('¥315.00')).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: '生意看板' })).toBeTruthy();
+    expect(await screen.findByText('¥315.00')).toBeTruthy();
     expect(screen.getByText('环比 +12.8%')).toBeTruthy();
     expect(await screen.findByRole('img', { name: '净成交额折线与支付订单柱形组合趋势' })).toBeTruthy();
     expect(await screen.findByRole('heading', { name: '商城经营对比' })).toBeTruthy();

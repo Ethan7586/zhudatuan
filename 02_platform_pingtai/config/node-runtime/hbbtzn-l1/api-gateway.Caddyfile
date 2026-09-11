@@ -1,4 +1,4 @@
-# Generated from manifest:hbbtzn:l1:v1 (sha256:b46f95da5f7b4e1085e5189af2d57e10cf432500aa50c390096eda034076c24f). Do not hand edit.
+# Generated from manifest:hbbtzn:l1:v1 (sha256:efde3b74922ac405da4a3c67b2d7346a65fe6b3477c986cf97ff66c578ee3f76). Do not hand edit.
 {
 	admin off
 	auto_https off
@@ -15,7 +15,7 @@ https://:4430 {
 		header Access-Control-Request-Method GET
 	}
 	handle @ordersReadPreflight {
-		reverse_proxy 127.0.0.1:4432 {
+		reverse_proxy 127.0.0.1:4322 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
@@ -31,7 +31,7 @@ https://:4430 {
 		path /api/v1/checkouts/quotes /api/v1/orders /api/v1/payments/intents
 	}
 	handle @purchaseWrite {
-		reverse_proxy 127.0.0.1:4434 {
+		reverse_proxy 127.0.0.1:4323 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
@@ -47,7 +47,7 @@ https://:4430 {
 		path /api/v1/payments/intents/*
 	}
 	handle @paymentRead {
-		reverse_proxy 127.0.0.1:4434 {
+		reverse_proxy 127.0.0.1:4323 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
@@ -63,7 +63,7 @@ https://:4430 {
 		path /api/v1/orders /api/v1/orders/*
 	}
 	handle @ordersRead {
-		reverse_proxy 127.0.0.1:4432 {
+		reverse_proxy 127.0.0.1:4322 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
@@ -79,7 +79,7 @@ https://:4430 {
 		path /api/v1/catalog/public/products*
 	}
 	handle @storefrontPublicCatalog {
-		reverse_proxy 127.0.0.1:4432 {
+		reverse_proxy 127.0.0.1:4322 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
@@ -94,7 +94,7 @@ https://:4430 {
 		path /api/v1/members/me* /api/v1/organizations/layers* /api/v1/reports/dashboard* /api/v1/catalog/listings /api/v1/catalog/public/products* /api/v1/pricing/offers* /api/v1/inventory/availability* /api/v1/carts/current* /api/v1/benefits/accounts* /api/v1/benefits/ledgers*
 	}
 	handle @webBusiness {
-		reverse_proxy 127.0.0.1:4432 {
+		reverse_proxy 127.0.0.1:4322 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
@@ -109,7 +109,7 @@ https://:4430 {
 		path /api/v1/catalog/imports*
 	}
 	handle @catalogImports {
-		reverse_proxy 127.0.0.1:4431 {
+		reverse_proxy 127.0.0.1:4331 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
@@ -125,7 +125,7 @@ https://:4430 {
 		path /api/v1/catalog/listings/batches
 	}
 	handle @catalogBatch {
-		reverse_proxy 127.0.0.1:4431 {
+		reverse_proxy 127.0.0.1:4331 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
@@ -141,7 +141,7 @@ https://:4430 {
 		path_regexp publication ^/api/v1/catalog/listings/[^/]+/publication$
 	}
 	handle @catalogPublication {
-		reverse_proxy 127.0.0.1:4431 {
+		reverse_proxy 127.0.0.1:4331 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
@@ -157,7 +157,22 @@ https://:4430 {
 		path /api/v1/webhooks/wechat/payment
 	}
 	handle @paymentWebhook {
-		reverse_proxy 127.0.0.1:4436 {
+		reverse_proxy 127.0.0.1:4326 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	@supportApi {
+		host api.hbbtzn.com
+		path /api/v1/support /api/v1/support/*
+	}
+	handle @supportApi {
+		reverse_proxy 127.0.0.1:4324 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
@@ -172,7 +187,7 @@ https://:4430 {
 		path /api/v1/*
 	}
 	handle @identityApi {
-		reverse_proxy 127.0.0.1:4433 {
+		reverse_proxy 127.0.0.1:4321 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id

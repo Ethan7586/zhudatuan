@@ -9,7 +9,9 @@ describe('member module manifest', () => {
   });
 
   it('declares member operations and entrypoints', () => {
-    expect(memberManifest.operations).toHaveLength(15);
+    expect(memberManifest.operations).toHaveLength(17);
+    expect(memberManifest.operations).toContain('member.malls.open');
+    expect(memberManifest.operations).toContain('member.sovereignty.upgrade');
     expect(memberManifest.operations).toContain('member.storefront.members.read');
     expect(memberManifest.operations).toContain('member.storefront.detail.read');
     expect(memberManifest.operations).toContain('member.storefront.invitees.read');

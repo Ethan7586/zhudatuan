@@ -37,6 +37,8 @@ requirements:
       - identity.stepup.complete
       - organization.layers.read
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - catalog.pools.attach
@@ -172,6 +174,8 @@ requirements:
       - capability.assignments.read
       - capability.assignments.manage
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - channel.distributors.create
@@ -321,6 +325,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -439,6 +445,8 @@ requirements:
       - provisioning.malls.create
       - provisioning.malls.read
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -570,6 +578,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - catalog.pools.read
@@ -700,6 +710,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -832,6 +844,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -1050,6 +1064,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -1204,6 +1220,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -1331,6 +1349,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -1480,6 +1500,10 @@ requirements:
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+      - access.administrators.members.read
+      - access.administrators.member.read
+      - access.administrators.scopes.manage
+      - access.administrators.members.note
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -1497,6 +1521,8 @@ requirements:
       - member.storefront.custom.manage
       - member.invitations.read
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - member.imports.create
@@ -1645,6 +1671,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -1763,6 +1791,8 @@ requirements:
       - provisioning.malls.create
       - provisioning.malls.read
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -1894,6 +1924,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - catalog.pools.read
@@ -2023,6 +2055,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -2158,6 +2192,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -2375,6 +2411,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -2528,6 +2566,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -2657,6 +2697,8 @@ requirements:
       - identity.stepup.start
       - identity.stepup.complete
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read
@@ -2807,6 +2849,10 @@ requirements:
       - access.center.read
       - access.roles.manage
       - access.scopes.manage
+      - access.administrators.members.read
+      - access.administrators.member.read
+      - access.administrators.scopes.manage
+      - access.administrators.members.note
       - capability.assignments.read
       - capability.assignments.manage
       - partner.partners.read
@@ -2824,6 +2870,8 @@ requirements:
       - member.storefront.custom.manage
       - member.invitations.read
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - member.imports.create
@@ -2976,6 +3024,8 @@ requirements:
       - identity.wechat.session
       - identity.wechat.bind
       - member.profile.read
+      - member.malls.open
+      - member.sovereignty.upgrade
       - member.addresses.read
       - member.addresses.manage
       - pricing.offers.read

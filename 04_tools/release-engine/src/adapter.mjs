@@ -63,9 +63,32 @@ export function validateAdapter(adapter) {
       invariant(typeof deployment.service === 'string' && deployment.service.length > 0, 'ADAPTER_SERVICE_INVALID', `${nodeKey}/${targetId} needs a service`);
       invariant(deployment.productionEnabled === undefined || typeof deployment.productionEnabled === 'boolean', 'ADAPTER_PRODUCTION_FLAG_INVALID', `${nodeKey}/${targetId} productionEnabled must be boolean`);
       if (deployment.productionEnabled === false) invariant(typeof deployment.productionDisabledReason === 'string' && deployment.productionDisabledReason.length > 0, 'ADAPTER_PRODUCTION_REASON_REQUIRED', `${nodeKey}/${targetId} needs a productionDisabledReason`);
+      if (deployment.hostedBy !== undefined) {
+        invariant(safeIdentifier(deployment.hostedBy) && deployment.hostedBy !== nodeKey,
+          'ADAPTER_HOST_NODE_INVALID', `${nodeKey}/${targetId} hostedBy must name another node`);
+        const hostDeployment = adapter.nodes[deployment.hostedBy]?.deployments?.[targetId];
+        invariant(Boolean(hostDeployment), 'ADAPTER_HOST_NODE_TARGET_UNKNOWN', `${nodeKey}/${targetId} host does not deploy ${targetId}`);
+        invariant(hostDeployment.hostedBy === undefined, 'ADAPTER_HOST_NODE_CHAIN_INVALID', `${nodeKey}/${targetId} hostedBy cannot form a chain`);
+        invariant(deployment.pointerRoot === hostDeployment.pointerRoot,
+          'ADAPTER_HOST_POINTER_MISMATCH', `${nodeKey}/${targetId} must use its host pointer`);
+        invariant(deployment.service === hostDeployment.service,
+          'ADAPTER_HOST_SERVICE_MISMATCH', `${nodeKey}/${targetId} must use its host service`);
+      }
     }
   }
   return adapter;
+}
+
+export function resolveDeployment(adapter, nodeKey, targetId) {
+  const requested = adapter.nodes[nodeKey]?.deployments?.[targetId];
+  invariant(Boolean(requested), 'ADAPTER_NODE_TARGET_UNKNOWN', `${nodeKey} does not deploy ${targetId}`);
+  const executionNode = requested.hostedBy ?? nodeKey;
+  return Object.freeze({
+    requestedNode: nodeKey,
+    executionNode,
+    node: adapter.nodes[executionNode],
+    deployment: adapter.nodes[executionNode].deployments[targetId],
+  });
 }
 
 function safeIdentifier(value) {

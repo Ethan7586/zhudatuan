@@ -9,7 +9,7 @@ describe('Console navigation selector', () => {
     const items = selectConsoleNavigationItems(consoleModules, 'enterprise');
 
     expect(items.filter(({ placement }) => placement === 'main').map(({ moduleId, label, icon, order }) => ({ moduleId, label, icon, order }))).toEqual([
-      { moduleId: 'cockpit', label: '经营驾驶舱', icon: 'trend', order: 10 },
+      { moduleId: 'cockpit', label: '生意看板', icon: 'trend', order: 10 },
       { moduleId: 'reports', label: '数据报表', icon: 'trend', order: 15 },
       { moduleId: 'applications', label: '築店 · 商城管理', icon: 'building', order: 30 },
       { moduleId: 'products', label: '商品管理', icon: 'products', order: 40 },
