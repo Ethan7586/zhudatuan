@@ -105,14 +105,14 @@ assert.equal(await readFile(outputUrl, 'utf8'), serialized, 'generated fixture m
 assert.deepEqual(await deserializeNodeManifestRegistry(serialized), registry, 'verified registry serialization must round-trip');
 assert.ok((await Promise.all(registry.manifests.map(hasValidNodeManifestDigest))).every(Boolean));
 assert.equal(classifySignedLevel('L-2'), 'supply_side');
-assert.equal(classifySignedLevel('L0'), 'operating_mall');
-assert.equal(classifySignedLevel('L6'), 'consumer');
+assert.equal(classifySignedLevel('L0'), 'member_l0_l5');
+assert.equal(classifySignedLevel('L6'), 'member_l6_l11');
 
 const l0 = registry.manifests.find((manifest) => manifest.signed_level === 'L0');
 const l1Nodes = registry.manifests.filter((manifest) => manifest.signed_level === 'L1');
 assert.ok(l0);
 assert.equal(l1Nodes.length, 3);
-for (const requiredLevel of ['L0', 'L1', 'L2', 'L5', 'L6', 'L11']) {
+for (const requiredLevel of ['L0', 'L1']) {
   assert.ok(registry.manifests.some((manifest) => manifest.signed_level === requiredLevel));
 }
 
@@ -154,26 +154,6 @@ await assert.rejects(
   /SFL_NODE_MANIFEST_HOST_AMBIGUOUS/
 );
 
-const l5Spec = baseSpecs.find((spec) => spec.signed_level === 'L5');
-const l6Spec = baseSpecs.find((spec) => spec.signed_level === 'L6');
-const l7Spec = baseSpecs.find((spec) => spec.signed_level === 'L7');
-assert.ok(l5Spec && l6Spec && l7Spec);
-await assert.rejects(
-  () => generateNodeManifestRegistry(registryInput(replaceSpec(l7Spec.node_id, { parent_node_id: l5Spec.node_id }))),
-  /SFL_CONSUMER_PARENT_CHAIN_INVALID/
-);
-await assert.rejects(
-  () =>
-    generateNodeManifestRegistry(
-      registryInput(
-        replaceSpec(l6Spec.node_id, {
-          surfaces: [...l6Spec.surfaces, ref('surface:console')],
-        })
-      )
-    ),
-  /SFL_CONSUMER_SURFACE_INVALID/
-);
-
 assert.equal(resolveNodeManifestByHost(registry, 'L1-A-CONSOLE.SFL-NODE.INVALID.').node_id, nodeId('l1-a'));
 assert.throws(() => resolveNodeManifestByHost(registry, 'l1-a.sfl-node.invalid'), /SFL_NODE_MANIFEST_HOST_UNKNOWN/);
 assert.throws(() => resolveNodeManifestByHost(registry, 'l1-a-console.sfl-node.invalid:443'), /SFL_NODE_MANIFEST_HOST_INVALID/);
@@ -198,7 +178,7 @@ const evidence = {
   schema_version: 'sfl.node-kernel-evidence.v1',
   version_name: 'SFL 节点内核底座 v1.1｜第二批生产级硬化',
   fixture_manifest_count: registry.manifests.length,
-  required_levels: ['L0', 'L1', 'L2', 'L5', 'L6', 'L11'],
+  required_levels: ['L0', 'L1'],
   checks: {
     legal_generation: 'PASS',
     deterministic_generated_fixture: 'PASS',
@@ -211,8 +191,7 @@ const evidence = {
     complete_contract_parsing: 'PASS',
     authority_tamper_rejection: 'PASS',
     registry_identifier_ambiguity_rejection: 'PASS',
-    topology_validation: 'PASS',
-    consumer_surface_isolation: 'PASS',
+    sovereign_manifest_boundary: 'PASS',
     invalid_host_rejection: 'PASS',
   },
   gates: {
@@ -233,7 +212,7 @@ const evidence = {
     },
     'SFL-D03': {
       status: 'PASS',
-      evidence: 'Predeclared checks call the real generator, verified parser, digest verifier, topology validator, and exact Host resolver.',
+      evidence: 'Predeclared checks call the real generator, verified parser, digest verifier, sovereign Manifest boundary, and exact Host resolver.',
     },
     'SFL-D04': {
       status: 'PASS',

@@ -13,9 +13,12 @@ import {
   parseNodeContext,
   parseNodeManifest,
   parseNodeManifestRegistry,
+  parseSflNodeTopology,
+  resolveNodeRecord,
   resolveNodeManifestByHost,
   serializeNodeManifest,
   serializeNodeManifestRegistry,
+  validateNodeManifestOwnership,
   type NodeLifecycleStatus,
   type NodeManifest,
   type NodeManifestRegistrySpec,
@@ -23,6 +26,63 @@ import {
 } from './SflNodeKernel';
 
 const registry = await parseNodeManifestRegistry(generatedFixture);
+const relationEffectiveAt = '2026-09-01T00:00:00.000Z';
+const relationChangedAt = '2026-09-10T00:00:00.000Z';
+const topologyFixture = {
+  schema_version: 'sfl.node-topology.v1',
+  nodes: [
+    node('l0', 'sovereign', 'operating_mall', 'mall:fixture:l0'),
+    node('l5', 'hosted', 'operating_mall', 'mall:fixture:l5'),
+    node('l6', 'hosted', 'operating_mall', 'mall:fixture:l6'),
+    node('l7', 'hosted', 'consumer', null),
+    node('l8', 'hosted', 'operating_mall', 'mall:fixture:l8'),
+    node('l9', 'hosted', 'consumer', null),
+    node('l10', 'hosted', 'consumer', null),
+    node('l11', 'hosted', 'consumer', null),
+  ],
+  relations: [
+    relation('l0', null, 'L0'),
+    relation('l5', 'l0', 'L5'),
+    { ...relation('l6', 'l5', 'L6'), superseded_at: relationChangedAt },
+    { ...relation('l6', 'l0', 'L6'), original_parent_node_id: nodeId('l5'), relation_version: 2, effective_at: relationChangedAt },
+    relation('l7', 'l6', 'L7'),
+    relation('l8', 'l7', 'L8'),
+    relation('l9', 'l8', 'L9'),
+    relation('l10', 'l9', 'L10'),
+    relation('l11', 'l10', 'L11'),
+  ],
+};
+
+function nodeId(key: string): string {
+  return `node:fixture:line-alpha:${key}`;
+}
+
+function node(key: string, sovereignty_tier: 'sovereign' | 'hosted', node_profile: 'operating_mall' | 'consumer', mall_id: string | null) {
+  return {
+    line_id: 'line:fixture:alpha',
+    node_id: nodeId(key),
+    sovereignty_tier,
+    node_profile,
+    realm_id: `realm:fixture:${key}`,
+    mall_id,
+    status: 'active',
+    created_at: relationEffectiveAt,
+  };
+}
+
+function relation(key: string, parentKey: string | null, signed_level: `L${number}`) {
+  return {
+    line_id: 'line:fixture:alpha',
+    node_id: nodeId(key),
+    parent_node_id: parentKey === null ? null : nodeId(parentKey),
+    original_parent_node_id: parentKey === null ? null : nodeId(parentKey),
+    signed_level,
+    host_sovereign_node_id: nodeId('l0'),
+    relation_version: 1,
+    effective_at: relationEffectiveAt,
+    superseded_at: null,
+  };
+}
 
 function specFrom(manifest: NodeManifest): NodeManifestSpec {
   const {
@@ -154,7 +214,7 @@ describe('SFL node kernel', () => {
     ['lifecycle_status', (manifest) => ({ ...manifest, lifecycle_status: 'suspended' })],
     ['line_id', (manifest) => ({ ...manifest, line_id: 'line:fixture:tampered' })],
     ['node_id', (manifest) => ({ ...manifest, node_id: `${manifest.node_id}:tampered` })],
-    ['parent_node_id', (manifest) => ({ ...manifest, parent_node_id: manifestByLevel('L2').node_id })],
+    ['parent_node_id', (manifest) => ({ ...manifest, parent_node_id: manifestByNode(nodeId('l1-a')).node_id })],
     ['signed_level', (manifest) => ({ ...manifest, signed_level: 'L2' })],
     ['node_profile', (manifest) => ({ ...manifest, node_profile: 'consumer' })],
     ['mall_id', (manifest) => ({ ...manifest, mall_id: `${manifest.mall_id}:tampered` })],
@@ -250,16 +310,16 @@ describe('SFL node kernel', () => {
   });
 
   it('rejects unresolved application and surface references instead of guessing them', async () => {
-    const l6 = manifestByLevel('L6');
-    const binding = l6.domain_bindings[0]!;
+    const l1 = manifestByLevel('L1');
+    const binding = l1.domain_bindings[0]!;
 
     await expectRegistryPatchRejected(
-      l6.node_id,
+      l1.node_id,
       { domain_bindings: [{ ...binding, application_ref: 'application:missing' }] },
       'SFL_NODE_MANIFEST_REFERENCE_UNKNOWN:application_ref'
     );
     await expectRegistryPatchRejected(
-      l6.node_id,
+      l1.node_id,
       { domain_bindings: [{ ...binding, surface_ref: 'surface:missing' }] },
       'SFL_NODE_MANIFEST_REFERENCE_UNKNOWN:surface_ref'
     );
@@ -291,50 +351,66 @@ describe('SFL node kernel', () => {
     );
   });
 
-  it('accepts L6 below any L0-L5 host and keeps every later consumer on that same host', async () => {
-    const l1A = manifestByNode('node:fixture:line-alpha:l1-a');
-    const specs = registry.manifests.map(specFrom).map((spec) => {
-      const level = Number(spec.signed_level.slice(1));
-      if (level === 6) return { ...spec, parent_node_id: l1A.node_id, host_node_id: l1A.node_id };
-      if (level >= 7) return { ...spec, host_node_id: l1A.node_id };
-      return spec;
-    });
-    const generated = await generateNodeManifestRegistry(registrySpec(specs));
-    const generatedL6 = generated.manifests.find((manifest) => manifest.signed_level === 'L6');
+  it('uses one node and relation model for L0, L5, L6, and L11 without deriving profile from level', () => {
+    const topology = parseSflNodeTopology(topologyFixture);
+    const samples = ['l0', 'l5', 'l6', 'l11'].map((key) => resolveNodeRecord(topology, nodeId(key), relationChangedAt));
 
-    expect(generatedL6).toMatchObject({ parent_node_id: l1A.node_id, host_node_id: l1A.node_id });
-    expect(
-      generated.manifests
-        .filter((manifest) => classifySignedLevel(manifest.signed_level) === 'consumer')
-        .every((manifest) => manifest.host_node_id === l1A.node_id)
-    ).toBe(true);
+    expect(samples.map((sample) => sample.signed_level)).toEqual(['L0', 'L5', 'L6', 'L11']);
+    expect(samples.map((sample) => sample.node_profile)).toEqual(['operating_mall', 'operating_mall', 'operating_mall', 'consumer']);
+    expect(classifySignedLevel('L5')).toBe('member_l0_l5');
+    expect(classifySignedLevel('L6')).toBe('member_l6_l11');
+    expect(samples.every((sample) => sample.host_sovereign_node_id === nodeId('l0'))).toBe(true);
   });
 
-  it('rejects invalid operating and consumer topology without naming undefined levels', async () => {
-    const l2 = manifestByLevel('L2');
-    const l3 = manifestByLevel('L3');
-    const l5 = manifestByLevel('L5');
-    const l6 = manifestByLevel('L6');
-    const l7 = manifestByLevel('L7');
-    const l8 = manifestByLevel('L8');
-    const l1A = manifestByNode('node:fixture:line-alpha:l1-a');
-
-    await expectRegistryPatchRejected(l2.node_id, { parent_node_id: l3.node_id }, 'SFL_OPERATING_MALL_PARENT_INVALID');
-    await expectRegistryPatchRejected(l6.node_id, { parent_node_id: l7.node_id }, 'SFL_CONSUMER_L6_PARENT_INVALID');
-    await expectRegistryPatchRejected(l7.node_id, { parent_node_id: l5.node_id }, 'SFL_CONSUMER_PARENT_CHAIN_INVALID');
-    await expectRegistryPatchRejected(l8.node_id, { host_node_id: l1A.node_id }, 'SFL_CONSUMER_PARENT_CHAIN_INVALID');
-    await expectRegistryPatchRejected(l7.node_id, { line_id: 'line:fixture:other' }, 'SFL_CONSUMER_PARENT_LINE_INVALID');
+  it('supports the three legal sovereignty/profile combinations and rejects sovereign consumer', () => {
+    const topology = parseSflNodeTopology(topologyFixture);
+    expect(topology.nodes).toEqual(expect.arrayContaining([
+      expect.objectContaining({ sovereignty_tier: 'sovereign', node_profile: 'operating_mall' }),
+      expect.objectContaining({ sovereignty_tier: 'hosted', node_profile: 'operating_mall' }),
+      expect.objectContaining({ sovereignty_tier: 'hosted', node_profile: 'consumer' }),
+    ]));
+    const invalid = {
+      ...topologyFixture,
+      nodes: topologyFixture.nodes.map((entry) => entry.node_id === nodeId('l0') ? { ...entry, node_profile: 'consumer', mall_id: null } : entry),
+    };
+    expect(() => parseSflNodeTopology(invalid)).toThrow('SFL_SOVEREIGN_NODE_PROFILE_INVALID');
   });
 
-  it('rejects mall or Console semantics on L6-L11 consumers', async () => {
-    const l6 = manifestByLevel('L6');
+  it('keeps hosted nodes data-only and reserves manifests for sovereign nodes', () => {
+    const topology = parseSflNodeTopology(topologyFixture);
+    const hosted = topology.nodes.find((entry) => entry.node_id === nodeId('l11'))!;
+    expect(Object.keys(hosted)).not.toEqual(expect.arrayContaining([
+      'domain_bindings', 'resource_binding_set_ref', 'runtime_instance_id', 'release_pointer_ref', 'manifest_id',
+    ]));
+    validateNodeManifestOwnership(topology, { ...registry, manifests: [manifestByLevel('L0')] });
+    expect(() => validateNodeManifestOwnership(topology, {
+      ...registry,
+      manifests: [{ ...manifestByLevel('L0'), node_id: nodeId('l11') }],
+    })).toThrow('SFL_NODE_MANIFEST_NON_SOVEREIGN');
+  });
 
-    await expectRegistryPatchRejected(l6.node_id, { mall_id: 'mall:forbidden' }, 'SFL_CONSUMER_CONTEXT_INVALID');
-    await expectRegistryPatchRejected(
-      l6.node_id,
-      { surfaces: [...l6.surfaces, { ref: 'surface:console', version: '1.0.0' }] },
-      'SFL_CONSUMER_SURFACE_INVALID:surface:console'
-    );
+  it('preserves relation history and resolves exactly one parent edge per effective period', () => {
+    const topology = parseSflNodeTopology(topologyFixture);
+    const before = resolveNodeRecord(topology, nodeId('l6'), '2026-09-05T00:00:00.000Z');
+    const after = resolveNodeRecord(topology, nodeId('l6'), relationChangedAt);
+
+    expect(before).toMatchObject({ parent_node_id: nodeId('l5'), original_parent_node_id: nodeId('l5'), relation_version: 1 });
+    expect(after).toMatchObject({ parent_node_id: nodeId('l0'), original_parent_node_id: nodeId('l5'), relation_version: 2 });
+    const overlap = {
+      ...topologyFixture,
+      relations: topologyFixture.relations.map((entry) => entry.node_id === nodeId('l6') && entry.relation_version === 1
+        ? { ...entry, superseded_at: null }
+        : entry),
+    };
+    expect(() => parseSflNodeTopology(overlap)).toThrow('SFL_NODE_RELATION_PERIOD_OVERLAP');
+  });
+
+  it('caps the member line at L11 without creating an L12 model', () => {
+    const invalid = {
+      ...topologyFixture,
+      relations: topologyFixture.relations.map((entry) => entry.node_id === nodeId('l11') ? { ...entry, signed_level: 'L12' } : entry),
+    };
+    expect(() => parseSflNodeTopology(invalid)).toThrow('SFL_SIGNED_LEVEL_INVALID');
   });
 
   it('preserves negative supply-side labels without profile, mall, host, ordering, or party-kind inference', async () => {

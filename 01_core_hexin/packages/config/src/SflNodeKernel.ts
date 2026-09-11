@@ -1,10 +1,12 @@
 export const SFL_NODE_MANIFEST_SCHEMA_VERSION = 'sfl.node-manifest.v1' as const;
 export const SFL_NODE_MANIFEST_REGISTRY_SCHEMA_VERSION = 'sfl.node-manifest-registry.v1' as const;
+export const SFL_NODE_TOPOLOGY_SCHEMA_VERSION = 'sfl.node-topology.v1' as const;
 
 export type ManifestDigest = `sha256:${string}`;
 export type SignedLevel = `L${number}`;
-export type SignedLevelSegment = 'supply_side' | 'operating_mall' | 'consumer';
+export type SignedLevelSegment = 'supply_side' | 'member_l0_l5' | 'member_l6_l11';
 export type NodeProfile = 'operating_mall' | 'consumer';
+export type SovereigntyTier = 'sovereign' | 'hosted';
 export type NodeLifecycleStatus = 'provisioning' | 'active' | 'suspended' | 'retired';
 
 export interface VersionedRef {
@@ -35,6 +37,37 @@ export interface NodeContext {
   readonly mall_id: string | null;
   readonly host_node_id: string | null;
 }
+
+export interface NodeRecord {
+  readonly line_id: string;
+  readonly node_id: string;
+  readonly sovereignty_tier: SovereigntyTier;
+  readonly node_profile: NodeProfile;
+  readonly realm_id: string;
+  readonly mall_id: string | null;
+  readonly status: NodeLifecycleStatus;
+  readonly created_at: string;
+}
+
+export interface NodeRelationRecord {
+  readonly line_id: string;
+  readonly node_id: string;
+  readonly parent_node_id: string | null;
+  readonly original_parent_node_id: string | null;
+  readonly signed_level: SignedLevel;
+  readonly host_sovereign_node_id: string;
+  readonly relation_version: number;
+  readonly effective_at: string;
+  readonly superseded_at: string | null;
+}
+
+export interface SflNodeTopology {
+  readonly schema_version: typeof SFL_NODE_TOPOLOGY_SCHEMA_VERSION;
+  readonly nodes: readonly NodeRecord[];
+  readonly relations: readonly NodeRelationRecord[];
+}
+
+export interface ResolvedNodeRecord extends NodeRecord, NodeRelationRecord {}
 
 export interface DomainBindingRef {
   readonly host: string;
@@ -138,6 +171,19 @@ type UnsignedNodeManifest = Omit<NodeManifest, 'manifest_digest'>;
 type JsonRecord = Record<string, unknown>;
 
 const NODE_CONTEXT_KEYS = ['line_id', 'node_id', 'parent_node_id', 'signed_level', 'node_profile', 'mall_id', 'host_node_id'] as const;
+const NODE_RECORD_KEYS = ['line_id', 'node_id', 'sovereignty_tier', 'node_profile', 'realm_id', 'mall_id', 'status', 'created_at'] as const;
+const NODE_RELATION_KEYS = [
+  'line_id',
+  'node_id',
+  'parent_node_id',
+  'original_parent_node_id',
+  'signed_level',
+  'host_sovereign_node_id',
+  'relation_version',
+  'effective_at',
+  'superseded_at',
+] as const;
+const NODE_TOPOLOGY_KEYS = ['schema_version', 'nodes', 'relations'] as const;
 const NODE_MANIFEST_KEYS = [
   'schema_version',
   'manifest_id',
@@ -170,13 +216,12 @@ const NODE_LIFECYCLE_STATUSES = new Set<NodeLifecycleStatus>(['provisioning', 'a
 const MANIFEST_DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/;
 const SOURCE_SHA_PATTERN = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 const MANIFEST_VERSION_PATTERN = /^1\.0\.(?:0|[1-9][0-9]*)$/;
-const CONSOLE_SURFACE_REF = 'surface:console';
 
 export function classifySignedLevel(signedLevel: SignedLevel | string): SignedLevelSegment {
   const level = signedLevelNumber(signedLevel);
   if (level < 0) return 'supply_side';
-  if (level <= 5) return 'operating_mall';
-  return 'consumer';
+  if (level <= 5) return 'member_l0_l5';
+  return 'member_l6_l11';
 }
 
 export function formatNodeManifestVersion(revision: number): string {
@@ -266,6 +311,103 @@ export async function materializeNodeManifestRegistryRelease(
 export function parseNodeContext(value: unknown): NodeContext {
   const record = exactRecord(value, NODE_CONTEXT_KEYS, 'SFL_NODE_CONTEXT_INVALID');
   return parseNodeContextFields(record);
+}
+
+export function parseNodeRecord(value: unknown): NodeRecord {
+  const record = exactRecord(value, NODE_RECORD_KEYS, 'SFL_NODE_RECORD_INVALID');
+  const sovereigntyTier = canonicalText(record.sovereignty_tier, 'sovereignty_tier');
+  if (sovereigntyTier !== 'sovereign' && sovereigntyTier !== 'hosted') {
+    throw new Error('SFL_SOVEREIGNTY_TIER_INVALID');
+  }
+  const nodeProfile = parseNodeProfile(record.node_profile);
+  if (nodeProfile === null) throw new Error('SFL_NODE_PROFILE_INVALID');
+  const node: NodeRecord = {
+    line_id: canonicalText(record.line_id, 'line_id'),
+    node_id: canonicalText(record.node_id, 'node_id'),
+    sovereignty_tier: sovereigntyTier,
+    node_profile: nodeProfile,
+    realm_id: canonicalText(record.realm_id, 'realm_id'),
+    mall_id: parseNullableText(record.mall_id, 'mall_id'),
+    status: parseLifecycleStatus(record.status),
+    created_at: parseCanonicalTimestamp(record.created_at),
+  };
+  if (node.sovereignty_tier === 'sovereign' && node.node_profile !== 'operating_mall') {
+    throw new Error(`SFL_SOVEREIGN_NODE_PROFILE_INVALID:${node.node_id}`);
+  }
+  if (node.node_profile === 'consumer' && node.mall_id !== null) {
+    throw new Error(`SFL_CONSUMER_NODE_MALL_INVALID:${node.node_id}`);
+  }
+  return Object.freeze(node);
+}
+
+export function parseNodeRelationRecord(value: unknown): NodeRelationRecord {
+  const record = exactRecord(value, NODE_RELATION_KEYS, 'SFL_NODE_RELATION_INVALID');
+  const relationVersion = record.relation_version;
+  if (!Number.isSafeInteger(relationVersion) || (relationVersion as number) < 1) {
+    throw new Error('SFL_NODE_RELATION_VERSION_INVALID');
+  }
+  const effectiveAt = parseCanonicalTimestamp(record.effective_at);
+  const supersededAt = record.superseded_at === null ? null : parseCanonicalTimestamp(record.superseded_at);
+  if (supersededAt !== null && supersededAt <= effectiveAt) {
+    throw new Error('SFL_NODE_RELATION_PERIOD_INVALID');
+  }
+  return Object.freeze({
+    line_id: canonicalText(record.line_id, 'line_id'),
+    node_id: canonicalText(record.node_id, 'node_id'),
+    parent_node_id: parseNullableText(record.parent_node_id, 'parent_node_id'),
+    original_parent_node_id: parseNullableText(record.original_parent_node_id, 'original_parent_node_id'),
+    signed_level: parseSignedLevel(record.signed_level),
+    host_sovereign_node_id: canonicalText(record.host_sovereign_node_id, 'host_sovereign_node_id'),
+    relation_version: relationVersion as number,
+    effective_at: effectiveAt,
+    superseded_at: supersededAt,
+  });
+}
+
+export function parseSflNodeTopology(value: unknown): SflNodeTopology {
+  const record = exactRecord(value, NODE_TOPOLOGY_KEYS, 'SFL_NODE_TOPOLOGY_INVALID');
+  if (record.schema_version !== SFL_NODE_TOPOLOGY_SCHEMA_VERSION) {
+    throw new Error('SFL_NODE_TOPOLOGY_SCHEMA_VERSION_INVALID');
+  }
+  const topology: SflNodeTopology = {
+    schema_version: SFL_NODE_TOPOLOGY_SCHEMA_VERSION,
+    nodes: requiredArray(record.nodes, 'nodes').map(parseNodeRecord).sort(compareNodes),
+    relations: requiredArray(record.relations, 'relations').map(parseNodeRelationRecord).sort(compareNodeRelations),
+  };
+  validateSflNodeTopology(topology);
+  return Object.freeze(topology);
+}
+
+export function resolveNodeRecord(topology: SflNodeTopology, nodeId: string, at: string): ResolvedNodeRecord {
+  const parsed = parseSflNodeTopology(topology);
+  const node = parsed.nodes.find((candidate) => candidate.node_id === nodeId);
+  if (node === undefined) throw new Error(`SFL_NODE_UNKNOWN:${nodeId}`);
+  const instant = parseCanonicalTimestamp(at);
+  const matches = parsed.relations.filter((relation) => relation.node_id === nodeId
+    && relation.effective_at <= instant
+    && (relation.superseded_at === null || instant < relation.superseded_at));
+  if (matches.length !== 1) throw new Error(`SFL_NODE_RELATION_NOT_UNIQUE:${nodeId}:${instant}`);
+  return Object.freeze({ ...node, ...matches[0]! });
+}
+
+export function validateNodeManifestOwnership(topology: SflNodeTopology, registry: NodeManifestRegistry): void {
+  const parsed = parseSflNodeTopology(topology);
+  const nodes = new Map(parsed.nodes.map((node) => [node.node_id, node]));
+  const manifests = new Set(registry.manifests.map((manifest) => manifest.node_id));
+  for (const manifest of registry.manifests) {
+    const node = nodes.get(manifest.node_id);
+    if (node === undefined || node.sovereignty_tier !== 'sovereign') {
+      throw new Error(`SFL_NODE_MANIFEST_NON_SOVEREIGN:${manifest.node_id}`);
+    }
+  }
+  for (const node of parsed.nodes) {
+    if (node.sovereignty_tier === 'sovereign' && !manifests.has(node.node_id)) {
+      throw new Error(`SFL_SOVEREIGN_NODE_MANIFEST_MISSING:${node.node_id}`);
+    }
+    if (node.sovereignty_tier === 'hosted' && manifests.has(node.node_id)) {
+      throw new Error(`SFL_HOSTED_NODE_MANIFEST_FORBIDDEN:${node.node_id}`);
+    }
+  }
 }
 
 export async function parseNodeManifest(value: unknown): Promise<NodeManifest> {
@@ -454,17 +596,11 @@ function validateNodeContext(context: NodeContext): void {
     }
     return;
   }
-  if (segment === 'operating_mall') {
-    if (context.node_profile !== 'operating_mall' || context.mall_id === null || context.host_node_id !== null) {
-      throw new Error('SFL_OPERATING_MALL_CONTEXT_INVALID');
-    }
-    if (context.signed_level === 'L0' ? context.parent_node_id !== null : context.parent_node_id === null) {
-      throw new Error('SFL_OPERATING_MALL_PARENT_INVALID');
-    }
-    return;
+  if (context.node_profile !== 'operating_mall' || context.mall_id === null || context.host_node_id !== null) {
+    throw new Error('SFL_SOVEREIGN_MANIFEST_CONTEXT_INVALID');
   }
-  if (context.node_profile !== 'consumer' || context.mall_id !== null || context.host_node_id === null || context.parent_node_id === null) {
-    throw new Error('SFL_CONSUMER_CONTEXT_INVALID');
+  if (context.signed_level === 'L0' ? context.parent_node_id !== null : context.parent_node_id === null) {
+    throw new Error('SFL_SOVEREIGN_MANIFEST_PARENT_INVALID');
   }
 }
 
@@ -498,9 +634,6 @@ function validateNodeManifestReferences(manifest: NodeManifest): void {
     if (!surfaceRefs.has(binding.surface_ref)) {
       throw new Error(`SFL_NODE_MANIFEST_REFERENCE_UNKNOWN:surface_ref:${binding.surface_ref}`);
     }
-  }
-  if (manifest.node_profile === 'consumer' && surfaceRefs.has(CONSOLE_SURFACE_REF)) {
-    throw new Error(`SFL_CONSUMER_SURFACE_INVALID:${CONSOLE_SURFACE_REF}`);
   }
 }
 
@@ -542,54 +675,95 @@ function validateNodeManifestRegistry(registry: NodeManifestRegistry): void {
     const level = signedLevelNumber(manifest.signed_level);
     const segment = classifySignedLevel(manifest.signed_level);
     if (segment === 'supply_side') continue;
-
-    if (segment === 'operating_mall') {
-      if (level === 0) {
-        if (lineRoots.has(manifest.line_id)) {
-          throw new Error(`SFL_NODE_MANIFEST_LINE_ROOT_AMBIGUOUS:${manifest.line_id}`);
-        }
-        lineRoots.add(manifest.line_id);
-        continue;
+    if (level === 0) {
+      if (lineRoots.has(manifest.line_id)) {
+        throw new Error(`SFL_NODE_MANIFEST_LINE_ROOT_AMBIGUOUS:${manifest.line_id}`);
       }
-      const parent = requireParentManifest(manifest, manifestsByNode);
-      if (parent.line_id !== manifest.line_id || classifySignedLevel(parent.signed_level) !== 'operating_mall') {
-        throw new Error(`SFL_OPERATING_MALL_PARENT_INVALID:${manifest.node_id}`);
-      }
-      const parentLevel = signedLevelNumber(parent.signed_level);
-      if (parentLevel < 0 || parentLevel >= level) {
-        throw new Error(`SFL_OPERATING_MALL_PARENT_INVALID:${manifest.node_id}`);
-      }
+      lineRoots.add(manifest.line_id);
       continue;
     }
-
-    const parent = requireParentManifest(manifest, manifestsByNode);
-    if (parent.line_id !== manifest.line_id) {
-      throw new Error(`SFL_CONSUMER_PARENT_LINE_INVALID:${manifest.node_id}`);
-    }
-    if (level === 6) {
-      if (classifySignedLevel(parent.signed_level) !== 'operating_mall' || manifest.host_node_id !== parent.node_id) {
-        throw new Error(`SFL_CONSUMER_L6_PARENT_INVALID:${manifest.node_id}`);
-      }
-    } else if (parent.signed_level !== `L${level - 1}` || parent.node_profile !== 'consumer' || manifest.host_node_id !== parent.host_node_id) {
-      throw new Error(`SFL_CONSUMER_PARENT_CHAIN_INVALID:${manifest.node_id}`);
-    }
-
-    const hostNode = manifestsByNode.get(manifest.host_node_id!);
-    if (
-      hostNode === undefined ||
-      hostNode.line_id !== manifest.line_id ||
-      classifySignedLevel(hostNode.signed_level) !== 'operating_mall' ||
-      hostNode.node_profile !== 'operating_mall'
-    ) {
-      throw new Error(`SFL_CONSUMER_HOST_NODE_INVALID:${manifest.node_id}`);
+    const parent = manifestsByNode.get(manifest.parent_node_id!);
+    if (parent !== undefined && (parent.line_id !== manifest.line_id || signedLevelNumber(parent.signed_level) >= level)) {
+      throw new Error(`SFL_SOVEREIGN_MANIFEST_PARENT_INVALID:${manifest.node_id}`);
     }
   }
 }
 
-function requireParentManifest(manifest: NodeManifest, manifestsByNode: ReadonlyMap<string, NodeManifest>): NodeManifest {
-  const parent = manifest.parent_node_id === null ? undefined : manifestsByNode.get(manifest.parent_node_id);
-  if (parent === undefined) throw new Error(`SFL_NODE_MANIFEST_PARENT_UNKNOWN:${manifest.node_id}`);
-  return parent;
+function validateSflNodeTopology(topology: SflNodeTopology): void {
+  assertRegistryIdentifierUnique(topology.nodes.map((node) => node.node_id), 'node_id');
+  assertRegistryIdentifierUnique(topology.nodes.map((node) => node.realm_id), 'realm_id');
+  const nodes = new Map(topology.nodes.map((node) => [node.node_id, node]));
+  const grouped = new Map<string, NodeRelationRecord[]>();
+  for (const relation of topology.relations) {
+    const node = nodes.get(relation.node_id);
+    if (node === undefined || node.line_id !== relation.line_id) {
+      throw new Error(`SFL_NODE_RELATION_NODE_INVALID:${relation.node_id}`);
+    }
+    for (const reference of [relation.parent_node_id, relation.original_parent_node_id]) {
+      if (reference !== null && nodes.get(reference)?.line_id !== relation.line_id) {
+        throw new Error(`SFL_NODE_RELATION_PARENT_INVALID:${relation.node_id}`);
+      }
+    }
+    const host = nodes.get(relation.host_sovereign_node_id);
+    if (host === undefined || host.line_id !== relation.line_id || host.sovereignty_tier !== 'sovereign') {
+      throw new Error(`SFL_NODE_RELATION_HOST_INVALID:${relation.node_id}`);
+    }
+    if (node.sovereignty_tier === 'sovereign'
+      ? relation.host_sovereign_node_id !== node.node_id
+      : relation.host_sovereign_node_id === node.node_id) {
+      throw new Error(`SFL_NODE_RELATION_SOVEREIGNTY_INVALID:${relation.node_id}`);
+    }
+    const level = signedLevelNumber(relation.signed_level);
+    if (level === 0 ? relation.parent_node_id !== null : relation.parent_node_id === null) {
+      throw new Error(`SFL_NODE_RELATION_PARENT_INVALID:${relation.node_id}`);
+    }
+    const key = `${relation.line_id}\u0000${relation.node_id}`;
+    const history = grouped.get(key) ?? [];
+    history.push(relation);
+    grouped.set(key, history);
+  }
+  if (grouped.size !== topology.nodes.length) throw new Error('SFL_NODE_RELATION_MISSING');
+  for (const history of grouped.values()) validateNodeRelationHistory(history, topology.relations);
+}
+
+function validateNodeRelationHistory(history: NodeRelationRecord[], relations: readonly NodeRelationRecord[]): void {
+  history.sort(compareNodeRelations);
+  const first = history[0]!;
+  if (first.relation_version !== 1 || first.original_parent_node_id !== first.parent_node_id) {
+    throw new Error(`SFL_NODE_RELATION_ORIGIN_INVALID:${first.node_id}`);
+  }
+  for (let index = 0; index < history.length; index += 1) {
+    const relation = history[index]!;
+    if (relation.relation_version !== index + 1 || relation.original_parent_node_id !== first.original_parent_node_id) {
+      throw new Error(`SFL_NODE_RELATION_VERSION_SEQUENCE_INVALID:${relation.node_id}`);
+    }
+    const next = history[index + 1];
+    if (next !== undefined && (relation.superseded_at === null || relation.superseded_at > next.effective_at)) {
+      throw new Error(`SFL_NODE_RELATION_PERIOD_OVERLAP:${relation.node_id}`);
+    }
+    const level = signedLevelNumber(relation.signed_level);
+    if (level <= 0) continue;
+    const parent = relations.find((candidate) => candidate.node_id === relation.parent_node_id
+      && candidate.line_id === relation.line_id
+      && candidate.effective_at <= relation.effective_at
+      && (candidate.superseded_at === null || relation.effective_at < candidate.superseded_at));
+    if (parent === undefined) throw new Error(`SFL_NODE_RELATION_PARENT_INACTIVE:${relation.node_id}`);
+    const parentLevel = signedLevelNumber(parent.signed_level);
+    if ((level >= 7 && parentLevel !== level - 1) || (level === 6 && (parentLevel < 0 || parentLevel > 5))
+      || (level >= 1 && level <= 5 && (parentLevel < 0 || parentLevel >= level))) {
+      throw new Error(`SFL_NODE_RELATION_LEVEL_INVALID:${relation.node_id}`);
+    }
+  }
+}
+
+function compareNodes(left: NodeRecord, right: NodeRecord): number {
+  return compareText(left.line_id, right.line_id) || compareText(left.node_id, right.node_id);
+}
+
+function compareNodeRelations(left: NodeRelationRecord, right: NodeRelationRecord): number {
+  return compareText(left.line_id, right.line_id)
+    || compareText(left.node_id, right.node_id)
+    || left.relation_version - right.relation_version;
 }
 
 function stableJson(value: unknown): string {
