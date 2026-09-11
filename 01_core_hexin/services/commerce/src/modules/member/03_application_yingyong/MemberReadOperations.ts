@@ -100,8 +100,7 @@ export function memberOperatorReadActions(): OperationActions {
       const page = queryPage(request);
       const query = queryValue(request.input.query.q);
       const result = await database.query(`select membership.id membership_id,profile.display_name,profile.mobile_masked,
-        case membership.client when 'storefront' then 'L6' end identity_level,
-        case membership.client when 'storefront' then 'consumer' end identity_kind,
+        relation.signed_level identity_level,node.node_profile identity_kind,
         membership.status membership_status,profile.mobile_token is not null mobile_bound,
         exists(select 1 from identity.federatedidentity identity
           where identity.membership_id=membership.id and identity.provider='wechat' and identity.status='active') wechat_bound,
@@ -109,6 +108,9 @@ export function memberOperatorReadActions(): OperationActions {
           'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') end joined_at
         from access.membership membership
         join member.profile profile on profile.id=membership.member_id
+        join organization.node node on node.id=membership.node_id and node.node_profile='consumer'
+        join organization.noderelation relation on relation.node_id=node.id and relation.superseded_at is null
+          and relation.signed_level in('L6','L7','L8','L9','L10','L11')
         where membership.organization_id=$1 and membership.client='storefront'
           and ($2='' or profile.display_name ilike '%'||$2||'%' or membership.id ilike '%'||$2||'%'
             or profile.mobile_masked ilike '%'||$2||'%')
@@ -122,8 +124,7 @@ export function memberOperatorReadActions(): OperationActions {
       const access = requireAccess(request);
       if (access.scope.kind !== 'mall') throw new Error('SCOPE_NOT_ALLOWED_FOR_OPERATION');
       const result = await database.query(`select membership.id membership_id,profile.display_name,profile.mobile_masked,
-        case membership.client when 'storefront' then 'L6' end identity_level,
-        case membership.client when 'storefront' then 'consumer' end identity_kind,
+        relation.signed_level identity_level,node.node_profile identity_kind,
         membership.status membership_status,profile.mobile_token is not null mobile_bound,
         exists(select 1 from identity.federatedidentity identity
           where identity.membership_id=membership.id and identity.provider='wechat' and identity.status='active') wechat_bound,
@@ -136,6 +137,12 @@ export function memberOperatorReadActions(): OperationActions {
             inviter_binding.expires_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') end,
           'relationship_status',case when inviter_binding.expires_at is not null
             and inviter_binding.expires_at<=clock_timestamp() then 'expired' else 'active' end) end inviter,
+        jsonb_build_object(
+          'kind',case parent_node.node_profile when 'consumer' then 'member' else 'mall' end,
+          'display_name',case parent_node.node_profile when 'consumer' then parent_profile.display_name
+            else parent_organization.name end,
+          'identity_level',parent_relation.signed_level
+        ) parent,
         coalesce((select count(*)::int from referral.member referral_owner
           join referral.binding invited_binding on invited_binding.scope_id=referral_owner.scope_id
             and invited_binding.referral_member_id=referral_owner.id
@@ -149,6 +156,16 @@ export function memberOperatorReadActions(): OperationActions {
           where orders.mall_id=membership.organization_id and orders.member_id=membership.member_id) latest_order_at
         from access.membership membership
         join member.profile profile on profile.id=membership.member_id
+        join organization.node node on node.id=membership.node_id and node.node_profile='consumer'
+        join organization.noderelation relation on relation.node_id=node.id and relation.superseded_at is null
+          and relation.signed_level in('L6','L7','L8','L9','L10','L11')
+        join organization.node parent_node on parent_node.id=relation.parent_node_id
+        join organization.noderelation parent_relation on parent_relation.node_id=parent_node.id
+          and parent_relation.superseded_at is null
+        left join access.membership parent_membership on parent_membership.node_id=parent_node.id
+          and parent_membership.organization_id=membership.organization_id and parent_membership.client='storefront'
+        left join member.profile parent_profile on parent_profile.id=parent_membership.member_id
+        left join organization.organization parent_organization on parent_organization.id=parent_node.mall_id
         left join lateral(select binding.* from referral.binding binding
           where binding.scope_id=membership.organization_id and binding.customer_member_id=membership.member_id
           order by binding.bound_at desc,binding.id desc limit 1) inviter_binding on true
@@ -168,7 +185,7 @@ export function memberOperatorReadActions(): OperationActions {
         select membership.member_id from access.membership membership
         where membership.id=$2 and membership.organization_id=$1 and membership.client='storefront'
       ) select invited_membership.id membership_id,invited_profile.display_name,invited_profile.mobile_masked,
-        invited_membership.status membership_status,
+        invited_membership.status membership_status,invited_relation.signed_level identity_level,
         to_char(binding.bound_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') bound_at,
         case when binding.expires_at is null then null else to_char(
           binding.expires_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') end expires_at,
@@ -179,6 +196,8 @@ export function memberOperatorReadActions(): OperationActions {
         join referral.binding binding on binding.scope_id=$1 and binding.referral_member_id=referral_owner.id
         join access.membership invited_membership on invited_membership.organization_id=$1
           and invited_membership.client='storefront' and invited_membership.member_id=binding.customer_member_id
+        join organization.noderelation invited_relation on invited_relation.node_id=invited_membership.node_id
+          and invited_relation.superseded_at is null and invited_relation.signed_level in('L7','L8','L9','L10','L11')
         join member.profile invited_profile on invited_profile.id=invited_membership.member_id
         where ($3::timestamptz is null or (binding.bound_at,invited_membership.id)<($3::timestamptz,$4))
         order by binding.bound_at desc,invited_membership.id desc limit $5`,

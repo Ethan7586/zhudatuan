@@ -107,10 +107,10 @@ describe('storefront member workspace', () => {
     const detail = screen.getByRole('complementary', { name: '会员详情' });
     expect(detail.getAttribute('aria-hidden')).toBe('false');
     expect(screen.getByRole('heading', { level: 2, name: '会员详情' })).toBeTruthy();
-    expect(await within(detail).findByText('测试商城')).toBeTruthy();
-    expect(within(detail).getByRole('tab', { name: '个人资料' }).getAttribute('aria-selected')).toBe('true');
+    expect(await within(detail).findByText('HT20260906001')).toBeTruthy();
+    expect(within(detail).getByRole('tab', { name: '个人订单' }).getAttribute('aria-selected')).toBe('true');
     expect(within(detail).getByText('手机已绑定')).toBeTruthy();
-    expect(within(detail).getAllByText('微信已绑定')).toHaveLength(2);
+    expect(within(detail).getAllByText('微信已绑定')).toHaveLength(1);
     expect(screen.queryByText('membership:storefront:test')).toBeNull();
 
     await user.click(screen.getByRole('button', { name: '全屏查看会员目录' }));
@@ -201,6 +201,7 @@ describe('storefront member workspace', () => {
     renderRoute();
     await user.click(await screen.findByRole('row', { name: '查看会员 测试消费者' }));
     const detail = screen.getByRole('complementary', { name: '会员详情' });
+    await user.click(within(detail).getByRole('tab', { name: '个人资料' }));
     expect(await within(detail).findByText('有效会员')).toBeTruthy();
     const region = within(detail).getByRole('textbox', { name: '地区' });
     await user.clear(region);
@@ -217,6 +218,7 @@ describe('storefront member workspace', () => {
     const user = userEvent.setup();
     renderRoute();
     await user.click(await screen.findByRole('row', { name: '查看会员 测试消费者' }));
+    await user.click(screen.getByRole('tab', { name: '个人资料' }));
     const region = await screen.findByRole('textbox', { name: '地区' });
     await user.clear(region);
     await user.type(region, '仍然保留');
@@ -234,6 +236,7 @@ describe('storefront member workspace', () => {
     const user = userEvent.setup();
     renderRoute();
     await user.click(await screen.findByRole('row', { name: '查看会员 测试消费者' }));
+    await user.click(screen.getByRole('tab', { name: '个人资料' }));
     expect(await screen.findByText('正在读取自定义档案…')).toBeTruthy();
     release?.();
     expect(await screen.findByText('当前商城尚未配置自定义标签')).toBeTruthy();
@@ -247,6 +250,7 @@ describe('storefront member workspace', () => {
     const user = userEvent.setup();
     renderRoute();
     await user.click(await screen.findByRole('row', { name: '查看会员 测试消费者' }));
+    await user.click(screen.getByRole('tab', { name: '个人资料' }));
     expect(await screen.findByText(/自定义档案暂不可用|PROFILE_UNAVAILABLE/)).toBeTruthy();
     server.use(http.get('*/api/v1/member/storefront-profile-config', () => HttpResponse.json(profileConfig)));
     await user.click(screen.getByRole('button', { name: '重新加载' }));
@@ -257,6 +261,7 @@ describe('storefront member workspace', () => {
     const user = userEvent.setup();
     renderRoute();
     await user.click(await screen.findByRole('row', { name: '查看会员 测试消费者' }));
+    await user.click(screen.getByRole('tab', { name: '个人资料' }));
     await user.click(await screen.findByRole('button', { name: '配置标签与字段' }));
     await user.click(screen.getByRole('button', { name: '添加标签' }));
     expect((screen.getByRole('textbox', { name: '标签 2 名称' }) as HTMLInputElement).value).toBe('新标签 2');
@@ -328,6 +333,7 @@ const memberPage = {
 
 const memberDetail = {
   ...memberPage.items[0],
+  parent: { kind: 'member', display_name: '邀请人丙', identity_level: 'L6' },
   inviter: {
     display_name: '邀请人丙', mobile_masked: '155****5544', bound_at: '2026-09-05T08:00:00.000Z',
     expires_at: null, relationship_status: 'active',
@@ -340,7 +346,7 @@ const memberDetail = {
 const inviteePage = {
   items: [{
     membership_id: 'membership:storefront:invitee', display_name: '测试消费者乙', mobile_masked: '177****7755',
-    membership_status: 'active', bound_at: '2026-09-06T09:00:00.000Z', expires_at: null,
+    membership_status: 'active', identity_level: 'L7', bound_at: '2026-09-06T09:00:00.000Z', expires_at: null,
     relationship_status: 'active',
   }],
   count: 1,

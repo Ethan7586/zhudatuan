@@ -59,6 +59,28 @@ describe('referral operations', () => {
     });
   });
 
+  it('projects a newly won referral binding into the versioned member-node relation', async () => {
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce(result([{ member: 'member:customer', scope: 'mall:one' }]))
+      .mockResolvedValueOnce(result([{
+        binding_id: 'binding:new', winner_referral_member_id: 'referral-member:parent', created: true,
+        bound_at: '2026-09-12T01:00:00.000Z', expires_at: null,
+      }]))
+      .mockResolvedValueOnce(result([{ node_id: 'node:child:l7', signed_level: 'L7' }]));
+
+    await action('referral.bindings.create')(
+      memberRequest('referral.bindings.create', { referralMember: 'referral-member:parent' }),
+      { query } as unknown as OperationDatabase,
+    );
+
+    expect(String(query.mock.calls[2]?.[0])).toContain('organization.bind_storefront_member_parent');
+    expect(query.mock.calls[2]?.[1]).toEqual([
+      'mall:one', 'member:customer', 'referral-member:parent', 'actor:member',
+      expect.any(String), new Date('2026-09-12T01:00:00.000Z'),
+    ]);
+  });
+
   it('stores only the immediate inviter and performs no ancestry walk during application', async () => {
     const inserted = {
       id: 'referral-member:new',

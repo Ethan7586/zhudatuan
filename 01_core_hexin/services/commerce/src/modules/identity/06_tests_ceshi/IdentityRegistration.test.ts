@@ -1378,6 +1378,13 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           joined_at: '2026-09-03T00:00:00.000Z', left_at: null,
         }]);
       }
+      if (text.includes('organization.provision_storefront_member_node')) {
+        return result([{
+          node_id: `node:consumer-test:l6`,
+          parent_node_id: 'node:zhudatuan:l0',
+          signed_level: 'L6',
+        }]);
+      }
       if (text.includes('from access.membership membership join identity.realm realm')
         && text.includes('membership.id=any')) {
         const memberships = Array.isArray(values[0]) ? values[0] : [values[0]];
