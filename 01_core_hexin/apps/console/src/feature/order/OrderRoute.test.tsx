@@ -523,7 +523,7 @@ describe('Order route', () => {
 
     await user.click(await screen.findByRole('button', { name: '下载文件' }));
     expect(download).toHaveBeenCalledOnce();
-    expect(download.mock.instances[0]?.href).toBe('https://download.test/orders.xlsx');
+    expect((download.mock.instances[0] as HTMLAnchorElement | undefined)?.href).toBe('https://download.test/orders.xlsx');
     expect(exportBody?.format).toBe('xlsx');
     expect(exportBody?.range).toBe('filter');
     expect(exportBody?.fields).toEqual(expect.arrayContaining(['orderNumber', 'memberId', 'productNames', 'refundMinor']));

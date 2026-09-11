@@ -43,6 +43,7 @@ describe('Order list query', () => {
     expect(request?.url.pathname).toBe('/api/v1/orders');
     expect(Object.fromEntries(request?.url.searchParams ?? [])).toEqual({
       limit: String(ORDER_PAGE_LIMIT),
+      exports: 'true',
       order: 'order:internal:42',
       cursor: 'cursor:50',
     });
@@ -96,6 +97,7 @@ describe('Order list query', () => {
 
     expect(Object.fromEntries(requests[0]?.url.searchParams ?? [])).toEqual({
       limit: String(ORDER_PAGE_LIMIT),
+      exports: 'true',
       cursor: 'cursor:production',
       placed: '30days',
       lifecycle: 'completed',
@@ -122,6 +124,7 @@ describe('Order list query', () => {
 
     expect(Object.fromEntries(requests[0]?.url.searchParams ?? [])).toEqual({
       limit: String(ORDER_PAGE_LIMIT),
+      exports: 'true',
       order: 'order:preview:1',
       cursor: 'cursor:preview',
       placed: '7days',
