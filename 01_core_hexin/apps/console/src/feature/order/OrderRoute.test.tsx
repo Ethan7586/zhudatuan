@@ -126,6 +126,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   cleanup();
   server.resetHandlers();
+  sessionStorage.clear();
   getRequests.length = 0;
   postRequests.length = 0;
 });
@@ -470,7 +471,7 @@ describe('Order route', () => {
     await waitFor(() => expect(getRequests.some((url) => url.searchParams.get('limit') === '50' && url.searchParams.get('order') === 'order:searched' && !url.searchParams.has('cursor'))).toBe(true));
   });
 
-  it('keeps every exposed final action disabled and sends no POST even with AAL2 and write permissions', async () => {
+  it('opens the real export workspace while keeping unrelated final actions disabled', async () => {
     const user = userEvent.setup();
     renderRoute();
     await screen.findByRole('table', { name: '订单列表' });
@@ -478,10 +479,13 @@ describe('Order route', () => {
     const exportButton = screen.getByRole<HTMLButtonElement>('button', { name: '导出订单' });
     const moreFilters = screen.getByRole<HTMLButtonElement>('button', { name: '更多筛选' });
     const rowMore = screen.getByRole<HTMLButtonElement>('button', { name: `订单 ${order.order_number} 更多操作` });
-    expect(exportButton.disabled).toBe(true);
+    expect(exportButton.disabled).toBe(false);
     expect(moreFilters.disabled).toBe(false);
     expect(rowMore.disabled).toBe(true);
     await user.click(exportButton);
+    expect(await screen.findByRole('heading', { name: '导出订单', level: 1 })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '返回订单列表' }));
+    await screen.findByRole('table', { name: '订单列表' });
     await user.click(rowMore);
 
     await user.click(screen.getByRole('button', { name: `查看订单 ${order.order_number}` }));
@@ -496,12 +500,36 @@ describe('Order route', () => {
     expect(postRequests).toHaveLength(0);
   });
 
+  it('creates a field-aware export task and exposes the server download', async () => {
+    let exportBody: Record<string, unknown> | undefined;
+    const task = { id: 'export:order-one', state: 'queued', recordCount: 0, filter: {}, createdAt: '2026-09-11T10:00:00.000Z', generatedAt: null, errorCode: null };
+    server.use(
+      http.post('*/api/v1/orders/exports', async ({ request }) => {
+        exportBody = await request.json() as Record<string, unknown>;
+        return HttpResponse.json({ ...task, filter: exportBody }, { status: 202 });
+      }),
+      http.get('*/api/v1/reports/exports/:exportid', () => HttpResponse.json({
+        ...task, state: 'completed', recordCount: 1, filter: exportBody ?? {}, generatedAt: '2026-09-11T10:00:02.000Z',
+        download: { url: 'https://download.test/orders.xlsx', expiresAt: '2026-09-11T10:05:02.000Z' },
+      })),
+    );
+    const user = userEvent.setup();
+    renderRoute();
+    await screen.findByRole('table', { name: '订单列表' });
+    await user.click(screen.getByRole('button', { name: '导出订单' }));
+    await user.click(screen.getByRole('button', { name: '创建导出任务' }));
+
+    expect(await screen.findByRole('link', { name: '下载文件' })).toHaveAttribute('href', 'https://download.test/orders.xlsx');
+    expect(exportBody?.format).toBe('xlsx');
+    expect(exportBody?.range).toBe('filter');
+    expect(exportBody?.fields).toEqual(expect.arrayContaining(['orderNumber', 'memberId', 'productNames', 'refundMinor']));
+  });
+
   it('opens and closes every preview-only order action without sending a write request', async () => {
     const user = userEvent.setup();
     renderRoute('/orders', previewContext);
     await screen.findByRole('table', { name: '订单列表' });
 
-    await openAndCloseSafePreview(user, screen.getByRole('button', { name: '导出订单' }), '导出订单预览');
     await openAndCloseSafePreview(user, screen.getByRole('button', { name: '更多筛选' }), '更多筛选');
     await openAndCloseSafePreview(user, screen.getByRole('button', { name: `订单 ${order.order_number} 更多操作` }), `订单操作预览 ${order.order_number}`);
 

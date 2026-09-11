@@ -9,6 +9,7 @@ import { OrderColumnSettings } from './OrderColumnSettings';
 import { orderDetailKey } from './OrderDetailQuery';
 import { OrderDrawer } from './OrderDrawer';
 import { OrderExceptionWorkbench } from './OrderExceptionWorkbench';
+import { OrderExportWorkspace } from './OrderExportWorkspace';
 import { emptyOrderFilter, OrderFilterForm } from './OrderFilter';
 import { OrderIcon } from './OrderIcon';
 import { OrderDirectoryActions } from './OrderPageHeader';
@@ -41,6 +42,7 @@ export function Component() {
   const filter = readFilter(search);
   const view = readView(search);
   const selected = readSelected(search);
+  const exportOpen = search.get('mode') === 'export';
   const detailTab = readDetailTab(search);
   const cursor = search.get('cursor') ?? undefined;
   const queryFilter: OrderQuery = { ...filter, view, ...(cursor === undefined ? {} : { cursor }) };
@@ -141,6 +143,17 @@ export function Component() {
       return { boundary: selectionBoundary, ids: next };
     });
 
+  if (exportOpen) {
+    return <OrderExportWorkspace
+      context={context}
+      mallName={mallName}
+      pageIds={pageIds}
+      selectedIds={[...checked]}
+      filter={{ ...filter, view }}
+      onClose={() => updateSearch((next) => next.delete('mode'))}
+    />;
+  }
+
   if (previewEnabled && view === 'exception') {
     return <>
       <OrderExceptionWorkbench page={page} isPending={query.isPending} isFetching={query.isFetching} error={error}
@@ -158,10 +171,9 @@ export function Component() {
               <h2 id="orderworkspacetitle">共 {page === undefined ? '—' : page.count} 条订单</h2>
             </div>
             <OrderDirectoryActions
-              previewEnabled={previewEnabled}
               isFetching={query.isFetching}
-              pageCount={page?.items.length ?? 0}
               columnsOpen={columnsOpen}
+              onExport={() => updateSearch((next) => next.set('mode', 'export'))}
               onRefresh={refresh}
               onColumns={() => setColumnsOpen((open) => !open)}
             />

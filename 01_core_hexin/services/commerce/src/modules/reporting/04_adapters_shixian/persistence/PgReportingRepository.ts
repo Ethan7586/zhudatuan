@@ -1,6 +1,6 @@
 import type { OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import type { ReportingPort } from '../../01_public_gongkai/ReportingPort';
-import type { ExportJob, ExportReport, ExportRow } from '../../02_domain_yewu/model/ExportJob';
+import { orderExportFields, type ExportJob, type ExportReport, type ExportRow, type OrderExportField } from '../../02_domain_yewu/model/ExportJob';
 import type { CockpitSummary, Metric, MetricQuery, MetricRow } from '../../02_domain_yewu/model/Metric';
 import type { OrderProjection, ProjectionEvent } from '../../02_domain_yewu/model/Projection';
 
@@ -15,6 +15,7 @@ interface ExportRecord {
   readonly state: ExportJob['state']; readonly cursor: string | null; readonly recordCount: number; readonly objectReference: string | null;
   readonly objectHash: string | null; readonly objectSize: number | null; readonly scanState: ExportJob['scanState'];
   readonly expiresAt: string | null; readonly createdAt: string; readonly generatedAt: string | null;
+  readonly errorCode: string | null;
 }
 
 export class PgReportingRepository implements ReportingPort {
@@ -55,7 +56,7 @@ export class PgReportingRepository implements ReportingPort {
     const result = await this.database.query<ExportRecord>(`insert into reporting.export(id,scope_id,report,filter,authorization_snapshot,state,cursor,record_count,
       created_at) values($1,$2,$3,$4::jsonb,$5::jsonb,'queued',null,0,clock_timestamp()) returning id,scope_id scope,report,filter,state,cursor,
       record_count "recordCount",object_ref "objectReference",sha256 "objectHash",object_size "objectSize",scan_state "scanState",
-      expires_at "expiresAt",created_at "createdAt",generated_at "generatedAt"`,
+      expires_at "expiresAt",created_at "createdAt",generated_at "generatedAt",error_code "errorCode"`,
     [input.id, input.scope, input.report, JSON.stringify(input.filter), authorization]);
     await this.database.query(`insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
       values($1,'export','reporting',$2,jsonb_build_object('export',$3),'queued',100,clock_timestamp(),clock_timestamp(),clock_timestamp())`,
@@ -150,25 +151,34 @@ export class PgReportingRepository implements ReportingPort {
       cursor=null,record_count=0
       where id=$1 and state in('queued','running') and (expires_at is null or expires_at>clock_timestamp()) returning id,scope_id scope,report,filter,state,
       cursor,record_count "recordCount",object_ref "objectReference",sha256 "objectHash",object_size "objectSize",scan_state "scanState",
-      expires_at "expiresAt",created_at "createdAt",generated_at "generatedAt"`, [id]);
+      expires_at "expiresAt",created_at "createdAt",generated_at "generatedAt",error_code "errorCode"`, [id]);
     return result.rows[0] ? exportJob(result.rows[0]) : null;
   }
 
-  async exportRows(id: string, report: ExportReport, cursor: string | null, fetch: number): Promise<readonly ExportRow[]> {
+  async exportRows(id: string, report: ExportReport, filter: Readonly<Record<string, unknown>>, cursor: string | null, fetch: number): Promise<readonly ExportRow[]> {
     if (report === 'metrics') return this.metricExportRows(id, cursor, fetch);
     if (report === 'orders') {
-      const result = await this.database.query<{ key: string; values: unknown[] }>(`select projection.order_id key,jsonb_build_array(projection.order_id,
-        projection.order_number,projection.payment_state,projection.fulfillment_state,projection.aftersale_state,projection.total_minor,
-        projection.currency,projection.occurred_at) values from reporting.export job join reporting.orderprojection projection
-        on projection.scope_id=job.scope_id where job.id=$1 and ($2::text is null or projection.order_id>$2)
-        and (not job.filter?'paymentState' or projection.payment_state=job.filter->>'paymentState')
-        and (not job.filter?'period' or projection.occurred_at>=case job.filter->>'period'
-          when 'yesterday' then date_trunc('day',clock_timestamp())-interval '1 day'
-          when '7days' then date_trunc('day',clock_timestamp())-interval '6 days'
+      const values = orderExportFields(filter).map((field) => ORDER_EXPORT_SQL[field]).join(',');
+      const result = await this.database.query<{ key: string; values: unknown[] }>(`select orders.id key,jsonb_build_array(${values}) values
+        from reporting.export job join ordering.orderrecord orders on orders.scope_id=job.scope_id where job.id=$1
+        and ($2::text is null or orders.id>$2)
+        and (not job.filter?'orderIds' or orders.id in(select jsonb_array_elements_text(job.filter->'orderIds')))
+        and (not job.filter?'order' or job.filter->>'order'='' or orders.order_number=job.filter->>'order' or orders.id=job.filter->>'order')
+        and (not job.filter?'mall' or job.filter->>'mall'='' or orders.mall_id=job.filter->>'mall')
+        and (not job.filter?'lifecycle' or job.filter->>'lifecycle'='' or orders.lifecycle_state=job.filter->>'lifecycle')
+        and (not job.filter?'payment' or job.filter->>'payment'='' or orders.payment_state=job.filter->>'payment')
+        and (not job.filter?'fulfillment' or job.filter->>'fulfillment'='' or orders.fulfillment_state=job.filter->>'fulfillment')
+        and (not job.filter?'placed' or job.filter->>'placed'='' or orders.created_at>=case job.filter->>'placed'
+          when 'today' then date_trunc('day',clock_timestamp()) when '7days' then date_trunc('day',clock_timestamp())-interval '6 days'
           when '30days' then date_trunc('day',clock_timestamp())-interval '29 days' else '-infinity'::timestamptz end)
-        and (not job.filter?'from' or projection.occurred_at>=(job.filter->>'from')::timestamptz)
-        and (not job.filter?'to' or projection.occurred_at<(job.filter->>'to')::timestamptz)
-        order by projection.order_id limit $3`, [id, cursor, fetch]);
+        and (not job.filter?'view' or job.filter->>'view'='all'
+          or (job.filter->>'view'='unpaid' and orders.payment_state='unpaid')
+          or (job.filter->>'view'='unshipped' and orders.fulfillment_state in('allocated','processing'))
+          or (job.filter->>'view'='active' and orders.lifecycle_state='active')
+          or (job.filter->>'view'='completed' and orders.lifecycle_state='completed')
+          or (job.filter->>'view'='aftersale' and orders.aftersale_state<>'none')
+          or (job.filter->>'view'='exception' and (orders.payment_state='failed' or orders.fulfillment_state in('cancelled','returned') or orders.aftersale_state in('requested','processing','rejected'))))
+        order by orders.id limit $3`, [id, cursor, fetch]);
       return result.rows;
     }
     const result = await this.database.query<{ key: string; values: unknown[] }>(`select projection.statement_id key,jsonb_build_array(
@@ -216,7 +226,8 @@ export class PgReportingRepository implements ReportingPort {
 function exportSelect(): string {
   return `select job.id,job.scope_id scope,job.report,job.filter,case when job.state='completed' and job.expires_at<=clock_timestamp()
     then 'expired' else job.state end state,job.cursor,job.record_count "recordCount",job.object_ref "objectReference",job.sha256 "objectHash",
-    job.object_size "objectSize",job.scan_state "scanState",job.expires_at "expiresAt",job.created_at "createdAt",job.generated_at "generatedAt"
+    job.object_size "objectSize",job.scan_state "scanState",job.expires_at "expiresAt",job.created_at "createdAt",job.generated_at "generatedAt",
+    job.error_code "errorCode"
     from reporting.export job`;
 }
 
@@ -224,3 +235,15 @@ function exportJob(row: ExportRecord): ExportJob { return Object.freeze(row); }
 function required<T>(value: T | undefined, code: string): T { if (value === undefined) throw new Error(code); return value; }
 function text(value: unknown, code: string): string { if (typeof value !== 'string' || !value) throw new Error(code); return value; }
 function integer(value: unknown): number { if (typeof value !== 'number' || !Number.isSafeInteger(value)) throw new Error('REPORT_INTEGER_INVALID'); return value; }
+
+const ORDER_EXPORT_SQL: Readonly<Record<OrderExportField, string>> = Object.freeze({
+  orderNumber: 'orders.order_number', createdAt: 'orders.created_at', lifecycleState: 'orders.lifecycle_state', mallId: 'orders.mall_id',
+  memberId: 'orders.member_id', totalMinor: 'orders.total_minor', currency: 'orders.currency', paymentState: 'orders.payment_state',
+  productNames: `(select string_agg(line.title_snapshot,'、' order by line.id) from ordering.line line where line.order_id=orders.id)`,
+  skus: `(select string_agg(line.sku_id,'、' order by line.id) from ordering.line line where line.order_id=orders.id)`,
+  quantityTotal: `(select coalesce(sum(line.quantity),0) from ordering.line line where line.order_id=orders.id)`,
+  fulfillmentState: 'orders.fulfillment_state',
+  providers: `(select string_agg(distinct line.provider,'、') from ordering.line line where line.order_id=orders.id and line.provider is not null)`,
+  aftersaleState: 'orders.aftersale_state',
+  refundMinor: `(select coalesce(sum(aftersale.amount_minor),0) from ordering.aftersale aftersale where aftersale.order_id=orders.id and aftersale.kind='refund' and aftersale.state in('approved','processing','completed'))`,
+});

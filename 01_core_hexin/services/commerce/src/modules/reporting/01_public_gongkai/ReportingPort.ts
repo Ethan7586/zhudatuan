@@ -18,7 +18,7 @@ export interface ReportingPort {
   saveStatement(scope: string, payload: Readonly<Record<string, unknown>>, watermark: string): Promise<void>;
   completeEvent(event: ProjectionEvent, scopes: readonly string[]): Promise<readonly Readonly<{ scope: string; version: number }>[] >;
   claimExport(id: string): Promise<ExportJob | null>;
-  exportRows(id: string, report: ExportReport, cursor: string | null, fetch: number): Promise<readonly ExportRow[]>;
+  exportRows(id: string, report: ExportReport, filter: Readonly<Record<string, unknown>>, cursor: string | null, fetch: number): Promise<readonly ExportRow[]>;
   advanceExport(id: string, cursor: string, count: number): Promise<void>;
   completeExport(id: string, object: Readonly<{ reference: string; sha256: string; size: number; scan: 'clean' }>): Promise<void>;
   failExport(id: string, code: string, terminal: boolean): Promise<void>;
