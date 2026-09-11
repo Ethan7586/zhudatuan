@@ -176,12 +176,12 @@
 .orderdrawermeta strong { color: #fff; font-weight: 700; }
 .orderdrawertabs { min-height: 60px; align-items: center; gap: 8px; overflow-x: auto; border-bottom-color: var(--order-border); padding: 0 20px; scrollbar-width: none; }
 .orderdrawertabs::-webkit-scrollbar { display: none; }
-.orderdrawertabs [role='tab'] { display: inline-flex; min-height: 40px; flex: 0 0 auto; align-items: center; justify-content: center; border-radius: 0; padding: 2px 13px 0; background: transparent; color: #596882; font-size: 14px; font-weight: 700; line-height: 20px; white-space: nowrap; transition: color .18s ease; }
-.orderdrawertabs [role='tab']:hover { background: transparent; color: #34445f; }
-.orderdrawertabs [role='tab'][aria-selected='true'] { background: transparent; color: var(--order-blue); }
-.orderdrawertabs [role='tab'][aria-selected='true']::after { display: block; }
+.orderdrawertabs [role='tab'] { display: inline-flex; min-height: 40px; flex: 0 0 auto; align-items: center; justify-content: center; border-radius: 9px; padding: 4px 13px 0; background: transparent; color: #596882; font-size: 14px; font-weight: 700; line-height: 20px; white-space: nowrap; transition: color .18s ease, background .18s ease; }
+.orderdrawertabs [role='tab']:hover { background: #f4f7fb; color: #34445f; }
+.orderdrawertabs [role='tab'][aria-selected='true'] { background: var(--order-blue-soft); color: var(--order-blue); }
+.orderdrawertabs [role='tab'][aria-selected='true']::after { display: none; }
 .orderdrawertabs [role='tab']:focus-visible,
-.orderdrawertabs [role='tab'][aria-selected='true']:focus-visible { border-radius: 6px; outline: 2px solid rgb(15 111 255 / 18%); outline-offset: -3px; background: transparent; box-shadow: none; }
+.orderdrawertabs [role='tab'][aria-selected='true']:focus-visible { border-radius: 9px; outline: 2px solid rgb(15 111 255 / 18%); outline-offset: -3px; box-shadow: none; }
 .orderdrawerbody { min-height: 0; overflow: auto; background: #fff; padding: 20px 22px 28px; }
 .orderdrawerstack { gap: 12px; color: var(--order-copy); font-size: 13px; line-height: 1.55; animation: order-tab-in .18s ease both; }
 .ordersummarynote { border: 1px solid #dbe4f1; border-radius: 10px; background: #f9fbfe; padding: 13px 16px; }
