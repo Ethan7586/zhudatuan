@@ -29,6 +29,7 @@ actual_instance_id="$(curl -fsS --max-time 2 "$metadata_url")"
 agent_source="$repo_root/04_tools/release-engine/remote/agent.mjs"
 policy_source="$repo_root/02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json"
 unit_source="$repo_root/02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd"
+gateway_source="$repo_root/02_platform_pingtai/config/node-runtime/hbbtzn-l1/api-gateway.Caddyfile"
 node --check "$agent_source"
 node -e 'const fs=require("node:fs"); const p=JSON.parse(fs.readFileSync(process.argv[1])); if(p.schema!=="ai.delivery.remote-policy.v1"||p.project!=="zdt-next") process.exit(1)' "$policy_source"
 
@@ -87,6 +88,7 @@ if [[ "$node_scope" == all || "$node_scope" == hbbtzn-l1 ]]; then
   required_pointers+=(
     /opt/sfl/nodes/hbbtzn-l1/targets/storefront/current
     /opt/sfl/nodes/hbbtzn-l1/targets/storefront/runtime
+    /opt/sfl/nodes/hbbtzn-l1/targets/auth-web/current
     /opt/sfl/nodes/hbbtzn-l1/targets/identity-api/current
     /opt/sfl/nodes/hbbtzn-l1/targets/purchase-api/current
     /opt/sfl/nodes/hbbtzn-l1/targets/web-api/current
@@ -96,6 +98,7 @@ if [[ "$node_scope" == all || "$node_scope" == hbbtzn-l1 ]]; then
     /opt/sfl/nodes/hbbtzn-l1/targets/payment-jobs/current
   )
   units+=(
+    sfl-api-gateway@.service
     sfl-storefront@.service
     sfl-identity-api@.service
     sfl-purchase-api@.service
@@ -114,6 +117,20 @@ for pointer in "${required_pointers[@]}"; do
 done
 
 for unit in "${units[@]}"; do install -m 0644 "$unit_source/$unit" "/etc/systemd/system/$unit"; done
+if [[ "$node_scope" == hbbtzn-l1 ]]; then
+  gateway_runtime=/opt/sfl/nodes/hbbtzn-l1/runtime/api-gateway.Caddyfile
+  gateway_candidate="${gateway_runtime}.candidate"
+  gateway_backup="${gateway_runtime}.pre-auth-pointer-$(date -u +%Y%m%dT%H%M%SZ)"
+  install -o root -g zhudatuan -m 0640 "$gateway_source" "$gateway_candidate"
+  caddy validate --config "$gateway_candidate" --adapter caddyfile
+  cp -a "$gateway_runtime" "$gateway_backup"
+  mv "$gateway_candidate" "$gateway_runtime"
+  runuser -u zhudatuan -- env \
+    XDG_DATA_HOME=/opt/sfl/nodes/hbbtzn-l1/runtime/caddy-data \
+    XDG_CONFIG_HOME=/opt/sfl/nodes/hbbtzn-l1/runtime/caddy-config \
+    caddy reload --config "$gateway_runtime" --adapter caddyfile
+  printf 'Gateway config reloaded for %s; rollback=%s\n' "$node_scope" "$gateway_backup"
+fi
 if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
   install -m 0644 "$repo_root/02_platform_pingtai/infrastructure/zhudatuan/aliyun/ecosystem.config.cjs" /etc/ai-delivery/candidates/zdt-next.ecosystem.config.cjs
 fi
