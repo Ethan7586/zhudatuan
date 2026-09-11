@@ -160,6 +160,17 @@ describe('member invitation command', () => {
     expect(bodies[0]).toMatchObject({ governanceLevel: 'senior_administrator' });
   });
 
+  it('does not hide Owner invitation behind stale session operation claims', async () => {
+    const staleClaims = { ...context, session: { ...context.session, permissions: [], capabilities: [] } };
+
+    expect(memberInvitationAvailable(staleClaims)).toBe(true);
+    await createMemberInvitation(staleClaims, {
+      label: 'Owner 创建邀请', destination: '13800138000', governanceLevel: 'administrator', maxUses: 1, validityDays: 7,
+    });
+
+    expect(requests).toHaveLength(1);
+  });
+
   it('keeps the ordinary invitation command available to a senior administrator', async () => {
     const senior = {
       ...context,
