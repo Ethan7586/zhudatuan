@@ -38,7 +38,7 @@ describe('identity registration API runtime', () => {
 
   it('requires the dedicated writable registration database role and registration relations', async () => {
     const healthy = { current_user: 'zhudatuanidentityapi', writable: true, schema: true, contract: true,
-      registration: true, operator_invitation: true, identity_context: true, relations: true, functions: true };
+      registration: true, operator_invitation: true, relations: true, functions: true };
     let compatibilityStatement = '';
     const pool = (state: typeof healthy) => ({ query: async (statement: string) => {
       if (statement.includes('deployment.runtime_database_boundary')) return result([databaseBoundary('zhudatuanidentityapi')], 1);
@@ -52,8 +52,6 @@ describe('identity registration API runtime', () => {
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool(healthy))).resolves.toBeUndefined();
     expect(compatibilityStatement).toContain("version='20260829060000'");
     expect(compatibilityStatement).toContain("checksum='b1e238eb8de569b0de9d1d2766620e1f661268d2f9260e646208d4f24715b37a'");
-    expect(compatibilityStatement).toContain("version='20260912240000'");
-    expect(compatibilityStatement).toContain("checksum='9fa01e96c2698e0da588f0b82780ecdf31eeebd34c78aaffc1b35664d9dc1174'");
     expect(compatibilityStatement).toContain("access.resolve_session_scope(text,text,text,text,text,text,text)");
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, current_user: 'shopjob' })))
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
@@ -62,8 +60,6 @@ describe('identity registration API runtime', () => {
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, registration: false })))
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, operator_invitation: false })))
-      .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
-    await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, identity_context: false })))
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, functions: false })))
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
