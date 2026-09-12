@@ -8,6 +8,7 @@ const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '.
 const systemdRoot = join(projectRoot, '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd');
 const adapter = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8'));
 const policy = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8'));
+const deployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy.yml'), 'utf8');
 
 test('production acceptance is fixed to the protected fifteen-domain baseline', () => {
   assert.equal(adapter.productionAcceptance.domains.length, 15);
@@ -199,4 +200,10 @@ test('first activation stays limited to content while Support uses an imported r
   }
   assert.deepEqual(firstActivations.sort(), ['hbbtzn-l1/catalog-media', 'zhudatuan-l0/catalog-media']);
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
+});
+
+test('production deployment binds identity to the downloaded candidate package', () => {
+  assert.match(deployWorkflow, /p\.sourceSha!==process\.env\.TARGET_SHA/);
+  assert.match(deployWorkflow, /release-candidate-\$TARGET_SHA/);
+  assert.doesNotMatch(deployWorkflow, /candidate_sha.*TARGET_SHA/);
 });

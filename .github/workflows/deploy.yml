@@ -66,24 +66,36 @@ jobs:
         run: |
           run_id="$CANDIDATE_RUN_ID"
           if [ -z "$run_id" ]; then
-            run_id="$(gh run list --workflow 'Affected Delivery' --branch zdt-next \
-              --json databaseId,headSha,conclusion \
-              -q "[.[] | select(.headSha==\"$TARGET_SHA\" and .conclusion==\"success\")][0].databaseId")"
+            mapfile -t candidate_runs < <(gh run list --workflow 'Affected Delivery' --branch zdt-next --limit 20 \
+              --json databaseId,conclusion \
+              --jq '.[] | select(.conclusion=="success") | .databaseId')
           else
-            candidate="$(gh run view "$run_id" --json headSha,conclusion,workflowName \
-              --jq '[.headSha,.conclusion,.workflowName] | @tsv')"
-            IFS=$'\t' read -r candidate_sha candidate_conclusion candidate_workflow <<< "$candidate"
-            if [ "$candidate_sha" != "$TARGET_SHA" ] || [ "$candidate_conclusion" != "success" ] || [ "$candidate_workflow" != "Affected Delivery" ]; then
-              echo "::error::候选运行与目标提交、结果或工作流不匹配。"
+            candidate="$(gh run view "$run_id" --json conclusion,workflowName \
+              --jq '[.conclusion,.workflowName] | @tsv')"
+            IFS=$'\t' read -r candidate_conclusion candidate_workflow <<< "$candidate"
+            if [ "$candidate_conclusion" != "success" ] || [ "$candidate_workflow" != "Affected Delivery" ]; then
+              echo "::error::候选运行结果或工作流不匹配。"
               exit 1
             fi
+            candidate_runs=("$run_id")
           fi
-          if [ -z "$run_id" ] || [ "$run_id" = "null" ]; then
-            echo "::error::找不到该 SHA 对应的绿色 Affected Delivery 运行；请先合并 PR 并等 CI 通过。"
+
+          matched_run=""
+          for candidate_run in "${candidate_runs[@]}"; do
+            rm -rf .candidate-download
+            if gh run download "$candidate_run" -n "release-candidate-$TARGET_SHA" -D .candidate-download; then
+              matched_run="$candidate_run"
+              break
+            fi
+          done
+          if [ -z "$matched_run" ]; then
+            echo "::error::找不到该 SHA 对应的绿色候选制品；请先生成候选。"
             exit 1
           fi
-          gh run download "$run_id" -n "release-candidate-${{ steps.sha.outputs.sha }}" -D .
-          test -f .ci-release/package.json
+          test -f .candidate-download/.ci-release/package.json
+          mv .candidate-download/.ci-release .ci-release
+          node -e "const p=require('./.ci-release/package.json');if(p.project!=='zdt-next'||p.sourceSha!==process.env.TARGET_SHA){throw new Error('候选包内来源与目标提交不一致')}"
+          printf '候选运行: `%s`，包内来源: `%s`\n' "$matched_run" "$TARGET_SHA" >> "$GITHUB_STEP_SUMMARY"
 
       - name: 安装发布引擎依赖
         run: npm ci --ignore-scripts --no-audit --no-fund
