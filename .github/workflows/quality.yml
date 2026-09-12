@@ -192,6 +192,30 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
+      - name: Configure candidate-only SSH transport
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate)
+        env:
+          RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+        run: |
+          test -n "$RELEASE_SSH_KEY"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$RELEASE_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          ssh-keyscan -H 123.57.232.253 >> "$HOME/.ssh/known_hosts"
+
+      - name: Install matching delivery agent and policy on Aliyun
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate)
+        env:
+          SOURCE_SHA: ${{ needs.plan.outputs.head_sha }}
+        run: |
+          node 04_tools/release-engine/cli.mjs install \
+            --mode agent \
+            --source-sha "$SOURCE_SHA" \
+            --approve-install "zdt-next:install:$SOURCE_SHA" \
+            --format json > "$RUNNER_TEMP/install-agent.json"
+          mkdir -p .ci-release
+          mv "$RUNNER_TEMP/install-agent.json" .ci-release/install-agent.json
+
       - name: Restore authoritative plan
         uses: actions/download-artifact@v4
         with:
@@ -232,28 +256,6 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
           retention-days: 14
-
-      - name: Configure candidate-only SSH transport
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate)
-        env:
-          RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
-        run: |
-          test -n "$RELEASE_SSH_KEY"
-          install -d -m 700 "$HOME/.ssh"
-          printf '%s\n' "$RELEASE_SSH_KEY" > "$HOME/.ssh/id_ed25519"
-          chmod 600 "$HOME/.ssh/id_ed25519"
-          ssh-keyscan -H 123.57.232.253 >> "$HOME/.ssh/known_hosts"
-
-      - name: Install matching delivery agent and policy on Aliyun
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate)
-        env:
-          SOURCE_SHA: ${{ needs.plan.outputs.head_sha }}
-        run: |
-          node 04_tools/release-engine/cli.mjs install \
-            --mode agent \
-            --source-sha "$SOURCE_SHA" \
-            --approve-install "zdt-next:install:$SOURCE_SHA" \
-            --format json > .ci-release/install-agent.json
 
       - name: Stage candidate on Aliyun without production cutover
         if: (github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate)
