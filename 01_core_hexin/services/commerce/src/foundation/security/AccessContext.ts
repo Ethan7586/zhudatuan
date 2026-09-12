@@ -6,6 +6,13 @@ const requestNodeContexts = new WeakMap<object, ResolvedNodeContext>();
 const scopeNodeContexts = new WeakMap<object, ResolvedNodeContext>();
 
 export type GovernanceLevel = 'owner' | 'senior_administrator' | 'administrator' | 'member';
+export type MembershipClient = 'storefront' | 'operator' | 'store' | 'supplier';
+
+export interface MembershipConsumptionContext {
+  readonly realmId: string;
+  readonly client: MembershipClient;
+  readonly organizationId: string;
+}
 
 export interface GovernanceScope {
   readonly kind: Scope['kind'];
@@ -30,6 +37,10 @@ export interface Actor {
   /** Runtime sessions always provide account, realm and NodeContext; optional only for legacy synthetic fixtures. */
   readonly account?: string;
   readonly realm?: string;
+  /** Selected by the server session projection; never inferred from the principal or request headers. */
+  readonly membershipClient?: MembershipClient;
+  /** Organization that owns the selected Membership's roles, permissions and scopes. */
+  readonly governanceOrganization?: string;
   readonly nodeContext?: ResolvedNodeContext;
   readonly session: string;
   readonly membership: string;
@@ -48,6 +59,8 @@ export interface AuthenticatedActor extends Actor {
 /** API runtime sessions additionally carry the server-resolved node context. */
 export interface NodeContextActor extends AuthenticatedActor {
   readonly nodeContext: ResolvedNodeContext;
+  readonly membershipClient: MembershipClient;
+  readonly governanceOrganization: string;
 }
 
 export interface AccessContext {
@@ -85,6 +98,17 @@ export function requireRequestNodeContext(headers: object): ResolvedNodeContext 
 export function requireActorNodeContext(actor: Actor): ResolvedNodeContext {
   if (actor.nodeContext === undefined) throw new Error('SFL_ACTOR_NODE_CONTEXT_MISSING');
   return actor.nodeContext;
+}
+
+export function requireMembershipConsumptionContext(actor: Actor): MembershipConsumptionContext {
+  if (!actor.realm || !actor.membershipClient || !actor.governanceOrganization) {
+    throw new Error('AUTH_MEMBERSHIP_CONTEXT_MISSING');
+  }
+  return Object.freeze({
+    realmId: actor.realm,
+    client: actor.membershipClient,
+    organizationId: actor.governanceOrganization,
+  });
 }
 
 export function bindScopeNodeContext(scope: Scope, nodeContext: ResolvedNodeContext): Scope {
