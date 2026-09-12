@@ -344,7 +344,9 @@ describe('canonical member registration security boundary', () => {
       },
     });
     const credential = harness.queries.find(({ text }) => text.includes('account.credential_version,credential.secret_hash'));
-    expect(credential?.values).toEqual(['realm:l0', subjectDigest(SUBJECT), 'account:principal:mobile-login:l0']);
+    expect(credential?.values).toEqual([
+      'realm:l0', subjectDigest(SUBJECT), expect.any(Array), 'operator', 'tenant-zhudatuan',
+    ]);
   });
 
   it.each([
@@ -863,7 +865,7 @@ describe('canonical member registration security boundary', () => {
     expect(operatorScopes?.text).toContain("'tenant'");
   });
 
-  it('reuses an existing L1 identity for a senior administrator without creating a consumer membership', async () => {
+  it('creates an L1 operator account for an existing hosted consumer without changing the consumer membership', async () => {
     const operatorOrganization = 'mall:d1708f04df2dd8a61736852c4900fb43';
     const harness = registrationHarness({
       challengeAccepted: true,
@@ -872,6 +874,8 @@ describe('canonical member registration security boundary', () => {
       operatorInvite: true,
       seniorInvite: true,
       storefrontOrganizationId: operatorOrganization,
+      boundMobileRealm: 'realm:member-hongtai',
+      credentialSecret: 'existing-consumer-password-hash',
     });
     const base = registrationRequest('registration:l1-existing-senior');
     const body = { ...(base.input.body as Readonly<Record<string, unknown>>) } as Record<string, unknown>;
@@ -892,13 +896,20 @@ describe('canonical member registration security boundary', () => {
       body: { client: 'operator', organization_id: operatorOrganization, governanceLevel: 'senior_administrator' },
     });
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);
-    expect(harness.queries.some(({ text }) => text.includes('insert into identity.account'))).toBe(false);
-    expect(harness.queries.some(({ text }) => text.includes('insert into identity.credential'))).toBe(false);
     expect(harness.queries.some(({ text }) => text.includes('insert into member.profile'))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes('organization.register_hosted_member_node'))).toBe(false);
+    const account = harness.queries.find(({ text }) => text.includes('insert into identity.account'));
+    expect(account?.values.slice(1, 3)).toEqual(['realm:l1', 'principal:existing-phone']);
+    const credential = harness.queries.find(({ text }) => text.includes('insert into identity.credential'));
+    expect(credential?.values.slice(1, 5)).toEqual([
+      'principal:existing-phone', subjectDigest(SUBJECT), 'existing-consumer-password-hash', 'realm:l1',
+    ]);
     const memberships = harness.queries.filter(({ text }) => text.includes('insert into access.membership('));
     expect(memberships).toHaveLength(1);
     expect(memberships[0]?.text).toContain("'operator'");
     expect(memberships[0]?.values).toContain(operatorOrganization);
+    expect(memberships[0]?.values[4]).toBe('realm:l1');
+    expect(memberships[0]?.values[5]).toBe(account?.values[0]);
     expect(memberships[0]?.text).not.toContain("'storefront'");
     const role = harness.queries.find(({ text }) => text.includes('insert into access.membershiprole'));
     expect(role?.values).toContain('role-senior-administrator-v1:tenant-zhudatuan');
@@ -1180,10 +1191,11 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       if (text.startsWith('select request_hash,state,response')) {
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }
-      if (text.includes('select account.id account_id,account.realm_id,account.legacy_principal_id principal_id,account.credential_version')
-        && text.includes('credential.subject_hash=$2') && !text.includes('credential.secret_hash')) {
+      if (text.includes('select account.id account_id,account.realm_id,account.legacy_principal_id principal_id')
+        && text.includes('credential.subject_hash=$2') && text.includes('limit 1 for update')) {
         return result(input.subjectExists ? [{ account_id: 'account:existing-phone:l0',
-          realm_id: input.boundMobileRealm ?? 'realm:l0', principal_id: 'principal:existing-phone', credential_version: 4 }] : []);
+          realm_id: input.boundMobileRealm ?? 'realm:l0', principal_id: 'principal:existing-phone', credential_version: 4,
+          secret_hash: input.credentialSecret ?? 'existing-password-hash' }] : []);
       }
       if (text.includes('from experience.application application') && text.includes('application.public_slug=$1')) {
         const l1 = values[0] === 'zdt-l1-verify';
@@ -1198,14 +1210,20 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           privacy_title: '主打团隐私政策', privacy_body: '隐私政策正文', terms_hash: 'f'.repeat(64),
         }] : []);
       }
-      if (text.includes('from identity.account account where account.id=$1')) {
+      if (text.includes('where account.id=$1') && text.includes("credential.provider='password'")) {
         return result([{ account_id: String(values[0]), realm_id: input.boundMobileRealm ?? String(values[1]),
-          principal_id: input.boundMobilePrincipal ?? 'principal:existing-phone', credential_version: 4 }]);
+          principal_id: input.boundMobilePrincipal ?? 'principal:existing-phone', credential_version: 4,
+          secret_hash: input.credentialSecret ?? 'existing-password-hash' }]);
+      }
+      if (text.includes('where account.realm_id=$1 and account.legacy_principal_id=$2')) {
+        return result(input.boundMobileRealm === values[0] ? [{
+          account_id: 'account:existing-phone:target', realm_id: String(values[0]), credential_version: 4,
+        }] : []);
       }
       if (text.includes('select principal_id from identity.credential')) {
         return result([{ principal_id: input.challengePrincipal ?? 'principal:password-reset' }]);
       }
-      if (text.includes('account.mobile_token=any')) {
+      if (text.includes('account.mobile_token=any') && !text.includes('join access.membership membership')) {
         const principals = [
           input.boundMobilePrincipal,
           input.subjectExists ? 'principal:existing-phone' : null,
@@ -1216,11 +1234,17 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
           realm_id: input.boundMobileRealm ?? String(values[0]),
           principal_id, credential_version: 4 })));
       }
-      if (text.includes('account.credential_version,credential.secret_hash')) {
-        const principal = input.boundMobilePrincipal ?? 'principal:password-login';
-        return result(input.credentialSecret ? [{ account_id: String(values[2] ?? `account:${principal}:${String(values[0]).slice(6)}`),
+      if (text.includes('account.credential_version,credential.secret_hash')
+        && text.includes('join access.membership membership')) {
+        const principals = [
+          input.boundMobilePrincipal ?? 'principal:password-login',
+          input.subjectExists ? 'principal:existing-phone' : null,
+        ].filter((principal, index, all): principal is string => principal !== null && all.indexOf(principal) === index);
+        return result(input.credentialSecret ? principals.map((principal) => ({
+          account_id: `account:${principal}:${String(values[0]).slice(6)}`,
           realm_id: input.boundMobileRealm ?? String(values[0]), principal_id: principal,
-          secret_hash: input.credentialSecret, credential_version: 2 }] : []);
+          secret_hash: input.credentialSecret, credential_version: 2,
+        })) : []);
       }
       if (text.includes('select membership.id,membership.access_version,membership.client')) {
         const rows = input.loginMembershipRows ?? (input.loginMemberships ? [

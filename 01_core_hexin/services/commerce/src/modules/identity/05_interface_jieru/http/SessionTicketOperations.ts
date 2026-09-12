@@ -9,7 +9,14 @@ import { publishIdentityEvent, tokenHash } from '../../04_adapters_shixian/persi
 import { authMembershipTarget, authTarget, requestCookie, sessionCookies } from './IdentitySecurity';
 import { memberPort } from '../../../member';
 import { canonicalIdentitySubject, canonicalMobile } from '../../02_domain_yewu/models_moxing/IdentitySubject';
-import { consumeSmsLoginChallenge, recordInvalidSmsLoginChallenge, resolvePasswordLoginCredential, verifySmsLoginChallenge } from '../../03_application_yingyong/services_fuwu/SmsLogin';
+import {
+  consumeSmsLoginChallenge,
+  recordInvalidSmsLoginChallenge,
+  resolveMembershipAccount,
+  resolvePasswordLoginCredential,
+  verifySmsLoginChallenge,
+  type SmsLoginPrincipal,
+} from '../../03_application_yingyong/services_fuwu/SmsLogin';
 import { currentRealmAccount, resolveActiveMembershipContext, resolveRealmContext, resolveRealmNode } from '../../03_application_yingyong/services_fuwu/RealmAccount';
 import { requireValidStorefront, type RealmOperationContext } from './RealmOperationContext';
 
@@ -64,13 +71,17 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         execute: async (request, database, { body, provider, authorization, host, requestedTarget, application, loginIntent, subject, mobileTokens }) => {
           const realm = await resolveRealmContext(database, host, requestedTarget, application);
           let found: Readonly<{ account_id: string; realm_id: string; principal_id: string; credential_version: number }> | undefined;
+          let challengeAccount: SmsLoginPrincipal | undefined;
           let loginChallenge: string | undefined;
           let loginCode: string | undefined;
           if (provider === 'password') {
             const credentialFound = await resolvePasswordLoginCredential(database,
               mobileTokens === undefined
-                ? { realmId: realm.realmId, subjectHash: subject }
-                : { realmId: realm.realmId, subjectHash: subject, mobileTokens });
+                ? { realmId: realm.realmId, subjectHash: subject, membershipClient: realm.membershipClient,
+                    membershipOrganizationId: realm.membershipOrganizationId }
+                : { realmId: realm.realmId, subjectHash: subject, mobileTokens,
+                    membershipClient: realm.membershipClient,
+                    membershipOrganizationId: realm.membershipOrganizationId });
             if (!(await passwords.verify(secretField(body, 'password', 128), credentialFound?.secret_hash ?? null))) {
               reject(401, 'CREDENTIAL_INVALID');
             }
@@ -78,16 +89,22 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           } else {
             loginChallenge = textField(body, 'challenge', 128);
             loginCode = textField(body, 'code', 16);
-            found = await verifySmsLoginChallenge(database, {
+            challengeAccount = await verifySmsLoginChallenge(database, {
               realmId: realm.realmId,
               id: loginChallenge,
               codeHash: codeDigest(loginChallenge, loginCode),
               destinationHash: subject,
             });
-            if (!found) {
+            if (!challengeAccount) {
               await recordInvalidSmsLoginChallenge(database, loginChallenge, subject);
               reject(401, 'CREDENTIAL_INVALID');
             }
+            found = await resolveMembershipAccount(database, {
+              entryRealmId: realm.realmId,
+              principalId: challengeAccount.principal_id,
+              membershipClient: realm.membershipClient,
+              membershipOrganizationId: realm.membershipOrganizationId,
+            });
           }
           if (!found) reject(401, 'CREDENTIAL_INVALID');
           const memberships = await database.query<{ id: string; access_version: number; client: string; organization_id: string }>(
@@ -124,8 +141,8 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
             const consumed = await consumeSmsLoginChallenge(database, {
               id: loginChallenge!,
               codeHash: codeDigest(loginChallenge!, loginCode!),
-              account: found.account_id,
-              realmId: found.realm_id,
+              account: challengeAccount!.account_id,
+              realmId: challengeAccount!.realm_id,
               destinationHash: subject,
             });
             if (!consumed) reject(401, 'CREDENTIAL_INVALID');

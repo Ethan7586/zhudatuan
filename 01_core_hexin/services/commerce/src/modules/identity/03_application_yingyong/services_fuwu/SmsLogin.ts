@@ -26,31 +26,64 @@ export async function resolveBoundMobileAccount(
           and credential.realm_id=account.realm_id and credential.provider='password' and credential.status='active'
           and credential.subject_hash=any($2::text[]))
       )
-      order by account.id limit 2 for update of account`,
+      order by account.realm_id,account.id for update of account`,
     [realmId, mobileTokens]
   );
-  if (matches.rows.length > 1) reject(409, 'IDENTITY_SUBJECT_EXISTS');
+  if (new Set(matches.rows.map(({ principal_id }) => principal_id)).size > 1) reject(409, 'IDENTITY_SUBJECT_EXISTS');
   return matches.rows[0] ?? null;
+}
+
+export async function resolveMembershipAccount(
+  database: OperationDatabase,
+  input: Readonly<{
+    entryRealmId: string;
+    principalId: string;
+    membershipClient: string;
+    membershipOrganizationId: string;
+  }>
+): Promise<SmsLoginPrincipal | undefined> {
+  const account = await database.query<SmsLoginPrincipal>(
+    `select account.id account_id,account.realm_id,account.legacy_principal_id principal_id,
+        account.credential_version
+      from identity.account account join access.membership membership
+        on membership.account_id=account.id and membership.realm_id=account.realm_id
+        and membership.client=$3 and membership.organization_id=$4 and membership.status='active'
+      where identity.realm_contains_account_realm($1,account.realm_id)
+        and account.legacy_principal_id=$2 and account.status='active'
+      order by account.realm_id,account.id limit 2 for update of account`,
+    [input.entryRealmId, input.principalId, input.membershipClient, input.membershipOrganizationId]
+  );
+  if (account.rows.length > 1) reject(409, 'IDENTITY_SUBJECT_EXISTS');
+  return account.rows[0];
 }
 
 export async function resolvePasswordLoginCredential(
   database: OperationDatabase,
-  input: Readonly<{ realmId: string; subjectHash: string; mobileTokens?: readonly string[] }>
+  input: Readonly<{
+    realmId: string;
+    subjectHash: string;
+    mobileTokens?: readonly string[];
+    membershipClient: string;
+    membershipOrganizationId: string;
+  }>
 ): Promise<PasswordLoginCredential | undefined> {
-  const mobileAccount = input.mobileTokens === undefined
-    ? null
-    : await resolveBoundMobileAccount(database, input.realmId, input.mobileTokens);
   const credential = await database.query<PasswordLoginCredential>(
     `select account.id account_id,account.realm_id,account.legacy_principal_id principal_id,
         account.credential_version,credential.secret_hash
       from identity.credential credential join identity.account account
         on account.id=credential.account_id and account.realm_id=credential.realm_id
+      join access.membership membership on membership.account_id=account.id and membership.realm_id=account.realm_id
+        and membership.client=$4 and membership.organization_id=$5 and membership.status='active'
       where identity.realm_contains_account_realm($1,credential.realm_id)
         and credential.provider='password' and credential.status='active' and account.status='active'
-        and (($3::text is null and credential.subject_hash=$2) or ($3::text is not null and credential.account_id=$3))
-      order by credential.created_at,credential.id limit 1 for update of credential,account`,
-    [input.realmId, input.subjectHash, mobileAccount?.account_id ?? null]
+        and (($3::text[] is null and credential.subject_hash=$2)
+          or ($3::text[] is not null and (credential.subject_hash=any($3::text[])
+            or account.mobile_token=any($3::text[]))))
+      order by credential.created_at,credential.id limit 2 for update of credential,account`,
+    [input.realmId, input.subjectHash, input.mobileTokens ?? null,
+      input.membershipClient, input.membershipOrganizationId]
   );
+  if (credential.rows.length > 1) reject(409, 'IDENTITY_SUBJECT_EXISTS');
   return credential.rows[0];
 }
 

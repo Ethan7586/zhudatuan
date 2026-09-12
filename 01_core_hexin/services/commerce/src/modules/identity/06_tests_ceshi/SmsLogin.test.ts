@@ -5,17 +5,34 @@ import {
   consumeSmsLoginChallenge,
   recordInvalidSmsLoginChallenge,
   resolveBoundMobileAccount,
+  resolveMembershipAccount,
   resolvePasswordLoginCredential,
   verifySmsLoginChallenge,
 } from '../03_application_yingyong/services_fuwu/SmsLogin';
 
 describe('SMS login database boundary', () => {
-  it('only resolves a mobile when exactly one active account owns it inside the requested realm', async () => {
+  it('treats multiple Realm accounts for one principal as one identity and rejects different principals', async () => {
     const owned = { account_id: 'account:l0', realm_id: 'realm:l0', principal_id: 'principal:one', credential_version: 1 };
     await expect(resolveBoundMobileAccount(database([owned]), 'realm:l0', ['token'])).resolves.toEqual(owned);
     await expect(resolveBoundMobileAccount(database([]), 'realm:l1', ['token'])).resolves.toBeNull();
     await expect(resolveBoundMobileAccount(database([owned, { ...owned, account_id: 'account:other' }]), 'realm:l0', ['token']))
+      .resolves.toEqual(owned);
+    await expect(resolveBoundMobileAccount(database([owned, {
+      ...owned, account_id: 'account:other', principal_id: 'principal:other',
+    }]), 'realm:l0', ['token']))
       .rejects.toThrow('IDENTITY_SUBJECT_EXISTS');
+  });
+
+  it('selects the account carrying the requested client and organization membership', async () => {
+    const operator = { account_id: 'account:operator', realm_id: 'realm:l1', principal_id: 'principal:one', credential_version: 2 };
+    const db = database([operator]);
+    await expect(resolveMembershipAccount(db, {
+      entryRealmId: 'realm:l1', principalId: 'principal:one',
+      membershipClient: 'operator', membershipOrganizationId: 'mall:one',
+    })).resolves.toEqual(operator);
+    expect(db.calls[0]?.values).toEqual(['realm:l1', 'principal:one', 'operator', 'mall:one']);
+    expect(db.calls[0]?.text).toContain('membership.client=$3');
+    expect(db.calls[0]?.text).toContain('membership.organization_id=$4');
   });
 
   it('lets an entry Realm discover only its registered hosted member account Realm', async () => {
@@ -31,13 +48,17 @@ describe('SMS login database boundary', () => {
       account_id: 'account:l0', realm_id: 'realm:l0', principal_id: 'principal:owner', secret_hash: 'scrypt:hash', credential_version: 4,
     }]);
 
-    await expect(resolvePasswordLoginCredential(db, { realmId: 'realm:l0', subjectHash: 'account-hash' })).resolves.toMatchObject({
+    await expect(resolvePasswordLoginCredential(db, {
+      realmId: 'realm:l0', subjectHash: 'account-hash',
+      membershipClient: 'operator', membershipOrganizationId: 'tenant:one',
+    })).resolves.toMatchObject({
       account_id: 'account:l0', principal_id: 'principal:owner', secret_hash: 'scrypt:hash', credential_version: 4,
     });
     expect(db.calls).toHaveLength(1);
-    expect(db.calls[0]?.values).toEqual(['realm:l0', 'account-hash', null]);
+    expect(db.calls[0]?.values).toEqual(['realm:l0', 'account-hash', null, 'operator', 'tenant:one']);
     expect(db.calls[0]?.text).toContain('credential.subject_hash=$2');
     expect(db.calls[0]?.text).toContain('identity.realm_contains_account_realm($1,credential.realm_id)');
+    expect(db.calls[0]?.text).toContain('membership.client=$4');
   });
 
   it('allows the same login subject to resolve different accounts and passwords in different realms', async () => {
@@ -54,28 +75,36 @@ describe('SMS login database boundary', () => {
       },
     } as unknown as OperationDatabase;
 
-    await expect(resolvePasswordLoginCredential(db, { realmId: 'realm:l0', subjectHash: 'same-phone' }))
+    await expect(resolvePasswordLoginCredential(db, {
+      realmId: 'realm:l0', subjectHash: 'same-phone',
+      membershipClient: 'operator', membershipOrganizationId: 'tenant:l0',
+    }))
       .resolves.toMatchObject({ account_id: 'account:l0', principal_id: 'principal:l0', secret_hash: 'hash:l0' });
-    await expect(resolvePasswordLoginCredential(db, { realmId: 'realm:l11', subjectHash: 'same-phone' }))
+    await expect(resolvePasswordLoginCredential(db, {
+      realmId: 'realm:l11', subjectHash: 'same-phone',
+      membershipClient: 'storefront', membershipOrganizationId: 'mall:l11',
+    }))
       .resolves.toMatchObject({ account_id: 'account:l11', principal_id: 'principal:l11', secret_hash: 'hash:l11' });
-    expect(calls.map(({ values }) => values.slice(0, 2))).toEqual([
-      ['realm:l0', 'same-phone'], ['realm:l11', 'same-phone'],
+    expect(calls.map(({ values }) => values)).toEqual([
+      ['realm:l0', 'same-phone', null, 'operator', 'tenant:l0'],
+      ['realm:l11', 'same-phone', null, 'storefront', 'mall:l11'],
     ]);
   });
 
-  it('resolves a bound mobile to the principal before reading its unchanged password credential', async () => {
+  it('selects the mobile credential through the requested membership instead of another identity domain', async () => {
     const db = databaseSequence(
-      [{ account_id: 'account:l0', realm_id: 'realm:l0', principal_id: 'principal:owner', credential_version: 5 }],
-      [{ account_id: 'account:l0', realm_id: 'realm:l0', principal_id: 'principal:owner', secret_hash: 'scrypt:hash', credential_version: 5 }],
+      [{ account_id: 'account:operator', realm_id: 'realm:l1', principal_id: 'principal:owner', secret_hash: 'scrypt:hash', credential_version: 5 }],
     );
 
     await expect(resolvePasswordLoginCredential(db, {
       realmId: 'realm:l0', subjectHash: 'mobile-hash', mobileTokens: ['mobile-hash', 'mobile-fingerprint'],
+      membershipClient: 'operator', membershipOrganizationId: 'tenant:one',
     })).resolves.toMatchObject({ principal_id: 'principal:owner', credential_version: 5 });
-    expect(db.calls[0]?.values).toEqual(['realm:l0', ['mobile-hash', 'mobile-fingerprint']]);
+    expect(db.calls[0]?.values).toEqual([
+      'realm:l0', 'mobile-hash', ['mobile-hash', 'mobile-fingerprint'], 'operator', 'tenant:one',
+    ]);
     expect(db.calls[0]?.text).toContain('account.mobile_token=any');
-    expect(db.calls[1]?.values).toEqual(['realm:l0', 'mobile-hash', 'account:l0']);
-    expect(db.calls[1]?.text).toContain('credential.account_id=$3');
+    expect(db.calls[0]?.text).toContain('join access.membership membership');
   });
 
   it('never falls back to a password credential when a mobile resolves to multiple principals', async () => {
@@ -83,6 +112,7 @@ describe('SMS login database boundary', () => {
 
     await expect(resolvePasswordLoginCredential(db, {
       realmId: 'realm:l0', subjectHash: 'mobile-hash', mobileTokens: ['mobile-hash', 'mobile-fingerprint'],
+      membershipClient: 'operator', membershipOrganizationId: 'tenant:one',
     })).rejects.toThrow('IDENTITY_SUBJECT_EXISTS');
     expect(db.calls).toHaveLength(1);
   });
