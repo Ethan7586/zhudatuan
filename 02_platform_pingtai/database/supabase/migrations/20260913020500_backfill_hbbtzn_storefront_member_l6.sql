@@ -50,7 +50,7 @@ begin
       'invitation_token_hash',null,
       'business_identity_hash',target.business_identity_hash,
       'node_key','member-'||left(key_hash,32),
-      'realm_id','realm:member-'||key_hash,
+      'realm_id','realm:member-'||left(key_hash,32),
       'membership_id',target.membership_id,
       'requested_by',target.principal_id,
       'trace_id','migration:20260913020500'
@@ -60,7 +60,7 @@ end
 $backfill$;
 
 insert into runtime.schemaversion(version,checksum)
-values('20260913020500','609fc705fd733bad30053d7fb81fdaeee389cdc619ad3c2fabef84f97b5d7723');
+values('20260913020500','c6821410f05168fba8caf0c86d91797bc8c14034098baa72b04527a75ec1c218');
 
 do $assert$
 begin
@@ -76,7 +76,7 @@ begin
           or node.node_profile<>'consumer' or relation.parent_node_id<>'node:hbbtzn:l1'
           or relation.signed_level<>'L6'))
     or not exists(select 1 from runtime.schemaversion where version='20260913020500'
-      and checksum='609fc705fd733bad30053d7fb81fdaeee389cdc619ad3c2fabef84f97b5d7723') then
+      and checksum='c6821410f05168fba8caf0c86d91797bc8c14034098baa72b04527a75ec1c218') then
     raise exception 'HBBTZN_STOREFRONT_MEMBER_L6_BACKFILL_INCOMPLETE';
   end if;
 end
