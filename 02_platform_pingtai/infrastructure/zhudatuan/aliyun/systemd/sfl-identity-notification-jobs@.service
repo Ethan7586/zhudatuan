@@ -1,6 +1,6 @@
 [Unit]
 Description=SFL node-scoped identity notification worker (%i)
-Requires=zhudatuan-internal-runtime.service
+Wants=zhudatuan-internal-runtime.service
 After=network-online.target zhudatuan-migration.service zhudatuan-internal-runtime.service
 ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/IdentityNotificationJobsOnlyMain.js
 ConditionPathExists=/opt/sfl/nodes/%i/current/01_core_hexin/services/commerce/dist/IdentityNotificationJobsReadyMain.js
