@@ -279,8 +279,13 @@ test('production deployment binds identity to the downloaded candidate package',
   assert.match(deployWorkflow, /release-candidate-\$TARGET_SHA/);
   assert.match(deployWorkflow, /mv \.candidate-download\/\.ai-delivery \.ai-delivery/);
   assert.doesNotMatch(deployWorkflow, /candidate_sha.*TARGET_SHA/);
+  const hideCandidate = deployWorkflow.indexOf('mv .ci-release "$candidate_release"');
   const install = deployWorkflow.indexOf('--approve-install "zdt-next:install:${{ steps.sha.outputs.sha }}"');
+  const restoreCandidate = deployWorkflow.indexOf('mv "$candidate_release" .ci-release');
   const cutover = deployWorkflow.indexOf('node 04_tools/release-engine/cli.mjs deploy');
-  assert.ok(install >= 0 && cutover > install, 'production installs the exact commit agent immediately before cutover');
+  assert.ok(
+    hideCandidate >= 0 && install > hideCandidate && restoreCandidate > install && cutover > restoreCandidate,
+    'production installs the exact commit agent from a clean checkout before restoring and deploying the candidate',
+  );
   assert.match(deployWorkflow, /install-production-agent\.json/);
 });
