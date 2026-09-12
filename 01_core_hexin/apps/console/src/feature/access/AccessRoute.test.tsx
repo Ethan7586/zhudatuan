@@ -205,6 +205,26 @@ describe('custom identity and permission directory', () => {
     expect(within(screen.getByRole('navigation', { name: '角色详情' })).getByRole('button', { name: /^成员与范围/ }).getAttribute('aria-selected')).toBe('true');
   });
 
+  it('keeps the storefront consumer role out of administrator role templates', async () => {
+    roles = [{
+      id: 'role-zhudatuan-storefront-member:mall-one',
+      name: '商城会员',
+      status: 'active',
+      version: '1',
+      permissions: ['order.read'],
+      member_count: '12',
+      governance: false,
+      editable: true,
+      members: [],
+      scopes: [],
+    }];
+
+    renderWorkspace();
+
+    expect(await screen.findByText('暂无自定义身份')).toBeTruthy();
+    expect(screen.queryByText('商城会员')).toBeNull();
+  });
+
   it('keeps the explicit member refresh authoritative', async () => {
     const user = userEvent.setup();
     renderSwitchWorkspace();

@@ -12,6 +12,7 @@ import { MemberInvitationDialog } from '../member/MemberInvitationDialog';
 import { memberInvitationAvailable } from '../member/MemberInvitationCommand';
 import { memberKey, readMembers } from '../member/MemberQuery';
 import { MemberRegistrationResetDialog } from '../member/MemberRegistrationResetDialog';
+import { isManagementRole } from './ManagementRole';
 import type { Member } from '../member/MemberSchema';
 import '../storefront-member/storefront-member.css';
 import { ACCESS_QUERY_STALE_TIME_MS, accessKey, readAccess } from './AccessQuery';
@@ -681,9 +682,7 @@ function mergeRows(members: readonly Member[], access: readonly AccessMembership
   });
 }
 function managementRolesOf(membership: AccessMembership): readonly MemberRole[] {
-  return membership.roles.filter((role) => role.role !== 'role:self'
-    && !role.role.startsWith('role-zhudatuan-storefront-member')
-    && role.name !== '商城会员');
+  return membership.roles.filter(isManagementRole);
 }
 function hasOperation(context: ConsoleContext, operation: string): boolean {
   return context.session.capabilities.includes(operation) || context.session.permissions.includes(operation);

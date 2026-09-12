@@ -11,6 +11,7 @@ import { ACCESS_QUERY_STALE_TIME_MS, accessKey, readAccess } from './AccessQuery
 import type { AccessRole } from './AccessSchema';
 import { roleCommandAvailable } from './AccessRoleCommand';
 import { invitationRecordsAvailable, invitationRecordsKey, readInvitationRecords } from './InvitationRecordsQuery';
+import { isManagementRole } from './ManagementRole';
 import type { InvitationRecord } from './InvitationRecordsSchema';
 import { RoleEditor, type RoleEditorRecord } from './RoleEditor';
 import './role-access-workspace.css';
@@ -47,7 +48,7 @@ export function RoleAccessWorkspace() {
   });
   const invitationPages = invitationRecordsQuery.data?.pages;
   const invitationRecords = useMemo(() => invitationPages?.flatMap((page) => page.items) ?? [], [invitationPages]);
-  const roles = query.data?.roles ?? [];
+  const roles = query.data?.roles.filter(isManagementRole) ?? [];
   const normalizedFilter = filter.trim().toLocaleLowerCase('zh-CN');
   const visibleRoles = useMemo(() => roles.filter((role) => normalizedFilter === '' || `${role.name} ${role.id} ${role.permissions.join(' ')}`.toLocaleLowerCase('zh-CN').includes(normalizedFilter)), [normalizedFilter, roles]);
   const defaultRole = visibleRoles.find(({ governance }) => !governance) ?? visibleRoles[0];
