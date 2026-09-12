@@ -56,6 +56,7 @@ describe('operator invitation registration', () => {
     fireEvent.click(screen.getByRole('button', { name: /获取验证码/ }));
 
     await waitFor(() => expect(screen.getByText(/无需重复设置密码/)).toBeTruthy());
+    expect(screen.getByLabelText('管理员姓名')).toBeTruthy();
     expect(screen.queryByLabelText('设置密码')).toBeNull();
     expect(screen.getByPlaceholderText('6 位验证码').getAttribute('autocomplete')).toBe('one-time-code');
   });

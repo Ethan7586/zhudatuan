@@ -53,7 +53,7 @@ describe('member directory scope boundary', () => {
         create table access.membership(
           id text primary key,member_id text not null,organization_id text not null,client text not null,
           employee_no text,status text not null,access_version integer not null,joined_at timestamptz,
-          governance_parent_membership_id text
+          governance_parent_membership_id text,operator_display_name text
         );
         create table organization.unitclosure(ancestor_id text not null,descendant_id text not null);
         insert into member.profile values
@@ -75,10 +75,15 @@ describe('member directory scope boundary', () => {
       const action = memberOperatorReadActions()['member.members.read'];
       if (typeof action !== 'function') throw new Error('MEMBER_READ_ACTION_MISSING');
       const response = await action(request(), database as unknown as OperationDatabase);
-      const items = (response.body as { readonly items: readonly { readonly membership_id: string; readonly client: string }[] }).items;
+      const items = (response.body as { readonly items: readonly {
+        readonly membership_id: string;
+        readonly client: string;
+        readonly display_name: string;
+      }[] }).items;
 
       expect(items.map(({ membership_id }) => membership_id)).toEqual(['membership:operator:shared', 'membership:owner']);
       expect(items.every(({ client }) => client === 'operator')).toBe(true);
+      expect(items.map(({ display_name }) => display_name)).toEqual(['同主体管理员', 'Owner']);
     } finally {
       await database.close();
     }

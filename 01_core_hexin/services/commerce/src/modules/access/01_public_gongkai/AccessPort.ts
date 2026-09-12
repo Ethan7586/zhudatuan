@@ -32,6 +32,7 @@ export interface OperatorRegistrationMembership {
   readonly operatorOrganization: string;
   readonly managementOrganization: string;
   readonly operatorRole: string;
+  readonly operatorDisplayName: string;
   readonly operatorScopes: readonly [string, string];
 }
 
@@ -81,11 +82,11 @@ export class AccessPort {
   async createOperatorRegistration(database: OperationDatabase, input: OperatorRegistrationMembership): Promise<Readonly<Record<string, unknown>>> {
     const membership = await database.query(`insert into access.membership(
       id,member_id,organization_id,client,status,access_version,joined_at,governance_parent_membership_id,
-      realm_id,account_id,node_profile)
-      select $1,$2,$3,'operator','active',1,transaction_timestamp(),$4,realm.id,$6,realm.node_profile
+      realm_id,account_id,node_profile,operator_display_name)
+      select $1,$2,$3,'operator','active',1,transaction_timestamp(),$4,realm.id,$6,realm.node_profile,$7
       from identity.realm realm where realm.id=$5 and realm.status='active' returning *`,
     [input.operatorMembership, input.member, input.operatorOrganization, input.governanceParentMembership,
-      input.realm, input.account]);
+      input.realm, input.account, input.operatorDisplayName]);
     await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
       ($1,$2,transaction_timestamp()),($1,'role:self',transaction_timestamp())`, [input.operatorMembership, input.operatorRole]);
     await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values

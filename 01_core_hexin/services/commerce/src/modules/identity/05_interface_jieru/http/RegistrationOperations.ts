@@ -225,6 +225,8 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             throw new Error('AUTH_REALM_MISMATCH');
           }
           if (body.termsAccepted !== true || body.termsHash !== registrationTarget.terms_hash) throw new Error('TERMS_ACCEPTANCE_REQUIRED');
+          const operatorDisplayName = registrationTarget.target_client === 'operator'
+            ? textField(body, 'displayName') : undefined;
           let resolvedPrincipal = principal;
           let resolvedAccount = account;
           let resolvedMember = member;
@@ -307,6 +309,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                   operatorOrganization: operatorRealm!.membershipOrganizationId,
                   managementOrganization: organization,
                   operatorRole: registrationTarget.role_id,
+                  operatorDisplayName: operatorDisplayName!,
                   operatorScopes: [scopes[3], scopes[4]],
                 })
               : await accessPort.createRegistration(database, {
@@ -399,6 +402,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                   operatorOrganization: operatorRealm!.membershipOrganizationId,
                   managementOrganization: organization,
                   operatorRole: registrationTarget.role_id,
+                  operatorDisplayName: operatorDisplayName!,
                   operatorScopes: [scopes[3], scopes[4]],
                 })
               : await accessPort.createRegistration(database, {

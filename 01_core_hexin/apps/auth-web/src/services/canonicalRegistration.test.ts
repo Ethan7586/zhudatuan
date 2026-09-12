@@ -191,6 +191,7 @@ describe('canonical registration', () => {
 
     await expect(createCanonicalMember({
       subject: '13800138000',
+      displayName: '李厚亿',
       inviteCode: 'senior-invitation',
       challengeId: 'challenge:registration-one',
       code: '483921',
@@ -204,7 +205,7 @@ describe('canonical registration', () => {
 
     const payload = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
     expect(payload).not.toHaveProperty('password');
-    expect(payload).not.toHaveProperty('displayName');
+    expect(payload.displayName).toBe('李厚亿');
   });
 
   it('uses the registration OTP to establish and exchange the new storefront session immediately', async () => {

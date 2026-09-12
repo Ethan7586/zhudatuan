@@ -165,6 +165,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
     if (invite === null || resolvedInviteCode !== inviteCode.trim().toUpperCase()) return setError('请先验证当前邀请码');
     if (!registrationChallenge) return setError('请先获取验证码');
     if (registrationIdentityExists === null) return setError('请重新获取验证码以确认统一身份状态');
+    if (!displayName.trim()) return setError('请输入管理员姓名');
     if (!registrationIdentityExists && !passwordMeetsPolicy(password)) return setError(PASSWORD_POLICY_MESSAGE);
     if (!registrationIdentityExists && password !== confirmPassword) return setError('两次输入的密码不一致');
     if (!acceptedTerms) return setError('请先阅读并同意服务协议与隐私政策');
@@ -173,7 +174,8 @@ export const OperatorIdentityPage: React.FC<Readonly<{
       'operator-register',
       (signal) => createCanonicalMember({
         subject: identifier,
-        ...(registrationIdentityExists ? {} : { password, displayName }),
+        displayName,
+        ...(registrationIdentityExists ? {} : { password }),
         inviteCode,
         challengeId: registrationChallenge,
         code: registrationCode,
@@ -297,7 +299,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
                 <input required value={inviteCode} onChange={(event) => { setInviteCode(event.target.value.toUpperCase()); setInvite(null); setRegistrationChallenge(''); setRegistrationIdentityExists(null); }} placeholder="企业邀请码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm uppercase outline-none focus:ring-2 focus:ring-blue-100" />
                 <button type="button" disabled={inviteBusy || !inviteCode.trim()} onPointerDown={() => identityActions.pointerDown('operator-invite')} onClick={() => loadInvite()} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50">验证邀请码</button>
               </div>
-              {registrationIdentityExists !== true && <TextField label="姓名" value={displayName} onChange={setDisplayName} autoComplete="name" />}
+              <TextField label="管理员姓名" value={displayName} onChange={setDisplayName} autoComplete="name" />
               <TextField label="手机号" value={identifier} onChange={(value) => { setIdentifier(value); setRegistrationChallenge(''); setRegistrationIdentityExists(null); }} autoComplete="tel" inputMode="tel" />
               <div className="flex gap-2">
                 <input required inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={registrationCode} onChange={(event) => setRegistrationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6 位验证码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100" />

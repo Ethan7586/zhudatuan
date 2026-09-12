@@ -54,12 +54,15 @@ describe('AccessPort invited registration', () => {
       operatorMembership: 'membership:operator', governanceParentMembership: 'membership:owner',
       member: 'member:one', principal: 'principal:one', realm: 'realm:l1', account: 'account:one',
       operatorOrganization: 'mall:one', managementOrganization: 'tenant:one', operatorRole: 'role:senior',
+      operatorDisplayName: '李厚亿',
       operatorScopes: ['scope:tenant', 'scope:self'],
     })).resolves.toMatchObject({ id: 'membership:operator', client: 'operator' });
 
     expect(query).toHaveBeenCalledTimes(3);
     expect(query.mock.calls.some(([text]) => String(text).includes("'storefront'"))).toBe(false);
+    expect(query.mock.calls[0]?.[0]).toContain('operator_display_name');
     expect(query.mock.calls[0]?.[1]).toContain('mall:one');
+    expect(query.mock.calls[0]?.[1]).toContain('李厚亿');
     expect(query.mock.calls[2]?.[1]).toContain('tenant:one');
   });
 });
