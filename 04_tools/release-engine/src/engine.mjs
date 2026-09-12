@@ -124,7 +124,22 @@ export async function deployCommand(adapter, options) {
   invariant(deployments.size > 0, 'DEPLOY_NO_TARGETS', 'The selected package has no target for the requested node(s)', { nodes });
   const paths = statePaths(adapter);
   const results = [];
+  const failedMigrations = new Set();
   for (const item of deployments.values()) {
+    const blockers = environment === 'production'
+      ? (adapter.targets[item.artifact.target]?.after ?? []).filter((target) => failedMigrations.has(target))
+      : [];
+    if (blockers.length > 0) {
+      results.push({
+        ok: false,
+        skipped: true,
+        node: item.nodeKey,
+        target: item.artifact.target,
+        environment,
+        error: { code: 'DATABASE_MIGRATION_DEPENDENCY_FAILED', message: 'Consumer activation blocked by failed database migration', details: { blockers } },
+      });
+      continue;
+    }
     const release = await acquireLocks([
       join(paths.locks, 'nodes', `${item.nodeKey}.lock`),
       join(paths.locks, 'targets', item.nodeKey, `${item.artifact.target}.lock`),
@@ -140,6 +155,7 @@ export async function deployCommand(adapter, options) {
       results.push({ ok: true, ...(await executeDeployment(adapter, item, environment, options)) });
     } catch (error) {
       results.push({ ok: false, node: item.nodeKey, target: item.artifact.target, environment, error: { code: error.code ?? 'DEPLOYMENT_FAILED', message: error.message, details: error.details ?? {} } });
+      if (environment === 'production' && adapter.targets[item.artifact.target]?.kind === 'migration') failedMigrations.add(item.artifact.target);
     } finally {
       await release();
     }
@@ -361,7 +377,17 @@ async function executeDeployment(adapter, item, environment, options) {
     if (options.externalBaseline === true) externalBefore = await externalDomainSnapshot(adapter);
     const activateArgv = ['ssh', host, remoteAgent, 'activate', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--approval', `${adapter.project}:${item.artifact.sourceSha}`, '--expected-current', preflight.result.rollbackPoint.pointers.current ?? 'none'];
     if (preflight.result.caddySemantic?.digest) activateArgv.push('--expected-caddy-semantic', preflight.result.caddySemantic.digest);
-    activated = await runCommand({ name: `activate:${item.nodeKey}:${item.artifact.target}`, argv: activateArgv, timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+    try {
+      activated = await runCommand({ name: `activate:${item.nodeKey}:${item.artifact.target}`, argv: activateArgv, timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+    } catch (error) {
+      if (adapter.targets[item.artifact.target]?.kind !== 'migration') throw error;
+      const remoteFailure = parseRemoteFailure(error.details?.outputTail);
+      if (!remoteFailure?.error) throw error;
+      throw new DeliveryError(remoteFailure.error.code ?? 'DATABASE_MIGRATION_FAILED', remoteFailure.error.message ?? 'Database migration failed', {
+        ...(remoteFailure.error.details ?? {}),
+        transport: { code: error.code, details: error.details ?? {} },
+      });
+    }
     result = activated;
     if (options.externalBaseline === true) {
       externalAfter = await externalDomainSnapshot(adapter);
@@ -574,4 +600,11 @@ function parseCommandJson(command) {
   } catch {
     throw new DeliveryError('REMOTE_AGENT_OUTPUT_INVALID', 'Remote delivery agent did not return JSON', { outputTail: command.outputTail });
   }
+}
+
+function parseRemoteFailure(output) {
+  for (const line of String(output ?? '').trim().split('\n').reverse()) {
+    try { return JSON.parse(line); } catch {}
+  }
+  return null;
 }

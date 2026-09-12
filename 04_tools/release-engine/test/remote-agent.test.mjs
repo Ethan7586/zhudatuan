@@ -490,6 +490,81 @@ test('production activation requires the exact source approval', async () => {
   await assert.rejects(() => readlink(join(fixture.pointerRoot, 'current')), { code: 'ENOENT' });
 });
 
+test('database migration activation records the selected ledger delta, retries as a no-op and never restarts', async () => {
+  const fixture = await createFixture();
+  const ledger = join(fixture.root, 'migration-ledger.json');
+  const environmentFile = join(fixture.root, 'migration.env');
+  await writeFile(ledger, JSON.stringify([{ version: '20990101000000', name: '20990101000000_first.sql', statements: [] }]));
+  await writeFile(environmentFile, `AI_TEST_LEDGER=${ledger}\n`);
+  fixture.policy.nodes.local.deployments.app = migrationDeployment(fixture, environmentFile);
+  await writePolicy(fixture);
+  const artifact = await createMigrationArtifact(fixture, '7'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+
+  const activated = await invoke(fixture, 'activate', artifact);
+  assert.equal(activated.result.restart.commandCount, 0);
+  assert.equal(activated.result.receipt.restart.commandCount, 0);
+  assert.equal(activated.result.receipt.databaseMigration.status, 'applied');
+  assert.deepEqual(activated.result.receipt.databaseMigration.selected.map((item) => item.version), ['20990102000000']);
+  assert.equal(activated.result.receipt.databaseMigration.ledgerBefore.count, 1);
+  assert.equal(activated.result.receipt.databaseMigration.ledgerAfter.count, 2);
+  assert.equal(activated.result.receipt.databaseRecovery.databaseRollback, 'not-performed');
+
+  const retried = await invoke(fixture, 'activate', artifact);
+  assert.equal(retried.result.receipt.databaseMigration.status, 'noop');
+  assert.deepEqual(retried.result.receipt.databaseMigration.selected, []);
+  assert.equal(retried.result.restart.commandCount, 0);
+
+  const current = await readlink(join(fixture.pointerRoot, 'current'));
+  const rollbackFailure = await captureAgentFailure(() => invoke(fixture, 'rollback', artifact));
+  assert.equal(rollbackFailure.code, 'DATABASE_ROLLBACK_UNSUPPORTED');
+  assert.equal(rollbackFailure.details.pointerAction, 'not-performed');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
+});
+
+test('database migration failure keeps pointers and ledger unchanged with a failed zero-restart receipt', async () => {
+  const fixture = await createFixture();
+  const ledger = join(fixture.root, 'migration-ledger.json');
+  const environmentFile = join(fixture.root, 'migration.env');
+  await writeFile(ledger, '[]');
+  await writeFile(environmentFile, `AI_TEST_LEDGER=${ledger}\nAI_TEST_FAIL=1\n`);
+  fixture.policy.nodes.local.deployments.app = migrationDeployment(fixture, environmentFile);
+  await writePolicy(fixture);
+  const artifact = await createMigrationArtifact(fixture, '8'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+
+  const failed = await captureAgentFailure(() => invoke(fixture, 'activate', artifact));
+  assert.equal(failed.code, 'DATABASE_MIGRATION_FAILED');
+  assert.equal(failed.details.receipt.finalStatus, 'failed');
+  assert.equal(failed.details.receipt.databaseMigration.status, 'failed');
+  assert.equal(failed.details.receipt.restart.commandCount, 0);
+  assert.deepEqual(JSON.parse(await readFile(ledger, 'utf8')), []);
+  await assert.rejects(() => readlink(join(fixture.pointerRoot, 'current')), { code: 'ENOENT' });
+});
+
+test('post-migration pointer failure restores only pointers and reports that the database remains applied', async () => {
+  const fixture = await createFixture();
+  const ledger = join(fixture.root, 'migration-ledger.json');
+  const environmentFile = join(fixture.root, 'migration.env');
+  await writeFile(ledger, '[]');
+  await writeFile(environmentFile, `AI_TEST_LEDGER=${ledger}\n`);
+  fixture.policy.nodes.local.deployments.app = migrationDeployment(fixture, environmentFile);
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{ argv: [process.execPath, '-e', 'process.exit(9)'] }];
+  await writePolicy(fixture);
+  const artifact = await createMigrationArtifact(fixture, '9'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+
+  const failed = await captureAgentFailure(() => invoke(fixture, 'activate', artifact));
+  assert.equal(failed.code, 'DATABASE_MIGRATION_POINTER_RECORD_FAILED');
+  assert.equal(failed.details.databaseMigration.status, 'applied');
+  assert.equal(failed.details.databaseRollback, 'not-performed');
+  assert.equal(failed.details.pointerRecovery.status, 'restored');
+  assert.equal(failed.details.receipt.finalStatus, 'database-applied-pointer-record-failed');
+  assert.equal(failed.details.receipt.restart.commandCount, 0);
+  assert.equal(JSON.parse(await readFile(ledger, 'utf8')).length, 2);
+  await assert.rejects(() => readlink(join(fixture.pointerRoot, 'current')), { code: 'ENOENT' });
+});
+
 test('requires and binds a declared dependency layer', async () => {
   const fixture = await createFixture();
   await writeFile(join(fixture.root, 'package-lock.json'), '{"lockfileVersion":3}\n');
@@ -719,6 +794,59 @@ async function createArtifact(fixture, contents, sourceSha, dependencyLayer = nu
   await writeFile(join(directory, 'app.txt'), contents);
   const evidence = { target: 'app', directory, deletions: [], ...(await treeEvidence(directory, ['app.txt'])) };
   const adapter = { project: 'fixture', projectRoot: fixture.root, targets: { app: { kind: 'frontend', criticalFiles: ['app.txt'], dependencyLayer } } };
+  const plan = { to: { sha: sourceSha }, planDigest: digest({ sourceSha }) };
+  return packageTarget(adapter, plan, evidence, join(fixture.root, 'runs', sourceSha), join(fixture.root, 'artifacts'));
+}
+
+function migrationDeployment(fixture, environmentFile) {
+  return {
+    pointerRoot: fixture.pointerRoot,
+    allowFirstActivation: true,
+    restart: { kind: 'none', name: 'none' },
+    candidateChecks: [
+      { argv: ['test', '-f', '{{candidateDir}}/executor/DatabaseMigrationExecutor.js'] },
+      { argv: ['test', '-d', '{{candidateDir}}/database/supabase/migrations'] },
+    ],
+    healthChecks: [],
+    databaseMigration: {
+      executionRoot: join(fixture.root, 'execution-releases'),
+      environmentFile,
+      runner: 'executor/DatabaseMigrationExecutor.js',
+      migrationDirectory: 'database/supabase/migrations',
+      nodeBinary: process.execPath,
+      timeoutMs: 10_000,
+      recovery: { mode: 'forward-only', snapshot: 'not-captured-by-delivery-engine' },
+    },
+  };
+}
+
+async function createMigrationArtifact(fixture, sourceSha) {
+  const directory = join(fixture.root, 'migration-sources', sourceSha);
+  await mkdir(join(directory, 'executor'), { recursive: true });
+  await mkdir(join(directory, 'database', 'supabase', 'migrations'), { recursive: true });
+  await mkdir(join(directory, 'database', 'contracts'), { recursive: true });
+  await writeFile(join(directory, 'database', 'supabase', 'migrations', '20990101000000_first.sql'), 'select 1;\n');
+  await writeFile(join(directory, 'database', 'supabase', 'migrations', '20990102000000_second.sql'), 'select 2;\n');
+  await writeFile(join(directory, 'database', 'contracts', 'history.json'), '{}\n');
+  await writeFile(join(directory, 'executor', 'DatabaseMigrationExecutor.js'), `
+import { createHash } from 'node:crypto';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+const ledgerPath = process.env.AI_TEST_LEDGER;
+const beforeRecords = JSON.parse(await readFile(ledgerPath, 'utf8'));
+const files = (await readdir(process.env.MIGRATION_DIRECTORY)).filter((name) => /^\\d{14}_.+\\.sql$/.test(name)).sort();
+const selected = files.filter((file) => !beforeRecords.some((row) => row.version === file.slice(0, 14))).map((file) => ({ file, version: file.slice(0, 14), sha256: createHash('sha256').update(file).digest('hex') }));
+const evidence = (records) => ({ exists: true, count: records.length, head: records.at(-1)?.version ?? null, sha256: createHash('sha256').update(JSON.stringify(records)).digest('hex'), records });
+if (process.env.AI_TEST_FAIL === '1') {
+  process.stdout.write(JSON.stringify({ schema: 'ai.delivery.database-migration-result.v1', sourceSha: process.env.AI_DELIVERY_SOURCE_SHA, status: 'failed', selected, ledgerBefore: evidence(beforeRecords), ledgerAfter: evidence(beforeRecords), applied: [], error: { code: 'FIXTURE_FAILURE', message: 'FIXTURE_FAILURE' } }) + '\\n');
+  process.exit(9);
+}
+const afterRecords = [...beforeRecords, ...selected.map((item) => ({ version: item.version, name: item.file, statements: [] }))];
+await writeFile(ledgerPath, JSON.stringify(afterRecords));
+process.stdout.write(JSON.stringify({ schema: 'ai.delivery.database-migration-result.v1', sourceSha: process.env.AI_DELIVERY_SOURCE_SHA, status: selected.length ? 'applied' : 'noop', selected, ledgerBefore: evidence(beforeRecords), ledgerAfter: evidence(afterRecords), applied: selected, error: null }) + '\\n');
+`);
+  const evidence = { target: 'app', directory, deletions: [], ...(await treeEvidence(directory, ['executor/DatabaseMigrationExecutor.js'])) };
+  const adapter = { project: 'fixture', projectRoot: fixture.root, targets: { app: { kind: 'migration', criticalFiles: ['executor/DatabaseMigrationExecutor.js'], dependencyLayer: null } } };
   const plan = { to: { sha: sourceSha }, planDigest: digest({ sourceSha }) };
   return packageTarget(adapter, plan, evidence, join(fixture.root, 'runs', sourceSha), join(fixture.root, 'artifacts'));
 }
