@@ -3355,7 +3355,7 @@ operations:
     idempotent: true
     expectedVersion: required
     schema: named
-    requestFields: ["challenge","code","currentPassword","newPassword"]
+    requestFields: ["reason"]
     responseFields: ["access","account_id","challenge","code","currentPassword","hash","history_retained","login_identity_released","principal_id","status","verified","verifiedAt","version"]
     requirements:
       - MVP13
