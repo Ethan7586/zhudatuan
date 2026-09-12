@@ -20,6 +20,11 @@ on:
         required: false
         default: false
         type: boolean
+      force_runtime_rebuild:
+        description: Rebuild every current runtime artifact from the selected commit
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -95,12 +100,30 @@ jobs:
         env:
           BASE_SHA: ${{ steps.refs.outputs.base_sha }}
           HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+          FORCE_RUNTIME_REBUILD: ${{ inputs.force_runtime_rebuild }}
         run: |
           mkdir -p .ci-release
+          force_files=()
+          if [ "$FORCE_RUNTIME_REBUILD" = "true" ]; then
+            force_files+=(
+              --file 01_core_hexin/apps/storefront-web/src/StorefrontRoot.tsx
+              --file 01_core_hexin/apps/auth-web/src/main.tsx
+              --file 01_core_hexin/apps/console/src/main.tsx
+              --file 01_core_hexin/services/commerce/src/entry/IdentityRegistrationApiMain.ts
+              --file 01_core_hexin/services/commerce/src/entry/ConsoleSupportMain.ts
+              --file 01_core_hexin/services/commerce/src/entry/PurchaseApiMain.ts
+              --file 01_core_hexin/services/commerce/src/entry/WebBusinessApiMain.ts
+              --file 01_core_hexin/services/commerce/src/entry/CatalogOperatorApiMain.ts
+              --file 01_core_hexin/services/commerce/src/entry/CatalogJobsMain.ts
+              --file 01_core_hexin/services/commerce/src/entry/PaymentWebhookApiMain.ts
+              --file 01_core_hexin/services/commerce/src/entry/PaymentJobsMain.ts
+            )
+          fi
           node 04_tools/release-engine/cli.mjs plan \
             --from "$BASE_SHA" \
             --to "$HEAD_SHA" \
             --node "$RELEASE_NODE" \
+            "${force_files[@]}" \
             --format json > .ci-release/plan-envelope.json
           node --input-type=module <<'NODE'
           import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
