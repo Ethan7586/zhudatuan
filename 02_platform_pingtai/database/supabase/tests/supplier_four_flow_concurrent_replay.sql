@@ -70,3 +70,33 @@ select 'aftersale:test:concurrent:'||kind,'aftersale:test:concurrent','line:test
 from (values('receivable'),('payable'),('income'),('cost')) fact(kind)
 on conflict(aftersale_id,order_line_id,fact_kind) do nothing;
 commit;
+
+begin;
+do $concurrent_replay_results$
+begin
+  if (select count(*) from ordering.orderrecord where id='order:test:concurrent')<>1
+    or (select count(*) from ordering.line where id='line:test:concurrent')<>1
+    or (select count(*) from ordering.suborder where id='leg:test:concurrent')<>1
+    or (select count(*) from ordering.aftersale where id='aftersale:test:concurrent')<>1
+    then raise exception 'CONCURRENT_REPLAY_DUPLICATED_BUSINESS_FACT'; end if;
+
+  if (select count(*) from ordering.lineroutestep where order_line_id='line:test:concurrent')<>6
+    or (select count(*) from ordering.aftersaleroutestep where aftersale_id='aftersale:test:concurrent')<>6
+    then raise exception 'CONCURRENT_REPLAY_ROUTE_INCOMPLETE'; end if;
+
+  if (select count(*) from payment.refund where id='refund:test:concurrent')<>1
+    or (select count(*) from payment.supplierrefundallocation where aftersale_id='aftersale:test:concurrent')<>1
+    or (select count(*) from inventory.supplierrestockfact where aftersale_id='aftersale:test:concurrent')<>1
+    or (select count(*) from finance.supplierlegreversal where aftersale_id='aftersale:test:concurrent')<>4
+    then raise exception 'CONCURRENT_REPLAY_DUPLICATED_REVERSE_FACT'; end if;
+
+  if array(
+    select original_sequence_no
+    from ordering.aftersaleroutestep
+    where aftersale_id='aftersale:test:concurrent'
+    order by reverse_sequence_no
+  )<>array[6,5,4,3,2,1]
+    then raise exception 'CONCURRENT_REPLAY_REVERSE_ROUTE_CHANGED'; end if;
+end
+$concurrent_replay_results$;
+rollback;
