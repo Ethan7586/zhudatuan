@@ -2,6 +2,7 @@ import {
   webBusinessApiAllowedOrigins,
   webBusinessApiEnvironment,
   webBusinessApiPort,
+  webBusinessApiPublicMallHostMappings,
   webBusinessApiPublicMallSlug,
 } from '@shop/config/server';
 
@@ -33,6 +34,7 @@ const bootstrapped = await bootstrapApi({
 });
 const app = new PublicCatalogHttpHandler(
   bootstrapped.app, runtime.pool, webBusinessApiPublicMallSlug(environment), allowedOrigins,
+  webBusinessApiPublicMallHostMappings(environment),
 );
 const server = listen(app, webBusinessApiPort(environment), '127.0.0.1', bootstrapped.nodeContextResolver);
 

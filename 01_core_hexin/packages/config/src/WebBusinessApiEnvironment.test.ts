@@ -4,6 +4,7 @@ import {
   webBusinessApiAllowedOrigins,
   webBusinessApiEnvironment,
   webBusinessApiPort,
+  webBusinessApiPublicMallHostMappings,
   webBusinessApiPublicMallSlug,
 } from './WebBusinessApiEnvironment';
 
@@ -20,6 +21,7 @@ function valid() {
     SERVICE_VERSION: '1.0.0',
     API_ALLOWED_ORIGINS: 'https://h5.hbbtzn.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com',
     PUBLIC_MALL_SLUG: 'zdt-l1-verify',
+    PUBLIC_MALL_HOST_MAPPINGS: 'hbbtzn.com=zdt-l1-verify,www.hbbtzn.com=zdt-l1-verify',
     DATABASE_API_CONNECTION_REF: 'zhudatuan/web-business/database/api',
     DATABASE_API_ROLE: 'zhudatuanwebapi',
     KMS_ENDPOINT: 'https://127.0.0.1:8544',
@@ -42,6 +44,10 @@ describe('web business API environment', () => {
     expect(environment.WEB_BUSINESS_API_PROFILE).toBe('web-business-only');
     expect(webBusinessApiPort(environment)).toBe(4432);
     expect(webBusinessApiPublicMallSlug(environment)).toBe('zdt-l1-verify');
+    expect(webBusinessApiPublicMallHostMappings(environment)).toEqual({
+      'hbbtzn.com': 'zdt-l1-verify',
+      'www.hbbtzn.com': 'zdt-l1-verify',
+    });
     expect(webBusinessApiAllowedOrigins(environment)).toEqual([
       'https://h5.hbbtzn.com',
       'https://hbbtzn.com',
@@ -78,6 +84,10 @@ describe('web business API environment', () => {
       .toThrow('API_ALLOWED_ORIGINS_INVALID');
     expect(() => webBusinessApiEnvironment({ ...valid(), PUBLIC_MALL_SLUG: 'INVALID' }))
       .toThrow('PUBLIC_MALL_SLUG_INVALID');
+    expect(() => webBusinessApiEnvironment({ ...valid(), PUBLIC_MALL_HOST_MAPPINGS: 'hbbtzn.com=INVALID' }))
+      .toThrow('PUBLIC_MALL_HOST_MAPPINGS_INVALID');
+    expect(() => webBusinessApiEnvironment({ ...valid(), PUBLIC_MALL_HOST_MAPPINGS: 'localhost=zdt-l1-verify' }))
+      .toThrow('PUBLIC_MALL_HOST_MAPPINGS_INVALID');
     expect(() => webBusinessApiEnvironment({ ...valid(), KMS_BEARER_TOKEN: secretStoreBearerToken }))
       .toThrow('WORKLOAD_BEARER_TOKENS_MUST_DIFFER');
   });

@@ -29,6 +29,7 @@ export class PublicCatalogHttpHandler implements HttpRequestHandler {
     private readonly pool: DatabasePool,
     private readonly defaultApplicationSlug: string,
     allowedOrigins: readonly string[],
+    private readonly applicationSlugByHost: Readonly<Record<string, string>> = {},
   ) {
     this.origins = new Set(allowedOrigins);
   }
@@ -40,12 +41,14 @@ export class PublicCatalogHttpHandler implements HttpRequestHandler {
     const requestId = request.headers.get('x-request-id') ?? randomUUID();
     const origin = request.headers.get('origin');
     if (origin && !this.origins.has(origin)) return response(403, { code: 'ORIGIN_DENIED', requestId }, requestId);
+    const hostApplicationSlug = this.applicationSlugByHost[url.hostname.toLowerCase()];
+    const selectedApplicationSlug = hostApplicationSlug ?? this.defaultApplicationSlug;
     const requestedApplicationSlug = url.searchParams.get('mall')?.trim();
-    const applicationSlug = requestedApplicationSlug || this.defaultApplicationSlug;
+    const applicationSlug = requestedApplicationSlug || selectedApplicationSlug;
     if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(applicationSlug)) {
       return response(400, { code: 'PUBLIC_MALL_INVALID', requestId }, requestId, origin);
     }
-    if (requestedApplicationSlug && requestedApplicationSlug !== this.defaultApplicationSlug) {
+    if (requestedApplicationSlug && requestedApplicationSlug !== selectedApplicationSlug) {
       return response(404, { code: 'PUBLIC_MALL_NOT_FOUND', requestId }, requestId, origin);
     }
     const limit = integer(url.searchParams.get('limit'), 24, 1, 100);

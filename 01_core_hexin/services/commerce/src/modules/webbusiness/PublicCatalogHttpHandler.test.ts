@@ -59,6 +59,26 @@ describe('public catalog HTTP handler', () => {
     expect(query).toHaveBeenCalledWith('select * from catalog.public_storefront_catalog($1,$2,$3,$4)',
       ['zdt-l1-verify', 24, 0, null]);
   });
+
+  it('selects the public application from the request host on a shared web API', async () => {
+    const query = vi.fn(async () => result([]));
+    const handler = new PublicCatalogHttpHandler(
+      { handle: vi.fn(async () => new Response(null, { status: 404 })) },
+      pool(query),
+      'zhudatuan-storefront',
+      ['https://hbbtzn.com'],
+      { 'hbbtzn.com': 'zdt-l1-verify' },
+    );
+
+    const response = await handler.handle(new Request(
+      'https://hbbtzn.com/api/v1/catalog/public/products?mall=zdt-l1-verify',
+      { headers: { origin: 'https://hbbtzn.com' } },
+    ));
+
+    expect(response.status).toBe(200);
+    expect(query).toHaveBeenCalledWith('select * from catalog.public_storefront_catalog($1,$2,$3,$4)',
+      ['zdt-l1-verify', 24, 0, null]);
+  });
 });
 
 function pool(query: ReturnType<typeof vi.fn>): DatabasePool {

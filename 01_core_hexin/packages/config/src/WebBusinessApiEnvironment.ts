@@ -20,6 +20,7 @@ export const WEB_BUSINESS_API_ENVIRONMENT_KEYS = Object.freeze([
   'SERVICE_VERSION',
   'API_ALLOWED_ORIGINS',
   'PUBLIC_MALL_SLUG',
+  'PUBLIC_MALL_HOST_MAPPINGS',
   'DATABASE_API_CONNECTION_REF',
   'DATABASE_API_ROLE',
   'KMS_ENDPOINT',
@@ -87,6 +88,7 @@ export function validateWebBusinessApiEnvironment(source: EnvironmentSource): vo
   }
   webBusinessApiPort(source);
   if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(source.PUBLIC_MALL_SLUG!)) throw new Error('PUBLIC_MALL_SLUG_INVALID');
+  webBusinessApiPublicMallHostMappings(source);
 }
 
 export function webBusinessApiPort(environment: WebBusinessApiEnvironment): number {
@@ -99,6 +101,23 @@ export function webBusinessApiAllowedOrigins(environment: WebBusinessApiEnvironm
 
 export function webBusinessApiPublicMallSlug(environment: WebBusinessApiEnvironment): string {
   return requiredValue(environment.PUBLIC_MALL_SLUG, 'PUBLIC_MALL_SLUG_MISSING');
+}
+
+export function webBusinessApiPublicMallHostMappings(
+  environment: WebBusinessApiEnvironment,
+): Readonly<Record<string, string>> {
+  const mappings: Record<string, string> = {};
+  for (const entry of (environment.PUBLIC_MALL_HOST_MAPPINGS ?? '').split(',').map((value) => value.trim()).filter(Boolean)) {
+    const separator = entry.indexOf('=');
+    const host = entry.slice(0, separator).trim().toLowerCase();
+    const slug = entry.slice(separator + 1).trim();
+    if (separator < 1 || !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(host)
+      || !/^[a-z0-9][a-z0-9-]{2,47}$/.test(slug) || mappings[host] !== undefined) {
+      throw new Error('PUBLIC_MALL_HOST_MAPPINGS_INVALID');
+    }
+    mappings[host] = slug;
+  }
+  return Object.freeze(mappings);
 }
 
 function secureEndpoint(value: string | undefined, code: string): void {
