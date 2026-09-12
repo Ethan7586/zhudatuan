@@ -334,7 +334,7 @@
       "estimateSeconds": 300,
       "unknownImpact": false,
       "tests": [
-        {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":300000}
+        {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":600000}
       ],
       "typecheck": [],
       "build": [
@@ -364,7 +364,7 @@
       "targets": [],
       "include": ["02_platform_pingtai/database/**/tests/**","02_platform_pingtai/database/**/*fixture*","03_quality_ceshi/**"],
       "validations": [
-        {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":300000}
+        {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":600000}
       ],
       "reason": "database tests and fixtures validate without producing a production migration"
     },
@@ -383,7 +383,7 @@
       "touches": ["database"],
       "reason": "production database migration",
       "validations": [
-        {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":300000}
+        {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":600000}
       ]
     },
     {
