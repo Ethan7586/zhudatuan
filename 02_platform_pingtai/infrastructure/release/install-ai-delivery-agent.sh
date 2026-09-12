@@ -134,6 +134,7 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
   if [[ "$mode" == runtime ]]; then
     gateway_active=/opt/sfl/nodes/hbbtzn-l1/runtime/api-gateway.Caddyfile
     gateway_unit=sfl-api-gateway@hbbtzn-l1.service
+    gateway_companion_unit=sfl-cloudflared@hbbtzn-l1.service
     [[ -f "$gateway_active" ]] || { printf 'active gateway config missing: %s\n' "$gateway_active" >&2; exit 1; }
 
     gateway_work="$(mktemp -d)"
@@ -171,8 +172,10 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
       backup_digest="$(sha256sum "$rollback_dir/api-gateway.Caddyfile" | cut -d' ' -f1)"
       old_gateway_pid="$(systemctl show --property MainPID --value "$gateway_unit")"
       [[ "$old_gateway_pid" =~ ^[1-9][0-9]*$ ]] || { printf 'gateway cutover refused: invalid current PID %s\n' "$old_gateway_pid" >&2; exit 1; }
+      old_companion_pid="$(systemctl show --property MainPID --value "$gateway_companion_unit")"
+      [[ "$old_companion_pid" =~ ^[1-9][0-9]*$ ]] || { printf 'gateway cutover refused: invalid tunnel PID %s\n' "$old_companion_pid" >&2; exit 1; }
 
-      node -e 'const p=require(process.argv[1]); for(const x of p.protectedProcesses) if(x.kind==="systemd"&&x.name!=="sfl-api-gateway@hbbtzn-l1.service") console.log(x.name)' "$policy_source" \
+      node -e 'const p=require(process.argv[1]), companions=new Set(["sfl-api-gateway@hbbtzn-l1.service","sfl-cloudflared@hbbtzn-l1.service"]); for(const x of p.protectedProcesses) if(x.kind==="systemd"&&!companions.has(x.name)) console.log(x.name)' "$policy_source" \
         | while IFS= read -r unit; do printf '%s=%s\n' "$unit" "$(systemctl show --property MainPID --value "$unit")"; done \
         > "$gateway_work/processes-before"
 
@@ -205,7 +208,12 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
         printf 'gateway cutover refused: gateway PID did not change (%s -> %s)\n' "$old_gateway_pid" "$new_gateway_pid" >&2
         exit 1
       }
-      node -e 'const p=require(process.argv[1]); for(const x of p.protectedProcesses) if(x.kind==="systemd"&&x.name!=="sfl-api-gateway@hbbtzn-l1.service") console.log(x.name)' "$policy_source" \
+      new_companion_pid="$(systemctl show --property MainPID --value "$gateway_companion_unit")"
+      [[ "$new_companion_pid" =~ ^[1-9][0-9]*$ ]] && systemctl is-active --quiet "$gateway_companion_unit" || {
+        printf 'gateway cutover refused: tunnel companion is not active with a valid PID\n' >&2
+        exit 1
+      }
+      node -e 'const p=require(process.argv[1]), companions=new Set(["sfl-api-gateway@hbbtzn-l1.service","sfl-cloudflared@hbbtzn-l1.service"]); for(const x of p.protectedProcesses) if(x.kind==="systemd"&&!companions.has(x.name)) console.log(x.name)' "$policy_source" \
         | while IFS= read -r unit; do printf '%s=%s\n' "$unit" "$(systemctl show --property MainPID --value "$unit")"; done \
         > "$gateway_work/processes-after"
       cmp -s "$gateway_work/processes-before" "$gateway_work/processes-after" || {
@@ -223,8 +231,8 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
       }
       identity_status="$(curl --noproxy '*' -ksS -o /dev/null -w '%{http_code}' --max-time 5 --resolve api.hbbtzn.com:4430:127.0.0.1 https://api.hbbtzn.com:4430/api/v1/identity/session)"
       [[ "$identity_status" == 401 ]] || { printf 'gateway Identity route returned %s instead of 401\n' "$identity_status" >&2; exit 1; }
-      printf 'Gateway runtime activated: status=success beforeDigest=sha256:%s afterDigest=sha256:%s oldPID=%s newPID=%s rollback=%s backupSha256=sha256:%s identityStatus=%s nonTargetProcesses=unchanged\n' \
-        "$before_digest" "$candidate_digest" "$old_gateway_pid" "$new_gateway_pid" "$rollback_dir" "$backup_digest" "$identity_status"
+      printf 'Gateway runtime activated: status=success beforeDigest=sha256:%s afterDigest=sha256:%s oldPID=%s newPID=%s tunnelOldPID=%s tunnelNewPID=%s rollback=%s backupSha256=sha256:%s identityStatus=%s nonTrafficProcesses=unchanged\n' \
+        "$before_digest" "$candidate_digest" "$old_gateway_pid" "$new_gateway_pid" "$old_companion_pid" "$new_companion_pid" "$rollback_dir" "$backup_digest" "$identity_status"
     fi
   fi
 fi
