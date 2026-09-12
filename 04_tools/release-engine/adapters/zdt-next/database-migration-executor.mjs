@@ -101,6 +101,7 @@ function migrationResult(status, ledgerBefore, ledgerAfter, selected, error = nu
   return {
     schema: 'ai.delivery.database-migration-result.v1',
     sourceSha,
+    executionMode: ownerExecution ? 'database-owner' : 'migration-role',
     status,
     selected,
     selectionStatus: 'determined',

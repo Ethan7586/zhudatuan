@@ -158,6 +158,19 @@ test('database migrations are independent and ordered before actual consumers', 
   }
 });
 
+test('database migration runtime changes rebuild only the migration artifact', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
+    '01_core_hexin/services/commerce/src/foundation/infrastructure/MigrationRunner.ts',
+    '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs',
+  ], nodes: ['zhudatuan-l0'] });
+  assert.deepEqual(plan.targets, ['database-migration']);
+  assert.deepEqual(plan.deploymentOrder, ['database-migration']);
+  assert.deepEqual(plan.artifacts.map((artifact) => artifact.target), ['database-migration']);
+  assert.equal(plan.actions.deployments.length, 1);
+  assert.equal(plan.actions.deployments[0].restart, 'none');
+});
+
 test('shared Commerce source expands through real entry graphs without refusal', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
