@@ -36,10 +36,19 @@ export function Component() {
   }, [partners, queryText]);
   const [selectedId, setSelectedId] = useState<string>();
   const [activeTab, setActiveTab] = useState<'overview' | 'economics'>('overview');
+  const [slowLoading, setSlowLoading] = useState(false);
   const selected = visiblePartners.find(({ id }) => id === selectedId) ?? visiblePartners[0];
   useEffect(() => {
     if (selected !== undefined && selected.id !== selectedId) setSelectedId(selected.id);
   }, [selected?.id, selectedId]);
+  useEffect(() => {
+    if (!query.isPending || query.data !== undefined) {
+      setSlowLoading(false);
+      return;
+    }
+    const timeout = window.setTimeout(() => setSlowLoading(true), 5_000);
+    return () => window.clearTimeout(timeout);
+  }, [query.data, query.isPending]);
 
   if (condition === 'denied') {
     return <ResourceState condition="denied" resourceLabel="供应链管理"
@@ -60,7 +69,7 @@ export function Component() {
       <ResourceState condition={condition === 'loading' || unavailable ? 'ready' : condition}
         {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
         {unavailable ? <SupplyUnavailable retry={() => { void query.refetch(); }} />
-          : query.data === undefined ? <SupplySkeleton /> : partners.length === 0 ? <SupplyEmpty onProducts={() => { void navigate(scopePath(context.scope, 'products')); }} /> : (
+          : query.data === undefined ? <SupplyLoadingState slow={slowLoading} /> : partners.length === 0 ? <SupplyEmpty onProducts={() => { void navigate(scopePath(context.scope, 'products')); }} /> : (
           <div className="supplysplit">
             <section className="supplylist" aria-label="供货伙伴">
               <div className="supplylisthead"><span>供货伙伴</span><span>供应渠道</span><span>商品</span></div>
@@ -99,8 +108,15 @@ function SupplyUnavailable({ retry }: Readonly<{ retry: () => void }>) {
   return <div className="supplyempty" role="status"><span aria-hidden="true">↻</span><h1>供应数据暂未同步</h1><p>页面已经可以使用，你可以立即重试本次读取。</p><button type="button" onClick={retry}>重新读取</button></div>;
 }
 
-function SupplySkeleton() {
-  return <div className="supplyskeleton" aria-label="正在读取供应链"><span /><span /><span /></div>;
+export function SupplyLoadingState({ slow }: Readonly<{ slow: boolean }>) {
+  return <div className="supplyskeleton" role="status" aria-live="polite">
+    <div className="supplyskeletonmessage">
+      <span className="supplyskeletonspinner" aria-hidden="true" />
+      <strong>{slow ? '供应数据较多，仍在读取…' : '正在读取供应链数据…'}</strong>
+      <small>{slow ? '页面没有卡死，供货伙伴和库存汇总完成后会自动显示。' : '正在汇总供货伙伴、商品、价格和库存。'}</small>
+    </div>
+    <div className="supplyskeletonrows" aria-hidden="true"><span /><span /><span /></div>
+  </div>;
 }
 
 function formatCount(value: number): string {

@@ -188,7 +188,7 @@ export function ScopeShell() {
           </div>
           <main className="workspacebody" aria-busy={navigation.state !== 'idle'}>
             {activeModule?.id === 'cockpit' ? <Outlet /> : (
-              <Suspense fallback={<span role="status">正在加载…</span>}>
+              <Suspense fallback={<WorkspaceRouteLoading moduleId={activeModule?.id} />}>
                 <LazyAccessDeniedActionsProvider actions={accessDeniedActions}><Outlet /></LazyAccessDeniedActionsProvider>
               </Suspense>
             )}
@@ -202,6 +202,15 @@ export function ScopeShell() {
       </div>
     </ConsoleContextProvider>
   );
+}
+
+export function WorkspaceRouteLoading({ moduleId }: Readonly<{ moduleId: string | undefined }>) {
+  const supplyChain = moduleId === 'supply-chain';
+  return <section className="workspacerouteloading" role="status" aria-live="polite">
+    <span className="workspacerouteloadingicon" aria-hidden="true" />
+    <strong>{supplyChain ? '正在打开供应链管理…' : '正在打开工作台…'}</strong>
+    <small>{supplyChain ? '正在准备供货伙伴、商品和库存数据' : '正在准备页面内容'}</small>
+  </section>;
 }
 
 function formatRailTime(value: string): string {

@@ -13,7 +13,7 @@ import {
   materializeConsoleModules,
   resolveConsoleRoutePresentation,
 } from '../route/ConsoleModuleRoutes';
-import { ScopeShell } from './ScopeShell';
+import { ScopeShell, WorkspaceRouteLoading } from './ScopeShell';
 
 const materializedRoutes = materializeConsoleModules(consoleModules);
 const entryOperations = consoleModules.flatMap((module) => module.routes.find(({ kind }) => kind === 'entry')?.operations ?? []);
@@ -51,6 +51,12 @@ afterEach(() => {
 });
 
 describe('ScopeShell route handles', () => {
+  it('keeps lazy supply-chain navigation visibly identified while its route chunk loads', () => {
+    render(<WorkspaceRouteLoading moduleId="supply-chain" />);
+    expect(screen.getByRole('status').textContent).toContain('正在打开供应链管理');
+    expect(screen.getByText('正在准备供货伙伴、商品和库存数据')).toBeTruthy();
+  });
+
   it('derives every entry and representative child/detail/technical owner from the deepest handle', () => {
     for (const module of consoleModules) {
       const entry = module.routes.find(({ kind }) => kind === 'entry');
