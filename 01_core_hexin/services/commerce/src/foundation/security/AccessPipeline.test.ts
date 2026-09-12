@@ -10,11 +10,13 @@ import { HttpApp } from '../interface/HttpApp';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS, registerOperationRoutes } from '../interface/OperationController';
 import { AccessPipeline } from './AccessPipeline';
 import type { Actor } from './AccessContext';
+import type { OperationAvailabilityResolver } from './OperationAvailability';
 import { PipelineAuthorizer } from './PipelineAuthorizer';
 
 const NOW = new Date('2026-08-27T00:00:00.000Z');
 const PLATFORM: Scope = Object.freeze({ kind: 'platform', id: 'platform:one', path: [] });
 const OWNER: Scope = Object.freeze({ kind: 'owner', id: 'member:one', path: [] });
+const OTHER_OWNER: Scope = Object.freeze({ kind: 'owner', id: 'member:other', path: [] });
 const MALL: Scope = Object.freeze({ kind: 'mall', id: 'mall:one', path: [{ kind: 'platform' as const, id: 'platform:one' }] });
 
 describe('AccessPipeline audience boundary', () => {
@@ -83,6 +85,63 @@ describe('AccessPipeline audience boundary', () => {
     expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'member.profile.read' }));
   });
 
+  it.each(Array.from({ length: 32 }, (_, mask) => ({
+    mask,
+    featureDeclared: Boolean(mask & 1),
+    permissionAllowed: Boolean(mask & 2),
+    scopeAllowed: Boolean(mask & 4),
+    capabilityAvailable: Boolean(mask & 8),
+    resourceReady: Boolean(mask & 16),
+  })))('fails closed for five-factor combination $mask', async (dimensions) => {
+    const fixture = accessFixture('storefront', 'member.profile.read', 'member.profile.read', OWNER, dimensions);
+    const expectedAllow = dimensions.featureDeclared && dimensions.permissionAllowed && dimensions.scopeAllowed
+      && dimensions.capabilityAvailable && dimensions.resourceReady;
+
+    if (expectedAllow) {
+      await expect(fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read')).resolves.toMatchObject({ scope: OWNER });
+      expect(fixture.decisions).toHaveBeenLastCalledWith(expect.objectContaining({ outcome: 'allow' }));
+    } else {
+      await expect(fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read')).rejects.toThrow();
+      expect(fixture.decisions).toHaveBeenLastCalledWith(expect.objectContaining({ outcome: 'deny' }));
+    }
+  });
+
+  it.each([
+    [{ featureDeclared: false }, 'FEATURE_NOT_DECLARED'],
+    [{ permissionAllowed: false }, 'PERMISSION_DENIED'],
+    [{ scopeAllowed: false }, 'SCOPE_DENIED'],
+    [{ capabilityAvailable: false }, 'CAPABILITY_DENIED'],
+    [{ resourceReady: false }, 'RESOURCE_NOT_READY'],
+  ] as const)('records the first unmet authorization dimension', async (overrides, reason) => {
+    const fixture = accessFixture('storefront', 'member.profile.read', 'member.profile.read', OWNER, {
+      featureDeclared: true,
+      permissionAllowed: true,
+      scopeAllowed: true,
+      capabilityAvailable: true,
+      resourceReady: true,
+      ...overrides,
+    });
+
+    let rejected: unknown;
+    try {
+      await fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read');
+    } catch (cause) {
+      rejected = cause;
+    }
+    expect(rejected).toMatchObject({ code: reason });
+    expect(fixture.decisions).toHaveBeenLastCalledWith(expect.objectContaining({ outcome: 'deny', reason }));
+  });
+
+  it('does not probe resources before permission, scope, and capability pass', async () => {
+    const fixture = accessFixture('storefront', 'member.profile.read', 'member.profile.read', OWNER, {
+      ...ALL_DIMENSIONS,
+      capabilityAvailable: false,
+    });
+
+    await expect(fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read')).rejects.toThrow('CAPABILITY_DENIED');
+    expect(fixture.availability.resourceReady).not.toHaveBeenCalled();
+  });
+
   it('passes one authorized mall to a handler even when the request body names another mall', async () => {
     const fixture = accessFixture('console', 'catalog.products.create', 'catalog.product.manage', MALL);
     const invoke = vi.fn(async () => ({ status: 201, body: { created: true } }) as const);
@@ -119,27 +178,54 @@ describe('AccessPipeline audience boundary', () => {
   });
 });
 
-function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope) {
+interface AccessDimensions {
+  readonly featureDeclared: boolean;
+  readonly permissionAllowed: boolean;
+  readonly scopeAllowed: boolean;
+  readonly capabilityAvailable: boolean;
+  readonly resourceReady: boolean;
+}
+
+const ALL_DIMENSIONS: AccessDimensions = Object.freeze({
+  featureDeclared: true,
+  permissionAllowed: true,
+  scopeAllowed: true,
+  capabilityAvailable: true,
+  resourceReady: true,
+});
+
+function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope,
+  dimensions: AccessDimensions = ALL_DIMENSIONS) {
   const actor = Object.freeze({ id: 'actor:one', account: 'account:one', realm: 'realm:l0', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: { level: 1 } });
   const membershipAccess: MembershipAccess = Object.freeze({
     id: actor.membership,
     active: true,
     accessVersion: actor.accessVersion,
     denies: [],
-    grants: [{ scope, permissions: [permission], effective: '2026-08-26T00:00:00.000Z', expires: null }],
+    grants: dimensions.permissionAllowed
+      ? [{ scope, permissions: [permission], effective: '2026-08-26T00:00:00.000Z', expires: null }]
+      : [],
   });
   const membership = vi.fn(async () => membershipAccess);
   const risk = vi.fn(async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) as const);
   const decisions = vi.fn(async () => undefined);
+  const availability = {
+    resolveFeature: vi.fn(async () => ({
+      featureDeclared: dimensions.featureDeclared,
+      requiredFeatures: ['identity'],
+    })),
+    resourceReady: vi.fn(async () => dimensions.resourceReady),
+  } satisfies OperationAvailabilityResolver;
   const pipeline = new AccessPipeline(
     { resolve: vi.fn(async () => actor) },
     { resolve: membership },
     { resolve: vi.fn(async () => actor.accessVersion) },
-    { resolve: vi.fn(async () => scope) },
-    { resolve: vi.fn(async () => [operation]) },
+    { resolve: vi.fn(async () => dimensions.scopeAllowed ? scope : OTHER_OWNER) },
+    { resolve: vi.fn(async () => dimensions.capabilityAvailable ? [operation] : []) },
+    availability,
     { now: () => NOW },
     { evaluate: risk },
     { append: decisions }
   );
-  return { pipeline, membership, risk, decisions };
+  return { pipeline, membership, risk, decisions, availability };
 }

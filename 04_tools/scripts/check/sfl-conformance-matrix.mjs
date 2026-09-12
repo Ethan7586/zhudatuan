@@ -107,7 +107,7 @@ const jobsRuntime = await text('01_core_hexin', 'services', 'commerce', 'src', '
 assert.match(jobsRuntime, /createPaymentJobs\([^\n]+manifest\.data_scope_ref\.ref\)/);
 for (const runtime of ['IdentityRegistrationApiRuntime.ts', 'PurchaseApiRuntime.ts', 'PaymentWebhookApiRuntime.ts']) {
   const source = await text('01_core_hexin', 'services', 'commerce', 'src', 'bootstrap', runtime);
-  assert.match(source, /singleNodeManifestRegistry\(manifest\)/);
+  assert.match(source, /runtimeNodeManifestRegistry\(manifest\)/);
   assert.match(source, /NODE_RELEASE_POINTER_REF/);
 }
 

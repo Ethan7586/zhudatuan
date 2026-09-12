@@ -20,6 +20,7 @@ import { SECRET_STORE, WorkloadSecretStore } from '../foundation/infrastructure/
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { NodeOperationAvailabilityResolver } from '../foundation/security/OperationAvailability';
 import { requireActorNodeContext } from '../foundation/security/AccessContext';
 import { NodeBoundScopeResolver } from '../foundation/security/NodeBoundScopeResolver';
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
@@ -97,6 +98,7 @@ export async function createCatalogOperatorApiRuntime(
     new NodeBoundScopeResolver(new PgScopeResolver(pool),
       manifest.signed_level === 'L0' ? (actor) => requireActorNodeContext(actor).scope.ref : manifest.data_scope_ref.ref),
     new PgCapabilityResolver(pool),
+    new NodeOperationAvailabilityResolver(),
     new SystemClock(),
     risk,
     new PgDecisionSink(pool),

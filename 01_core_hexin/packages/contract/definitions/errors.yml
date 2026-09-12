@@ -740,6 +740,8 @@ errors:
     status: 400
   - code: EXTERNAL_OBJECT_DUPLICATE
     status: 409
+  - code: FEATURE_NOT_DECLARED
+    status: 403
   - code: FEDERATED_MEMBERSHIP_ORPHAN
     status: 500
   - code: FEDERATED_PRINCIPAL_ORPHAN
@@ -2154,6 +2156,8 @@ errors:
     status: 400
   - code: RESOURCE_NOT_FOUND
     status: 404
+  - code: RESOURCE_NOT_READY
+    status: 503
   - code: RESOURCE_RESULT_ID_MISSING
     status: 400
   - code: RESOURCE_SCOPE_NOT_FOUND

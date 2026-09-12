@@ -1,0 +1,764 @@
+{
+  "schema_version": "sfl.unified-node-experiment-matrix.v1",
+  "version_name": "SFL 统一节点模型实验准备矩阵 v1.0",
+  "generated_at": "2026-09-12",
+  "baseline": {
+    "branch": "origin/zdt-next",
+    "source_sha": "cc8ab201bd2260525511dd65ab7a58ef7d57ab48"
+  },
+  "authority": [
+    "LAW.md",
+    "05_docs_ziliao/docs_wendang/governance/standards/01-雍彻科技治理标准.md",
+    "05_docs_ziliao/docs_wendang/governance/standards/02-SFL核心标准.md",
+    "05_docs_ziliao/docs_wendang/governance/standards/03-SFL安全与运行完整性标准.md",
+    "05_docs_ziliao/docs_wendang/governance/standards/04-主打团标准.md",
+    "05_docs_ziliao/docs_wendang/governance/standards/05-疆域标准.md"
+  ],
+  "execution_policy": {
+    "execution_result": "NOT_EXECUTED",
+    "production_execution_in_this_task": false,
+    "result_rule": "每项只有在实际执行且全部 PASS 条件成立时才能记录 PASS；任一 FAIL 条件命中即记录 FAIL；未执行保持 NOT_EXECUTED，不从既有单元测试推断生产结果。",
+    "forbidden_inputs": [
+      "真实秘密明文",
+      "固定生产密码",
+      "伪造收据",
+      "节点专属源码或业务分支",
+      "要求全部 Sovereign 节点瞬时同时升级"
+    ]
+  },
+  "readiness_values": [
+    "READY_LOCAL",
+    "READY_STAGING",
+    "WAITING_PRODUCTION_INPUT",
+    "BLOCKED"
+  ],
+  "readiness_summary": {
+    "READY_LOCAL": 9,
+    "READY_STAGING": 3,
+    "WAITING_PRODUCTION_INPUT": 0,
+    "BLOCKED": 0
+  },
+  "experiments": [
+    {
+      "id": "E01",
+      "目标": "证明一套共享节点模型覆盖横向三个同级节点，节点差异只来自节点、身份、范围、能力和资源数据。",
+      "对象_节点矩阵": {
+        "operating_lines": ["line:experiment:horizontal"],
+        "parent_nodes": ["node:experiment:horizontal:parent"],
+        "sample_nodes": [
+          {"node_ref": "H-A", "signed_level": "L1", "sovereignty_tier": "hosted"},
+          {"node_ref": "H-B", "signed_level": "L1", "sovereignty_tier": "hosted"},
+          {"node_ref": "H-C", "signed_level": "L1", "sovereignty_tier": "sovereign"}
+        ]
+      },
+      "前置条件": [
+        "空白隔离数据库已应用节点、关系、NodeContext、Membership、Scope 和 Capability 迁移",
+        "同一测试源码 SHA 和同一共享制品标识可用",
+        "三个节点使用不同 node_id、Realm、Membership 和 Scope"
+      ],
+      "输入": {
+        "topology": "同 line_id、同 parent_node_id、同 signed_level 的三个节点行",
+        "artifact": "同一 source_sha、build_id 和 immutable_artifact_digest 的测试引用",
+        "requests": "对三个节点执行同一组只读与可回滚写 Operation"
+      },
+      "执行阶段": [
+        "建立父节点与三个同级节点",
+        "分别建立 Realm、Membership、Permission、Scope 和 Capability",
+        "用同一服务入口代码解析三个 NodeContext",
+        "执行相同 Operation 并直查落库归属",
+        "比较源码、构建和节点专属文件计数"
+      ],
+      "观测值": [
+        "每次解析出的 line_id、node_id、parent_node_id、signed_level、Realm 和 Membership",
+        "允许与拒绝的 Operation 集合",
+        "业务写入的 node_id、mall_id、membership_id 和 scope_id",
+        "source_sha、build_id、artifact_digest、build_count、source_copy_count、node_specific_build_count"
+      ],
+      "判定边界": {
+        "PASS": [
+          "三个节点均由同一 Node/Relation/Context 模型解析",
+          "同一输入 Operation 按各自身份和 Scope 得到预期且隔离的结果",
+          "所有写入只落到目标节点和目标 Scope",
+          "共享 source_sha/build_id/artifact_digest 唯一，build_count=1，源码复制与节点专属构建均为0"
+        ],
+        "FAIL": [
+          "任一节点需要另一份模型、源码副本、业务分支或节点专属构建",
+          "任一请求解析到其他节点、Realm、Membership 或 Scope",
+          "同级差异由节点名称硬编码而非权威数据产生",
+          "出现第二个共享代码构建或第二个不等价制品身份"
+        ],
+        "exhaustiveness": "全部 PASS 条件同时成立才 PASS；任一 FAIL 条件命中即 FAIL；未执行或观测缺失保持 NOT_EXECUTED。"
+      },
+      "证据产物": [
+        "horizontal-topology.json",
+        "horizontal-node-contexts.json",
+        "horizontal-operation-results.json",
+        "horizontal-database-diff.json",
+        "horizontal-artifact-identity.json"
+      ],
+      "回滚方式": "回滚隔离数据库事务；删除临时 Sovereign 候选指针，不改变任何生产指针。",
+      "readiness": "READY_LOCAL",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E02",
+      "目标": "证明同一节点模型覆盖一条 L0—L11 纵向链，父边、级号和关系版本是数据而非节点类型。",
+      "对象_节点矩阵": {
+        "operating_lines": ["line:experiment:vertical"],
+        "sample_nodes": ["V-L0", "V-L1", "V-L2", "V-L3", "V-L4", "V-L5", "V-L6", "V-L7", "V-L8", "V-L9", "V-L10", "V-L11"],
+        "relationship": "每级唯一父节点为前一级；L0 无父节点"
+      },
+      "前置条件": [
+        "隔离数据库已应用 node、noderelation、nodeclosure 和注册递进迁移",
+        "L0—L11 的测试 NodeProfile、Membership 与 Scope 数据已声明",
+        "不定义或生成 L12"
+      ],
+      "输入": {
+        "chain": "L0 至 L11 的 12 个节点和 11 条父边",
+        "relation_versions": "初始版本1，并选择一个非交易节点做关系换版",
+        "operations": ["resolve self", "resolve ancestors", "resolve descendants", "resolve subtree"]
+      },
+      "执行阶段": [
+        "原子创建纵向链",
+        "逐节点解析 NodeContext",
+        "校验祖先、后代和子树闭包",
+        "换版一条父边并保留旧版本",
+        "验证 L11 不产生 L12"
+      ],
+      "观测值": [
+        "每级 parent_node_id、signed_level、relation_version、effective_at、superseded_at",
+        "每级 closure 深度和同线约束",
+        "换版前后原父边、当前父边和历史交易路径快照",
+        "L12 记录计数"
+      ],
+      "判定边界": {
+        "PASS": [
+          "12 个节点使用同一表、类型和解析路径",
+          "每个生效时段每节点只有一个父级且全部父边在同一 line_id",
+          "闭包结果与链长度完全一致，换版保留旧父边",
+          "L11 边界结果明确且 L12 记录为0"
+        ],
+        "FAIL": [
+          "任一级使用专属模型、生成器或代码路径",
+          "出现跳级、双父、跨线借链、错误闭包或覆盖历史父边",
+          "级号自动授予管理员权限或主权资源",
+          "生成任何 L12 业务事实"
+        ],
+        "exhaustiveness": "全部 PASS 条件同时成立才 PASS；任一 FAIL 条件命中即 FAIL；缺任一级观测即不判 PASS。"
+      },
+      "证据产物": [
+        "vertical-chain.sql.json",
+        "vertical-context-matrix.json",
+        "vertical-closure-matrix.json",
+        "vertical-relation-version-diff.json"
+      ],
+      "回滚方式": "整个实验在隔离数据库中执行并最终 ROLLBACK；关系换版不进入共享环境。",
+      "readiness": "READY_LOCAL",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E03",
+      "目标": "穷举功能可见性与可执行性等于 Operation 功能声明、Permission、Scope、Capability 和资源就绪状态的交集。",
+      "对象_节点矩阵": {
+        "nodes": ["operating_mall Hosted", "operating_mall Sovereign", "consumer Hosted"],
+        "dimensions": ["feature_declared", "permission_allowed", "scope_allowed", "capability_available", "resource_ready"],
+        "combinations": 32
+      },
+      "前置条件": [
+        "选择一个无财务副作用的读 Operation 和一个可事务回滚的写 Operation",
+        "前端可见性探针、API 授权探针、任务调度探针和 Provider 健康探针可记录同一 correlation_id",
+        "五个布尔维度均可独立控制"
+      ],
+      "输入": {
+        "truth_table": "2^5=32 个组合，每个组合分别执行页面、API、任务和服务探针",
+        "identity": "固定 Principal，在三个节点使用独立 Membership",
+        "resource_failure": "仅使用隔离 stub 或 staging provider，不中断生产资源"
+      },
+      "执行阶段": [
+        "生成 32 行预期矩阵",
+        "逐行建立服务端 Session、Membership 和 NodeContext",
+        "执行页面/API/任务/服务四类探针",
+        "直查授权决策、业务写入和 Provider 调用",
+        "对比四类表面的判定一致性"
+      ],
+      "观测值": [
+        "页面元素是否可见或可操作",
+        "API allow/deny 与拒绝原因",
+        "任务是否入队或执行",
+        "Provider 是否被选择和调用",
+        "DecisionSink、Outbox、数据库写入和 correlation_id"
+      ],
+      "判定边界": {
+        "PASS": [
+          "只有五个维度全为 true 的组合在对应表面可用",
+          "其余31种组合均失败关闭，且拒绝原因对应首个不满足维度",
+          "页面、API、任务和服务结果一致",
+          "被拒绝组合没有业务写入、Outbox 或 Provider 副作用"
+        ],
+        "FAIL": [
+          "任一维度为 false 时仍可见、可调用、可入队或可运行",
+          "五维全 true 时被节点名称、裸级号或品牌特例错误拒绝",
+          "四类表面判定不一致",
+          "拒绝后留下业务副作用"
+        ],
+        "exhaustiveness": "32个组合和四类表面必须全部有结果；任一缺行、错判或副作用即 FAIL。"
+      },
+      "证据产物": [
+        "capability-truth-table.expected.json",
+        "capability-truth-table.observed.json",
+        "authorization-decisions.jsonl",
+        "side-effect-diff.json"
+      ],
+      "回滚方式": "撤销临时 Membership Grant、Capability 和资源 stub；写 Operation 使用事务回滚。",
+      "readiness": "READY_LOCAL",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E04",
+      "目标": "证明同一凭据跨 Realm 只用于发现身份，不合并 Account、Membership、Session、父链、Scope、权限或资产。",
+      "对象_节点矩阵": {
+        "credential_ref": "credential:experiment:shared",
+        "realms": ["realm:experiment:A", "realm:experiment:B", "realm:experiment:C"],
+        "memberships": ["A-L6 storefront", "B-L8 storefront", "C operator"]
+      },
+      "前置条件": [
+        "隔离数据库支持同凭据多 Realm 账号绑定",
+        "三个 Realm 有不同 NodeContext、父链、Scope、权限和测试资产",
+        "切换 Realm 必须重新签发目标会话"
+      ],
+      "输入": {
+        "credential": "一次测试凭据引用，不存储明文",
+        "positive_cases": "分别登录三个 Realm 并读取本人资产",
+        "negative_cases": "复用来源 Session、Membership、Scope 和节点身份访问另一个 Realm"
+      },
+      "执行阶段": [
+        "创建同凭据三 Realm 身份",
+        "分别登录并记录活动 Membership",
+        "切换 Realm 后检查新会话和旧权限残留",
+        "执行跨 Realm 读写负向用例",
+        "直查账号、会话、资产和审计归属"
+      ],
+      "观测值": [
+        "realm_id、account_id、principal_id、membership_id、session_id",
+        "parent_node_id、signed_level、scope 和 permissions",
+        "本人资产查询结果和跨 Realm 写入计数",
+        "旧 Session 撤销或失效结果"
+      ],
+      "判定边界": {
+        "PASS": [
+          "三个 Realm 的 Account、Membership、Session 和业务资产均独立",
+          "每次请求只有一个活动 Membership",
+          "切换后来源权限零残留",
+          "所有跨 Realm 负向读写均拒绝且不落库"
+        ],
+        "FAIL": [
+          "按手机号或凭据合并 Account、Membership、父链、Scope 或资产",
+          "一个请求同时激活多 Membership",
+          "来源 Session 或权限在目标 Realm 继续生效",
+          "跨 Realm 负向请求读到数据或产生写入"
+        ],
+        "exhaustiveness": "三个 Realm 的正向、双向跨 Realm 和切换后残留用例必须全部覆盖；任一串线即 FAIL。"
+      },
+      "证据产物": [
+        "multi-realm-identity-map.json",
+        "multi-realm-session-transitions.json",
+        "multi-realm-negative-results.json",
+        "multi-realm-database-diff.json"
+      ],
+      "回滚方式": "删除隔离 Realm 夹具或回滚数据库事务；销毁所有实验 Session。",
+      "readiness": "READY_LOCAL",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E05",
+      "目标": "证明 Hosted 节点新增、停用和授权只改变数据事实，对共享内核变更和节点生命周期均无逐节点基础设施扇出。",
+      "对象_节点矩阵": {
+        "host_sovereign_node": "S-HOST",
+        "hosted_nodes": ["H-NEW-1", "H-NEW-2", "H-NEW-3"],
+        "operations": ["create", "suspend", "reactivate", "grant", "revoke"]
+      },
+      "前置条件": [
+        "共享宿主运行健康且使用隔离测试数据范围",
+        "数据库审计、Outbox 和基础设施调用计数器可观测",
+        "没有为 Hosted 节点预创建 Node Manifest、端口、进程或发布指针"
+      ],
+      "输入": {
+        "node_facts": "三个 Hosted 节点及独立 Membership/Scope/Capability",
+        "lifecycle_changes": "新增、停用、恢复、授权、撤销",
+        "shared_kernel_change": "一次无业务副作用的版本标记变更，由宿主单次切换"
+      },
+      "执行阶段": [
+        "记录宿主与所有 Hosted 节点前态",
+        "执行五类数据操作",
+        "切换一次共享宿主候选版本",
+        "逐节点验证可见性与拒绝结果",
+        "统计数据库写入、构建、部署、重启、端口和进程变化"
+      ],
+      "观测值": [
+        "node/relation/membership/scope/capability/audit/outbox 数据差异",
+        "Host 基础设施 API 调用数",
+        "build_count、deploy_count、restart_count",
+        "Hosted 专属 manifest/pointer/process/port 数",
+        "停用和撤销后的访问结果"
+      ],
+      "判定边界": {
+        "PASS": [
+          "新增、停用、恢复、授权和撤销只产生预期数据库事实、审计与Outbox",
+          "Hosted 专属 manifest、pointer、process、port 均为0",
+          "共享内核变更只构建一次并只切换宿主一次",
+          "Hosted 节点数量增加不增加逐节点部署或重启次数"
+        ],
+        "FAIL": [
+          "任一 Hosted 生命周期操作调用 DNS、Tunnel、systemd、Caddy、构建或发布",
+          "为 Hosted 节点创建独立进程、端口、Manifest 或指针",
+          "停用或撤销后仍可访问",
+          "共享变更按 Hosted 节点重复构建、部署或重启"
+        ],
+        "exhaustiveness": "五类生命周期操作和一次共享变更全部满足 PASS 才通过；任一基础设施调用或访问残留即 FAIL。"
+      },
+      "证据产物": [
+        "hosted-before-after.sql.json",
+        "hosted-audit-outbox.jsonl",
+        "hosted-infrastructure-call-counts.json",
+        "hosted-shared-release-receipt.json"
+      ],
+      "回滚方式": "回滚数据事务和宿主测试指针；不得逐 Hosted 节点回滚。",
+      "readiness": "READY_LOCAL",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E06",
+      "目标": "证明多个 Sovereign 节点使用同源制品时可渐进发布、只回滚一个目标节点，并保持其他节点完全不变。",
+      "对象_节点矩阵": {
+        "sovereign_nodes": ["S-A control", "S-B canary", "S-C control"],
+        "artifacts": ["artifact:A previous", "artifact:B candidate from same shared code line"],
+        "sequence": "S-B A→B→A；S-A 与 S-C 始终保持 A"
+      },
+      "前置条件": [
+        "staging 有三个隔离 Sovereign 节点和独立发布指针",
+        "制品 A/B 均有 source_sha、tree_digest、manifest_digest 和归档摘要",
+        "每节点健康、四流历史摘要和指针前态已记录",
+        "目标清单只包含 S-B"
+      ],
+      "输入": {
+        "candidate": "一次共享代码构建产生的不可变制品 B",
+        "target": "仅 S-B",
+        "rollback_target": "S-B 的上一不可变制品 A",
+        "traffic": "无真实支付副作用的 staging 健康与历史查询"
+      },
+      "执行阶段": [
+        "记录三节点指针、进程、健康和数据摘要",
+        "仅将 S-B 指针推进到 B",
+        "验证 S-B 新版本与三节点历史一致性",
+        "仅回滚 S-B 到 A",
+        "比较 S-A/S-C 全程前后状态"
+      ],
+      "观测值": [
+        "每节点 source_sha、artifact_digest、pointer、started_at 和 health",
+        "S-B 激活与回滚收据",
+        "S-A/S-C 指针、进程、配置和数据摘要差异",
+        "订单、商品、现金、财务历史查询摘要"
+      ],
+      "判定边界": {
+        "PASS": [
+          "B 只有一个共享构建身份且可被三个 Sovereign 节点选择",
+          "仅 S-B 从 A 推进到 B，S-A/S-C 不变",
+          "仅 S-B 回滚到 A 且服务恢复健康",
+          "升级和回滚前后四流历史均未被重算或覆盖"
+        ],
+        "FAIL": [
+          "为 S-B 产生节点专属源码、业务分支或构建",
+          "S-B 切换影响 S-A/S-C 的指针、进程、配置或数据",
+          "系统要求三个节点同时升级才能工作",
+          "回滚后服务不健康或历史事实改变"
+        ],
+        "exhaustiveness": "推进、运行、回滚和两个非目标节点隔离四段均须有收据；任一缺证据不判 PASS。"
+      },
+      "证据产物": [
+        "sovereign-artifact-manifest.json",
+        "sovereign-pointer-timeline.json",
+        "sovereign-canary-activation-receipt.json",
+        "sovereign-single-node-rollback-receipt.json",
+        "sovereign-nontarget-diff.json",
+        "sovereign-four-flow-history-digest.json"
+      ],
+      "回滚方式": "仅把 S-B 指针恢复到已验证的 A；不改变 S-A/S-C，不删除不可变制品。",
+      "readiness": "READY_STAGING",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E07",
+      "目标": "证明 Hosted 会员在原节点开店，并按需升级为 Sovereign 时原身份、经营线、父边、级号和历史血缘不变。",
+      "对象_节点矩阵": {
+        "sample_nodes": ["L3 Hosted consumer", "L6 Hosted consumer", "L8 Hosted consumer", "L11 Hosted consumer"],
+        "transitions": ["consumer Hosted → operating_mall Hosted", "operating_mall Hosted → operating_mall Sovereign"]
+      },
+      "前置条件": [
+        "staging 隔离 Realm 含四个不同级别会员节点",
+        "每节点开店前身份、父链和历史摘要已记录",
+        "Sovereign 资源全部使用非生产引用并支持删除或回退"
+      ],
+      "输入": {
+        "mall_opening": "商城名和经营主体名等业务配置",
+        "sovereign_upgrade": "staging 域名、资源、secret/payment/callback 引用，不含秘密明文",
+        "idempotency": "每个节点独立业务键"
+      },
+      "执行阶段": [
+        "记录四节点开店前快照",
+        "执行 Hosted 开店并检查基础设施调用为0",
+        "选择两个节点执行 Sovereign staging 升级",
+        "验证升级状态机、资源就绪和独立指针",
+        "对比开店与升级前后血缘和历史"
+      ],
+      "观测值": [
+        "operating_node_id、line_id、realm_id、parent_node_id、original_parent_node_id、signed_level、membership_id",
+        "mall_id、node_profile、sovereignty_tier、host_sovereign_node_id",
+        "关系版本、能力版本、基础设施调用数",
+        "升级资源、Manifest 和发布指针引用"
+      ],
+      "判定边界": {
+        "PASS": [
+          "Hosted 开店仅升级原节点能力并新增 mall_id，所有身份与血缘字段不变",
+          "Hosted 开店基础设施调用为0",
+          "Sovereign 升级仍使用原节点且只改变主权与必要资源版本",
+          "不同级别节点使用同一操作与数据模型，历史交易和父边不丢失"
+        ],
+        "FAIL": [
+          "开店或升级创建无关新血缘、重置 Membership 或改变 signed_level",
+          "Hosted 开店触发基础设施或发布",
+          "升级复制源码、产生节点专属构建或要求其他 Sovereign 同时切换",
+          "原关系或历史交易被覆盖"
+        ],
+        "exhaustiveness": "四个级别的 Hosted 开店和两个 Sovereign 升级样本全部满足才 PASS；任一身份/血缘变化即 FAIL。"
+      },
+      "证据产物": [
+        "mall-opening-lineage-before-after.json",
+        "mall-opening-infra-counts.json",
+        "sovereign-upgrade-state-timeline.json",
+        "sovereign-upgrade-manifest-pointers.json"
+      ],
+      "回滚方式": "开店数据库步骤在隔离数据中回滚；Sovereign 升级恢复 Hosted 关系版本并释放 staging 资源。",
+      "readiness": "READY_STAGING",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E08",
+      "目标": "证明多供应商经营路径、四流正向事实和部分退款按成交时原商品行与供应商经济腿逆向回放。",
+      "对象_节点矩阵": {
+        "operating_node": "MALL-L1",
+        "participant_node": "MEMBER-L7",
+        "supplier_paths": ["supplier-A own", "supplier-B upstream", "supplier-C signed supply-side"],
+        "order_lines": 3
+      },
+      "前置条件": [
+        "空白 PostgreSQL 17 数据库已应用多供应商与四流迁移",
+        "三个供应关系、合同、SKU、库存和结算责任均独立",
+        "所有金额使用测试最小货币单位"
+      ],
+      "输入": {
+        "order": "3 商品行、3 供应商腿、确定折扣与总额",
+        "route": "含 sequence_no、signed_level、supplier_id、contract_id 和 route_version",
+        "after_sale": "选择一条腿做部分退款，再做可控全额逆向",
+        "relationship_change": "成交后新增供应关系和合同版本"
+      },
+      "执行阶段": [
+        "报价并下单",
+        "预占库存、记录支付和财务正向事实",
+        "换版供应关系与合同",
+        "对选中行执行部分退款和库存恢复",
+        "按原 sequence_no 逆序检查退款、回补和财务冲销"
+      ],
+      "观测值": [
+        "主订单、商品行、供应商经济腿和金额守恒",
+        "库存预占/扣减/释放/回补",
+        "支付分配、退款分配和幂等键",
+        "财务正向与逆向事实",
+        "成交路径和当前关系版本差异"
+      ],
+      "判定边界": {
+        "PASS": [
+          "三个商品行形成三个独立供应商经济腿且总额守恒",
+          "四流分别保有权威事实并能按 transaction/correlation/route 对齐",
+          "部分退款只影响选中行和对应供应商腿",
+          "逆向严格按原路径回放，关系换版后不重算历史"
+        ],
+        "FAIL": [
+          "供应商范围、合同、履约或结算责任合并串线",
+          "金额不守恒、重复退款、库存错回或财务无法对平",
+          "一腿售后错误逆转其他合法经济腿",
+          "使用当前关系覆盖或重算成交时路径"
+        ],
+        "exhaustiveness": "订单、商品、现金、财务四流及三条供应腿均须收口；任一腿或任一流不一致即 FAIL。"
+      },
+      "证据产物": [
+        "supplier-route-snapshot.json",
+        "four-flow-forward-facts.json",
+        "partial-refund-replay.json",
+        "inventory-and-finance-reconciliation.json"
+      ],
+      "回滚方式": "实验运行于一次性 PostgreSQL 数据库；销毁数据库实例，不调用真实支付渠道。",
+      "readiness": "READY_LOCAL",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E09",
+      "目标": "证明关键写在相同意图幂等、五路并发、中断续跑和节点独立恢复下只形成一次权威结果。",
+      "对象_节点矩阵": {
+        "nodes": ["Hosted-A", "Hosted-B", "Sovereign-C"],
+        "operations": ["register member", "open mall", "upgrade sovereign", "place order", "refund"],
+        "concurrency": 5
+      },
+      "前置条件": [
+        "每项 Operation 已登记业务编号、幂等键、状态转换、事务边界、Outbox 和审计关联",
+        "可在多个固定断点注入中断",
+        "所有副作用均为本地测试或 staging 可回滚资源"
+      ],
+      "输入": {
+        "same_intent": "同一幂等键和同一请求 Hash 五路并发",
+        "conflicting_intent": "同一幂等键但不同请求 Hash",
+        "interruptions": ["after identity", "after configuration", "after outbox", "during provider apply"],
+        "isolation": "只中断或恢复一个目标节点"
+      },
+      "执行阶段": [
+        "对每项关键写执行五路相同意图并发",
+        "执行同键异请求冲突",
+        "逐断点注入中断并检查半套事实",
+        "重试并续跑到终态",
+        "回滚和恢复单个节点并核对非目标"
+      ],
+      "观测值": [
+        "业务结果行数、业务编号、请求 Hash、幂等回放标志",
+        "状态机版本、Outbox 和审计条数",
+        "中断前后数据库和 Provider 收据",
+        "目标与非目标节点状态摘要"
+      ],
+      "判定边界": {
+        "PASS": [
+          "五路相同意图只产生一个权威结果并返回同一业务编号",
+          "同键异请求被拒绝且不改变已有结果",
+          "任一中断不留下不可恢复半套事实，重试从已确认步骤继续",
+          "单节点恢复不改变其他节点"
+        ],
+        "FAIL": [
+          "出现重复订单、扣款、库存占用、退款、Membership 或 Outbox",
+          "同键异请求覆盖原结果",
+          "中断留下不可识别或不可恢复的半套事实",
+          "恢复一个节点改变其他节点状态"
+        ],
+        "exhaustiveness": "每项 Operation 的同意图、冲突、中断、续跑和隔离五类用例都必须通过；任一重复或半套写入即 FAIL。"
+      },
+      "证据产物": [
+        "idempotency-five-way-results.json",
+        "idempotency-conflict-results.json",
+        "interruption-state-diffs.json",
+        "recovery-receipts.json",
+        "nontarget-isolation-diff.json"
+      ],
+      "回滚方式": "数据库用一次性实例或事务回滚；staging Provider 按记录的反向步骤补偿单个目标。",
+      "readiness": "READY_LOCAL",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E10",
+      "目标": "对共享内核做一次无业务副作用的可观测版本变更，只构建一次，并验证所有样本节点按身份、权限、范围、能力和资源状态得到正确功能；不要求 Sovereign 同时切换。",
+      "对象_节点矩阵": {
+        "hosted": ["H-A", "H-B", "H-C"],
+        "sovereign": ["S-A first canary", "S-B later", "S-C remains previous"],
+        "identities": ["storefront member", "operator", "administrator with bounded scope"]
+      },
+      "前置条件": [
+        "staging 有一组 Hosted 宿主和三个独立 Sovereign 节点",
+        "可观测版本标记不改变交易、价格、权限或数据 Schema",
+        "一次构建可生成可追溯 source_sha、build_id 和不可变制品摘要",
+        "各节点当前指针、NodeContext、Membership 和功能集合已快照"
+      ],
+      "输入": {
+        "change": "共享内核增加只读 build marker/health metadata",
+        "build": "从一个完整 Git SHA 触发一次构建",
+        "rollout": "Hosted 宿主一次切换；S-A先切换，S-B后切换，S-C保留旧版本",
+        "feature_probe": "无业务副作用的页面/API/任务/服务探针"
+      },
+      "执行阶段": [
+        "提交并锁定唯一源码 SHA",
+        "执行一次构建并冻结不可变制品",
+        "切换 Hosted 宿主并验证三个 Hosted 节点",
+        "依次切换 S-A 和 S-B，保持 S-C 不变",
+        "按身份/权限/Scope/Capability/资源就绪执行功能探针",
+        "回滚 S-B 并再次检查全部非目标"
+      ],
+      "观测值": [
+        "构建调用次数、source_sha、build_id、artifact/tree/manifest digest",
+        "每节点发布指针和 build marker 时间线",
+        "每身份预期/实际功能集合",
+        "页面/API/任务/服务一致性",
+        "回滚收据和非目标节点差异"
+      ],
+      "判定边界": {
+        "PASS": [
+          "共享变更只触发一次构建并形成一个不可变制品身份",
+          "三个 Hosted 节点随宿主一次切换生效且无逐节点操作",
+          "S-A/S-B 可分时切换，S-C 可继续运行旧指针",
+          "每个节点的功能集合严格等于身份、Permission、Scope、Capability 和资源就绪交集",
+          "S-B 单节点回滚后其他节点不变"
+        ],
+        "FAIL": [
+          "出现节点专属源码、业务分支、重复构建或不等价制品",
+          "Hosted 需要逐节点切换",
+          "系统要求所有 Sovereign 同时升级",
+          "任一功能越权显示/执行或合法功能被节点特例拒绝",
+          "单节点回滚影响其他节点"
+        ],
+        "exhaustiveness": "构建、Hosted、三个 Sovereign、三类身份、四类表面和回滚均须完整观测；任何缺口不判 PASS。"
+      },
+      "证据产物": [
+        "shared-change.patch-id.txt",
+        "single-build-provenance.json",
+        "immutable-artifact-manifest.json",
+        "node-pointer-timeline.json",
+        "identity-feature-matrix.expected.json",
+        "identity-feature-matrix.observed.json",
+        "single-node-rollback-and-isolation.json"
+      ],
+      "回滚方式": "Hosted 宿主恢复上一指针；Sovereign 仅回滚被选目标。保留不可变制品和收据用于审计。",
+      "readiness": "READY_STAGING",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E11",
+      "目标": "证明节点数量增长时业务代码量、共享构建次数和 Hosted 逐节点操作数不增长。",
+      "对象_节点矩阵": {
+        "hosted_scales": [1, 10, 100, 1000],
+        "sovereign_sample": 3,
+        "topologies": ["同级横向", "多线横向", "L0-L11纵向混合"]
+      },
+      "前置条件": [
+        "使用一次性数据库和可重复数据生成器",
+        "源码树文件计数、构建调用、基础设施调用和数据库耗时可观测",
+        "不为规模样本生成真实 DNS、支付或外部资源"
+      ],
+      "输入": {
+        "node_counts": [1, 10, 100, 1000],
+        "shared_change": "一次无业务副作用版本标记",
+        "workload": "每节点固定数量的 NodeContext、Scope 和只读 Operation 请求"
+      },
+      "执行阶段": [
+        "在四个规模档生成同模型节点数据",
+        "记录源码树和节点专属业务文件",
+        "执行同一共享变更和一次构建",
+        "解析所有节点并运行固定工作负载",
+        "计算随节点数变化的代码、构建、Hosted 操作和查询成本"
+      ],
+      "观测值": [
+        "business_source_file_count 和 node_specific_source_file_count",
+        "build_count 和 artifact_identity_count",
+        "hosted_per_node_infrastructure_action_count",
+        "数据库行数、上下文解析吞吐和延迟分位数",
+        "闭包更新写放大"
+      ],
+      "判定边界": {
+        "PASS": [
+          "1到1000节点间业务源码文件数和节点专属源码文件数保持不变，后者为0",
+          "共享变更的 build_count=1 且 artifact_identity_count=1",
+          "Hosted 逐节点基础设施操作总数和增量均为0",
+          "所有节点解析正确且无跨线/跨Scope串线",
+          "性能数据完整记录，不把性能建议升级为未授权门禁"
+        ],
+        "FAIL": [
+          "节点增加导致新增业务源码副本、节点分支或节点专属构建",
+          "build_count 或 artifact_identity_count 随节点数增长",
+          "Hosted 基础设施调用数随节点数增长",
+          "出现解析错误、串线或数据不完整"
+        ],
+        "exhaustiveness": "四个规模档、三类拓扑和全部计数必须齐全；任一增长关系或串线即 FAIL。性能数值本身只记录，不另设未经授权阈值。"
+      },
+      "证据产物": [
+        "scale-input-manifest.json",
+        "scale-code-and-build-counts.json",
+        "scale-hosted-operation-counts.json",
+        "scale-context-resolution-metrics.json",
+        "scale-isolation-results.json"
+      ],
+      "回滚方式": "销毁一次性数据库和本地临时制品目录；不创建或删除生产资源。",
+      "readiness": "READY_LOCAL",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    },
+    {
+      "id": "E12",
+      "目标": "证明未知 Host、跨 Realm、跨 Scope 和错误节点身份均失败关闭，不回退默认节点、不串线、不落库。",
+      "对象_节点矩阵": {
+        "valid_nodes": ["NODE-A realm-A scope-A", "NODE-B realm-B scope-B"],
+        "invalid_cases": [
+          "unknown host",
+          "ambiguous host",
+          "realm-A session on realm-B host",
+          "membership-A with scope-B",
+          "node-A identity claiming node-B",
+          "stale access_version",
+          "suspended node or membership"
+        ]
+      },
+      "前置条件": [
+        "Host 解析器、Session、Membership、Scope、Capability 和 DecisionSink 可观测",
+        "正向 A/A 与 B/B 用例先通过",
+        "写用例使用可回滚的无财务副作用 Operation"
+      ],
+      "输入": {
+        "hosts": ["valid-A", "valid-B", "unknown", "ambiguous fixture"],
+        "sessions": ["A", "B", "stale", "suspended"],
+        "forgeries": ["realm", "membership", "scope", "node_id", "mall_id", "role"]
+      },
+      "执行阶段": [
+        "执行两个正向基线",
+        "逐一执行七类无效情况",
+        "组合伪造 node/mall/role 后执行写请求",
+        "直查业务表、Outbox、审计和授权决策",
+        "确认无默认节点或旧权限回退"
+      ],
+      "观测值": [
+        "Host 解析结果或精确错误码",
+        "Session 的 entry_realm_id、active membership 和 node context",
+        "Scope/Capability 决策及拒绝原因",
+        "目标与非目标业务表写入计数",
+        "旧投影兼容路径是否被调用"
+      ],
+      "判定边界": {
+        "PASS": [
+          "未知和歧义 Host 均拒绝且无默认节点回退",
+          "所有跨 Realm、跨 Scope、错节点、过期版本和停用身份请求均拒绝",
+          "服务端忽略或拒绝客户端伪造的 node/mall/role 权威字段",
+          "所有负向用例业务写入和Outbox为0，审计能定位拒绝原因",
+          "最新数据库投影存在时不走旧 Session 投影回退"
+        ],
+        "FAIL": [
+          "任何未知或歧义 Host 解析到有效节点",
+          "任何来源 Realm/Membership/Scope/Capability 在目标请求中残留",
+          "客户端伪造字段改变落库归属",
+          "拒绝请求产生业务写入、Outbox 或跨节点可见数据",
+          "旧兼容路径掩盖缺失的新权威字段"
+        ],
+        "exhaustiveness": "七类无效情况、六类伪造字段和两个正向基线都必须有直接结果；任一负向放行或缺少落库检查即 FAIL。"
+      },
+      "证据产物": [
+        "host-resolution-negative-matrix.json",
+        "realm-scope-node-negative-matrix.json",
+        "authority-forgery-database-diff.json",
+        "authorization-denial-audit.jsonl"
+      ],
+      "回滚方式": "回滚隔离写事务，销毁实验 Session 和歧义 Host fixture。",
+      "readiness": "READY_LOCAL",
+      "阻塞原因": null,
+      "execution_result": "NOT_EXECUTED"
+    }
+  ]
+}

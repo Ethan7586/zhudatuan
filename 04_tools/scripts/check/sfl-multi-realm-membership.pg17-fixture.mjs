@@ -70,7 +70,7 @@ end $verify$;`;
   await run('docker', ['exec', '-i', container, 'psql', '-X', '-v', 'ON_ERROR_STOP=1', '-U', 'postgres', '-d', database, '-f', '-'], {
     input: verification,
   });
-  console.log('SFL multi-Realm membership PostgreSQL 17 acceptance passed: same credential A=L6 B=L8 realm-first login single-active-membership five-way concurrency rollback lifecycle isolation');
+  console.log('SFL multi-Realm membership PostgreSQL 17 acceptance passed: same credential A=L6 B=L8 C=operator, isolated accounts/memberships/sessions/parents/scopes/permissions/assets, explicit switch, cross-Realm denial, concurrency, rollback and lifecycle isolation');
 } finally {
   await run('docker', ['rm', '-f', container], { allowFailure: true, quiet: true });
 }

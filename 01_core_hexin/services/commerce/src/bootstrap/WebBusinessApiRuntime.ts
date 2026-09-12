@@ -20,6 +20,7 @@ import { WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { NodeOperationAvailabilityResolver } from '../foundation/security/OperationAvailability';
 import { requireActorNodeContext } from '../foundation/security/AccessContext';
 import { NodeBoundScopeResolver } from '../foundation/security/NodeBoundScopeResolver';
 import {
@@ -108,6 +109,7 @@ export async function createWebBusinessApiRuntime(
       (actor) => scopeResolver.resolveStorefrontScope(actor),
     ),
     new PgCapabilityResolver(pool),
+    new NodeOperationAvailabilityResolver(),
     new SystemClock(),
     risk,
     new PgDecisionSink(pool),
