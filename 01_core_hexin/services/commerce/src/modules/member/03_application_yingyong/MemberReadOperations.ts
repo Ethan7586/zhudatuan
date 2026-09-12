@@ -38,7 +38,8 @@ export function memberOperatorReadActions(): OperationActions {
         join governance_subtree parent on child.governance_parent_membership_id=parent.membership_id
         where child.client='operator' and child.status='active'
       ), anchor as(
-        select distinct on(profile.id) profile.id,profile.principal_id,profile.display_name,profile.status,
+        select distinct on(profile.id) profile.id,profile.principal_id,
+          coalesce(membership.operator_display_name,profile.display_name) display_name,profile.status,
           principal.version principal_version,principal.status principal_status,
           membership.id membership_id,membership.client,membership.employee_no,membership.status membership_status,
           membership.access_version,membership.joined_at,membership.governance_parent_membership_id,

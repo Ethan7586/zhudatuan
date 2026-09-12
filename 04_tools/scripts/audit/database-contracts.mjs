@@ -221,6 +221,7 @@ const REPAIR_FILES = [
   '20260913012500_restore_identity_context_resolver_execute.sql',
   '20260913013500_restore_identity_session_owner_execute.sql',
   '20260913014500_restore_storefront_member_context_owner.sql',
+  '20260913015500_complete_senior_administrator_invitation_projection.sql',
 ];
 
 const mode = process.argv[2];

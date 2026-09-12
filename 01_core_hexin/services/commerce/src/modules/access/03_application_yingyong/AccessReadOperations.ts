@@ -19,7 +19,8 @@ export function accessOperatorReadActions(): OperationActions {
       const page = queryPage(request, 500);
       const [result, roles] = await Promise.all([
         database.query(`select membership.id,membership.status,membership.access_version,
-        profile.display_name,profile.id member_id,membership.employee_no,
+        coalesce(membership.operator_display_name,profile.display_name) display_name,
+        profile.id member_id,membership.employee_no,
         coalesce((select jsonb_agg(jsonb_build_object(
           'role',role.id,'name',role.name,
           'scope',access.scope_object(coalesce(assignment.assigned_scope_id,role.scope_id)),
@@ -30,15 +31,19 @@ export function accessOperatorReadActions(): OperationActions {
           where assignment.membership_id=membership.id and assignment.effective_at<=clock_timestamp()
             and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
             and (coalesce(assignment.assigned_scope_id,role.scope_id)=$1 or exists(
-              select 1 from organization.unitclosure assignmentboundary where assignmentboundary.ancestor_id=$1
-                and assignmentboundary.descendant_id=coalesce(assignment.assigned_scope_id,role.scope_id)))),'[]') roles,
+              select 1 from organization.unitclosure assignmentboundary where
+                (assignmentboundary.ancestor_id=$1
+                  and assignmentboundary.descendant_id=coalesce(assignment.assigned_scope_id,role.scope_id))
+                or (assignmentboundary.ancestor_id=coalesce(assignment.assigned_scope_id,role.scope_id)
+                  and assignmentboundary.descendant_id=$1)))),'[]') roles,
         coalesce((select jsonb_agg(jsonb_build_object('id',scopegrant.id,'kind',scopegrant.scope_kind,
           'scope',scopegrant.scope_id,'effect',scopegrant.effect,'expires',scopegrant.expires_at)
           order by scopegrant.scope_path) from access.scopegrant scopegrant
           where scopegrant.membership_id=membership.id and scopegrant.effective_at<=clock_timestamp()
             and (scopegrant.expires_at is null or scopegrant.expires_at>clock_timestamp())
             and (scopegrant.scope_id=$1 or exists(select 1 from organization.unitclosure grantboundary
-              where grantboundary.ancestor_id=$1 and grantboundary.descendant_id=scopegrant.scope_id))),'[]') scopes,
+              where (grantboundary.ancestor_id=$1 and grantboundary.descendant_id=scopegrant.scope_id)
+                or (grantboundary.ancestor_id=scopegrant.scope_id and grantboundary.descendant_id=$1)))),'[]') scopes,
         coalesce(resolved.denies,array[]::text[]) denies,
         coalesce((select jsonb_agg(effective.code order by effective.code) from (
           select distinct permission.value code
@@ -46,7 +51,8 @@ export function accessOperatorReadActions(): OperationActions {
           cross join lateral jsonb_array_elements_text(coalesce(resolvedgrant->'permissions','[]'::jsonb)) permission(value)
           where not(permission.value=any(coalesce(resolved.denies,array[]::text[])))
             and ((resolvedgrant->'scope'->>'id')=$1 or exists(select 1 from organization.unitclosure effectiveboundary
-              where effectiveboundary.ancestor_id=$1 and effectiveboundary.descendant_id=(resolvedgrant->'scope'->>'id')))) effective),'[]') effective_permissions
+              where (effectiveboundary.ancestor_id=$1 and effectiveboundary.descendant_id=(resolvedgrant->'scope'->>'id'))
+                or (effectiveboundary.ancestor_id=(resolvedgrant->'scope'->>'id') and effectiveboundary.descendant_id=$1)))) effective),'[]') effective_permissions
         from access.membership membership join member.profile profile on profile.id=membership.member_id
         left join lateral access.resolve_membership(membership.id) resolved on true
         where exists(select 1 from organization.unitclosure boundary
@@ -107,7 +113,10 @@ export function accessOperatorReadActions(): OperationActions {
             when role.id='role-zhudatuan-pending-operator' then 'administrator' end governance_level,
           (role.id not in('role:self','role-platform-owner-v2','role-platform-owner-successor-v1','role-zhudatuan-pending-operator')
             and role.id<>'role-senior-administrator-v1:'||role.scope_id) editable
-          from access.role role where role.scope_id=$1 order by governance desc,role.name,role.id`, [access.scope.id]),
+          from access.role role where role.scope_id=$1 or (role.id='role-senior-administrator-v1:'||role.scope_id
+            and exists(select 1 from organization.unitclosure roleboundary
+              where roleboundary.ancestor_id=role.scope_id and roleboundary.descendant_id=$1))
+          order by governance desc,role.name,role.id`, [access.scope.id]),
       ]);
       const pageResult = keysetResult(result, page, 'id');
       return { ...pageResult, body: { ...(pageResult.body as Readonly<Record<string, unknown>>), roles: roles.rows } };

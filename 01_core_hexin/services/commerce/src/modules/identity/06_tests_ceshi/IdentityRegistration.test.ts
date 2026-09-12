@@ -863,6 +863,9 @@ describe('canonical member registration security boundary', () => {
     const operatorScopes = harness.queries.find(({ text, values }) => text.includes('insert into access.scopegrant')
       && values.includes('tenant-zhudatuan'));
     expect(operatorScopes?.text).toContain("'tenant'");
+    const membership = harness.queries.find(({ text }) => text.includes('insert into access.membership('));
+    expect(membership?.text).toContain('operator_display_name');
+    expect(membership?.values).toContain('测试会员');
   });
 
   it('creates an L1 operator account for an existing hosted consumer without changing the consumer membership', async () => {
@@ -880,7 +883,6 @@ describe('canonical member registration security boundary', () => {
     const base = registrationRequest('registration:l1-existing-senior');
     const body = { ...(base.input.body as Readonly<Record<string, unknown>>) } as Record<string, unknown>;
     delete body.password;
-    delete body.displayName;
 
     const response = await identityRegistrationOperations(context(harness.pool)).invoke({
       ...base,
@@ -910,6 +912,8 @@ describe('canonical member registration security boundary', () => {
     expect(memberships[0]?.values).toContain(operatorOrganization);
     expect(memberships[0]?.values[4]).toBe('realm:l1');
     expect(memberships[0]?.values[5]).toBe(account?.values[0]);
+    expect(memberships[0]?.text).toContain('operator_display_name');
+    expect(memberships[0]?.values).toContain('测试会员');
     expect(memberships[0]?.text).not.toContain("'storefront'");
     const role = harness.queries.find(({ text }) => text.includes('insert into access.membershiprole'));
     expect(role?.values).toContain('role-senior-administrator-v1:tenant-zhudatuan');
