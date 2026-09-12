@@ -50,4 +50,9 @@ describe('console bootstrap document', () => {
     expect(index).toContain('<main class="statemain" aria-label="页面加载状态">');
     expect(index).toContain('<p role="status" aria-live="polite">正在加载…</p>');
   });
+
+  it('recovers once when an open page references retired dynamic modules', () => {
+    expect(main).toContain('recoverFromDynamicImportFailure(cause)');
+    expect(main).toContain('clearDynamicImportRecoveryAfterStableBoot()');
+  });
 });
