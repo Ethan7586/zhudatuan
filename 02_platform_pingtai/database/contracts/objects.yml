@@ -917,7 +917,7 @@ objects:
   - id: identity.resolve_storefront_member_context
     kind: function
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260912220000_publish_storefront_member_context_projection.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260913014500_restore_storefront_member_context_owner.sql
     operationalOwner: identity
   - id: identity.resolve_session
     kind: function
@@ -18607,7 +18607,7 @@ objects:
   - id: zhudatuanidentityapi:function:identity.resolve_storefront_member_context(text,text):execute
     kind: grant
     owner: identity
-    source: 02_platform_pingtai/database/supabase/migrations/20260912220000_publish_storefront_member_context_projection.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260913014500_restore_storefront_member_context_owner.sql
     role: zhudatuanidentityapi
     objectType: function
     target: identity.resolve_storefront_member_context(text,text)

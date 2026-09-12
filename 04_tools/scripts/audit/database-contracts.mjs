@@ -220,6 +220,7 @@ const REPAIR_FILES = [
   '20260912250000_grant_catalog_media_replication_job.sql',
   '20260913012500_restore_identity_context_resolver_execute.sql',
   '20260913013500_restore_identity_session_owner_execute.sql',
+  '20260913014500_restore_storefront_member_context_owner.sql',
 ];
 
 const mode = process.argv[2];
