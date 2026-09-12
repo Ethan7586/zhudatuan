@@ -337,11 +337,16 @@
         {"name":"database-migration-ledger","argv":["npm","run","check:migrations"],"timeoutMs":300000}
       ],
       "typecheck": [],
-      "build": [],
-      "artifactInputs": [
-        {"source":"02_platform_pingtai/database/supabase/migrations","destination":"migrations"}
+      "build": [
+        {"name":"database-migration-executor-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-database-migration.mjs"],"timeoutMs":300000}
       ],
-      "criticalFiles": []
+      "artifactInputs": [
+        {"source":"01_core_hexin/services/commerce/dist/DatabaseMigrationExecutor.js","destination":"executor/DatabaseMigrationExecutor.js"},
+        {"source":"01_core_hexin/services/commerce/dist/DatabaseMigrationExecutor.js.map","destination":"executor/DatabaseMigrationExecutor.js.map"},
+        {"source":"02_platform_pingtai/database/supabase/migrations","destination":"database/supabase/migrations"},
+        {"source":"02_platform_pingtai/database/contracts/history.json","destination":"database/contracts/history.json"}
+      ],
+      "criticalFiles": ["executor/DatabaseMigrationExecutor.js","database/contracts/history.json"]
     }
   },
   "rules": [
@@ -349,7 +354,7 @@
       "id": "validation-only",
       "validationOnly": true,
       "targets": [],
-      "include": ["**/*.md","**/tests/**","**/test/**","**/fixtures/**","**/*fixture*","**/*.test.*","**/*.spec.*"],
+      "include": ["05_docs_ziliao/**","**/*.md","**/tests/**","**/test/**","**/fixtures/**","**/*fixture*","**/*.test.*","**/*.spec.*"],
       "validations": [],
       "reason": "changed files require validation but are not production artifacts"
     },

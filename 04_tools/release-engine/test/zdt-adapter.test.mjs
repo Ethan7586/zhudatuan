@@ -112,6 +112,26 @@ test('artifacts never carry the repository node_modules tree', () => {
   }
 });
 
+test('database migration packages the official runner inputs and uses the managed production connection source', () => {
+  const target = adapter.targets['database-migration'];
+  assert.deepEqual(target.build.map((command) => command.argv), [
+    ['node', '04_tools/release-engine/adapters/zdt-next/build-database-migration.mjs'],
+  ]);
+  assert.deepEqual(target.artifactInputs, [
+    { source: '01_core_hexin/services/commerce/dist/DatabaseMigrationExecutor.js', destination: 'executor/DatabaseMigrationExecutor.js' },
+    { source: '01_core_hexin/services/commerce/dist/DatabaseMigrationExecutor.js.map', destination: 'executor/DatabaseMigrationExecutor.js.map' },
+    { source: '02_platform_pingtai/database/supabase/migrations', destination: 'database/supabase/migrations' },
+    { source: '02_platform_pingtai/database/contracts/history.json', destination: 'database/contracts/history.json' },
+  ]);
+  const deployment = policy.nodes['zhudatuan-l0'].deployments['database-migration'];
+  assert.equal(deployment.restart.kind, 'none');
+  assert.equal(deployment.databaseMigration.environmentFile, '/opt/zhudatuan/shared/migration.env');
+  assert.equal(deployment.databaseMigration.executionRoot, '/opt/zhudatuan/releases');
+  assert.equal(deployment.databaseMigration.recovery.mode, 'forward-only');
+  assert.equal(deployment.databaseMigration.recovery.snapshot, 'not-captured-by-delivery-engine');
+  assert.ok(deployment.candidateChecks.some((check) => check.argv.includes('{{candidateDir}}/executor/DatabaseMigrationExecutor.js')));
+});
+
 test('service definitions use target pointers instead of node-wide code pointers', async () => {
   const units = {
     'sfl-identity-api@.service': 'identity-api',

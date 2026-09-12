@@ -131,6 +131,16 @@ test('database migrations are independent and ordered before actual consumers', 
   ] });
   assert.deepEqual(withConsumer.targets, ['database-migration', 'web-api']);
   assert.deepEqual(withConsumer.deploymentOrder, ['database-migration', 'web-api']);
+
+  for (const file of [
+    '02_platform_pingtai/database/supabase/tests/example.sql',
+    '02_platform_pingtai/database/supabase/fixtures/example.sql',
+    '05_docs_ziliao/docs_wendang/example.sql',
+  ]) {
+    const validationOnly = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [file] });
+    assert.deepEqual(validationOnly.targets, [], file);
+    assert.equal(validationOnly.deployRequired, false, file);
+  }
 });
 
 test('shared Commerce source expands through real entry graphs without refusal', async () => {

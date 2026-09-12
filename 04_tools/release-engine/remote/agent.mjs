@@ -71,7 +71,7 @@ try {
       });
     } catch {}
   }
-  process.stderr.write(`${JSON.stringify({ ok: false, error: { code: error.code ?? 'REMOTE_AGENT_FAILED', message: error.message, details: error.details ?? {} } }, null, 2)}\n`);
+  process.stderr.write(`${JSON.stringify({ ok: false, error: { code: error.code ?? 'REMOTE_AGENT_FAILED', message: error.message, details: error.details ?? {} } })}\n`);
   process.exitCode = 1;
 }
 
@@ -407,12 +407,39 @@ async function activate(context, options) {
   const candidateRuntime = await dependencyLayerPath(context, manifest.dependencyLayer);
   const caddyBefore = await caddySemanticEvidence(context.policy);
   if (options.expectedCaddySemantic) assert(caddyBefore?.digest === options.expectedCaddySemantic, 'CADDY_SEMANTIC_CHANGED_BEFORE_CUTOVER', { expected: options.expectedCaddySemantic, actual: caddyBefore?.digest });
-  const rollbackPoint = previousCurrent === candidate
-    ? { status: 'not-required', reason: 'candidate-is-already-current', pointers: pointersBefore }
-    : await recordRollbackPoint(context, manifest, pointersBefore, caddyBefore);
+  const rollbackPoint = context.deployment.databaseMigration
+    ? { status: 'not-applicable', reason: 'database-migrations-are-forward-only', recovery: databaseRecoveryEvidence(context.deployment.databaseMigration), pointers: pointersBefore }
+    : previousCurrent === candidate
+      ? { status: 'not-required', reason: 'candidate-is-already-current', pointers: pointersBefore }
+      : await recordRollbackPoint(context, manifest, pointersBefore, caddyBefore);
   await ensureTraversablePointerRoot(context);
   timings.snapshot = Date.now() - snapshotStarted;
   let activationRestart = restartEvidence(context.deployment.restart, false);
+  let databaseMigration = null;
+  if (context.deployment.databaseMigration) {
+    try {
+      databaseMigration = await executeDatabaseMigration(context, candidate, manifest);
+    } catch (migrationError) {
+      const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+      const caddyAfter = await caddySemanticEvidence(context.policy);
+      const readiness = { status: 'not-run', attempts: 0, durationMs: 0, checks: [] };
+      const receipt = await deploymentReceipt(context, manifest, {
+        pointersBefore,
+        rollbackPoint,
+        capacity,
+        caddyBefore,
+        caddyAfter,
+        readiness,
+        targetProcessBefore,
+        targetProcessAfter: await processId(context.deployment.restart),
+        protectedBefore,
+        protectedAfter,
+        databaseMigration: migrationError.details?.databaseMigration ?? null,
+        finalStatus: 'failed',
+      });
+      throw failure('DATABASE_MIGRATION_FAILED', { cause: errorEvidence(migrationError), databaseMigration: receipt.databaseMigration, receipt });
+    }
+  }
   if (previousCurrent === candidate) {
     const readiness = await waitForReadiness(context, { candidateDir: candidate, currentDir: candidate, ...contextSummary(context) });
     timings.health = readiness.durationMs;
@@ -435,7 +462,7 @@ async function activate(context, options) {
       cutoverMs: timings.health + timings.isolation,
       timings,
       protectedProcesses: { before: protectedBefore, after: protectedAfter },
-      receipt: await deploymentReceipt(context, manifest, { pointersBefore, rollbackPoint, capacity, caddyBefore, caddyAfter, readiness, targetProcessBefore, targetProcessAfter: await processId(context.deployment.restart), protectedBefore, protectedAfter, finalStatus: 'success' }),
+      receipt: await deploymentReceipt(context, manifest, { pointersBefore, rollbackPoint, capacity, caddyBefore, caddyAfter, readiness, targetProcessBefore, targetProcessAfter: await processId(context.deployment.restart), protectedBefore, protectedAfter, databaseMigration, finalStatus: 'success' }),
     };
   }
   let readiness;
@@ -462,6 +489,40 @@ async function activate(context, options) {
     const caddyAfter = await caddySemanticEvidence(context.policy);
     assert(caddyAfter?.digest === caddyBefore?.digest, 'CADDY_SEMANTIC_CHANGED', { before: caddyBefore?.digest, after: caddyAfter?.digest });
   } catch (candidateError) {
+    if (databaseMigration) {
+      let pointerRecovery = { status: 'restored', error: null };
+      try {
+        await restoreOptionalPointer(join(root, 'current'), pointersBefore.current);
+        await restoreOptionalPointer(join(root, 'previous'), pointersBefore.previous);
+        await restoreOptionalPointer(join(root, 'runtime'), pointersBefore.runtime);
+        await restoreOptionalPointer(join(root, 'previous-runtime'), pointersBefore['previous-runtime']);
+      } catch (error) {
+        pointerRecovery = { status: 'failed', error: errorEvidence(error) };
+      }
+      const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+      const caddyAfter = await caddySemanticEvidence(context.policy).catch((error) => ({ status: 'capture-failed', digest: null, error: errorEvidence(error) }));
+      const receipt = await deploymentReceipt(context, manifest, {
+        pointersBefore,
+        rollbackPoint,
+        capacity,
+        caddyBefore,
+        caddyAfter,
+        readiness: candidateError?.details?.readiness ?? { status: 'failed', error: errorEvidence(candidateError) },
+        targetProcessBefore,
+        targetProcessAfter: await processId(context.deployment.restart),
+        protectedBefore,
+        protectedAfter,
+        databaseMigration,
+        finalStatus: 'database-applied-pointer-record-failed',
+      });
+      throw failure('DATABASE_MIGRATION_POINTER_RECORD_FAILED', {
+        candidateFailure: errorEvidence(candidateError),
+        databaseMigration,
+        databaseRollback: 'not-performed',
+        pointerRecovery,
+        receipt,
+      });
+    }
     activationRestart = candidateError?.details?.restart ?? activationRestart;
     timings.health = candidateError?.details?.durationMs ?? 0;
     const failureConfirmedAt = new Date().toISOString();
@@ -559,7 +620,7 @@ async function activate(context, options) {
     timings,
     targetProcess: { before: targetProcessBefore, after: await processId(context.deployment.restart) },
     protectedProcesses: { before: protectedBefore, after: protectedAfter },
-    receipt: await deploymentReceipt(context, manifest, { pointersBefore, rollbackPoint, capacity, caddyBefore, caddyAfter: await caddySemanticEvidence(context.policy), readiness, targetProcessBefore, targetProcessAfter: await processId(context.deployment.restart), protectedBefore, protectedAfter, finalStatus: 'success' }),
+    receipt: await deploymentReceipt(context, manifest, { pointersBefore, rollbackPoint, capacity, caddyBefore, caddyAfter: await caddySemanticEvidence(context.policy), readiness, targetProcessBefore, targetProcessAfter: await processId(context.deployment.restart), protectedBefore, protectedAfter, databaseMigration, finalStatus: 'success' }),
   };
 }
 
@@ -581,9 +642,125 @@ async function preflight(context) {
   };
 }
 
+async function executeDatabaseMigration(context, candidate, manifest) {
+  const definition = context.deployment.databaseMigration;
+  const executionRoot = resolve(required(definition.executionRoot, 'DATABASE_MIGRATION_EXECUTION_ROOT_REQUIRED'));
+  const environmentFile = resolve(required(definition.environmentFile, 'DATABASE_MIGRATION_ENVIRONMENT_FILE_REQUIRED'));
+  assertAllowedRoot(context.policy, executionRoot);
+  assertAllowedRoot(context.policy, environmentFile);
+  const releaseName = `${manifest.sourceSha}-database-migration-${manifest.treeDigest.slice(7, 19)}`;
+  const executionDirectory = join(executionRoot, releaseName);
+  const temporary = join(executionRoot, `.${releaseName}.${process.pid}.${Date.now()}`);
+  await mkdir(executionRoot, { recursive: true, mode: 0o755 });
+  if (!(await exists(executionDirectory))) {
+    try {
+      await cp(candidate, temporary, { recursive: true, dereference: false, errorOnExist: true });
+      await rename(temporary, executionDirectory);
+    } finally {
+      await rm(temporary, { recursive: true, force: true });
+    }
+  } else {
+    const existing = await readJson(join(executionDirectory, 'AI_DELIVERY_ARTIFACT.json'));
+    assert(existing?.sourceSha === manifest.sourceSha && existing?.treeDigest === manifest.treeDigest
+      && existing?.manifestDigest === manifest.manifestDigest, 'DATABASE_MIGRATION_EXECUTION_RELEASE_MISMATCH', { executionDirectory });
+  }
+  await chmod(executionDirectory, 0o755);
+  const runner = resolve(executionDirectory, definition.runner);
+  const migrationDirectory = resolve(executionDirectory, definition.migrationDirectory);
+  assert(runner.startsWith(`${executionDirectory}/`) && migrationDirectory.startsWith(`${executionDirectory}/`),
+    'DATABASE_MIGRATION_EXECUTION_PATH_UNSAFE', { runner, migrationDirectory });
+  const environment = {
+    PATH: process.env.PATH ?? '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+    NODE_ENV: 'production',
+    ...parseEnvironmentFile(await readFile(environmentFile, 'utf8')),
+    APP_ENV: 'production',
+    REGISTRATION_MIGRATION_PROFILE: 'registration-only',
+    MIGRATION_DIRECTORY: migrationDirectory,
+    AI_DELIVERY_SOURCE_SHA: manifest.sourceSha,
+    AI_DELIVERY_TREE_DIGEST: manifest.treeDigest,
+  };
+  const identity = await runtimeIdentity(definition);
+  try {
+    const executed = await command([definition.nodeBinary ?? '/usr/bin/node', runner], {
+      cwd: executionDirectory,
+      env: environment,
+      uid: identity.uid,
+      gid: identity.gid,
+      timeoutMs: definition.timeoutMs ?? 300_000,
+    });
+    const result = parseJsonOutput(executed.stdout);
+    assert(result?.schema === 'ai.delivery.database-migration-result.v1' && result.sourceSha === manifest.sourceSha,
+      'DATABASE_MIGRATION_RESULT_INVALID', { executionDirectory });
+    assert(['applied', 'noop'].includes(result.status), 'DATABASE_MIGRATION_RESULT_FAILED', { databaseMigration: result });
+    return { ...result, executionDirectory, credentialSource: environmentFile, restart: restartEvidence(context.deployment.restart, false) };
+  } catch (error) {
+    const reported = parseJsonOutput(error?.details?.outputTail ?? '', false);
+    const databaseMigration = reported?.schema === 'ai.delivery.database-migration-result.v1'
+      ? { ...reported, executionDirectory, credentialSource: environmentFile, restart: restartEvidence(context.deployment.restart, false) }
+      : { schema: 'ai.delivery.database-migration-result.v1', sourceSha: manifest.sourceSha, status: 'failed', selectionStatus: 'unavailable', selected: null, ledgerBefore: null, ledgerAfter: null, applied: null, error: errorEvidence(error), executionDirectory, credentialSource: environmentFile, restart: restartEvidence(context.deployment.restart, false) };
+    throw failure('DATABASE_MIGRATION_EXECUTOR_FAILED', { databaseMigration });
+  }
+}
+
+function parseEnvironmentFile(source) {
+  const environment = {};
+  for (const [index, raw] of source.split(/\r?\n/).entries()) {
+    const line = raw.trim();
+    if (!line || line.startsWith('#') || line.startsWith(';')) continue;
+    const match = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/.exec(line);
+    assert(match, 'DATABASE_MIGRATION_ENVIRONMENT_LINE_INVALID', { line: index + 1 });
+    const value = match[2].trim();
+    if ((value.startsWith("'") && value.endsWith("'")) || (value.startsWith('"') && value.endsWith('"'))) {
+      environment[match[1]] = value.slice(1, -1);
+    } else {
+      environment[match[1]] = value;
+    }
+  }
+  return environment;
+}
+
+async function runtimeIdentity(definition) {
+  if (!definition.runtimeUser && !definition.runtimeGroup) return { uid: undefined, gid: undefined };
+  const user = safeName(required(definition.runtimeUser, 'DATABASE_MIGRATION_RUNTIME_USER_REQUIRED'));
+  const group = safeName(required(definition.runtimeGroup, 'DATABASE_MIGRATION_RUNTIME_GROUP_REQUIRED'));
+  const uidResult = await command(['id', '-u', user]);
+  const groupResult = await command(['id', '-gn', user]);
+  assert(groupResult.stdout.trim() === group, 'DATABASE_MIGRATION_RUNTIME_GROUP_INVALID', { user, group });
+  const gidResult = await command(['id', '-g', user]);
+  const uid = Number(uidResult.stdout.trim());
+  const gid = Number(gidResult.stdout.trim());
+  assert(Number.isInteger(uid) && uid >= 0 && Number.isInteger(gid) && gid >= 0,
+    'DATABASE_MIGRATION_RUNTIME_ID_INVALID', { user, group });
+  return { uid, gid };
+}
+
+function parseJsonOutput(output, requiredOutput = true) {
+  for (const line of String(output).trim().split('\n').reverse()) {
+    try { return JSON.parse(line); } catch {}
+  }
+  assert(!requiredOutput, 'DATABASE_MIGRATION_RESULT_MISSING');
+  return null;
+}
+
+function databaseRecoveryEvidence(definition) {
+  return {
+    mode: definition.recovery?.mode ?? 'forward-only',
+    snapshot: definition.recovery?.snapshot ?? 'not-captured-by-delivery-engine',
+    databaseRollback: 'not-performed',
+  };
+}
+
 async function rollback(context) {
   const root = context.deployment.pointerRoot;
   assertAllowedRoot(context.policy, root);
+  if (context.deployment.databaseMigration) {
+    throw failure('DATABASE_ROLLBACK_UNSUPPORTED', {
+      recovery: databaseRecoveryEvidence(context.deployment.databaseMigration),
+      pointerAction: 'not-performed',
+      current: await pointer(root, 'current'),
+      previous: await pointer(root, 'previous'),
+    });
+  }
   const [current, previous, currentRuntime, previousRuntime] = await Promise.all([
     pointer(root, 'current'),
     pointer(root, 'previous'),
@@ -807,6 +984,9 @@ async function deploymentReceipt(context, manifest, evidence) {
     ready: evidence.readiness,
     caddySemantic: { before: evidence.caddyBefore, after: evidence.caddyAfter, unchanged: evidence.caddyBefore?.digest === evidence.caddyAfter?.digest },
     automaticCleanup: lifecycle,
+    databaseMigration: evidence.databaseMigration ?? null,
+    databaseRecovery: context.deployment.databaseMigration ? databaseRecoveryEvidence(context.deployment.databaseMigration) : null,
+    restart: context.deployment.databaseMigration ? restartEvidence(context.deployment.restart, false) : undefined,
     finalStatus: evidence.finalStatus,
     completedAt: new Date().toISOString(),
   };
@@ -1070,7 +1250,14 @@ async function command(argv, options = {}) {
   const started = Date.now();
   const chunks = [];
   const result = await new Promise((resolvePromise, reject) => {
-    const child = spawn(argv[0], argv.slice(1), { shell: false, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(argv[0], argv.slice(1), {
+      shell: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      ...(options.cwd ? { cwd: options.cwd } : {}),
+      ...(options.env ? { env: options.env } : {}),
+      ...(options.uid === undefined ? {} : { uid: options.uid }),
+      ...(options.gid === undefined ? {} : { gid: options.gid }),
+    });
     child.stdout.on('data', (chunk) => chunks.push(chunk));
     child.stderr.on('data', (chunk) => chunks.push(chunk));
     child.on('error', reject);
@@ -1296,6 +1483,28 @@ function validatePolicy(policy, project) {
         assert(['replace', 'ignore-dependencies'].includes(deployment.restart.jobMode ?? 'replace'), 'POLICY_RESTART_JOB_MODE_INVALID', { node, target });
       } else {
         assert(deployment.restart?.jobMode === undefined, 'POLICY_RESTART_JOB_MODE_UNSUPPORTED', { node, target });
+      }
+      if (deployment.databaseMigration) {
+        const migration = deployment.databaseMigration;
+        assert(deployment.restart?.kind === 'none', 'POLICY_DATABASE_MIGRATION_RESTART_FORBIDDEN', { node, target });
+        assert(typeof migration.executionRoot === 'string' && typeof migration.environmentFile === 'string',
+          'POLICY_DATABASE_MIGRATION_SOURCE_REQUIRED', { node, target });
+        assertAllowedRoot(policy, migration.executionRoot);
+        assertAllowedRoot(policy, migration.environmentFile);
+        assert(safeRelative(migration.runner) && safeRelative(migration.migrationDirectory),
+          'POLICY_DATABASE_MIGRATION_PATH_INVALID', { node, target });
+        assert(migration.nodeBinary === undefined || (typeof migration.nodeBinary === 'string' && migration.nodeBinary.startsWith('/')),
+          'POLICY_DATABASE_MIGRATION_NODE_INVALID', { node, target });
+        assert(Number.isInteger(migration.timeoutMs) && migration.timeoutMs > 0,
+          'POLICY_DATABASE_MIGRATION_TIMEOUT_INVALID', { node, target });
+        assert((migration.runtimeUser === undefined) === (migration.runtimeGroup === undefined),
+          'POLICY_DATABASE_MIGRATION_IDENTITY_INCOMPLETE', { node, target });
+        if (migration.runtimeUser) {
+          safeName(migration.runtimeUser);
+          safeName(migration.runtimeGroup);
+        }
+        assert(migration.recovery?.mode === 'forward-only' && typeof migration.recovery.snapshot === 'string',
+          'POLICY_DATABASE_MIGRATION_RECOVERY_INVALID', { node, target });
       }
       if (deployment.allowBaselineImport !== undefined) assert(typeof deployment.allowBaselineImport === 'boolean', 'POLICY_BASELINE_IMPORT_INVALID', { node, target });
       for (const input of deployment.seedInputs ?? []) {
