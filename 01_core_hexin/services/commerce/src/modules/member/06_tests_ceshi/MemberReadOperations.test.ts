@@ -24,19 +24,64 @@ describe('member directory scope boundary', () => {
     const [sql, values = []] = query.mock.calls[0]!;
     expect(sql).toContain('from organization.unitclosure boundary');
     expect(sql).toContain('boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id');
-    expect(sql).toContain('with recursive governance_memberships(membership_id)');
+    expect(sql).toContain('with recursive governance_subtree(membership_id)');
     expect(sql).not.toContain("assignment.role_id='role-platform-owner-v2'");
-    expect(sql).toContain('membership.id=$6');
-    expect(sql).toContain("assignment.role_id='role-zhudatuan-pending-operator'");
-    expect(sql).toContain("assignment.role_id='role-senior-administrator-v1:'||membership.organization_id");
+    expect(sql).not.toContain('access.membershiprole');
+    expect(sql).not.toContain('access.role');
+    expect(sql).not.toContain('role-zhudatuan-pending-operator');
+    expect(sql).not.toContain('role-senior-administrator-v1:');
+    expect(sql).toContain("where actor.id=$8 and actor.client='operator' and actor.status='active'");
     expect(sql).toContain('child.governance_parent_membership_id=parent.membership_id');
-    expect(sql).toContain('join governance_memberships governance_member on governance_member.membership_id=child.id');
-    expect(sql).toContain('where exists(select 1 from governance_memberships governance_member');
+    expect(sql).toContain("where child.client='operator' and child.status='active'");
+    expect(sql).toContain("where membership.client='operator' and membership.status='active'");
     expect(sql).toContain('$7::boolean or exists(select 1 from governance_subtree');
     expect(sql).toContain('governance_parent_profile.display_name governance_parent_name');
     expect(sql).toContain('(anchor.directory_sort,anchor.id)<($2::text,$3::text)');
     expect(sql).toContain('order by anchor.directory_sort desc,anchor.id desc');
     expect(values).toEqual(['organization-platform-root', null, null, 51, 'principal:owner', 'membership:owner', true, 'membership:owner']);
+  });
+
+  it('returns active operator Memberships without requiring role assignments or mixing in storefront identity', async () => {
+    const database = new PGlite();
+    try {
+      await database.exec(`create schema access; create schema member; create schema identity; create schema organization;
+        create table member.profile(
+          id text primary key,principal_id text not null,display_name text not null,status text not null
+        );
+        create table identity.principal(id text primary key,version integer not null,status text not null);
+        create table identity.credential(principal_id text not null,provider text not null,status text not null);
+        create table access.membership(
+          id text primary key,member_id text not null,organization_id text not null,client text not null,
+          employee_no text,status text not null,access_version integer not null,joined_at timestamptz,
+          governance_parent_membership_id text
+        );
+        create table organization.unitclosure(ancestor_id text not null,descendant_id text not null);
+        insert into member.profile values
+          ('member:owner','principal:owner','Owner','active'),
+          ('member:shared','principal:shared','同主体管理员','active'),
+          ('member:inactive','principal:inactive','已停用管理员','active'),
+          ('member:outside','principal:outside','范围外管理员','active');
+        insert into identity.principal values
+          ('principal:owner',1,'active'),('principal:shared',1,'active'),
+          ('principal:inactive',1,'active'),('principal:outside',1,'active');
+        insert into access.membership values
+          ('membership:owner','member:owner','organization-platform-root','operator',null,'active',1,'2026-09-01T00:00:00Z',null),
+          ('membership:operator:shared','member:shared','organization-platform-root','operator',null,'active',1,'2026-09-02T00:00:00Z','membership:owner'),
+          ('membership:storefront:shared','member:shared','organization-platform-root','storefront',null,'active',1,'2026-09-03T00:00:00Z','membership:owner'),
+          ('membership:inactive','member:inactive','organization-platform-root','operator',null,'inactive',1,'2026-09-04T00:00:00Z','membership:owner'),
+          ('membership:outside','member:outside','mall:outside','operator',null,'active',1,'2026-09-05T00:00:00Z','membership:owner');
+        insert into organization.unitclosure values ('organization-platform-root','organization-platform-root');`);
+
+      const action = memberOperatorReadActions()['member.members.read'];
+      if (typeof action !== 'function') throw new Error('MEMBER_READ_ACTION_MISSING');
+      const response = await action(request(), database as unknown as OperationDatabase);
+      const items = (response.body as { readonly items: readonly { readonly membership_id: string; readonly client: string }[] }).items;
+
+      expect(items.map(({ membership_id }) => membership_id)).toEqual(['membership:operator:shared', 'membership:owner']);
+      expect(items.every(({ client }) => client === 'operator')).toBe(true);
+    } finally {
+      await database.close();
+    }
   });
 
   it('lists only scoped operator invitations without returning recoverable invitation secrets', async () => {

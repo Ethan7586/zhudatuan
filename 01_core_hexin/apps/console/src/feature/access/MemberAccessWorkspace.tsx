@@ -65,10 +65,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   });
   const accessItems = accessQuery.data?.items ?? [];
   const memberItems = memberQuery.data?.items ?? [];
-  const rows = useMemo(
-    () => mergeRows(memberItems, accessItems, context.session.membership),
-    [accessItems, context.session.membership, memberItems]
-  );
+  const rows = useMemo(() => mergeRows(memberItems, accessItems), [accessItems, memberItems]);
   const invitationWritable = memberInvitationAvailable(context);
   const normalizedFilter = filter.trim().toLocaleLowerCase('zh-CN');
   const visibleRows = useMemo(
@@ -666,19 +663,13 @@ function MemberIcon({ name }: Readonly<{ name: MemberIconName }>) {
   );
 }
 
-function mergeRows(members: readonly Member[], access: readonly AccessMembership[], currentMembershipId: string): readonly MemberAccessRow[] {
-  const memberById = new Map(members.filter((member) => member.client === 'operator').map((member) => [member.membership_id, member]));
+function mergeRows(members: readonly Member[], access: readonly AccessMembership[]): readonly MemberAccessRow[] {
   const accessById = new Map(access.map((membership) => [membership.id, membership]));
-  const administratorIds = new Set([
-    ...memberById.keys(),
-    ...access.filter((membership) => managementRolesOf(membership).length > 0).map((membership) => membership.id),
-    ...(accessById.has(currentMembershipId) ? [currentMembershipId] : []),
-  ]);
-  return [...administratorIds].map((id) => {
-    const member = memberById.get(id);
+  return members.filter((member) => member.client === 'operator').map((member) => {
+    const id = member.membership_id;
     const membership = accessById.get(id);
     const managementRoles = membership === undefined ? [] : managementRolesOf(membership);
-    return { id, administrator: true, managementRoles, ...(member === undefined ? {} : { member }), ...(membership === undefined ? {} : { access: membership }) };
+    return { id, administrator: true, managementRoles, member, ...(membership === undefined ? {} : { access: membership }) };
   });
 }
 function managementRolesOf(membership: AccessMembership): readonly MemberRole[] {
