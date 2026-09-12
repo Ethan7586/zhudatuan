@@ -125,6 +125,7 @@ done
 
 for unit in "${units[@]}"; do install -m 0644 "$unit_source/$unit" "/etc/systemd/system/$unit"; done
 if [[ "$node_scope" == hbbtzn-l1 ]]; then
+  systemctl unmask sfl-identity-api@hbbtzn-l1.service
   gateway_candidate=/etc/ai-delivery/candidates/hbbtzn-l1.api-gateway.Caddyfile
   install -o root -g zhudatuan -m 0640 "$gateway_source" "$gateway_candidate"
   caddy validate --config "$gateway_candidate" --adapter caddyfile
