@@ -152,10 +152,14 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
     if cmp -s "$gateway_work/active-before.json" "$gateway_work/candidate.json"; then
       printf 'Gateway runtime already current: status=noop semanticDigest=sha256:%s\n' "$candidate_digest"
     else
-      cmp -s "$gateway_work/active-before.json" "$gateway_work/expected-old.json" || {
+      if ! cmp -s "$gateway_work/active-before.json" "$gateway_work/expected-old.json"; then
+        semantic_diff_rc=0
+        diff -u "$gateway_work/expected-old.json" "$gateway_work/active-before.json" > "$gateway_work/unapproved-semantic.diff" || semantic_diff_rc=$?
+        [[ "$semantic_diff_rc" -eq 1 ]] || { printf 'gateway semantic diff failed with rc=%s\n' "$semantic_diff_rc" >&2; exit 1; }
         printf 'gateway cutover refused: active semantic config differs from the single approved 4321-to-4433 transition\n' >&2
+        sed -n '1,120p' "$gateway_work/unapproved-semantic.diff" >&2
         exit 1
-      }
+      fi
 
       rollback_id="$(date -u +%Y%m%dT%H%M%SZ)-hbbtzn-l1-api-gateway"
       rollback_dir="/opt/ai-delivery/rollback/zdt-next/$rollback_id"
