@@ -100,8 +100,8 @@ operations:
     audience: public
     idempotent: false
     schema: named
-    requestFields: ["application","authorization","challenge","code","loginIntent","membership","password","provider","subject","target","targetApplication","targetNodeId","targetSurface"]
-    responseFields: ["accessVersion","active_context","actor","application","assurance","authorization","callback","capabilities","csrf","expiresIn","governance","host","loginIntent","loginUrl","membership","memberships","mobileTokens","permissions","principal","provider","requestedTarget","returnOrigin","returnTarget","revoked","scope","scopes","security","session","sessions","sourceNode","subject","syncedAt","target","targetNode","targetRealm","targetSurface","ticket"]
+    requestFields: ["ticket","state","nonce","verifier"]
+    responseFields: ["returnTarget","expiresIn"]
     requirements: *a1
     controller: 01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts
     handler: 01_core_hexin/services/commerce/src/foundation/application/OperationHandler.ts
