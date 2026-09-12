@@ -40,7 +40,7 @@ try {
   await run('npm', ['--workspace', '@shop/commerce', 'run', 'test:integration', '--', 'NodeContextScopeResolverEngine.test.ts'], {
     environment: { SHOP_TEST_ADMIN_DATABASE_URL: adminUrl, SHOP_TEST_DATABASE_URL: runtimeUrl },
   });
-  console.log('SFL NodeContext and indexed scope PostgreSQL 17 acceptance passed: sovereign=L0/L1 hosted=L1/L5/L6/L11 relation=current closure=request-O(1)');
+  console.log('SFL NodeContext and indexed scope PostgreSQL 17 acceptance passed: sovereign=L0/L1 hosted=L2/L5/L6/L11 relation=current closure=request-O(1)');
 } finally {
   await run('docker', ['rm', '-f', container], { allowFailure: true, quiet: true });
 }

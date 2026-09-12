@@ -30,9 +30,9 @@ describe.runIf(endpointAvailable)('SFL NodeContext and Scope Resolver engine', (
     await admin.connect();
     await runtime.connect();
     let parentNodeId = rootNodeId;
-    for (const level of [1, 5, 6, 7, 8, 9, 10, 11]) {
+    for (const level of [2, 5, 6, 7, 8, 9, 10, 11]) {
       const nodeId = `node:context-it-${suffix}:l${level}`;
-      const profile = level === 1 || level === 5 ? 'operating_mall' : 'consumer';
+      const profile = level === 2 || level === 5 ? 'operating_mall' : 'consumer';
       const mallId = profile === 'operating_mall' ? `mall:context:${suffix}:l${level}` : null;
       const realmId = `realm:context-${suffix}-l${level}`;
       await admin.query(
@@ -68,7 +68,7 @@ describe.runIf(endpointAvailable)('SFL NodeContext and Scope Resolver engine', (
     const contexts = await Promise.all([
       contextResolver.resolve(rootNodeId),
       contextResolver.resolve(sovereignL1NodeId),
-      contextResolver.resolve(node(1)),
+      contextResolver.resolve(node(2)),
       contextResolver.resolve(node(5)),
       contextResolver.resolve(node(6)),
       contextResolver.resolve(node(11)),
@@ -77,7 +77,7 @@ describe.runIf(endpointAvailable)('SFL NodeContext and Scope Resolver engine', (
     expect(contexts.map((context) => [context.signed_level, context.sovereignty_tier, context.node_profile])).toEqual([
       ['L0', 'sovereign', 'operating_mall'],
       ['L1', 'sovereign', 'operating_mall'],
-      ['L1', 'hosted', 'operating_mall'],
+      ['L2', 'hosted', 'operating_mall'],
       ['L5', 'hosted', 'operating_mall'],
       ['L6', 'hosted', 'consumer'],
       ['L11', 'hosted', 'consumer'],
