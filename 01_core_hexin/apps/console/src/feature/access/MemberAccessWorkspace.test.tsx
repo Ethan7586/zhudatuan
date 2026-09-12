@@ -71,19 +71,78 @@ describe('member directory pagination', () => {
     expect((await screen.findAllByText('第二页成员')).length).toBeGreaterThan(0);
     expect(screen.queryAllByText('第一页成员')).toHaveLength(0);
   });
+
+  it('uses operator member rows as the only directory source and only enriches matching rows with access data', async () => {
+    const sharedOperator = {
+      ...member('operator:shared', '同主体管理员'),
+      membership_id: 'membership:operator:shared',
+      principal_id: 'principal:shared',
+    };
+    const sharedStorefront = {
+      ...member('storefront:shared', '同主体 L6 会员'),
+      membership_id: 'membership:storefront:shared',
+      principal_id: 'principal:shared',
+      client: 'storefront' as const,
+    };
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json({ items: [sharedOperator, sharedStorefront], count: 2 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json({
+        items: [
+          accessMembership('membership:operator:shared', '同主体管理员', true),
+          accessMembership('membership:role-only', '权限角色幽灵', true),
+          accessMembership('membership:owner', '当前登录者', false),
+        ],
+        count: 3,
+        roles: [],
+      })),
+    );
+
+    renderWorkspace({
+      ...context,
+      session: { ...context.session, capabilities: ['member.members.read', 'access.center.read'] },
+    });
+
+    expect(await screen.findByRole('row', { name: '查看管理员 同主体管理员' })).toBeTruthy();
+    expect(screen.getAllByText('高级管理员').length).toBeGreaterThan(0);
+    expect(screen.queryByText('同主体 L6 会员')).toBeNull();
+    expect(screen.queryByText('权限角色幽灵')).toBeNull();
+    expect(screen.queryByText('当前登录者')).toBeNull();
+  });
 });
 
-function renderWorkspace() {
+function renderWorkspace(value: ConsoleContext = context) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <MemoryRouter initialEntries={['/scopes/platform/organization-platform-root/settings/members']}>
       <QueryClientProvider client={client}>
-        <ConsoleContextProvider value={context}>
+        <ConsoleContextProvider value={value}>
           <MemberAccessWorkspace primary="members" />
         </ConsoleContextProvider>
       </QueryClientProvider>
     </MemoryRouter>,
   );
+}
+
+function accessMembership(id: string, displayName: string, managementRole: boolean) {
+  return {
+    id,
+    status: 'active',
+    access_version: 7,
+    member_id: `member:${id}`,
+    display_name: displayName,
+    employee_no: null,
+    roles: managementRole ? [{
+      role: 'role:senior-administrator',
+      name: '高级管理员',
+      scope,
+      scope_source: 'direct',
+      effective_at: '2026-09-01T00:00:00.000Z',
+      expires: null,
+    }] : [],
+    scopes: [{ id: `scope:${id}`, kind: scope.kind, scope: scope.id, effect: 'allow', expires: null }],
+    denies: [],
+    effective_permissions: ['member.members.read'],
+  };
 }
 
 function member(id: string, displayName: string) {

@@ -28,25 +28,15 @@ export function memberOperatorReadActions(): OperationActions {
       const access = requireAccess(request);
       const governance = requireGovernanceContext(access);
       const page = queryPage(request);
-      const result = await database.query(`with recursive governance_memberships(membership_id) as(
-        select membership.id
-        from access.membership membership
-        where membership.client='operator'
-          and (membership.id=$6
-            or exists(select 1 from access.membershiprole assignment
-            join access.role role on role.id=assignment.role_id and role.status='active'
-            where assignment.membership_id=membership.id
-              and assignment.effective_at<=clock_timestamp()
-              and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
-              and (assignment.role_id='role-zhudatuan-pending-operator'
-                or assignment.role_id='role-senior-administrator-v1:'||membership.organization_id)))
-      ), governance_subtree(membership_id) as(
-        select $8::text
+      const result = await database.query(`with recursive governance_subtree(membership_id) as(
+        select actor.id
+        from access.membership actor
+        where actor.id=$8 and actor.client='operator' and actor.status='active'
         union
         select child.id
         from access.membership child
         join governance_subtree parent on child.governance_parent_membership_id=parent.membership_id
-        join governance_memberships governance_member on governance_member.membership_id=child.id
+        where child.client='operator' and child.status='active'
       ), anchor as(
         select distinct on(profile.id) profile.id,profile.principal_id,profile.display_name,profile.status,
           principal.version principal_version,principal.status principal_status,
@@ -61,8 +51,7 @@ export function memberOperatorReadActions(): OperationActions {
         left join access.membership governance_parent
           on governance_parent.id=membership.governance_parent_membership_id
         left join member.profile governance_parent_profile on governance_parent_profile.id=governance_parent.member_id
-        where exists(select 1 from governance_memberships governance_member
-            where governance_member.membership_id=membership.id)
+        where membership.client='operator' and membership.status='active'
           and exists(select 1 from organization.unitclosure boundary
           where boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id)
           and ($7::boolean or exists(select 1 from governance_subtree visible where visible.membership_id=membership.id))
