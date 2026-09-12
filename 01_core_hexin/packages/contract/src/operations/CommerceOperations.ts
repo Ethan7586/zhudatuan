@@ -17041,7 +17041,7 @@ const definitions = [
     "writePath": "transactional",
     "stateMachine": "identity.members.reset.execution.v1",
     "businessNumber": "SFL-IDENTITY-{sha256:16}",
-    "operationHash": "7bb0ee05b5f72910ad88c9739c556ae92ec88712e22128191e1b794de8d7eaba",
+    "operationHash": "a2462544fe6cbe3dfb5886f0a49e6773ca82fe157fd353c0d49e1336a92f799b",
     "requirements": [
       "MVP13",
       "MVP22"
