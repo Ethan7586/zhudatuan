@@ -351,6 +351,22 @@
   },
   "rules": [
     {
+      "id": "identity-sovereignty-control-plane",
+      "validationOnly": true,
+      "targets": [],
+      "include": [
+        "02_platform_pingtai/config/node-runtime/hbbtzn-l1/api-gateway.Caddyfile",
+        "02_platform_pingtai/infrastructure/projects_xiangmu/hbbtzn/deployment/aliyun.yml",
+        "02_platform_pingtai/infrastructure/release/zdt-next.release.json",
+        "02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json"
+      ],
+      "validations": [
+        {"name":"release-adapter-boundary","argv":["node","--test","04_tools/release-engine/test/zdt-adapter.test.mjs"],"timeoutMs":120000},
+        {"name":"sfl-conformance-matrix","argv":["node","04_tools/scripts/check/sfl-conformance-matrix.mjs"],"timeoutMs":120000}
+      ],
+      "reason": "identity runtime ownership and gateway control-plane validation"
+    },
+    {
       "id": "validation-only",
       "validationOnly": true,
       "targets": [],
