@@ -257,7 +257,8 @@ export function memberOperatorReadActions(): OperationActions {
         left join member.profile accepted_profile on accepted_profile.id=accepted_membership.member_id
         where invitation.target_client='operator'
           and exists(select 1 from organization.unitclosure boundary
-            where boundary.ancestor_id=$1 and boundary.descendant_id=invitation.organization_id)
+            where boundary.ancestor_id=$1
+              and boundary.descendant_id=coalesce(invitation.storefront_organization_id,invitation.organization_id))
           and ($2::timestamptz is null or (invitation.created_at,invitation.id)<($2::timestamptz,$3::text))
         order by invitation.created_at desc,invitation.id desc limit $4`,
       [access.scope.id, page.sort, page.id, page.fetch]);

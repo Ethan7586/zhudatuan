@@ -526,7 +526,7 @@ describe('custom identity and permission directory', () => {
     expect(within(liRow as HTMLElement).getByText('Ethan')).toBeTruthy();
     expect(within(table).getByText('历史记录，邀请对象不可还原')).toBeTruthy();
     expect(within(table).getAllByText('高级管理员')).toHaveLength(2);
-    expect(within(table).getByText('生效中')).toBeTruthy();
+    expect(within(table).getByText('未使用')).toBeTruthy();
     expect(within(table).getByText('已使用')).toBeTruthy();
     expect(within(table).getByText('已作废')).toBeTruthy();
   });
