@@ -397,6 +397,7 @@ async function executeDeployment(adapter, item, environment, options) {
   let preflight = null;
   let externalBefore = null;
   let externalAfter = null;
+  let targetExternal = null;
   if (environment === 'production') {
     const preflightCommand = await runCommand({ name: `preflight:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'preflight', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
     preflight = parseCommandJson(preflightCommand);
@@ -416,13 +417,20 @@ async function executeDeployment(adapter, item, environment, options) {
     }
     result = activated;
     if (options.externalBaseline === true) {
-      externalAfter = await externalDomainSnapshot(adapter);
+      [externalAfter, targetExternal] = await Promise.all([
+        externalDomainSnapshot(adapter),
+        externalTargetSnapshot(item.deployment),
+      ]);
       const domainDifferences = compareDomainSnapshots(externalBefore, externalAfter);
-      if (domainDifferences.length > 0) {
+      if (domainDifferences.length > 0 || targetExternal?.passed === false) {
         const rolledBack = await runCommand({ name: `external-acceptance-rollback:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'rollback', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
-        const afterRollback = await externalDomainSnapshot(adapter);
+        const [afterRollback, targetAfterRollback] = await Promise.all([
+          externalDomainSnapshot(adapter),
+          externalTargetSnapshot(item.deployment),
+        ]);
         const rollbackDifferences = compareDomainSnapshots(externalBefore, afterRollback);
-        throw new DeliveryError('EXTERNAL_ACCEPTANCE_CHANGED', 'External domain baseline changed; target was rolled back', { domainDifferences, rollbackDifferences, before: externalBefore, after: externalAfter, afterRollback, rollback: parseCommandJson(rolledBack), activation: parseCommandJson(activated) });
+        const targetFailed = targetExternal?.passed === false;
+        throw new DeliveryError(targetFailed ? 'TARGET_EXTERNAL_ACCEPTANCE_FAILED' : 'EXTERNAL_ACCEPTANCE_CHANGED', targetFailed ? 'Target public acceptance failed; target was rolled back' : 'External domain baseline changed; target was rolled back', { domainDifferences, rollbackDifferences, before: externalBefore, after: externalAfter, afterRollback, target: targetExternal, targetAfterRollback, rollback: parseCommandJson(rolledBack), activation: parseCommandJson(activated) });
       }
     }
   }
@@ -452,7 +460,7 @@ async function executeDeployment(adapter, item, environment, options) {
     receipt: activatedRemote?.result?.receipt ? {
       ...activatedRemote.result.receipt,
       externalAcceptance: options.externalBaseline === true
-        ? { status: 'passed', count: externalAfter.length, before: externalBefore, after: externalAfter, differences: [] }
+        ? { status: 'passed', count: externalAfter.length, before: externalBefore, after: externalAfter, differences: [], target: targetExternal }
         : { status: 'not-requested' },
     } : null,
     remote: { lookup: lookupRemote, stage: stagedRemote, preflight, activate: activatedRemote, final: parseCommandJson(result) },
@@ -520,6 +528,36 @@ async function externalDomainSnapshot(adapter) {
     }
   }));
   return observations.sort((left, right) => left.host.localeCompare(right.host));
+}
+
+export async function externalTargetSnapshot(deployment) {
+  const acceptance = deployment.publicAcceptance;
+  if (!acceptance) return null;
+  const allowedStatuses = acceptance.allowedStatuses ?? [200];
+  try {
+    const response = await fetch(acceptance.url, {
+      method: acceptance.method ?? 'GET',
+      redirect: 'manual',
+      signal: AbortSignal.timeout(acceptance.timeoutMs ?? 12_000),
+    });
+    await response.body?.cancel();
+    return {
+      url: acceptance.url,
+      status: response.status,
+      statusText: response.statusText || '',
+      allowedStatuses,
+      passed: allowedStatuses.includes(response.status),
+    };
+  } catch (error) {
+    return {
+      url: acceptance.url,
+      status: null,
+      statusText: 'NO_HTTP_STATUS',
+      allowedStatuses,
+      passed: false,
+      error: error?.cause?.code ?? error?.name ?? 'FETCH_FAILED',
+    };
+  }
 }
 
 function compareDomainSnapshots(before, after) {

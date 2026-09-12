@@ -1,10 +1,26 @@
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { deployCommand } from '../src/engine.mjs';
+import { deployCommand, externalTargetSnapshot } from '../src/engine.mjs';
+
+test('target public acceptance records the actual status against its declared allowlist', async (t) => {
+  const server = createServer((_request, response) => {
+    response.writeHead(204);
+    response.end();
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve())));
+  const { port } = server.address();
+  const deployment = { publicAcceptance: { url: `http://127.0.0.1:${port}/`, allowedStatuses: [204] } };
+
+  assert.deepEqual(await externalTargetSnapshot({}), null);
+  assert.equal((await externalTargetSnapshot(deployment)).passed, true);
+  assert.equal((await externalTargetSnapshot({ publicAcceptance: { ...deployment.publicAcceptance, allowedStatuses: [200] } })).passed, false);
+});
 
 test('failed production database migration blocks consumer activation without affecting candidate staging semantics', async () => {
   const production = await fixture();

@@ -1,7 +1,7 @@
 name: Deploy
 
 # 秒级切流：只把 CI 已经校验并暂存好的候选制品切成 current，重启一个目标服务。
-# 不跑测试、不构建、不打包、不浏览器验收、不打 15 域名基线、不做 caddy diff。
+# 不跑测试、不构建、不打包、不浏览器验收；切流时默认核对 15 域名前后基线与目标公网入口。
 # 触发本工作流（Run workflow / scripts/deploy-now.sh）即为 Ethan 的生产授权。
 
 on:
@@ -21,9 +21,9 @@ on:
         default: console
         type: string
       external_baseline:
-        description: 切流后额外跑 15 域名基线 + 漂移自动回滚（默认关）
+        description: 核对 15 域名前后基线与目标公网入口，漂移或目标异常时自动回滚
         required: false
-        default: false
+        default: true
         type: boolean
       release_node:
         description: 要切换的主权节点

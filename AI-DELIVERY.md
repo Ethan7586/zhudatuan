@@ -20,7 +20,7 @@ npm run release -- rollback --node <node> --target <target>
 
 > **校验前移（2026-09-11）：** 所有测试 / typecheck / build / package 在 PR 的 `Affected Delivery` CI 里跑完，合并到 `zdt-next` 时自动把候选制品暂存到阿里云。
 > **AI 会话的活到「合并 + CI 绿」为止**，不在本地 build / test / deploy，不做浏览器 QA，不为部署单独取证。
-> **生产切流只走 `Deploy` 工作流**（GitHub Actions → Run workflow，或 `scripts/deploy-now.sh <target> [commit]`），且必须明确一个 `release_target`：记回滚点 → 原子切 `current` → 重启一个目标服务 → 等 READY（起不来自动弹回）。默认不打 15 域名基线、不做 caddy diff；需要时工作流勾 `external_baseline`。
+> **生产切流只走 `Deploy` 工作流**（GitHub Actions → Run workflow，或 `scripts/deploy-now.sh <target> [commit]`），且必须明确一个 `release_target`：记回滚点 → 记录固定 15 域名基线 → 原子切 `current` → 重启一个目标服务 → 等 READY → 对比 15 域名前后状态并检查目标公网入口（任一异常自动弹回）。15 域名用于证明共享站点未因本次发布发生变化，不要求旧站点预先全部返回 200；Console 目标另按节点检查 `console.fufu.wang` 或 `console.hbbtzn.com` 返回 200。Caddy 仍以归一化语义摘要判定是否发生变化。
 > 文档、测试和夹具变化可以运行直接相关验证；没有生产目标时不构建制品、不暂存候选、不重启服务。
 
 ## 目标图发布

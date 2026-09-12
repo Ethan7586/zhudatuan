@@ -25,6 +25,17 @@ test('production acceptance is fixed to the protected fifteen-domain baseline', 
   assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
 });
 
+test('Console production cutover verifies the node-specific public entry by default', () => {
+  assert.deepEqual(adapter.nodes['zhudatuan-l0'].deployments.console.publicAcceptance, {
+    url: 'https://console.fufu.wang/', allowedStatuses: [200], timeoutMs: 12000,
+  });
+  assert.deepEqual(adapter.nodes['hbbtzn-l1'].deployments.console.publicAcceptance, {
+    url: 'https://console.hbbtzn.com/', allowedStatuses: [200], timeoutMs: 12000,
+  });
+  assert.match(deployWorkflow, /external_baseline:[\s\S]*?default: true/);
+  assert.match(deployWorkflow, /inputs\.external_baseline && '--external-baseline'/);
+});
+
 test('build and remote adapters agree on every pointer and process', () => {
   for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
     for (const [target, deployment] of Object.entries(node.deployments)) {
