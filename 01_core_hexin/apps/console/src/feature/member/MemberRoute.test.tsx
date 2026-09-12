@@ -158,14 +158,16 @@ describe('member administrator invitation', () => {
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('platform:one');
   });
 
-  it('anchors the administrator directory to operator members and excludes unrelated access memberships', async () => {
+  it('keeps role-bearing administrators when the operator member endpoint is empty and excludes unrelated access memberships', async () => {
+    server.use(http.get('*/api/v1/members', () => HttpResponse.json({ items: [], count: 0 })));
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json({
       items: [
-        accessMembership('membership:employee', '测试员工'),
+        accessMembership('membership:owner', 'Ethan', 'Owner'),
+        accessMembership('membership:senior', '高级管理员', '高级管理员'),
         accessMembership('membership:l6-consumer', 'L6消费者7586'),
         accessMembership('membership:duplicate-ethan', 'Ethan'),
       ],
-      count: 3,
+      count: 4,
       roles: [],
     })));
     renderRoute({
@@ -178,10 +180,10 @@ describe('member administrator invitation', () => {
     });
 
     const table = await screen.findByRole('table', { name: '管理员目录' });
-    expect(await within(table).findByText('测试员工')).toBeTruthy();
+    expect(await within(table).findAllByText('高级管理员')).toHaveLength(2);
+    expect(within(table).getAllByText('Ethan')).toHaveLength(1);
     expect(within(table).queryByText('L6消费者7586')).toBeNull();
-    expect(within(table).queryByText('Ethan')).toBeNull();
-    expect(screen.getByText('当前页 1 位 · 共 1 位管理员')).toBeTruthy();
+    expect(screen.getByText('当前页 2 位 · 共 2 位管理员')).toBeTruthy();
   });
 
   it.each(legacyInvitationEvidenceCases)('keeps the write entry when stale %s evidence is missing', async (_name, sessionPatch) => {
@@ -348,7 +350,7 @@ function memberPage(patch: Readonly<Record<string, unknown>> = {}) {
   };
 }
 
-function accessMembership(id: string, displayName: string) {
+function accessMembership(id: string, displayName: string, roleName?: string) {
   return {
     id,
     status: 'active',
@@ -356,7 +358,14 @@ function accessMembership(id: string, displayName: string) {
     member_id: id.replace('membership:', 'member:'),
     display_name: displayName,
     employee_no: null,
-    roles: [],
+    roles: roleName === undefined ? [] : [{
+      role: `role:${roleName.toLocaleLowerCase('zh-CN')}`,
+      name: roleName,
+      scope: tenantScope,
+      scope_source: 'direct',
+      effective_at: '2026-08-29T00:00:00.000Z',
+      expires: null,
+    }],
     scopes: [],
     denies: [],
     effective_permissions: [],
