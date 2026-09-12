@@ -6,6 +6,29 @@ import type { AccessContext } from '../../foundation/security/AccessContext';
 import { webCatalogActions } from './WebCatalogOperations';
 
 describe('web catalog management read', () => {
+  it('limits the ordinary first page before joining product details and summarizes draft readiness separately', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, (text) => text.includes('listing_counts') ? [{
+      total_count: 571,
+      needs_attention: 0,
+      pending_review: 0,
+      published: 571,
+      unpublished: 0,
+    }] : []);
+    const read = webCatalogActions()['catalog.listings.read'];
+    if (typeof read !== 'function') throw new Error('WEB_CATALOG_LISTING_READ_ACTION_MISSING');
+
+    await read(request({}), database);
+
+    const listingRead = calls[0]!;
+    expect(listingRead.text).toContain('with listing_page as materialized');
+    expect(listingRead.text.indexOf('limit $7')).toBeLessThan(listingRead.text.indexOf('join catalog.sku sku'));
+    expect(listingRead.values).toEqual(['mall:hongtai', '', false, null, null, '', 51]);
+    expect(calls[1]?.text).toContain('with scoped_listing as materialized');
+    expect(calls[1]?.text).toContain("where listing.status='draft'");
+    expect(calls[1]?.values).toEqual(['mall:hongtai', '', false]);
+  });
+
   it('returns SKU quantity and management status totals through the hierarchy-aware path', async () => {
     const calls: QueryCall[] = [];
     const database = recordingDatabase(calls, (text) => text.includes('count(*) filter') ? [{
@@ -32,10 +55,11 @@ describe('web catalog management read', () => {
 
     const summaryRead = calls.find(({ text }) => text.includes('count(*) filter'))!;
     expect(summaryRead.text).toContain('organization.unitclosure');
-    expect(summaryRead.text).toContain('with classified as materialized');
-    expect(summaryRead.text).toContain("filter(where management_status='published')");
+    expect(summaryRead.text).toContain('with scoped_listing as materialized');
+    expect(summaryRead.text).toContain('draft_classified as materialized');
+    expect(summaryRead.text).toContain("filter(where status='published')");
     expect(summaryRead.text.match(/not exists\(select 1 from pricing\.pricebook/g)).toHaveLength(1);
-    expect(summaryRead.values).toEqual(['mall:hongtai', '', '', '', '', false]);
+    expect(summaryRead.values).toEqual(['mall:hongtai', '', false]);
     expect(calls.some(({ text }) => text.includes('console_supply_network'))).toBe(false);
   });
 
