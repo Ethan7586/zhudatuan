@@ -93,7 +93,9 @@ jobs:
             exit 1
           fi
           test -f .candidate-download/.ci-release/package.json
+          test -d .candidate-download/.ai-delivery/artifacts
           mv .candidate-download/.ci-release .ci-release
+          mv .candidate-download/.ai-delivery .ai-delivery
           node -e "const p=require('./.ci-release/package.json');if(p.project!=='zdt-next'||p.sourceSha!==process.env.TARGET_SHA){throw new Error('候选包内来源与目标提交不一致')}"
           printf '候选运行: `%s`，包内来源: `%s`\n' "$matched_run" "$TARGET_SHA" >> "$GITHUB_STEP_SUMMARY"
 

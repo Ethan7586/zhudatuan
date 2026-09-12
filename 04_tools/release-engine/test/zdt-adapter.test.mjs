@@ -205,5 +205,6 @@ test('first activation stays limited to content while Support uses an imported r
 test('production deployment binds identity to the downloaded candidate package', () => {
   assert.match(deployWorkflow, /p\.sourceSha!==process\.env\.TARGET_SHA/);
   assert.match(deployWorkflow, /release-candidate-\$TARGET_SHA/);
+  assert.match(deployWorkflow, /mv \.candidate-download\/\.ai-delivery \.ai-delivery/);
   assert.doesNotMatch(deployWorkflow, /candidate_sha.*TARGET_SHA/);
 });
