@@ -6,7 +6,7 @@ import { workspaceResolver } from './workspace-resolver.mjs';
 const outfile = '01_core_hexin/services/commerce/dist/DatabaseMigrationExecutor.js';
 await mkdir('01_core_hexin/services/commerce/dist', { recursive: true });
 await build({
-  banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
+  banner: { js: "import { createRequire as __sflCreateRequire } from 'node:module'; const require = __sflCreateRequire(import.meta.url);" },
   bundle: true,
   entryPoints: ['04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'],
   format: 'esm',
