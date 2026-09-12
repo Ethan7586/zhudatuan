@@ -158,13 +158,14 @@ describe('member administrator invitation', () => {
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('platform:one');
   });
 
-  it('merges every operator returned by the member and access directories', async () => {
+  it('anchors the administrator directory to operator members and excludes unrelated access memberships', async () => {
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json({
       items: [
         accessMembership('membership:employee', '测试员工'),
-        accessMembership('membership:off-page', '不应出现在本页'),
+        accessMembership('membership:l6-consumer', 'L6消费者7586'),
+        accessMembership('membership:duplicate-ethan', 'Ethan'),
       ],
-      count: 2,
+      count: 3,
       roles: [],
     })));
     renderRoute({
@@ -178,8 +179,9 @@ describe('member administrator invitation', () => {
 
     const table = await screen.findByRole('table', { name: '管理员目录' });
     expect(await within(table).findByText('测试员工')).toBeTruthy();
-    expect(within(table).getByText('不应出现在本页')).toBeTruthy();
-    expect(screen.getByText('当前页 2 位 · 共 2 位管理员')).toBeTruthy();
+    expect(within(table).queryByText('L6消费者7586')).toBeNull();
+    expect(within(table).queryByText('Ethan')).toBeNull();
+    expect(screen.getByText('当前页 1 位 · 共 1 位管理员')).toBeTruthy();
   });
 
   it.each(legacyInvitationEvidenceCases)('keeps the write entry when stale %s evidence is missing', async (_name, sessionPatch) => {

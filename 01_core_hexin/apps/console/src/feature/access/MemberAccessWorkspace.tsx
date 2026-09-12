@@ -64,7 +64,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   });
   const accessItems = accessQuery.data?.items ?? [];
   const memberItems = memberQuery.data?.items ?? [];
-  const rows = useMemo(() => mergeRows(memberItems, accessItems, context.session.membership), [accessItems, context.session.membership, memberItems]);
+  const rows = useMemo(() => mergeRows(memberItems, accessItems), [accessItems, memberItems]);
   const invitationWritable = memberInvitationAvailable(context);
   const normalizedFilter = filter.trim().toLocaleLowerCase('zh-CN');
   const visibleRows = useMemo(
@@ -79,16 +79,14 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   );
   const selected = rows.find((row) => row.id === selectedId);
   const detailOpen = selected !== undefined;
-  const hasSourceData = memberQuery.data !== undefined || accessQuery.data !== undefined;
-  const primaryError = safeQueryError(primary === 'access' ? accessQuery.error : memberQuery.error);
-  const secondaryError = safeQueryError(primary === 'access' ? memberQuery.error : accessQuery.error);
-  const fatalError = hasSourceData ? undefined : (primaryError ?? secondaryError);
-  const supplementalError = hasSourceData ? (primaryError ?? secondaryError) : undefined;
+  const hasSourceData = memberQuery.data !== undefined;
+  const fatalError = hasSourceData ? undefined : safeQueryError(memberQuery.error);
+  const supplementalError = hasSourceData ? safeQueryError(accessQuery.error) : undefined;
   const fetching = memberQuery.isFetching || accessQuery.isFetching;
   const condition = resourceState(hasSourceData ? { items: rows } : undefined, fetching, fatalError);
   const resetAvailable = context.session.permissions.includes('identity.registration.reset') && context.session.capabilities.includes('identity.members.reset') && context.session.csrf !== undefined;
-  const total = Math.max(rows.length, memberQuery.data?.count ?? 0);
-  const nextCursor = primary === 'access' ? accessQuery.data?.nextCursor : memberQuery.data?.nextCursor;
+  const total = memberQuery.data?.count ?? rows.length;
+  const nextCursor = memberQuery.data?.nextCursor;
 
   useEffect(() => {
     if (!detailOpen) return undefined;
@@ -664,16 +662,13 @@ function MemberIcon({ name }: Readonly<{ name: MemberIconName }>) {
   );
 }
 
-function mergeRows(members: readonly Member[], access: readonly AccessMembership[], currentMembershipId: string): readonly MemberAccessRow[] {
-  const memberById = new Map(members.map((member) => [member.membership_id, member]));
+function mergeRows(members: readonly Member[], access: readonly AccessMembership[]): readonly MemberAccessRow[] {
+  const memberById = new Map(members.filter((member) => member.client === 'operator').map((member) => [member.membership_id, member]));
   const accessById = new Map(access.map((membership) => [membership.id, membership]));
-  const ids = new Set([...memberById.keys(), ...accessById.keys()]);
-  return [...ids].map((id) => {
-    const member = memberById.get(id);
+  return [...memberById.entries()].map(([id, member]) => {
     const membership = accessById.get(id);
-    const administrator = member !== undefined || id === currentMembershipId;
-    const managementRoles = administrator ? (membership?.roles ?? []) : [];
-    return { id, administrator, managementRoles, ...(member === undefined ? {} : { member }), ...(membership === undefined ? {} : { access: membership }) };
+    const managementRoles = membership?.roles ?? [];
+    return { id, administrator: true, managementRoles, member, ...(membership === undefined ? {} : { access: membership }) };
   });
 }
 function hasOperation(context: ConsoleContext, operation: string): boolean {
