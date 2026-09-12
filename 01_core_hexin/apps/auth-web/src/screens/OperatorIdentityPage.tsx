@@ -68,6 +68,10 @@ export const OperatorIdentityPage: React.FC<Readonly<{
     setError('');
     setNotice('');
     setMemberships([]);
+    setPassword('');
+    setConfirmPassword('');
+    setResetConfirm('');
+    setShowPassword(false);
   };
 
   const consoleOptions = () => ({ target, expectedOrigin });
@@ -296,7 +300,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
               {registrationIdentityExists !== true && <TextField label="姓名" value={displayName} onChange={setDisplayName} autoComplete="name" />}
               <TextField label="手机号" value={identifier} onChange={(value) => { setIdentifier(value); setRegistrationChallenge(''); setRegistrationIdentityExists(null); }} autoComplete="tel" inputMode="tel" />
               <div className="flex gap-2">
-                <input required inputMode="numeric" maxLength={6} value={registrationCode} onChange={(event) => setRegistrationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6 位验证码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100" />
+                <input required inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={registrationCode} onChange={(event) => setRegistrationCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6 位验证码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100" />
                 <button type="button" disabled={registrationCodeBusy || !identifier.trim() || !inviteCode.trim()} onPointerDown={() => identityActions.pointerDown('operator-registration-code')} onClick={sendRegistrationCode} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50"><Send className="mr-1 inline h-3.5 w-3.5" />获取验证码</button>
               </div>
               {registrationIdentityExists !== true && (
@@ -304,6 +308,11 @@ export const OperatorIdentityPage: React.FC<Readonly<{
                   <PasswordField label="设置密码" value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />
                   <PasswordField label="确认密码" value={confirmPassword} onChange={setConfirmPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />
                 </>
+              )}
+              {registrationIdentityExists === true && (
+                <div role="status" className="rounded-xl border border-blue-100 bg-blue-50 px-3.5 py-3 text-xs leading-5 text-blue-700">
+                  该手机号已有统一身份，无需重复设置密码。开通管理员身份后，请使用原统一身份密码登录；忘记密码可在“找回密码”中重置。
+                </div>
               )}
               <label className="flex items-start gap-2 text-xs leading-5 text-slate-500">
                 <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} disabled={invite === null} className="mt-0.5 h-4 w-4 accent-[var(--sw-brand)]" />
@@ -317,7 +326,7 @@ export const OperatorIdentityPage: React.FC<Readonly<{
             <form onSubmit={resetPassword} className="space-y-4">
               <TextField label="绑定手机号" value={identifier} onChange={setIdentifier} autoComplete="tel" inputMode="tel" />
               <div className="flex gap-2">
-                <input required inputMode="numeric" maxLength={6} value={resetCode} onChange={(event) => setResetCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6 位验证码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100" />
+                <input required inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={resetCode} onChange={(event) => setResetCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="6 位验证码" className="min-w-0 flex-1 rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100" />
                 <button type="button" disabled={resetCodeBusy || !identifier.trim()} onPointerDown={() => identityActions.pointerDown('operator-reset-code')} onClick={sendResetCode} className="rounded-xl border border-blue-200 bg-blue-50 px-4 text-xs font-bold text-[var(--sw-brand)] disabled:opacity-50"><KeyRound className="mr-1 inline h-3.5 w-3.5" />获取验证码</button>
               </div>
               <PasswordField label="新密码" value={password} onChange={setPassword} visible={showPassword} onToggle={() => setShowPassword((value) => !value)} autoComplete="new-password" />

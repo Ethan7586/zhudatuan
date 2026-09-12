@@ -328,7 +328,7 @@ describe('administrator invitation issuance', () => {
 });
 
 describe('identity challenge notification queue', () => {
-  it('enqueues registration challenges on the dedicated identity notification queue', async () => {
+  it('enqueues shared-api registration challenges for the resolved entry node', async () => {
     let requestHash = '';
     let notificationSql = '';
     let notificationValues: readonly unknown[] = [];
@@ -355,7 +355,7 @@ describe('identity challenge notification queue', () => {
       workload: () => pool,
       end: async () => undefined,
     };
-    const moduleContext = context(pool, 'node:hbbtzn:l1');
+    const moduleContext = context(pool);
 
     const response = await identityOperations(moduleContext).invoke({
       type: 'identity.challenges.create',

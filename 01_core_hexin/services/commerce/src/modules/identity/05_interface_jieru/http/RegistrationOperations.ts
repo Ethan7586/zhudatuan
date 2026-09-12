@@ -82,7 +82,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
             `insert into runtime.job(id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
           select $1,'identitynotification','identity',$2,jsonb_build_object('challenge',$3::text),'queued',1,clock_timestamp(),clock_timestamp(),clock_timestamp()
           where $4::text is not null`,
-            [`job:notify:${id}`, notificationScope ?? null, id, purpose === 'login' ? principal : 'public-challenge']
+            [`job:notify:${id}`, notificationScope ?? realm.nodeId, id, purpose === 'login' ? principal : 'public-challenge']
           );
           await publishIdentityEvent(database, 'identity.challenge.started', id, 'identity', request.input.idempotency!, {
             challenge: id, destination: destinationHash, purpose, realm: challengeRealmId,
