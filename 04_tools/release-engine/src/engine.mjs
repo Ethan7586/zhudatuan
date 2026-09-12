@@ -173,8 +173,8 @@ export async function deployCommand(adapter, options) {
 export async function installCommand(adapter, options) {
   const started = performance.now();
   const mode = options.mode ?? 'agent';
-  invariant(['agent-candidate', 'agent', 'runtime-candidate', 'verify'].includes(mode), 'INSTALL_MODE_INVALID', `Unsupported install mode: ${mode}`);
-  const nodeScope = mode === 'runtime-candidate' ? required(options.node, 'INSTALL_NODE_REQUIRED') : 'all';
+  invariant(['agent-candidate', 'agent', 'runtime-candidate', 'runtime', 'verify'].includes(mode), 'INSTALL_MODE_INVALID', `Unsupported install mode: ${mode}`);
+  const nodeScope = ['runtime-candidate', 'runtime'].includes(mode) ? required(options.node, 'INSTALL_NODE_REQUIRED') : 'all';
   invariant(nodeScope === 'all' || Boolean(adapter.nodes[nodeScope]), 'INSTALL_NODE_UNKNOWN', `Unknown install node: ${nodeScope}`);
   await assertWorktreeClean(adapter.projectRoot);
   const head = await currentHead(adapter.projectRoot);
@@ -238,6 +238,7 @@ export async function installCommand(adapter, options) {
     sourceSha: head,
     archive: { path: archive, bytes: archiveBytes, sha256: `sha256:${archiveSha256}` },
     remoteRoot,
+    remoteEvidence: installed.output.trim(),
     timings: { package: packageMs, upload: upload.durationMs, install: installed.durationMs, total: elapsed(started) },
     traffic: { artifactBytes: archiveBytes, uploadedBytes: archiveBytes, reusedBytes: 0 },
     installedAt: new Date().toISOString(),
