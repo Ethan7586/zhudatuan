@@ -1,4 +1,4 @@
-import { createRequire } from 'node:module';
+import { createRequire as createNodeRequire } from 'node:module';
 import type { CatalogMediaStorageResolver, CatalogMediaTarget } from '../../03_application_yingyong/port/CatalogMediaObjectStorage';
 import { AliyunOssCatalogMediaStorage, type AliyunOssClient } from './AliyunOssCatalogMediaStorage';
 
@@ -36,7 +36,7 @@ export function createCatalogMediaStorageResolver(
 }
 
 function createAliyunOssClient(configuration: AliyunOssClientConfiguration): AliyunOssClient {
-  const require = createRequire(import.meta.url);
+  const require = createNodeRequire(import.meta.url);
   const AliyunOss = require('ali-oss') as new (options: AliyunOssClientConfiguration) => AliyunOssClient;
   return new AliyunOss(configuration);
 }
