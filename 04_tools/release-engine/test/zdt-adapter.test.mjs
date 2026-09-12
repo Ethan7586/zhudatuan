@@ -206,9 +206,8 @@ test('storefront seed dependency identity matches the build adapter', () => {
   assert.deepEqual(policy.readiness, { timeoutMs: 30000, intervalMs: 500, attemptTimeoutMs: 3000, hardFailureGraceMs: 1000 });
 });
 
-test('runtime installer cannot restart or cut over a service', async () => {
+test('runtime candidate stays inert while explicit runtime mode can cut over only the L1 gateway', async () => {
   const source = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh'), 'utf8');
-  assert.doesNotMatch(source, /systemctl\s+(restart|start|reload)\b/);
   assert.doesNotMatch(source, /pm2\s+(restart|start|reload|startOrReload)\b/);
   assert.match(source, /systemctl daemon-reload/);
   assert.match(source, /agent-candidate/);
@@ -218,6 +217,10 @@ test('runtime installer cannot restart or cut over a service', async () => {
   assert.match(source, /node_scope.*hbbtzn-l1/);
   assert.match(source, /node_scope.*zhudatuan-l0/);
   assert.match(source, /systemctl unmask sfl-identity-api@hbbtzn-l1\.service/);
+  assert.match(source, /if \[\[ "\$mode" == runtime \]\]; then/);
+  assert.match(source, /active semantic config differs from the single approved 4321-to-4433 transition/);
+  assert.match(source, /systemctl restart "\$gateway_unit"/);
+  assert.match(source, /nonTargetProcesses=unchanged/);
   assert.match(source, /target_root="\$\{pointer%\/\*\}"/);
   assert.match(source, /chmod 0755 "\$target_parent" "\$target_root"/);
 });
