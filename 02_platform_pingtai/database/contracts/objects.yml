@@ -884,6 +884,11 @@ objects:
     owner: identity
     source: 02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql
     operationalOwner: identity
+  - id: identity.resolve_storefront_member_context
+    kind: function
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912220000_publish_storefront_member_context_projection.sql
+    operationalOwner: identity
   - id: identity.resolve_session
     kind: function
     owner: identity
@@ -18560,6 +18565,14 @@ objects:
     role: zhudatuanidentityapi
     objectType: function
     target: identity.resolve_active_membership_context(text,text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:identity.resolve_storefront_member_context(text,text):execute
+    kind: grant
+    owner: identity
+    source: 02_platform_pingtai/database/supabase/migrations/20260912220000_publish_storefront_member_context_projection.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: identity.resolve_storefront_member_context(text,text)
     privilege: execute
   - id: zhudatuanidentityapi:function:identity.resolve_session(text,text):execute
     kind: grant

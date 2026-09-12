@@ -212,6 +212,7 @@ const REPAIR_FILES = [
   '20260912190000_create_supplier_four_flow_ledger.sql',
   '20260912200000_create_sfl_company_template_clone.sql',
   '20260912210000_catalog_media_replication_persistence.sql',
+  '20260912220000_publish_storefront_member_context_projection.sql',
 ];
 
 const mode = process.argv[2];

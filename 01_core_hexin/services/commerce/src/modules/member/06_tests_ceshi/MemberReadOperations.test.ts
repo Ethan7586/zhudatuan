@@ -134,10 +134,12 @@ describe('storefront member directory boundary', () => {
           id text primary key,node_profile text not null,mall_id text,status text not null
         );
         create table organization.noderelation(
-          node_id text not null,parent_node_id text,signed_level text not null,superseded_at timestamptz
+          node_id text not null,line_id text not null,parent_node_id text,signed_level text not null,
+          superseded_at timestamptz
         );
         create table organization.membernoderegistration(
-          membership_id text primary key,node_id text not null unique
+          registration_id text primary key,membership_id text not null,node_id text not null,
+          line_id text not null,created_at timestamptz not null
         );
         create table identity.federatedidentity(
           id text primary key,principal_id text,membership_id text,provider text not null,status text not null
@@ -152,6 +154,49 @@ describe('storefront member directory boundary', () => {
           payment_state text not null,fulfillment_state text not null,aftersale_state text not null,
           member_id text not null,mall_id text not null,created_at timestamptz not null
         );
+        create function identity.resolve_storefront_member_context(
+          p_membership_id text,p_organization_id text
+        ) returns table(
+          membership_id text,node_id text,parent_node_id text,signed_level text,node_profile text,
+          parent_kind text,parent_display_name text,parent_signed_level text
+        ) language sql stable as $function$
+          select membership.id,member_node.node_id,member_node.parent_node_id,
+            member_node.signed_level,member_node.node_profile,
+            case when parent_node.node_profile='consumer' then 'member' else 'mall' end,
+            case when parent_node.node_profile='consumer' then parent_member.display_name else organization.name end,
+            parent_relation.signed_level
+          from access.membership membership
+          join member.profile profile on profile.id=membership.member_id
+          join organization.organization organization on organization.id=membership.organization_id
+          join lateral (
+            select node.id node_id,relation.line_id,relation.parent_node_id,relation.signed_level,node.node_profile
+            from organization.membernoderegistration registration
+            join organization.node node on node.id=registration.node_id and node.status='active'
+              and node.node_profile='consumer'
+            join organization.noderelation relation on relation.node_id=node.id
+              and relation.line_id=registration.line_id and relation.superseded_at is null
+              and relation.signed_level in('L6','L7','L8','L9','L10','L11')
+            where registration.membership_id=membership.id
+            order by registration.created_at desc,registration.registration_id desc
+            limit 1
+          ) member_node on true
+          join organization.node parent_node on parent_node.id=member_node.parent_node_id and parent_node.status='active'
+          join organization.noderelation parent_relation on parent_relation.node_id=parent_node.id
+            and parent_relation.line_id=member_node.line_id and parent_relation.superseded_at is null
+          left join lateral (
+            select parent_profile.display_name
+            from organization.membernoderegistration parent_registration
+            join access.membership parent_membership on parent_membership.id=parent_registration.membership_id
+              and parent_membership.organization_id=membership.organization_id
+              and parent_membership.client='storefront'
+            join member.profile parent_profile on parent_profile.id=parent_membership.member_id
+            where parent_registration.node_id=parent_node.id and parent_registration.line_id=member_node.line_id
+            order by parent_registration.created_at desc,parent_registration.registration_id desc
+            limit 1
+          ) parent_member on parent_node.node_profile='consumer'
+          where membership.id=p_membership_id and membership.organization_id=p_organization_id
+            and membership.client='storefront'
+        $function$;
         insert into member.profile values
           ('member:shared','principal:shared','测试消费者甲','18800008866','token:8866','188****8866'),
           ('member:wechat','principal:wechat','测试消费者乙','17700007755','token:7755','177****7755'),
@@ -165,24 +210,25 @@ describe('storefront member directory boundary', () => {
           ('node:wechat:l8','consumer',null,'active'),
           ('node:foreign:l6','consumer',null,'active');
         insert into organization.noderelation values
-          ('node:mall-one:l1',null,'L1',null),
-          ('node:inviter:l6','node:mall-one:l1','L6',null),
-          ('node:shared:l7','node:inviter:l6','L7',null),
-          ('node:wechat:l8','node:shared:l7','L8',null),
-          ('node:foreign:l6','node:mall-one:l1','L6',null);
+          ('node:mall-one:l1','line:mall-one',null,'L1',null),
+          ('node:inviter:l6','line:mall-one','node:mall-one:l1','L6',null),
+          ('node:shared:l7','line:mall-one','node:inviter:l6','L7',null),
+          ('node:wechat:l8','line:mall-one','node:shared:l7','L8',null),
+          ('node:foreign:l6','line:mall-two','node:mall-one:l1','L6',null);
         insert into access.membership values
           ('membership:storefront:one','member:shared','mall:one','storefront','active','2026-09-06T08:00:00Z'),
           ('membership:operator:same-principal','member:shared','mall:one','operator','active','2026-09-06T08:00:00Z'),
           ('membership:storefront:two','member:wechat','mall:one','storefront','invited',null),
           ('membership:storefront:inviter','member:inviter','mall:one','storefront','active','2026-09-04T08:00:00Z'),
+          ('membership:storefront:legacy','member:foreign','mall:one','storefront','active','2026-09-05T08:00:00Z'),
           ('membership:store:one','member:foreign','mall:one','store','active','2026-09-05T08:00:00Z'),
           ('membership:supplier:one','member:foreign','mall:one','supplier','active','2026-09-05T08:00:00Z'),
           ('membership:storefront:other-mall','member:foreign','mall:two','storefront','active','2026-09-05T08:00:00Z'),
           ('membership:storefront:l0','member:foreign','organization-platform-root','storefront','active','2026-09-05T08:00:00Z');
         insert into organization.membernoderegistration values
-          ('membership:storefront:one','node:shared:l7'),
-          ('membership:storefront:two','node:wechat:l8'),
-          ('membership:storefront:inviter','node:inviter:l6');
+          ('registration:one','membership:storefront:one','node:shared:l7','line:mall-one','2026-09-06T08:00:00Z'),
+          ('registration:two','membership:storefront:two','node:wechat:l8','line:mall-one','2026-09-07T08:00:00Z'),
+          ('registration:inviter','membership:storefront:inviter','node:inviter:l6','line:mall-one','2026-09-04T08:00:00Z');
         insert into identity.federatedidentity values
           ('identity:operator','principal:shared','membership:operator:same-principal','wechat','active'),
           ('identity:revoked','principal:shared','membership:storefront:one','wechat','revoked'),
@@ -208,6 +254,7 @@ describe('storefront member directory boundary', () => {
       expect(page.items.map(({ membership_id }) => membership_id)).toEqual([
         'membership:storefront:two', 'membership:storefront:one', 'membership:storefront:inviter',
       ]);
+      expect(page.items.some(({ membership_id }) => membership_id === 'membership:storefront:legacy')).toBe(false);
       expect(page.items[0]).toMatchObject({ identity_level: 'L8', identity_kind: 'consumer', wechat_bound: true });
       expect(page.items[1]).toMatchObject({ identity_level: 'L7' });
       expect(page.items[1]).toMatchObject({
