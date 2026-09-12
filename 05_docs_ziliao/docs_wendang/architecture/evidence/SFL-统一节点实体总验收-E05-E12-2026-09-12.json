@@ -1,7 +1,7 @@
 {
   "schema_version": "sfl.unified-node.entity-acceptance-receipt.v1",
-  "receipt_id": "sfl-e05-e12-20260912-d258160b",
-  "fixed_at": "2026-09-12T15:01:31Z",
+  "receipt_id": "sfl-e05-e12-20260912-7d94f2aa",
+  "fixed_at": "2026-09-12T15:36:15Z",
   "scope": "E05-E12 acceptance indexes only",
   "result_policy": {
     "PASS": "All exhaustive conditions for this acceptance index were directly observed in the stated environment.",
@@ -25,8 +25,8 @@
   },
   "baseline": {
     "branch": "codex/sfl-e05-e12-entity-acceptance",
-    "source_sha": "d258160b87b3ff2b2613e266ab4681cc98417d0f",
-    "origin_zdt_next_sha_at_fix": "d258160b87b3ff2b2613e266ab4681cc98417d0f",
+    "source_sha": "7d94f2aa1d5b4b181168ecc59c0e34babb2ae36f",
+    "origin_zdt_next_sha_at_fix": "7d94f2aa1d5b4b181168ecc59c0e34babb2ae36f",
     "working_tree_before_receipt": "clean",
     "migration_inventory": {
       "historical": 94,
@@ -212,10 +212,11 @@
       "passed_evidence": [
         "L0 and L1 declarations reference one shared immutable artifact with build_count=1",
         "Conformance matrix has 17 candidate PASS, 0 FAIL and 13 UNKNOWN",
-        "Current public L0 and L1 readiness probes return ready"
+        "Current public L0 and L1 readiness probes return ready",
+        "Affected Delivery run 34701926991 built once, packaged, published and staged the exact 7d94f2aa candidate on Aliyun without production cutover"
       ],
       "missing_evidence": [
-        "Declared artifact identity does not equal acceptance baseline SHA d258160b",
+        "Declared L0/L1 production artifact identity does not equal acceptance baseline SHA 7d94f2aa",
         "Live L0 manifest digest differs from the repository declaration",
         "No real one-build rollout across one Hosted host and three Sovereign pointers",
         "No complete page/API/task/service observed feature matrix and S-B rollback receipt"
@@ -254,11 +255,12 @@
         "Domain boundary tests passed 4/4: no default node, duplicate host rejected, undeclared default rejected, unknown resource node rejected",
         "Multi-Realm PostgreSQL 17 acceptance passed for same credential across isolated accounts, memberships, sessions, parents, scopes, permissions and assets",
         "Administrator segment PostgreSQL 17 acceptance passed for L0-L5, L6-L11, both boundaries, rollback and deterministic concurrency",
-        "Commerce NodeServer, RealmAccount and IdentityRegistration tests passed 60/60"
+        "Commerce NodeServer, RealmAccount and IdentityRegistration tests passed 60/60",
+        "NodeContext and indexed scope PostgreSQL 17 acceptance passed 4/4 after replacing the illegal Hosted L1 fixture with legal Hosted L2; the product L1 Sovereign rule was unchanged"
       ],
       "missing_evidence": [
-        "The full NodeContext scope integration fixture aborts because it attempts a Hosted L1, now prohibited by SFL_L1_REQUIRES_SOVEREIGN",
-        "The full identity-realm replay aborts before isolation assertions on the known five-function object-contract drift",
+        "The full PGlite identity-realm replay cannot model production function-owner, schema-owner and RLS-owner execution consistently; it first denies the identity schema and returns an empty legal L0/L1 matrix when temporary owner grants are introduced",
+        "Production role ownership and BYPASSRLS facts for identity.resolve_session and its helper chain have not been directly read from the live database",
         "No single direct database diff covers all seven invalid cases and all six authority-forgery fields"
       ]
     }
@@ -278,61 +280,55 @@
     {"name": "sfl-conformance", "result": "PASS_WITH_UNKNOWN", "candidate_pass": 17, "candidate_fail": 0, "candidate_unknown": 13, "production_pass": 4, "production_fail": 0, "production_unknown": 26},
     {"name": "sfl-administrator-segment-scope", "result": "PASS"},
     {"name": "E11 scale 1/10/100/1000", "result": "PASS"},
-    {"name": "sfl-node-context-scope", "result": "BLOCKED_TEST_FIXTURE", "error": "SFL_L1_REQUIRES_SOVEREIGN"},
-    {"name": "full identity-realm replay", "result": "BLOCKED_OBJECT_CONTRACT", "error": "DATABASE_OBJECT_FUNCTION_DRIFT"}
+    {"name": "check:migrations", "result": "PASS", "migrations": 291, "historical": 94, "repair": 197},
+    {"name": "sfl-node-context-scope", "result": "PASS_AFTER_TEST_FIXTURE_FIX", "tests": 4, "sovereign": ["L0", "L1"], "hosted": ["L2", "L5", "L6", "L11"]},
+    {"name": "full identity-realm replay", "result": "BLOCKED_TEST_OWNERSHIP_MODEL", "errors": ["permission denied for schema identity", "permission denied for schema public", "IDENTITY_L0_L1_FOUR_ENTRY_MATRIX_INVALID:[]"]}
   ],
   "central_release_state": {
     "latest_candidate_run": {
-      "run_id": 34699595225,
-      "url": "https://github.com/Ethan7586/zhudatuan/actions/runs/34699595225",
-      "source_sha": "d258160b87b3ff2b2613e266ab4681cc98417d0f",
+      "run_id": 34701926991,
+      "url": "https://github.com/Ethan7586/zhudatuan/actions/runs/34701926991",
+      "source_sha": "7d94f2aa1d5b4b181168ecc59c0e34babb2ae36f",
       "plan": "PASS",
-      "tests_and_build": "FAIL",
-      "candidate_packaging": "SKIPPED",
-      "candidate_staging": "SKIPPED",
-      "failure": {
-        "code": "DATABASE_OBJECT_FUNCTION_DRIFT",
-        "missing": [],
-        "extra": [
-          "access.resolve_session_membership",
-          "access.resolve_session_scope",
-          "access.session_membership_context_matches",
-          "access.session_membership_version",
-          "capability.session_membership_operations"
-        ]
-      }
+      "tests_and_build_once": "PASS",
+      "candidate_packaging": "PASS",
+      "candidate_publish": "PASS",
+      "candidate_staging_on_aliyun_without_production_cutover": "PASS"
     },
     "database_migration_executor": {
       "pr": 145,
       "url": "https://github.com/Ethan7586/zhudatuan/pull/145",
       "head_sha": "03b8f44e989b47d6bb9a53b032272d38f5d6b452",
-      "state": "OPEN",
-      "merged_to_zdt_next": false,
+      "state": "MERGED",
+      "merge_commit": "23e77e2fab0ae872d57074dabf3f70c76b513e11",
+      "merged_to_zdt_next": true,
       "production_migration_executed": false
     },
     "production_cutover_executed_by_this_acceptance": false
   },
-  "repair_action_list_not_executed": [
+  "repair_actions": [
     {
       "priority": 1,
+      "status": "COMPLETED_UPSTREAM",
       "action": "Classify the five session-membership functions as intended contract objects and add them to 02_platform_pingtai/database/contracts/objects.yml, or remove them only if product ownership declares them unauthorized.",
-      "reason": "This blocks the central candidate and full database-backed E12 replay.",
-      "requires": "Code review, merge to zdt-next, then rerun check:migrations."
+      "result": "The functions were registered by upstream commit a5d163a9 and check:migrations passed with all 291 migrations."
     },
     {
       "priority": 2,
+      "status": "COMPLETED_THIS_BRANCH",
       "action": "Update NodeContextScopeResolverEngine.test.ts to use a legal Hosted level while preserving the production rule that L1 must be Sovereign.",
-      "reason": "Current failure is a stale test fixture, not evidence that the product rule should be weakened.",
-      "requires": "Test-only change and focused rerun."
+      "result": "Fixture changed from Hosted L1 to Hosted L2; PostgreSQL 17 integration passed 4/4."
     },
     {
       "priority": 3,
+      "status": "PARTIAL",
       "action": "Merge PR #145, install the matching release Agent/Policy, execute the 291-migration backlog through the official ledger, and only then build/stage one exact-SHA candidate.",
-      "reason": "E06, E07 and E10 require code, artifact, database and pointers on the same mainline.",
-      "requires": "Explicit Ethan authorization before production migration, Agent/Policy installation or cutover."
+      "result": "PR #145 merged; the matching Agent/Policy and exact-SHA candidate were staged successfully. Production migration and cutover were not executed.",
+      "requires": "Explicit Ethan authorization before production migration or cutover."
     },
     {
       "priority": 4,
+      "status": "PENDING",
       "action": "After same-SHA staging exists, run S-B A-to-B-to-A, two Hosted-to-Sovereign upgrades, the full feature matrix and direct E12 authority-forgery database diffs.",
       "reason": "These are the remaining direct observations required to convert UNKNOWN to PASS or FAIL.",
       "requires": "Real staging targets and rollback-safe resource references."
