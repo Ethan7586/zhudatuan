@@ -35,7 +35,6 @@ concurrency:
 
 env:
   NODE_VERSION: 22.22.0
-  RELEASE_NODE: hbbtzn-l1
 
 jobs:
   plan:
@@ -110,6 +109,7 @@ jobs:
               --file 01_core_hexin/apps/auth-web/src/main.tsx
               --file 01_core_hexin/apps/console/src/main.tsx
               --file 01_core_hexin/services/commerce/src/entry/IdentityRegistrationApiMain.ts
+              --file 01_core_hexin/services/commerce/src/entry/IdentityNotificationJobsOnlyMain.ts
               --file 01_core_hexin/services/commerce/src/entry/ConsoleSupportMain.ts
               --file 01_core_hexin/services/commerce/src/entry/PurchaseApiMain.ts
               --file 01_core_hexin/services/commerce/src/entry/WebBusinessApiMain.ts
@@ -122,7 +122,8 @@ jobs:
           node 04_tools/release-engine/cli.mjs plan \
             --from "$BASE_SHA" \
             --to "$HEAD_SHA" \
-            --node "$RELEASE_NODE" \
+            --node hbbtzn-l1 \
+            --node zhudatuan-l0 \
             "${force_files[@]}" \
             --format json > .ci-release/plan-envelope.json
           node --input-type=module <<'NODE'
@@ -248,7 +249,8 @@ jobs:
         run: |
           node 04_tools/release-engine/cli.mjs deploy \
             --package .ci-release/package.json \
-            --node "$RELEASE_NODE" \
+            --node hbbtzn-l1 \
+            --node zhudatuan-l0 \
             --environment candidate \
             --format json > .ci-release/deploy-candidate.json
 

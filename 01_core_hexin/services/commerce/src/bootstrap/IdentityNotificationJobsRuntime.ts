@@ -128,7 +128,7 @@ export async function assertIdentityNotificationRuntimeCompatibility(pool: Datab
     to_regclass('identity.challengedelivery') is not null challenge_delivery`,
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
   const state = result.rows[0];
-  if (!state || state.current_user !== 'zhudatuanidentityjob' || !state.writable || !state.schema || !state.contract || !state.registration || !state.runtime_job
+  if (!state || state.current_user !== 'zhudatuanidentityjob' || !state.writable || !state.schema || !state.registration || !state.runtime_job
     || !state.challenge || !state.challenge_secret || !state.challenge_delivery) {
     throw new Error('IDENTITY_NOTIFICATION_RUNTIME_COMPATIBILITY_FAILED');
   }

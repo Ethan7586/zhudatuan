@@ -105,13 +105,24 @@ export async function deployCommand(adapter, options) {
     invariant(options.approveProduction === expected, 'PRODUCTION_APPROVAL_REQUIRED', `Production requires --approve-production ${expected}`);
   }
   const deployments = new Map();
+  const skipped = [];
   for (const requestedNode of nodes) {
     invariant(Boolean(adapter.nodes[requestedNode]), 'DEPLOY_NODE_UNKNOWN', `Unknown node ${requestedNode}`);
     for (const artifact of packageSet.artifacts) {
       const resolved = resolveDeployment(adapter, requestedNode, artifact.target);
       const { executionNode: nodeKey, node, deployment } = resolved;
-      if (environment === 'production') {
-        invariant(deployment.productionEnabled !== false, 'DEPLOY_PRODUCTION_DISABLED', deployment.productionDisabledReason ?? `${nodeKey}/${artifact.target} requires an external A3 procedure`, { node: nodeKey, target: artifact.target });
+      if (environment === 'production' && deployment.productionEnabled === false) {
+        skipped.push({
+          ok: true,
+          skipped: true,
+          status: 'not-applicable',
+          node: nodeKey,
+          requestedNode,
+          target: artifact.target,
+          environment,
+          reason: deployment.productionDisabledReason ?? `${nodeKey}/${artifact.target} is not a production target`,
+        });
+        continue;
       }
       const key = `${nodeKey}:${artifact.target}`;
       const existing = deployments.get(key);
@@ -122,8 +133,9 @@ export async function deployCommand(adapter, options) {
       }
     }
   }
+  invariant(deployments.size > 0, 'DEPLOY_NO_ENABLED_TARGETS', 'The selected package has no enabled target for the requested production node(s)', { nodes });
   const paths = statePaths(adapter);
-  const results = [];
+  const results = [...skipped];
   for (const item of deployments.values()) {
     const release = await acquireLocks([
       join(paths.locks, 'nodes', `${item.nodeKey}.lock`),
@@ -144,7 +156,7 @@ export async function deployCommand(adapter, options) {
       await release();
     }
   }
-  const successful = results.filter((item) => item.ok);
+  const successful = results.filter((item) => item.ok && !item.skipped);
   const timings = aggregateDeployTimings(successful);
   timings.package = packageSet.timings?.package ?? 0;
   timings.total = elapsed(started);

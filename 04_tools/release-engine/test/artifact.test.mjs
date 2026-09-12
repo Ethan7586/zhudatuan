@@ -40,6 +40,11 @@ test('packages only existing changed files and records deletions', async () => {
   assert.deepEqual(artifact.deletions, ['content/old.webp']);
   assert.match(artifact.archive.sha256, /^sha256:[a-f0-9]{64}$/);
   assert.match(artifact.manifestDigest, /^sha256:[a-f0-9]{64}$/);
+  assert.deepEqual(artifact.contractTransition, {
+    mode: 'contract-pool-pending',
+    legacyRuntimeAuthority: 'disabled',
+    localContractAuthority: 'forbidden',
+  });
   assert.equal(artifact.totalBytes, 3);
   assert.deepEqual(artifact.entries.map((entry) => entry.path), ['content/', 'content/new.webp']);
   const storedManifest = JSON.parse(await readFile(artifact.manifestPath, 'utf8'));

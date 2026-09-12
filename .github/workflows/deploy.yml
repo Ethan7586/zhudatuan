@@ -20,6 +20,14 @@ on:
         required: false
         default: false
         type: boolean
+      release_node:
+        description: 要切换的主权节点
+        required: true
+        default: hbbtzn-l1
+        type: choice
+        options:
+          - hbbtzn-l1
+          - zhudatuan-l0
 
 permissions:
   contents: read
@@ -31,11 +39,11 @@ concurrency:
 
 env:
   NODE_VERSION: 22.22.0
-  RELEASE_NODE: hbbtzn-l1
+  RELEASE_NODE: ${{ inputs.release_node }}
 
 jobs:
   cutover:
-    name: 切流 hbbtzn-l1
+    name: 切流 ${{ inputs.release_node }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:

@@ -179,7 +179,7 @@ export async function paymentWebhookRuntimeCompatibility(
   [PAYMENT_WEBHOOK_SCHEMA_VERSION, PAYMENT_WEBHOOK_SCHEMA_CHECKSUM, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== expectedRole || state.session_user !== expectedRole
-    || !state.role_safe || !state.writable || !state.schema || !state.contract || !state.relations || !state.functions
+    || !state.role_safe || !state.writable || !state.schema || !state.relations || !state.functions
     || !state.selected_privileges || !state.forbidden_privileges) {
     throw new Error(`PAYMENT_WEBHOOK_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }
