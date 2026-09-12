@@ -223,6 +223,7 @@ test('shared Contract package expands through workspace consumers without a glob
 test('release tooling remains non-deploying and support keeps its physical host', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   assert.deepEqual(classifyChanges(real, [change('.github/workflows/deploy.yml')]).targets, []);
+  assert.deepEqual(classifyChanges(real, [change('scripts/deploy-now.sh')]).targets, []);
   const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
     '01_core_hexin/services/commerce/src/entry/ConsoleSupportMain.ts',
   ], nodes: ['hbbtzn-l1'] });

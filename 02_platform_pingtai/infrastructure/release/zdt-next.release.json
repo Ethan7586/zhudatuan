@@ -568,7 +568,7 @@
     {
       "id": "delivery-tooling",
       "targets": [],
-      "include": [".github/workflows/quality.yml",".github/workflows/deploy.yml","04_tools/release-engine/**","02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh","02_platform_pingtai/infrastructure/release/zdt-next.release.json","02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json"],
+      "include": [".github/workflows/quality.yml",".github/workflows/deploy.yml","scripts/deploy-now.sh","04_tools/release-engine/**","02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh","02_platform_pingtai/infrastructure/release/zdt-next.release.json","02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json"],
       "reason": "delivery tooling is validated in the planning job and is not a production artifact"
     },
     {
