@@ -55,13 +55,15 @@ export function ScopeShell() {
   const logout = async () => {
     setLogoutState('pending');
     try {
-      const [{ consoleCommand, identitySessionDelete }, { appConfig }] = await Promise.all([
+      const [{ consoleCommand, consoleRequest, identitySessionDelete, identitySessionRead }, { appConfig }] = await Promise.all([
         import('../shared/api/Client'),
         import('../shared/config/AppConfig'),
       ]);
+      const liveSession = await identitySessionRead({}, consoleRequest(undefined));
+      const liveCsrf = typeof liveSession.csrf === 'string' ? liveSession.csrf : undefined;
       await identitySessionDelete({}, consoleCommand(undefined, {
         accessVersion: context.session.accessVersion,
-        ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
+        ...(liveCsrf === undefined ? {} : { csrfToken: liveCsrf }),
       }));
       queryClient.clear();
       window.location.assign(appConfig.identityEntryUrl);
