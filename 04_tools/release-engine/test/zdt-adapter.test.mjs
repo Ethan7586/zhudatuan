@@ -46,6 +46,19 @@ test('remote policy registers each physical pointer exactly once', () => {
   assert.equal(new Set(roots).size, roots.length);
 });
 
+test('L1 identity API owns its runtime, pointer, and rollback independently from L0', () => {
+  const l0 = adapter.nodes['zhudatuan-l0'].deployments['identity-api'];
+  const l1 = adapter.nodes['hbbtzn-l1'].deployments['identity-api'];
+  const remote = policy.nodes['hbbtzn-l1'].deployments['identity-api'];
+  assert.equal(l1.hostedBy, undefined);
+  assert.equal(l1.pointerRoot, '/opt/sfl/nodes/hbbtzn-l1/targets/identity-api');
+  assert.equal(l1.service, 'sfl-identity-api@hbbtzn-l1.service');
+  assert.notEqual(l1.pointerRoot, l0.pointerRoot);
+  assert.notEqual(l1.service, l0.service);
+  assert.equal(remote.pointerRoot, l1.pointerRoot);
+  assert.equal(remote.restart.name, l1.service);
+});
+
 test('every restartable fast target has a one-time legacy seed and production rollback baseline', () => {
   for (const [nodeKey, node] of Object.entries(policy.nodes)) {
     assert.match(node.legacyRoot, /^\/opt\//, `${nodeKey} legacy root`);

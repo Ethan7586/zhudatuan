@@ -600,7 +600,7 @@
         "storefront": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/storefront","service":"sfl-storefront@hbbtzn-l1.service"},
         "auth-web": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/auth-web","service":"none","restart":"none"},
         "console": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/console","service":"none","restart":"none"},
-        "identity-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/identity-api","service":"sfl-identity-api@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
+        "identity-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/identity-api","service":"sfl-identity-api@hbbtzn-l1.service"},
         "identity-notification-jobs": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/identity-notification-jobs","service":"sfl-identity-notification-jobs@hbbtzn-l1.service"},
         "mall-provisioning-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/mall-provisioning-api","service":"none","restart":"none"},
         "support-api": {"pointerRoot":"/opt/zhudatuan/targets/support-api","service":"zhudatuan-console-support.service","hostedBy":"zhudatuan-l0"},

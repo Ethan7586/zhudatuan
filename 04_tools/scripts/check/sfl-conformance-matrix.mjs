@@ -82,8 +82,8 @@ assert.match(gateway, /host api\.hbbtzn\.com/);
 assert.match(gateway, /@storefrontPublicCatalog\s*\{\s*host h5\.hbbtzn\.com hbbtzn\.com mall\.hbbtzn\.com www\.hbbtzn\.com\s*method GET HEAD OPTIONS\s*path \/api\/v1\/catalog\/public\/products\*/);
 assert.match(gateway, /@catalogBatch/);
 assert.match(gateway, /path \/api\/v1\/catalog\/listings\/batches/);
-for (const port of [4321, 4322, 4323, 4324, 4326, 4331]) assert.match(gateway, new RegExp(`reverse_proxy 127\\.0\\.0\\.1:${port}`));
-for (const port of [4431, 4432, 4433, 4434, 4436]) assert.doesNotMatch(gateway, new RegExp(`reverse_proxy 127\\.0\\.0\\.1:${port}`));
+for (const port of [4322, 4323, 4324, 4326, 4331, 4433]) assert.match(gateway, new RegExp(`reverse_proxy 127\\.0\\.0\\.1:${port}`));
+for (const port of [4321, 4431, 4432, 4434, 4436]) assert.doesNotMatch(gateway, new RegExp(`reverse_proxy 127\\.0\\.0\\.1:${port}`));
 assert.match(gateway, /@supportApi/);
 assert.match(gateway, /path \/api\/v1\/support \/api\/v1\/support\/\*/);
 assert.match(gateway, /header_up Host \{http\.request\.host\}/);
@@ -97,6 +97,8 @@ const hbbtznDeployment = await text('02_platform_pingtai', 'infrastructure', 'pr
 assert.match(hbbtznDeployment, /^mode: branded-node-shared-business-kernel$/m);
 assert.match(hbbtznDeployment, /^\s+businessExecutionHostNodeId: node:zhudatuan:l0$/m);
 assert.match(hbbtznDeployment, /^\s+requestContextResolution: preserved-host-to-server-node-context$/m);
+assert.match(hbbtznDeployment, /^\s+identityApiReleasePointer: independent$/m);
+assert.match(hbbtznDeployment, /^\s+- unit: sfl-identity-api@hbbtzn-l1\.service$/m);
 assert.match(hbbtznDeployment, /^\s+- unit: zhudatuan-console-support\.service$/m);
 
 for (const unit of ['api-gateway', 'cloudflared', 'identity-api', 'purchase-api', 'payment-webhook-api', 'payment-jobs']) {
