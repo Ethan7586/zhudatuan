@@ -217,6 +217,7 @@ test('runtime installer cannot restart or cut over a service', async () => {
   assert.match(source, /latest\/meta-data\/instance-id/);
   assert.match(source, /node_scope.*hbbtzn-l1/);
   assert.match(source, /node_scope.*zhudatuan-l0/);
+  assert.match(source, /systemctl unmask sfl-identity-api@hbbtzn-l1\.service/);
   assert.match(source, /target_root="\$\{pointer%\/\*\}"/);
   assert.match(source, /chmod 0755 "\$target_parent" "\$target_root"/);
 });
