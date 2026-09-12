@@ -670,15 +670,20 @@ function mergeRows(members: readonly Member[], access: readonly AccessMembership
   const accessById = new Map(access.map((membership) => [membership.id, membership]));
   const administratorIds = new Set([
     ...memberById.keys(),
-    ...access.filter((membership) => membership.roles.length > 0).map((membership) => membership.id),
+    ...access.filter((membership) => managementRolesOf(membership).length > 0).map((membership) => membership.id),
     ...(accessById.has(currentMembershipId) ? [currentMembershipId] : []),
   ]);
   return [...administratorIds].map((id) => {
     const member = memberById.get(id);
     const membership = accessById.get(id);
-    const managementRoles = membership?.roles ?? [];
+    const managementRoles = membership === undefined ? [] : managementRolesOf(membership);
     return { id, administrator: true, managementRoles, ...(member === undefined ? {} : { member }), ...(membership === undefined ? {} : { access: membership }) };
   });
+}
+function managementRolesOf(membership: AccessMembership): readonly MemberRole[] {
+  return membership.roles.filter((role) => role.role !== 'role:self'
+    && !role.role.startsWith('role-zhudatuan-storefront-member')
+    && role.name !== '商城会员');
 }
 function hasOperation(context: ConsoleContext, operation: string): boolean {
   return context.session.capabilities.includes(operation) || context.session.permissions.includes(operation);
