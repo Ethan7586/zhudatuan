@@ -10,6 +10,8 @@ import {
   registrationMigrationExecution,
   registrationMigrationLedgerMatches,
   type RegistrationMigrationExecution,
+  registrationMigrationTarget,
+  type RegistrationMigrationTarget,
 } from './RegistrationMigrationPlan';
 
 interface HistoryContract {
@@ -43,9 +45,6 @@ interface LedgerRecord {
 }
 
 const BACKFILL = '20260821026000_backfill_domain_data.sql';
-const REGISTRATION_TARGET_VERSION = '20260911010000';
-const REGISTRATION_TARGET_CHECKSUM = '33504f898d2ba5f955ffd8c87584f57fa18d6d7290c567639049fc4f24f2a350';
-const REGISTRATION_TARGET_FILE = '20260911010000_add_storefront_member_custom_profile.sql';
 const AUTONODE_IDENTITY_VERSION = '20260909062000';
 const AUTONODE_IDENTITY_CHECKSUM = '3fd8550c8331373bce69345128c464f331fcc0ca57d873621091905641c1e638';
 const L0_PUBLIC_DOMAIN_VERSION = '20260909203000';
@@ -78,7 +77,9 @@ export class RegistrationMigrationRunner {
       await client.query("select pg_advisory_lock(hashtext('zhudatuan:registration-migration:v1'))");
       locked = true;
       const files = (await readdir(this.directory)).filter((name) => MIGRATION_FILE.test(name)).sort();
-      if (files.at(-1)?.slice(0, 14) !== REGISTRATION_TARGET_VERSION) throw new Error('REGISTRATION_MIGRATION_TARGET_FILESET_INVALID');
+      const targetFile = files.at(-1);
+      if (targetFile === undefined) throw new Error('REGISTRATION_MIGRATION_TARGET_FILESET_INVALID');
+      const target = registrationMigrationTarget(targetFile, await readFile(join(this.directory, targetFile), 'utf8'));
       await this.assertHistory(files);
       await this.assertFreshOrManagedState(client);
       await this.ensureLedger(client);
@@ -103,7 +104,7 @@ export class RegistrationMigrationRunner {
           [version, [...execution.ledgerStatements], execution.ledgerName],
         );
       }
-      await this.assertTarget(client);
+      await this.assertTarget(client, target);
     } finally {
       if (locked) await client.query("select pg_advisory_unlock(hashtext('zhudatuan:registration-migration:v1'))").catch(() => undefined);
       client.release();
@@ -228,13 +229,13 @@ export class RegistrationMigrationRunner {
     }
   }
 
-  private async assertTarget(client: PoolClient): Promise<void> {
+  private async assertTarget(client: PoolClient, target: RegistrationMigrationTarget): Promise<void> {
     const result = await client.query<{ readonly valid: boolean }>(`select
       exists(select 1 from runtime.schemaversion where version=$1 and checksum=$2)
       and not exists(select 1 from runtime.schemaversion where version>$1)
       and not exists(select 1 from pg_tables where schemaname='public')
       and exists(select 1 from supabase_migrations.schema_migrations where version=$1 and name=$3) valid`,
-    [REGISTRATION_TARGET_VERSION, REGISTRATION_TARGET_CHECKSUM, REGISTRATION_TARGET_FILE]);
+    [target.version, target.checksum, target.file]);
     if (result.rows[0]?.valid !== true) throw new Error('REGISTRATION_MIGRATION_TARGET_INVALID');
   }
 

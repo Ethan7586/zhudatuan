@@ -2,7 +2,11 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { registrationMigrationExecution, registrationMigrationLedgerMatches } from './RegistrationMigrationPlan';
+import {
+  registrationMigrationExecution,
+  registrationMigrationLedgerMatches,
+  registrationMigrationTarget,
+} from './RegistrationMigrationPlan';
 
 const migration = (file: string) => fileURLToPath(new URL(`../../../../../../02_platform_pingtai/database/supabase/migrations/${file}`, import.meta.url));
 
@@ -116,6 +120,8 @@ describe('registration migration execution plan', () => {
     ['20260905203000_provision_zhudatuan_storefront_application.sql', 'eccaa52b4f52f7f66d6c5f64a7e8ad9541bd1781dcae55f176e2214e19af3da6'],
     ['20260909010000_bind_published_listings_to_storefront_pool.sql', 'e879110631a0dd4323218743c392240a398bb4f235d5972313d8d00eabf5b08b'],
     ['20260909061000_add_checkout_address_default.sql', '5caaab79f8e3159cfe410bde4a1dc86b9d355380ee5afb7fe64971ec4ea28f75'],
+    ['20260912182000_create_storefront_member_node_projection.sql', '428c379ced8eb5396e28812be98acab2818433ce718bd29a99cbf8050b7892ea'],
+    ['20260912183000_fix_storefront_member_node_projection.sql', 'f1504e5317bf77c4dcc47980533743469d7176a1a034a66e01e2e68322909206'],
   ])('accepts legacy generic ledger row %s only for its immutable source', async (file, sourceDigest) => {
     const source = await readFile(migration(file), 'utf8');
     const execution = registrationMigrationExecution(file, source);
@@ -143,5 +149,20 @@ describe('registration migration execution plan', () => {
     ];
     expect(registrationMigrationLedgerMatches(file, `registration-reconciled:${file}`, statements, execution)).toBe(true);
     expect(registrationMigrationLedgerMatches(file, `registration-reconciled:${file}`, [...statements, 'drift'], execution)).toBe(false);
+  });
+
+  it('derives the registration target from the latest migration runtime marker', async () => {
+    const file = '20260912250000_grant_catalog_media_replication_job.sql';
+    const source = await readFile(migration(file), 'utf8');
+    expect(registrationMigrationTarget(file, source)).toEqual({
+      checksum: '24f71fb162010ad5da92d48532535e387f7b49cef24130835a86ea0e50997f5a',
+      file,
+      version: '20260912250000',
+    });
+  });
+
+  it('rejects a latest migration without one matching runtime marker', () => {
+    expect(() => registrationMigrationTarget('20260912260000_missing.sql', 'begin; commit;'))
+      .toThrow('REGISTRATION_MIGRATION_TARGET_MARKER_INVALID:20260912260000_missing.sql');
   });
 });

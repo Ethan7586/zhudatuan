@@ -209,6 +209,8 @@ const REPAIR_FILES = [
   '20260912170000_create_sfl_execution_contract_kernel.sql',
   '20260912180000_reconcile_identity_runtime_state.sql',
   '20260912181000_restore_identity_reconciliation_function_ownership.sql',
+  '20260912182000_create_storefront_member_node_projection.sql',
+  '20260912183000_fix_storefront_member_node_projection.sql',
   '20260912190000_create_supplier_four_flow_ledger.sql',
   '20260912200000_create_sfl_company_template_clone.sql',
   '20260912210000_catalog_media_replication_persistence.sql',
@@ -287,7 +289,15 @@ try {
     }
     if (name === SECURE_STAGE) await stageFreshReplaySecrets(database);
     await execute(database, await readFile(join(MIGRATIONS,name),'utf8'), `migration ${name}`);
-    if (name === AUTONODE_IDENTITY_POST_HISTORY || name === L0_PUBLIC_DOMAIN_POST_HISTORY) {
+    const selfRecorded = await database.query(
+      'select name from supabase_migrations.schema_migrations where version=$1',
+      [name.slice(0,14)],
+    );
+    if (selfRecorded.rows.length > 0) {
+      if (selfRecorded.rows.length !== 1 || selfRecorded.rows[0]?.name !== name) {
+        throw new Error(`SELF_RECORDED_MIGRATION_LEDGER_INVALID:${name}`);
+      }
+    } else if (name === AUTONODE_IDENTITY_POST_HISTORY || name === L0_PUBLIC_DOMAIN_POST_HISTORY) {
       await database.query(
         'insert into supabase_migrations.schema_migrations(version,name,statements) values($1,$2,$3)',
         [name.slice(0,14),name,name === AUTONODE_IDENTITY_POST_HISTORY
