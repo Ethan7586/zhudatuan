@@ -213,6 +213,7 @@ const REPAIR_FILES = [
   '20260912200000_create_sfl_company_template_clone.sql',
   '20260912210000_catalog_media_replication_persistence.sql',
   '20260912220000_publish_storefront_member_context_projection.sql',
+  '20260912230000_separate_permission_write_targets.sql',
 ];
 
 const mode = process.argv[2];

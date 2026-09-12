@@ -26,6 +26,11 @@ create table identity.account(
   id text primary key,realm_id text not null references identity.realm(id),legacy_principal_id text not null references identity.principal(id),
   status text not null,credential_version bigint not null default 1,unique(id,realm_id),unique(realm_id,legacy_principal_id)
 );
+create table identity.realmtarget(
+  realm_id text not null,surface text not null,target text not null,membership_client text not null,
+  membership_organization_id text not null,node_profile text not null,
+  primary key(realm_id,target)
+);
 
 create table organization.node(
   id text primary key,line_id text not null,sovereignty_tier text not null,node_profile text not null,
@@ -41,6 +46,11 @@ create table organization.nodeclosure(
   closure_id bigint generated always as identity primary key,line_id text not null,descendant_node_id text not null,
   ancestor_node_id text not null,depth integer not null,descendant_relation_version bigint not null,
   effective_at timestamptz not null,superseded_at timestamptz
+);
+create table organization.organization(id text primary key,kind text not null,status text not null);
+create table organization.unitclosure(
+  ancestor_id text not null,descendant_id text not null,depth integer not null,
+  primary key(ancestor_id,descendant_id)
 );
 
 create table access.permission(id text primary key,code text not null unique,risk text not null,status text not null);
@@ -79,6 +89,8 @@ insert into identity.principal(id,status) values
   ('principal:owner','active'),('principal:first','active'),('principal:second','active'),
   ('principal:both','active'),('principal:dual','active'),('principal:concurrent','active'),
   ('principal:race','active'),('principal:fault','active'),('principal:member-only','active');
+insert into identity.principal(id,status) values
+  ('principal:other-realm','active'),('principal:wrong-organization','active');
 insert into identity.realm(id,node_id,status) values
   ('realm:a-l0','node:a:l0','active'),('realm:a-l3','node:a:l3','active'),('realm:a-l5','node:a:l5','active'),
   ('realm:a-l6','node:a:l6','active'),('realm:a-l8','node:a:l8','active'),('realm:a-l11','node:a:l11','active'),
@@ -89,6 +101,12 @@ insert into identity.account(id,realm_id,legacy_principal_id,status) values
   ('account:dual-admin','realm:a-l0','principal:dual','active'),('account:dual-member','realm:a-l6','principal:dual','active'),
   ('account:concurrent','realm:a-l0','principal:concurrent','active'),('account:race','realm:a-l0','principal:race','active'),
   ('account:fault','realm:a-l0','principal:fault','active'),('account:member-only','realm:a-l3','principal:member-only','active');
+insert into identity.account(id,realm_id,legacy_principal_id,status) values
+  ('account:other-realm','realm:b-l3','principal:other-realm','active'),
+  ('account:wrong-organization','realm:a-l0','principal:wrong-organization','active');
+insert into identity.realmtarget(realm_id,surface,target,membership_client,membership_organization_id,node_profile) values
+  ('realm:a-l0','admin','console:a-l0','operator','realm:a-l0','operating_mall'),
+  ('realm:b-l3','admin','console:b-l3','operator','realm:b-l3','operating_mall');
 
 insert into organization.node(id,line_id,sovereignty_tier,node_profile,realm_id,mall_id,status,created_at,updated_at) values
   ('node:a:l0','line:a','sovereign','operating_mall','realm:a-l0','mall:a','active',clock_timestamp(),clock_timestamp()),
@@ -145,5 +163,10 @@ insert into access.membership(
   ('membership:admin-race','member:race','realm:a-l0','operator','active',1,clock_timestamp(),'realm:a-l0','account:race'),
   ('membership:admin-fault','member:fault','realm:a-l0','operator','active',1,clock_timestamp(),'realm:a-l0','account:fault'),
   ('membership:member-only','member:member-only','node:a:l3','storefront','active',1,clock_timestamp(),'realm:a-l3','account:member-only');
+insert into access.membership(
+  id,member_id,organization_id,client,status,access_version,joined_at,realm_id,account_id
+) values
+  ('membership:admin-other-realm','member:other-realm','realm:b-l3','operator','active',1,clock_timestamp(),'realm:b-l3','account:other-realm'),
+  ('membership:admin-wrong-organization','member:wrong-organization','realm:wrong','operator','active',1,clock_timestamp(),'realm:a-l0','account:wrong-organization');
 insert into access.membershiprole(membership_id,role_id,effective_at)
 values('membership:owner','role-platform-owner-v2',clock_timestamp());
