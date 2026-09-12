@@ -49,6 +49,7 @@ interface CompatibilityRow {
   readonly contract: boolean;
   readonly registration: boolean;
   readonly operator_invitation: boolean;
+  readonly identity_context: boolean;
   readonly relations: boolean;
   readonly functions: boolean;
 }
@@ -171,7 +172,16 @@ export async function identityRegistrationRuntimeCompatibility(
       and checksum='5cf87482ba3d0db32500809d28a77973ac285657aeb9c14612ba3dc525a2965e') registration,
     exists(select 1 from runtime.schemaversion where version='20260829060000'
       and checksum='b1e238eb8de569b0de9d1d2766620e1f661268d2f9260e646208d4f24715b37a') operator_invitation,
-    to_regprocedure('access.resolve_scope(text,text,text,text)') is not null functions,
+    exists(select 1 from runtime.schemaversion where version='20260912240000'
+      and checksum='9fa01e96c2698e0da588f0b82780ecdf31eeebd34c78aaffc1b35664d9dc1174') identity_context,
+    array_position(array[
+      to_regprocedure('access.resolve_scope(text,text,text,text)'),
+      to_regprocedure('identity.resolve_storefront_member_context(text,text)'),
+      to_regprocedure('access.resolve_session_membership(text,text,text,text)'),
+      to_regprocedure('access.session_membership_version(text,text,text,text)'),
+      to_regprocedure('access.resolve_session_scope(text,text,text,text,text)'),
+      to_regprocedure('capability.session_membership_operations(text,text,text,text)')
+    ],null) is null functions,
     array_position(array[
       to_regclass('runtime.idempotency'),to_regclass('runtime.job'),to_regclass('runtime.outbox'),
       to_regclass('identity.principal'),to_regclass('identity.credential'),to_regclass('identity.session'),
@@ -183,7 +193,8 @@ export async function identityRegistrationRuntimeCompatibility(
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== expectedRole || !state.writable || !state.schema
-    || !state.registration || !state.operator_invitation || !state.relations || !state.functions) {
+    || !state.registration || !state.operator_invitation || !state.identity_context
+    || !state.relations || !state.functions) {
     throw new Error(`IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }
   return Object.freeze(state);
