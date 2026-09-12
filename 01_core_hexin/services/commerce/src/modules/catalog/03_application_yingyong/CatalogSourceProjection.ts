@@ -91,6 +91,13 @@ export class CatalogSourceProjection {
     });
     await database.query(`update catalog.sourcelisting set sku_id=$4,status='mapped',observed_at=clock_timestamp()
       where provider=$1 and scope_id=$2 and external_id=$3`, [input.provider, input.scope, input.external, sku]);
+    const mediaJob = `job:catalogmedia:${digest(`${product}:${source.imagePaths.join('|')}`)}`;
+    await database.query(`insert into runtime.job(
+      id,kind,owner,scope_id,payload,state,priority,available_at,created_at,updated_at)
+      values($1,'catalogmediareplication','catalog',$2,
+        jsonb_build_object('productId',$3::text,'sourceUrls',$4::jsonb,'purpose','cover','position',0),
+        'queued',100,clock_timestamp(),clock_timestamp(),clock_timestamp())
+      on conflict(id) do nothing`, [mediaJob, input.scope, product, JSON.stringify(source.imagePaths)]);
     return Object.freeze({ product, sku, listing });
   }
 }

@@ -56,6 +56,11 @@ describe('CatalogSourceProjection', () => {
     expect(calls.some(({ text }) => text.includes("status='mapped'"))).toBe(true);
     expect(calls.some(({ text }) => text.includes('insert into pricing.price'))).toBe(true);
     expect(calls.some(({ text }) => text.includes('insert into inventory.stockitem'))).toBe(true);
+    const mediaJob = calls.find(({ text }) => text.includes("'catalogmediareplication'"));
+    expect(mediaJob?.values?.[0]).toMatch(/^job:catalogmedia:/);
+    expect(mediaJob?.values?.[1]).toBe('mall:one');
+    expect(mediaJob?.values?.[2]).toBe(projected?.product);
+    expect(JSON.parse(String(mediaJob?.values?.[3]))).toEqual(['https://image-oss.dangaoss.cn/cake.png']);
   });
 
   it('leaves unrelated providers on the existing source-only path', async () => {

@@ -7,7 +7,7 @@ import {
   type NodeManifest,
 } from '@shop/config/server';
 import type { Job } from '../foundation/application/Job';
-import type { JobRunnerConfig } from '../foundation/application/JobRunner';
+import type { JobProcessor, JobRunnerConfig } from '../foundation/application/JobRunner';
 import { HttpObjectStore, type ObjectStore } from '../foundation/infrastructure/ObjectStore';
 import { QueueJob } from '../foundation/infrastructure/QueueJob';
 import { WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
@@ -15,7 +15,13 @@ import { createPool, type DatabasePool } from '../foundation/persistence/Pool';
 import { JobMetrics } from '../foundation/telemetry/JobMetrics';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
 import { CatalogImportProcessor } from '../modules/catalog/05_interface_jieru/job/CatalogImportJob';
+import { CatalogMediaReplicationProcessor } from '../modules/catalog/05_interface_jieru/job/CatalogMediaReplicationJob';
 import { CatalogPublicationProcessor } from '../modules/catalog/05_interface_jieru/job/CatalogPublicationJob';
+import { CatalogMediaReplication } from '../modules/catalog/03_application_yingyong/CatalogMediaReplication';
+import { CatalogProductMediaRegistration } from '../modules/catalog/03_application_yingyong/CatalogProductMediaRegistration';
+import { catalogMediaTargets } from '../modules/catalog/04_adapters_shixian/config/CatalogMediaTargets';
+import { createCatalogMediaStorageResolver } from '../modules/catalog/04_adapters_shixian/object_storage/CatalogMediaStorageResolver';
+import { PgCatalogMediaPersistence } from '../modules/catalog/04_adapters_shixian/persistence/PgCatalogMediaPersistence';
 import { ExportJobRunner } from '../modules/reporting/05_interface_jieru/job/ExportJobRunner';
 
 export interface CatalogJobsEnvironment {
@@ -34,6 +40,26 @@ export interface CatalogJobsEnvironment {
   readonly NODE_RUNTIME_CONFIG_REF: string;
   readonly NODE_RESOURCE_BINDING_VERSION: string;
   readonly NODE_RELEASE_POINTER_REF: string;
+  readonly CATALOG_MEDIA_REPLICATION_ENABLED?: string;
+  readonly CATALOG_MEDIA_PRIMARY_TARGET_ID?: string;
+  readonly CATALOG_MEDIA_ZHUDATUAN_PROVIDER?: string;
+  readonly CATALOG_MEDIA_ZHUDATUAN_ENDPOINT?: string;
+  readonly CATALOG_MEDIA_ZHUDATUAN_REGION?: string;
+  readonly CATALOG_MEDIA_ZHUDATUAN_BUCKET?: string;
+  readonly CATALOG_MEDIA_ZHUDATUAN_PUBLIC_BASE_URL?: string;
+  readonly CATALOG_MEDIA_ZHUDATUAN_REQUIRED?: string;
+  readonly CATALOG_MEDIA_ZHUDATUAN_ENABLED?: string;
+  readonly CATALOG_MEDIA_ZHUDATUAN_ACCESS_KEY_ID?: string;
+  readonly CATALOG_MEDIA_ZHUDATUAN_ACCESS_KEY_SECRET?: string;
+  readonly CATALOG_MEDIA_FUFU_PROVIDER?: string;
+  readonly CATALOG_MEDIA_FUFU_ENDPOINT?: string;
+  readonly CATALOG_MEDIA_FUFU_REGION?: string;
+  readonly CATALOG_MEDIA_FUFU_BUCKET?: string;
+  readonly CATALOG_MEDIA_FUFU_PUBLIC_BASE_URL?: string;
+  readonly CATALOG_MEDIA_FUFU_REQUIRED?: string;
+  readonly CATALOG_MEDIA_FUFU_ENABLED?: string;
+  readonly CATALOG_MEDIA_FUFU_ACCESS_KEY_ID?: string;
+  readonly CATALOG_MEDIA_FUFU_ACCESS_KEY_SECRET?: string;
 }
 
 interface CompatibilityRow {
@@ -69,6 +95,7 @@ export function catalogJobsEnvironment(source: NodeJS.ProcessEnv = process.env):
     NODE_RUNTIME_CONFIG_REF: required(source.NODE_RUNTIME_CONFIG_REF, 'NODE_RUNTIME_CONFIG_REF_MISSING'),
     NODE_RESOURCE_BINDING_VERSION: required(source.NODE_RESOURCE_BINDING_VERSION, 'NODE_RESOURCE_BINDING_VERSION_MISSING'),
     NODE_RELEASE_POINTER_REF: required(source.NODE_RELEASE_POINTER_REF, 'NODE_RELEASE_POINTER_REF_MISSING'),
+    ...optionalMediaEnvironment(source),
   });
 }
 
@@ -97,8 +124,20 @@ export async function createCatalogJobsRuntime(environment: CatalogJobsEnvironme
   );
   try {
     await catalogJobsDependenciesReady(pool, objects, environment.DATABASE_JOB_ROLE);
+    let mediaProcessor: JobProcessor | undefined;
+    if (environment.CATALOG_MEDIA_REPLICATION_ENABLED === 'true') {
+      await catalogMediaJobsDependenciesReady(pool);
+      const mediaEnvironment = environment as unknown as Readonly<Record<string, string | undefined>>;
+      const targets = catalogMediaTargets(mediaEnvironment);
+      const primaryTarget = required(environment.CATALOG_MEDIA_PRIMARY_TARGET_ID, 'CATALOG_MEDIA_PRIMARY_TARGET_ID_MISSING');
+      catalogMediaConfigurationReady(targets, mediaEnvironment, primaryTarget);
+      const replication = new CatalogMediaReplication(targets, createCatalogMediaStorageResolver(mediaEnvironment));
+      const registration = new CatalogProductMediaRegistration(replication, new PgCatalogMediaPersistence());
+      mediaProcessor = new CatalogMediaReplicationProcessor(pool, registration, primaryTarget);
+    }
     return Object.freeze({
-      jobs: createCatalogJobs(pool, objects, required(environment.JOB_WORKER_ID, 'JOB_WORKER_ID_MISSING'), manifest.data_scope_ref.ref),
+      jobs: createCatalogJobs(pool, objects, required(environment.JOB_WORKER_ID, 'JOB_WORKER_ID_MISSING'),
+        manifest.data_scope_ref.ref, mediaProcessor),
       manifest,
       close: () => pool.end(),
     });
@@ -108,7 +147,13 @@ export async function createCatalogJobsRuntime(environment: CatalogJobsEnvironme
   }
 }
 
-export function createCatalogJobs(pool: DatabasePool, objects: ObjectStore, worker: string, scope: string): readonly Job<void>[] {
+export function createCatalogJobs(
+  pool: DatabasePool,
+  objects: ObjectStore,
+  worker: string,
+  scope: string,
+  mediaProcessor?: JobProcessor,
+): readonly Job<void>[] {
   const configuration: JobRunnerConfig = Object.freeze({
     worker,
     owner: 'catalog',
@@ -134,7 +179,7 @@ export function createCatalogJobs(pool: DatabasePool, objects: ObjectStore, work
     retryMinimum: 250,
     retryMaximum: 60_000,
   });
-  return Object.freeze([
+  const jobs: Job<void>[] = [
     new QueueJob(
       'catalogimport',
       pool,
@@ -159,7 +204,30 @@ export function createCatalogJobs(pool: DatabasePool, objects: ObjectStore, work
       undefined,
       new JobMetrics(commerceTelemetry()),
     ),
-  ]);
+  ];
+  if (mediaProcessor) {
+    jobs.push(new QueueJob(
+      'catalogmediareplication',
+      pool,
+      { ...configuration, worker: `${worker}:media`, concurrency: 2 },
+      mediaProcessor,
+      undefined,
+      new JobMetrics(commerceTelemetry()),
+    ));
+  }
+  return Object.freeze(jobs);
+}
+
+export async function catalogMediaJobsDependenciesReady(pool: DatabasePool): Promise<void> {
+  const result = await pool.query<{ ready: boolean }>(`select
+    array_position(array[
+      to_regclass('catalog.mediaobject'),to_regclass('catalog.mediareplica'),to_regclass('catalog.productmedia')
+    ],null) is null
+    and has_table_privilege(current_user,'catalog.mediaobject','SELECT,INSERT,UPDATE,DELETE')
+    and has_table_privilege(current_user,'catalog.mediareplica','SELECT,INSERT,UPDATE,DELETE')
+    and has_table_privilege(current_user,'catalog.productmedia','SELECT,INSERT,UPDATE,DELETE')
+    and has_table_privilege(current_user,'catalog.product','SELECT,UPDATE') ready`);
+  if (result.rows[0]?.ready !== true) throw new Error('CATALOG_MEDIA_JOBS_RUNTIME_COMPATIBILITY_FAILED');
 }
 
 export async function catalogJobsDependenciesReady(
@@ -220,4 +288,37 @@ export async function catalogJobsRuntimeCompatibility(pool: DatabasePool, expect
 function required(value: string | undefined, code: string): string {
   if (!value?.trim()) throw new Error(code);
   return value.trim();
+}
+
+const OPTIONAL_MEDIA_ENVIRONMENT = Object.freeze([
+  'CATALOG_MEDIA_REPLICATION_ENABLED', 'CATALOG_MEDIA_PRIMARY_TARGET_ID',
+  'CATALOG_MEDIA_ZHUDATUAN_PROVIDER', 'CATALOG_MEDIA_ZHUDATUAN_ENDPOINT', 'CATALOG_MEDIA_ZHUDATUAN_REGION',
+  'CATALOG_MEDIA_ZHUDATUAN_BUCKET', 'CATALOG_MEDIA_ZHUDATUAN_PUBLIC_BASE_URL', 'CATALOG_MEDIA_ZHUDATUAN_REQUIRED',
+  'CATALOG_MEDIA_ZHUDATUAN_ENABLED', 'CATALOG_MEDIA_ZHUDATUAN_ACCESS_KEY_ID', 'CATALOG_MEDIA_ZHUDATUAN_ACCESS_KEY_SECRET',
+  'CATALOG_MEDIA_FUFU_PROVIDER', 'CATALOG_MEDIA_FUFU_ENDPOINT', 'CATALOG_MEDIA_FUFU_REGION',
+  'CATALOG_MEDIA_FUFU_BUCKET', 'CATALOG_MEDIA_FUFU_PUBLIC_BASE_URL', 'CATALOG_MEDIA_FUFU_REQUIRED',
+  'CATALOG_MEDIA_FUFU_ENABLED', 'CATALOG_MEDIA_FUFU_ACCESS_KEY_ID', 'CATALOG_MEDIA_FUFU_ACCESS_KEY_SECRET',
+] as const);
+
+function optionalMediaEnvironment(source: NodeJS.ProcessEnv): Readonly<Record<string, string>> {
+  return Object.freeze(Object.fromEntries(OPTIONAL_MEDIA_ENVIRONMENT.flatMap((name) => {
+    const value = source[name]?.trim();
+    return value ? [[name, value]] : [];
+  })));
+}
+
+function catalogMediaConfigurationReady(
+  targets: ReturnType<typeof catalogMediaTargets>,
+  environment: Readonly<Record<string, string | undefined>>,
+  primaryTargetId: string,
+): void {
+  const enabledTargets = targets.filter(({ enabled }) => enabled);
+  if (!enabledTargets.some(({ id }) => id === primaryTargetId)) throw new Error('CATALOG_MEDIA_PRIMARY_TARGET_INVALID');
+  for (const target of enabledTargets) {
+    const prefix = `CATALOG_MEDIA_${target.id.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase()}_`;
+    if (!target.endpoint || !target.region || !target.bucket || !target.publicBaseUrl
+      || !environment[`${prefix}ACCESS_KEY_ID`] || !environment[`${prefix}ACCESS_KEY_SECRET`]) {
+      throw new Error(`CATALOG_MEDIA_TARGET_CONFIGURATION_INCOMPLETE:${target.id}`);
+    }
+  }
 }
