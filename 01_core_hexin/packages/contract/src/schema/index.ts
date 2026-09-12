@@ -122,10 +122,11 @@ function normalizeJson(value: unknown, path: string, allowed: ReadonlySet<string
   const result: Record<string, ContractJsonValue> = {};
   for (const [key, child] of Object.entries(value)) {
     if (allowed !== null && !allowed.has(key)) throw new Error(`CONTRACT_FIELD_UNDECLARED:${path}:${key}`);
-    if (dateField(key) && child !== null && (typeof child !== 'string' || !validDate(child))) {
+    const normalized = normalizeJson(child, `${path}.${key}`);
+    if (dateField(key) && normalized !== null && (typeof normalized !== 'string' || !validDate(normalized))) {
       throw new Error(`CONTRACT_DATE_INVALID:${path}:${key}`);
     }
-    result[key] = normalizeJson(child, `${path}.${key}`);
+    result[key] = normalized;
   }
   return Object.freeze(result);
 }

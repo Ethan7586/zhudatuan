@@ -41,6 +41,12 @@ describe('contract truth', () => {
     expect(() => generic.parse({ body:new (class Payload { display = 'member'; })() })).toThrow();
   });
 
+  it('normalizes database Date values before validating date-like response fields', () => {
+    const createdAt = new Date('2026-09-12T00:37:21.000Z');
+    expect(OPERATION_SCHEMAS['identity.invitations.create'].output.parse({ created_at: createdAt }))
+      .toEqual({ created_at: '2026-09-12T00:37:21.000Z' });
+  });
+
   it('validates path parameters and rejects undeclared input fields', () => {
     const schema = OPERATION_SCHEMAS['catalog.products.update'].input;
     expect(schema.parse({ path: { productid: 'product:1' }, body: { title: 'new' } })).toEqual({
