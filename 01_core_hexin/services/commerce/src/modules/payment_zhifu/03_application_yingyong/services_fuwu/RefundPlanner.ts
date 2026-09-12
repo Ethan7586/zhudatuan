@@ -11,6 +11,8 @@ export interface RefundRequest {
   readonly reason: string;
   readonly mall: string;
   readonly aftersale?: string;
+  readonly supplier?: Readonly<{ orderLine: string; supplierLeg: string; transaction: string; correlation: string; route: string;
+    routeVersion: number; supplier: string; linePayableMinor: number }>;
 }
 
 export interface PlannedRefund {
@@ -90,7 +92,20 @@ export class RefundPlanner {
       request.amountMinor, payment.currency, request.reason, request.aftersale ?? null]);
     for (const leg of legs) await database.query(`insert into payment.refundtender(mall_id,refund_id,sequence,kind,reference_id,amount_minor,state)
       values($1,$2,$3,$4,$5,$6,'planned')`, [request.mall, request.id, leg.sequence, leg.kind, leg.reference, leg.amount]);
+    if (request.aftersale && request.supplier) await this.allocateSupplierRefund(database, request, payment.currency, request.supplier);
     return inserted.rows[0]!;
+  }
+
+  private async allocateSupplierRefund(database: OperationDatabase, request: RefundRequest, currency: string,
+    target: NonNullable<RefundRequest['supplier']>): Promise<void> {
+    const already = (await database.query<{ amount_minor: number }>(`select coalesce(sum(amount_minor),0)::float8 amount_minor
+      from payment.supplierrefundallocation where order_line_id=$1 and state<>'failed'`, [target.orderLine])).rows[0]?.amount_minor ?? 0;
+    if (already+request.amountMinor>target.linePayableMinor) throw new Error('SUPPLIER_AFTERSALE_AMOUNT_EXCEEDS_LINE');
+    await database.query(`insert into payment.supplierrefundallocation(id,refund_id,aftersale_id,order_line_id,supplier_leg_id,
+      transaction_id,correlation_id,route_id,route_version,supplier_id,amount_minor,currency,state,created_at)
+      values('supplier-refund-allocation:'||$1,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'planned',clock_timestamp())
+      on conflict(refund_id,order_line_id) do nothing`, [request.id,request.aftersale,target.orderLine,target.supplierLeg,
+      target.transaction,target.correlation,target.route,target.routeVersion,target.supplier,request.amountMinor,currency]);
   }
 }
 

@@ -77,6 +77,8 @@ export class PaymentSettlementCore {
       if (plan.kind === 'wechat' && source === 'internal') throw new Error('PAYMENT_EXTERNAL_TENDER_NOT_CAPTURED');
     }
     await this.inventory.commit(database, target.mall, target.order);
+    await database.query(`update inventory.supplierreservationfact set state='committed'
+      where order_id=$1 and state='reserved'`, [target.order]);
     await this.marketing.commit(database, target.order);
     await database.query(`update payment.intenttender set state='captured' where mall_id=$1 and intent_id=$2
       and state in('planned','held')`, [target.mall, target.intent]);
@@ -91,6 +93,11 @@ export class PaymentSettlementCore {
       await allocatePaymentToEconomicLegs(database, {
         mall: target.mall, payment, order: target.order, amountMinor: target.amountMinor, currency: target.currency,
       });
+      await database.query(`insert into payment.merchantreceipt(id,payment_id,order_id,transaction_id,correlation_id,mall_id,
+        amount_minor,currency,provider_source,observed_at)
+        select 'merchant-receipt:'||$1,$1,orders.id,orders.transaction_id,orders.correlation_id,$2,$3,$4,$5,clock_timestamp()
+        from ordering.orderrecord orders where orders.id=$6 on conflict(payment_id) do nothing`,
+      [payment, target.mall, target.amountMinor, target.currency, source, target.order]);
     }
     await this.orders.markPaid(database, target.order);
     const fulfillments = await this.fulfillment.create(database, {

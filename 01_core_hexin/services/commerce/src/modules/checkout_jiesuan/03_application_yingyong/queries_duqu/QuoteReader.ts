@@ -26,6 +26,8 @@ interface LineRow {
   readonly partner_id: string | null;
   readonly supplier_relationship_id: string | null; readonly contract_id: string | null; readonly contract_hash: string | null;
   readonly fulfillment_party_id: string | null; readonly settlement_party_id: string | null; readonly invoice_party_id: string | null;
+  readonly supply_offer_id: string | null; readonly supplier_relationship_version: number | null; readonly contract_version: number | null;
+  readonly supply_route_id: string | null; readonly supply_route_version: number | null; readonly supply_unit_cost_minor: number | null;
 }
 interface PolicyRow {
   readonly id: string; readonly version: number; readonly rule_hash: string; readonly rule: Record<string, unknown>;
@@ -103,11 +105,16 @@ export class QuoteReader {
       listing.title listing_title,listing.version::float8 listing_version,listing.status listing_status,product.id product_id,product.product_type,
       product.category_id,product.version::float8 product_version,sku.version::float8 sku_version,price.amount_minor::float8 unit_minor,
       price.effective_at::text price_version,stock.id stockitem_id,stock.onhand::float8 onhand,stock.safety::float8 safety,
-      stock.reserved::float8 reserved,stock.version::float8 stock_version,source.provider,product.owner_partner_id partner_id,
-      agreement.id supplier_relationship_id,agreement.contract_ref contract_id,agreement.contract_hash,
-      case when agreement.capabilities ? 'fulfillment' then product.owner_partner_id end fulfillment_party_id,
-      case when agreement.capabilities ? 'settlement' then product.owner_partner_id end settlement_party_id,
-      case when agreement.capabilities ? 'invoice' then product.owner_partner_id end invoice_party_id
+      stock.reserved::float8 reserved,stock.version::float8 stock_version,source.provider,
+      coalesce(supply.supplier_id,product.owner_partner_id) partner_id,
+      coalesce(supply.relationship_id,agreement.id) supplier_relationship_id,
+      coalesce(supply.contract_id,agreement.contract_ref) contract_id,agreement.contract_hash,
+      coalesce(supply.fulfillment_party_id,case when agreement.capabilities ? 'fulfillment' then product.owner_partner_id end) fulfillment_party_id,
+      coalesce(supply.settlement_party_id,case when agreement.capabilities ? 'settlement' then product.owner_partner_id end) settlement_party_id,
+      coalesce(supply.invoice_party_id,case when agreement.capabilities ? 'invoice' then product.owner_partner_id end) invoice_party_id,
+      supply.supply_offer_id,supply.relationship_version::float8 supplier_relationship_version,
+      supply.contract_version::float8 contract_version,supply.route_id supply_route_id,
+      supply.route_version::float8 supply_route_version,supply.unit_cost_minor::float8 supply_unit_cost_minor
       from cart.item item left join catalog.listing listing on listing.id=item.listing_id and listing.scope_id=$2
         and listing.status='published' and (listing.effective_at is null or listing.effective_at<=clock_timestamp())
         and (listing.expires_at is null or listing.expires_at>clock_timestamp())
@@ -116,10 +123,26 @@ export class QuoteReader {
       left join lateral(select price.amount_minor,price.effective_at from pricing.pricebook book join pricing.price price on price.book_id=book.id
         where book.scope_id=$2 and book.status='active' and price.sku_id=item.sku_id and price.effective_at<=clock_timestamp()
           and (price.expires_at is null or price.expires_at>clock_timestamp()) order by price.effective_at desc,book.id limit 1) price on true
+      left join lateral(select offer.id supply_offer_id,offer.supplier_id,relationship.relationship_id,
+        relationship.relationship_version,contract.contract_id,contract.contract_version,offer.route_id,offer.route_version,
+        offer.stockitem_id,offer.unit_cost_minor,contract.fulfillment_party_id,contract.settlement_party_id,contract.invoice_party_id
+        from catalog.supplyoffer offer join partner.supplierrelationship relationship on relationship.id=offer.supplier_relationship_id
+        join partner.suppliercontract contract on contract.id=offer.contract_id
+        join partner.supplyroute route on route.route_id=offer.route_id and route.route_version=offer.route_version
+        where offer.mall_id=$2 and offer.sku_id=item.sku_id and offer.status='active'
+          and offer.effective_at<=clock_timestamp() and (offer.superseded_at is null or offer.superseded_at>clock_timestamp())
+          and relationship.status='active' and relationship.effective_at<=clock_timestamp()
+          and (relationship.superseded_at is null or relationship.superseded_at>clock_timestamp())
+          and contract.status='active' and contract.effective_at<=clock_timestamp()
+          and (contract.superseded_at is null or contract.superseded_at>clock_timestamp())
+          and route.status='active' and route.effective_at<=clock_timestamp()
+          and (route.superseded_at is null or route.superseded_at>clock_timestamp())
+        order by (offer.supplier_id=product.owner_partner_id) desc,offer.effective_at desc,offer.id limit 1) supply on true
       left join lateral(select candidate.id,candidate.onhand,candidate.safety,candidate.version,coalesce(sum(reservation.quantity)
         filter(where reservation.state='active' and reservation.expires_at>clock_timestamp()),0) reserved
         from inventory.stockitem candidate left join inventory.reservation reservation on reservation.stockitem_id=candidate.id
-        where candidate.scope_id=$2 and candidate.sku_id=item.sku_id and candidate.status='active' group by candidate.id
+        where candidate.scope_id=$2 and candidate.sku_id=item.sku_id and candidate.status='active'
+          and (supply.stockitem_id is null or candidate.id=supply.stockitem_id) group by candidate.id
         order by candidate.onhand-candidate.safety-coalesce(sum(reservation.quantity) filter(where reservation.state='active'
           and reservation.expires_at>clock_timestamp()),0) desc,candidate.id limit 1) stock on true
       left join lateral(select provider from catalog.sourcelisting where sku_id=item.sku_id and scope_id=$2 and status='mapped'
@@ -151,7 +174,11 @@ export class QuoteReader {
       contractHash: source.contract_hash, fulfillmentParty: source.fulfillment_party_id, settlementParty: source.settlement_party_id,
       invoiceParty: source.invoice_party_id, stockitem: source.stockitem_id,
       versions: Object.freeze({ listing: source.listing_version ?? -1, product: source.product_version ?? -1, sku: source.sku_version ?? -1,
-        price: source.price_version ?? '', stock: source.stock_version ?? -1 }), accepted: reasons.length === 0, reasons: Object.freeze(reasons) });
+        price: source.price_version ?? '', stock: source.stock_version ?? -1,
+        ...(source.supply_offer_id == null ? {} : { supplyOffer: source.supply_offer_id,
+          supplierRelationship: source.supplier_relationship_version ?? -1, contract: source.contract_version ?? -1,
+          route: source.supply_route_id ?? '', routeVersion: source.supply_route_version ?? -1,
+          unitCostMinor: source.supply_unit_cost_minor ?? -1 }) }), accepted: reasons.length === 0, reasons: Object.freeze(reasons) });
   }
 
   private async policies(database: OperationDatabase, scope: string): Promise<readonly PolicyRow[]> {

@@ -4,9 +4,12 @@ import { BenefitPort } from '../../../benefit';
 import { FinancePort } from '../../../finance';
 import { VoucherPort } from '../../../voucher';
 import { orderPort } from '../../../order_dingdan';
+import { inventoryPort } from '../../../inventory';
+import { fulfillmentPort } from '../../../fulfillment';
 
-const benefit = new BenefitPort(new FinancePort());
-const voucher = new VoucherPort(new FinancePort());
+const finance = new FinancePort();
+const benefit = new BenefitPort(finance);
+const voucher = new VoucherPort(finance);
 
 interface RefundRow {
   readonly id: string;
@@ -60,6 +63,17 @@ export class RefundSettlement {
       where mall_id=$1 and id=$2`, [mall, refundid, providerReference]);
     await database.query(`update payment.recoverycase set state='resolved',resolved_at=clock_timestamp()
       where mall_id=$1 and state='open' and evidence->>'refund'=$2`, [mall, refundid]);
+    if (refund.aftersale_id) {
+      const replayable = await orderPort.prepareSupplierAftersaleReplay(database, refund.aftersale_id, refundid);
+      if (replayable) {
+        await fulfillmentPort.recordSupplierReturn(database, refund.aftersale_id);
+        await inventoryPort.restockSupplierAftersale(database, refund.aftersale_id);
+        await finance.reverseSupplierAftersale(database, refund.aftersale_id, refundid);
+        await database.query(`update payment.supplierrefundallocation set state='succeeded'
+          where refund_id=$1 and aftersale_id=$2 and state='planned'`, [refundid, refund.aftersale_id]);
+        await orderPort.completeSupplierAftersaleReplay(database, refund.aftersale_id);
+      }
+    }
     await orderPort.markRefunded(database, { order: refund.order_id, refundedMinor: totals.refunded_minor,
       capturedMinor: totals.captured_minor, aftersale: refund.aftersale_id });
     await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,occurred_at,available_at)

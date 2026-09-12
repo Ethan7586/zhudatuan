@@ -28,6 +28,20 @@ export class FulfillmentPort {
       on conflict(mall_id,fulfillment_id,order_line_id) do nothing`, [input.mall, input.order]);
     return fulfillments.rows.map(({ id }) => id);
   }
+
+  async recordSupplierReturn(database: OperationDatabase, aftersale: string): Promise<void> {
+    const inserted = await database.query(`insert into fulfillment.supplierreturnfact(id,aftersale_id,order_line_id,supplier_leg_id,
+      transaction_id,correlation_id,route_id,route_version,fulfillment_party_id,quantity,state,created_at)
+      select 'supplier-return:'||aftersale.id,aftersale.id,line.id,line.supplier_leg_id,orders.transaction_id,orders.correlation_id,
+        line.route_id,line.route_version,line.fulfillment_party_id,coalesce(aftersale.quantity,line.quantity),'accepted',clock_timestamp()
+      from ordering.aftersale aftersale join ordering.orderrecord orders on orders.id=aftersale.order_id
+      join ordering.line line on line.id=aftersale.line_id and line.order_id=orders.id
+      where aftersale.id=$1 and line.supplier_leg_id is not null and line.fulfillment_party_id is not null
+      on conflict(aftersale_id,order_line_id) do nothing returning supplier_leg_id`, [aftersale]);
+    const leg = inserted.rows[0]?.supplier_leg_id;
+    if (leg) await database.query(`update fulfillment.supplierresponsibility set state='returned'
+      where supplier_leg_id=$1 and state<>'cancelled'`, [leg]);
+  }
 }
 
 export const fulfillmentPort = new FulfillmentPort();

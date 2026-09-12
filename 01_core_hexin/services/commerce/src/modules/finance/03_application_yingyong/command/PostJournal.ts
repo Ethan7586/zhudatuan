@@ -92,6 +92,7 @@ export class PostJournal {
       }
     }
     if (tenderTotal !== minor(fact.total_minor, false, 'FINANCE_ORDER_AMOUNT_INVALID') || externalCount > 1) throw new Error('FINANCE_ORDER_TENDER_ALLOCATION_INVALID');
+    await this.finance.recordSupplierOrder(database, order);
     if (externalTotal === 0) return;
     await this.finance.post(database, {
       scope: target.scope_id,

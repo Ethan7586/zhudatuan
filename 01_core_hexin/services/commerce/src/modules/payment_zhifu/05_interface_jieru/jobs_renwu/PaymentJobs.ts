@@ -223,15 +223,23 @@ export class PaymentJobProcessor implements JobProcessor {
     const client = await this.pool.connect();
     try {
       await client.query('begin');
-      const target = (await client.query<{ payment: string; amount_minor: number; reason: string; scope_id: string }>(`select payment.id payment,
-        coalesce(aftersale.amount_minor,payment.captured_minor-payment.refunded_minor)::float8 amount_minor,aftersale.reason,intent.mall_id scope_id
+      const target = (await client.query<{ payment: string; amount_minor: number; reason: string; scope_id: string; order_line: string;
+        supplier_leg: string; transaction: string; correlation: string; route: string; route_version: number; supplier: string;
+        line_payable_minor: number }>(`select payment.id payment,
+        coalesce(aftersale.amount_minor,payment.captured_minor-payment.refunded_minor)::float8 amount_minor,aftersale.reason,intent.mall_id scope_id,
+        aftersale.line_id order_line,aftersale.supplier_leg_id supplier_leg,aftersale.route_snapshot->>'transactionId' transaction,
+        aftersale.route_snapshot->>'correlationId' correlation,aftersale.route_snapshot->>'routeId' route,
+        (aftersale.route_snapshot->>'routeVersion')::float8 route_version,aftersale.route_snapshot->>'supplierId' supplier,
+        (aftersale.route_snapshot->>'linePayableMinor')::float8 line_payable_minor
         from ordering.aftersale aftersale join payment.intent intent on intent.mall_id=$1 and intent.order_id=aftersale.order_id
         join payment.payment payment on payment.mall_id=intent.mall_id and payment.intent_id=intent.id
         where aftersale.id=$2 and aftersale.state in('approved','processing')
           and coalesce(aftersale.amount_minor,payment.captured_minor-payment.refunded_minor)>0 for update of aftersale`, [mall, aftersale])).rows[0];
       if (!target) throw new Error('AFTERSALE_REFUND_NOT_RUNNABLE');
       const refund = await this.refunds.create(client, { id, payment: target.payment, amountMinor: target.amount_minor, idempotency: aftersale,
-        reason: target.reason, mall: target.scope_id, aftersale });
+        reason: target.reason, mall: target.scope_id, aftersale, supplier: { orderLine: target.order_line, supplierLeg: target.supplier_leg,
+          transaction: target.transaction, correlation: target.correlation, route: target.route, routeVersion: target.route_version,
+          supplier: target.supplier, linePayableMinor: target.line_payable_minor } });
       await orderPort.startAftersaleRefund(client, aftersale);
       await client.query('commit');
       return refund.id;

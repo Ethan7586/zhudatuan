@@ -20,6 +20,7 @@ describe('PostJournal', () => {
       if (sql === 'begin' || sql === 'commit' || sql === 'rollback') return result([]);
       if (sql.includes('join runtime.outbox') && sql.includes('for update')) return result(pending ? [{ scope_id: 'mall:one', occurred_at: '2026-08-28T01:02:04.000Z', payload }] : []);
       if (sql.includes('processed_at is not null')) return result([{ accepted: 1 }]);
+      if (sql.includes('from ordering.suborder')) return result([]);
       if (sql.includes('from ordering.orderrecord')) return result([{ scope_id: 'mall:one', currency: 'CNY', total_minor: '1000', occurred_at: '2026-08-28T01:02:03.000Z', tenders: payload.tenders }]);
       if (sql.includes('select finance.post')) return result([{ journal: 'journal:order:one' }]);
       if (sql.includes('update runtime.inbox')) {

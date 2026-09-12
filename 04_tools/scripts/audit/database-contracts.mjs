@@ -207,6 +207,9 @@ const REPAIR_FILES = [
   '20260912140000_index_catalog_reverse_lookups.sql',
   '20260912150000_create_sfl_administrator_segment_scope.sql',
   '20260912170000_create_sfl_execution_contract_kernel.sql',
+  '20260912180000_reconcile_identity_runtime_state.sql',
+  '20260912181000_restore_identity_reconciliation_function_ownership.sql',
+  '20260912190000_create_supplier_four_flow_ledger.sql',
 ];
 
 const mode = process.argv[2];
@@ -245,6 +248,7 @@ try {
     create role service_role nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     create role shopmigration nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     create role zhudatuanbootstrap nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanroot nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
   `, 'database role bootstrap');
   if (replayRole !== undefined) await execute(database, `set role "${replayRole}"`, 'database migration role');
   await execute(database, `

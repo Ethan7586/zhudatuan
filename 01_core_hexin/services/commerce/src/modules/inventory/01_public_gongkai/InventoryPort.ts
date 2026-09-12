@@ -95,6 +95,37 @@ export class InventoryPort {
     [`movement:${randomUUID()}`, mall, item.stockitem_id, item.quantity, order]);
   }
 
+  async restockSupplierAftersale(database: OperationDatabase, aftersale: string): Promise<void> {
+    const target = (await database.query<{ line_id: string; supplier_leg_id: string; stockitem_id: string; transaction_id: string;
+      correlation_id: string; route_id: string; route_version: number; quantity: number; ordered_quantity: number; mall_id: string }>(
+      `select line.id line_id,line.supplier_leg_id,line.stockitem_id,orders.transaction_id,orders.correlation_id,line.route_id,
+        line.route_version::float8 route_version,coalesce(aftersale.quantity,line.quantity)::float8 quantity,
+        line.quantity::float8 ordered_quantity,orders.mall_id
+      from ordering.aftersale aftersale join ordering.orderrecord orders on orders.id=aftersale.order_id
+      join ordering.line line on line.id=aftersale.line_id and line.order_id=orders.id
+      where aftersale.id=$1 for update of line`, [aftersale])).rows[0];
+    if (!target || !target.supplier_leg_id || !target.stockitem_id) throw new Error('SUPPLIER_AFTERSALE_STOCK_TARGET_MISSING');
+    const prior = await database.query<{ quantity: number }>(`select coalesce(sum(quantity),0)::float8 quantity
+      from inventory.supplierrestockfact where order_line_id=$1`, [target.line_id]);
+    const already = prior.rows[0]?.quantity ?? 0;
+    const existing = await database.query(`select 1 from inventory.supplierrestockfact where aftersale_id=$1 and order_line_id=$2`,
+    [aftersale, target.line_id]);
+    if (existing.rows[0]) return;
+    if (already+target.quantity>target.ordered_quantity) throw new Error('SUPPLIER_AFTERSALE_QUANTITY_EXCEEDS_LINE');
+    const inserted = await database.query(`insert into inventory.supplierrestockfact(id,aftersale_id,order_line_id,supplier_leg_id,stockitem_id,
+      transaction_id,correlation_id,route_id,route_version,quantity,created_at)
+      values('supplier-restock:'||$1,$1,$2,$3,$4,$5,$6,$7,$8,$9,clock_timestamp()) on conflict(aftersale_id,order_line_id) do nothing returning id`,
+    [aftersale,target.line_id,target.supplier_leg_id,target.stockitem_id,target.transaction_id,target.correlation_id,target.route_id,
+      target.route_version,target.quantity]);
+    if (!inserted.rows[0]) return;
+    await database.query(`update inventory.stockitem set onhand=onhand+$2,version=version+1,updated_at=clock_timestamp()
+      where id=$1 and scope_id=$3`, [target.stockitem_id,target.quantity,target.mall_id]);
+    await database.query(`insert into inventory.movement(id,mall_id,stockitem_id,kind,quantity_delta,reference_type,reference_id,occurred_at)
+      values('movement:supplier-return:'||$1,$2,$3,'return',$4,'supplier_aftersale',$1,clock_timestamp())
+      on conflict(mall_id,stockitem_id,kind,reference_type,reference_id) do nothing`,
+    [aftersale,target.mall_id,target.stockitem_id,target.quantity]);
+  }
+
   async expireCheckout(database: OperationDatabase, checkout: string): Promise<void> {
     await database.query(`update inventory.reservation set state='expired',version=version+1
       where owner_type='checkout' and owner_id=$1 and state='active'`, [checkout]);
