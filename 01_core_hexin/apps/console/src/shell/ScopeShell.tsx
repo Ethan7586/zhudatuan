@@ -107,6 +107,11 @@ export function ScopeShell() {
     void import('../feature/member/MemberPrefetch').then(({ prefetchMembers }) =>
       prefetchMembers(queryClient, context));
   }, [context, queryClient]);
+  const prepareProducts = useCallback(() => {
+    if (!context.session.capabilities.includes('catalog.listings.read')) return Promise.resolve();
+    return import('../feature/product/ProductPrefetch').then(({ prefetchProducts }) =>
+      prefetchProducts(queryClient, context));
+  }, [context, queryClient]);
   const openRoute = (suffix: string) => {
     setMobileOpen(false);
     const preferredScopeKind = selectConsoleModuleByEntryPath(suffix)?.navigation.preferredScopeKind;
@@ -118,21 +123,31 @@ export function ScopeShell() {
   const prepareRoute = useCallback((moduleId: Parameters<typeof preloadConsoleModule>[0], intent: ConsoleNavigationIntent) => {
     void preloadConsoleModule(moduleId, intent)?.catch(() => undefined);
     if (moduleId === 'access') prepareMembers();
-  }, [prepareMembers]);
+    if (moduleId === 'products') void prepareProducts();
+  }, [prepareMembers, prepareProducts]);
 
   useEffect(() => {
-    if (context.scope.kind !== 'mall' || !context.session.capabilities.includes('member.members.read')) return undefined;
-    const prepare = () => {
-      void preloadConsoleModule('access', 'idle')?.catch(() => undefined);
-      prepareMembers();
+    const productAvailable = context.session.capabilities.includes('catalog.listings.read');
+    const memberAvailable = context.scope.kind === 'mall' && context.session.capabilities.includes('member.members.read');
+    if (!productAvailable && !memberAvailable) return undefined;
+    const prepare = async () => {
+      if (activeModule?.id !== 'products' && productAvailable) {
+        await preloadConsoleModule('products', 'idle')?.catch(() => undefined);
+        await prepareProducts();
+      }
+      if (activeModule?.id !== 'products' && activeModule?.id !== 'access' && memberAvailable) {
+        await preloadConsoleModule('access', 'idle')?.catch(() => undefined);
+        prepareMembers();
+      }
     };
     if (typeof window.requestIdleCallback === 'function') {
-      const idle = window.requestIdleCallback(prepare, { timeout: 1_000 });
+      const idle = window.requestIdleCallback(() => { void prepare(); }, { timeout: 1_000 });
       return () => window.cancelIdleCallback(idle);
     }
-    const timer = window.setTimeout(prepare, 200);
+    const timer = window.setTimeout(() => { void prepare(); }, 200);
     return () => window.clearTimeout(timer);
-  }, [context.scope.id, context.scope.kind, context.session.capabilities, context.session.membership, prepareMembers]);
+  }, [activeModule?.id, context.scope.id, context.scope.kind, context.session.capabilities,
+    context.session.membership, prepareMembers, prepareProducts]);
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
     if (next !== undefined) navigateAfterCancel(`${scopePath(next, currentSuffix || 'cockpit')}${location.search}`);

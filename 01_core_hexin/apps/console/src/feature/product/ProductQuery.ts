@@ -37,6 +37,8 @@ export const productKey = (context: ConsoleContext, filter: ProductQuery) =>
   ] as const);
 
 export async function readProducts(context: ConsoleContext, filter: ProductQuery, signal: AbortSignal) {
+  const prefetched = await takeDocumentProductPrefetch(context, filter, signal);
+  if (prefetched !== undefined) return prefetched;
   const value = await listingsRead(
     {
       query: {
@@ -53,4 +55,47 @@ export async function readProducts(context: ConsoleContext, filter: ProductQuery
     consoleRequest(context.scope, signal, context.session.accessVersion)
   );
   return ListingPageSchema.parse(value);
+}
+
+async function takeDocumentProductPrefetch(
+  context: ConsoleContext,
+  filter: ProductQuery,
+  signal: AbortSignal,
+) {
+  if (typeof window === 'undefined') return undefined;
+  const slot = window.__consoleProductPrefetch;
+  delete window.__consoleProductPrefetch;
+  if (slot === undefined) return undefined;
+  if (signal.aborted) {
+    window.__consoleAbortDocumentPrefetch?.();
+    throw signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
+  }
+  let rejectAbort: (cause: unknown) => void = () => undefined;
+  const aborted = new Promise<never>((_resolve, reject) => { rejectAbort = reject; });
+  const abort = () => {
+    window.__consoleAbortDocumentPrefetch?.();
+    rejectAbort(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
+  };
+  signal.addEventListener('abort', abort, { once: true });
+  try {
+    const value = await Promise.race([slot.promise, aborted]);
+    const query = value?.query;
+    const matches = value?.scopeKind === context.scope.kind
+      && value.scopeId === context.scope.id
+      && value.accessVersion === context.session.accessVersion
+      && query?.q === filter.q
+      && query.category === filter.category
+      && query.supplier === (filter.supplier ?? '')
+      && query.mall === (filter.mall ?? '')
+      && query.status === (filter.status ?? '')
+      && query.cursor === filter.cursor
+      && query.limit === (filter.limit ?? 50)
+      && query.preview === (filter.preview ?? false)
+      && filter.view === undefined;
+    if (!matches) return undefined;
+    const parsed = ListingPageSchema.safeParse(value.value);
+    return parsed.success ? parsed.data : undefined;
+  } finally {
+    signal.removeEventListener('abort', abort);
+  }
 }

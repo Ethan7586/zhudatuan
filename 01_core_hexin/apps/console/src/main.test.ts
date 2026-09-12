@@ -38,6 +38,13 @@ describe('console bootstrap document', () => {
     expect(prefetch).toContain('scopeKind: first.kind');
   });
 
+  it('starts the exact product listing read as soon as the session resolves', () => {
+    expect(prefetch).toContain("location.pathname.match(/^\\/scopes\\/(platform|distributor|tenant|enterprise|mall)\\/([^/]+)\\/products");
+    expect(prefetch).toContain('window.__consoleProductPrefetch = tracked(');
+    expect(prefetch).toContain('`/api/v1/catalog/listings?${parameters.toString()}`');
+    expect(prefetch).toContain("value.capabilities.includes('catalog.listings.read')");
+  });
+
   it('makes every document prefetch observable and immediately abortable by navigation', () => {
     expect(prefetch).toContain('const slot: Tracked<T> = { settled: false');
     expect(prefetch).toContain('window.__consoleAbortDocumentPrefetch = () =>');
