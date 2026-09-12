@@ -164,8 +164,8 @@ describe('member administrator invitation', () => {
       items: [
         accessMembership('membership:owner', 'Ethan', 'Owner'),
         accessMembership('membership:senior', '高级管理员', '高级管理员'),
-        accessMembership('membership:l6-consumer', 'L6消费者7586'),
-        accessMembership('membership:duplicate-ethan', 'Ethan'),
+        accessMembership('membership:l6-consumer', 'L6消费者7586', '商城会员', 'role-zhudatuan-storefront-member:mall-hbbtzn'),
+        accessMembership('membership:duplicate-ethan', 'Ethan', '商城会员', 'role-zhudatuan-storefront-member:mall-hbbtzn'),
       ],
       count: 4,
       roles: [],
@@ -350,7 +350,7 @@ function memberPage(patch: Readonly<Record<string, unknown>> = {}) {
   };
 }
 
-function accessMembership(id: string, displayName: string, roleName?: string) {
+function accessMembership(id: string, displayName: string, roleName?: string, roleId?: string) {
   return {
     id,
     status: 'active',
@@ -359,7 +359,7 @@ function accessMembership(id: string, displayName: string, roleName?: string) {
     display_name: displayName,
     employee_no: null,
     roles: roleName === undefined ? [] : [{
-      role: `role:${roleName.toLocaleLowerCase('zh-CN')}`,
+      role: roleId ?? `role:${roleName.toLocaleLowerCase('zh-CN')}`,
       name: roleName,
       scope: tenantScope,
       scope_source: 'direct',
