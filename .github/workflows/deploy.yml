@@ -124,11 +124,18 @@ jobs:
         id: cutover
         run: |
           set -o pipefail
+          candidate_release="$RUNNER_TEMP/candidate-ci-release"
+          candidate_artifacts="$RUNNER_TEMP/candidate-ai-delivery"
+          mv .ci-release "$candidate_release"
+          mv .ai-delivery "$candidate_artifacts"
           node 04_tools/release-engine/cli.mjs install \
             --mode agent \
             --source-sha "${{ steps.sha.outputs.sha }}" \
             --approve-install "zdt-next:install:${{ steps.sha.outputs.sha }}" \
-            --format json > .ci-release/install-production-agent.json
+            --format json > "$RUNNER_TEMP/install-production-agent.json"
+          mv "$candidate_release" .ci-release
+          mv "$candidate_artifacts" .ai-delivery
+          mv "$RUNNER_TEMP/install-production-agent.json" .ci-release/install-production-agent.json
           node 04_tools/release-engine/cli.mjs deploy \
             --package .ci-release/package.json \
             --node "$RELEASE_NODE" \
