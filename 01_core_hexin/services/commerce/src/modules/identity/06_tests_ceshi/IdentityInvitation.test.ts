@@ -424,7 +424,8 @@ function invitationHarness(options: Readonly<{
       }
       if (text.includes('insert into member.invite')) return result([{
         id: String(values[0]), label: String(values[2]), target: values[12] === 'operator' ? 'console' : String(values[12]), max_uses: Number(values[9]), use_count: 0,
-        status: 'active', version: 0,
+        starts_at: new Date('2026-09-12T00:37:21.000Z'), expires_at: new Date('2026-09-19T00:37:21.000Z'),
+        created_at: new Date('2026-09-12T00:37:21.000Z'), status: 'active', version: '0',
       }]);
       if (text.includes("update member.invite set status='disabled'")) return result(options.revokeRows ?? []);
       if (text.includes('select status,version from member.invite')) return result(options.currentRows ?? []);
