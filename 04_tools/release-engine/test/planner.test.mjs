@@ -74,6 +74,35 @@ test('v1.2R console source plus workspace lock change selects only Console', asy
   assert.deepEqual(plan.artifacts.map((item) => item.target), ['console']);
 });
 
+test('explicit Console scope excludes unrelated migration history from changes, validation, artifacts and deployment', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const consoleSource = '01_core_hexin/apps/console/src/feature/member/MemberQuery.ts';
+  const consoleTest = '01_core_hexin/apps/console/src/feature/member/MemberPrefetch.test.ts';
+  const migration = '02_platform_pingtai/database/supabase/migrations/20260913020500_backfill_hbbtzn_storefront_member_l6.sql';
+  const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', target: 'console', files: [consoleSource, consoleTest, migration], nodes: ['hbbtzn-l1'] });
+  assert.deepEqual(plan.requestedTargets, ['console']);
+  assert.deepEqual(plan.targets, ['console']);
+  assert.deepEqual(plan.deploymentOrder, ['console']);
+  assert.deepEqual(plan.changes.map((item) => item.path).sort(), [consoleSource, consoleTest].sort());
+  assert.equal(plan.targetScope.excludedChangeCount, 1);
+  assert.deepEqual(plan.artifacts.map((item) => item.target), ['console']);
+  assert.deepEqual(plan.actions.deployments.map((item) => item.target), ['console']);
+  assert.ok(plan.requiredValidations.every((item) => item.name !== 'database-migration-ledger'));
+});
+
+test('explicit Console scope produces no work for a migration-only change and rejects unknown targets', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', target: 'console', files: [
+    '02_platform_pingtai/database/supabase/migrations/20260913020500_backfill_hbbtzn_storefront_member_l6.sql',
+  ], nodes: ['hbbtzn-l1'] });
+  assert.equal(plan.deployRequired, false);
+  assert.deepEqual(plan.targets, []);
+  assert.deepEqual(plan.changes, []);
+  assert.deepEqual(plan.requiredValidations, []);
+  await assert.rejects(() => createPlan(real, { from: 'HEAD', to: 'HEAD', target: 'missing-target' }),
+    (error) => error.code === 'PLAN_TARGET_UNKNOWN');
+});
+
 test('workspace lock diff follows an added internal dependency only to Console', async () => {
   const root = await mkdtemp(join(tmpdir(), 'release-engine-workspace-'));
   try {

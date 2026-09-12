@@ -7,13 +7,17 @@ import { resolveDeployment } from './adapter.mjs';
 export async function createPlan(adapter, options = {}) {
   const fromRef = options.from ?? adapter.defaultBaseRef ?? 'HEAD^';
   const toRef = options.to ?? 'HEAD';
+  const requestedTargets = options.target === undefined ? [] : [options.target];
+  for (const target of requestedTargets) invariant(Boolean(adapter.targets[target]), 'PLAN_TARGET_UNKNOWN', `Unknown target ${target}`);
   const [fromSha, toSha] = await Promise.all([
     resolveGitRef(adapter.projectRoot, fromRef),
     resolveGitRef(adapter.projectRoot, toRef),
   ]);
   const changes = await changedFiles(adapter.projectRoot, fromSha, toSha, options.files ?? []);
   const initial = classifyChanges(adapter, changes);
-  const classification = await refineDynamicImpact(adapter, initial, changes, { fromSha, toSha });
+  const refined = await refineDynamicImpact(adapter, initial, changes, { fromSha, toSha });
+  const classification = requestedTargets.length > 0 ? scopeClassification(adapter, refined, requestedTargets) : refined;
+  const scopedChanges = requestedTargets.length > 0 ? changes.filter((change) => classification.files.some((file) => sameChange(file, change))) : changes;
   const targets = expandTargetDependencies(adapter, classification.targets);
   const requestedNodes = options.nodes ?? [];
   for (const node of requestedNodes) invariant(Boolean(adapter.nodes[node]), 'PLAN_NODE_UNKNOWN', `Unknown node ${node}`);
@@ -21,12 +25,16 @@ export async function createPlan(adapter, options = {}) {
   for (const node of requestedNodes) {
     for (const target of targets) invariant(Boolean(adapter.nodes[node].deployments[target]), 'PLAN_NODE_TARGET_UNSUPPORTED', `${node} does not deploy ${target}`);
   }
-  const actions = materializeActions(adapter, targets, requestedNodes, changes, classification.validations);
+  const actions = materializeActions(adapter, targets, requestedNodes, scopedChanges, classification.validations);
   const deploymentOrder = orderTargets(adapter, targets);
   const plan = {
     schema: 'ai.delivery.plan.v2', engineVersion: 2, project: adapter.project, adapter: adapter.adapterPath,
     from: { ref: fromRef, sha: fromSha }, to: { ref: toRef, sha: toSha }, deployRequired: targets.length > 0,
-    changes, classifications: classification.files, reasons: classification.reasons, targets,
+    changes: scopedChanges, classifications: classification.files, reasons: classification.reasons, targets,
+    requestedTargets,
+    targetScope: requestedTargets.length > 0
+      ? { mode: 'explicit', requestedTargets, excludedChangeCount: changes.length - scopedChanges.length }
+      : { mode: 'affected', requestedTargets: [], excludedChangeCount: 0 },
     impact: { flags: classification.touches, unknownFiles: classification.unknownFiles },
     requiredValidations: actions.requiredValidations,
     dependencyInstallRequired: [...actions.preflight, ...actions.tests, ...actions.typecheck, ...actions.build].length > 0,
@@ -55,22 +63,59 @@ export function classifyChanges(adapter, changes) {
       for (const target of upperBound) targets.add(target);
       unknownFiles.push(change.path);
       reasons.add(`unclassified:${change.path}; selected reachable runtime target upper bound`);
-      files.push({ ...change, targets: upperBound, rules: [], impact: 'reachable-upper-bound' });
+      files.push({ ...change, targets: upperBound, rules: [], validations: [], touches: [],
+        reasons: [`unclassified:${change.path}; selected reachable runtime target upper bound`], impact: 'reachable-upper-bound' });
       continue;
     }
     const fileTargets = [...new Set(matched.flatMap((rule) => rule.targets ?? []))].sort();
     for (const target of fileTargets) targets.add(target);
+    const fileTouches = [], fileValidations = [], fileReasons = [];
     for (const rule of matched) {
       for (const touch of rule.touches ?? []) touches.add(touch);
       validations.push(...(rule.validations ?? []));
       reasons.add(rule.reason ?? rule.id);
+      fileTouches.push(...(rule.touches ?? []));
+      fileValidations.push(...(rule.validations ?? []));
+      fileReasons.push(rule.reason ?? rule.id);
     }
     files.push({ ...change, targets: fileTargets, rules: matched.map((rule) => rule.id).sort(),
+      validations: uniqueCommands(fileValidations), touches: [...new Set(fileTouches)].sort(), reasons: [...new Set(fileReasons)].sort(),
       dynamicImpact: [...new Set(matched.map((rule) => rule.dynamicImpact).filter(Boolean))],
       impact: fileTargets.length > 0 ? 'runtime' : 'validation-only' });
   }
   return Object.freeze({ targets: [...targets].sort(), files, reasons: [...reasons].sort(), touches: [...touches].sort(),
     validations: uniqueCommands(validations), unknownFiles: unknownFiles.sort() });
+}
+
+function scopeClassification(adapter, classification, requestedTargets) {
+  const requested = new Set(requestedTargets);
+  const targets = classification.targets.filter((target) => requested.has(target));
+  if (targets.length === 0) {
+    return { ...classification, targets: [], files: [], reasons: ['no changes for requested targets'], touches: [], validations: [], unknownFiles: [] };
+  }
+  const files = classification.files.filter((file) => fileRelatesToTargets(adapter, file, requested));
+  const dynamic = files.some((file) => (file.dynamicImpact ?? []).length > 0);
+  return {
+    ...classification,
+    targets,
+    files,
+    reasons: dynamic ? classification.reasons : [...new Set(files.flatMap((file) => file.reasons ?? []))].sort(),
+    touches: dynamic ? classification.touches : [...new Set(files.flatMap((file) => file.touches ?? []))].sort(),
+    validations: dynamic ? classification.validations : uniqueCommands(files.flatMap((file) => file.validations ?? [])),
+    unknownFiles: classification.unknownFiles.filter((path) => files.some((file) => file.path === path)),
+  };
+}
+
+function fileRelatesToTargets(adapter, file, requested) {
+  if (file.targets.some((target) => requested.has(target))) return true;
+  const paths = [file.path, file.sourcePath].filter(Boolean);
+  return adapter.rules.some((rule) => !rule.validationOnly
+    && (rule.targets ?? []).some((target) => requested.has(target))
+    && paths.some((path) => matchesAny(path, rule.include) && !matchesAny(path, rule.exclude ?? [])));
+}
+
+function sameChange(left, right) {
+  return left.path === right.path && left.status === right.status && left.sourcePath === right.sourcePath;
 }
 
 async function refineDynamicImpact(adapter, classification, changes, refs) {

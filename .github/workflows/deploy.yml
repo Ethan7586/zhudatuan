@@ -15,6 +15,11 @@ on:
         description: 要切换的绿色候选运行编号（留空=自动选择该提交最新一次）
         required: false
         type: string
+      release_target:
+        description: 要切换的唯一运行目标
+        required: true
+        default: console
+        type: string
       external_baseline:
         description: 切流后额外跑 15 域名基线 + 漂移自动回滚（默认关）
         required: false
@@ -40,10 +45,11 @@ concurrency:
 env:
   NODE_VERSION: 22.22.0
   RELEASE_NODE: ${{ inputs.release_node }}
+  RELEASE_TARGET: ${{ inputs.release_target }}
 
 jobs:
   cutover:
-    name: 切流 ${{ inputs.release_node }}
+    name: 切流 ${{ inputs.release_node }}/${{ inputs.release_target }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
     env:
@@ -91,7 +97,7 @@ jobs:
           matched_run=""
           for candidate_run in "${candidate_runs[@]}"; do
             rm -rf .candidate-download
-            if gh run download "$candidate_run" -n "release-candidate-$TARGET_SHA" -D .candidate-download; then
+            if gh run download "$candidate_run" -n "release-candidate-$TARGET_SHA-$RELEASE_TARGET" -D .candidate-download; then
               matched_run="$candidate_run"
               break
             fi
@@ -104,8 +110,8 @@ jobs:
           test -d .candidate-download/.ai-delivery/artifacts
           mv .candidate-download/.ci-release .ci-release
           mv .candidate-download/.ai-delivery .ai-delivery
-          node -e "const p=require('./.ci-release/package.json');if(p.project!=='zdt-next'||p.sourceSha!==process.env.TARGET_SHA){throw new Error('候选包内来源与目标提交不一致')}"
-          printf '候选运行: `%s`，包内来源: `%s`\n' "$matched_run" "$TARGET_SHA" >> "$GITHUB_STEP_SUMMARY"
+          node -e "const p=require('./.ci-release/package.json');const requested=p.requestedTargets??[];if(p.project!=='zdt-next'||p.sourceSha!==process.env.TARGET_SHA){throw new Error('候选包内来源与目标提交不一致')}if(requested.length!==1||requested[0]!==process.env.RELEASE_TARGET){throw new Error('候选包目标与本次切流目标不一致')}"
+          printf '候选运行: `%s`，包内来源: `%s`，目标: `%s`\n' "$matched_run" "$TARGET_SHA" "$RELEASE_TARGET" >> "$GITHUB_STEP_SUMMARY"
 
       - name: 安装发布引擎依赖
         run: npm ci --ignore-scripts --no-audit --no-fund
@@ -142,6 +148,7 @@ jobs:
           node 04_tools/release-engine/cli.mjs deploy \
             --package .ci-release/package.json \
             --node "$RELEASE_NODE" \
+            --target "$RELEASE_TARGET" \
             --environment production \
             --approve-production "zdt-next:${{ steps.sha.outputs.sha }}" \
             ${{ inputs.external_baseline && '--external-baseline' || '' }} \
@@ -152,7 +159,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: deploy-production-${{ steps.sha.outputs.sha }}
+          name: deploy-production-${{ steps.sha.outputs.sha }}-${{ inputs.release_target }}
           path: |
             .ci-release/install-production-agent.json
             .ci-release/deploy-production.json

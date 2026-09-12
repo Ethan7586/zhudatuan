@@ -9,6 +9,7 @@ const systemdRoot = join(projectRoot, '02_platform_pingtai/infrastructure/zhudat
 const adapter = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8'));
 const policy = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8'));
 const deployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy.yml'), 'utf8');
+const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/quality.yml'), 'utf8');
 const databaseMigrationExecutor = await readFile(join(projectRoot,
   '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'), 'utf8');
 
@@ -276,7 +277,11 @@ test('first activation is limited to pointer-only content and migration evidence
 
 test('production deployment binds identity to the downloaded candidate package', () => {
   assert.match(deployWorkflow, /p\.sourceSha!==process\.env\.TARGET_SHA/);
-  assert.match(deployWorkflow, /release-candidate-\$TARGET_SHA/);
+  assert.match(deployWorkflow, /release-candidate-\$TARGET_SHA-\$RELEASE_TARGET/);
+  assert.match(deployWorkflow, /--target "\$RELEASE_TARGET"/);
+  assert.match(deployWorkflow, /requested\.length!==1\|\|requested\[0\]!==process\.env\.RELEASE_TARGET/);
+  assert.match(qualityWorkflow, /--target "\$RELEASE_TARGET"/);
+  assert.match(qualityWorkflow, /release-candidate-\$\{\{ needs\.plan\.outputs\.head_sha \}\}-\$\{\{ inputs\.release_target \|\| 'all' \}\}/);
   assert.match(deployWorkflow, /mv \.candidate-download\/\.ai-delivery \.ai-delivery/);
   assert.doesNotMatch(deployWorkflow, /candidate_sha.*TARGET_SHA/);
   const hideCandidate = deployWorkflow.indexOf('mv .ci-release "$candidate_release"');

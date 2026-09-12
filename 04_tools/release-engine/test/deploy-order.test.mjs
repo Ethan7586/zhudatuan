@@ -38,6 +38,23 @@ test('failed production database migration blocks consumer activation without af
   assert.match(await readFile(join(candidate.localRoot, 'local', 'consumer', 'candidate.txt'), 'utf8'), /releases/);
 });
 
+test('explicit deployment target ignores unrelated packaged migration artifacts', async () => {
+  const scoped = await fixture();
+  const result = await deployCommand(scoped.adapter, {
+    package: scoped.packagePath,
+    nodes: ['local'],
+    target: 'consumer',
+    environment: 'production',
+    approveProduction: `fixture:${scoped.sourceSha}`,
+  });
+  assert.equal(result.finalStatus, 'success');
+  assert.deepEqual(result.requestedTargets, ['consumer']);
+  assert.deepEqual(result.results.map((item) => item.target), ['consumer']);
+  await assert.rejects(() => readFile(join(scoped.localRoot, 'local', 'database-migration', 'current.txt')),
+    (error) => ['ENOENT', 'ENOTDIR'].includes(error.code));
+  assert.match(await readFile(join(scoped.localRoot, 'local', 'consumer', 'current.txt'), 'utf8'), /releases/);
+});
+
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), 'ai-delivery-deploy-order-'));
   const localRoot = join(root, 'remote');

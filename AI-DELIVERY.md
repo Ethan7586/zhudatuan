@@ -5,22 +5,22 @@
 ## 唯一入口
 
 ```bash
-npm run release -- plan --from <base> --to <commit> [--node <node>]
+npm run release -- plan --from <base> --to <commit> [--node <node>] [--target <target>]
 npm run release -- install --mode <agent|verify> --source-sha <commit> --approve-install zdt-next:install:<commit>
 npm run release -- install --mode runtime-candidate --node <node> --source-sha <commit> --approve-install zdt-next:install:<commit>
 npm run release -- build --plan <plan.json>
 npm run release -- package --build <build.json>
-npm run release -- deploy --package <package.json> --node <node> --environment candidate
+npm run release -- deploy --package <package.json> --node <node> [--target <target>] --environment candidate
 npm run release -- verify --node <node> --target <target>
 npm run release -- status [--node <node> --target <target>]
 npm run release -- rollback --node <node> --target <target>
 ```
 
-任何 AI 在发布前必须先运行 `plan`，并以计划输出的变更影响、真实目标、必需验证、逐目标制品、部署顺序、指针和重启范围为准。无法精确分类的改动选择所有可达运行目标作为上界并继续，不得拒绝或跳过候选流程。
+任何 AI 在发布前必须先运行 `plan`，并以计划输出的变更影响、真实目标、必需验证、逐目标制品、部署顺序、指针和重启范围为准。发布单一运行目标时必须显式传入 `--target`；计划只保留该目标消费的文件差异、验证和制品。无法精确分类的改动在未指定目标时选择所有可达运行目标作为上界，指定目标时只选择该目标作为上界。
 
 > **校验前移（2026-09-11）：** 所有测试 / typecheck / build / package 在 PR 的 `Affected Delivery` CI 里跑完，合并到 `zdt-next` 时自动把候选制品暂存到阿里云。
 > **AI 会话的活到「合并 + CI 绿」为止**，不在本地 build / test / deploy，不做浏览器 QA，不为部署单独取证。
-> **生产切流只走 `Deploy` 工作流**（GitHub Actions → Run workflow，或 `scripts/deploy-now.sh`）：记回滚点 → 原子切 `current` → 重启一个目标服务 → 等 READY（起不来自动弹回）。默认不打 15 域名基线、不做 caddy diff；需要时工作流勾 `external_baseline`。
+> **生产切流只走 `Deploy` 工作流**（GitHub Actions → Run workflow，或 `scripts/deploy-now.sh <target> [commit]`），且必须明确一个 `release_target`：记回滚点 → 原子切 `current` → 重启一个目标服务 → 等 READY（起不来自动弹回）。默认不打 15 域名基线、不做 caddy diff；需要时工作流勾 `external_baseline`。
 > 文档、测试和夹具变化可以运行直接相关验证；没有生产目标时不构建制品、不暂存候选、不重启服务。
 
 ## 目标图发布

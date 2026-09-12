@@ -11,6 +11,10 @@ on:
         description: Optional immutable head SHA for candidate validation
         required: false
         type: string
+      release_target:
+        description: Optional explicit deployment target; empty keeps affected-target planning
+        required: false
+        type: string
       stage_candidate:
         description: Stage the validated candidate on Aliyun without production cutover
         required: false
@@ -97,9 +101,14 @@ jobs:
           BASE_SHA: ${{ steps.refs.outputs.base_sha }}
           HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
           FORCE_RUNTIME_REBUILD: ${{ inputs.force_runtime_rebuild }}
+          RELEASE_TARGET: ${{ inputs.release_target }}
         run: |
           mkdir -p .ci-release
           force_files=()
+          target_args=()
+          if [ -n "$RELEASE_TARGET" ]; then
+            target_args+=(--target "$RELEASE_TARGET")
+          fi
           if [ "$FORCE_RUNTIME_REBUILD" = "true" ]; then
             force_files+=(
               --file 01_core_hexin/apps/storefront-web/src/StorefrontRoot.tsx
@@ -121,6 +130,7 @@ jobs:
             --to "$HEAD_SHA" \
             --node hbbtzn-l1 \
             --node zhudatuan-l0 \
+            "${target_args[@]}" \
             "${force_files[@]}" \
             --format json > .ci-release/plan-envelope.json
           node --input-type=module <<'NODE'
@@ -288,7 +298,7 @@ jobs:
       - name: Publish immutable candidate artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: release-candidate-${{ needs.plan.outputs.head_sha }}
+          name: release-candidate-${{ needs.plan.outputs.head_sha }}-${{ inputs.release_target || 'all' }}
           path: |
             .ci-release/plan.json
             .ci-release/build.json
@@ -300,11 +310,18 @@ jobs:
 
       - name: Stage candidate on Aliyun without production cutover
         if: (github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate)
+        env:
+          RELEASE_TARGET: ${{ inputs.release_target }}
         run: |
+          target_args=()
+          if [ -n "$RELEASE_TARGET" ]; then
+            target_args+=(--target "$RELEASE_TARGET")
+          fi
           node 04_tools/release-engine/cli.mjs deploy \
             --package .ci-release/package.json \
             --node hbbtzn-l1 \
             --node zhudatuan-l0 \
+            "${target_args[@]}" \
             --environment candidate \
             --format json > .ci-release/deploy-candidate.json
 

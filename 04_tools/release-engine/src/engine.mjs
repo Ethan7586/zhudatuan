@@ -83,6 +83,8 @@ export async function packageCommand(adapter, options) {
     project: adapter.project,
     runId: build.runId,
     sourceSha: build.sourceSha,
+    requestedTargets: plan.requestedTargets ?? [],
+    targetScope: plan.targetScope ?? { mode: 'affected', requestedTargets: [], excludedChangeCount: 0 },
     deploymentOrder: plan.deploymentOrder ?? build.targets.map((target) => target.target),
     artifacts,
     timings: { package: elapsed(started), total: elapsed(started) },
@@ -97,6 +99,14 @@ export async function deployCommand(adapter, options) {
   const packagePath = requiredPath(options.package, 'DEPLOY_PACKAGE_REQUIRED');
   const packageSet = await resolvePackageArtifactPaths(packagePath, await readJson(packagePath));
   invariant(packageSet.project === adapter.project, 'DEPLOY_PROJECT_MISMATCH', 'Package belongs to another project');
+  const requestedTargets = options.target === undefined ? [] : deploymentTargetClosure(adapter, options.target);
+  if (options.target !== undefined) {
+    invariant(Boolean(adapter.targets[options.target]), 'DEPLOY_TARGET_UNKNOWN', `Unknown target ${options.target}`);
+    invariant(packageSet.artifacts.some((artifact) => artifact.target === options.target), 'DEPLOY_TARGET_NOT_PACKAGED', `Package does not contain target ${options.target}`);
+  }
+  const artifacts = requestedTargets.length > 0
+    ? packageSet.artifacts.filter((artifact) => requestedTargets.includes(artifact.target))
+    : packageSet.artifacts;
   const nodes = options.nodes ?? [];
   invariant(nodes.length > 0, 'DEPLOY_NODE_REQUIRED', 'Deploy requires at least one explicit --node');
   const environment = options.environment ?? 'candidate';
@@ -106,10 +116,10 @@ export async function deployCommand(adapter, options) {
     invariant(options.approveProduction === expected, 'PRODUCTION_APPROVAL_REQUIRED', `Production requires --approve-production ${expected}`);
   }
   const deployments = new Map();
-  const order = new Map((packageSet.deploymentOrder ?? packageSet.artifacts.map((artifact) => artifact.target)).map((target, index) => [target, index]));
+  const order = new Map((packageSet.deploymentOrder ?? artifacts.map((artifact) => artifact.target)).map((target, index) => [target, index]));
   for (const requestedNode of nodes) {
     invariant(Boolean(adapter.nodes[requestedNode]), 'DEPLOY_NODE_UNKNOWN', `Unknown node ${requestedNode}`);
-    for (const artifact of [...packageSet.artifacts].sort((left, right) => (order.get(left.target) ?? 0) - (order.get(right.target) ?? 0))) {
+    for (const artifact of [...artifacts].sort((left, right) => (order.get(left.target) ?? 0) - (order.get(right.target) ?? 0))) {
       const resolved = resolveDeployment(adapter, requestedNode, artifact.target);
       const { executionNode: nodeKey, node, deployment } = resolved;
       const key = `${nodeKey}:${artifact.target}`;
@@ -164,10 +174,25 @@ export async function deployCommand(adapter, options) {
   const timings = aggregateDeployTimings(successful);
   timings.package = packageSet.timings?.package ?? 0;
   timings.total = elapsed(started);
-  const result = { schema: 'ai.delivery.deploy.v1', project: adapter.project, environment, sourceSha: packageSet.sourceSha, finalStatus: results.every((item) => item.ok) ? 'success' : successful.length > 0 ? 'partial-failure' : 'failure', results, timings, traffic: aggregateDeployTraffic(successful), completedAt: new Date().toISOString() };
+  const result = { schema: 'ai.delivery.deploy.v1', project: adapter.project, environment, sourceSha: packageSet.sourceSha,
+    requestedTargets: options.target === undefined ? [] : [options.target],
+    finalStatus: results.every((item) => item.ok) ? 'success' : successful.length > 0 ? 'partial-failure' : 'failure', results, timings, traffic: aggregateDeployTraffic(successful), completedAt: new Date().toISOString() };
   await writeJson(join(dirname(packagePath), `deploy-${environment}.json`), result);
   invariant(result.finalStatus === 'success', 'DEPLOYMENT_OBJECTS_FAILED', 'One or more independently locked deployment objects failed', result);
   return result;
+}
+
+function deploymentTargetClosure(adapter, targetId) {
+  const selected = new Set([targetId]);
+  const visit = (target) => {
+    for (const dependency of adapter.targets[target]?.requires ?? []) {
+      if (selected.has(dependency)) continue;
+      selected.add(dependency);
+      visit(dependency);
+    }
+  };
+  visit(targetId);
+  return [...selected];
 }
 
 export async function installCommand(adapter, options) {
