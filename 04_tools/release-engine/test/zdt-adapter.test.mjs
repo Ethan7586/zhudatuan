@@ -220,6 +220,7 @@ test('runtime candidate stays inert while explicit runtime mode can cut over onl
   assert.match(source, /if \[\[ "\$mode" == runtime \]\]; then/);
   assert.match(source, /active semantic config differs from the single approved 4321-to-4433 transition/);
   assert.match(source, /unapproved-semantic\.diff/);
+  assert.match(source, /__SFL_GATEWAY_CADDYFILE__/);
   assert.match(source, /systemctl restart "\$gateway_unit"/);
   assert.match(source, /nonTargetProcesses=unchanged/);
   assert.match(source, /target_root="\$\{pointer%\/\*\}"/);

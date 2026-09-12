@@ -146,6 +146,9 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
     caddy adapt --config "$gateway_active" --adapter caddyfile --pretty > "$gateway_work/active-before.json"
     caddy adapt --config "$gateway_candidate" --adapter caddyfile --pretty > "$gateway_work/candidate.json"
     caddy adapt --config "$gateway_work/expected-old.Caddyfile" --adapter caddyfile --pretty > "$gateway_work/expected-old.json"
+    node -e 'const fs=require("node:fs"),file=process.argv[1],source=process.argv[2]; const walk=v=>Array.isArray(v)?v.map(walk):v&&typeof v==="object"?Object.fromEntries(Object.entries(v).map(([k,x])=>[k,walk(x)])):v===source?"/__SFL_GATEWAY_CADDYFILE__":v; fs.writeFileSync(file,JSON.stringify(walk(JSON.parse(fs.readFileSync(file))),null,2)+"\n")' "$gateway_work/active-before.json" "$gateway_active"
+    node -e 'const fs=require("node:fs"),file=process.argv[1],source=process.argv[2]; const walk=v=>Array.isArray(v)?v.map(walk):v&&typeof v==="object"?Object.fromEntries(Object.entries(v).map(([k,x])=>[k,walk(x)])):v===source?"/__SFL_GATEWAY_CADDYFILE__":v; fs.writeFileSync(file,JSON.stringify(walk(JSON.parse(fs.readFileSync(file))),null,2)+"\n")' "$gateway_work/candidate.json" "$gateway_candidate"
+    node -e 'const fs=require("node:fs"),file=process.argv[1],source=process.argv[2]; const walk=v=>Array.isArray(v)?v.map(walk):v&&typeof v==="object"?Object.fromEntries(Object.entries(v).map(([k,x])=>[k,walk(x)])):v===source?"/__SFL_GATEWAY_CADDYFILE__":v; fs.writeFileSync(file,JSON.stringify(walk(JSON.parse(fs.readFileSync(file))),null,2)+"\n")' "$gateway_work/expected-old.json" "$gateway_work/expected-old.Caddyfile"
     before_digest="$(sha256sum "$gateway_work/active-before.json" | cut -d' ' -f1)"
     candidate_digest="$(sha256sum "$gateway_work/candidate.json" | cut -d' ' -f1)"
 
@@ -213,6 +216,7 @@ if [[ "$node_scope" == hbbtzn-l1 ]]; then
       }
 
       caddy adapt --config "$gateway_active" --adapter caddyfile --pretty > "$gateway_work/active-after.json"
+      node -e 'const fs=require("node:fs"),file=process.argv[1],source=process.argv[2]; const walk=v=>Array.isArray(v)?v.map(walk):v&&typeof v==="object"?Object.fromEntries(Object.entries(v).map(([k,x])=>[k,walk(x)])):v===source?"/__SFL_GATEWAY_CADDYFILE__":v; fs.writeFileSync(file,JSON.stringify(walk(JSON.parse(fs.readFileSync(file))),null,2)+"\n")' "$gateway_work/active-after.json" "$gateway_active"
       cmp -s "$gateway_work/active-after.json" "$gateway_work/candidate.json" || {
         printf 'gateway cutover failed: active semantic config does not match candidate\n' >&2
         exit 1
