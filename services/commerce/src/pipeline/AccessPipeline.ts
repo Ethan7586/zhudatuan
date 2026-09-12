@@ -8,6 +8,11 @@ import { StepupPolicy } from '../platform/security/StepupPolicy';
 import type { DecisionSink } from '../platform/security/DecisionSink';
 import { assertRiskAllowed, type RiskGate } from '../platform/security/RiskGate';
 
+export interface AccessAuthorization {
+  readonly access: AccessContext;
+  readonly decision: Promise<void>;
+}
+
 export class AccessPipeline {
   constructor(
     private readonly authorization: AuthorizationResolver,
@@ -17,7 +22,7 @@ export class AccessPipeline {
     private readonly stepup = new StepupPolicy()
   ) {}
 
-  async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string | null, deadline: number, signal: AbortSignal, resource?: string): Promise<AccessContext> {
+  async authorize(headers: Readonly<Record<string, string>>, operation: string, permission: string | null, deadline: number, signal: AbortSignal, resource?: string): Promise<AccessAuthorization> {
     const resolvedResource = resource ?? headers['x-scope-hint'];
     const resolution = await this.authorization.resolve(headers, operation, {
       ...(resolvedResource === undefined ? {} : { resource: resolvedResource }),
@@ -56,8 +61,7 @@ export class AccessPipeline {
       }
       const risk = await this.risk.evaluate({ actor, operation, scope, trace, deadline, signal, ...(resource === undefined ? {} : { resource }) });
       assertRiskAllowed(risk.outcome);
-      await this.decisions.append({ actor, operation, scope, outcome: 'allow', reason: 'POLICY_ALLOWED', trace, deadline, signal, ...(resource === undefined ? {} : { resource }) });
-      return {
+      const access = Object.freeze({
         actor,
         membership,
         roles: snapshot.roles,
@@ -68,7 +72,9 @@ export class AccessPipeline {
         capabilityVersion: snapshot.capabilityVersion,
         assurance: actor.assurance,
         trace,
-      };
+      });
+      const decision = this.decisions.append({ actor, operation, scope, outcome: 'allow', reason: 'POLICY_ALLOWED', trace, deadline, signal, ...(resource === undefined ? {} : { resource }) });
+      return Object.freeze({ access, decision });
     } catch (cause) {
       const reason = failureReason(cause);
       await this.decisions.append({

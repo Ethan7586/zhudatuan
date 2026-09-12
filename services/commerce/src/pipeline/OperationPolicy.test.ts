@@ -17,7 +17,7 @@ const accessContext = {
 } as const satisfies AccessContext;
 
 function fixture() {
-  const access = { authorize: vi.fn(async () => accessContext) };
+  const access = { authorize: vi.fn(async () => Object.freeze({ access: accessContext, decision: Promise.resolve() })) };
   const preauth = {
     resolve: vi.fn(async () =>
       Object.freeze({
@@ -36,7 +36,8 @@ function fixture() {
     ),
   };
   const risk = { evaluate: vi.fn(async () => ({ outcome: 'allow' as const, safeReason: 'policy' as const, decision: null })) };
-  const decisions = { append: vi.fn(async () => undefined) };
+  const append: (_decision: unknown) => Promise<void> = async () => undefined;
+  const decisions = { append: vi.fn(append) };
   return { policy: new SecureOperationPolicy(access as never, preauth, risk, decisions), access, preauth, risk, decisions };
 }
 
@@ -44,18 +45,39 @@ describe('SecureOperationPolicy security states', () => {
   it('returns an explicit anonymous context and evaluates public risk', async () => {
     const value = fixture();
     await expect(value.policy.authorize({ operation: OperationCatalog.get('identity.sessions.create'), input: {}, headers: { 'x-client-target': 'storefront', 'x-trace-id': 'trace:anonymous' }, ...execution() })).resolves.toMatchObject({
-      kind: 'anonymous',
-      target: 'storefront',
+      security: { kind: 'anonymous', target: 'storefront' },
+      decision: expect.any(Promise),
     });
     expect(value.risk.evaluate).toHaveBeenCalledOnce();
     expect(value.access.authorize).not.toHaveBeenCalled();
   });
 
+  it('returns an allowed public context while its durable decision is still pending', async () => {
+    const value = fixture();
+    let finishDecision: (() => void) | undefined;
+    value.decisions.append.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishDecision = resolve;
+        })
+    );
+
+    const authorization = await value.policy.authorize({ operation: OperationCatalog.get('identity.bootstrap.read'), input: {}, headers: { 'x-client-target': 'storefront' }, ...execution() });
+    let settled = false;
+    void authorization.decision.finally(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    finishDecision?.();
+    await expect(authorization.decision).resolves.toBeUndefined();
+  });
+
   it('resolves and preserves the purpose-bound preauth context', async () => {
     const value = fixture();
     await expect(value.policy.authorize({ operation: OperationCatalog.get('identity.federations.selection.read'), input: {}, headers: { 'x-client-target': 'storefront' }, ...execution() })).resolves.toMatchObject({
-      kind: 'preauth',
-      purpose: 'federationselection',
+      security: { kind: 'preauth', purpose: 'federationselection' },
+      decision: expect.any(Promise),
     });
     expect(value.preauth.resolve).toHaveBeenCalledOnce();
     expect(value.access.authorize).not.toHaveBeenCalled();
@@ -63,7 +85,10 @@ describe('SecureOperationPolicy security states', () => {
 
   it('wraps authenticated access in the session context', async () => {
     const value = fixture();
-    await expect(value.policy.authorize({ operation: OperationCatalog.get('member.profile.read'), input: {}, headers: {}, ...execution() })).resolves.toEqual({ kind: 'session', access: accessContext });
+    await expect(value.policy.authorize({ operation: OperationCatalog.get('member.profile.read'), input: {}, headers: {}, ...execution() })).resolves.toMatchObject({
+      security: { kind: 'session', access: accessContext },
+      decision: expect.any(Promise),
+    });
     expect(value.access.authorize).toHaveBeenCalledOnce();
     expect(value.preauth.resolve).not.toHaveBeenCalled();
   });

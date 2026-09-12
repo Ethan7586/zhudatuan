@@ -30,8 +30,8 @@ describe('AccessPipeline audience boundary', () => {
     const fixture = accessFixture('console', 'access.center.read', 'access.center.read', PLATFORM);
 
     await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read', Date.now() + 10_000, new AbortController().signal)).resolves.toMatchObject({
-      actor: { target: 'console' },
-      scope: PLATFORM,
+      access: { actor: { target: 'console' }, scope: PLATFORM },
+      decision: expect.any(Promise),
     });
     expect(fixture.decisions).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'allow', reason: 'POLICY_ALLOWED' }));
   });
@@ -40,15 +40,37 @@ describe('AccessPipeline audience boundary', () => {
     const fixture = accessFixture('storefront', 'member.profile.read', 'member.profile.read', OWNER);
 
     await expect(fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read', Date.now() + 10_000, new AbortController().signal)).resolves.toMatchObject({
-      actor: { target: 'storefront' },
-      scope: OWNER,
+      access: { actor: { target: 'storefront' }, scope: OWNER },
+      decision: expect.any(Promise),
     });
-    expect(fixture.authorization).toHaveBeenCalledWith(
-      {},
-      'member.profile.read',
-      expect.objectContaining({ deadline: expect.any(Number), signal: expect.any(AbortSignal) })
-    );
+    expect(fixture.authorization).toHaveBeenCalledWith({}, 'member.profile.read', expect.objectContaining({ deadline: expect.any(Number), signal: expect.any(AbortSignal) }));
     expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'member.profile.read' }));
+  });
+
+  it('returns an allowed read authorization while its durable decision is still pending', async () => {
+    let finishDecision: (() => void) | undefined;
+    const fixture = accessFixture(
+      'storefront',
+      'member.profile.read',
+      'member.profile.read',
+      OWNER,
+      'allow',
+      1,
+      () =>
+        new Promise<void>((resolve) => {
+          finishDecision = resolve;
+        })
+    );
+
+    const authorization = await fixture.pipeline.authorize({}, 'member.profile.read', 'member.profile.read', Date.now() + 10_000, new AbortController().signal);
+    let settled = false;
+    void authorization.decision.finally(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    finishDecision?.();
+    await expect(authorization.decision).resolves.toBeUndefined();
   });
 
   it('preserves the authoritative risk reason for immediate session invalidation', async () => {
@@ -76,7 +98,7 @@ describe('AccessPipeline audience boundary', () => {
   });
 });
 
-function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope, riskOutcome: 'allow' | 'deny' = 'allow', credentialVersion = 1) {
+function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope, riskOutcome: 'allow' | 'deny' = 'allow', credentialVersion = 1, append: () => Promise<void> = async () => undefined) {
   const privileged = operation === 'access.center.read';
   const actor: Actor = Object.freeze({ id: 'actor:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: privileged ? { level: 3, verified: NOW } : { level: 1 } });
   const membershipAccess: MembershipAccess = Object.freeze({
@@ -89,7 +111,7 @@ function accessFixture(target: Actor['target'], operation: OperationId, permissi
   const snapshot = Object.freeze({ membership: membershipAccess, scope, capabilities: new Set([operation]), capabilityVersion: 1, credentialVersion, organization: 'organization:one', target, roles: Object.freeze([]) });
   const authorization = vi.fn(async () => Object.freeze({ actor, snapshot }));
   const risk = vi.fn(async () => ({ outcome: riskOutcome, safeReason: riskOutcome === 'allow' ? 'policy' : 'signal', decision: null }) as const);
-  const decisions = vi.fn(async () => undefined);
+  const decisions = vi.fn(append);
   const pipeline = new AccessPipeline({ resolve: authorization }, { now: () => NOW }, { evaluate: risk }, { append: decisions });
   return { pipeline, authorization, risk, decisions };
 }

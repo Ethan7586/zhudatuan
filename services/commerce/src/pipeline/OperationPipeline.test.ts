@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { OperationPipeline } from './OperationPipeline';
 import { DomainError } from '../platform/error/DomainError';
 import { HttpStream } from '../platform/http/HttpStream';
@@ -9,7 +9,7 @@ describe('OperationPipeline redirect contract', () => {
       { get: () => ({ handle: () => Promise.resolve({ status: 303, headers: { location: 'https://yengze.press/' } }) }) } as never,
       {
         authorize: () =>
-          Promise.resolve({
+          authorized({
             kind: 'preauth',
             id: 'selection:one',
             purpose: 'federationselection',
@@ -33,7 +33,7 @@ describe('OperationPipeline redirect contract', () => {
       { get: () => ({ handle: () => Promise.resolve({ status: 303, headers: {} }) }) } as never,
       {
         authorize: () =>
-          Promise.resolve({
+          authorized({
             kind: 'preauth',
             id: 'selection:one',
             purpose: 'federationselection',
@@ -68,7 +68,7 @@ describe('OperationPipeline error contract', () => {
   it('conceals a typed exception not declared by the operation error contract', async () => {
     const pipeline = new OperationPipeline(
       { get: () => ({ handle: () => Promise.reject(new DomainError('ACCESS_VERSION_STALE')) }) } as never,
-      { authorize: () => Promise.resolve({ kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:anonymous' }) } as never,
+      { authorize: () => authorized({ kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:anonymous' }) } as never,
       { create: () => `public:${'c'.repeat(64)}` } as never,
       passthroughExecutor() as never
     );
@@ -100,7 +100,7 @@ describe('OperationPipeline output boundary', () => {
     };
     const pipeline = new OperationPipeline(
       { get: () => ({ handle: () => Promise.resolve({ status: 200, body }) }) } as never,
-      { authorize: () => Promise.resolve({ kind: 'anonymous', channel: 'public', target: 'console', trace: 'trace:anonymous' }) } as never,
+      { authorize: () => authorized({ kind: 'anonymous', channel: 'public', target: 'console', trace: 'trace:anonymous' }) } as never,
       { create: () => `public:${'d'.repeat(64)}` } as never,
       passthroughExecutor() as never
     );
@@ -148,12 +148,88 @@ describe('OperationPipeline output boundary', () => {
     });
     const pipeline = new OperationPipeline(
       { get: () => ({ handle: () => Promise.resolve({ status: 200, body }) }) } as never,
-      { authorize: () => Promise.resolve({ kind: 'anonymous', channel: 'public', target: 'console', trace: 'trace:anonymous' }) } as never,
+      { authorize: () => authorized({ kind: 'anonymous', channel: 'public', target: 'console', trace: 'trace:anonymous' }) } as never,
       { create: () => `public:${'e'.repeat(64)}` } as never,
       passthroughExecutor() as never
     );
 
     await expect(pipeline.execute('support.events.read', streamRequest())).resolves.toEqual({ status: 200, body });
+  });
+});
+
+describe('OperationPipeline authorization completion', () => {
+  it('overlaps an allowed GET with its decision audit and waits for both before returning', async () => {
+    let finishDecision: (() => void) | undefined;
+    let finishRead: (() => void) | undefined;
+    const decision = new Promise<void>((resolve) => {
+      finishDecision = resolve;
+    });
+    const read = new Promise((resolve) => {
+      finishRead = () => resolve({ status: 200, body: { items: [], count: 0 } });
+    });
+    const execute = vi.fn(() => read);
+    const pipeline = new OperationPipeline(
+      { get: () => ({}) } as never,
+      { authorize: () => Promise.resolve({ security: { kind: 'anonymous', channel: 'public', target: 'console', trace: 'trace:parallel' }, decision }) } as never,
+      { create: () => `public:${'f'.repeat(64)}` } as never,
+      { execute } as never
+    );
+
+    let settled = false;
+    const result = pipeline.execute('organization.stores.read', storesRequest()).finally(() => {
+      settled = true;
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(execute).toHaveBeenCalledOnce();
+
+    finishRead?.();
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    finishDecision?.();
+    await expect(result).resolves.toEqual({ status: 200, body: { items: [], count: 0 } });
+  });
+
+  it('does not start a write until its decision audit succeeds', async () => {
+    let finishDecision: (() => void) | undefined;
+    const decision = new Promise<void>((resolve) => {
+      finishDecision = resolve;
+    });
+    const execute = vi.fn(async () => ({ status: 409, body: { code: 'IDEMPOTENCY_REPLAY_FORBIDDEN' } }));
+    const pipeline = new OperationPipeline(
+      { get: () => ({}) } as never,
+      { authorize: () => Promise.resolve({ security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:write' }, decision }) } as never,
+      { create: () => `public:${'g'.repeat(64)}` } as never,
+      { execute } as never
+    );
+
+    const result = pipeline.execute('identity.sessions.create', sessionRequest());
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(execute).not.toHaveBeenCalled();
+    finishDecision?.();
+    await expect(result).rejects.toMatchObject({ code: 'IDEMPOTENCY_REPLAY_FORBIDDEN' });
+    expect(execute).toHaveBeenCalledOnce();
+  });
+
+  it('fails closed without starting a write when its decision audit fails', async () => {
+    let failDecision: ((cause: Error) => void) | undefined;
+    const decision = new Promise<void>((_resolve, reject) => {
+      failDecision = reject;
+    });
+    const execute = vi.fn();
+    const pipeline = new OperationPipeline(
+      { get: () => ({}) } as never,
+      { authorize: () => Promise.resolve({ security: { kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:failed-write' }, decision }) } as never,
+      { create: () => `public:${'h'.repeat(64)}` } as never,
+      { execute } as never
+    );
+
+    const result = pipeline.execute('identity.sessions.create', sessionRequest());
+    await Promise.resolve();
+    failDecision?.(new Error('DECISION_AUDIT_FAILED'));
+    await expect(result).rejects.toThrow('DECISION_AUDIT_FAILED');
+    expect(execute).not.toHaveBeenCalled();
   });
 });
 
@@ -175,10 +251,29 @@ function request() {
 function errorPipeline(body: Readonly<Record<string, string>>) {
   return new OperationPipeline(
     { get: () => ({ handle: () => Promise.resolve({ status: 409, body }) }) } as never,
-    { authorize: () => Promise.resolve({ kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:anonymous' }) } as never,
+    { authorize: () => authorized({ kind: 'anonymous', channel: 'public', target: 'storefront', trace: 'trace:anonymous' }) } as never,
     { create: () => `public:${'c'.repeat(64)}` } as never,
     passthroughExecutor() as never
   );
+}
+
+function authorized(security: Readonly<Record<string, unknown>>) {
+  return Promise.resolve({ security, decision: Promise.resolve() });
+}
+
+function storesRequest() {
+  const controller = new AbortController();
+  return {
+    method: 'GET',
+    path: '/api/v1/organizations/stores',
+    headers: { 'x-client-target': 'console' },
+    parameters: {},
+    query: new URLSearchParams(),
+    body: undefined,
+    rawBody: '',
+    deadline: Date.now() + 1_000,
+    signal: controller.signal,
+  };
 }
 
 function passthroughExecutor() {

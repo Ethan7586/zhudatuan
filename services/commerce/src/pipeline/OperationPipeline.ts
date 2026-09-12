@@ -44,7 +44,8 @@ export class OperationPipeline {
     }
     const expectedVersion = expectedVersionOf(request.headers['if-match']);
     if (operation.expectedVersion === 'required' && expectedVersion === undefined) throw new ApplicationError('EXPECTED_VERSION_REQUIRED');
-    const security = await this.policy.authorize({ operation, input, headers: request.headers, deadline: request.deadline, signal: request.signal });
+    const authorization = await this.policy.authorize({ operation, input, headers: request.headers, deadline: request.deadline, signal: request.signal });
+    const security = authorization.security;
     const publicActor = security.kind === 'session' ? undefined : this.publicActors.create(operation, input, request.headers);
     const handler = this.handlers.get(operationId);
     const context = {
@@ -61,12 +62,14 @@ export class OperationPipeline {
       ...(expectedVersion === undefined ? {} : { expectedVersion }),
       ...(request.headers['x-action-proof'] === undefined ? {} : { actionProof: request.headers['x-action-proof'] }),
     } as const;
-    const reply = await this.executor.execute(handler, input as OperationInputFor<TKey>, context).catch((cause: unknown) => {
-      if (cause instanceof ApplicationError && !(operation.errorUnion as readonly string[]).includes(cause.code)) {
-        throw new ApplicationError('INTERNAL_ERROR', {}, cause);
-      }
-      throw cause;
-    });
+    const execute = () =>
+      this.executor.execute(handler, input as OperationInputFor<TKey>, context).catch((cause: unknown) => {
+        if (cause instanceof ApplicationError && !(operation.errorUnion as readonly string[]).includes(cause.code)) {
+          throw new ApplicationError('INTERNAL_ERROR', {}, cause);
+        }
+        throw cause;
+      });
+    const reply = operation.method === 'GET' ? await completeRead(execute(), authorization.decision) : await completeWrite(execute, authorization.decision);
     if (!operationSuccess(operation.responseMode, reply.status)) throw operationError(operation.errorUnion, reply.status, reply.body);
     if (operation.responseMode === 'stream') {
       if (reply.status !== 200 || !isHttpStream(reply.body)) throw new ApplicationError('INTERNAL_ERROR');
@@ -75,6 +78,25 @@ export class OperationPipeline {
     const output = schema.output.parse(normalizeContractOutput(operation.responseMode === 'redirect' ? { location: reply.headers?.location } : reply.body));
     return { status: reply.status, body: operation.responseMode === 'redirect' ? undefined : output, ...(reply.headers === undefined ? {} : { headers: reply.headers }) };
   }
+}
+
+async function completeRead<T>(read: Promise<T>, decision: Promise<void>): Promise<T> {
+  try {
+    const [result] = await Promise.all([read, decision]);
+    return result;
+  } catch (cause) {
+    try {
+      await decision;
+    } catch (decisionFailure) {
+      throw decisionFailure;
+    }
+    throw cause;
+  }
+}
+
+async function completeWrite<T>(write: () => Promise<T>, decision: Promise<void>): Promise<T> {
+  await decision;
+  return write();
 }
 
 function normalizeContractOutput(value: unknown): unknown {
