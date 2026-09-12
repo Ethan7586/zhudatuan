@@ -383,7 +383,7 @@ function InvitationRecordsState({
 }
 
 function invitationStatusLabel(status: InvitationRecord['status']): string {
-  return { active: '生效中', used: '已使用', expired: '已过期', revoked: '已作废' }[status];
+  return { active: '未使用', used: '已使用', expired: '已过期', revoked: '已作废' }[status];
 }
 
 function invitationStatusTone(status: InvitationRecord['status']): 'success' | 'info' | 'warning' | 'danger' {

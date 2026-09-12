@@ -736,7 +736,7 @@ function scopeKindLabel(kind: string): string {
   return ({ platform: '平台', tenant: '商户', distributor: '分销', enterprise: '集团', mall: '商城', supplier: '供应商', brand: '品牌', store: '门店', department: '部门', self: '本人' } as Record<string, string>)[kind] ?? '当前范围';
 }
 function invitationStatusLabel(status: InvitationRecord['status']): string {
-  return ({ active: '生效中', used: '已使用', expired: '已过期', revoked: '已作废' } as const)[status];
+  return ({ active: '未使用', used: '已使用', expired: '已过期', revoked: '已作废' } as const)[status];
 }
 function statusLabel(status: string): string {
   return ({ active: '有效', invited: '待激活', suspended: '已暂停', offboarded: '已移除', expired: '已过期', left: '已离开', unknown: '待补充' } as Record<string, string>)[status] ?? status;

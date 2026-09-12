@@ -55,7 +55,8 @@ describe('member directory scope boundary', () => {
     expect(response).toMatchObject({ status: 200, body: { count: 1, items: [{ id: 'invite:one', status: 'active' }] } });
     const [sql, values = []] = query.mock.calls[0]!;
     expect(sql).toContain("invitation.target_client='operator'");
-    expect(sql).toContain('boundary.ancestor_id=$1 and boundary.descendant_id=invitation.organization_id');
+    expect(sql).toContain('boundary.ancestor_id=$1');
+    expect(sql).toContain('boundary.descendant_id=coalesce(invitation.storefront_organization_id,invitation.organization_id)');
     expect(sql).toContain('(invitation.created_at,invitation.id)<($2::timestamptz,$3::text)');
     expect(sql).toContain('order by invitation.created_at desc,invitation.id desc');
     expect(sql).toContain('accepted_membership.id=invitation.accepted_membership_id');
