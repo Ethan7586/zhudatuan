@@ -222,7 +222,8 @@ test('runtime candidate stays inert while explicit runtime mode can cut over onl
   assert.match(source, /unapproved-semantic\.diff/);
   assert.match(source, /__SFL_GATEWAY_CADDYFILE__/);
   assert.match(source, /systemctl restart "\$gateway_unit"/);
-  assert.match(source, /nonTargetProcesses=unchanged/);
+  assert.match(source, /gateway_companion_unit=sfl-cloudflared@hbbtzn-l1\.service/);
+  assert.match(source, /nonTrafficProcesses=unchanged/);
   assert.match(source, /target_root="\$\{pointer%\/\*\}"/);
   assert.match(source, /chmod 0755 "\$target_parent" "\$target_root"/);
 });
