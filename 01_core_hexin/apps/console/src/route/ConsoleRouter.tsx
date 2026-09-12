@@ -1,17 +1,12 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
-import { lazy, Suspense } from 'react';
 import { ScopeShell } from '../shell/ScopeShell';
 import { landingLoader, scopeLoader, scopeShouldRevalidate } from './SessionLoader';
 import { consoleModules } from './ConsoleModuleRegistry';
 import { materializeConsoleIndexRoute, materializeConsoleModules } from './ConsoleModuleRoutes';
-
-const LazyRouteError = lazy(async () => {
-  const { RouteError } = await import('./RouteError');
-  return { default: RouteError };
-});
+import { RouteError } from './RouteError';
 
 function ConsoleRouteError() {
-  return <Suspense fallback={<ConsoleRouteFallback />}><LazyRouteError /></Suspense>;
+  return <RouteError />;
 }
 
 function ConsoleRouteFallback() {
