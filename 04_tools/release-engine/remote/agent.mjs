@@ -50,6 +50,7 @@ try {
   else if (action === 'reuse') result = await withLocks(context, false, () => reuse(context, options), { version: options.treeDigest, operation: 'reuse-artifact' });
   else if (action === 'stage') result = await withLocks(context, false, () => stage(context, options), { version: options.treeDigest });
   else if (action === 'preflight') result = await preflight(context);
+  else if (action === 'baseline') result = await withLocks(context, true, () => importBaseline(context, options), { version: options.sourceSha, operation: 'import-baseline' });
   else if (action === 'seed') result = await withLocks(context, true, () => seed(context, options), { version: options.sourceSha, operation: 'seed-layout' });
   else if (action === 'activate') result = await withLocks(context, true, () => activate(context, options), { version: options.approval?.split(':').at(-1) });
   else if (action === 'rollback') result = await withLocks(context, true, () => rollback(context), { operation: 'rollback' });
@@ -148,6 +149,26 @@ async function seed(context, options) {
   } finally {
     await rm(temporary, { recursive: true, force: true });
   }
+}
+
+async function importBaseline(context, options) {
+  assert(context.deployment.allowBaselineImport === true, 'BASELINE_IMPORT_NOT_ALLOWED');
+  const sourceSha = required(options.sourceSha, 'BASELINE_SOURCE_SHA_REQUIRED');
+  assert(/^[a-f0-9]{40}$/.test(sourceSha), 'BASELINE_SOURCE_SHA_INVALID');
+  assert(options.approval === `${context.project}:baseline:${sourceSha}`, 'BASELINE_APPROVAL_INVALID');
+  const root = context.deployment.pointerRoot;
+  assertAllowedRoot(context.policy, root);
+  assert(!(await lstatOrNull(join(root, 'current'))), 'BASELINE_CURRENT_ALREADY_EXISTS', { root });
+  const candidate = await pointer(root, 'candidate');
+  assert(candidate, 'BASELINE_CANDIDATE_MISSING');
+  const manifest = JSON.parse(await readFile(join(candidate, 'AI_DELIVERY_ARTIFACT.json'), 'utf8'));
+  assert(manifest.project === context.project && manifest.target === context.target && manifest.sourceSha === sourceSha, 'BASELINE_CANDIDATE_IDENTITY_MISMATCH');
+  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: candidate, currentDir: '', ...contextSummary(context) });
+  const protectedBefore = await protectedProcessSnapshot(context);
+  await ensureTraversablePointerRoot(context);
+  await atomicPointer(join(root, 'current'), candidate);
+  const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+  return { imported: true, current: candidate, sourceSha, treeDigest: manifest.treeDigest, protectedProcesses: { before: protectedBefore, after: protectedAfter } };
 }
 
 async function seedDependencyLayer(context) {
@@ -1281,6 +1302,7 @@ function validatePolicy(policy, project) {
         assert(deployment.restart?.jobMode === undefined, 'POLICY_RESTART_JOB_MODE_UNSUPPORTED', { node, target });
       }
       if (deployment.productionEnabled === false) assert(typeof deployment.productionDisabledReason === 'string' && deployment.productionDisabledReason.length > 0, 'POLICY_PRODUCTION_REASON_REQUIRED', { node, target });
+      if (deployment.allowBaselineImport !== undefined) assert(typeof deployment.allowBaselineImport === 'boolean', 'POLICY_BASELINE_IMPORT_INVALID', { node, target });
       for (const input of deployment.seedInputs ?? []) {
         assert(safeRelative(input.source) && safeRelative(input.destination), 'POLICY_SEED_PATH_INVALID', { node, target, input });
       }

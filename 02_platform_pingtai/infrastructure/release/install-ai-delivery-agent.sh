@@ -64,16 +64,14 @@ required_pointers=()
 units=()
 if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
   required_pointers+=(
-    /opt/zhudatuan/targets/storefront/current
-    /opt/zhudatuan/targets/storefront/runtime
-    /opt/zhudatuan/targets/identity-api/current
+    /opt/sfl/nodes/zhudatuan-l0/targets/identity-api/current
     /opt/zhudatuan/targets/support-api/current
-    /opt/zhudatuan/targets/purchase-api/current
-    /opt/zhudatuan/targets/web-api/current
-    /opt/zhudatuan/targets/catalog-api/current
-    /opt/zhudatuan/targets/catalog-jobs/current
-    /opt/zhudatuan/targets/payment-webhook-api/current
-    /opt/zhudatuan/targets/payment-jobs/current
+    /opt/sfl/nodes/zhudatuan-l0/targets/purchase-api/current
+    /opt/sfl/nodes/zhudatuan-l0/targets/web-api/current
+    /opt/sfl/nodes/zhudatuan-l0/targets/catalog-api/current
+    /opt/sfl/nodes/zhudatuan-l0/targets/catalog-jobs/current
+    /opt/sfl/nodes/zhudatuan-l0/targets/payment-webhook-api/current
+    /opt/sfl/nodes/zhudatuan-l0/targets/payment-jobs/current
   )
   units+=(
     sfl-identity-api@.service
@@ -91,6 +89,7 @@ if [[ "$node_scope" == all || "$node_scope" == hbbtzn-l1 ]]; then
     /opt/sfl/nodes/hbbtzn-l1/targets/storefront/current
     /opt/sfl/nodes/hbbtzn-l1/targets/storefront/runtime
     /opt/sfl/nodes/hbbtzn-l1/targets/auth-web/current
+    /opt/sfl/nodes/hbbtzn-l1/targets/console/current
   )
   units+=(
     sfl-api-gateway@.service
@@ -103,14 +102,6 @@ for pointer in "${required_pointers[@]}"; do
   target_parent="${target_root%/*}"
   chmod 0755 "$target_parent" "$target_root"
 done
-
-if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
-  for target in identity-api purchase-api web-api catalog-api catalog-jobs payment-webhook-api payment-jobs; do
-    bridge_root="/opt/sfl/nodes/zhudatuan-l0/targets/$target"
-    install -d -m 0755 "$bridge_root"
-    ln -sfn "/opt/zhudatuan/targets/$target/current" "$bridge_root/current"
-  done
-fi
 
 for unit in "${units[@]}"; do install -m 0644 "$unit_source/$unit" "/etc/systemd/system/$unit"; done
 if [[ "$node_scope" == hbbtzn-l1 ]]; then

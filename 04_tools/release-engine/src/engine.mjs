@@ -185,6 +185,7 @@ export async function installCommand(adapter, options) {
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-catalog-jobs@.service',
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-payment-webhook-api@.service',
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-payment-jobs@.service',
+    '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/zhudatuan-console-support.service',
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/zhudatuan-api.service',
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/zhudatuan-purchase-api.service',
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/zhudatuan-web-api.service',
@@ -274,6 +275,29 @@ export async function seedCommand(adapter, options) {
     timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
   }, basicContext(adapter));
   return { schema: 'ai.delivery.seed.v1', project: adapter.project, node: nodeKey, target: targetId, durationMs: result.durationMs, remote: parseCommandJson(result) };
+}
+
+export async function baselineCommand(adapter, options) {
+  const nodeKey = required(options.node ?? options.nodes?.[0], 'BASELINE_NODE_REQUIRED');
+  const targetId = required(options.target, 'BASELINE_TARGET_REQUIRED');
+  const sourceSha = required(options.sourceSha, 'BASELINE_SOURCE_SHA_REQUIRED');
+  invariant(/^[a-f0-9]{40}$/.test(sourceSha), 'BASELINE_SOURCE_SHA_INVALID', 'Baseline source must be a full lowercase Git SHA');
+  const expected = `${adapter.project}:baseline:${sourceSha}`;
+  invariant(options.approveBaseline === expected, 'BASELINE_APPROVAL_REQUIRED', `Baseline import requires --approve-baseline ${expected}`);
+  const node = adapter.nodes[nodeKey];
+  const deployment = node?.deployments?.[targetId];
+  invariant(Boolean(deployment), 'BASELINE_TARGET_UNKNOWN', `Unknown deployment ${nodeKey}/${targetId}`);
+  const transport = node.transport ?? adapter.transport;
+  invariant(transport.kind === 'ssh', 'BASELINE_REQUIRES_REMOTE_POLICY', 'Baseline import requires the remote policy');
+  const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
+  invariant(Boolean(host), 'DEPLOY_SSH_HOST_MISSING', `SSH host missing for ${nodeKey}`);
+  const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
+  const result = await runCommand({
+    name: `baseline:${nodeKey}:${targetId}`,
+    argv: ['ssh', host, remoteAgent, 'baseline', '--project', adapter.project, '--node', nodeKey, '--target', targetId, '--source-sha', sourceSha, '--approval', expected],
+    timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+  }, basicContext(adapter));
+  return { schema: 'ai.delivery.baseline.v1', project: adapter.project, node: nodeKey, target: targetId, durationMs: result.durationMs, remote: parseCommandJson(result) };
 }
 
 export async function statusCommand(adapter, options) {

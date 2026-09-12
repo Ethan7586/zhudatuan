@@ -179,3 +179,24 @@ test('runtime installer cannot restart or cut over a service', async () => {
   assert.match(source, /target_root="\$\{pointer%\/\*\}"/);
   assert.match(source, /chmod 0755 "\$target_parent" "\$target_root"/);
 });
+
+test('runtime installer uses the same L0 pointers and support unit as the release policy', async () => {
+  const installer = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh'), 'utf8');
+  for (const target of ['identity-api', 'purchase-api', 'web-api', 'catalog-api', 'catalog-jobs', 'payment-webhook-api', 'payment-jobs']) {
+    assert.match(installer, new RegExp(`/opt/sfl/nodes/zhudatuan-l0/targets/${target}/current`));
+    assert.doesNotMatch(installer, new RegExp(`/opt/zhudatuan/targets/${target}/current`));
+  }
+  assert.match(installer, /\/opt\/zhudatuan\/targets\/support-api\/current/);
+  assert.match(installer, /zhudatuan-console-support\.service/);
+});
+
+test('first activation stays limited to content while Support uses an imported rollback baseline', () => {
+  const firstActivations = [];
+  for (const [node, nodePolicy] of Object.entries(policy.nodes)) {
+    for (const [target, deployment] of Object.entries(nodePolicy.deployments)) {
+      if (deployment.allowFirstActivation === true) firstActivations.push(`${node}/${target}`);
+    }
+  }
+  assert.deepEqual(firstActivations.sort(), ['hbbtzn-l1/catalog-media', 'zhudatuan-l0/catalog-media']);
+  assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
+});

@@ -620,6 +620,18 @@ test('candidate lookup tolerates an unmanaged current directory without replacin
   assert.equal(await readFile(join(fixture.pointerRoot, 'current', 'legacy.txt'), 'utf8'), 'legacy-current\n');
 });
 
+test('imports an explicitly allowed candidate as a rollback baseline without restarting', async () => {
+  const fixture = await createFixture();
+  fixture.policy.nodes.local.deployments.app.allowBaselineImport = true;
+  await writePolicy(fixture);
+  const artifact = await createArtifact(fixture, 'imported-baseline', 'e'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+  const args = [agent, 'baseline', '--project', 'fixture', '--node', 'local', '--target', 'app', '--source-sha', artifact.sourceSha, '--approval', `fixture:baseline:${artifact.sourceSha}`];
+  const imported = await execFileAsync(process.execPath, args, { env: { ...process.env, AI_DELIVERY_POLICY_ROOT: fixture.policyRoot }, maxBuffer: 1024 * 1024 });
+  assert.equal(JSON.parse(imported.stdout).result.imported, true);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), await readlink(join(fixture.pointerRoot, 'candidate')));
+});
+
 test('remote policy can block production while still accepting a candidate', async () => {
   const fixture = await createFixture();
   const artifact = await createArtifact(fixture, 'candidate-only', '4'.repeat(40));

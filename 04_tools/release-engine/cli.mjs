@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 
 import { loadAdapter } from './src/adapter.mjs';
 import { asDeliveryError } from './src/errors.mjs';
-import { buildCommand, deployCommand, installCommand, packageCommand, planCommand, rollbackCommand, seedCommand, statusCommand, verifyCommand } from './src/engine.mjs';
+import { baselineCommand, buildCommand, deployCommand, installCommand, packageCommand, planCommand, rollbackCommand, seedCommand, statusCommand, verifyCommand } from './src/engine.mjs';
 import { layerCommand } from './src/layer.mjs';
 
 const DEFAULT_ADAPTER = '02_platform_pingtai/infrastructure/release/zdt-next.release.json';
@@ -15,6 +15,7 @@ const commands = Object.freeze({
   deploy: deployCommand,
   verify: verifyCommand,
   rollback: rollbackCommand,
+  baseline: baselineCommand,
   seed: seedCommand,
   status: statusCommand,
   layer: layerCommand,
@@ -84,5 +85,5 @@ function printResult(result, format) {
 }
 
 function printHelp() {
-  process.stdout.write(`统一 AI 发布引擎\n\n用法：\n  node 04_tools/release-engine/cli.mjs <plan|install|build|package|deploy|verify|rollback|status|seed|layer> [选项]\n\n关键选项：\n  --adapter <path>             项目适配器\n  --from <git-ref>             差异起点\n  --to <git-ref>               差异终点\n  --node <node-key>            目标节点，可重复\n  --plan <plan.json>           构建所用计划\n  --build <build.json>         打包所用构建证据\n  --package <package.json>     部署所用制品集合\n  --environment <candidate|production>\n  --approve-production <project:sha>\n  --mode <agent-candidate|agent|runtime-candidate|verify>\n  --approve-install <project:install:sha>\n  --target <target-id>         状态、回滚、初始登记或依赖层目标\n  --source-sha <sha>           安装或初始登记所对应的提交\n  --approve-seed <project:seed-layout:sha>\n  --source-node-modules <path> 依赖层来源（只在 A3 初始化使用）\n  --destination <path>         依赖层安装根目录\n  --dry-run                    只展示部署意图\n  --format <human|json>\n`);
+  process.stdout.write(`统一 AI 发布引擎\n\n用法：\n  node 04_tools/release-engine/cli.mjs <plan|install|build|package|deploy|verify|rollback|status|seed|baseline|layer> [选项]\n\n关键选项：\n  --adapter <path>             项目适配器\n  --from <git-ref>             差异起点\n  --to <git-ref>               差异终点\n  --node <node-key>            目标节点，可重复\n  --plan <plan.json>           构建所用计划\n  --build <build.json>         打包所用构建证据\n  --package <package.json>     部署所用制品集合\n  --environment <candidate|production>\n  --approve-production <project:sha>\n  --mode <agent-candidate|agent|runtime-candidate|verify>\n  --approve-install <project:install:sha>\n  --target <target-id>         状态、回滚、初始登记或依赖层目标\n  --source-sha <sha>           安装、初始登记或基线导入对应的提交\n  --approve-seed <project:seed-layout:sha>\n  --approve-baseline <project:baseline:sha>\n  --source-node-modules <path> 依赖层来源（只在 A3 初始化使用）\n  --destination <path>         依赖层安装根目录\n  --dry-run                    只展示部署意图\n  --format <human|json>\n`);
 }
