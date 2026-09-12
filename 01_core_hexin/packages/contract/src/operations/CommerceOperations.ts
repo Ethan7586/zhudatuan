@@ -554,7 +554,7 @@ const definitions = [
     "writePath": "transactional",
     "stateMachine": "identity.tickets.exchange.execution.v1",
     "businessNumber": "SFL-IDENTITY-{sha256:16}",
-    "operationHash": "604b4a780678a6238fd9ed2a4e778a17251edf20cf5f3bc0650c13060443a48a",
+    "operationHash": "e6e4e7521dd08c730fb0a4b335e85be3429f1d13d1399af5f1414cbf7f0473f3",
     "requirements": [
       "MVP03",
       "MVP04",

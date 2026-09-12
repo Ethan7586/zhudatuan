@@ -57,6 +57,18 @@ describe('contract truth', () => {
     expect(() => schema.parse({ path: { productid: 'product:1', wrong: 'value' }, body: {} })).toThrow();
   });
 
+  it('accepts the PKCE ticket exchange payload and rejects login-form fields', () => {
+    const schema = OPERATION_SCHEMAS['identity.tickets.exchange'].input;
+    const body = {
+      ticket: 'ticket-value',
+      state: 'state-value',
+      nonce: 'nonce-value',
+      verifier: 'verifier-value',
+    };
+    expect(schema.parse({ body })).toEqual({ body });
+    expect(() => schema.parse({ body: { ...body, password: 'must-not-cross-the-ticket-boundary' } })).toThrow('CONTRACT_FIELD_UNDECLARED');
+  });
+
   it('classifies every employee journey operation as member audience', () => {
     const employeeOperations = [
       'cart.current.read', 'cart.items.put', 'cart.items.batch', 'checkout.quote.create', 'order.orders.create', 'order.orders.read',

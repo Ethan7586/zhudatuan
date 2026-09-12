@@ -4796,43 +4796,16 @@
       "IdentityTicketsExchangeRequest": {
         "additionalProperties": false,
         "properties": {
-          "application": {
+          "nonce": {
             "$ref": "#/components/schemas/JsonValue"
           },
-          "authorization": {
+          "state": {
             "$ref": "#/components/schemas/JsonValue"
           },
-          "challenge": {
+          "ticket": {
             "$ref": "#/components/schemas/JsonValue"
           },
-          "code": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "loginIntent": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "membership": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "password": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "provider": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "subject": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "target": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "targetApplication": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "targetNodeId": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "targetSurface": {
+          "verifier": {
             "$ref": "#/components/schemas/JsonValue"
           }
         },
@@ -4841,34 +4814,7 @@
       "IdentityTicketsExchangeResponse": {
         "additionalProperties": false,
         "properties": {
-          "accessVersion": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "active_context": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "actor": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "application": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "assurance": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "authorization": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "callback": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "capabilities": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
           "code": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "csrf": {
             "$ref": "#/components/schemas/JsonValue"
           },
           "details": {
@@ -4877,40 +4823,7 @@
           "expiresIn": {
             "$ref": "#/components/schemas/JsonValue"
           },
-          "governance": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "host": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "loginIntent": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "loginUrl": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "membership": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "memberships": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
           "message": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "mobileTokens": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "permissions": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "principal": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "provider": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "requestedTarget": {
             "$ref": "#/components/schemas/JsonValue"
           },
           "requestId": {
@@ -4919,52 +4832,7 @@
           "retryable": {
             "$ref": "#/components/schemas/JsonValue"
           },
-          "returnOrigin": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
           "returnTarget": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "revoked": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "scope": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "scopes": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "security": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "session": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "sessions": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "sourceNode": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "subject": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "syncedAt": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "target": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "targetNode": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "targetRealm": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "targetSurface": {
-            "$ref": "#/components/schemas/JsonValue"
-          },
-          "ticket": {
             "$ref": "#/components/schemas/JsonValue"
           }
         },
@@ -33612,7 +33480,7 @@
           "operating_mall",
           "consumer"
         ],
-        "x-operation-hash": "604b4a780678a6238fd9ed2a4e778a17251edf20cf5f3bc0650c13060443a48a",
+        "x-operation-hash": "e6e4e7521dd08c730fb0a4b335e85be3429f1d13d1399af5f1414cbf7f0473f3",
         "x-permission": null,
         "x-request-schema": "IdentityTicketsExchangeRequest",
         "x-requirements": [
