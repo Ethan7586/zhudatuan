@@ -7,6 +7,7 @@ import {
   assertExecutionTransition,
   currentWriteTx,
   ExecutionKernel,
+  normalizeOperationResult,
 } from './ExecutionKernel';
 import type { OperationRequest, OperationResult } from './OperationHandler';
 import { assertActiveWriteTx, type Transaction, type TransactionContext, type WriteTx } from './UnitOfWork';
@@ -62,6 +63,11 @@ describe('ExecutionKernel', () => {
     await expect(fixture.kernel.execute(request(undefined), 'identity', fixture.transaction, context(),
       async () => ({ status: 201 }), (_request, result) => result)).rejects.toThrow('IDEMPOTENCY_KEY_REQUIRED');
     expect(() => assertExecutionTransition('completed', 'started')).toThrow('STATE_INVALID:completed:started');
+  });
+
+  it('preserves successful output without applying the retired response schema', () => {
+    const body = { futureField: 'kept', nested: { value: 2 } };
+    expect(normalizeOperationResult(request('response-key'), { status: 200, body })).toEqual({ status: 200, body });
   });
 
   it('invalidates the branded write context immediately after the transaction ends', async () => {

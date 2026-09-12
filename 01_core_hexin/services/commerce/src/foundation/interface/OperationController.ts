@@ -1,5 +1,5 @@
 // Generated shell from definitions/operations.yml. Do not edit.
-import { OperationCatalog, operationSchema, type OperationId } from '@shop/contract';
+import { OperationCatalog, type OperationId } from '@shop/contract';
 import { token } from '../../bootstrap/Container';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import type { OperationHandler, OperationInput, OperationResult } from '../application/OperationHandler';
@@ -339,13 +339,8 @@ function operationInput(operation: string, request: HttpRequest, resource: strin
 }
 
 function contractOperationInput(operation: OperationId, input: OperationInput): OperationInput {
-  try {
-    const contractValue = { ...(Object.keys(input.path).length === 0 ? {} : { path: input.path }), query: input.query, body: input.body };
-    const parsed = operationSchema(operation).input.parse(contractValue) as { readonly path?: Readonly<Record<string, string>>; readonly query?: OperationInput['query']; readonly body?: unknown };
-    return Object.freeze({ ...input, path: parsed.path ?? {}, query: parsed.query ?? {}, body: parsed.body });
-  } catch (cause) {
-    throw new Error(`CONTRACT_REQUEST_INVALID:${cause instanceof Error ? cause.message : 'UNKNOWN'}`, { cause });
-  }
+  void operation;
+  return Object.freeze({ ...input });
 }
 
 function operationResource(operation: string, request: HttpRequest): string | undefined {

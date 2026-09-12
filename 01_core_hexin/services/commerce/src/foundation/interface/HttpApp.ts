@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { CONTRACT_VERSION, OperationCatalog, type OperationGateDeclaration } from '@shop/contract';
+import { OperationCatalog, type OperationGateDeclaration } from '@shop/contract';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import type { NodeContextResolver, ResolvedNodeContext } from '@shop/config/sfl-node-kernel';
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
@@ -50,14 +50,6 @@ export class HttpApp {
       observedOperation = operation.id;
       observedPhase = 'csrf';
       assertCsrf(request, origin, operation.id);
-      observedPhase = 'contract';
-      const version = request.headers.get('x-contract-version');
-      if (!route.operation.startsWith('runtime.health.') && operation.audience !== 'provider' && version !== CONTRACT_VERSION) {
-        observedStatus = 426;
-        observedError = 'CONTRACT_VERSION_UNSUPPORTED';
-        return secure(426, { code: 'CONTRACT_VERSION_UNSUPPORTED', message: '客户端版本不兼容，请刷新页面后重试', requestId,
-          required: CONTRACT_VERSION }, requestId, origin, { 'x-contract-version': CONTRACT_VERSION });
-      }
       observedPhase = 'request';
       const nodeContext = route.operation.startsWith('runtime.health.')
         ? undefined
@@ -86,7 +78,7 @@ export class HttpApp {
         recoverStaleIdentityCookie ? { ...mapped.headers, ...EXPIRED_IDENTITY_COOKIES } : mapped.headers);
     } finally {
       if (observedOperation) this.metrics?.observe({ requestId, traceId,
-        operation: observedOperation, version: CONTRACT_VERSION, phase: observedPhase,
+        operation: observedOperation, version: request.headers.get('x-contract-version') ?? 'unversioned', phase: observedPhase,
         ...identityRealmObservation(observedOperation, observedNodeContext) }, observedStatus, performance.now()-started, observedError);
       deadline.dispose();
     }

@@ -403,7 +403,7 @@ function hardenedControllerSource(values: readonly OperationDefinition[]): strin
   return controllerSource(values)
     .replace(
       "import { OperationCatalog, type OperationId } from '@shop/contract';",
-      "import { OperationCatalog, operationSchema, type OperationId } from '@shop/contract';"
+      "import { OperationCatalog, type OperationId } from '@shop/contract';"
     )
     .replace(
       'export function registerOperationRoutes(module: string, context: ModuleContext): void {',
@@ -465,6 +465,10 @@ function operationInput(operation: string, request: HttpRequest, resource: strin
     .replace(
       '\nfunction queryObject(parameters: URLSearchParams)',
       "\nfunction contractOperationInput(operation: OperationId, input: OperationInput): OperationInput {\n  try {\n    const contractValue = { ...(Object.keys(input.path).length === 0 ? {} : { path: input.path }), query: input.query, body: input.body };\n    const parsed = operationSchema(operation).input.parse(contractValue) as { readonly path?: Readonly<Record<string, string>>; readonly query?: OperationInput['query']; readonly body?: unknown };\n    return Object.freeze({ ...input, path: parsed.path ?? {}, query: parsed.query ?? {}, body: parsed.body });\n  } catch (cause) {\n    throw new Error(`CONTRACT_REQUEST_INVALID:${cause instanceof Error ? cause.message : 'UNKNOWN'}`, { cause });\n  }\n}\n\nfunction operationResource(operation: string, request: HttpRequest): string | undefined {\n  // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.\n  if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;\n  const pathResource = Object.values(request.parameters)[0];\n  if (operation === 'catalog.imports.read' && pathResource?.startsWith('catalogpublication:')) return undefined;\n  if (pathResource !== undefined) return pathResource;\n  if (!['finance.withdrawals.create', 'invoice.requests.create'].includes(operation) || request.body === null || typeof request.body !== 'object' || Array.isArray(request.body)) return undefined;\n  const settlement = Reflect.get(request.body, 'settlement');\n  return typeof settlement === 'string' && settlement.length > 0 ? settlement : undefined;\n}\n\nfunction queryObject(parameters: URLSearchParams)"
+    )
+    .replace(
+      /\nfunction contractOperationInput[\s\S]*?\n}\n\n(?=function operationResource)/,
+      "\nfunction contractOperationInput(operation: OperationId, input: OperationInput): OperationInput {\n  void operation;\n  return Object.freeze({ ...input });\n}\n\n"
     );
 }
 

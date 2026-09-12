@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { OperationCatalog, operationSchema } from '@shop/contract';
+import { OperationCatalog } from '@shop/contract';
 import type { QueryResultRow } from 'pg';
 import type { AuditSink } from './AuditSink';
 import type { OperationRequest, OperationResult } from './OperationHandler';
@@ -121,14 +121,8 @@ export async function completeCriticalWrite(database: OperationDatabase, request
   return markEnforcedWriteResult(result);
 }
 
-export function normalizeOperationResult(request: OperationRequest, result: OperationResult): OperationResult {
-  let body: unknown;
-  try {
-    body = operationSchema(request.type).output.parse(result.body);
-  } catch (cause) {
-    throw new Error(`CONTRACT_RESPONSE_INVALID:${cause instanceof Error ? cause.message : 'UNKNOWN'}`, { cause });
-  }
-  return Object.freeze({ status: result.status, ...(body === undefined ? {} : { body }),
+export function normalizeOperationResult(_request: OperationRequest, result: OperationResult): OperationResult {
+  return Object.freeze({ status: result.status, ...(result.body === undefined ? {} : { body: result.body }),
     ...(result.headers === undefined ? {} : { headers: Object.freeze({ ...result.headers }) }) });
 }
 

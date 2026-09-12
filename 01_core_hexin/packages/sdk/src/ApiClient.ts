@@ -4,9 +4,7 @@ import type {
   OperationInputFor,
   OperationOutputFor,
   OperationQuery,
-  Schema,
 } from '@shop/contract';
-import { CONTRACT_VERSION } from '@shop/contract/version';
 import { RUNTIME_LIMITS } from '@shop/config/runtime';
 import { Deadline } from '@shop/kernel/deadline';
 import { ApiError } from './error';
@@ -36,7 +34,6 @@ export class ApiClient implements OperationExecutor {
     input: OperationInputFor<TKey>,
     context: RequestContext,
   ): Promise<OperationOutputFor<TKey>> {
-    if (context.contractVersion !== CONTRACT_VERSION) throw new Error('SDK_CONTRACT_VERSION_MISMATCH');
     if (operation.availability === 'frozen') throw new Error('SDK_OPERATION_FROZEN');
     if (operation.expectedVersion === 'required' && context.expectedVersion === undefined) {
       throw new Error('SDK_EXPECTED_VERSION_REQUIRED');
@@ -44,8 +41,13 @@ export class ApiClient implements OperationExecutor {
     if (operation.method !== 'GET' && operation.audience !== 'provider' && context.idempotencyKey === undefined) {
       throw new Error('SDK_IDEMPOTENCY_KEY_REQUIRED');
     }
-    const parsed = operation.input.parse(input);
-    const value = await this.send(operation.path, operation.method, parsed, context, operation.idempotent, operation.output);
+    const value = await this.send<OperationOutputFor<TKey>>(
+      operation.path,
+      operation.method,
+      input as WireInput,
+      context,
+      operation.idempotent,
+    );
     return value;
   }
 
@@ -55,7 +57,6 @@ export class ApiClient implements OperationExecutor {
     input: WireInput,
     context: RequestContext,
     idempotent: boolean,
-    output: Schema<TOutput>,
   ): Promise<TOutput> {
     const deadline = Deadline.after(RUNTIME_LIMITS.http.totalDeadlineMilliseconds, context.signal);
     const request = this.request(path, method, input, context, deadline.signal);
@@ -66,13 +67,7 @@ export class ApiClient implements OperationExecutor {
         deadline.throwIfExpired();
         try {
           const response = await this.transport.send(request);
-          if (response.status >= 200 && response.status < 300) {
-            try {
-              return output.parse(decode(response.body));
-            } catch (cause) {
-              throw ApiError.contractResponse(context.traceId, cause);
-            }
-          }
+          if (response.status >= 200 && response.status < 300) return decode(response.body) as TOutput;
           const decision = this.retry.decide(attempt, response.status);
           if (!canRetry || !decision.retry) throw ApiError.from(response.status, response.body, context.traceId);
           await delay(decision.delayMs, deadline.signal);
@@ -103,7 +98,6 @@ export class ApiClient implements OperationExecutor {
     }
     const headers: Record<string, string> = {
       accept: 'application/json',
-      'x-contract-version': CONTRACT_VERSION,
       'x-client-version': context.clientVersion,
       'x-trace-id': context.traceId,
     };

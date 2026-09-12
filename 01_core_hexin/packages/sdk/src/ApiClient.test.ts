@@ -17,11 +17,28 @@ class RecordingTransport implements Transport {
 }
 
 describe('ApiClient contract identity', () => {
-  it('pins every SDK request to the generated contract version', async () => {
+  it('does not pin SDK requests to the retired contract version', async () => {
     const transport = new RecordingTransport();
     const client = new ApiClient('https://shop.example', transport);
     await createRuntimeOperations(client).healthLive({}, context());
-    expect(transport.request?.headers['x-contract-version']).toBe(CONTRACT_VERSION);
+    expect(transport.request?.headers['x-contract-version']).toBeUndefined();
+  });
+
+  it('forwards inputs without applying the retired request schema', async () => {
+    const transport = new RecordingTransport();
+    const client = new ApiClient('https://shop.example', transport);
+    await createOrderOperations(client).ordersCreate({ body: { replacementQuote: 'quote:future' } } as never, {
+      ...context(), idempotencyKey: 'command:future',
+    });
+    expect(transport.request?.body).toBe(JSON.stringify({ replacementQuote: 'quote:future' }));
+  });
+
+  it('returns successful JSON without applying the retired response schema', async () => {
+    const client = new ApiClient('https://shop.example', {
+      send: () => Promise.resolve({ status: 200, headers: {}, body: '{"futureField":"kept"}' }),
+    });
+    const result = await createRuntimeOperations(client).healthLive({}, context());
+    expect(result).toEqual({ futureField: 'kept' });
   });
 
   it('carries scope, access, command and proof evidence through one immutable context', async () => {
@@ -50,14 +67,11 @@ describe('ApiClient contract identity', () => {
     expect(transport.request).toBeUndefined();
   });
 
-  it('rejects a response that does not parse as JSON before it reaches a Feature', async () => {
+  it('still rejects malformed transport JSON', async () => {
     const client = new ApiClient('https://shop.example', {
       send: () => Promise.resolve({ status: 200, headers: {}, body: '{' }),
     });
-    await expect(createRuntimeOperations(client).healthLive({}, context())).rejects.toMatchObject({
-      code: 'CONTRACT_RESPONSE_INVALID',
-      status: 502,
-    });
+    await expect(createRuntimeOperations(client).healthLive({}, context())).rejects.toBeInstanceOf(SyntaxError);
   });
 
   it('forwards caller cancellation to the actual transport request', async () => {

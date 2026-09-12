@@ -77,20 +77,16 @@ describe('HttpApp contract handshake', () => {
     expect(resolveCount).toBe(0);
   });
 
-  it('returns upgrade required before invoking a route with a missing contract version', async () => {
+  it('invokes a route when the retired contract version header is missing', async () => {
     const response = await new HttpApp(routes(), []).handle(new Request('https://api.example/api/v1/identity/sessions', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: '{}',
     }));
-    expect(response.status).toBe(426);
-    expect(response.headers.get('x-contract-version')).toBe(CONTRACT_VERSION);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-contract-version')).toBeNull();
     expect(response.headers.get('location')).toBeNull();
-    expect(await response.json()).toMatchObject({
-      code: 'CONTRACT_VERSION_UNSUPPORTED',
-      message: '客户端版本不兼容，请刷新页面后重试',
-      required: CONTRACT_VERSION,
-    });
+    expect(await response.json()).toMatchObject({ accepted: true });
   });
 
   it('clears stale identity cookies without redirecting or retrying server-side', async () => {
@@ -141,7 +137,7 @@ describe('HttpApp contract handshake', () => {
       'Private-Password-1!', '483921', 'private-ticket']) expect(serialized).not.toContain(secret);
   });
 
-  it('records a contract mismatch as HTTP 426 in the contract phase', async () => {
+  it('accepts an obsolete contract version and records the completed operation', async () => {
     const records: Readonly<Record<string, unknown>>[] = [];
     const metrics = new OperationMetrics(createTelemetry((record) => { records.push(record); }));
     const response = await new HttpApp(routes(), [], undefined, undefined, metrics)
@@ -149,11 +145,11 @@ describe('HttpApp contract handshake', () => {
         method: 'POST', headers: { 'content-type': 'application/json', 'x-contract-version': '0.0.0' }, body: '{}',
       }));
 
-    expect(response.status).toBe(426);
+    expect(response.status).toBe(200);
     expect(records.find((record) => record.event === 'commerce.operation.completed')).toMatchObject({
-      level: 'warn', event: 'commerce.operation.completed', nodeId: 'unresolved', realmId: 'unresolved',
-      operation: 'identity.sessions.create', version: CONTRACT_VERSION, phase: 'contract',
-      result: 'failure', errorCode: 'CONTRACT_VERSION_UNSUPPORTED', data: { status: 426 },
+      level: 'info', event: 'commerce.operation.completed', nodeId: 'unresolved', realmId: 'unresolved',
+      operation: 'identity.sessions.create', version: '0.0.0', phase: 'complete',
+      result: 'success', data: { status: 200 },
     });
   });
 

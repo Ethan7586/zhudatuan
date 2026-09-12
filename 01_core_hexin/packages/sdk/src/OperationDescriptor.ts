@@ -1,4 +1,3 @@
-import { operationSchema } from '@shop/contract';
 import type {
   HttpMethod,
   OperationAudience,
@@ -9,7 +8,6 @@ import type {
   OperationInputFor,
   OperationOutputFor,
   OperationVersionPolicy,
-  Schema,
 } from '@shop/contract';
 import type { RequestContext } from './RequestContext';
 
@@ -23,8 +21,6 @@ export interface OperationDescriptor<TKey extends OperationId> {
   readonly expectedVersion: OperationVersionPolicy;
   readonly execution: OperationExecution;
   readonly availability: OperationAvailability;
-  readonly input: Schema<OperationInputFor<TKey>>;
-  readonly output: Schema<OperationOutputFor<TKey>>;
 }
 
 export interface OperationExecutor {
@@ -51,7 +47,6 @@ export function defineContractOperation<TKey extends OperationId>(definition: Re
   execution: OperationExecution;
   availability: OperationAvailability;
 }>): OperationDescriptor<TKey> {
-  const schemas = operationSchema(definition.id);
   return Object.freeze({
     id: definition.id,
     method: definition.method,
@@ -62,8 +57,6 @@ export function defineContractOperation<TKey extends OperationId>(definition: Re
     expectedVersion: definition.expectedVersion,
     execution: definition.execution,
     availability: definition.availability,
-    input: schemas.input as Schema<OperationInputFor<TKey>>,
-    output: schemas.output as Schema<OperationOutputFor<TKey>>,
   });
 }
 
