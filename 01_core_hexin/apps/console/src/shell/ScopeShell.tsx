@@ -60,7 +60,7 @@ export function ScopeShell() {
         import('../shared/config/AppConfig'),
       ]);
       const liveSession = await identitySessionRead({}, consoleRequest(undefined));
-      const liveCsrf = typeof liveSession.csrf === 'string' ? liveSession.csrf : undefined;
+      const liveCsrf = liveSession !== undefined && typeof liveSession.csrf === 'string' ? liveSession.csrf : undefined;
       await identitySessionDelete({}, consoleCommand(undefined, {
         accessVersion: context.session.accessVersion,
         ...(liveCsrf === undefined ? {} : { csrfToken: liveCsrf }),
