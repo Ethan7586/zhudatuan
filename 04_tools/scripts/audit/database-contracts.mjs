@@ -223,6 +223,8 @@ const REPAIR_FILES = [
   '20260913014500_restore_storefront_member_context_owner.sql',
   '20260913015500_complete_senior_administrator_invitation_projection.sql',
   '20260913020500_backfill_hbbtzn_storefront_member_l6.sql',
+  '20260913021500_align_purchase_supplier_flow_access.sql',
+  '20260913021600_align_purchase_operation_completion_outbox.sql',
 ];
 
 const mode = process.argv[2];

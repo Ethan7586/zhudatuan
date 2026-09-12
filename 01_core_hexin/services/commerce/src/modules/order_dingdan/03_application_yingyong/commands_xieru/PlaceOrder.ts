@@ -18,18 +18,6 @@ export interface OrderVoucherGateway {
     tenders: readonly Readonly<{ reference: string; amountMinor: number }>[]): Promise<void>;
 }
 
-interface ParticipantSnapshotRow {
-  readonly membership_id: string;
-  readonly member_id: string;
-  readonly organization_id: string;
-  readonly access_version: number;
-  readonly realm_id: string | null;
-  readonly account_id: string | null;
-  readonly node_id: string | null;
-  readonly host_node_id: string | null;
-  readonly node_profile: string | null;
-}
-
 interface OrderRouteContext {
   readonly transaction: string;
   readonly correlation: string;
@@ -114,16 +102,15 @@ export class PlaceOrder {
     if (current.rejections.length > 0) throw new Error(`CHECKOUT_REJECTED:${current.rejections.map(({ listing, reasons }) => `${listing}:${reasons.join(',')}`).join(';')}`);
     const order = `order:${randomUUID()}`;
     const transaction = `transaction:${randomUUID()}`;
-    const participant = await this.participant(database, access.membership.id, current.cart.member);
-    const participantNode = participant?.node_id ?? access.actor.nodeContext?.node_id ?? null;
-    const operatingNode = participant?.host_node_id ?? access.actor.nodeContext?.host_node_id ?? access.actor.nodeContext?.node_id ?? null;
+    const participantNode = access.actor.nodeContext?.node_id ?? null;
+    const operatingNode = access.actor.nodeContext?.host_node_id ?? participantNode;
     const routeContext: OrderRouteContext = Object.freeze({
       transaction,
       correlation: access.trace,
       operatingNode,
       operatingLine: access.actor.nodeContext?.line_id ?? null,
       operatingSignedLevel: access.actor.nodeContext?.signed_level ?? null,
-      realm: participant?.realm_id ?? access.actor.realm ?? null,
+      realm: access.actor.realm ?? null,
       participantNode,
       participantMembership: access.membership.id,
       participantMember: current.cart.member,
@@ -144,17 +131,17 @@ export class PlaceOrder {
       current.currency, current.payableMinor, JSON.stringify({ quote: stored.quote_id, signature: stored.signature, dependencies: current.evidence,
         selection: current.selection, tenders: current.tenders }), JSON.stringify(snapshots.address), JSON.stringify(snapshots.invoice),
       JSON.stringify(current.selection.delivery), experienceVersion(current), transaction, access.trace, operatingNode,
-      routeContext.operatingLine, participantNode, access.membership.id, participant?.realm_id ?? access.actor.realm ?? null,
-      participant?.account_id ?? access.actor.account ?? null, JSON.stringify({
+      routeContext.operatingLine, participantNode, access.membership.id, access.actor.realm ?? null,
+      access.actor.account ?? null, JSON.stringify({
         membershipId: access.membership.id,
         memberId: current.cart.member,
-        realmId: participant?.realm_id ?? access.actor.realm ?? null,
-        accountId: participant?.account_id ?? access.actor.account ?? null,
+        realmId: access.actor.realm ?? null,
+        accountId: access.actor.account ?? null,
         nodeId: participantNode,
-        nodeProfile: participant?.node_profile ?? access.actor.nodeContext?.node_profile ?? null,
-        hostNodeId: participant?.host_node_id ?? access.actor.nodeContext?.host_node_id ?? null,
-        organizationId: participant?.organization_id ?? current.cart.mall,
-        accessVersion: participant?.access_version ?? access.accessVersion,
+        nodeProfile: access.actor.nodeContext?.node_profile ?? null,
+        hostNodeId: access.actor.nodeContext?.host_node_id ?? null,
+        organizationId: current.cart.mall,
+        accessVersion: access.accessVersion,
       })]);
     const savedLines = await this.saveLines(database, order, current, routeContext);
     await this.saveSuborders(database, order, routeContext, current.currency);
@@ -201,13 +188,6 @@ export class PlaceOrder {
     if (quote.selection.address !== null && !address) throw new Error('CHECKOUT_ADDRESS_INVALID');
     if (quote.selection.invoice !== null && !invoice) throw new Error('CHECKOUT_INVOICE_INVALID');
     return Object.freeze({ address: address ?? null, invoice: invoice ?? null });
-  }
-
-  private async participant(database: OperationDatabase, membership: string, member: string): Promise<ParticipantSnapshotRow | undefined> {
-    return (await database.query<ParticipantSnapshotRow>(`select membership.id membership_id,membership.member_id,membership.organization_id,
-      membership.access_version::float8 access_version,membership.realm_id,membership.account_id,realm.node_id,realm.host_node_id,
-      realm.node_profile from access.membership membership left join identity.realm realm on realm.id=membership.realm_id
-      where membership.id=$1 and membership.member_id=$2`, [membership, member])).rows[0];
   }
 
   private async saveLines(database: OperationDatabase, order: string, quote: CheckoutQuote, context: OrderRouteContext): Promise<readonly SavedOrderLine[]> {

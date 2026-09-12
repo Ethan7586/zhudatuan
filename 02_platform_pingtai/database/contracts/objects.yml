@@ -21244,6 +21244,14 @@ objects:
     objectType: table
     target: catalog.sourcelisting
     privilege: select
+  - id: zhudatuanpurchaseapi:table:catalog.supplyoffer:select
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
+    role: zhudatuanpurchaseapi
+    objectType: table
+    target: catalog.supplyoffer
+    privilege: select
   - id: zhudatuanpurchaseapi:table:checkout.address:select
     kind: grant
     owner: checkout
@@ -21324,6 +21332,14 @@ objects:
     objectType: table
     target: fulfillment.line
     privilege: select
+  - id: zhudatuanpurchaseapi:table:fulfillment.supplierresponsibility:insert
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
+    role: zhudatuanpurchaseapi
+    objectType: table
+    target: fulfillment.supplierresponsibility
+    privilege: insert
   - id: zhudatuanpurchaseapi:table:inventory.movement:insert
     kind: grant
     owner: inventory
@@ -21356,6 +21372,14 @@ objects:
     objectType: table
     target: inventory.stockitem
     privilege: select
+  - id: zhudatuanpurchaseapi:table:inventory.supplierreservationfact:insert
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
+    role: zhudatuanpurchaseapi
+    objectType: table
+    target: inventory.supplierreservationfact
+    privilege: insert
   - id: zhudatuanpurchaseapi:table:invoice.profile:select
     kind: grant
     owner: invoice
@@ -21404,6 +21428,14 @@ objects:
     objectType: table
     target: ordering.line
     privilege: select
+  - id: zhudatuanpurchaseapi:table:ordering.lineroutestep:insert
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
+    role: zhudatuanpurchaseapi
+    objectType: table
+    target: ordering.lineroutestep
+    privilege: insert
   - id: zhudatuanpurchaseapi:table:ordering.orderrecord:insert
     kind: grant
     owner: ordering
@@ -21459,6 +21491,38 @@ objects:
     role: zhudatuanpurchaseapi
     objectType: table
     target: partner.agreement
+    privilege: select
+  - id: zhudatuanpurchaseapi:table:partner.suppliercontract:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
+    role: zhudatuanpurchaseapi
+    objectType: table
+    target: partner.suppliercontract
+    privilege: select
+  - id: zhudatuanpurchaseapi:table:partner.supplierrelationship:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
+    role: zhudatuanpurchaseapi
+    objectType: table
+    target: partner.supplierrelationship
+    privilege: select
+  - id: zhudatuanpurchaseapi:table:partner.supplyroute:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
+    role: zhudatuanpurchaseapi
+    objectType: table
+    target: partner.supplyroute
+    privilege: select
+  - id: zhudatuanpurchaseapi:table:partner.supplyroutestep:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
+    role: zhudatuanpurchaseapi
+    objectType: table
+    target: partner.supplyroutestep
     privilege: select
   - id: zhudatuanpurchaseapi:table:payment.allocation:insert
     kind: grant
@@ -25391,11 +25455,15 @@ objects:
   - id: ordering.line.zhudatuanpurchaseapiinsert
     kind: policy
     owner: ordering
-    source: 02_platform_pingtai/database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
   - id: ordering.line.zhudatuanpurchaseapiselect
     kind: policy
     owner: ordering
     source: 02_platform_pingtai/database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+  - id: ordering.line.zhudatuanpurchaseapiupdate
+    kind: policy
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
   - id: ordering.line.zhudatuanwebapi
     kind: policy
     owner: ordering
@@ -25459,7 +25527,7 @@ objects:
   - id: ordering.suborder.zhudatuanpurchaseapiinsert
     kind: policy
     owner: ordering
-    source: 02_platform_pingtai/database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql
   - id: ordering.suborder.zhudatuanpurchaseapiselect
     kind: policy
     owner: ordering
@@ -26579,11 +26647,11 @@ objects:
   - id: runtime.outbox.zhudatuanpurchaseapiinsert
     kind: policy
     owner: runtime
-    source: 02_platform_pingtai/database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021600_align_purchase_operation_completion_outbox.sql
   - id: runtime.outbox.zhudatuanpurchaseapiselect
     kind: policy
     owner: runtime
-    source: 02_platform_pingtai/database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql
+    source: 02_platform_pingtai/database/supabase/migrations/20260913021600_align_purchase_operation_completion_outbox.sql
   - id: runtime.outbox.zhudatuanwebapiinsert
     kind: policy
     owner: runtime
