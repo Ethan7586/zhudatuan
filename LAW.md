@@ -48,10 +48,10 @@ SFL 核心标准
 
 | 标准 | 安装状态 | LAW 启用状态 |
 | --- | --- | --- |
-| 雍彻科技治理标准 | 待安装 | 未启用 |
-| SFL 核心标准 | 待安装 | 未启用 |
-| SFL 安全与运行完整性标准 | 待安装 | 未启用 |
-| 主打团标准 | 待安装 | 未启用 |
-| 疆域标准 | 待安装 | 未启用 |
+| [雍彻科技治理标准](05_docs_ziliao/docs_wendang/governance/standards/01-雍彻科技治理标准.md) | `YC-GOV 1.0.0` | `ACTIVE` |
+| [SFL 核心标准](05_docs_ziliao/docs_wendang/governance/standards/02-SFL核心标准.md) | `SFL-CORE 2.2.0` | `ACTIVE` |
+| [SFL 安全与运行完整性标准](05_docs_ziliao/docs_wendang/governance/standards/03-SFL安全与运行完整性标准.md) | `SFL-SRI 1.0.0` | `ACTIVE` |
+| [主打团标准](05_docs_ziliao/docs_wendang/governance/standards/04-主打团标准.md) | `ZDT-BIZ 1.0.0` | `ACTIVE` |
+| [疆域标准](05_docs_ziliao/docs_wendang/governance/standards/05-疆域标准.md) | `REALM-GOV 1.0.0` | `ACTIVE` |
 
-第一批没有虚构任何已生效的新标准。旧标准、旧流程和历史资料的状态登记位于 `05_docs_ziliao/docs_wendang/governance/zdt-rule-rebuild/`；登记本身不会改变 GitHub、脚本、数据库或生产控制面的实际行为。
+旧标准、旧流程和历史资料的状态登记位于 `05_docs_ziliao/docs_wendang/governance/zdt-rule-rebuild/`。SFL 运行注册表与具体疆域骨架不在本登记区；它们保持 `REFERENCE`。标准登记本身不会改变 GitHub、脚本、数据库或生产控制面的实际行为。
