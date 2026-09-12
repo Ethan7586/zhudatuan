@@ -49,7 +49,28 @@ export function webCatalogActions(): OperationActions {
         );
         return keysetResult(result, page, 'cursor_sort');
       }
-      const result = await database.query(
+      const directListingPage = query === '' && category === '' && product === ''
+        && (status === '' || status === 'published' || status === 'unpublished');
+      const result = directListingPage ? await database.query(
+        `with listing_page as materialized(
+          select listing.* from catalog.listing listing where
+          (exists(select 1 from organization.unitclosure where ancestor_id=$1 and descendant_id=listing.scope_id)
+            or ($3 and exists(select 1 from organization.unitclosure where ancestor_id=listing.scope_id and descendant_id=$1)))
+          and ($2='' or listing.pool_id=$2)
+          and ($6='' or ($6='published' and listing.status='published')
+            or ($6='unpublished' and listing.status in('unpublished','retired')))
+          and ($4::timestamptz is null or (listing.updated_at,listing.id)<($4::timestamptz,$5))
+          order by listing.updated_at desc,listing.id desc limit $7
+        ) select listing.id,listing.pool_id,listing.sku_id,listing.title,listing.status,listing.effective_at,listing.expires_at,listing.version,listing.updated_at cursor_sort,
+        sku.code,product.id product_id,product.product_type,product.attributes->>'coverUrl' cover_url,
+        product.attributes->>'subtitle' subtitle,
+        (select count(*)::integer from catalog.sku productsku where productsku.product_id=product.id) sku_count,
+        ${CATALOG_LISTING_MANAGEMENT_STATUS_SQL} management_status
+        from listing_page listing join catalog.sku sku on sku.id=listing.sku_id
+        join catalog.product product on product.id=sku.product_id
+        order by listing.updated_at desc,listing.id desc`,
+        [access.scope.id, poolFilter, access.scope.kind === 'store', page.sort, page.id, status, page.fetch],
+      ) : await database.query(
         `select listing.id,listing.pool_id,listing.sku_id,listing.title,listing.status,listing.effective_at,listing.expires_at,listing.version,listing.updated_at cursor_sort,
         sku.code,product.id product_id,product.product_type,product.attributes->>'coverUrl' cover_url,
         product.attributes->>'subtitle' subtitle,
@@ -67,7 +88,27 @@ export function webCatalogActions(): OperationActions {
         [access.scope.id, query, category, product, poolFilter, storefront, status, page.sort, page.id, page.fetch, access.scope.kind === 'store'],
       );
       if (storefront) return keysetResult(result, page, 'cursor_sort');
-      const summary = await database.query<CatalogListingStatusSummary>(`with classified as materialized (
+      const directSummary = query === '' && category === '' && product === '';
+      const summary = directSummary ? await database.query<CatalogListingStatusSummary>(`with scoped_listing as materialized(
+        select listing.* from catalog.listing listing where
+        (exists(select 1 from organization.unitclosure where ancestor_id=$1 and descendant_id=listing.scope_id)
+          or ($3 and exists(select 1 from organization.unitclosure where ancestor_id=listing.scope_id and descendant_id=$1)))
+        and ($2='' or listing.pool_id=$2)
+      ), listing_counts as(
+        select count(*)::integer total_count,
+        count(*) filter(where status='published')::integer published,
+        count(*) filter(where status in('unpublished','retired'))::integer unpublished
+        from scoped_listing
+      ), draft_classified as materialized(
+        select ${CATALOG_LISTING_MANAGEMENT_STATUS_SQL} management_status
+        from scoped_listing listing join catalog.sku sku on sku.id=listing.sku_id
+        join catalog.product product on product.id=sku.product_id where listing.status='draft'
+      ), draft_counts as(
+        select count(*) filter(where management_status='needs_attention')::integer needs_attention,
+        count(*) filter(where management_status='pending_review')::integer pending_review from draft_classified
+      ) select listing_counts.total_count,draft_counts.needs_attention,draft_counts.pending_review,
+        listing_counts.published,listing_counts.unpublished from listing_counts cross join draft_counts`,
+      [access.scope.id, poolFilter, access.scope.kind === 'store']) : await database.query<CatalogListingStatusSummary>(`with classified as materialized (
         select ${CATALOG_LISTING_MANAGEMENT_STATUS_SQL} management_status
         from catalog.listing listing join catalog.sku sku on sku.id=listing.sku_id
         join catalog.product product on product.id=sku.product_id where
