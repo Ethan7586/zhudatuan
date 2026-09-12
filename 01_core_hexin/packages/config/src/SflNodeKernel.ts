@@ -837,7 +837,9 @@ export function parseHostedNodeProvisioningRequest(value: unknown): HostedNodePr
     throw new Error('SFL_HOSTED_NODE_PROFILE_MALL_INVALID');
   }
   const signedLevel = parseSignedLevel(record.signed_level);
-  if (signedLevelNumber(signedLevel) < 1) throw new Error('SFL_HOSTED_NODE_LEVEL_INVALID');
+  const level = signedLevelNumber(signedLevel);
+  if (level < 1) throw new Error('SFL_HOSTED_NODE_LEVEL_INVALID');
+  if (level === 1) throw new Error('SFL_L1_REQUIRES_SOVEREIGN');
   const nodeId = canonicalText(record.node_id, 'node_id');
   const parentNodeId = canonicalText(record.parent_node_id, 'parent_node_id');
   if (nodeId === parentNodeId) throw new Error('SFL_HOSTED_NODE_PARENT_INVALID');
