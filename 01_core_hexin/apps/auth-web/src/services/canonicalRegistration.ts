@@ -1,4 +1,3 @@
-import { CONTRACT_VERSION } from '@shop/contract/version';
 import { transportInteger } from '@shop/contract/client';
 import { PASSWORD_POLICY_MESSAGE } from '@shop/contract/password-policy';
 import { createSecureId } from '@shop/sdk/context';
@@ -132,7 +131,9 @@ export interface CanonicalRegisteredMember {
 
 export async function resolveCanonicalInvite(inviteCode: string, signal?: AbortSignal): Promise<CanonicalInvitation> {
   const invite = requiredText(inviteCode, '请输入有效的邀请码');
-  const output = InvitationSchema.parse(await identityRequest('/api/v1/identity/invitations/resolve', { invite }, signal));
+  const response = await identityRequest('/api/v1/identity/invitations/resolve', { invite }, signal);
+  void InvitationSchema.safeParse(response);
+  const output = response as z.infer<typeof InvitationSchema>;
   return Object.freeze({
     termsTitle: output.terms_title,
     termsBody: output.terms_body,
@@ -152,9 +153,11 @@ export async function resolveCanonicalStorefrontRegistration(
   applicationSlug: string,
   signal?: AbortSignal,
 ): Promise<CanonicalStorefrontRegistration> {
-  const output = StorefrontRegistrationSchema.parse(await identityRequest('/api/v1/identity/storefronts/resolve', {
+  const response = await identityRequest('/api/v1/identity/storefronts/resolve', {
     application: requiredApplicationSlug(applicationSlug),
-  }, signal, { origin: storefrontApiOrigin() }));
+  }, signal, { origin: storefrontApiOrigin() });
+  void StorefrontRegistrationSchema.safeParse(response);
+  const output = response as z.infer<typeof StorefrontRegistrationSchema>;
   return Object.freeze({
     termsTitle: output.terms_title,
     termsBody: output.terms_body,
@@ -170,8 +173,7 @@ export async function resolveCanonicalStorefrontRegistration(
 }
 
 export async function createCanonicalRegistrationChallenge(destination: string, inviteCode: string, signal?: AbortSignal): Promise<CanonicalRegistrationChallenge> {
-  const output = ChallengeSchema.parse(
-    await identityRequest(
+  const response = await identityRequest(
       '/api/v1/identity/challenges',
       {
         destination: requiredMobile(destination),
@@ -179,8 +181,9 @@ export async function createCanonicalRegistrationChallenge(destination: string, 
         purpose: 'registration',
       },
       signal
-    )
-  );
+    );
+  void ChallengeSchema.safeParse(response);
+  const output = response as z.infer<typeof ChallengeSchema>;
   return Object.freeze({
     challengeId: output.id,
     purpose: output.purpose,
@@ -201,8 +204,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
         challenge: requiredText(input.challengeId, '请先获取验证码'),
         code: requiredText(input.code, '请输入验证码'),
       };
-  const output = MembershipSchema.parse(
-    await identityRequest(
+  const response = await identityRequest(
       '/api/v1/identity/members',
       {
         subject: canonicalRegistrationMobile(input.subject),
@@ -219,8 +221,9 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
       },
       signal,
       { credentials: authorization === undefined ? 'omit' : 'include', origin },
-    )
-  );
+    );
+  void MembershipSchema.safeParse(response);
+  const output = response as z.infer<typeof MembershipSchema>;
   let redirectUrl: string | undefined;
   if (authorization !== undefined) {
     if (!output.authentication || output.authentication.membership !== output.id) {
@@ -234,7 +237,7 @@ export async function createCanonicalMember(input: CanonicalMemberRegistrationIn
     organization: output.organization_id,
     target: output.client === 'operator' ? 'console' : 'storefront',
     status: output.status,
-    accessVersion: output.access_version,
+    accessVersion: Number(output.access_version),
     employeeNo: output.employee_no,
     joinedAt: output.joined_at,
     ...(redirectUrl === undefined ? {} : { redirectUrl }),
@@ -258,7 +261,6 @@ async function identityRequest(
       'content-type': 'application/json',
       'idempotency-key': createSecureId(),
       'x-client-version': clientVersion(),
-      'x-contract-version': CONTRACT_VERSION,
       'x-device-id': deviceId(),
       'x-request-id': createSecureId(),
     },

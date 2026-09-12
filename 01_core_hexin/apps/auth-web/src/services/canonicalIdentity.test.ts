@@ -89,6 +89,7 @@ describe('canonical console identity', () => {
       id: 'challenge:login:1234567890',
       purpose: 'login',
       expires_at: '2099-01-01T00:00:00.000Z',
+      delivery_channel: 'sms',
     }));
     vi.stubGlobal('fetch', fetchMock);
 
@@ -193,12 +194,11 @@ describe('canonical console identity', () => {
     expect(sessionHeaders).toMatchObject({
       'content-type': 'application/json',
       'x-client-version': process.env.VITE_CLIENT_VERSION ?? '0.0.0',
-      'x-contract-version': expect.any(String),
       'x-device-id': expect.any(String),
       'x-request-id': expect.any(String),
       'idempotency-key': expect.any(String),
     });
-    expect(sessionHeaders['x-contract-version']).not.toBe('');
+    expect(sessionHeaders).not.toHaveProperty('x-contract-version');
 
     const sessionBody = JSON.parse(String(sessionInit?.body));
     expect(sessionBody).toMatchObject({
@@ -476,6 +476,7 @@ function sessionCreated(target: 'console' | 'storefront' = 'console', membership
     callback: {
       ticket: SESSION_TICKET,
       state: CALLBACK_STATE,
+      issued_by: 'identity-node',
     },
   };
 }
@@ -486,8 +487,10 @@ function ticketExchanged(url: string): Readonly<Record<string, unknown>> {
       url,
       proof: VALID_PROOF,
       expiresAt: '2099-01-01T00:00:00.000Z',
+      route_class: 'console',
     },
     expiresIn: 3_600,
+    exchange_node: 'identity-node',
   };
 }
 
