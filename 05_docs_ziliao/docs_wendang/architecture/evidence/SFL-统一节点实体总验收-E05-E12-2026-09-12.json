@@ -1,0 +1,355 @@
+{
+  "schema_version": "sfl.unified-node.entity-acceptance-receipt.v1",
+  "receipt_id": "sfl-e05-e12-20260912-d258160b",
+  "fixed_at": "2026-09-12T15:01:31Z",
+  "scope": "E05-E12 acceptance indexes only",
+  "result_policy": {
+    "PASS": "All exhaustive conditions for this acceptance index were directly observed in the stated environment.",
+    "FAIL": "A directly observed result violated an acceptance condition.",
+    "UNKNOWN": "Evidence is incomplete, blocked before the target assertion, or not aligned to one source SHA; UNKNOWN is not failure."
+  },
+  "summary": {
+    "PASS": 3,
+    "FAIL": 0,
+    "UNKNOWN": 5,
+    "passed": ["E08", "E09", "E11"],
+    "unknown": ["E05", "E06", "E07", "E10", "E12"]
+  },
+  "authority_and_origin": {
+    "classification": "acceptance labels, not development batches, contracts, product gates, or new node implementations",
+    "created_by_artifact": "05_docs_ziliao/docs_wendang/architecture/16-SFL-统一节点模型全项目总报告与实验计划-2026-09-12.md",
+    "machine_plan": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json",
+    "introduced_commit": "332fef7b0df38b1a48eced91af27a230553b210b",
+    "introduced_pr": "https://github.com/Ethan7586/zhudatuan/pull/141",
+    "conclusion": "E05-E12 in this receipt are the report's experiment indexes. They do not replace or duplicate the older commerce boundary labels E05-E12 and do not authorize duplicate C1/C2 implementation."
+  },
+  "baseline": {
+    "branch": "codex/sfl-e05-e12-entity-acceptance",
+    "source_sha": "d258160b87b3ff2b2613e266ab4681cc98417d0f",
+    "origin_zdt_next_sha_at_fix": "d258160b87b3ff2b2613e266ab4681cc98417d0f",
+    "working_tree_before_receipt": "clean",
+    "migration_inventory": {
+      "historical": 94,
+      "repair": 197,
+      "total": 291
+    }
+  },
+  "real_node_inventory": {
+    "L0": {
+      "node_id": "node:zhudatuan:l0",
+      "signed_level": "L0",
+      "realm_id": "realm:l0",
+      "line_id": "line:zhudatuan:commerce:v1",
+      "mall_id": "mall-zhudatuan",
+      "runtime_instance_id": "runtime:zhudatuan:l0:commerce",
+      "node_profile": "operating_mall",
+      "data_scope": "organization-platform-root",
+      "manifest_id": "manifest:zhudatuan:l0:v1",
+      "declared_manifest_digest": "sha256:4354d82093b5cef4a2d0506b677753cf2da74e5167aa84c25214b9964c882b8c",
+      "release_pointer": "/opt/sfl/nodes/zhudatuan-l0/current",
+      "hosts": [
+        "accounts.fufu.wang",
+        "api.fufu.wang",
+        "beta.fufu.wang",
+        "console.fufu.wang",
+        "fufu.wang",
+        "h5.fufu.wang",
+        "internal.fufu.wang",
+        "mini.fufu.wang",
+        "www.fufu.wang"
+      ],
+      "live_probe": {
+        "url": "https://api.fufu.wang/health/ready",
+        "http_status": 200,
+        "status": "ready",
+        "reported_node_id": "node:zhudatuan:l0",
+        "reported_manifest_id": "manifest:zhudatuan:l0:v1",
+        "reported_manifest_digest": "sha256:a660a51822194b3f34db28bfe034d7f8acef8ab7289be4d5e6bc8ff138e38a30",
+        "same_as_declared_manifest_digest": false
+      }
+    },
+    "L1": {
+      "node_id": "node:hbbtzn:l1",
+      "signed_level": "L1",
+      "realm_id": "realm:l1",
+      "parent_node_id": "node:zhudatuan:l0",
+      "line_id": "line:zhudatuan:commerce:v1",
+      "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+      "runtime_instance_id": "runtime:hbbtzn:l1:commerce",
+      "node_profile": "operating_mall",
+      "data_scope": "mall:d1708f04df2dd8a61736852c4900fb43",
+      "manifest_id": "manifest:hbbtzn:l1:v1",
+      "declared_manifest_digest": "sha256:efde3b74922ac405da4a3c67b2d7346a65fe6b3477c986cf97ff66c578ee3f76",
+      "release_pointer": "/opt/sfl/nodes/hbbtzn-l1/current",
+      "hosts": [
+        "accounts.hbbtzn.com",
+        "api.hbbtzn.com",
+        "console.hbbtzn.com",
+        "h5.hbbtzn.com",
+        "hbbtzn.com",
+        "mall.hbbtzn.com",
+        "www.hbbtzn.com"
+      ],
+      "live_probe": {
+        "url": "https://api.hbbtzn.com/health/gateway",
+        "http_status": 200,
+        "status": "ready",
+        "reported_node_id": "node:hbbtzn:l1",
+        "reported_manifest_id": "manifest:hbbtzn:l1:v1"
+      }
+    },
+    "shared_declared_artifact": {
+      "source_sha_field": "13fd877e2ee4f4056dbfba1ec3ef0f994f8f8689b2188a6d48ffe397895312de",
+      "build_id": "node-manifest-declaration:13fd877e2ee4f4056dbfba1ec3ef0f994f8f8689b2188a6d48ffe397895312de",
+      "build_count": 1,
+      "immutable_artifact_digest": "sha256:13fd877e2ee4f4056dbfba1ec3ef0f994f8f8689b2188a6d48ffe397895312de",
+      "same_for_L0_and_L1": true,
+      "same_as_acceptance_baseline_sha": false
+    }
+  },
+  "reused_C1_C2_evidence": {
+    "C1": {
+      "commit": "a4b0867eefbefc17329d644071befbcaf224c094",
+      "on_current_mainline": true,
+      "reused_for": ["E06", "E09", "E10", "E11"],
+      "observed": "Three sibling L1 candidates share one artifact, retain isolated pointers and rollback, resume durable provider steps, and do not overwrite an existing Cloudflare target."
+    },
+    "C2": {
+      "commit": "02d159a99ab81b828156786396f4f05fcb324d2b",
+      "on_current_mainline": false,
+      "reused_for": ["E07", "E09", "E11"],
+      "observed": "Historical branch test passed 2/2 for L1 recursively provisioning L2-L5 with four domain/payment modes and resuming each step after post-commit interruption.",
+      "constraint": "Historical evidence only; it is not asserted as current-mainline capability."
+    }
+  },
+  "experiments": [
+    {
+      "id": "E05",
+      "status": "UNKNOWN",
+      "target": "Hosted data-only lifecycle and zero per-node infrastructure fan-out",
+      "passed_evidence": [
+        "Hosted PostgreSQL 17 provisioning: L1/L5/L6/L11, concurrency=5, atomic rollback, infrastructure=0",
+        "Hosted mall opening: L3/L6/L8/L11 lineage, Outbox, rollback, five-way idempotency, multi-Realm isolation, infrastructure=0"
+      ],
+      "missing_evidence": [
+        "One fixed before/after receipt covering create, suspend, reactivate, grant and revoke together",
+        "A real shared-host candidate switch proving deploy_count=1 and restart_count=1 with zero Hosted per-node operations"
+      ]
+    },
+    {
+      "id": "E06",
+      "status": "UNKNOWN",
+      "target": "Sovereign progressive release and single-node rollback",
+      "passed_evidence": [
+        "C1 local/provider tests prove one shared artifact, three independent candidates and isolated rollback"
+      ],
+      "missing_evidence": [
+        "Three real staging Sovereign pointers S-A/S-B/S-C",
+        "Real S-B A-to-B-to-A activation/rollback receipts and non-target state diffs",
+        "Four-flow history digests before and after real pointer changes"
+      ]
+    },
+    {
+      "id": "E07",
+      "status": "UNKNOWN",
+      "target": "Hosted mall opening followed by Sovereign upgrade without identity or lineage change",
+      "passed_evidence": [
+        "PostgreSQL 17 Hosted opening passed for L3/L6/L8/L11",
+        "PostgreSQL 17 Sovereign upgrade passed for L2/L5/L8 with versioned resources, rollback and failure recovery",
+        "Six local provisioning/upgrade tests passed"
+      ],
+      "missing_evidence": [
+        "Two actual staging Sovereign upgrades with resource readiness, manifests and release pointers",
+        "Cleanup/rollback receipts for the staging resources"
+      ]
+    },
+    {
+      "id": "E08",
+      "status": "PASS",
+      "target": "Multi-supplier four-flow forward facts and historical partial-refund reverse replay",
+      "environment": "Disposable PostgreSQL 17 with all 291 migrations applied; no real payment provider",
+      "observed": {
+        "supplier_legs": 3,
+        "route_levels": ["L0", "L1", "L-2", "L2", "L6", "L7"],
+        "order_total_minor": 3000,
+        "discount_minor": 200,
+        "payable_minor": 2800,
+        "forward_finance_facts": 12,
+        "reversal_finance_facts": 8,
+        "reverse_sequence": [6, 5, 4, 3, 2, 1],
+        "atomic_failure_half_writes": 0
+      },
+      "rollback": "Business contract ended in transaction rollback; disposable database was destroyed."
+    },
+    {
+      "id": "E09",
+      "status": "PASS",
+      "target": "Idempotency, five-way concurrency, interruption recovery and independent rollback",
+      "environment": "Disposable PostgreSQL 17 plus local C1/C2 provider fixtures",
+      "observed": {
+        "parallel_sessions": 5,
+        "orders": 1,
+        "order_lines": 1,
+        "supplier_legs": 1,
+        "forward_steps": 6,
+        "reverse_steps": 6,
+        "refunds": 1,
+        "refund_allocations": 1,
+        "restock_facts": 1,
+        "reversal_facts": 4,
+        "reverse_sequence": [6, 5, 4, 3, 2, 1],
+        "execution_contract_writes_checked": 79,
+        "execution_contract_failures": 0,
+        "interrupted_steps_resume_without_duplicate_work": true,
+        "single_target_rollback_isolated": true
+      },
+      "rollback": "Disposable database, temporary C2 worktree and local candidate directories were removed."
+    },
+    {
+      "id": "E10",
+      "status": "UNKNOWN",
+      "target": "One shared change, one build, dynamic feature truth across Hosted and Sovereign samples",
+      "passed_evidence": [
+        "L0 and L1 declarations reference one shared immutable artifact with build_count=1",
+        "Conformance matrix has 17 candidate PASS, 0 FAIL and 13 UNKNOWN",
+        "Current public L0 and L1 readiness probes return ready"
+      ],
+      "missing_evidence": [
+        "Declared artifact identity does not equal acceptance baseline SHA d258160b",
+        "Live L0 manifest digest differs from the repository declaration",
+        "No real one-build rollout across one Hosted host and three Sovereign pointers",
+        "No complete page/API/task/service observed feature matrix and S-B rollback receipt"
+      ]
+    },
+    {
+      "id": "E11",
+      "status": "PASS",
+      "target": "Node growth does not increase business source, shared builds or Hosted per-node infrastructure operations",
+      "environment": "Disposable PostgreSQL 17 with three lines and L1-L11 mixed topology",
+      "observed": {
+        "scales": [
+          {"nodes": 1, "provision_elapsed_ms": 8.127, "resolution_elapsed_ms": 1.081, "resolved": 1, "incorrect": 0},
+          {"nodes": 10, "provision_elapsed_ms": 19.78, "resolution_elapsed_ms": 0.497, "resolved": 10, "incorrect": 0},
+          {"nodes": 100, "provision_elapsed_ms": 85.112, "resolution_elapsed_ms": 3.156, "resolved": 100, "incorrect": 0},
+          {"nodes": 1000, "provision_elapsed_ms": 1024.921, "resolution_elapsed_ms": 53.686, "resolved": 1000, "incorrect": 0}
+        ],
+        "business_source_file_count": 1183,
+        "node_specific_business_source_file_count": 0,
+        "declared_build_count": 1,
+        "declared_artifact_identity_count": 1,
+        "hosted_per_node_infrastructure_action_count": 0,
+        "distinct_lines": 3,
+        "levels": ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9", "L10", "L11"],
+        "max_depth": 11,
+        "duplicate_nodes": 0,
+        "cross_line_closure_rows": 0
+      },
+      "rollback": "Disposable database was destroyed; no production resource was created."
+    },
+    {
+      "id": "E12",
+      "status": "UNKNOWN",
+      "target": "Unknown Host and cross-Realm/Scope/node identity fail closed with zero unauthorized writes",
+      "passed_evidence": [
+        "Domain boundary tests passed 4/4: no default node, duplicate host rejected, undeclared default rejected, unknown resource node rejected",
+        "Multi-Realm PostgreSQL 17 acceptance passed for same credential across isolated accounts, memberships, sessions, parents, scopes, permissions and assets",
+        "Administrator segment PostgreSQL 17 acceptance passed for L0-L5, L6-L11, both boundaries, rollback and deterministic concurrency",
+        "Commerce NodeServer, RealmAccount and IdentityRegistration tests passed 60/60"
+      ],
+      "missing_evidence": [
+        "The full NodeContext scope integration fixture aborts because it attempts a Hosted L1, now prohibited by SFL_L1_REQUIRES_SOVEREIGN",
+        "The full identity-realm replay aborts before isolation assertions on the known five-function object-contract drift",
+        "No single direct database diff covers all seven invalid cases and all six authority-forgery fields"
+      ]
+    }
+  ],
+  "executed_checks": [
+    {"name": "sfl-hosted-mall-opening", "result": "PASS"},
+    {"name": "sfl-sovereign-upgrade", "result": "PASS"},
+    {"name": "sfl-hosted-node-provisioning direct fixture", "result": "PASS"},
+    {"name": "sfl-multi-realm-membership", "result": "PASS"},
+    {"name": "sfl-execution-contract-kernel", "result": "PASS"},
+    {"name": "commerce NodeServer + RealmAccount + IdentityRegistration", "result": "PASS", "tests": 60},
+    {"name": "domain-boundary", "result": "PASS", "tests": 4},
+    {"name": "C1 activation/provider/cloudflare", "result": "PASS", "tests": 8},
+    {"name": "C2 recursive branch evidence", "result": "PASS", "tests": 2, "current_mainline": false},
+    {"name": "supplier-four-flow-business-contract", "result": "PASS"},
+    {"name": "supplier-four-flow-concurrent-replay", "result": "PASS", "parallel_sessions": 5},
+    {"name": "sfl-conformance", "result": "PASS_WITH_UNKNOWN", "candidate_pass": 17, "candidate_fail": 0, "candidate_unknown": 13, "production_pass": 4, "production_fail": 0, "production_unknown": 26},
+    {"name": "sfl-administrator-segment-scope", "result": "PASS"},
+    {"name": "E11 scale 1/10/100/1000", "result": "PASS"},
+    {"name": "sfl-node-context-scope", "result": "BLOCKED_TEST_FIXTURE", "error": "SFL_L1_REQUIRES_SOVEREIGN"},
+    {"name": "full identity-realm replay", "result": "BLOCKED_OBJECT_CONTRACT", "error": "DATABASE_OBJECT_FUNCTION_DRIFT"}
+  ],
+  "central_release_state": {
+    "latest_candidate_run": {
+      "run_id": 34699595225,
+      "url": "https://github.com/Ethan7586/zhudatuan/actions/runs/34699595225",
+      "source_sha": "d258160b87b3ff2b2613e266ab4681cc98417d0f",
+      "plan": "PASS",
+      "tests_and_build": "FAIL",
+      "candidate_packaging": "SKIPPED",
+      "candidate_staging": "SKIPPED",
+      "failure": {
+        "code": "DATABASE_OBJECT_FUNCTION_DRIFT",
+        "missing": [],
+        "extra": [
+          "access.resolve_session_membership",
+          "access.resolve_session_scope",
+          "access.session_membership_context_matches",
+          "access.session_membership_version",
+          "capability.session_membership_operations"
+        ]
+      }
+    },
+    "database_migration_executor": {
+      "pr": 145,
+      "url": "https://github.com/Ethan7586/zhudatuan/pull/145",
+      "head_sha": "03b8f44e989b47d6bb9a53b032272d38f5d6b452",
+      "state": "OPEN",
+      "merged_to_zdt_next": false,
+      "production_migration_executed": false
+    },
+    "production_cutover_executed_by_this_acceptance": false
+  },
+  "repair_action_list_not_executed": [
+    {
+      "priority": 1,
+      "action": "Classify the five session-membership functions as intended contract objects and add them to 02_platform_pingtai/database/contracts/objects.yml, or remove them only if product ownership declares them unauthorized.",
+      "reason": "This blocks the central candidate and full database-backed E12 replay.",
+      "requires": "Code review, merge to zdt-next, then rerun check:migrations."
+    },
+    {
+      "priority": 2,
+      "action": "Update NodeContextScopeResolverEngine.test.ts to use a legal Hosted level while preserving the production rule that L1 must be Sovereign.",
+      "reason": "Current failure is a stale test fixture, not evidence that the product rule should be weakened.",
+      "requires": "Test-only change and focused rerun."
+    },
+    {
+      "priority": 3,
+      "action": "Merge PR #145, install the matching release Agent/Policy, execute the 291-migration backlog through the official ledger, and only then build/stage one exact-SHA candidate.",
+      "reason": "E06, E07 and E10 require code, artifact, database and pointers on the same mainline.",
+      "requires": "Explicit Ethan authorization before production migration, Agent/Policy installation or cutover."
+    },
+    {
+      "priority": 4,
+      "action": "After same-SHA staging exists, run S-B A-to-B-to-A, two Hosted-to-Sovereign upgrades, the full feature matrix and direct E12 authority-forgery database diffs.",
+      "reason": "These are the remaining direct observations required to convert UNKNOWN to PASS or FAIL.",
+      "requires": "Real staging targets and rollback-safe resource references."
+    }
+  ],
+  "instances_and_mutations": {
+    "real_nodes_created": 0,
+    "real_nodes_modified": 0,
+    "production_database_writes": 0,
+    "dns_changes": 0,
+    "payment_provider_calls": 0,
+    "production_pointer_changes": 0,
+    "temporary_instances": [
+      {"kind": "PostgreSQL 17 Docker", "purpose": "E08/E09", "state": "destroyed"},
+      {"kind": "PostgreSQL 17 Docker", "purpose": "E11 scale", "state": "destroyed"},
+      {"kind": "temporary Git worktree", "purpose": "C2 historical evidence", "state": "removed"}
+    ]
+  },
+  "final_conclusion": "No duplicate C1/C2 product implementation was written. E08, E09 and E11 pass at the stated local/disposable evidence layer. E05, E06, E07, E10 and E12 remain UNKNOWN until the explicitly listed evidence gaps are closed on one aligned mainline; no acceptance index is currently FAIL."
+}
