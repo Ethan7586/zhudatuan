@@ -16,6 +16,8 @@
 - 未知文件选择可达运行目标上界并继续，不能拒绝或跳过；
 - 测试、文档和夹具可以只运行验证，不产生候选；
 - 数据库迁移是独立目标，先于同一提交中的实际消费者且不重启服务；
+- 生产数据库候选携带同一 source SHA 编译的官方 migration runner、完整受管 migration inventory 与 history contract；远端仅从既有受管 env/Secret Store 连接来源取凭据，执行前后按 `supabase_migrations.schema_migrations` 记录 ledger 摘要和实际选择集；
+- 数据库执行失败时消费者 activation 保持未执行；数据库迁移只支持前向修复，目标指针回退不构成数据库回滚，receipt 会明确记录发布引擎未捕获恢复快照；
 - 一份源码只构建一次，同一内容摘要可进入多个节点；
 - 节点共享制品，不共享 `current/previous`、运行配置、锁或回滚；
 - 生产机不安装依赖、不编译源码；
