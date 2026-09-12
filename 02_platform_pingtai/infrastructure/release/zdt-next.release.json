@@ -351,6 +351,23 @@
   },
   "rules": [
     {
+      "id": "identity-sovereignty-control-plane",
+      "validationOnly": true,
+      "targets": [],
+      "include": [
+        "02_platform_pingtai/config/node-runtime/hbbtzn-l1/api-gateway.Caddyfile",
+        "02_platform_pingtai/infrastructure/projects_xiangmu/hbbtzn/deployment/aliyun.yml",
+        "02_platform_pingtai/infrastructure/release/zdt-next.release.json",
+        "02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json"
+      ],
+      "validations": [
+        {"name":"release-adapter-boundary","argv":["node","--test","04_tools/release-engine/test/zdt-adapter.test.mjs"],"timeoutMs":120000},
+        {"name":"sfl-conformance-matrix","argv":["node","04_tools/scripts/check/sfl-conformance-matrix.mjs"],"timeoutMs":120000},
+        {"name":"l1-identity-sovereignty-tests","argv":["npm","run","test","--workspace","@shop/commerce","--","src/bootstrap/IdentityNodeManifestRuntime.test.ts","src/bootstrap/IdentityNotificationJobsRuntime.test.ts","src/foundation/security/PgAccessResolvers.test.ts","src/modules/identity/06_tests_ceshi/IdentityOperations.test.ts","src/modules/identity/06_tests_ceshi/IdentityRegistration.test.ts"],"timeoutMs":420000}
+      ],
+      "reason": "identity runtime ownership and gateway control-plane validation"
+    },
+    {
       "id": "validation-only",
       "validationOnly": true,
       "targets": [],
@@ -600,7 +617,7 @@
         "storefront": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/storefront","service":"sfl-storefront@hbbtzn-l1.service"},
         "auth-web": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/auth-web","service":"none","restart":"none"},
         "console": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/console","service":"none","restart":"none"},
-        "identity-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/identity-api","service":"sfl-identity-api@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
+        "identity-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/identity-api","service":"sfl-identity-api@hbbtzn-l1.service"},
         "identity-notification-jobs": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/identity-notification-jobs","service":"sfl-identity-notification-jobs@hbbtzn-l1.service"},
         "mall-provisioning-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/mall-provisioning-api","service":"none","restart":"none"},
         "support-api": {"pointerRoot":"/opt/zhudatuan/targets/support-api","service":"zhudatuan-console-support.service","hostedBy":"zhudatuan-l0"},

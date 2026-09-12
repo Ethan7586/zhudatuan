@@ -114,6 +114,21 @@ test('E04 documentation, tests and database fixtures never create a candidate', 
   assert.ok(plan.requiredValidations.length > 0);
 });
 
+test('L1 identity control-plane changes require focused validation without rebuilding service code', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
+    '02_platform_pingtai/config/node-runtime/hbbtzn-l1/api-gateway.Caddyfile',
+    '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json',
+  ] });
+  assert.equal(plan.deployRequired, false);
+  assert.deepEqual(plan.targets, []);
+  assert.deepEqual(plan.requiredValidations.map((validation) => validation.name), [
+    'release-adapter-boundary',
+    'sfl-conformance-matrix',
+    'l1-identity-sovereignty-tests',
+  ]);
+});
+
 test('database migrations are independent and ordered before actual consumers', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const migrationOnly = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [

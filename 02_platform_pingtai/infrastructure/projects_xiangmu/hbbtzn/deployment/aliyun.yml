@@ -30,6 +30,7 @@ isolation:
   callbackBindings: node-scoped
   brandedEdgeReleasePointer: independent
   businessKernelReleasePointer: host-node-owned
+  identityApiReleasePointer: independent
   businessExecutionHostNodeId: node:zhudatuan:l0
 
 runtime:
@@ -38,6 +39,9 @@ runtime:
   services:
     - unit: sfl-storefront@hbbtzn-l1.service
       responsibility: storefront
+    - unit: sfl-identity-api@hbbtzn-l1.service
+      responsibility: identity-api
+      port: 4433
     - unit: sfl-identity-notification-jobs@hbbtzn-l1.service
       responsibility: identity-realm-notification-jobs
     - unit: sfl-api-gateway@hbbtzn-l1.service
@@ -46,9 +50,6 @@ runtime:
     - unit: sfl-cloudflared@hbbtzn-l1.service
       responsibility: node-owned-edge-tunnel
   sharedBusinessServices:
-    - unit: sfl-identity-api@zhudatuan-l0.service
-      responsibility: identity-api
-      port: 4321
     - unit: sfl-web-api@zhudatuan-l0.service
       responsibility: web-business-api
       port: 4322
@@ -90,12 +91,13 @@ compatibility:
     - remove-worker-routes
     - prove-worker-zero-traffic
   productionCurrentSharedPhysicalRuntimes:
-    - responsibility: identity
-      unit: sfl-identity-api@zhudatuan-l0.service
-      canonicalNodeResolution: trusted-entry-host-to-NodeContext
     - responsibility: purchase
       unit: sfl-purchase-api@zhudatuan-l0.service
       canonicalNodeResolution: trusted-public-host-to-NodeContext
+  productionCurrentIndependentPhysicalRuntimes:
+    - responsibility: identity
+      unit: sfl-identity-api@hbbtzn-l1.service
+      canonicalNodeResolution: single-node-manifest-to-NodeContext
   retirementTargets: []
   forbiddenClaims:
     - dedicated-physical-database
