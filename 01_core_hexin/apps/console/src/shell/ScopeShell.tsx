@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useMatches, useNavigate, useNavigation } from 'react-router';
 import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNavigation';
 import { ConsoleContextProvider } from '../entity/session/ConsoleContext';
@@ -9,6 +9,7 @@ import { consoleModuleById, consoleModules, selectConsoleModuleByEntryPath } fro
 import { deepestConsoleRouteHandle, resolveConsoleRoutePresentation } from '../route/ConsoleModuleRoutes';
 import { scopeSuffix } from '../route/ProfessionalRouteCatalog';
 import { buildInfo } from '../shared/config/BuildInfo';
+import { preloadConsoleModule, type ConsoleNavigationIntent } from '../shared/interaction/ConsoleModulePreload';
 import { scopePath } from '../shared/url/ScopePath';
 
 const LazyHeader = lazy(async () => {
@@ -110,6 +111,9 @@ export function ScopeShell() {
       : context.scope;
     navigateAfterCancel(scopePath(targetScope, suffix));
   };
+  const prepareRoute = useCallback((moduleId: Parameters<typeof preloadConsoleModule>[0], intent: ConsoleNavigationIntent) => {
+    void preloadConsoleModule(moduleId, intent)?.catch(() => undefined);
+  }, []);
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
     if (next !== undefined) navigateAfterCancel(`${scopePath(next, currentSuffix || 'cockpit')}${location.search}`);
@@ -145,6 +149,7 @@ export function ScopeShell() {
           <LazySidebar active={activeRoute} collapsed={collapsed} mainItems={mainNavigationItems} bottomItems={bottomNavigationItems}
             displayName={context.profile.display_name} roleLabel={scopeLabel} brandName={brandName} brandSubtitle={brandSubtitle}
             onNavigate={openRoute}
+            onNavigateIntent={prepareRoute}
             onOpenProfile={() => openRoute('settings/profile')}
             onToggle={() => setCollapsed((value) => !value)} />
         </Suspense>

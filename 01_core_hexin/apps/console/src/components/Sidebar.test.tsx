@@ -1,10 +1,11 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ConsoleScope } from '../entity/session/ConsoleSession';
 import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNavigation';
 import type { ConsoleModuleManifest } from '../entity/navigation/ConsoleModuleManifest';
+import type { ConsoleNavigationIntent } from '../shared/interaction/ConsoleModulePreload';
 import { consoleModules } from '../route/ConsoleModuleRegistry';
 import { Sidebar } from './Sidebar';
 
@@ -106,6 +107,24 @@ describe('Sidebar commerce navigation', () => {
     expect(onNavigate).toHaveBeenCalledWith('products');
   });
 
+  it('preloads a module on hover, focus, and pointer intent without navigating', () => {
+    const onNavigate = vi.fn();
+    const onNavigateIntent = vi.fn();
+    renderSidebar('enterprise', false, onNavigate, consoleModules, vi.fn(), 'applications', onNavigateIntent);
+    const target = screen.getByRole('button', { name: '订单管理系统' });
+
+    fireEvent.pointerEnter(target);
+    fireEvent.focus(target);
+    fireEvent.pointerDown(target);
+
+    expect(onNavigateIntent.mock.calls).toEqual([
+      ['orders', 'hover'],
+      ['orders', 'focus'],
+      ['orders', 'pointerdown'],
+    ]);
+    expect(onNavigate).not.toHaveBeenCalled();
+  });
+
   it.each([false, true])('keeps the profile above bottom-pinned customer service when collapsed=%s', async (collapsed) => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
@@ -139,13 +158,14 @@ function renderSidebar(
   modules: readonly ConsoleModuleManifest[] = consoleModules,
   onOpenProfile = vi.fn(),
   active = 'applications',
+  onNavigateIntent: (moduleId: ConsoleModuleManifest['id'], intent: ConsoleNavigationIntent) => void = vi.fn(),
 ) {
   const items = selectConsoleNavigationItems(modules, kind);
   return render(<div className="consolelayout" data-visual-theme="admin-web-v1">
     <Sidebar active={active} collapsed={collapsed} displayName="商城管理员" roleLabel="当前范围"
       mainItems={items.filter(({ placement }) => placement === 'main')}
       bottomItems={items.filter(({ placement }) => placement === 'bottom')}
-      onNavigate={onNavigate} onOpenProfile={onOpenProfile} onToggle={vi.fn()} />
+      onNavigate={onNavigate} onNavigateIntent={onNavigateIntent} onOpenProfile={onOpenProfile} onToggle={vi.fn()} />
   </div>);
 }
 

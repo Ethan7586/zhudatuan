@@ -1,4 +1,6 @@
 import type { NavigationItem } from '../entity/navigation/ConsoleNavigation';
+import type { ConsoleModuleId } from '../entity/navigation/ConsoleModuleManifest';
+import type { ConsoleNavigationIntent } from '../shared/interaction/ConsoleModulePreload';
 import { ShellIcon } from './ShellIcon';
 
 export interface SidebarProps {
@@ -11,12 +13,13 @@ export interface SidebarProps {
   readonly mainItems: readonly NavigationItem[];
   readonly bottomItems: readonly NavigationItem[];
   readonly onNavigate: (suffix: string) => void;
+  readonly onNavigateIntent?: (moduleId: ConsoleModuleId, intent: ConsoleNavigationIntent) => void;
   readonly onOpenProfile: () => void;
   readonly onToggle: () => void;
 }
 
 export function Sidebar({ active, collapsed, displayName, roleLabel, brandName = 'zdt-next', brandSubtitle = '经营与权限管理',
-  mainItems, bottomItems, onNavigate, onOpenProfile, onToggle }: SidebarProps) {
+  mainItems, bottomItems, onNavigate, onNavigateIntent, onOpenProfile, onToggle }: SidebarProps) {
 
   return (
     <aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-label="主导航">
@@ -35,6 +38,9 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, brandName =
         {mainItems.map((item) => {
           const label = navigationLabel(item);
           return <button key={item.moduleId} type="button" onClick={() => onNavigate(item.suffix)} data-module={item.moduleId}
+            onPointerEnter={() => onNavigateIntent?.(item.moduleId, 'hover')}
+            onFocus={() => onNavigateIntent?.(item.moduleId, 'focus')}
+            onPointerDown={() => onNavigateIntent?.(item.moduleId, 'pointerdown')}
             data-status={item.status}
             aria-disabled={item.status === 'disabled' ? true : undefined}
             aria-label={label} aria-current={item.moduleId === active ? 'page' : undefined}
@@ -54,6 +60,9 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, brandName =
         return <nav key={item.moduleId} aria-label={label} className="sidebarsupport">
           <div className="sidebarnavigation" style={{ height: 68, paddingBlock: 16 }}>
             <button type="button" onClick={() => onNavigate(item.suffix)} data-status={item.status}
+              onPointerEnter={() => onNavigateIntent?.(item.moduleId, 'hover')}
+              onFocus={() => onNavigateIntent?.(item.moduleId, 'focus')}
+              onPointerDown={() => onNavigateIntent?.(item.moduleId, 'pointerdown')}
               aria-disabled={item.status === 'disabled' ? true : undefined} aria-label={label}
               aria-current={item.moduleId === active ? 'page' : undefined} title={collapsed ? label : undefined}>
               <ShellIcon name={item.icon} /><span className="sidebarlabel">{label}</span>

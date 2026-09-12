@@ -8,6 +8,7 @@ import type {
 } from '../entity/navigation/ConsoleModuleManifest';
 import { isConsoleModuleId } from '../entity/navigation/ConsoleModuleManifest';
 import type { ConsoleScope } from '../entity/session/ConsoleSession';
+import { loadConsoleModuleRoute } from '../shared/interaction/ConsoleModulePreload';
 
 export interface ResolvedConsoleRoutePresentation {
   readonly title: string;
@@ -107,5 +108,5 @@ function materializeConsoleRoute<Id extends ConsoleModuleId>(
   if (route.kind === 'redirect') {
     return { ...base, element: <Navigate to={route.redirectTo} replace /> };
   }
-  return { ...base, lazy: route.lazy };
+  return { ...base, lazy: () => loadConsoleModuleRoute(module.id, route.id, route.lazy) };
 }

@@ -28,7 +28,8 @@ describe('Console module route materializer', () => {
     const routes = materializeConsoleModule(fixtureModule('enabled', lazy));
 
     expect(routes).toHaveLength(2);
-    expect(routes[0]?.lazy).toBe(lazy);
+    expect(routes[0]?.lazy).not.toBe(lazy);
+    expect(routes[0]?.lazy).toBeTypeOf('function');
     expect(routes[1]?.element).toBeDefined();
     expect(routes[1]?.Component).toBeUndefined();
     expect(routes.map(({ handle }) => handle)).toEqual([
