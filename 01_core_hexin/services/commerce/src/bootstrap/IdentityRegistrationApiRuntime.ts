@@ -22,6 +22,7 @@ import { IDENTITY_SECURITY_KEYS, SECRET_STORE, WorkloadSecretStore } from '../fo
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { NodeOperationAvailabilityResolver } from '../foundation/security/OperationAvailability';
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
 import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
@@ -115,6 +116,7 @@ export async function createIdentityRegistrationApiRuntime(
     new PgAccessVersionResolver(pool),
     new PgScopeResolver(pool),
     new PgCapabilityResolver(pool),
+    new NodeOperationAvailabilityResolver(),
     new SystemClock(),
     risk,
     new PgDecisionSink(pool),

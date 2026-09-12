@@ -101,38 +101,105 @@ create table identity.session(
   foreign key(realm_id,auth_target) references identity.realmtarget(realm_id,target)
 );
 
+create table access.realmscopegrant(
+  membership_id text not null references access.membership(id),
+  realm_id text not null references identity.realm(id),
+  permission text not null,
+  scope_ref text not null,
+  primary key(membership_id,permission)
+);
+
+create table member.realmasset(
+  id text primary key,
+  realm_id text not null references identity.realm(id),
+  owner_membership_id text not null references access.membership(id),
+  value text not null,
+  version bigint not null default 1
+);
+
+create function member.read_realm_asset(p_membership_id text,p_asset_id text)
+returns table(asset_id text,realm_id text,value text,version bigint)
+language sql stable security definer
+set search_path=pg_catalog,pg_temp as $function$
+  select asset.id,asset.realm_id,asset.value,asset.version
+  from member.realmasset asset
+  join access.membership membership on membership.id=p_membership_id and membership.status='active'
+    and membership.realm_id=asset.realm_id and membership.id=asset.owner_membership_id
+  join access.realmscopegrant granted on granted.membership_id=membership.id
+    and granted.realm_id=membership.realm_id and granted.permission='realm.asset.read'
+    and granted.scope_ref=asset.realm_id
+  where asset.id=p_asset_id
+$function$;
+
+create function member.update_realm_asset(p_membership_id text,p_asset_id text,p_value text)
+returns boolean
+language plpgsql security definer
+set search_path=pg_catalog,pg_temp as $function$
+begin
+  update member.realmasset asset set value=p_value,version=asset.version+1
+  where asset.id=p_asset_id and exists(
+    select 1 from access.membership membership
+    join access.realmscopegrant granted on granted.membership_id=membership.id
+      and granted.realm_id=membership.realm_id and granted.permission='realm.asset.write'
+      and granted.scope_ref=membership.realm_id
+    where membership.id=p_membership_id and membership.status='active'
+      and membership.realm_id=asset.realm_id and membership.id=asset.owner_membership_id
+  );
+  return found;
+end
+$function$;
+
+revoke all on access.realmscopegrant,member.realmasset from public,shopapp,shopconsole,zhudatuanwebapi,zhudatuanpurchaseapi;
+revoke all on function member.read_realm_asset(text,text),member.update_realm_asset(text,text,text) from public;
+grant execute on function member.read_realm_asset(text,text),member.update_realm_asset(text,text,text)
+  to shopapp,shopconsole,zhudatuanwebapi,zhudatuanpurchaseapi;
+
 create function identity.resolve_session(text,text)
 returns table(actor_id text,account_id text,realm_id text,session_id text,membership_id text,
   credential_version bigint,access_version bigint,target text,assurance_level smallint,assurance_verified_at timestamptz)
 language sql stable as $$select null::text,null::text,null::text,null::text,null::text,
   null::bigint,null::bigint,null::text,null::smallint,null::timestamptz where false$$;
 
-insert into organization.organization(id,kind,status) values('mall:mall-b','mall','active');
+insert into organization.organization(id,kind,status) values
+  ('mall:mall-b','mall','active'),('mall:operator-c','mall','active');
 insert into identity.realm(
   id,node_id,status,created_at,updated_at,node_profile,mall_id,host_node_id,host_node_profile
-) values(
+) values
+(
   'realm:mall-b','node:mall-b:l0','active','2026-09-01T00:00:00Z','2026-09-01T00:00:00Z',
   'operating_mall','mall:mall-b',null,null
+),(
+  'realm:operator-c','node:operator-c:l0','active','2026-09-01T00:00:00Z','2026-09-01T00:00:00Z',
+  'operating_mall','mall:operator-c',null,null
 );
 insert into organization.node(
   id,line_id,sovereignty_tier,node_profile,realm_id,mall_id,status,created_at,updated_at
-) values(
+) values
+(
   'node:mall-b:l0','line:mall-b:v1','sovereign','operating_mall','realm:mall-b','mall:mall-b','active',
+  '2026-09-01T00:00:00Z','2026-09-01T00:00:00Z'
+),(
+  'node:operator-c:l0','line:operator-c:v1','sovereign','operating_mall','realm:operator-c','mall:operator-c','active',
   '2026-09-01T00:00:00Z','2026-09-01T00:00:00Z'
 );
 insert into organization.noderelation(
   line_id,node_id,parent_node_id,original_parent_node_id,signed_level,host_sovereign_node_id,
   relation_version,effective_at
-) values(
+) values
+(
   'line:mall-b:v1','node:mall-b:l0',null,null,'L0','node:mall-b:l0',1,'2026-09-01T00:00:00Z'
+),(
+  'line:operator-c:v1','node:operator-c:l0',null,null,'L0','node:operator-c:l0',1,'2026-09-01T00:00:00Z'
 );
 
 insert into identity.realmentry(host,realm_id,kind,status,created_at) values
   ('api.mall-a.test','realm:l0','api','active','2026-09-01T00:00:00Z'),
-  ('api.mall-b.test','realm:mall-b','api','active','2026-09-01T00:00:00Z');
+  ('api.mall-b.test','realm:mall-b','api','active','2026-09-01T00:00:00Z'),
+  ('api.operator-c.test','realm:operator-c','api','active','2026-09-01T00:00:00Z');
 insert into identity.realmtarget(
   realm_id,surface,target,membership_client,membership_organization_id,application_slug,
   return_origin,created_at,node_profile
 ) values
   ('realm:l0','consumer','storefront-a','storefront','mall-zhudatuan','mall-a','https://mall-a.test','2026-09-01T00:00:00Z','operating_mall'),
-  ('realm:mall-b','consumer','storefront-b','storefront','mall:mall-b','mall-b','https://mall-b.test','2026-09-01T00:00:00Z','operating_mall');
+  ('realm:mall-b','consumer','storefront-b','storefront','mall:mall-b','mall-b','https://mall-b.test','2026-09-01T00:00:00Z','operating_mall'),
+  ('realm:operator-c','operator','console-c','operator','mall:operator-c','operator-c','https://operator-c.test','2026-09-01T00:00:00Z','operating_mall');

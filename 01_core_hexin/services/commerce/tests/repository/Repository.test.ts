@@ -87,6 +87,7 @@ describe.runIf(endpointAvailable)('PostgreSQL repository contract', () => {
         new PgAccessVersionResolver(database),
         new PgScopeResolver(database),
         new PgCapabilityResolver(database),
+        { resolveFeature: async () => ({ featureDeclared: true, requiredFeatures: ['identity'] }), resourceReady: async () => true },
         { now: () => new Date() },
         { evaluate: async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) },
         { append: async (decision) => { decisions.push(decision); } },

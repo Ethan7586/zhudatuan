@@ -11,6 +11,7 @@ import { assertRiskAllowed, type RiskGate } from './RiskGate';
 import type { ActionProofVerifier } from './ActionProof';
 import { ResolveMallContext } from '../../modules/mall';
 import type { GovernanceResolver } from './GovernanceResolver';
+import type { OperationAvailabilityResolver } from './OperationAvailability';
 
 export interface MembershipResolver {
   resolve(actor: string): Promise<MembershipAccess | MembershipSnapshot>;
@@ -38,6 +39,7 @@ export class AccessPipeline {
     private readonly versions: AccessVersionResolver,
     private readonly scopes: ScopeResolver,
     private readonly capabilities: CapabilityResolver,
+    private readonly availability: OperationAvailabilityResolver,
     private readonly clock: Clock,
     private readonly risk: RiskGate,
     private readonly decisions: DecisionSink,
@@ -52,6 +54,10 @@ export class AccessPipeline {
     let scope: AccessContext['scope'] | undefined;
     try {
       assertAudienceTarget(operation, actor.target);
+      const feature = await this.availability.resolveFeature(actor, operation);
+      if (!feature.featureDeclared) {
+        throw new DomainError('FEATURE_NOT_DECLARED', { requiredFeatures: feature.requiredFeatures });
+      }
       const resolvedMembership = await this.memberships.resolve(actor.membership);
       const membership = isMembershipSnapshot(resolvedMembership) ? resolvedMembership.access : resolvedMembership;
       const accessVersion = await this.versions.resolve(membership.id);
@@ -68,7 +74,12 @@ export class AccessPipeline {
       const governance = await this.governance?.resolve(actor, membership, scope);
       const mallContext = this.mallContexts.resolve(scope, membership, scopeHint);
       const capabilities = await this.capabilities.resolve(membership.id);
-      if (!capabilities.includes(operation)) throw new DomainError('PERMISSION_DENIED', { operation });
+      if (!capabilities.includes(operation)) {
+        throw new DomainError('CAPABILITY_DENIED', { operation });
+      }
+      if (!await this.availability.resourceReady(actor, operation, resource)) {
+        throw new DomainError('RESOURCE_NOT_READY', { operation });
+      }
       const assuranceFailure = checkAssurance(permission, { now, ...(actor.assurance.verified === undefined ? {} : { stepupAt: actor.assurance.verified }) });
       if (assuranceFailure !== null || !this.stepup.accepts(permissionDefinition(permission).stepup, actor.assurance, now)) throw new DomainError('STEPUP_REQUIRED');
       const risk = await this.risk.evaluate({ actor, operation, scope, trace, ...(resource === undefined ? {} : { resource }) });

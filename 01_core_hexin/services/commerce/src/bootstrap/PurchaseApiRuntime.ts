@@ -21,6 +21,7 @@ import { WorkloadSecretStore } from '../foundation/infrastructure/SecretStore';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interface/OperationController';
 import { createPool, DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { NodeOperationAvailabilityResolver } from '../foundation/security/OperationAvailability';
 import {
   PgAccessVersionResolver,
   PgCapabilityResolver,
@@ -126,6 +127,7 @@ export async function createPurchaseApiRuntime(environment: PurchaseApiEnvironme
     new PgAccessVersionResolver(pool),
     new WebBusinessScopeResolver(pool),
     new PgCapabilityResolver(pool),
+    new NodeOperationAvailabilityResolver(),
     new SystemClock(),
     risk,
     decisions,

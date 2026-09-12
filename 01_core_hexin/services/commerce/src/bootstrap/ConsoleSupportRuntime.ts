@@ -3,6 +3,7 @@ import type { Telemetry } from '@shop/telemetry';
 import { CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, TARGET_SCHEMA_HEAD, type ApiEnvironment } from '@shop/config/server';
 import type { OperationId } from '@shop/contract';
 import { AccessPipeline } from '../foundation/security/AccessPipeline';
+import { NodeOperationAvailabilityResolver } from '../foundation/security/OperationAvailability';
 import { PgGovernanceResolver } from '../foundation/security/GovernanceResolver';
 import { PgAccessVersionResolver, PgCapabilityResolver, PgMembershipResolver, PgScopeResolver, PgSessionResolver } from '../foundation/security/PgAccessResolvers';
 import { PipelineAuthorizer } from '../foundation/security/PipelineAuthorizer';
@@ -65,7 +66,7 @@ export async function createConsoleSupportRuntime(environment: ApiEnvironment): 
   const risk = new RiskCheckAdapter(pool);
   const audit = new RecordAudit(new PgAuditRepository());
   const access = new AccessPipeline(new PgSessionResolver(pool), new PgMembershipResolver(pool), new PgAccessVersionResolver(pool),
-    new PgScopeResolver(pool), new PgCapabilityResolver(pool), new SystemClock(), risk, new PgDecisionSink(pool),
+    new PgScopeResolver(pool), new PgCapabilityResolver(pool), new NodeOperationAvailabilityResolver(), new SystemClock(), risk, new PgDecisionSink(pool),
     undefined, undefined, new PgGovernanceResolver(pool));
   const handlers = new Map<OperationId, OperationHandler>();
   const kms = new KmsClient(
