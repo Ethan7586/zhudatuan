@@ -81,8 +81,22 @@ describe('AccessPipeline audience boundary', () => {
       actor: { target: 'storefront' },
       scope: OWNER,
     });
-    expect(fixture.membership).toHaveBeenCalledWith('membership:one');
+    expect(fixture.membership).toHaveBeenCalledWith('membership:one', {
+      realmId: 'realm:l0', client: 'storefront', organizationId: 'organization:one',
+    });
     expect(fixture.risk).toHaveBeenCalledWith(expect.objectContaining({ operation: 'member.profile.read' }));
+  });
+
+  it('rejects a permission projection returned for a different Membership', async () => {
+    const fixture = accessFixture('console', 'access.center.read', 'access.center.read', PLATFORM);
+    fixture.membership.mockResolvedValue({
+      id: 'membership:other', active: true, accessVersion: 1, denies: [],
+      grants: [{ scope: PLATFORM, permissions: ['access.center.read'], effective: NOW.toISOString(), expires: null }],
+    });
+
+    await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read'))
+      .rejects.toThrow('MEMBERSHIP_INACTIVE');
+    expect(fixture.risk).not.toHaveBeenCalled();
   });
 
   it.each(Array.from({ length: 32 }, (_, mask) => ({
@@ -196,7 +210,7 @@ const ALL_DIMENSIONS: AccessDimensions = Object.freeze({
 
 function accessFixture(target: Actor['target'], operation: OperationId, permission: string, scope: Scope,
   dimensions: AccessDimensions = ALL_DIMENSIONS) {
-  const actor = Object.freeze({ id: 'actor:one', account: 'account:one', realm: 'realm:l0', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: { level: 1 } });
+  const actor = Object.freeze({ id: 'actor:one', account: 'account:one', realm: 'realm:l0', membershipClient: target === 'console' ? 'operator' as const : 'storefront' as const, governanceOrganization: 'organization:one', session: 'session:one', membership: 'membership:one', credentialVersion: 1, accessVersion: 1, target, assurance: { level: 1 } });
   const membershipAccess: MembershipAccess = Object.freeze({
     id: actor.membership,
     active: true,

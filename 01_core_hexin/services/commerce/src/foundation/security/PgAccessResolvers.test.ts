@@ -33,7 +33,7 @@ describe('PostgreSQL access NodeContext continuity', () => {
         membership_id: 'membership:one',
         credential_version: 1,
         access_version: 2,
-        target: 'console',
+        target: 'console', membership_client: 'operator', governance_organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43',
         assurance_level: 1,
         assurance_verified_at: null,
         ...l1SessionNode,
@@ -63,23 +63,14 @@ describe('PostgreSQL access NodeContext continuity', () => {
 });
 
 describe('PgSessionResolver realm account projection', () => {
-  it('falls back to the legacy session projection while the realm migration is pending', async () => {
+  it('rejects the legacy session projection instead of consuming an unbound permission context', async () => {
     const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
     const missingColumn = Object.assign(new Error('column "entry_realm_id" does not exist'), { code: '42703' });
-    const query = vi.fn()
-      .mockRejectedValueOnce(missingColumn)
-      .mockResolvedValueOnce({ rows: [{
-        actor_id: 'principal:shared', account_id: 'account:l1', realm_id: 'realm:l1',
-        session_id: 'session:l1', membership_id: 'membership:l1', credential_version: 1,
-        access_version: 2, target: 'console', assurance_level: 1, assurance_verified_at: null,
-      }] });
+    const query = vi.fn().mockRejectedValueOnce(missingColumn);
     const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'l'.repeat(32)}` }), nodeContext);
 
-    await expect(new PgSessionResolver({ query } as never).resolve(headers)).resolves.toMatchObject({
-      account: 'account:l1', realm: 'realm:l1', nodeContext,
-    });
-    expect(query).toHaveBeenCalledTimes(2);
-    expect(query.mock.calls[1]?.[0]).not.toContain('entry_realm_id');
+    await expect(new PgSessionResolver({ query } as never).resolve(headers)).rejects.toThrow('entry_realm_id');
+    expect(query).toHaveBeenCalledTimes(1);
   });
 
   it('activates the hosted Membership node while retaining the server-resolved entry host', async () => {
@@ -87,7 +78,7 @@ describe('PgSessionResolver realm account projection', () => {
     const query = vi.fn().mockResolvedValue({ rows: [{
       actor_id: 'principal:shared', account_id: 'account:member-a', realm_id: 'realm:member-a',
       session_id: 'session:member-a', membership_id: 'membership:member-a', credential_version: 2,
-      access_version: 4, target: 'storefront', assurance_level: 2, assurance_verified_at: null,
+      access_version: 4, target: 'storefront', membership_client: 'storefront', governance_organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43', assurance_level: 2, assurance_verified_at: null,
       ...l1SessionNode, node_id: 'node:member-a:l6', parent_node_id: 'node:hbbtzn:l1', signed_level: 'L6',
       node_profile: 'consumer', mall_id: null,
     }] });
@@ -103,7 +94,10 @@ describe('PgSessionResolver realm account projection', () => {
       kind: 'self', id: 'member:member-a', tenant: 'node:member-a:l6', path: [],
     } }] });
     await new PgScopeResolver({ query: scopeQuery } as never).resolve(actor, 'benefit.balance.read');
-    expect(scopeQuery.mock.calls[0]?.[1]?.slice(0, 2)).toEqual(['membership:member-a', 'benefit.balance.read']);
+    expect(scopeQuery.mock.calls[0]?.[1]).toEqual([
+      'membership:member-a', 'realm:member-a', 'storefront',
+      'mall:d1708f04df2dd8a61736852c4900fb43', 'benefit.balance.read', null, null,
+    ]);
   });
 
   it('projects the account and realm selected by the database session boundary', async () => {
@@ -111,7 +105,7 @@ describe('PgSessionResolver realm account projection', () => {
     const query = vi.fn().mockResolvedValue({ rows: [{
       actor_id: 'principal:shared', account_id: 'account:l1', realm_id: 'realm:l1',
       session_id: 'session:l1', membership_id: 'membership:l1', credential_version: 7,
-      access_version: 3, target: 'console', assurance_level: 1, assurance_verified_at: null,
+      access_version: 3, target: 'console', membership_client: 'operator', governance_organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43', assurance_level: 1, assurance_verified_at: null,
       ...l1SessionNode,
     }] });
     const resolver = new PgSessionResolver({ query } as never);
@@ -131,7 +125,7 @@ describe('PgSessionResolver realm account projection', () => {
     const query = vi.fn().mockResolvedValue({ rows: [{
       actor_id: 'principal:shared', account_id: 'account:l0', realm_id: 'realm:l0',
       session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
-      access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
+      access_version: 1, target: 'console', membership_client: 'operator', governance_organization_id: 'mall-zhudatuan', assurance_level: 1, assurance_verified_at: null,
       ...l0SessionNode,
     }] });
     const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'x'.repeat(32)}` }), nodeContext);
@@ -143,7 +137,7 @@ describe('PgSessionResolver realm account projection', () => {
     const query = vi.fn().mockResolvedValue({ rows: [{
       actor_id: 'principal:shared', account_id: null, realm_id: 'realm:l0',
       session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
-      access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
+      access_version: 1, target: 'console', membership_client: 'operator', governance_organization_id: 'mall-zhudatuan', assurance_level: 1, assurance_verified_at: null,
       ...l0SessionNode,
     }] });
     const resolver = new PgSessionResolver({ query } as never);
@@ -161,7 +155,7 @@ describe('PgSessionResolver realm account projection', () => {
       rows: values[1] === 'api.fufu.wang' ? [{
         actor_id: 'principal:shared', account_id: 'account:l0', realm_id: 'realm:l0',
         session_id: 'session:l0', membership_id: 'membership:l0', credential_version: 1,
-        access_version: 1, target: 'console', assurance_level: 1, assurance_verified_at: null,
+        access_version: 1, target: 'console', membership_client: 'operator', governance_organization_id: 'mall-zhudatuan', assurance_level: 1, assurance_verified_at: null,
         ...l0SessionNode,
       }] : [],
     }));
@@ -189,11 +183,15 @@ describe('PgMembershipResolver authorization time snapshot', () => {
     });
     const resolver = new PgMembershipResolver({ query } as never);
 
-    await expect(resolver.resolve('membership:one')).resolves.toMatchObject({
+    await expect(resolver.resolve('membership:one', { realmId: 'realm:one', client: 'operator', organizationId: 'organization:one' })).resolves.toMatchObject({
       access: { id: 'membership:one', accessVersion: 7 },
       evaluatedAt,
     });
     expect(query.mock.calls[0]?.[0]).toContain('clock_timestamp() evaluated_at');
+    expect(query.mock.calls[0]?.[0]).toContain('access.resolve_session_membership($1,$2,$3,$4)');
+    expect(query.mock.calls[0]?.[1]).toEqual([
+      'membership:one', 'realm:one', 'operator', 'organization:one',
+    ]);
   });
 
   it('fails closed when PostgreSQL does not return a valid decision time', async () => {
@@ -202,6 +200,6 @@ describe('PgMembershipResolver authorization time snapshot', () => {
     });
     const resolver = new PgMembershipResolver({ query } as never);
 
-    await expect(resolver.resolve('membership:one')).rejects.toThrow('AUTHORIZATION_TIME_INVALID');
+    await expect(resolver.resolve('membership:one', { realmId: 'realm:one', client: 'operator', organizationId: 'organization:one' })).rejects.toThrow('AUTHORIZATION_TIME_INVALID');
   });
 });

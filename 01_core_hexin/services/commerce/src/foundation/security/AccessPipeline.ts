@@ -3,6 +3,7 @@ import { OperationCatalog, requiresFinancialActionProof, requiresFinancialExpect
 import type { Clock } from '@shop/kernel';
 import { DomainError } from '../domain/DomainError';
 import type { AccessContext } from './AccessContext';
+import { requireMembershipConsumptionContext, type MembershipConsumptionContext } from './AccessContext';
 import type { ScopeResolver } from './ScopeResolver';
 import type { SessionResolver } from './SessionResolver';
 import { StepupPolicy } from './StepupPolicy';
@@ -14,7 +15,7 @@ import type { GovernanceResolver } from './GovernanceResolver';
 import type { OperationAvailabilityResolver } from './OperationAvailability';
 
 export interface MembershipResolver {
-  resolve(actor: string): Promise<MembershipAccess | MembershipSnapshot>;
+  resolve(actor: string, context?: MembershipConsumptionContext): Promise<MembershipAccess | MembershipSnapshot>;
 }
 
 export interface MembershipSnapshot {
@@ -23,11 +24,11 @@ export interface MembershipSnapshot {
 }
 
 export interface AccessVersionResolver {
-  resolve(membership: string): Promise<number>;
+  resolve(membership: string, context?: MembershipConsumptionContext): Promise<number>;
 }
 
 export interface CapabilityResolver {
-  resolve(membership: string): Promise<readonly string[]>;
+  resolve(membership: string, context?: MembershipConsumptionContext): Promise<readonly string[]>;
 }
 
 export class AccessPipeline {
@@ -58,9 +59,11 @@ export class AccessPipeline {
       if (!feature.featureDeclared) {
         throw new DomainError('FEATURE_NOT_DECLARED', { requiredFeatures: feature.requiredFeatures });
       }
-      const resolvedMembership = await this.memberships.resolve(actor.membership);
+      const consumptionContext = requireMembershipConsumptionContext(actor);
+      const resolvedMembership = await this.memberships.resolve(actor.membership, consumptionContext);
       const membership = isMembershipSnapshot(resolvedMembership) ? resolvedMembership.access : resolvedMembership;
-      const accessVersion = await this.versions.resolve(membership.id);
+      if (membership.id !== actor.membership) throw new DomainError('MEMBERSHIP_INACTIVE', { reason: 'MEMBERSHIP_CONTEXT_MISMATCH' });
+      const accessVersion = await this.versions.resolve(membership.id, consumptionContext);
       const now = isMembershipSnapshot(resolvedMembership) ? resolvedMembership.evaluatedAt : this.clock.now();
       if (!Number.isFinite(now.getTime())) throw new DomainError('PERMISSION_DENIED', { reason: 'AUTHORIZATION_TIME_INVALID' });
       const permissionFailure = precheck(membership, permission, { expectedAccessVersion: actor.accessVersion, now });
@@ -73,7 +76,7 @@ export class AccessPipeline {
       if ('reason' in scopeDecision) throw new DomainError(mapReason(scopeDecision.reason));
       const governance = await this.governance?.resolve(actor, membership, scope);
       const mallContext = this.mallContexts.resolve(scope, membership, scopeHint);
-      const capabilities = await this.capabilities.resolve(membership.id);
+      const capabilities = await this.capabilities.resolve(membership.id, consumptionContext);
       if (!capabilities.includes(operation)) {
         throw new DomainError('CAPABILITY_DENIED', { operation });
       }

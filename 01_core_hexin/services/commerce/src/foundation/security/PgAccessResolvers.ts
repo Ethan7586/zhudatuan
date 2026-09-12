@@ -6,7 +6,9 @@ import type { AccessVersionResolver, CapabilityResolver, MembershipResolver, Mem
 import {
   bindScopeNodeContext,
   requireActorNodeContext,
+  requireMembershipConsumptionContext,
   type Actor,
+  type MembershipConsumptionContext,
   type NodeContextActor,
 } from './AccessContext';
 import type { ScopeResolver } from './ScopeResolver';
@@ -21,6 +23,8 @@ interface SessionRow {
   readonly credential_version: number;
   readonly access_version: number;
   readonly target: Actor['target'];
+  readonly membership_client: NonNullable<Actor['membershipClient']>;
+  readonly governance_organization_id: string;
   readonly assurance_level: number;
   readonly assurance_verified_at: Date | null;
   readonly entry_realm_id: string;
@@ -32,8 +36,6 @@ interface SessionRow {
   readonly mall_id: string | null;
   readonly host_sovereign_node_id: string;
 }
-type LegacySessionRow = Omit<SessionRow,
-  'entry_realm_id' | 'line_id' | 'node_id' | 'parent_node_id' | 'signed_level' | 'node_profile' | 'mall_id' | 'host_sovereign_node_id'>;
 interface MembershipRow {
   readonly id: string;
   readonly active: boolean;
@@ -52,27 +54,13 @@ export class PgSessionResolver implements RuntimeSessionResolver {
     if (!token) throw new Error('AUTHENTICATION_REQUIRED');
     const nodeContext = sessionNodeContext(headers);
     const parameters = [createHash('sha256').update(token).digest('hex'), nodeContext.host];
-    let result: Readonly<{ rows: readonly SessionRow[] }>;
-    try {
-      result = await this.pool.query<SessionRow>('select actor_id,account_id,realm_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at,entry_realm_id,line_id,node_id,parent_node_id,signed_level,node_profile,mall_id,host_sovereign_node_id from identity.resolve_session($1,$2)', parameters);
-    } catch (cause) {
-      if (!isLegacySessionProjection(cause)) throw cause;
-      const legacy = await this.pool.query<LegacySessionRow>('select actor_id,account_id,realm_id,session_id,membership_id,credential_version,access_version,target,assurance_level,assurance_verified_at from identity.resolve_session($1,$2)', parameters);
-      const row = legacy.rows[0];
-      if (!row) throw new Error('AUTHENTICATION_REQUIRED');
-      if (!row.account_id || !row.realm_id) throw new Error('AUTH_REALM_CONTEXT_MISSING');
-      if (row.realm_id !== nodeContext.realm.ref) throw new Error('AUTH_REALM_MISMATCH');
-      return {
-        id: row.actor_id, account: row.account_id, realm: row.realm_id, nodeContext,
-        session: row.session_id, membership: row.membership_id,
-        credentialVersion: row.credential_version, accessVersion: row.access_version,
-        target: row.target,
-        assurance: { level: row.assurance_level, ...(row.assurance_verified_at === null ? {} : { verified: row.assurance_verified_at }) },
-      };
-    }
+    const result = await this.pool.query<SessionRow>('select actor_id,account_id,realm_id,session_id,membership_id,credential_version,access_version,target,membership_client,governance_organization_id,assurance_level,assurance_verified_at,entry_realm_id,line_id,node_id,parent_node_id,signed_level,node_profile,mall_id,host_sovereign_node_id from identity.resolve_session($1,$2)', parameters);
     const row = result.rows[0];
     if (!row) throw new Error('AUTHENTICATION_REQUIRED');
     if (!row.account_id || !row.realm_id) throw new Error('AUTH_REALM_CONTEXT_MISSING');
+    if (!row.governance_organization_id || (row.target === 'console' ? row.membership_client !== 'operator' : row.membership_client !== row.target)) {
+      throw new Error('AUTH_MEMBERSHIP_CONTEXT_MISMATCH');
+    }
     if (row.entry_realm_id !== nodeContext.realm.ref) throw new Error('AUTH_REALM_MISMATCH');
     const activeNode = Object.freeze({
       line_id: row.line_id,
@@ -92,6 +80,8 @@ export class PgSessionResolver implements RuntimeSessionResolver {
       id: row.actor_id,
       account: row.account_id,
       realm: row.realm_id,
+      membershipClient: row.membership_client,
+      governanceOrganization: row.governance_organization_id,
       nodeContext: activeNodeContext,
       session: row.session_id,
       membership: row.membership_id,
@@ -103,25 +93,20 @@ export class PgSessionResolver implements RuntimeSessionResolver {
   }
 }
 
-function isLegacySessionProjection(cause: unknown): boolean {
-  return cause instanceof Error
-    && 'code' in cause && cause.code === '42703'
-    && cause.message.includes('entry_realm_id');
-}
-
 export class PgMembershipResolver implements MembershipResolver {
   constructor(private readonly pool: DatabasePool) {}
-  async resolve(membership: string): Promise<MembershipSnapshot> {
+  async resolve(membership: string, context?: MembershipConsumptionContext): Promise<MembershipSnapshot> {
+    if (!context) throw new Error('AUTH_MEMBERSHIP_CONTEXT_MISSING');
     const result = await this.pool.query<MembershipRow>(
       `with snapshot as materialized(select clock_timestamp() evaluated_at),
       resolved as materialized(
         select membership.* from snapshot
-        cross join lateral access.resolve_membership($1) membership
+        cross join lateral access.resolve_session_membership($1,$2,$3,$4) membership
         where snapshot.evaluated_at is not null
       )
       select resolved.id,resolved.active,resolved.access_version,resolved.denies,resolved.grants,snapshot.evaluated_at
       from resolved cross join snapshot`,
-      [membership]
+      [membership, context.realmId, context.client, context.organizationId]
     );
     const row = result.rows[0];
     if (!row) throw new Error('MEMBERSHIP_INACTIVE');
@@ -135,8 +120,10 @@ export class PgMembershipResolver implements MembershipResolver {
 
 export class PgAccessVersionResolver implements AccessVersionResolver {
   constructor(private readonly pool: DatabasePool) {}
-  async resolve(membership: string): Promise<number> {
-    const result = await this.pool.query<{ access_version: number | null }>('select access.membership_version($1) as access_version', [membership]);
+  async resolve(membership: string, context?: MembershipConsumptionContext): Promise<number> {
+    if (!context) throw new Error('AUTH_MEMBERSHIP_CONTEXT_MISSING');
+    const result = await this.pool.query<{ access_version: number | null }>('select access.session_membership_version($1,$2,$3,$4) as access_version',
+      [membership, context.realmId, context.client, context.organizationId]);
     const version = result.rows[0]?.access_version;
     if (version === undefined || version === null) throw new Error('MEMBERSHIP_INACTIVE');
     return version;
@@ -146,8 +133,9 @@ export class PgAccessVersionResolver implements AccessVersionResolver {
 export class PgScopeResolver implements ScopeResolver {
   constructor(private readonly pool: DatabasePool) {}
   async resolve(actor: Actor, operation: string, resource?: string, scopeHint?: string): Promise<Scope> {
-    const result = await this.pool.query<ScopeRow>('select scope from access.resolve_scope($1,$2,$3,$4)',
-      [actor.membership, operation, resource ?? null, scopeHint ?? null]);
+    const context = requireMembershipConsumptionContext(actor);
+    const result = await this.pool.query<ScopeRow>('select scope from access.resolve_session_scope($1,$2,$3,$4,$5,$6,$7)',
+      [actor.membership, context.realmId, context.client, context.organizationId, operation, resource ?? null, scopeHint ?? null]);
     const row = result.rows[0];
     if (!row?.scope) throw new Error('SCOPE_DENIED');
     return actor.nodeContext === undefined ? row.scope : bindScopeNodeContext(row.scope, requireActorNodeContext(actor));
@@ -156,8 +144,10 @@ export class PgScopeResolver implements ScopeResolver {
 
 export class PgCapabilityResolver implements CapabilityResolver {
   constructor(private readonly pool: DatabasePool) {}
-  async resolve(membership: string): Promise<readonly string[]> {
-    const result = await this.pool.query<{ operation_id: string }>('select operation_id from capability.membership_operations($1)', [membership]);
+  async resolve(membership: string, context?: MembershipConsumptionContext): Promise<readonly string[]> {
+    if (!context) throw new Error('AUTH_MEMBERSHIP_CONTEXT_MISSING');
+    const result = await this.pool.query<{ operation_id: string }>('select operation_id from capability.session_membership_operations($1,$2,$3,$4)',
+      [membership, context.realmId, context.client, context.organizationId]);
     return Object.freeze(result.rows.map((row) => row.operation_id));
   }
 }
