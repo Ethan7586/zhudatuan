@@ -11,6 +11,7 @@ declare global {
     __consoleSessionPrefetch?: DocumentPrefetch<Readonly<{ value: unknown }>>;
     __consoleScopePrefetch?: DocumentPrefetch<ConsoleScopePrefetch>;
     __consoleCockpitPrefetch?: DocumentPrefetch<ConsoleCockpitPrefetch>;
+    __consoleProductPrefetch?: DocumentPrefetch<ConsoleProductPrefetch>;
   }
 }
 
@@ -31,6 +32,23 @@ interface ConsoleCockpitPrefetch {
   readonly scopeId: string;
   readonly accessVersion: number;
   readonly period: string;
+  readonly value: unknown;
+}
+
+interface ConsoleProductPrefetch {
+  readonly scopeKind: ConsoleScope['kind'];
+  readonly scopeId: string;
+  readonly accessVersion: number;
+  readonly query: Readonly<{
+    q: string;
+    category: string;
+    supplier: string;
+    mall: string;
+    status: string;
+    cursor?: string;
+    limit: number;
+    preview: boolean;
+  }>;
   readonly value: unknown;
 }
 

@@ -99,6 +99,48 @@ export function startDocumentPrefetch(
       value: dashboard,
     });
   }));
+  window.__consoleProductPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('catalog.listings.read')) return undefined;
+    const match = location.pathname.match(/^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/([^/]+)\/products\/?$/);
+    let direct: Readonly<{ kind: 'platform' | 'distributor' | 'tenant' | 'enterprise' | 'mall'; id: string }> | undefined;
+    try {
+      const candidate = match?.[1] === undefined ? undefined : { kind: match[1], id: decodeURIComponent(match[2]!) };
+      direct = isConsoleScope(candidate) ? candidate : undefined;
+    } catch { direct = undefined; }
+    if (direct === undefined) return undefined;
+    const requestedLimit = Number(new URLSearchParams(location.search).get('limit') ?? 50);
+    const limit = [20, 50, 100].includes(requestedLimit) ? requestedLimit : 50;
+    const search = new URLSearchParams(location.search);
+    const preview = direct.kind === 'platform' && direct.id === 'platform:preview';
+    const query = {
+      q: search.get('q') ?? '',
+      category: search.get('category') ?? '',
+      supplier: preview ? (search.get('supplier') ?? '') : '',
+      mall: preview ? (search.get('mall') ?? '') : '',
+      status: search.get('status') ?? '',
+      ...(search.get('cursor') === null ? {} : { cursor: search.get('cursor')! }),
+      limit,
+      preview,
+    };
+    const parameters = new URLSearchParams({ limit: String(limit) });
+    if (query.q !== '') parameters.set('q', query.q);
+    if (query.category !== '') parameters.set('category', query.category);
+    if (query.supplier !== '') parameters.set('supplier', query.supplier);
+    if (query.mall !== '') parameters.set('mall', query.mall);
+    if (query.status !== '') parameters.set('status', query.status);
+    if (query.cursor !== undefined) parameters.set('cursor', query.cursor);
+    return readJson<unknown>(`/api/v1/catalog/listings?${parameters.toString()}`, {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((products) => products === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      query,
+      value: products,
+    });
+  }));
 }
 
 function tracked<T>(promise: Promise<T | undefined>): Tracked<T> {
