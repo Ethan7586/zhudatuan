@@ -117,6 +117,7 @@ describe('canonical registration', () => {
           purpose: 'registration',
           expires_at: '2026-08-28T01:10:00.000Z',
           identity_exists: false,
+          delivery_channel: 'sms',
         },
         202
       )
@@ -222,7 +223,8 @@ describe('canonical registration', () => {
             expiresIn: 43_200,
             membership: 'membership:storefront-one',
             target: 'storefront',
-            callback: { ticket: 't'.repeat(64), state: authorization.state },
+            callback: { ticket: 't'.repeat(64), state: authorization.state, issued_by: 'identity-node' },
+            session_node: 'identity-node',
           },
         }, 201);
       }
@@ -231,8 +233,10 @@ describe('canonical registration', () => {
           url: 'https://hbbtzn.com/',
           proof: 'signed-return-target-proof',
           expiresAt: '2099-01-01T00:00:00.000Z',
+          route_class: 'storefront',
         },
         expiresIn: 43_200,
+        exchange_node: 'identity-node',
       });
     });
     vi.stubGlobal('fetch', fetchMock);
@@ -409,11 +413,11 @@ function expectCanonicalHeaders(headers: HeadersInit | undefined): void {
   expect(headers).toMatchObject({
     'content-type': 'application/json',
     'x-client-version': process.env.VITE_CLIENT_VERSION ?? '0.0.0',
-    'x-contract-version': expect.any(String),
     'x-device-id': expect.any(String),
     'x-request-id': expect.any(String),
     'idempotency-key': expect.any(String),
   });
+  expect(headers).not.toHaveProperty('x-contract-version');
 }
 
 function invitation(): Readonly<Record<string, unknown>> {

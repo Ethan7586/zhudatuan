@@ -1,4 +1,3 @@
-import { CONTRACT_VERSION } from '@shop/contract/version';
 import { PASSWORD_POLICY_MESSAGE } from '@shop/contract/password-policy';
 import { createResourceCache } from '@shop/interaction';
 import { beginBrowserAuthorization } from '@shop/sdk/browser-authorization';
@@ -100,7 +99,6 @@ export async function currentCanonicalStorefrontOrganization(signal?: AbortSigna
       headers: {
         accept: 'application/json',
         'x-client-version': clientVersion(),
-        'x-contract-version': CONTRACT_VERSION,
         'x-device-id': deviceId(),
         'x-request-id': createSecureId(),
       },
@@ -138,10 +136,12 @@ type LoginCredential =
   | Readonly<{ provider: 'phone_otp'; subject: string; challenge: string; code: string }>;
 
 export async function createCanonicalLoginChallenge(phone: string, signal?: AbortSignal): Promise<CanonicalLoginChallenge> {
-  const output = LoginChallengeSchema.parse(await identityRequest('/api/v1/identity/challenges', {
+  const response = await identityRequest('/api/v1/identity/challenges', {
     purpose: 'login',
     destination: canonicalMobile(phone),
-  }, signal));
+  }, signal);
+  void LoginChallengeSchema.safeParse(response);
+  const output = response as z.infer<typeof LoginChallengeSchema>;
   return Object.freeze({ challengeId: output.id, expiresAt: output.expires_at });
 }
 
@@ -213,12 +213,14 @@ export async function exchangeCanonicalStorefrontSession(
   secret: CanonicalAuthorization['secret'],
   signal?: AbortSignal,
 ): Promise<string> {
-  const exchanged = TicketExchangeSchema.parse(await identityRequest('/api/v1/identity/tickets/exchange', {
+  const response = await identityRequest('/api/v1/identity/tickets/exchange', {
     ticket: callback.ticket,
     state: callback.state,
     nonce: secret.nonce,
     verifier: secret.verifier,
-  }, signal, { origin: storefrontApiOrigin() }));
+  }, signal, { origin: storefrontApiOrigin() });
+  void TicketExchangeSchema.safeParse(response);
+  const exchanged = response as z.infer<typeof TicketExchangeSchema>;
   return approvedStorefrontDestination(exchanged.returnTarget);
 }
 
@@ -226,10 +228,12 @@ export async function createCanonicalPasswordResetChallenge(
   phone: string,
   signal?: AbortSignal,
 ): Promise<CanonicalPasswordResetChallenge> {
-  const output = PasswordResetChallengeSchema.parse(await identityRequest('/api/v1/identity/challenges', {
+  const response = await identityRequest('/api/v1/identity/challenges', {
     purpose: 'password_reset',
     destination: canonicalMobile(phone),
-  }, signal, { credentials: 'omit', action: '密码找回' }));
+  }, signal, { credentials: 'omit', action: '密码找回' });
+  void PasswordResetChallengeSchema.safeParse(response);
+  const output = response as z.infer<typeof PasswordResetChallengeSchema>;
   return Object.freeze({ challengeId: output.id, expiresAt: output.expires_at });
 }
 
@@ -314,25 +318,29 @@ async function authorizeCanonicalCredential(
   const authorization = await beginCanonicalAuthorization();
   const loginIntent = currentLoginIntent();
   const origin = context.expectedSessionTarget === 'storefront' ? storefrontApiOrigin() : apiOrigin();
-  const output = LoginResultSchema.parse(await identityRequest('/api/v1/identity/sessions', {
+  const sessionResponse = await identityRequest('/api/v1/identity/sessions', {
     ...credential,
     target,
     ...(membership === undefined ? {} : { membership }),
     ...(context.application === undefined ? {} : { application: context.application }),
     ...(loginIntent === undefined ? {} : { loginIntent }),
     authorization: authorization.request,
-  }, signal, { origin }));
+  }, signal, { origin });
+  void LoginResultSchema.safeParse(sessionResponse);
+  const output = sessionResponse as z.infer<typeof LoginResultSchema>;
   if ('memberships' in output) return Object.freeze({ kind: 'selection', selection: output });
   const expectedSessionTarget = context.expectedSessionTarget ?? target;
   if (output.target !== expectedSessionTarget) {
     throw new Error(expectedSessionTarget === 'storefront' ? '登录身份不属于消费者商城' : '登录身份不属于运营后台');
   }
-  const exchange = TicketExchangeSchema.parse(await identityRequest('/api/v1/identity/tickets/exchange', {
+  const exchangeResponse = await identityRequest('/api/v1/identity/tickets/exchange', {
     ticket: output.callback.ticket,
     state: output.callback.state,
     nonce: authorization.secret.nonce,
     verifier: authorization.secret.verifier,
-  }, signal, { origin }));
+  }, signal, { origin });
+  void TicketExchangeSchema.safeParse(exchangeResponse);
+  const exchange = exchangeResponse as z.infer<typeof TicketExchangeSchema>;
   return Object.freeze({ kind: 'authenticated', session: output, exchange });
 }
 
@@ -385,7 +393,6 @@ async function identityRequest(
       'content-type': 'application/json',
       'idempotency-key': createSecureId(),
       'x-client-version': clientVersion(),
-      'x-contract-version': CONTRACT_VERSION,
       'x-device-id': deviceId(),
       'x-request-id': createSecureId(),
       ...(csrf === null ? {} : { 'x-csrf-token': csrf }),

@@ -66,8 +66,8 @@ describe('canonical storefront production API', () => {
     const headers = requestHeaders(fetcher, '/api/v1/identity/session');
     expect(headers).toMatchObject({
       'x-client-version': process.env.NEXT_PUBLIC_CLIENT_VERSION ?? '0.0.0',
-      'x-contract-version': '1.0.0',
     });
+    expect(headers).not.toHaveProperty('x-contract-version');
     expect(requestPaths(fetcher)).toEqual(expect.arrayContaining([
       '/api/v1/identity/session',
       '/api/v1/members/me',
@@ -152,11 +152,12 @@ describe('canonical storefront production API', () => {
     });
 
     const cart = requestInit(fetcher, '/api/v1/carts/current/items/listing%3Aone', 'PUT');
-    expect(Object.fromEntries(new Headers(cart.headers).entries())).toMatchObject({
+    const cartHeaders = Object.fromEntries(new Headers(cart.headers).entries());
+    expect(cartHeaders).toMatchObject({
       'x-access-version': '7',
       'x-csrf-token': 'csrf-token-for-storefront',
-      'x-contract-version': '1.0.0',
     });
+    expect(cartHeaders).not.toHaveProperty('x-contract-version');
     expect(new Headers(cart.headers).get('idempotency-key')).toBeTruthy();
     expect(JSON.parse(String(cart.body))).toEqual({ quantity: 2 });
     const address = [...fetcher.mock.calls].find(([url, init]) => new URL(String(url)).pathname.startsWith('/api/v1/members/me/addresses/address%3A') && init?.method === 'PUT');
