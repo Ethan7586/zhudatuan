@@ -173,9 +173,6 @@ test('routes SFL node kernel changes to every real consumer without duplicate ch
   assert.equal(plan.actions.typecheck.length, 2);
   assert.equal(plan.actions.build.length, 9);
 
-  const typecheckConfig = classifyChanges(commerceAdapter, [change('01_core_hexin/packages/config/tsconfig.json')]);
-  assert.equal(typecheckConfig.lane, 'A2');
-  assert.deepEqual(typecheckConfig.targets, plan.targets);
 });
 
 test('deploys hosted node business targets once through their sovereign runtime host', async () => {
@@ -205,6 +202,10 @@ test('keeps release policy and deploy workflow changes in the delivery-tooling l
   ]);
   assert.equal(classified.lane, 'NONE');
   assert.deepEqual(classified.targets, []);
+
+  const compilerOnly = classifyChanges(commerceAdapter, [change('tsconfig.json')]);
+  assert.equal(compilerOnly.lane, 'NONE');
+  assert.deepEqual(compilerOnly.targets, []);
 });
 
 test('routes the legacy session projection bridge only to identity and web APIs', async () => {

@@ -1,8 +1,5 @@
 {
   "extends": "../../../tsconfig.json",
-  "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "lib": ["ES2022"]
-  },
+  "compilerOptions": { "lib": ["ES2022"] },
   "include": ["src/**/*.ts"]
 }
