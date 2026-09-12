@@ -172,6 +172,10 @@ test('routes SFL node kernel changes to every real consumer without duplicate ch
   assert.equal(plan.actions.tests.length, 2);
   assert.equal(plan.actions.typecheck.length, 2);
   assert.equal(plan.actions.build.length, 9);
+
+  const typecheckConfig = classifyChanges(commerceAdapter, [change('01_core_hexin/packages/config/tsconfig.json')]);
+  assert.equal(typecheckConfig.lane, 'A2');
+  assert.deepEqual(typecheckConfig.targets, plan.targets);
 });
 
 test('deploys hosted node business targets once through their sovereign runtime host', async () => {
