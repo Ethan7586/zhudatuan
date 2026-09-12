@@ -21,7 +21,7 @@ if [ -z "$SHA" ]; then
   SHA="$(git rev-parse origin/zdt-next)"
 fi
 
-echo "触发 Deploy 工作流，运行目标: $TARGET，commit: $SHA"
+echo "触发 Deploy 工作流，运行目标: ${TARGET}，commit: ${SHA}"
 gh workflow run deploy.yml -f head_sha="$SHA" -f release_target="$TARGET"
 
 # 等它出现在运行列表里
