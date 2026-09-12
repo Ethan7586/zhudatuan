@@ -191,6 +191,8 @@ export async function installCommand(adapter, options) {
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-api-gateway@.service',
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-storefront@.service',
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-identity-api@.service',
+    '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-identity-notification-jobs@.service',
+    '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-mall-provisioning-api@.service',
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-purchase-api@.service',
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-web-api@.service',
     '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/sfl-catalog-api@.service',

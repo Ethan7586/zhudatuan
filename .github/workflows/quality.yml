@@ -244,6 +244,17 @@ jobs:
           chmod 600 "$HOME/.ssh/id_ed25519"
           ssh-keyscan -H 123.57.232.253 >> "$HOME/.ssh/known_hosts"
 
+      - name: Install matching delivery agent and policy on Aliyun
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate)
+        env:
+          SOURCE_SHA: ${{ needs.plan.outputs.head_sha }}
+        run: |
+          node 04_tools/release-engine/cli.mjs install \
+            --mode agent \
+            --source-sha "$SOURCE_SHA" \
+            --approve-install "zdt-next:install:$SOURCE_SHA" \
+            --format json > .ci-release/install-agent.json
+
       - name: Stage candidate on Aliyun without production cutover
         if: (github.event_name == 'push' && github.ref == 'refs/heads/zdt-next') || (github.event_name == 'workflow_dispatch' && inputs.stage_candidate)
         run: |
@@ -259,7 +270,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: release-candidate-evidence-${{ needs.plan.outputs.head_sha }}
-          path: .ci-release/deploy-candidate.json
+          path: |
+            .ci-release/install-agent.json
+            .ci-release/deploy-candidate.json
           if-no-files-found: ignore
           include-hidden-files: true
           retention-days: 14
