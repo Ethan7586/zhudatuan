@@ -13,10 +13,15 @@ describe('console bootstrap document', () => {
     expect(index).not.toContain('%VITE_CLIENT_VERSION%');
     expect(runtime).toContain("fetch('/console-runtime.json'");
     expect(runtime).toContain("fetch('/console-build.json'");
-    expect(runtime.indexOf("fetch('/console-runtime.json'")).toBeLessThan(runtime.indexOf("fetch('/console-build.json'"));
+    expect(runtime).toContain('const nodeResponsePromise = fetch(');
+    expect(runtime).toContain('const fallbackResponsePromise = fetch(');
+    expect(runtime.indexOf('const fallbackResponsePromise = fetch('))
+      .toBeLessThan(runtime.indexOf('const nodeResponse = await nodeResponsePromise'));
     expect(prefetch).toContain('fetch(`${appConfig.apiBaseUrl}${path}`');
     expect(prefetch).toContain("'x-client-version': appConfig.clientVersion");
     expect(main.indexOf('loadConsoleRuntimeConfig()')).toBeLessThan(main.indexOf("import('./app/providers')"));
+    expect(main).toContain('startDocumentPrefetch(runtimeConfig)');
+    expect(main).not.toContain("import('./shared/api/DocumentPrefetch')");
   });
 
   it('starts the default cockpit read from the validated session context', () => {

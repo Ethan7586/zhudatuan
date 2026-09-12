@@ -14,7 +14,6 @@ import { scopePath } from '../shared/url/ScopePath';
 
 const LazyHeader = lazy(async () => {
   const { Header } = await import('../components/Header');
-  await new Promise<void>((resolve) => window.setTimeout(resolve, import.meta.env.PROD ? 200 : 0));
   return { default: Header };
 });
 

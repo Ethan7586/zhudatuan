@@ -30,12 +30,20 @@ export function requireConsoleRuntimeConfig(): ConsoleAppConfig {
 }
 
 async function loadProductionConfig(hostname: string): Promise<ConsoleAppConfig> {
-  const nodeResponse = await fetch('/console-runtime.json', {
+  const nodeResponsePromise = fetch('/console-runtime.json', {
     cache: 'no-store',
     credentials: 'same-origin',
     headers: { accept: 'application/json' },
     redirect: 'error',
   });
+  const fallbackResponsePromise = fetch('/console-build.json', {
+    cache: 'no-store',
+    credentials: 'same-origin',
+    headers: { accept: 'application/json' },
+    redirect: 'error',
+  });
+  void fallbackResponsePromise.catch(() => undefined);
+  const nodeResponse = await nodeResponsePromise;
   const contentType = nodeResponse.headers.get('content-type')?.toLowerCase() ?? '';
   if (nodeResponse.ok && contentType.includes('json')) {
     const runtime = await parseSflConsoleNodeRuntime(await nodeResponse.json());
@@ -44,12 +52,7 @@ async function loadProductionConfig(hostname: string): Promise<ConsoleAppConfig>
   if (!nodeResponse.ok && nodeResponse.status !== 404) {
     throw new Error(`CONSOLE_NODE_RUNTIME_CONFIG_HTTP_${nodeResponse.status}`);
   }
-  const response = await fetch('/console-build.json', {
-    cache: 'no-store',
-    credentials: 'same-origin',
-    headers: { accept: 'application/json' },
-    redirect: 'error',
-  });
+  const response = await fallbackResponsePromise;
   if (!response.ok) throw new Error(`CONSOLE_RUNTIME_CONFIG_HTTP_${response.status}`);
   const artifact = await parseSflConsoleArtifact(await response.json());
   return install(resolveConsoleAppConfig(artifact, hostname));

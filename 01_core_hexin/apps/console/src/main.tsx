@@ -5,6 +5,7 @@ import '@shop/design/base.css';
 import '@shop/design/components.css';
 import '@shop/design/workspace.css';
 import './style.css';
+import { startDocumentPrefetch } from './shared/api/DocumentPrefetch';
 import { loadConsoleRuntimeConfig } from './shared/config/RuntimeConfig';
 import {
   clearDynamicImportRecoveryAfterStableBoot,
@@ -14,9 +15,8 @@ import {
 const root = document.getElementById('root');
 if (!root) throw new Error('APP_ROOT_MISSING');
 const renderer = createRoot(root);
-void loadConsoleRuntimeConfig().then(async () => {
-  const { startDocumentPrefetch } = await import('./shared/api/DocumentPrefetch');
-  startDocumentPrefetch();
+void loadConsoleRuntimeConfig().then(async (runtimeConfig) => {
+  startDocumentPrefetch(runtimeConfig);
   return await import('./app/providers');
 }).then(
   ({ Providers }) => {

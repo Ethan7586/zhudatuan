@@ -1,4 +1,4 @@
-import { appConfig } from '../config/AppConfig';
+import type { ConsoleAppConfig } from '@shop/config/sfl-console-runtime';
 
 interface ScopeCandidate {
   readonly kind?: string;
@@ -20,7 +20,9 @@ interface Tracked<T> {
 
 const consoleKinds = Object.freeze(['platform', 'distributor', 'tenant', 'enterprise', 'mall']);
 
-export function startDocumentPrefetch(): void {
+export function startDocumentPrefetch(
+  appConfig: Pick<ConsoleAppConfig, 'apiBaseUrl' | 'clientVersion'>,
+): void {
   const controllers = new Set<AbortController>();
   window.__consoleAbortDocumentPrefetch = () => {
     for (const controller of controllers) controller.abort();

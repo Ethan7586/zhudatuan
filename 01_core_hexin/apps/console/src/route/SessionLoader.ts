@@ -35,7 +35,7 @@ interface ConsoleCockpitPrefetch {
 }
 
 const LANDING_SESSION_HANDOFF_MS = 5_000;
-const DOCUMENT_PREFETCH_HANDOFF_MS = 180;
+const DOCUMENT_PREFETCH_HANDOFF_MS = 1_500;
 const DOCUMENT_PREFETCH_TIMEOUT = Symbol('DOCUMENT_PREFETCH_TIMEOUT');
 let landingSessionHandoff: Readonly<{ path: string; session: ConsoleSession; expiresAt: number }> | undefined;
 

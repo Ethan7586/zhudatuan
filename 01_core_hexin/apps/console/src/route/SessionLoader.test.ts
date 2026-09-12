@@ -103,6 +103,18 @@ describe('console scope loader profile isolation', () => {
     expect(api.identitySessionRead).not.toHaveBeenCalled();
   });
 
+  it('keeps the in-flight document session instead of restarting it after 180ms', async () => {
+    window.__consoleSessionPrefetch = {
+      settled: false,
+      promise: new Promise((resolve) => window.setTimeout(() => resolve({ value: session }), 250)),
+    };
+
+    const context = await loadPlatformScope();
+
+    expect(context.scope).toEqual(platformScope);
+    expect(api.identitySessionRead).not.toHaveBeenCalled();
+  });
+
   it('abandons the handoff immediately when route navigation aborts', async () => {
     window.__consoleSessionPrefetch = { settled: false, promise: new Promise(() => undefined) };
     window.__consoleAbortDocumentPrefetch = vi.fn();
