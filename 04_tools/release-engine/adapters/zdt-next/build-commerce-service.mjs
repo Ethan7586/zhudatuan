@@ -11,7 +11,7 @@ const entryPoints = Object.fromEntries(names.map((name) => [name, `${serviceEntr
 const outdir = '01_core_hexin/services/commerce/dist';
 await mkdir(outdir, { recursive: true });
 await build({
-  banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
+  banner: { js: "import { createRequire as __sflCreateRequire } from 'node:module'; const require = __sflCreateRequire(import.meta.url);" },
   bundle: true,
   entryPoints,
   format: 'esm',

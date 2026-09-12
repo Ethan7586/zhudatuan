@@ -194,7 +194,7 @@ test('storefront seed dependency identity matches the build adapter', () => {
   for (const [nodeKey, node] of Object.entries(policy.nodes)) {
     assert.deepEqual(node.deployments.storefront.seedInputs, [{ source: '01_core_hexin/apps/storefront-web/dist', destination: 'app/dist' }]);
     assert.ok(node.deployments.storefront.candidateChecks.some((check) => check.argv.includes('{{candidateDir}}/app/dist/server/index.js')));
-    const healthArgv = node.deployments.storefront.healthChecks[0].argv;
+    const healthArgv = node.deployments.storefront.healthChecks.find((check) => check.argv.includes('curl'))?.argv ?? [];
     assert.ok(healthArgv.includes(`Host: ${storefrontHosts[nodeKey]}`), `${nodeKey} health check carries the real Host boundary`);
     assert.ok(healthArgv.includes(`X-Forwarded-Host: ${storefrontHosts[nodeKey]}`), `${nodeKey} health check carries the forwarded Host boundary`);
     const seeded = node.deployments.storefront.seedDependencyLayer;
@@ -202,6 +202,12 @@ test('storefront seed dependency identity matches the build adapter', () => {
     assert.deepEqual(seeded.keyFiles, expected.keyFiles);
     assert.equal(seeded.productionRoot, expected.productionRoot);
   }
+  assert.equal(policy.nodes['zhudatuan-l0'].deployments.storefront.pointerRoot, '/opt/sfl/nodes/zhudatuan-l0/targets/storefront');
+  assert.deepEqual(policy.nodes['zhudatuan-l0'].deployments.storefront.restart, {
+    kind: 'systemd',
+    name: 'sfl-storefront@zhudatuan-l0.service',
+    jobMode: 'ignore-dependencies',
+  });
   assert.equal(policy.nodes['hbbtzn-l1'].deployments.storefront.restart.jobMode, 'ignore-dependencies');
   assert.deepEqual(policy.readiness, { timeoutMs: 30000, intervalMs: 500, attemptTimeoutMs: 3000, hardFailureGraceMs: 1000 });
 });
@@ -245,7 +251,15 @@ test('first activation is limited to pointer-only content and migration evidence
       if (deployment.allowFirstActivation === true) firstActivations.push(`${node}/${target}`);
     }
   }
-  assert.deepEqual(firstActivations.sort(), ['hbbtzn-l1/catalog-media', 'zhudatuan-l0/catalog-media', 'zhudatuan-l0/database-migration']);
+  assert.deepEqual(firstActivations.sort(), [
+    'hbbtzn-l1/catalog-media',
+    'zhudatuan-l0/auth-web',
+    'zhudatuan-l0/catalog-media',
+    'zhudatuan-l0/console',
+    'zhudatuan-l0/database-migration',
+  ]);
+  assert.equal(policy.nodes['zhudatuan-l0'].deployments['auth-web'].restart.kind, 'none');
+  assert.equal(policy.nodes['zhudatuan-l0'].deployments.console.restart.kind, 'none');
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
 });
 

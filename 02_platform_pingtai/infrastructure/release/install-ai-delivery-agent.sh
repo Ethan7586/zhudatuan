@@ -64,6 +64,8 @@ required_pointers=()
 units=()
 if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
   required_pointers+=(
+    /opt/sfl/nodes/zhudatuan-l0/targets/storefront/current
+    /opt/sfl/nodes/zhudatuan-l0/targets/storefront/runtime
     /opt/sfl/nodes/zhudatuan-l0/targets/identity-api/current
     /opt/sfl/nodes/zhudatuan-l0/targets/identity-notification-jobs/current
     /opt/sfl/nodes/zhudatuan-l0/targets/mall-provisioning-api/current
@@ -76,6 +78,7 @@ if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
     /opt/sfl/nodes/zhudatuan-l0/targets/payment-jobs/current
   )
   units+=(
+    sfl-storefront@.service
     sfl-identity-api@.service
     sfl-identity-notification-jobs@.service
     sfl-mall-provisioning-api@.service

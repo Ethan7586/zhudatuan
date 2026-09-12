@@ -591,7 +591,7 @@
       "manifest": "02_platform_pingtai/config/node-manifests/zhudatuan-l0.json",
       "deployments": {
         "catalog-media": {"pointerRoot":"/opt/ai-delivery/content/zdt-next/zhudatuan-l0/catalog-media","service":"none","restart":"none"},
-        "storefront": {"pointerRoot":"/opt/zhudatuan/targets/storefront","service":"zhudatuan-storefront","restart":"pm2"},
+        "storefront": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/storefront","service":"sfl-storefront@zhudatuan-l0.service","restart":"systemd"},
         "auth-web": {"pointerRoot":"/opt/zhudatuan/targets/auth-web","service":"none","restart":"none"},
         "console": {"pointerRoot":"/opt/zhudatuan/targets/console","service":"none","restart":"none"},
         "identity-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/identity-api","service":"sfl-identity-api@zhudatuan-l0.service"},
