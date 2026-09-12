@@ -50,7 +50,9 @@ describe('Owner Console route and Operation coverage', () => {
   });
 
   it('requires only registered non-public Operations covered by the Owner projection', () => {
-    const catalog = new Map(COMMERCE_OPERATIONS.map((operation) => [operation.id, operation]));
+    const catalog = new Map<OperationId, (typeof COMMERCE_OPERATIONS)[number]>(
+      COMMERCE_OPERATIONS.map((operation) => [operation.id, operation]),
+    );
     for (const id of allRequiredOperations()) {
       const operation = catalog.get(id);
       expect(operation, id).toBeDefined();
