@@ -133,6 +133,9 @@ jobs:
             --source-sha "${{ steps.sha.outputs.sha }}" \
             --approve-install "zdt-next:install:${{ steps.sha.outputs.sha }}" \
             --format json > "$RUNNER_TEMP/install-production-agent.json"
+          if [ -d .ai-delivery ]; then
+            mv .ai-delivery "$RUNNER_TEMP/agent-install-state"
+          fi
           mv "$candidate_release" .ci-release
           mv "$candidate_artifacts" .ai-delivery
           mv "$RUNNER_TEMP/install-production-agent.json" .ci-release/install-production-agent.json
