@@ -4,8 +4,6 @@ import { changedFiles, currentHead, resolveGitRef } from './git.mjs';
 import { invariant } from './errors.mjs';
 import { resolveDeployment } from './adapter.mjs';
 
-const rank = Object.freeze({ NONE: -1, A0: 0, A1: 1, A2: 2, A3: 3 });
-
 export async function createPlan(adapter, options = {}) {
   const fromRef = options.from ?? adapter.defaultBaseRef ?? 'HEAD^';
   const toRef = options.to ?? 'HEAD';
@@ -14,177 +12,134 @@ export async function createPlan(adapter, options = {}) {
     resolveGitRef(adapter.projectRoot, toRef),
   ]);
   const changes = await changedFiles(adapter.projectRoot, fromSha, toSha, options.files ?? []);
-  const initialClassification = classifyChanges(adapter, changes);
-  const classification = await refineDynamicImpact(adapter, initialClassification, changes, { fromSha, toSha });
+  const initial = classifyChanges(adapter, changes);
+  const classification = await refineDynamicImpact(adapter, initial, changes, { fromSha, toSha });
+  const targets = expandTargetDependencies(adapter, classification.targets);
   const requestedNodes = options.nodes ?? [];
   for (const node of requestedNodes) invariant(Boolean(adapter.nodes[node]), 'PLAN_NODE_UNKNOWN', `Unknown node ${node}`);
-  const eligibleNodes = eligibleNodesForTargets(adapter, classification.targets);
-  const selectedNodes = requestedNodes.length === 0 ? [] : requestedNodes;
-  for (const node of selectedNodes) {
-    for (const target of classification.targets) {
-      invariant(Boolean(adapter.nodes[node].deployments[target]), 'PLAN_NODE_TARGET_UNSUPPORTED', `${node} does not deploy ${target}`);
-    }
+  const eligibleNodes = eligibleNodesForTargets(adapter, targets);
+  for (const node of requestedNodes) {
+    for (const target of targets) invariant(Boolean(adapter.nodes[node].deployments[target]), 'PLAN_NODE_TARGET_UNSUPPORTED', `${node} does not deploy ${target}`);
   }
-  const actions = materializeActions(adapter, classification.targets, selectedNodes, changes);
+  const actions = materializeActions(adapter, targets, requestedNodes, changes, classification.validations);
+  const deploymentOrder = orderTargets(adapter, targets);
   const plan = {
-    schema: 'ai.delivery.plan.v1',
-    engineVersion: 1,
-    project: adapter.project,
-    adapter: adapter.adapterPath,
-    from: { ref: fromRef, sha: fromSha },
-    to: { ref: toRef, sha: toSha },
-    lane: classification.lane,
-    deployRequired: classification.lane !== 'NONE',
-    changes,
-    classifications: classification.files,
-    reasons: classification.reasons,
-    targets: classification.targets,
-    eligibleNodes,
-    selectedNodes,
-    selectedRealms: selectedNodes.map((node) => adapter.nodes[node].realmId).filter(Boolean),
-    impactFlags: classification.touches,
-    actions,
-    prohibitedRestarts: selectedNodes.flatMap((nodeKey) => Object.entries(adapter.nodes[nodeKey].deployments)
-      .filter(([target]) => !classification.targets.includes(target))
+    schema: 'ai.delivery.plan.v2', engineVersion: 2, project: adapter.project, adapter: adapter.adapterPath,
+    from: { ref: fromRef, sha: fromSha }, to: { ref: toRef, sha: toSha }, deployRequired: targets.length > 0,
+    changes, classifications: classification.files, reasons: classification.reasons, targets,
+    impact: { flags: classification.touches, unknownFiles: classification.unknownFiles },
+    requiredValidations: actions.requiredValidations,
+    dependencyInstallRequired: [...actions.preflight, ...actions.tests, ...actions.typecheck, ...actions.build].length > 0,
+    artifacts: targets.map((target) => ({ target, inputs: adapter.targets[target].artifactInputs })),
+    deploymentOrder, eligibleNodes, selectedNodes: requestedNodes,
+    selectedRealms: requestedNodes.map((node) => adapter.nodes[node].realmId).filter(Boolean),
+    impactFlags: classification.touches, actions,
+    prohibitedRestarts: requestedNodes.flatMap((nodeKey) => Object.entries(adapter.nodes[nodeKey].deployments)
+      .filter(([target]) => !targets.includes(target))
       .map(([target, deployment]) => ({ node: nodeKey, target, service: deployment.service }))),
     productionApproval: { required: true, token: `${adapter.project}:${toSha}` },
-    estimates: estimate(adapter, classification.lane, classification.targets),
+    estimates: estimate(adapter, targets, actions),
   };
   return Object.freeze({ ...plan, generatedAt: new Date().toISOString(), planDigest: digest(plan) });
 }
 
 export function classifyChanges(adapter, changes) {
-  if (changes.length === 0) return Object.freeze({ lane: 'NONE', targets: [], files: [], reasons: ['no changes'], touches: [], ambiguous: false });
-  const files = [];
-  const targets = new Set();
-  const reasons = new Set();
-  const touches = new Set();
-  let lane = 'NONE';
-  let ambiguous = false;
-
+  if (changes.length === 0) return Object.freeze({ targets: [], files: [], reasons: ['no changes'], touches: [], validations: [], unknownFiles: [] });
+  const files = [], targets = new Set(), reasons = new Set(), touches = new Set(), validations = [], unknownFiles = [];
   for (const change of changes) {
     const paths = [change.path, change.sourcePath].filter(Boolean);
-    const matched = adapter.rules.filter((rule) =>
-      paths.some((path) => matchesAny(path, rule.include) && !matchesAny(path, rule.exclude ?? [])));
+    const allMatched = adapter.rules.filter((rule) => paths.some((path) => matchesAny(path, rule.include) && !matchesAny(path, rule.exclude ?? [])));
+    const matched = allMatched.some((rule) => rule.validationOnly) ? allMatched.filter((rule) => rule.validationOnly) : allMatched;
     if (matched.length === 0) {
-      lane = 'A3';
-      ambiguous = true;
-      reasons.add(`unclassified:${change.path}`);
-      files.push({ ...change, lane: 'A3', targets: [], rules: [], reason: 'unclassified path; fail-closed to A3' });
+      const upperBound = reachableRuntimeTargets(adapter);
+      for (const target of upperBound) targets.add(target);
+      unknownFiles.push(change.path);
+      reasons.add(`unclassified:${change.path}; selected reachable runtime target upper bound`);
+      files.push({ ...change, targets: upperBound, rules: [], impact: 'reachable-upper-bound' });
       continue;
     }
-    const winningRank = Math.max(...matched.map((rule) => rank[rule.lane]));
-    const winning = matched.filter((rule) => rank[rule.lane] === winningRank);
-    const fileLane = winning[0].lane;
-    if (winning.some((rule) => rule.lane !== fileLane)) ambiguous = true;
-    if (rank[fileLane] > rank[lane]) lane = fileLane;
-    for (const rule of winning) {
-      for (const target of rule.targets ?? []) targets.add(target);
+    const fileTargets = [...new Set(matched.flatMap((rule) => rule.targets ?? []))].sort();
+    for (const target of fileTargets) targets.add(target);
+    for (const rule of matched) {
       for (const touch of rule.touches ?? []) touches.add(touch);
+      validations.push(...(rule.validations ?? []));
       reasons.add(rule.reason ?? rule.id);
     }
-    files.push({
-      ...change,
-      lane: fileLane,
-      targets: [...new Set(winning.flatMap((rule) => rule.targets ?? []))].sort(),
-      rules: winning.map((rule) => rule.id).sort(),
-      dynamicImpact: [...new Set(winning.map((rule) => rule.dynamicImpact).filter(Boolean))],
-    });
+    files.push({ ...change, targets: fileTargets, rules: matched.map((rule) => rule.id).sort(),
+      dynamicImpact: [...new Set(matched.map((rule) => rule.dynamicImpact).filter(Boolean))],
+      impact: fileTargets.length > 0 ? 'runtime' : 'validation-only' });
   }
-
-  const dependencyKeys = new Set(Object.values(adapter.targets)
-    .flatMap((target) => target.dependencyLayer?.keyFiles ?? []));
-  const changedDependencyKeys = changes
-    .flatMap((change) => [change.path, change.sourcePath].filter(Boolean))
-    .filter((path) => dependencyKeys.has(path));
-  if (changedDependencyKeys.length > 0) {
-    lane = 'A3';
-    touches.add('dependency-layer');
-    for (const path of [...new Set(changedDependencyKeys)].sort()) reasons.add(`dependency-layer-key:${path}`);
-  }
-
-  if (lane === 'NONE' && targets.size > 0) {
-    lane = 'A3';
-    ambiguous = true;
-    reasons.add('non-deploying rules selected deploy targets');
-  }
-  if (lane === 'A1' && targets.size !== 1) {
-    lane = 'A3';
-    reasons.add(`A1 requires exactly one client target; found ${targets.size}`);
-  }
-  if ((lane === 'A0' || lane === 'A1') && [...targets].some((target) => adapter.targets[target]?.lane !== lane)) {
-    lane = 'A3';
-    reasons.add('mixed target lanes require A3');
-  }
-  if (lane === 'A3') {
-    targets.clear();
-    targets.add(adapter.fallbackTarget);
-    for (let index = 0; index < files.length; index += 1) {
-      if (files[index].lane !== 'NONE') files[index] = { ...files[index], lane: 'A3', targets: [adapter.fallbackTarget] };
-    }
-  }
-  return Object.freeze({ lane, targets: [...targets].sort(), files, reasons: [...reasons].sort(), touches: [...touches].sort(), ambiguous });
+  return Object.freeze({ targets: [...targets].sort(), files, reasons: [...reasons].sort(), touches: [...touches].sort(),
+    validations: uniqueCommands(validations), unknownFiles: unknownFiles.sort() });
 }
 
 async function refineDynamicImpact(adapter, classification, changes, refs) {
-  const runtimeFiles = classification.files.filter((file) => file.lane !== 'NONE');
-  const dynamicFiles = runtimeFiles.filter((file) => (file.dynamicImpact ?? []).length > 0);
-  const resolvers = [...new Set(dynamicFiles.flatMap((file) => file.dynamicImpact ?? []))];
-  if (dynamicFiles.length === 0 || resolvers.length !== 1 || dynamicFiles.some((file) => (file.dynamicImpact ?? []).length !== 1)) return classification;
-  const resolverId = resolvers[0];
-  const definition = adapter.impactResolvers?.[resolverId];
-  if (!definition) return classification;
-  if (refs.toSha !== await currentHead(adapter.projectRoot)) {
-    return { ...classification, reasons: [...classification.reasons, `dynamic impact ${resolverId} requires target commit checked out`] };
-  }
-  const resolver = await import(new URL(definition.module, `file://${adapter.adapterPath}`).href);
-  invariant(typeof resolver.resolveImpact === 'function', 'IMPACT_RESOLVER_INVALID', `${resolverId} must export resolveImpact`);
+  const dynamicFiles = classification.files.filter((file) => (file.dynamicImpact ?? []).length > 0);
+  if (dynamicFiles.length === 0) return classification;
+  if (refs.toSha !== await currentHead(adapter.projectRoot)) return { ...classification, reasons: [...classification.reasons, 'dynamic impact requires target commit checked out'] };
   const dynamicPaths = new Set(dynamicFiles.flatMap((file) => [file.path, file.sourcePath].filter(Boolean)));
-  const dynamicChanges = changes.filter((change) => [change.path, change.sourcePath].filter(Boolean).some((path) => dynamicPaths.has(path)));
-  const staticChanges = changes.filter((change) => !dynamicChanges.includes(change));
-  const staticClassification = classifyChanges(adapter, staticChanges);
-  if (staticClassification.lane === 'A3') return classification;
-  const impact = await resolver.resolveImpact({ adapter, changes: dynamicChanges, refs, definition });
-  invariant(impact?.lane === 'A2' || impact?.lane === 'A3', 'IMPACT_RESULT_INVALID', `${resolverId} returned invalid lane`);
-  if (impact.lane === 'A2') {
-    invariant(Array.isArray(impact.targets) && impact.targets.length > 0 && impact.targets.every((target) => adapter.targets[target]?.lane === 'A2'), 'IMPACT_TARGET_INVALID', `${resolverId} must select one or more A2 targets`);
+  const staticTargets = new Set(classification.targets);
+  for (const file of dynamicFiles) for (const target of file.targets) staticTargets.delete(target);
+  const dynamicTargets = new Set(), dynamicReasons = [], dynamicValidations = [], resolvedByPath = new Map();
+  const resolverIds = [...new Set(dynamicFiles.flatMap((file) => file.dynamicImpact))].sort();
+  for (const resolverId of resolverIds) {
+    const definition = adapter.impactResolvers?.[resolverId];
+    invariant(Boolean(definition), 'IMPACT_RESOLVER_UNKNOWN', `Unknown impact resolver ${resolverId}`);
+    const resolver = await import(new URL(definition.module, `file://${adapter.adapterPath}`).href);
+    invariant(typeof resolver.resolveImpact === 'function', 'IMPACT_RESOLVER_INVALID', `${resolverId} must export resolveImpact`);
+    const resolverPaths = new Set(dynamicFiles.filter((file) => file.dynamicImpact.includes(resolverId)).flatMap((file) => [file.path, file.sourcePath].filter(Boolean)));
+    const resolverChanges = changes.filter((change) => [change.path, change.sourcePath].filter(Boolean).some((path) => resolverPaths.has(path)));
+    const impact = await resolver.resolveImpact({ adapter, changes: resolverChanges, refs, definition });
+    invariant(Array.isArray(impact?.targets) && impact.targets.every((target) => Boolean(adapter.targets[target])), 'IMPACT_TARGET_INVALID', `${resolverId} returned unknown targets`);
+    for (const target of impact.targets) dynamicTargets.add(target);
+    dynamicReasons.push(...(impact.reasons ?? [`dynamic:${resolverId}`]));
+    dynamicValidations.push(...(impact.validations ?? []));
+    for (const path of resolverPaths) resolvedByPath.set(path, impact.targets);
   }
-  if (impact.lane === 'A3') return classification;
-  const targets = [...new Set([...staticClassification.targets, ...impact.targets])].sort();
-  const staticFiles = new Map(staticClassification.files.map((file) => [file.path, file]));
-  return {
-    ...classification,
-    lane: 'A2',
-    targets,
-    reasons: [...new Set([
-      ...staticClassification.reasons.filter((reason) => reason !== 'no changes'),
-      ...(impact.reasons ?? [`dynamic:${resolverId}`]),
-    ])].sort(),
-    touches: [...new Set([...staticClassification.touches, ...classification.touches])].sort(),
+  const targets = [...new Set([...staticTargets, ...dynamicTargets])].sort();
+  return { ...classification, targets,
+    reasons: [...new Set([...classification.reasons, ...dynamicReasons])].sort(),
+    validations: uniqueCommands([...classification.validations, ...dynamicValidations]),
     files: classification.files.map((file) => dynamicPaths.has(file.path)
-      ? { ...file, lane: 'A2', targets: impact.targets }
-      : (staticFiles.get(file.path) ?? file)),
-    ambiguous: false,
+      ? { ...file, targets: resolvedByPath.get(file.path) ?? [], impact: (resolvedByPath.get(file.path) ?? []).length > 0 ? 'runtime' : 'validation-only' }
+      : file) };
+}
+
+function reachableRuntimeTargets(adapter) {
+  return Object.entries(adapter.targets).filter(([, target]) => target.kind !== 'migration' && target.unknownImpact !== false).map(([target]) => target).sort();
+}
+
+function expandTargetDependencies(adapter, targets) {
+  const selected = new Set(targets);
+  const visit = (target) => {
+    for (const dependency of adapter.targets[target]?.requires ?? []) if (!selected.has(dependency)) { selected.add(dependency); visit(dependency); }
   };
+  for (const target of [...selected]) visit(target);
+  return [...selected].sort();
+}
+
+function orderTargets(adapter, targets) {
+  const selected = new Set(targets), ordered = [], visiting = new Set(), visited = new Set();
+  const visit = (target) => {
+    invariant(!visiting.has(target), 'TARGET_DEPENDENCY_CYCLE', `Target dependency cycle at ${target}`);
+    if (visited.has(target)) return;
+    visiting.add(target);
+    for (const dependency of adapter.targets[target]?.after ?? []) if (selected.has(dependency)) visit(dependency);
+    visiting.delete(target); visited.add(target); ordered.push(target);
+  };
+  for (const target of [...selected].sort()) visit(target);
+  return ordered;
 }
 
 function eligibleNodesForTargets(adapter, targets) {
   if (targets.length === 0) return [];
-  return Object.entries(adapter.nodes)
-    .filter(([, node]) => targets.every((target) => Boolean(node.deployments[target])))
-    .map(([key]) => key)
-    .sort();
+  return Object.entries(adapter.nodes).filter(([, node]) => targets.every((target) => Boolean(node.deployments[target]))).map(([key]) => key).sort();
 }
 
-function materializeActions(adapter, targets, selectedNodes, changes) {
+function materializeActions(adapter, targets, selectedNodes, changes, validations) {
   const changed = changes.map((change) => change.path);
-  const preflight = targets.some((target) => adapter.targets[target]?.lane !== 'A0')
-    ? decorateCommands(adapter.buildPreflight ?? [], 'workspace', changed)
-    : [];
-  const tests = [];
-  const typecheck = [];
-  const build = [];
-  const artifactInputs = [];
+  const preflight = targets.length > 0 ? decorateCommands(adapter.buildPreflight ?? [], 'workspace', changed) : [];
+  const tests = decorateCommands(validations, 'changed-files', changed), typecheck = [], build = [], artifactInputs = [];
   for (const targetId of targets) {
     const target = adapter.targets[targetId];
     tests.push(...decorateCommands(target.tests, targetId, changed));
@@ -193,63 +148,30 @@ function materializeActions(adapter, targets, selectedNodes, changes) {
     artifactInputs.push(...target.artifactInputs.map((input) => ({ ...input, target: targetId })));
   }
   const deployments = new Map();
-  for (const requestedNode of selectedNodes) {
-    for (const targetId of targets) {
-      const resolved = resolveDeployment(adapter, requestedNode, targetId);
-      const { executionNode, deployment } = resolved;
-      const key = `${executionNode}:${targetId}`;
-      const existing = deployments.get(key);
-      if (existing) {
-        existing.requestedNodes.push(requestedNode);
-        continue;
-      }
-      deployments.set(key, {
-        node: executionNode,
-        nodeId: resolved.node.nodeId,
-        realmId: resolved.node.realmId,
-        requestedNodes: [requestedNode],
-        target: targetId,
-        pointerRoot: deployment.pointerRoot,
-        currentPointer: `${deployment.pointerRoot}/current`,
-        previousPointer: `${deployment.pointerRoot}/previous`,
-        service: deployment.service,
-        restart: deployment.restart ?? 'systemd',
-        health: deployment.health ?? [],
-        productionEnabled: deployment.productionEnabled ?? true,
-        productionDisabledReason: deployment.productionDisabledReason ?? null,
-      });
-    }
+  for (const requestedNode of selectedNodes) for (const targetId of targets) {
+    const resolved = resolveDeployment(adapter, requestedNode, targetId);
+    const { executionNode, deployment } = resolved, key = `${executionNode}:${targetId}`, existing = deployments.get(key);
+    if (existing) { existing.requestedNodes.push(requestedNode); continue; }
+    deployments.set(key, { node: executionNode, nodeId: resolved.node.nodeId, realmId: resolved.node.realmId,
+      requestedNodes: [requestedNode], target: targetId, pointerRoot: deployment.pointerRoot,
+      currentPointer: `${deployment.pointerRoot}/current`, previousPointer: `${deployment.pointerRoot}/previous`,
+      service: deployment.service, restart: deployment.restart ?? 'systemd', health: deployment.health ?? [] });
   }
-  return {
-    preflight: uniqueCommands(preflight),
-    tests: uniqueCommands(tests),
-    typecheck: uniqueCommands(typecheck),
-    build: uniqueCommands(build),
-    artifactInputs,
-    deployments: [...deployments.values()],
-  };
+  const actions = { preflight: uniqueCommands(preflight), tests: uniqueCommands(tests), typecheck: uniqueCommands(typecheck),
+    build: uniqueCommands(build), artifactInputs, deployments: [...deployments.values()] };
+  actions.requiredValidations = [...actions.tests, ...actions.typecheck].map(({ name, target, argv }) => ({ name, target, argv }));
+  return actions;
 }
 
 function uniqueCommands(commands) {
   const seen = new Set();
-  return commands.filter((command) => {
-    const key = JSON.stringify({ argv: command.argv, cwd: command.cwd ?? null, environment: command.environment ?? null });
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  return commands.filter((command) => { const key = JSON.stringify({ argv: command.argv, cwd: command.cwd ?? null, environment: command.environment ?? null });
+    if (seen.has(key)) return false; seen.add(key); return true; });
 }
 
-function decorateCommands(commands = [], target, changedFiles) {
-  return commands.map((command) => ({ ...command, target, changedFiles }));
-}
+function decorateCommands(commands = [], target, changedFiles) { return commands.map((command) => ({ ...command, target, changedFiles })); }
 
-function estimate(adapter, lane, targets) {
-  const laneEstimate = adapter.laneEstimates?.[lane] ?? { minSeconds: 0, maxSeconds: 0 };
-  return {
-    lane,
-    minSeconds: laneEstimate.minSeconds,
-    maxSeconds: laneEstimate.maxSeconds,
-    targetCount: targets.length,
-  };
+function estimate(adapter, targets, actions) {
+  return { estimatedSeconds: targets.reduce((total, target) => total + (adapter.targets[target].estimateSeconds ?? 0), 0),
+    targetCount: targets.length, validationCount: actions.requiredValidations.length };
 }

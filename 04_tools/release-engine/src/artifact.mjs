@@ -1,7 +1,9 @@
-import { createReadStream } from 'node:fs';
+import { createReadStream, createWriteStream } from 'node:fs';
 import { cp, lstat, lutimes, mkdir, readFile, readdir, readlink, rename, rm, utimes, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
+import { pipeline } from 'node:stream/promises';
+import { createGzip } from 'node:zlib';
 
 import { invariant } from './errors.mjs';
 import { digest, prettyStableJson } from './stable.mjs';
@@ -53,7 +55,7 @@ export async function packageTarget(adapter, plan, buildEvidence, runDirectory, 
   const targetId = buildEvidence.target;
   const target = adapter.targets[targetId];
   const content = await treeEvidence(buildEvidence.directory, target.criticalFiles ?? []);
-  assertArtifactSize(plan.lane, targetId, content.totalBytes, content.entries);
+  assertArtifactSize(targetId, content.totalBytes, content.entries);
   const artifactId = `${adapter.project}-${targetId}-${content.treeDigest.slice(7, 19)}`;
   const directory = join(artifactRoot, targetId, content.treeDigest.slice(7), plan.to.sha, plan.planDigest.slice(7), 'v2');
   const archive = join(directory, `${targetId}.tar.gz`);
@@ -64,16 +66,19 @@ export async function packageTarget(adapter, plan, buildEvidence, runDirectory, 
   const temporary = `${directory}.candidate-${process.pid}-${Date.now()}`;
   await mkdir(temporary, { recursive: true });
   const temporaryArchive = join(temporary, `${targetId}.tar.gz`);
+  const temporaryTar = join(temporary, `${targetId}.tar`);
   await normalizeArtifactTimes(buildEvidence.directory, content.entries);
-  const command = await runCommand({ name: `package:${targetId}`, argv: deterministicTarArgv(temporaryArchive, buildEvidence.directory), timeoutMs: 10 * 60_000 }, {
+  const command = await runCommand({ name: `package:${targetId}`, argv: deterministicTarArgv(temporaryTar, buildEvidence.directory), timeoutMs: 10 * 60_000 }, {
     projectRoot: adapter.projectRoot,
     environment: {},
     changedFiles: [],
     logPath: join(runDirectory, 'logs', `package-${targetId}.log`),
   });
+  await pipeline(createReadStream(temporaryTar), createGzip({ level: 9, mtime: 0 }), createWriteStream(temporaryArchive, { flags: 'wx' }));
+  await rm(temporaryTar);
   const archiveSha256 = await hashFile(temporaryArchive);
   const archiveBytes = (await lstat(temporaryArchive)).size;
-  assertArtifactSize(plan.lane, targetId, archiveBytes, content.entries, 'archive');
+  assertArtifactSize(targetId, archiveBytes, content.entries, 'archive');
   const dependencyLayer = await dependencyLayerEvidence(adapter, target.dependencyLayer);
   const manifest = {
     schema: 'ai.delivery.artifact.v1',
@@ -82,7 +87,6 @@ export async function packageTarget(adapter, plan, buildEvidence, runDirectory, 
     project: adapter.project,
     target: targetId,
     targetKind: target.kind,
-    lane: plan.lane,
     sourceSha: plan.to.sha,
     contractTransition: {
       mode: 'contract-pool-pending',
@@ -158,7 +162,7 @@ function deterministicTarArgv(archive, source) {
   const ownership = process.platform === 'darwin'
     ? ['--uid', '0', '--gid', '0', '--uname', 'root', '--gname', 'root']
     : ['--owner=0', '--group=0', '--numeric-owner', '--sort=name', '--mtime=@0'];
-  return ['tar', ...ownership, '-czf', archive, '-C', source, '.'];
+  return ['tar', ...ownership, '-cf', archive, '-C', source, '.'];
 }
 
 async function normalizeArtifactTimes(root, entries) {
@@ -271,9 +275,8 @@ function assertArtifactPath(path) {
   invariant(!/\.(?:log|tmp|swp)$/i.test(leaf), 'ARTIFACT_FORBIDDEN_PATH', `Forbidden artifact file: ${path}`, { path });
 }
 
-function assertArtifactSize(lane, target, bytes, entries, kind = 'uncompressed') {
-  invariant(bytes <= MAX_ARTIFACT_BYTES, 'ARTIFACT_SIZE_LIMIT_EXCEEDED', `${lane} artifact exceeds 150 MiB: ${target}`, {
-    lane,
+function assertArtifactSize(target, bytes, entries, kind = 'uncompressed') {
+  invariant(bytes <= MAX_ARTIFACT_BYTES, 'ARTIFACT_SIZE_LIMIT_EXCEEDED', `Artifact exceeds 150 MiB: ${target}`, {
     target,
     kind,
     bytes,

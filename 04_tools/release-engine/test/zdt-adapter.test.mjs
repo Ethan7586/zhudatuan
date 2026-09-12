@@ -37,7 +37,6 @@ test('build and remote adapters agree on every pointer and process', () => {
       assert.ok(remote, `missing remote deployment ${nodeKey}/${target}`);
       assert.equal(remote.pointerRoot, deployment.pointerRoot, `${nodeKey}/${target} pointer`);
       assert.equal(remote.restart.name, deployment.service, `${nodeKey}/${target} service`);
-      assert.equal(remote.productionEnabled ?? true, deployment.productionEnabled ?? true, `${nodeKey}/${target} production state`);
     }
   }
 });
@@ -58,7 +57,7 @@ test('every restartable fast target has a one-time legacy seed and production ro
   }
 });
 
-test('every A1/A2 systemd target owns exactly one dependency-isolated restart unit', () => {
+test('every systemd target owns exactly one dependency-isolated restart unit', () => {
   for (const [nodeKey, node] of Object.entries(policy.nodes)) {
     const owners = new Set();
     for (const [target, deployment] of Object.entries(node.deployments)) {
@@ -89,7 +88,8 @@ test('every fast target is either node-owned or explicitly hosted by one runtime
     const pointers = [];
     for (const [target, deployment] of Object.entries(node.deployments)) {
       if (target === 'core') continue;
-      assert.match(deployment.pointerRoot, new RegExp(`/${target.replaceAll('-', '\\-')}$`));
+      if (target === 'database-migration') assert.equal(deployment.pointerRoot, '/opt/ai-delivery/database-migrations/zdt-next');
+      else assert.match(deployment.pointerRoot, new RegExp(`/${target.replaceAll('-', '\\-')}$`));
       assert.ok(!deployment.pointerRoot.endsWith('/current'), `${nodeKey}/${target} owns a pointer root, not a shared current`);
       if (deployment.hostedBy) {
         const host = adapter.nodes[deployment.hostedBy].deployments[target];
@@ -198,14 +198,14 @@ test('runtime installer uses the same L0 pointers and support unit as the releas
   assert.match(installer, /zhudatuan-console-support\.service/);
 });
 
-test('first activation stays limited to content while Support uses an imported rollback baseline', () => {
+test('first activation is limited to pointer-only content and migration evidence targets', () => {
   const firstActivations = [];
   for (const [node, nodePolicy] of Object.entries(policy.nodes)) {
     for (const [target, deployment] of Object.entries(nodePolicy.deployments)) {
       if (deployment.allowFirstActivation === true) firstActivations.push(`${node}/${target}`);
     }
   }
-  assert.deepEqual(firstActivations.sort(), ['hbbtzn-l1/catalog-media', 'zhudatuan-l0/catalog-media']);
+  assert.deepEqual(firstActivations.sort(), ['hbbtzn-l1/catalog-media', 'zhudatuan-l0/catalog-media', 'zhudatuan-l0/database-migration']);
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
 });
 

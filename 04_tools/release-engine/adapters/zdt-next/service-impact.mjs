@@ -47,12 +47,14 @@ export async function resolveImpact({ adapter, changes }) {
     const reason = unresolved.length === 0
       ? selection
       : `${selection}; ${unresolved.length} changed file(s) are outside production entry graphs`;
-    return { lane: 'A2', targets, reasons: [reason] };
+    return { targets, reasons: [reason] };
   }
+  if (changed.size === 0) return { targets: [], reasons: ['changed commerce files are validation-only'] };
   return {
-    lane: 'A3',
-    targets: ['core'],
-    reasons: [unresolved.length > 0 ? `dependency graph unresolved: ${unresolved.join(', ')}` : `dependency graph spans ${[...impacted].sort().join(', ')}`],
+    targets: Object.keys(serviceTargets).sort(),
+    reasons: [unresolved.length > 0
+      ? `dependency graph could not narrow ${unresolved.join(', ')}; selected every reachable commerce runtime target`
+      : 'dependency graph could not narrow the runtime consumer; selected every reachable commerce runtime target'],
   };
 }
 

@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, utimes, writeFile } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { materializeTarget, packageTarget, resolvePackageArtifactPaths } from '../src/artifact.mjs';
 import { digest } from '../src/stable.mjs';
@@ -35,7 +36,7 @@ test('packages only existing changed files and records deletions', async () => {
   assert.equal(await readFile(join(evidence.directory, 'content', 'new.webp'), 'utf8'), 'new');
   assert.deepEqual(evidence.deletions, ['content/old.webp']);
 
-  const plan = { lane: 'A0', to: { sha: 'a'.repeat(40) }, planDigest: digest({ test: true }) };
+  const plan = { to: { sha: 'a'.repeat(40) }, planDigest: digest({ test: true }) };
   const artifact = await packageTarget(adapter, plan, evidence, run, join(root, 'artifacts'));
   assert.deepEqual(artifact.deletions, ['content/old.webp']);
   assert.match(artifact.archive.sha256, /^sha256:[a-f0-9]{64}$/);
@@ -57,6 +58,7 @@ test('packages only existing changed files and records deletions', async () => {
   assert.equal(reused.packageCache, 'hit_local');
 
   await utimes(join(evidence.directory, 'content', 'new.webp'), new Date(), new Date());
+  await delay(1100);
   const rebuilt = await packageTarget(adapter, plan, evidence, run, join(root, 'second-artifact-store'));
   assert.equal(rebuilt.packageCache, 'miss');
   assert.equal(rebuilt.archive.sha256, artifact.archive.sha256);

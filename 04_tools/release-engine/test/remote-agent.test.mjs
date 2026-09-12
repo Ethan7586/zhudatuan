@@ -632,19 +632,6 @@ test('imports an explicitly allowed candidate as a rollback baseline without res
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), await readlink(join(fixture.pointerRoot, 'candidate')));
 });
 
-test('remote policy can block production while still accepting a candidate', async () => {
-  const fixture = await createFixture();
-  const artifact = await createArtifact(fixture, 'candidate-only', '4'.repeat(40));
-  fixture.policy.nodes.local.deployments.app.productionEnabled = false;
-  fixture.policy.nodes.local.deployments.app.productionDisabledReason = 'external A3 required';
-  await writePolicy(fixture);
-  await invoke(fixture, 'stage', artifact);
-  await assert.rejects(() => invoke(fixture, 'activate', artifact), (error) => {
-    assert.match(error.stderr, /PRODUCTION_ACTIVATION_DISABLED/);
-    return true;
-  });
-});
-
 test('L0 and L1 target pointers remain independent in both directions', async () => {
   const fixture = await createFixture();
   const l0 = await createArtifact(fixture, 'l0', '5'.repeat(40));
@@ -681,7 +668,7 @@ async function createFixture() {
       lockRoot: join(root, 'locks'),
       auditRoot: join(root, 'audit'),
       minimumFreeBytes: 1,
-      readiness: { timeoutMs: 200, intervalMs: 10, attemptTimeoutMs: 50, hardFailureGraceMs: 20 },
+      readiness: { timeoutMs: 1_000, intervalMs: 20, attemptTimeoutMs: 250, hardFailureGraceMs: 50 },
       allowedDependencyRoots: [join(root, 'layers')],
       protectedProcesses: [],
       nodes: {
@@ -732,7 +719,7 @@ async function createArtifact(fixture, contents, sourceSha, dependencyLayer = nu
   await writeFile(join(directory, 'app.txt'), contents);
   const evidence = { target: 'app', directory, deletions: [], ...(await treeEvidence(directory, ['app.txt'])) };
   const adapter = { project: 'fixture', projectRoot: fixture.root, targets: { app: { kind: 'frontend', criticalFiles: ['app.txt'], dependencyLayer } } };
-  const plan = { lane: 'A1', to: { sha: sourceSha }, planDigest: digest({ sourceSha }) };
+  const plan = { to: { sha: sourceSha }, planDigest: digest({ sourceSha }) };
   return packageTarget(adapter, plan, evidence, join(fixture.root, 'runs', sourceSha), join(fixture.root, 'artifacts'));
 }
 

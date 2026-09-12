@@ -26,7 +26,7 @@ export async function buildCommand(adapter, options) {
   const planPath = requiredPath(options.plan, 'BUILD_PLAN_REQUIRED');
   const plan = await readJson(planPath);
   invariant(plan.project === adapter.project, 'BUILD_PROJECT_MISMATCH', 'Plan belongs to another project');
-  invariant(plan.deployRequired, 'BUILD_NOT_REQUIRED', 'Plan contains no deployable changes');
+  invariant(plan.deployRequired || plan.requiredValidations?.length > 0, 'BUILD_NOT_REQUIRED', 'Plan contains no deployable changes or required validations');
   await assertBuildRefIsCheckedOut(adapter.projectRoot, plan.to.sha);
   const runDirectory = dirname(planPath);
   const paths = statePaths(adapter);
@@ -48,7 +48,7 @@ export async function buildCommand(adapter, options) {
       }
     }
     const materializeStarted = performance.now();
-    for (const target of plan.targets) targetEvidence.push(await materializeTarget(adapter, target, runDirectory, plan.changes));
+    for (const target of plan.deploymentOrder ?? plan.targets) targetEvidence.push(await materializeTarget(adapter, target, runDirectory, plan.changes));
     timings.materialize = elapsed(materializeStarted);
     timings.total = elapsed(started);
     const evidence = {
@@ -83,6 +83,7 @@ export async function packageCommand(adapter, options) {
     project: adapter.project,
     runId: build.runId,
     sourceSha: build.sourceSha,
+    deploymentOrder: plan.deploymentOrder ?? build.targets.map((target) => target.target),
     artifacts,
     timings: { package: elapsed(started), total: elapsed(started) },
     completedAt: new Date().toISOString(),
@@ -105,25 +106,12 @@ export async function deployCommand(adapter, options) {
     invariant(options.approveProduction === expected, 'PRODUCTION_APPROVAL_REQUIRED', `Production requires --approve-production ${expected}`);
   }
   const deployments = new Map();
-  const skipped = [];
+  const order = new Map((packageSet.deploymentOrder ?? packageSet.artifacts.map((artifact) => artifact.target)).map((target, index) => [target, index]));
   for (const requestedNode of nodes) {
     invariant(Boolean(adapter.nodes[requestedNode]), 'DEPLOY_NODE_UNKNOWN', `Unknown node ${requestedNode}`);
-    for (const artifact of packageSet.artifacts) {
+    for (const artifact of [...packageSet.artifacts].sort((left, right) => (order.get(left.target) ?? 0) - (order.get(right.target) ?? 0))) {
       const resolved = resolveDeployment(adapter, requestedNode, artifact.target);
       const { executionNode: nodeKey, node, deployment } = resolved;
-      if (environment === 'production' && deployment.productionEnabled === false) {
-        skipped.push({
-          ok: true,
-          skipped: true,
-          status: 'not-applicable',
-          node: nodeKey,
-          requestedNode,
-          target: artifact.target,
-          environment,
-          reason: deployment.productionDisabledReason ?? `${nodeKey}/${artifact.target} is not a production target`,
-        });
-        continue;
-      }
       const key = `${nodeKey}:${artifact.target}`;
       const existing = deployments.get(key);
       if (existing) {
@@ -133,9 +121,9 @@ export async function deployCommand(adapter, options) {
       }
     }
   }
-  invariant(deployments.size > 0, 'DEPLOY_NO_ENABLED_TARGETS', 'The selected package has no enabled target for the requested production node(s)', { nodes });
+  invariant(deployments.size > 0, 'DEPLOY_NO_TARGETS', 'The selected package has no target for the requested node(s)', { nodes });
   const paths = statePaths(adapter);
-  const results = [...skipped];
+  const results = [];
   for (const item of deployments.values()) {
     const release = await acquireLocks([
       join(paths.locks, 'nodes', `${item.nodeKey}.lock`),
