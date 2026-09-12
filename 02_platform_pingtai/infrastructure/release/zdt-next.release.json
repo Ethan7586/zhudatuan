@@ -362,7 +362,8 @@
       ],
       "validations": [
         {"name":"release-adapter-boundary","argv":["node","--test","04_tools/release-engine/test/zdt-adapter.test.mjs"],"timeoutMs":120000},
-        {"name":"sfl-conformance-matrix","argv":["node","04_tools/scripts/check/sfl-conformance-matrix.mjs"],"timeoutMs":120000}
+        {"name":"sfl-conformance-matrix","argv":["node","04_tools/scripts/check/sfl-conformance-matrix.mjs"],"timeoutMs":120000},
+        {"name":"l1-identity-sovereignty-tests","argv":["npm","run","test","--workspace","@shop/commerce","--","src/bootstrap/IdentityNodeManifestRuntime.test.ts","src/bootstrap/IdentityNotificationJobsRuntime.test.ts","src/foundation/security/PgAccessResolvers.test.ts","src/modules/identity/06_tests_ceshi/IdentityOperations.test.ts","src/modules/identity/06_tests_ceshi/IdentityRegistration.test.ts"],"timeoutMs":420000}
       ],
       "reason": "identity runtime ownership and gateway control-plane validation"
     },

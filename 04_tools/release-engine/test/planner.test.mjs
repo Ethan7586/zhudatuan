@@ -125,6 +125,7 @@ test('L1 identity control-plane changes require focused validation without rebui
   assert.deepEqual(plan.requiredValidations.map((validation) => validation.name), [
     'release-adapter-boundary',
     'sfl-conformance-matrix',
+    'l1-identity-sovereignty-tests',
   ]);
 });
 
