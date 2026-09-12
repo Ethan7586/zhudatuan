@@ -427,16 +427,16 @@
         "storefront": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/storefront", "service": "sfl-storefront@hbbtzn-l1.service" },
         "auth-web": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/auth-web", "service": "none", "restart": "none" },
         "console": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/console", "service": "none", "restart": "none" },
-        "identity-api": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/identity-api", "service": "sfl-identity-api@hbbtzn-l1.service" },
+        "identity-api": { "pointerRoot": "/opt/sfl/nodes/zhudatuan-l0/targets/identity-api", "service": "sfl-identity-api@zhudatuan-l0.service", "hostedBy": "zhudatuan-l0" },
         "identity-notification-jobs": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/identity-notification-jobs", "service": "sfl-identity-notification-jobs@hbbtzn-l1.service" },
         "mall-provisioning-api": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/mall-provisioning-api", "service": "none", "restart": "none", "productionEnabled": false, "productionDisabledReason": "hbbtzn-l1 has no installed mall provisioning runtime" },
         "support-api": { "pointerRoot": "/opt/zhudatuan/targets/support-api", "service": "zhudatuan-console-support.service", "hostedBy": "zhudatuan-l0" },
-        "purchase-api": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/purchase-api", "service": "sfl-purchase-api@hbbtzn-l1.service" },
-        "web-api": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/web-api", "service": "sfl-web-api@hbbtzn-l1.service" },
-        "catalog-api": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/catalog-api", "service": "sfl-catalog-api@hbbtzn-l1.service" },
-        "catalog-jobs": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/catalog-jobs", "service": "sfl-catalog-jobs@hbbtzn-l1.service" },
-        "payment-webhook-api": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/payment-webhook-api", "service": "sfl-payment-webhook-api@hbbtzn-l1.service" },
-        "payment-jobs": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1/targets/payment-jobs", "service": "sfl-payment-jobs@hbbtzn-l1.service" },
+        "purchase-api": { "pointerRoot": "/opt/sfl/nodes/zhudatuan-l0/targets/purchase-api", "service": "sfl-purchase-api@zhudatuan-l0.service", "hostedBy": "zhudatuan-l0" },
+        "web-api": { "pointerRoot": "/opt/sfl/nodes/zhudatuan-l0/targets/web-api", "service": "sfl-web-api@zhudatuan-l0.service", "hostedBy": "zhudatuan-l0" },
+        "catalog-api": { "pointerRoot": "/opt/sfl/nodes/zhudatuan-l0/targets/catalog-api", "service": "sfl-catalog-api@zhudatuan-l0.service", "hostedBy": "zhudatuan-l0" },
+        "catalog-jobs": { "pointerRoot": "/opt/sfl/nodes/zhudatuan-l0/targets/catalog-jobs", "service": "sfl-catalog-jobs@zhudatuan-l0.service", "hostedBy": "zhudatuan-l0" },
+        "payment-webhook-api": { "pointerRoot": "/opt/sfl/nodes/zhudatuan-l0/targets/payment-webhook-api", "service": "sfl-payment-webhook-api@zhudatuan-l0.service", "hostedBy": "zhudatuan-l0" },
+        "payment-jobs": { "pointerRoot": "/opt/sfl/nodes/zhudatuan-l0/targets/payment-jobs", "service": "sfl-payment-jobs@zhudatuan-l0.service", "hostedBy": "zhudatuan-l0" },
         "core": { "pointerRoot": "/opt/sfl/nodes/hbbtzn-l1", "service": "sfl-api-gateway@hbbtzn-l1.service", "productionEnabled": false, "productionDisabledReason": "A3 uses the existing full migration and external verification procedure" }
       }
     }

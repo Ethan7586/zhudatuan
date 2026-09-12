@@ -46,24 +46,28 @@ runtime:
     - unit: sfl-cloudflared@hbbtzn-l1.service
       responsibility: node-owned-edge-tunnel
   sharedBusinessServices:
-    - unit: zhudatuan-api.service
+    - unit: sfl-identity-api@zhudatuan-l0.service
       responsibility: identity-api
       port: 4321
-    - unit: zhudatuan-web-api.service
+    - unit: sfl-web-api@zhudatuan-l0.service
       responsibility: web-business-api
       port: 4322
-    - unit: zhudatuan-purchase-api.service
+    - unit: sfl-purchase-api@zhudatuan-l0.service
       responsibility: purchase-api
       port: 4323
     - unit: zhudatuan-console-support.service
       responsibility: support-api
       port: 4324
-    - unit: zhudatuan-payment-webhook-api.service
+    - unit: sfl-payment-webhook-api@zhudatuan-l0.service
       responsibility: payment-webhook-api
       port: 4326
-    - unit: zhudatuan-catalog-api.service
+    - unit: sfl-catalog-api@zhudatuan-l0.service
       responsibility: catalog-api
       port: 4331
+    - unit: sfl-catalog-jobs@zhudatuan-l0.service
+      responsibility: catalog-jobs
+    - unit: sfl-payment-jobs@zhudatuan-l0.service
+      responsibility: payment-jobs
 
 targetEdge:
   standard: SFL-1.6
@@ -76,7 +80,7 @@ targetEdge:
   workerRouteCount: 0
 
 compatibility:
-  status: node-local-business-runtimes-production-active-pending-retirement
+  status: shared-business-runtimes-production-active
   boundary: SFL-COMPAT-01
   edgeWorker: hbbtzn-alias
   retirementOrder:
@@ -87,19 +91,12 @@ compatibility:
     - prove-worker-zero-traffic
   productionCurrentSharedPhysicalRuntimes:
     - responsibility: identity
-      unit: zhudatuan-internal-api.service
+      unit: sfl-identity-api@zhudatuan-l0.service
       canonicalNodeResolution: trusted-entry-host-to-NodeContext
     - responsibility: purchase
-      unit: zhudatuan-purchase-api.service
+      unit: sfl-purchase-api@zhudatuan-l0.service
       canonicalNodeResolution: trusted-public-host-to-NodeContext
-  retirementTargets:
-    - sfl-catalog-api@hbbtzn-l1.service
-    - sfl-catalog-jobs@hbbtzn-l1.service
-    - sfl-web-api@hbbtzn-l1.service
-    - sfl-identity-api@hbbtzn-l1.service
-    - sfl-purchase-api@hbbtzn-l1.service
-    - sfl-payment-webhook-api@hbbtzn-l1.service
-    - sfl-payment-jobs@hbbtzn-l1.service
+  retirementTargets: []
   forbiddenClaims:
     - dedicated-physical-database
     - production-worker-retired-before-cutover-evidence
