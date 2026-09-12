@@ -16,7 +16,8 @@ if (!/^[a-f0-9]{40}$/.test(sourceSha ?? '')) throw new Error('DATABASE_MIGRATION
 const environment = migrationEnvironment(processEnvironment());
 if (!/^[a-z0-9][a-z0-9/._:-]{7,511}$/i.test(environment.snapshotRef)) throw new Error('MIGRATION_SOURCE_SNAPSHOT_REF_INVALID');
 const secrets = new WorkloadSecretStore(environment.secretStoreEndpoint, environment.secretStoreBearerToken);
-const connection = await secrets.read(environment.databaseConnectionRef);
+const ownerExecution = process.env.DATABASE_MIGRATION_EXECUTION_MODE === 'database-owner';
+const connection = ownerExecution ? ownerConnection(process.env) : await secrets.read(environment.databaseConnectionRef);
 const pool = createPool(connection, 'migration');
 const files = await migrationFiles(environment.directory);
 const ledgerBefore = await ledgerEvidence(pool);
@@ -27,7 +28,7 @@ const runner = new MigrationRunner(pool, new KmsClient(environment.kmsEndpoint, 
   identityKeyRef: environment.identityKeyRef,
   partnerKeyRef: environment.partnerKeyRef,
   voucherKeyRef: environment.voucherKeyRef,
-});
+}, ownerExecution ? { kind: 'database-owner', role: required(process.env.POSTGRES_USER, 'MIGRATION_OWNER_ROLE_MISSING') } : undefined);
 
 let result;
 try {
@@ -46,6 +47,25 @@ try {
 }
 
 process.stdout.write(`${JSON.stringify(result)}\n`);
+
+function ownerConnection(source) {
+  const host = required(source.MIGRATION_OWNER_DATABASE_HOST, 'MIGRATION_OWNER_DATABASE_HOST_MISSING');
+  if (host !== '127.0.0.1') throw new Error('MIGRATION_OWNER_DATABASE_HOST_INVALID');
+  const port = required(source.MIGRATION_OWNER_DATABASE_PORT, 'MIGRATION_OWNER_DATABASE_PORT_MISSING');
+  if (!/^\d{2,5}$/.test(port)) throw new Error('MIGRATION_OWNER_DATABASE_PORT_INVALID');
+  const user = required(source.POSTGRES_USER, 'MIGRATION_OWNER_ROLE_MISSING');
+  const password = required(source.POSTGRES_PASSWORD, 'MIGRATION_OWNER_PASSWORD_MISSING');
+  const database = required(source.POSTGRES_DB, 'MIGRATION_OWNER_DATABASE_MISSING');
+  if (!/^[a-z][a-z0-9_]{2,62}$/.test(user) || !/^[a-z][a-z0-9_]{2,62}$/.test(database)) {
+    throw new Error('MIGRATION_OWNER_IDENTITY_INVALID');
+  }
+  return `postgresql://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}:${port}/${encodeURIComponent(database)}`;
+}
+
+function required(value, code) {
+  if (typeof value !== 'string' || value.length === 0) throw new Error(code);
+  return value;
+}
 
 async function migrationFiles(directory) {
   const names = (await readdir(directory)).filter((name) => MIGRATION_FILE.test(name)).sort();

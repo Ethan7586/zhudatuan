@@ -522,6 +522,33 @@ test('database migration activation records the selected ledger delta, retries a
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
 });
 
+test('database owner migration combines managed runtime and owner credential files without exposing values', async () => {
+  const fixture = await createFixture();
+  const ledger = join(fixture.root, 'owner-migration-ledger.json');
+  const environmentFile = join(fixture.root, 'migration.env');
+  const credentialFile = join(fixture.root, 'owner.env');
+  await writeFile(ledger, '[]');
+  await writeFile(environmentFile, `AI_TEST_LEDGER=${ledger}\nAI_TEST_EXPECT_OWNER=1\n`);
+  await writeFile(credentialFile, 'AI_TEST_OWNER_CREDENTIAL=fixture-owner-secret\n');
+  const deployment = migrationDeployment(fixture, environmentFile);
+  deployment.databaseMigration = {
+    ...deployment.databaseMigration,
+    credentialFile,
+    executionMode: 'database-owner',
+    ownerDatabaseHost: '127.0.0.1',
+    ownerDatabasePort: 55432,
+  };
+  fixture.policy.nodes.local.deployments.app = deployment;
+  await writePolicy(fixture);
+  const artifact = await createMigrationArtifact(fixture, '6'.repeat(40));
+  await invoke(fixture, 'stage', artifact);
+
+  const activated = await invoke(fixture, 'activate', artifact);
+  assert.equal(activated.result.receipt.databaseMigration.status, 'applied');
+  assert.deepEqual(activated.result.receipt.databaseMigration.credentialSources, [environmentFile, credentialFile]);
+  assert.doesNotMatch(JSON.stringify(activated), /fixture-owner-secret/);
+});
+
 test('database migration failure keeps pointers and ledger unchanged with a failed zero-restart receipt', async () => {
   const fixture = await createFixture();
   const ledger = join(fixture.root, 'migration-ledger.json');
@@ -833,6 +860,10 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 const ledgerPath = process.env.AI_TEST_LEDGER;
+if (process.env.AI_TEST_EXPECT_OWNER === '1' && (process.env.DATABASE_MIGRATION_EXECUTION_MODE !== 'database-owner'
+  || process.env.MIGRATION_OWNER_DATABASE_HOST !== '127.0.0.1'
+  || process.env.MIGRATION_OWNER_DATABASE_PORT !== '55432'
+  || process.env.AI_TEST_OWNER_CREDENTIAL !== 'fixture-owner-secret')) throw new Error('FIXTURE_OWNER_ENVIRONMENT_INVALID');
 const beforeRecords = JSON.parse(await readFile(ledgerPath, 'utf8'));
 const files = (await readdir(process.env.MIGRATION_DIRECTORY)).filter((name) => /^\\d{14}_.+\\.sql$/.test(name)).sort();
 const selected = files.filter((file) => !beforeRecords.some((row) => row.version === file.slice(0, 14))).map((file) => ({ file, version: file.slice(0, 14), sha256: createHash('sha256').update(file).digest('hex') }));

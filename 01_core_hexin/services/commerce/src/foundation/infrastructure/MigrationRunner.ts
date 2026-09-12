@@ -23,6 +23,10 @@ interface MigrationSecrets {
   readonly voucherKeyRef: string;
 }
 
+export type MigrationExecutionRole =
+  | { readonly kind: 'migration-role' }
+  | { readonly kind: 'database-owner'; readonly role: string };
+
 interface SourceSecret {
   readonly context: Readonly<Record<string, string>>;
   readonly createdAt: Date;
@@ -41,6 +45,7 @@ export class MigrationRunner {
     private readonly kms: KmsClient,
     private readonly directory: string,
     private readonly secrets: MigrationSecrets,
+    private readonly executionRole: MigrationExecutionRole = { kind: 'migration-role' },
   ) {}
 
   async run(): Promise<void> {
@@ -74,11 +79,18 @@ export class MigrationRunner {
   }
 
   private async assertRole(client: PoolClient): Promise<void> {
-    const result = await client.query<{ readonly allowed: boolean; readonly bypass: boolean }>(
+    const result = await client.query<{ readonly current_role: string; readonly allowed: boolean; readonly bypass: boolean; readonly superuser: boolean }>(
       `select pg_has_role(current_user,'shopmigration','member') allowed,
-        coalesce((select rolbypassrls from pg_roles where rolname=current_user),false) bypass`,
+        current_user current_role,
+        coalesce((select rolbypassrls from pg_roles where rolname=current_user),false) bypass,
+        coalesce((select rolsuper from pg_roles where rolname=current_user),false) superuser`,
     );
-    if (result.rows[0]?.allowed !== true || result.rows[0].bypass) throw new Error('MIGRATION_ROLE_INVALID');
+    const role = result.rows[0];
+    if (this.executionRole.kind === 'database-owner') {
+      if (role?.current_role !== this.executionRole.role || role.superuser !== true) throw new Error('MIGRATION_OWNER_ROLE_INVALID');
+      return;
+    }
+    if (role?.allowed !== true || role.bypass) throw new Error('MIGRATION_ROLE_INVALID');
   }
 
   private async assertHistory(files: readonly string[]): Promise<void> {
