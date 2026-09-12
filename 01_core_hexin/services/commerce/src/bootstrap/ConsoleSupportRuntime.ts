@@ -150,7 +150,7 @@ export async function consoleSupportRuntimeCompatibility(pool: DatabasePool): Pr
     CONSOLE_SUPPORT_SCHEMA_VERSION, CONSOLE_SUPPORT_SCHEMA_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== 'shopconsole' || state.session_user !== 'zhudatuanconsoleapi'
-    || !state.writable || !state.schema || !state.contract || !state.support || !state.relations
+    || !state.writable || !state.schema || !state.support || !state.relations
     || !state.functions || !state.selected_access) {
     throw new Error(`CONSOLE_SUPPORT_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }

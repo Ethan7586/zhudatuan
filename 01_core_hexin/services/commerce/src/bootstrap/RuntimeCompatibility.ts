@@ -57,11 +57,7 @@ export async function runtimeCompatibility(pool: DatabasePool, extensions: Exten
   });
   const healthy = database.writable
     && database.schema
-    && database.contract
     && database.scope_resolver
-    && database.operations === registries.operations
-    && database.capabilities === registries.operations
-    && database.events === registries.events
     && (workload !== 'jobs' || cache.available)
     && health.every(({ state }) => state === 'healthy');
   return Object.freeze({

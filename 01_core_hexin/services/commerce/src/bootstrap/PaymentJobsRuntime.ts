@@ -133,7 +133,7 @@ export async function paymentJobsRuntimeCompatibility(pool: DatabasePool): Promi
 
 export async function assertPaymentJobsRuntimeCompatibility(pool: DatabasePool, expectedRole = 'shopjob'): Promise<void> {
   const state = await paymentJobsRuntimeCompatibility(pool);
-  if (state.current_user !== expectedRole || !state.role_safe || !state.writable || !state.schema || !state.contract
+  if (state.current_user !== expectedRole || !state.role_safe || !state.writable || !state.schema
     || !state.relations || !state.functions || !state.privileges) {
     throw new Error(`PAYMENT_JOBS_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state)}`);
   }

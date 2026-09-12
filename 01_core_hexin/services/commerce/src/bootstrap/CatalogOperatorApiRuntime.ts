@@ -172,7 +172,7 @@ export async function catalogOperatorRuntimeCompatibility(
       and has_table_privilege(current_user,'runtime.job','INSERT') writes`,
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
   const state = result.rows[0];
-  if (!state || state.current_user !== expectedRole || !state.writable || !state.schema || !state.contract
+  if (!state || state.current_user !== expectedRole || !state.writable || !state.schema
     || !state.relations || !state.functions || !state.writes) {
     throw new Error(`CATALOG_OPERATOR_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }

@@ -65,6 +65,8 @@ units=()
 if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
   required_pointers+=(
     /opt/sfl/nodes/zhudatuan-l0/targets/identity-api/current
+    /opt/sfl/nodes/zhudatuan-l0/targets/identity-notification-jobs/current
+    /opt/sfl/nodes/zhudatuan-l0/targets/mall-provisioning-api/current
     /opt/zhudatuan/targets/support-api/current
     /opt/sfl/nodes/zhudatuan-l0/targets/purchase-api/current
     /opt/sfl/nodes/zhudatuan-l0/targets/web-api/current
@@ -75,6 +77,8 @@ if [[ "$node_scope" == all || "$node_scope" == zhudatuan-l0 ]]; then
   )
   units+=(
     sfl-identity-api@.service
+    sfl-identity-notification-jobs@.service
+    sfl-mall-provisioning-api@.service
     zhudatuan-console-support.service
     sfl-purchase-api@.service
     sfl-web-api@.service
@@ -90,10 +94,26 @@ if [[ "$node_scope" == all || "$node_scope" == hbbtzn-l1 ]]; then
     /opt/sfl/nodes/hbbtzn-l1/targets/storefront/runtime
     /opt/sfl/nodes/hbbtzn-l1/targets/auth-web/current
     /opt/sfl/nodes/hbbtzn-l1/targets/console/current
+    /opt/sfl/nodes/hbbtzn-l1/targets/identity-api/current
+    /opt/sfl/nodes/hbbtzn-l1/targets/identity-notification-jobs/current
+    /opt/sfl/nodes/hbbtzn-l1/targets/purchase-api/current
+    /opt/sfl/nodes/hbbtzn-l1/targets/web-api/current
+    /opt/sfl/nodes/hbbtzn-l1/targets/catalog-api/current
+    /opt/sfl/nodes/hbbtzn-l1/targets/catalog-jobs/current
+    /opt/sfl/nodes/hbbtzn-l1/targets/payment-webhook-api/current
+    /opt/sfl/nodes/hbbtzn-l1/targets/payment-jobs/current
   )
   units+=(
     sfl-api-gateway@.service
     sfl-storefront@.service
+    sfl-identity-api@.service
+    sfl-identity-notification-jobs@.service
+    sfl-purchase-api@.service
+    sfl-web-api@.service
+    sfl-catalog-api@.service
+    sfl-catalog-jobs@.service
+    sfl-payment-webhook-api@.service
+    sfl-payment-jobs@.service
   )
 fi
 for pointer in "${required_pointers[@]}"; do

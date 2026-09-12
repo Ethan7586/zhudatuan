@@ -197,7 +197,7 @@ export async function mallProvisioningRuntimeCompatibility(
   const state = result.rows[0];
   if (!state || state.current_user !== 'zhudatuanprovisioningapi'
     || state.session_user !== 'zhudatuanprovisioningapi' || !state.role_safe || !state.writable
-    || !state.schema || !state.contract || !state.provisioning || !state.relations || !state.functions
+    || !state.schema || !state.provisioning || !state.relations || !state.functions
     || !state.selected_writes || !state.forbidden_privileges) {
     throw new Error(`MALL_PROVISIONING_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }

@@ -163,6 +163,8 @@ test('routes SFL node kernel changes to every real consumer without duplicate ch
     'catalog-jobs',
     'console',
     'identity-api',
+    'identity-notification-jobs',
+    'mall-provisioning-api',
     'payment-jobs',
     'payment-webhook-api',
     'purchase-api',
@@ -171,11 +173,11 @@ test('routes SFL node kernel changes to every real consumer without duplicate ch
   ]);
   assert.equal(plan.actions.tests.length, 2);
   assert.equal(plan.actions.typecheck.length, 2);
-  assert.equal(plan.actions.build.length, 9);
+  assert.equal(plan.actions.build.length, 11);
 
 });
 
-test('deploys hosted node business targets once through their sovereign runtime host', async () => {
+test('deploys L0 and L1 identity targets through their own sovereign runtimes', async () => {
   const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const plan = await createPlan(commerceAdapter, {
     from: 'HEAD',
@@ -184,13 +186,24 @@ test('deploys hosted node business targets once through their sovereign runtime 
     nodes: ['hbbtzn-l1', 'zhudatuan-l0'],
   });
   assert.deepEqual(plan.targets, ['identity-api']);
-  assert.equal(plan.actions.deployments.length, 1);
-  const deployment = plan.actions.deployments[0];
-  assert.equal(deployment.node, 'zhudatuan-l0');
-  assert.equal(deployment.nodeId, 'node:zhudatuan:l0');
-  assert.deepEqual(deployment.requestedNodes, ['hbbtzn-l1', 'zhudatuan-l0']);
-  assert.equal(deployment.target, 'identity-api');
-  assert.equal(deployment.service, 'sfl-identity-api@zhudatuan-l0.service');
+  assert.equal(plan.actions.deployments.length, 2);
+  assert.deepEqual(
+    plan.actions.deployments.map(({ node, nodeId, target, service }) => ({ node, nodeId, target, service })),
+    [
+      {
+        node: 'hbbtzn-l1',
+        nodeId: 'node:hbbtzn:l1',
+        target: 'identity-api',
+        service: 'sfl-identity-api@hbbtzn-l1.service',
+      },
+      {
+        node: 'zhudatuan-l0',
+        nodeId: 'node:zhudatuan:l0',
+        target: 'identity-api',
+        service: 'sfl-identity-api@zhudatuan-l0.service',
+      },
+    ],
+  );
 });
 
 test('keeps release policy and deploy workflow changes in the delivery-tooling lane', async () => {

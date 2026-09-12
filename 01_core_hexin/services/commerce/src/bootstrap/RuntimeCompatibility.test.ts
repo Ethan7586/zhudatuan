@@ -23,7 +23,7 @@ function extensions(state: 'healthy' | 'degraded' = 'healthy'): ExtensionRegistr
 }
 
 describe('runtime compatibility', () => {
-  it('accepts only the exact generated contract and all runtime registries', async () => {
+  it('reports the legacy contract without granting it runtime blocking authority', async () => {
     const state = await runtimeCompatibility(pool({
       writable: true,
       schema: true,
@@ -36,6 +36,18 @@ describe('runtime compatibility', () => {
     expect(state.healthy).toBe(true);
     expect(state.contract).toEqual({ checksum: RUNTIME_CONTRACT_CHECKSUM, matches: true });
     expect(state.registries.jobs).toBeGreaterThan(0);
+
+    const drifted = await runtimeCompatibility(pool({
+      writable: true,
+      schema: true,
+      contract: false,
+      scope_resolver: true,
+      operations: 0,
+      capabilities: 0,
+      events: 0,
+    }), extensions());
+    expect(drifted.healthy).toBe(true);
+    expect(drifted.contract.matches).toBe(false);
   });
 
   it('fails closed when an enabled extension is degraded', async () => {

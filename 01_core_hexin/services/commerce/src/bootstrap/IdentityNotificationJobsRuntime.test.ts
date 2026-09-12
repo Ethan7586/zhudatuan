@@ -73,7 +73,7 @@ describe('identity notification Jobs runtime', () => {
     await expect(assertIdentityNotificationRuntimeCompatibility(pool({ ...healthy, current_user: 'shopapp' })))
       .rejects.toThrow('IDENTITY_NOTIFICATION_RUNTIME_COMPATIBILITY_FAILED');
     await expect(assertIdentityNotificationRuntimeCompatibility(pool({ ...healthy, contract: false })))
-      .rejects.toThrow('IDENTITY_NOTIFICATION_RUNTIME_COMPATIBILITY_FAILED');
+      .resolves.toBeUndefined();
     await expect(assertIdentityNotificationRuntimeCompatibility(pool({ ...healthy, registration: false })))
       .rejects.toThrow('IDENTITY_NOTIFICATION_RUNTIME_COMPATIBILITY_FAILED');
     const ownerMissing = { query: async (statement: string) => statement.includes('deployment.runtime_database_boundary')

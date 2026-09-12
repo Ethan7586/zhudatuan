@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "deploy:production": "tsx scripts/deploy-console-rsync.ts",
     "test": "vitest run --config vitest.config.ts",
     "test:component": "vitest run --config vitest.config.ts src/route/Routes.test.ts src/feature/cockpit/CockpitRoute.test.tsx",
     "typecheck": "tsc --noEmit",

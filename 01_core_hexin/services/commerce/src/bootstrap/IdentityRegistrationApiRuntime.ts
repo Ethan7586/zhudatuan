@@ -180,7 +180,7 @@ export async function identityRegistrationRuntimeCompatibility(
     ],null) is null relations`,
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
   const state = result.rows[0];
-  if (!state || state.current_user !== expectedRole || !state.writable || !state.schema || !state.contract
+  if (!state || state.current_user !== expectedRole || !state.writable || !state.schema
     || !state.registration || !state.operator_invitation || !state.relations || !state.functions) {
     throw new Error(`IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }

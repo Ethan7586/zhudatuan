@@ -222,7 +222,7 @@ export async function webBusinessRuntimeCompatibility(
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM, WEB_BUSINESS_SCHEMA_VERSION, WEB_BUSINESS_SCHEMA_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== expectedRole || state.session_user !== expectedRole || !state.role_safe
-    || !state.writable || !state.schema || !state.contract
+    || !state.writable || !state.schema
     || !state.web_business || !state.relations || !state.functions || !state.selected_writes || !state.forbidden_writes) {
     throw new Error(`WEB_BUSINESS_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }

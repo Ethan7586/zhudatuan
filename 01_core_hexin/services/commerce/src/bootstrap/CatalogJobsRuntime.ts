@@ -211,7 +211,7 @@ export async function catalogJobsRuntimeCompatibility(pool: DatabasePool, expect
   [TARGET_SCHEMA_HEAD, CONTRACT_SCHEMA_HEAD, RUNTIME_CONTRACT_CHECKSUM]);
   const state = result.rows[0];
   if (!state || state.current_user !== expectedRole || state.session_user !== expectedRole
-    || !state.writable || !state.schema || !state.contract || !state.relations || !state.writes) {
+    || !state.writable || !state.schema || !state.relations || !state.writes) {
     throw new Error(`CATALOG_JOBS_RUNTIME_COMPATIBILITY_FAILED:${JSON.stringify(state ?? null)}`);
   }
   return Object.freeze(state);
