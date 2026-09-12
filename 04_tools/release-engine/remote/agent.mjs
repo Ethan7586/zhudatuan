@@ -646,8 +646,10 @@ async function executeDatabaseMigration(context, candidate, manifest) {
   const definition = context.deployment.databaseMigration;
   const executionRoot = resolve(required(definition.executionRoot, 'DATABASE_MIGRATION_EXECUTION_ROOT_REQUIRED'));
   const environmentFile = resolve(required(definition.environmentFile, 'DATABASE_MIGRATION_ENVIRONMENT_FILE_REQUIRED'));
+  const credentialFile = definition.credentialFile === undefined ? null : resolve(definition.credentialFile);
   assertAllowedRoot(context.policy, executionRoot);
   assertAllowedRoot(context.policy, environmentFile);
+  if (credentialFile !== null) assertAllowedRoot(context.policy, credentialFile);
   const releaseName = `${manifest.sourceSha}-database-migration-${manifest.treeDigest.slice(7, 19)}`;
   const executionDirectory = join(executionRoot, releaseName);
   const temporary = join(executionRoot, `.${releaseName}.${process.pid}.${Date.now()}`);
@@ -673,11 +675,15 @@ async function executeDatabaseMigration(context, candidate, manifest) {
     PATH: process.env.PATH ?? '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
     NODE_ENV: 'production',
     ...parseEnvironmentFile(await readFile(environmentFile, 'utf8')),
+    ...(credentialFile === null ? {} : parseEnvironmentFile(await readFile(credentialFile, 'utf8'))),
     APP_ENV: 'production',
     REGISTRATION_MIGRATION_PROFILE: 'registration-only',
     MIGRATION_DIRECTORY: migrationDirectory,
     AI_DELIVERY_SOURCE_SHA: manifest.sourceSha,
     AI_DELIVERY_TREE_DIGEST: manifest.treeDigest,
+    DATABASE_MIGRATION_EXECUTION_MODE: definition.executionMode ?? 'migration-role',
+    ...(definition.ownerDatabaseHost === undefined ? {} : { MIGRATION_OWNER_DATABASE_HOST: definition.ownerDatabaseHost }),
+    ...(definition.ownerDatabasePort === undefined ? {} : { MIGRATION_OWNER_DATABASE_PORT: String(definition.ownerDatabasePort) }),
   };
   const identity = await runtimeIdentity(definition);
   try {
@@ -692,12 +698,12 @@ async function executeDatabaseMigration(context, candidate, manifest) {
     assert(result?.schema === 'ai.delivery.database-migration-result.v1' && result.sourceSha === manifest.sourceSha,
       'DATABASE_MIGRATION_RESULT_INVALID', { executionDirectory });
     assert(['applied', 'noop'].includes(result.status), 'DATABASE_MIGRATION_RESULT_FAILED', { databaseMigration: result });
-    return { ...result, executionDirectory, credentialSource: environmentFile, restart: restartEvidence(context.deployment.restart, false) };
+    return { ...result, executionDirectory, credentialSources: [environmentFile, ...(credentialFile === null ? [] : [credentialFile])], restart: restartEvidence(context.deployment.restart, false) };
   } catch (error) {
     const reported = parseJsonOutput(error?.details?.outputTail ?? '', false);
     const databaseMigration = reported?.schema === 'ai.delivery.database-migration-result.v1'
-      ? { ...reported, executionDirectory, credentialSource: environmentFile, restart: restartEvidence(context.deployment.restart, false) }
-      : { schema: 'ai.delivery.database-migration-result.v1', sourceSha: manifest.sourceSha, status: 'failed', selectionStatus: 'unavailable', selected: null, ledgerBefore: null, ledgerAfter: null, applied: null, error: errorEvidence(error), executionDirectory, credentialSource: environmentFile, restart: restartEvidence(context.deployment.restart, false) };
+      ? { ...reported, executionDirectory, credentialSources: [environmentFile, ...(credentialFile === null ? [] : [credentialFile])], restart: restartEvidence(context.deployment.restart, false) }
+      : { schema: 'ai.delivery.database-migration-result.v1', sourceSha: manifest.sourceSha, status: 'failed', selectionStatus: 'unavailable', selected: null, ledgerBefore: null, ledgerAfter: null, applied: null, error: errorEvidence(error), executionDirectory, credentialSources: [environmentFile, ...(credentialFile === null ? [] : [credentialFile])], restart: restartEvidence(context.deployment.restart, false) };
     throw failure('DATABASE_MIGRATION_EXECUTOR_FAILED', { databaseMigration });
   }
 }
@@ -1491,6 +1497,18 @@ function validatePolicy(policy, project) {
           'POLICY_DATABASE_MIGRATION_SOURCE_REQUIRED', { node, target });
         assertAllowedRoot(policy, migration.executionRoot);
         assertAllowedRoot(policy, migration.environmentFile);
+        if (migration.executionMode === 'database-owner') {
+          assert(typeof migration.credentialFile === 'string', 'POLICY_DATABASE_MIGRATION_OWNER_CREDENTIAL_REQUIRED', { node, target });
+          assertAllowedRoot(policy, migration.credentialFile);
+          assert(migration.ownerDatabaseHost === '127.0.0.1' && Number.isInteger(migration.ownerDatabasePort)
+            && migration.ownerDatabasePort > 0 && migration.ownerDatabasePort <= 65535,
+          'POLICY_DATABASE_MIGRATION_OWNER_ENDPOINT_INVALID', { node, target });
+        } else {
+          assert(migration.executionMode === undefined || migration.executionMode === 'migration-role',
+            'POLICY_DATABASE_MIGRATION_EXECUTION_MODE_INVALID', { node, target });
+          assert(migration.credentialFile === undefined && migration.ownerDatabaseHost === undefined
+            && migration.ownerDatabasePort === undefined, 'POLICY_DATABASE_MIGRATION_OWNER_CONFIGURATION_UNEXPECTED', { node, target });
+        }
         assert(safeRelative(migration.runner) && safeRelative(migration.migrationDirectory),
           'POLICY_DATABASE_MIGRATION_PATH_INVALID', { node, target });
         assert(migration.nodeBinary === undefined || (typeof migration.nodeBinary === 'string' && migration.nodeBinary.startsWith('/')),

@@ -141,12 +141,18 @@ test('database migration packages the official runner inputs and uses the manage
   const deployment = policy.nodes['zhudatuan-l0'].deployments['database-migration'];
   assert.equal(deployment.restart.kind, 'none');
   assert.equal(deployment.databaseMigration.environmentFile, '/opt/zhudatuan/shared/migration.env');
+  assert.equal(deployment.databaseMigration.credentialFile, '/opt/zhudatuan/shared/postgres.env');
+  assert.equal(deployment.databaseMigration.executionMode, 'database-owner');
+  assert.equal(deployment.databaseMigration.ownerDatabaseHost, '127.0.0.1');
+  assert.equal(deployment.databaseMigration.ownerDatabasePort, 55432);
   assert.equal(deployment.databaseMigration.executionRoot, '/opt/zhudatuan/releases');
   assert.equal(deployment.databaseMigration.recovery.mode, 'forward-only');
   assert.equal(deployment.databaseMigration.recovery.snapshot, 'not-captured-by-delivery-engine');
   assert.ok(deployment.candidateChecks.some((check) => check.argv.includes('{{candidateDir}}/executor/DatabaseMigrationExecutor.js')));
   assert.match(databaseMigrationExecutor, /import \{ migrationEnvironment, processEnvironment \} from '@shop\/config\/server';/);
   assert.match(databaseMigrationExecutor, /import \{ MigrationRunner \} from .*\/MigrationRunner\.ts';/);
+  assert.match(databaseMigrationExecutor, /MIGRATION_OWNER_DATABASE_HOST/);
+  assert.match(databaseMigrationExecutor, /kind: 'database-owner'/);
   assert.doesNotMatch(databaseMigrationExecutor, /RegistrationMigrationRunner|registrationMigrationEnvironment/);
 });
 
