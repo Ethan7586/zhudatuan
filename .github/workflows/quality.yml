@@ -43,8 +43,9 @@ jobs:
     timeout-minutes: 5
     outputs:
       deploy_required: ${{ steps.plan.outputs.deploy_required }}
+      validation_required: ${{ steps.plan.outputs.validation_required }}
+      dependency_install_required: ${{ steps.plan.outputs.dependency_install_required }}
       head_sha: ${{ steps.plan.outputs.head_sha }}
-      lane: ${{ steps.plan.outputs.lane }}
       run_id: ${{ steps.plan.outputs.run_id }}
     steps:
       - uses: actions/checkout@v4
@@ -142,8 +143,9 @@ jobs:
           writeFileSync('.ci-release/plan.json', `${JSON.stringify(plan, null, 2)}\n`);
           appendFileSync(process.env.GITHUB_OUTPUT, [
             `deploy_required=${plan.deployRequired}`,
+            `validation_required=${plan.requiredValidations.length > 0}`,
+            `dependency_install_required=${plan.dependencyInstallRequired}`,
             `head_sha=${plan.to.sha}`,
-            `lane=${plan.lane}`,
             `run_id=${plan.runId}`,
             '',
           ].join('\n'));
@@ -173,7 +175,7 @@ jobs:
   affected_candidate:
     name: affected tests, typecheck, build, package and candidate
     needs: plan
-    if: needs.plan.outputs.deploy_required == 'true' && needs.plan.outputs.lane != 'A3'
+    if: needs.plan.outputs.deploy_required == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -229,7 +231,7 @@ jobs:
           key: delivery-artifacts-v4-${{ runner.os }}-${{ needs.plan.outputs.head_sha }}
 
       - name: Restore dependencies for affected targets
-        if: needs.plan.outputs.lane != 'A0'
+        if: needs.plan.outputs.dependency_install_required == 'true'
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Run affected tests, typecheck and build once
@@ -282,14 +284,38 @@ jobs:
       - name: Ensure release produced no source drift
         run: git diff --exit-code
 
-  # full_a3 job 已于 2026-09-11 移除（前身 commit 5967e66e）。
-  # 原因：planner 误判 src/entry/* → fail-closed A3、A3 无单服务 target、每轮约 40 分钟。
-  # 重装：从 git history 取回 full_a3 定义，并先做 planner 规则 + 增量缓存 + 单服务 target。
+  affected_validation:
+    name: required validation without candidate
+    needs: plan
+    if: needs.plan.outputs.deploy_required != 'true' && needs.plan.outputs.validation_required == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.plan.outputs.head_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-plan-${{ github.run_id }}
+          path: .ci-release
+      - name: Run validations selected by changed files
+        run: |
+          node 04_tools/release-engine/cli.mjs build \
+            --plan .ci-release/plan.json \
+            --format json > .ci-release/validation-envelope.json
+      - name: Ensure validation produced no source drift
+        run: git diff --exit-code
 
   no_changes:
     name: no deployable changes
     needs: plan
-    if: needs.plan.outputs.deploy_required != 'true'
+    if: needs.plan.outputs.deploy_required != 'true' && needs.plan.outputs.validation_required != 'true'
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Plan completed; no tests, build, package, upload or restart required."
+      - run: echo "Plan completed; no validation, artifact, candidate or restart required."

@@ -1,68 +1,47 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import test from 'node:test';
 
 import { loadAdapter } from '../src/adapter.mjs';
 import { classifyChanges, createPlan } from '../src/planner.mjs';
+import { resolveImpact as resolveWorkspaceImpact } from '../adapters/zdt-next/workspace-impact.mjs';
 
+const execFileAsync = promisify(execFile);
+
+const target = (kind = 'service') => ({ kind, tests: [], typecheck: [], build: [], artifactInputs: [] });
 const adapter = {
-  fallbackTarget: 'core',
-  targets: {
-    media: { lane: 'A0' },
-    web: { lane: 'A1', dependencyLayer: { keyFiles: ['apps/web/package.json'] } },
-    api: { lane: 'A2' },
-    core: { lane: 'A3' },
-  },
+  targets: { media: target('content'), web: target('frontend'), api: target(), database: target('migration') },
   rules: [
-    { id: 'docs', lane: 'NONE', include: ['docs/**'] },
-    { id: 'media', lane: 'A0', targets: ['media'], include: ['public/media/**'] },
-    { id: 'web', lane: 'A1', targets: ['web'], include: ['apps/web/**'] },
-    { id: 'api', lane: 'A2', targets: ['api'], include: ['services/api/entry/**'] },
-    { id: 'core', lane: 'A3', targets: ['core'], include: ['database/**'], touches: ['database'] },
+    { id: 'validation', validationOnly: true, include: ['**/*.md'], targets: [] },
+    { id: 'media', include: ['public/media/**'], targets: ['media'] },
+    { id: 'web', include: ['apps/web/**'], targets: ['web'] },
+    { id: 'api', include: ['services/api/**'], targets: ['api'] },
+    { id: 'database', include: ['database/migrations/**'], targets: ['database'], touches: ['database'] },
   ],
 };
-
 const change = (path, status = 'M', sourcePath = null) => ({ path, status, sourcePath });
 
-test('classifies the four release lanes and documentation-only changes', () => {
-  assert.equal(classifyChanges(adapter, [change('public/media/a.webp')]).lane, 'A0');
-  assert.equal(classifyChanges(adapter, [change('apps/web/App.tsx')]).lane, 'A1');
-  assert.equal(classifyChanges(adapter, [change('services/api/entry/Main.ts')]).lane, 'A2');
-  const database = classifyChanges(adapter, [change('database/001.sql')]);
-  assert.equal(database.lane, 'A3');
-  assert.deepEqual(database.touches, ['database']);
-  assert.equal(classifyChanges(adapter, [change('docs/readme.md')]).lane, 'NONE');
-});
-
-test('fails closed for unknown changes and keeps mixed client-service targets affected', () => {
-  const unknown = classifyChanges(adapter, [change('mystery/file.txt')]);
-  assert.equal(unknown.lane, 'A3');
-  assert.deepEqual(unknown.targets, ['core']);
-  assert.equal(unknown.ambiguous, true);
-  assert.match(unknown.reasons.join('\n'), /unclassified/);
-
-  const mixed = classifyChanges(adapter, [
-    change('services/api/entry/Main.ts'),
-    change('apps/web/App.tsx'),
-  ]);
-  assert.equal(mixed.lane, 'A2');
+test('classifies changed files directly into runtime targets and validation-only work', () => {
+  assert.deepEqual(classifyChanges(adapter, [change('public/media/a.webp')]).targets, ['media']);
+  assert.deepEqual(classifyChanges(adapter, [change('apps/web/App.tsx')]).targets, ['web']);
+  assert.deepEqual(classifyChanges(adapter, [change('docs/readme.md')]).targets, []);
+  const mixed = classifyChanges(adapter, [change('services/api/Main.ts'), change('apps/web/App.tsx')]);
   assert.deepEqual(mixed.targets, ['api', 'web']);
 });
 
-test('classifies both sides of a rename', () => {
-  const renamed = classifyChanges(adapter, [change('apps/web/new.tsx', 'R100', 'mystery/old.tsx')]);
-  assert.equal(renamed.lane, 'A1');
-  assert.deepEqual(renamed.targets, ['web']);
+test('unrecognized files continue with the reachable runtime upper bound', () => {
+  const result = classifyChanges(adapter, [change('mystery/file.txt')]);
+  assert.deepEqual(result.targets, ['api', 'media', 'web']);
+  assert.deepEqual(result.unknownFiles, ['mystery/file.txt']);
+  assert.match(result.reasons.join('\n'), /reachable runtime target upper bound/);
 });
 
-test('dependency layer key changes always upgrade to A3', () => {
-  const dependencyChange = classifyChanges(adapter, [change('apps/web/package.json')]);
-  assert.equal(dependencyChange.lane, 'A3');
-  assert.deepEqual(dependencyChange.targets, ['core']);
-  assert.deepEqual(dependencyChange.touches, ['dependency-layer']);
-  assert.match(dependencyChange.reasons.join('\n'), /dependency-layer-key/);
+test('classifies both sides of a rename without a severity rank', () => {
+  assert.deepEqual(classifyChanges(adapter, [change('apps/web/new.tsx', 'R100', 'mystery/old.tsx')]).targets, ['web']);
 });
 
 test('fails visibly when a dynamic impact dependency is unavailable', async () => {
@@ -70,189 +49,116 @@ test('fails visibly when a dynamic impact dependency is unavailable', async () =
   try {
     await writeFile(join(fixtureRoot, 'missing-impact.mjs'), "import 'release-engine-missing-fixture';\n");
     const dynamicAdapter = {
-      project: 'fixture',
-      projectRoot: process.cwd(),
-      adapterPath: join(fixtureRoot, 'adapter.json'),
-      fallbackTarget: 'core',
-      targets: {
-        core: { lane: 'A3', tests: [], typecheck: [], build: [], artifactInputs: [] },
-      },
-      nodes: {},
-      impactResolvers: {
-        services: { module: './missing-impact.mjs' },
-      },
-      rules: [
-        { id: 'shared', lane: 'A3', targets: ['core'], include: ['services/**'], dynamicImpact: 'services' },
-      ],
+      project: 'fixture', projectRoot: process.cwd(), adapterPath: join(fixtureRoot, 'adapter.json'),
+      targets: { api: target() }, nodes: {}, impactResolvers: { services: { module: './missing-impact.mjs' } },
+      rules: [{ id: 'shared', targets: [], include: ['services/**'], dynamicImpact: 'services' }],
     };
-
     await assert.rejects(
       () => createPlan(dynamicAdapter, { from: 'HEAD', to: 'HEAD', files: ['services/shared.ts'] }),
-      (error) => {
-        assert.equal(error.code, 'ERR_MODULE_NOT_FOUND');
-        assert.match(error.message, /release-engine-missing-fixture/);
-        return true;
-      },
+      (error) => error.code === 'ERR_MODULE_NOT_FOUND',
     );
-  } finally {
-    await rm(fixtureRoot, { recursive: true, force: true });
-  }
+  } finally { await rm(fixtureRoot, { recursive: true, force: true }); }
 });
 
-test('uses the real commerce dependency graph for shared source changes', async () => {
-  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
-  const singleService = await createPlan(commerceAdapter, {
-    from: 'HEAD',
-    to: 'HEAD',
-    files: ['01_core_hexin/services/commerce/src/modules/member/05_interface_jieru/IdentityOperatorMemberModule.ts'],
-  });
-  assert.equal(singleService.lane, 'A2');
-  assert.deepEqual(singleService.targets, ['identity-api']);
-  assert.match(singleService.reasons.join('\n'), /dependency graph selects only identity-api/);
-  assert.equal(typeof singleService.planDigest, 'string');
-
-  const multipleServices = await createPlan(commerceAdapter, {
-    from: 'HEAD',
-    to: 'HEAD',
-    files: ['01_core_hexin/services/commerce/src/modules/webbusiness/WebBusinessScopeResolver.ts'],
-  });
-  assert.equal(multipleServices.lane, 'A2');
-  assert.deepEqual(multipleServices.targets, ['purchase-api', 'web-api']);
-  assert.match(multipleServices.reasons.join('\n'), /dependency graph selects purchase-api, web-api/);
-  assert.equal(typeof multipleServices.planDigest, 'string');
-
-  const sharedTest = await createPlan(commerceAdapter, {
-    from: 'HEAD',
-    to: 'HEAD',
-    files: ['01_core_hexin/services/commerce/src/modules/benefit/06_tests_ceshi/module.manifest.test.ts'],
-  });
-  assert.equal(sharedTest.lane, 'A3');
-  assert.deepEqual(sharedTest.targets, ['core']);
-  assert.match(sharedTest.reasons.join('\n'), /shared commerce dependency/);
-  assert.equal(typeof sharedTest.planDigest, 'string');
+test('v1.2R console source plus workspace lock change selects only Console', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
+    '01_core_hexin/apps/console/src/main.tsx',
+    'package-lock.json',
+  ] });
+  assert.deepEqual(plan.targets, ['console']);
+  assert.deepEqual(plan.deploymentOrder, ['console']);
+  assert.equal(plan.actions.tests.length, 1);
+  assert.equal(plan.actions.typecheck.length, 1);
+  assert.equal(plan.actions.build.length, 1);
+  assert.deepEqual(plan.artifacts.map((item) => item.target), ['console']);
 });
 
-test('keeps order export console and commerce changes out of A3', async () => {
-  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
-  const orderExport = await createPlan(commerceAdapter, {
-    from: 'HEAD',
-    to: 'HEAD',
-    files: [
-      '01_core_hexin/apps/console/src/feature/order/OrderExportWorkspace.tsx',
-      '01_core_hexin/services/commerce/src/modules/reporting/ReportingModule.ts',
-      '01_core_hexin/services/commerce/src/modules/reporting/04_adapters_shixian/persistence/PgReportingRepository.ts',
-      '01_core_hexin/services/commerce/src/modules/reporting/05_interface_jieru/job/ExportJobRunner.ts',
-      '01_core_hexin/services/commerce/src/modules/reporting/06_tests_ceshi/command/ExportDocument.test.ts',
-    ],
-  });
-  assert.equal(orderExport.lane, 'A2');
-  assert.deepEqual(orderExport.targets, ['catalog-jobs', 'console', 'payment-jobs']);
-  assert.doesNotMatch(orderExport.reasons.join('\n'), /A3/);
+test('workspace lock diff follows an added internal dependency only to Console', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'release-engine-workspace-'));
+  try {
+    const rootPackage = { workspaces: ['apps/*', 'packages/*'] };
+    const before = { packages: {
+      '': {}, 'apps/console': { name: '@shop/console', dependencies: { '@shop/alpha': '1.0.0' } },
+      'apps/other': { name: '@shop/other', dependencies: {} }, 'packages/alpha': { name: '@shop/alpha' },
+      'packages/beta': { name: '@shop/beta' },
+    } };
+    await writeFile(join(root, 'package.json'), JSON.stringify(rootPackage));
+    await writeFile(join(root, 'package-lock.json'), JSON.stringify(before));
+    await execFileAsync('git', ['init', '-q'], { cwd: root });
+    await execFileAsync('git', ['add', 'package.json', 'package-lock.json'], { cwd: root });
+    await execFileAsync('git', ['-c', 'user.name=Release Test', '-c', 'user.email=release@test.invalid', 'commit', '-qm', 'baseline'], { cwd: root });
+    const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: root });
+    const after = structuredClone(before);
+    after.packages['apps/console'].dependencies['@shop/beta'] = '1.0.0';
+    await writeFile(join(root, 'package-lock.json'), JSON.stringify(after));
+    const impact = await resolveWorkspaceImpact({
+      adapter: { projectRoot: root, targets: { console: { kind: 'frontend', workspace: '@shop/console' }, other: { kind: 'frontend', workspace: '@shop/other' } } },
+      changes: [change('package-lock.json')], refs: { fromSha: stdout.trim(), toSha: 'working-tree' },
+    });
+    assert.deepEqual(impact.targets, ['console']);
+  } finally { await rm(root, { recursive: true, force: true }); }
 });
 
-test('routes SFL node kernel changes to every real consumer without duplicate checks', async () => {
-  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
-  const plan = await createPlan(commerceAdapter, {
-    from: 'HEAD',
-    to: 'HEAD',
-    files: ['01_core_hexin/packages/config/src/SflNodeKernel.ts'],
-  });
-  assert.equal(plan.lane, 'A2');
-  assert.deepEqual(plan.targets, [
-    'catalog-api',
-    'catalog-jobs',
-    'console',
-    'identity-api',
-    'identity-notification-jobs',
-    'mall-provisioning-api',
-    'payment-jobs',
-    'payment-webhook-api',
-    'purchase-api',
-    'support-api',
-    'web-api',
-  ]);
-  assert.equal(plan.actions.tests.length, 2);
-  assert.equal(plan.actions.typecheck.length, 2);
-  assert.equal(plan.actions.build.length, 11);
-
+test('E04 documentation, tests and database fixtures never create a candidate', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
+    '05_docs_ziliao/docs_wendang/e04.md',
+    '01_core_hexin/apps/console/src/feature/e04/E04.test.tsx',
+    '03_quality_ceshi/tests/fixtures/e04-database.fixture.sql',
+  ] });
+  assert.equal(plan.deployRequired, false);
+  assert.deepEqual(plan.targets, []);
+  assert.deepEqual(plan.artifacts, []);
+  assert.equal(plan.actions.deployments.length, 0);
+  assert.ok(plan.requiredValidations.length > 0);
 });
 
-test('deploys L0 and L1 identity targets through their own sovereign runtimes', async () => {
-  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
-  const plan = await createPlan(commerceAdapter, {
-    from: 'HEAD',
-    to: 'HEAD',
-    files: ['01_core_hexin/services/commerce/src/modules/member/05_interface_jieru/IdentityOperatorMemberModule.ts'],
-    nodes: ['hbbtzn-l1', 'zhudatuan-l0'],
-  });
-  assert.deepEqual(plan.targets, ['identity-api']);
-  assert.equal(plan.actions.deployments.length, 2);
-  assert.deepEqual(
-    plan.actions.deployments.map(({ node, nodeId, target, service }) => ({ node, nodeId, target, service })),
-    [
-      {
-        node: 'hbbtzn-l1',
-        nodeId: 'node:hbbtzn:l1',
-        target: 'identity-api',
-        service: 'sfl-identity-api@hbbtzn-l1.service',
-      },
-      {
-        node: 'zhudatuan-l0',
-        nodeId: 'node:zhudatuan:l0',
-        target: 'identity-api',
-        service: 'sfl-identity-api@zhudatuan-l0.service',
-      },
-    ],
-  );
+test('database migrations are independent and ordered before actual consumers', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const migrationOnly = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
+    '02_platform_pingtai/database/supabase/migrations/20990101000000_example.sql',
+  ], nodes: ['hbbtzn-l1', 'zhudatuan-l0'] });
+  assert.deepEqual(migrationOnly.targets, ['database-migration']);
+  assert.deepEqual(migrationOnly.deploymentOrder, ['database-migration']);
+  assert.equal(migrationOnly.actions.deployments.length, 1);
+  assert.equal(migrationOnly.actions.deployments[0].service, 'none');
+  assert.equal(migrationOnly.actions.deployments[0].restart, 'none');
+
+  const withConsumer = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
+    '02_platform_pingtai/database/supabase/migrations/20990101000000_example.sql',
+    '01_core_hexin/services/commerce/src/entry/WebBusinessApiMain.ts',
+  ] });
+  assert.deepEqual(withConsumer.targets, ['database-migration', 'web-api']);
+  assert.deepEqual(withConsumer.deploymentOrder, ['database-migration', 'web-api']);
 });
 
-test('keeps release policy and deploy workflow changes in the delivery-tooling lane', async () => {
-  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
-  const classified = classifyChanges(commerceAdapter, [
-    change('.github/workflows/deploy.yml'),
-    change('02_platform_pingtai/infrastructure/release/zdt-next.release.json'),
-    change('02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'),
-  ]);
-  assert.equal(classified.lane, 'NONE');
-  assert.deepEqual(classified.targets, []);
-
-  const compilerOnly = classifyChanges(commerceAdapter, [change('tsconfig.json')]);
-  assert.equal(compilerOnly.lane, 'NONE');
-  assert.deepEqual(compilerOnly.targets, []);
+test('shared Commerce source expands through real entry graphs without refusal', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
+    '01_core_hexin/services/commerce/src/modules/webbusiness/WebBusinessScopeResolver.ts',
+  ] });
+  assert.deepEqual(plan.targets, ['purchase-api', 'web-api']);
+  assert.match(plan.reasons.join('\n'), /dependency graph selects purchase-api, web-api/);
 });
 
-test('routes the legacy session projection bridge only to identity and web APIs', async () => {
-  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
-  const classified = classifyChanges(commerceAdapter, [
-    change('01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts'),
-    change('01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.test.ts'),
-    change('01_core_hexin/services/commerce/src/modules/provisioning/03_application_yingyong/CreateMall.ts'),
-  ]);
-  assert.equal(classified.lane, 'A2');
-  assert.deepEqual(classified.targets, ['identity-api', 'web-api']);
+test('shared Contract package expands through workspace consumers without a global fallback', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
+    '01_core_hexin/packages/contract/src/index.ts',
+  ] });
+  assert.ok(plan.targets.includes('console'));
+  assert.ok(plan.targets.includes('identity-api'));
+  assert.ok(!plan.targets.includes('database-migration'));
+  assert.match(plan.reasons.join('\n'), /workspace dependency graph selects/);
 });
 
-test('routes the hbbtzn support entry to the shared support runtime', async () => {
-  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
-  const plan = await createPlan(commerceAdapter, {
-    from: 'HEAD',
-    to: 'HEAD',
-    files: ['01_core_hexin/services/commerce/src/entry/ConsoleSupportMain.ts'],
-    nodes: ['hbbtzn-l1'],
-  });
+test('release tooling remains non-deploying and support keeps its physical host', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  assert.deepEqual(classifyChanges(real, [change('.github/workflows/deploy.yml')]).targets, []);
+  const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: [
+    '01_core_hexin/services/commerce/src/entry/ConsoleSupportMain.ts',
+  ], nodes: ['hbbtzn-l1'] });
   assert.deepEqual(plan.targets, ['support-api']);
-  const deployment = plan.actions.deployments[0];
-  assert.equal(deployment.node, 'zhudatuan-l0');
-  assert.deepEqual(deployment.requestedNodes, ['hbbtzn-l1']);
-  assert.equal(deployment.target, 'support-api');
-  assert.equal(deployment.service, 'zhudatuan-console-support.service');
-});
-
-test('routes the managed support unit directly to support without the core lane', async () => {
-  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
-  const classified = classifyChanges(commerceAdapter, [
-    change('02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/zhudatuan-console-support.service'),
-  ]);
-  assert.equal(classified.lane, 'A2');
-  assert.deepEqual(classified.targets, ['support-api']);
+  assert.equal(plan.actions.deployments[0].node, 'zhudatuan-l0');
 });

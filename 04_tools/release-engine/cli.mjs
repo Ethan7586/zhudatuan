@@ -69,13 +69,14 @@ function printResult(result, format) {
     `AI 发布引擎：${result.schema}`,
     `项目：${result.project}`,
   ];
-  if (result.lane) lines.push(`发布等级：${result.lane}`);
   if (result.runId) lines.push(`运行编号：${result.runId}`);
   if (result.targets) lines.push(`目标：${result.targets.map((target) => typeof target === 'string' ? target : target.target).join(', ') || '无'}`);
   if (result.selectedNodes) lines.push(`节点：${result.selectedNodes.join(', ') || '尚未选择（部署前必须显式指定）'}`);
   if (result.selectedRealms?.length) lines.push(`身份域：${result.selectedRealms.join(', ')}`);
   if (result.impactFlags?.length) lines.push(`核心影响：${result.impactFlags.join(', ')}`);
-  if (result.estimates) lines.push(`预计：${result.estimates.minSeconds}–${result.estimates.maxSeconds} 秒`);
+  if (result.requiredValidations) lines.push(`必需验证：${result.requiredValidations.map((item) => item.name).join(', ') || '无'}`);
+  if (result.deploymentOrder) lines.push(`部署顺序：${result.deploymentOrder.join(' → ') || '无'}`);
+  if (result.estimates) lines.push(`预计：${result.estimates.estimatedSeconds} 秒`);
   if (result.planPath) lines.push(`计划：${resolve(result.planPath)}`);
   if (result.buildPath) lines.push(`构建证据：${resolve(result.buildPath)}`);
   if (result.packagePath) lines.push(`制品清单：${resolve(result.packagePath)}`);
@@ -85,5 +86,5 @@ function printResult(result, format) {
 }
 
 function printHelp() {
-  process.stdout.write(`统一 AI 发布引擎\n\n用法：\n  node 04_tools/release-engine/cli.mjs <plan|install|build|package|deploy|verify|rollback|status|seed|baseline|layer> [选项]\n\n关键选项：\n  --adapter <path>             项目适配器\n  --from <git-ref>             差异起点\n  --to <git-ref>               差异终点\n  --node <node-key>            目标节点，可重复\n  --plan <plan.json>           构建所用计划\n  --build <build.json>         打包所用构建证据\n  --package <package.json>     部署所用制品集合\n  --environment <candidate|production>\n  --approve-production <project:sha>\n  --mode <agent-candidate|agent|runtime-candidate|verify>\n  --approve-install <project:install:sha>\n  --target <target-id>         状态、回滚、初始登记或依赖层目标\n  --source-sha <sha>           安装、初始登记或基线导入对应的提交\n  --approve-seed <project:seed-layout:sha>\n  --approve-baseline <project:baseline:sha>\n  --source-node-modules <path> 依赖层来源（只在 A3 初始化使用）\n  --destination <path>         依赖层安装根目录\n  --dry-run                    只展示部署意图\n  --format <human|json>\n`);
+  process.stdout.write(`统一 AI 发布引擎\n\n用法：\n  node 04_tools/release-engine/cli.mjs <plan|install|build|package|deploy|verify|rollback|status|seed|baseline|layer> [选项]\n\n关键选项：\n  --adapter <path>             项目适配器\n  --from <git-ref>             差异起点\n  --to <git-ref>               差异终点\n  --node <node-key>            目标节点，可重复\n  --plan <plan.json>           构建所用计划\n  --build <build.json>         打包所用构建证据\n  --package <package.json>     部署所用制品集合\n  --environment <candidate|production>\n  --approve-production <project:sha>\n  --mode <agent-candidate|agent|runtime-candidate|verify>\n  --approve-install <project:install:sha>\n  --target <target-id>         状态、回滚、初始登记或依赖层目标\n  --source-sha <sha>           安装、初始登记或基线导入对应的提交\n  --approve-seed <project:seed-layout:sha>\n  --approve-baseline <project:baseline:sha>\n  --source-node-modules <path> 依赖层来源\n  --destination <path>         依赖层安装根目录\n  --dry-run                    只展示部署意图\n  --format <human|json>\n`);
 }

@@ -117,7 +117,6 @@ async function seed(context, options) {
       project: context.project,
       target: context.target,
       targetKind: 'seed',
-      lane: 'A3',
       sourceSha,
       treeDigest: evidence.treeDigest,
       fileCount: evidence.fileCount,
@@ -384,9 +383,6 @@ async function reuse(context, options) {
 async function activate(context, options) {
   const started = Date.now();
   const timings = { candidate: 0, snapshot: 0, cutover: 0, restart: 0, health: 0, isolation: 0 };
-  assert(context.deployment.productionEnabled !== false, 'PRODUCTION_ACTIVATION_DISABLED', {
-    reason: context.deployment.productionDisabledReason ?? 'target requires an external A3 procedure',
-  });
   const root = context.deployment.pointerRoot;
   assertAllowedRoot(context.policy, root);
   const candidate = await pointer(root, 'candidate');
@@ -1301,7 +1297,6 @@ function validatePolicy(policy, project) {
       } else {
         assert(deployment.restart?.jobMode === undefined, 'POLICY_RESTART_JOB_MODE_UNSUPPORTED', { node, target });
       }
-      if (deployment.productionEnabled === false) assert(typeof deployment.productionDisabledReason === 'string' && deployment.productionDisabledReason.length > 0, 'POLICY_PRODUCTION_REASON_REQUIRED', { node, target });
       if (deployment.allowBaselineImport !== undefined) assert(typeof deployment.allowBaselineImport === 'boolean', 'POLICY_BASELINE_IMPORT_INVALID', { node, target });
       for (const input of deployment.seedInputs ?? []) {
         assert(safeRelative(input.source) && safeRelative(input.destination), 'POLICY_SEED_PATH_INVALID', { node, target, input });
