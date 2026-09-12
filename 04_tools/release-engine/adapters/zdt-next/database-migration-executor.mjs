@@ -2,10 +2,10 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { processEnvironment, registrationMigrationEnvironment } from '@shop/config/server';
+import { migrationEnvironment, processEnvironment } from '@shop/config/server';
 
 import { KmsClient } from '../../../../01_core_hexin/services/commerce/src/foundation/infrastructure/KmsClient.ts';
-import { RegistrationMigrationRunner } from '../../../../01_core_hexin/services/commerce/src/foundation/infrastructure/RegistrationMigrationRunner.ts';
+import { MigrationRunner } from '../../../../01_core_hexin/services/commerce/src/foundation/infrastructure/MigrationRunner.ts';
 import { WorkloadSecretStore } from '../../../../01_core_hexin/services/commerce/src/foundation/infrastructure/SecretStore.ts';
 import { createPool } from '../../../../01_core_hexin/services/commerce/src/foundation/persistence/Pool.ts';
 
@@ -13,7 +13,8 @@ const MIGRATION_FILE = /^\d{14}_[a-z0-9_]+\.sql$/;
 const sourceSha = process.env.AI_DELIVERY_SOURCE_SHA;
 if (!/^[a-f0-9]{40}$/.test(sourceSha ?? '')) throw new Error('DATABASE_MIGRATION_SOURCE_SHA_INVALID');
 
-const environment = registrationMigrationEnvironment(processEnvironment());
+const environment = migrationEnvironment(processEnvironment());
+if (!/^[a-z0-9][a-z0-9/._:-]{7,511}$/i.test(environment.snapshotRef)) throw new Error('MIGRATION_SOURCE_SNAPSHOT_REF_INVALID');
 const secrets = new WorkloadSecretStore(environment.secretStoreEndpoint, environment.secretStoreBearerToken);
 const connection = await secrets.read(environment.databaseConnectionRef);
 const pool = createPool(connection, 'migration');
@@ -21,7 +22,7 @@ const files = await migrationFiles(environment.directory);
 const ledgerBefore = await ledgerEvidence(pool);
 const appliedBefore = new Set(ledgerBefore.versions);
 const selected = files.filter((file) => !appliedBefore.has(file.version));
-const runner = new RegistrationMigrationRunner(pool, new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken), environment.directory, {
+const runner = new MigrationRunner(pool, new KmsClient(environment.kmsEndpoint, environment.kmsBearerToken), environment.directory, {
   distributorKeyRef: environment.distributorKeyRef,
   identityKeyRef: environment.identityKeyRef,
   partnerKeyRef: environment.partnerKeyRef,

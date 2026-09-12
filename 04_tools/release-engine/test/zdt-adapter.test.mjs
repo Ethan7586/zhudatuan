@@ -9,6 +9,8 @@ const systemdRoot = join(projectRoot, '02_platform_pingtai/infrastructure/zhudat
 const adapter = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8'));
 const policy = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8'));
 const deployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy.yml'), 'utf8');
+const databaseMigrationExecutor = await readFile(join(projectRoot,
+  '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'), 'utf8');
 
 test('production acceptance is fixed to the protected fifteen-domain baseline', () => {
   assert.equal(adapter.productionAcceptance.domains.length, 15);
@@ -143,6 +145,9 @@ test('database migration packages the official runner inputs and uses the manage
   assert.equal(deployment.databaseMigration.recovery.mode, 'forward-only');
   assert.equal(deployment.databaseMigration.recovery.snapshot, 'not-captured-by-delivery-engine');
   assert.ok(deployment.candidateChecks.some((check) => check.argv.includes('{{candidateDir}}/executor/DatabaseMigrationExecutor.js')));
+  assert.match(databaseMigrationExecutor, /import \{ migrationEnvironment, processEnvironment \} from '@shop\/config\/server';/);
+  assert.match(databaseMigrationExecutor, /import \{ MigrationRunner \} from .*\/MigrationRunner\.ts';/);
+  assert.doesNotMatch(databaseMigrationExecutor, /RegistrationMigrationRunner|registrationMigrationEnvironment/);
 });
 
 test('service definitions use target pointers instead of node-wide code pointers', async () => {
