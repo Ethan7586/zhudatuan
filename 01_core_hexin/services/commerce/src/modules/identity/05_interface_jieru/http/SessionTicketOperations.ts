@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import type { OperationId } from '@shop/contract';
-import { operationLifecycle, pageResult, reject, requireAccess, rowResult, type OperationActions } from '../../../../foundation/application/ModuleOperations';
+import { operationLifecycle, pageResult, reject, requireAccess, type OperationActions } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, secretField, textField } from '../../../../foundation/interface/Validation';
 import { requireAccessNodeContext, requireGovernanceContext } from '../../../../foundation/security/AccessContext';
 import { PasswordPolicy } from '../../02_domain_yewu/policies_guize/PasswordPolicy';
@@ -307,9 +307,13 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         const result = await database.query(`update identity.session set revoked_at=clock_timestamp(),revoked_reason='logout'
           where id=$1 and account_id=$2 and realm_id=$3 and revoked_at is null returning id,revoked_at`,
         [access.actor.session, account.accountId, account.realmId]);
-        const response = rowResult(result);
-        await publishIdentityEvent(database, 'identity.session.revoked', access.actor.session, access.membership.id, request.input.idempotency!, { sessions: [access.actor.session], reason: 'logout' });
-        return { ...response, headers: sessionCookies('', '', 0) };
+        const sessions = result.rows.length === 0 ? [] : [access.actor.session];
+        await publishIdentityEvent(database, 'identity.session.revoked', access.actor.session, access.membership.id, request.input.idempotency!, { sessions, reason: 'logout' });
+        return {
+          status: 200,
+          body: { target: access.actor.session, revoked: sessions.length, sessions },
+          headers: sessionCookies('', '', 0),
+        };
       },
       'identity.sessions.read': async (request, database) => {
         const access = requireAccess(request);
