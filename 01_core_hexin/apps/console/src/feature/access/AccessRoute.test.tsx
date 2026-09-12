@@ -95,7 +95,13 @@ const server = setupServer(
       return [{ membership: member.id, access_version: member.access_version }];
     });
     syncRoleMetadata();
-    return HttpResponse.json({ ...roles.find(({ id }) => id === saved.id), affected_memberships: affected });
+    return HttpResponse.json({
+      id: saved.id,
+      name: saved.name,
+      status: saved.status,
+      version: saved.version,
+      affected_memberships: affected,
+    });
   })
 );
 
