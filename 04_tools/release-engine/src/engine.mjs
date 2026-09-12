@@ -409,7 +409,12 @@ async function executeDeployment(adapter, item, environment, options) {
       isolation: activationTimings.isolation ?? 0,
       remoteTotal: activated?.durationMs ?? 0,
     },
-    receipt: activatedRemote?.result?.receipt ? { ...activatedRemote.result.receipt, externalAcceptance: { status: 'passed', count: externalAfter.length, before: externalBefore, after: externalAfter, differences: [] } } : null,
+    receipt: activatedRemote?.result?.receipt ? {
+      ...activatedRemote.result.receipt,
+      externalAcceptance: options.externalBaseline === true
+        ? { status: 'passed', count: externalAfter.length, before: externalBefore, after: externalAfter, differences: [] }
+        : { status: 'not-requested' },
+    } : null,
     remote: { lookup: lookupRemote, stage: stagedRemote, preflight, activate: activatedRemote, final: parseCommandJson(result) },
     pointerRoot: item.deployment.pointerRoot,
     service: item.deployment.service,

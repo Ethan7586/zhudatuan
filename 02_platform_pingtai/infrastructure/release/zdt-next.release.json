@@ -401,7 +401,7 @@
       "manifest": "02_platform_pingtai/config/node-manifests/zhudatuan-l0.json",
       "deployments": {
         "catalog-media": { "pointerRoot": "/opt/ai-delivery/content/zdt-next/zhudatuan-l0/catalog-media", "service": "none", "restart": "none", "productionEnabled": false, "productionDisabledReason": "media origin binding must be installed by the one-time A3 migration" },
-        "storefront": { "pointerRoot": "/opt/zhudatuan/targets/storefront", "service": "zhudatuan-storefront", "restart": "pm2" },
+        "storefront": { "pointerRoot": "/opt/zhudatuan/targets/storefront", "service": "zhudatuan-storefront", "restart": "pm2", "productionEnabled": false, "productionDisabledReason": "L0 storefront is still running from the legacy node-wide systemd layout and is not yet managed by this target pointer" },
         "auth-web": { "pointerRoot": "/opt/zhudatuan/targets/auth-web", "service": "none", "restart": "none", "productionEnabled": false, "productionDisabledReason": "serving pointer not proven" },
         "console": { "pointerRoot": "/opt/zhudatuan/targets/console", "service": "none", "restart": "none", "productionEnabled": false, "productionDisabledReason": "serving pointer not proven" },
         "identity-api": { "pointerRoot": "/opt/sfl/nodes/zhudatuan-l0/targets/identity-api", "service": "sfl-identity-api@zhudatuan-l0.service" },
