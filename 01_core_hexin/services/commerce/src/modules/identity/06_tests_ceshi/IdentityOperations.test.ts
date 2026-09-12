@@ -150,6 +150,21 @@ describe('governance-aware member management', () => {
 
     expect(response).toMatchObject({ status: 200, body: { id: 'membership:target', status: 'suspended' } });
   });
+
+  it('offboards an administrator by expiring every management relation while preserving member data', async () => {
+    const harness = memberManagementHarness('administrator');
+
+    const response = await identityOperations(context(harness.pool)).invoke(
+      memberStatusRequest(governanceAccess('senior_administrator', false), 'offboarded')
+    );
+
+    expect(response).toMatchObject({ status: 200, body: { id: 'membership:target', status: 'left' } });
+    expect(harness.queries.some(({ text }) => text.includes('update access.membershiprole set expires_at'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('update access.scopegrant set expires_at'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('update access.membershipoverride set revoked_at'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes("update member.invite set status='disabled'"))).toBe(true);
+    expect(harness.queries.some(({ text }) => /delete from (member\.profile|identity\.principal)/.test(text))).toBe(false);
+  });
 });
 
 describe('identity financial action proof issuance', () => {
@@ -262,6 +277,9 @@ describe('administrator invitation issuance', () => {
           return result([{ request_hash: requestHash, state: 'started', response: null }]);
         }
         if (text.includes('access.zhudatuan_owner_context')) return result([{ exact_owner: true }]);
+        if (text.trimStart().startsWith('select account.id account_id')) {
+          return result([{ account_id: 'account:owner', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }]);
+        }
         if (text.includes('select storefront.id')) return result([{ id: 'mall:one' }]);
         if (text.includes('select role.id')) return result([{ id: 'role-zhudatuan-pending-operator' }]);
         if (text.includes('from identity.registrationpolicy')) {
@@ -447,13 +465,13 @@ function governanceAccess(
   };
 }
 
-function memberStatusRequest(accessContext: NonNullable<OperationRequest['access']>): OperationRequest {
+function memberStatusRequest(accessContext: NonNullable<OperationRequest['access']>, status = 'suspended'): OperationRequest {
   return {
     type: 'identity.members.manage',
     access: accessContext,
     input: {
       path: { membershipid: 'membership:target' }, query: {}, headers: {},
-      body: { action: 'status', status: 'suspended', reason: '验证治理身份边界' }, rawBody: '',
+      body: { action: 'status', status, reason: '验证治理身份边界' }, rawBody: '',
       deadline: Date.now() + 1_000, signal: new AbortController().signal,
       idempotency: 'member-status:target',
     },
@@ -475,7 +493,8 @@ function memberManagementHarness(targetGovernance: 'owner' | 'senior_administrat
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }
       if (text.includes('target_governance.governance_level')) {
-        return result([{ member_id: 'member:target', governance_level: targetGovernance }]);
+        return result([{ member_id: 'member:target', account_id: 'account:target', realm_id: 'realm:l0',
+          organization_id: 'organization:one', governance_level: targetGovernance }]);
       }
       if (text.includes('set status=$2')) {
         return result([{ id: 'membership:target', member_id: 'member:target', status: values[1] }]);

@@ -158,7 +158,7 @@ describe('member administrator invitation', () => {
     expect(writes[0]?.headers.get('x-scope-hint')).toBe('platform:one');
   });
 
-  it('keeps role-bearing administrators when the operator member endpoint is empty and excludes unrelated access memberships', async () => {
+  it('keeps the operator member endpoint authoritative when access data contains role-bearing identities', async () => {
     server.use(http.get('*/api/v1/members', () => HttpResponse.json({ items: [], count: 0 })));
     server.use(http.get('*/api/v1/access/center', () => HttpResponse.json({
       items: [
@@ -179,11 +179,12 @@ describe('member administrator invitation', () => {
       },
     });
 
-    const table = await screen.findByRole('table', { name: '管理员目录' });
-    expect(await within(table).findAllByText('高级管理员')).toHaveLength(2);
-    expect(within(table).getAllByText('Ethan')).toHaveLength(1);
-    expect(within(table).queryByText('L6消费者7586')).toBeNull();
-    expect(screen.getByText('当前页 2 位 · 共 2 位管理员')).toBeTruthy();
+    expect(await screen.findByText('暂无管理员')).toBeTruthy();
+    expect(screen.queryByRole('table', { name: '管理员目录' })).toBeNull();
+    expect(screen.queryByText('Ethan')).toBeNull();
+    expect(screen.queryByText('高级管理员')).toBeNull();
+    expect(screen.queryByText('L6消费者7586')).toBeNull();
+    expect(screen.getByText('当前页 0 位 · 共 0 位管理员')).toBeTruthy();
   });
 
   it.each(legacyInvitationEvidenceCases)('keeps the write entry when stale %s evidence is missing', async (_name, sessionPatch) => {
@@ -214,6 +215,23 @@ describe('member administrator invitation', () => {
 
     expect((await screen.findByRole('alert')).textContent).toContain('邀请生成失败');
     expect(screen.queryByText('short')).toBeNull();
+  });
+
+  it.each([
+    ['ADMINISTRATOR_ALREADY_EXISTS', '该手机号已经是当前商城的管理员，无需重复邀请。'],
+    ['ADMINISTRATOR_INVITATION_ALREADY_ACTIVE', '该手机号已有一张未使用的管理员邀请，请前往邀请记录查看或撤销后重发。'],
+  ])('explains the %s invitation conflict', async (code, message) => {
+    const user = userEvent.setup();
+    server.use(http.post('*/api/v1/identity/invitations', () => HttpResponse.json({ code, message: code, requestId: 'request:conflict' }, { status: 409 })));
+    renderRoute(ownerContext);
+    await screen.findByRole('table', { name: '管理员目录' });
+    await user.click(screen.getByRole('button', { name: '邀请管理员' }));
+    const dialog = await screen.findByRole('dialog', { name: '邀请管理员' });
+    await user.type(within(dialog).getByLabelText('受邀管理员手机号'), '13800138000');
+    await user.click(within(dialog).getByRole('button', { name: '生成管理员邀请' }));
+
+    expect((await within(dialog).findByRole('alert')).textContent).toContain(message);
+    expect(screen.queryByRole('dialog', { name: '管理员邀请已生成' })).toBeNull();
   });
 });
 

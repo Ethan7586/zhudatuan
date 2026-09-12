@@ -346,6 +346,8 @@ function invitationFieldErrors(issues: readonly Readonly<{ path: readonly Proper
 function invitationErrorPresentation(error: unknown, scopeSelectable: boolean): Readonly<{ fields: FieldErrors; form?: string }> {
   if (error === null || error === undefined) return { fields: {} };
   const code = error instanceof ApiError ? error.code.toUpperCase() : error instanceof Error ? error.message.toUpperCase() : '';
+  if (code.includes('ADMINISTRATOR_ALREADY_EXISTS')) return { fields: {}, form: '该手机号已经是当前商城的管理员，无需重复邀请。' };
+  if (code.includes('ADMINISTRATOR_INVITATION_ALREADY_ACTIVE')) return { fields: {}, form: '该手机号已有一张未使用的管理员邀请，请前往邀请记录查看或撤销后重发。' };
   if (code.includes('DESTINATION') || code.includes('PHONE') || code.includes('MOBILE')) return { fields: { destination: '该手机号不可用，请核对后重试。' } };
   if (code.includes('LABEL')) return { fields: { label: '邀请名称不完整，请修改后重试。' } };
   if (code.includes('TENANT') || code.includes('SCOPE')) return scopeSelectable

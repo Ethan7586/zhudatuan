@@ -95,6 +95,25 @@ export function membershipInvitationOperations(runtime: RealmOperationContext): 
               and ($2::text is null or storefront.id=$2) order by storefront.id limit 2`, [invitationScope, requestedStorefront])
           : { rows: [] };
         if (targetClient === 'operator' && storefronts.rows.length !== 1) throw new Error('STOREFRONT_SCOPE_REQUIRED');
+        if (targetClient === 'operator' && destinationHash !== null) {
+          const actorAccount = await currentRealmAccount(database, access.membership.id, access.actor.id);
+          const existingAdministrator = await database.query<{ id: string }>(`select membership.id
+            from identity.account account
+            join access.membership membership on membership.account_id=account.id and membership.realm_id=account.realm_id
+            where account.realm_id=$1 and account.status='active'
+              and membership.organization_id=$3 and membership.client='operator' and membership.status='active'
+              and (account.mobile_token=$2 or exists(select 1 from identity.credential credential
+                where credential.account_id=account.id and credential.realm_id=account.realm_id
+                  and credential.provider='password' and credential.subject_hash=$2 and credential.status='active'))
+            limit 1`, [actorAccount.realmId, destinationHash, storefronts.rows[0]!.id]);
+          if (existingAdministrator.rows[0]) reject(409, 'ADMINISTRATOR_ALREADY_EXISTS');
+          const existingInvitation = await database.query<{ id: string }>(`select id from member.invite
+            where organization_id=$1 and storefront_organization_id=$2 and target_client='operator'
+              and allowed_destination_hash=$3 and status='active' and use_count<max_uses
+              and effective_at<=clock_timestamp() and expires_at>clock_timestamp()
+            order by created_at desc limit 1`, [invitationScope, storefronts.rows[0]!.id, destinationHash]);
+          if (existingInvitation.rows[0]) reject(409, 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE');
+        }
         const operatorRoleId = targetClient === 'operator'
           ? governanceLevel === 'senior_administrator'
             ? seniorAdministratorRoleId(invitationScope)
@@ -210,10 +229,11 @@ export function membershipInvitationOperations(runtime: RealmOperationContext): 
           return { status: 201, body: { ...result, membershipId: membership, memberId: member, userId: principal } };
         }
         const target = await database.query<{
-          member_id: string;
+          member_id: string; account_id: string; realm_id: string; organization_id: string;
           governance_level: 'owner' | 'senior_administrator' | 'administrator' | 'member';
         }>(
-          `select membership.member_id,target_governance.governance_level
+          `select membership.member_id,membership.account_id,membership.realm_id,membership.organization_id,
+            target_governance.governance_level
           from access.membership membership
           join member.profile profile on profile.id=membership.member_id
           cross join lateral access.resolve_authoritative_governance(
@@ -232,6 +252,19 @@ export function membershipInvitationOperations(runtime: RealmOperationContext): 
         if (action === 'status') {
           const status = body.status === 'offboarded' ? 'left' : body.status;
           if (!['active', 'suspended', 'left'].includes(String(status))) throw new Error('MEMBERSHIP_STATUS_INVALID');
+          if (status === 'left') {
+            await database.query(`update access.membershiprole set expires_at=clock_timestamp()
+              where membership_id=$1 and (expires_at is null or expires_at>clock_timestamp())`, [membershipId]);
+            await database.query(`update access.scopegrant set expires_at=clock_timestamp()
+              where membership_id=$1 and (expires_at is null or expires_at>clock_timestamp())`, [membershipId]);
+            await database.query(`update access.membershipoverride set revoked_at=coalesce(revoked_at,clock_timestamp())
+              where membership_id=$1 and revoked_at is null`, [membershipId]);
+            await database.query(`update member.invite set status='disabled',version=version+1
+              where status='active' and (created_by=$1 or (target_client='operator' and storefront_organization_id=$2
+                and allowed_destination_hash in(select credential.subject_hash from identity.credential credential
+                  where credential.account_id=$3 and credential.realm_id=$4 and credential.provider='password')))`,
+            [membershipId, target.rows[0].organization_id, target.rows[0].account_id, target.rows[0].realm_id]);
+          }
           const result = await database.query(
             `update access.membership set status=$2,access_version=access_version+1,
           left_at=case when $2='left' then clock_timestamp() else null end where id=$1 returning *`,

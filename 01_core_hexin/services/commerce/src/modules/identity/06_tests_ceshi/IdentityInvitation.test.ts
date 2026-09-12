@@ -45,6 +45,26 @@ describe('operator invitation security boundary', () => {
     ]);
   });
 
+  it('rejects a duplicate invitation when the phone already owns an active administrator membership', async () => {
+    const harness = invitationHarness({ existingAdministratorRows: [{ id: 'membership:existing-administrator' }] });
+
+    await expect(identityRegistrationOperations(context(harness.pool)).invoke(createRequest(managerAccess())))
+      .resolves.toEqual({ status: 409, body: { code: 'ADMINISTRATOR_ALREADY_EXISTS' } });
+
+    expect(harness.queries.some(({ text }) => text.includes('from identity.account account'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);
+  });
+
+  it('rejects a second active invitation for the same phone and storefront', async () => {
+    const harness = invitationHarness({ activeInvitationRows: [{ id: 'invite:existing' }] });
+
+    await expect(identityRegistrationOperations(context(harness.pool)).invoke(createRequest(managerAccess())))
+      .resolves.toEqual({ status: 409, body: { code: 'ADMINISTRATOR_INVITATION_ALREADY_ACTIVE' } });
+
+    expect(harness.queries.some(({ text }) => text.includes('use_count<max_uses'))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('insert into member.invite'))).toBe(false);
+  });
+
   it('projects the authoritative Owner through a node membership and normalizes its Mall scope', async () => {
     const harness = invitationHarness({ exactOwner: false });
     const access = managerAccess({
@@ -393,6 +413,8 @@ function invitationHarness(options: Readonly<{
   revokeRows?: readonly Record<string, unknown>[];
   currentRows?: readonly Record<string, unknown>[];
   roleRows?: readonly Record<string, unknown>[];
+  existingAdministratorRows?: readonly Record<string, unknown>[];
+  activeInvitationRows?: readonly Record<string, unknown>[];
   exactOwner?: boolean;
 }> = {}): Readonly<{
   pool: DatabasePool;
@@ -411,6 +433,11 @@ function invitationHarness(options: Readonly<{
       }
       if (text.includes("organization.kind='tenant'")) return result([{ id: String(values[0]) }]);
       if (text.includes('select storefront.id')) return result([{ id: 'mall-zhudatuan' }]);
+      if (text.includes('from access.membership membership join identity.account account')) {
+        return result([{ account_id: 'account:manager', realm_id: 'realm:l0', principal_id: 'principal:manager', credential_version: 1 }]);
+      }
+      if (text.includes('from identity.account account')) return result(options.existingAdministratorRows ?? []);
+      if (text.includes('use_count<max_uses')) return result(options.activeInvitationRows ?? []);
       if (text.includes('select role.id')) {
         const roleId = values[3] === 'storefront'
           ? String(values[1]) === 'mall-zhudatuan'
