@@ -7,6 +7,7 @@ import { materializeTarget, packageTarget } from './artifact.mjs';
 import { resolveDeployment } from './adapter.mjs';
 import { DeliveryError, invariant } from './errors.mjs';
 import { assertBuildRefIsCheckedOut, assertWorktreeClean, currentHead } from './git.mjs';
+import { layerCommand } from './layer.mjs';
 import { acquireLocks } from './lock.mjs';
 import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
@@ -305,6 +306,7 @@ async function executeDeployment(adapter, item, environment, options) {
   ];
   const manifestBytes = (await lstat(item.artifact.manifestPath)).size;
   const artifactBytes = item.artifact.archive.bytes + manifestBytes;
+  const dependencyLayer = await ensureRemoteDependencyLayer(adapter, item, transport, host, remoteAgent);
   const lookup = await runCommand({ name: `artifact-lookup:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'lookup', ...identityArgs], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
   const lookupRemote = parseCommandJson(lookup);
   const lookupResult = lookupRemote?.result ?? {};
@@ -350,14 +352,15 @@ async function executeDeployment(adapter, item, environment, options) {
     node: item.nodeKey,
     target: item.artifact.target,
     environment,
-    durationMs: lookup.durationMs + uploadDurationMs + staged.durationMs + (activated?.durationMs ?? 0),
+    durationMs: dependencyLayer.durationMs + lookup.durationMs + uploadDurationMs + staged.durationMs + (activated?.durationMs ?? 0),
     cacheStatus: lookupResult.status ?? 'miss',
     artifactBytes,
-    uploadedBytes,
-    reusedBytes: artifactBytes - uploadedBytes,
+    uploadedBytes: uploadedBytes + dependencyLayer.uploadedBytes,
+    reusedBytes: artifactBytes - uploadedBytes + dependencyLayer.reusedBytes,
     uploadRateBytesPerSecond: uploadDurationMs > 0 ? Math.round(uploadedBytes / (uploadDurationMs / 1000)) : 0,
     timings: {
       artifactLookup: lookup.durationMs,
+      dependencyLayer: dependencyLayer.durationMs,
       upload: uploadDurationMs,
       candidate: staged.durationMs,
       cutover: activationTimings.cutover ?? 0,
@@ -371,6 +374,53 @@ async function executeDeployment(adapter, item, environment, options) {
     pointerRoot: item.deployment.pointerRoot,
     service: item.deployment.service,
   };
+}
+
+async function ensureRemoteDependencyLayer(adapter, item, transport, host, remoteAgent) {
+  const layer = item.artifact.dependencyLayer;
+  if (!layer) return { durationMs: 0, uploadedBytes: 0, reusedBytes: 0 };
+  const started = performance.now();
+  const identityArgs = [
+    '--digest', layer.digest,
+    '--runtime', layer.runtime,
+    '--production-root', layer.productionRoot,
+  ];
+  const lookup = await runCommand({
+    name: `layer-lookup:${item.nodeKey}:${item.artifact.target}`,
+    argv: ['ssh', host, remoteAgent, 'layer-lookup', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, ...identityArgs],
+    timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+  }, basicContext(adapter));
+  if (parseCommandJson(lookup)?.result?.exists) {
+    return { durationMs: elapsed(started), uploadedBytes: 0, reusedBytes: parseCommandJson(lookup).result.bytes ?? 0 };
+  }
+
+  const localRoot = join(statePaths(adapter).root, 'dependency-layers');
+  const prepared = await layerCommand(adapter, {
+    target: item.artifact.target,
+    destination: localRoot,
+    sourceNodeModules: join(adapter.projectRoot, 'node_modules'),
+  });
+  invariant(prepared.digest === layer.digest, 'DEPENDENCY_LAYER_LOCAL_MISMATCH', 'Prepared dependency layer differs from artifact declaration');
+  const archive = join(localRoot, `${layer.digest.slice(7)}.tar.gz`);
+  await runCommand({
+    name: `layer-package:${item.nodeKey}:${item.artifact.target}`,
+    argv: ['tar', '-czf', archive, '-C', prepared.destination, '.'],
+    timeoutMs: 20 * 60_000,
+  }, basicContext(adapter));
+  const archiveStats = await lstat(archive);
+  const archiveHash = await hashLocalFile(archive);
+  const incoming = `${transport.incomingRoot ?? '/opt/ai-delivery/incoming'}/${adapter.project}--layer--${layer.digest.slice(7)}.tar.gz`;
+  await runCommand({
+    name: `layer-upload:${item.nodeKey}:${item.artifact.target}`,
+    argv: ['scp', archive, `${host}:${incoming}`],
+    timeoutMs: transport.uploadTimeoutMs ?? 10 * 60_000,
+  }, basicContext(adapter));
+  await runCommand({
+    name: `layer-stage:${item.nodeKey}:${item.artifact.target}`,
+    argv: ['ssh', host, remoteAgent, 'stage-layer', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--archive', incoming, '--sha256', archiveHash, ...identityArgs],
+    timeoutMs: transport.deployTimeoutMs ?? 20 * 60_000,
+  }, basicContext(adapter));
+  return { durationMs: elapsed(started), uploadedBytes: archiveStats.size, reusedBytes: 0 };
 }
 
 async function externalDomainSnapshot(adapter) {

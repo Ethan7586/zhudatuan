@@ -18,6 +18,7 @@ const FORBIDDEN_DIRECTORIES = new Set([
   'releases', 'test-results', 'tmp', 'temp',
 ]);
 const MAX_ARTIFACT_BYTES = 150_000_000;
+const MAX_DEPENDENCY_LAYER_ARCHIVE_BYTES = 1_500_000_000;
 const DEFAULT_READINESS = Object.freeze({
   timeoutMs: 30_000,
   intervalMs: 500,
@@ -44,6 +45,8 @@ try {
 
   let result;
   if (action === 'lookup') result = await lookup(context, options);
+  else if (action === 'layer-lookup') result = await dependencyLayerLookup(context, options);
+  else if (action === 'stage-layer') result = await withLocks(context, false, () => stageDependencyLayer(context, options), { version: options.digest, operation: 'stage-dependency-layer' });
   else if (action === 'reuse') result = await withLocks(context, false, () => reuse(context, options), { version: options.treeDigest, operation: 'reuse-artifact' });
   else if (action === 'stage') result = await withLocks(context, false, () => stage(context, options), { version: options.treeDigest });
   else if (action === 'preflight') result = await preflight(context);
@@ -639,6 +642,70 @@ async function verifyDependencyLayer(context, layer) {
   assert(ready.schema === 'ai.delivery.dependency-layer.v1', 'DEPENDENCY_LAYER_MANIFEST_INVALID');
   assert(ready.digest === layer.digest && ready.runtime === layer.runtime, 'DEPENDENCY_LAYER_IDENTITY_MISMATCH');
   return path;
+}
+
+async function dependencyLayerLookup(context, options) {
+  const layer = requestedDependencyLayer(context, options);
+  const path = join(layer.productionRoot, layer.digest.slice(7));
+  if (!(await exists(path))) return { exists: false, path, digest: layer.digest, runtime: layer.runtime };
+  const ready = JSON.parse(await readFile(join(path, 'AI_DELIVERY_LAYER.json'), 'utf8'));
+  assert(ready.schema === 'ai.delivery.dependency-layer.v1', 'DEPENDENCY_LAYER_MANIFEST_INVALID');
+  assert(ready.digest === layer.digest && ready.runtime === layer.runtime, 'DEPENDENCY_LAYER_IDENTITY_MISMATCH');
+  return { exists: true, path, digest: layer.digest, runtime: layer.runtime };
+}
+
+async function stageDependencyLayer(context, options) {
+  const layer = requestedDependencyLayer(context, options);
+  const archive = resolve(required(options.archive, 'DEPENDENCY_LAYER_ARCHIVE_REQUIRED'));
+  assertIncomingPath(context.policy, archive);
+  const archiveStats = await lstat(archive);
+  assert(archiveStats.isFile() && archiveStats.size <= MAX_DEPENDENCY_LAYER_ARCHIVE_BYTES, 'DEPENDENCY_LAYER_ARCHIVE_SIZE_INVALID', { bytes: archiveStats.size, limitBytes: MAX_DEPENDENCY_LAYER_ARCHIVE_BYTES });
+  assert(/^[a-f0-9]{64}$/.test(options.sha256), 'DEPENDENCY_LAYER_ARCHIVE_HASH_INVALID');
+  assert(await hashFile(archive) === options.sha256, 'DEPENDENCY_LAYER_ARCHIVE_HASH_MISMATCH');
+  const destination = join(layer.productionRoot, layer.digest.slice(7));
+  if (await exists(destination)) {
+    const reused = await dependencyLayerLookup(context, options);
+    await rm(archive, { force: true });
+    return { ...reused, reused: true };
+  }
+  await mkdir(layer.productionRoot, { recursive: true, mode: 0o755 });
+  const temporary = join(layer.productionRoot, `.staging-${layer.digest.slice(7)}-${process.pid}-${Date.now()}`);
+  await mkdir(temporary, { recursive: true, mode: 0o755 });
+  try {
+    await verifyDependencyLayerArchiveEntries(archive);
+    await command(['tar', '-xzf', archive, '-C', temporary], { timeoutMs: 1_200_000 });
+    const ready = JSON.parse(await readFile(join(temporary, 'AI_DELIVERY_LAYER.json'), 'utf8'));
+    assert(ready.schema === 'ai.delivery.dependency-layer.v1', 'DEPENDENCY_LAYER_MANIFEST_INVALID');
+    assert(ready.project === context.project && ready.target === context.target, 'DEPENDENCY_LAYER_SCOPE_MISMATCH');
+    assert(ready.digest === layer.digest && ready.runtime === layer.runtime, 'DEPENDENCY_LAYER_IDENTITY_MISMATCH');
+    await rename(temporary, destination);
+  } finally {
+    await rm(temporary, { recursive: true, force: true });
+    await rm(archive, { force: true });
+  }
+  return { exists: true, path: destination, digest: layer.digest, runtime: layer.runtime, reused: false };
+}
+
+function requestedDependencyLayer(context, options) {
+  const configured = context.deployment.seedDependencyLayer;
+  const productionRoot = required(options.productionRoot, 'DEPENDENCY_LAYER_ROOT_REQUIRED');
+  const digestValue = required(options.digest, 'DEPENDENCY_LAYER_DIGEST_REQUIRED');
+  const runtime = required(options.runtime, 'DEPENDENCY_LAYER_RUNTIME_REQUIRED');
+  assert((context.policy.allowedDependencyRoots ?? []).includes(productionRoot), 'DEPENDENCY_LAYER_ROOT_NOT_ALLOWED', { productionRoot });
+  assert(/^sha256:[a-f0-9]{64}$/.test(digestValue), 'DEPENDENCY_LAYER_DIGEST_INVALID');
+  if (configured) {
+    assert(configured.productionRoot === productionRoot && configured.runtime === runtime, 'DEPENDENCY_LAYER_CONFIG_MISMATCH');
+  }
+  return { productionRoot, digest: digestValue, runtime };
+}
+
+async function verifyDependencyLayerArchiveEntries(archive) {
+  const listing = await command(['tar', '-tzf', archive], { timeoutMs: 120_000 });
+  for (const entry of listing.stdout.split('\n').filter(Boolean)) {
+    const normalized = entry.replace(/^\.\//, '').replace(/\/$/, '');
+    assert(!normalized.startsWith('/') && !normalized.split('/').includes('..'), 'DEPENDENCY_LAYER_ARCHIVE_PATH_UNSAFE', { entry });
+    if (normalized) assert(normalized === 'AI_DELIVERY_LAYER.json' || normalized === 'node_modules' || normalized.startsWith('node_modules/'), 'DEPENDENCY_LAYER_ARCHIVE_ENTRY_INVALID', { entry });
+  }
 }
 
 async function dependencyLayerPath(context, layer) {

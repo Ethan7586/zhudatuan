@@ -11,6 +11,10 @@ on:
         description: 要切上生产的 zdt-next commit（留空=最新 zdt-next）
         required: false
         type: string
+      candidate_run_id:
+        description: 要切换的绿色候选运行编号（留空=自动选择该提交最新一次）
+        required: false
+        type: string
       external_baseline:
         description: 切流后额外跑 15 域名基线 + 漂移自动回滚（默认关）
         required: false
@@ -57,10 +61,23 @@ jobs:
       - name: 取回 CI 已校验的候选制品
         env:
           GH_TOKEN: ${{ github.token }}
+          CANDIDATE_RUN_ID: ${{ inputs.candidate_run_id }}
+          TARGET_SHA: ${{ steps.sha.outputs.sha }}
         run: |
-          run_id="$(gh run list --workflow 'Affected Delivery' --branch zdt-next \
-            --json databaseId,headSha,conclusion \
-            -q "[.[] | select(.headSha==\"${{ steps.sha.outputs.sha }}\" and .conclusion==\"success\")][0].databaseId")"
+          run_id="$CANDIDATE_RUN_ID"
+          if [ -z "$run_id" ]; then
+            run_id="$(gh run list --workflow 'Affected Delivery' --branch zdt-next \
+              --json databaseId,headSha,conclusion \
+              -q "[.[] | select(.headSha==\"$TARGET_SHA\" and .conclusion==\"success\")][0].databaseId")"
+          else
+            candidate="$(gh run view "$run_id" --json headSha,conclusion,workflowName \
+              --jq '[.headSha,.conclusion,.workflowName] | @tsv')"
+            IFS=$'\t' read -r candidate_sha candidate_conclusion candidate_workflow <<< "$candidate"
+            if [ "$candidate_sha" != "$TARGET_SHA" ] || [ "$candidate_conclusion" != "success" ] || [ "$candidate_workflow" != "Affected Delivery" ]; then
+              echo "::error::候选运行与目标提交、结果或工作流不匹配。"
+              exit 1
+            fi
+          fi
           if [ -z "$run_id" ] || [ "$run_id" = "null" ]; then
             echo "::error::找不到该 SHA 对应的绿色 Affected Delivery 运行；请先合并 PR 并等 CI 通过。"
             exit 1

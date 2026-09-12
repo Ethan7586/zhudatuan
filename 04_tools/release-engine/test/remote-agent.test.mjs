@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { createReadStream } from 'node:fs';
 import { chmod, lstat, mkdir, mkdtemp, readFile, readlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -11,6 +13,12 @@ import { digest } from '../src/stable.mjs';
 
 const execFileAsync = promisify(execFile);
 const agent = new URL('../remote/agent.mjs', import.meta.url).pathname;
+
+async function hashFile(path) {
+  const hash = createHash('sha256');
+  for await (const chunk of createReadStream(path)) hash.update(chunk);
+  return hash.digest('hex');
+}
 
 test('stages, activates, rolls back and reports status with immutable releases', async () => {
   const fixture = await createFixture();
@@ -506,6 +514,44 @@ test('requires and binds a declared dependency layer', async () => {
   await invoke(fixture, 'stage', artifact);
   await invoke(fixture, 'activate', artifact);
   assert.equal(await readlink(join(fixture.pointerRoot, 'runtime')), layer);
+});
+
+test('stages a missing declared dependency layer atomically', async () => {
+  const fixture = await createFixture();
+  await writeFile(join(fixture.root, 'package-lock.json'), '{"lockfileVersion":3}\n');
+  const layerConfig = {
+    strategy: 'shared-content-addressed',
+    runtime: 'node22-linux-x64-test',
+    keyFiles: ['package-lock.json'],
+    productionRoot: join(fixture.root, 'layers'),
+  };
+  fixture.policy.allowedDependencyRoots = [layerConfig.productionRoot];
+  fixture.policy.nodes.local.deployments.app.seedDependencyLayer = {
+    source: 'node_modules',
+    runtime: layerConfig.runtime,
+    keyFiles: layerConfig.keyFiles,
+    productionRoot: layerConfig.productionRoot,
+  };
+  await writePolicy(fixture);
+  const artifact = await createArtifact(fixture, 'layer-upload', '9'.repeat(40), layerConfig);
+  const source = join(fixture.root, 'layer-source');
+  await mkdir(join(source, 'node_modules', 'runtime-package'), { recursive: true });
+  await writeFile(join(source, 'node_modules', 'runtime-package', 'index.js'), 'export default true;\n');
+  await writeFile(join(source, 'AI_DELIVERY_LAYER.json'), `${JSON.stringify({
+    schema: 'ai.delivery.dependency-layer.v1',
+    project: 'fixture',
+    target: 'app',
+    digest: artifact.dependencyLayer.digest,
+    runtime: layerConfig.runtime,
+  })}\n`);
+  const archive = join(fixture.policy.incomingRoot, 'dependency-layer.tar.gz');
+  await execFileAsync('tar', ['-czf', archive, '-C', source, '.']);
+  const args = [agent, 'stage-layer', '--project', 'fixture', '--node', 'local', '--target', 'app', '--archive', archive, '--sha256', await hashFile(archive), '--digest', artifact.dependencyLayer.digest, '--runtime', layerConfig.runtime, '--production-root', layerConfig.productionRoot];
+  const staged = await execFileAsync(process.execPath, args, { env: { ...process.env, AI_DELIVERY_POLICY_ROOT: fixture.policyRoot }, maxBuffer: 1024 * 1024 });
+  assert.equal(JSON.parse(staged.stdout).result.reused, false);
+  const layer = join(layerConfig.productionRoot, artifact.dependencyLayer.digest.slice(7));
+  assert.equal(await readFile(join(layer, 'node_modules', 'runtime-package', 'index.js'), 'utf8'), 'export default true;\n');
+  await invoke(fixture, 'stage', artifact);
 });
 
 test('keeps source provenance distinct when two commits produce the same tree', async () => {
