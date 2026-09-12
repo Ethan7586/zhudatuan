@@ -36,6 +36,7 @@ interface OrderRouteContext {
   readonly operatingNode: string | null;
   readonly operatingLine: string | null;
   readonly operatingSignedLevel: string | null;
+  readonly realm: string | null;
   readonly participantNode: string | null;
   readonly participantMembership: string;
   readonly participantMember: string;
@@ -52,6 +53,26 @@ interface SavedOrderLine {
   readonly route: string;
   readonly routeVersion: number;
   readonly payableMinor: number;
+}
+
+interface SupplyRouteRow {
+  readonly offer_id: string;
+  readonly sku_id: string;
+  readonly supplier_id: string;
+  readonly supplier_relationship_id: string;
+  readonly supplier_relationship_version: number;
+  readonly contract_id: string;
+  readonly contract_version: number;
+  readonly route_id: string;
+  readonly route_version: number;
+  readonly unit_cost_minor: number;
+  readonly stockitem_id: string;
+  readonly fulfillment_party_id: string;
+  readonly settlement_party_id: string;
+  readonly invoice_party_id: string;
+  readonly effective_at: string;
+  readonly steps: readonly Readonly<{ sequenceNo: number; lineId: string; signedLevel: string; nodeId: string | null;
+    partyId: string; partyKind: string; edgeKind: string; effectiveAt: string }>[];
 }
 
 export class DirectOrderQuoteStore implements OrderQuoteStore {
@@ -102,6 +123,7 @@ export class PlaceOrder {
       operatingNode,
       operatingLine: access.actor.nodeContext?.line_id ?? null,
       operatingSignedLevel: access.actor.nodeContext?.signed_level ?? null,
+      realm: participant?.realm_id ?? access.actor.realm ?? null,
       participantNode,
       participantMembership: access.membership.id,
       participantMember: current.cart.member,
@@ -135,7 +157,8 @@ export class PlaceOrder {
         accessVersion: participant?.access_version ?? access.accessVersion,
       })]);
     const savedLines = await this.saveLines(database, order, current, routeContext);
-    await this.saveSuborders(database, order);
+    await this.saveSuborders(database, order, routeContext, current.currency);
+    await this.saveSupplierFlowFacts(database, order, routeContext);
     const intent = await this.paymentPlan(database, request, order, number, current);
     await checkoutSessionPort.confirm(database, stored.checkout);
     await cartPort.convert(database, stored.cart_id);
@@ -188,58 +211,146 @@ export class PlaceOrder {
   }
 
   private async saveLines(database: OperationDatabase, order: string, quote: CheckoutQuote, context: OrderRouteContext): Promise<readonly SavedOrderLine[]> {
-    const lines = quote.lines.filter(({ accepted }) => accepted).map((line) => {
-      const route = routeId(context, line);
+    const accepted = quote.lines.filter(({ accepted }) => accepted);
+    const supplyOfferIds = accepted.map(({ versions }) => versions.supplyOffer).filter((id): id is string => typeof id === 'string');
+    const supplyRows = await database.query<SupplyRouteRow>(`select offer.id offer_id,offer.sku_id,offer.supplier_id,
+      relationship.relationship_id supplier_relationship_id,relationship.relationship_version::float8 supplier_relationship_version,
+      contract.contract_id,contract.contract_version::float8 contract_version,offer.route_id,offer.route_version::float8 route_version,
+      offer.unit_cost_minor::float8 unit_cost_minor,offer.stockitem_id,contract.fulfillment_party_id,contract.settlement_party_id,contract.invoice_party_id,
+      route.effective_at::text effective_at,coalesce(jsonb_agg(jsonb_build_object('sequenceNo',step.sequence_no,'lineId',step.line_id,
+        'signedLevel',step.signed_level,'nodeId',step.node_id,'partyId',step.party_id,'partyKind',step.party_kind,
+        'edgeKind',step.edge_kind,'effectiveAt',step.effective_at) order by step.sequence_no),'[]'::jsonb) steps
+      from catalog.supplyoffer offer join partner.supplierrelationship relationship on relationship.id=offer.supplier_relationship_id
+      join partner.suppliercontract contract on contract.id=offer.contract_id
+      join partner.supplyroute route on route.route_id=offer.route_id and route.route_version=offer.route_version
+      join partner.supplyroutestep step on step.route_id=route.route_id and step.route_version=route.route_version
+      where offer.mall_id=$1 and offer.id=any($2::text[])
+      group by offer.id,offer.sku_id,offer.supplier_id,relationship.relationship_id,relationship.relationship_version,contract.contract_id,
+        contract.contract_version,offer.route_id,offer.route_version,offer.unit_cost_minor,offer.stockitem_id,contract.fulfillment_party_id,
+        contract.settlement_party_id,contract.invoice_party_id,route.effective_at
+      order by offer.id`, [context.mall, supplyOfferIds]);
+    const supplies = new Map(supplyRows.rows.map((row) => [row.offer_id, row]));
+    const lines = accepted.map((line) => {
+      const quotedSupplyOffer = line.versions.supplyOffer;
+      const supply = typeof quotedSupplyOffer === 'string' ? supplies.get(quotedSupplyOffer) : undefined;
+      if (typeof quotedSupplyOffer === 'string' && !supply) throw new Error('QUOTE_SUPPLY_SNAPSHOT_MISSING');
+      const route = supply?.route_id ?? routeId(context, line);
       const id = `line:${randomUUID()}`;
-      const routeVersion = 1;
-      return Object.freeze({ ...line, id, route, routeVersion, routeSnapshot: {
+      const routeVersion = supply?.route_version ?? 1;
+      const supplier = supply?.supplier_id ?? line.partner ?? context.mall;
+      const supplierRelationship = supply?.supplier_relationship_id ?? line.supplierRelationship ?? `relationship:self:${context.mall}`;
+      const supplierRelationshipVersion = supply?.supplier_relationship_version ?? 1;
+      const contract = supply?.contract_id ?? line.contract ?? `contract:self:${context.mall}`;
+      const contractVersion = supply?.contract_version ?? 1;
+      const fulfillmentParty = supply?.fulfillment_party_id ?? line.fulfillmentParty ?? supplier;
+      const settlementParty = supply?.settlement_party_id ?? line.settlementParty ?? supplier;
+      const invoiceParty = supply?.invoice_party_id ?? line.invoiceParty ?? supplier;
+      const stockitem = supply?.stockitem_id ?? line.stockitem;
+      const effectiveAt = supply?.effective_at ?? new Date().toISOString();
+      const steps = supply?.steps ?? routeSteps(context, supplier, effectiveAt);
+      return Object.freeze({ ...line, id, route, routeVersion, supplier, supplierRelationship, supplierRelationshipVersion,
+        contract, contractVersion, fulfillmentParty, settlementParty, invoiceParty, stockitem,
+        costMinor: (supply?.unit_cost_minor ?? line.unitMinor)*line.quantity,
+        routeSnapshot: {
         schemaVersion: 'sfl.order-line-route.v1',
         transactionId: context.transaction,
         correlationId: context.correlation,
         routeId: route,
         routeVersion,
-        lineId: context.operatingLine,
+        lineId: context.operatingLine ?? `line:${context.mall}`,
         operatingNodeId: context.operatingNode,
         operatingMallId: context.mall,
         participantNodeId: context.participantNode,
         participantMembershipId: context.participantMembership,
         participantMemberId: context.participantMember,
-        supplierId: line.partner,
-        supplierRelationshipId: line.supplierRelationship,
-        contractId: line.contract,
+        supplierId: supplier,
+        supplierRelationshipId: supplierRelationship,
+        supplierRelationshipVersion,
+        contractId: contract,
+        contractVersion,
         contractHash: line.contractHash,
-        fulfillmentPartyId: line.fulfillmentParty,
-        settlementPartyId: line.settlementParty,
-        invoicePartyId: line.invoiceParty,
-        steps: routeSteps(context, line.partner),
+        fulfillmentPartyId: fulfillmentParty,
+        settlementPartyId: settlementParty,
+        invoicePartyId: invoiceParty,
+        effectiveAt,
+        steps,
       } });
     });
     await database.query(`insert into ordering.line(id,order_id,sku_id,listing_id,product_id,title_snapshot,quantity,unit_minor,total_minor,discount_minor,
       qualification_evidence_id,provider,partner_id,evidence,route_id,route_version,operating_node_id,operating_line_id,participant_node_id,
       participant_membership_id,supplier_id,supplier_relationship_id,contract_id,contract_hash,fulfillment_party_id,settlement_party_id,
-      invoice_party_id,route_snapshot) select line.id,$1,line.sku,line.listing,line.product,line.title,line.quantity,line."unitMinor",
+      invoice_party_id,route_snapshot,stockitem_id,supplier_relationship_version,contract_version,cost_minor,shipping_minor,tax_minor)
+      select line.id,$1,line.sku,line.listing,line.product,line.title,line.quantity,line."unitMinor",
       line."totalMinor",line."discountMinor",null,line.provider,line.partner,line.versions,line.route,line."routeVersion",line."operatingNode",
       line."operatingLine",line."participantNode",line."participantMembership",line.partner,line."supplierRelationship",line.contract,
-      line."contractHash",line."fulfillmentParty",line."settlementParty",line."invoiceParty",line."routeSnapshot"
+      line."contractHash",line."fulfillmentParty",line."settlementParty",line."invoiceParty",line."routeSnapshot",line.stockitem,
+      line."supplierRelationshipVersion",line."contractVersion",line."costMinor",0,0
       from jsonb_to_recordset($2::jsonb) as line(id text,sku text,listing text,product text,title text,quantity bigint,"unitMinor" bigint,
       "totalMinor" bigint,"discountMinor" bigint,provider text,partner text,versions jsonb,route text,"routeVersion" bigint,
       "operatingNode" text,"operatingLine" text,"participantNode" text,"participantMembership" text,"supplierRelationship" text,
-      contract text,"contractHash" text,"fulfillmentParty" text,"settlementParty" text,"invoiceParty" text,"routeSnapshot" jsonb)`,
+      contract text,"contractHash" text,"fulfillmentParty" text,"settlementParty" text,"invoiceParty" text,"routeSnapshot" jsonb,
+      stockitem text,"supplierRelationshipVersion" bigint,"contractVersion" bigint,"costMinor" bigint)`,
     [order, JSON.stringify(lines.map((line) => ({ ...line, operatingNode: context.operatingNode, operatingLine: context.operatingLine,
-      participantNode: context.participantNode, participantMembership: context.participantMembership })))]);
-    return lines.map((line) => Object.freeze({ id: line.id, sku: line.sku, product: line.product, supplier: line.partner,
+      participantNode: context.participantNode, participantMembership: context.participantMembership, partner: line.supplier,
+      supplierRelationship: line.supplierRelationship, contract: line.contract })))]);
+    const routeStepRows = lines.flatMap((line) => line.routeSnapshot.steps.map((step) => ({ ...step, orderLineId: line.id,
+      routeId: line.route, routeVersion: line.routeVersion, mallId: context.mall, supplierId: line.supplier,
+      supplierRelationshipId: line.supplierRelationship, supplierRelationshipVersion: line.supplierRelationshipVersion,
+      contractId: line.contract, contractVersion: line.contractVersion, fulfillmentPartyId: line.fulfillmentParty,
+      settlementPartyId: line.settlementParty, invoicePartyId: line.invoiceParty })));
+    await database.query(`insert into ordering.lineroutestep(order_line_id,route_id,route_version,sequence_no,line_id,signed_level,node_id,
+      party_id,party_kind,mall_id,supplier_id,supplier_relationship_id,supplier_relationship_version,contract_id,contract_version,
+      edge_kind,fulfillment_party_id,settlement_party_id,invoice_party_id,effective_at)
+      select step."orderLineId",step."routeId",step."routeVersion",step."sequenceNo",step."lineId",step."signedLevel",step."nodeId",
+        step."partyId",step."partyKind",step."mallId",step."supplierId",step."supplierRelationshipId",step."supplierRelationshipVersion",
+        step."contractId",step."contractVersion",step."edgeKind",step."fulfillmentPartyId",step."settlementPartyId",step."invoicePartyId",
+        step."effectiveAt" from jsonb_to_recordset($1::jsonb) as step("orderLineId" text,"routeId" text,"routeVersion" bigint,
+        "sequenceNo" integer,"lineId" text,"signedLevel" text,"nodeId" text,"partyId" text,"partyKind" text,"mallId" text,
+        "supplierId" text,"supplierRelationshipId" text,"supplierRelationshipVersion" bigint,"contractId" text,"contractVersion" bigint,
+        "edgeKind" text,"fulfillmentPartyId" text,"settlementPartyId" text,"invoicePartyId" text,"effectiveAt" timestamptz)`,
+    [JSON.stringify(routeStepRows)]);
+    return lines.map((line) => Object.freeze({ id: line.id, sku: line.sku, product: line.product, supplier: line.supplier,
       supplierRelationship: line.supplierRelationship, contract: line.contract, route: line.route, routeVersion: line.routeVersion,
       payableMinor: line.payableMinor }));
   }
 
-  private async saveSuborders(database: OperationDatabase, order: string): Promise<void> {
+  private async saveSuborders(database: OperationDatabase, order: string, context: OrderRouteContext, currency: string): Promise<void> {
     await database.query(`insert into ordering.suborder(id,order_id,partner_id,provider,state,version,route_id,route_version,supplier_id,
-      supplier_relationship_id,contract_id,fulfillment_party_id,settlement_party_id,invoice_party_id,amount_minor)
-      select 'suborder:'||md5($1||':'||line.route_id),$1,min(line.partner_id),min(line.provider),'pending',0,line.route_id,
-        line.route_version,line.supplier_id,line.supplier_relationship_id,line.contract_id,line.fulfillment_party_id,line.settlement_party_id,
-        line.invoice_party_id,sum(line.payable_minor) from ordering.line line where line.order_id=$1
+      supplier_relationship_id,contract_id,fulfillment_party_id,settlement_party_id,invoice_party_id,amount_minor,transaction_id,
+      correlation_id,realm_id,line_id,operating_node_id,merchandise_minor,discount_minor,shipping_minor,tax_minor,cost_minor,currency)
+      select 'suborder:'||md5(concat_ws('|',$1::text,line.supplier_id,line.supplier_relationship_id,line.contract_id,line.route_id,
+        line.route_version::text,line.fulfillment_party_id,line.settlement_party_id,line.invoice_party_id)),$1,min(line.partner_id),
+        min(line.provider),'pending',0,line.route_id,line.route_version,line.supplier_id,line.supplier_relationship_id,line.contract_id,
+        line.fulfillment_party_id,line.settlement_party_id,line.invoice_party_id,sum(line.payable_minor),$2,$3,$4,$5,$6,
+        sum(line.total_minor),sum(line.discount_minor),sum(line.shipping_minor),sum(line.tax_minor),sum(line.cost_minor),$7
+      from ordering.line line where line.order_id=$1
       group by line.route_id,line.route_version,line.supplier_id,line.supplier_relationship_id,line.contract_id,line.fulfillment_party_id,
-        line.settlement_party_id,line.invoice_party_id`, [order]);
+        line.settlement_party_id,line.invoice_party_id`, [order, context.transaction, context.correlation, context.realm,
+      context.operatingLine ?? `line:${context.mall}`, context.operatingNode, currency]);
+    await database.query(`update ordering.line line set supplier_leg_id=leg.id from ordering.suborder leg where line.order_id=$1
+      and leg.order_id=line.order_id and leg.route_id=line.route_id and leg.route_version=line.route_version
+      and leg.supplier_id is not distinct from line.supplier_id
+      and leg.supplier_relationship_id is not distinct from line.supplier_relationship_id
+      and leg.contract_id is not distinct from line.contract_id
+      and leg.fulfillment_party_id is not distinct from line.fulfillment_party_id
+      and leg.settlement_party_id is not distinct from line.settlement_party_id
+      and leg.invoice_party_id is not distinct from line.invoice_party_id`, [order]);
+  }
+
+  private async saveSupplierFlowFacts(database: OperationDatabase, order: string, context: OrderRouteContext): Promise<void> {
+    await database.query(`insert into inventory.supplierreservationfact(id,reservation_id,order_id,order_line_id,supplier_leg_id,stockitem_id,
+      transaction_id,correlation_id,route_id,route_version,supplier_id,quantity,state,created_at)
+      select 'supplier-reservation:'||line.id,reservation.id,line.order_id,line.id,line.supplier_leg_id,line.stockitem_id,$2,$3,line.route_id,
+        line.route_version,line.supplier_id,line.quantity,'reserved',clock_timestamp()
+      from ordering.line line join inventory.reservation reservation on reservation.mall_id=$4 and reservation.owner_type='order'
+        and reservation.owner_id=line.order_id and reservation.stockitem_id=line.stockitem_id
+      where line.order_id=$1 and line.supplier_id is not null and line.supplier_leg_id is not null`,
+    [order, context.transaction, context.correlation, context.mall]);
+    await database.query(`insert into fulfillment.supplierresponsibility(id,order_id,supplier_leg_id,transaction_id,correlation_id,route_id,
+      route_version,supplier_id,fulfillment_party_id,settlement_party_id,invoice_party_id,state,created_at)
+      select 'supplier-responsibility:'||leg.id,leg.order_id,leg.id,leg.transaction_id,leg.correlation_id,leg.route_id,leg.route_version,
+        leg.supplier_id,leg.fulfillment_party_id,leg.settlement_party_id,leg.invoice_party_id,'pending',clock_timestamp()
+      from ordering.suborder leg where leg.order_id=$1 and leg.supplier_id is not null`, [order]);
   }
 
   private async paymentPlan(database: OperationDatabase, request: OperationRequest, order: string, number: string, quote: CheckoutQuote): Promise<string> {
@@ -274,13 +385,15 @@ function routeId(context: OrderRouteContext, line: CheckoutQuote['lines'][number
   return `route:${digest.slice(0, 32)}`;
 }
 
-function routeSteps(context: OrderRouteContext, supplier: string | null): readonly Readonly<Record<string, unknown>>[] {
+function routeSteps(context: OrderRouteContext, supplier: string | null, effectiveAt: string): readonly Readonly<Record<string, unknown>>[] {
   const steps: Readonly<Record<string, unknown>>[] = [];
-  if (supplier !== null) steps.push(Object.freeze({ sequenceNo: 1, partyKind: 'supplier', partyId: supplier, nodeId: null, signedLevel: null }));
+  const lineId = context.operatingLine ?? `line:${context.mall}`;
+  if (supplier !== null) steps.push(Object.freeze({ sequenceNo: 1, lineId, partyKind: 'supplier', partyId: supplier, nodeId: null,
+    signedLevel: 'L-1', edgeKind: 'supplier_contract', effectiveAt }));
   steps.push(Object.freeze({ sequenceNo: steps.length + 1, partyKind: 'operating_owner', partyId: context.mall,
-    nodeId: context.operatingNode, signedLevel: context.operatingSignedLevel }));
+    lineId, nodeId: context.operatingNode, signedLevel: context.operatingSignedLevel ?? 'L0', edgeKind: 'operates', effectiveAt }));
   steps.push(Object.freeze({ sequenceNo: steps.length + 1, partyKind: 'participant', partyId: context.participantMembership,
-    nodeId: context.participantNode, signedLevel: null }));
+    lineId, nodeId: context.participantNode, signedLevel: context.operatingSignedLevel ?? 'L0', edgeKind: 'participates', effectiveAt }));
   return Object.freeze(steps);
 }
 

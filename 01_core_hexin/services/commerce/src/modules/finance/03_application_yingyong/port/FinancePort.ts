@@ -72,6 +72,72 @@ export class FinancePort {
     return id;
   }
 
+  async recordSupplierOrder(database: FinanceDatabase, order: string): Promise<void> {
+    const legs = (await database.query<SupplierLeg>(`select leg.id,leg.order_id,orders.scope_id,leg.transaction_id,leg.correlation_id,
+      leg.route_id,leg.route_version::float8 route_version,leg.supplier_id,leg.amount_minor::float8 amount_minor,
+      leg.cost_minor::float8 cost_minor,leg.currency,orders.created_at::text occurred_at
+      from ordering.suborder leg join ordering.orderrecord orders on orders.id=leg.order_id
+      where leg.order_id=$1 and leg.transaction_id is not null order by leg.id`, [order])).rows;
+    for (const leg of legs) {
+      const saleJournal = leg.amount_minor > 0 ? await this.post(database, {
+        scope: leg.scope_id, referenceType: 'supplier-leg.sale', referenceId: leg.id, currency: leg.currency,
+        description: `Supplier leg sale ${leg.id}`, debit: { code: `order.receivable.${leg.order_id}`, kind: 'asset' },
+        credit: { code: 'commerce.revenue', kind: 'income' }, amountMinor: leg.amount_minor, occurredAt: leg.occurred_at,
+      }) : null;
+      const costJournal = leg.cost_minor > 0 ? await this.post(database, {
+        scope: leg.scope_id, referenceType: 'supplier-leg.cost', referenceId: leg.id, currency: leg.currency,
+        description: `Supplier leg cost ${leg.id}`, debit: { code: 'settlement.cost', kind: 'expense' },
+        credit: { code: `settlement.payable.${leg.supplier_id}`, kind: 'liability' }, amountMinor: leg.cost_minor, occurredAt: leg.occurred_at,
+      }) : null;
+      await database.query(`insert into finance.supplierlegfact(id,order_id,supplier_leg_id,transaction_id,correlation_id,route_id,
+        route_version,supplier_id,fact_kind,amount_minor,currency,journal_id,created_at) values
+        ($1||':receivable',$2,$1,$3,$4,$5,$6,$7,'receivable',$8,$9,$10,clock_timestamp()),
+        ($1||':income',$2,$1,$3,$4,$5,$6,$7,'income',$8,$9,$10,clock_timestamp()),
+        ($1||':payable',$2,$1,$3,$4,$5,$6,$7,'payable',$11,$9,$12,clock_timestamp()),
+        ($1||':cost',$2,$1,$3,$4,$5,$6,$7,'cost',$11,$9,$12,clock_timestamp())
+        on conflict(supplier_leg_id,fact_kind) do nothing`, [leg.id, leg.order_id, leg.transaction_id, leg.correlation_id,
+        leg.route_id, leg.route_version, leg.supplier_id, leg.amount_minor, leg.currency, saleJournal, leg.cost_minor, costJournal]);
+    }
+  }
+
+  async reverseSupplierAftersale(database: FinanceDatabase, aftersale: string, refund: string): Promise<void> {
+    const target = (await database.query<SupplierRefundTarget>(`select aftersale.id aftersale_id,aftersale.order_id,line.id order_line_id,
+      line.supplier_leg_id,line.supplier_id,orders.scope_id,orders.transaction_id,orders.correlation_id,orders.currency,
+      aftersale.created_at::text occurred_at,
+      allocation.amount_minor::float8 amount_minor,line.payable_minor::float8 line_payable_minor,line.cost_minor::float8 line_cost_minor,
+      coalesce((select sum(previous.amount_minor) from finance.supplierlegreversal previous
+        where previous.order_line_id=line.id and previous.fact_kind='receivable'),0)::float8 reversed_amount_minor,
+      coalesce((select sum(previous.amount_minor) from finance.supplierlegreversal previous
+        where previous.order_line_id=line.id and previous.fact_kind='cost'),0)::float8 reversed_cost_minor
+      from ordering.aftersale aftersale join ordering.orderrecord orders on orders.id=aftersale.order_id
+      join ordering.line line on line.id=aftersale.line_id and line.order_id=orders.id
+      join payment.supplierrefundallocation allocation on allocation.aftersale_id=aftersale.id and allocation.refund_id=$2
+      where aftersale.id=$1`, [aftersale, refund])).rows[0];
+    if (!target) throw new Error('SUPPLIER_AFTERSALE_FINANCE_TARGET_MISSING');
+    const remainingCost = target.line_cost_minor-target.reversed_cost_minor;
+    const costMinor = target.reversed_amount_minor+target.amount_minor >= target.line_payable_minor
+      ? remainingCost
+      : Math.min(remainingCost, Math.floor(target.line_cost_minor*target.amount_minor/target.line_payable_minor));
+    const saleJournal = await this.post(database, {
+      scope: target.scope_id, referenceType: 'supplier-leg.refund-sale', referenceId: aftersale, currency: target.currency,
+      description: `Supplier leg refund ${aftersale}`, debit: { code: 'commerce.refund', kind: 'expense' },
+      credit: { code: `order.receivable.${target.order_id}`, kind: 'asset' }, amountMinor: target.amount_minor, occurredAt: target.occurred_at,
+    });
+    const costJournal = costMinor > 0 ? await this.post(database, {
+      scope: target.scope_id, referenceType: 'supplier-leg.refund-cost', referenceId: aftersale, currency: target.currency,
+      description: `Supplier leg refund cost ${aftersale}`, debit: { code: `settlement.payable.${target.supplier_id}`, kind: 'liability' },
+      credit: { code: 'settlement.cost', kind: 'expense' }, amountMinor: costMinor, occurredAt: target.occurred_at,
+    }) : null;
+    await database.query(`insert into finance.supplierlegreversal(id,aftersale_id,order_line_id,supplier_leg_id,transaction_id,
+      correlation_id,fact_kind,amount_minor,currency,journal_id,created_at) values
+      ($1||':receivable',$1,$2,$3,$4,$5,'receivable',$6,$7,$8,clock_timestamp()),
+      ($1||':income',$1,$2,$3,$4,$5,'income',$6,$7,$8,clock_timestamp()),
+      ($1||':payable',$1,$2,$3,$4,$5,'payable',$9,$7,$10,clock_timestamp()),
+      ($1||':cost',$1,$2,$3,$4,$5,'cost',$9,$7,$10,clock_timestamp())
+      on conflict(aftersale_id,order_line_id,fact_kind) do nothing`, [target.aftersale_id,target.order_line_id,
+      target.supplier_leg_id,target.transaction_id,target.correlation_id,target.amount_minor,target.currency,saleJournal,costMinor,costJournal]);
+  }
+
   async reverse(database: FinanceDatabase, intent: ReversalIntent): Promise<string> {
     if (!intent.scope || !intent.journal || !intent.referenceId || !intent.reason || !intent.actor || Number.isNaN(Date.parse(intent.occurredAt))) {
       throw new Error('FINANCE_REVERSAL_INVALID');
@@ -128,4 +194,19 @@ export class FinancePort {
       [input.id, input.scope, input.provider, input.partner, input.period, input.statement, input.hash, input.run]
     );
   }
+}
+
+interface SupplierLeg extends Record<string, unknown> {
+  readonly id: string; readonly order_id: string; readonly scope_id: string; readonly transaction_id: string;
+  readonly correlation_id: string; readonly route_id: string; readonly route_version: number; readonly supplier_id: string;
+  readonly amount_minor: number; readonly cost_minor: number; readonly currency: string; readonly occurred_at: string;
+}
+
+interface SupplierRefundTarget extends Record<string, unknown> {
+  readonly aftersale_id: string; readonly order_id: string; readonly order_line_id: string; readonly supplier_leg_id: string;
+  readonly supplier_id: string;
+  readonly scope_id: string; readonly transaction_id: string; readonly correlation_id: string; readonly currency: string;
+  readonly occurred_at: string;
+  readonly amount_minor: number; readonly line_payable_minor: number; readonly line_cost_minor: number;
+  readonly reversed_amount_minor: number; readonly reversed_cost_minor: number;
 }

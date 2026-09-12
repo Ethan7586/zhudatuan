@@ -26,6 +26,12 @@ describe('QuoteReader mall purchase history isolation', () => {
 
     expect(mallA.lines[0]).toMatchObject({ accepted: false, reasons: ['QUALIFICATION_DENIED:policy:limit-one'] });
     expect(mallB.lines[0]).toMatchObject({ accepted: true, reasons: [] });
+    expect(mallB.lines[0]).toMatchObject({
+      partner: 'partner:supplier-one', supplierRelationship: 'relationship:supplier-one', contract: 'contract:supplier-one',
+      fulfillmentParty: 'party:fulfillment-one', settlementParty: 'party:settlement-one', invoiceParty: 'party:invoice-one',
+      stockitem: 'stock:one', versions: { supplyOffer: 'offer:supplier-one', supplierRelationship: 3, contract: 5,
+        route: 'route:supplier-one', routeVersion: 2, unitCostMinor: 60 },
+    });
     expect(historyQueries).toEqual([
       ['mall:a', 'member:one'],
       ['mall:b', 'member:one'],
@@ -51,9 +57,11 @@ function quoteDatabase(historyQueries: unknown[][], historySql: string[]): Opera
           listing_id: 'listing:one', sku_id: 'sku:one', quantity: 1, cart_listing_version: '1', listing_title: '商品',
           listing_version: 1, listing_status: 'published', product_id: 'product:one', product_type: 'digital', category_id: 'category:one',
           product_version: 1, sku_version: 1, unit_minor: 100, price_version: 'price:1', stockitem_id: 'stock:one',
-          onhand: 10, safety: 0, reserved: 0, stock_version: 1, provider: null, partner_id: null,
-          supplier_relationship_id: null, contract_id: null, contract_hash: null, fulfillment_party_id: null,
-          settlement_party_id: null, invoice_party_id: null,
+          onhand: 10, safety: 0, reserved: 0, stock_version: 1, provider: null, partner_id: 'partner:supplier-one',
+          supplier_relationship_id: 'relationship:supplier-one', contract_id: 'contract:supplier-one', contract_hash: null,
+          fulfillment_party_id: 'party:fulfillment-one', settlement_party_id: 'party:settlement-one', invoice_party_id: 'party:invoice-one',
+          supply_offer_id: 'offer:supplier-one', supplier_relationship_version: 3, contract_version: 5,
+          supply_route_id: 'route:supplier-one', supply_route_version: 2, supply_unit_cost_minor: 60,
         }];
       } else if (text.includes('from qualification.policy policy')) {
         rows = [{

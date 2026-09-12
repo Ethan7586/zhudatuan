@@ -1,5 +1,85 @@
 version: 1
 objects:
+  - id: catalog.supplyoffer
+    kind: table
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: catalog
+  - id: finance.supplierlegfact
+    kind: table
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: finance
+  - id: finance.supplierlegreversal
+    kind: table
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: finance
+  - id: fulfillment.supplierresponsibility
+    kind: table
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: fulfillment
+  - id: fulfillment.supplierreturnfact
+    kind: table
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: fulfillment
+  - id: inventory.supplierreservationfact
+    kind: table
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: inventory
+  - id: inventory.supplierrestockfact
+    kind: table
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: inventory
+  - id: ordering.aftersaleexception
+    kind: table
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: ordering
+  - id: ordering.aftersaleroutestep
+    kind: table
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: ordering
+  - id: ordering.lineroutestep
+    kind: table
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: ordering
+  - id: partner.suppliercontract
+    kind: table
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: partner
+  - id: partner.supplierrelationship
+    kind: table
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: partner
+  - id: partner.supplyroute
+    kind: table
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: partner
+  - id: partner.supplyroutestep
+    kind: table
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: partner
+  - id: payment.merchantreceipt
+    kind: table
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: payment
+  - id: payment.supplierrefundallocation
+    kind: table
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    operationalOwner: payment
   - id: access.administrator_member_visible
     kind: function
     owner: access
@@ -28951,3 +29031,771 @@ objects:
     kind: view
     owner: benefit
     source: 02_platform_pingtai/database/supabase/migrations/20260821042000_benefit_lifecycle.sql
+  - id: shopapp:table:catalog.supplyoffer:select
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: catalog.supplyoffer
+    privilege: select
+  - id: shopapp:table:catalog.supplyoffer:insert
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: catalog.supplyoffer
+    privilege: insert
+  - id: shopapp:table:catalog.supplyoffer:update
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: catalog.supplyoffer
+    privilege: update
+  - id: shopapp:table:finance.supplierlegfact:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: finance.supplierlegfact
+    privilege: select
+  - id: shopapp:table:finance.supplierlegfact:insert
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: finance.supplierlegfact
+    privilege: insert
+  - id: shopapp:table:finance.supplierlegfact:update
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: finance.supplierlegfact
+    privilege: update
+  - id: shopapp:table:finance.supplierlegreversal:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: finance.supplierlegreversal
+    privilege: select
+  - id: shopapp:table:finance.supplierlegreversal:insert
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: finance.supplierlegreversal
+    privilege: insert
+  - id: shopapp:table:finance.supplierlegreversal:update
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: finance.supplierlegreversal
+    privilege: update
+  - id: shopapp:table:fulfillment.supplierresponsibility:select
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: fulfillment.supplierresponsibility
+    privilege: select
+  - id: shopapp:table:fulfillment.supplierresponsibility:insert
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: fulfillment.supplierresponsibility
+    privilege: insert
+  - id: shopapp:table:fulfillment.supplierresponsibility:update
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: fulfillment.supplierresponsibility
+    privilege: update
+  - id: shopapp:table:fulfillment.supplierreturnfact:select
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: fulfillment.supplierreturnfact
+    privilege: select
+  - id: shopapp:table:fulfillment.supplierreturnfact:insert
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: fulfillment.supplierreturnfact
+    privilege: insert
+  - id: shopapp:table:fulfillment.supplierreturnfact:update
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: fulfillment.supplierreturnfact
+    privilege: update
+  - id: shopapp:table:inventory.supplierreservationfact:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: inventory.supplierreservationfact
+    privilege: select
+  - id: shopapp:table:inventory.supplierreservationfact:insert
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: inventory.supplierreservationfact
+    privilege: insert
+  - id: shopapp:table:inventory.supplierreservationfact:update
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: inventory.supplierreservationfact
+    privilege: update
+  - id: shopapp:table:inventory.supplierrestockfact:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: inventory.supplierrestockfact
+    privilege: select
+  - id: shopapp:table:inventory.supplierrestockfact:insert
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: inventory.supplierrestockfact
+    privilege: insert
+  - id: shopapp:table:inventory.supplierrestockfact:update
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: inventory.supplierrestockfact
+    privilege: update
+  - id: shopapp:table:ordering.aftersaleexception:select
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: ordering.aftersaleexception
+    privilege: select
+  - id: shopapp:table:ordering.aftersaleexception:insert
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: ordering.aftersaleexception
+    privilege: insert
+  - id: shopapp:table:ordering.aftersaleexception:update
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: ordering.aftersaleexception
+    privilege: update
+  - id: shopapp:table:ordering.aftersaleroutestep:select
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: ordering.aftersaleroutestep
+    privilege: select
+  - id: shopapp:table:ordering.aftersaleroutestep:insert
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: ordering.aftersaleroutestep
+    privilege: insert
+  - id: shopapp:table:ordering.aftersaleroutestep:update
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: ordering.aftersaleroutestep
+    privilege: update
+  - id: shopapp:table:ordering.lineroutestep:select
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: ordering.lineroutestep
+    privilege: select
+  - id: shopapp:table:ordering.lineroutestep:insert
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: ordering.lineroutestep
+    privilege: insert
+  - id: shopapp:table:ordering.lineroutestep:update
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: ordering.lineroutestep
+    privilege: update
+  - id: shopapp:table:partner.suppliercontract:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.suppliercontract
+    privilege: select
+  - id: shopapp:table:partner.suppliercontract:insert
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.suppliercontract
+    privilege: insert
+  - id: shopapp:table:partner.suppliercontract:update
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.suppliercontract
+    privilege: update
+  - id: shopapp:table:partner.supplierrelationship:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.supplierrelationship
+    privilege: select
+  - id: shopapp:table:partner.supplierrelationship:insert
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.supplierrelationship
+    privilege: insert
+  - id: shopapp:table:partner.supplierrelationship:update
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.supplierrelationship
+    privilege: update
+  - id: shopapp:table:partner.supplyroute:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.supplyroute
+    privilege: select
+  - id: shopapp:table:partner.supplyroute:insert
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.supplyroute
+    privilege: insert
+  - id: shopapp:table:partner.supplyroute:update
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.supplyroute
+    privilege: update
+  - id: shopapp:table:partner.supplyroutestep:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.supplyroutestep
+    privilege: select
+  - id: shopapp:table:partner.supplyroutestep:insert
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.supplyroutestep
+    privilege: insert
+  - id: shopapp:table:partner.supplyroutestep:update
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: partner.supplyroutestep
+    privilege: update
+  - id: shopapp:table:payment.merchantreceipt:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: payment.merchantreceipt
+    privilege: select
+  - id: shopapp:table:payment.merchantreceipt:insert
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: payment.merchantreceipt
+    privilege: insert
+  - id: shopapp:table:payment.merchantreceipt:update
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: payment.merchantreceipt
+    privilege: update
+  - id: shopapp:table:payment.supplierrefundallocation:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: payment.supplierrefundallocation
+    privilege: select
+  - id: shopapp:table:payment.supplierrefundallocation:insert
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: payment.supplierrefundallocation
+    privilege: insert
+  - id: shopapp:table:payment.supplierrefundallocation:update
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopapp
+    objectType: table
+    target: payment.supplierrefundallocation
+    privilege: update
+  - id: shopjob:table:catalog.supplyoffer:select
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: catalog.supplyoffer
+    privilege: select
+  - id: shopjob:table:catalog.supplyoffer:insert
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: catalog.supplyoffer
+    privilege: insert
+  - id: shopjob:table:catalog.supplyoffer:update
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: catalog.supplyoffer
+    privilege: update
+  - id: shopjob:table:finance.supplierlegfact:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: finance.supplierlegfact
+    privilege: select
+  - id: shopjob:table:finance.supplierlegfact:insert
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: finance.supplierlegfact
+    privilege: insert
+  - id: shopjob:table:finance.supplierlegfact:update
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: finance.supplierlegfact
+    privilege: update
+  - id: shopjob:table:finance.supplierlegreversal:select
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: finance.supplierlegreversal
+    privilege: select
+  - id: shopjob:table:finance.supplierlegreversal:insert
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: finance.supplierlegreversal
+    privilege: insert
+  - id: shopjob:table:finance.supplierlegreversal:update
+    kind: grant
+    owner: finance
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: finance.supplierlegreversal
+    privilege: update
+  - id: shopjob:table:fulfillment.supplierresponsibility:select
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: fulfillment.supplierresponsibility
+    privilege: select
+  - id: shopjob:table:fulfillment.supplierresponsibility:insert
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: fulfillment.supplierresponsibility
+    privilege: insert
+  - id: shopjob:table:fulfillment.supplierresponsibility:update
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: fulfillment.supplierresponsibility
+    privilege: update
+  - id: shopjob:table:fulfillment.supplierreturnfact:select
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: fulfillment.supplierreturnfact
+    privilege: select
+  - id: shopjob:table:fulfillment.supplierreturnfact:insert
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: fulfillment.supplierreturnfact
+    privilege: insert
+  - id: shopjob:table:fulfillment.supplierreturnfact:update
+    kind: grant
+    owner: fulfillment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: fulfillment.supplierreturnfact
+    privilege: update
+  - id: shopjob:table:inventory.supplierreservationfact:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: inventory.supplierreservationfact
+    privilege: select
+  - id: shopjob:table:inventory.supplierreservationfact:insert
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: inventory.supplierreservationfact
+    privilege: insert
+  - id: shopjob:table:inventory.supplierreservationfact:update
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: inventory.supplierreservationfact
+    privilege: update
+  - id: shopjob:table:inventory.supplierrestockfact:select
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: inventory.supplierrestockfact
+    privilege: select
+  - id: shopjob:table:inventory.supplierrestockfact:insert
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: inventory.supplierrestockfact
+    privilege: insert
+  - id: shopjob:table:inventory.supplierrestockfact:update
+    kind: grant
+    owner: inventory
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: inventory.supplierrestockfact
+    privilege: update
+  - id: shopjob:table:ordering.aftersaleexception:select
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: ordering.aftersaleexception
+    privilege: select
+  - id: shopjob:table:ordering.aftersaleexception:insert
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: ordering.aftersaleexception
+    privilege: insert
+  - id: shopjob:table:ordering.aftersaleexception:update
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: ordering.aftersaleexception
+    privilege: update
+  - id: shopjob:table:ordering.aftersaleroutestep:select
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: ordering.aftersaleroutestep
+    privilege: select
+  - id: shopjob:table:ordering.aftersaleroutestep:insert
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: ordering.aftersaleroutestep
+    privilege: insert
+  - id: shopjob:table:ordering.aftersaleroutestep:update
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: ordering.aftersaleroutestep
+    privilege: update
+  - id: shopjob:table:ordering.lineroutestep:select
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: ordering.lineroutestep
+    privilege: select
+  - id: shopjob:table:ordering.lineroutestep:insert
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: ordering.lineroutestep
+    privilege: insert
+  - id: shopjob:table:ordering.lineroutestep:update
+    kind: grant
+    owner: ordering
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: ordering.lineroutestep
+    privilege: update
+  - id: shopjob:table:partner.suppliercontract:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.suppliercontract
+    privilege: select
+  - id: shopjob:table:partner.suppliercontract:insert
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.suppliercontract
+    privilege: insert
+  - id: shopjob:table:partner.suppliercontract:update
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.suppliercontract
+    privilege: update
+  - id: shopjob:table:partner.supplierrelationship:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.supplierrelationship
+    privilege: select
+  - id: shopjob:table:partner.supplierrelationship:insert
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.supplierrelationship
+    privilege: insert
+  - id: shopjob:table:partner.supplierrelationship:update
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.supplierrelationship
+    privilege: update
+  - id: shopjob:table:partner.supplyroute:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.supplyroute
+    privilege: select
+  - id: shopjob:table:partner.supplyroute:insert
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.supplyroute
+    privilege: insert
+  - id: shopjob:table:partner.supplyroute:update
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.supplyroute
+    privilege: update
+  - id: shopjob:table:partner.supplyroutestep:select
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.supplyroutestep
+    privilege: select
+  - id: shopjob:table:partner.supplyroutestep:insert
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.supplyroutestep
+    privilege: insert
+  - id: shopjob:table:partner.supplyroutestep:update
+    kind: grant
+    owner: partner
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: partner.supplyroutestep
+    privilege: update
+  - id: shopjob:table:payment.merchantreceipt:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: payment.merchantreceipt
+    privilege: select
+  - id: shopjob:table:payment.merchantreceipt:insert
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: payment.merchantreceipt
+    privilege: insert
+  - id: shopjob:table:payment.merchantreceipt:update
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: payment.merchantreceipt
+    privilege: update
+  - id: shopjob:table:payment.supplierrefundallocation:select
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: payment.supplierrefundallocation
+    privilege: select
+  - id: shopjob:table:payment.supplierrefundallocation:insert
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: payment.supplierrefundallocation
+    privilege: insert
+  - id: shopjob:table:payment.supplierrefundallocation:update
+    kind: grant
+    owner: payment
+    source: 02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql
+    role: shopjob
+    objectType: table
+    target: payment.supplierrefundallocation
+    privilege: update

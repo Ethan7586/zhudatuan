@@ -13,6 +13,8 @@ const dependencies = vi.hoisted(() => ({
   paymentState: vi.fn(async () => 'unpaid'),
   markPaid: vi.fn(),
   markRefunded: vi.fn(),
+  prepareSupplierAftersaleReplay: vi.fn(async () => false),
+  completeSupplierAftersaleReplay: vi.fn(),
 }));
 
 vi.mock('../../benefit', () => ({
@@ -35,6 +37,8 @@ vi.mock('../../order_dingdan', () => ({
     paymentState: dependencies.paymentState,
     markPaid: dependencies.markPaid,
     markRefunded: dependencies.markRefunded,
+    prepareSupplierAftersaleReplay: dependencies.prepareSupplierAftersaleReplay,
+    completeSupplierAftersaleReplay: dependencies.completeSupplierAftersaleReplay,
   },
 }));
 
