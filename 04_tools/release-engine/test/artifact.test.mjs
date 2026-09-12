@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, utimes, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { materializeTarget, packageTarget } from '../src/artifact.mjs';
+import { materializeTarget, packageTarget, resolvePackageArtifactPaths } from '../src/artifact.mjs';
 import { digest } from '../src/stable.mjs';
 
 test('packages only existing changed files and records deletions', async () => {
@@ -73,4 +73,25 @@ test('rejects forbidden directories even when they appear inside an allowed targ
     () => materializeTarget(adapter, 'app', join(root, 'run')),
     (error) => error.code === 'ARTIFACT_FORBIDDEN_PATH',
   );
+});
+
+test('resolves candidate artifact paths after the package moves to another CI runner', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'ai-delivery-portable-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const portable = join(root, '.ai-delivery', 'artifacts', 'app', 'digest', 'v2');
+  const packagePath = join(root, '.ci-release', 'package.json');
+  await mkdir(portable, { recursive: true });
+  await mkdir(join(root, '.ci-release'), { recursive: true });
+  await writeFile(join(portable, 'app.tar.gz'), 'archive');
+  await writeFile(join(portable, 'app.artifact.json'), '{}');
+
+  const relocated = await resolvePackageArtifactPaths(packagePath, {
+    artifacts: [{
+      target: 'app',
+      archive: { path: '/old/runner/.ai-delivery/artifacts/app/digest/v2/app.tar.gz' },
+      manifestPath: '/old/runner/.ai-delivery/artifacts/app/digest/v2/app.artifact.json',
+    }],
+  });
+  assert.equal(relocated.artifacts[0].archive.path, join(portable, 'app.tar.gz'));
+  assert.equal(relocated.artifacts[0].manifestPath, join(portable, 'app.artifact.json'));
 });

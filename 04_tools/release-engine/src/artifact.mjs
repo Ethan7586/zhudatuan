@@ -111,6 +111,44 @@ export async function packageTarget(adapter, plan, buildEvidence, runDirectory, 
   return { ...committed, packageCache: 'miss' };
 }
 
+export async function resolvePackageArtifactPaths(packagePath, packageSet) {
+  const portableRoot = resolve(dirname(packagePath), '..', '.ai-delivery', 'artifacts');
+  const artifacts = [];
+  for (const artifact of packageSet.artifacts ?? []) {
+    artifacts.push({
+      ...artifact,
+      archive: {
+        ...artifact.archive,
+        path: await resolvePackageArtifactPath(artifact.archive?.path, portableRoot),
+      },
+      manifestPath: await resolvePackageArtifactPath(artifact.manifestPath, portableRoot),
+    });
+  }
+  return { ...packageSet, artifacts };
+}
+
+async function resolvePackageArtifactPath(configuredPath, portableRoot) {
+  invariant(typeof configuredPath === 'string' && configuredPath.length > 0,
+    'PACKAGE_ARTIFACT_PATH_INVALID', 'Packaged artifact path is missing');
+  try {
+    const stats = await lstat(configuredPath);
+    invariant(stats.isFile(), 'PACKAGE_ARTIFACT_PATH_INVALID', `Packaged artifact path is not a file: ${configuredPath}`);
+    return configuredPath;
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
+
+  const normalized = configuredPath.replaceAll('\\', '/');
+  const marker = '.ai-delivery/artifacts/';
+  const markerIndex = normalized.lastIndexOf(marker);
+  invariant(markerIndex >= 0, 'PACKAGE_ARTIFACT_PATH_MISSING', `Packaged artifact is unavailable: ${configuredPath}`);
+  const candidate = resolve(portableRoot, normalized.slice(markerIndex + marker.length));
+  invariant(candidate.startsWith(`${portableRoot}/`), 'PACKAGE_ARTIFACT_PATH_UNSAFE', `Packaged artifact path escapes its bundle: ${configuredPath}`);
+  const stats = await lstat(candidate);
+  invariant(stats.isFile(), 'PACKAGE_ARTIFACT_PATH_INVALID', `Packaged artifact path is not a file: ${candidate}`);
+  return candidate;
+}
+
 function deterministicTarArgv(archive, source) {
   const ownership = process.platform === 'darwin'
     ? ['--uid', '0', '--gid', '0', '--uname', 'root', '--gname', 'root']

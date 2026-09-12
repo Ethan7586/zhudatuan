@@ -3,7 +3,7 @@ import { createReadStream } from 'node:fs';
 import { cp, lstat, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 
-import { materializeTarget, packageTarget } from './artifact.mjs';
+import { materializeTarget, packageTarget, resolvePackageArtifactPaths } from './artifact.mjs';
 import { resolveDeployment } from './adapter.mjs';
 import { DeliveryError, invariant } from './errors.mjs';
 import { assertBuildRefIsCheckedOut, assertWorktreeClean, currentHead } from './git.mjs';
@@ -94,7 +94,7 @@ export async function packageCommand(adapter, options) {
 export async function deployCommand(adapter, options) {
   const started = performance.now();
   const packagePath = requiredPath(options.package, 'DEPLOY_PACKAGE_REQUIRED');
-  const packageSet = await readJson(packagePath);
+  const packageSet = await resolvePackageArtifactPaths(packagePath, await readJson(packagePath));
   invariant(packageSet.project === adapter.project, 'DEPLOY_PROJECT_MISMATCH', 'Package belongs to another project');
   const nodes = options.nodes ?? [];
   invariant(nodes.length > 0, 'DEPLOY_NODE_REQUIRED', 'Deploy requires at least one explicit --node');
