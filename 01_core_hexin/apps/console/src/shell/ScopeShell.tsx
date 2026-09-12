@@ -102,6 +102,11 @@ export function ScopeShell() {
     void queryClient.cancelQueries({ queryKey: ['console'] });
     void navigate(target);
   };
+  const prepareMembers = useCallback(() => {
+    if (context.scope.kind !== 'mall' || !context.session.capabilities.includes('member.members.read')) return;
+    void import('../feature/member/MemberPrefetch').then(({ prefetchMembers }) =>
+      prefetchMembers(queryClient, context));
+  }, [context, queryClient]);
   const openRoute = (suffix: string) => {
     setMobileOpen(false);
     const preferredScopeKind = selectConsoleModuleByEntryPath(suffix)?.navigation.preferredScopeKind;
@@ -112,7 +117,22 @@ export function ScopeShell() {
   };
   const prepareRoute = useCallback((moduleId: Parameters<typeof preloadConsoleModule>[0], intent: ConsoleNavigationIntent) => {
     void preloadConsoleModule(moduleId, intent)?.catch(() => undefined);
-  }, []);
+    if (moduleId === 'access') prepareMembers();
+  }, [prepareMembers]);
+
+  useEffect(() => {
+    if (context.scope.kind !== 'mall' || !context.session.capabilities.includes('member.members.read')) return undefined;
+    const prepare = () => {
+      void preloadConsoleModule('access', 'idle')?.catch(() => undefined);
+      prepareMembers();
+    };
+    if (typeof window.requestIdleCallback === 'function') {
+      const idle = window.requestIdleCallback(prepare, { timeout: 1_000 });
+      return () => window.cancelIdleCallback(idle);
+    }
+    const timer = window.setTimeout(prepare, 200);
+    return () => window.clearTimeout(timer);
+  }, [context.scope.id, context.scope.kind, context.session.capabilities, context.session.membership, prepareMembers]);
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
     if (next !== undefined) navigateAfterCancel(`${scopePath(next, currentSuffix || 'cockpit')}${location.search}`);

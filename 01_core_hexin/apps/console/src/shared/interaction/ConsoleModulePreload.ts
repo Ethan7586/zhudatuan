@@ -69,7 +69,7 @@ function routeLoadDefinitions(modules: readonly ConsoleModuleManifest[]): readon
 
 const consoleModulePreloader = createConsoleModulePreloader(routeLoadDefinitions(consoleModules));
 
-export type ConsoleNavigationIntent = 'hover' | 'focus' | 'pointerdown';
+export type ConsoleNavigationIntent = 'idle' | 'hover' | 'focus' | 'pointerdown' | 'touchstart';
 
 export function preloadConsoleModule(moduleId: ConsoleModuleId, intent: ConsoleNavigationIntent): Promise<unknown> | undefined {
   return consoleModulePreloader.preloadModule(moduleId, `navigation.${intent}`);

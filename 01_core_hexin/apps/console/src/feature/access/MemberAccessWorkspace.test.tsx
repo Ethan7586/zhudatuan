@@ -7,6 +7,7 @@ import { MemoryRouter } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
+import { memberKey } from '../member/MemberQuery';
 import { MemberAccessWorkspace } from './MemberAccessWorkspace';
 
 const scope: ConsoleScope = { kind: 'platform', id: 'organization-platform-root', name: '主打团平台' };
@@ -103,15 +104,30 @@ describe('member directory pagination', () => {
     });
 
     expect(await screen.findByRole('row', { name: '查看管理员 同主体管理员' })).toBeTruthy();
-    expect(screen.getAllByText('高级管理员').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('高级管理员')).length).toBeGreaterThan(0);
     expect(screen.queryByText('同主体 L6 会员')).toBeNull();
     expect(screen.queryByText('权限角色幽灵')).toBeNull();
     expect(screen.queryByText('当前登录者')).toBeNull();
   });
+
+  it('keeps cached members visible when the background refresh fails', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    client.setQueryData(memberKey(context), { items: [member('member:cached', '缓存会员')], count: 1 });
+    server.use(http.get('*/api/v1/members', async () => {
+      await delay(20);
+      return HttpResponse.json({ code: 'MEMBER_REFRESH_UNAVAILABLE' }, { status: 503 });
+    }));
+
+    renderWorkspace(context, client);
+
+    expect(await screen.findByRole('row', { name: '查看管理员 缓存会员' })).toBeTruthy();
+    expect(await screen.findByText('刷新失败，已保留已有会员名单')).toBeTruthy();
+    expect(screen.getByRole('row', { name: '查看管理员 缓存会员' })).toBeTruthy();
+  });
+
 });
 
-function renderWorkspace(value: ConsoleContext = context) {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+function renderWorkspace(value: ConsoleContext = context, client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })) {
   return render(
     <MemoryRouter initialEntries={['/scopes/platform/organization-platform-root/settings/members']}>
       <QueryClientProvider client={client}>

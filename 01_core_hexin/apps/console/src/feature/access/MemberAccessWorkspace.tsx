@@ -10,7 +10,7 @@ import { pageCursor } from '../../shared/url/PageCursor';
 import { scopePath } from '../../shared/url/ScopePath';
 import { MemberInvitationDialog } from '../member/MemberInvitationDialog';
 import { memberInvitationAvailable } from '../member/MemberInvitationCommand';
-import { memberKey, readMembers } from '../member/MemberQuery';
+import { belongsToMemberPartition, memberKey, readMembers } from '../member/MemberQuery';
 import { MemberRegistrationResetDialog } from '../member/MemberRegistrationResetDialog';
 import { isManagementRole } from './ManagementRole';
 import type { Member } from '../member/MemberSchema';
@@ -50,18 +50,24 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   const canReadMembers = primary === 'members' || hasOperation(context, 'member.members.read');
   const accessCursor = primary === 'access' ? cursor : undefined;
   const memberCursor = primary === 'members' ? cursor : undefined;
+  const memberQuery = useQuery({
+    queryKey: memberKey(context, memberCursor),
+    queryFn: ({ signal }) => readMembers(context, memberCursor, signal),
+    enabled: canReadMembers,
+    placeholderData: (previousData, previousQuery) =>
+      belongsToMemberPartition(previousQuery?.queryKey, context) ? previousData : undefined,
+    staleTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
   const accessQuery = useQuery({
     queryKey: accessKey(context, accessCursor),
     queryFn: ({ signal }) => readAccess(context, accessCursor, signal),
     enabled: canReadAccess,
     placeholderData: keepPreviousData,
     staleTime: ACCESS_QUERY_STALE_TIME_MS,
-  });
-  const memberQuery = useQuery({
-    queryKey: memberKey(context, memberCursor),
-    queryFn: ({ signal }) => readMembers(context, memberCursor, signal),
-    enabled: canReadMembers,
-    placeholderData: keepPreviousData,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
   const accessItems = accessQuery.data?.items ?? [];
   const memberItems = memberQuery.data?.items ?? [];
@@ -82,7 +88,8 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
   const detailOpen = selected !== undefined;
   const hasSourceData = memberQuery.data !== undefined || accessQuery.data !== undefined;
   const fatalError = hasSourceData ? undefined : safeQueryError(memberQuery.error) ?? safeQueryError(accessQuery.error);
-  const supplementalError = hasSourceData ? safeQueryError(memberQuery.error) ?? safeQueryError(accessQuery.error) : undefined;
+  const memberRefreshError = memberQuery.data === undefined ? undefined : safeQueryError(memberQuery.error);
+  const supplementalError = hasSourceData ? safeQueryError(accessQuery.error) : undefined;
   const fetching = memberQuery.isFetching || accessQuery.isFetching;
   const condition = resourceState(hasSourceData ? { items: rows } : undefined, fetching, fatalError);
   const resetAvailable = context.session.permissions.includes('identity.registration.reset') && context.session.capabilities.includes('identity.members.reset') && context.session.csrf !== undefined;
@@ -201,7 +208,9 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
 
             <footer className="storefrontmemberpagination">
               <span>
-                当前页 {visibleRows.length} 位 · 共 {total} 位管理员
+                {memberRefreshError === undefined
+                  ? `当前页 ${visibleRows.length} 位 · 共 ${total} 位管理员`
+                  : '刷新失败，已保留已有会员名单'}
               </span>
               <button
                 type="button"
