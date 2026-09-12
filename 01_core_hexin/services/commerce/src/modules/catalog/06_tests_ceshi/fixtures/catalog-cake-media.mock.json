@@ -1,0 +1,61 @@
+{
+  "schema": "catalog-package/v1",
+  "packageId": "mock-cake-media-20260910",
+  "compiledAt": "2026-09-10T00:00:00.000Z",
+  "source": {
+    "name": "test-fixture-cake",
+    "file": "catalog-cake-media.mock.json",
+    "dataSource": "simulated",
+    "isMock": true
+  },
+  "validation": {
+    "status": "passed",
+    "errors": []
+  },
+  "items": [
+    {
+      "source": {
+        "row": 1,
+        "productRef": "MOCK-CAKE-PRODUCT-001",
+        "skuRef": "MOCK-CAKE-SKU-001"
+      },
+      "product": {
+        "title": "测试蛋糕｜多 OSS 媒体绑定",
+        "description": "仅用于本地验证商品结构化数据与正式媒体副本绑定。",
+        "category": "cake",
+        "type": "physical",
+        "attributes": {
+          "fixture": true,
+          "flavor": "strawberry"
+        },
+        "media": [
+          {
+            "kind": "image",
+            "reference": "fixture:catalog-cake-media/cover"
+          }
+        ]
+      },
+      "sku": {
+        "code": "MOCK-CAKE-SKU-001",
+        "specifications": {
+          "size": "six-inch"
+        }
+      },
+      "offer": {
+        "currency": "CNY",
+        "amountMinor": 19800,
+        "compareMinor": 23800
+      },
+      "inventory": {
+        "available": 8
+      },
+      "publication": {
+        "state": "draft"
+      },
+      "validation": {
+        "status": "valid",
+        "errors": []
+      }
+    }
+  ]
+}

@@ -210,6 +210,8 @@ const REPAIR_FILES = [
   '20260912180000_reconcile_identity_runtime_state.sql',
   '20260912181000_restore_identity_reconciliation_function_ownership.sql',
   '20260912190000_create_supplier_four_flow_ledger.sql',
+  '20260912200000_create_sfl_company_template_clone.sql',
+  '20260912210000_catalog_media_replication_persistence.sql',
 ];
 
 const mode = process.argv[2];

@@ -1020,6 +1020,11 @@ objects:
     owner: notification
     source: 02_platform_pingtai/database/supabase/migrations/20260821047000_notification_lifecycle.sql
     operationalOwner: notification
+  - id: organization.clone_company_template
+    kind: function
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912200000_create_sfl_company_template_clone.sql
+    operationalOwner: organization
   - id: organization.provision_hosted_node
     kind: function
     owner: organization
@@ -22252,6 +22257,14 @@ objects:
     objectType: function
     target: organization.open_hosted_member_mall(text,text,jsonb)
     privilege: execute
+  - id: zhudatuanwebapi:function:organization.clone_company_template(jsonb):execute
+    kind: grant
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912200000_create_sfl_company_template_clone.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: organization.clone_company_template(jsonb)
+    privilege: execute
   - id: zhudatuanwebapi:function:organization.upgrade_hosted_mall_to_sovereign(text,text,jsonb):execute
     kind: grant
     owner: organization
@@ -27327,6 +27340,16 @@ objects:
     owner: catalog
     source: 02_platform_pingtai/database/supabase/migrations/20260821017000_create_catalog_pricing.sql
     rls: true
+  - id: catalog.mediaobject
+    kind: table
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912210000_catalog_media_replication_persistence.sql
+    rls: false
+  - id: catalog.mediareplica
+    kind: table
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912210000_catalog_media_replication_persistence.sql
+    rls: false
   - id: catalog.pool
     kind: table
     owner: catalog
@@ -27347,6 +27370,11 @@ objects:
     owner: catalog
     source: 02_platform_pingtai/database/supabase/migrations/20260821017000_create_catalog_pricing.sql
     rls: true
+  - id: catalog.productmedia
+    kind: table
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912210000_catalog_media_replication_persistence.sql
+    rls: false
   - id: catalog.review
     kind: table
     owner: catalog
@@ -27962,6 +27990,16 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260821014000_create_organization_partner.sql
     rls: true
+  - id: organization.companyclone
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912200000_create_sfl_company_template_clone.sql
+    rls: false
+  - id: organization.companyuniquebinding
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912200000_create_sfl_company_template_clone.sql
+    rls: false
   - id: organization.hostednodeprovisioning
     kind: table
     owner: organization
@@ -28052,6 +28090,11 @@ objects:
     owner: organization
     source: 02_platform_pingtai/database/supabase/migrations/20260821014000_create_organization_partner.sql
     rls: true
+  - id: organization.operatingline
+    kind: table
+    owner: organization
+    source: 02_platform_pingtai/database/supabase/migrations/20260912200000_create_sfl_company_template_clone.sql
+    rls: false
   - id: organization.sourcebinding
     kind: table
     owner: organization
