@@ -179,7 +179,7 @@ export async function identityRegistrationRuntimeCompatibility(
       to_regprocedure('identity.resolve_storefront_member_context(text,text)'),
       to_regprocedure('access.resolve_session_membership(text,text,text,text)'),
       to_regprocedure('access.session_membership_version(text,text,text,text)'),
-      to_regprocedure('access.resolve_session_scope(text,text,text,text,text)'),
+      to_regprocedure('access.resolve_session_scope(text,text,text,text,text,text,text)'),
       to_regprocedure('capability.session_membership_operations(text,text,text,text)')
     ],null) is null functions,
     array_position(array[

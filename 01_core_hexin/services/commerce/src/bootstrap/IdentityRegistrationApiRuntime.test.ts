@@ -54,6 +54,7 @@ describe('identity registration API runtime', () => {
     expect(compatibilityStatement).toContain("checksum='b1e238eb8de569b0de9d1d2766620e1f661268d2f9260e646208d4f24715b37a'");
     expect(compatibilityStatement).toContain("version='20260912240000'");
     expect(compatibilityStatement).toContain("checksum='9fa01e96c2698e0da588f0b82780ecdf31eeebd34c78aaffc1b35664d9dc1174'");
+    expect(compatibilityStatement).toContain("access.resolve_session_scope(text,text,text,text,text,text,text)");
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, current_user: 'shopjob' })))
       .rejects.toThrow('IDENTITY_REGISTRATION_RUNTIME_COMPATIBILITY_FAILED');
     await expect(assertIdentityRegistrationRuntimeCompatibility(pool({ ...healthy, relations: false })))
