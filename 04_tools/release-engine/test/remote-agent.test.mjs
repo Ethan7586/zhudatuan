@@ -610,6 +610,16 @@ test('adopts an unmanaged current directory as the immutable rollback baseline',
   assert.equal(await readFile(join(current, 'app.txt'), 'utf8'), 'existing runtime\n');
 });
 
+test('candidate lookup tolerates an unmanaged current directory without replacing it', async () => {
+  const fixture = await createFixture();
+  await mkdir(join(fixture.pointerRoot, 'current'), { recursive: true });
+  await writeFile(join(fixture.pointerRoot, 'current', 'legacy.txt'), 'legacy-current\n');
+  const artifact = await createArtifact(fixture, 'candidate-for-unmanaged-current', 'd'.repeat(40));
+  const lookup = await invoke(fixture, 'lookup', artifact);
+  assert.equal(lookup.result.current, null);
+  assert.equal(await readFile(join(fixture.pointerRoot, 'current', 'legacy.txt'), 'utf8'), 'legacy-current\n');
+});
+
 test('remote policy can block production while still accepting a candidate', async () => {
   const fixture = await createFixture();
   const artifact = await createArtifact(fixture, 'candidate-only', '4'.repeat(40));

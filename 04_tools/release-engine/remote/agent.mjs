@@ -1232,7 +1232,7 @@ async function pointer(root, name) {
   try {
     return await readlink(join(root, name));
   } catch (error) {
-    if (error?.code === 'ENOENT') return null;
+    if (error?.code === 'ENOENT' || error?.code === 'EINVAL') return null;
     throw error;
   }
 }
