@@ -429,12 +429,12 @@ describe('SFL node kernel', () => {
   it('rejects hosted request shapes outside the shared node model', () => {
     const request = {
       idempotency_key: 'hosted-request:fixture:invalid',
-      node_id: 'node:fixture-hosted:l1',
+      node_id: 'node:fixture-hosted:l2',
       parent_node_id: nodeId('l0'),
       realm_id: 'realm:fixture-hosted-invalid',
       node_profile: 'consumer',
       mall_id: null,
-      signed_level: 'L1',
+      signed_level: 'L2',
       effective_at: relationEffectiveAt,
       requested_by: 'principal:fixture:operator',
       trace_id: 'trace:fixture:hosted-invalid',
@@ -444,6 +444,8 @@ describe('SFL node kernel', () => {
       .toThrow('SFL_HOSTED_NODE_PROFILE_MALL_INVALID');
     expect(() => parseHostedNodeProvisioningRequest({ ...request, signed_level: 'L0' }))
       .toThrow('SFL_HOSTED_NODE_LEVEL_INVALID');
+    expect(() => parseHostedNodeProvisioningRequest({ ...request, signed_level: 'L1' }))
+      .toThrow('SFL_L1_REQUIRES_SOVEREIGN');
     expect(() => parseHostedNodeProvisioningRequest({ ...request, parent_node_id: request.node_id }))
       .toThrow('SFL_HOSTED_NODE_PARENT_INVALID');
   });

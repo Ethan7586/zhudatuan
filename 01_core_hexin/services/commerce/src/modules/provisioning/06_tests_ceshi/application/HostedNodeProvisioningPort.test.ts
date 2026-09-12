@@ -46,4 +46,24 @@ describe('HostedNodeProvisioningPort', () => {
     expect(query).toHaveBeenCalledWith('select * from organization.provision_hosted_node($1::jsonb)', [JSON.stringify(request)]);
     expect(result).toMatchObject({ node_id: request.node_id, relation_version: 1, replayed: false });
   });
+
+  it('keeps L1 on the sovereign provisioning path', async () => {
+    const query = vi.fn();
+    const request = {
+      idempotency_key: 'hosted-request:test:l1',
+      node_id: 'node:test-hosted:l1',
+      parent_node_id: 'node:test-hosted:l0',
+      realm_id: 'realm:test-hosted-l1',
+      node_profile: 'operating_mall',
+      mall_id: 'mall:test:hosted-l1',
+      signed_level: 'L1',
+      effective_at: '2026-09-11T00:00:00.000Z',
+      requested_by: 'principal:test:operator',
+      trace_id: 'trace:test:hosted-l1',
+    } as const;
+
+    await expect(new HostedNodeProvisioningPort().provision({ query }, request))
+      .rejects.toThrow('SFL_L1_REQUIRES_SOVEREIGN');
+    expect(query).not.toHaveBeenCalled();
+  });
 });
