@@ -357,6 +357,16 @@ objects:
     source: 02_platform_pingtai/database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - 01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts
+  - id: access.resolve_session_membership
+    kind: function
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    operationalOwner: access
+  - id: access.resolve_session_scope
+    kind: function
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    operationalOwner: access
   - id: access.resource_scope
     kind: function
     owner: access
@@ -371,6 +381,16 @@ objects:
     kind: function
     owner: access
     source: 02_platform_pingtai/database/supabase/migrations/20260821029000_publish_domain_contract.sql
+    operationalOwner: access
+  - id: access.session_membership_context_matches
+    kind: function
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    operationalOwner: access
+  - id: access.session_membership_version
+    kind: function
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
     operationalOwner: access
   - id: access.web_audit_scope_allowed
     kind: function
@@ -473,6 +493,11 @@ objects:
     source: 02_platform_pingtai/database/supabase/migrations/20260821029000_publish_domain_contract.sql
     callers:
       - 01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts
+  - id: capability.session_membership_operations
+    kind: function
+    owner: capability
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    operationalOwner: capability
   - id: catalog.console_supply_network
     kind: function
     owner: catalog
@@ -29855,3 +29880,339 @@ objects:
     objectType: table
     target: payment.supplierrefundallocation
     privilege: update
+  - id: shopapp:function:access.resolve_session_membership(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: shopapp
+    objectType: function
+    target: access.resolve_session_membership(text,text,text,text)
+    privilege: execute
+  - id: shopapp:function:access.resolve_session_scope(text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: shopapp
+    objectType: function
+    target: access.resolve_session_scope(text,text,text,text,text,text,text)
+    privilege: execute
+  - id: shopapp:function:access.session_membership_context_matches(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: shopapp
+    objectType: function
+    target: access.session_membership_context_matches(text,text,text,text)
+    privilege: execute
+  - id: shopapp:function:access.session_membership_version(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: shopapp
+    objectType: function
+    target: access.session_membership_version(text,text,text,text)
+    privilege: execute
+  - id: shopapp:function:capability.session_membership_operations(text,text,text,text):execute
+    kind: grant
+    owner: capability
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: shopapp
+    objectType: function
+    target: capability.session_membership_operations(text,text,text,text)
+    privilege: execute
+  - id: shopconsole:function:access.resolve_session_membership(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: shopconsole
+    objectType: function
+    target: access.resolve_session_membership(text,text,text,text)
+    privilege: execute
+  - id: shopconsole:function:access.resolve_session_scope(text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: shopconsole
+    objectType: function
+    target: access.resolve_session_scope(text,text,text,text,text,text,text)
+    privilege: execute
+  - id: shopconsole:function:access.session_membership_context_matches(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: shopconsole
+    objectType: function
+    target: access.session_membership_context_matches(text,text,text,text)
+    privilege: execute
+  - id: shopconsole:function:access.session_membership_version(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: shopconsole
+    objectType: function
+    target: access.session_membership_version(text,text,text,text)
+    privilege: execute
+  - id: shopconsole:function:capability.session_membership_operations(text,text,text,text):execute
+    kind: grant
+    owner: capability
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: shopconsole
+    objectType: function
+    target: capability.session_membership_operations(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:access.resolve_session_membership(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.resolve_session_membership(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:access.resolve_session_scope(text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.resolve_session_scope(text,text,text,text,text,text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:access.session_membership_context_matches(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.session_membership_context_matches(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:access.session_membership_version(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: access.session_membership_version(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanidentityapi:function:capability.session_membership_operations(text,text,text,text):execute
+    kind: grant
+    owner: capability
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanidentityapi
+    objectType: function
+    target: capability.session_membership_operations(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanwebapi:function:access.resolve_session_membership(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: access.resolve_session_membership(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanwebapi:function:access.resolve_session_scope(text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: access.resolve_session_scope(text,text,text,text,text,text,text)
+    privilege: execute
+  - id: zhudatuanwebapi:function:access.session_membership_context_matches(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: access.session_membership_context_matches(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanwebapi:function:access.session_membership_version(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: access.session_membership_version(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanwebapi:function:capability.session_membership_operations(text,text,text,text):execute
+    kind: grant
+    owner: capability
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanwebapi
+    objectType: function
+    target: capability.session_membership_operations(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanpurchaseapi:function:access.resolve_session_membership(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanpurchaseapi
+    objectType: function
+    target: access.resolve_session_membership(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanpurchaseapi:function:access.resolve_session_scope(text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanpurchaseapi
+    objectType: function
+    target: access.resolve_session_scope(text,text,text,text,text,text,text)
+    privilege: execute
+  - id: zhudatuanpurchaseapi:function:access.session_membership_context_matches(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanpurchaseapi
+    objectType: function
+    target: access.session_membership_context_matches(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanpurchaseapi:function:access.session_membership_version(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanpurchaseapi
+    objectType: function
+    target: access.session_membership_version(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanpurchaseapi:function:capability.session_membership_operations(text,text,text,text):execute
+    kind: grant
+    owner: capability
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanpurchaseapi
+    objectType: function
+    target: capability.session_membership_operations(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:access.resolve_session_membership(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: access.resolve_session_membership(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:access.resolve_session_scope(text,text,text,text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: access.resolve_session_scope(text,text,text,text,text,text,text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:access.session_membership_context_matches(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: access.session_membership_context_matches(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:access.session_membership_version(text,text,text,text):execute
+    kind: grant
+    owner: access
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: access.session_membership_version(text,text,text,text)
+    privilege: execute
+  - id: zhudatuanprovisioningapi:function:capability.session_membership_operations(text,text,text,text):execute
+    kind: grant
+    owner: capability
+    source: 02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql
+    role: zhudatuanprovisioningapi
+    objectType: function
+    target: capability.session_membership_operations(text,text,text,text)
+    privilege: execute
+  - id: shopjob:table:catalog.mediaobject:select
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.mediaobject
+    privilege: select
+  - id: shopjob:table:catalog.mediaobject:insert
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.mediaobject
+    privilege: insert
+  - id: shopjob:table:catalog.mediaobject:update
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.mediaobject
+    privilege: update
+  - id: shopjob:table:catalog.mediaobject:delete
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.mediaobject
+    privilege: delete
+  - id: shopjob:table:catalog.mediareplica:select
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.mediareplica
+    privilege: select
+  - id: shopjob:table:catalog.mediareplica:insert
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.mediareplica
+    privilege: insert
+  - id: shopjob:table:catalog.mediareplica:update
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.mediareplica
+    privilege: update
+  - id: shopjob:table:catalog.mediareplica:delete
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.mediareplica
+    privilege: delete
+  - id: shopjob:table:catalog.productmedia:select
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.productmedia
+    privilege: select
+  - id: shopjob:table:catalog.productmedia:insert
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.productmedia
+    privilege: insert
+  - id: shopjob:table:catalog.productmedia:update
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.productmedia
+    privilege: update
+  - id: shopjob:table:catalog.productmedia:delete
+    kind: grant
+    owner: catalog
+    source: 02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql
+    role: shopjob
+    objectType: table
+    target: catalog.productmedia
+    privilege: delete
