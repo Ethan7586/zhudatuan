@@ -30,6 +30,26 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       if (body.action !== undefined) throw new Error('VALIDATION_FAILED:action');
       const permissions = body.permissions;
       if (!Array.isArray(permissions) || permissions.some((item) => typeof item !== 'string')) throw new Error('VALIDATION_FAILED:permissions');
+      const assignedTargets = await database.query<ManagementTargetRow>(`select target.id target_membership_id,
+        target.client target_client,target.status target_status,target.realm_id target_realm_id,
+        actor.realm_id actor_realm_id,access.scope_object(target.organization_id) target_membership_scope,
+        exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
+          and realm_target.surface='admin' and realm_target.membership_client='operator') target_realm_binding,
+        exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
+          and realm_target.surface='admin' and realm_target.membership_client='operator'
+          and realm_target.membership_organization_id=target.organization_id) target_organization_binding
+        from access.membershiprole assignment
+        join access.membership target on target.id=assignment.membership_id
+        join access.membership actor on actor.id=$3 and actor.status='active' and actor.client='operator'
+        where assignment.role_id=$1 and assignment.effective_at<=clock_timestamp()
+          and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
+          and exists(select 1 from access.permission permission
+            join capability.operation operation on operation.permission_code=permission.code and operation.audience='operator'
+            where permission.code=any($2::text[]) and permission.status='active'
+              and not exists(select 1 from capability.operation other where other.permission_code=permission.code
+                and other.audience<>'operator'))
+        order by target.id for update of target`, [role, permissions, access.membership.id]);
+      for (const target of assignedTargets.rows) requireManagementTarget(target, access.scope);
       const result = await database.query(`with target as (
           insert into access.role(id,scope_id,name,status,version) values($1,$2,$3,'active',0)
           on conflict(id) do update set name=excluded.name,status='active',version=access.role.version+1
@@ -62,12 +82,23 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       if (body.effect === 'deny') throw new Error('SCOPE_DENY_UNSUPPORTED');
       if (body.effect !== undefined && body.effect !== 'allow') throw new Error('VALIDATION_FAILED:effect');
       const effect = 'allow';
-      const resolved = await database.query<{ scope: unknown; target_membership_scope: unknown }>(`select access.scope_object($1) scope,
-        access.scope_object(target.organization_id) target_membership_scope
-        from access.membership target where target.id=$2 and target.status='active'
-        for update of target`, [scope, membership]);
-      const targetScope = canonicalScope(resolved.rows[0]?.scope);
-      const targetMembershipScope = canonicalScope(resolved.rows[0]?.target_membership_scope);
+      const resolved = await database.query<ManagementTargetRow & { scope: unknown }>(`select access.scope_object($1) scope,
+        access.scope_object(target.organization_id) target_membership_scope,target.id target_membership_id,
+        target.client target_client,target.status target_status,target.realm_id target_realm_id,
+        actor.realm_id actor_realm_id,
+        exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
+          and realm_target.surface='admin' and realm_target.membership_client='operator') target_realm_binding,
+        exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
+          and realm_target.surface='admin' and realm_target.membership_client='operator'
+          and realm_target.membership_organization_id=target.organization_id) target_organization_binding
+        from access.membership target
+        join access.membership actor on actor.id=$3 and actor.status='active' and actor.client='operator'
+        where target.id=$2 for update of target`, [scope, membership, access.membership.id]);
+      const target = resolved.rows[0];
+      if (target === undefined) throw new Error('MANAGEMENT_PERMISSION_TARGET_NOT_ACTIVE_OPERATOR');
+      const targetScope = canonicalScope(target.scope);
+      const targetMembershipScope = canonicalScope(target.target_membership_scope);
+      requireManagementTarget(target, targetScope);
       const scopeDecision = targetScope === null ? null
         : checkScope(access.membership, 'access.scope.manage', targetScope, new Date());
       if (targetScope === null || targetMembershipScope === null || kind !== targetScope.kind
@@ -165,15 +196,40 @@ async function manageRoleAssignment(request: OperationRequest, database: Operati
     target_membership_scope: unknown;
     target_access_version: string | number;
     role_id: string;
+    management_role: boolean;
+    target_membership_id: string | null;
+    target_client: string | null;
+    target_status: string | null;
+    target_realm_id: string | null;
+    actor_realm_id: string | null;
+    target_realm_binding: boolean;
+    target_organization_binding: boolean;
   }>(`select access.scope_object($1) scope,access.scope_object(target.organization_id) target_membership_scope,
-    target.access_version target_access_version,role.id role_id
-    from access.membership target join access.role role on role.id=$3 and role.scope_id=$4 and role.status='active'
+    target.access_version target_access_version,role.id role_id,target.id target_membership_id,
+    target.client target_client,target.status target_status,target.realm_id target_realm_id,
+    actor.realm_id actor_realm_id,
+    exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
+      and realm_target.surface='admin' and realm_target.membership_client='operator') target_realm_binding,
+    exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
+      and realm_target.surface='admin' and realm_target.membership_client='operator'
+      and realm_target.membership_organization_id=target.organization_id) target_organization_binding,
+    exists(select 1 from access.rolepermission mapping
+      join access.permission permission on permission.id=mapping.permission_id and permission.status='active'
+      join capability.operation operation on operation.permission_code=permission.code and operation.audience='operator'
+      where mapping.role_id=role.id and mapping.effect='allow'
+        and not exists(select 1 from capability.operation other where other.permission_code=permission.code
+          and other.audience<>'operator')) management_role
+    from access.membership target
+    join access.membership actor on actor.id=$5 and actor.status='active' and actor.client='operator'
+    join access.role role on role.id=$3 and role.scope_id=$4 and role.status='active'
       and role.id not in('role:self','role-platform-owner-v2','role-platform-owner-successor-v1','role-zhudatuan-pending-operator')
-    where target.id=$2 and target.status='active' for update of target`, [scope, membership, role, access.scope.id]);
+    where target.id=$2 for update of target`, [scope, membership, role, access.scope.id, access.membership.id]);
   const target = resolved.rows[0];
   if (target === undefined) throw new Error('ROLE_ASSIGNMENT_NOT_AVAILABLE');
   const targetScope = canonicalScope(target.scope);
   const targetMembershipScope = canonicalScope(target.target_membership_scope);
+  if (target.management_role) requireManagementTarget(target, targetScope);
+  else if (target.target_status !== 'active') throw new Error('ROLE_ASSIGNMENT_NOT_AVAILABLE');
   const scopeDecision = targetScope === null ? null : checkScope(access.membership, 'access.scope.manage', targetScope, new Date());
   if (targetScope === null || targetMembershipScope === null || kind !== targetScope.kind
     || !scopeContains(access.scope, targetScope)
@@ -261,6 +317,37 @@ function numericVersion(value: string | number): number {
   const version = Number(value);
   if (!Number.isSafeInteger(version) || version < 0) throw new Error('INVALID_ACCESS_VERSION');
   return version;
+}
+
+interface ManagementTargetRow {
+  readonly target_membership_id: string | null;
+  readonly target_client: string | null;
+  readonly target_status: string | null;
+  readonly target_realm_id: string | null;
+  readonly actor_realm_id: string | null;
+  readonly target_membership_scope: unknown;
+  readonly target_realm_binding: boolean;
+  readonly target_organization_binding: boolean;
+}
+
+function requireManagementTarget(target: ManagementTargetRow, grantScope: Scope | null): void {
+  if (target.target_membership_id === null || target.target_client !== 'operator' || target.target_status !== 'active') {
+    throw new Error('MANAGEMENT_PERMISSION_TARGET_NOT_ACTIVE_OPERATOR');
+  }
+  if (target.target_realm_id === null || target.actor_realm_id === null
+    || target.target_realm_id !== target.actor_realm_id || !target.target_realm_binding) {
+    throw new Error('MANAGEMENT_PERMISSION_REALM_MISMATCH');
+  }
+  const membershipScope = canonicalScope(target.target_membership_scope);
+  if (!target.target_organization_binding || grantScope === null || membershipScope === null
+    || governanceOrganization(grantScope) !== governanceOrganization(membershipScope)) {
+    throw new Error('MANAGEMENT_PERMISSION_ORGANIZATION_MISMATCH');
+  }
+}
+
+function governanceOrganization(scope: Scope): string {
+  if (scope.kind === 'platform' || scope.kind === 'tenant') return scope.id;
+  return scope.tenant ?? [...scope.path].reverse().find(({ kind }) => kind === 'tenant')?.id ?? scope.id;
 }
 
 function canonicalScope(value: unknown): Scope | null {

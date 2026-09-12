@@ -9,6 +9,7 @@ const container = `zhudatuan-admin-segment-${identifier}`;
 const database = 'zhudatuan_admin_segment';
 const password = `Administrator${identifier}A`;
 const migrationPath = '02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql';
+const targetSeparationMigrationPath = '02_platform_pingtai/database/supabase/migrations/20260912230000_separate_permission_write_targets.sql';
 
 try {
   await run('docker', ['info', '--format', '{{.ServerVersion}}'], { quiet: true });
@@ -18,6 +19,8 @@ try {
   const files = [
     '02_platform_pingtai/database/supabase/tests/sfl_administrator_segment_scope_bootstrap.sql',
     migrationPath,
+    '02_platform_pingtai/database/supabase/tests/permission_write_target_separation_bootstrap.sql',
+    targetSeparationMigrationPath,
     '02_platform_pingtai/database/supabase/tests/sfl_administrator_segment_scope_contract.sql',
   ];
   const sql = await Promise.all(files.map((path) => readFile(join(repositoryRoot, path), 'utf8')));
@@ -52,7 +55,7 @@ try {
     end if;
   end $verify$;`);
 
-  const source = await readFile(join(repositoryRoot, migrationPath), 'utf8');
+  const source = `${await readFile(join(repositoryRoot, migrationPath), 'utf8')}\n${await readFile(join(repositoryRoot, targetSeparationMigrationPath), 'utf8')}`;
   const forbidden = /update\s+organization\.noderelation|set\s+signed_level|set\s+parent_node_id|hbbtzn|zhudatuan\.com|1[3-9][0-9]{9}/i;
   const match = forbidden.exec(source);
   if (match) throw new Error(`SFL_ADMIN_SCOPE_FORBIDDEN_COUPLING:${match[0]}`);
@@ -61,7 +64,7 @@ try {
     || !source.includes("relation.signed_level~'^L([0-9]|10|11)$'")) {
     throw new Error('SFL_ADMIN_SCOPE_SHARED_SEMANTICS_MISSING');
   }
-  console.log('SFL administrator segment scope PostgreSQL 17 acceptance passed: independent administrator identity, L0-L5/L6-L11/both read-write boundaries, Realm/line/subtree isolation, version history, revoke, rollback, five-way idempotency and deterministic race');
+  console.log('SFL administrator segment scope PostgreSQL 17 acceptance passed: pre-existing active operator targets only, Realm/governance organization alignment, no identity mutation, L0-L5/L6-L11/both boundaries, rollback and deterministic concurrency');
 } finally {
   await run('docker', ['rm', '-f', container], { allowFailure: true, quiet: true });
 }

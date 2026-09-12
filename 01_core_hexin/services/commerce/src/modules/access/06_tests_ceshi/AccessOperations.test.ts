@@ -61,6 +61,16 @@ describe('access scope management boundary', () => {
     expect(versionWrite?.values).toEqual(['role:finance']);
   });
 
+  it('rejects adding operator-only Permissions to a role already attached to storefront Memberships', async () => {
+    const harness = operationHarness({ targetClient: 'storefront' });
+
+    await expect(accessOperations(context(harness.pool)).invoke(roleRequest()))
+      .rejects.toThrow('MANAGEMENT_PERMISSION_TARGET_NOT_ACTIVE_OPERATOR');
+
+    expect(harness.queries.some((query) => query.includes('insert into access.role(id,scope_id,name,status,version)'))).toBe(false);
+    expect(harness.queries.some((query) => query.includes('insert into access.rolepermission'))).toBe(false);
+  });
+
   it('assigns a custom identity with a directly specified scope and raises Access Version once', async () => {
     const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantA });
 
@@ -74,6 +84,35 @@ describe('access scope management boundary', () => {
       'organization-platform-root/tenant-a/mall-a', 'direct',
     ]);
     expect(harness.queries.filter((query) => query.startsWith('update access.membership set access_version')).length).toBe(1);
+  });
+
+  it('rejects a management role for a storefront membership before writing role or scope state', async () => {
+    const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantA, targetClient: 'storefront' });
+
+    await expect(accessOperations(context(harness.pool)).invoke(assignmentRequest('assign', 'direct', mallA)))
+      .rejects.toThrow('MANAGEMENT_PERMISSION_TARGET_NOT_ACTIVE_OPERATOR');
+
+    expect(harness.queries.some((query) => query.includes('insert into access.membershiprole'))).toBe(false);
+    expect(harness.queries.some((query) => query.includes('insert into access.scopegrant'))).toBe(false);
+    expect(harness.queries.some((query) => /update access\.membership set (client|realm_id|organization_id|node_id|parent_node_id)/.test(query))).toBe(false);
+  });
+
+  it('keeps a storefront business role assignable when it has no operator-only permission', async () => {
+    const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantA,
+      targetClient: 'storefront', managementRole: false });
+
+    await expect(accessOperations(context(harness.pool)).invoke(assignmentRequest('assign', 'direct', mallA)))
+      .resolves.toMatchObject({ status: 200, body: { changed: true } });
+  });
+
+  it('rejects a management role across Realms without leaving a partial grant', async () => {
+    const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantA, targetRealm: 'realm:other' });
+
+    await expect(accessOperations(context(harness.pool)).invoke(assignmentRequest('assign', 'direct', mallA)))
+      .rejects.toThrow('MANAGEMENT_PERMISSION_REALM_MISMATCH');
+
+    expect(harness.queries.some((query) => query.includes('insert into access.membershiprole'))).toBe(false);
+    expect(harness.queries.some((query) => query.includes('insert into access.scopegrant'))).toBe(false);
   });
 
   it('inherits an existing scope without creating a duplicate grant', async () => {
@@ -90,7 +129,7 @@ describe('access scope management boundary', () => {
     const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantB });
 
     await expect(accessOperations(context(harness.pool)).invoke(assignmentRequest('assign', 'direct', mallA)))
-      .rejects.toThrow('CANNOT_GRANT_UNOWNED_SCOPE');
+      .rejects.toThrow('MANAGEMENT_PERMISSION_ORGANIZATION_MISMATCH');
 
     expect(harness.queries.some((query) => query.includes('insert into access.membershiprole'))).toBe(false);
     expect(harness.queries.some((query) => query.includes('insert into access.scopegrant'))).toBe(false);
@@ -129,6 +168,16 @@ describe('access scope management boundary', () => {
     await expect(accessOperations(context(harness.pool)).invoke(scopeRequest('deny')))
       .rejects.toThrow('SCOPE_DENY_UNSUPPORTED');
     expect(harness.queries.some((query) => query.includes('insert into access.scopegrant'))).toBe(false);
+  });
+
+  it('rejects a management Scope for a storefront Membership before any write', async () => {
+    const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantA, targetClient: 'storefront' });
+
+    await expect(accessOperations(context(harness.pool)).invoke(scopeRequest('allow', 'mall', mallA.id, ownerAccess(mallA))))
+      .rejects.toThrow('MANAGEMENT_PERMISSION_TARGET_NOT_ACTIVE_OPERATOR');
+
+    expect(harness.queries.some((query) => query.includes('insert into access.scopegrant'))).toBe(false);
+    expect(harness.queries.some((query) => query.startsWith('update access.membership'))).toBe(false);
   });
 
   it('lets a platform Owner grant a mall through the canonical authorization hierarchy', async () => {
@@ -182,8 +231,18 @@ describe('access scope management boundary', () => {
     const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantB });
 
     await expect(accessOperations(context(harness.pool)).invoke(scopeRequest('allow', 'mall', mallA.id, ownerAccess(mallA))))
-      .rejects.toThrow('CANNOT_GRANT_UNOWNED_SCOPE');
+      .rejects.toThrow('MANAGEMENT_PERMISSION_ORGANIZATION_MISMATCH');
     expect(harness.queries.some((query) => query.includes('insert into access.scopegrant'))).toBe(false);
+  });
+
+  it('rejects a management Scope whose governance organization differs from the operator Membership', async () => {
+    const harness = operationHarness({ scope: mallA, targetMembershipScope: tenantB });
+
+    await expect(accessOperations(context(harness.pool)).invoke(scopeRequest('allow', 'mall', mallA.id, ownerAccess(mallA))))
+      .rejects.toThrow('MANAGEMENT_PERMISSION_ORGANIZATION_MISMATCH');
+
+    expect(harness.queries.some((query) => query.includes('insert into access.scopegrant'))).toBe(false);
+    expect(harness.queries.some((query) => query.includes('insert into access.membershiprole'))).toBe(false);
   });
 });
 
@@ -203,6 +262,9 @@ const tenantB = { kind: 'tenant' as const, id: 'tenant-b', tenant: 'tenant-b', p
 ] };
 const mallB = { kind: 'mall' as const, id: 'mall-b', tenant: tenantB.id, path: [
   { kind: 'platform' as const, id: platform.id }, { kind: 'tenant' as const, id: tenantB.id },
+] };
+const managerTenant = { kind: 'tenant' as const, id: 'tenant-zhudatuan', tenant: 'tenant-zhudatuan', path: [
+  { kind: 'platform' as const, id: platform.id },
 ] };
 
 function centerRequest(): OperationRequest {
@@ -273,7 +335,7 @@ function tenantManagerAccess(scope: AccessContext['scope']): AccessContext {
 }
 
 function managerAccess(): AccessContext {
-  const scope = { kind: 'mall' as const, id: 'mall-zhudatuan', tenant: 'tenant-zhudatuan', path: [] };
+  const scope = { kind: 'mall' as const, id: 'mall-zhudatuan', tenant: managerTenant.id, path: [] };
   return accessContext(scope);
 }
 
@@ -288,7 +350,11 @@ function accessContext(scope: AccessContext['scope'], grantScope = scope): Acces
   };
 }
 
-function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipScope?: unknown; roleRows?: readonly Record<string, unknown>[] }> = {}): Readonly<{
+function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipScope?: unknown;
+  assignedTargetMembershipScope?: unknown;
+  targetClient?: string; targetStatus?: string; targetRealm?: string; actorRealm?: string;
+  targetRealmBinding?: boolean; targetOrganizationBinding?: boolean; managementRole?: boolean;
+  roleRows?: readonly Record<string, unknown>[] }> = {}): Readonly<{
   pool: DatabasePool;
   queries: readonly string[];
   calls: readonly Readonly<{ text: string; values: readonly unknown[] }>[];
@@ -306,9 +372,22 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }
       if (text.startsWith('select access.scope_object($1) scope')) {
-        if (text.includes('target.access_version target_access_version')) return result([{ scope: options.scope ?? mallA,
-          target_membership_scope: options.targetMembershipScope ?? tenantA, target_access_version: 2, role_id: 'role:finance' }]);
-        return result([{ scope: options.scope ?? null, target_membership_scope: options.targetMembershipScope ?? null }]);
+        const target = { target_membership_id: 'membership:target', target_client: options.targetClient ?? 'operator',
+          target_status: options.targetStatus ?? 'active', target_realm_id: options.targetRealm ?? 'realm:tenant-a',
+          actor_realm_id: options.actorRealm ?? 'realm:tenant-a', target_realm_binding: options.targetRealmBinding ?? true,
+          target_organization_binding: options.targetOrganizationBinding ?? true };
+        if (text.includes('target.access_version target_access_version')) return result([{ ...target, scope: options.scope ?? mallA,
+          target_membership_scope: options.targetMembershipScope ?? tenantA, target_access_version: 2,
+          role_id: 'role:finance', management_role: options.managementRole ?? true }]);
+        return result([{ ...target, scope: options.scope ?? null, target_membership_scope: options.targetMembershipScope ?? null }]);
+      }
+      if (text.includes('permission.code=any($2::text[])') && text.includes('from access.membershiprole assignment')) {
+        return result([{ target_membership_id: 'membership:target', target_client: options.targetClient ?? 'operator',
+          target_status: options.targetStatus ?? 'active', target_realm_id: options.targetRealm ?? 'realm:tenant-a',
+          actor_realm_id: options.actorRealm ?? 'realm:tenant-a',
+          target_membership_scope: options.assignedTargetMembershipScope ?? managerTenant,
+          target_realm_binding: options.targetRealmBinding ?? true,
+          target_organization_binding: options.targetOrganizationBinding ?? true }]);
       }
       if (text.includes('from access.role role where role.scope_id=$1')) return result(options.roleRows ?? []);
       if (text.includes('insert into access.role(id,scope_id,name,status,version)')) {

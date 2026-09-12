@@ -6,6 +6,58 @@ returns jsonb language sql immutable as $function$
   )
 $function$;
 
+insert into access.administratoridentity(
+  id,membership_id,realm_id,account_id,principal_id,host_node_id,status,version,created_at
+)
+select 'administrator:fixture:'||membership.id,membership.id,membership.realm_id,membership.account_id,
+  account.legacy_principal_id,node.id,'active',1,clock_timestamp()
+from access.membership membership
+join identity.account account on account.id=membership.account_id and account.realm_id=membership.realm_id
+join organization.node node on node.realm_id=membership.realm_id
+where membership.client='operator'
+on conflict(membership_id) do nothing;
+
+do $target_separation$
+begin
+  begin
+    perform access.change_administrator_segment_scope(
+      'membership:owner','membership:member-only',1,
+      pg_temp.admin_scope_request('grant','both_segments','scope:storefront-rejected'));
+    raise exception 'EXPECTED_STOREFRONT_REJECTION';
+  exception when others then
+    if sqlerrm not like '%SFL_ADMIN_SCOPE_TARGET_NOT_ACTIVE_OPERATOR%' then raise; end if;
+  end;
+  begin
+    perform access.change_administrator_segment_scope(
+      'membership:owner','membership:admin-other-realm',1,
+      pg_temp.admin_scope_request('grant','both_segments','scope:realm-rejected','node:b:l3'));
+    raise exception 'EXPECTED_REALM_REJECTION';
+  exception when others then
+    if sqlerrm not like '%SFL_ADMIN_SCOPE_REALM_MISMATCH%' then raise; end if;
+  end;
+  begin
+    perform access.change_administrator_segment_scope(
+      'membership:owner','membership:admin-wrong-organization',1,
+      pg_temp.admin_scope_request('grant','both_segments','scope:organization-rejected'));
+    raise exception 'EXPECTED_ORGANIZATION_REJECTION';
+  exception when others then
+    if sqlerrm not like '%SFL_ADMIN_SCOPE_ORGANIZATION_MISMATCH%' then raise; end if;
+  end;
+  if exists(select 1 from access.membershiprole where membership_id in(
+      'membership:member-only','membership:admin-other-realm','membership:admin-wrong-organization'))
+    or exists(select 1 from access.administratorsegmentscope scope join access.administratoridentity identity
+      on identity.id=scope.administrator_identity_id where identity.membership_id in(
+        'membership:member-only','membership:admin-other-realm','membership:admin-wrong-organization'))
+    or exists(select 1 from access.administratorsegmentchange where idempotency_key in(
+      'scope:storefront-rejected','scope:realm-rejected','scope:organization-rejected'))
+    or exists(select 1 from access.administratoridentity where membership_id='membership:member-only')
+    or exists(select 1 from access.membership where id in(
+      'membership:member-only','membership:admin-other-realm','membership:admin-wrong-organization') and access_version<>1) then
+    raise exception 'SFL_ADMIN_SCOPE_REJECTION_LEFT_PARTIAL_STATE';
+  end if;
+end
+$target_separation$;
+
 create temporary table administrator_segment_before as
 select node.id node_id,node.line_id,node.realm_id,node.node_profile,node.mall_id,
   relation.parent_node_id,relation.original_parent_node_id,relation.signed_level,relation.relation_version
@@ -123,7 +175,7 @@ begin
     'membership:owner','membership:admin-second',before_version,
     pg_temp.admin_scope_request('revoke','second_segment','scope:second:revoke'));
   if exists(select 1 from access.resolve_administrator_context('membership:admin-second'))
-    or (select status from access.administratoridentity where membership_id='membership:admin-second')<>'revoked'
+    or (select status from access.administratoridentity where membership_id='membership:admin-second')<>'active'
     or (select access_version from access.membership where id='membership:admin-second')<>before_version+1 then
     raise exception 'SFL_ADMIN_SCOPE_REVOKE_INVALID';
   end if;
@@ -141,7 +193,10 @@ begin
     if sqlerrm not like '%SFL_ADMIN_SCOPE_TEST_INTERRUPT%' then raise; end if;
   end;
   perform set_config('sfl.admin_scope_interrupt','',true);
-  if exists(select 1 from access.administratoridentity where membership_id='membership:admin-fault')
+  if not exists(select 1 from access.administratoridentity where membership_id='membership:admin-fault' and status='active' and version=1)
+    or exists(select 1 from access.administratorsegmentscope scope join access.administratoridentity identity
+      on identity.id=scope.administrator_identity_id where identity.membership_id='membership:admin-fault')
+    or exists(select 1 from access.membershiprole where membership_id='membership:admin-fault')
     or (select access_version from access.membership where id='membership:admin-fault')<>1
     or exists(select 1 from access.administratorsegmentchange where idempotency_key='scope:fault') then
     raise exception 'SFL_ADMIN_SCOPE_INTERRUPTION_NOT_ROLLED_BACK';
