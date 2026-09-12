@@ -1,5 +1,5 @@
 export const SFL_NODE_MANIFEST_SCHEMA_VERSION = 'sfl.node-manifest.v1' as const;
-export * from './AdminSegmentScope.ts';
+export * from './AdminSegmentScope';
 export const SFL_NODE_MANIFEST_REGISTRY_SCHEMA_VERSION = 'sfl.node-manifest-registry.v1' as const;
 export const SFL_NODE_TOPOLOGY_SCHEMA_VERSION = 'sfl.node-topology.v1' as const;
 

@@ -612,6 +612,7 @@ async function createFixture() {
       incomingRoot: root,
       lockRoot: join(root, 'locks'),
       auditRoot: join(root, 'audit'),
+      minimumFreeBytes: 1,
       readiness: { timeoutMs: 200, intervalMs: 10, attemptTimeoutMs: 50, hardFailureGraceMs: 20 },
       allowedDependencyRoots: [join(root, 'layers')],
       protectedProcesses: [],

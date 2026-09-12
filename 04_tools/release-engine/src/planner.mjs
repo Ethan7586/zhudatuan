@@ -220,7 +220,24 @@ function materializeActions(adapter, targets, selectedNodes, changes) {
       });
     }
   }
-  return { preflight, tests, typecheck, build, artifactInputs, deployments: [...deployments.values()] };
+  return {
+    preflight: uniqueCommands(preflight),
+    tests: uniqueCommands(tests),
+    typecheck: uniqueCommands(typecheck),
+    build: uniqueCommands(build),
+    artifactInputs,
+    deployments: [...deployments.values()],
+  };
+}
+
+function uniqueCommands(commands) {
+  const seen = new Set();
+  return commands.filter((command) => {
+    const key = JSON.stringify({ argv: command.argv, cwd: command.cwd ?? null, environment: command.environment ?? null });
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function decorateCommands(commands = [], target, changedFiles) {

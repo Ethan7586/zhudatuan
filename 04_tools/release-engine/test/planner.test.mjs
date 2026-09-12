@@ -150,6 +150,30 @@ test('keeps order export console and commerce changes out of A3', async () => {
   assert.doesNotMatch(orderExport.reasons.join('\n'), /A3/);
 });
 
+test('routes SFL node kernel changes to every real consumer without duplicate checks', async () => {
+  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(commerceAdapter, {
+    from: 'HEAD',
+    to: 'HEAD',
+    files: ['01_core_hexin/packages/config/src/SflNodeKernel.ts'],
+  });
+  assert.equal(plan.lane, 'A2');
+  assert.deepEqual(plan.targets, [
+    'catalog-api',
+    'catalog-jobs',
+    'console',
+    'identity-api',
+    'payment-jobs',
+    'payment-webhook-api',
+    'purchase-api',
+    'support-api',
+    'web-api',
+  ]);
+  assert.equal(plan.actions.tests.length, 2);
+  assert.equal(plan.actions.typecheck.length, 2);
+  assert.equal(plan.actions.build.length, 9);
+});
+
 test('deploys hosted node business targets once through their sovereign runtime host', async () => {
   const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
   const plan = await createPlan(commerceAdapter, {
