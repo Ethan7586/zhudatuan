@@ -234,3 +234,12 @@ test('routes the hbbtzn support entry to the shared support runtime', async () =
   assert.equal(deployment.target, 'support-api');
   assert.equal(deployment.service, 'zhudatuan-console-support.service');
 });
+
+test('routes the managed support unit directly to support without the core lane', async () => {
+  const commerceAdapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const classified = classifyChanges(commerceAdapter, [
+    change('02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/zhudatuan-console-support.service'),
+  ]);
+  assert.equal(classified.lane, 'A2');
+  assert.deepEqual(classified.targets, ['support-api']);
+});
