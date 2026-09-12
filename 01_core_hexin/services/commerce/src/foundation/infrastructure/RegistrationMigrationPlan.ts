@@ -7,6 +7,12 @@ export interface RegistrationMigrationExecution {
   readonly sql: string | null;
 }
 
+export interface RegistrationMigrationTarget {
+  readonly checksum: string;
+  readonly file: string;
+  readonly version: string;
+}
+
 interface Transformation {
   readonly assertion: RegExp;
   readonly reason: string;
@@ -27,6 +33,8 @@ const LEGACY_GENERIC_LEDGER_SOURCES = new Map<string, string>([
   ['20260905203000_provision_zhudatuan_storefront_application.sql', 'eccaa52b4f52f7f66d6c5f64a7e8ad9541bd1781dcae55f176e2214e19af3da6'],
   ['20260909010000_bind_published_listings_to_storefront_pool.sql', 'e879110631a0dd4323218743c392240a398bb4f235d5972313d8d00eabf5b08b'],
   ['20260909061000_add_checkout_address_default.sql', '5caaab79f8e3159cfe410bde4a1dc86b9d355380ee5afb7fe64971ec4ea28f75'],
+  ['20260912182000_create_storefront_member_node_projection.sql', '428c379ced8eb5396e28812be98acab2818433ce718bd29a99cbf8050b7892ea'],
+  ['20260912183000_fix_storefront_member_node_projection.sql', 'f1504e5317bf77c4dcc47980533743469d7176a1a034a66e01e2e68322909206'],
 ]);
 const OMITTED_MIGRATIONS = new Map<string, string>([
   ['20260817191000_bootstrap_ethan_platform_owner.sql', 'environment-specific Ethan platform owner fixture'],
@@ -108,6 +116,19 @@ export function registrationMigrationExecution(file: string, source: string): Re
     ledgerStatements: Object.freeze(metadata(sourceDigest, sha256(sql), transformation.reason)),
     sql,
   });
+}
+
+export function registrationMigrationTarget(file: string, source: string): RegistrationMigrationTarget {
+  const version = file.slice(0, 14);
+  const marker = new RegExp(
+    `insert\\s+into\\s+runtime\\.schemaversion\\s*\\(version,checksum\\)\\s*values\\s*\\(\\s*'${version}'\\s*,\\s*'([a-f0-9]{64})'\\s*\\)`,
+    'gi',
+  );
+  const matches = [...source.matchAll(marker)];
+  if (matches.length !== 1 || matches[0]?.[1] === undefined) {
+    throw new Error(`REGISTRATION_MIGRATION_TARGET_MARKER_INVALID:${file}`);
+  }
+  return Object.freeze({ checksum: matches[0][1], file, version });
 }
 
 export function registrationMigrationLedgerMatches(
