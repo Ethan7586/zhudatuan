@@ -122,13 +122,13 @@ describe('ScopeShell route handles', () => {
     await waitFor(() => expect(document.title).toBe('商城管理 · 鸿泰集团'));
   });
 
-  it('uses referral preferredScopeKind from registry navigation when opening the module', async () => {
+  it('uses distributed platform preferredScopeKind from registry navigation when opening the module', async () => {
     const user = userEvent.setup();
     const { router } = renderShell('/scopes/enterprise/enterprise%3A1/applications');
 
-    await user.click(await screen.findByRole('button', { name: '分销返佣系统' }));
+    await user.click(await screen.findByRole('button', { name: '分布式平台' }));
     await waitFor(() => expect(router.state.location.pathname)
-      .toBe('/scopes/mall/mall%3A1/referral/settings'));
+      .toBe('/scopes/mall/mall%3A1/platforms'));
   });
 
   it('omits business modules that the current session cannot enter', async () => {
@@ -179,6 +179,7 @@ function renderShell(initialEntry: string, loadedContext: ConsoleContext = conte
     Component: ScopeShell,
     children: [
       { path: 'applications', Component: FixturePage, handle: handleForPath('applications') },
+      { path: 'platforms', Component: FixturePage, handle: handleForPath('platforms') },
       { path: 'referral/settings', Component: FixturePage, handle: handleForPath('referral/settings') },
       { path: 'settings/profile', Component: FixturePage },
       { path: '*', Component: UnknownPage },

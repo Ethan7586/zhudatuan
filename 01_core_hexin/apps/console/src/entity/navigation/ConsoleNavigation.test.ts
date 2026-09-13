@@ -15,7 +15,7 @@ describe('Console navigation selector', () => {
       { moduleId: 'products', label: '商品管理', icon: 'products', order: 40 },
       { moduleId: 'supply-chain', label: '供应链管理', icon: 'supply', order: 45 },
       { moduleId: 'orders', label: '订单管理系统', icon: 'orders', order: 50 },
-      { moduleId: 'referral', label: '分销返佣系统', icon: 'channel', order: 60 },
+      { moduleId: 'referral', label: '分布式平台', icon: 'channel', order: 60 },
       { moduleId: 'channels', label: '渠道接入系统', icon: 'channel', order: 70 },
       { moduleId: 'vouchers', label: '卡券治理台', icon: 'voucher', order: 80 },
       { moduleId: 'finance', label: '财务与对账台', icon: 'finance', order: 90 },
@@ -27,7 +27,7 @@ describe('Console navigation selector', () => {
     ]);
     expect(items.find(({ moduleId }) => moduleId === 'control')).toBeUndefined();
     expect(items.find(({ moduleId }) => moduleId === 'referral')).toMatchObject({
-      suffix: 'referral/settings', preferredScopeKind: 'mall', status: 'enabled',
+      suffix: 'platforms', preferredScopeKind: 'mall', status: 'enabled',
     });
   });
 
