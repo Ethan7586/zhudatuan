@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { WorkspacePanelSkeleton } from '@shop/design';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useMatches, useNavigate, useNavigation } from 'react-router';
 import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNavigation';
@@ -303,12 +304,8 @@ export function ScopeShell() {
 
 export function WorkspaceRouteLoading({ moduleId }: Readonly<{ moduleId: string | undefined }>) {
   const supplyChain = moduleId === 'supply-chain';
-  if (moduleId === 'engineering') return <section className="engineeringrouteskeleton" role="status" aria-live="polite">
-    <header><span /><div /></header>
-    <nav aria-hidden="true">{Array.from({ length: 4 }, (_, index) => <i key={index} />)}</nav>
-    <div aria-hidden="true">{Array.from({ length: 4 }, (_, index) => <i key={index} />)}</div>
-    <small>正在准备工程中心内容…</small>
-  </section>;
+  if (moduleId === 'engineering') return <WorkspacePanelSkeleton className="engineeringrouteskeleton"
+    label="正在准备工程中心内容…" />;
   return <section className="workspacerouteloading" role="status" aria-live="polite">
     <span className="workspacerouteloadingicon" aria-hidden="true" />
     <strong>{supplyChain ? '正在打开供应链管理…' : '正在打开工作台…'}</strong>

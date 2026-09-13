@@ -1,4 +1,5 @@
-import { type CSSProperties, type ReactNode, useLayoutEffect, useRef } from 'react';
+import { StableWorkspaceTabs, useViewScrollMemory } from '@shop/design';
+import { type ReactNode, useCallback, useRef } from 'react';
 import { NavLink, useParams } from 'react-router';
 import { scopePath } from '../../shared/url/ScopePath';
 import './engineering.css';
@@ -24,19 +25,9 @@ export function EngineeringFrame({ eyebrow, title, description, activeView, chil
   const { scopeKind = 'platform', scopeId = 'organization-platform-root' } = useParams();
   const scope = { kind: scopeKind, id: scopeId };
   const pageRef = useRef<HTMLElement>(null);
-  const scrollPositions = useRef<Partial<Record<EngineeringViewId, number>>>({});
   const activeIndex = engineeringTabs.findIndex(({ id }) => id === activeView);
-
-  const workspace = () => pageRef.current?.closest<HTMLElement>('.workspacebody') ?? null;
-  const rememberScroll = () => {
-    const container = workspace();
-    if (container !== null) scrollPositions.current[activeView] = container.scrollTop;
-  };
-
-  useLayoutEffect(() => {
-    const container = workspace();
-    if (container !== null) container.scrollTop = scrollPositions.current[activeView] ?? 0;
-  }, [activeView]);
+  const workspace = useCallback(() => pageRef.current?.closest<HTMLElement>('.workspacebody') ?? null, []);
+  const rememberScroll = useViewScrollMemory(activeView, workspace);
 
   return <section className="engineeringpage" ref={pageRef}>
     <header className="engineeringhero">
@@ -49,12 +40,11 @@ export function EngineeringFrame({ eyebrow, title, description, activeView, chil
         decoding="async" fetchPriority="high"
         alt="MORVIA · zhudatuan 主打团" />
     </header>
-    <nav className="engineeringtabs" aria-label="工程与架构中心页面"
-      style={{ '--engineering-active-tab': activeIndex } as CSSProperties}>
+    <StableWorkspaceTabs className="engineeringtabs" label="工程与架构中心页面" activeIndex={activeIndex}>
       {engineeringTabs.map((tab) => <NavLink key={tab.suffix} to={scopePath(scope, tab.suffix)}
         onClick={rememberScroll} preventScrollReset
         className={({ isActive }) => isActive ? 'isactive' : undefined}>{tab.label}</NavLink>)}
-    </nav>
+    </StableWorkspaceTabs>
     <div className="engineeringcontent">{children}</div>
   </section>;
 }

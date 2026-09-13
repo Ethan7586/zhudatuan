@@ -15,6 +15,7 @@
 - [`疆域标准模板`](realms/TEMPLATE.md)；
 - [`gsyen 疆域标准骨架`](realms/gsyen-疆域标准.md)，状态 `REFERENCE`；
 - [`SFL 运行注册表`](SFL-运行注册表.md)，状态 `REFERENCE`，不是标准。
+- [`统一前端体验与性能标准 v0.1.0`](06-统一前端体验与性能标准.md)，状态 `REFERENCE`；这是 Ethan 已决定建立、等待代表页面验证和 LAW 启用的标准草案。
 
 ## 引用方向
 

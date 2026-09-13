@@ -99,43 +99,9 @@
 }
 
 .engineeringrouteskeleton {
-  display: grid;
   width: min(100%, 1560px);
-  min-height: 620px;
   margin: 0 auto;
   padding: 28px clamp(18px, 2.4vw, 36px) 48px;
-  gap: 16px;
-}
-
-.engineeringrouteskeleton header {
-  display: grid;
-  width: min(52%, 580px);
-  align-content: center;
-  gap: 12px;
-}
-
-.engineeringrouteskeleton header span,
-.engineeringrouteskeleton header div,
-.engineeringrouteskeleton nav,
-.engineeringrouteskeleton nav i,
-.engineeringrouteskeleton > div i {
-  border-radius: 10px;
-  background: linear-gradient(100deg, #edf1f7 20%, #f8faff 45%, #edf1f7 70%);
-  background-size: 240% 100%;
-  animation: engineeringrouteskeletonpulse 1.1s ease-in-out infinite;
-}
-
-.engineeringrouteskeleton header span { width: 38%; height: 12px; }
-.engineeringrouteskeleton header div { width: 72%; height: 42px; }
-.engineeringrouteskeleton nav { display: grid; height: 46px; grid-template-columns: repeat(4, 1fr); padding: 5px; gap: 6px; }
-.engineeringrouteskeleton nav i { background: #fff; }
-.engineeringrouteskeleton > div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.engineeringrouteskeleton > div i { height: 120px; border: 1px solid #e1e7f0; background-color: #fff; }
-.engineeringrouteskeleton small { color: #738198; font-size: 11px; }
-
-@keyframes engineeringrouteskeletonpulse {
-  from { background-position: 100% 0; }
-  to { background-position: -100% 0; }
 }
 
 .workspacerouteloading strong { font-size: 15px; }

@@ -24,3 +24,4 @@ export * from './WorkspaceShell';
 export * from './WorkspaceHero';
 export * from './WorkspaceMetrics';
 export * from './MasterDetail';
+export * from './PageExperience';
