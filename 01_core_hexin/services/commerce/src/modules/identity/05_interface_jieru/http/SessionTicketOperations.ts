@@ -288,19 +288,16 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         const permissions = [...new Set(access.membership.grants.flatMap((grant) => grant.permissions).filter((permission) => !access.membership.denies.includes(permission)))].sort();
         const scopes = [...new Map(access.membership.grants.map((grant) => [grant.scope.id, grant.scope] as const)).values()];
         const csrf = requestCookie(request.input.headers.cookie, 'shop_csrf');
-        const realmAccount = await currentRealmAccount(database, access.membership.id, access.actor.id);
+        const realmAccount = access.actor.account !== undefined && access.actor.realm !== undefined
+          ? { accountId: access.actor.account, realmId: access.actor.realm }
+          : await currentRealmAccount(database, access.membership.id, access.actor.id);
         const entryRealmId = access.actor.nodeContext?.manifest.realm_ref.ref ?? realmAccount.realmId;
-        const [activeContext, credential, member, accountState] = await Promise.all([
-          resolveActiveMembershipContext(database, entryRealmId, realmAccount.accountId, access.membership.id),
-          database.query<{ rotated_at: Date | null }>(
-            `select rotated_at from identity.credential
-          where account_id=$1 and realm_id=$2 and provider='password' and status='active' order by created_at desc limit 1`,
-            [realmAccount.accountId, realmAccount.realmId]
-          ),
-          memberPort.securityProfile(database, access.actor.id),
-          database.query<{ mobile_masked: string | null }>(`select mobile_masked from identity.account where id=$1 and realm_id=$2`,
-            [realmAccount.accountId, realmAccount.realmId]),
+        const [activeContext, security] = await Promise.all([
+          resolveActiveMembershipContext(database, entryRealmId, realmAccount.accountId, access.membership.id,
+            { resolverKnownAvailable: true }),
+          memberPort.sessionSecurityProjection(database, realmAccount.accountId, realmAccount.realmId, access.actor.id),
         ]);
+        if (security === null) reject(403, 'REALM_ACCOUNT_INACTIVE');
         return {
           status: 200,
           body: {
@@ -320,11 +317,11 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
               exactOwner: governance.isExactOwner,
               organization: governance.organizationId,
             },
-            ...(member.displayName === null ? {} : {
-              profile: { display_name: member.displayName, employee_no: null },
+            ...(security.displayName === null ? {} : {
+              profile: { display_name: security.displayName, employee_no: null },
             }),
-            security: { hasLocalCredential: credential.rows.length > 0, phoneMasked: accountState.rows[0]?.mobile_masked ?? null,
-              passwordChangedAt: credential.rows[0]?.rotated_at?.toISOString() ?? null },
+            security: { hasLocalCredential: security.hasLocalCredential, phoneMasked: security.phoneMasked,
+              passwordChangedAt: security.passwordChangedAt?.toISOString() ?? null },
             syncedAt: new Date().toISOString(),
             ...(csrf === undefined ? {} : { csrf }),
           },

@@ -35,6 +35,24 @@ describe('MemberPort invitation constraints', () => {
     expect(values).toEqual(['principal:one']);
   });
 
+  it('projects session profile, credential and phone state in one database read', async () => {
+    const rotatedAt = new Date('2026-09-14T00:00:00.000Z');
+    const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) => result([{
+      display_name: '张三', has_local_credential: true, mobile_masked: '+86****8000', rotated_at: rotatedAt,
+    }]));
+    const port = new MemberPort();
+
+    await expect(port.sessionSecurityProjection({ query } as unknown as OperationDatabase,
+      'account:one', 'realm:l0', 'principal:one')).resolves.toEqual({
+      displayName: '张三', hasLocalCredential: true, phoneMasked: '+86****8000', passwordChangedAt: rotatedAt,
+    });
+    const [sql, values = []] = query.mock.calls[0]!;
+    expect(sql).toContain('from identity.account account');
+    expect(sql).toContain('from member.profile profile');
+    expect(sql).toContain('from identity.credential credential');
+    expect(values).toEqual(['account:one', 'realm:l0', 'principal:one']);
+  });
+
   it('persists the mobile mask together with the encrypted mobile', async () => {
     const query = vi.fn(async (_text: string, _values: readonly unknown[] = []) =>
       result([{ id: 'member:one', display_name: '张三', mobile_masked: '+86****4716', version: '1' }]));

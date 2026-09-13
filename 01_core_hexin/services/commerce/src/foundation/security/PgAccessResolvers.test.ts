@@ -179,16 +179,19 @@ describe('PgMembershipResolver authorization time snapshot', () => {
   it('returns the database evaluation time with the resolved membership', async () => {
     const evaluatedAt = new Date('2026-08-30T00:00:00.501Z');
     const query = vi.fn().mockResolvedValue({
-      rows: [{ id: 'membership:one', active: true, access_version: 7, denies: [], grants: [], evaluated_at: evaluatedAt }],
+      rows: [{ id: 'membership:one', active: true, access_version: 7, denies: [], grants: [], evaluated_at: evaluatedAt,
+        capabilities: ['reporting.dashboard.read'] }],
     });
     const resolver = new PgMembershipResolver({ query } as never);
 
     await expect(resolver.resolve('membership:one', { realmId: 'realm:one', client: 'operator', organizationId: 'organization:one' })).resolves.toMatchObject({
       access: { id: 'membership:one', accessVersion: 7 },
       evaluatedAt,
+      capabilities: ['reporting.dashboard.read'],
     });
     expect(query.mock.calls[0]?.[0]).toContain('clock_timestamp() evaluated_at');
     expect(query.mock.calls[0]?.[0]).toContain('access.resolve_session_membership($1,$2,$3,$4)');
+    expect(query.mock.calls[0]?.[0]).toContain('capability.session_membership_operations($1,$2,$3,$4)');
     expect(query.mock.calls[0]?.[1]).toEqual([
       'membership:one', 'realm:one', 'operator', 'organization:one',
     ]);

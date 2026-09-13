@@ -20,8 +20,17 @@ export async function resolveActiveMembershipContext(
   entryRealmId: string,
   accountId: string,
   membershipId: string,
+  options: Readonly<{ resolverKnownAvailable?: boolean }> = {},
 ): Promise<ActiveRealmMembershipContext> {
   const parameters = [entryRealmId, accountId, membershipId];
+  if (options.resolverKnownAvailable === true) {
+    const result = await database.query<Record<string, unknown>>(
+      'select * from identity.resolve_active_membership_context($1,$2,$3)', parameters,
+    );
+    const found = result.rows[0];
+    if (!found || result.rows.length !== 1) throw new Error('MEMBERSHIP_REALM_BINDING_FAILED');
+    return parseActiveRealmMembershipContext(found);
+  }
   const resolver = await database.query<{ available: boolean }>(
     `select to_regprocedure('identity.resolve_active_membership_context(text,text,text)') is not null available`,
   );

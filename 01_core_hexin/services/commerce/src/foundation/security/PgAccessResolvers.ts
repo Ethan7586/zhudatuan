@@ -43,6 +43,7 @@ interface MembershipRow {
   readonly denies: string[];
   readonly grants: ScopeGrant[];
   readonly evaluated_at: Date;
+  readonly capabilities?: string[];
 }
 interface ScopeRow { readonly scope: Scope }
 
@@ -104,7 +105,9 @@ export class PgMembershipResolver implements MembershipResolver {
         cross join lateral access.resolve_session_membership($1,$2,$3,$4) membership
         where snapshot.evaluated_at is not null
       )
-      select resolved.id,resolved.active,resolved.access_version,resolved.denies,resolved.grants,snapshot.evaluated_at
+      select resolved.id,resolved.active,resolved.access_version,resolved.denies,resolved.grants,snapshot.evaluated_at,
+        array(select operation_id from capability.session_membership_operations($1,$2,$3,$4)
+          order by operation_id) capabilities
       from resolved cross join snapshot`,
       [membership, context.realmId, context.client, context.organizationId]
     );
@@ -114,6 +117,7 @@ export class PgMembershipResolver implements MembershipResolver {
     return Object.freeze({
       access: Object.freeze({ id: row.id, active: row.active, accessVersion: row.access_version, denies: row.denies, grants: row.grants }),
       evaluatedAt: row.evaluated_at,
+      ...(row.capabilities === undefined ? {} : { capabilities: Object.freeze([...row.capabilities]) }),
     });
   }
 }
