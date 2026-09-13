@@ -1,0 +1,117 @@
+{
+  "schema_version": "e2.0-execution-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E11-FORMAL-RETEST-20260914",
+  "profile_version": "2.0.0",
+  "claim_id": "E2-SCALE-001",
+  "legacy_trace_id": "E11",
+  "purpose": "Execute the already-defined E11 scale-decoupling claim and preserve independently recountable source, build, infrastructure, resolution and isolation evidence. This record mirrors the active E2.0 trace matrix and does not create or expand a product contract.",
+  "locked_at": "2026-09-13T19:02:03Z",
+  "non_gating": true,
+  "authoritative_basis": [
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-SCALE-001",
+      "git_commit": "5ad18c5ccf53f42887124467e00c51ffd27388bc",
+      "sha256": "sha256:3508e759ec49b3fb6a38cd0dd52c5033b19d012cc99f01d571fc48621b96dd9b"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E11",
+      "git_commit": "5ad18c5ccf53f42887124467e00c51ffd27388bc",
+      "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69"
+    }
+  ],
+  "implementation_basis": [
+    {
+      "path": "04_tools/scripts/release/build-runtime-bundle.mjs",
+      "sha256": "sha256:30bd3def63d82e8c259e3d7ddb6a05c4229e5230b49f07cd760abdc3c4e67697",
+      "role": "existing shared runtime build channel"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/modules/provisioning/01_public_gongkai/HostedNodeProvisioningPort.ts",
+      "sha256": "sha256:485ea3fce06b9a0c04875ed8314c2b9acf28e5ebb3b397cbf29373ca953adcea",
+      "role": "database-only Hosted node provisioning adapter"
+    }
+  ],
+  "scale_matrix": {
+    "node_counts": [1, 10, 100, 1000],
+    "topologies": [
+      {
+        "id": "peer-horizontal",
+        "description": "Hosted peers at one signed level on one business line."
+      },
+      {
+        "id": "multi-line-horizontal",
+        "description": "Hosted peers distributed across three isolated business lines."
+      },
+      {
+        "id": "l0-l11-vertical-mixed",
+        "description": "Branched L0-L11 chains with operating-mall and consumer profiles."
+      }
+    ],
+    "scenario_count": 12,
+    "sovereign_control_count_per_scenario": 3
+  },
+  "source_inventory_scope": {
+    "roots": ["01_core_hexin", "02_platform_pingtai/database/supabase/migrations"],
+    "extensions": [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".sql"],
+    "excluded_directory_names": [".next", "coverage", "dist", "node_modules", "playwright-report", "test-results"],
+    "excluded_path_segments": ["06_tests_ceshi", "__tests__", "tests"],
+    "excluded_filename_patterns": [".test.", ".spec."],
+    "node_specific_definition": "A scoped business-source path containing the generated E11 run token or any generated node, realm, mall or line identifier token."
+  },
+  "shared_build": {
+    "marker": "e11-shared-version-marker-v1",
+    "exact_command_template": "node 04_tools/scripts/release/build-runtime-bundle.mjs identity-api <temporary-output-directory> <source-sha>",
+    "expected_build_count": 1,
+    "expected_artifact_identity_count": 1,
+    "node_specific_build_count": 0
+  },
+  "fixed_per_node_workload": [
+    "organization.resolve_node_context(node_id)",
+    "organization.resolve_node_scope_self(line_id,node_id) plus resolve_node_scope_ancestors(line_id,node_id)",
+    "read latest organization.nodecapabilityversion for node_id"
+  ],
+  "required_input_artifacts": ["scale-input-manifest.json", "scale-code-and-build-counts.json", "scale-hosted-operation-counts.json", "scale-context-resolution-metrics.json", "scale-isolation-results.json", "environment.json"],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E11-SCALE-COUNTS",
+    "reads_test_program_pass": false,
+    "procedure": "Independently recount source inventory entries and digests at every scale, actual build invocations and artifact identities, Hosted per-node infrastructure events, scenario and topology completeness, per-node context/scope/capability outputs, sovereign controls, isolation aggregates and latency sample presence. Mutate copies to prove detection of generated node source, build/event growth and cross-line resolution; do not consume runner PASS fields."
+  },
+  "prelocked_thresholds": [
+    "required raw evidence missing count = 0",
+    "scale/topology scenario completeness mismatch count = 0",
+    "business source file count delta from 1 to 1000 nodes = 0",
+    "business source inventory digest changes = 0",
+    "node-specific business source file count = 0",
+    "build count = 1",
+    "artifact identity count = 1",
+    "node-specific build count = 0",
+    "Hosted per-node infrastructure action total and scale delta = 0",
+    "context, scope, capability and sovereign control mismatch count = 0",
+    "duplicate node and cross-line closure/scope row count = 0",
+    "missing or malformed latency sample count = 0",
+    "negative oracle probe miss count = 0"
+  ],
+  "positive_cases": [
+    "All twelve scale/topology combinations resolve every generated node correctly.",
+    "One actual shared identity-api runtime build produces one artifact identity used by every scenario.",
+    "All Hosted node creation remains database-only at every scale."
+  ],
+  "negative_cases": ["Detect a generated node-specific source file.", "Detect an extra build identity or Hosted per-node infrastructure event.", "Detect a context or scope result moved to another business line."],
+  "unknown_rule": "Missing any scale, topology, source inventory, build provenance, infrastructure event log, resolution/correctness output, sovereign control, isolation aggregate or latency sample yields UNKNOWN. Latency magnitude is recorded without a pass threshold.",
+  "outcome_table": [
+    {
+      "condition": "All required artifacts and fields exist; every locked count or delta is zero or exactly one as specified; every generated and control node resolves correctly; all three negative oracle mutations are detected.",
+      "claim_outcome": "MET"
+    },
+    {
+      "condition": "Any complete raw observation contradicts a prelocked scale, source, build, infrastructure, resolution or isolation threshold.",
+      "claim_outcome": "NOT MET"
+    },
+    {
+      "condition": "Any required artifact, scale, topology, count, output, sample, hash or environment fact is missing or unreadable.",
+      "claim_outcome": "UNKNOWN"
+    }
+  ],
+  "environment_classification": "A successful disposable local PostgreSQL 17 and local runtime-build execution can establish DEV VERIFIED only.",
+  "review_classification": "The criteria designer, executor and oracle operator are the same Codex task; the result remains NOT REVIEWED until a reviewer independent of the generator and counting code recomputes and signs it."
+}
