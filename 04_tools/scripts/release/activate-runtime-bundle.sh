@@ -126,7 +126,9 @@ if [ "$RELEASE_TARGET" = 'identity-api' ]; then
   manifest_backup_path="$manifest_backup_dir/${release_id}-$(date -u +%Y%m%dT%H%M%SZ)-$$.json"
   cp -a "$manifest_path" "$manifest_backup_path"
   new_manifest_digest="$(jq -r '.manifest_digest' "$next_manifest")"
+  new_identity_origins="$(jq -r '[.domain_bindings[] | select(.surface_ref != "surface:api") | "https://" + .host] | sort | join(",")' "$next_manifest")"
   case "$new_manifest_digest" in (sha256:[0-9a-f][0-9a-f]*) ;; (*) echo 'Invalid node manifest digest' >&2; false ;; esac
+  test -n "$new_identity_origins"
   for env_path in /opt/sfl/nodes/hbbtzn-l1/runtime/*.env; do
     if grep -qx 'NODE_MANIFEST_PATH=/opt/sfl/nodes/hbbtzn-l1/manifest.json' "$env_path"; then
       grep -q '^NODE_MANIFEST_DIGEST=' "$env_path"
@@ -147,6 +149,10 @@ if [ "$RELEASE_TARGET" = 'identity-api' ]; then
     env_next_tmp="${env_path}.$$.next"
     cp -a "$env_path" "$env_next_tmp"
     sed -i "s|^NODE_MANIFEST_DIGEST=.*$|NODE_MANIFEST_DIGEST=$new_manifest_digest|" "$env_next_tmp"
+    if [ "$(basename "$env_path")" = 'identity-api.env' ]; then
+      grep -q '^API_ALLOWED_ORIGINS=' "$env_next_tmp"
+      sed -i "s|^API_ALLOWED_ORIGINS=.*$|API_ALLOWED_ORIGINS=$new_identity_origins|" "$env_next_tmp"
+    fi
     mv -Tf "$env_next_tmp" "$env_path"
   done
 fi
