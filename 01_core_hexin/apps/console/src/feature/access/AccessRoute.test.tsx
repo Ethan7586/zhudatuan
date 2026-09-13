@@ -595,7 +595,7 @@ describe('custom identity and permission directory', () => {
     expect(reads).toBeGreaterThanOrEqual(3);
   });
 
-  it('lets the exact Owner upgrade and demote an administrator from the senior role template', async () => {
+  it('lets the authoritative Owner principal upgrade and demote an administrator from the senior role template', async () => {
     roles.push({ id: 'role-senior-administrator-v1:tenant:one', name: '高级管理员', status: 'active', version: '1',
       permissions: ['order.read', 'member.members.read'], member_count: '0', governance: true,
       governance_level: 'senior_administrator', editable: false, members: [], scopes: [] });
@@ -606,7 +606,8 @@ describe('custom identity and permission directory', () => {
     syncRoleMetadata();
     const user = userEvent.setup();
     const mallOwner: ConsoleContext = { ...context, scope: mallScope, scopes: [tenantScope, mallScope],
-      session: { ...context.session, scope: mallScope, scopes: [tenantScope, mallScope] } };
+      session: { ...context.session, scope: mallScope, scopes: [tenantScope, mallScope],
+        governance: { ...context.session.governance!, exactOwner: false } } };
 
     renderWorkspace(mallOwner, '/scopes/mall/mall%3Aone/settings/access?role=role-senior-administrator-v1%3Atenant%3Aone&view=members');
 

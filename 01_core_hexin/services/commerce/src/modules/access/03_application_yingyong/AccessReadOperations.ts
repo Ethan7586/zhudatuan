@@ -76,12 +76,14 @@ export function accessOperatorReadActions(): OperationActions {
                   or (assignmentboundary.ancestor_id=coalesce(assignment.assigned_scope_id,role.scope_id)
                     and assignmentboundary.descendant_id=$1)))) member_count,
           coalesce((select jsonb_agg(jsonb_build_object(
-            'membership',membership.id,'member_id',profile.id,'display_name',profile.display_name,
+            'membership',membership.id,'member_id',profile.id,
+            'display_name',coalesce(membership.operator_display_name,profile.display_name),
             'employee_no',membership.employee_no,'access_version',membership.access_version,
             'scope',access.scope_object(coalesce(assignment.assigned_scope_id,role.scope_id)),
             'scope_source',coalesce(assignment.scope_source,'inherited'),
             'effective_at',assignment.effective_at,'expires',assignment.expires_at)
-            order by profile.display_name,membership.id,coalesce(assignment.assigned_scope_id,role.scope_id))
+            order by coalesce(membership.operator_display_name,profile.display_name),membership.id,
+              coalesce(assignment.assigned_scope_id,role.scope_id))
             from access.membershiprole assignment join access.membership membership on membership.id=assignment.membership_id
             join member.profile profile on profile.id=membership.member_id
             where assignment.role_id=role.id and membership.status='active'
