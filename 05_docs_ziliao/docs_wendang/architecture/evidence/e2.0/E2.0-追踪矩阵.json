@@ -520,14 +520,17 @@
       "executor_role": "Multi-Realm identity and session-isolation test operator",
       "reviewer_role": "Security reviewer independent of identity/session implementation and E04 test code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E04 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay resolved one shared synthetic credential independently into three distinct Realm identities, preserved separate Account, principal, Membership, base Session, lineage, Scope-grant and order-asset identifiers, passed all three own-Realm asset cases, and bound all six directed Realm switches to fresh target Sessions with zero source residue. All 48 source Session/Membership/Scope/node read-write misuse observations denied with zero disclosure, authoritative write or Outbox delta, and the independent oracle detected all three injected faults.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/E2.0-E04-证据.json",
         "review_evidence_ref": null,
         "gaps": [
-          "E2.0 three-Realm evidence record and independent identity/session recomputation"
+          "Stable separately managed staging replay",
+          "Public HTTP ingress observation for target Session issuance and final asset operation",
+          "Authorized production observation",
+          "Independent reviewer recomputation and signature"
         ]
       }
     },

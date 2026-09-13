@@ -1,0 +1,738 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E04-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-ID-001"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E04-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E04-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:9b799e547b701f845becd2d418883c4072a61d19fa705ad8b16b145656fa5d40",
+    "locked_at": "2026-09-13T21:51:44Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e04-acceptance-repair-20260914",
+      "role": "E04 multi-Realm identity, Session, transition and asset-isolation test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and executed the E04 disposable evidence exporter and operated the separate raw-evidence oracle; not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-ID-001",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E04",
+    "02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql",
+    "02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql",
+    "02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql",
+    "01_core_hexin/services/commerce/src/modules/identity/03_application_yingyong/services_fuwu/SmsLogin.ts",
+    "01_core_hexin/services/commerce/src/foundation/security/NodeBoundScopeResolver.ts",
+    "02_platform_pingtai/database/supabase/tests/sfl_multi_realm_membership_contract.sql",
+    "04_tools/scripts/check/sfl-multi-realm-membership.pg17-fixture.mjs"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T22:11:50.907Z",
+    "completed_at": "2026-09-13T22:13:30.690Z",
+    "executor": {
+      "actor_id": "codex-task-e04-acceptance-repair-20260914",
+      "role": "E04 multi-Realm identity, Session, transition and asset-isolation test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and executed the E04 disposable evidence exporter and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e04 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "The generated disposable PostgreSQL password and connection URL were used only in process memory and were not persisted. All credential and Session identifiers are synthetic hashes scoped to the disposable run."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-postgresql17-e04-fdec2a7792ec43c5",
+    "description": "A newly created PostgreSQL 17 Alpine container replayed the complete production migration chain and executed the locked three-Realm credential, asset, transition and 48-negative E04 matrix.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Disposable Docker container zhudatuan-e04-fdec2a7792ec43c5; synthetic E04 identities, Sessions and orders only; every negative write was savepoint-rolled back and the container was removed after execution.",
+    "real_customer_data": false,
+    "production_impact": "None. No production service, database, domain, payment provider, deployment channel or customer record was contacted.",
+    "differences_from_production": [
+      "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+      "Synthetic Realm, identity, Session and order fixtures rather than customer traffic.",
+      "Credential lookup and node-bound authorization executed production source; Session rows and the final order read/write adapter were driven directly by the evidence workload rather than public HTTP ingress.",
+      "No stable separately managed staging execution and no production observation."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "397eb23b54cda5f31164c4203e3bf4abae5e121d",
+    "test_item_shas": [
+      "397eb23b54cda5f31164c4203e3bf4abae5e121d"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "postgres:17-alpine sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73; 301 migrations; three Realm identities; three own-asset cases; six directed Realm switches; 48 source-authority misuse observations.",
+    "digest": "sha256:4d8d33d0f5c6210720e4408c8fce9a682ef243e1bd1f211e2ad080118a52d20c",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E04-REQUIRED-ARTIFACT-MISSING-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-CREDENTIAL-DISCOVERY-MISMATCH-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-IDENTITY-MAP-MISMATCH-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-IDENTIFIER-MERGE-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-POSITIVE-CASE-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-POSITIVE-ACCEPTANCE-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-POSITIVE-ASSET-MISMATCH-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-POSITIVE-AUTHORITATIVE-WRITE-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-DIRECTED-PAIR-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 6,
+        "actual": 6,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-TRANSITION-PAIR-MISMATCH-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-CONSUMED-LOGIN-INTENT-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 6,
+        "actual": 6,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-FRESH-TARGET-SESSION-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 6,
+        "actual": 6,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-SOURCE-SESSION-TARGET-RESOLUTION-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-TARGET-SESSION-TARGET-RESOLUTION-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 6,
+        "actual": 6,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-SOURCE-AUTHORITY-RESIDUE-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-TARGET-AUTHORITY-MISMATCH-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-MULTI-MEMBERSHIP-ACTIVATION-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-NEGATIVE-OBSERVATION-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 48,
+        "actual": 48,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-NEGATIVE-COMBINATION-MISMATCH-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-NEGATIVE-REQUEST-INTEGRITY-MISMATCH-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-NEGATIVE-DENIAL-STAGE-MISMATCH-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-NEGATIVE-ACCEPTANCE-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-CROSS-REALM-DATA-DISCLOSURE-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-NEGATIVE-AUTHORITATIVE-WRITE-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-NEGATIVE-OUTBOX-DELTA",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-NEGATIVE-MATRIX-CHANGED-TABLE-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-FIXTURE-PREEXISTING-ROW-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E04-NEGATIVE-ORACLE-PROBE-MISS-COUNT",
+      "source": "multi-realm-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:13:30.462Z",
+      "notes": "Recomputed from the six required raw artifacts; no runner PASS/status field was read."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-identity-map.json",
+      "media_type": "application/json",
+      "sha256": "sha256:f3080b475c338741ffcc45fb658c815995c621b0e89ec070ae8c5b392dcdf2cb",
+      "size_bytes": 14669,
+      "role": "Shared synthetic credential discovery and separate Account, principal, Membership, base Session, lineage, Scope grant and order asset identifiers"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-positive-results.json",
+      "media_type": "application/json",
+      "sha256": "sha256:230d065c9819f5dd4c0b84d134cae6bba5d06cf350d548e01461d3d99d2aaa89",
+      "size_bytes": 28908,
+      "role": "Three raw own-Realm authorization, asset-read and asset-write observations"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-session-transitions.json",
+      "media_type": "application/json",
+      "sha256": "sha256:6417b3d3636a26c16702dc2ffb43a70b6ef147808d5b2308f609f8c534410cab",
+      "size_bytes": 42774,
+      "role": "All six directed login-intent and fresh target-Session transition records"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-negative-results.json",
+      "media_type": "application/json",
+      "sha256": "sha256:6247bfad46552b03df041b6ccbe7e86bfe270c036245f12f5837e6bb608a37bd",
+      "size_bytes": 170455,
+      "role": "All 48 source Session, Membership, Scope and node-identity read/write misuse observations"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-database-diff.json",
+      "media_type": "application/json",
+      "sha256": "sha256:2bb4245eb32e12eebe18266ef76d82c1bdf1d848371f56a48232edb8cd8a9dee",
+      "size_bytes": 52714,
+      "role": "Raw production-table rows before fixture establishment and before/after the rollback-safe negative matrix"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:8bfa69cf7736a45d3bcfc3eccee89454ebac87da210b79558add4acf13bf08a5",
+      "size_bytes": 2071,
+      "role": "Disposable execution environment identity and production differences"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-independent-recount.json",
+      "media_type": "application/json",
+      "sha256": "sha256:d1098ab44c7c9098d1af186d23579cb207b6c8551806c3c8cd57634dc59e8196",
+      "size_bytes": 8182,
+      "role": "Independent identity, transition, negative and database recomputation with mutation probes"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/migration-replay.txt",
+      "media_type": "text/plain",
+      "sha256": "sha256:e8bfa35dee2a9f123e4613589091920bbe931eb21a6b1fa2dfbef55c3e68566a",
+      "size_bytes": 296,
+      "role": "Complete production migration replay completion output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:71cdb437f7880b2c9d7923b333e8871f81fa1a577bb2b705ab0701f066405021",
+      "size_bytes": 1294,
+      "role": "Exact command, source SHA, execution totals and cleanup record"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E04-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:9b799e547b701f845becd2d418883c4072a61d19fa705ad8b16b145656fa5d40",
+      "size_bytes": 11130,
+      "role": "Pre-execution locked E04 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E04-MULTI-REALM",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Independently reconstruct the three-Realm credential and identifier map, enumerate all six ordered source-to-target transitions, verify every fresh target Session from raw login-intent and resolver records, enumerate the exact 48 source-authority misuse observations, recompute disclosure/write/Outbox and table diffs, and mutate copies to prove detection of one identifier merge, one transition residue and one accepted negative. Do not consume runner PASS fields.",
+    "exact_invocation": "node 04_tools/scripts/audit/e04-multi-realm.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E04-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-independent-recount.json",
+    "evaluator": {
+      "actor_id": "codex-task-e04-acceptance-repair-20260914",
+      "role": "E04 multi-Realm identity, Session, transition and asset-isolation test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and executed the E04 disposable evidence exporter and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E04-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-identity-map.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-positive-results.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-session-transitions.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-negative-results.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-database-diff.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "required_artifact_missing_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "credential_discovery_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "identity_map_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "identifier_merge_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "positive_case_count",
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      {
+        "threshold_id": "positive_acceptance_count",
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      {
+        "threshold_id": "positive_asset_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "positive_authoritative_write_count",
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      {
+        "threshold_id": "directed_pair_count",
+        "expected": 6,
+        "actual": 6,
+        "met": true
+      },
+      {
+        "threshold_id": "transition_pair_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "consumed_login_intent_count",
+        "expected": 6,
+        "actual": 6,
+        "met": true
+      },
+      {
+        "threshold_id": "fresh_target_session_count",
+        "expected": 6,
+        "actual": 6,
+        "met": true
+      },
+      {
+        "threshold_id": "source_session_target_resolution_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "target_session_target_resolution_count",
+        "expected": 6,
+        "actual": 6,
+        "met": true
+      },
+      {
+        "threshold_id": "source_authority_residue_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "target_authority_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "multi_membership_activation_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_observation_count",
+        "expected": 48,
+        "actual": 48,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_combination_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_request_integrity_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_denial_stage_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_acceptance_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "cross_realm_data_disclosure_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_authoritative_write_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_outbox_delta",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_matrix_changed_table_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "fixture_preexisting_row_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_oracle_probe_miss_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "clean checkout of the recorded source SHA"
+    ],
+    "steps": [
+      "Check out 397eb23b54cda5f31164c4203e3bf4abae5e121d.",
+      "Run npm run evidence:e04 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01.",
+      "Read multi-realm-independent-recount.json and independently verify its input hashes and raw records."
+    ],
+    "expected_raw_observations": [
+      "required raw evidence missing count = 0",
+      "shared credential Realm-specific discovery mismatch count = 0",
+      "cross-Realm Account, principal, Membership, base Session, lineage, Scope-grant or asset identifier merge count = 0",
+      "valid own-Realm positive case count = 3 and expected asset mismatch count = 0",
+      "all 6 directed Realm pairs issue and consume one intent into a fresh target Session",
+      "source Session target resolution and source authority residue count = 0",
+      "more-than-one active Membership count per request = 0",
+      "all 6 directed pairs x 4 source-authority misuse variants x read/write = 48 negative observations",
+      "negative acceptance, cross-Realm data disclosure and authoritative write count = 0",
+      "negative-matrix authoritative table and Outbox delta = 0",
+      "negative oracle probe miss count = 0"
+    ],
+    "cleanup": "The runner rolls every negative write back to its savepoint and removes the disposable PostgreSQL container in a finally block."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
+    "rationale": "One shared synthetic credential resolved to exactly three separate Realm identities; all 3 own-Realm asset cases and all 6 directed switches matched; all 48 source-authority misuse observations denied with zero disclosure, authoritative write or Outbox delta; all three oracle mutations were detected.",
+    "gaps": [
+      "No stable separately managed staging replay has been performed.",
+      "No authorized production observation has been performed.",
+      "Synthetic target Session rows and the final order read/write adapter were driven directly by the evidence workload after production credential, Session, Membership, Scope and node-bound checks; no public HTTP ingress was exercised.",
+      "No reviewer independent of the E04 identity/session implementation, fixture and oracle has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}

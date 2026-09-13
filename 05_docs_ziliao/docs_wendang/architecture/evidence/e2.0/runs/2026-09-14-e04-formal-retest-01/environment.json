@@ -1,0 +1,34 @@
+{
+  "schema_version": "e04-environment-v1",
+  "captured_at": "2026-09-13T22:13:30.419Z",
+  "kind": "DEV",
+  "environment_id": "local-disposable-postgresql17-e04-fdec2a7792ec43c5",
+  "description": "A newly created PostgreSQL 17 Alpine container replayed the complete production migration chain and executed the locked three-Realm credential, asset, transition and 48-negative E04 matrix.",
+  "owner": "Ethan-controlled local Codex workspace",
+  "isolation": "Disposable Docker container zhudatuan-e04-fdec2a7792ec43c5; synthetic E04 identities, Sessions and orders only; every negative write was savepoint-rolled back and the container was removed after execution.",
+  "real_customer_data": false,
+  "production_impact": "None. No production service, database, domain, payment provider, deployment channel or customer record was contacted.",
+  "differences_from_production": [
+    "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+    "Synthetic Realm, identity, Session and order fixtures rather than customer traffic.",
+    "Credential lookup and node-bound authorization executed production source; Session rows and the final order read/write adapter were driven directly by the evidence workload rather than public HTTP ingress.",
+    "No stable separately managed staging execution and no production observation."
+  ],
+  "runtime": {
+    "node": "v22.22.3",
+    "os": "darwin 25.5.0",
+    "docker_server": "29.7.2",
+    "postgres": "PostgreSQL 17.11 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "docker_image": "postgres:17-alpine",
+    "docker_image_id": "sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+    "migration_count": 301,
+    "endpoint": "127.0.0.1:58900/zhudatuan_registration"
+  },
+  "source_control": {
+    "sha": "397eb23b54cda5f31164c4203e3bf4abae5e121d",
+    "branch": "codex/e2-acceptance-repair",
+    "tree_state": "CLEAN",
+    "status": ""
+  },
+  "configuration_digest": "sha256:4d8d33d0f5c6210720e4408c8fce9a682ef243e1bd1f211e2ad080118a52d20c"
+}

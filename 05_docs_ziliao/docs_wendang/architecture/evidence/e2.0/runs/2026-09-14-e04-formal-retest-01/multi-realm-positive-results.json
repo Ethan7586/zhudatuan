@@ -1,0 +1,852 @@
+{
+  "schema_version": "e04-multi-realm-positive-results-v1",
+  "captured_at": "2026-09-13T22:13:30.313Z",
+  "authority_boundary": [
+    "resolvePasswordLoginCredential Realm-contained lookup",
+    "identity.resolve_session(token_hash,target_host)",
+    "access.resolve_session_membership(session-bound context)",
+    "access.resolve_session_scope + @shop/authz checkScope",
+    "NodeBoundScopeResolver mapped node data Scope",
+    "ordering.orderrecord participant Realm/Account/Membership/node/Scope predicate"
+  ],
+  "cases": [
+    {
+      "case_id": "E04-POS-A",
+      "realm_label": "A",
+      "expected_asset_id": "order:e04a:fdec2a77",
+      "expected_membership_id": "membership:e04a:fdec2a77",
+      "request": {
+        "token_hash": "80b091b85dd969a5099a1af20916ae0e1d6709da64089b862de1a0a42c993395",
+        "session_id": "session:e04a:fdec2a77:base",
+        "membership_id": "membership:e04a:fdec2a77",
+        "scope_id": "mall-zhudatuan",
+        "node_id": "node:e04a-fdec2a77:l6",
+        "realm_id": "realm:e04a-fdec2a77",
+        "account_id": "account:e04a:fdec2a77"
+      },
+      "read_response": {
+        "status": 200,
+        "denial": null,
+        "authorization": {
+          "session_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "actor_id": "principal:e04a:fdec2a77",
+                "account_id": "account:e04a:fdec2a77",
+                "realm_id": "realm:e04a-fdec2a77",
+                "session_id": "session:e04a:fdec2a77:base",
+                "membership_id": "membership:e04a:fdec2a77",
+                "credential_version": "1",
+                "access_version": "1",
+                "target": "storefront",
+                "membership_client": "storefront",
+                "governance_organization_id": "mall-zhudatuan",
+                "entry_realm_id": "realm:e04a-fdec2a77",
+                "line_id": "line:zhudatuan:commerce:v1",
+                "node_id": "node:e04a-fdec2a77:l6",
+                "parent_node_id": "node:zhudatuan:l0",
+                "signed_level": "L6",
+                "node_profile": "consumer",
+                "mall_id": null,
+                "host_sovereign_node_id": "node:zhudatuan:l0",
+                "relation_version": 1
+              }
+            ]
+          },
+          "membership_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "id": "membership:e04a:fdec2a77",
+                "active": true,
+                "access_version": "1",
+                "denies": [],
+                "grants": [
+                  {
+                    "scope": {
+                      "id": "mall-zhudatuan",
+                      "kind": "mall",
+                      "name": "主打团福利商城",
+                      "path": [
+                        {
+                          "id": "organization-platform-root",
+                          "kind": "platform"
+                        },
+                        {
+                          "id": "tenant-zhudatuan",
+                          "kind": "tenant"
+                        },
+                        {
+                          "id": "enterprise-zhudatuan",
+                          "kind": "enterprise"
+                        }
+                      ],
+                      "tenant": "tenant-zhudatuan"
+                    },
+                    "expires": null,
+                    "effective": "2026-09-13T22:13:29.441666+00:00",
+                    "permissions": [
+                      "access.scope.manage"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "scope_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "scope": {
+                  "id": "mall-zhudatuan",
+                  "kind": "mall",
+                  "name": "主打团福利商城",
+                  "path": [
+                    {
+                      "id": "organization-platform-root",
+                      "kind": "platform"
+                    },
+                    {
+                      "id": "tenant-zhudatuan",
+                      "kind": "tenant"
+                    },
+                    {
+                      "id": "enterprise-zhudatuan",
+                      "kind": "enterprise"
+                    }
+                  ],
+                  "tenant": "tenant-zhudatuan"
+                }
+              }
+            ]
+          },
+          "policy_decision": {
+            "evidence": {
+              "membership": "membership:e04a:fdec2a77",
+              "permission": "access.scope.manage",
+              "scope": {
+                "id": "mall-zhudatuan",
+                "kind": "mall",
+                "name": "主打团福利商城",
+                "path": [
+                  {
+                    "id": "organization-platform-root",
+                    "kind": "platform"
+                  },
+                  {
+                    "id": "tenant-zhudatuan",
+                    "kind": "tenant"
+                  },
+                  {
+                    "id": "enterprise-zhudatuan",
+                    "kind": "enterprise"
+                  }
+                ],
+                "tenant": "tenant-zhudatuan"
+              },
+              "accessVersion": 1
+            }
+          },
+          "node_boundary": {
+            "presented_node_id": "node:e04a-fdec2a77:l6",
+            "mapped_data_scope": {
+              "id": "mall-zhudatuan",
+              "kind": "mall",
+              "name": "主打团福利商城",
+              "path": [
+                {
+                  "id": "organization-platform-root",
+                  "kind": "platform"
+                },
+                {
+                  "id": "tenant-zhudatuan",
+                  "kind": "tenant"
+                },
+                {
+                  "id": "enterprise-zhudatuan",
+                  "kind": "enterprise"
+                }
+              ],
+              "tenant": "tenant-zhudatuan"
+            },
+            "expected_target_scope_id": "mall-zhudatuan",
+            "error": null
+          }
+        },
+        "asset_rows": [
+          {
+            "id": "order:e04a:fdec2a77",
+            "scope_id": "mall-zhudatuan",
+            "participant_realm_id": "realm:e04a-fdec2a77",
+            "participant_account_id": "account:e04a:fdec2a77",
+            "participant_membership_id": "membership:e04a:fdec2a77",
+            "participant_node_id": "node:e04a-fdec2a77:l6",
+            "version": "1",
+            "evidence": {
+              "realm": "A",
+              "fixture": "E04"
+            }
+          }
+        ],
+        "write_rows": [],
+        "outbox_before": [],
+        "outbox_after": []
+      },
+      "write_response": {
+        "status": 200,
+        "denial": null,
+        "authorization": {
+          "session_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "actor_id": "principal:e04a:fdec2a77",
+                "account_id": "account:e04a:fdec2a77",
+                "realm_id": "realm:e04a-fdec2a77",
+                "session_id": "session:e04a:fdec2a77:base",
+                "membership_id": "membership:e04a:fdec2a77",
+                "credential_version": "1",
+                "access_version": "1",
+                "target": "storefront",
+                "membership_client": "storefront",
+                "governance_organization_id": "mall-zhudatuan",
+                "entry_realm_id": "realm:e04a-fdec2a77",
+                "line_id": "line:zhudatuan:commerce:v1",
+                "node_id": "node:e04a-fdec2a77:l6",
+                "parent_node_id": "node:zhudatuan:l0",
+                "signed_level": "L6",
+                "node_profile": "consumer",
+                "mall_id": null,
+                "host_sovereign_node_id": "node:zhudatuan:l0",
+                "relation_version": 1
+              }
+            ]
+          },
+          "membership_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "id": "membership:e04a:fdec2a77",
+                "active": true,
+                "access_version": "1",
+                "denies": [],
+                "grants": [
+                  {
+                    "scope": {
+                      "id": "mall-zhudatuan",
+                      "kind": "mall",
+                      "name": "主打团福利商城",
+                      "path": [
+                        {
+                          "id": "organization-platform-root",
+                          "kind": "platform"
+                        },
+                        {
+                          "id": "tenant-zhudatuan",
+                          "kind": "tenant"
+                        },
+                        {
+                          "id": "enterprise-zhudatuan",
+                          "kind": "enterprise"
+                        }
+                      ],
+                      "tenant": "tenant-zhudatuan"
+                    },
+                    "expires": null,
+                    "effective": "2026-09-13T22:13:29.441666+00:00",
+                    "permissions": [
+                      "access.scope.manage"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "scope_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "scope": {
+                  "id": "mall-zhudatuan",
+                  "kind": "mall",
+                  "name": "主打团福利商城",
+                  "path": [
+                    {
+                      "id": "organization-platform-root",
+                      "kind": "platform"
+                    },
+                    {
+                      "id": "tenant-zhudatuan",
+                      "kind": "tenant"
+                    },
+                    {
+                      "id": "enterprise-zhudatuan",
+                      "kind": "enterprise"
+                    }
+                  ],
+                  "tenant": "tenant-zhudatuan"
+                }
+              }
+            ]
+          },
+          "policy_decision": {
+            "evidence": {
+              "membership": "membership:e04a:fdec2a77",
+              "permission": "access.scope.manage",
+              "scope": {
+                "id": "mall-zhudatuan",
+                "kind": "mall",
+                "name": "主打团福利商城",
+                "path": [
+                  {
+                    "id": "organization-platform-root",
+                    "kind": "platform"
+                  },
+                  {
+                    "id": "tenant-zhudatuan",
+                    "kind": "tenant"
+                  },
+                  {
+                    "id": "enterprise-zhudatuan",
+                    "kind": "enterprise"
+                  }
+                ],
+                "tenant": "tenant-zhudatuan"
+              },
+              "accessVersion": 1
+            }
+          },
+          "node_boundary": {
+            "presented_node_id": "node:e04a-fdec2a77:l6",
+            "mapped_data_scope": {
+              "id": "mall-zhudatuan",
+              "kind": "mall",
+              "name": "主打团福利商城",
+              "path": [
+                {
+                  "id": "organization-platform-root",
+                  "kind": "platform"
+                },
+                {
+                  "id": "tenant-zhudatuan",
+                  "kind": "tenant"
+                },
+                {
+                  "id": "enterprise-zhudatuan",
+                  "kind": "enterprise"
+                }
+              ],
+              "tenant": "tenant-zhudatuan"
+            },
+            "expected_target_scope_id": "mall-zhudatuan",
+            "error": null
+          }
+        },
+        "asset_rows": [],
+        "write_rows": [
+          {
+            "id": "order:e04a:fdec2a77",
+            "scope_id": "mall-zhudatuan",
+            "participant_realm_id": "realm:e04a-fdec2a77",
+            "participant_account_id": "account:e04a:fdec2a77",
+            "participant_membership_id": "membership:e04a:fdec2a77",
+            "participant_node_id": "node:e04a-fdec2a77:l6",
+            "version": "2",
+            "evidence": {
+              "realm": "A",
+              "fixture": "E04",
+              "e04_probe": "e04-fdec2a77-positive-A-write"
+            }
+          }
+        ],
+        "outbox_before": [],
+        "outbox_after": []
+      }
+    },
+    {
+      "case_id": "E04-POS-B",
+      "realm_label": "B",
+      "expected_asset_id": "order:e04b:fdec2a77",
+      "expected_membership_id": "membership:e04b:fdec2a77",
+      "request": {
+        "token_hash": "ebc1283b76bac7487014c172f22afacd8641b72cb9b9985ad5122eaadcf5d70d",
+        "session_id": "session:e04b:fdec2a77:base",
+        "membership_id": "membership:e04b:fdec2a77",
+        "scope_id": "mall:e04b-fdec2a77",
+        "node_id": "node:e04b-fdec2a77:l8",
+        "realm_id": "realm:e04b-fdec2a77",
+        "account_id": "account:e04b:fdec2a77"
+      },
+      "read_response": {
+        "status": 200,
+        "denial": null,
+        "authorization": {
+          "session_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "actor_id": "principal:e04b:fdec2a77",
+                "account_id": "account:e04b:fdec2a77",
+                "realm_id": "realm:e04b-fdec2a77",
+                "session_id": "session:e04b:fdec2a77:base",
+                "membership_id": "membership:e04b:fdec2a77",
+                "credential_version": "1",
+                "access_version": "1",
+                "target": "storefront",
+                "membership_client": "storefront",
+                "governance_organization_id": "mall:e04b-fdec2a77",
+                "entry_realm_id": "realm:e04b-fdec2a77",
+                "line_id": "line:e04b-fdec2a77:v1",
+                "node_id": "node:e04b-fdec2a77:l8",
+                "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+                "signed_level": "L8",
+                "node_profile": "consumer",
+                "mall_id": null,
+                "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+                "relation_version": 1
+              }
+            ]
+          },
+          "membership_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "id": "membership:e04b:fdec2a77",
+                "active": true,
+                "access_version": "1",
+                "denies": [],
+                "grants": [
+                  {
+                    "scope": {
+                      "id": "mall:e04b-fdec2a77",
+                      "kind": "mall",
+                      "name": "E04 Realm B Mall",
+                      "path": []
+                    },
+                    "expires": null,
+                    "effective": "2026-09-13T22:13:29.450634+00:00",
+                    "permissions": [
+                      "access.scope.manage"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "scope_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "scope": {
+                  "id": "mall:e04b-fdec2a77",
+                  "kind": "mall",
+                  "name": "E04 Realm B Mall",
+                  "path": []
+                }
+              }
+            ]
+          },
+          "policy_decision": {
+            "evidence": {
+              "membership": "membership:e04b:fdec2a77",
+              "permission": "access.scope.manage",
+              "scope": {
+                "id": "mall:e04b-fdec2a77",
+                "kind": "mall",
+                "name": "E04 Realm B Mall",
+                "path": []
+              },
+              "accessVersion": 1
+            }
+          },
+          "node_boundary": {
+            "presented_node_id": "node:e04b-fdec2a77:l8",
+            "mapped_data_scope": {
+              "id": "mall:e04b-fdec2a77",
+              "kind": "mall",
+              "name": "E04 Realm B Mall",
+              "path": []
+            },
+            "expected_target_scope_id": "mall:e04b-fdec2a77",
+            "error": null
+          }
+        },
+        "asset_rows": [
+          {
+            "id": "order:e04b:fdec2a77",
+            "scope_id": "mall:e04b-fdec2a77",
+            "participant_realm_id": "realm:e04b-fdec2a77",
+            "participant_account_id": "account:e04b:fdec2a77",
+            "participant_membership_id": "membership:e04b:fdec2a77",
+            "participant_node_id": "node:e04b-fdec2a77:l8",
+            "version": "1",
+            "evidence": {
+              "realm": "B",
+              "fixture": "E04"
+            }
+          }
+        ],
+        "write_rows": [],
+        "outbox_before": [],
+        "outbox_after": []
+      },
+      "write_response": {
+        "status": 200,
+        "denial": null,
+        "authorization": {
+          "session_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "actor_id": "principal:e04b:fdec2a77",
+                "account_id": "account:e04b:fdec2a77",
+                "realm_id": "realm:e04b-fdec2a77",
+                "session_id": "session:e04b:fdec2a77:base",
+                "membership_id": "membership:e04b:fdec2a77",
+                "credential_version": "1",
+                "access_version": "1",
+                "target": "storefront",
+                "membership_client": "storefront",
+                "governance_organization_id": "mall:e04b-fdec2a77",
+                "entry_realm_id": "realm:e04b-fdec2a77",
+                "line_id": "line:e04b-fdec2a77:v1",
+                "node_id": "node:e04b-fdec2a77:l8",
+                "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+                "signed_level": "L8",
+                "node_profile": "consumer",
+                "mall_id": null,
+                "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+                "relation_version": 1
+              }
+            ]
+          },
+          "membership_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "id": "membership:e04b:fdec2a77",
+                "active": true,
+                "access_version": "1",
+                "denies": [],
+                "grants": [
+                  {
+                    "scope": {
+                      "id": "mall:e04b-fdec2a77",
+                      "kind": "mall",
+                      "name": "E04 Realm B Mall",
+                      "path": []
+                    },
+                    "expires": null,
+                    "effective": "2026-09-13T22:13:29.450634+00:00",
+                    "permissions": [
+                      "access.scope.manage"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "scope_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "scope": {
+                  "id": "mall:e04b-fdec2a77",
+                  "kind": "mall",
+                  "name": "E04 Realm B Mall",
+                  "path": []
+                }
+              }
+            ]
+          },
+          "policy_decision": {
+            "evidence": {
+              "membership": "membership:e04b:fdec2a77",
+              "permission": "access.scope.manage",
+              "scope": {
+                "id": "mall:e04b-fdec2a77",
+                "kind": "mall",
+                "name": "E04 Realm B Mall",
+                "path": []
+              },
+              "accessVersion": 1
+            }
+          },
+          "node_boundary": {
+            "presented_node_id": "node:e04b-fdec2a77:l8",
+            "mapped_data_scope": {
+              "id": "mall:e04b-fdec2a77",
+              "kind": "mall",
+              "name": "E04 Realm B Mall",
+              "path": []
+            },
+            "expected_target_scope_id": "mall:e04b-fdec2a77",
+            "error": null
+          }
+        },
+        "asset_rows": [],
+        "write_rows": [
+          {
+            "id": "order:e04b:fdec2a77",
+            "scope_id": "mall:e04b-fdec2a77",
+            "participant_realm_id": "realm:e04b-fdec2a77",
+            "participant_account_id": "account:e04b:fdec2a77",
+            "participant_membership_id": "membership:e04b:fdec2a77",
+            "participant_node_id": "node:e04b-fdec2a77:l8",
+            "version": "2",
+            "evidence": {
+              "realm": "B",
+              "fixture": "E04",
+              "e04_probe": "e04-fdec2a77-positive-B-write"
+            }
+          }
+        ],
+        "outbox_before": [],
+        "outbox_after": []
+      }
+    },
+    {
+      "case_id": "E04-POS-C",
+      "realm_label": "C",
+      "expected_asset_id": "order:e04c:fdec2a77",
+      "expected_membership_id": "membership:e04c:fdec2a77",
+      "request": {
+        "token_hash": "826351295d501983f61354f3811e8cd5ca23c29d3de4108eb6fcc1bb442a1a34",
+        "session_id": "session:e04c:fdec2a77:base",
+        "membership_id": "membership:e04c:fdec2a77",
+        "scope_id": "mall:e04c-fdec2a77",
+        "node_id": "node:e04c-fdec2a77:l0",
+        "realm_id": "realm:e04c-fdec2a77",
+        "account_id": "account:e04c:fdec2a77"
+      },
+      "read_response": {
+        "status": 200,
+        "denial": null,
+        "authorization": {
+          "session_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "actor_id": "principal:e04c:fdec2a77",
+                "account_id": "account:e04c:fdec2a77",
+                "realm_id": "realm:e04c-fdec2a77",
+                "session_id": "session:e04c:fdec2a77:base",
+                "membership_id": "membership:e04c:fdec2a77",
+                "credential_version": "1",
+                "access_version": "1",
+                "target": "console",
+                "membership_client": "operator",
+                "governance_organization_id": "mall:e04c-fdec2a77",
+                "entry_realm_id": "realm:e04c-fdec2a77",
+                "line_id": "line:e04c-fdec2a77:v1",
+                "node_id": "node:e04c-fdec2a77:l0",
+                "parent_node_id": null,
+                "signed_level": "L0",
+                "node_profile": "operating_mall",
+                "mall_id": "mall:e04c-fdec2a77",
+                "host_sovereign_node_id": "node:e04c-fdec2a77:l0",
+                "relation_version": 1
+              }
+            ]
+          },
+          "membership_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "id": "membership:e04c:fdec2a77",
+                "active": true,
+                "access_version": "1",
+                "denies": [],
+                "grants": [
+                  {
+                    "scope": {
+                      "id": "mall:e04c-fdec2a77",
+                      "kind": "mall",
+                      "name": "E04 Realm C Mall",
+                      "path": []
+                    },
+                    "expires": null,
+                    "effective": "2026-09-13T22:13:29.457061+00:00",
+                    "permissions": [
+                      "access.scope.manage"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "scope_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "scope": {
+                  "id": "mall:e04c-fdec2a77",
+                  "kind": "mall",
+                  "name": "E04 Realm C Mall",
+                  "path": []
+                }
+              }
+            ]
+          },
+          "policy_decision": {
+            "evidence": {
+              "membership": "membership:e04c:fdec2a77",
+              "permission": "access.scope.manage",
+              "scope": {
+                "id": "mall:e04c-fdec2a77",
+                "kind": "mall",
+                "name": "E04 Realm C Mall",
+                "path": []
+              },
+              "accessVersion": 1
+            }
+          },
+          "node_boundary": {
+            "presented_node_id": "node:e04c-fdec2a77:l0",
+            "mapped_data_scope": {
+              "id": "mall:e04c-fdec2a77",
+              "kind": "mall",
+              "name": "E04 Realm C Mall",
+              "path": []
+            },
+            "expected_target_scope_id": "mall:e04c-fdec2a77",
+            "error": null
+          }
+        },
+        "asset_rows": [
+          {
+            "id": "order:e04c:fdec2a77",
+            "scope_id": "mall:e04c-fdec2a77",
+            "participant_realm_id": "realm:e04c-fdec2a77",
+            "participant_account_id": "account:e04c:fdec2a77",
+            "participant_membership_id": "membership:e04c:fdec2a77",
+            "participant_node_id": "node:e04c-fdec2a77:l0",
+            "version": "1",
+            "evidence": {
+              "realm": "C",
+              "fixture": "E04"
+            }
+          }
+        ],
+        "write_rows": [],
+        "outbox_before": [],
+        "outbox_after": []
+      },
+      "write_response": {
+        "status": 200,
+        "denial": null,
+        "authorization": {
+          "session_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "actor_id": "principal:e04c:fdec2a77",
+                "account_id": "account:e04c:fdec2a77",
+                "realm_id": "realm:e04c-fdec2a77",
+                "session_id": "session:e04c:fdec2a77:base",
+                "membership_id": "membership:e04c:fdec2a77",
+                "credential_version": "1",
+                "access_version": "1",
+                "target": "console",
+                "membership_client": "operator",
+                "governance_organization_id": "mall:e04c-fdec2a77",
+                "entry_realm_id": "realm:e04c-fdec2a77",
+                "line_id": "line:e04c-fdec2a77:v1",
+                "node_id": "node:e04c-fdec2a77:l0",
+                "parent_node_id": null,
+                "signed_level": "L0",
+                "node_profile": "operating_mall",
+                "mall_id": "mall:e04c-fdec2a77",
+                "host_sovereign_node_id": "node:e04c-fdec2a77:l0",
+                "relation_version": 1
+              }
+            ]
+          },
+          "membership_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "id": "membership:e04c:fdec2a77",
+                "active": true,
+                "access_version": "1",
+                "denies": [],
+                "grants": [
+                  {
+                    "scope": {
+                      "id": "mall:e04c-fdec2a77",
+                      "kind": "mall",
+                      "name": "E04 Realm C Mall",
+                      "path": []
+                    },
+                    "expires": null,
+                    "effective": "2026-09-13T22:13:29.457061+00:00",
+                    "permissions": [
+                      "access.scope.manage"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "scope_resolution": {
+            "row_count": 1,
+            "rows": [
+              {
+                "scope": {
+                  "id": "mall:e04c-fdec2a77",
+                  "kind": "mall",
+                  "name": "E04 Realm C Mall",
+                  "path": []
+                }
+              }
+            ]
+          },
+          "policy_decision": {
+            "evidence": {
+              "membership": "membership:e04c:fdec2a77",
+              "permission": "access.scope.manage",
+              "scope": {
+                "id": "mall:e04c-fdec2a77",
+                "kind": "mall",
+                "name": "E04 Realm C Mall",
+                "path": []
+              },
+              "accessVersion": 1
+            }
+          },
+          "node_boundary": {
+            "presented_node_id": "node:e04c-fdec2a77:l0",
+            "mapped_data_scope": {
+              "id": "mall:e04c-fdec2a77",
+              "kind": "mall",
+              "name": "E04 Realm C Mall",
+              "path": []
+            },
+            "expected_target_scope_id": "mall:e04c-fdec2a77",
+            "error": null
+          }
+        },
+        "asset_rows": [],
+        "write_rows": [
+          {
+            "id": "order:e04c:fdec2a77",
+            "scope_id": "mall:e04c-fdec2a77",
+            "participant_realm_id": "realm:e04c-fdec2a77",
+            "participant_account_id": "account:e04c:fdec2a77",
+            "participant_membership_id": "membership:e04c:fdec2a77",
+            "participant_node_id": "node:e04c-fdec2a77:l0",
+            "version": "2",
+            "evidence": {
+              "realm": "C",
+              "fixture": "E04",
+              "e04_probe": "e04-fdec2a77-positive-C-write"
+            }
+          }
+        ],
+        "outbox_before": [],
+        "outbox_after": []
+      }
+    }
+  ]
+}

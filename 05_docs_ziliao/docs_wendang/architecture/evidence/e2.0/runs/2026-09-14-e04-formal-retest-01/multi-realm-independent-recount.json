@@ -1,0 +1,291 @@
+{
+  "schema_version": "e04-independent-multi-realm-recount-v1",
+  "oracle_id": "E2-ORACLE-E04-MULTI-REALM",
+  "executed_at": "2026-09-13T22:13:30.462Z",
+  "independent_from_test_program": true,
+  "reads_test_program_pass": false,
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E04-FORMAL-RETEST-20260914",
+    "sha256": "sha256:9b799e547b701f845becd2d418883c4072a61d19fa705ad8b16b145656fa5d40",
+    "locked_at": "2026-09-13T21:51:44Z"
+  },
+  "input_artifacts": [
+    {
+      "path": "/Users/Ethan/.codex/worktrees/e9b4/zdt-next/05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E04-正式重测判据-2026-09-14.json",
+      "sha256": "sha256:9b799e547b701f845becd2d418883c4072a61d19fa705ad8b16b145656fa5d40"
+    },
+    {
+      "path": "/Users/Ethan/.codex/worktrees/e9b4/zdt-next/05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-identity-map.json",
+      "sha256": "sha256:f3080b475c338741ffcc45fb658c815995c621b0e89ec070ae8c5b392dcdf2cb"
+    },
+    {
+      "path": "/Users/Ethan/.codex/worktrees/e9b4/zdt-next/05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-positive-results.json",
+      "sha256": "sha256:230d065c9819f5dd4c0b84d134cae6bba5d06cf350d548e01461d3d99d2aaa89"
+    },
+    {
+      "path": "/Users/Ethan/.codex/worktrees/e9b4/zdt-next/05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-session-transitions.json",
+      "sha256": "sha256:6417b3d3636a26c16702dc2ffb43a70b6ef147808d5b2308f609f8c534410cab"
+    },
+    {
+      "path": "/Users/Ethan/.codex/worktrees/e9b4/zdt-next/05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-negative-results.json",
+      "sha256": "sha256:6247bfad46552b03df041b6ccbe7e86bfe270c036245f12f5837e6bb608a37bd"
+    },
+    {
+      "path": "/Users/Ethan/.codex/worktrees/e9b4/zdt-next/05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-database-diff.json",
+      "sha256": "sha256:2bb4245eb32e12eebe18266ef76d82c1bdf1d848371f56a48232edb8cd8a9dee"
+    },
+    {
+      "path": "/Users/Ethan/.codex/worktrees/e9b4/zdt-next/05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/environment.json",
+      "sha256": "sha256:8bfa69cf7736a45d3bcfc3eccee89454ebac87da210b79558add4acf13bf08a5"
+    }
+  ],
+  "computed_observations": {
+    "identity": {
+      "realm_count": 3,
+      "credential_row_count": 3,
+      "discovery_positive_count": 3,
+      "discovery_cross_count": 6,
+      "discovery_mismatch_count": 0,
+      "identity_map_mismatch_count": 0,
+      "identifier_merge_count": 0,
+      "duplicate_identifier_categories": [],
+      "distinct_counts": {
+        "credential_id": 3,
+        "account_id": 3,
+        "principal_id": 3,
+        "membership_id": 3,
+        "base_session_id": 3,
+        "node_id": 3,
+        "lineage_identity": 3,
+        "scope_grant_id": 3,
+        "scope_id": 3,
+        "asset_id": 3
+      }
+    },
+    "positives": {
+      "case_count": 3,
+      "accepted_count": 3,
+      "asset_mismatch_count": 0,
+      "write_count": 3,
+      "multi_membership_activation_count": 0
+    },
+    "transitions": {
+      "pair_count": 6,
+      "pair_mismatch_count": 0,
+      "consumed_intent_count": 6,
+      "fresh_target_session_count": 6,
+      "source_session_target_resolution_count": 0,
+      "target_session_target_resolution_count": 6,
+      "source_authority_residue_count": 0,
+      "target_authority_mismatch_count": 0,
+      "multi_membership_activation_count": 0
+    },
+    "negatives": {
+      "observation_count": 48,
+      "combination_mismatch_count": 0,
+      "request_integrity_mismatch_count": 0,
+      "denial_stage_mismatch_count": 0,
+      "acceptance_count": 0,
+      "disclosure_count": 0,
+      "write_count": 0,
+      "outbox_delta": 0,
+      "multi_membership_activation_count": 0
+    },
+    "database": {
+      "table_count": 13,
+      "changed_table_count": 0,
+      "changed_tables": [],
+      "fixture_preexisting_row_count": 0
+    },
+    "environment_kind": "DEV"
+  },
+  "negative_probes": [
+    {
+      "probe_id": "identifier-merge",
+      "detected": true
+    },
+    {
+      "probe_id": "transition-source-residue",
+      "detected": true
+    },
+    {
+      "probe_id": "accepted-negative-with-write",
+      "detected": true
+    }
+  ],
+  "thresholds": [
+    {
+      "threshold_id": "required_artifact_missing_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "credential_discovery_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "identity_map_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "identifier_merge_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "positive_case_count",
+      "expected": 3,
+      "actual": 3,
+      "met": true
+    },
+    {
+      "threshold_id": "positive_acceptance_count",
+      "expected": 3,
+      "actual": 3,
+      "met": true
+    },
+    {
+      "threshold_id": "positive_asset_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "positive_authoritative_write_count",
+      "expected": 3,
+      "actual": 3,
+      "met": true
+    },
+    {
+      "threshold_id": "directed_pair_count",
+      "expected": 6,
+      "actual": 6,
+      "met": true
+    },
+    {
+      "threshold_id": "transition_pair_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "consumed_login_intent_count",
+      "expected": 6,
+      "actual": 6,
+      "met": true
+    },
+    {
+      "threshold_id": "fresh_target_session_count",
+      "expected": 6,
+      "actual": 6,
+      "met": true
+    },
+    {
+      "threshold_id": "source_session_target_resolution_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "target_session_target_resolution_count",
+      "expected": 6,
+      "actual": 6,
+      "met": true
+    },
+    {
+      "threshold_id": "source_authority_residue_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "target_authority_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "multi_membership_activation_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_observation_count",
+      "expected": 48,
+      "actual": 48,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_combination_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_request_integrity_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_denial_stage_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_acceptance_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "cross_realm_data_disclosure_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_authoritative_write_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_outbox_delta",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_matrix_changed_table_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "fixture_preexisting_row_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_oracle_probe_miss_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    }
+  ],
+  "missing_items": [],
+  "contradictions": [],
+  "claim_outcome": "MET",
+  "environment_assurance": "DEV VERIFIED",
+  "review_assurance": "NOT REVIEWED"
+}

@@ -1,0 +1,1328 @@
+{
+  "schema_version": "e04-multi-realm-database-diff-v1",
+  "captured_at": "2026-09-13T22:13:30.313Z",
+  "observation_scope": "Synthetic E04 rows in production tables plus matching runtime.outbox trace rows.",
+  "fixture_before": {
+    "tables": {
+      "identity.account": [],
+      "identity.credential": [],
+      "identity.session": [],
+      "identity.loginintent": [],
+      "access.membership": [],
+      "access.scopegrant": [],
+      "access.role": [],
+      "access.membershiprole": [],
+      "identity.realm": [],
+      "organization.node": [],
+      "organization.noderelation": [],
+      "ordering.orderrecord": [],
+      "runtime.outbox": []
+    },
+    "table_digests": {
+      "identity.account": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "identity.credential": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "identity.session": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "identity.loginintent": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "access.membership": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "access.scopegrant": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "access.role": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "access.membershiprole": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "identity.realm": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "organization.node": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "organization.noderelation": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "ordering.orderrecord": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "runtime.outbox": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "established_before_negative_matrix": {
+    "tables": {
+      "identity.account": [
+        {
+          "id": "account:e04a:fdec2a77",
+          "realm_id": "realm:e04a-fdec2a77",
+          "legacy_principal_id": "principal:e04a:fdec2a77",
+          "status": "active",
+          "credential_version": "1",
+          "assurance_level": 2
+        },
+        {
+          "id": "account:e04b:fdec2a77",
+          "realm_id": "realm:e04b-fdec2a77",
+          "legacy_principal_id": "principal:e04b:fdec2a77",
+          "status": "active",
+          "credential_version": "1",
+          "assurance_level": 2
+        },
+        {
+          "id": "account:e04c:fdec2a77",
+          "realm_id": "realm:e04c-fdec2a77",
+          "legacy_principal_id": "principal:e04c:fdec2a77",
+          "status": "active",
+          "credential_version": "1",
+          "assurance_level": 3
+        }
+      ],
+      "identity.credential": [
+        {
+          "id": "credential:e04a:fdec2a77",
+          "principal_id": "principal:e04a:fdec2a77",
+          "provider": "password",
+          "subject_hash": "ec72d7925cd2276111b20a8037c297bd940dc1b3c0d2e7cbf9d2d39eca55c803",
+          "status": "active",
+          "realm_id": "realm:e04a-fdec2a77",
+          "account_id": "account:e04a:fdec2a77"
+        },
+        {
+          "id": "credential:e04b:fdec2a77",
+          "principal_id": "principal:e04b:fdec2a77",
+          "provider": "password",
+          "subject_hash": "ec72d7925cd2276111b20a8037c297bd940dc1b3c0d2e7cbf9d2d39eca55c803",
+          "status": "active",
+          "realm_id": "realm:e04b-fdec2a77",
+          "account_id": "account:e04b:fdec2a77"
+        },
+        {
+          "id": "credential:e04c:fdec2a77",
+          "principal_id": "principal:e04c:fdec2a77",
+          "provider": "password",
+          "subject_hash": "ec72d7925cd2276111b20a8037c297bd940dc1b3c0d2e7cbf9d2d39eca55c803",
+          "status": "active",
+          "realm_id": "realm:e04c-fdec2a77",
+          "account_id": "account:e04c:fdec2a77"
+        }
+      ],
+      "identity.session": [
+        {
+          "id": "session:e04:fdec2a77:switch:a:b",
+          "principal_id": "principal:e04b:fdec2a77",
+          "membership_id": "membership:e04b:fdec2a77",
+          "token_hash": "2290b5ff3aa8b97e49a6e9c44b54439e5c2dfa168182a1ced95eef567da41c47",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04b-fdec2a77",
+          "account_id": "account:e04b:fdec2a77",
+          "auth_target": "e04-b-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04:fdec2a77:switch:a:c",
+          "principal_id": "principal:e04c:fdec2a77",
+          "membership_id": "membership:e04c:fdec2a77",
+          "token_hash": "6d893a131458a6b827318a7d4b4a648a04afa8a0ea9eccf21c47c8e79e5fd7de",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "operator",
+          "assurance_level": 1,
+          "realm_id": "realm:e04c-fdec2a77",
+          "account_id": "account:e04c:fdec2a77",
+          "auth_target": "e04-c-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04:fdec2a77:switch:b:a",
+          "principal_id": "principal:e04a:fdec2a77",
+          "membership_id": "membership:e04a:fdec2a77",
+          "token_hash": "963af804a40f94afd390e450924a85efa9ffa639cd83bb6ebb2113969c8d5a5c",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04a-fdec2a77",
+          "account_id": "account:e04a:fdec2a77",
+          "auth_target": "e04-a-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04:fdec2a77:switch:b:c",
+          "principal_id": "principal:e04c:fdec2a77",
+          "membership_id": "membership:e04c:fdec2a77",
+          "token_hash": "c98a75d2f3bb0687b0ff96b980a7f9681ebaa7f49c1bcb19c92acc4ebefc13b6",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "operator",
+          "assurance_level": 1,
+          "realm_id": "realm:e04c-fdec2a77",
+          "account_id": "account:e04c:fdec2a77",
+          "auth_target": "e04-c-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04:fdec2a77:switch:c:a",
+          "principal_id": "principal:e04a:fdec2a77",
+          "membership_id": "membership:e04a:fdec2a77",
+          "token_hash": "904b7c1f1b5c19bcbdb6af60ee5e841125dcdc82cd541898fd7593b766e8a793",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04a-fdec2a77",
+          "account_id": "account:e04a:fdec2a77",
+          "auth_target": "e04-a-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04:fdec2a77:switch:c:b",
+          "principal_id": "principal:e04b:fdec2a77",
+          "membership_id": "membership:e04b:fdec2a77",
+          "token_hash": "04f9f40f5f8e986d68763151c39d5d3e1dccced2245c54b31cdf28eb5ca253cf",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04b-fdec2a77",
+          "account_id": "account:e04b:fdec2a77",
+          "auth_target": "e04-b-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04a:fdec2a77:base",
+          "principal_id": "principal:e04a:fdec2a77",
+          "membership_id": "membership:e04a:fdec2a77",
+          "token_hash": "80b091b85dd969a5099a1af20916ae0e1d6709da64089b862de1a0a42c993395",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04a-fdec2a77",
+          "account_id": "account:e04a:fdec2a77",
+          "auth_target": "e04-a-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04b:fdec2a77:base",
+          "principal_id": "principal:e04b:fdec2a77",
+          "membership_id": "membership:e04b:fdec2a77",
+          "token_hash": "ebc1283b76bac7487014c172f22afacd8641b72cb9b9985ad5122eaadcf5d70d",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04b-fdec2a77",
+          "account_id": "account:e04b:fdec2a77",
+          "auth_target": "e04-b-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04c:fdec2a77:base",
+          "principal_id": "principal:e04c:fdec2a77",
+          "membership_id": "membership:e04c:fdec2a77",
+          "token_hash": "826351295d501983f61354f3811e8cd5ca23c29d3de4108eb6fcc1bb442a1a34",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "operator",
+          "assurance_level": 1,
+          "realm_id": "realm:e04c-fdec2a77",
+          "account_id": "account:e04c:fdec2a77",
+          "auth_target": "e04-c-fdec2a77",
+          "revoked_at": null
+        }
+      ],
+      "identity.loginintent": [
+        {
+          "id": "loginintent:95050e68-f5eb-426a-aea5-7d76cba917eb",
+          "source_realm_id": "realm:e04b-fdec2a77",
+          "source_node_id": "node:e04b-fdec2a77:l8",
+          "source_account_id": "account:e04b:fdec2a77",
+          "source_session_id": "session:e04b:fdec2a77:base",
+          "target_realm_id": "realm:e04c-fdec2a77",
+          "target_node_id": "node:e04c-fdec2a77:l0",
+          "target_account_id": "account:e04c:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:b:c",
+          "consumed_at": "2026-09-13T22:13:29.737Z"
+        },
+        {
+          "id": "loginintent:c4474e09-b9af-433e-9f61-85d96a89c2b1",
+          "source_realm_id": "realm:e04c-fdec2a77",
+          "source_node_id": "node:e04c-fdec2a77:l0",
+          "source_account_id": "account:e04c:fdec2a77",
+          "source_session_id": "session:e04c:fdec2a77:base",
+          "target_realm_id": "realm:e04a-fdec2a77",
+          "target_node_id": "node:e04a-fdec2a77:l6",
+          "target_account_id": "account:e04a:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:c:a",
+          "consumed_at": "2026-09-13T22:13:29.766Z"
+        },
+        {
+          "id": "loginintent:d17b357c-70fc-4a5b-91ed-ee94b6de55fe",
+          "source_realm_id": "realm:e04a-fdec2a77",
+          "source_node_id": "node:e04a-fdec2a77:l6",
+          "source_account_id": "account:e04a:fdec2a77",
+          "source_session_id": "session:e04a:fdec2a77:base",
+          "target_realm_id": "realm:e04b-fdec2a77",
+          "target_node_id": "node:e04b-fdec2a77:l8",
+          "target_account_id": "account:e04b:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:a:b",
+          "consumed_at": "2026-09-13T22:13:29.671Z"
+        },
+        {
+          "id": "loginintent:d1fb520a-846a-4979-8ac1-f90703b24021",
+          "source_realm_id": "realm:e04a-fdec2a77",
+          "source_node_id": "node:e04a-fdec2a77:l6",
+          "source_account_id": "account:e04a:fdec2a77",
+          "source_session_id": "session:e04a:fdec2a77:base",
+          "target_realm_id": "realm:e04c-fdec2a77",
+          "target_node_id": "node:e04c-fdec2a77:l0",
+          "target_account_id": "account:e04c:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:a:c",
+          "consumed_at": "2026-09-13T22:13:29.694Z"
+        },
+        {
+          "id": "loginintent:d39a37be-6e24-4273-8434-0d024d20f634",
+          "source_realm_id": "realm:e04c-fdec2a77",
+          "source_node_id": "node:e04c-fdec2a77:l0",
+          "source_account_id": "account:e04c:fdec2a77",
+          "source_session_id": "session:e04c:fdec2a77:base",
+          "target_realm_id": "realm:e04b-fdec2a77",
+          "target_node_id": "node:e04b-fdec2a77:l8",
+          "target_account_id": "account:e04b:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:c:b",
+          "consumed_at": "2026-09-13T22:13:29.790Z"
+        },
+        {
+          "id": "loginintent:e5f5ed02-5cc9-4f52-b5ed-7cceadabd41c",
+          "source_realm_id": "realm:e04b-fdec2a77",
+          "source_node_id": "node:e04b-fdec2a77:l8",
+          "source_account_id": "account:e04b:fdec2a77",
+          "source_session_id": "session:e04b:fdec2a77:base",
+          "target_realm_id": "realm:e04a-fdec2a77",
+          "target_node_id": "node:e04a-fdec2a77:l6",
+          "target_account_id": "account:e04a:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:b:a",
+          "consumed_at": "2026-09-13T22:13:29.715Z"
+        }
+      ],
+      "access.membership": [
+        {
+          "id": "membership:e04a:fdec2a77",
+          "member_id": "member:e04a:fdec2a77",
+          "organization_id": "mall-zhudatuan",
+          "client": "storefront",
+          "status": "active",
+          "access_version": "1",
+          "realm_id": "realm:e04a-fdec2a77",
+          "account_id": "account:e04a:fdec2a77",
+          "node_profile": "consumer"
+        },
+        {
+          "id": "membership:e04b:fdec2a77",
+          "member_id": "member:e04b:fdec2a77",
+          "organization_id": "mall:e04b-fdec2a77",
+          "client": "storefront",
+          "status": "active",
+          "access_version": "1",
+          "realm_id": "realm:e04b-fdec2a77",
+          "account_id": "account:e04b:fdec2a77",
+          "node_profile": "consumer"
+        },
+        {
+          "id": "membership:e04c:fdec2a77",
+          "member_id": "member:e04c:fdec2a77",
+          "organization_id": "mall:e04c-fdec2a77",
+          "client": "operator",
+          "status": "active",
+          "access_version": "1",
+          "realm_id": "realm:e04c-fdec2a77",
+          "account_id": "account:e04c:fdec2a77",
+          "node_profile": "operating_mall"
+        }
+      ],
+      "access.scopegrant": [
+        {
+          "id": "scope:e04a:fdec2a77",
+          "membership_id": "membership:e04a:fdec2a77",
+          "scope_kind": "mall",
+          "scope_id": "mall-zhudatuan",
+          "scope_path": "mall-zhudatuan",
+          "effect": "allow",
+          "access_version": "1"
+        },
+        {
+          "id": "scope:e04b:fdec2a77",
+          "membership_id": "membership:e04b:fdec2a77",
+          "scope_kind": "mall",
+          "scope_id": "mall:e04b-fdec2a77",
+          "scope_path": "mall:e04b-fdec2a77",
+          "effect": "allow",
+          "access_version": "1"
+        },
+        {
+          "id": "scope:e04c:fdec2a77",
+          "membership_id": "membership:e04c:fdec2a77",
+          "scope_kind": "mall",
+          "scope_id": "mall:e04c-fdec2a77",
+          "scope_path": "mall:e04c-fdec2a77",
+          "effect": "allow",
+          "access_version": "1"
+        }
+      ],
+      "access.role": [
+        {
+          "id": "role:e04a:fdec2a77",
+          "scope_id": "mall-zhudatuan",
+          "name": "E04 Realm A Scope Manager",
+          "status": "active",
+          "version": "1"
+        },
+        {
+          "id": "role:e04b:fdec2a77",
+          "scope_id": "mall:e04b-fdec2a77",
+          "name": "E04 Realm B Scope Manager",
+          "status": "active",
+          "version": "1"
+        },
+        {
+          "id": "role:e04c:fdec2a77",
+          "scope_id": "mall:e04c-fdec2a77",
+          "name": "E04 Realm C Scope Manager",
+          "status": "active",
+          "version": "1"
+        }
+      ],
+      "access.membershiprole": [
+        {
+          "membership_id": "membership:e04a:fdec2a77",
+          "role_id": "role:e04a:fdec2a77",
+          "effective_at": "2026-09-13T22:13:29.439Z",
+          "expires_at": null
+        },
+        {
+          "membership_id": "membership:e04b:fdec2a77",
+          "role_id": "role:e04b:fdec2a77",
+          "effective_at": "2026-09-13T22:13:29.450Z",
+          "expires_at": null
+        },
+        {
+          "membership_id": "membership:e04c:fdec2a77",
+          "role_id": "role:e04c:fdec2a77",
+          "effective_at": "2026-09-13T22:13:29.456Z",
+          "expires_at": null
+        }
+      ],
+      "identity.realm": [
+        {
+          "id": "realm:e04a-fdec2a77",
+          "node_id": "node:e04a-fdec2a77:l6",
+          "status": "active",
+          "node_profile": "consumer",
+          "mall_id": null,
+          "host_node_id": "node:zhudatuan:l0",
+          "host_node_profile": "operating_mall"
+        },
+        {
+          "id": "realm:e04b-fdec2a77",
+          "node_id": "node:e04b-fdec2a77:l8",
+          "status": "active",
+          "node_profile": "consumer",
+          "mall_id": null,
+          "host_node_id": "node:e04b-root-fdec2a77:l0",
+          "host_node_profile": "operating_mall"
+        },
+        {
+          "id": "realm:e04b-parent-fdec2a77",
+          "node_id": "node:e04b-parent-fdec2a77:l7",
+          "status": "active",
+          "node_profile": "consumer",
+          "mall_id": null,
+          "host_node_id": "node:e04b-root-fdec2a77:l0",
+          "host_node_profile": "operating_mall"
+        },
+        {
+          "id": "realm:e04b-root-fdec2a77",
+          "node_id": "node:e04b-root-fdec2a77:l0",
+          "status": "active",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:e04b-fdec2a77",
+          "host_node_id": null,
+          "host_node_profile": null
+        },
+        {
+          "id": "realm:e04c-fdec2a77",
+          "node_id": "node:e04c-fdec2a77:l0",
+          "status": "active",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:e04c-fdec2a77",
+          "host_node_id": null,
+          "host_node_profile": null
+        }
+      ],
+      "organization.node": [
+        {
+          "id": "node:e04a-fdec2a77:l6",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "consumer",
+          "realm_id": "realm:e04a-fdec2a77",
+          "mall_id": null,
+          "status": "active"
+        },
+        {
+          "id": "node:e04b-fdec2a77:l8",
+          "line_id": "line:e04b-fdec2a77:v1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "consumer",
+          "realm_id": "realm:e04b-fdec2a77",
+          "mall_id": null,
+          "status": "active"
+        },
+        {
+          "id": "node:e04b-parent-fdec2a77:l7",
+          "line_id": "line:e04b-fdec2a77:v1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "consumer",
+          "realm_id": "realm:e04b-parent-fdec2a77",
+          "mall_id": null,
+          "status": "active"
+        },
+        {
+          "id": "node:e04b-root-fdec2a77:l0",
+          "line_id": "line:e04b-fdec2a77:v1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e04b-root-fdec2a77",
+          "mall_id": "mall:e04b-fdec2a77",
+          "status": "active"
+        },
+        {
+          "id": "node:e04c-fdec2a77:l0",
+          "line_id": "line:e04c-fdec2a77:v1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e04c-fdec2a77",
+          "mall_id": "mall:e04c-fdec2a77",
+          "status": "active"
+        }
+      ],
+      "organization.noderelation": [
+        {
+          "line_id": "line:e04b-fdec2a77:v1",
+          "node_id": "node:e04b-fdec2a77:l8",
+          "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+          "original_parent_node_id": "node:e04b-parent-fdec2a77:l7",
+          "signed_level": "L8",
+          "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T22:13:29.424Z",
+          "superseded_at": null
+        },
+        {
+          "line_id": "line:e04b-fdec2a77:v1",
+          "node_id": "node:e04b-parent-fdec2a77:l7",
+          "parent_node_id": "node:e04b-root-fdec2a77:l0",
+          "original_parent_node_id": "node:e04b-root-fdec2a77:l0",
+          "signed_level": "L7",
+          "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T22:13:29.422Z",
+          "superseded_at": null
+        },
+        {
+          "line_id": "line:e04b-fdec2a77:v1",
+          "node_id": "node:e04b-root-fdec2a77:l0",
+          "parent_node_id": null,
+          "original_parent_node_id": null,
+          "signed_level": "L0",
+          "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T22:13:29.418Z",
+          "superseded_at": null
+        },
+        {
+          "line_id": "line:e04c-fdec2a77:v1",
+          "node_id": "node:e04c-fdec2a77:l0",
+          "parent_node_id": null,
+          "original_parent_node_id": null,
+          "signed_level": "L0",
+          "host_sovereign_node_id": "node:e04c-fdec2a77:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T22:13:29.425Z",
+          "superseded_at": null
+        },
+        {
+          "line_id": "line:zhudatuan:commerce:v1",
+          "node_id": "node:e04a-fdec2a77:l6",
+          "parent_node_id": "node:zhudatuan:l0",
+          "original_parent_node_id": "node:zhudatuan:l0",
+          "signed_level": "L6",
+          "host_sovereign_node_id": "node:zhudatuan:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T22:13:29.423Z",
+          "superseded_at": null
+        }
+      ],
+      "ordering.orderrecord": [
+        {
+          "id": "order:e04a:fdec2a77",
+          "scope_id": "mall-zhudatuan",
+          "member_id": "member:e04a:fdec2a77",
+          "mall_id": "mall-zhudatuan",
+          "version": "2",
+          "evidence": {
+            "realm": "A",
+            "fixture": "E04",
+            "e04_probe": "e04-fdec2a77-positive-A-write"
+          },
+          "operating_node_id": "node:e04a-fdec2a77:l6",
+          "operating_line_id": "line:zhudatuan:commerce:v1",
+          "participant_node_id": "node:e04a-fdec2a77:l6",
+          "participant_membership_id": "membership:e04a:fdec2a77",
+          "participant_realm_id": "realm:e04a-fdec2a77",
+          "participant_account_id": "account:e04a:fdec2a77"
+        },
+        {
+          "id": "order:e04b:fdec2a77",
+          "scope_id": "mall:e04b-fdec2a77",
+          "member_id": "member:e04b:fdec2a77",
+          "mall_id": "mall:e04b-fdec2a77",
+          "version": "2",
+          "evidence": {
+            "realm": "B",
+            "fixture": "E04",
+            "e04_probe": "e04-fdec2a77-positive-B-write"
+          },
+          "operating_node_id": "node:e04b-fdec2a77:l8",
+          "operating_line_id": "line:e04b-fdec2a77:v1",
+          "participant_node_id": "node:e04b-fdec2a77:l8",
+          "participant_membership_id": "membership:e04b:fdec2a77",
+          "participant_realm_id": "realm:e04b-fdec2a77",
+          "participant_account_id": "account:e04b:fdec2a77"
+        },
+        {
+          "id": "order:e04c:fdec2a77",
+          "scope_id": "mall:e04c-fdec2a77",
+          "member_id": "member:e04c:fdec2a77",
+          "mall_id": "mall:e04c-fdec2a77",
+          "version": "2",
+          "evidence": {
+            "realm": "C",
+            "fixture": "E04",
+            "e04_probe": "e04-fdec2a77-positive-C-write"
+          },
+          "operating_node_id": "node:e04c-fdec2a77:l0",
+          "operating_line_id": "line:e04c-fdec2a77:v1",
+          "participant_node_id": "node:e04c-fdec2a77:l0",
+          "participant_membership_id": "membership:e04c:fdec2a77",
+          "participant_realm_id": "realm:e04c-fdec2a77",
+          "participant_account_id": "account:e04c:fdec2a77"
+        }
+      ],
+      "runtime.outbox": []
+    },
+    "table_digests": {
+      "identity.account": "sha256:c9a33105c33832b8052e44a2b49cce6e1b69f032bca3f24f3fbca45676a94280",
+      "identity.credential": "sha256:f8fc2d905e8dbbae98c24e789febf3aad0f5a857dd089e47953d682688132e6d",
+      "identity.session": "sha256:bff4219289473776f7c54b9325881a520d1e188d962a084bae08c661b6088d7d",
+      "identity.loginintent": "sha256:c861b78f5c5958e951e775c244a4bb9ef932e7563a3b53e04a228ba7a09e4679",
+      "access.membership": "sha256:0a92e031b705c3a66365f1662345b1db286b1ab149817993b94d3bc1435f464f",
+      "access.scopegrant": "sha256:5f118500a3ba13686f9a6d09dfe01c7baa5cac3a3a1a0bd3699474c59619c997",
+      "access.role": "sha256:8e943d7d42f49f68d19114c0cc5895f52f0aaca939fa9d23fbf2ebf8747807b5",
+      "access.membershiprole": "sha256:b164273b44bfd0ab8c6acb08ab49d079b8efa115bb80ae3480d09528aa16a5b3",
+      "identity.realm": "sha256:7419c3628d743f325d69bf2d0a5d9b627b0cb4e1c9f6b9b93d6fe709c2889d7e",
+      "organization.node": "sha256:901fdf9d5005de6ef4e9ef16e29a91aad9c4301bf94ad005774307b25a55ebfe",
+      "organization.noderelation": "sha256:d5ad3a42be5d0bc211d488e07445061d042008593da16af0e6eb739960b8d6ea",
+      "ordering.orderrecord": "sha256:d01e753ab2de831b50438cadf9509a0f10b0ab68052a2d59205d2e514a1448a8",
+      "runtime.outbox": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "after_negative_matrix": {
+    "tables": {
+      "identity.account": [
+        {
+          "id": "account:e04a:fdec2a77",
+          "realm_id": "realm:e04a-fdec2a77",
+          "legacy_principal_id": "principal:e04a:fdec2a77",
+          "status": "active",
+          "credential_version": "1",
+          "assurance_level": 2
+        },
+        {
+          "id": "account:e04b:fdec2a77",
+          "realm_id": "realm:e04b-fdec2a77",
+          "legacy_principal_id": "principal:e04b:fdec2a77",
+          "status": "active",
+          "credential_version": "1",
+          "assurance_level": 2
+        },
+        {
+          "id": "account:e04c:fdec2a77",
+          "realm_id": "realm:e04c-fdec2a77",
+          "legacy_principal_id": "principal:e04c:fdec2a77",
+          "status": "active",
+          "credential_version": "1",
+          "assurance_level": 3
+        }
+      ],
+      "identity.credential": [
+        {
+          "id": "credential:e04a:fdec2a77",
+          "principal_id": "principal:e04a:fdec2a77",
+          "provider": "password",
+          "subject_hash": "ec72d7925cd2276111b20a8037c297bd940dc1b3c0d2e7cbf9d2d39eca55c803",
+          "status": "active",
+          "realm_id": "realm:e04a-fdec2a77",
+          "account_id": "account:e04a:fdec2a77"
+        },
+        {
+          "id": "credential:e04b:fdec2a77",
+          "principal_id": "principal:e04b:fdec2a77",
+          "provider": "password",
+          "subject_hash": "ec72d7925cd2276111b20a8037c297bd940dc1b3c0d2e7cbf9d2d39eca55c803",
+          "status": "active",
+          "realm_id": "realm:e04b-fdec2a77",
+          "account_id": "account:e04b:fdec2a77"
+        },
+        {
+          "id": "credential:e04c:fdec2a77",
+          "principal_id": "principal:e04c:fdec2a77",
+          "provider": "password",
+          "subject_hash": "ec72d7925cd2276111b20a8037c297bd940dc1b3c0d2e7cbf9d2d39eca55c803",
+          "status": "active",
+          "realm_id": "realm:e04c-fdec2a77",
+          "account_id": "account:e04c:fdec2a77"
+        }
+      ],
+      "identity.session": [
+        {
+          "id": "session:e04:fdec2a77:switch:a:b",
+          "principal_id": "principal:e04b:fdec2a77",
+          "membership_id": "membership:e04b:fdec2a77",
+          "token_hash": "2290b5ff3aa8b97e49a6e9c44b54439e5c2dfa168182a1ced95eef567da41c47",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04b-fdec2a77",
+          "account_id": "account:e04b:fdec2a77",
+          "auth_target": "e04-b-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04:fdec2a77:switch:a:c",
+          "principal_id": "principal:e04c:fdec2a77",
+          "membership_id": "membership:e04c:fdec2a77",
+          "token_hash": "6d893a131458a6b827318a7d4b4a648a04afa8a0ea9eccf21c47c8e79e5fd7de",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "operator",
+          "assurance_level": 1,
+          "realm_id": "realm:e04c-fdec2a77",
+          "account_id": "account:e04c:fdec2a77",
+          "auth_target": "e04-c-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04:fdec2a77:switch:b:a",
+          "principal_id": "principal:e04a:fdec2a77",
+          "membership_id": "membership:e04a:fdec2a77",
+          "token_hash": "963af804a40f94afd390e450924a85efa9ffa639cd83bb6ebb2113969c8d5a5c",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04a-fdec2a77",
+          "account_id": "account:e04a:fdec2a77",
+          "auth_target": "e04-a-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04:fdec2a77:switch:b:c",
+          "principal_id": "principal:e04c:fdec2a77",
+          "membership_id": "membership:e04c:fdec2a77",
+          "token_hash": "c98a75d2f3bb0687b0ff96b980a7f9681ebaa7f49c1bcb19c92acc4ebefc13b6",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "operator",
+          "assurance_level": 1,
+          "realm_id": "realm:e04c-fdec2a77",
+          "account_id": "account:e04c:fdec2a77",
+          "auth_target": "e04-c-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04:fdec2a77:switch:c:a",
+          "principal_id": "principal:e04a:fdec2a77",
+          "membership_id": "membership:e04a:fdec2a77",
+          "token_hash": "904b7c1f1b5c19bcbdb6af60ee5e841125dcdc82cd541898fd7593b766e8a793",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04a-fdec2a77",
+          "account_id": "account:e04a:fdec2a77",
+          "auth_target": "e04-a-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04:fdec2a77:switch:c:b",
+          "principal_id": "principal:e04b:fdec2a77",
+          "membership_id": "membership:e04b:fdec2a77",
+          "token_hash": "04f9f40f5f8e986d68763151c39d5d3e1dccced2245c54b31cdf28eb5ca253cf",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04b-fdec2a77",
+          "account_id": "account:e04b:fdec2a77",
+          "auth_target": "e04-b-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04a:fdec2a77:base",
+          "principal_id": "principal:e04a:fdec2a77",
+          "membership_id": "membership:e04a:fdec2a77",
+          "token_hash": "80b091b85dd969a5099a1af20916ae0e1d6709da64089b862de1a0a42c993395",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04a-fdec2a77",
+          "account_id": "account:e04a:fdec2a77",
+          "auth_target": "e04-a-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04b:fdec2a77:base",
+          "principal_id": "principal:e04b:fdec2a77",
+          "membership_id": "membership:e04b:fdec2a77",
+          "token_hash": "ebc1283b76bac7487014c172f22afacd8641b72cb9b9985ad5122eaadcf5d70d",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "storefront",
+          "assurance_level": 1,
+          "realm_id": "realm:e04b-fdec2a77",
+          "account_id": "account:e04b:fdec2a77",
+          "auth_target": "e04-b-fdec2a77",
+          "revoked_at": null
+        },
+        {
+          "id": "session:e04c:fdec2a77:base",
+          "principal_id": "principal:e04c:fdec2a77",
+          "membership_id": "membership:e04c:fdec2a77",
+          "token_hash": "826351295d501983f61354f3811e8cd5ca23c29d3de4108eb6fcc1bb442a1a34",
+          "credential_version": "1",
+          "access_version": "1",
+          "client": "operator",
+          "assurance_level": 1,
+          "realm_id": "realm:e04c-fdec2a77",
+          "account_id": "account:e04c:fdec2a77",
+          "auth_target": "e04-c-fdec2a77",
+          "revoked_at": null
+        }
+      ],
+      "identity.loginintent": [
+        {
+          "id": "loginintent:95050e68-f5eb-426a-aea5-7d76cba917eb",
+          "source_realm_id": "realm:e04b-fdec2a77",
+          "source_node_id": "node:e04b-fdec2a77:l8",
+          "source_account_id": "account:e04b:fdec2a77",
+          "source_session_id": "session:e04b:fdec2a77:base",
+          "target_realm_id": "realm:e04c-fdec2a77",
+          "target_node_id": "node:e04c-fdec2a77:l0",
+          "target_account_id": "account:e04c:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:b:c",
+          "consumed_at": "2026-09-13T22:13:29.737Z"
+        },
+        {
+          "id": "loginintent:c4474e09-b9af-433e-9f61-85d96a89c2b1",
+          "source_realm_id": "realm:e04c-fdec2a77",
+          "source_node_id": "node:e04c-fdec2a77:l0",
+          "source_account_id": "account:e04c:fdec2a77",
+          "source_session_id": "session:e04c:fdec2a77:base",
+          "target_realm_id": "realm:e04a-fdec2a77",
+          "target_node_id": "node:e04a-fdec2a77:l6",
+          "target_account_id": "account:e04a:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:c:a",
+          "consumed_at": "2026-09-13T22:13:29.766Z"
+        },
+        {
+          "id": "loginintent:d17b357c-70fc-4a5b-91ed-ee94b6de55fe",
+          "source_realm_id": "realm:e04a-fdec2a77",
+          "source_node_id": "node:e04a-fdec2a77:l6",
+          "source_account_id": "account:e04a:fdec2a77",
+          "source_session_id": "session:e04a:fdec2a77:base",
+          "target_realm_id": "realm:e04b-fdec2a77",
+          "target_node_id": "node:e04b-fdec2a77:l8",
+          "target_account_id": "account:e04b:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:a:b",
+          "consumed_at": "2026-09-13T22:13:29.671Z"
+        },
+        {
+          "id": "loginintent:d1fb520a-846a-4979-8ac1-f90703b24021",
+          "source_realm_id": "realm:e04a-fdec2a77",
+          "source_node_id": "node:e04a-fdec2a77:l6",
+          "source_account_id": "account:e04a:fdec2a77",
+          "source_session_id": "session:e04a:fdec2a77:base",
+          "target_realm_id": "realm:e04c-fdec2a77",
+          "target_node_id": "node:e04c-fdec2a77:l0",
+          "target_account_id": "account:e04c:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:a:c",
+          "consumed_at": "2026-09-13T22:13:29.694Z"
+        },
+        {
+          "id": "loginintent:d39a37be-6e24-4273-8434-0d024d20f634",
+          "source_realm_id": "realm:e04c-fdec2a77",
+          "source_node_id": "node:e04c-fdec2a77:l0",
+          "source_account_id": "account:e04c:fdec2a77",
+          "source_session_id": "session:e04c:fdec2a77:base",
+          "target_realm_id": "realm:e04b-fdec2a77",
+          "target_node_id": "node:e04b-fdec2a77:l8",
+          "target_account_id": "account:e04b:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:c:b",
+          "consumed_at": "2026-09-13T22:13:29.790Z"
+        },
+        {
+          "id": "loginintent:e5f5ed02-5cc9-4f52-b5ed-7cceadabd41c",
+          "source_realm_id": "realm:e04b-fdec2a77",
+          "source_node_id": "node:e04b-fdec2a77:l8",
+          "source_account_id": "account:e04b:fdec2a77",
+          "source_session_id": "session:e04b:fdec2a77:base",
+          "target_realm_id": "realm:e04a-fdec2a77",
+          "target_node_id": "node:e04a-fdec2a77:l6",
+          "target_account_id": "account:e04a:fdec2a77",
+          "target_session_id": "session:e04:fdec2a77:switch:b:a",
+          "consumed_at": "2026-09-13T22:13:29.715Z"
+        }
+      ],
+      "access.membership": [
+        {
+          "id": "membership:e04a:fdec2a77",
+          "member_id": "member:e04a:fdec2a77",
+          "organization_id": "mall-zhudatuan",
+          "client": "storefront",
+          "status": "active",
+          "access_version": "1",
+          "realm_id": "realm:e04a-fdec2a77",
+          "account_id": "account:e04a:fdec2a77",
+          "node_profile": "consumer"
+        },
+        {
+          "id": "membership:e04b:fdec2a77",
+          "member_id": "member:e04b:fdec2a77",
+          "organization_id": "mall:e04b-fdec2a77",
+          "client": "storefront",
+          "status": "active",
+          "access_version": "1",
+          "realm_id": "realm:e04b-fdec2a77",
+          "account_id": "account:e04b:fdec2a77",
+          "node_profile": "consumer"
+        },
+        {
+          "id": "membership:e04c:fdec2a77",
+          "member_id": "member:e04c:fdec2a77",
+          "organization_id": "mall:e04c-fdec2a77",
+          "client": "operator",
+          "status": "active",
+          "access_version": "1",
+          "realm_id": "realm:e04c-fdec2a77",
+          "account_id": "account:e04c:fdec2a77",
+          "node_profile": "operating_mall"
+        }
+      ],
+      "access.scopegrant": [
+        {
+          "id": "scope:e04a:fdec2a77",
+          "membership_id": "membership:e04a:fdec2a77",
+          "scope_kind": "mall",
+          "scope_id": "mall-zhudatuan",
+          "scope_path": "mall-zhudatuan",
+          "effect": "allow",
+          "access_version": "1"
+        },
+        {
+          "id": "scope:e04b:fdec2a77",
+          "membership_id": "membership:e04b:fdec2a77",
+          "scope_kind": "mall",
+          "scope_id": "mall:e04b-fdec2a77",
+          "scope_path": "mall:e04b-fdec2a77",
+          "effect": "allow",
+          "access_version": "1"
+        },
+        {
+          "id": "scope:e04c:fdec2a77",
+          "membership_id": "membership:e04c:fdec2a77",
+          "scope_kind": "mall",
+          "scope_id": "mall:e04c-fdec2a77",
+          "scope_path": "mall:e04c-fdec2a77",
+          "effect": "allow",
+          "access_version": "1"
+        }
+      ],
+      "access.role": [
+        {
+          "id": "role:e04a:fdec2a77",
+          "scope_id": "mall-zhudatuan",
+          "name": "E04 Realm A Scope Manager",
+          "status": "active",
+          "version": "1"
+        },
+        {
+          "id": "role:e04b:fdec2a77",
+          "scope_id": "mall:e04b-fdec2a77",
+          "name": "E04 Realm B Scope Manager",
+          "status": "active",
+          "version": "1"
+        },
+        {
+          "id": "role:e04c:fdec2a77",
+          "scope_id": "mall:e04c-fdec2a77",
+          "name": "E04 Realm C Scope Manager",
+          "status": "active",
+          "version": "1"
+        }
+      ],
+      "access.membershiprole": [
+        {
+          "membership_id": "membership:e04a:fdec2a77",
+          "role_id": "role:e04a:fdec2a77",
+          "effective_at": "2026-09-13T22:13:29.439Z",
+          "expires_at": null
+        },
+        {
+          "membership_id": "membership:e04b:fdec2a77",
+          "role_id": "role:e04b:fdec2a77",
+          "effective_at": "2026-09-13T22:13:29.450Z",
+          "expires_at": null
+        },
+        {
+          "membership_id": "membership:e04c:fdec2a77",
+          "role_id": "role:e04c:fdec2a77",
+          "effective_at": "2026-09-13T22:13:29.456Z",
+          "expires_at": null
+        }
+      ],
+      "identity.realm": [
+        {
+          "id": "realm:e04a-fdec2a77",
+          "node_id": "node:e04a-fdec2a77:l6",
+          "status": "active",
+          "node_profile": "consumer",
+          "mall_id": null,
+          "host_node_id": "node:zhudatuan:l0",
+          "host_node_profile": "operating_mall"
+        },
+        {
+          "id": "realm:e04b-fdec2a77",
+          "node_id": "node:e04b-fdec2a77:l8",
+          "status": "active",
+          "node_profile": "consumer",
+          "mall_id": null,
+          "host_node_id": "node:e04b-root-fdec2a77:l0",
+          "host_node_profile": "operating_mall"
+        },
+        {
+          "id": "realm:e04b-parent-fdec2a77",
+          "node_id": "node:e04b-parent-fdec2a77:l7",
+          "status": "active",
+          "node_profile": "consumer",
+          "mall_id": null,
+          "host_node_id": "node:e04b-root-fdec2a77:l0",
+          "host_node_profile": "operating_mall"
+        },
+        {
+          "id": "realm:e04b-root-fdec2a77",
+          "node_id": "node:e04b-root-fdec2a77:l0",
+          "status": "active",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:e04b-fdec2a77",
+          "host_node_id": null,
+          "host_node_profile": null
+        },
+        {
+          "id": "realm:e04c-fdec2a77",
+          "node_id": "node:e04c-fdec2a77:l0",
+          "status": "active",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:e04c-fdec2a77",
+          "host_node_id": null,
+          "host_node_profile": null
+        }
+      ],
+      "organization.node": [
+        {
+          "id": "node:e04a-fdec2a77:l6",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "consumer",
+          "realm_id": "realm:e04a-fdec2a77",
+          "mall_id": null,
+          "status": "active"
+        },
+        {
+          "id": "node:e04b-fdec2a77:l8",
+          "line_id": "line:e04b-fdec2a77:v1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "consumer",
+          "realm_id": "realm:e04b-fdec2a77",
+          "mall_id": null,
+          "status": "active"
+        },
+        {
+          "id": "node:e04b-parent-fdec2a77:l7",
+          "line_id": "line:e04b-fdec2a77:v1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "consumer",
+          "realm_id": "realm:e04b-parent-fdec2a77",
+          "mall_id": null,
+          "status": "active"
+        },
+        {
+          "id": "node:e04b-root-fdec2a77:l0",
+          "line_id": "line:e04b-fdec2a77:v1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e04b-root-fdec2a77",
+          "mall_id": "mall:e04b-fdec2a77",
+          "status": "active"
+        },
+        {
+          "id": "node:e04c-fdec2a77:l0",
+          "line_id": "line:e04c-fdec2a77:v1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e04c-fdec2a77",
+          "mall_id": "mall:e04c-fdec2a77",
+          "status": "active"
+        }
+      ],
+      "organization.noderelation": [
+        {
+          "line_id": "line:e04b-fdec2a77:v1",
+          "node_id": "node:e04b-fdec2a77:l8",
+          "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+          "original_parent_node_id": "node:e04b-parent-fdec2a77:l7",
+          "signed_level": "L8",
+          "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T22:13:29.424Z",
+          "superseded_at": null
+        },
+        {
+          "line_id": "line:e04b-fdec2a77:v1",
+          "node_id": "node:e04b-parent-fdec2a77:l7",
+          "parent_node_id": "node:e04b-root-fdec2a77:l0",
+          "original_parent_node_id": "node:e04b-root-fdec2a77:l0",
+          "signed_level": "L7",
+          "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T22:13:29.422Z",
+          "superseded_at": null
+        },
+        {
+          "line_id": "line:e04b-fdec2a77:v1",
+          "node_id": "node:e04b-root-fdec2a77:l0",
+          "parent_node_id": null,
+          "original_parent_node_id": null,
+          "signed_level": "L0",
+          "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T22:13:29.418Z",
+          "superseded_at": null
+        },
+        {
+          "line_id": "line:e04c-fdec2a77:v1",
+          "node_id": "node:e04c-fdec2a77:l0",
+          "parent_node_id": null,
+          "original_parent_node_id": null,
+          "signed_level": "L0",
+          "host_sovereign_node_id": "node:e04c-fdec2a77:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T22:13:29.425Z",
+          "superseded_at": null
+        },
+        {
+          "line_id": "line:zhudatuan:commerce:v1",
+          "node_id": "node:e04a-fdec2a77:l6",
+          "parent_node_id": "node:zhudatuan:l0",
+          "original_parent_node_id": "node:zhudatuan:l0",
+          "signed_level": "L6",
+          "host_sovereign_node_id": "node:zhudatuan:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T22:13:29.423Z",
+          "superseded_at": null
+        }
+      ],
+      "ordering.orderrecord": [
+        {
+          "id": "order:e04a:fdec2a77",
+          "scope_id": "mall-zhudatuan",
+          "member_id": "member:e04a:fdec2a77",
+          "mall_id": "mall-zhudatuan",
+          "version": "2",
+          "evidence": {
+            "realm": "A",
+            "fixture": "E04",
+            "e04_probe": "e04-fdec2a77-positive-A-write"
+          },
+          "operating_node_id": "node:e04a-fdec2a77:l6",
+          "operating_line_id": "line:zhudatuan:commerce:v1",
+          "participant_node_id": "node:e04a-fdec2a77:l6",
+          "participant_membership_id": "membership:e04a:fdec2a77",
+          "participant_realm_id": "realm:e04a-fdec2a77",
+          "participant_account_id": "account:e04a:fdec2a77"
+        },
+        {
+          "id": "order:e04b:fdec2a77",
+          "scope_id": "mall:e04b-fdec2a77",
+          "member_id": "member:e04b:fdec2a77",
+          "mall_id": "mall:e04b-fdec2a77",
+          "version": "2",
+          "evidence": {
+            "realm": "B",
+            "fixture": "E04",
+            "e04_probe": "e04-fdec2a77-positive-B-write"
+          },
+          "operating_node_id": "node:e04b-fdec2a77:l8",
+          "operating_line_id": "line:e04b-fdec2a77:v1",
+          "participant_node_id": "node:e04b-fdec2a77:l8",
+          "participant_membership_id": "membership:e04b:fdec2a77",
+          "participant_realm_id": "realm:e04b-fdec2a77",
+          "participant_account_id": "account:e04b:fdec2a77"
+        },
+        {
+          "id": "order:e04c:fdec2a77",
+          "scope_id": "mall:e04c-fdec2a77",
+          "member_id": "member:e04c:fdec2a77",
+          "mall_id": "mall:e04c-fdec2a77",
+          "version": "2",
+          "evidence": {
+            "realm": "C",
+            "fixture": "E04",
+            "e04_probe": "e04-fdec2a77-positive-C-write"
+          },
+          "operating_node_id": "node:e04c-fdec2a77:l0",
+          "operating_line_id": "line:e04c-fdec2a77:v1",
+          "participant_node_id": "node:e04c-fdec2a77:l0",
+          "participant_membership_id": "membership:e04c:fdec2a77",
+          "participant_realm_id": "realm:e04c-fdec2a77",
+          "participant_account_id": "account:e04c:fdec2a77"
+        }
+      ],
+      "runtime.outbox": []
+    },
+    "table_digests": {
+      "identity.account": "sha256:c9a33105c33832b8052e44a2b49cce6e1b69f032bca3f24f3fbca45676a94280",
+      "identity.credential": "sha256:f8fc2d905e8dbbae98c24e789febf3aad0f5a857dd089e47953d682688132e6d",
+      "identity.session": "sha256:bff4219289473776f7c54b9325881a520d1e188d962a084bae08c661b6088d7d",
+      "identity.loginintent": "sha256:c861b78f5c5958e951e775c244a4bb9ef932e7563a3b53e04a228ba7a09e4679",
+      "access.membership": "sha256:0a92e031b705c3a66365f1662345b1db286b1ab149817993b94d3bc1435f464f",
+      "access.scopegrant": "sha256:5f118500a3ba13686f9a6d09dfe01c7baa5cac3a3a1a0bd3699474c59619c997",
+      "access.role": "sha256:8e943d7d42f49f68d19114c0cc5895f52f0aaca939fa9d23fbf2ebf8747807b5",
+      "access.membershiprole": "sha256:b164273b44bfd0ab8c6acb08ab49d079b8efa115bb80ae3480d09528aa16a5b3",
+      "identity.realm": "sha256:7419c3628d743f325d69bf2d0a5d9b627b0cb4e1c9f6b9b93d6fe709c2889d7e",
+      "organization.node": "sha256:901fdf9d5005de6ef4e9ef16e29a91aad9c4301bf94ad005774307b25a55ebfe",
+      "organization.noderelation": "sha256:d5ad3a42be5d0bc211d488e07445061d042008593da16af0e6eb739960b8d6ea",
+      "ordering.orderrecord": "sha256:d01e753ab2de831b50438cadf9509a0f10b0ab68052a2d59205d2e514a1448a8",
+      "runtime.outbox": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "negative_matrix_diff": {
+    "changed_table_count": 0,
+    "tables": [
+      {
+        "table": "access.membership",
+        "before_count": 3,
+        "after_count": 3,
+        "changed": false,
+        "before_sha256": "sha256:0a92e031b705c3a66365f1662345b1db286b1ab149817993b94d3bc1435f464f",
+        "after_sha256": "sha256:0a92e031b705c3a66365f1662345b1db286b1ab149817993b94d3bc1435f464f"
+      },
+      {
+        "table": "access.membershiprole",
+        "before_count": 3,
+        "after_count": 3,
+        "changed": false,
+        "before_sha256": "sha256:b164273b44bfd0ab8c6acb08ab49d079b8efa115bb80ae3480d09528aa16a5b3",
+        "after_sha256": "sha256:b164273b44bfd0ab8c6acb08ab49d079b8efa115bb80ae3480d09528aa16a5b3"
+      },
+      {
+        "table": "access.role",
+        "before_count": 3,
+        "after_count": 3,
+        "changed": false,
+        "before_sha256": "sha256:8e943d7d42f49f68d19114c0cc5895f52f0aaca939fa9d23fbf2ebf8747807b5",
+        "after_sha256": "sha256:8e943d7d42f49f68d19114c0cc5895f52f0aaca939fa9d23fbf2ebf8747807b5"
+      },
+      {
+        "table": "access.scopegrant",
+        "before_count": 3,
+        "after_count": 3,
+        "changed": false,
+        "before_sha256": "sha256:5f118500a3ba13686f9a6d09dfe01c7baa5cac3a3a1a0bd3699474c59619c997",
+        "after_sha256": "sha256:5f118500a3ba13686f9a6d09dfe01c7baa5cac3a3a1a0bd3699474c59619c997"
+      },
+      {
+        "table": "identity.account",
+        "before_count": 3,
+        "after_count": 3,
+        "changed": false,
+        "before_sha256": "sha256:c9a33105c33832b8052e44a2b49cce6e1b69f032bca3f24f3fbca45676a94280",
+        "after_sha256": "sha256:c9a33105c33832b8052e44a2b49cce6e1b69f032bca3f24f3fbca45676a94280"
+      },
+      {
+        "table": "identity.credential",
+        "before_count": 3,
+        "after_count": 3,
+        "changed": false,
+        "before_sha256": "sha256:f8fc2d905e8dbbae98c24e789febf3aad0f5a857dd089e47953d682688132e6d",
+        "after_sha256": "sha256:f8fc2d905e8dbbae98c24e789febf3aad0f5a857dd089e47953d682688132e6d"
+      },
+      {
+        "table": "identity.loginintent",
+        "before_count": 6,
+        "after_count": 6,
+        "changed": false,
+        "before_sha256": "sha256:c861b78f5c5958e951e775c244a4bb9ef932e7563a3b53e04a228ba7a09e4679",
+        "after_sha256": "sha256:c861b78f5c5958e951e775c244a4bb9ef932e7563a3b53e04a228ba7a09e4679"
+      },
+      {
+        "table": "identity.realm",
+        "before_count": 5,
+        "after_count": 5,
+        "changed": false,
+        "before_sha256": "sha256:7419c3628d743f325d69bf2d0a5d9b627b0cb4e1c9f6b9b93d6fe709c2889d7e",
+        "after_sha256": "sha256:7419c3628d743f325d69bf2d0a5d9b627b0cb4e1c9f6b9b93d6fe709c2889d7e"
+      },
+      {
+        "table": "identity.session",
+        "before_count": 9,
+        "after_count": 9,
+        "changed": false,
+        "before_sha256": "sha256:bff4219289473776f7c54b9325881a520d1e188d962a084bae08c661b6088d7d",
+        "after_sha256": "sha256:bff4219289473776f7c54b9325881a520d1e188d962a084bae08c661b6088d7d"
+      },
+      {
+        "table": "ordering.orderrecord",
+        "before_count": 3,
+        "after_count": 3,
+        "changed": false,
+        "before_sha256": "sha256:d01e753ab2de831b50438cadf9509a0f10b0ab68052a2d59205d2e514a1448a8",
+        "after_sha256": "sha256:d01e753ab2de831b50438cadf9509a0f10b0ab68052a2d59205d2e514a1448a8"
+      },
+      {
+        "table": "organization.node",
+        "before_count": 5,
+        "after_count": 5,
+        "changed": false,
+        "before_sha256": "sha256:901fdf9d5005de6ef4e9ef16e29a91aad9c4301bf94ad005774307b25a55ebfe",
+        "after_sha256": "sha256:901fdf9d5005de6ef4e9ef16e29a91aad9c4301bf94ad005774307b25a55ebfe"
+      },
+      {
+        "table": "organization.noderelation",
+        "before_count": 5,
+        "after_count": 5,
+        "changed": false,
+        "before_sha256": "sha256:d5ad3a42be5d0bc211d488e07445061d042008593da16af0e6eb739960b8d6ea",
+        "after_sha256": "sha256:d5ad3a42be5d0bc211d488e07445061d042008593da16af0e6eb739960b8d6ea"
+      },
+      {
+        "table": "runtime.outbox",
+        "before_count": 0,
+        "after_count": 0,
+        "changed": false,
+        "before_sha256": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "after_sha256": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      }
+    ]
+  }
+}
