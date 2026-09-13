@@ -32,7 +32,7 @@ test('production acceptance is fixed to the eight retained domains', () => {
   assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
 });
 
-test('deployment channel 1.2 remains byte-for-byte available during the parallel RC', () => {
+test('deployment channel 1.2 remains byte-for-byte available alongside official 1.3', () => {
   assert.equal(sha256(deployWorkflow), 'd75d32a4c37d565153965f31ebb8a9083c88206e469af1768cdba6f53f83c186');
   assert.equal(sha256(deployOssWorkflow), '39606189d420ff3442b58eda9c89213f0b3b2f8ab1df994d7e457bb6298dadf7');
   assert.equal(sha256(deployNow), '643ad67134bc21278e0800e7d7a87d4e92bbb0e1657f5b47a442f12aaa236385');

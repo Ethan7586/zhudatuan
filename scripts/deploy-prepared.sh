@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dispatch the parallel 1.3 prepared-artifact deployment channel.
+# Dispatch the official 1.3 prepared-artifact deployment channel.
 # Usage:
 #   scripts/deploy-prepared.sh <target> <full-commit-sha> <node>
 

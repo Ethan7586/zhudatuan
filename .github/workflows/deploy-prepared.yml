@@ -1,7 +1,7 @@
 name: Prepared Deploy
 run-name: Prepared Deploy ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
 
-# Parallel 1.3 release channel. Candidate validation is the default and cannot
+# Official 1.3 prepared-release channel. Candidate validation is the default and cannot
 # move the production current pointer. The deployment command dispatches operation=deploy;
 # no generated approval string is accepted, and the unchanged 1.2 Deploy remains available.
 on:

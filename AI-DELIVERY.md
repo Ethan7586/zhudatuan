@@ -1,10 +1,23 @@
-# AI 发布通道（现役直达部署与 1.3 RC）
+# AI 发布通道（1.2 兜底与正式 1.3）
 
-1.3 作为并行 RC 通道加入现有发布体系：GitHub `Prepare Artifact` 生成制品，GitHub `Prepared Deploy` 验证或部署已经存在的制品。现有 1.2 `Deploy`、`Deploy via Wuhan OSS` 和 `scripts/deploy-now.sh` 在首次 1.3 生产候选完成验证前保持原样可用。1.3 两条工作流一次都只接受一个 target；不支持空目标、affected 或多目标扇出；工作流必须从 `zdt-next` 触发，source SHA 必须属于该次精确 `zdt-next` 控制提交的历史。
+1.3 已完成通道建设并作为正式可用的并行生产通道运行：GitHub `Prepare Artifact` 生成制品，GitHub `Prepared Deploy` 验证或部署已经存在的制品。现有 1.2 `Deploy`、`Deploy via Wuhan OSS` 和 `scripts/deploy-now.sh` 保持原样，继续承接尚未自然迁移的运行目标以及 `h6-cdn` 等 L2/边缘能力。1.3 两条工作流一次都只接受一个 target；不支持空目标、affected 或多目标扇出；工作流必须从 `zdt-next` 触发，source SHA 必须属于该次精确 `zdt-next` 控制提交的历史。
+
+## 当前状态与迁移边界
+
+截至 2026-09-14，1.3 已由两个真实生产目标完成 Prepare、候选验证和生产切换，足以证明通道成立并可持续使用：
+
+| 生产部署位 | 业务 source SHA | 1.3 生产回执 | 状态 |
+| --- | --- | --- | --- |
+| `hbbtzn-l1/storefront` | `768ff86f22f0d28da69ef51a572706054fc4163d` | [GitHub run 34774901585](https://github.com/Ethan7586/zhudatuan/actions/runs/34774901585) | 已迁移，旧版本可回滚 |
+| `hbbtzn-l1/console` | `2bd31e9f4b3c3af95b9f7df5a42df0ef31019b34` | [GitHub run 34777531642](https://github.com/Ethan7586/zhudatuan/actions/runs/34777531642) | 已迁移，旧版本可回滚 |
+
+生产覆盖率是后续迁移进度，不是 1.3 通道成立的门禁。不得为了追求覆盖率连续扰动生产；以后哪个目标本来就需要发布，就通过 1.3 完成该部署位的第一次自然迁移。未迁移目标继续使用 1.2，数据库迁移和多服务组合目标最后处理。
+
+全面替代 1.2 需要最终覆盖全部 L0/L1 生产部署位；退役整个 1.2 还需要为 `h6-cdn` 等 L2/边缘能力完成独立安置。两项条件都满足并获得 Ethan 的独立清理授权前，1.2 必须继续保留。
 
 ## 用户入口与授权
 
-Ethan 在独立任务中输入“部署”才是首次 1.3 生产授权。AI 只部署已存在的精确制品，不得在 Prepared Deploy 中修代码、安装依赖、测试、构建、打包、发布制品、推送分支或建设通道。目标或完整 40 位 source SHA 不明确时只询问缺失项。
+Ethan 每次在独立任务中输入“部署”才是该次 1.3 生产授权。AI 只部署已存在的精确制品，不得在 Prepared Deploy 中修代码、安装依赖、测试、构建、打包、发布制品、推送分支或建设通道。目标或完整 40 位 source SHA 不明确时只询问缺失项。
 
 通道建设、Prepare 和 Deploy 是三个不同动作。建设完成后必须停止；Prepare 完成后也不得顺带 Deploy。生产切流仍须 Ethan 在独立任务中明确输入“部署”。
 
@@ -167,11 +180,11 @@ Prepare 单独报告两次冷构建摘要、确定性比较和 `plan/tests/typec
 
 ## 兼容与启用顺序
 
-Storefront 继续使用 1.2 的自包含生产运行包和现有 systemd 单元，不恢复 `node_modules` 依赖层。1.3 复用现有候选目录、current/previous 指针、健康检查、回滚回执和单目标锁；只为远端 Agent 增加 OSS 下载动作。
+Storefront 的 1.3 路径继续使用既有自包含生产运行包和现有 systemd 单元，不恢复 `node_modules` 依赖层。1.3 复用现有候选目录、current/previous 指针、健康检查、回滚回执和单目标锁；只为远端 Agent 增加 OSS 下载动作。
 
-生产启用必须按独立任务串行执行：合并并行 1.3 通道，同时保留 1.2 → 配置并核对 OSS/凭据/Endpoint → 安装并验证新版远端 Agent → 手工 Prepare 一个目标 → 运行 `validate-candidate`，只做候选解析、下载和校验 → Ethan 在新的独立任务中明确“部署”后，才允许首次 1.3 生产切流。任一前置步骤失败都停止 1.3，继续使用未改动的 1.2。
+1.3 首次生产启用序列已经由 Storefront 和 Console 完成：保留 1.2 → 核对 OSS/凭据/Endpoint → 安装并验证新版远端 Agent → Prepare 单一目标 → 运行 `validate-candidate` → Ethan 在独立任务中明确“部署” → 原子切换生产。后续目标仍按同一顺序自然迁移，任一前置步骤失败都停止该目标的 1.3 操作并继续使用 1.2。
 
-首次 1.3 生产部署成功也不自动退役 1.2。只有后续独立清理任务获得 Ethan 明确授权后，才允许删除旧工作流或改变 `scripts/deploy-now.sh`。
+任何数量的 1.3 生产部署成功都不自动退役 1.2。只有全部 L0/L1 生产部署位完成迁移、L2/边缘能力完成独立安置，并且后续清理任务获得 Ethan 明确授权后，才允许删除旧工作流或改变 `scripts/deploy-now.sh`。
 
 ## E06 一次性 staging 验收
 
