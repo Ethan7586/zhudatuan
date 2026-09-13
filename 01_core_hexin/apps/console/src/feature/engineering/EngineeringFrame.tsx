@@ -4,9 +4,9 @@ import { scopePath } from '../../shared/url/ScopePath';
 import './engineering.css';
 
 const tabs = [
+  { suffix: 'system/engineering', label: '工程与架构' },
   { suffix: 'system/status', label: '运行状态' },
   { suffix: 'system/releases', label: '发布与版本' },
-  { suffix: 'system/engineering', label: '工程与架构' },
   { suffix: 'system/incidents', label: '故障与技术' },
 ] as const;
 

@@ -61,7 +61,7 @@ describe('Console module route materializer', () => {
   it('injects a valid module handle into every registered route', () => {
     const routes = materializeConsoleModules(consoleModules);
 
-    expect(routes).toHaveLength(38);
+    expect(routes).toHaveLength(39);
     for (const route of routes) {
       expect(isConsoleRouteHandle(route.handle), route.id).toBe(true);
     }
@@ -73,7 +73,7 @@ describe('Console module route materializer', () => {
   });
 
   it('supplies the Router index, all registry routes, the profile route, and the existing wildcard', () => {
-    expect(consoleScopeChildren).toHaveLength(41);
+    expect(consoleScopeChildren).toHaveLength(42);
     expect(consoleScopeChildren[0]).toMatchObject({ index: true });
     expect(consoleScopeChildren.at(-2)).toMatchObject({ path: 'settings/profile' });
     expect(consoleScopeChildren.at(-1)).toMatchObject({ path: '*' });

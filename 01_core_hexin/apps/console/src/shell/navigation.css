@@ -96,9 +96,6 @@
   scrollbar-color: rgb(148 163 184 / 30%) transparent;
 }
 
-.sidebarsupport { margin-top: auto; }
-.consolesidebar > .sidebarprofile { margin-top: 0; }
-
 .sidebarnavigation button {
   position: relative;
   display: flex;
@@ -156,9 +153,86 @@
 
 .sidebarnavigation button[aria-current='page'] > svg { color: #fff; }
 
+.sidebarfooter {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 10px;
+  margin-top: auto;
+  border-top: 1px solid rgb(255 255 255 / 9%);
+  padding: 12px 10px 14px;
+}
+
+.sidebarutilitynavigation { display: grid; gap: 6px; }
+
+.sidebarutilitynavigation button,
+.sidebarversion {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  align-items: center;
+  gap: 11px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 0 11px;
+  background: transparent;
+  color: #c5d2e2;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sidebarutilitynavigation button > svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+}
+
+.sidebarprofileavatar {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 7px;
+  color: #dce8f7;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.sidebarutilitynavigation button:hover { background: rgb(255 255 255 / 6%); color: #fff; }
+.sidebarutilitynavigation button[aria-current='page'] {
+  border-color: rgb(84 145 255 / 28%);
+  background: linear-gradient(90deg, rgb(31 94 255 / 27%), rgb(31 94 255 / 15%));
+  color: #fff;
+}
+
+.sidebarversion {
+  height: 56px;
+  min-height: 56px;
+  justify-content: space-between;
+  border-color: rgb(255 255 255 / 9%);
+  background: rgb(255 255 255 / 5%);
+  cursor: pointer;
+}
+
+.sidebarversion:hover { border-color: rgb(84 145 255 / 30%); background: rgb(255 255 255 / 8%); }
+.sidebarversioncopy { display: grid; min-width: 0; gap: 3px; }
+.sidebarversioncopy small { color: #8399b3; font-size: 9px; letter-spacing: .1em; }
+.sidebarversioncopy strong { color: #fff; font-size: 12px; }
+.sidebarversionstate { display: flex; align-items: center; gap: 5px; color: #82dab3; font-size: 9px; }
+.sidebarversionstate i { width: 6px; height: 6px; border-radius: 50%; background: #4fd19a; box-shadow: 0 0 0 3px rgb(79 209 154 / 10%); }
+
 .consolesidebar.iscollapsed .sidebarbrand { justify-content: center; padding-inline: 8px; }
 .consolesidebar.iscollapsed .sidebarbrandcopy,
 .consolesidebar.iscollapsed .sidebarlabel { display: none; }
 .consolesidebar.iscollapsed .sidebartoggle { top: 70px; right: 17px; opacity: 1; transform: none; }
 .consolesidebar.iscollapsed .sidebarnavigation { padding-top: 22px; }
 .consolesidebar.iscollapsed .sidebarnavigation button { justify-content: center; padding-inline: 0; }
+.consolesidebar.iscollapsed .sidebarfooter { padding-inline: 8px; }
+.consolesidebar.iscollapsed .sidebarutilitynavigation button { justify-content: center; padding-inline: 0; }
+.consolesidebar.iscollapsed .sidebarversion { justify-content: center; padding-inline: 0; }
+.consolesidebar.iscollapsed .sidebarversioncopy small,
+.consolesidebar.iscollapsed .sidebarversionstate { display: none; }

@@ -1,5 +1,6 @@
 import type { NavigationItem } from '../entity/navigation/ConsoleNavigation';
 import type { ConsoleModuleId } from '../entity/navigation/ConsoleModuleManifest';
+import { CURRENT_CONSOLE_RELEASE } from '../entity/release/ConsoleReleaseLedger';
 import type { ConsoleNavigationIntent } from '../shared/interaction/ConsoleModulePreload';
 import { ShellIcon } from './ShellIcon';
 
@@ -18,7 +19,7 @@ export interface SidebarProps {
   readonly onToggle: () => void;
 }
 
-export function Sidebar({ active, collapsed, displayName, roleLabel, brandName = 'zdt-next', brandSubtitle = '经营与权限管理',
+export function Sidebar({ active, collapsed, displayName, brandName = 'zdt-next', brandSubtitle = '经营与权限管理',
   mainItems, bottomItems, onNavigate, onNavigateIntent, onOpenProfile, onToggle }: SidebarProps) {
 
   return (
@@ -50,17 +51,18 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, brandName =
           </button>;
         })}
       </nav>
-      <button className="sidebarprofile" type="button" onClick={onOpenProfile}
-        aria-label={`个人中心：${displayName}`} aria-current={active === 'profile' ? 'page' : undefined}
-        title={collapsed ? '个人中心' : undefined}>
-        <span className="sidebarprofileavatar" aria-hidden="true">{avatarLetter(displayName)}</span>
-        <span className="sidebarprofilecopy"><strong>{displayName}</strong><small>个人中心 · {roleLabel}</small></span>
-      </button>
-      {bottomItems.map((item) => {
-        const label = navigationLabel(item);
-        return <nav key={item.moduleId} aria-label={label} className="sidebarsupport">
-          <div className="sidebarnavigation" style={{ height: 68, paddingBlock: 16 }}>
-            <button type="button" onClick={() => onNavigate(item.suffix)} data-status={item.status}
+      <footer className="sidebarfooter">
+        <nav aria-label="个人中心、工程与架构和服务中心" className="sidebarutilitynavigation">
+          <button className="sidebarprofile" type="button" onClick={onOpenProfile}
+            aria-label={`个人中心：${displayName}`} aria-current={active === 'profile' ? 'page' : undefined}
+            title={collapsed ? `个人中心：${displayName}` : undefined}>
+            <span className="sidebarprofileavatar" aria-hidden="true">{avatarLetter(displayName)}</span>
+            <span className="sidebarlabel">个人中心</span>
+          </button>
+          {bottomItems.map((item) => {
+            const label = navigationLabel(item);
+            return <button key={item.moduleId} type="button" onClick={() => onNavigate(item.suffix)}
+              data-module={item.moduleId} data-status={item.status}
               onPointerEnter={() => onNavigateIntent?.(item.moduleId, 'hover')}
               onFocus={() => onNavigateIntent?.(item.moduleId, 'focus')}
               onPointerDown={() => onNavigateIntent?.(item.moduleId, 'pointerdown')}
@@ -68,10 +70,16 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, brandName =
               aria-disabled={item.status === 'disabled' ? true : undefined} aria-label={label}
               aria-current={item.moduleId === active ? 'page' : undefined} title={collapsed ? label : undefined}>
               <ShellIcon name={item.icon} /><span className="sidebarlabel">{label}</span>
-            </button>
-          </div>
-        </nav>;
-      })}
+            </button>;
+          })}
+        </nav>
+        <button className="sidebarversion" type="button" onClick={() => onNavigate('system/releases')}
+          aria-label={`福福网 Console 当前生产版本 ${CURRENT_CONSOLE_RELEASE.version}`}
+          title={collapsed ? `福福网 Console ${CURRENT_CONSOLE_RELEASE.version}` : undefined}>
+          <span className="sidebarversioncopy"><small>福福网 CONSOLE</small><strong>{CURRENT_CONSOLE_RELEASE.version}</strong></span>
+          <span className="sidebarversionstate"><i aria-hidden="true" />生产版</span>
+        </button>
+      </footer>
     </aside>
   );
 }

@@ -68,21 +68,19 @@ describe('Sidebar commerce navigation', () => {
     expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
   });
 
-  it('keeps engineering immediately below profile and above customer service', () => {
-    const { container } = renderSidebar('enterprise', false, vi.fn());
+  it('keeps personal center, engineering, and customer service in one evenly spaced footer', () => {
+    renderSidebar('enterprise', false, vi.fn());
     const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(primaryNavigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
-    const profile = container.querySelector('.sidebarprofile');
-    const engineeringNavigation = screen.getByRole('navigation', { name: '工程与架构' });
-    const supportNavigation = screen.getByRole('navigation', { name: '服务中心' });
+    const utilityNavigation = screen.getByRole('navigation', { name: '个人中心、工程与架构和服务中心' });
 
     expect(labels).toEqual([
       '生意看板', '数据报表', '商城管理', '商品管理', '供应链管理', '订单管理系统', '分布式平台',
       '渠道接入系统', '卡券治理台', '财务与对账台', '管理与权限', '系统治理台',
     ]);
-    expect(primaryNavigation.nextElementSibling).toBe(profile);
-    expect(profile?.nextElementSibling).toBe(engineeringNavigation);
-    expect(engineeringNavigation.nextElementSibling).toBe(supportNavigation);
+    expect(within(utilityNavigation).getAllByRole('button').map((button) => button.getAttribute('aria-label')))
+      .toEqual(['个人中心：商城管理员', '工程与架构', '服务中心']);
+    expect(screen.getByRole('button', { name: '福福网 Console 当前生产版本 v1.1.0' })).toBeTruthy();
   });
 
   it('opens the personal center from the profile control and marks it active', async () => {
@@ -132,23 +130,28 @@ describe('Sidebar commerce navigation', () => {
   it.each([false, true])('keeps profile, engineering, and customer service in bottom order when collapsed=%s', async (collapsed) => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
-    const { container } = renderSidebar('mall', collapsed, onNavigate);
-    const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
-    const engineeringNavigation = screen.getByRole('navigation', { name: '工程与架构' });
-    const supportNavigation = screen.getByRole('navigation', { name: '服务中心' });
-    const supportButton = within(supportNavigation).getByRole('button', { name: '服务中心' });
-    const profile = container.querySelector('.sidebarprofile');
+    renderSidebar('mall', collapsed, onNavigate);
+    const utilityNavigation = screen.getByRole('navigation', { name: '个人中心、工程与架构和服务中心' });
+    const utilityButtons = within(utilityNavigation).getAllByRole('button');
+    const supportButton = within(utilityNavigation).getByRole('button', { name: '服务中心' });
 
-    expect(profile).toBeInstanceOf(HTMLElement);
-    expect(primaryNavigation.nextElementSibling).toBe(profile);
-    expect(profile?.nextElementSibling).toBe(engineeringNavigation);
-    expect(engineeringNavigation.nextElementSibling).toBe(supportNavigation);
+    expect(utilityButtons.map((button) => button.getAttribute('aria-label')))
+      .toEqual(['个人中心：商城管理员', '工程与架构', '服务中心']);
     expect(navigationCss).toMatch(/\.sidebarnavigation\s*\{[^}]*flex:\s*0 1 auto;/);
-    expect(navigationCss).toMatch(/\.sidebarsupport\s*\{[^}]*margin-top:\s*auto;/);
-    expect(navigationCss).toMatch(/\.consolesidebar > \.sidebarprofile\s*\{[^}]*margin-top:\s*0;/);
+    expect(navigationCss).toMatch(/\.sidebarfooter\s*\{[^}]*margin-top:\s*auto;/);
+    expect(navigationCss).toMatch(/\.sidebarutilitynavigation\s*\{[^}]*gap:\s*6px;/);
     expect(supportButton.getAttribute('title')).toBe(collapsed ? '服务中心' : null);
     await user.click(supportButton);
     expect(onNavigate).toHaveBeenCalledWith('support');
+  });
+
+  it('opens the release ledger from the footer version', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    renderSidebar('mall', false, onNavigate);
+
+    await user.click(screen.getByRole('button', { name: '福福网 Console 当前生产版本 v1.1.0' }));
+    expect(onNavigate).toHaveBeenCalledWith('system/releases');
   });
 
   it('does not import legacy route catalogs, workstations, or feature modules', () => {

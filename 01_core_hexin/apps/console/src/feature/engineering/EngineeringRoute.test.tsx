@@ -34,6 +34,9 @@ describe('Engineering and architecture center', () => {
 
   it('routes the four center tabs within the current scope', () => {
     renderPage(<EngineeringRoute />, 'system/engineering');
+    const tabs = screen.getByRole('navigation', { name: '工程与架构中心页面' });
+    expect(within(tabs).getAllByRole('link').map((link) => link.textContent))
+      .toEqual(['工程与架构', '运行状态', '发布与版本', '故障与技术']);
     expect(screen.getByRole('link', { name: '运行状态' }).getAttribute('href'))
       .toBe('/scopes/platform/organization-platform-root/system/status');
     expect(screen.getByRole('link', { name: '发布与版本' }).getAttribute('href'))
@@ -45,12 +48,21 @@ describe('Engineering and architecture center', () => {
 
   it.each([
     [RuntimeStatusRoute, 'system/status', '系统运行状态', '实时运行数据尚未接入'],
-    [ReleaseVersionRoute, 'system/releases', '发布与版本', '这是只读版本中心'],
     [IncidentTechnologyRoute, 'system/incidents', '故障与技术支持', '故障数据尚未接入'],
   ] as const)('renders an honest %s page without invented live state', (Page, suffix, title, notice) => {
     renderPage(<Page />, suffix);
     expect(screen.getByRole('heading', { name: title })).toBeTruthy();
     expect(screen.getByText(notice)).toBeTruthy();
+  });
+
+  it('renders the Chinese production release ledger newest first', () => {
+    renderPage(<ReleaseVersionRoute />, 'system/releases');
+    expect(screen.getByRole('heading', { name: '发布与版本' })).toBeTruthy();
+    expect(screen.getByText('版本登记规则')).toBeTruthy();
+    const versions = screen.getAllByText(/^v\d+\.\d+\.\d+$/).map((node) => node.textContent);
+    expect(versions).toEqual(['v1.1.0', 'v1.1.0', 'v1.0.4', 'v1.0.3']);
+    expect(screen.getByText('工程与架构中心正式上线')).toBeTruthy();
+    expect(screen.getByText('中文版本更新账本')).toBeTruthy();
   });
 });
 

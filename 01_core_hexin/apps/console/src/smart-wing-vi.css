@@ -238,6 +238,76 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   box-shadow: 0 4px 12px rgb(0 39 111 / 32%);
 }
 
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarfooter {
+  gap: 10px;
+  border-top-color: rgb(255 255 255 / 9%);
+  background: linear-gradient(180deg, rgb(3 19 38 / 8%), rgb(3 19 38 / 30%));
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarutilitynavigation {
+  gap: 6px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarutilitynavigation .sidebarprofile,
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarutilitynavigation button {
+  width: 100%;
+  height: 44px;
+  min-height: 44px;
+  gap: 11px;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 0 11px;
+  background: transparent;
+  box-shadow: none;
+  color: #c5d2e2;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarutilitynavigation button:hover {
+  background: linear-gradient(90deg, rgb(255 255 255 / 7%), rgb(255 255 255 / 3%));
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarutilitynavigation button[aria-current='page'] {
+  border-color: rgb(84 145 255 / 28%);
+  background: linear-gradient(90deg, rgb(31 94 255 / 27%), rgb(31 94 255 / 15%));
+  box-shadow: inset 3px 0 0 #64a0ff, 0 8px 20px rgb(0 49 135 / 14%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarutilitynavigation .sidebarprofileavatar {
+  width: 22px;
+  height: 22px;
+  flex-basis: 22px;
+  border-radius: 7px;
+  background: transparent;
+  box-shadow: none;
+  font-size: 10px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarversion {
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(255 255 255 / 5%);
+  transition: border-color var(--sw-duration-fast), background-color var(--sw-duration-fast);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .sidebarversion:hover {
+  border-color: rgb(84 145 255 / 32%);
+  background: rgb(255 255 255 / 8%);
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarfooter {
+  padding-inline: 8px;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarutilitynavigation {
+  padding: 0;
+}
+
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarutilitynavigation .sidebarprofile,
+.consolelayout[data-visual-theme='admin-web-v1'] .consolesidebar.iscollapsed .sidebarutilitynavigation button {
+  justify-content: center;
+  padding-inline: 0;
+}
+
 .consolelayout[data-visual-theme='admin-web-v1'] .consoleheader {
   border-bottom-color: rgb(207 218 232 / 84%);
   background: rgb(255 255 255 / 94%);
