@@ -230,10 +230,13 @@ const REPAIR_FILES = [
 
 const mode = process.argv[2];
 if (!['--check-inventory','--schema-fresh','--environment-bootstrap','--inventory-cutover-unsafe','--postgres-fresh','--mvp-kernel','--identity-realm-isolation'].includes(mode)) {
-  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel|--identity-realm-isolation [URL]');
+  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel|--identity-realm-isolation [URL] [local-disposable-fixture]');
 }
 const replayRole = mode === '--postgres-fresh' ? process.argv[4] : undefined;
 if (replayRole !== undefined && !/^[a-z][a-z0-9_]{2,62}$/.test(replayRole)) throw new Error('POSTGRES_FRESH_ROLE_INVALID');
+if (mode === '--identity-realm-isolation' && process.argv[4] !== 'local-disposable-fixture') {
+  throw new Error('IDENTITY_REALM_POSTGRES_FIXTURE_CONFIRMATION_REQUIRED');
+}
 if (mode === '--registration-boundary-postgres' && process.argv[4] !== 'local-disposable-fixture') {
   throw new Error('REGISTRATION_BOUNDARY_POSTGRES_FIXTURE_CONFIRMATION_REQUIRED');
 }
@@ -258,7 +261,26 @@ if (mode === '--registration-boundary-postgres') {
 
 const database = await openDatabase();
 try {
-  await execute(database, `
+  await execute(database, mode === '--identity-realm-isolation' ? `
+    create role anon nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role authenticated nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role service_role nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopapp login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopconsole nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopjob login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopmigration login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopread login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanbootstrap login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanconsoleapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanidentityapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanidentityjob login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanpaymentwebhookapi nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanprovisioningapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanpurchaseapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanroot login inherit superuser createdb createrole replication bypassrls;
+    create role zhudatuansandboxbootstrap login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanwebapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+  ` : `
     create role anon nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     create role authenticated nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     create role service_role nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
@@ -266,7 +288,23 @@ try {
     create role zhudatuanbootstrap nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     create role zhudatuanroot nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
   `, 'database role bootstrap');
-  if (replayRole !== undefined) await execute(database, `set role "${replayRole}"`, 'database migration role');
+  if (mode === '--identity-realm-isolation') {
+    await execute(database, `
+      do $fixture$
+      begin
+        if current_database()<>'zhudatuan_registration' then
+          raise exception 'IDENTITY_REALM_POSTGRES_DATABASE_INVALID';
+        end if;
+      end
+      $fixture$;
+      grant shopconsole to zhudatuanconsoleapi;
+      grant shopapp,shopjob to shopmigration with inherit false,set true;
+      alter database zhudatuan_registration owner to shopmigration;
+      set role shopmigration;
+    `, 'identity realm database owner bootstrap');
+  } else if (replayRole !== undefined) {
+    await execute(database, `set role "${replayRole}"`, 'database migration role');
+  }
   await execute(database, `
     create schema supabase_migrations;
     create table supabase_migrations.schema_migrations(version text primary key,statements text[],name text);
@@ -280,6 +318,10 @@ try {
       ]);
       applied += 1;
       continue;
+    }
+    if (mode === '--identity-realm-isolation'
+      && name === '20260912181000_restore_identity_reconciliation_function_ownership.sql') {
+      await execute(database, 'reset role; set role zhudatuanroot;', 'identity realm authority handoff');
     }
     if (name === BOOTSTRAP) {
       await seedDeploymentBoundary(database);
@@ -341,9 +383,14 @@ async function openDatabase() {
     await cluster.close();
     return new PGlite({ database: 'zhudatuan_registration', loadDataDir: data, extensions: { pgcrypto } });
   }
-  if (mode !== '--postgres-fresh' && mode !== '--registration-boundary-postgres') return new PGlite({ extensions: { pgcrypto } });
+  if (mode !== '--postgres-fresh' && mode !== '--registration-boundary-postgres' && mode !== '--identity-realm-isolation') {
+    return new PGlite({ extensions: { pgcrypto } });
+  }
   const connectionString = process.argv[3];
   if (connectionString !== undefined && !/^postgres(?:ql)?:\/\//.test(connectionString)) throw new Error('POSTGRES_FRESH_URL_INVALID');
+  if (mode === '--identity-realm-isolation' && connectionString === undefined) {
+    throw new Error('IDENTITY_REALM_POSTGRES_URL_REQUIRED');
+  }
   if (mode === '--registration-boundary-postgres' && connectionString === undefined) {
     throw new Error('REGISTRATION_BOUNDARY_POSTGRES_URL_REQUIRED');
   }

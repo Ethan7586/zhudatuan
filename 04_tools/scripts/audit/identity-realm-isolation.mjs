@@ -103,6 +103,24 @@ export async function verifyIdentityRealmIsolation(database) {
         case when node_profile='consumer' then 'operating_mall' else null end
       from identity_realm_fixture where level>=2;
 
+      insert into organization.node(
+        id,line_id,sovereignty_tier,node_profile,realm_id,mall_id,status,created_at,updated_at
+      )
+      select fixture.node_id,root.line_id,'hosted',fixture.node_profile,fixture.realm_id,fixture.mall_id,
+        'active',clock_timestamp(),clock_timestamp()
+      from identity_realm_fixture fixture
+      cross join organization.node root
+      where fixture.level>=2 and root.id='node:zhudatuan:l0';
+
+      insert into organization.noderelation(
+        line_id,node_id,parent_node_id,original_parent_node_id,signed_level,host_sovereign_node_id,
+        relation_version,effective_at
+      )
+      select root.line_id,fixture.node_id,root.id,root.id,'L'||fixture.level,root.id,1,clock_timestamp()
+      from identity_realm_fixture fixture
+      cross join organization.node root
+      where fixture.level>=2 and root.id='node:zhudatuan:l0';
+
       insert into identity.realmentry(host,realm_id,kind,status,created_at)
       select accounts_host,realm_id,'accounts','active',clock_timestamp()
       from identity_realm_fixture where level>=2
@@ -465,7 +483,7 @@ export async function verifyIdentityRealmIsolation(database) {
       order by fixture.level`);
     if (resolved.rows.length !== 12 || resolved.rows.some((row) => row.account_id !== `account:realm-isolation:l${row.level}`
       || row.realm_id !== `realm:l${row.level}` || row.membership_id !== `membership:realm-isolation:l${row.level}`)) {
-      throw new Error('IDENTITY_REALM_SESSION_RESOLUTION_INVALID');
+      throw new Error(`IDENTITY_REALM_SESSION_RESOLUTION_INVALID:${JSON.stringify(resolved.rows)}`);
     }
 
     await expectScalar(database, `select count(*)::integer value
