@@ -46,6 +46,9 @@ declare -A release_targets=()
 declare -A was_active=()
 switched_targets=()
 rollback_required=0
+manifest_changed=0
+manifest_path=''
+manifest_backup_path=''
 
 cleanup() {
   unlink "$archive_path" 2>/dev/null || true
@@ -67,6 +70,11 @@ rollback() {
         unlink "$root/current" 2>/dev/null || true
       fi
     done
+    if [ "$manifest_changed" = 1 ]; then
+      manifest_rollback_tmp="${manifest_path}.$$.rollback"
+      install -o root -g root -m 0644 "$manifest_backup_path" "$manifest_rollback_tmp"
+      mv -Tf "$manifest_rollback_tmp" "$manifest_path"
+    fi
     for spec in "${target_specs[@]}"; do
       IFS='|' read -r name root unit <<<"$spec"
       if [ "${was_active[$name]:-0}" = 1 ]; then systemctl restart "$unit" || true; fi
@@ -101,6 +109,20 @@ for spec in "${target_specs[@]}"; do
 done
 
 rollback_required=1
+if [ "$RELEASE_TARGET" = 'identity-api' ]; then
+  manifest_path='/opt/sfl/nodes/hbbtzn-l1/manifest.json'
+  next_manifest="${release_targets[identity-api]}/node-manifest.json"
+  test -s "$next_manifest"
+  jq -e '.node_id == "node:hbbtzn:l1" and .node_profile == "operating_mall"' "$next_manifest" >/dev/null
+  manifest_backup_dir="$bundle_root/manifest-rollbacks"
+  mkdir -p "$manifest_backup_dir"
+  manifest_backup_path="$manifest_backup_dir/${release_id}-$(date -u +%Y%m%dT%H%M%SZ)-$$.json"
+  cp -a "$manifest_path" "$manifest_backup_path"
+  manifest_next_tmp="${manifest_path}.$$.next"
+  install -o root -g root -m 0644 "$next_manifest" "$manifest_next_tmp"
+  mv -Tf "$manifest_next_tmp" "$manifest_path"
+  manifest_changed=1
+fi
 for spec in "${target_specs[@]}"; do
   IFS='|' read -r name root unit <<<"$spec"
   next_link="$root/.current.$$.next"
@@ -129,6 +151,10 @@ rollback_required=0
 trap - ERR
 printf 'DEPLOYED_TARGET=%s\n' "$RELEASE_TARGET"
 printf 'SOURCE_SHA=%s\n' "$SOURCE_SHA"
+if [ "$manifest_changed" = 1 ]; then
+  printf 'CURRENT_MANIFEST=%s\n' "$manifest_path"
+  printf 'ROLLBACK_MANIFEST=%s\n' "$manifest_backup_path"
+fi
 for spec in "${target_specs[@]}"; do
   IFS='|' read -r name root unit <<<"$spec"
   printf 'CURRENT_%s=%s\n' "$name" "${release_targets[$name]}"
