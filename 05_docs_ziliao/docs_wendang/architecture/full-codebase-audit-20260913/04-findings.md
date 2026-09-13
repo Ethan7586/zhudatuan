@@ -2,32 +2,32 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-003 结束时累计：P0 0、P1 候选 1、P2 11、P3 1、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-004 结束时累计：P0 0、P1 候选 2、P2 16、P3 1、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
-## F-0001｜fufu Console 公网入口与发布制品指针分裂
+## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块 | 发布与运行 / Console 静态制品 |
+| 模块 | 发布与运行 / Auth、Console 静态制品 |
 | 类型 | 运行配置漂移、可用性、发布事实源分裂 |
 | 严重级别 | **P1 候选**；未完成 RV-0001 前不作最终 P1 |
-| 置信度 | 高：当前行为与路径证据直接；影响范围和持续时间未知 |
-| 文件和精确位置 | `02_platform_pingtai/infrastructure/release/zdt-next.release.json:611`；`02_platform_pingtai/infrastructure/zhudatuan/aliyun/Caddyfile:65-91`；线上 `/etc/caddy/Caddyfile:115`（只读观察） |
-| 当前行为 | [FACT][E-AU-001-020][E-AU-001-021] 线上 Caddy 指向 runtime recovery current 下的 Console dist，该目录无 index；release target current 的 static/index.html 存在；公网根返回 404 |
-| 预期行为 | [FACT][E-AU-001-017] release manifest 对 `https://console.fufu.wang/` 只允许 200，且 Console 制品应由其声明的 pointer root 对外提供 |
-| 直接证据 | E-AU-001-017、E-AU-001-020、E-AU-001-021 |
-| 调用链或运行入口 | workflow/release build → `/opt/zhudatuan/targets/console/current/static`；浏览器 → Caddy → `/opt/sfl/nodes/zhudatuan-l0/current/.../console/dist` |
-| 用户影响 | [INFERENCE] 直接访问 Console 根的运营用户无法加载页面；是否存在替代域名/路径、影响人数和起始时间未知 |
+| 置信度 | 高：两个公网状态、active Caddy、两个 pointer/index 和成功发布回执均直接核验；影响人数和持续时间未知 |
+| 文件和精确位置 | `02_platform_pingtai/infrastructure/release/zdt-next.release.json:584-611`；`02_platform_pingtai/infrastructure/zhudatuan/aliyun/Caddyfile:65-115`；线上 `/etc/caddy/Caddyfile:66,115`（2026-09-13 只读观察） |
+| 当前行为 | [FACT][E-AU-001-020][E-AU-001-021][E-AU-004-010][E-AU-004-019] 线上 Caddy 分别指向 runtime-recovery current 下的 Auth/Console dist，两处都无 index；正式 release target current 的两份 static/index.html 都存在；对应 Direct run 曾返回 success，而两个公网根均返回 404 |
+| 预期行为 | [FACT][E-AU-001-017][E-AU-004-002] release manifest 对 Console 只允许 200；Auth/Console 制品都应由正式发布器声明并实际更新的 pointer root 对外提供 |
+| 直接证据 | E-AU-001-017、E-AU-001-020、E-AU-001-021、E-AU-004-002、E-AU-004-010、E-AU-004-019；RS-AU-004-001 |
+| 调用链或运行入口 | workflow/release build → `/opt/zhudatuan/targets/{auth-web,console}/current/static`；浏览器 → active Caddy → `/opt/sfl/nodes/zhudatuan-l0/current/.../{auth-web,console}/dist` |
+| 用户影响 | [INFERENCE] 直接访问 fufu Auth 的登录用户和 Console 的运营用户无法加载页面；是否存在替代域名/路径、影响人数和起始时间未知 |
 | 数据影响 | 未发现直接数据写入或数据损坏证据 |
 | 安全影响 | 未发现直接安全暴露证据 |
-| 根因 | [UNKNOWN] 多套 current/pointer 与 Caddy 安装流程并存是直接冲突；具体由哪次配置或发布引入尚未追溯 |
+| 根因 | [CONFLICT][E-AU-004-007][E-AU-004-010] release pointer、runtime-recovery pointer 与主机本地 Caddy 权威并存；active Caddy 不等于仓库历史中的任一 blob，具体哪次外部安装引入仍 UNKNOWN |
 | 建议方向 | 后续独立修复批次只统一“被 release 更新的 pointer”和“Caddy 实际读取的 pointer”，先确认权威路径；本审计分支不实施 |
 | 预计修改范围 | [UNKNOWN] 可能涉及 Caddy 配置、release target/policy 或激活流程中的一处或数处；复核前不得猜定 |
 | 验证方式 | 第二审计者重新核对实例身份、Caddy active config、两个 current 指针、制品版本和直连 SNI；穷举 200/404/5xx/连接失败，并检查其它域名无变化 |
 | 回滚方式 | 修复批次保留原 Caddy 与原 pointer，按当时正式发布流程回切；本次未执行 |
 | 是否需要独立复核 | 是，RV-0001；P1 强制 100% 重追入口 |
 
-为什么不是 P0：当前只证明单一 Console 表面的 404，没有证据证明正在发生严重数据损失、安全事故或全系统中断，也未独立确认业务影响规模。按用户定义，不能为了谨慎而把证据不足的 P1 候选升级为 P0。
+为什么不是 P0：当前证明两个前端入口 404，但没有证据证明正在发生严重数据损失、安全事故或全系统中断，也未独立确认影响规模。按用户定义，不能为了谨慎而把证据不足的 P1 候选升级为 P0。
 
 ## F-0002｜正式 Playwright 入口引用四个不存在的 workspace
 
@@ -346,3 +346,150 @@
 - [CONFLICT][E-AU-003-022] staging 制品清单称 FullJobsMain.ts 不生成独立 artifact，但全量 build 按文件名会生成；staging unit 又固定阻断。保留历史/兼容分歧，不作删除结论。
 - [UNKNOWN] JobsEntrypoint.ts 有 profile dispatcher 和测试，但不被当前全量 Main 发现或正式 service target 构建；外部消费者和历史发布责任未验证。
 - [UNKNOWN] 生产观察的 12 个进程并非固定基线制品；只用于核对进程名称和 systemd 启动关系，不能把时点日志直接归因到基线。
+
+## F-0015｜正式生产 workflow 固定使用 Direct，成功回执跳过可用性验收与健康回滚
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 发布与运行 / GitHub → release engine → ECS agent |
+| 类型 | 发布门禁、失败检测、回滚语义 |
+| 严重级别 | **P1 候选**；未完成 RV-0002 前不作最终 P1 |
+| 置信度 | 高：固定 workflow、两条 agent 分支和反事实测试直接证明；事故频率与全部用户影响未知 |
+| 文件和精确位置 | `.github/workflows/deploy.yml:65-109`；`04_tools/release-engine/src/planner.mjs:19-53,189-212`；`04_tools/release-engine/src/engine.mjs:114-119,357-477`；`04_tools/release-engine/remote/agent.mjs:240-305,388-470,472-712`；`04_tools/release-engine/test/remote-agent.test.mjs:64-75` |
+| 当前行为 | [FACT][E-AU-004-004][E-AU-004-005][E-AU-004-006][E-AU-004-019] 正式 Deploy 在 plan/deploy 两处固定 `--direct`。Direct 仍校验 source、archive/tree/critical files 并传播 restart 错误，但明确跳过 preflight、tests、typecheck、production approval、candidate checks、capacity、Caddy 语义、目标/受保护进程、readiness、外部域名验收和健康失败自动回滚；真实成功 run 只形成 direct-activated 回执 |
+| 预期行为 | 生产成功状态应证明仓库声明的最小可用性与发布后稳定性，或者明确输出未验收状态；已有 guarded 路径不应在唯一正式主入口中被无提示绕过 |
+| 直接证据 | E-AU-004-004、E-AU-004-005、E-AU-004-006、E-AU-004-014、E-AU-004-019；RS-AU-004-002；TEST-AU-004-002 |
+| 调用链或运行入口 | 人工 workflow_dispatch → Deploy Direct → planner direct → build/package → stage-direct → activate-direct → pointer/restart → direct success receipt |
+| 用户影响 | [INFERENCE] 进程能重启但端口、路由、依赖、静态 root 或公网链路不可用时，workflow 仍可成功，故障延续到外部监控或用户报告；F-0001 提供同一时点“成功发布回执与公网 404 并存”的运行证据，但尚未证明 Direct 是该漂移根因 |
+| 数据影响 | Direct 不改变 migration 的 forward-only 属性；跳过健康验收可能让依赖错误制品继续接收请求，具体数据风险需按 target 复核，未证明已损坏数据 |
+| 安全影响 | 跳过 Caddy 语义和受保护进程对账扩大错误配置未被发布器发现的窗口；未发现正在发生的安全事故 |
+| 根因 | [FACT][E-AU-004-014] 历史提交有意把旧 candidate、external baseline 和 production approval 主路径替换成 Direct；guarded 实现仍保留但正式 workflow 不调用 |
+| 建议方向 | 后续独立发布治理批次先定义正式成功回执必须覆盖的最小门禁，再只调整 workflow/模式选择；不得与业务代码、Caddy修复或依赖升级混批 |
+| 预计修改范围 | Deploy workflow、release mode/receipt 契约和定向 remote-agent tests；具体启用哪些门禁待 Ethan 决定 |
+| 验证方式 | 第二审计者重新追踪 workflow→planner→engine→agent；覆盖 restart成功但candidate失败、health失败、Caddy变化、受保护PID变化、外部404、rollback失败的穷举反事实 |
+| 回滚方式 | 回退独立 workflow/模式提交即可恢复 Direct；任何已经执行的数据库 migration 仍按 forward-only处理 |
+| 是否需要独立复核 | 是，RV-0002；P1 候选必须 100% 重追入口 |
+
+为什么不是 P0：未发现正在造成严重数据损失、安全事故或全系统中断的证据；F-0001 的两个 404 也尚未建立到 Direct 的排他因果。当前只能保留 P1 候选。
+
+## F-0016｜HBBTZN Console 有两个无共享锁的生产 pointer writer
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 发布与运行 / Console 静态制品 |
+| 类型 | 并发、发布所有权、回滚基线 |
+| 严重级别 | P2 |
+| 置信度 | 高（两条可执行写链与锁缺口）；真实重叠执行未观察 |
+| 文件和精确位置 | `.github/workflows/deploy-oss.yml:15-16,94-114`；`.github/workflows/deploy.yml:30-31`；`04_tools/scripts/release/activate-console-static.sh:15-63`；`04_tools/release-engine/remote/agent.mjs:388-470,1010-1023` |
+| 当前行为 | [FACT][E-AU-004-008][E-AU-004-019] release agent 和 OSS activation 都可原子改写 `/opt/sfl/nodes/hbbtzn-l1/targets/console/current`。OSS 自身有 SHA/version/公网验收与失败恢复，但不持有 agent 的项目/节点/target flock；两个 workflow concurrency group 也不同 |
+| 预期行为 | 同一生产 pointer 的所有 writer 应共享一个串行化边界和一致的 expected-current/receipt 语义 |
+| 直接证据 | E-AU-004-008、E-AU-004-019；RS-AU-004-003；writers-and-locks.csv |
+| 调用链或运行入口 | Deploy Direct → agent activate-direct → Console current；或 Deploy Console via Wuhan OSS → SSH stdin script → 同一 Console current |
+| 用户影响 | [INFERENCE] 若并发或交错执行，最后写入者获胜，一条路径的成功/回滚回执可能不再描述最终线上版本；未证明当前发生 |
+| 数据影响 | 只影响静态制品 pointer，无数据库写入证据 |
+| 安全影响 | 无直接安全影响证据 |
+| 根因 | OSS 是在正式 release engine之外新增的专用发布器，只复用了 pointer布局，未复用 agent lock和expected-current协议 |
+| 建议方向 | 独立 Console 发布所有权批次先确定唯一 writer 或共享锁/expected-current 协议；保留 OSS 的不可变制品与公网版本验收 |
+| 预计修改范围 | 两个 workflow 中的一条及 activation/agent 协调层；不应同时改 Console代码 |
+| 验证方式 | 两发布器交错、同版本重放、A切换后B失败回滚、B读取过期previous四类并发测试；最终 pointer与两份receipt一致 |
+| 回滚方式 | 回退协调提交，按明确 source SHA重新激活权威版本；release目录保留可恢复 |
+| 是否需要独立复核 | 否（P2）；若发现真实交错导致生产回退，再升级复核 |
+
+## F-0017｜控制面变更的 affected 规划与实际交付不一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 发布与运行 / Caddy、Cloudflared、systemd |
+| 类型 | 发布影响图、配置权威、可观察成功语义 |
+| 严重级别 | P2 |
+| 置信度 | 高：真实 planner 输出、artifact输入和installer调用点直接证明 |
+| 文件和精确位置 | `02_platform_pingtai/infrastructure/release/zdt-next.release.json:422-431,569-590`；`02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh:1-253`；`04_tools/release-engine/src/planner.mjs:60-82,162-212`；`.github/workflows/quality.yml:312-324` |
+| 当前行为 | [FACT][E-AU-004-003][E-AU-004-007][E-AU-004-010] Caddy 变更会选 14 个非迁移业务 target；Cloudflared unit 因 tunnel规则叠加也选14个；普通 systemd unit、delivery tooling 和 OSS激活脚本为零target。但业务artifact不包含这些控制面文件，正式workflow只安装agent模式，线上active Caddy又不匹配仓库任一历史blob |
+| 预期行为 | control-plane变更应由计划明确交付到active配置，或以不支持/需独立流程明确失败；不应重发无关业务制品后报告成功 |
+| 直接证据 | E-AU-004-003、E-AU-004-007、E-AU-004-010、E-AU-004-012；RS-AU-004-004、RS-AU-004-005 |
+| 调用链或运行入口 | Git diff → release rule → target plan → business artifact → agent；缺失的是触发文件到 `/etc/caddy`、node runtime或systemd unit的正式apply边 |
+| 用户影响 | [INFERENCE] 预期修正路由/tunnel/unit的发布可成功但不生效，同时重启或重发14个无关target；故障继续存在 |
+| 数据影响 | 无直接数据库写入；无关服务重启可扩大可用性影响，但未观察事故 |
+| 安全影响 | active edge配置不受固定仓库制品完整性约束；未发现具体权限泄漏 |
+| 根因 | affected-target是业务制品图，control-plane安装由独立runtime mode或AutoNode承担；两者没有正式workflow编排和统一active blob回执 |
+| 建议方向 | 独立控制面发布设计批次先明确Caddy/systemd/Cloudflared各自权威writer、计划结果和回滚证据；不与业务target重构混批 |
+| 预计修改范围 | release rules、control-plane artifact/apply入口与验收测试；范围需先由架构决策收敛 |
+| 验证方式 | 对三类配置各提交无业务改动反事实，计划必须只显示真实交付单元；apply后active blob/semantic/unit hash与source一致，失败能恢复 |
+| 回滚方式 | 保留active配置备份、semantic diff和旧unit；独立回退控制面提交，不回滚业务数据库 |
+| 是否需要独立复核 | 否（P2）；若控制面设计涉及生产Caddy安装则实施前专项复核 |
+
+## F-0018｜正式 deployment contract check 在固定基线上必然失败且未验证活跃发布链
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 发布质量 / deployment contract |
+| 类型 | 测试可信度、文档漂移、门禁可执行性 |
+| 严重级别 | P2 |
+| 置信度 | 高：正式npm入口直接执行并在确定token失败 |
+| 文件和精确位置 | `package.json:93,123`；`04_tools/scripts/check/deployment.mjs:31-68` |
+| 当前行为 | [FACT][E-AU-004-013] `npm run check:deployment --silent` 报 `DEPLOYMENT_CONTRACT_MISSING:SmokeMain.js`。检查把多个历史发布文件拼为文本并要求存在固定token；它不加载release adapter、不追workflow→agent路径，也不核对active运行状态。Direct workflow不要求它 |
+| 预期行为 | 正式检查应在固定基线可执行，并直接测量当前发布契约；删除或更名非活跃token不应成为唯一判据 |
+| 直接证据 | E-AU-004-013；TEST-AU-004-007 |
+| 调用链或运行入口 | `quality:canonical-hard-cut` → `check:deployment` → 文本拼接/token查找；与 Deploy Direct 无前置关系 |
+| 用户影响 | 质量总入口无法在基线上通过；团队可能长期绕过它，或把与真实部署无关的token恢复当成修复 |
+| 数据影响 | 无直接数据影响 |
+| 安全影响 | 无直接安全影响 |
+| 根因 | 检查保存旧部署规格的表面词汇，而发布主轴已演进为target/agent/Direct/OSS；两套契约未同步 |
+| 建议方向 | 独立测试可信度批次先列出现役发布不变量，再以planner/agent/workflow行为反事实替换或重定向旧token检查；不为让测试绿而补假token |
+| 预计修改范围 | 一个检查脚本、对应测试和根script编排；不改生产发布代码 |
+| 验证方式 | 当前正确链通过；移除target、跳锁、跳source校验、错误pointer、错误回滚等反事实必须失败；无关注释/token不能使其通过 |
+| 回滚方式 | 回退独立检查提交；不影响线上状态 |
+| 是否需要独立复核 | 否（P2） |
+
+## F-0019｜三个 SSH workflow 在运行时信任未预先固定的 ssh-keyscan 结果
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 发布供应链 / GitHub Actions SSH |
+| 类型 | 主机身份验证、供应链边界 |
+| 严重级别 | P2 |
+| 置信度 | 高（当前配置）；利用需要网络或解析路径被干预，未发现实际攻击 |
+| 文件和精确位置 | `.github/workflows/deploy.yml:90`；`.github/workflows/quality.yml:213`；`.github/workflows/deploy-oss.yml:102` |
+| 当前行为 | [FACT][E-AU-004-015] 每个run把当次 `ssh-keyscan -H 123.57.232.253` 输出直接追加到新known_hosts，仓库内未找到预置fingerprint或独立比较 |
+| 预期行为 | 首次SSH信任应有独立于本次网络握手的主机身份依据；具体约束是否实施由Ethan决定 |
+| 直接证据 | E-AU-004-015；COM-AU-004-012 |
+| 调用链或运行入口 | GitHub runner → ssh-keyscan网络响应 → known_hosts → 随后的ssh/scp |
+| 用户影响 | [INFERENCE] 若runner到固定IP的网络路径被干预，同一错误key可被本run接受，发布失败或发送到错误主机；条件较强且未观察 |
+| 数据影响 | 无已发生数据影响；发布命令包含生产变更能力 |
+| 安全影响 | 条件满足时可能泄露传输内容或执行发布命令到非预期主机；workflow secrets是否可被对端取得取决于命令，未进一步推断 |
+| 根因 | known_hosts信任锚与待验证连接来自同一即时通道 |
+| 建议方向 | 仅报告；若Ethan决定治理，独立供应链批次选择可审计的主机key/fingerprint来源并定义轮换流程 |
+| 预计修改范围 | 三个workflow与运维记录；不涉及应用代码 |
+| 验证方式 | 正确key成功、错误key硬失败、合法轮换显式批准；不得再以本次scan结果自证 |
+| 回滚方式 | 回退workflow小提交；恢复原scan行为 |
+| 是否需要独立复核 | 否（P2）；实施任何供应链约束前由Ethan确认 |
+
+## F-0020｜affected 发布只比较 HEAD^，不能覆盖目标实际部署版本后的累计变化
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 发布规划 / affected target |
+| 类型 | 差异基线、漏发布、版本漂移 |
+| 严重级别 | P2 |
+| 置信度 | 高：workflow固定base、planner输入语义和不同target source SHA直接；实际漏发事件未确认 |
+| 文件和精确位置 | `.github/workflows/deploy.yml:65-78`；`04_tools/release-engine/src/planner.mjs:8-46,60-82` |
+| 当前行为 | [FACT][E-AU-004-016] 未显式target时，workflow总以所选commit的 `HEAD^` 作为from。planner不知道每个target current artifact的source SHA。若中间提交未发布或某target此前失败，本次只看到最后一提交，较早累计变化对应target可不入计划 |
+| 预期行为 | affected发布应比较每个目标实际已部署source与目标source，或明确拒绝无法形成完整累计差异的请求 |
+| 直接证据 | E-AU-004-004、E-AU-004-016；RS-AU-004-007 |
+| 调用链或运行入口 | workflow selected ref → base=HEAD^ → changedFiles → release rules → selected targets；target current source只在远端激活阶段出现 |
+| 用户影响 | [INFERENCE] workflow可成功，但某些应更新target保留旧版本，形成跨服务/前端契约漂移；显式target是人工绕行，不是affected正确性证明 |
+| 数据影响 | 若漏掉database-migration或依赖服务，可产生schema/应用不兼容；当前未证明具体数据错误 |
+| 安全影响 | 若较早提交是权限修正，对应target可漏发；没有观察到实际安全缺口 |
+| 根因 | Git提交相邻差异被当作部署状态差异；发布状态只在agent端用于expected/current，而未反馈给planner |
+| 建议方向 | 独立planner批次先定义多target部署基线来源和落后/领先/未知状态；不与F-0017控制面交付混批 |
+| 预计修改范围 | workflow输入、planner状态读取/plan schema和定向测试；可能需要只读汇总target receipt |
+| 验证方式 | target已在HEAD~3、HEAD~1、目标SHA、未知SHA、部分失败五种状态；affected集合应等于各自累计差异并显式显示base |
+| 回滚方式 | 回退planner/workflow小提交并改用显式target；不改变已部署制品 |
+| 是否需要独立复核 | 否（P2）；若引入生产状态聚合服务再专项设计复核 |
+
+## 5. AU-004 新增未定级事项
+
+- [UNKNOWN][E-AU-004-010] active `/etc/caddy/Caddyfile` 不匹配固定基线或仓库历史45个Caddy blob中的任何一个；其创建者、安装时间和完整变更链未取得。
+- [UNKNOWN][E-AU-004-012] AutoNode具有完整外部资源控制面，但固定基线没有正式workflow/package执行入口；是否由外部runbook调用尚未验证。
+- [UNKNOWN][E-AU-004-009] Cloudflare tunnel、DNS与OSS账户侧策略没有纳入本单元；仓库example和公开HTTP只能证明局部链路。
+- [FACT][E-AU-004-018] legacy deploy、零target control-plane文件及AutoNode入口均未满足垃圾代码认定条件，本单元不新增G1–GX候选。

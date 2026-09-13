@@ -380,3 +380,50 @@ sequenceDiagram
 ### 11.5 图外但禁止删除的入口
 
 ApiMain、JobsMain、FullJobsMain、JobsEntrypoint、MigrationMain、RegistrationMigrationMain 和 SmokeMain 都没有当前 10 个 service target；其中部分被全量构建、staging 配置、动态 import、测试或 legacy unit 使用。AU-003 没有把任何一个标为 G1–G3。
+
+## 12. AU-004：GitHub、制品、节点与 Edge 运行链
+
+### 12.1 正式 Direct 链
+
+~~~mermaid
+sequenceDiagram
+  participant U as 操作者
+  participant GH as Deploy Direct
+  participant P as Planner
+  participant A as ECS Agent
+  participant SD as systemd/static pointer
+  U->>GH: ref + node + optional target
+  GH->>P: HEAD^..HEAD / direct
+  P-->>GH: target order + artifacts，无 validations
+  GH->>A: stage-direct
+  A->>A: source/tree/critical files
+  GH->>A: activate-direct
+  A->>SD: switch pointer + restart
+  SD-->>A: restart result
+  A-->>GH: direct success receipt
+  Note over A,SD: 不执行 readiness/public acceptance/健康回滚
+~~~
+
+[CONFLICT][E-AU-004-005][E-AU-004-006] 该链的 success 只覆盖 Direct 契约，不能替代 guarded activation。受保护路径的 capacity、candidate、rollback point、Caddy semantic、process、readiness 和外部 acceptance 仍存在于代码，但不在正式 workflow 路径上。
+
+### 12.2 Node 与进程落点
+
+| 逻辑节点 | 原生前端/进程 | 复用的物理进程 | 公网第一跳 |
+| --- | --- | --- | --- |
+| zhudatuan-l0 | Storefront、Auth、Console、Identity、Identity Jobs、Mall及全部L0服务 | 无 | host Caddy |
+| hbbtzn-l1 | Storefront、Auth、Console、Identity、Identity Jobs；Mall仅制品 | Support、Purchase、Web、Catalog、Payment、Migration hostedBy L0 | Cloudflare→Cloudflared→L1 gateway Caddy |
+
+[FACT][E-AU-004-011] 18 个正式 unit/release-policy入口已逐项建立身份、工作根、启动/Ready和依赖表。Storefront使用DynamicUser，其余正式SFL服务主要使用zhudatuan用户；未发现服务以root运行业务Main的证据。
+
+### 12.3 静态制品双链
+
+- L0 Auth/Console：release agent写 `/opt/zhudatuan/targets/*/current/static`，active fufu Caddy却读 runtime-recovery `.../dist`，见F-0001。
+- L1 Auth/Console：gateway读 `/opt/sfl/nodes/hbbtzn-l1/targets/*/current/static`；Console另可由OSS脚本写同一current，见F-0016。
+- Storefront：target current/app与独立node_modules runtime layer组合后由systemd启动；Direct不执行remote HTTP health。
+
+### 12.4 控制面与恢复
+
+- 普通Deploy不形成Caddy/systemd/Cloudflared配置artifact，见F-0017。
+- installer的runtime模式与AutoNode是独立人工控制面；正式workflow只使用agent安装模式。
+- release retention通过timer/path保护current、previous、runtime、进程CWD、pin、recent和grace；行为测试仍受本机Bash版本阻塞。
+- database-migration是forward-only；应用pointer恢复不等于数据库回滚。

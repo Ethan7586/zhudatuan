@@ -150,3 +150,22 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Legacy/aggregate entries | ApiMain、JobsMain、FullJobsMain、JobsEntrypoint、MigrationMain、RegistrationMigrationMain、SmokeMain | 本地/staging/历史调用 | 构建、测试、legacy unit或 UNKNOWN | 全域 runtime | 不作新所有权判断 | 无当前 10 个 target | 零散 tests/配置 | 均不满足删除认定条件 |
 
 [FACT][E-AU-003-002] AU-003 深入审阅 43 个文件、1,904 行，结构性审阅 51 个直接依赖文件。33 个 generic jobs 和 300 个迁移只完成入口/结构盘点，不能把本表当作逐任务或逐迁移业务审计完成证明。
+
+## 10. AU-004 发布与节点运行模块库存
+
+| 模块/运行单元 | 职责 | 对外入口 | 上游调用者 | 下游依赖 | 数据/状态所有权 | 运行/发布单元 | 测试范围 | 当前边界问题 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Deploy Direct | 规划、构建、打包并Direct激活 | workflow_dispatch | 人工操作者/deploy-now | release engine、SSH agent | GitHub run与本地release state | GitHub job | release engine 79/80 | 跳完整验收F-0015；base=HEAD^ F-0020 |
+| Quality/Candidate | 规划、依赖、可选验证/build/package/stage | workflow_dispatch | 人工操作者 | npm/release engine/agent | candidate state | GitHub job | 部分step continue-on-error | 不构成Direct前置；清空验证动作 |
+| OSS Console | immutable OSS制品与L1 Console原子切换 | workflow_dispatch | 人工操作者 | OSS、SSH激活脚本、公网版本接口 | L1 Console current/OSS object | GitHub job + ECS script | 成功run只读核验 | 与agent双writer F-0016 |
+| Release Manifest/Planner | 15 target、2 node、影响与顺序 | CLI/API | workflows/tests | Git、workspace图、规则 | plan schema | runner内进程 | planner/adapter tests | control-plane分类F-0017；after非requires |
+| Remote Agent | stage、activate、rollback、status、锁 | SSH CLI | release engine | filesystem/systemd/Caddy/health | target pointer/receipt/rollback evidence | ECS agent | direct/guarded tests | 正式只走Direct |
+| L0 Edge | fufu静态与服务路由 | 公网HTTPS | 浏览器 | static roots/loopback services | active Caddy主机状态 | Caddy | fixed config validate | active权威与release pointer分裂F-0001/F-0017 |
+| L1 Edge | HBBTZN tunnel/gateway路由 | Cloudflare tunnel/4430 | 浏览器/Cloudflare | L1 static、L0/L1 services | node runtime config | cloudflared + Caddy systemd | validate/AutoNode health | 账户侧配置UNKNOWN |
+| systemd runtime | 15类业务/平台进程与Ready | unit实例 | agent/control-plane | target/node current、runtime env | 进程状态 | 18种unit/timer/path | unit静态+生产只读 | 普通Deploy不安装定义F-0017 |
+| Release retention | 回收未保护release | timer/path/service | systemd/人工 | release roots、pins、process CWD | 删除集合 | root oneshot | syntax；行为环境阻塞 | 需Bash4环境复核 |
+| Control-plane installer | 安装agent/policy或显式runtime | engine install/人工 | quality或操作者 | /opt、systemd、特殊Caddy transition | 主机控制面文件 | ECS root script | 静态/部分tests | workflow只调用agent模式 |
+| AutoNode | 主权节点11步计划、执行与补偿 | 显式CLI | 人工；正式消费者UNKNOWN | Cloudflare/DNS/TLS/systemd/process | activation ledger/owned resources | 独立控制面 | 4 pass；4文件环境阻塞 | 不属于普通Deploy下游 |
+| Legacy deploy兼容 | 历史发布/检查线索 | 退役或人工脚本 | UNKNOWN/check:deployment | origin/main/旧Caddy路径 | 历史责任 | 非正式target | 无运行验证 | 不满足删除条件 |
+
+[FACT][E-AU-004-013] AU-004 深入审阅45个人工文件、4,283行，结构性审阅28个人工文件、9,347行，并核对2个自动生成node manifest、396行；大型engine/provider只对发布关键逻辑形成结构性结论，生成输出也不计作逐行人工审阅。

@@ -1,0 +1,8 @@
+"入口/域名组","第一跳","第二跳/根","后端/制品","失败边界","状态"
+"fufu.wang","公网 TLS → host Caddy","root站点","现有 root","单入口状态码","观察时 200"
+"accounts.fufu.wang","公网 TLS → active host Caddy","/opt/sfl/nodes/zhudatuan-l0/current/.../auth-web/dist","Auth静态文件","active root与release pointer分裂","观察时 404；正式 static index存在"
+"console.fufu.wang","公网 TLS → active host Caddy","/opt/sfl/nodes/zhudatuan-l0/current/.../console/dist","Console静态文件","active root与release pointer分裂","观察时 404；正式 static index存在"
+"accounts/console.hbbtzn.com","Cloudflare tunnel → 127.0.0.1:4430","L1 gateway Caddy → /opt/sfl/nodes/hbbtzn-l1/targets/*/current/static","Auth/Console静态文件","tunnel、gateway、pointer任一失败","观察时均 200"
+"hbbtzn.com/www/h5/h6/mall","Cloudflare tunnel → 127.0.0.1:4430","L1 gateway Caddy","storefront 4410 或 web 4322等","host matcher/上游服务失败","root观察时 200；逐页面未审"
+"api及业务子域","Cloudflare tunnel → L1 gateway","反代 4322/4323/4331/4326/4324/4433/4410","多数服务 hostedBy L0物理进程","共享物理节点扩大故障域","路由声明已核对；逐API未冒烟"
+"未知 HBBTZN host","Cloudflare tunnel → L1 gateway","默认拒绝","无","应返回 421","AutoNode health把421列为验收"

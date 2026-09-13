@@ -1,0 +1,3 @@
+"复核编号","对象","触发原因","必须重新检查","当前状态","不得采用的捷径","完成判据"
+"RV-0001","F-0001 fufu Auth/Console pointer分裂","P1候选且观察到公网404","实例身份；active Caddy完整入口；两套pointer/readlink/index/version；Direct run source；直连SNI；其它域名对照","待第二位独立审计者","不得只复述AU-001/AU-004报告或只看文件名","独立证据链确认/反驳范围、当前行为、影响与等级；分歧取较保守结论"
+"RV-0002","F-0015 Direct成功语义","新增P1候选且属于正式生产主入口","workflow触发；planner direct；engine分支；agent direct/guarded；candidate/health/Caddy/process/public/rollback反事实；真实receipt字段","待第二位独立审计者","不得仅依赖现有测试名或本次差异表","独立重跑/重读全链，明确Direct仍保留的校验、跳过项、可观察影响和最终等级"

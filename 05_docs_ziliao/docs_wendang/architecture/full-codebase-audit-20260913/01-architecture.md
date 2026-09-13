@@ -19,7 +19,7 @@
 5. [FACT][E-AU-001-009] Storefront 的 Worker/Node fetch 入口先调用 Compatibility Commerce API 的 public router，再回落到 vinext App Router。因此 Compatibility API 不是一个可仅凭“无独立发布 target”判定无用的孤立服务。
 6. [FACT][E-AU-002-003][E-AU-002-004][E-AU-002-008][E-AU-002-013] 四个客户端不是同一种运行形态：Console 是 Browser Router；Auth 是 host/query 分流；Storefront 是 App Router + Worker 双入口；Miniapp 只有 App 初始化片段。
 7. [CONFLICT][E-AU-002-010][E-AU-002-018][E-AU-002-020] Auth 和 Miniapp 的机器声明均不能同时解释当前运行入口：Auth 批准组件/锁哈希漂移，Miniapp 的 candidate/tests/navigation/runtimegraph/delivery matrix 对“完整客户端”使用互相冲突的判据。
-8. [CONFLICT][E-AU-001-017][E-AU-001-020][E-AU-001-021] Console 的发布 target、仓库 Caddy 路径和线上实际 Caddy 路径不是同一指针体系；观察时 `console.fufu.wang/` 返回 404。该项为 F-0001（P1 候选），尚待独立复核。
+8. [CONFLICT][E-AU-001-017][E-AU-001-020][E-AU-001-021][E-AU-004-010] Auth 与 Console 的发布 target、仓库 Caddy 路径和线上 active Caddy 路径不是同一指针体系；观察时 `accounts.fufu.wang/` 与 `console.fufu.wang/` 均返回 404。该项为 F-0001（P1 候选），尚待 RV-0001 独立复核。
 9. [CONFLICT][E-AU-001-018][E-AU-001-019][E-AU-001-022] 仓库声明的生产 unit/target 不能完整重建观察时线上运行单元：至少两个活跃 unit 没有基线内同名 unit 文件。
 
 ## 3. 总体运行架构
@@ -364,3 +364,43 @@ flowchart LR
 4. 迁移与应用 pointer 是两个不同回滚域；数据库一旦 applied，后续应用失败只回 pointer，兼容性责任由 migration 设计承担。
 
 完整逐进程、Ready、Jobs 和迁移表见 records/AU-003-canonical-process-entry-map。
+
+## 13. AU-004 增量：发布与节点控制面
+
+### 13.1 三条发布路径与两个逻辑节点
+
+~~~mermaid
+flowchart TB
+  Manual[人工触发] --> Direct[Deploy Direct]
+  Manual --> Quality[Quality/Candidate]
+  Manual --> OSS[OSS Console]
+  Direct --> Targets[15 release targets]
+  Quality --> Targets
+  Targets --> Agent[remote agent]
+  Agent --> L0[zhudatuan-l0]
+  Agent --> L1[hbbtzn-l1]
+  OSS --> L1Console[L1 Console current]
+  L0 --> Host[同一 ECS]
+  L1 --> Host
+  Host --> SD[systemd processes]
+  Host --> Caddy[Caddy]
+  Caddy --> Public[公网用户]
+  Host --> Tunnel[Cloudflared]
+  Tunnel --> Cloudflare[HBBTZN Cloudflare edge]
+~~~
+
+- [FACT][E-AU-004-002] 固定 manifest 有 15 个 target、2 个逻辑节点；HBBTZN 的部分业务服务通过 `hostedBy=zhudatuan-l0` 共享同一物理进程，不是两个完全独立主机。
+- [CONFLICT][E-AU-004-004][E-AU-004-006] 正式 Deploy 固定 Direct。它保留制品完整性和 restart 错误传播，但不执行仓库已实现的 guarded readiness、Caddy/进程对账、外部验收和健康回滚，形成 F-0015。
+- [CONFLICT][E-AU-004-008] HBBTZN Console 同时有 release agent 与 OSS 两个 production pointer writer，二者没有共享互斥，形成 F-0016。
+
+### 13.2 业务发布面与控制面没有闭环
+
+[CONFLICT][E-AU-004-003][E-AU-004-007] Caddy、Cloudflared 与 systemd 的 affected 分类不会交付相应配置：结果可能是重发全部 14 个非迁移业务 target，或零 target。独立 runtime installer 与 AutoNode 能处理部分控制面，但没有被普通 Deploy 正式编排，形成 F-0017。
+
+[FACT][E-AU-004-012] AutoNode 的 11 步持久 ledger、exact plan digest 和 ownership-aware compensation 是高质量设计。它是显式主权节点升级通道，不应被误画成每次业务发布都会执行的下游。
+
+### 13.3 Edge 权威分裂
+
+[CONFLICT][E-AU-004-009][E-AU-004-010] HBBTZN gateway Caddy 从正式 target pointer 提供静态文件并反代 L0/L1 服务；fufu active Caddy 则从另一套 runtime-recovery current 读取 Auth/Console。观察时这两个 root 都缺 index，而正式 release pointer 的 index 存在，公网两个入口均为 404。active Caddy blob 不属于固定基线或仓库历史，权威安装者仍 UNKNOWN。
+
+完整发布、制品、node、systemd、edge 与锁关系见 `09-release-and-operations.md` 和 `records/AU-004-release-node-runtime-map/`。
