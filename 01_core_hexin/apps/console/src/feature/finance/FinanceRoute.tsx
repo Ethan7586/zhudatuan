@@ -47,6 +47,7 @@ export function Component() {
   const overviewQuery = useQuery({
     queryKey: financeKey(context),
     queryFn: ({ signal }) => readFinance(context, signal),
+    enabled: tab === 'payments' && query.data !== undefined,
     staleTime: FINANCE_PREFETCH_STALE_TIME_MS,
   });
   const page = query.data;

@@ -31,10 +31,11 @@ export function Component() {
   const view: ReportView = supplier !== undefined && !supplierViewOptions.some(({ value }) => value === requestedView) ? 'sales' : requestedView;
   const period: ReportPeriod = reportPeriods.includes(rawPeriod as ReportPeriod) ? rawPeriod as ReportPeriod : '30days';
   const cursor = search.get('cursor') ?? undefined;
-  const perspectives = useQuery({ queryKey: supplierPerspectiveKey(context),
-    queryFn: ({ signal }) => readSupplierPerspectives(context, signal), staleTime: 5 * 60_000 });
   const query = useQuery({ queryKey: reportKey(context, view, period, cursor, supplier),
     queryFn: ({ signal }) => readReport(context, view, period, cursor, signal, supplier) });
+  const perspectives = useQuery({ queryKey: supplierPerspectiveKey(context),
+    queryFn: ({ signal }) => readSupplierPerspectives(context, signal), enabled: query.data !== undefined,
+    staleTime: 5 * 60_000 });
   const data = query.data; const error = safeQueryError(query.error);
   const condition = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
     hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });

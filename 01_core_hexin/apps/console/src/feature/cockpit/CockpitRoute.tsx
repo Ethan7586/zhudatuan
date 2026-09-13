@@ -29,14 +29,15 @@ export function Component() {
   const requested = search.get('period');
   const period: CockpitPeriod = cockpitPeriods.includes(requested as CockpitPeriod) ? requested as CockpitPeriod : '30days';
   const supplier = search.get('supplier') ?? undefined;
-  const perspectives = useQuery({
-    queryKey: supplierPerspectiveKey(context),
-    queryFn: ({ signal }) => readSupplierPerspectives(context, signal),
-    staleTime: 5 * 60_000,
-  });
   const query = useQuery({
     queryKey: cockpitKey(context, period, supplier),
     queryFn: ({ signal }) => readCockpit(context, period, signal, supplier),
+  });
+  const perspectives = useQuery({
+    queryKey: supplierPerspectiveKey(context),
+    queryFn: ({ signal }) => readSupplierPerspectives(context, signal),
+    enabled: query.data !== undefined,
+    staleTime: 5 * 60_000,
   });
   const error = safeQueryError(query.error);
   const condition = queryCondition({
@@ -82,7 +83,7 @@ export function Component() {
   return (
     <section className="cockpitpage" aria-label="生意看板" data-workspace="business-overview">
       <CockpitHero period={period} {...(selected === undefined ? {} : { perspective: selected })}
-        busy={perspectives.isFetching || query.isFetching} onPeriodChange={setPeriod} onRefresh={() => { void query.refetch(); }} />
+        busy={query.isFetching} onPeriodChange={setPeriod} onRefresh={() => { void query.refetch(); }} />
       <BusinessPerspectiveBar partners={perspectives.data ?? []} {...(supplier === undefined ? {} : { selected: supplier })}
         busy={perspectives.isFetching || query.isFetching} onSelect={setPerspective} />
       {resource}

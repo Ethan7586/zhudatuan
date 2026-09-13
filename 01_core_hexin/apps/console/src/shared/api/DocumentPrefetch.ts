@@ -253,22 +253,7 @@ export function startDocumentPrefetch(
       value: orders,
     });
   }));
-  window.__consoleFinanceOverviewPrefetch = tracked(session.promise.then((value) => {
-    if (value === undefined || !Number.isInteger(value?.accessVersion)
-      || !Array.isArray(value.capabilities) || !value.capabilities.includes('finance.overview.read')) return undefined;
-    const direct = directScopeFor('finance');
-    if (direct === undefined) return undefined;
-    return readJson<unknown>('/api/v1/finance/overview', {
-      'x-scope-hint': direct.id,
-      'x-access-version': String(value.accessVersion),
-    }).promise.then((overview) => overview === undefined ? undefined : {
-      scopeKind: direct.kind,
-      scopeId: direct.id,
-      accessVersion: value.accessVersion!,
-      value: overview,
-    });
-  }));
-  window.__consoleFinanceReconciliationPrefetch = tracked(session.promise.then((value) => {
+  const financeReconciliationPrefetch = tracked(session.promise.then((value) => {
     if (value === undefined || !Number.isInteger(value?.accessVersion)
       || !Array.isArray(value.capabilities) || !value.capabilities.includes('finance.reconciliations.read')) return undefined;
     const direct = directScopeFor('finance');
@@ -306,6 +291,24 @@ export function startDocumentPrefetch(
       accessVersion: value.accessVersion!,
       query,
       value: reconciliations,
+    });
+  }));
+  window.__consoleFinanceReconciliationPrefetch = financeReconciliationPrefetch;
+  window.__consoleFinanceOverviewPrefetch = tracked(financeReconciliationPrefetch.promise.then(async (primary) => {
+    if (primary === undefined) return undefined;
+    const value = await session.promise;
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('finance.overview.read')) return undefined;
+    const direct = directScopeFor('finance');
+    if (direct === undefined) return undefined;
+    return readJson<unknown>('/api/v1/finance/overview', {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((overview) => overview === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      value: overview,
     });
   }));
   window.__consoleApplicationPrefetch = tracked(session.promise.then((value) => {
@@ -395,7 +398,7 @@ export function startDocumentPrefetch(
       value: vouchers,
     });
   }));
-  window.__consoleReportPrefetch = tracked(session.promise.then((value) => {
+  const reportPrefetch = tracked(session.promise.then((value) => {
     if (value === undefined || !Number.isInteger(value?.accessVersion) || !Array.isArray(value.capabilities)) return undefined;
     const direct = directScopeFor('reports');
     if (direct === undefined) return undefined;
@@ -441,7 +444,10 @@ export function startDocumentPrefetch(
       value: report,
     });
   }));
-  window.__consoleReportSupplierPrefetch = tracked(session.promise.then((value) => {
+  window.__consoleReportPrefetch = reportPrefetch;
+  window.__consoleReportSupplierPrefetch = tracked(reportPrefetch.promise.then(async (primary) => {
+    if (primary === undefined) return undefined;
+    const value = await session.promise;
     if (value === undefined || !Number.isInteger(value?.accessVersion)
       || !Array.isArray(value.capabilities) || !value.capabilities.includes('catalog.listings.read')) return undefined;
     const direct = directScopeFor('reports');

@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 
 const api = vi.hoisted(() => ({
@@ -16,11 +16,32 @@ vi.mock('./FinanceWorkspaceQuery', async (importOriginal) => ({
 import { prefetchFinance } from './FinancePrefetch';
 
 describe('finance page prefetch', () => {
+  beforeEach(() => {
+    api.readFinance.mockReset().mockResolvedValue({ items: [] });
+    api.readFinanceReconciliations.mockReset().mockResolvedValue({ items: [], count: 0, facets: {} });
+  });
+
   it('prepares overview and reconciliation data once', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     await Promise.all([prefetchFinance(client, context), prefetchFinance(client, context)]);
     expect(api.readFinance).toHaveBeenCalledOnce();
     expect(api.readFinanceReconciliations).toHaveBeenCalledOnce();
+  });
+
+  it('finishes the reconciliation table before requesting the secondary overview', async () => {
+    let finishPrimary: () => void = () => undefined;
+    api.readFinanceReconciliations.mockImplementationOnce(() => new Promise((resolve) => {
+      finishPrimary = () => resolve({ items: [], count: 0, facets: {} });
+    }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    const loading = prefetchFinance(client, context);
+    await vi.waitFor(() => expect(api.readFinanceReconciliations).toHaveBeenCalledOnce());
+    expect(api.readFinance).not.toHaveBeenCalled();
+
+    finishPrimary();
+    await loading;
+    expect(api.readFinance).toHaveBeenCalledOnce();
   });
 });
 
