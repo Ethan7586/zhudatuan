@@ -37,7 +37,7 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
   const scopeOptions = scopeSource === 'direct' ? directScopes : inheritedScopes;
   const selectedScope = scopeOptions.find((scope) => scopeKey(scope) === selectedScopeKey) ?? scopeOptions[0];
   const canWriteRole = role.editable && roleCommandAvailable(context);
-  const canManageSeniorRole = seniorGovernanceRole && context.session.governance?.exactOwner === true;
+  const canManageSeniorRole = seniorGovernanceRole && context.session.governance?.level === 'owner';
   const canAssign = (canWriteRole || (canManageSeniorRole && roleCommandAvailable(context)))
     && context.session.permissions.includes('access.scope.manage');
 

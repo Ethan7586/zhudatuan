@@ -185,7 +185,7 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
 async function manageRoleAssignment(request: OperationRequest, database: OperationDatabase, access: ReturnType<typeof requireAccess>,
   role: string, action: 'assign' | 'revoke'): Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
   const seniorRoleRequested = role.startsWith('role-senior-administrator-v1:');
-  if (seniorRoleRequested && access.governance?.isExactOwner !== true) throw new Error('OWNER_REQUIRED_FOR_SENIOR_ADMINISTRATOR');
+  if (seniorRoleRequested && access.governance?.governanceLevel !== 'owner') throw new Error('OWNER_REQUIRED_FOR_SENIOR_ADMINISTRATOR');
   const body = bodyRecord(request);
   const membership = textField(body, 'membership');
   const kind = textField(body, 'kind');
@@ -234,7 +234,7 @@ async function manageRoleAssignment(request: OperationRequest, database: Operati
         and exists(select 1 from organization.unitclosure roleboundary
           where roleboundary.ancestor_id=role.scope_id and roleboundary.descendant_id=$4)))
     where target.id=$2 for update of target`, [scope, membership, role, access.scope.id, access.membership.id,
-      access.governance?.isExactOwner === true]);
+      access.governance?.governanceLevel === 'owner']);
   const target = resolved.rows[0];
   if (target === undefined) throw new Error('ROLE_ASSIGNMENT_NOT_AVAILABLE');
   if (target.target_is_owner) throw new Error('OWNER_ROLE_LEVEL_IMMUTABLE');

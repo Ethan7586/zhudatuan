@@ -148,10 +148,10 @@ describe('access scope management boundary', () => {
     expect(harness.queries.some((query) => query.includes('delete from access.membershiprole'))).toBe(false);
   });
 
-  it('lets the exact Owner promote an active operator through the ancestor senior role without touching storefront membership', async () => {
+  it('lets the authoritative Owner principal promote an active operator through the ancestor senior role without touching storefront membership', async () => {
     const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true });
 
-    const response = await accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('assign'));
+    const response = await accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('assign', projectedOwnerAccess(mallA)));
 
     expect(response).toMatchObject({ status: 200, body: { action: 'assign', changed: true,
       role: 'role-senior-administrator-v1:tenant-a', membership: 'membership:target',
@@ -166,11 +166,11 @@ describe('access scope management boundary', () => {
     expect(harness.queries.some((query) => /delete from access\.membership\b/.test(query))).toBe(false);
   });
 
-  it('lets the exact Owner demote a senior administrator and retires only its unused senior Scope', async () => {
+  it('lets the authoritative Owner principal demote a senior administrator and retires only its unused senior Scope', async () => {
     const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true,
       revokedSeniorScope: true });
 
-    const response = await accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('revoke'));
+    const response = await accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('revoke', projectedOwnerAccess(mallA)));
 
     expect(response).toMatchObject({ status: 200, body: { action: 'revoke', changed: true,
       role: 'role-senior-administrator-v1:tenant-a', access_version: 3 } });
@@ -394,6 +394,12 @@ function ownerAccess(scope: AccessContext['scope']): AccessContext {
     organizationId: tenantA.id, ownerMembershipId: access.membership.id,
     scope: { kind: 'tenant', semanticId: tenantA.id, storageId: tenantA.id, organizationId: tenantA.id },
     resolvedAt: new Date('2026-09-01T00:00:00.000Z') } };
+}
+
+function projectedOwnerAccess(scope: AccessContext['scope']): AccessContext {
+  const access = ownerAccess(scope);
+  return { ...access, governance: { ...access.governance!, isExactOwner: false,
+    ownerMembershipId: 'membership:authoritative-owner' } };
 }
 
 function tenantManagerAccess(scope: AccessContext['scope']): AccessContext {
