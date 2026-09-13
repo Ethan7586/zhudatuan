@@ -17,8 +17,8 @@ function valid() {
     AUTH_MODE: 'membership',
     SERVICE_VERSION: '1.0.0',
     API_ALLOWED_ORIGINS: 'https://console.fufu.wang',
-    DATABASE_API_CONNECTION_REF: 'zhudatuan/mall-provisioning/database/api',
-    SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8543',
+    DATABASE_API_CONNECTION_REF: 'zhudatuan/nodes/l0/database/mall-provisioning-api',
+    SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8553',
     SECRET_STORE_BEARER_TOKEN: bearer,
   };
 }
@@ -31,8 +31,18 @@ describe('mall provisioning API environment', () => {
     expect(mallProvisioningApiAllowedOrigins(environment)).toEqual(['https://console.fufu.wang']);
     expect(new Set(MALL_PROVISIONING_API_ENVIRONMENT_KEYS).size)
       .toBe(MALL_PROVISIONING_API_ENVIRONMENT_KEYS.length);
-    expect(mallProvisioningApiEnvironment({ ...valid(), SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8553' })
-      .SECRET_STORE_ENDPOINT).toBe('https://127.0.0.1:8553');
+  });
+
+  it('binds the L1 runtime to its own console, port, database reference, and secret endpoint', () => {
+    const environment = mallProvisioningApiEnvironment({
+      ...valid(),
+      API_PORT: '4435',
+      API_ALLOWED_ORIGINS: 'https://console.hbbtzn.com',
+      DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/mall-provisioning-api',
+      SECRET_STORE_ENDPOINT: 'https://127.0.0.1:8543',
+    });
+    expect(mallProvisioningApiPort(environment)).toBe(4435);
+    expect(mallProvisioningApiAllowedOrigins(environment)).toEqual(['https://console.hbbtzn.com']);
   });
 
   it('rejects full-runtime dependencies, public binds, and storefront origins', () => {
@@ -53,6 +63,11 @@ describe('mall provisioning API environment', () => {
       .toThrow('MALL_PROVISIONING_API_PORT_INVALID');
     expect(() => mallProvisioningApiEnvironment({ ...valid(), API_ALLOWED_ORIGINS: 'https://fufu.wang' }))
       .toThrow('MALL_PROVISIONING_API_ORIGINS_INVALID');
+    expect(() => mallProvisioningApiEnvironment({
+      ...valid(),
+      API_ALLOWED_ORIGINS: 'https://console.hbbtzn.com',
+      API_PORT: '4435',
+    })).toThrow('MALL_PROVISIONING_API_DATABASE_BOUNDARY_INVALID');
   });
 
   it('requires the dedicated profile, membership auth, and loopback TLS secret store', () => {

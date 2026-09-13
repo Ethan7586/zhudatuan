@@ -634,7 +634,7 @@
         "console": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/console","service":"none","restart":"none","publicAcceptance":{"url":"https://console.hbbtzn.com/","allowedStatuses":[200],"timeoutMs":12000}},
         "identity-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/identity-api","service":"sfl-identity-api@hbbtzn-l1.service"},
         "identity-notification-jobs": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/identity-notification-jobs","service":"sfl-identity-notification-jobs@hbbtzn-l1.service"},
-        "mall-provisioning-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/mall-provisioning-api","service":"none","restart":"none"},
+        "mall-provisioning-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/mall-provisioning-api","service":"sfl-mall-provisioning-api@hbbtzn-l1.service"},
         "support-api": {"pointerRoot":"/opt/zhudatuan/targets/support-api","service":"zhudatuan-console-support.service","hostedBy":"zhudatuan-l0"},
         "purchase-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/purchase-api","service":"sfl-purchase-api@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
         "web-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/web-api","service":"sfl-web-api@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},

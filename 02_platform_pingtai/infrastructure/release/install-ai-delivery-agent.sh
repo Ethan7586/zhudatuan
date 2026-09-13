@@ -99,6 +99,7 @@ if [[ "$node_scope" == all || "$node_scope" == hbbtzn-l1 ]]; then
     /opt/sfl/nodes/hbbtzn-l1/targets/console/current
     /opt/sfl/nodes/hbbtzn-l1/targets/identity-api/current
     /opt/sfl/nodes/hbbtzn-l1/targets/identity-notification-jobs/current
+    /opt/sfl/nodes/hbbtzn-l1/targets/mall-provisioning-api/current
     /opt/sfl/nodes/hbbtzn-l1/targets/purchase-api/current
     /opt/sfl/nodes/hbbtzn-l1/targets/web-api/current
     /opt/sfl/nodes/hbbtzn-l1/targets/catalog-api/current
@@ -111,6 +112,7 @@ if [[ "$node_scope" == all || "$node_scope" == hbbtzn-l1 ]]; then
     sfl-storefront@.service
     sfl-identity-api@.service
     sfl-identity-notification-jobs@.service
+    sfl-mall-provisioning-api@.service
     sfl-purchase-api@.service
     sfl-web-api@.service
     sfl-catalog-api@.service

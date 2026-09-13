@@ -22,6 +22,7 @@ async function main() {
       'purchase-port': { type: 'string' },
       'webhook-port': { type: 'string' },
       'support-port': { type: 'string' },
+      'provisioning-port': { type: 'string' },
       'omit-runtime-config': { type: 'boolean' },
     },
     strict: true,
@@ -46,6 +47,13 @@ async function main() {
       throw new Error('SFL_GATEWAY_SUPPORT_PORT_INVALID');
     }
     ports.support = support;
+  }
+  if (values['provisioning-port'] !== undefined) {
+    const provisioning = Number(values['provisioning-port']);
+    if (!Number.isSafeInteger(provisioning) || provisioning < 1 || provisioning > 65_535) {
+      throw new Error('SFL_GATEWAY_PROVISIONING_PORT_INVALID');
+    }
+    ports.provisioning = provisioning;
   }
   const expected = gatewayConfiguration(manifest, nodeRoot, ports, {
     runtimeConfigRoutes: values['omit-runtime-config'] !== true,
@@ -111,6 +119,8 @@ export function gatewayConfiguration(manifest, nodeRoot, ports, options = {}) {
 `\thandle @paymentWebhook {\n${proxy(ports.webhook)}\n\t}\n\n` +
 `${ports.support ? `\t@supportApi {\n\t\thost ${apiHost}\n\t\tpath /api/v1/support /api/v1/support/*\n\t}\n` +
 `\thandle @supportApi {\n${proxy(ports.support)}\n\t}\n\n` : ''}` +
+`${ports.provisioning ? `\t@mallProvisioningApi {\n\t\thost ${apiHost}\n\t\tpath /api/v1/provisioning/malls /api/v1/provisioning/malls/*\n\t}\n` +
+`\thandle @mallProvisioningApi {\n${proxy(ports.provisioning)}\n\t}\n\n` : ''}` +
 `\t@identityApi {\n\t\thost ${apiHost}\n\t\tpath /api/v1/*\n\t}\n` +
 `\thandle @identityApi {\n${proxy(ports.identity)}\n\t}\n\n` +
 `\t@gatewayHealth {\n\t\thost ${apiHost}\n\t\tpath /health/gateway\n\t}\n` +

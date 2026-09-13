@@ -34,7 +34,8 @@
     {"kind":"systemd","name":"sfl-cloudflared@hbbtzn-l1.service"},
     {"kind":"systemd","name":"sfl-catalog-object-store@hbbtzn-l1.service"},
     {"kind":"systemd","name":"sfl-identity-api@hbbtzn-l1.service"},
-    {"kind":"systemd","name":"sfl-identity-notification-jobs@hbbtzn-l1.service"}
+    {"kind":"systemd","name":"sfl-identity-notification-jobs@hbbtzn-l1.service"},
+    {"kind":"systemd","name":"sfl-mall-provisioning-api@hbbtzn-l1.service"}
   ],
   "nodes": {
     "zhudatuan-l0": {
@@ -66,7 +67,7 @@
         "console": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/console","seedInputs":[{"source":"01_core_hexin/apps/console/dist","destination":"static"}],"restart":{"kind":"none","name":"none"},"candidateChecks":[{"argv":["test","-f","{{candidateDir}}/static/index.html"]}],"healthChecks":[]},
         "identity-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/identity-api","seedInputs":[{"source":"01_core_hexin/services/commerce/dist/IdentityRegistrationApiMain.js","destination":"service/IdentityRegistrationApiMain.js"},{"source":"01_core_hexin/services/commerce/dist/IdentityRegistrationApiReadyMain.js","destination":"service/IdentityRegistrationApiReadyMain.js"}],"restart":{"kind":"systemd","name":"sfl-identity-api@hbbtzn-l1.service","jobMode":"ignore-dependencies"},"candidateChecks":[{"argv":["node","--check","{{candidateDir}}/service/IdentityRegistrationApiMain.js"]},{"argv":["node","--check","{{candidateDir}}/service/IdentityRegistrationApiReadyMain.js"]}],"healthChecks":[{"argv":["systemctl","is-active","--quiet","sfl-identity-api@hbbtzn-l1.service"]}]},
         "identity-notification-jobs": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/identity-notification-jobs","seedInputs":[{"source":"01_core_hexin/services/commerce/dist/IdentityNotificationJobsOnlyMain.js","destination":"service/IdentityNotificationJobsOnlyMain.js"},{"source":"01_core_hexin/services/commerce/dist/IdentityNotificationJobsReadyMain.js","destination":"service/IdentityNotificationJobsReadyMain.js"}],"restart":{"kind":"systemd","name":"sfl-identity-notification-jobs@hbbtzn-l1.service","jobMode":"ignore-dependencies"},"candidateChecks":[{"argv":["node","--check","{{candidateDir}}/service/IdentityNotificationJobsOnlyMain.js"]},{"argv":["node","--check","{{candidateDir}}/service/IdentityNotificationJobsReadyMain.js"]}],"healthChecks":[{"argv":["systemctl","is-active","--quiet","sfl-identity-notification-jobs@hbbtzn-l1.service"]}]},
-        "mall-provisioning-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/mall-provisioning-api","restart":{"kind":"none","name":"none"},"candidateChecks":[{"argv":["node","--check","{{candidateDir}}/service/MallProvisioningApiMain.js"]},{"argv":["node","--check","{{candidateDir}}/service/MallProvisioningApiReadyMain.js"]}],"healthChecks":[]}
+        "mall-provisioning-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/mall-provisioning-api","seedInputs":[{"source":"01_core_hexin/services/commerce/dist/MallProvisioningApiMain.js","destination":"service/MallProvisioningApiMain.js"},{"source":"01_core_hexin/services/commerce/dist/MallProvisioningApiReadyMain.js","destination":"service/MallProvisioningApiReadyMain.js"}],"restart":{"kind":"systemd","name":"sfl-mall-provisioning-api@hbbtzn-l1.service","jobMode":"ignore-dependencies"},"candidateChecks":[{"argv":["node","--check","{{candidateDir}}/service/MallProvisioningApiMain.js"]},{"argv":["node","--check","{{candidateDir}}/service/MallProvisioningApiReadyMain.js"]}],"healthChecks":[{"argv":["systemctl","is-active","--quiet","sfl-mall-provisioning-api@hbbtzn-l1.service"]},{"argv":["curl","-fsS","--max-time","10","http://127.0.0.1:4435/health/ready"]}]}
       }
     }
   }

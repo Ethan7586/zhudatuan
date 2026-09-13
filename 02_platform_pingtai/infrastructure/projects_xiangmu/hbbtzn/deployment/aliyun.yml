@@ -45,6 +45,9 @@ runtime:
       port: 4433
     - unit: sfl-identity-notification-jobs@hbbtzn-l1.service
       responsibility: identity-realm-notification-jobs
+    - unit: sfl-mall-provisioning-api@hbbtzn-l1.service
+      responsibility: mall-provisioning-api
+      port: 4435
     - unit: sfl-api-gateway@hbbtzn-l1.service
       responsibility: node-local-tls-gateway
       port: 4430

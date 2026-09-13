@@ -10,10 +10,18 @@ import { apiAllowedOrigins } from './ApiEnvironment';
 import { nodeOriginForBinding } from './SflNodeRegistry';
 
 export const MALL_PROVISIONING_API_PROFILE = 'mall-provisioning-only' as const;
-const PLATFORM_CONSOLE_ORIGIN = nodeOriginForBinding(
-  'node:zhudatuan:l0',
-  'domain:zhudatuan:l0:console',
-);
+const NODE_RUNTIME_BOUNDARIES = Object.freeze({
+  [nodeOriginForBinding('node:zhudatuan:l0', 'domain:zhudatuan:l0:console')]: Object.freeze({
+    port: 4325,
+    databaseConnectionRef: 'zhudatuan/nodes/l0/database/mall-provisioning-api',
+    secretStoreEndpoint: 'https://127.0.0.1:8553',
+  }),
+  [nodeOriginForBinding('node:hbbtzn:l1', 'domain:hbbtzn:l1:console')]: Object.freeze({
+    port: 4435,
+    databaseConnectionRef: 'hbbtzn/nodes/l1/database/mall-provisioning-api',
+    secretStoreEndpoint: 'https://127.0.0.1:8543',
+  }),
+} as const);
 
 export const MALL_PROVISIONING_API_ENVIRONMENT_KEYS = Object.freeze([
   'MALL_PROVISIONING_API_PROFILE',
@@ -60,16 +68,27 @@ export function validateMallProvisioningApiEnvironment(source: EnvironmentSource
   if (source.API_BIND_HOST !== undefined && source.API_BIND_HOST !== '127.0.0.1') {
     throw new Error('MALL_PROVISIONING_API_BIND_HOST_INVALID');
   }
+  const origins = apiAllowedOrigins(source);
+  const boundary = NODE_RUNTIME_BOUNDARIES[origins.join(',') as keyof typeof NODE_RUNTIME_BOUNDARIES];
+  if (app === 'production' && boundary === undefined) {
+    throw new Error('MALL_PROVISIONING_API_ORIGINS_INVALID');
+  }
   const secretStoreEndpoint = secureEndpoint(source.SECRET_STORE_ENDPOINT, 'SECRET_STORE_ENDPOINT_INVALID');
   if (app === 'production' && secretStoreEndpoint.hostname !== '127.0.0.1') {
     throw new Error('MALL_PROVISIONING_API_SECRET_STORE_ENDPOINT_INVALID');
   }
   bearerToken(source.SECRET_STORE_BEARER_TOKEN, 'SECRET_STORE_BEARER_TOKEN_INVALID');
-  const origins = apiAllowedOrigins(source);
-  if (app === 'production' && origins.join(',') !== PLATFORM_CONSOLE_ORIGIN) {
-    throw new Error('MALL_PROVISIONING_API_ORIGINS_INVALID');
+  if (app === 'production' && boundary !== undefined) {
+    if (source.DATABASE_API_CONNECTION_REF !== boundary.databaseConnectionRef) {
+      throw new Error('MALL_PROVISIONING_API_DATABASE_BOUNDARY_INVALID');
+    }
+    if (source.SECRET_STORE_ENDPOINT !== boundary.secretStoreEndpoint) {
+      throw new Error('MALL_PROVISIONING_API_SECRET_STORE_BOUNDARY_INVALID');
+    }
+    if (mallProvisioningApiPort(source) !== boundary.port) {
+      throw new Error('MALL_PROVISIONING_API_PORT_INVALID');
+    }
   }
-  if (mallProvisioningApiPort(source) !== 4325) throw new Error('MALL_PROVISIONING_API_PORT_INVALID');
 }
 
 export function mallProvisioningApiPort(environment: MallProvisioningApiEnvironment): number {

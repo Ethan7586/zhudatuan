@@ -13,6 +13,13 @@ const deployNow = await readFile(join(projectRoot, 'scripts/deploy-now.sh'), 'ut
 const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/quality.yml'), 'utf8');
 const databaseMigrationExecutor = await readFile(join(projectRoot,
   '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'), 'utf8');
+const hbbtznGateway = await readFile(join(projectRoot,
+  '02_platform_pingtai/config/node-runtime/hbbtzn-l1/api-gateway.Caddyfile'), 'utf8');
+const mallProvisioningUnit = await readFile(join(systemdRoot, 'sfl-mall-provisioning-api@.service'), 'utf8');
+const l0MallProvisioningEnvironment = await readFile(join(projectRoot,
+  '02_platform_pingtai/config/node-runtime/zhudatuan-l0/mall-provisioning-api.env.example'), 'utf8');
+const l1MallProvisioningEnvironment = await readFile(join(projectRoot,
+  '02_platform_pingtai/config/node-runtime/hbbtzn-l1/mall-provisioning-api.env.example'), 'utf8');
 
 test('production acceptance is fixed to the protected fifteen-domain baseline', () => {
   assert.equal(adapter.productionAcceptance.domains.length, 15);
@@ -80,6 +87,33 @@ test('L1 identity API owns its runtime, pointer, and rollback independently from
   assert.notEqual(l1.service, l0.service);
   assert.equal(remote.pointerRoot, l1.pointerRoot);
   assert.equal(remote.restart.name, l1.service);
+});
+
+test('L0 and L1 mall provisioning APIs own distinct runtimes and rollback pointers', () => {
+  const l0 = adapter.nodes['zhudatuan-l0'].deployments['mall-provisioning-api'];
+  const l1 = adapter.nodes['hbbtzn-l1'].deployments['mall-provisioning-api'];
+  const remote = policy.nodes['hbbtzn-l1'].deployments['mall-provisioning-api'];
+  assert.equal(l1.hostedBy, undefined);
+  assert.equal(l1.pointerRoot, '/opt/sfl/nodes/hbbtzn-l1/targets/mall-provisioning-api');
+  assert.equal(l1.service, 'sfl-mall-provisioning-api@hbbtzn-l1.service');
+  assert.notEqual(l1.pointerRoot, l0.pointerRoot);
+  assert.notEqual(l1.service, l0.service);
+  assert.equal(remote.pointerRoot, l1.pointerRoot);
+  assert.equal(remote.restart.name, l1.service);
+  assert.ok(remote.seedInputs.length > 0);
+  assert.equal(remote.allowFirstActivation, undefined);
+});
+
+test('L0 and L1 mall provisioning instances use distinct ports and L1 routing', () => {
+  assert.match(l0MallProvisioningEnvironment, /^API_PORT=4325$/m);
+  assert.match(l0MallProvisioningEnvironment, /^DATABASE_API_CONNECTION_REF=zhudatuan\/nodes\/l0\/database\/mall-provisioning-api$/m);
+  assert.match(l1MallProvisioningEnvironment, /^API_PORT=4435$/m);
+  assert.match(l1MallProvisioningEnvironment, /^DATABASE_API_CONNECTION_REF=hbbtzn\/nodes\/l1\/database\/mall-provisioning-api$/m);
+  assert.doesNotMatch(mallProvisioningUnit, /^Environment=API_PORT=/m);
+  assert.doesNotMatch(mallProvisioningUnit, /\/usr\/bin\/env[^\n]*API_PORT=/m);
+  assert.match(hbbtznGateway, /path \/api\/v1\/provisioning\/malls \/api\/v1\/provisioning\/malls\/\*/);
+  assert.match(hbbtznGateway, /reverse_proxy 127\.0\.0\.1:4435/);
+  assert.ok(hbbtznGateway.indexOf('@mallProvisioningApi') < hbbtznGateway.indexOf('@identityApi'));
 });
 
 test('every restartable fast target has a one-time legacy seed and production rollback baseline', () => {
@@ -180,6 +214,7 @@ test('database migration packages the official runner inputs and uses the manage
 test('service definitions use target pointers instead of node-wide code pointers', async () => {
   const units = {
     'sfl-identity-api@.service': 'identity-api',
+    'sfl-mall-provisioning-api@.service': 'mall-provisioning-api',
     'sfl-purchase-api@.service': 'purchase-api',
     'sfl-web-api@.service': 'web-api',
     'sfl-catalog-api@.service': 'catalog-api',

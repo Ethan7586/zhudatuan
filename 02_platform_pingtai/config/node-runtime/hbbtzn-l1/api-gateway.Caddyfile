@@ -1,4 +1,4 @@
-# Generated from manifest:hbbtzn:l1:v1 (sha256:efde3b74922ac405da4a3c67b2d7346a65fe6b3477c986cf97ff66c578ee3f76). Do not hand edit.
+# Generated from manifest:hbbtzn:l1:v1 (sha256:eb600abbdcef18c8eb2d3a647f3cd8cc50bf641ccdf511ec1e0a339bd2d20425). Do not hand edit.
 {
 	admin off
 	auto_https off
@@ -173,6 +173,21 @@ https://:4430 {
 	}
 	handle @supportApi {
 		reverse_proxy 127.0.0.1:4324 {
+			header_up Host {http.request.host}
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up -X-Sfl-Node-Id
+			header_up -X-Sfl-Node-Manifest-Id
+			header_up -X-Sfl-Node-Surface
+			header_up -X-Zdt-Identity-Entry-Host
+		}
+	}
+
+	@mallProvisioningApi {
+		host api.hbbtzn.com
+		path /api/v1/provisioning/malls /api/v1/provisioning/malls/*
+	}
+	handle @mallProvisioningApi {
+		reverse_proxy 127.0.0.1:4435 {
 			header_up Host {http.request.host}
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
 			header_up -X-Sfl-Node-Id
