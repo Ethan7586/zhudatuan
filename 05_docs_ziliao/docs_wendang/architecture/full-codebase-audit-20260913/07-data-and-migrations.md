@@ -56,3 +56,10 @@
 - [UNKNOWN] tracked `current.sql` 只证明期望发布内容，不证明任一环境已执行、ledger 已登记或数据库当前行与之相同。旧 checksum 与当前输出不同也因历史移除 runtime 阻断职责而不能单独定级为事故。
 
 本 AU 未执行迁移、未连接数据库，也未修改既有 migration 或 ledger。
+
+## 9. AU-008 生成数据库快照边界
+
+- [FACT][E-AU-008-003/012] `database/contracts/current.sql`包含271个runtime Operation、67个Event及由Operation投影的capability/binding；仓内精确消费者只有contractgen写端和`VoucherTargetContract.test.ts`读端。
+- release candidate、migration runner、服务启动入口和受管迁移目录均未加载该文件。它当前是tracked生成快照与测试oracle，不是已证明的迁移。
+- [UNKNOWN] 历史或仓外人工流程是否直接应用该SQL；因此不能删除、执行或把它当作恢复入口。若未来调查，必须先对账migration ledger、操作者流程和数据库现状。
+- 本AU未执行SQL、迁移或数据库连接，也未修改ledger。

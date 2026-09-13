@@ -1,0 +1,6 @@
+"抽检编号","确定性顺序键","抽检文件","原结论","重新从入口追踪","复核结论","遗漏/扩大范围"
+"RS-AU-008-001","01f4e6130297","01_core_hexin/packages/sdk/src/DomainFactory.test.ts","generated factory形态测试，不证明真实网络/CORS","test→createFetchCatalog/Identity→generated factory→ApiClient","一致；只证明named方法/no generic escape hatch","无；不扩大"
+"RS-AU-008-002","05ce8c36c5ce","01_core_hexin/packages/sdk/src/Transport.ts","body必须string、signal可选的公共端口","Fetch/Wechat实现→ApiClient.decode与deadline","一致；Wechat实现违反body/settlement分支已登记F-0046","已在首次审阅登记；不属抽检新遗漏"
+"RS-AU-008-003","111f61d390aa","01_core_hexin/packages/sdk/src/VoucherTarget.test.ts","74 frozen全量阻断测试可信","definitions→SDK IDs/descriptors→ApiClient transport count","一致；对frozen集合是高可信反事实，不证明runtime handler","无；不扩大"
+"RS-AU-008-004","20804ad4cc0b","01_core_hexin/packages/sdk/src/CommerceClient.test.ts","aggregate client路径/输出测试","root export→ClientFactory→generated aggregate→ApiClient recording transport","一致；单例不覆盖retry/CORS/schema","无；不扩大"
+"RS-AU-008-005","333b0ef265de","01_core_hexin/packages/sdk/src/RequestContextFactory.ts","安全ID/context/cookie入口；contractVersion为兼容残留","Console/Storefront callers→factory→ApiClient header读取集合","一致；proof/csrf生效，contractVersion不被读取，DC-0009","无；不扩大"

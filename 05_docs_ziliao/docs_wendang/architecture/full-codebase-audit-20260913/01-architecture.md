@@ -509,3 +509,38 @@ flowchart LR
 - generator的顺序直接写与无命中断言replace形成F-0042；当前主要tracked输出仍通过只读集合对账。
 
 完整目录、逐Operation/Event/Capability/Error记录、117文件覆盖与19.5%逆向抽检见 `records/AU-007-contract-definitions-contractgen/`。
+
+## 17. AU-008 增量：生成契约运行边界
+
+### 17.1 生成物不是一个发布单元
+
+~~~mermaid
+flowchart LR
+  Gen[contractgen] --> OA[OpenAPI/events JSON]
+  Gen --> SDK[35 SDK operation clients]
+  Gen --> HTTP[Controller/Handler]
+  Gen --> ER[EVENT_HANDLERS]
+  Gen --> DB[current.sql]
+  MiniGen[miniapp generator] --> Mini[2 domain modules]
+  SDK --> API[ApiClient/Transport]
+  API --> CORS[HttpApp preflight]
+  HTTP --> Routes[RouteRegistry]
+  ER --> Pub[RuntimeEventPublisher]
+  OA --> ContractHash[release contractHash]
+  SDK --> ClientHash[web client hashes]
+  HTTP --> OCI[Commerce OCI hash]
+  Mini --> MiniHash[Miniapp directory hash]
+~~~
+
+[FACT][E-AU-008-003/010] 345个Operation都存在于SDK；服务端Controller、Handler和数据库快照只承载271个runtime Operation，74个frozen Operation由SDK在传输前拒绝。67个Event均进入生成registry；publisher在事务前解析type/version，再在同一事务写inbox并排队handler job。
+
+[FACT][E-AU-008-012/013] `current.sql`在仓内只有generator写端和一个contract test读端，不进入迁移runner或release candidate。release的`contractHash`只覆盖OpenAPI与稀疏events JSON；Web SDK、Commerce壳和Miniapp分别由目录/OCI哈希追踪。因此制品身份是分层关系，不能用一个contract字段代替全部字节。
+
+### 17.2 主要接缝问题
+
+- SDK的proof header与生产CORS白名单分离维护，真实Console跨域命令在浏览器预检处终止，而mock允许通过（F-0044）。
+- runtimegraph仍验证已由`57c1177d`退出的版本头/426契约，并读取不存在的Miniapp client（F-0045）。
+- 微信Transport端口边界清楚，但adapter在undefined/不可序列化响应上违反字符串与Promise settle契约（F-0046）。
+- Miniapp两个生成domain模块有候选制品责任但零运行引用；外部工程未知，继续保留在F-0006而非删除候选升级。
+
+完整文件记录、通信/FMEA/不变量矩阵与18.5%确定性逆向抽检见 `records/AU-008-generated-contract-runtime-chain/`。

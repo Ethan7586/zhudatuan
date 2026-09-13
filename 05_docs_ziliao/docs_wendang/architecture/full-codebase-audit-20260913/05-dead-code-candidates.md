@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 2、G1 5、G2 0、G3 0、GX 1。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 2、G1 7、G2 0、G3 0、GX 1。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -105,6 +105,30 @@ AU-005 首次建立候选总账。零静态引用、零正式target或测试只�
 | 可否独立删除 | 否；公共API、生成职责、等价替代、可观察行为和第二次复核均未满足 |
 | 二次复核 | G1不强制；升级G2前需独立查外部消费者与语义版本承诺 |
 
+## DC-0008｜生成的 Controller 与 Handler Operation ID 数组
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，但证据不足 |
+| 对象 | 生成`OperationController.ts`的`CONTROLLER_OPERATION_IDS`与`OperationHandler.ts`的`HANDLED_OPERATION_IDS` |
+| 疑似原因 | [FACT][E-AU-008-015] 排除generator模板和各自定义后，固定仓库未找到读取者；真实route/handler完整性由对象key、DefinedModule和RouteRegistry检查 |
+| 保留证据 | 两个数组仍是生成模块的公开export，保存271个runtime ID的显式诊断投影；仓外工具、动态消费者和生成API兼容未排除 |
+| 未排除项 | 外部架构检查、运行诊断、未来完整性oracle、生成输出语义版本承诺、等价替代的正式确认 |
+| 可否独立删除 | 否；公共导出、生成职责、外部消费者和二次复核均未排除 |
+| 二次复核 | G1不强制；升级G2前重查release/check工具和仓外消费者 |
+
+## DC-0009｜SDK 已退出运行契约的兼容残留与微信 factory
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，但证据不足 |
+| 对象 | `RequestContext.contractVersion`、`ApiError.contractResponse`、`defineStructuralOperation`、`createWechatCommerce` |
+| 疑似原因 | [FACT][E-AU-008-015] context仍填充contractVersion但ApiClient不读取；其余符号没有仓内生产caller；版本/schema runtime阻断已由`57c1177d`正式退出 |
+| 保留证据 | 全部仍经`@shop/sdk`公开或属于公开参数类型；`createWechatCommerce`是唯一微信Transport factory，且外部Miniapp工程/SDK消费者未知 |
+| 未排除项 | npm/仓外调用者、类型兼容、历史客户端编译契约、Miniapp外置工程、正式deprecated周期和替代API |
+| 可否独立删除 | 否；零仓内调用不能排除公共API、历史兼容和外部运行责任 |
+| 二次复核 | G1不强制；升级G2/G3前必须查发布包消费者与Miniapp所有权 |
+
 ## 2. G3 条件对账
 
-上述G0、G1和GX项均不满足“无公共/事件契约、无数据责任、存在等价替代、删除不改变可观察行为、已完成第二次复核”等条件。AU-007未对任何文件提出删除、归档或移动建议。
+上述G0、G1和GX项均不满足“无公共/事件契约、无数据责任、存在等价替代、删除不改变可观察行为、已完成第二次复核”等条件。AU-008未对任何文件提出删除、归档或移动建议。

@@ -86,3 +86,11 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - malformed-percent DeepLink 只读反事实确认 `%ZZ` 通过字符规则后抛原生 `URIError`，见 F-0043。
 
 完整 53 条测试/静态验证记录及“不证明项”见 `records/AU-007-contract-definitions-contractgen/tests.csv`。
+
+## 7. AU-008 SDK 与运行链测试可信度
+
+- SDK共有10个测试文件、27个用例，覆盖factory形态、74个frozen Operation传输前拒绝、旧版本/schema退出、header透传、取消、Secure ID、PKCE、Identity registry与Fetch signal。
+- [CONFLICT][E-AU-008-005/006] SDK测试断言发送`x-action-proof`，browser OperationMock允许该头；生产HttpApp预检测试只断言access/device头，因而无法发现生产白名单遗漏（F-0044）。
+- WechatTransport只有abort一例；success/fail、string/object/undefined、序列化异常、重复callback和callback-after-abort均未覆盖（F-0046）。RetryPolicy也没有直接或端到端的重试次数、408/429/5xx与deadline矩阵。
+- 正式`npm test --workspace @shop/sdk`因vitest缺失退出127，typecheck因tsc缺失退出127，`build-miniapp-contract --check`因zod缺失退出1，`check:runtimegraph`因typescript缺失退出1。均在业务逻辑前阻塞，未记为通过或实现失败，也未安装依赖。
+- 只读集合复算确认345/271/74 Operation分层、67 Event registry以及SDK/运行壳缺项均为0；runtimegraph静态复算确认1个缺文件和3个旧token期望。完整38条记录见`records/AU-008-generated-contract-runtime-chain/tests.csv`。

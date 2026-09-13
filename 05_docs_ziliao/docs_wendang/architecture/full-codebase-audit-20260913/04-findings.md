@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-007 结束时累计：P0 0、P1 候选 7、P2 27、P3 8、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-008 结束时累计：P0 0、P1 候选 7、P2 29、P3 9、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -136,11 +136,11 @@
 | 类型 | 运行入口缺失、机器契约冲突、测试假阳性 |
 | 严重级别 | P2 |
 | 置信度 | 高（仓库内冲突）；外部完整工程与线上状态未知 |
-| 文件和精确位置 | `01_core_hexin/apps/miniapp/miniprogram/app.js:1-9`；`04_tools/scripts/audit/navigation.mjs:13-46`；`04_tools/scripts/audit/runtimegraph.mjs:17-24`；`04_tools/scripts/check/tests.mjs:39-50`；`04_tools/scripts/release/candidate.mjs:19-34`；`01_core_hexin/packages/api-contract/src/delivery-matrix.json:1-65`；`04_tools/scripts/audit/regression.mjs:6-18` |
-| 当前行为 | [FACT][E-AU-002-018][E-AU-002-019][E-AU-002-020] 目录只有 9 个文件；无 app.json/pages/api/client/navigation/actions。navigation 正式命令必现 ENOENT；test topology 只见 app.js 就通过；candidate 无条件复制片段；delivery matrix 又把已被 regression 标为 retired、当前不存在的 wechat-miniapp 路径作为四项 implemented 能力证据 |
+| 文件和精确位置 | `01_core_hexin/apps/miniapp/miniprogram/app.js:1-9`；`miniprogram/domain/deeplink.js`；`miniprogram/domain/experience.js`；`04_tools/scripts/build-miniapp-contract.mjs`；`04_tools/scripts/audit/navigation.mjs:13-46`；`04_tools/scripts/audit/runtimegraph.mjs:17-24`；`04_tools/scripts/check/tests.mjs:39-50`；`04_tools/scripts/release/candidate.mjs:19-34`；`01_core_hexin/packages/api-contract/src/delivery-matrix.json:1-65`；`04_tools/scripts/audit/regression.mjs:6-18` |
+| 当前行为 | [FACT][E-AU-002-018/019/020][E-AU-008-014] 目录只有9个文件；两个生成domain模块存在但Miniapp运行引用为0，contractgen预留的`miniprogram/api/client.js`不存在，且无app.json/pages/navigation/actions。navigation正式命令必现ENOENT；test topology只见app.js就通过；candidate无条件复制全部9文件；delivery matrix又把已被regression标为retired、当前不存在的wechat-miniapp路径作为四项implemented能力证据 |
 | 预期行为 | 若 Miniapp 是 required/current client，构建、测试、导航、runtime compatibility、candidate 和 delivery matrix 应共享同一最小可启动拓扑；若已外置或下线，机器契约应明确指向真实所有者/制品 |
-| 直接证据 | E-AU-002-018、E-AU-002-019、E-AU-002-020、T-AU-002-003/005/009 |
-| 调用链或运行入口 | generate scripts → 8 outputs；微信 runtime → app.js；quality → navigation/runtimegraph/tests；release → candidate clients/miniapp；contract → delivery matrix |
+| 直接证据 | E-AU-002-018、E-AU-002-019、E-AU-002-020、E-AU-008-014、T-AU-002-003/005/009 |
+| 调用链或运行入口 | build-miniapp-contract/contractgen条件输出 → 当前2个domain模块与缺失api client；微信runtime → app.js；quality → navigation/runtimegraph/tests；release → candidate clients/miniapp；contract → delivery matrix |
 | 用户影响 | [UNKNOWN] 本仓库无法重建/导航一个完整 Miniapp；是否有外部工程持续供给线上小程序未验证 |
 | 数据影响 | [UNKNOWN] delivery matrix 声称 cart/order/payment 能力 implemented，但当前证据文件不存在；不能推导线上写入是否缺失 |
 | 安全影响 | [UNKNOWN] 缺 API client 无法审阅身份/header/权限边界，但不等于已存在漏洞 |
@@ -763,11 +763,11 @@
 | 类型 | 隐式共享可变状态、配置完整性 |
 | 严重级别 | P2 |
 | 置信度 | 高：隔离Node进程直接观察并改变resolver与共享deadline结果；固定基线未找到现有写调用 |
-| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17 |
-| 当前行为 | [FACT][E-AU-006-006] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功 |
+| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17；`services/commerce/src/app/events.ts`；`RuntimeEventPublisher.ts` |
+| 当前行为 | [FACT][E-AU-006-006][E-AU-008-011] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功。生成的`EVENT_HANDLERS`同样导出可变Map singleton；当前仓库未发现set/delete/clear调用 |
 | 预期行为 | Manifest/Registry/Topology及共享容量/缓存参数作为进程权威，在解析/生成后应不可被消费者改写，或消费者获得隔离副本 |
-| 直接证据 | E-AU-006-006、T-AU-006-004、RS-AU-006-002、INV-AU-006-006 |
-| 调用链或运行入口 | JSON/YAML生成物 module import → exported singleton → Identity/Console/generator/check或HTTP/Pool/cache/SDK consumers |
+| 直接证据 | E-AU-006-006、E-AU-008-011、T-AU-006-004、RS-AU-006-002、INV-AU-006-006、FM-AU-008-005 |
+| 调用链或运行入口 | JSON/YAML生成物 module import → exported singleton → Identity/Console/generator/check或HTTP/Pool/cache/SDK consumers；events.ts Map → RuntimeEventPublisher → inbox/job |
 | 用户影响 | 若任一同进程消费者意外修改嵌套对象，后续Host/资源ref或timeout/cache/capacity行为可随加载顺序漂移 |
 | 数据影响 | 不修改仓库或数据库，但会改变进程内配置事实；重启恢复原JSON |
 | 安全影响 | 可改变节点/域名选择边界；当前未发现生产写入点，故不升级P1 |
@@ -919,7 +919,7 @@
 | 数据影响 | handler专用schema通常在写入前拒绝，降低部分写风险；尚未逐345项确认所有handler均如此 |
 | 安全影响 | 本项不证明绕过授权；弱通用schema不能被当成请求安全边界 |
 | 根因 | 目录从 structural 升名为 named 时只加入字段allowlist/名称，生产运行时校验随后被明确移除；OpenAPI required规则、SDK类型和测试没有同步重定义 |
-| 建议方向 | AU-008先完成生成物/SDK/handler矩阵；后续按单一业务链决定以专用schema生成真正契约，或诚实降级通用目录语义，不能一次批量猜字段类型 |
+| 建议方向 | AU-008已完成生成物/SDK/运行壳矩阵；后续按单一业务链决定以专用schema生成真正契约，或诚实降级通用目录语义，不能一次批量猜字段类型 |
 | 预计修改范围 | definitions/schema generator、OpenAPI、SDK types/runtime、Controller/handler边界及兼容测试；可能跨多个小批次 |
 | 验证方式 | 每批选一条Operation执行同一payload矩阵：TypeScript编译、schema.parse、OpenAPI validator、SDK发送、HTTP入口、handler；接受/拒绝集合必须一致 |
 | 回滚方式 | 生成器、定义和全部生成物保持同一提交；保留旧OpenAPI/SDK兼容版本，不在审计分支修改 |
@@ -933,11 +933,11 @@
 | 类型 | 版本兼容、制品身份、异步路由 |
 | 严重级别 | P2 |
 | 置信度 | 高：投影与反事实确定；线上是否消费checksum未知 |
-| 文件和精确位置 | contractgen/ContractGenerator.ts:61-65,275-327；events.yml；generated ContractIdentity、app/events.ts、database/contracts/current.sql |
-| 当前行为 | [FACT][E-AU-007-007] checksum的Event部分只含 type/version/module；database event row还含schema，runtime registry还含handlers。内存反事实只改schema与handlers后，checksum输入不变而两个输出均变化 |
+| 文件和精确位置 | contractgen/ContractGenerator.ts:61-65,275-327；events.yml；generated ContractIdentity、app/events.ts、database/contracts/current.sql；`04_tools/scripts/release/candidate.mjs:19-52`；generated `events.json` |
+| 当前行为 | [FACT][E-AU-007-007][E-AU-008-013] checksum的Event部分和公开`events.json`都只含type/version/module；database event row还含schema，runtime registry还含handlers。内存反事实只改schema与handlers后，checksum输入不变而两个输出均变化；release candidate的`contractHash`又只对OpenAPI与这份稀疏events.json原始字节求哈希，因此也不会因单独修改event schema/handlers而旋转。commit与Commerce OCI hash仍提供其它制品溯源 |
 | 预期行为 | 能改变事件载荷契约或消费者路由的定义变化必须旋转可追溯身份，或有独立、同等强度的schema/routing版本与校验 |
-| 直接证据 | E-AU-007-007/016、INV-AU-007-006、FM-AU-007-004、RS-AU-007-004 |
-| 调用链或运行入口 | events.yml → checksum/event artifacts/app events/current.sql → RuntimeEventPublisher/数据库发布 |
+| 直接证据 | E-AU-007-007/016、E-AU-008-013、INV-AU-007-006、FM-AU-007-004、FM-AU-008-006、RS-AU-007-004 |
+| 调用链或运行入口 | events.yml → checksum/events.json/app events/current.sql → RuntimeEventPublisher/数据库发布；openapi.json + events.json → candidate contractHash → stage/promote/validate |
 | 用户影响 | 事件定义或handler路由变更可能在相同contract identity下发布，使回滚、兼容诊断和制品对账失真 |
 | 数据影响 | 错误handler或schema兼容会影响projection/notification/reconciliation/referral等派生数据；当前无事件变更或live积压证据 |
 | 安全影响 | 无直接权限绕过证据 |
@@ -1045,3 +1045,78 @@
 - [STALE][E-AU-007-016] 当前生成 checksum 与旧 Release/runtime migration checksum 不同，但历史已明确移除 database.contract 的 runtime 阻断责任；未读取线上数据库前，不把静态差异写成事故。
 - [UNKNOWN][E-AU-007-008] 81个runtime非GET/`writePath=none`中每条业务是否应进入统一执行内核，必须按模块不变量确认；本AU不作批量推断。
 - [UNKNOWN] 线上Operation/Event/Error发布状态、current.sql应用者、外部SDK/OpenAPI消费者和实际错误/事件数量均未验证。
+
+## F-0044｜SDK proof 请求被生产 CORS 预检阻断
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | SDK / Console / Commerce HTTP |
+| 类型 | API契约、浏览器跨域、测试可信度 |
+| 严重级别 | P2 |
+| 置信度 | 高（固定基线代码链确定）；线上制品与调用频率未知 |
+| 文件和精确位置 | `packages/sdk/src/client/ApiClient.ts:99-117`；`apps/console/src/feature/finance/FinancePolicyCommand.ts:224-236`；`apps/console/src/feature/access/OwnerTransferQuery.ts:75-145,219-233`；`services/commerce/src/foundation/interface/HttpApp.ts:167-173`；`quality/tests/browser/OperationMock.ts:125-133`；`HttpApp.test.ts:168-175` |
+| 当前行为 | [CONFLICT][E-AU-008-005/006] SDK把调用者提供的proof发送为`x-action-proof`；Finance policy和Owner transfer真实Console链会提供该值。Console与API由SFL声明为不同origin，但生产preflight的allow-headers没有该头，浏览器因此不会发送真实命令。OperationMock反而允许该头，HttpApp测试只断言access/device头 |
+| 预期行为 | 生产CORS、客户端SDK、浏览器mock和HTTP测试应共享同一可审计请求头契约，所有真实浏览器命令应能通过预检后再由服务端身份/授权链裁决 |
+| 直接证据 | E-AU-008-005、E-AU-008-006、INV-AU-008-002、FM-AU-008-001 |
+| 调用链或运行入口 | Console finance/owner command → generated SDK client → ApiClient → FetchTransport → browser OPTIONS → HttpApp.preflight；当前在真实请求前终止 |
+| 用户影响 | 使用这些proof能力的Console操作会表现为浏览器网络/CORS失败；线上实际发生频率未验证 |
+| 数据影响 | 预检失败发生在真实请求前，因此该次请求无数据库写入；用户重试也不会到达handler |
+| 安全影响 | 本项没有绕过认证或授权；它是合法高风险操作的可用性阻断，不能通过删除proof规避 |
+| 根因 | SDK proof header与生产HTTP CORS白名单分别维护，mock和测试又采用不同列表，没有统一契约或真实跨域反事实 |
+| 建议方向 | 后续独立修复批次只统一现有header契约与测试，不新增权限或改变proof语义；先确认当前主线是否已另行处理 |
+| 预计修改范围 | HttpApp CORS白名单、对应preflight测试与browser mock一致性测试；不应触及业务handler |
+| 验证方式 | 真实Console origin的OPTIONS包含`x-action-proof`应非阻断，再验证请求到达既有身份/授权边界；无proof和非法origin反例保持原行为 |
+| 回滚方式 | 单一HTTP契约提交回退；本审计分支未实施 |
+| 是否需要独立复核 | 否（P2）；若线上确认关键操作普遍不可用，再评估升级 |
+
+## F-0045｜runtimegraph 仍强制已经正式退出的版本契约
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Quality / Runtime graph / Miniapp |
+| 类型 | 门禁漂移、错误质量信号 |
+| 严重级别 | P2 |
+| 置信度 | 高（历史决策、源码和token复算一致） |
+| 文件和精确位置 | `04_tools/scripts/audit/runtimegraph.mjs:16-30`；`packages/sdk/src/client/ApiClient.ts`及测试；`services/commerce/src/foundation/interface/HttpApp.ts`及测试；缺失的`apps/miniapp/miniprogram/api/client.js`；提交`57c1177d42bfe3a36777d9e8bbb29d852cb36d8b` |
+| 当前行为 | [STALE][E-AU-008-007/008] 正式`check:runtimegraph`仍要求SDK发送`x-contract-version`、Miniapp client含同名header、HttpApp含`CONTRACT_VERSION_UNSUPPORTED`和426；2026-09-13提交已明确退出这些runtime检查并更新实现/测试，却未更新checker。checker还同步读取不存在的Miniapp文件，会在统一report前抛ENOENT。本环境更早因缺`typescript`退出 |
+| 预期行为 | 正式架构门禁应验证当前批准的运行契约，并把缺文件/缺token作为结构化检查结果；不能把已退休行为或不存在的客户端当成功标准 |
+| 直接证据 | E-AU-008-007、E-AU-008-008、INV-AU-008-004、FM-AU-008-002 |
+| 调用链或运行入口 | `npm run check:runtimegraph` → `audit:architecture` / `quality:canonical-hard-cut` → required file/token读取；当前依赖完整时仍会命中旧期望或ENOENT |
+| 用户影响 | 正确实现会被正式质量入口阻断，或团队被迫忽略门禁，从而降低后续架构漂移检测可信度 |
+| 数据影响 | 无直接运行数据写入 |
+| 安全影响 | 无直接权限影响；旧版本头也不得被当成当前安全边界 |
+| 根因 | 退出旧contract-version运行阻断的提交没有同步门禁事实表，且checker缺少缺文件容错和自身反事实fixture |
+| 建议方向 | 后续独立门禁批次根据当前产品决定重写required表和缺文件报告；不恢复已退出的runtime阻断，不顺手补造Miniapp工程 |
+| 预计修改范围 | runtimegraph checker及其fixture/测试；若Miniapp所有权另有定稿，应由独立产品批次处理 |
+| 验证方式 | 对每个当前required事实做存在/缺失反事实；缺文件必须得到稳定报告；正式入口在依赖完整环境执行一次 |
+| 回滚方式 | checker单一提交回退；本审计分支未实施 |
+| 是否需要独立复核 | 否（P2） |
+
+## F-0046｜WechatTransport 可违反字符串响应契约并留下悬空 Promise
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | SDK / Wechat transport |
+| 类型 | 正确性、边界值、异步恢复、测试缺口 |
+| 严重级别 | P3 |
+| 置信度 | 高（语言级控制流）；微信实际响应形态和仓外消费者未知 |
+| 文件和精确位置 | `packages/sdk/src/client/WechatTransport.ts:22-61`；`Transport.ts:9-16`；`ApiClient.ts:69-79,122-124`；`WechatTransport.test.ts` |
+| 当前行为 | [FACT][E-AU-008-009] `TransportResponse.body`要求string，Wechat success却直接使用`JSON.stringify(response.data)`：undefined会得到undefined并在ApiClient的`body.length`处失败；BigInt或循环对象会抛错。实现先把`settled=true`并移除abort listener再序列化，抛错后Promise既不resolve也不reject。测试只覆盖abort |
+| 预期行为 | 任意native callback都应把Promise恰好settle一次，且成功响应必须规范化为string；序列化失败应形成确定reject并保留取消/超时恢复语义 |
+| 直接证据 | E-AU-008-009、INV-AU-008-003、FM-AU-008-003、FM-AU-008-004 |
+| 调用链或运行入口 | `createWechatCommerce` → ApiClient → WechatTransport → `wx.request` success callback → stringify → ApiClient.decode；固定仓库没有生产caller |
+| 用户影响 | 仓外或未来微信消费者可能把成功响应误报为失败，或一直等待到上游超时 |
+| 数据影响 | 若写请求已在服务端成功而客户端误判，用户重试可能重复请求；SDK对非幂等操作限制自动重试，但人工重试影响未知 |
+| 安全影响 | 未发现凭据泄露或权限绕过 |
+| 根因 | unknown原生数据被直接断言为string契约，并在可能抛错的序列化之前提前进入settled状态 |
+| 建议方向 | 后续独立adapter批次先定义undefined/非JSON值的响应规范，再保证序列化异常reject；不在审计分支修改 |
+| 预计修改范围 | WechatTransport与其定向测试；必要时补Transport契约说明，不触及生成operation clients |
+| 验证方式 | string/object/undefined/BigInt/cycle、success/fail、abort-before/during/after、重复callback矩阵，断言每例恰好settle一次 |
+| 回滚方式 | adapter单一提交回退；本审计分支未实施 |
+| 是否需要独立复核 | 否（P3）；若确认存在当前生产调用或重复写，再重新定级 |
+
+## 9. AU-008 新增未定级事项
+
+- [UNKNOWN] 线上Console/API是否运行固定基线、proof命令的真实调用频率与F-0044实际用户影响均未验证；本AU未访问线上。
+- [UNKNOWN] `@shop/sdk`仓外消费者、外部Miniapp工程/微信发布流水线和人工应用`database/contracts/current.sql`的历史流程均未排除。
+- [UNVERIFIED][E-AU-008-008] SDK test/typecheck、Miniapp generated check与runtimegraph均在业务逻辑前因本地依赖缺失阻塞；没有任何一项被写成通过或实现失败。

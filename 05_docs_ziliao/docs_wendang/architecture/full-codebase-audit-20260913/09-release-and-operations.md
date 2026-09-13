@@ -124,3 +124,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - [UNKNOWN] GitHub 生成检查是否在当前依赖完整环境通过、外部 OpenAPI/SDK 消费者、数据库实际发布行和活跃事件 backlog 均未核验。
 
 本 AU 未运行生成写模式、未构建或发布制品、未推送、未部署。
+
+## 11. AU-008 生成制品身份与候选传播
+
+- [FACT][E-AU-008-013] candidate的`contractHash`是`SHA-256(openapi.json原始字节 + events.json原始字节)`，固定基线值为`9bc19d393714c7e9b70e89e0d18c263ca8d6c4097665ab7086a5b366fb70b4d4`。
+- `events.json`只含type/version/module，event schema/handlers变化不会旋转该字段，补强F-0039；但Commerce OCI、commit、SBOM和candidate/stage证据仍提供其它溯源，不能夸大为全部制品不可追踪。
+- SDK operation代码由Console/Auth/Storefront各自目录hash进入候选，Commerce generated shells由OCI hash覆盖；Miniapp两个domain模块随全部9文件进入Miniapp目录hash。`current.sql`不进入candidate。
+- stage、promote、validate和validatebundle继续传播并核对这些分层hash。本AU只读源码并本地复算，未构建候选、未读取线上release、未推送、未部署。

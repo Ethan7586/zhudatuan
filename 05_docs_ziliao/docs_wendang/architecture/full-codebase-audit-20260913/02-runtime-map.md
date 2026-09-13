@@ -570,3 +570,31 @@ Event schema和handlers不进入checksum（F-0039）。Error正式门禁扫描�
 ### 15.3 生成与失败
 
 contractgen `--check`逐目标读比；写模式逐文件直接覆盖。任何后段目标失败都可能留下前序新、后序旧的混合工作树；Controller/Handler文本加固的replace不验证命中（F-0042）。本AU没有运行写模式。
+
+## 16. AU-008：生成制品到运行与发布
+
+| 生成对象 | 真实加载者 | 运行/发布终点 | 失败与恢复边界 |
+| --- | --- | --- | --- |
+| 35个SDK operation文件 | Console 42、Storefront 13、Auth 6个非测试源码文件；Miniapp 0 | ApiClient → Fetch/Wechat Transport | frozen/缺版本/缺幂等键传输前拒绝；HTTP错误按RetryPolicy处理 |
+| OperationController/Handler | DefinedModule、RouteRegistry | AccessPipeline → ModuleOperations/handler | missing、duplicate、frozen在route freeze前拒绝；只注册271个runtime |
+| EVENT_HANDLERS | app/modules、RuntimeEventPublisher | runtime.inbox + runtime.job | 未知type/version在事务前拒绝；接收与排队同事务；Map仍可变见F-0032 |
+| OpenAPI + events.json | release candidate | `contractHash=9bc19d393714c7e9b70e89e0d18c263ca8d6c4097665ab7086a5b366fb70b4d4` | event schema/handlers不旋转该字段；其它字节另由commit/OCI/client hash覆盖 |
+| current.sql | contractgen写入、Voucher contract test读取 | 无已证明runtime/release/migration loader | 外部人工执行UNKNOWN；保留快照/测试责任 |
+| Miniapp deeplink/experience | 运行引用0；candidate复制整个9文件目录 | Miniapp目录hash | 完整工程/发布链UNKNOWN；runtimegraph还读取不存在api client |
+
+### 16.1 浏览器同步链
+
+~~~text
+Console command
+  → generated SDK operation
+  → ApiClient（path/query/header/body/deadline/retry）
+  → FetchTransport
+  → browser CORS preflight
+  → HttpApp route/CSRF/gate/handler
+~~~
+
+`x-action-proof`在SDK与真实Console调用中存在，但生产preflight未允许，链路在真正HTTP请求前终止（F-0044）。ApiClient与HttpApp已经退出旧`x-contract-version`运行阻断；runtimegraph仍要求旧行为（F-0045）。
+
+### 16.2 微信异步链
+
+`createWechatCommerce`是公开factory但固定仓库无生产caller。WechatTransport把AbortSignal传到native task；success分支却可能产出非string或在已settled后抛序列化异常，使Promise无法完成（F-0046）。这不证明线上Miniapp受影响，外部消费者仍为UNKNOWN。

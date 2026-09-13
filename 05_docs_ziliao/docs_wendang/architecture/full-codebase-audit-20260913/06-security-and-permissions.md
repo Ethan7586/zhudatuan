@@ -71,3 +71,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - [UNKNOWN] 未读取线上角色、membership grants、entitlement 或真实请求日志，因此不能把 F-0036 写成已发生的越权事故，也不能用静态 fixture 证明线上无人可达。
 
 本 AU 没有修改权限、凭据、会话或线上状态。
+
+## 9. AU-008 proof 与跨域权限接缝
+
+- [FACT][E-AU-008-005/006] `x-action-proof`由SDK显式透传，Finance policy和Owner transfer的Console调用会提供；proof值未被本审计记录。
+- [CONFLICT] Console与API是不同origin，生产HttpApp的CORS预检白名单遗漏该头，真实请求在身份/业务授权之前被浏览器阻断；browser mock却允许。这是F-0044/P2可用性缺陷，不是授权绕过。
+- 修复方向不得删除proof、缩短授权链或新增权限规则；只应在未来独立批次统一现有客户端/HTTP/mock头契约，并验证请求仍由既有AccessPipeline裁决。
+- WechatTransport和release检查未发现凭据写入报告或制品的新证据；线上bundle与日志未读取，保持UNKNOWN。本AU未修改任何权限、凭据、会话或线上状态。

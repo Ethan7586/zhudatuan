@@ -203,7 +203,7 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 
 [FACT] AU-006深入审阅35个人工文件、6,151行，结构性审阅62个人工文件、8,947行，核对7个自动生成文件、1,070行；合计104文件、16,168行。
 
-## 10. AU-007 契约模块清单
+## 13. AU-007 契约模块清单
 
 | 子模块 | 职责 | 对外入口 | 上游 | 下游/数据所有权 | 发布单元 | 测试 | 当前边界 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -217,3 +217,19 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Contract public utilities | ClientPage、Password、DeepLink、Experience、FinancialAction | package root/subpaths | App/SDK/工具 | 调用者 | contract package | 对应unit | DeepLink边界F-0043；部分零仓内消费者为G1 |
 
 [FACT] AU-007深入审阅41个人工文件、12,089行，结构性反追28个人工文件、3,976行，核对48个生成文件、103,131行；合计117文件、119,196行。
+
+## 14. AU-008 生成契约运行模块清单
+
+| 子模块 | 职责 | 对外入口 | 上游调用者 | 下游/数据所有权 | 运行进程/发布单元 | 测试范围 | 当前边界 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| SDK generated domains | 345个Operation的typed factory与domain聚合 | `@shop/sdk/*`、CommerceClient | Console/Storefront/Auth及仓外消费者 | ApiClient；不拥有数据 | Web client bundles/各目录hash | factory/frozen集合 | 生成集合一致；公共ID数组G1 |
+| SDK ApiClient | 请求构造、deadline、幂等前置、重试、decode | ApiClient/create*Commerce | generated domains | Transport → HTTP API | 浏览器/微信client bundle | 版本退出、headers、abort | proof与生产CORS冲突F-0044；retry直接测试缺口 |
+| Browser Fetch transport | fetch、credentials、redirect、AbortSignal | FetchTransport | ApiClient | 浏览器网络 | Web clients | signal传递 | 依赖HttpApp CORS契约 |
+| Wechat transport | `wx.request`适配Transport | createWechatCommerce | 仓内生产caller为0 | 微信native request | 潜在Miniapp/外部bundle | 仅abort | body/settle违约F-0046；G1兼容面 |
+| Commerce generated HTTP shells | runtime route/handler描述与授权元数据 | OperationController/Handler | RouteRegistry/DefinedModule | AccessPipeline/ModuleOperations | Commerce OCI | RouteRegistry/契约测试 | 271 runtime齐全；领域handler留后续AU |
+| Commerce event registry | event version与handler路由 | COMMERCE_EVENTS/EVENT_HANDLERS | modules/publisher | runtime inbox/job表 | Commerce API/Jobs OCI | Event结构测试 | 67项齐全；可变Map归F-0032 |
+| Generated contract artifacts | OpenAPI、events JSON、current.sql | contract package/files | check/release/test | 文档、制品identity、DB测试oracle | npm/workspace、release metadata | generated/contract checks | `contractHash`覆盖有限F-0039；current.sql无运行loader |
+| Miniapp generated fragment | DeepLink/Experience CommonJS投影 | 两个domain JS文件 | candidate；运行caller为0 | 外部Miniapp UNKNOWN | 9文件目录hash | generated check受依赖阻塞 | 完整工程冲突F-0006；runtimegraph漂移F-0045 |
+| Runtime graph checker | 架构token/文件存在性门禁 | `check:runtimegraph` | audit/quality scripts | 源码只读扫描 | CI/本地质量入口 | 无自有反事实fixture | 仍要求退休契约并读缺文件F-0045 |
+
+[FACT] AU-008深入审阅32个人工文件、1,835行，结构性反追31个人工文件、4,047行，核对43个自动生成文件、76,940行；合计106文件、82,822行。
