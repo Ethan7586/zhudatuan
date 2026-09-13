@@ -58,6 +58,12 @@ export const OperatorIdentityPage: React.FC<Readonly<{
     void loadInvite(initialInvite);
   }, []);
 
+  useEffect(() => {
+    if (initialInvite) return;
+    const timer = window.setTimeout(preloadCanonicalIdentity, 0);
+    return () => window.clearTimeout(timer);
+  }, [initialInvite]);
+
   const changeMode = (next: PageMode) => {
     identityActions.cancel();
     setMode(next);
