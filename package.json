@@ -117,6 +117,8 @@
     "test:environment-bootstrap": "node 04_tools/scripts/audit/database-contracts.mjs --environment-bootstrap",
     "test:identity-realms": "node 04_tools/scripts/audit/identity-realm-isolation.pg17-fixture.mjs",
     "evidence:e12": "node 04_tools/scripts/audit/identity-realm-isolation.pg17-fixture.mjs",
+    "test:e07-continuity": "node 04_tools/scripts/audit/e07-continuity.pg17-fixture.mjs",
+    "evidence:e07": "node 04_tools/scripts/audit/e07-continuity.pg17-fixture.mjs",
     "test:supplier-four-flow": "node 04_tools/scripts/audit/supplier-four-flow.pg17-fixture.mjs",
     "evidence:e08": "node 04_tools/scripts/audit/supplier-four-flow.pg17-fixture.mjs",
     "test:e09-recovery": "node 04_tools/scripts/audit/e09-recovery.pg17-fixture.mjs",
