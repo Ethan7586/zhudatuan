@@ -290,6 +290,12 @@ jobs:
             --plan .ci-release/plan.json \
             --format json > .ci-release/build-envelope.json
 
+      - name: Check H5 performance budget outside deployment
+        run: |
+          if node -e "const p=require('./.ci-release/plan.json');process.exit((p.targets||[]).includes('storefront')?0:1)"; then
+            npm run verify:h5-performance --workspace @smart-wing/storefront-web
+          fi
+
       - name: Package immutable target artifacts
         run: |
           node 04_tools/release-engine/cli.mjs package \
