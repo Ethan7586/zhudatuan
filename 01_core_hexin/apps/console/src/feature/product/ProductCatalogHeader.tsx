@@ -7,6 +7,7 @@ interface ProductCatalogHeaderProps {
   readonly partnerWorkspace: boolean;
   readonly workspace: 'catalog' | 'selection' | 'free';
   readonly onWorkspace: (workspace: 'catalog' | 'selection' | 'free') => void;
+  readonly onWorkspaceIntent?: (workspace: 'catalog' | 'selection' | 'free') => void;
   readonly status: string;
   readonly onStatus: (status: string) => void;
   readonly exportReady: boolean;
@@ -30,7 +31,7 @@ const tabs = Object.freeze([
   { key: 'unpublished', label: '已下架' },
 ] as const);
 
-export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, workspace, onWorkspace, status, onStatus, exportReady, writeEnabled, releaseDisabledReason,
+export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, workspace, onWorkspace, onWorkspaceIntent, status, onStatus, exportReady, writeEnabled, releaseDisabledReason,
   releasePending, publicationTask, releaseFeedback, onImport, onCreate, onExport, onRelease, onRetry }: ProductCatalogHeaderProps) {
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
   const coreTotal = preview === undefined ? page?.total_count : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
@@ -47,11 +48,17 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
           <div>
             {partnerWorkspace ? <><h1>我的商品</h1>{coreTotal === undefined ? null : <strong>{formatCount(coreTotal)}</strong>}</> : (
               <><h1 className="sr-only">商品管理</h1><nav className="productworkspacetabs" aria-label="商品工作区">
-                <button type="button" aria-current={workspace === 'catalog' ? 'page' : undefined} onClick={() => onWorkspace('catalog')}>
+                <button type="button" aria-current={workspace === 'catalog' ? 'page' : undefined}
+                  onPointerEnter={() => onWorkspaceIntent?.('catalog')} onFocus={() => onWorkspaceIntent?.('catalog')}
+                  onPointerDown={() => onWorkspaceIntent?.('catalog')} onClick={() => onWorkspace('catalog')}>
                   商品目录{workspace !== 'catalog' || coreTotal === undefined ? null : <strong>{formatCount(coreTotal)}</strong>}
                 </button>
-                <button type="button" aria-current={workspace === 'selection' ? 'page' : undefined} onClick={() => onWorkspace('selection')}>选品中心</button>
-                <button type="button" aria-current={workspace === 'free' ? 'page' : undefined} onClick={() => onWorkspace('free')}>自有商品</button>
+                <button type="button" aria-current={workspace === 'selection' ? 'page' : undefined}
+                  onPointerEnter={() => onWorkspaceIntent?.('selection')} onFocus={() => onWorkspaceIntent?.('selection')}
+                  onPointerDown={() => onWorkspaceIntent?.('selection')} onClick={() => onWorkspace('selection')}>选品中心</button>
+                <button type="button" aria-current={workspace === 'free' ? 'page' : undefined}
+                  onPointerEnter={() => onWorkspaceIntent?.('free')} onFocus={() => onWorkspaceIntent?.('free')}
+                  onPointerDown={() => onWorkspaceIntent?.('free')} onClick={() => onWorkspace('free')}>自有商品</button>
               </nav></>
             )}
             <small>{partnerWorkspace ? '维护商品资料与平台采用状态' : workspace === 'selection'

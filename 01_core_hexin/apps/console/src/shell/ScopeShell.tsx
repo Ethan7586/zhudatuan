@@ -56,8 +56,6 @@ export function ScopeShell() {
   const brandSubtitle = context.scope.kind === 'mall' ? '商城运营后台' : '经营与权限管理';
   const activeRoute = profileRoute ? 'profile' : activeModule?.id;
   const navigationItems = selectConsoleNavigationItems(consoleModules, context.scope.kind, context.session.capabilities);
-  const navigationModuleIds = navigationItems.map(({ moduleId }) => moduleId);
-  const navigationModuleKey = navigationModuleIds.join('|');
   const mainNavigationItems = navigationItems.filter(({ placement }) => placement === 'main');
   const bottomNavigationItems = navigationItems.filter(({ placement }) => placement === 'bottom');
   const logout = async () => {
@@ -165,55 +163,6 @@ export function ScopeShell() {
     if (moduleId === 'support') void prepareSupport();
   }, [prepareApplications, prepareFinance, prepareMembers, prepareOrders, prepareProducts, prepareSupplyChain, prepareSupport]);
 
-  useEffect(() => {
-    const productAvailable = context.session.capabilities.includes('catalog.listings.read');
-    const supplyChainAvailable = context.session.capabilities.includes('catalog.listings.read');
-    const memberAvailable = context.scope.kind === 'mall' && context.session.capabilities.includes('member.members.read');
-    const supportAvailable = context.session.capabilities.includes('support.cases.read');
-    const applicationAvailable = context.session.capabilities.includes('experience.applications.read');
-    const orderAvailable = context.session.capabilities.includes('order.orders.read');
-    const financeAvailable = context.session.capabilities.includes('finance.overview.read')
-      || context.session.capabilities.includes('finance.reconciliations.read');
-    if (!productAvailable && !supplyChainAvailable && !memberAvailable && !supportAvailable
-      && !applicationAvailable && !orderAvailable && !financeAvailable) return undefined;
-    const prepare = async () => {
-      await Promise.all([
-        ...navigationModuleIds
-          .filter((moduleId) => moduleId !== activeModule?.id)
-          .map((moduleId) => preloadConsoleModule(moduleId, 'idle')?.catch(() => undefined)),
-        activeModule?.id !== 'products' && productAvailable
-          ? preloadConsoleModule('products', 'idle')?.catch(() => undefined).then(() => prepareProducts())
-          : undefined,
-        activeModule?.id !== 'supply-chain' && supplyChainAvailable
-          ? preloadConsoleModule('supply-chain', 'idle')?.catch(() => undefined).then(() => prepareSupplyChain())
-          : undefined,
-        activeModule?.id !== 'support' && supportAvailable
-          ? preloadConsoleModule('support', 'idle')?.catch(() => undefined).then(() => prepareSupport())
-          : undefined,
-        activeModule?.id !== 'applications' && applicationAvailable
-          ? preloadConsoleModule('applications', 'idle')?.catch(() => undefined).then(() => prepareApplications())
-          : undefined,
-        activeModule?.id !== 'orders' && orderAvailable
-          ? preloadConsoleModule('orders', 'idle')?.catch(() => undefined).then(() => prepareOrders())
-          : undefined,
-        activeModule?.id !== 'finance' && financeAvailable
-          ? preloadConsoleModule('finance', 'idle')?.catch(() => undefined).then(() => prepareFinance())
-          : undefined,
-      ]);
-      if (activeModule?.id !== 'products' && activeModule?.id !== 'access' && memberAvailable) {
-        await preloadConsoleModule('access', 'idle')?.catch(() => undefined);
-        prepareMembers();
-      }
-    };
-    if (typeof window.requestIdleCallback === 'function') {
-      const idle = window.requestIdleCallback(() => { void prepare(); }, { timeout: 1_000 });
-      return () => window.cancelIdleCallback(idle);
-    }
-    const timer = window.setTimeout(() => { void prepare(); }, 200);
-    return () => window.clearTimeout(timer);
-  }, [activeModule?.id, context.scope.id, context.scope.kind, context.session.capabilities,
-    context.session.membership, navigationModuleKey, prepareApplications, prepareFinance, prepareMembers, prepareOrders,
-    prepareProducts, prepareSupplyChain, prepareSupport]);
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
     if (next !== undefined) navigateAfterCancel(`${scopePath(next, currentSuffix || 'cockpit')}${location.search}`);

@@ -75,7 +75,8 @@ export function ProductSelectionCenter({ rows, query, selected, canSelect, pendi
         <div className="selectionempty"><ProductIcon name="inventory" /><strong>当前条件下没有可选商品</strong><span>换一个关键词或来源继续查看。</span></div>
       ) : (
         <div className="selectiongrid" aria-label="选品商品池">
-          {visible.map((row) => <SelectionCard key={row.id} row={row} checked={selected.has(row.id)}
+          {visible.map((row, index) => <SelectionCard key={row.id} row={row} checked={selected.has(row.id)}
+            aboveFold={index < 4}
             canSelect={canSelect} pending={pending} onToggle={() => onToggle(row.id)} onSelect={() => onSelect([row.id])} />)}
         </div>
       )}
@@ -106,9 +107,10 @@ function LensButton({ active, title, detail, onClick }: Readonly<{
   </button>;
 }
 
-function SelectionCard({ row, checked, canSelect, pending, onToggle, onSelect }: Readonly<{
+function SelectionCard({ row, checked, aboveFold, canSelect, pending, onToggle, onSelect }: Readonly<{
   row: Listing;
   checked: boolean;
+  aboveFold: boolean;
   canSelect: boolean;
   pending: boolean;
   onToggle: () => void;
@@ -120,7 +122,8 @@ function SelectionCard({ row, checked, canSelect, pending, onToggle, onSelect }:
     <article className="selectioncard" data-selected={detail.selected ? 'true' : undefined}>
       <div className="selectionmedia">
         {row.cover_url == null || row.cover_url === '' ? <ProductIcon name="cube" /> : (
-          <img src={row.cover_url} alt="" loading="lazy" decoding="async"
+          <img src={row.cover_url} alt="" width="320" height="148"
+            loading={aboveFold ? 'eager' : 'lazy'} fetchPriority={aboveFold ? 'high' : 'low'} decoding="async"
             onError={(event) => { event.currentTarget.hidden = true; }} />
         )}
         <span className="selectionsource">{detail.sourceChannel}</span>

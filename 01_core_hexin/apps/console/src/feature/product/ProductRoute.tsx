@@ -1,4 +1,4 @@
-import { ResourceState } from '@shop/design';
+import { ResourceState, WorkspacePanelSkeleton } from '@shop/design';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
@@ -14,6 +14,7 @@ import { ProductFilterForm } from './ProductFilter';
 import { canCreateCatalogImport } from './ProductImportCommand';
 import { ProductImportDialog } from './ProductImportDialog';
 import { ProductPagination } from './ProductPagination';
+import { prefetchProductSelection } from './ProductPrefetch';
 import { ProductSelectionCenter } from './ProductSelectionCenter';
 import { canSelectProducts, selectProducts } from './ProductSelectionCommand';
 import { canManageListing, canReadPublicationTask, publishReadyListings, readPublicationTask,
@@ -57,8 +58,9 @@ export function Component() {
   const selectionWorkspace = !partnerWorkspace && search.get('workspace') === 'selection';
   const freeWorkspace = !partnerWorkspace && search.get('workspace') === 'free';
   const previewScope = context.scope.kind === 'platform' && context.scope.id === 'platform:preview';
-  const limitValue = Number(search.get('limit') ?? 50);
-  const limit = pageSizes.has(limitValue) ? limitValue : 50;
+  const defaultPageSize = selectionWorkspace ? 20 : 50;
+  const limitValue = Number(search.get('limit') ?? defaultPageSize);
+  const limit = pageSizes.has(limitValue) ? limitValue : defaultPageSize;
   const pageValue = Number(search.get('page') ?? 1);
   const page = Number.isSafeInteger(pageValue) && pageValue > 0 ? pageValue : 1;
   const filter: ProductQuery = {
@@ -228,6 +230,10 @@ export function Component() {
     void navigate(scopePath(context.scope, `imports/catalog/${encodeURIComponent(jobId)}`));
   };
 
+  const prepareWorkspace = (workspace: 'catalog' | 'selection' | 'free') => {
+    if (workspace === 'selection') void prefetchProductSelection(queryClient, context);
+  };
+
   const changeWorkspace = (workspace: 'catalog' | 'selection' | 'free') => {
     const next = new URLSearchParams();
     if (workspace === 'selection') next.set('workspace', 'selection');
@@ -241,7 +247,7 @@ export function Component() {
     const next = new URLSearchParams();
     next.set('workspace', 'selection');
     if (value !== '') next.set('q', value);
-    if (limit !== 50) next.set('limit', String(limit));
+    if (limit !== defaultPageSize) next.set('limit', String(limit));
     cursorTrail.current = new Map([[1, undefined]]);
     setSelected(new Set());
     setSearch(next);
@@ -301,7 +307,7 @@ export function Component() {
     changeSearch((next) => {
       next.delete('cursor');
       next.delete('page');
-      if (nextLimit === 50) next.delete('limit');
+      if (nextLimit === defaultPageSize) next.delete('limit');
       else next.set('limit', String(nextLimit));
     });
   };
@@ -359,6 +365,7 @@ export function Component() {
           partnerWorkspace={false}
           workspace="selection"
           onWorkspace={changeWorkspace}
+          onWorkspaceIntent={prepareWorkspace}
           status=""
           exportReady={false}
           writeEnabled={false}
@@ -370,7 +377,9 @@ export function Component() {
           onExport={() => undefined}
           onStatus={() => undefined}
         />
-        <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
+        {condition === 'loading' ? (
+          <WorkspacePanelSkeleton className="selectionloading" label="正在准备选品主数据…" cards={8} />
+        ) : <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
           {query.data === undefined ? <span /> : (
             <>
               <ProductSelectionCenter
@@ -385,11 +394,11 @@ export function Component() {
                 onToggleAll={toggleSelectionRows}
                 onSelect={(ids) => selection.mutate(ids)}
               />
-              <ProductPagination count={query.data.count} page={page} limit={limit} canPrevious={canPrevious}
+              <ProductPagination count={query.data.items.length} page={page} limit={limit} canPrevious={canPrevious}
                 canNext={query.data.nextCursor !== undefined} onPrevious={previousPage} onNext={nextPage} onLimit={changeLimit} />
             </>
           )}
-        </ResourceState>
+        </ResourceState>}
       </section>
     );
   }
@@ -403,6 +412,7 @@ export function Component() {
         previewEnabled={previewEnabled}
         partnerWorkspace={partnerWorkspace}
         workspace={freeWorkspace ? 'free' : 'catalog'}
+        onWorkspaceIntent={prepareWorkspace}
         onWorkspace={changeWorkspace}
         status={filter.status ?? ''}
         exportReady={query.data !== undefined}

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { HttpResponse, http } from 'msw';
+import { delay, HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { MemoryRouter, useLocation } from 'react-router';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -63,6 +63,7 @@ describe('Product governance workspace', () => {
     expect(screen.getByRole('navigation', { name: '商品工作区' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '选品中心' }).getAttribute('aria-current')).toBe('page');
     expect(requests[0]?.searchParams.get('view')).toBe('selection-center');
+    expect(requests[0]?.searchParams.get('limit')).toBe('20');
     expect(screen.getByText('宏泰供应链')).toBeTruthy();
     expect(screen.getByText('宏泰品牌')).toBeTruthy();
     expect(screen.getByText('市场近 30 天销量')).toBeTruthy();
@@ -70,10 +71,35 @@ describe('Product governance workspace', () => {
     expect(within(insights).getByText('1.3万')).toBeTruthy();
     expect(within(insights).getByText('8.7%')).toBeTruthy();
     expect(document.querySelector('.selectionscore')?.textContent).toContain('推荐 94');
+    expect(document.querySelector('.selectionmedia img')?.getAttribute('loading')).toBe('eager');
+    expect(document.querySelector('.selectionmedia img')?.getAttribute('width')).toBe('320');
 
     await user.click(screen.getByRole('button', { name: '选入商品目录' }));
     await waitFor(() => expect(batchActions).toEqual(['select']));
     expect(await screen.findByText('已选入 1 件商品')).toBeTruthy();
+  });
+
+  it('shows a selection-shaped skeleton while the primary data is pending', async () => {
+    server.use(http.get('*/api/v1/catalog/listings', async () => {
+      await delay(80);
+      return HttpResponse.json(selectionPage);
+    }));
+
+    renderProductRoute(mallContext, '/products?workspace=selection');
+
+    expect(screen.getByRole('status', { name: '正在准备选品主数据…' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: '找到值得卖的商品' })).toBeTruthy();
+  });
+
+  it('prefetches the selection first page from workspace navigation intent', async () => {
+    const user = userEvent.setup();
+    renderProductRoute(mallContext, '/products');
+    await screen.findByRole('table', { name: '商品列表' });
+
+    await user.hover(screen.getByRole('button', { name: '选品中心' }));
+
+    await waitFor(() => expect(requests.some((request) =>
+      request.searchParams.get('view') === 'selection-center' && request.searchParams.get('limit') === '20')).toBe(true));
   });
 
   it('keeps existing products visible in the self-owned workspace and places creation actions in the header', async () => {
@@ -513,6 +539,7 @@ const selectionPage = {
   items: [{
     id: 'source:1', sku_id: 'sku:1', product_id: 'product:1', title: '轻盈随行保温杯', status: 'mapped',
     version: 0, code: 'HT-CUP-001', product_type: 'physical', subtitle: '食品级内胆，适合办公与出行',
+    cover_url: 'https://cdn.example/cup.webp',
     selection: {
       kind: 'selection-center-v1', categoryId: 'category:life', categoryName: '生活用品',
       supplierId: 'supplier:hongtai', supplierName: '宏泰供应链', brandId: 'brand:hongtai', brandName: '宏泰品牌',

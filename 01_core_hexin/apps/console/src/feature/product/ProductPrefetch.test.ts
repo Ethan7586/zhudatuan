@@ -5,7 +5,7 @@ import { HttpResponse, delay, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
-import { prefetchProducts } from './ProductPrefetch';
+import { prefetchProducts, prefetchProductSelection } from './ProductPrefetch';
 import { productKey } from './ProductQuery';
 
 const response = { items: [], count: 0, total_count: 0,
@@ -38,6 +38,19 @@ describe('product page prefetch', () => {
       ...context, session: { ...context.session, capabilities: [] },
     })).toBeUndefined();
     expect(requests).toBe(0);
+  });
+
+  it('deduplicates the lightweight selection first page', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    await Promise.all([prefetchProductSelection(client, context), prefetchProductSelection(client, context)]);
+
+    const filter = {
+      q: '', category: '', supplier: '', mall: '', status: '', limit: 20, preview: false,
+      view: 'selection-center' as const,
+    };
+    expect(requests).toBe(1);
+    expect(client.getQueryData(productKey(context, filter))).toEqual(response);
+    expect(prefetchProductSelection(client, context)).toBeUndefined();
   });
 });
 
