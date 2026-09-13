@@ -581,13 +581,13 @@
       "executor_role": "Environment operator with access to lifecycle and release observations",
       "reviewer_role": "Reviewer independent of E05 test implementation",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay completed the three-node five-operation Hosted lifecycle with exact database, audit and Outbox facts; independently recomputed access was denied after suspend/revoke and restored after reactivate/grant; every Hosted infrastructure, runtime object and per-node action count stayed zero. The frozen shared-host production receipt was reconciled read-only against GitHub and showed one build, artifact, deploy and restart.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/E2.0-E05-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["E2.0 evidence record and independent oracle recomputation not yet completed"]
+        "gaps": ["Stable separately managed staging lifecycle replay", "Live HTTP handler and real Session denial observation for suspend/reactivate/grant/revoke", "Current production Hosted lifecycle observation", "New production shared-host release observation rather than historical read-only reconciliation", "Independent reviewer recomputation and signature"]
       }
     },
     {

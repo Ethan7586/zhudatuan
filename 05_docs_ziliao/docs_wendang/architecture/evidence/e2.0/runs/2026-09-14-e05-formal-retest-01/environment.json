@@ -1,0 +1,35 @@
+{
+  "schema_version": "e05-environment-v1",
+  "captured_at": "2026-09-13T21:38:45.083Z",
+  "kind": "DEV",
+  "environment_id": "local-disposable-postgresql17-e05-9ef293e7ad864256",
+  "description": "A newly created PostgreSQL 17 Alpine container replayed the complete migration chain and executed the locked three-node, five-operation E05 lifecycle matrix. A read-only GitHub lookup reconciled the frozen historical production shared-host release receipt.",
+  "owner": "Ethan-controlled local Codex workspace",
+  "isolation": "Disposable Docker container zhudatuan-e05-9ef293e7ad864256; synthetic E05 identities only; no infrastructure mutation was invoked and the container was removed after execution.",
+  "real_customer_data": false,
+  "production_impact": "None from this run. GitHub Actions run metadata was read only; no workflow, deployment, process, DNS, tunnel, Caddy, pointer or cloud resource was changed.",
+  "differences_from_production": [
+    "Lifecycle transitions ran in local disposable PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+    "Synthetic Hosted nodes and database authorization projections were used rather than customer identities or live HTTP sessions.",
+    "The shared-host build/deploy/restart observation is a frozen historical production receipt reconciled read-only, not a new deployment.",
+    "No stable separately managed staging lifecycle execution and no current production lifecycle observation."
+  ],
+  "runtime": {
+    "node": "v22.22.3",
+    "os": "darwin 25.5.0",
+    "docker_server": "29.7.2",
+    "postgres": "PostgreSQL 17.11 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "docker_image": "postgres:17-alpine",
+    "docker_image_id": "sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+    "migration_count": 301,
+    "endpoint": "127.0.0.1:57616/zhudatuan_e05",
+    "github_cli": "gh version 2.92.0 (2026-04-28)"
+  },
+  "source_control": {
+    "sha": "78890d2686bd3e37405357b2e527a0b9f340705b",
+    "branch": "codex/e2-acceptance-repair",
+    "tree_state": "CLEAN",
+    "status": ""
+  },
+  "configuration_digest": "sha256:81131306ab4a21e7f3c4d95481b35db0e998ca9070a3f27385d43d9c762356eb"
+}

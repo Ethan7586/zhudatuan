@@ -1,0 +1,514 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E05-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-REL-001"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E05-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E05-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:680b7cf46d44f9d86e2468a7ef38a514bc1f5ed90c58178a51d5041567950cb6",
+    "locked_at": "2026-09-13T21:23:28Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e05-acceptance-repair-20260914",
+      "role": "E05 lifecycle, infrastructure and release-receipt test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and executed the E05 disposable lifecycle evidence exporter, performed the read-only historical workflow reconciliation and operated the separate raw-evidence oracle; not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-REL-001",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E05",
+    "02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql",
+    ".github/workflows/deploy.yml",
+    "02_platform_pingtai/database/supabase/tests/sfl_hosted_zero_fanout_contract.sql",
+    "04_tools/scripts/check/sfl-hosted-zero-fanout.pg17-fixture.mjs",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e05-hosted-zero-fanout/hosted-infrastructure-call-counts.json",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e05-hosted-zero-fanout/hosted-shared-release-receipt.json"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T21:38:04.356Z",
+    "completed_at": "2026-09-13T21:38:45.336Z",
+    "executor": {
+      "actor_id": "codex-task-e05-acceptance-repair-20260914",
+      "role": "E05 lifecycle, infrastructure and release-receipt test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and executed the E05 disposable lifecycle evidence exporter, performed the read-only historical workflow reconciliation and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e05 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "The generated disposable PostgreSQL password and connection URL were used only in process memory and were not persisted in evidence; GitHub access was read only and no token was persisted."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-postgresql17-e05-9ef293e7ad864256",
+    "description": "A newly created PostgreSQL 17 Alpine container replayed the complete migration chain and executed the locked three-node, five-operation E05 lifecycle matrix. A read-only GitHub lookup reconciled the frozen historical production shared-host release receipt.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Disposable Docker container zhudatuan-e05-9ef293e7ad864256; synthetic E05 identities only; no infrastructure mutation was invoked and the container was removed after execution.",
+    "real_customer_data": false,
+    "production_impact": "None from this run. GitHub Actions run metadata was read only; no workflow, deployment, process, DNS, tunnel, Caddy, pointer or cloud resource was changed.",
+    "differences_from_production": [
+      "Lifecycle transitions ran in local disposable PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+      "Synthetic Hosted nodes and database authorization projections were used rather than customer identities or live HTTP sessions.",
+      "The shared-host build/deploy/restart observation is a frozen historical production receipt reconciled read-only, not a new deployment.",
+      "No stable separately managed staging lifecycle execution and no current production lifecycle observation."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "78890d2686bd3e37405357b2e527a0b9f340705b",
+    "test_item_shas": [
+      "78890d2686bd3e37405357b2e527a0b9f340705b"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "postgres:17-alpine sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73; 301 migrations; three Hosted nodes; seven operation receipts across five categories; seven audit and seven Outbox rows; 2052 source files; one historical shared-host build/deploy/restart receipt.",
+    "digest": "sha256:81131306ab4a21e7f3c4d95481b35db0e998ca9070a3f27385d43d9c762356eb",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E05-REQUIRED-RAW-EVIDENCE-MISSING-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-THREE-NODE-AND-FIVE-OPERATION-COMPLETENESS-MISMATCH-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-EXPECTED-DATABASE-FACT-MISMATCH-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-UNEXPECTED-DATABASE-AUDIT-OR-OUTBOX-FACT-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-SUSPENDED-OR-REVOKED-RESIDUAL-ACCESS-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-REACTIVATED-OR-GRANTED-EXPECTED-ACCESS-DENIAL-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-HOSTED-SPECIFIC-INFRASTRUCTURE-OBJECT-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-HOSTED-PER-NODE-INFRASTRUCTURE-ACTION-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-HOSTED-LIFECYCLE-INFRASTRUCTURE-CATEGORY-EVENT-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-SHARED-HOST-BUILD-ARTIFACT-DEPLOY-RESTART-MISMATCH-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-HISTORICAL-GITHUB-WORKFLOW-RECEIPT-MISMATCH-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-BUSINESS-SOURCE-COUNT-OR-DIGEST-CHANGE-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-HOSTED-NODE-SPECIFIC-SOURCE-OR-BUILD-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E05-NEGATIVE-ORACLE-PROBE-MISS-COUNT",
+      "source": "zero-fanout-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:38:45.151Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-before-after-database.json",
+      "media_type": "application/json",
+      "sha256": "sha256:a57a3b5cbb594384b56794952c007f1e33301bdbc888c81d6b015f55e2d2dd53",
+      "size_bytes": 24120,
+      "role": "Before/after Hosted node, relation, identity, Membership, scope, entitlement and infrastructure-object rows"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-lifecycle-timeline.json",
+      "media_type": "application/json",
+      "sha256": "sha256:0e014876ada3e58098cf3e85b62dcaeb33cd9a5cfaa397a74262e6d85b73f6fc",
+      "size_bytes": 18145,
+      "role": "Seven operation receipts and raw stage-by-stage access-decision inputs"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-audit-outbox.json",
+      "media_type": "application/json",
+      "sha256": "sha256:30e3047cfad4fb751982dab0c07334112c9d39179156dab9e9f3dd5465a8dcf4",
+      "size_bytes": 8076,
+      "role": "Seven raw decision-audit and seven raw Outbox rows"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-infrastructure-call-counts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:99ded7386336489d814ba02b451d0bf3abdf3e0a297159b1b8d3236035c632ab",
+      "size_bytes": 2275,
+      "role": "Zero lifecycle infrastructure categories and frozen shared-host release counts"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-shared-release-receipt.json",
+      "media_type": "application/json",
+      "sha256": "sha256:5850435d6940f889ed7fee723f3edd58e0d5af26fa6d9fc36a64863de240a459",
+      "size_bytes": 1937,
+      "role": "Frozen historical production shared-host release receipt with source provenance"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-runtime-inventory.json",
+      "media_type": "application/json",
+      "sha256": "sha256:09c8100836432b20208c064fa93655de65453428d114f5e106ee6ac50f970d06",
+      "size_bytes": 1324,
+      "role": "Raw disposable-container process and port inventory for Hosted identity-token scanning"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-source-inventory.json",
+      "media_type": "application/json",
+      "sha256": "sha256:d1f4adf082d9b22682421c1d4421ed8c694dae0eb1dfec39d0ba8dd37e8ee96e",
+      "size_bytes": 1133958,
+      "role": "Before/after production and release source inventory with per-node token scan"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/github-workflow-observation.json",
+      "media_type": "application/json",
+      "sha256": "sha256:fad96be8038ffd214c36ba20a35daff21f8d10f943b03537492a439e4dcb1915",
+      "size_bytes": 590,
+      "role": "Fresh read-only GitHub observation of the frozen historical workflow run"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:fccd0749946a37831e3723d4cc1d5a741b88e203d3f2b8e0087bc9b034ba4be6",
+      "size_bytes": 2212,
+      "role": "Disposable execution environment identity and production differences"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/zero-fanout-independent-recount.json",
+      "media_type": "application/json",
+      "sha256": "sha256:e7df423effec5db092eefba754d2bc0149e51a3d4abc1fcb7736cfdb906d958c",
+      "size_bytes": 6931,
+      "role": "Independent data, access, infrastructure and release recount with negative probes"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/migration-replay.txt",
+      "media_type": "text/plain",
+      "sha256": "sha256:e9ab691c84de1fae8d2038ac6ee3e04c70cf23a16a0c6e57ecd79ce60b5d0472",
+      "size_bytes": 69,
+      "role": "Complete migration replay completion output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:07c808403de15a3050df1a27790721f837c9a183580ca065735f9d5aa5743acb",
+      "size_bytes": 1546,
+      "role": "Exact commands, source SHA, execution totals and cleanup record"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E05-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:680b7cf46d44f9d86e2468a7ef38a514bc1f5ed90c58178a51d5041567950cb6",
+      "size_bytes": 9984,
+      "role": "Pre-execution locked E05 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E05-FANOUT",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Independently reconstruct the three-node five-operation sequence from raw node, relation, Membership, scope, entitlement, audit and Outbox rows; recompute every stage access decision; enumerate Hosted manifest/resource/process/port/source/build facts; reconcile the frozen shared-host receipt with a fresh read-only GitHub workflow observation and its historical workflow source; then mutate copies to prove detection of residual access, Hosted infrastructure objects, per-node releases and unexpected facts. Do not consume runner PASS fields.",
+    "exact_invocation": "node 04_tools/scripts/audit/e05-zero-fanout.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E05-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/zero-fanout-independent-recount.json",
+    "evaluator": {
+      "actor_id": "codex-task-e05-acceptance-repair-20260914",
+      "role": "E05 lifecycle, infrastructure and release-receipt test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and executed the E05 disposable lifecycle evidence exporter, performed the read-only historical workflow reconciliation and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E05-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-before-after-database.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-lifecycle-timeline.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-audit-outbox.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-infrastructure-call-counts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-shared-release-receipt.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-runtime-inventory.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/hosted-source-inventory.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/github-workflow-observation.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "required_raw_evidence_missing_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "three_node_and_five_operation_completeness_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "expected_database_fact_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "unexpected_database_audit_or_outbox_fact_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "suspended_or_revoked_residual_access_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "reactivated_or_granted_expected_access_denial_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "hosted_specific_infrastructure_object_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "hosted_per_node_infrastructure_action_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "hosted_lifecycle_infrastructure_category_event_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "shared_host_build_artifact_deploy_restart_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "historical_github_workflow_receipt_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "business_source_count_or_digest_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "hosted_node_specific_source_or_build_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_oracle_probe_miss_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "GitHub CLI read access to Ethan7586/zhudatuan",
+      "clean checkout of the recorded source SHA"
+    ],
+    "steps": [
+      "Check out 78890d2686bd3e37405357b2e527a0b9f340705b.",
+      "Run npm run evidence:e05 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01.",
+      "Read zero-fanout-independent-recount.json and independently verify the listed artifact hashes and raw rows."
+    ],
+    "expected_raw_observations": [
+      "required raw evidence missing count = 0",
+      "three-node and five-operation completeness mismatch count = 0",
+      "expected database fact mismatch count = 0",
+      "unexpected database, audit or Outbox fact count = 0",
+      "suspended or revoked residual-access count = 0",
+      "reactivated or granted expected-access denial count = 0",
+      "Hosted-specific infrastructure object count = 0",
+      "Hosted per-node infrastructure action count = 0",
+      "Hosted lifecycle DNS/Tunnel/systemd/Caddy/build/deploy/restart/manifest/pointer/process/port count = 0",
+      "shared-host build/artifact/deploy/restart count mismatch = 0",
+      "historical GitHub workflow receipt mismatch count = 0",
+      "business source count or digest change = 0",
+      "Hosted-node-specific source or build count = 0",
+      "negative oracle probe miss count = 0"
+    ],
+    "cleanup": "The runner removes the disposable PostgreSQL container in a finally block; the GitHub lookup is read only and no release or external resource is created."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
+    "rationale": "All 3 Hosted nodes completed the locked five-category lifecycle, all stage access decisions reconciled from raw inputs, exactly 7 audit and 7 Outbox rows existed, every Hosted infrastructure and per-node action count stayed zero, and the historical shared-host release reconciled to one build/deploy/restart. All four negative oracle mutations were detected.",
+    "gaps": [
+      "No stable separately managed staging lifecycle replay has been performed.",
+      "Suspend, reactivate, grant and revoke were the existing E05 matrix-scoped database transitions; no live HTTP handler or real Session denial was exercised.",
+      "The production shared-host release observation is historical and read-only; this run did not trigger a new build, deployment or restart.",
+      "No current production Hosted lifecycle observation was performed.",
+      "No reviewer independent of the E05 fixture, release receipt and oracle has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}

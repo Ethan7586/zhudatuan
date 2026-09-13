@@ -1,0 +1,541 @@
+{
+  "schema_version": "e05-hosted-lifecycle-timeline-v2",
+  "captured_at": "2026-09-13T21:38:44.913Z",
+  "access_projection_definition": {
+    "required": [
+      "node status active",
+      "Membership status active",
+      "unexpired allow scope",
+      "enabled and unexpired entitlement"
+    ],
+    "oracle_policy": "The independent oracle recomputes allowed from raw inputs and does not consume the exported allowed field."
+  },
+  "operation_receipts": [
+    {
+      "receipt_id": "receipt:e05:9ef293e7:create:h1",
+      "operation": "create",
+      "node_id": "node:e05-9ef293e7-h1:l2",
+      "production_function": "organization.provision_hosted_node(jsonb)",
+      "production_response": {
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:e05-9ef293e7-h1:l2",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e05-9ef293e7-h1",
+        "mall_id": null,
+        "status": "active",
+        "created_at": "2026-09-13T21:38:46.377Z",
+        "parent_node_id": "node:zhudatuan:l0",
+        "original_parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L2",
+        "host_sovereign_node_id": "node:zhudatuan:l0",
+        "relation_version": 1,
+        "effective_at": "2026-09-13T21:38:46.377Z",
+        "superseded_at": null,
+        "idempotency_key": "e05:9ef293e7:create:h1",
+        "request_hash": "b5d79c4fbec05ae21e4c7d4ba92c735dbd7644c64a4b961b2c9610d3495cfbff",
+        "requested_by": "principal:e05-9ef293e7-h1",
+        "trace_id": "trace:e05:9ef293e7",
+        "replayed": false
+      },
+      "database_mutations": [
+        {
+          "table": "identity.realm",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "organization.node",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "organization.noderelation",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "identity/access fixture",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "capability.entitlement",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.scopegrant",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.decisionaudit",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "runtime.outbox",
+          "action": "insert",
+          "expected_rows": 1
+        }
+      ],
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:create:h2",
+      "operation": "create",
+      "node_id": "node:e05-9ef293e7-h2:l3",
+      "production_function": "organization.provision_hosted_node(jsonb)",
+      "production_response": {
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:e05-9ef293e7-h2:l3",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e05-9ef293e7-h2",
+        "mall_id": null,
+        "status": "active",
+        "created_at": "2026-09-13T21:38:46.377Z",
+        "parent_node_id": "node:zhudatuan:l0",
+        "original_parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L3",
+        "host_sovereign_node_id": "node:zhudatuan:l0",
+        "relation_version": 1,
+        "effective_at": "2026-09-13T21:38:46.377Z",
+        "superseded_at": null,
+        "idempotency_key": "e05:9ef293e7:create:h2",
+        "request_hash": "7dddfffed25e43eb174307905933038efe881e40e640e33e109257f130053fd0",
+        "requested_by": "principal:e05-9ef293e7-h2",
+        "trace_id": "trace:e05:9ef293e7",
+        "replayed": false
+      },
+      "database_mutations": [
+        {
+          "table": "identity.realm",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "organization.node",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "organization.noderelation",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "identity/access fixture",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "capability.entitlement",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.scopegrant",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.decisionaudit",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "runtime.outbox",
+          "action": "insert",
+          "expected_rows": 1
+        }
+      ],
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:create:h3",
+      "operation": "create",
+      "node_id": "node:e05-9ef293e7-h3:l4",
+      "production_function": "organization.provision_hosted_node(jsonb)",
+      "production_response": {
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:e05-9ef293e7-h3:l4",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e05-9ef293e7-h3",
+        "mall_id": null,
+        "status": "active",
+        "created_at": "2026-09-13T21:38:46.377Z",
+        "parent_node_id": "node:zhudatuan:l0",
+        "original_parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L4",
+        "host_sovereign_node_id": "node:zhudatuan:l0",
+        "relation_version": 1,
+        "effective_at": "2026-09-13T21:38:46.377Z",
+        "superseded_at": null,
+        "idempotency_key": "e05:9ef293e7:create:h3",
+        "request_hash": "4e2115ea3f92cb0ad9b4e9d623f0e4363d7c44a07d91dca6f8de38929e90b9a1",
+        "requested_by": "principal:e05-9ef293e7-h3",
+        "trace_id": "trace:e05:9ef293e7",
+        "replayed": false
+      },
+      "database_mutations": [
+        {
+          "table": "identity.realm",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "organization.node",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "organization.noderelation",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "identity/access fixture",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "capability.entitlement",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.scopegrant",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.decisionaudit",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "runtime.outbox",
+          "action": "insert",
+          "expected_rows": 1
+        }
+      ],
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:suspend:h2",
+      "operation": "suspend",
+      "node_id": "node:e05-9ef293e7-h2:l3",
+      "production_function": null,
+      "authority": "matrix-scoped direct database lifecycle transition",
+      "database_mutations": [
+        {
+          "table": "organization.node",
+          "action": "update",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.decisionaudit",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "runtime.outbox",
+          "action": "insert",
+          "expected_rows": 1
+        }
+      ],
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:reactivate:h2",
+      "operation": "reactivate",
+      "node_id": "node:e05-9ef293e7-h2:l3",
+      "production_function": null,
+      "authority": "matrix-scoped direct database lifecycle transition",
+      "database_mutations": [
+        {
+          "table": "organization.node",
+          "action": "update",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.decisionaudit",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "runtime.outbox",
+          "action": "insert",
+          "expected_rows": 1
+        }
+      ],
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:grant:h3",
+      "operation": "grant",
+      "node_id": "node:e05-9ef293e7-h3:l4",
+      "production_function": null,
+      "authority": "matrix-scoped direct database lifecycle transition",
+      "database_mutations": [
+        {
+          "table": "capability.entitlement",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.scopegrant",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.membership",
+          "action": "update",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.decisionaudit",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "runtime.outbox",
+          "action": "insert",
+          "expected_rows": 1
+        }
+      ],
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:revoke:h3",
+      "operation": "revoke",
+      "node_id": "node:e05-9ef293e7-h3:l4",
+      "production_function": null,
+      "authority": "matrix-scoped direct database lifecycle transition",
+      "database_mutations": [
+        {
+          "table": "capability.entitlement",
+          "action": "update",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.scopegrant",
+          "action": "update",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.membership",
+          "action": "update",
+          "expected_rows": 1
+        },
+        {
+          "table": "access.decisionaudit",
+          "action": "insert",
+          "expected_rows": 1
+        },
+        {
+          "table": "runtime.outbox",
+          "action": "insert",
+          "expected_rows": 1
+        }
+      ],
+      "infrastructure_actions": []
+    }
+  ],
+  "stages": [
+    {
+      "stage": "after_create",
+      "observed_at": "2026-09-13T21:38:46.377Z",
+      "access": [
+        {
+          "node_id": "node:e05-9ef293e7-h1:l2",
+          "membership_id": "membership:e05-9ef293e7-h1",
+          "capability_id": "capability:e05-9ef293e7-base",
+          "scope_grant_id": "scope:membership:e05-9ef293e7-h1:base",
+          "observed_at": "2026-09-13T21:38:46.377Z",
+          "inputs": {
+            "node_id": "node:e05-9ef293e7-h1:l2",
+            "node_status": "active",
+            "membership_id": "membership:e05-9ef293e7-h1",
+            "membership_status": "active",
+            "access_version": "1",
+            "scope_grant_id": "scope:membership:e05-9ef293e7-h1:base",
+            "scope_effect": "allow",
+            "scope_effective_at": "2026-09-13T21:38:46.377Z",
+            "scope_expires_at": null,
+            "entitlement_id": "entitlement:membership:e05-9ef293e7-h1:base",
+            "entitlement_state": "enabled",
+            "entitlement_effective_at": "2026-09-13T21:38:46.377Z",
+            "entitlement_expires_at": null
+          },
+          "allowed": true
+        },
+        {
+          "node_id": "node:e05-9ef293e7-h2:l3",
+          "membership_id": "membership:e05-9ef293e7-h2",
+          "capability_id": "capability:e05-9ef293e7-base",
+          "scope_grant_id": "scope:membership:e05-9ef293e7-h2:base",
+          "observed_at": "2026-09-13T21:38:46.377Z",
+          "inputs": {
+            "node_id": "node:e05-9ef293e7-h2:l3",
+            "node_status": "active",
+            "membership_id": "membership:e05-9ef293e7-h2",
+            "membership_status": "active",
+            "access_version": "1",
+            "scope_grant_id": "scope:membership:e05-9ef293e7-h2:base",
+            "scope_effect": "allow",
+            "scope_effective_at": "2026-09-13T21:38:46.377Z",
+            "scope_expires_at": null,
+            "entitlement_id": "entitlement:membership:e05-9ef293e7-h2:base",
+            "entitlement_state": "enabled",
+            "entitlement_effective_at": "2026-09-13T21:38:46.377Z",
+            "entitlement_expires_at": null
+          },
+          "allowed": true
+        },
+        {
+          "node_id": "node:e05-9ef293e7-h3:l4",
+          "membership_id": "membership:e05-9ef293e7-h3",
+          "capability_id": "capability:e05-9ef293e7-base",
+          "scope_grant_id": "scope:membership:e05-9ef293e7-h3:base",
+          "observed_at": "2026-09-13T21:38:46.377Z",
+          "inputs": {
+            "node_id": "node:e05-9ef293e7-h3:l4",
+            "node_status": "active",
+            "membership_id": "membership:e05-9ef293e7-h3",
+            "membership_status": "active",
+            "access_version": "1",
+            "scope_grant_id": "scope:membership:e05-9ef293e7-h3:base",
+            "scope_effect": "allow",
+            "scope_effective_at": "2026-09-13T21:38:46.377Z",
+            "scope_expires_at": null,
+            "entitlement_id": "entitlement:membership:e05-9ef293e7-h3:base",
+            "entitlement_state": "enabled",
+            "entitlement_effective_at": "2026-09-13T21:38:46.377Z",
+            "entitlement_expires_at": null
+          },
+          "allowed": true
+        }
+      ]
+    },
+    {
+      "stage": "after_suspend",
+      "observed_at": "2026-09-13T21:38:47.377Z",
+      "access": [
+        {
+          "node_id": "node:e05-9ef293e7-h2:l3",
+          "membership_id": "membership:e05-9ef293e7-h2",
+          "capability_id": "capability:e05-9ef293e7-base",
+          "scope_grant_id": "scope:membership:e05-9ef293e7-h2:base",
+          "observed_at": "2026-09-13T21:38:47.377Z",
+          "inputs": {
+            "node_id": "node:e05-9ef293e7-h2:l3",
+            "node_status": "suspended",
+            "membership_id": "membership:e05-9ef293e7-h2",
+            "membership_status": "active",
+            "access_version": "1",
+            "scope_grant_id": "scope:membership:e05-9ef293e7-h2:base",
+            "scope_effect": "allow",
+            "scope_effective_at": "2026-09-13T21:38:46.377Z",
+            "scope_expires_at": null,
+            "entitlement_id": "entitlement:membership:e05-9ef293e7-h2:base",
+            "entitlement_state": "enabled",
+            "entitlement_effective_at": "2026-09-13T21:38:46.377Z",
+            "entitlement_expires_at": null
+          },
+          "allowed": false
+        }
+      ]
+    },
+    {
+      "stage": "after_reactivate",
+      "observed_at": "2026-09-13T21:38:48.377Z",
+      "access": [
+        {
+          "node_id": "node:e05-9ef293e7-h2:l3",
+          "membership_id": "membership:e05-9ef293e7-h2",
+          "capability_id": "capability:e05-9ef293e7-base",
+          "scope_grant_id": "scope:membership:e05-9ef293e7-h2:base",
+          "observed_at": "2026-09-13T21:38:48.377Z",
+          "inputs": {
+            "node_id": "node:e05-9ef293e7-h2:l3",
+            "node_status": "active",
+            "membership_id": "membership:e05-9ef293e7-h2",
+            "membership_status": "active",
+            "access_version": "1",
+            "scope_grant_id": "scope:membership:e05-9ef293e7-h2:base",
+            "scope_effect": "allow",
+            "scope_effective_at": "2026-09-13T21:38:46.377Z",
+            "scope_expires_at": null,
+            "entitlement_id": "entitlement:membership:e05-9ef293e7-h2:base",
+            "entitlement_state": "enabled",
+            "entitlement_effective_at": "2026-09-13T21:38:46.377Z",
+            "entitlement_expires_at": null
+          },
+          "allowed": true
+        }
+      ]
+    },
+    {
+      "stage": "after_grant",
+      "observed_at": "2026-09-13T21:38:49.377Z",
+      "access": [
+        {
+          "node_id": "node:e05-9ef293e7-h3:l4",
+          "membership_id": "membership:e05-9ef293e7-h3",
+          "capability_id": "capability:e05-9ef293e7-extra",
+          "scope_grant_id": "scope:membership:e05-9ef293e7-h3:extra",
+          "observed_at": "2026-09-13T21:38:49.377Z",
+          "inputs": {
+            "node_id": "node:e05-9ef293e7-h3:l4",
+            "node_status": "active",
+            "membership_id": "membership:e05-9ef293e7-h3",
+            "membership_status": "active",
+            "access_version": "2",
+            "scope_grant_id": "scope:membership:e05-9ef293e7-h3:extra",
+            "scope_effect": "allow",
+            "scope_effective_at": "2026-09-13T21:38:49.377Z",
+            "scope_expires_at": null,
+            "entitlement_id": "entitlement:membership:e05-9ef293e7-h3:extra",
+            "entitlement_state": "enabled",
+            "entitlement_effective_at": "2026-09-13T21:38:49.377Z",
+            "entitlement_expires_at": null
+          },
+          "allowed": true
+        }
+      ]
+    },
+    {
+      "stage": "after_revoke",
+      "observed_at": "2026-09-13T21:38:50.377Z",
+      "access": [
+        {
+          "node_id": "node:e05-9ef293e7-h3:l4",
+          "membership_id": "membership:e05-9ef293e7-h3",
+          "capability_id": "capability:e05-9ef293e7-extra",
+          "scope_grant_id": "scope:membership:e05-9ef293e7-h3:extra",
+          "observed_at": "2026-09-13T21:38:50.377Z",
+          "inputs": {
+            "node_id": "node:e05-9ef293e7-h3:l4",
+            "node_status": "active",
+            "membership_id": "membership:e05-9ef293e7-h3",
+            "membership_status": "active",
+            "access_version": "3",
+            "scope_grant_id": "scope:membership:e05-9ef293e7-h3:extra",
+            "scope_effect": "allow",
+            "scope_effective_at": "2026-09-13T21:38:49.377Z",
+            "scope_expires_at": "2026-09-13T21:38:50.377Z",
+            "entitlement_id": "entitlement:membership:e05-9ef293e7-h3:extra",
+            "entitlement_state": "disabled",
+            "entitlement_effective_at": "2026-09-13T21:38:49.377Z",
+            "entitlement_expires_at": "2026-09-13T21:38:50.377Z"
+          },
+          "allowed": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,247 @@
+{
+  "schema_version": "e05-hosted-audit-outbox-v2",
+  "captured_at": "2026-09-13T21:38:44.913Z",
+  "trace_id": "trace:e05:9ef293e7",
+  "decision_audit": [
+    {
+      "id": "audit:e05:9ef293e7:create:h1",
+      "actor_id": "principal:e05-9ef293e7-h1",
+      "operation": "organization.hosted.create",
+      "resource_id": "node:e05-9ef293e7-h1:l2",
+      "scope_id": "node:e05-9ef293e7-h1:l2",
+      "decision": "allow",
+      "reason": "E05_HOSTED_DATA_ONLY",
+      "policy_version": "sfl-e05-v2",
+      "trace_id": "trace:e05:9ef293e7",
+      "decided_at": "2026-09-13T21:38:46.377Z"
+    },
+    {
+      "id": "audit:e05:9ef293e7:create:h2",
+      "actor_id": "principal:e05-9ef293e7-h2",
+      "operation": "organization.hosted.create",
+      "resource_id": "node:e05-9ef293e7-h2:l3",
+      "scope_id": "node:e05-9ef293e7-h2:l3",
+      "decision": "allow",
+      "reason": "E05_HOSTED_DATA_ONLY",
+      "policy_version": "sfl-e05-v2",
+      "trace_id": "trace:e05:9ef293e7",
+      "decided_at": "2026-09-13T21:38:46.377Z"
+    },
+    {
+      "id": "audit:e05:9ef293e7:create:h3",
+      "actor_id": "principal:e05-9ef293e7-h3",
+      "operation": "organization.hosted.create",
+      "resource_id": "node:e05-9ef293e7-h3:l4",
+      "scope_id": "node:e05-9ef293e7-h3:l4",
+      "decision": "allow",
+      "reason": "E05_HOSTED_DATA_ONLY",
+      "policy_version": "sfl-e05-v2",
+      "trace_id": "trace:e05:9ef293e7",
+      "decided_at": "2026-09-13T21:38:46.377Z"
+    },
+    {
+      "id": "audit:e05:9ef293e7:suspend",
+      "actor_id": "principal:e05-9ef293e7-h2",
+      "operation": "organization.hosted.suspend",
+      "resource_id": "node:e05-9ef293e7-h2:l3",
+      "scope_id": "node:e05-9ef293e7-h2:l3",
+      "decision": "allow",
+      "reason": "E05_HOSTED_DATA_ONLY",
+      "policy_version": "sfl-e05-v2",
+      "trace_id": "trace:e05:9ef293e7",
+      "decided_at": "2026-09-13T21:38:47.377Z"
+    },
+    {
+      "id": "audit:e05:9ef293e7:reactivate",
+      "actor_id": "principal:e05-9ef293e7-h2",
+      "operation": "organization.hosted.reactivate",
+      "resource_id": "node:e05-9ef293e7-h2:l3",
+      "scope_id": "node:e05-9ef293e7-h2:l3",
+      "decision": "allow",
+      "reason": "E05_HOSTED_DATA_ONLY",
+      "policy_version": "sfl-e05-v2",
+      "trace_id": "trace:e05:9ef293e7",
+      "decided_at": "2026-09-13T21:38:48.377Z"
+    },
+    {
+      "id": "audit:e05:9ef293e7:grant",
+      "actor_id": "principal:e05-9ef293e7-h3",
+      "operation": "organization.hosted.grant",
+      "resource_id": "node:e05-9ef293e7-h3:l4",
+      "scope_id": "node:e05-9ef293e7-h3:l4",
+      "decision": "allow",
+      "reason": "E05_HOSTED_DATA_ONLY",
+      "policy_version": "sfl-e05-v2",
+      "trace_id": "trace:e05:9ef293e7",
+      "decided_at": "2026-09-13T21:38:49.377Z"
+    },
+    {
+      "id": "audit:e05:9ef293e7:revoke",
+      "actor_id": "principal:e05-9ef293e7-h3",
+      "operation": "organization.hosted.revoke",
+      "resource_id": "node:e05-9ef293e7-h3:l4",
+      "scope_id": "node:e05-9ef293e7-h3:l4",
+      "decision": "allow",
+      "reason": "E05_HOSTED_DATA_ONLY",
+      "policy_version": "sfl-e05-v2",
+      "trace_id": "trace:e05:9ef293e7",
+      "decided_at": "2026-09-13T21:38:50.377Z"
+    }
+  ],
+  "runtime_outbox": [
+    {
+      "id": "outbox:e05:9ef293e7:create:h1",
+      "event_type": "HostedNodeCreated",
+      "event_version": 1,
+      "aggregate_type": "node",
+      "aggregate_id": "node:e05-9ef293e7-h1:l2",
+      "scope_id": "node:e05-9ef293e7-h1:l2",
+      "payload": {
+        "node_id": "node:e05-9ef293e7-h1:l2",
+        "operation": "create",
+        "infrastructure_action_count": 0
+      },
+      "trace_id": "trace:e05:9ef293e7",
+      "occurred_at": "2026-09-13T21:38:46.377Z",
+      "available_at": "2026-09-13T21:38:46.377Z",
+      "claimed_by": null,
+      "claim_until": null,
+      "attempts": 0,
+      "published_at": null,
+      "failed_at": null,
+      "error_code": null
+    },
+    {
+      "id": "outbox:e05:9ef293e7:create:h2",
+      "event_type": "HostedNodeCreated",
+      "event_version": 1,
+      "aggregate_type": "node",
+      "aggregate_id": "node:e05-9ef293e7-h2:l3",
+      "scope_id": "node:e05-9ef293e7-h2:l3",
+      "payload": {
+        "node_id": "node:e05-9ef293e7-h2:l3",
+        "operation": "create",
+        "infrastructure_action_count": 0
+      },
+      "trace_id": "trace:e05:9ef293e7",
+      "occurred_at": "2026-09-13T21:38:46.377Z",
+      "available_at": "2026-09-13T21:38:46.377Z",
+      "claimed_by": null,
+      "claim_until": null,
+      "attempts": 0,
+      "published_at": null,
+      "failed_at": null,
+      "error_code": null
+    },
+    {
+      "id": "outbox:e05:9ef293e7:create:h3",
+      "event_type": "HostedNodeCreated",
+      "event_version": 1,
+      "aggregate_type": "node",
+      "aggregate_id": "node:e05-9ef293e7-h3:l4",
+      "scope_id": "node:e05-9ef293e7-h3:l4",
+      "payload": {
+        "node_id": "node:e05-9ef293e7-h3:l4",
+        "operation": "create",
+        "infrastructure_action_count": 0
+      },
+      "trace_id": "trace:e05:9ef293e7",
+      "occurred_at": "2026-09-13T21:38:46.377Z",
+      "available_at": "2026-09-13T21:38:46.377Z",
+      "claimed_by": null,
+      "claim_until": null,
+      "attempts": 0,
+      "published_at": null,
+      "failed_at": null,
+      "error_code": null
+    },
+    {
+      "id": "outbox:e05:9ef293e7:suspend",
+      "event_type": "HostedNodeSuspended",
+      "event_version": 1,
+      "aggregate_type": "node",
+      "aggregate_id": "node:e05-9ef293e7-h2:l3",
+      "scope_id": "node:e05-9ef293e7-h2:l3",
+      "payload": {
+        "node_id": "node:e05-9ef293e7-h2:l3",
+        "operation": "suspend",
+        "infrastructure_action_count": 0
+      },
+      "trace_id": "trace:e05:9ef293e7",
+      "occurred_at": "2026-09-13T21:38:47.377Z",
+      "available_at": "2026-09-13T21:38:47.377Z",
+      "claimed_by": null,
+      "claim_until": null,
+      "attempts": 0,
+      "published_at": null,
+      "failed_at": null,
+      "error_code": null
+    },
+    {
+      "id": "outbox:e05:9ef293e7:reactivate",
+      "event_type": "HostedNodeReactivated",
+      "event_version": 1,
+      "aggregate_type": "node",
+      "aggregate_id": "node:e05-9ef293e7-h2:l3",
+      "scope_id": "node:e05-9ef293e7-h2:l3",
+      "payload": {
+        "node_id": "node:e05-9ef293e7-h2:l3",
+        "operation": "reactivate",
+        "infrastructure_action_count": 0
+      },
+      "trace_id": "trace:e05:9ef293e7",
+      "occurred_at": "2026-09-13T21:38:48.377Z",
+      "available_at": "2026-09-13T21:38:48.377Z",
+      "claimed_by": null,
+      "claim_until": null,
+      "attempts": 0,
+      "published_at": null,
+      "failed_at": null,
+      "error_code": null
+    },
+    {
+      "id": "outbox:e05:9ef293e7:grant",
+      "event_type": "HostedNodeGrantChanged",
+      "event_version": 1,
+      "aggregate_type": "node",
+      "aggregate_id": "node:e05-9ef293e7-h3:l4",
+      "scope_id": "node:e05-9ef293e7-h3:l4",
+      "payload": {
+        "node_id": "node:e05-9ef293e7-h3:l4",
+        "operation": "grant",
+        "infrastructure_action_count": 0
+      },
+      "trace_id": "trace:e05:9ef293e7",
+      "occurred_at": "2026-09-13T21:38:49.377Z",
+      "available_at": "2026-09-13T21:38:49.377Z",
+      "claimed_by": null,
+      "claim_until": null,
+      "attempts": 0,
+      "published_at": null,
+      "failed_at": null,
+      "error_code": null
+    },
+    {
+      "id": "outbox:e05:9ef293e7:revoke",
+      "event_type": "HostedNodeGrantChanged",
+      "event_version": 1,
+      "aggregate_type": "node",
+      "aggregate_id": "node:e05-9ef293e7-h3:l4",
+      "scope_id": "node:e05-9ef293e7-h3:l4",
+      "payload": {
+        "node_id": "node:e05-9ef293e7-h3:l4",
+        "operation": "revoke",
+        "infrastructure_action_count": 0
+      },
+      "trace_id": "trace:e05:9ef293e7",
+      "occurred_at": "2026-09-13T21:38:50.377Z",
+      "available_at": "2026-09-13T21:38:50.377Z",
+      "claimed_by": null,
+      "claim_until": null,
+      "attempts": 0,
+      "published_at": null,
+      "failed_at": null,
+      "error_code": null
+    }
+  ]
+}

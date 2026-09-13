@@ -1,0 +1,41 @@
+{
+  "$schema": "../../E2.0-符合性声明.schema.json",
+  "schema_version": "e2.0-conformity-statement-v2",
+  "statement_id": "E2-STATEMENT-E05-DEV-20260913",
+  "template": false,
+  "profile_id": "E2.0",
+  "profile_version": "2.0.0",
+  "issued_at": "2026-09-13T21:38:45.336Z",
+  "scope": "E2-REL-001 / legacy E05 at source SHA 78890d2686bd3e37405357b2e527a0b9f340705b, disposable local PostgreSQL 17 lifecycle execution plus frozen historical shared-host production release observation.",
+  "claim_ids": [
+    "E2-REL-001"
+  ],
+  "rating": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM"
+  },
+  "evidence_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/E2.0-E05-证据.json"
+  ],
+  "review_evidence_refs": [],
+  "tailoring_refs": [],
+  "gaps": [
+    "No stable separately managed staging lifecycle replay has been performed.",
+    "Suspend, reactivate, grant and revoke were the existing E05 matrix-scoped database transitions; no live HTTP handler or real Session denial was exercised.",
+    "The production shared-host release observation is historical and read-only; this run did not trigger a new build, deployment or restart.",
+    "No current production Hosted lifecycle observation was performed.",
+    "No reviewer independent of the E05 fixture, release receipt and oracle has recomputed and signed the evidence."
+  ],
+  "issuer": {
+    "name_or_id": "codex-task-e05-acceptance-repair-20260914",
+    "organization": "zhudatuan internal",
+    "role": "E05 lifecycle, infrastructure and release-receipt test operator",
+    "relationship_to_test_item": "Implemented and executed the E05 disposable lifecycle evidence exporter, performed the read-only historical workflow reconciliation and operated the separate raw-evidence oracle; not an independent reviewer.",
+    "signed_at": "2026-09-13T21:38:45.336Z"
+  },
+  "reviewer": null,
+  "mandatory_disclaimer": "This is an E2.0 standards-aligned tailored conformity statement, not an ISO, IEEE, NIST, OWASP, PCI SSC, or third-party certification.",
+  "non_gating": true
+}
