@@ -1,12 +1,14 @@
 import { Button } from '@shop/design';
 import { useMutation } from '@tanstack/react-query';
 import { useMemo, useRef, useState, type ChangeEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { scopePath } from '../../shared/url/ScopePath';
 import { canCreateCatalogImport, createCatalogImport, manualCatalogPackage, type ManualProductDraft } from './ProductImportCommand';
+import { ProductImportDialog } from './ProductImportDialog';
 import { ProductIcon } from './ProductIcon';
 import './owned-product-create.css';
+import './product-dialogs.css';
 
 type CreateStep = 'basic' | 'offer' | 'service';
 
@@ -46,6 +48,8 @@ const steps: readonly Readonly<{ key: CreateStep; number: number; label: string 
 export function Component() {
   const context = useConsoleContext();
   const navigate = useNavigate();
+  const [search, setSearch] = useSearchParams();
+  const mode = search.get('mode') === 'batch' ? 'batch' : 'single';
   const draftKey = `console:owned-product-draft:${context.scope.kind}:${context.scope.id}`;
   const [form, setForm] = useState<OwnedProductForm>(() => readDraft(draftKey));
   const [step, setStep] = useState<CreateStep>('basic');
@@ -98,6 +102,20 @@ export function Component() {
         <p>创建当前商城自主经营的商品</p>
       </header>
 
+      <nav className="ownedproductmodes" aria-label="自有商品添加方式">
+        <button type="button" aria-current={mode === 'single' ? 'page' : undefined} onClick={() => setSearch({})}>
+          <ProductIcon name="plus" /><span><strong>单个录入</strong><small>逐项创建一件商品</small></span>
+        </button>
+        <button type="button" aria-current={mode === 'batch' ? 'page' : undefined} onClick={() => setSearch({ mode: 'batch' })}>
+          <ProductIcon name="upload" /><span><strong>批量导入</strong><small>通过标准模板导入一批商品</small></span>
+        </button>
+      </nav>
+
+      {mode === 'batch' ? (
+        <ProductImportDialog context={context} open embedded
+          onClose={() => { void navigate(`${productsPath}?workspace=free`); }}
+          onCreated={(jobId) => { void navigate(scopePath(context.scope, `imports/catalog/${encodeURIComponent(jobId)}`)); }} />
+      ) : <>
       <nav className="ownedproductsteps" aria-label="商品创建步骤">
         {steps.map((item) => <button type="button" key={item.key} aria-current={step === item.key ? 'step' : undefined}
           onClick={() => setStep(item.key)}><span>{item.number}</span><strong>{item.label}</strong></button>)}
@@ -192,6 +210,7 @@ export function Component() {
           ? <Button tone="primary" isPending={mutation.isPending} isDisabled={mutation.isPending} onPress={submit}>预览并确认</Button>
           : <Button tone="primary" onPress={next}>下一步：{step === 'basic' ? '规格与价格' : '配送与服务'}</Button>}
       </footer>
+      </>}
     </section>
   );
 }

@@ -89,8 +89,7 @@
 .orderreset { min-height: 44px; font-size: 12px; }
 .orderfiltermeta { display: none; }
 .ordercolumnsettings { right: 14px; border-color: var(--order-border); border-radius: 9px; box-shadow: var(--order-shadow); }
-.orderselectionnote,
-.orderstalebanner { margin: 8px 14px 0; border-radius: 6px; font-size: 12px; }
+.orderselectionnote { margin: 8px 14px 0; border-radius: 6px; font-size: 12px; }
 .orderselectionnote { order: 3; }
 
 .orderlistpanel { min-height: 0; order: 4; flex: 1; overflow: auto; }

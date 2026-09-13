@@ -39,6 +39,9 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
   const releaseStateVisible = publicationTask !== undefined || releaseFeedback !== undefined
     || (releaseDisabledReason !== undefined && !noPendingReview);
   const releaseMessage = releaseFeedback?.message ?? (noPendingReview ? undefined : releaseDisabledReason);
+  const publicationActive = publicationTask?.state === 'queued' || publicationTask?.state === 'running';
+  const compactPublicationTask = publicationTask !== undefined && !publicationActive ? publicationTask : undefined;
+  const expandedReleaseStateVisible = publicationActive || releaseMessage !== undefined;
 
   return (
     <>
@@ -91,9 +94,9 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
           商品写操作仅在当前商城已授权的管理范围内可用。
         </p>
       </header>
-      {workspace === 'catalog' && !partnerWorkspace && releaseStateVisible ? (
+      {workspace === 'catalog' && !partnerWorkspace && expandedReleaseStateVisible ? (
         <section id="productreleasestate" className="productreleasestate" aria-label="商品发布状态">
-          {publicationTask === undefined ? null : (
+          {!publicationActive || publicationTask === undefined ? null : (
             <PublicationTaskStatus task={publicationTask} retryPending={releasePending} onRetry={onRetry} />
           )}
           {releaseMessage === undefined ? null : (
@@ -115,6 +118,18 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
             </button>
           );
         })}
+        {workspace !== 'catalog' || compactPublicationTask === undefined ? null : (
+          <details className="productpublicationcompact">
+            <summary>
+              <ProductIcon name={compactPublicationTask.state === 'completed' ? 'check' : 'warning'} />
+              {compactPublicationTask.state === 'completed' ? '已完成' : publicationStateLabel(compactPublicationTask.state)}
+              {compactPublicationTask.total === null ? null : <strong>{formatCount(compactPublicationTask.processed)}</strong>}
+            </summary>
+            <div className="productpublicationpopover">
+              <PublicationTaskStatus task={compactPublicationTask} retryPending={releasePending} onRetry={onRetry} />
+            </div>
+          </details>
+        )}
       </nav> : null}
     </>
   );

@@ -280,6 +280,8 @@ describe('Product governance workspace', () => {
     expect(screen.queryByRole('alert')).toBeNull();
     completed = true;
     expect(await screen.findByText('任务已完成', {}, { timeout: 5_000 })).toBeTruthy();
+    expect(document.querySelector('.productreleasestate')).toBeNull();
+    expect(screen.getByText('已完成')).toBeTruthy();
     expect(screen.getByText('成功 1 · 失败 0 · 跳过 0')).toBeTruthy();
     const completedRelease = screen.getByRole<HTMLButtonElement>('button', { name: '一键审核上架' });
     expect(completedRelease.disabled).toBe(true);
@@ -376,6 +378,7 @@ describe('Product governance workspace', () => {
 
     renderProductRoute(mallContext);
     await screen.findByText('成功 1 · 失败 2 · 跳过 0');
+    await user.click(screen.getByText('已完成'));
     await user.click(screen.getByText('查看失败明细 2 件'));
     expect(screen.getByText(/LISTING_NOT_FOUND/)).toBeTruthy();
     expect(screen.getByText(/不可重试。下一步：补全商品资料、价格和库存后重新审核/)).toBeTruthy();
@@ -404,27 +407,21 @@ describe('Product governance workspace', () => {
     expect(screen.getByTestId('route-location').textContent)
       .toBe('/scopes/mall/mall%3Ahongtai/products/owned/new');
     await user.click(importing);
-    expect(await screen.findByRole('dialog', { name: '批量导入商品' })).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: '取消' }));
+    expect(screen.getByTestId('route-location').textContent)
+      .toBe('/scopes/mall/mall%3Ahongtai/products/owned/new');
+    expect(screen.getByTestId('route-search').textContent).toBe('?mode=batch');
     await user.click(screen.getByRole('button', { name: '下架 核心商品' }));
     await waitFor(() => expect(writes).toContain('DELETE'));
   });
 
   it('opens an uploaded import inside the exact mall scope', async () => {
     const user = userEvent.setup();
-    server.use(http.post('*/api/v1/catalog/imports', () => HttpResponse.json({
-      id: 'catalogimport:1', state: 'uploaded', total_count: 0, cursor_value: 0, success_count: 0, failure_count: 0,
-    })));
     renderProductRoute(mallContext);
     await screen.findByRole('table', { name: '商品列表' });
     await user.click(screen.getByRole('button', { name: '批量导入' }));
-    await user.upload(screen.getByLabelText('选择标准货盘包'),
-      new File([standardPackage], 'hongtai-products.json', { type: 'application/json' }));
-    await screen.findByText('package:test:route');
-    await user.click(screen.getByRole('button', { name: '上传并校验' }));
-
-    await waitFor(() => expect(screen.getByTestId('route-location').textContent)
-      .toBe('/scopes/mall/mall%3Ahongtai/imports/catalog/catalogimport%3A1'));
+    expect(screen.getByTestId('route-location').textContent)
+      .toBe('/scopes/mall/mall%3Ahongtai/products/owned/new');
+    expect(screen.getByTestId('route-search').textContent).toBe('?mode=batch');
   });
 
   it('downloads an empty loaded page with only the fixed header', async () => {
@@ -459,7 +456,8 @@ function renderProductRoute(value: ConsoleContext = context, entry = '/products'
 
 function RouteLocation() {
   const location = useLocation();
-  return <output hidden data-testid="route-location">{location.pathname}</output>;
+  return <><output hidden data-testid="route-location">{location.pathname}</output>
+    <output hidden data-testid="route-search">{location.search}</output></>;
 }
 
 function captureDownload() {
@@ -548,17 +546,6 @@ function publicationTask(overrides: Readonly<Record<string, unknown>> = {}) {
     ...overrides,
   };
 }
-
-const standardPackage = JSON.stringify({
-  schema: 'catalog-package/v1', packageId: 'package:test:route', compiledAt: '2026-09-07T00:00:00.000Z',
-  source: { name: '测试货盘', file: 'test.json' }, validation: { status: 'passed', errors: [] },
-  items: [{ source: { row: 1, productRef: 'P-1', skuRef: 'S-1' },
-    product: { title: '测试商品', description: '测试商品描述', category: 'personal', type: 'physical',
-      attributes: {}, media: [{ kind: 'image', reference: 'fixture:test-product' }] },
-    sku: { code: 'TEST-SKU-ROUTE', specifications: { 规格: '标准' } },
-    offer: { currency: 'CNY', amountMinor: 9900 }, inventory: { available: 10 }, publication: { state: 'draft' },
-    validation: { status: 'valid', errors: [] } }],
-});
 
 const scope = { kind: 'enterprise' as const, id: 'enterprise:1', name: '鸿泰集团' };
 const context: ConsoleContext = {

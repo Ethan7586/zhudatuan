@@ -15,11 +15,13 @@ export function ProductImportDialog({
   open,
   onClose,
   onCreated,
+  embedded = false,
 }: Readonly<{
   context: ConsoleContext;
   open: boolean;
   onClose: () => void;
   onCreated: (jobId: string) => void;
+  embedded?: boolean;
 }>) {
   const [file, setFile] = useState<File>();
   const [content, setContent] = useState<string>();
@@ -58,9 +60,8 @@ export function ProductImportDialog({
     }
   };
 
-  return (
-    <Dialog open={open} title="批量导入商品" eyebrow="CATALOG PACKAGE / V1" dismissable={!mutation.isPending} onClose={resetAndClose}>
-      <div className="productimportdialog">
+  const formContent = (
+    <div className="productimportdialog">
         <p>上传固定版本标准包。系统先校验并生成预览；只有你在结果页确认后，才会保存商品草稿、售价和库存。</p>
         <div className="productimporttools">
           <Button onPress={downloadCatalogPackageTemplate}>下载标准模板</Button>
@@ -89,7 +90,14 @@ export function ProductImportDialog({
           <Button tone="primary" isDisabled={!available || content === undefined || preview === undefined || mutation.isPending}
             onPress={() => mutation.mutate()}>{mutation.isPending ? '正在上传…' : '上传并校验'}</Button>
         </footer>
-      </div>
+    </div>
+  );
+
+  if (embedded) return <section className="productimportembedded" aria-label="批量导入自有商品">{formContent}</section>;
+
+  return (
+    <Dialog open={open} title="批量导入商品" eyebrow="CATALOG PACKAGE / V1" dismissable={!mutation.isPending} onClose={resetAndClose}>
+      {formContent}
     </Dialog>
   );
 }

@@ -234,11 +234,6 @@ export function Component() {
                     </button>
                   </section>
                 ) : null}
-                {query.isError && page !== undefined ? (
-                  <p className="orderstalebanner" role="status">
-                    刷新失败，当前保留最近一次已验证数据：{error}
-                  </p>
-                ) : null}
                 {page?.items.length === 0 ? (
                   <section className="orderliststate" role="status">
                     <OrderIcon name="order" />

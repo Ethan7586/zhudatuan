@@ -41,8 +41,7 @@
   accent-color: var(--sw-brand);
 }
 
-.orderselectionnote,
-.orderstalebanner {
+.orderselectionnote {
   margin: var(--sw-space-1) var(--sw-space-3) 0;
   border-radius: var(--sw-radius-sm);
   padding: var(--sw-space-1);
@@ -51,10 +50,6 @@
 .orderselectionnote {
   background: var(--sw-brand-light);
   color: var(--sw-brand-dark);
-}
-.orderstalebanner {
-  background: var(--sw-warning-surface);
-  color: var(--sw-warning-strong);
 }
 .orderlistpanel {
   min-height: 15rem;

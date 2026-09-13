@@ -23,6 +23,19 @@ afterEach(() => { cleanup(); uploadedPackage = undefined; window.localStorage.cl
 afterAll(() => server.close());
 
 describe('Owned product creation page', () => {
+  it('switches between single entry and batch import on the same page', async () => {
+    const user = userEvent.setup();
+    renderRoute();
+
+    expect(screen.getByRole('button', { name: /单个录入/ }).getAttribute('aria-current')).toBe('page');
+    await user.click(screen.getByRole('button', { name: /批量导入/ }));
+    expect(screen.getByRole('button', { name: /批量导入/ }).getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('region', { name: '批量导入自有商品' })).toBeTruthy();
+    expect(screen.getByLabelText('选择标准货盘包')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: /单个录入/ }));
+    expect(screen.getByRole('button', { name: /基础信息/ })).toBeTruthy();
+  });
+
   it('collects the three-step form, previews completeness and opens server confirmation', async () => {
     const user = userEvent.setup();
     renderRoute();

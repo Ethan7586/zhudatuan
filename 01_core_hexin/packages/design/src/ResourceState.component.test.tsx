@@ -62,12 +62,8 @@ describe('resource state contract', () => {
     expect(result.props.children).toBe('previous data');
   });
 
-  it('keeps prior content and an explicit refresh action when stale', () => {
-    const result = ResourceState({ condition: 'stale', retry: () => undefined, children: 'previous data' });
-    expect(isValidElement(result)).toBe(true);
-    if (!isValidElement<{ message: string; retry: () => void; children: unknown }>(result)) throw new Error('RESOURCE_STALE_ELEMENT_REQUIRED');
-    expect(result.props.message).toContain('最近一次成功读取');
-    expect(result.props.retry).toBeTypeOf('function');
-    expect(result.props.children).toBe('previous data');
+  it('keeps prior content without rendering the retired stale-data panel', () => {
+    expect(ResourceState({ condition: 'stale', retry: () => undefined, children: 'previous data' }))
+      .toBe('previous data');
   });
 });
