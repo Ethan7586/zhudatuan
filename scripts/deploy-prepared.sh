@@ -37,13 +37,11 @@ if ! gh workflow view deploy-prepared.yml --ref zdt-next --yaml >/dev/null 2>&1;
 fi
 
 echo "Prepared deploy: ${SHA} -> ${NODE}/${TARGET}"
-APPROVAL="zdt-next:prepared-deploy:${SHA}:${NODE}:${TARGET}"
 gh workflow run deploy-prepared.yml --ref zdt-next \
   -f head_sha="$SHA" \
   -f release_node="$NODE" \
   -f release_target="$TARGET" \
-  -f operation=deploy \
-  -f production_approval="$APPROVAL"
+  -f operation=deploy
 
 TITLE="Prepared Deploy ${SHA} ${NODE} ${TARGET}"
 RUN_ID=""

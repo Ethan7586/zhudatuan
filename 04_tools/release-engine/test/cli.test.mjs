@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-import { deployPreparedCommand, validatePreparedCommand } from '../src/engine.mjs';
+import { assertPreparedControlPlane, deployPreparedCommand, validatePreparedCommand } from '../src/engine.mjs';
 
 const releaseEngineRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -41,7 +41,7 @@ test('artifact preparation is an explicit boolean CLI option with separate publi
   assert.match(result.stdout, /--state-directory/);
 });
 
-test('prepared commands require exact control provenance and an independent production approval', async () => {
+test('prepared commands require exact control provenance and expected remote digests', async () => {
   const adapter = {
     project: 'fixture',
     projectRoot: process.cwd(),
@@ -55,6 +55,32 @@ test('prepared commands require exact control provenance and an independent prod
   );
   await assert.rejects(
     () => deployPreparedCommand(adapter, { ...base, controlSha: 'b'.repeat(40), githubRunId: '10', githubRunAttempt: '1' }),
-    (error) => error.code === 'PREPARED_DEPLOY_APPROVAL_INVALID'
+    (error) => error.code === 'PREPARED_DEPLOY_REMOTE_AGENT_SHA256_REQUIRED'
+  );
+});
+
+test('prepared control-plane evidence must match the expected Agent and policy exactly', () => {
+  const expected = {
+    sourceSha: 'b'.repeat(40),
+    githubRunId: '10',
+    githubRunAttempt: '1',
+    remoteAgentSha256: `sha256:${'c'.repeat(64)}`,
+    remotePolicySha256: `sha256:${'d'.repeat(64)}`,
+  };
+  const evidence = {
+    sourceSha: expected.sourceSha,
+    github: { runId: expected.githubRunId, runAttempt: expected.githubRunAttempt },
+    remoteAgentSha256: expected.remoteAgentSha256,
+    remotePolicySha256: expected.remotePolicySha256,
+  };
+
+  assert.equal(assertPreparedControlPlane(evidence, expected), evidence);
+  assert.throws(
+    () => assertPreparedControlPlane({ ...evidence, remoteAgentSha256: `sha256:${'e'.repeat(64)}` }, expected),
+    (error) => error.code === 'PREPARED_DEPLOY_REMOTE_PROVENANCE_MISMATCH'
+  );
+  assert.throws(
+    () => assertPreparedControlPlane({ ...evidence, remotePolicySha256: `sha256:${'f'.repeat(64)}` }, expected),
+    (error) => error.code === 'PREPARED_DEPLOY_REMOTE_PROVENANCE_MISMATCH'
   );
 });

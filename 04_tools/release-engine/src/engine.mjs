@@ -14,6 +14,8 @@ import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
 import { createRun, readJson, statePaths, writeJson } from './state.mjs';
 
+const SHA256_PATTERN = /^sha256:[a-f0-9]{64}$/;
+
 export async function planCommand(adapter, options) {
   const started = performance.now();
   const created = await createPlan(adapter, options);
@@ -121,16 +123,16 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   invariant(/^[a-f0-9]{40}$/.test(controlSha), 'PREPARED_DEPLOY_CONTROL_SHA_INVALID', 'Prepared deploy requires the exact release control-plane SHA');
   invariant(/^[1-9][0-9]*$/.test(githubRunId), 'PREPARED_DEPLOY_RUN_ID_INVALID', 'Prepared deploy requires the GitHub run id');
   invariant(/^[1-9][0-9]*$/.test(githubRunAttempt), 'PREPARED_DEPLOY_RUN_ATTEMPT_INVALID', 'Prepared deploy requires the GitHub run attempt');
+  const expectedRemoteAgentSha256 = required(options.expectedRemoteAgentSha256, 'PREPARED_DEPLOY_REMOTE_AGENT_SHA256_REQUIRED');
+  const expectedRemotePolicySha256 = required(options.expectedRemotePolicySha256, 'PREPARED_DEPLOY_REMOTE_POLICY_SHA256_REQUIRED');
+  invariant(SHA256_PATTERN.test(expectedRemoteAgentSha256), 'PREPARED_DEPLOY_REMOTE_AGENT_SHA256_INVALID', 'Prepared deploy requires the expected remote Agent SHA-256');
+  invariant(SHA256_PATTERN.test(expectedRemotePolicySha256), 'PREPARED_DEPLOY_REMOTE_POLICY_SHA256_INVALID', 'Prepared deploy requires the expected remote policy SHA-256');
   const target = required(options.target, 'PREPARED_DEPLOY_TARGET_REQUIRED');
   invariant(Boolean(adapter.targets[target]), 'PREPARED_DEPLOY_TARGET_UNKNOWN', `Unknown target ${target}`);
   const nodes = options.nodes ?? [];
   invariant(nodes.length === 1, 'PREPARED_DEPLOY_NODE_REQUIRED', 'Prepared deploy requires exactly one explicit node');
   const requestedNode = nodes[0];
   invariant(Boolean(adapter.nodes[requestedNode]?.deployments?.[target]), 'PREPARED_DEPLOY_NODE_TARGET_MISMATCH', `Unknown deployment ${requestedNode}/${target}`);
-  if (!candidateOnly) {
-    const expectedApproval = `${adapter.project}:prepared-deploy:${sourceSha}:${requestedNode}:${target}`;
-    invariant(options.productionApproval === expectedApproval, 'PREPARED_DEPLOY_APPROVAL_INVALID', `Prepared production deploy requires ${expectedApproval}`);
-  }
   const resolvedDeployment = resolveDeployment(adapter, requestedNode, target);
   const resolution = await resolvePreparedArtifact(adapter, { ...options, node: requestedNode });
   const publicClient = ossClientFromEnvironment(options.endpoint);
@@ -151,7 +153,7 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
         'ssh',
         host,
         remoteAgent,
-        candidateOnly ? 'validate-oss-candidate' : 'deploy-oss-direct',
+        candidateOnly ? 'validate-oss-candidate-v2' : 'deploy-oss-direct-v2',
         '--project',
         adapter.project,
         '--node',
@@ -172,6 +174,10 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
         githubRunId,
         '--github-run-attempt',
         githubRunAttempt,
+        '--expected-remote-agent-sha256',
+        expectedRemoteAgentSha256,
+        '--expected-remote-policy-sha256',
+        expectedRemotePolicySha256,
       ],
       input: `${JSON.stringify({
         artifactUrl: internalClient.signGet(artifact.object, 900),
@@ -188,16 +194,13 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
     invariant(Boolean(remoteResult?.activation?.receipt), 'PREPARED_DEPLOY_RECEIPT_MISSING', 'Remote prepared deploy did not return an activation receipt');
   }
   const controlPlane = candidateOnly ? remoteResult.controlPlane : remoteResult.activation.receipt.controlPlane;
-  invariant(
-    controlPlane?.sourceSha === controlSha && controlPlane.github?.runId === githubRunId && controlPlane.github?.runAttempt === githubRunAttempt,
-    'PREPARED_DEPLOY_CONTROL_PROVENANCE_MISMATCH',
-    'Remote deployment receipt control-plane provenance differs'
-  );
-  invariant(
-    /^sha256:[a-f0-9]{64}$/.test(controlPlane.remoteAgentSha256 ?? '') && /^sha256:[a-f0-9]{64}$/.test(controlPlane.remotePolicySha256 ?? ''),
-    'PREPARED_DEPLOY_REMOTE_PROVENANCE_MISSING',
-    'Remote deployment receipt is missing Agent or policy digest'
-  );
+  assertPreparedControlPlane(controlPlane, {
+    sourceSha: controlSha,
+    githubRunId,
+    githubRunAttempt,
+    remoteAgentSha256: expectedRemoteAgentSha256,
+    remotePolicySha256: expectedRemotePolicySha256,
+  });
   return {
     schema: candidateOnly ? 'ai.delivery.prepared-candidate.v1' : 'ai.delivery.prepared-deploy.v1',
     project: adapter.project,
@@ -231,6 +234,29 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
     ...(candidateOnly ? { candidateEvidence: remoteResult.current } : { receipt: remoteResult.activation.receipt }),
     completedAt: new Date().toISOString(),
   };
+}
+
+export function assertPreparedControlPlane(controlPlane, expected) {
+  invariant(
+    controlPlane?.sourceSha === expected.sourceSha && controlPlane.github?.runId === expected.githubRunId && controlPlane.github?.runAttempt === expected.githubRunAttempt,
+    'PREPARED_DEPLOY_CONTROL_PROVENANCE_MISMATCH',
+    'Remote deployment receipt control-plane provenance differs'
+  );
+  invariant(
+    SHA256_PATTERN.test(controlPlane.remoteAgentSha256 ?? '') && SHA256_PATTERN.test(controlPlane.remotePolicySha256 ?? ''),
+    'PREPARED_DEPLOY_REMOTE_PROVENANCE_MISSING',
+    'Remote deployment receipt is missing Agent or policy digest'
+  );
+  invariant(
+    controlPlane.remoteAgentSha256 === expected.remoteAgentSha256 && controlPlane.remotePolicySha256 === expected.remotePolicySha256,
+    'PREPARED_DEPLOY_REMOTE_PROVENANCE_MISMATCH',
+    'Remote Agent or policy digest differs from the exact release control plane',
+    {
+      expected: { remoteAgentSha256: expected.remoteAgentSha256, remotePolicySha256: expected.remotePolicySha256 },
+      actual: { remoteAgentSha256: controlPlane.remoteAgentSha256, remotePolicySha256: controlPlane.remotePolicySha256 },
+    }
+  );
+  return controlPlane;
 }
 
 export async function deployCommand(adapter, options) {

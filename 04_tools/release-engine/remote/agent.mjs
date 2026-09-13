@@ -39,9 +39,11 @@ try {
   const nodePolicy = policy.nodes?.[nodeKey];
   const deployment = nodePolicy?.deployments?.[targetId];
   assert(deployment, 'DEPLOYMENT_NOT_ALLOWED');
-  const controlPlane = ['deploy-oss-direct', 'validate-oss-candidate'].includes(action) ? await preparedControlPlane(options, policyBody) : null;
+  const preparedActions = new Set(['deploy-oss-direct', 'validate-oss-candidate', 'deploy-oss-direct-v2', 'validate-oss-candidate-v2']);
+  const controlPlane = preparedActions.has(action) ? await preparedControlPlane(options, policyBody) : null;
   const context = { project, node: nodeKey, target: targetId, deployment, nodePolicy, policy, controlPlane };
   loadedContext = context;
+  if (preparedActions.has(action) && action.endsWith('-v2')) assertExpectedPreparedControlPlane(controlPlane, options);
 
   let result;
   if (action === 'lookup') result = await lookup(context, options);
@@ -51,8 +53,9 @@ try {
   else if (action === 'reuse-direct') result = await withLocks(context, false, () => reuse(context, options, true), { version: options.treeDigest, operation: 'reuse-artifact-direct' });
   else if (action === 'stage') result = await withLocks(context, false, () => stage(context, options), { version: options.treeDigest });
   else if (action === 'stage-direct') result = await withLocks(context, false, () => stage(context, options, true), { version: options.treeDigest, operation: 'stage-direct' });
-  else if (action === 'validate-oss-candidate') result = await withLocks(context, false, () => validateOssCandidate(context, options), { version: options.sourceSha, operation: 'validate-oss-candidate' });
-  else if (action === 'deploy-oss-direct') result = await withLocks(context, true, () => deployOssDirect(context, options), { version: options.sourceSha, operation: 'deploy-oss-direct' });
+  else if (action === 'validate-oss-candidate' || action === 'validate-oss-candidate-v2')
+    result = await withLocks(context, false, () => validateOssCandidate(context, options), { version: options.sourceSha, operation: 'validate-oss-candidate' });
+  else if (action === 'deploy-oss-direct' || action === 'deploy-oss-direct-v2') result = await withLocks(context, true, () => deployOssDirect(context, options), { version: options.sourceSha, operation: 'deploy-oss-direct' });
   else if (action === 'preflight') result = await preflight(context);
   else if (action === 'baseline') result = await withLocks(context, true, () => importBaseline(context, options), { version: options.sourceSha, operation: 'import-baseline' });
   else if (action === 'seed') result = await withLocks(context, true, () => seed(context, options), { version: options.sourceSha, operation: 'seed-layout' });
@@ -1764,6 +1767,21 @@ async function preparedControlPlane(options, policyBody) {
     remoteAgentSha256: `sha256:${await hashFile(fileURLToPath(import.meta.url))}`,
     remotePolicySha256: `sha256:${createHash('sha256').update(policyBody).digest('hex')}`,
   };
+}
+
+function assertExpectedPreparedControlPlane(controlPlane, options) {
+  const expectedAgentSha256 = required(options.expectedRemoteAgentSha256, 'EXPECTED_REMOTE_AGENT_SHA256_REQUIRED');
+  const expectedPolicySha256 = required(options.expectedRemotePolicySha256, 'EXPECTED_REMOTE_POLICY_SHA256_REQUIRED');
+  assert(/^sha256:[a-f0-9]{64}$/.test(expectedAgentSha256), 'EXPECTED_REMOTE_AGENT_SHA256_INVALID');
+  assert(/^sha256:[a-f0-9]{64}$/.test(expectedPolicySha256), 'EXPECTED_REMOTE_POLICY_SHA256_INVALID');
+  assert(controlPlane.remoteAgentSha256 === expectedAgentSha256, 'REMOTE_AGENT_SHA256_MISMATCH', {
+    expected: expectedAgentSha256,
+    actual: controlPlane.remoteAgentSha256,
+  });
+  assert(controlPlane.remotePolicySha256 === expectedPolicySha256, 'REMOTE_POLICY_SHA256_MISMATCH', {
+    expected: expectedPolicySha256,
+    actual: controlPlane.remotePolicySha256,
+  });
 }
 
 function expand(value, values) {

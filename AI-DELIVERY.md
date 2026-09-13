@@ -73,7 +73,7 @@ release-manifest-<release-manifest-file-sha256>.json
 
 ## Prepared Deploy（1.3 纯部署通道）
 
-`.github/workflows/deploy-prepared.yml` 必须输入一个完整 source SHA、一个 node 和一个 target。默认操作是 `validate-candidate`，只解析、下载、校验并设置候选，不移动 current。`deploy` 操作需要独立任务中的明确生产授权。工作流只稀疏读取当前发布控制面，不 checkout 业务源版本，不执行 `npm ci`、测试、类型检查、构建、打包或上传。
+`.github/workflows/deploy-prepared.yml` 必须输入一个完整 source SHA、一个 node 和一个 target。默认操作是 `validate-candidate`，只解析、下载、校验并设置候选，不移动 current。`deploy` 只由 Ethan 的“部署”口令触发，不再接收脚本可自动生成的第二授权字符串。工作流只稀疏读取当前发布控制面，不 checkout 业务源版本，不执行 `npm ci`、测试、类型检查、构建、打包或上传。
 
 ```text
 OSS 前缀查询 → 唯一 release manifest
@@ -89,13 +89,14 @@ OSS 前缀查询 → 唯一 release manifest
 
 ```bash
 npm run release -- validate-prepared --source-sha <source-sha> --node <node> --target <target> \
-  --control-sha <workflow-sha> --github-run-id <run-id> --github-run-attempt <attempt>
+  --control-sha <workflow-sha> --github-run-id <run-id> --github-run-attempt <attempt> \
+  --expected-remote-agent-sha256 <sha256> --expected-remote-policy-sha256 <sha256>
 npm run release -- deploy-prepared --source-sha <source-sha> --node <node> --target <target> \
   --control-sha <workflow-sha> --github-run-id <run-id> --github-run-attempt <attempt> \
-  --production-approval zdt-next:prepared-deploy:<source-sha>:<node>:<target>
+  --expected-remote-agent-sha256 <sha256> --expected-remote-policy-sha256 <sha256>
 ```
 
-OSS 中制品不存在、对象下载失败、摘要/清单不符或 project/target/node/source SHA 不符时，远端切换不会开始。同一精确制品可重复部署；ECS 已有不可变版本时跳过下载并执行健康复核。相同制品也可部署到清单声明的其他节点，不重新构建。
+Prepared Deploy 只接受仓库固定的 ECS Ed25519 主机键（指纹 `SHA256:k5H7lupovyWgtjZJWrB4nmeLc0T1CpBN5FR/Xd3qmW8`），禁止运行时 `ssh-keyscan`。当前控制面从精确 checkout 计算 Agent 与 policy 摘要并调用 v2 远端动作；新 Agent 在下载、加锁和切换前自校验，旧 Agent 因不认识 v2 动作直接拒绝，动作完成后的回执再逐值复核。只有格式正确但值不同同样停止。OSS 中制品不存在、对象下载失败、摘要/清单不符或 project/target/node/source SHA 不符时，远端切换不会开始。同一精确制品可重复部署；ECS 已有不可变版本时跳过下载并执行健康复核。相同制品也可部署到清单声明的其他节点，不重新构建。
 
 预签名下载 URL 只经 stdin 交给远端 Agent，不进入命令参数、回执或审计日志。凭据只来自现有 GitHub Secrets；仓库、制品和回执不保存凭据。
 

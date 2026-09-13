@@ -13,8 +13,10 @@ const deployWorkflow = await readFile(join(projectRoot, '.github/workflows/deplo
 const deployOssWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy-oss.yml'), 'utf8');
 const preparedDeployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy-prepared.yml'), 'utf8');
 const prepareWorkflow = await readFile(join(projectRoot, '.github/workflows/prepare-artifact.yml'), 'utf8');
+const releaseEngine = await readFile(join(projectRoot, '04_tools/release-engine/src/engine.mjs'), 'utf8');
 const deployNow = await readFile(join(projectRoot, 'scripts/deploy-now.sh'), 'utf8');
 const deployPrepared = await readFile(join(projectRoot, 'scripts/deploy-prepared.sh'), 'utf8');
+const preparedKnownHosts = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts'), 'utf8');
 const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/quality.yml'), 'utf8');
 const storefrontUnit = await readFile(join(systemdRoot, 'sfl-storefront@.service'), 'utf8');
 const storefrontPackage = JSON.parse(await readFile(join(projectRoot, '01_core_hexin/apps/storefront-web/package.json'), 'utf8'));
@@ -55,6 +57,13 @@ test('Console retains optional public acceptance metadata while parallel Prepare
   assert.equal((preparedDeployWorkflow.match(/--target "\$RELEASE_TARGET"/g) ?? []).length, 1);
   assert.doesNotMatch(preparedDeployWorkflow, /affected|target_args|inputs\.head_sha \|\||inputs\.release_target \|\|/);
   assert.doesNotMatch(preparedDeployWorkflow, /Affected Delivery|external_baseline|approve-production|npm ci|release -- (?:build|package|publish)/);
+  assert.doesNotMatch(preparedDeployWorkflow, /ssh-keyscan|production[_-]approval|zdt-next:prepared-deploy:/);
+  assert.match(preparedDeployWorkflow, /zdt-next\.ssh-known-hosts/);
+  assert.match(preparedDeployWorkflow, /StrictHostKeyChecking yes/);
+  assert.match(preparedDeployWorkflow, /--expected-remote-agent-sha256 "\$expected_agent_sha256"/);
+  assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256 "\$expected_policy_sha256"/);
+  assert.match(preparedDeployWorkflow, /zdt-next\.remote-policy\.json/);
+  assert.match(preparedKnownHosts, /^123\.57\.232\.253 ssh-ed25519 AAAA[0-9A-Za-z+/]+={0,2}$/m);
   assert.match(prepareWorkflow, /--prepare/);
   assert.match(prepareWorkflow, /npm ci/);
   assert.match(prepareWorkflow, /release -- build/);
@@ -77,7 +86,7 @@ test('direct deployment refuses incomplete inputs and never creates a temporary 
   assert.match(deployNow, /gh workflow run deploy\.yml --ref zdt-next -f head_sha="\$SHA" -f release_node="\$NODE" -f release_target="\$TARGET"/);
   assert.doesNotMatch(deployNow, /git push|DEPLOY_REF|affected/);
   assert.match(deployPrepared, /gh workflow run deploy-prepared\.yml/);
-  assert.match(deployPrepared, /production_approval/);
+  assert.doesNotMatch(deployPrepared, /production[_-]approval|zdt-next:prepared-deploy:/);
 });
 
 test('build and remote adapters agree on every pointer and process', () => {
@@ -341,9 +350,11 @@ test('prepared deployment binds artifact and control-plane provenance before can
   assert.match(preparedDeployWorkflow, /--control-sha "\$CONTROL_SHA"/);
   assert.match(preparedDeployWorkflow, /--github-run-id "\$GITHUB_RUN_ID"/);
   assert.match(preparedDeployWorkflow, /--github-run-attempt "\$GITHUB_RUN_ATTEMPT"/);
+  assert.match(preparedDeployWorkflow, /--expected-remote-agent-sha256/);
+  assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256/);
+  assert.match(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v2' : 'deploy-oss-direct-v2'/);
   assert.match(preparedDeployWorkflow, /--node "\$RELEASE_NODE"/);
   assert.match(preparedDeployWorkflow, /validate-candidate/);
-  assert.match(preparedDeployWorkflow, /zdt-next:prepared-deploy:/);
   assert.match(preparedDeployWorkflow, /jobs:\n  prepared:/);
   assert.doesNotMatch(preparedDeployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent|npm ci|release -- build|release -- package/);
   assert.match(qualityWorkflow, /^on:\n  workflow_dispatch:/m);

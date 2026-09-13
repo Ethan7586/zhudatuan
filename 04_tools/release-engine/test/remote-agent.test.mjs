@@ -140,6 +140,28 @@ test('OSS direct mode rejects missing deployment control-plane provenance before
     () => readlink(join(fixture.pointerRoot, 'current')),
     (error) => error.code === 'ENOENT'
   );
+  await assert.rejects(
+    () => lstat(fixture.pointerRoot),
+    (error) => error.code === 'ENOENT'
+  );
+});
+
+test('prepared v2 actions reject Agent or policy drift before download and cutover', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'drift-refused', '1'.repeat(40));
+  const payload = await artifactPayload(artifact);
+  const agentMismatch = await captureAgentFailure(() => invokeOss(fixture, artifact, payload, true, 'deploy-oss-direct-v2', { remoteAgentSha256: `sha256:${'0'.repeat(64)}` }));
+  assert.equal(agentMismatch.code, 'REMOTE_AGENT_SHA256_MISMATCH');
+  const policyMismatch = await captureAgentFailure(() => invokeOss(fixture, artifact, payload, true, 'deploy-oss-direct-v2', { remotePolicySha256: `sha256:${'0'.repeat(64)}` }));
+  assert.equal(policyMismatch.code, 'REMOTE_POLICY_SHA256_MISMATCH');
+  await assert.rejects(
+    () => readlink(join(fixture.pointerRoot, 'current')),
+    (error) => error.code === 'ENOENT'
+  );
+  await assert.rejects(
+    () => lstat(fixture.pointerRoot),
+    (error) => error.code === 'ENOENT'
+  );
 });
 
 test('prepared candidate validation downloads and checks the release without moving current', async () => {
@@ -148,7 +170,7 @@ test('prepared candidate validation downloads and checks the release without mov
   await invokeOss(fixture, baseline, await artifactPayload(baseline));
   const current = await readlink(join(fixture.pointerRoot, 'current'));
   const candidate = await createArtifact(fixture, 'candidate-only', '2'.repeat(40));
-  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate');
+  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v2');
   assert.equal(validated.result.schema, 'ai.delivery.oss-candidate.v1');
   assert.equal(validated.result.current.unchanged, true);
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
@@ -1104,7 +1126,7 @@ async function artifactPayload(artifact) {
   };
 }
 
-async function invokeOss(fixture, artifact, payload, includeControlPlane = true, action = 'deploy-oss-direct') {
+async function invokeOss(fixture, artifact, payload, includeControlPlane = true, action = 'deploy-oss-direct-v2', expectedOverrides = {}) {
   const args = [
     agent,
     action,
@@ -1123,7 +1145,17 @@ async function invokeOss(fixture, artifact, payload, includeControlPlane = true,
     '--manifest-digest',
     artifact.manifestDigest,
   ];
-  if (includeControlPlane) args.push('--control-sha', 'f'.repeat(40), '--github-run-id', '123456', '--github-run-attempt', '2');
+  if (includeControlPlane) {
+    args.push('--control-sha', 'f'.repeat(40), '--github-run-id', '123456', '--github-run-attempt', '2');
+    if (action.endsWith('-v2')) {
+      args.push(
+        '--expected-remote-agent-sha256',
+        expectedOverrides.remoteAgentSha256 ?? `sha256:${await hashFile(agent)}`,
+        '--expected-remote-policy-sha256',
+        expectedOverrides.remotePolicySha256 ?? `sha256:${await hashFile(join(fixture.policyRoot, 'fixture.json'))}`
+      );
+    }
+  }
   return new Promise((resolveInvoke, rejectInvoke) => {
     const child = spawn(process.execPath, args, {
       env: { ...process.env, ...(fixture.environment ?? {}), AI_DELIVERY_POLICY_ROOT: fixture.policyRoot },
