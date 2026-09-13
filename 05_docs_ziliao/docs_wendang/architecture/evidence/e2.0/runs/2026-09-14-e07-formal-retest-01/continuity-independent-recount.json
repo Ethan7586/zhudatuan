@@ -1,0 +1,246 @@
+{
+  "schema_version": "e07-independent-continuity-recount-v1",
+  "oracle_id": "E2-ORACLE-E07-LINEAGE",
+  "executed_at": "2026-09-13T21:15:54.754Z",
+  "reads_test_program_pass": false,
+  "input_artifacts": [
+    {
+      "path": "E2.0-E07-正式重测判据-2026-09-14.json",
+      "sha256": "sha256:8c390fc2f2b7b73d52025b84e7aa41929029b2f4d54bc4a9594ea131f7ab17cd",
+      "size_bytes": 9160
+    },
+    {
+      "path": "mall-opening-lineage-before-after.json",
+      "sha256": "sha256:4071845952be2938c000c1fcee3d37197969ab23b64b9eb483d2e5237e63d92c",
+      "size_bytes": 66134
+    },
+    {
+      "path": "mall-opening-infra-counts.json",
+      "sha256": "sha256:ccf5bd2275045d718063f09196a6d25bd9f5ee4ba4cab13e45f82355dbbd8626",
+      "size_bytes": 18099
+    },
+    {
+      "path": "sovereign-upgrade-state-timeline.json",
+      "sha256": "sha256:7fdd061e39f4dd2845ef762a10add357d4bfbb6c6b4fdf84375bf6f66f9d1c17",
+      "size_bytes": 17741
+    },
+    {
+      "path": "sovereign-upgrade-manifest-pointers.json",
+      "sha256": "sha256:a32e95705a4cbaa6525d972f404bd95eab08563909756ccc6957e4e2a522409c",
+      "size_bytes": 13486
+    },
+    {
+      "path": "history-digests.json",
+      "sha256": "sha256:949bf997fde814194bdfe74694971f6d24a208307f2c3f71675017126e42610a",
+      "size_bytes": 58280
+    },
+    {
+      "path": "nontarget-transition-diff.json",
+      "sha256": "sha256:1fdff0fe301e520062b9fb4d7877c4274611c98e9c20d86bf0e8654d3f03b4d2",
+      "size_bytes": 85269
+    },
+    {
+      "path": "source-build-counts.json",
+      "sha256": "sha256:1bc556a17fb7613592c5e089864f1bbd4033f1153c7fd48aba8f4449373da4cd",
+      "size_bytes": 1086331
+    },
+    {
+      "path": "rollback-receipts.json",
+      "sha256": "sha256:4775c9c3b1528e3fa1e7b9d19914d1a2b7949952778b3401b8b93c35fcba5c4c",
+      "size_bytes": 76196
+    },
+    {
+      "path": "continuity-database-raw-rows.json",
+      "sha256": "sha256:21c73dfee38ec83f49389bb51ed7ec5a85cf90164c50f20090be97e8423e689c",
+      "size_bytes": 66191
+    },
+    {
+      "path": "environment.json",
+      "sha256": "sha256:96c8eb205e78fdbc4d951f248369ed3d0346fdb71d0370ae82ab47529d4f56ae",
+      "size_bytes": 2030
+    }
+  ],
+  "missing_items": [],
+  "violations": [],
+  "negative_probes": [
+    {
+      "probe_id": "unrelated-lineage",
+      "expected_violation": [
+        "OPENING_IDENTITY_CHANGED"
+      ],
+      "detected": true,
+      "detected_codes": [
+        "OPENING_IDENTITY_CHANGED"
+      ]
+    },
+    {
+      "probe_id": "membership-and-level-reset",
+      "expected_violation": [
+        "OPENING_IDENTITY_CHANGED"
+      ],
+      "detected": true,
+      "detected_codes": [
+        "OPENING_IDENTITY_CHANGED"
+      ]
+    },
+    {
+      "probe_id": "node-specific-source-build",
+      "expected_violation": [
+        "NODE_SPECIFIC_SOURCE_OR_BUILD"
+      ],
+      "detected": true,
+      "detected_codes": [
+        "NODE_SPECIFIC_SOURCE_OR_BUILD"
+      ]
+    },
+    {
+      "probe_id": "non-target-node-switch",
+      "expected_violation": [
+        "NON_TARGET_UPGRADE_CHANGE"
+      ],
+      "detected": true,
+      "detected_codes": [
+        "NON_TARGET_UPGRADE_CHANGE"
+      ]
+    }
+  ],
+  "recomputed_observations": {
+    "expected_levels": [
+      "L3",
+      "L6",
+      "L8",
+      "L11"
+    ],
+    "upgrade_target_levels": [
+      "L6",
+      "L8"
+    ],
+    "opening_sample_count": 4,
+    "upgrade_timeline_count": 2,
+    "manifest_count": 2,
+    "rollback_receipt_count": 2,
+    "source_file_count": 2013,
+    "raw_row_counts": {
+      "nodes": 4,
+      "relations": 8,
+      "closure": 27,
+      "realms": 4,
+      "memberships": 4,
+      "accounts": 4,
+      "principals": 4,
+      "capabilities": 8,
+      "provisioning": 4,
+      "openings": 4,
+      "configurations": 4,
+      "entity_bindings": 4,
+      "upgrades": 2,
+      "sovereignty_versions": 2,
+      "domain_binding_sets": 2,
+      "domain_bindings": 10,
+      "resource_binding_sets": 2,
+      "manifests": 2,
+      "upgrade_steps": 10,
+      "outbox": 6
+    }
+  },
+  "thresholds": [
+    {
+      "threshold_id": "required_raw_evidence_missing_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "four_level_sample_and_transition_completeness_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "identity_realm_line_parent_level_membership_account_principal_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "lineage_or_immutable_history_digest_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "hosted_opening_authority_or_allowed_addition_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "hosted_infrastructure_call_delta",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "selected_sovereign_target_identity_replacement_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "sovereign_four_step_timeline_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "sovereign_resource_readiness_or_uniqueness_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "manifest_digest_node_binding_or_release_pointer_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "non_target_transition_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "unexpected_relation_capability_or_history_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "business_source_count_or_digest_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "node_specific_source_copy_or_build_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "rollback_restoration_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_oracle_probe_miss_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    }
+  ],
+  "claim_outcome": "MET",
+  "environment_assurance": "DEV VERIFIED"
+}

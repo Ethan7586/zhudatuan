@@ -1,0 +1,402 @@
+{
+  "schema_version": "e07-sovereign-upgrade-state-timeline-v1",
+  "captured_at": "2026-09-13T21:15:54.507Z",
+  "upgrades": [
+    {
+      "sample": {
+        "signed_level": "L6",
+        "opening": true,
+        "sovereign_upgrade": true,
+        "key": "3aefaf82-l6",
+        "node_id": "node:e07-3aefaf82-l6:l6",
+        "realm_id": "realm:e07-3aefaf82-l6",
+        "principal_id": "principal:e07-3aefaf82-l6",
+        "account_id": "account:e07-3aefaf82-l6",
+        "member_id": "member:e07-3aefaf82-l6",
+        "membership_id": "membership:e07-3aefaf82-l6"
+      },
+      "request": {
+        "idempotency_key": "sovereign-upgrade:e07:3aefaf82-l6",
+        "brand_ref": "brand:e07:3aefaf82-l6:v1",
+        "public_api_host": "api.3aefaf82-l6.3aefaf82.e07.test",
+        "storefront_host": "shop.3aefaf82-l6.3aefaf82.e07.test",
+        "accounts_host": "accounts.3aefaf82-l6.3aefaf82.e07.test",
+        "console_host": "console.3aefaf82-l6.3aefaf82.e07.test",
+        "payment_callback_host": "pay.3aefaf82-l6.3aefaf82.e07.test",
+        "edge_binding_ref": "edge:e07:3aefaf82-l6:v1",
+        "tunnel_ref": "tunnel:e07:3aefaf82-l6:v1",
+        "gateway_ref": "gateway:e07:3aefaf82-l6:v1",
+        "runtime_identity_ref": "runtime:e07:3aefaf82-l6:v1",
+        "data_scope_ref": "scope:e07:3aefaf82-l6:v1",
+        "secret_binding_set_ref": "secrets:e07:3aefaf82-l6:v1",
+        "payment_binding_ref": "payment:e07:3aefaf82-l6:v1",
+        "callback_binding_ref": "callback:e07:3aefaf82-l6:v1",
+        "runtime_config_ref": "runtime-config:e07:3aefaf82-l6:v1"
+      },
+      "response": {
+        "business_number": "SFLSOV-0BC090AB6BA1630C3DC6",
+        "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+        "idempotency_key": "sovereign-upgrade:e07:3aefaf82-l6",
+        "request_hash": "d33d68820b5793ea5b8f9abda960f279f12a6c99cd996171234f5662ee47d075",
+        "node_id": "node:e07-3aefaf82-l6:l6",
+        "membership_id": "membership:e07-3aefaf82-l6",
+        "principal_id": "principal:e07-3aefaf82-l6",
+        "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+        "operating_entity_id": "enterprise:43cb62c13e7f56f7636a6a0ab3eace33",
+        "realm_id": "realm:e07-3aefaf82-l6",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "signed_level": "L6",
+        "parent_node_id": "node:zhudatuan:l0",
+        "original_parent_node_id": "node:zhudatuan:l0",
+        "previous_host_sovereign_node_id": "node:zhudatuan:l0",
+        "host_sovereign_node_id": "node:e07-3aefaf82-l6:l6",
+        "source_tier": "hosted",
+        "target_tier": "sovereign",
+        "node_profile": "operating_mall",
+        "status": "upgraded",
+        "previous_relation_version": 1,
+        "active_relation_version": 2,
+        "sovereignty_version": 1,
+        "domain_binding_set_version": 1,
+        "resource_binding_version": 1,
+        "manifest_version": 1,
+        "manifest_digest": "sha256:09921636e929584a7b7caedd7cf8701b39eec8fbb29a764a598023b5a21e281f",
+        "manifest_summary": {
+          "surface_count": 5,
+          "schema_version": "sfl.node-manifest.sovereign.v2",
+          "release_pointer_ref": null,
+          "domain_binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "resource_binding_set_id": "resource-binding-set:0bc090ab6ba1630c3dc687f40de47054"
+        },
+        "recoverable": true,
+        "upgraded_at": "2026-09-13T21:15:54.290Z",
+        "replayed": false
+      },
+      "upgrade": [
+        {
+          "idempotency_key": "sovereign-upgrade:e07:3aefaf82-l6",
+          "request_hash": "d33d68820b5793ea5b8f9abda960f279f12a6c99cd996171234f5662ee47d075",
+          "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+          "business_number": "SFLSOV-0BC090AB6BA1630C3DC6",
+          "node_id": "node:e07-3aefaf82-l6:l6",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "realm_id": "realm:e07-3aefaf82-l6",
+          "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+          "operating_entity_id": "enterprise:43cb62c13e7f56f7636a6a0ab3eace33",
+          "membership_id": "membership:e07-3aefaf82-l6",
+          "principal_id": "principal:e07-3aefaf82-l6",
+          "parent_node_id": "node:zhudatuan:l0",
+          "original_parent_node_id": "node:zhudatuan:l0",
+          "signed_level": "L6",
+          "previous_host_sovereign_node_id": "node:zhudatuan:l0",
+          "previous_relation_version": "1",
+          "active_relation_version": "2",
+          "source_tier": "hosted",
+          "target_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "status": "upgraded",
+          "sovereignty_version": "1",
+          "domain_binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "domain_binding_set_version": "1",
+          "resource_binding_set_id": "resource-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "resource_binding_version": "1",
+          "manifest_id": "node-manifest:0bc090ab6ba1630c3dc687f40de47054",
+          "manifest_version": "1",
+          "manifest_digest": "sha256:09921636e929584a7b7caedd7cf8701b39eec8fbb29a764a598023b5a21e281f",
+          "manifest_summary": {
+            "surface_count": 5,
+            "schema_version": "sfl.node-manifest.sovereign.v2",
+            "release_pointer_ref": null,
+            "domain_binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+            "resource_binding_set_id": "resource-binding-set:0bc090ab6ba1630c3dc687f40de47054"
+          },
+          "recoverable": true,
+          "upgraded_at": "2026-09-13T21:15:54.290Z",
+          "rolled_back_at": null,
+          "rollback_reason": null,
+          "trace_id": "e07:upgrade:node:e07-3aefaf82-l6:l6"
+        }
+      ],
+      "sovereignty_versions": [
+        {
+          "node_id": "node:e07-3aefaf82-l6:l6",
+          "sovereignty_version": "1",
+          "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+          "source_tier": "hosted",
+          "target_tier": "sovereign",
+          "previous_host_sovereign_node_id": "node:zhudatuan:l0",
+          "host_sovereign_node_id": "node:e07-3aefaf82-l6:l6",
+          "previous_relation_version": "1",
+          "active_relation_version": "2",
+          "status": "upgraded",
+          "effective_at": "2026-09-13T21:15:54.290Z",
+          "rolled_back_at": null
+        }
+      ],
+      "steps": [
+        {
+          "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+          "step": "planned",
+          "ordinal": 1,
+          "completed_at": "2026-09-13T21:15:54.290Z",
+          "receipt": {
+            "source_tier": "hosted",
+            "target_tier": "sovereign"
+          }
+        },
+        {
+          "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+          "step": "resources_ready",
+          "ordinal": 2,
+          "completed_at": "2026-09-13T21:15:54.290Z",
+          "receipt": {
+            "domain_binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+            "resource_binding_set_id": "resource-binding-set:0bc090ab6ba1630c3dc687f40de47054"
+          }
+        },
+        {
+          "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+          "step": "bindings_complete",
+          "ordinal": 3,
+          "completed_at": "2026-09-13T21:15:54.290Z",
+          "receipt": {
+            "manifest_id": "node-manifest:0bc090ab6ba1630c3dc687f40de47054",
+            "manifest_digest": "sha256:09921636e929584a7b7caedd7cf8701b39eec8fbb29a764a598023b5a21e281f"
+          }
+        },
+        {
+          "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+          "step": "upgraded",
+          "ordinal": 4,
+          "completed_at": "2026-09-13T21:15:54.290Z",
+          "receipt": {
+            "host_sovereign_node_id": "node:e07-3aefaf82-l6:l6",
+            "active_relation_version": 2
+          }
+        }
+      ],
+      "relation_history": [
+        {
+          "line_id": "line:zhudatuan:commerce:v1",
+          "node_id": "node:e07-3aefaf82-l6:l6",
+          "parent_node_id": "node:zhudatuan:l0",
+          "original_parent_node_id": "node:zhudatuan:l0",
+          "signed_level": "L6",
+          "host_sovereign_node_id": "node:zhudatuan:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T21:15:54.122Z",
+          "superseded_at": "2026-09-13T21:15:54.290Z"
+        },
+        {
+          "line_id": "line:zhudatuan:commerce:v1",
+          "node_id": "node:e07-3aefaf82-l6:l6",
+          "parent_node_id": "node:zhudatuan:l0",
+          "original_parent_node_id": "node:zhudatuan:l0",
+          "signed_level": "L6",
+          "host_sovereign_node_id": "node:e07-3aefaf82-l6:l6",
+          "relation_version": "2",
+          "effective_at": "2026-09-13T21:15:54.290Z",
+          "superseded_at": null
+        }
+      ]
+    },
+    {
+      "sample": {
+        "signed_level": "L8",
+        "opening": true,
+        "sovereign_upgrade": true,
+        "key": "3aefaf82-l8",
+        "node_id": "node:e07-3aefaf82-l8:l8",
+        "realm_id": "realm:e07-3aefaf82-l8",
+        "principal_id": "principal:e07-3aefaf82-l8",
+        "account_id": "account:e07-3aefaf82-l8",
+        "member_id": "member:e07-3aefaf82-l8",
+        "membership_id": "membership:e07-3aefaf82-l8"
+      },
+      "request": {
+        "idempotency_key": "sovereign-upgrade:e07:3aefaf82-l8",
+        "brand_ref": "brand:e07:3aefaf82-l8:v1",
+        "public_api_host": "api.3aefaf82-l8.3aefaf82.e07.test",
+        "storefront_host": "shop.3aefaf82-l8.3aefaf82.e07.test",
+        "accounts_host": "accounts.3aefaf82-l8.3aefaf82.e07.test",
+        "console_host": "console.3aefaf82-l8.3aefaf82.e07.test",
+        "payment_callback_host": "pay.3aefaf82-l8.3aefaf82.e07.test",
+        "edge_binding_ref": "edge:e07:3aefaf82-l8:v1",
+        "tunnel_ref": "tunnel:e07:3aefaf82-l8:v1",
+        "gateway_ref": "gateway:e07:3aefaf82-l8:v1",
+        "runtime_identity_ref": "runtime:e07:3aefaf82-l8:v1",
+        "data_scope_ref": "scope:e07:3aefaf82-l8:v1",
+        "secret_binding_set_ref": "secrets:e07:3aefaf82-l8:v1",
+        "payment_binding_ref": "payment:e07:3aefaf82-l8:v1",
+        "callback_binding_ref": "callback:e07:3aefaf82-l8:v1",
+        "runtime_config_ref": "runtime-config:e07:3aefaf82-l8:v1"
+      },
+      "response": {
+        "business_number": "SFLSOV-99C29C8135210C7BA720",
+        "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+        "idempotency_key": "sovereign-upgrade:e07:3aefaf82-l8",
+        "request_hash": "890ce1c320db0b6897f469129b744c4c49792f0b15d318234d299cc2685e4187",
+        "node_id": "node:e07-3aefaf82-l8:l8",
+        "membership_id": "membership:e07-3aefaf82-l8",
+        "principal_id": "principal:e07-3aefaf82-l8",
+        "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+        "operating_entity_id": "enterprise:8222d6a18ddb9056a06abf95a3a2e321",
+        "realm_id": "realm:e07-3aefaf82-l8",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "signed_level": "L8",
+        "parent_node_id": "node:e07-3aefaf82-parent:l7",
+        "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+        "previous_host_sovereign_node_id": "node:zhudatuan:l0",
+        "host_sovereign_node_id": "node:e07-3aefaf82-l8:l8",
+        "source_tier": "hosted",
+        "target_tier": "sovereign",
+        "node_profile": "operating_mall",
+        "status": "upgraded",
+        "previous_relation_version": 1,
+        "active_relation_version": 2,
+        "sovereignty_version": 1,
+        "domain_binding_set_version": 1,
+        "resource_binding_version": 1,
+        "manifest_version": 1,
+        "manifest_digest": "sha256:8b4c7901de34ccf5db40d2d999b6b25db017782fae1b8d8e1ecf347b522c15e1",
+        "manifest_summary": {
+          "surface_count": 5,
+          "schema_version": "sfl.node-manifest.sovereign.v2",
+          "release_pointer_ref": null,
+          "domain_binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "resource_binding_set_id": "resource-binding-set:99c29c8135210c7ba72063eebf24200b"
+        },
+        "recoverable": true,
+        "upgraded_at": "2026-09-13T21:15:54.302Z",
+        "replayed": false
+      },
+      "upgrade": [
+        {
+          "idempotency_key": "sovereign-upgrade:e07:3aefaf82-l8",
+          "request_hash": "890ce1c320db0b6897f469129b744c4c49792f0b15d318234d299cc2685e4187",
+          "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+          "business_number": "SFLSOV-99C29C8135210C7BA720",
+          "node_id": "node:e07-3aefaf82-l8:l8",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "realm_id": "realm:e07-3aefaf82-l8",
+          "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+          "operating_entity_id": "enterprise:8222d6a18ddb9056a06abf95a3a2e321",
+          "membership_id": "membership:e07-3aefaf82-l8",
+          "principal_id": "principal:e07-3aefaf82-l8",
+          "parent_node_id": "node:e07-3aefaf82-parent:l7",
+          "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+          "signed_level": "L8",
+          "previous_host_sovereign_node_id": "node:zhudatuan:l0",
+          "previous_relation_version": "1",
+          "active_relation_version": "2",
+          "source_tier": "hosted",
+          "target_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "status": "upgraded",
+          "sovereignty_version": "1",
+          "domain_binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "domain_binding_set_version": "1",
+          "resource_binding_set_id": "resource-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "resource_binding_version": "1",
+          "manifest_id": "node-manifest:99c29c8135210c7ba72063eebf24200b",
+          "manifest_version": "1",
+          "manifest_digest": "sha256:8b4c7901de34ccf5db40d2d999b6b25db017782fae1b8d8e1ecf347b522c15e1",
+          "manifest_summary": {
+            "surface_count": 5,
+            "schema_version": "sfl.node-manifest.sovereign.v2",
+            "release_pointer_ref": null,
+            "domain_binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+            "resource_binding_set_id": "resource-binding-set:99c29c8135210c7ba72063eebf24200b"
+          },
+          "recoverable": true,
+          "upgraded_at": "2026-09-13T21:15:54.302Z",
+          "rolled_back_at": null,
+          "rollback_reason": null,
+          "trace_id": "e07:upgrade:node:e07-3aefaf82-l8:l8"
+        }
+      ],
+      "sovereignty_versions": [
+        {
+          "node_id": "node:e07-3aefaf82-l8:l8",
+          "sovereignty_version": "1",
+          "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+          "source_tier": "hosted",
+          "target_tier": "sovereign",
+          "previous_host_sovereign_node_id": "node:zhudatuan:l0",
+          "host_sovereign_node_id": "node:e07-3aefaf82-l8:l8",
+          "previous_relation_version": "1",
+          "active_relation_version": "2",
+          "status": "upgraded",
+          "effective_at": "2026-09-13T21:15:54.302Z",
+          "rolled_back_at": null
+        }
+      ],
+      "steps": [
+        {
+          "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+          "step": "planned",
+          "ordinal": 1,
+          "completed_at": "2026-09-13T21:15:54.302Z",
+          "receipt": {
+            "source_tier": "hosted",
+            "target_tier": "sovereign"
+          }
+        },
+        {
+          "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+          "step": "resources_ready",
+          "ordinal": 2,
+          "completed_at": "2026-09-13T21:15:54.302Z",
+          "receipt": {
+            "domain_binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+            "resource_binding_set_id": "resource-binding-set:99c29c8135210c7ba72063eebf24200b"
+          }
+        },
+        {
+          "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+          "step": "bindings_complete",
+          "ordinal": 3,
+          "completed_at": "2026-09-13T21:15:54.302Z",
+          "receipt": {
+            "manifest_id": "node-manifest:99c29c8135210c7ba72063eebf24200b",
+            "manifest_digest": "sha256:8b4c7901de34ccf5db40d2d999b6b25db017782fae1b8d8e1ecf347b522c15e1"
+          }
+        },
+        {
+          "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+          "step": "upgraded",
+          "ordinal": 4,
+          "completed_at": "2026-09-13T21:15:54.302Z",
+          "receipt": {
+            "host_sovereign_node_id": "node:e07-3aefaf82-l8:l8",
+            "active_relation_version": 2
+          }
+        }
+      ],
+      "relation_history": [
+        {
+          "line_id": "line:zhudatuan:commerce:v1",
+          "node_id": "node:e07-3aefaf82-l8:l8",
+          "parent_node_id": "node:e07-3aefaf82-parent:l7",
+          "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+          "signed_level": "L8",
+          "host_sovereign_node_id": "node:zhudatuan:l0",
+          "relation_version": "1",
+          "effective_at": "2026-09-13T21:15:54.122Z",
+          "superseded_at": "2026-09-13T21:15:54.302Z"
+        },
+        {
+          "line_id": "line:zhudatuan:commerce:v1",
+          "node_id": "node:e07-3aefaf82-l8:l8",
+          "parent_node_id": "node:e07-3aefaf82-parent:l7",
+          "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+          "signed_level": "L8",
+          "host_sovereign_node_id": "node:e07-3aefaf82-l8:l8",
+          "relation_version": "2",
+          "effective_at": "2026-09-13T21:15:54.302Z",
+          "superseded_at": null
+        }
+      ]
+    }
+  ]
+}

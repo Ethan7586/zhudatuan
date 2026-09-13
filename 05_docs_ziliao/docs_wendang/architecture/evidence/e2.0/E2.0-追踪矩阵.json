@@ -705,13 +705,13 @@
       "executor_role": "Isolated transition environment operator",
       "reviewer_role": "Reviewer independent of transition implementation",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay opened the original L3/L6/L8/L11 Hosted nodes, upgraded and rolled back only L6/L8, preserved every locked identity, lineage and immutable-history digest, produced the exact versioned resource/manifest facts, changed neither non-target node, and recorded zero Hosted infrastructure or node-specific build actions. The independent raw-evidence oracle detected all four negative mutations.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/E2.0-E07-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["E2.0 criteria lock, evidence record and independent oracle recomputation"]
+        "gaps": ["Stable separately managed staging replay", "Authorized real DNS/TLS/tunnel/runtime/secret/payment-provider readiness observation", "Deployment and production serving observation", "Independent reviewer recomputation and signature"]
       }
     },
     {

@@ -1,0 +1,291 @@
+{
+  "schema_version": "e07-sovereign-upgrade-manifest-pointers-v1",
+  "captured_at": "2026-09-13T21:15:54.507Z",
+  "resource_boundary": "Synthetic non-production references persisted by the production upgrade transaction; no DNS, TLS, tunnel, runtime, secret or payment provider was called.",
+  "upgrades": [
+    {
+      "sample": {
+        "signed_level": "L6",
+        "opening": true,
+        "sovereign_upgrade": true,
+        "key": "3aefaf82-l6",
+        "node_id": "node:e07-3aefaf82-l6:l6",
+        "realm_id": "realm:e07-3aefaf82-l6",
+        "principal_id": "principal:e07-3aefaf82-l6",
+        "account_id": "account:e07-3aefaf82-l6",
+        "member_id": "member:e07-3aefaf82-l6",
+        "membership_id": "membership:e07-3aefaf82-l6"
+      },
+      "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+      "domain_binding_sets": [
+        {
+          "binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "binding_version": "1",
+          "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+          "node_id": "node:e07-3aefaf82-l6:l6",
+          "realm_id": "realm:e07-3aefaf82-l6",
+          "status": "active",
+          "activated_at": "2026-09-13T21:15:54.290Z",
+          "rolled_back_at": null
+        }
+      ],
+      "domain_bindings": [
+        {
+          "binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "binding_version": "1",
+          "surface": "accounts",
+          "host": "accounts.3aefaf82-l6.3aefaf82.e07.test",
+          "binding_ref": "domain-binding:0bc090ab6ba1630c:accounts",
+          "status": "active"
+        },
+        {
+          "binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "binding_version": "1",
+          "surface": "console",
+          "host": "console.3aefaf82-l6.3aefaf82.e07.test",
+          "binding_ref": "domain-binding:0bc090ab6ba1630c:console",
+          "status": "active"
+        },
+        {
+          "binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "binding_version": "1",
+          "surface": "payment_callback",
+          "host": "pay.3aefaf82-l6.3aefaf82.e07.test",
+          "binding_ref": "domain-binding:0bc090ab6ba1630c:payment_callback",
+          "status": "active"
+        },
+        {
+          "binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "binding_version": "1",
+          "surface": "public_api",
+          "host": "api.3aefaf82-l6.3aefaf82.e07.test",
+          "binding_ref": "domain-binding:0bc090ab6ba1630c:public_api",
+          "status": "active"
+        },
+        {
+          "binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "binding_version": "1",
+          "surface": "storefront",
+          "host": "shop.3aefaf82-l6.3aefaf82.e07.test",
+          "binding_ref": "domain-binding:0bc090ab6ba1630c:storefront",
+          "status": "active"
+        }
+      ],
+      "resource_binding_sets": [
+        {
+          "resource_binding_set_id": "resource-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "resource_binding_version": "1",
+          "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+          "node_id": "node:e07-3aefaf82-l6:l6",
+          "edge_binding_ref": "edge:e07:3aefaf82-l6:v1",
+          "tunnel_ref": "tunnel:e07:3aefaf82-l6:v1",
+          "gateway_ref": "gateway:e07:3aefaf82-l6:v1",
+          "runtime_identity_ref": "runtime:e07:3aefaf82-l6:v1",
+          "realm_ref": "realm:realm:e07-3aefaf82-l6",
+          "data_scope_ref": "scope:e07:3aefaf82-l6:v1",
+          "secret_binding_set_ref": "secrets:e07:3aefaf82-l6:v1",
+          "payment_binding_ref": "payment:e07:3aefaf82-l6:v1",
+          "callback_binding_ref": "callback:e07:3aefaf82-l6:v1",
+          "runtime_config_ref": "runtime-config:e07:3aefaf82-l6:v1",
+          "status": "active",
+          "activated_at": "2026-09-13T21:15:54.290Z",
+          "rolled_back_at": null
+        }
+      ],
+      "manifests": [
+        {
+          "manifest_id": "node-manifest:0bc090ab6ba1630c3dc687f40de47054",
+          "manifest_version": "1",
+          "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+          "node_id": "node:e07-3aefaf82-l6:l6",
+          "domain_binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "domain_binding_set_version": "1",
+          "resource_binding_set_id": "resource-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+          "resource_binding_version": "1",
+          "manifest_digest": "sha256:09921636e929584a7b7caedd7cf8701b39eec8fbb29a764a598023b5a21e281f",
+          "manifest": {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "realm_id": "realm:e07-3aefaf82-l6",
+            "brand_ref": "brand:e07:3aefaf82-l6:v1",
+            "realm_ref": "realm:realm:e07-3aefaf82-l6",
+            "manifest_id": "node-manifest:0bc090ab6ba1630c3dc687f40de47054",
+            "node_profile": "operating_mall",
+            "signed_level": "L6",
+            "data_scope_ref": "scope:e07:3aefaf82-l6:v1",
+            "parent_node_id": "node:zhudatuan:l0",
+            "schema_version": "sfl.node-manifest.sovereign.v2",
+            "domain_bindings": {
+              "console": "console.3aefaf82-l6.3aefaf82.e07.test",
+              "accounts": "accounts.3aefaf82-l6.3aefaf82.e07.test",
+              "public_api": "api.3aefaf82-l6.3aefaf82.e07.test",
+              "storefront": "shop.3aefaf82-l6.3aefaf82.e07.test",
+              "payment_callback": "pay.3aefaf82-l6.3aefaf82.e07.test"
+            },
+            "manifest_version": 1,
+            "sovereignty_tier": "sovereign",
+            "runtime_config_ref": "runtime-config:e07:3aefaf82-l6:v1",
+            "operating_entity_id": "enterprise:43cb62c13e7f56f7636a6a0ab3eace33",
+            "payment_binding_ref": "payment:e07:3aefaf82-l6:v1",
+            "release_pointer_ref": null,
+            "callback_binding_ref": "callback:e07:3aefaf82-l6:v1",
+            "runtime_identity_ref": "runtime:e07:3aefaf82-l6:v1",
+            "domain_binding_set_ref": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+            "secret_binding_set_ref": "secrets:e07:3aefaf82-l6:v1",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "resource_binding_set_ref": "resource-binding-set:0bc090ab6ba1630c3dc687f40de47054"
+          },
+          "status": "active",
+          "generated_at": "2026-09-13T21:15:54.290Z",
+          "activated_at": "2026-09-13T21:15:54.290Z",
+          "rolled_back_at": null,
+          "release_pointer_ref": null,
+          "recomputed_manifest_digest": "sha256:09921636e929584a7b7caedd7cf8701b39eec8fbb29a764a598023b5a21e281f"
+        }
+      ]
+    },
+    {
+      "sample": {
+        "signed_level": "L8",
+        "opening": true,
+        "sovereign_upgrade": true,
+        "key": "3aefaf82-l8",
+        "node_id": "node:e07-3aefaf82-l8:l8",
+        "realm_id": "realm:e07-3aefaf82-l8",
+        "principal_id": "principal:e07-3aefaf82-l8",
+        "account_id": "account:e07-3aefaf82-l8",
+        "member_id": "member:e07-3aefaf82-l8",
+        "membership_id": "membership:e07-3aefaf82-l8"
+      },
+      "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+      "domain_binding_sets": [
+        {
+          "binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "binding_version": "1",
+          "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+          "node_id": "node:e07-3aefaf82-l8:l8",
+          "realm_id": "realm:e07-3aefaf82-l8",
+          "status": "active",
+          "activated_at": "2026-09-13T21:15:54.302Z",
+          "rolled_back_at": null
+        }
+      ],
+      "domain_bindings": [
+        {
+          "binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "binding_version": "1",
+          "surface": "accounts",
+          "host": "accounts.3aefaf82-l8.3aefaf82.e07.test",
+          "binding_ref": "domain-binding:99c29c8135210c7b:accounts",
+          "status": "active"
+        },
+        {
+          "binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "binding_version": "1",
+          "surface": "console",
+          "host": "console.3aefaf82-l8.3aefaf82.e07.test",
+          "binding_ref": "domain-binding:99c29c8135210c7b:console",
+          "status": "active"
+        },
+        {
+          "binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "binding_version": "1",
+          "surface": "payment_callback",
+          "host": "pay.3aefaf82-l8.3aefaf82.e07.test",
+          "binding_ref": "domain-binding:99c29c8135210c7b:payment_callback",
+          "status": "active"
+        },
+        {
+          "binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "binding_version": "1",
+          "surface": "public_api",
+          "host": "api.3aefaf82-l8.3aefaf82.e07.test",
+          "binding_ref": "domain-binding:99c29c8135210c7b:public_api",
+          "status": "active"
+        },
+        {
+          "binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "binding_version": "1",
+          "surface": "storefront",
+          "host": "shop.3aefaf82-l8.3aefaf82.e07.test",
+          "binding_ref": "domain-binding:99c29c8135210c7b:storefront",
+          "status": "active"
+        }
+      ],
+      "resource_binding_sets": [
+        {
+          "resource_binding_set_id": "resource-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "resource_binding_version": "1",
+          "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+          "node_id": "node:e07-3aefaf82-l8:l8",
+          "edge_binding_ref": "edge:e07:3aefaf82-l8:v1",
+          "tunnel_ref": "tunnel:e07:3aefaf82-l8:v1",
+          "gateway_ref": "gateway:e07:3aefaf82-l8:v1",
+          "runtime_identity_ref": "runtime:e07:3aefaf82-l8:v1",
+          "realm_ref": "realm:realm:e07-3aefaf82-l8",
+          "data_scope_ref": "scope:e07:3aefaf82-l8:v1",
+          "secret_binding_set_ref": "secrets:e07:3aefaf82-l8:v1",
+          "payment_binding_ref": "payment:e07:3aefaf82-l8:v1",
+          "callback_binding_ref": "callback:e07:3aefaf82-l8:v1",
+          "runtime_config_ref": "runtime-config:e07:3aefaf82-l8:v1",
+          "status": "active",
+          "activated_at": "2026-09-13T21:15:54.302Z",
+          "rolled_back_at": null
+        }
+      ],
+      "manifests": [
+        {
+          "manifest_id": "node-manifest:99c29c8135210c7ba72063eebf24200b",
+          "manifest_version": "1",
+          "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+          "node_id": "node:e07-3aefaf82-l8:l8",
+          "domain_binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "domain_binding_set_version": "1",
+          "resource_binding_set_id": "resource-binding-set:99c29c8135210c7ba72063eebf24200b",
+          "resource_binding_version": "1",
+          "manifest_digest": "sha256:8b4c7901de34ccf5db40d2d999b6b25db017782fae1b8d8e1ecf347b522c15e1",
+          "manifest": {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "realm_id": "realm:e07-3aefaf82-l8",
+            "brand_ref": "brand:e07:3aefaf82-l8:v1",
+            "realm_ref": "realm:realm:e07-3aefaf82-l8",
+            "manifest_id": "node-manifest:99c29c8135210c7ba72063eebf24200b",
+            "node_profile": "operating_mall",
+            "signed_level": "L8",
+            "data_scope_ref": "scope:e07:3aefaf82-l8:v1",
+            "parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "schema_version": "sfl.node-manifest.sovereign.v2",
+            "domain_bindings": {
+              "console": "console.3aefaf82-l8.3aefaf82.e07.test",
+              "accounts": "accounts.3aefaf82-l8.3aefaf82.e07.test",
+              "public_api": "api.3aefaf82-l8.3aefaf82.e07.test",
+              "storefront": "shop.3aefaf82-l8.3aefaf82.e07.test",
+              "payment_callback": "pay.3aefaf82-l8.3aefaf82.e07.test"
+            },
+            "manifest_version": 1,
+            "sovereignty_tier": "sovereign",
+            "runtime_config_ref": "runtime-config:e07:3aefaf82-l8:v1",
+            "operating_entity_id": "enterprise:8222d6a18ddb9056a06abf95a3a2e321",
+            "payment_binding_ref": "payment:e07:3aefaf82-l8:v1",
+            "release_pointer_ref": null,
+            "callback_binding_ref": "callback:e07:3aefaf82-l8:v1",
+            "runtime_identity_ref": "runtime:e07:3aefaf82-l8:v1",
+            "domain_binding_set_ref": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+            "secret_binding_set_ref": "secrets:e07:3aefaf82-l8:v1",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "resource_binding_set_ref": "resource-binding-set:99c29c8135210c7ba72063eebf24200b"
+          },
+          "status": "active",
+          "generated_at": "2026-09-13T21:15:54.302Z",
+          "activated_at": "2026-09-13T21:15:54.302Z",
+          "rolled_back_at": null,
+          "release_pointer_ref": null,
+          "recomputed_manifest_digest": "sha256:8b4c7901de34ccf5db40d2d999b6b25db017782fae1b8d8e1ecf347b522c15e1"
+        }
+      ]
+    }
+  ]
+}
