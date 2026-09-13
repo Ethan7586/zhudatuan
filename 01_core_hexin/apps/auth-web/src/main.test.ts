@@ -8,5 +8,6 @@ describe('identity bootstrap performance', () => {
     expect(source.indexOf('if (configuredIdentityNode() !== null) renderApp()'))
       .toBeLessThan(source.indexOf('void loadIdentityNodeRuntime()'));
     expect(source).toContain('if (renderedFromBuild) return');
+    expect(source).toContain('if (!renderedFromBuild) {');
   });
 });

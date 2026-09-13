@@ -190,6 +190,18 @@ body {
   font-family: 'MORVIA Title', 'Noto Sans SC', 'PingFang SC', sans-serif;
 }
 
+/* The Hongtai operator entry uses its own wordmark. Keep its first paint on
+   local system fonts so the login form never waits for the 160 KB MORVIA font. */
+.morvia-auth-page[data-brand='hongtai'] .hongtai-mark,
+.morvia-auth-page[data-brand='hongtai'] .hongtai-header-mark,
+.morvia-auth-page[data-brand='hongtai'] .hongtai-lockup strong,
+.morvia-auth-page[data-brand='hongtai'] .morvia-auth-message h1,
+.morvia-auth-page[data-brand='hongtai'] .morvia-auth-body h1,
+.morvia-auth-page[data-brand='hongtai'] .morvia-auth-body h2,
+.morvia-auth-page[data-brand='hongtai'] .morvia-auth-body h3 {
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
 .morvia-auth-body input {
   border-color: #d7dbe5;
   border-radius: 12px;

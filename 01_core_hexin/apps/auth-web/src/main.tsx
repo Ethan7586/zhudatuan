@@ -23,11 +23,13 @@ try {
   // A runtime-only node is rendered as soon as its same-origin registry arrives.
 }
 
-void loadIdentityNodeRuntime().then(() => {
-  renderApp();
-}).catch((cause: unknown) => {
-  const message = cause instanceof Error ? cause.message : 'IDENTITY_NODE_RUNTIME_INVALID';
-  root.render(
-    <main>身份节点运行配置不可用：{message}</main>
-  );
-});
+if (!renderedFromBuild) {
+  void loadIdentityNodeRuntime().then(() => {
+    renderApp();
+  }).catch((cause: unknown) => {
+    const message = cause instanceof Error ? cause.message : 'IDENTITY_NODE_RUNTIME_INVALID';
+    root.render(
+      <main>身份节点运行配置不可用：{message}</main>
+    );
+  });
+}
