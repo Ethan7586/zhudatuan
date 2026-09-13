@@ -51,6 +51,7 @@ jobs:
           cache: npm
 
       - name: Install build dependencies
+        if: inputs.release_target != 'node-operations'
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Build independent runtime artifact
