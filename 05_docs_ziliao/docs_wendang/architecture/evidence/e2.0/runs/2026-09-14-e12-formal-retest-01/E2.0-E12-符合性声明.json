@@ -1,0 +1,39 @@
+{
+  "$schema": "../../E2.0-符合性声明.schema.json",
+  "schema_version": "e2.0-conformity-statement-v2",
+  "statement_id": "E2-STATEMENT-E12-DEV-20260913",
+  "template": false,
+  "profile_id": "E2.0",
+  "profile_version": "2.0.0",
+  "issued_at": "2026-09-13T18:24:17.815Z",
+  "scope": "E2-ISO-001 / legacy E12 at source SHA 766eda4984ce85d6d9c509d9ef0c770cb2be04fb, disposable local PostgreSQL 17 and loopback HTTP only.",
+  "claim_ids": [
+    "E2-ISO-001"
+  ],
+  "rating": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "EXACT_OPEN_REQUIREMENT_MAPPING"
+  },
+  "evidence_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/E2.0-E12-证据.json"
+  ],
+  "review_evidence_refs": [],
+  "tailoring_refs": [],
+  "gaps": [
+    "No stable separately managed staging replay has been performed.",
+    "No authorized production observation has been performed.",
+    "No reviewer independent of the E12 test implementation and execution has recomputed and signed the evidence."
+  ],
+  "issuer": {
+    "name_or_id": "codex-task-e12-acceptance-repair-20260914",
+    "organization": "zhudatuan internal",
+    "role": "E12 authorization isolation test and oracle operator",
+    "relationship_to_test_item": "Implemented the evidence exporter, executed the test and operated the separate raw-field oracle; not an independent reviewer.",
+    "signed_at": "2026-09-13T18:24:17.815Z"
+  },
+  "reviewer": null,
+  "mandatory_disclaimer": "This is an E2.0 standards-aligned tailored conformity statement, not an ISO, IEEE, NIST, OWASP, PCI SSC, or third-party certification.",
+  "non_gating": true
+}

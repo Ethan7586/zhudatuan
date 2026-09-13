@@ -1,0 +1,418 @@
+{
+  "schema_version": "e12-http-raw-evidence-v1",
+  "captured_at": "2026-09-13T18:22:40.689Z",
+  "baselines": {
+    "node_a": {
+      "node_id": "node:hbbtzn:l1",
+      "realm_id": "realm:l1",
+      "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+      "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+      "host": "api.hbbtzn.com"
+    },
+    "node_b": {
+      "node_id": "node:zhudatuan:l0",
+      "realm_id": "realm:l0",
+      "scope_id": "organization-platform-root",
+      "mall_id": "mall-zhudatuan",
+      "host": "api.fufu.wang"
+    }
+  },
+  "positive_cases": [
+    {
+      "case_id": "E12-POS-A-A",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.hbbtzn.com",
+        "headers": {},
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"host\":\"api.hbbtzn.com\",\"line_id\":\"line:zhudatuan:commerce:v1\",\"node_id\":\"node:hbbtzn:l1\",\"parent_node_id\":\"node:zhudatuan:l0\",\"signed_level\":\"L1\",\"node_profile\":\"operating_mall\",\"mall_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"scope_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"realm_id\":\"realm:l1\",\"manifest_id\":\"manifest:hbbtzn:l1:v1\"}"
+      },
+      "resolver_error": null,
+      "direct_resolved_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "handler_invocations": 1,
+      "handler_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      }
+    },
+    {
+      "case_id": "E12-POS-B-B",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.fufu.wang",
+        "headers": {},
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"host\":\"api.fufu.wang\",\"line_id\":\"line:zhudatuan:commerce:v1\",\"node_id\":\"node:zhudatuan:l0\",\"parent_node_id\":null,\"signed_level\":\"L0\",\"node_profile\":\"operating_mall\",\"mall_id\":\"mall-zhudatuan\",\"scope_id\":\"organization-platform-root\",\"realm_id\":\"realm:l0\",\"manifest_id\":\"manifest:zhudatuan:l0:v1\"}"
+      },
+      "resolver_error": null,
+      "direct_resolved_context": {
+        "host": "api.fufu.wang",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:zhudatuan:l0",
+        "parent_node_id": null,
+        "signed_level": "L0",
+        "node_profile": "operating_mall",
+        "mall_id": "mall-zhudatuan",
+        "scope_id": "organization-platform-root",
+        "realm_id": "realm:l0",
+        "manifest_id": "manifest:zhudatuan:l0:v1"
+      },
+      "handler_invocations": 1,
+      "handler_context": {
+        "host": "api.fufu.wang",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:zhudatuan:l0",
+        "parent_node_id": null,
+        "signed_level": "L0",
+        "node_profile": "operating_mall",
+        "mall_id": "mall-zhudatuan",
+        "scope_id": "organization-platform-root",
+        "realm_id": "realm:l0",
+        "manifest_id": "manifest:zhudatuan:l0:v1"
+      }
+    }
+  ],
+  "invalid_cases": [
+    {
+      "case_id": "E12-NEG-01-UNKNOWN-HOST",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "unknown.e12.invalid",
+        "headers": {},
+        "body": {}
+      },
+      "response": {
+        "status": 421,
+        "body": "{\"code\":\"NODE_BOUNDARY_HOST_MISMATCH\"}"
+      },
+      "resolver_error": {
+        "name": "Error",
+        "message": "SFL_NODE_MANIFEST_HOST_UNKNOWN:unknown.e12.invalid"
+      },
+      "direct_resolved_context": null,
+      "handler_invocations": 0,
+      "handler_context": null
+    },
+    {
+      "case_id": "E12-NEG-02-AMBIGUOUS-HOST",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.hbbtzn.com",
+        "headers": {},
+        "body": {}
+      },
+      "response": {
+        "status": 421,
+        "body": "{\"code\":\"NODE_BOUNDARY_HOST_MISMATCH\"}"
+      },
+      "resolver_error": {
+        "name": "Error",
+        "message": "SFL_NODE_MANIFEST_HOST_AMBIGUOUS:api.hbbtzn.com"
+      },
+      "direct_resolved_context": null,
+      "handler_invocations": 0,
+      "handler_context": null
+    }
+  ],
+  "forgery_cases": [
+    {
+      "case_id": "E12-FORGE-REALM",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.hbbtzn.com",
+        "headers": {
+          "x-realm-id": "realm:l0"
+        },
+        "body": {
+          "realm": "realm:l0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"host\":\"api.hbbtzn.com\",\"line_id\":\"line:zhudatuan:commerce:v1\",\"node_id\":\"node:hbbtzn:l1\",\"parent_node_id\":\"node:zhudatuan:l0\",\"signed_level\":\"L1\",\"node_profile\":\"operating_mall\",\"mall_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"scope_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"realm_id\":\"realm:l1\",\"manifest_id\":\"manifest:hbbtzn:l1:v1\"}"
+      },
+      "resolver_error": null,
+      "direct_resolved_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "handler_invocations": 1,
+      "handler_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "field": "realm"
+    },
+    {
+      "case_id": "E12-FORGE-MEMBERSHIP",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.hbbtzn.com",
+        "headers": {
+          "x-membership-id": "membership:realm-isolation:l0"
+        },
+        "body": {
+          "membership": "membership:realm-isolation:l0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"host\":\"api.hbbtzn.com\",\"line_id\":\"line:zhudatuan:commerce:v1\",\"node_id\":\"node:hbbtzn:l1\",\"parent_node_id\":\"node:zhudatuan:l0\",\"signed_level\":\"L1\",\"node_profile\":\"operating_mall\",\"mall_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"scope_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"realm_id\":\"realm:l1\",\"manifest_id\":\"manifest:hbbtzn:l1:v1\"}"
+      },
+      "resolver_error": null,
+      "direct_resolved_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "handler_invocations": 1,
+      "handler_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "field": "membership"
+    },
+    {
+      "case_id": "E12-FORGE-SCOPE",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.hbbtzn.com",
+        "headers": {
+          "x-scope-hint": "tenant-zhudatuan"
+        },
+        "body": {
+          "scope": "tenant-zhudatuan"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"host\":\"api.hbbtzn.com\",\"line_id\":\"line:zhudatuan:commerce:v1\",\"node_id\":\"node:hbbtzn:l1\",\"parent_node_id\":\"node:zhudatuan:l0\",\"signed_level\":\"L1\",\"node_profile\":\"operating_mall\",\"mall_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"scope_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"realm_id\":\"realm:l1\",\"manifest_id\":\"manifest:hbbtzn:l1:v1\"}"
+      },
+      "resolver_error": null,
+      "direct_resolved_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "handler_invocations": 1,
+      "handler_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "field": "scope"
+    },
+    {
+      "case_id": "E12-FORGE-NODE_ID",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.hbbtzn.com",
+        "headers": {
+          "x-sfl-node-id": "node:zhudatuan:l0"
+        },
+        "body": {
+          "node_id": "node:zhudatuan:l0"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"host\":\"api.hbbtzn.com\",\"line_id\":\"line:zhudatuan:commerce:v1\",\"node_id\":\"node:hbbtzn:l1\",\"parent_node_id\":\"node:zhudatuan:l0\",\"signed_level\":\"L1\",\"node_profile\":\"operating_mall\",\"mall_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"scope_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"realm_id\":\"realm:l1\",\"manifest_id\":\"manifest:hbbtzn:l1:v1\"}"
+      },
+      "resolver_error": null,
+      "direct_resolved_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "handler_invocations": 1,
+      "handler_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "field": "node_id"
+    },
+    {
+      "case_id": "E12-FORGE-MALL_ID",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.hbbtzn.com",
+        "headers": {
+          "x-mall-id": "mall-zhudatuan"
+        },
+        "body": {
+          "mall_id": "mall-zhudatuan"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"host\":\"api.hbbtzn.com\",\"line_id\":\"line:zhudatuan:commerce:v1\",\"node_id\":\"node:hbbtzn:l1\",\"parent_node_id\":\"node:zhudatuan:l0\",\"signed_level\":\"L1\",\"node_profile\":\"operating_mall\",\"mall_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"scope_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"realm_id\":\"realm:l1\",\"manifest_id\":\"manifest:hbbtzn:l1:v1\"}"
+      },
+      "resolver_error": null,
+      "direct_resolved_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "handler_invocations": 1,
+      "handler_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "field": "mall_id"
+    },
+    {
+      "case_id": "E12-FORGE-ROLE",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.hbbtzn.com",
+        "headers": {
+          "x-role": "role-platform-owner-v2"
+        },
+        "body": {
+          "role": "role-platform-owner-v2"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"host\":\"api.hbbtzn.com\",\"line_id\":\"line:zhudatuan:commerce:v1\",\"node_id\":\"node:hbbtzn:l1\",\"parent_node_id\":\"node:zhudatuan:l0\",\"signed_level\":\"L1\",\"node_profile\":\"operating_mall\",\"mall_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"scope_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"realm_id\":\"realm:l1\",\"manifest_id\":\"manifest:hbbtzn:l1:v1\"}"
+      },
+      "resolver_error": null,
+      "direct_resolved_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "handler_invocations": 1,
+      "handler_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "field": "role"
+    }
+  ]
+}

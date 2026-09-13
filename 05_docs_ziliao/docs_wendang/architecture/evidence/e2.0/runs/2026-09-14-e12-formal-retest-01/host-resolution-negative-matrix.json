@@ -1,0 +1,169 @@
+{
+  "schema_version": "e12-host-resolution-negative-matrix-v1",
+  "captured_at": "2026-09-13T18:24:17.579Z",
+  "baselines": {
+    "node_a": {
+      "node_id": "node:hbbtzn:l1",
+      "realm_id": "realm:l1",
+      "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+      "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+      "host": "api.hbbtzn.com"
+    },
+    "node_b": {
+      "node_id": "node:zhudatuan:l0",
+      "realm_id": "realm:l0",
+      "scope_id": "organization-platform-root",
+      "mall_id": "mall-zhudatuan",
+      "host": "api.fufu.wang"
+    }
+  },
+  "positive_cases": [
+    {
+      "case_id": "E12-POS-A-A",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.hbbtzn.com",
+        "headers": {},
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"host\":\"api.hbbtzn.com\",\"line_id\":\"line:zhudatuan:commerce:v1\",\"node_id\":\"node:hbbtzn:l1\",\"parent_node_id\":\"node:zhudatuan:l0\",\"signed_level\":\"L1\",\"node_profile\":\"operating_mall\",\"mall_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"scope_id\":\"mall:d1708f04df2dd8a61736852c4900fb43\",\"realm_id\":\"realm:l1\",\"manifest_id\":\"manifest:hbbtzn:l1:v1\"}"
+      },
+      "resolver_error": null,
+      "direct_resolved_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      },
+      "handler_invocations": 1,
+      "handler_context": {
+        "host": "api.hbbtzn.com",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:hbbtzn:l1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L1",
+        "node_profile": "operating_mall",
+        "mall_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "scope_id": "mall:d1708f04df2dd8a61736852c4900fb43",
+        "realm_id": "realm:l1",
+        "manifest_id": "manifest:hbbtzn:l1:v1"
+      }
+    },
+    {
+      "case_id": "E12-POS-B-B",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.fufu.wang",
+        "headers": {},
+        "body": {}
+      },
+      "response": {
+        "status": 200,
+        "body": "{\"host\":\"api.fufu.wang\",\"line_id\":\"line:zhudatuan:commerce:v1\",\"node_id\":\"node:zhudatuan:l0\",\"parent_node_id\":null,\"signed_level\":\"L0\",\"node_profile\":\"operating_mall\",\"mall_id\":\"mall-zhudatuan\",\"scope_id\":\"organization-platform-root\",\"realm_id\":\"realm:l0\",\"manifest_id\":\"manifest:zhudatuan:l0:v1\"}"
+      },
+      "resolver_error": null,
+      "direct_resolved_context": {
+        "host": "api.fufu.wang",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:zhudatuan:l0",
+        "parent_node_id": null,
+        "signed_level": "L0",
+        "node_profile": "operating_mall",
+        "mall_id": "mall-zhudatuan",
+        "scope_id": "organization-platform-root",
+        "realm_id": "realm:l0",
+        "manifest_id": "manifest:zhudatuan:l0:v1"
+      },
+      "handler_invocations": 1,
+      "handler_context": {
+        "host": "api.fufu.wang",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "node_id": "node:zhudatuan:l0",
+        "parent_node_id": null,
+        "signed_level": "L0",
+        "node_profile": "operating_mall",
+        "mall_id": "mall-zhudatuan",
+        "scope_id": "organization-platform-root",
+        "realm_id": "realm:l0",
+        "manifest_id": "manifest:zhudatuan:l0:v1"
+      }
+    }
+  ],
+  "invalid_cases": [
+    {
+      "case_id": "E12-NEG-01-UNKNOWN-HOST",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "unknown.e12.invalid",
+        "headers": {},
+        "body": {}
+      },
+      "response": {
+        "status": 421,
+        "body": "{\"code\":\"NODE_BOUNDARY_HOST_MISMATCH\"}"
+      },
+      "resolver_error": {
+        "name": "Error",
+        "message": "SFL_NODE_MANIFEST_HOST_UNKNOWN:unknown.e12.invalid"
+      },
+      "direct_resolved_context": null,
+      "handler_invocations": 0,
+      "handler_context": null
+    },
+    {
+      "case_id": "E12-NEG-02-AMBIGUOUS-HOST",
+      "request": {
+        "method": "POST",
+        "path": "/api/v1/e12/authority-probe",
+        "host": "api.hbbtzn.com",
+        "headers": {},
+        "body": {}
+      },
+      "response": {
+        "status": 421,
+        "body": "{\"code\":\"NODE_BOUNDARY_HOST_MISMATCH\"}"
+      },
+      "resolver_error": {
+        "name": "Error",
+        "message": "SFL_NODE_MANIFEST_HOST_AMBIGUOUS:api.hbbtzn.com"
+      },
+      "direct_resolved_context": null,
+      "handler_invocations": 0,
+      "handler_context": null
+    }
+  ],
+  "database_authority_uniqueness": {
+    "case_id": "E12-NEG-02-AMBIGUOUS-HOST",
+    "request": {
+      "boundary": "identity.realmentry authority uniqueness",
+      "host": "accounts.hbbtzn.com",
+      "existing_realm_id": "realm:l1",
+      "attempted_realm_id": "realm:l0"
+    },
+    "response": {
+      "database_error": {
+        "name": "error",
+        "message": "duplicate key value violates unique constraint \"realmentry_pkey\"",
+        "code": "23505",
+        "operation_result": null
+      },
+      "authoritative_rows": [
+        {
+          "host": "accounts.hbbtzn.com",
+          "realm_id": "realm:l1"
+        }
+      ]
+    }
+  }
+}

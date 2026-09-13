@@ -978,7 +978,10 @@
         "tailoring_ref": null,
         "review_trigger": "Reassess when Host resolution, session, membership, scope, capability or write authority changes."
       },
-      "test_basis_refs": ["05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E12"],
+      "test_basis_refs": [
+        "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E12",
+        "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E12-正式重测判据-2026-09-14.json"
+      ],
       "independent_oracle": {
         "oracle_id": "E2-ORACLE-E12-AUTHORITY-DIFF",
         "procedure": "Independently compare expected versus actual status/error/context and before/after authoritative tables for every positive, invalid and forged-field case; do not use the test program's pass flags.",
@@ -997,13 +1000,13 @@
       "executor_role": "Authorization isolation test operator",
       "reviewer_role": "Security reviewer independent of authorization implementation and E12 test code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "The prelocked E12 matrix was executed at clean source SHA 766eda4984ce85d6d9c509d9ef0c770cb2be04fb in disposable PostgreSQL 17 and loopback HTTP. The independent raw-field oracle found zero positive mismatch, invalid acceptance, invalid business write, invalid Outbox event, forged ownership change, default-node fallback or denial-audit mismatch. This establishes DEV only and has no independent reviewer.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/E2.0-E12-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["Complete E2.0 negative matrix, direct database oracle and independent review"]
+        "gaps": ["Stable separately managed staging replay", "Authorized production observation", "Independent security reviewer recomputation and signature"]
       }
     }
   ]

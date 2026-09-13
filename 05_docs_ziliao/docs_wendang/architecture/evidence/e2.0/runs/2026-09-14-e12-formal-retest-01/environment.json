@@ -1,0 +1,33 @@
+{
+  "schema_version": "e12-environment-v1",
+  "captured_at": "2026-09-13T18:24:17.579Z",
+  "kind": "DEV",
+  "environment_id": "local-disposable-postgresql17-e12-937857f3440447b2",
+  "description": "A newly created PostgreSQL 17 Alpine container replayed the production migration chain with production-equivalent migration roles; local HTTP probes used the same source SHA.",
+  "owner": "Ethan-controlled local Codex workspace",
+  "isolation": "Disposable Docker container zhudatuan-identity-realm-937857f3440447b2; synthetic E12 identities only; container removed after execution.",
+  "real_customer_data": false,
+  "production_impact": "None. No production service, database, domain, payment provider or customer record was contacted.",
+  "differences_from_production": [
+    "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+    "Loopback HTTP listener rather than Caddy and public network ingress.",
+    "Synthetic identities and reversible transaction-scoped writes rather than customer traffic.",
+    "No production observation or stable staging environment identity."
+  ],
+  "runtime": {
+    "node": "v22.22.3",
+    "os": "darwin 25.5.0",
+    "docker_server": "29.7.2",
+    "postgres": "PostgreSQL 17.11 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "docker_image": "postgres:17-alpine",
+    "docker_image_id": "sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+    "endpoint": "127.0.0.1:64849/zhudatuan_registration"
+  },
+  "source_control": {
+    "sha": "766eda4984ce85d6d9c509d9ef0c770cb2be04fb",
+    "branch": "codex/e2-acceptance-repair",
+    "tree_state": "CLEAN",
+    "status": ""
+  },
+  "configuration_digest": "sha256:52ff367c02dba322391eb49d229d62de3b483b259633d2f5e0ce16a5372e7a6f"
+}
