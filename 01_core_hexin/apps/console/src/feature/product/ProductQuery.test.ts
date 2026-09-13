@@ -52,6 +52,23 @@ describe('product document prefetch', () => {
     expect(api.listingsRead).toHaveBeenCalledOnce();
   });
 
+  it('uses an exact prefetched supply network read', async () => {
+    const supplyFilter: ProductQuery = {
+      q: '', category: '', status: '', limit: 1, preview: true, view: 'supply-network',
+    };
+    window.__consoleProductPrefetch = resolvedPrefetch({
+      scopeKind: 'mall', scopeId: 'mall:one', accessVersion: 7,
+      query: {
+        q: '', category: '', supplier: '', mall: '', status: '', limit: 1,
+        preview: true, view: 'supply-network' as const,
+      },
+      value: response,
+    });
+
+    await expect(readProducts(context, supplyFilter, new AbortController().signal)).resolves.toMatchObject({ count: 0 });
+    expect(api.listingsRead).not.toHaveBeenCalled();
+  });
+
   it('aborts the in-flight document handoff with route navigation', async () => {
     window.__consoleProductPrefetch = { settled: false, promise: new Promise(() => undefined) };
     window.__consoleAbortDocumentPrefetch = vi.fn();

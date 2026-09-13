@@ -1,6 +1,8 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 import { SupplyLoadingState } from './SupplyChainRoute';
+
+afterEach(cleanup);
 
 describe('SupplyChainRoute loading feedback', () => {
   it('shows an immediate readable loading state instead of an empty workspace', () => {
