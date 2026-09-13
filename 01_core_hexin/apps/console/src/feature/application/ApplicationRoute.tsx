@@ -10,6 +10,7 @@ import { applicationCommandAvailable } from './ApplicationCommand';
 import { ApplicationCopyDialog, ApplicationCreateDialog, ApplicationDisableDialog, ApplicationEditDialog, ApplicationRecordDrawer, CommerceFlowPreview } from './ApplicationDialogs';
 import { applicationSummary, commerceFlow, needsAttention } from './ApplicationPresentation';
 import { applicationKey, applicationRootKey, readApplications } from './ApplicationQuery';
+import { APPLICATION_PREFETCH_STALE_TIME_MS } from './ApplicationPrefetch';
 import type { Application } from './ApplicationSchema';
 import { applicationScopePresentation, type CommerceWorkspaceMode } from './ApplicationScope';
 import { ApplicationTable } from './ApplicationTable';
@@ -75,7 +76,7 @@ export function Component() {
   const query = useQuery({
     queryKey: applicationKey(context, cursor),
     queryFn: ({ signal }) => readApplications(context, cursor, signal),
-    staleTime: 60_000,
+    staleTime: APPLICATION_PREFETCH_STALE_TIME_MS,
   });
   const data = query.data;
   const condition = queryCondition({

@@ -8,6 +8,7 @@ import { scopePath } from '../../shared/url/ScopePath';
 import { formatOrderTime } from './OrderPresentation';
 import { OrderColumnSettings } from './OrderColumnSettings';
 import { orderDetailKey, readOrderDetail } from './OrderDetailQuery';
+import { ORDER_PREFETCH_STALE_TIME_MS } from './OrderPrefetch';
 import { OrderDrawer } from './OrderDrawer';
 import { OrderExceptionWorkbench } from './OrderExceptionWorkbench';
 import { OrderExportWorkspace } from './OrderExportWorkspace';
@@ -47,7 +48,11 @@ export function Component() {
   const detailTab = readDetailTab(search);
   const cursor = search.get('cursor') ?? undefined;
   const queryFilter: OrderQuery = { ...filter, view, ...(cursor === undefined ? {} : { cursor }) };
-  const query = useQuery({ queryKey: orderKey(context, queryFilter), queryFn: ({ signal }) => readOrders(context, queryFilter, signal) });
+  const query = useQuery({
+    queryKey: orderKey(context, queryFilter),
+    queryFn: ({ signal }) => readOrders(context, queryFilter, signal),
+    staleTime: ORDER_PREFETCH_STALE_TIME_MS,
+  });
   const page = query.data;
   const selectedOrder = page?.items.find((order) => order.id === selected);
   const pageIds = useMemo(() => page?.items.map((order) => order.id) ?? [], [page?.items]);

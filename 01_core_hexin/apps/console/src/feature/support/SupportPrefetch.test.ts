@@ -40,4 +40,13 @@ describe('support page prefetch', () => {
       session: { ...context.session, capabilities: [] },
     })).toBeUndefined();
   });
+
+  it('does not repeatedly retry a failed background prefetch', async () => {
+    api.readCases.mockRejectedValue(new Error('offline'));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    await prefetchSupport(client, context);
+
+    expect(prefetchSupport(client, context)).toBeUndefined();
+    expect(api.readCases).toHaveBeenCalledOnce();
+  });
 });

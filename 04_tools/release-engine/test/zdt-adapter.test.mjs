@@ -9,6 +9,7 @@ const systemdRoot = join(projectRoot, '02_platform_pingtai/infrastructure/zhudat
 const adapter = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8'));
 const policy = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8'));
 const deployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy.yml'), 'utf8');
+const deployNow = await readFile(join(projectRoot, 'scripts/deploy-now.sh'), 'utf8');
 const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/quality.yml'), 'utf8');
 const databaseMigrationExecutor = await readFile(join(projectRoot,
   '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'), 'utf8');
@@ -35,6 +36,13 @@ test('Console retains optional public acceptance metadata while Deploy uses dire
   assert.match(deployWorkflow, /--direct/);
   assert.doesNotMatch(deployWorkflow, /Affected Delivery|external_baseline|approve-production/);
   assert.equal((deployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
+});
+
+test('direct deployment pins and publishes the current task commit', () => {
+  assert.match(deployNow, /SHA="\$\(git rev-parse HEAD\)"/);
+  assert.match(deployNow, /git push origin "\$\{SHA\}:refs\/heads\/\$\{DEPLOY_REF\}" --quiet/);
+  assert.match(deployNow, /workflow run deploy\.yml --ref "\$DEPLOY_REF" -f head_sha="\$SHA"/);
+  assert.doesNotMatch(deployNow, /rev-parse origin\/zdt-next/);
 });
 
 test('build and remote adapters agree on every pointer and process', () => {

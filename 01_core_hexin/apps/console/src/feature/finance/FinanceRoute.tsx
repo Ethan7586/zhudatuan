@@ -7,6 +7,7 @@ import { FinanceColumnSettings } from './FinanceColumnSettings';
 import { FinanceFilters, emptyFinanceFilter } from './FinanceFilters';
 import { FinanceHeader, type FinanceHeaderAction } from './FinanceHeader';
 import { FinanceIcon } from './FinanceIcon';
+import { FINANCE_PREFETCH_STALE_TIME_MS } from './FinancePrefetch';
 import { financeKey, readFinance } from './FinanceQuery';
 import { FinanceTabs } from './FinanceTabs';
 import { FinancePagination, ReconciliationTable, defaultFinanceColumns, type FinanceColumnKey } from './ReconciliationTable';
@@ -41,10 +42,12 @@ export function Component() {
     queryKey: financeReconciliationKey(context, queryInput),
     queryFn: ({ signal }) => readFinanceReconciliations(context, queryInput, signal),
     enabled: tab === 'payments',
+    staleTime: FINANCE_PREFETCH_STALE_TIME_MS,
   });
   const overviewQuery = useQuery({
     queryKey: financeKey(context),
     queryFn: ({ signal }) => readFinance(context, signal),
+    staleTime: FINANCE_PREFETCH_STALE_TIME_MS,
   });
   const page = query.data;
   const previewEnabled = previewContext && page?.preview?.source === 'local-preview';

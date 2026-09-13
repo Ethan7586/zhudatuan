@@ -114,6 +114,22 @@ export function ScopeShell() {
     return import('../feature/product/ProductPrefetch').then(({ prefetchProducts }) =>
       prefetchProducts(queryClient, context));
   }, [context, queryClient]);
+  const prepareApplications = useCallback(() => {
+    if (!context.session.capabilities.includes('experience.applications.read')) return Promise.resolve();
+    return import('../feature/application/ApplicationPrefetch').then(({ prefetchApplications }) =>
+      prefetchApplications(queryClient, context));
+  }, [context, queryClient]);
+  const prepareOrders = useCallback(() => {
+    if (!context.session.capabilities.includes('order.orders.read')) return Promise.resolve();
+    return import('../feature/order/OrderPrefetch').then(({ prefetchOrders }) =>
+      prefetchOrders(queryClient, context));
+  }, [context, queryClient]);
+  const prepareFinance = useCallback(() => {
+    if (!context.session.capabilities.includes('finance.overview.read')
+      && !context.session.capabilities.includes('finance.reconciliations.read')) return Promise.resolve();
+    return import('../feature/finance/FinancePrefetch').then(({ prefetchFinance }) =>
+      prefetchFinance(queryClient, context));
+  }, [context, queryClient]);
   const prepareSupplyChain = useCallback(() => {
     if (!context.session.capabilities.includes('catalog.listings.read')) return Promise.resolve();
     return import('../feature/supply-chain/SupplyChainPrefetch').then(({ prefetchSupplyChain }) =>
@@ -136,16 +152,24 @@ export function ScopeShell() {
     void preloadConsoleModule(moduleId, intent)?.catch(() => undefined);
     if (moduleId === 'access') prepareMembers();
     if (moduleId === 'products') void prepareProducts();
+    if (moduleId === 'applications') void prepareApplications();
+    if (moduleId === 'orders') void prepareOrders();
+    if (moduleId === 'finance') void prepareFinance();
     if (moduleId === 'supply-chain') void prepareSupplyChain();
     if (moduleId === 'support') void prepareSupport();
-  }, [prepareMembers, prepareProducts, prepareSupplyChain, prepareSupport]);
+  }, [prepareApplications, prepareFinance, prepareMembers, prepareOrders, prepareProducts, prepareSupplyChain, prepareSupport]);
 
   useEffect(() => {
     const productAvailable = context.session.capabilities.includes('catalog.listings.read');
     const supplyChainAvailable = context.session.capabilities.includes('catalog.listings.read');
     const memberAvailable = context.scope.kind === 'mall' && context.session.capabilities.includes('member.members.read');
     const supportAvailable = context.session.capabilities.includes('support.cases.read');
-    if (!productAvailable && !supplyChainAvailable && !memberAvailable && !supportAvailable) return undefined;
+    const applicationAvailable = context.session.capabilities.includes('experience.applications.read');
+    const orderAvailable = context.session.capabilities.includes('order.orders.read');
+    const financeAvailable = context.session.capabilities.includes('finance.overview.read')
+      || context.session.capabilities.includes('finance.reconciliations.read');
+    if (!productAvailable && !supplyChainAvailable && !memberAvailable && !supportAvailable
+      && !applicationAvailable && !orderAvailable && !financeAvailable) return undefined;
     const prepare = async () => {
       await Promise.all([
         ...navigationModuleIds
@@ -160,6 +184,15 @@ export function ScopeShell() {
         activeModule?.id !== 'support' && supportAvailable
           ? preloadConsoleModule('support', 'idle')?.catch(() => undefined).then(() => prepareSupport())
           : undefined,
+        activeModule?.id !== 'applications' && applicationAvailable
+          ? preloadConsoleModule('applications', 'idle')?.catch(() => undefined).then(() => prepareApplications())
+          : undefined,
+        activeModule?.id !== 'orders' && orderAvailable
+          ? preloadConsoleModule('orders', 'idle')?.catch(() => undefined).then(() => prepareOrders())
+          : undefined,
+        activeModule?.id !== 'finance' && financeAvailable
+          ? preloadConsoleModule('finance', 'idle')?.catch(() => undefined).then(() => prepareFinance())
+          : undefined,
       ]);
       if (activeModule?.id !== 'products' && activeModule?.id !== 'access' && memberAvailable) {
         await preloadConsoleModule('access', 'idle')?.catch(() => undefined);
@@ -173,7 +206,8 @@ export function ScopeShell() {
     const timer = window.setTimeout(() => { void prepare(); }, 200);
     return () => window.clearTimeout(timer);
   }, [activeModule?.id, context.scope.id, context.scope.kind, context.session.capabilities,
-    context.session.membership, navigationModuleKey, prepareMembers, prepareProducts, prepareSupplyChain, prepareSupport]);
+    context.session.membership, navigationModuleKey, prepareApplications, prepareFinance, prepareMembers, prepareOrders,
+    prepareProducts, prepareSupplyChain, prepareSupport]);
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
     if (next !== undefined) navigateAfterCancel(`${scopePath(next, currentSuffix || 'cockpit')}${location.search}`);

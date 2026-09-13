@@ -40,8 +40,35 @@ describe('web order read model', () => {
     expect(read?.text).toContain("$13='aftersale'");
     expect(read?.values).toEqual([
       false, 'mall:test', false, false, 'SW-TEST-1', null, null,
-      'paid', 'allocated', 'active', 'mall:test', '30days', 'aftersale', 51,
+      'paid', 'allocated', 'active', 'mall:test', '30days', 'aftersale', 51, true,
     ]);
+  });
+
+  it('skips detail-only projections for an order list', async () => {
+    const queries: Array<Readonly<{ text: string; values: readonly unknown[] }>> = [];
+    const client = {
+      query: async (text: string, values: readonly unknown[] = []) => {
+        queries.push({ text, values });
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool: DatabasePool = {
+      connect: async () => client,
+      query: async () => result([]),
+      workload: () => pool,
+      end: async () => undefined,
+    };
+    const listRequest = request();
+
+    await webOrderOperations(context(pool)).invoke({
+      ...listRequest,
+      input: { ...listRequest.input, query: { limit: '50' } },
+    });
+
+    const read = queries.find(({ text }) => text.includes('select orders.*'));
+    expect(read?.text).toContain('where $15::boolean and fulfillment.order_id=orders.id');
+    expect(read?.values.at(-1)).toBe(false);
   });
 });
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # GitHub -> Aliyun direct deployment.
 # Usage:
-#   scripts/deploy-now.sh                       # affected targets from latest zdt-next
-#   scripts/deploy-now.sh console               # console from latest zdt-next
+#   scripts/deploy-now.sh                       # affected targets from the current task commit
+#   scripts/deploy-now.sh console               # console from the current task commit
 #   scripts/deploy-now.sh console <commit>      # console from an exact commit
 #   scripts/deploy-now.sh console <commit> zhudatuan-l0
 
@@ -13,11 +13,14 @@ TARGET="${1:-}"
 SHA="${2:-}"
 NODE="${3:-hbbtzn-l1}"
 if [ -z "$SHA" ]; then
-  git fetch origin zdt-next --quiet
-  SHA="$(git rev-parse origin/zdt-next)"
+  SHA="$(git rev-parse HEAD)"
+else
+  SHA="$(git rev-parse "${SHA}^{commit}")"
 fi
+DEPLOY_REF="codex/deploy-${SHA:0:12}"
+git push origin "${SHA}:refs/heads/${DEPLOY_REF}" --quiet
 
-dispatch=(workflow run deploy.yml --ref zdt-next -f head_sha="$SHA" -f release_node="$NODE")
+dispatch=(workflow run deploy.yml --ref "$DEPLOY_REF" -f head_sha="$SHA" -f release_node="$NODE")
 if [ -n "$TARGET" ]; then
   dispatch+=(-f release_target="$TARGET")
 fi
