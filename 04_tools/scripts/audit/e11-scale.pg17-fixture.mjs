@@ -202,7 +202,7 @@ async function verifyCriteriaSources(criteriaValue) {
 
 async function waitForPostgres() {
   for (let attempt = 1; attempt <= 60; attempt += 1) {
-    const ready = await run('docker', ['exec', container, 'pg_isready', '-U', 'postgres', '-d', databaseName], { allowFailure: true, quiet: true });
+    const ready = await run('docker', ['exec', container, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-d', databaseName], { allowFailure: true, quiet: true });
     if (ready === 0) return;
     await new Promise((resolveWait) => setTimeout(resolveWait, 500));
   }

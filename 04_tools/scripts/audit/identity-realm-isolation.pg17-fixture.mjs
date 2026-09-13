@@ -96,7 +96,7 @@ async function waitForPostgres() {
   for (let attempt = 1; attempt <= 60; attempt += 1) {
     const logs = await capture('docker', ['logs', container]).catch(() => '');
     if (logs.includes('PostgreSQL init process complete; ready for start up.')) {
-      const ready = await run('docker', ['exec', container, 'pg_isready', '-U', 'postgres', '-d', database],
+      const ready = await run('docker', ['exec', container, 'pg_isready', '-h', '127.0.0.1', '-U', 'postgres', '-d', database],
         { allowFailure: true, quiet: true });
       if (ready === 0) return;
     }
