@@ -119,6 +119,7 @@ describe('ScopeShell route handles', () => {
     expect(await screen.findByText('创建、复制、进入和管理集团旗下商城，并跟踪开店与发布进度。')).toBeTruthy();
     expect((await screen.findByRole('button', { name: '商城管理' })).getAttribute('aria-current')).toBe('page');
     expect(container.querySelector('.consolelayout')?.getAttribute('data-route')).toBe('applications');
+    expect(container.querySelector('.consolelayout')?.getAttribute('data-visual-geometry')).toBe('straight');
     await waitFor(() => expect(document.title).toBe('商城管理 · 鸿泰集团'));
   });
 

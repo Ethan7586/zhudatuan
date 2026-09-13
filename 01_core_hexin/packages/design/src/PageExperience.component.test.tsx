@@ -9,6 +9,7 @@ import {
   useViewScrollMemory,
   WorkspacePanelSkeleton,
 } from './PageExperience';
+import { token } from './Token';
 
 afterEach(cleanup);
 
@@ -23,6 +24,10 @@ describe('page experience foundation', () => {
       interactionToNextPaintP75Ms: 200,
       routeCumulativeLayoutShift: 0.05,
     });
+  });
+
+  it('publishes straight structural radius tokens', () => {
+    expect(token.radius).toEqual({ small: '0px', medium: '0px', large: '0px' });
   });
 
   it('uses a stable tab list with an animated active index', () => {

@@ -238,7 +238,7 @@ export function ScopeShell() {
 
   return (
     <ConsoleContextProvider value={context}>
-      <div className="consolelayout" data-visual-theme="admin-web-v1" data-route={activeRoute}
+      <div className="consolelayout" data-visual-theme="admin-web-v1" data-visual-geometry="straight" data-route={activeRoute}
         data-sidebar={collapsed ? 'collapsed' : 'expanded'} data-mobile-nav={mobileOpen ? 'open' : 'closed'}>
         <Suspense fallback={<aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-hidden="true" />}>
           <LazySidebar active={activeRoute} collapsed={collapsed} mainItems={mainNavigationItems} bottomItems={bottomNavigationItems}

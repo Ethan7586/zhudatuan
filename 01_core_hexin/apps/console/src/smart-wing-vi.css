@@ -30,9 +30,9 @@ body:has(.consolelayout[data-visual-theme='admin-web-v1']) {
   --vi-danger: #dc2626;
   --vi-route-accent: var(--vi-brand);
   --vi-route-soft: var(--vi-brand-soft);
-  --vi-radius-card: 16px;
-  --vi-radius-panel: 12px;
-  --vi-radius-control: 12px;
+  --vi-radius-card: 0;
+  --vi-radius-panel: 0;
+  --vi-radius-control: 0;
   --vi-shadow-card: 0 1px 2px rgb(11 29 53 / 4%), 0 8px 24px rgb(11 29 53 / 5%);
   --vi-shadow-raised: 0 2px 5px rgb(11 29 53 / 7%), 0 16px 38px rgb(11 29 53 / 8%);
   --vi-shadow-focus: 0 0 0 3px rgb(31 94 255 / 12%);
