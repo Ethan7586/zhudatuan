@@ -147,6 +147,26 @@ export function startDocumentPrefetch(
       value: products,
     });
   }));
+  window.__consoleSupportPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('support.cases.read')) return undefined;
+    const match = location.pathname.match(/^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/([^/]+)\/support(?:\/[^/]+)?\/?$/);
+    let direct: Readonly<{ kind: 'platform' | 'distributor' | 'tenant' | 'enterprise' | 'mall'; id: string }> | undefined;
+    try {
+      const candidate = match?.[1] === undefined ? undefined : { kind: match[1], id: decodeURIComponent(match[2]!) };
+      direct = isConsoleScope(candidate) ? candidate : undefined;
+    } catch { direct = undefined; }
+    if (direct === undefined) return undefined;
+    return readJson<unknown>('/api/v1/support/cases?limit=50', {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((cases) => cases === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      value: cases,
+    });
+  }));
 }
 
 function tracked<T>(promise: Promise<T | undefined>): Tracked<T> {

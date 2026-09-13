@@ -107,7 +107,7 @@ describe('Sidebar commerce navigation', () => {
     expect(onNavigate).toHaveBeenCalledWith('products');
   });
 
-  it('preloads a module on hover, focus, and pointer intent without navigating', () => {
+  it('preloads a module on hover, focus, pointer, and touch intent without navigating', () => {
     const onNavigate = vi.fn();
     const onNavigateIntent = vi.fn();
     renderSidebar('enterprise', false, onNavigate, consoleModules, vi.fn(), 'applications', onNavigateIntent);
@@ -116,11 +116,13 @@ describe('Sidebar commerce navigation', () => {
     fireEvent.pointerEnter(target);
     fireEvent.focus(target);
     fireEvent.pointerDown(target);
+    fireEvent.touchStart(target);
 
     expect(onNavigateIntent.mock.calls).toEqual([
       ['orders', 'hover'],
       ['orders', 'focus'],
       ['orders', 'pointerdown'],
+      ['orders', 'touchstart'],
     ]);
     expect(onNavigate).not.toHaveBeenCalled();
   });

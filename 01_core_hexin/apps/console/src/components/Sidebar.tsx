@@ -41,7 +41,7 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, brandName =
             onPointerEnter={() => onNavigateIntent?.(item.moduleId, 'hover')}
             onFocus={() => onNavigateIntent?.(item.moduleId, 'focus')}
             onPointerDown={() => onNavigateIntent?.(item.moduleId, 'pointerdown')}
-            onTouchStart={() => item.moduleId === 'access' && onNavigateIntent?.(item.moduleId, 'touchstart')}
+            onTouchStart={() => onNavigateIntent?.(item.moduleId, 'touchstart')}
             data-status={item.status}
             aria-disabled={item.status === 'disabled' ? true : undefined}
             aria-label={label} aria-current={item.moduleId === active ? 'page' : undefined}
@@ -64,7 +64,7 @@ export function Sidebar({ active, collapsed, displayName, roleLabel, brandName =
               onPointerEnter={() => onNavigateIntent?.(item.moduleId, 'hover')}
               onFocus={() => onNavigateIntent?.(item.moduleId, 'focus')}
               onPointerDown={() => onNavigateIntent?.(item.moduleId, 'pointerdown')}
-              onTouchStart={() => item.moduleId === 'access' && onNavigateIntent?.(item.moduleId, 'touchstart')}
+              onTouchStart={() => onNavigateIntent?.(item.moduleId, 'touchstart')}
               aria-disabled={item.status === 'disabled' ? true : undefined} aria-label={label}
               aria-current={item.moduleId === active ? 'page' : undefined} title={collapsed ? label : undefined}>
               <ShellIcon name={item.icon} /><span className="sidebarlabel">{label}</span>

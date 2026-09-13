@@ -153,6 +153,8 @@ describe('ScopeShell route handles', () => {
   it('does not retain pathname catalogs, hardcoded owner Sets, or ApplicationScope at runtime', () => {
     const source = readFileSync('src/shell/ScopeShell.tsx', 'utf8');
     expect(source).toContain('useMatches()');
+    expect(source).toContain("cancelQueries({ queryKey: ['console'], type: 'active' })");
+    expect(source).toContain("preloadConsoleModule(moduleId, 'idle')");
     expect(source).not.toMatch(/professionalRouteFromPath|workstationFromPath|new Set\(|ApplicationScope/);
   });
 });

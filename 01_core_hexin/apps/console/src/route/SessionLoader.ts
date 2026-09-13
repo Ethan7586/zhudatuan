@@ -12,6 +12,7 @@ declare global {
     __consoleScopePrefetch?: DocumentPrefetch<ConsoleScopePrefetch>;
     __consoleCockpitPrefetch?: DocumentPrefetch<ConsoleCockpitPrefetch>;
     __consoleProductPrefetch?: DocumentPrefetch<ConsoleProductPrefetch>;
+    __consoleSupportPrefetch?: DocumentPrefetch<ConsoleSupportPrefetch>;
   }
 }
 
@@ -50,6 +51,13 @@ interface ConsoleProductPrefetch {
     preview: boolean;
     view?: 'supply-network';
   }>;
+  readonly value: unknown;
+}
+
+interface ConsoleSupportPrefetch {
+  readonly scopeKind: ConsoleScope['kind'];
+  readonly scopeId: string;
+  readonly accessVersion: number;
   readonly value: unknown;
 }
 

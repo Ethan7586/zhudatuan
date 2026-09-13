@@ -51,6 +51,12 @@ describe('console bootstrap document', () => {
     expect(prefetch).toContain("parameters.set('view', query.view)");
   });
 
+  it('starts the service-center case read as soon as the session resolves', () => {
+    expect(prefetch).toContain('window.__consoleSupportPrefetch = tracked(');
+    expect(prefetch).toContain("'/api/v1/support/cases?limit=50'");
+    expect(prefetch).toContain("value.capabilities.includes('support.cases.read')");
+  });
+
   it('makes every document prefetch observable and immediately abortable by navigation', () => {
     expect(prefetch).toContain('const slot: Tracked<T> = { settled: false');
     expect(prefetch).toContain('window.__consoleAbortDocumentPrefetch = () =>');

@@ -50,6 +50,8 @@ export function ScopeShell() {
   const brandSubtitle = context.scope.kind === 'mall' ? '商城运营后台' : '经营与权限管理';
   const activeRoute = profileRoute ? 'profile' : activeModule?.id;
   const navigationItems = selectConsoleNavigationItems(consoleModules, context.scope.kind, context.session.capabilities);
+  const navigationModuleIds = navigationItems.map(({ moduleId }) => moduleId);
+  const navigationModuleKey = navigationModuleIds.join('|');
   const mainNavigationItems = navigationItems.filter(({ placement }) => placement === 'main');
   const bottomNavigationItems = navigationItems.filter(({ placement }) => placement === 'bottom');
   const logout = async () => {
@@ -99,7 +101,7 @@ export function ScopeShell() {
   }, [brandName, location.pathname, routeTitle]);
 
   const navigateAfterCancel = (target: string) => {
-    void queryClient.cancelQueries({ queryKey: ['console'] });
+    void queryClient.cancelQueries({ queryKey: ['console'], type: 'active' });
     void navigate(target);
   };
   const prepareMembers = useCallback(() => {
@@ -117,6 +119,11 @@ export function ScopeShell() {
     return import('../feature/supply-chain/SupplyChainPrefetch').then(({ prefetchSupplyChain }) =>
       prefetchSupplyChain(queryClient, context));
   }, [context, queryClient]);
+  const prepareSupport = useCallback(() => {
+    if (!context.session.capabilities.includes('support.cases.read')) return Promise.resolve();
+    return import('../feature/support/SupportPrefetch').then(({ prefetchSupport }) =>
+      prefetchSupport(queryClient, context));
+  }, [context, queryClient]);
   const openRoute = (suffix: string) => {
     setMobileOpen(false);
     const preferredScopeKind = selectConsoleModuleByEntryPath(suffix)?.navigation.preferredScopeKind;
@@ -130,20 +137,28 @@ export function ScopeShell() {
     if (moduleId === 'access') prepareMembers();
     if (moduleId === 'products') void prepareProducts();
     if (moduleId === 'supply-chain') void prepareSupplyChain();
-  }, [prepareMembers, prepareProducts, prepareSupplyChain]);
+    if (moduleId === 'support') void prepareSupport();
+  }, [prepareMembers, prepareProducts, prepareSupplyChain, prepareSupport]);
 
   useEffect(() => {
     const productAvailable = context.session.capabilities.includes('catalog.listings.read');
     const supplyChainAvailable = context.session.capabilities.includes('catalog.listings.read');
     const memberAvailable = context.scope.kind === 'mall' && context.session.capabilities.includes('member.members.read');
-    if (!productAvailable && !supplyChainAvailable && !memberAvailable) return undefined;
+    const supportAvailable = context.session.capabilities.includes('support.cases.read');
+    if (!productAvailable && !supplyChainAvailable && !memberAvailable && !supportAvailable) return undefined;
     const prepare = async () => {
       await Promise.all([
+        ...navigationModuleIds
+          .filter((moduleId) => moduleId !== activeModule?.id)
+          .map((moduleId) => preloadConsoleModule(moduleId, 'idle')?.catch(() => undefined)),
         activeModule?.id !== 'products' && productAvailable
           ? preloadConsoleModule('products', 'idle')?.catch(() => undefined).then(() => prepareProducts())
           : undefined,
         activeModule?.id !== 'supply-chain' && supplyChainAvailable
           ? preloadConsoleModule('supply-chain', 'idle')?.catch(() => undefined).then(() => prepareSupplyChain())
+          : undefined,
+        activeModule?.id !== 'support' && supportAvailable
+          ? preloadConsoleModule('support', 'idle')?.catch(() => undefined).then(() => prepareSupport())
           : undefined,
       ]);
       if (activeModule?.id !== 'products' && activeModule?.id !== 'access' && memberAvailable) {
@@ -158,7 +173,7 @@ export function ScopeShell() {
     const timer = window.setTimeout(() => { void prepare(); }, 200);
     return () => window.clearTimeout(timer);
   }, [activeModule?.id, context.scope.id, context.scope.kind, context.session.capabilities,
-    context.session.membership, prepareMembers, prepareProducts, prepareSupplyChain]);
+    context.session.membership, navigationModuleKey, prepareMembers, prepareProducts, prepareSupplyChain, prepareSupport]);
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
     if (next !== undefined) navigateAfterCancel(`${scopePath(next, currentSuffix || 'cockpit')}${location.search}`);

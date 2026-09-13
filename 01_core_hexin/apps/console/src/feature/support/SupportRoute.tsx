@@ -12,6 +12,7 @@ import { SupportContextPanel } from './SupportContextPanel';
 import { SupportConversation } from './SupportConversation';
 import { readCases, readMessages, supportCaseKey, supportMessageKey } from './SupportQuery';
 import { supportRoleLabel } from './SupportPresentation';
+import { SUPPORT_PREFETCH_STALE_TIME_MS } from './SupportPrefetch';
 import type { SupportMessage } from './SupportSchema';
 import './support-layout.css';
 import './support-conversation.css';
@@ -28,11 +29,15 @@ export function Component() {
   const casesQuery = useQuery({
     queryKey: supportCaseKey(context, caseCursor),
     queryFn: ({ signal }) => readCases(context, caseCursor, signal),
+    staleTime: SUPPORT_PREFETCH_STALE_TIME_MS,
+    refetchOnWindowFocus: false,
   });
   const messagesQuery = useQuery({
     queryKey: supportMessageKey(context, caseId ?? 'not-selected'),
     queryFn: ({ signal }) => readMessages(context, caseId!, undefined, signal),
     enabled: caseId !== undefined,
+    staleTime: SUPPORT_PREFETCH_STALE_TIME_MS,
+    refetchOnWindowFocus: false,
   });
   const [olderMessages, setOlderMessages] = useState<readonly SupportMessage[]>([]);
   const [olderCursor, setOlderCursor] = useState<string>();
