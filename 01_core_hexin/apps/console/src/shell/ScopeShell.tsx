@@ -115,8 +115,11 @@ export function ScopeShell() {
   }, [context, queryClient]);
   const prepareProducts = useCallback(() => {
     if (!context.session.capabilities.includes('catalog.listings.read')) return Promise.resolve();
-    return import('../feature/product/ProductPrefetch').then(({ prefetchProducts }) =>
-      prefetchProducts(queryClient, context));
+    return Promise.all([
+      import('../feature/product/ProductCatalogRoute'),
+      import('../feature/product/ProductPrefetch').then(({ prefetchProducts }) =>
+        prefetchProducts(queryClient, context)),
+    ]).then(() => undefined);
   }, [context, queryClient]);
   const prepareApplications = useCallback(() => {
     if (!context.session.capabilities.includes('experience.applications.read')) return Promise.resolve();
