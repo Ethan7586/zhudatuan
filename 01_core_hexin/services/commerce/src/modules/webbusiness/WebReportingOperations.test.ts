@@ -53,7 +53,9 @@ describe('web reporting dashboard read', () => {
 
     expect(response).toMatchObject({ status: 200, body: { count: 0, summary: { sales: { periodSalesCents: 12 } } } });
     const cockpit = queries.find(({ text }) => text.includes('select reporting.cockpit'));
+    const metrics = queries.find(({ text }) => text.includes('from reporting.fact'));
     expect(cockpit?.values).toEqual(['mall:test', null, '30days']);
+    expect(metrics?.text).toContain('CAST(fact.projection_version AS float8)');
     expect(writes).toHaveLength(1);
     expect(writes[0]?.value).toEqual(response);
     expect(writes[0]?.seconds).toBeGreaterThan(0);
