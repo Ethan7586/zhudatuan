@@ -123,6 +123,17 @@ describe('ScopeShell route handles', () => {
     await waitFor(() => expect(document.title).toBe('商城管理 · 鸿泰集团'));
   });
 
+  it('keeps the engineering workspace mounted across its internal routes', async () => {
+    const user = userEvent.setup();
+    renderShell('/scopes/enterprise/enterprise%3A1/system/engineering');
+
+    const brand = await screen.findByAltText('MORVIA · zhudatuan 主打团');
+    await user.click(screen.getByRole('link', { name: '发布与版本' }));
+
+    expect(await screen.findByRole('heading', { name: '发布与版本' })).toBeTruthy();
+    expect(screen.getByAltText('MORVIA · zhudatuan 主打团')).toBe(brand);
+  });
+
   it('uses distributed platform preferredScopeKind from registry navigation when opening the module', async () => {
     const user = userEvent.setup();
     const { router } = renderShell('/scopes/enterprise/enterprise%3A1/applications');
@@ -182,6 +193,10 @@ function renderShell(initialEntry: string, loadedContext: ConsoleContext = conte
       { path: 'applications', Component: FixturePage, handle: handleForPath('applications') },
       { path: 'platforms', Component: FixturePage, handle: handleForPath('platforms') },
       { path: 'referral/settings', Component: FixturePage, handle: handleForPath('referral/settings') },
+      { path: 'system/engineering', Component: FixturePage, handle: handleForPath('system/engineering') },
+      { path: 'system/status', Component: FixturePage, handle: handleForPath('system/status') },
+      { path: 'system/releases', Component: FixturePage, handle: handleForPath('system/releases') },
+      { path: 'system/incidents', Component: FixturePage, handle: handleForPath('system/incidents') },
       { path: 'settings/profile', Component: FixturePage },
       { path: '*', Component: UnknownPage },
     ],

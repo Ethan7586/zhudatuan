@@ -28,6 +28,11 @@ const LazyAccessDeniedActionsProvider = lazy(async () => {
   return { default: AccessDeniedActionsProvider };
 });
 
+const LazyEngineeringWorkspace = lazy(async () => {
+  const { Component } = await import('../feature/engineering/EngineeringWorkspaceRoute');
+  return { default: Component };
+});
+
 export function ScopeShell() {
   const context = useLoaderData<ConsoleContext>();
   const location = useLocation();
@@ -287,7 +292,9 @@ export function ScopeShell() {
           <main className="workspacebody" aria-busy={navigation.state !== 'idle'}>
             {activeModule?.id === 'cockpit' ? <Outlet /> : (
               <Suspense fallback={<WorkspaceRouteLoading moduleId={activeModule?.id} />}>
-                <LazyAccessDeniedActionsProvider actions={accessDeniedActions}><Outlet /></LazyAccessDeniedActionsProvider>
+                <LazyAccessDeniedActionsProvider actions={accessDeniedActions}>
+                  {activeModule?.id === 'engineering' ? <LazyEngineeringWorkspace /> : <Outlet />}
+                </LazyAccessDeniedActionsProvider>
               </Suspense>
             )}
           </main>
