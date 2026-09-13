@@ -1,0 +1,26 @@
+{
+  "schema": "sfl.e05.hosted-before-after.v1",
+  "host_sovereign_node": "node:zhudatuan:l0",
+  "hosted_nodes": ["node:e05-h1:l2", "node:e05-h2:l3", "node:e05-h3:l4"],
+  "operations": ["create", "suspend", "reactivate", "grant", "revoke"],
+  "before": {"hosted_nodes": 0, "memberships": 0, "audit_rows": 0, "outbox_rows": 0},
+  "after": {
+    "hosted_nodes": 3,
+    "active_nodes": 3,
+    "memberships": 3,
+    "active_base_scopes": 3,
+    "base_entitlements": 3,
+    "extra_scope_rows": 1,
+    "extra_scope_active": 0,
+    "extra_entitlement_state": "disabled",
+    "audit_rows": 7,
+    "outbox_rows": 7,
+    "manifest_rows": 0,
+    "resource_binding_rows": 0
+  },
+  "access_checks": {
+    "suspended_denied": true,
+    "reactivated_allowed": true,
+    "revoked_extra_scope_denied": true
+  }
+}

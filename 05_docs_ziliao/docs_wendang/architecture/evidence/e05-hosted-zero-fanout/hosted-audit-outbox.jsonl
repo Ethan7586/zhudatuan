@@ -1,0 +1,7 @@
+{"operation":"create","node_id":"node:e05-h1:l2","audit_id":"audit:e05:create:h1","outbox_id":"outbox:e05:create:h1","infrastructure_action_count":0}
+{"operation":"create","node_id":"node:e05-h2:l3","audit_id":"audit:e05:create:h2","outbox_id":"outbox:e05:create:h2","infrastructure_action_count":0}
+{"operation":"create","node_id":"node:e05-h3:l4","audit_id":"audit:e05:create:h3","outbox_id":"outbox:e05:create:h3","infrastructure_action_count":0}
+{"operation":"suspend","node_id":"node:e05-h2:l3","audit_id":"audit:e05:suspend","outbox_id":"outbox:e05:suspend","infrastructure_action_count":0}
+{"operation":"reactivate","node_id":"node:e05-h2:l3","audit_id":"audit:e05:reactivate","outbox_id":"outbox:e05:reactivate","infrastructure_action_count":0}
+{"operation":"grant","node_id":"node:e05-h3:l4","audit_id":"audit:e05:grant","outbox_id":"outbox:e05:grant","infrastructure_action_count":0}
+{"operation":"revoke","node_id":"node:e05-h3:l4","audit_id":"audit:e05:revoke","outbox_id":"outbox:e05:revoke","infrastructure_action_count":0}

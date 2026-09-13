@@ -1,0 +1,23 @@
+{
+  "schema": "sfl.e05.hosted-infrastructure-call-counts.v1",
+  "hosted_lifecycle": {
+    "dns": 0,
+    "tunnel": 0,
+    "systemd": 0,
+    "caddy": 0,
+    "build": 0,
+    "deploy": 0,
+    "restart": 0,
+    "manifest": 0,
+    "pointer": 0,
+    "process": 0,
+    "port": 0
+  },
+  "shared_host_change": {
+    "build_count": 1,
+    "artifact_identity_count": 1,
+    "deploy_count": 1,
+    "restart_count": 1,
+    "hosted_per_node_action_count": 0
+  }
+}
