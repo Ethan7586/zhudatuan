@@ -1,0 +1,72 @@
+{
+  "schema_version": "e2.0-validation-receipt-v1",
+  "profile_version": "2.0.0-baseline",
+  "validated_at": "2026-09-13T09:39:19Z",
+  "non_gating": true,
+  "scope": "Documentation, JSON/JSON Schema, traceability semantics, evidence hashes, local links and official-source references only. No business code, service, release or deployment was executed.",
+  "validators": {
+    "json_syntax": {
+      "tool": "jq",
+      "result": "VALID",
+      "files": "all JSON files in architecture/evidence/e2.0"
+    },
+    "json_schema": {
+      "tool": "Ajv 8.20.0 with ajv-formats and JSON Schema draft 2020-12",
+      "result": "VALID",
+      "pairs": [
+        "E2.0-追踪矩阵.schema.json -> E2.0-追踪矩阵.json",
+        "E2.0-证据.schema.json -> E2.0-E06-校准样例.json",
+        "E2.0-符合性声明.schema.json -> E2.0-符合性声明模板.json"
+      ]
+    },
+    "semantic_traceability": {
+      "result": "VALID",
+      "observed": {
+        "claim_count": 8,
+        "standard_registry_count": 9,
+        "legacy_ids_exactly_once": ["E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12"],
+        "all_standard_mapping_ids_resolve": true,
+        "all_claims_have_external_mapping_or_project_custom_marker": true,
+        "all_oracles_refuse_test_program_pass_as_input": true,
+        "all_applicable_machine_records_non_gating": true
+      }
+    },
+    "e06_evidence_integrity": {
+      "result": "VALID",
+      "artifact_hash_and_size_pairs_checked": 8,
+      "criteria_locked_before_oracle_execution": true,
+      "independent_oracle_exit_code": 0,
+      "all_prelocked_thresholds_met": true,
+      "assurance_ceiling": "DEV VERIFIED",
+      "review_ceiling": "NOT REVIEWED"
+    },
+    "local_links": {
+      "result": "VALID",
+      "links_checked": 10,
+      "broken_links": []
+    },
+    "official_sources": {
+      "result": "VERIFIED_WITH_TRANSPORT_NOTE",
+      "retrieved_on": "2026-09-13",
+      "primary_source_only": true,
+      "urls": [
+        "https://www.iso.org/standard/78176.html",
+        "https://www.iso.org/standard/81291.html",
+        "https://www.iso.org/standard/79428.html",
+        "https://www.iso.org/standard/79429.html",
+        "https://www.iso.org/standard/79430.html",
+        "https://github.com/OWASP/ASVS/tree/v5.0.0",
+        "https://csrc.nist.gov/pubs/sp/800/218/final",
+        "https://csrc.nist.gov/projects/ssdf/publications",
+        "https://www.pcisecuritystandards.org/document_library/",
+        "https://www.pcisecuritystandards.org/standards/pci-dss/",
+        "https://www.iso.org/standard/75106.html",
+        "https://www.iso.org/standard/88412.html",
+        "https://www.iso.org/certification.html"
+      ],
+      "transport_note": "NIST, OWASP and PCI SSC URLs returned HTTP 200 to automated retrieval. ISO URLs were successfully read through official web retrieval but returned HTTP 403 to a raw curl check because ISO blocks that automated transport; this is not treated as a broken citation."
+    }
+  },
+  "final_result": "E2.0 ALIGNMENT BASELINE VALID",
+  "forbidden_interpretation": "This validation receipt is not an international certification, a PCI assessment, a production acceptance, or a runtime/merge/release/deployment gate."
+}

@@ -1,0 +1,323 @@
+{
+  "$schema": "./E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v1",
+  "evidence_id": "E2-EVID-E06-CALIBRATION-20260913",
+  "profile_version": "2.0.0-baseline",
+  "non_gating": true,
+  "claim_ids": ["E2-REL-002"],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E06-CALIBRATION-20260913",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-校准判据.json",
+    "sha256": "sha256:0374e9ab693b571261be328e20eafc1ef3c00ac9a141449d2949214c2d91a4fc",
+    "locked_at": "2026-09-13T09:26:26Z",
+    "locked_before_execution": true
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E06",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-E06-Sovereign单节点渐进发布与回滚验收-2026-09-13.json",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-REL-002"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T09:33:18Z",
+    "completed_at": "2026-09-13T09:33:28Z",
+    "executor": {
+      "actor_id": "codex-task-01a09a0a-db53-7ce0-bbe8-c9f817911bb4",
+      "role": "E2.0 calibration oracle operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Authored the E2.0 baseline and ran a separate read-only oracle over existing E06 receipts; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "jq -n --slurpfile m 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-artifact-manifest.json --slurpfile t 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-pointer-timeline.json --slurpfile a 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-canary-activation-receipt.json --slurpfile r 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-single-node-rollback-receipt.json --slurpfile n 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-nontarget-diff.json --slurpfile h 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-four-flow-history-digest.json -f 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-独立oracle.jq",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": null,
+        "stderr_artifact": null,
+        "sensitive_value_handling": "Read-only local JSON; no credentials or secret values were used."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-docker-e06-20260913T085330Z",
+    "description": "Three disposable Docker-isolated node processes labelled S-A control, S-B canary and S-C control; evidence reports network=none.",
+    "owner": "Legacy E06 internal execution task; no separately identified staging owner in evidence",
+    "isolation": "Disposable local Docker processes and temporary staging root; all containers/root removed after the run.",
+    "real_customer_data": false,
+    "production_impact": "No production deployment, pointer change, data write, domain change or payment-provider call recorded.",
+    "differences_from_production": [
+      "Docker image reference is local and process topology is temporary.",
+      "Network is disabled.",
+      "No real customer records or payment calls.",
+      "No stable staging environment identity, owner, credentials/data boundary or production-difference inventory was recorded.",
+      "systemd names and /staging paths are simulated inside the disposable harness."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "03bfbe07393ecd7fdfcbee83ab02e6ce3fea5fd3",
+    "test_item_shas": [
+      "ed02bf2710babf062e7a7ae6c610151cc688495c",
+      "dff9082b5061590ae3ad143d663061a91c236145"
+    ],
+    "execution_tree_state": "UNKNOWN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "Evidence records image sha256:8fb447e0fe22149dc6a60c9cca79374545a28031f71f44c018c2db68acd522c6, image reference zhudatuan-commerce:local-b9c, network=none, three isolated node processes, separate node pointers, and per-node config/data digests.",
+    "digest": null,
+    "unknown_fields": [
+      "Canonical full environment configuration bundle",
+      "Original host inventory and tool versions beyond embedded receipt details",
+      "Original execution worktree clean/dirty state"
+    ]
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E06-ARTIFACT-B",
+      "source": "sovereign-artifact-manifest.json",
+      "value": {
+        "build_count": 1,
+        "identity_count": 1,
+        "eligible_nodes": ["s-a", "s-b", "s-c"],
+        "node_specific_source_count": 0,
+        "source_sha": "dff9082b5061590ae3ad143d663061a91c236145",
+        "tree_digest": "sha256:5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb9c14fcf8995ee"
+      },
+      "unit": null,
+      "captured_at": "2026-09-13T09:33:28Z",
+      "notes": "Computed directly from artifact fields, not from the legacy PASS/checks summary."
+    },
+    {
+      "observation_id": "OBS-E06-POINTER-SEQUENCES",
+      "source": "sovereign-pointer-timeline.json",
+      "value": {
+        "s-a": ["A", "A", "A"],
+        "s-b": ["A", "B", "A"],
+        "s-c": ["A", "A", "A"]
+      },
+      "unit": "release labels over three locked phases",
+      "captured_at": "2026-09-13T09:33:28Z",
+      "notes": null
+    },
+    {
+      "observation_id": "OBS-E06-ACTIVATION",
+      "source": "sovereign-canary-activation-receipt.json",
+      "value": {
+        "selected_nodes": ["s-b"],
+        "excluded_nodes": ["s-a", "s-c"],
+        "release": "B",
+        "health": "ready",
+        "control_processes_unchanged": true
+      },
+      "unit": null,
+      "captured_at": "2026-09-13T09:33:28Z",
+      "notes": null
+    },
+    {
+      "observation_id": "OBS-E06-ROLLBACK",
+      "source": "sovereign-single-node-rollback-receipt.json",
+      "value": {
+        "selected_nodes": ["s-b"],
+        "excluded_nodes": ["s-a", "s-c"],
+        "release": "A",
+        "health": "ready",
+        "control_processes_unchanged": true
+      },
+      "unit": null,
+      "captured_at": "2026-09-13T09:33:28Z",
+      "notes": null
+    },
+    {
+      "observation_id": "OBS-E06-NONTARGET",
+      "source": "sovereign-nontarget-diff.json",
+      "value": {
+        "total_change_count": 0,
+        "control_digests_unchanged": true
+      },
+      "unit": "changes",
+      "captured_at": "2026-09-13T09:33:28Z",
+      "notes": "Digest equality was recomputed across baseline, post-activation and post-rollback fields."
+    },
+    {
+      "observation_id": "OBS-E06-HISTORY",
+      "source": "sovereign-four-flow-history-digest.json",
+      "value": {
+        "total_change_count": 0,
+        "history_recalculation_or_overwrite_count": 0,
+        "all_node_combined_digests_unchanged": true
+      },
+      "unit": "changes",
+      "captured_at": "2026-09-13T09:33:28Z",
+      "notes": "Combined digest equality was recomputed for all three nodes across all phases."
+    },
+    {
+      "observation_id": "OBS-E06-ALL-THRESHOLDS",
+      "source": "E2.0-E06-独立oracle.jq stdout",
+      "value": true,
+      "unit": "boolean conjunction of every prelocked threshold",
+      "captured_at": "2026-09-13T09:33:28Z",
+      "notes": "This boolean is the oracle's conjunction of raw-field comparisons; it is not the legacy test program's PASS field."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-artifact-manifest.json",
+      "media_type": "application/json",
+      "sha256": "sha256:261df70947a403eb9a5ce0fed01fb9d3ee5ebb1ffb7985852ba6cd02b0a3393e",
+      "size_bytes": 9368,
+      "role": "artifact and build provenance"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-pointer-timeline.json",
+      "media_type": "application/json",
+      "sha256": "sha256:467be5e6de9f0e1139adfe57207604a1d97531f7012eda2f65f34ea19eba19e2",
+      "size_bytes": 21835,
+      "role": "three-phase pointer and health states"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-canary-activation-receipt.json",
+      "media_type": "application/json",
+      "sha256": "sha256:daecf2bff651a7840c7cdc4617d20bafa6d0279f49464b03279dc05326c6caa7",
+      "size_bytes": 11426,
+      "role": "target activation receipt"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-single-node-rollback-receipt.json",
+      "media_type": "application/json",
+      "sha256": "sha256:c68a41a40d564a729750d3c5593abcd190bcd1813cbe125d3a8ad08ef592b611",
+      "size_bytes": 5481,
+      "role": "target rollback receipt"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-nontarget-diff.json",
+      "media_type": "application/json",
+      "sha256": "sha256:90d2284e83f8ba52fa0fb6b9f08e8442bd540d95795008766b9d07cf0a1ebde5",
+      "size_bytes": 1138,
+      "role": "control-node raw digest comparison"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-four-flow-history-digest.json",
+      "media_type": "application/json",
+      "sha256": "sha256:a2f521c3f91b0d85d3f17801d27362c3898aadc99580308ecd99cce32f0eb303",
+      "size_bytes": 9436,
+      "role": "four-flow history raw digests"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-校准判据.json",
+      "media_type": "application/json",
+      "sha256": "sha256:0374e9ab693b571261be328e20eafc1ef3c00ac9a141449d2949214c2d91a4fc",
+      "size_bytes": 6036,
+      "role": "prelocked E2.0 calibration criteria"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-独立oracle.jq",
+      "media_type": "application/jq",
+      "sha256": "sha256:74f048be757f5bda31d833043465be5b9325a32916f37450f1c25118377f9e61",
+      "size_bytes": 3571,
+      "role": "oracle implementation independent of the E06 test program"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E06-POINTER-DIFF-v1",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Load the six E06 raw artifacts, reconstruct artifact counts, target sets, per-node release sequences, protected process equality, control-node digest equality and four-flow digest equality, then conjunct every prelocked threshold. The legacy acceptance summary and its checks/result fields are not inputs.",
+    "exact_invocation": "jq -n --slurpfile m 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-artifact-manifest.json --slurpfile t 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-pointer-timeline.json --slurpfile a 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-canary-activation-receipt.json --slurpfile r 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-single-node-rollback-receipt.json --slurpfile n 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-nontarget-diff.json --slurpfile h 05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-four-flow-history-digest.json -f 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-独立oracle.jq",
+    "evaluator": {
+      "actor_id": "codex-task-01a09a0a-db53-7ce0-bbe8-c9f817911bb4",
+      "role": "E2.0 calibration oracle operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Separate from the original E06 test program, but also author of the E2.0 profile; therefore not an independent reviewer."
+    },
+    "input_artifacts": [
+      "sovereign-artifact-manifest.json",
+      "sovereign-pointer-timeline.json",
+      "sovereign-canary-activation-receipt.json",
+      "sovereign-single-node-rollback-receipt.json",
+      "sovereign-nontarget-diff.json",
+      "sovereign-four-flow-history-digest.json"
+    ],
+    "computed_observations": [
+      { "name": "artifact_b_build_count", "value": 1 },
+      { "name": "artifact_b_identity_count", "value": 1 },
+      { "name": "node_specific_source_count", "value": 0 },
+      { "name": "pointer_sequence_s_b", "value": ["A", "B", "A"] },
+      { "name": "pointer_sequence_s_a", "value": ["A", "A", "A"] },
+      { "name": "pointer_sequence_s_c", "value": ["A", "A", "A"] },
+      { "name": "non_target_total_change_count", "value": 0 },
+      { "name": "history_recalculation_or_overwrite_count", "value": 0 },
+      { "name": "all_thresholds_met", "value": true }
+    ]
+  },
+  "anomalies": [
+    {
+      "anomaly_id": "E06-GAP-ENV-LABEL",
+      "description": "Legacy evidence names the environment disposable Docker staging, but it has no stable external staging identity and records network=none.",
+      "impact_on_assessment": "Caps environment assurance at DEV VERIFIED.",
+      "resolution": "Repeat in a separately identified, configuration-managed real staging environment and record its production differences."
+    },
+    {
+      "anomaly_id": "E06-GAP-EXECUTION-PROVENANCE",
+      "description": "Original E06 executor identity, worktree state, complete stdout/stderr and one canonical configuration-bundle digest are not recorded.",
+      "impact_on_assessment": "Recorded as evidence gaps; does not erase directly hashable DEV raw receipts, but prevents higher assurance and clean external replay claims.",
+      "resolution": "Capture these fields in the next E2.0 execution record."
+    },
+    {
+      "anomaly_id": "E06-GAP-INDEPENDENCE",
+      "description": "The calibration evaluator authored the E2.0 profile and had prior access to the evidence; no external reviewer signed the recomputation.",
+      "impact_on_assessment": "Review assurance remains NOT REVIEWED.",
+      "resolution": "Assign a reviewer independent of test design and execution to verify hashes and rerun the oracle."
+    },
+    {
+      "anomaly_id": "E06-GAP-PRODUCTION",
+      "description": "No production host, pointer, customer record or authorized production observation is present.",
+      "impact_on_assessment": "PRODUCTION OBSERVED is not established.",
+      "resolution": "Only after separate explicit authorization, collect a bounded production observation record."
+    }
+  ],
+  "reproduction": {
+    "prerequisites": [
+      "Checkout zdt-next evidence commit 03bfbe07393ecd7fdfcbee83ab02e6ce3fea5fd3 or obtain the eight artifacts with the listed SHA-256 values.",
+      "Install jq with --slurpfile and -f support.",
+      "Do not use the legacy report's result or checks fields as oracle inputs."
+    ],
+    "steps": [
+      "Verify SHA-256 and byte size for every listed artifact.",
+      "Run the exact jq invocation recorded in execution.invocations[0].exact from the repository root.",
+      "Compare every emitted primitive/set/sequence to the locked criteria; do not accept only all_thresholds_met.",
+      "Classify the environment from raw environment facts, not from the word staging in a path or label.",
+      "Record reviewer identity and relationship separately if an independent review is commissioned."
+    ],
+    "expected_raw_observations": [
+      "B build/identity count 1, eligible nodes s-a/s-b/s-c, node-specific source count 0.",
+      "S-B sequence A/B/A; S-A and S-C each A/A/A.",
+      "Activation and rollback select only s-b and keep protected control process IDs equal.",
+      "Non-target and four-flow change counts are zero and all compared digests remain equal."
+    ],
+    "cleanup": "Read-only oracle; no cleanup is required. Re-running the original E06 experiment must use its own disposable-environment cleanup procedure and does not authorize production activity."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "rationale": "All prelocked E06 mechanism thresholds can be independently recomputed from the six hash-identified raw receipts. The observed environment is three disposable local Docker processes with network=none and no production effects, so the highest honest level is DEV VERIFIED. No independent person or organization reviewed the result.",
+    "gaps": [
+      "Real STAGING VERIFIED execution",
+      "Authorized PRODUCTION OBSERVED evidence",
+      "INDEPENDENTLY REVIEWED signature and recomputation",
+      "Original execution actor/worktree/stdout-stderr/full-configuration provenance"
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "recomputation_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-独立oracle.jq"
+    ]
+  },
+  "supersedes": null
+}

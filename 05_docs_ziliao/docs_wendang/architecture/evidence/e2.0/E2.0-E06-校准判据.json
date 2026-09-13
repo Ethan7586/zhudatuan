@@ -1,0 +1,93 @@
+{
+  "schema_version": "e2.0-calibration-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E06-CALIBRATION-20260913",
+  "profile_version": "2.0.0-baseline",
+  "claim_id": "E2-REL-002",
+  "legacy_trace_id": "E06",
+  "purpose": "Retrospectively classify existing E06 evidence under E2.0 and independently recompute raw observations without changing the frozen E v1 result.",
+  "locked_at": "2026-09-13T09:26:26Z",
+  "non_gating": true,
+  "original_pre_execution_basis": {
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E06",
+    "git_commit": "c557efcf225a0d525d24e2597e4ab4ef9b458ba9",
+    "committed_at": "2026-09-12T21:19:16+08:00",
+    "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69",
+    "relationship_to_execution": "The versioned E06 PASS/FAIL/exhaustiveness basis predates the recorded execution start 2026-09-13T08:53:30.591Z."
+  },
+  "calibration_disclosure": "The E2.0 criteria author had access to the existing evidence. This calibration is therefore not an independent review; reliance on pre-execution locking comes from the earlier committed E06 basis above.",
+  "required_input_artifacts": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-artifact-manifest.json",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-pointer-timeline.json",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-canary-activation-receipt.json",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-single-node-rollback-receipt.json",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-nontarget-diff.json",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e06-sovereign-single-node-rollout/sovereign-four-flow-history-digest.json"
+  ],
+  "independent_oracle": {
+    "reads_test_program_pass": false,
+    "reads_legacy_summary_checks": false,
+    "computations": [
+      "Read artifact manifest: B build_count, B identity count, eligible nodes and node-specific source count.",
+      "Read activation receipt: selected/excluded nodes, expected release, source/tree/manifest/archive identities, S-B health and protected control process IDs.",
+      "Read rollback receipt: selected/excluded nodes, target release A, source/tree/manifest/archive identities, S-B health and protected control process IDs.",
+      "Read non-target diff: independently require total_change_count=0 and baseline/activation/rollback digests equal for S-A and S-C.",
+      "Read four-flow digest: independently require total_change_count=0 and history_recalculation_or_overwrite_count=0.",
+      "Verify all six file SHA-256 digests before accepting observations."
+    ]
+  },
+  "prelocked_thresholds": [
+    "artifact B build_count = 1",
+    "artifact B identity count = 1",
+    "artifact B eligible node set = {s-a, s-b, s-c}",
+    "node-specific source count = 0",
+    "activation selected node set = {s-b}; excluded set = {s-a, s-c}; S-B release = B and health = ready",
+    "rollback selected node set = {s-b}; excluded set = {s-a, s-c}; S-B release = A and health = ready",
+    "protected S-A/S-C process IDs before and after activation/rollback are identical",
+    "non-target total change count = 0 and both control digests remain identical",
+    "four-flow total change count = 0 and history recalculation/overwrite count = 0"
+  ],
+  "positive_cases": [
+    "One shared candidate B is selectable by all three nodes.",
+    "Only S-B advances to B and later returns to A healthy.",
+    "S-A and S-C remain unchanged."
+  ],
+  "negative_cases": [
+    "Any node-specific source/build or second B identity.",
+    "Any activation/rollback target beyond S-B.",
+    "Any S-A/S-C pointer, process, health, configuration or data change.",
+    "Any four-flow historical recalculation/overwrite or final S-B unhealthy state."
+  ],
+  "environment_classification_rules": {
+    "DEV VERIFIED": "All thresholds are met in local/disposable containers, simulations or developer-controlled isolated processes.",
+    "STAGING VERIFIED": "All thresholds are met in a stable, separately identified and configuration-managed staging environment with a documented production-difference list.",
+    "PRODUCTION OBSERVED": "The specified facts are directly observed in production under explicit authorization and a recorded time window; unexecuted negative cases remain gaps.",
+    "INDEPENDENTLY REVIEWED": "A reviewer who did not design or execute the test independently validates hashes, re-runs the oracle and signs a relationship disclosure."
+  },
+  "exhaustive_outcome_table": [
+    {
+      "condition": "All required files exist, hashes match, all thresholds are met, and environment identity is established.",
+      "claim_outcome": "MET",
+      "environment_assurance": "Use only the environment level proven by raw environment facts."
+    },
+    {
+      "condition": "Any threshold is contradicted by a raw observation.",
+      "claim_outcome": "NOT MET",
+      "environment_assurance": "Use the environment level in which the contradiction was observed."
+    },
+    {
+      "condition": "Any required artifact, hash, raw field or environment fact is absent, inconsistent or unreadable.",
+      "claim_outcome": "UNKNOWN",
+      "environment_assurance": "NOT ESTABLISHED unless the missing item cannot affect a separately scoped lower environment result."
+    },
+    {
+      "condition": "The claim is removed from scope by an approved applicability record.",
+      "claim_outcome": "NOT APPLICABLE",
+      "environment_assurance": "NOT ESTABLISHED"
+    }
+  ],
+  "forbidden_promotions": [
+    "A directory or test label containing staging does not establish STAGING VERIFIED.",
+    "A DEV result does not establish production behavior.",
+    "A tool-generated PASS or this calibration does not establish INDEPENDENTLY REVIEWED."
+  ]
+}

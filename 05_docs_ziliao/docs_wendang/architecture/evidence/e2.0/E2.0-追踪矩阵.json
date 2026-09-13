@@ -1,0 +1,602 @@
+{
+  "$schema": "./E2.0-追踪矩阵.schema.json",
+  "schema_version": "e2.0-traceability-matrix-v1",
+  "profile": {
+    "id": "E2.0",
+    "name": "E2.0 国际标准对标验收体系",
+    "version": "2.0.0-baseline",
+    "classification": "standards-aligned-tailored-conformity-profile",
+    "certification_claim": false
+  },
+  "non_gating": true,
+  "retrieved_on": "2026-09-13",
+  "standards": [
+    {
+      "standard_id": "ISO/IEC 25010:2023",
+      "title": "Systems and software engineering — SQuaRE — Product quality model",
+      "version": "2023, Edition 2",
+      "status": "Published 2023-11",
+      "official_url": "https://www.iso.org/standard/78176.html",
+      "retrieved_on": "2026-09-13",
+      "access_depth": "OFFICIAL_PUBLIC_METADATA",
+      "profile_usage": "Quality-model vocabulary for specifying, measuring and evaluating product quality.",
+      "scope_status": "ACTIVE",
+      "notes": [
+        "No clause-level conformity is claimed from the public abstract.",
+        "SFL-specific thresholds remain project-custom assertions."
+      ]
+    },
+    {
+      "standard_id": "ISO/IEC/IEEE 29119-1:2022",
+      "title": "Software testing — Part 1: General concepts",
+      "version": "2022, Edition 2",
+      "status": "Published",
+      "official_url": "https://www.iso.org/standard/81291.html",
+      "retrieved_on": "2026-09-13",
+      "access_depth": "OFFICIAL_PUBLIC_METADATA",
+      "profile_usage": "Risk-based testing concepts, test basis, test oracle and test independence.",
+      "scope_status": "ACTIVE",
+      "notes": ["Public metadata/preview only; formal conformity requires authorized full text and clause-by-clause treatment."]
+    },
+    {
+      "standard_id": "ISO/IEC/IEEE 29119-2:2021",
+      "title": "Software testing — Part 2: Test processes",
+      "version": "2021, Edition 2",
+      "status": "Published 2021-10",
+      "official_url": "https://www.iso.org/standard/79428.html",
+      "retrieved_on": "2026-09-13",
+      "access_depth": "OFFICIAL_PUBLIC_METADATA",
+      "profile_usage": "Governance, management and implementation process alignment.",
+      "scope_status": "ACTIVE",
+      "notes": ["Process alignment only; no clause-level conformity claim."]
+    },
+    {
+      "standard_id": "ISO/IEC/IEEE 29119-3:2021",
+      "title": "Software testing — Part 3: Test documentation",
+      "version": "2021, Edition 2",
+      "status": "Published 2021-10",
+      "official_url": "https://www.iso.org/standard/79429.html",
+      "retrieved_on": "2026-09-13",
+      "access_depth": "OFFICIAL_PUBLIC_METADATA",
+      "profile_usage": "Documentation-output and traceability alignment.",
+      "scope_status": "ACTIVE",
+      "notes": ["Template concepts are adapted, not copied from the protected standard."]
+    },
+    {
+      "standard_id": "ISO/IEC/IEEE 29119-4:2021",
+      "title": "Software testing — Part 4: Test techniques",
+      "version": "2021, Edition 2",
+      "status": "Published 2021-10",
+      "official_url": "https://www.iso.org/standard/79430.html",
+      "retrieved_on": "2026-09-13",
+      "access_depth": "OFFICIAL_PUBLIC_METADATA",
+      "profile_usage": "Test-design-technique alignment for positive, negative and boundary cases.",
+      "scope_status": "ACTIVE",
+      "notes": ["Technique alignment only; no clause-level conformity claim."]
+    },
+    {
+      "standard_id": "OWASP ASVS 5.0.0",
+      "title": "OWASP Application Security Verification Standard",
+      "version": "5.0.0, May 2025",
+      "status": "Latest stable release",
+      "official_url": "https://github.com/OWASP/ASVS/tree/v5.0.0",
+      "retrieved_on": "2026-09-13",
+      "access_depth": "OFFICIAL_PUBLIC_FULL_TEXT",
+      "profile_usage": "Exact open requirement IDs for E12 web authorization isolation only.",
+      "scope_status": "ACTIVE",
+      "notes": ["Mapping is not an OWASP certification or an assertion that all ASVS requirements were assessed."]
+    },
+    {
+      "standard_id": "NIST SP 800-218 SSDF 1.1",
+      "title": "Secure Software Development Framework Version 1.1",
+      "version": "1.1, February 2022",
+      "status": "Final; SSDF 1.2 is Draft as of retrieval date",
+      "official_url": "https://csrc.nist.gov/pubs/sp/800/218/final",
+      "retrieved_on": "2026-09-13",
+      "access_depth": "OFFICIAL_PUBLIC_FULL_TEXT",
+      "profile_usage": "Security requirements/risk traceability and release component provenance evidence.",
+      "scope_status": "ACTIVE",
+      "notes": ["Task IDs such as PW.1.2 and PS.3.2 are cross-references, not certification claims."]
+    },
+    {
+      "standard_id": "PCI DSS 4.0.1",
+      "title": "Payment Card Industry Data Security Standard",
+      "version": "4.0.1, June 2024",
+      "status": "Current version in PCI SSC Document Library",
+      "official_url": "https://www.pcisecuritystandards.org/document_library/",
+      "retrieved_on": "2026-09-13",
+      "access_depth": "OFFICIAL_PUBLIC_FULL_TEXT",
+      "profile_usage": "Potential scope registry only; no quality claim is mapped in this baseline.",
+      "scope_status": "NOT_ACTIVATED",
+      "notes": [
+        "Activation requires confirmed direct handling of cardholder data and a formal applicability decision.",
+        "Official intended-audience source: https://www.pcisecuritystandards.org/standards/pci-dss/",
+        "This profile is not a PCI scope determination, SAQ, ROC or AOC."
+      ]
+    },
+    {
+      "standard_id": "ISO 22301:2019 + Amd 1:2024",
+      "title": "Security and resilience — Business continuity management systems — Requirements",
+      "version": "2019, Edition 2; Amendment 1:2024",
+      "status": "Published; next edition under development",
+      "official_url": "https://www.iso.org/standard/75106.html",
+      "retrieved_on": "2026-09-13",
+      "access_depth": "OFFICIAL_PUBLIC_METADATA",
+      "profile_usage": "Reference alignment for continuity and recovery evidence only.",
+      "scope_status": "REFERENCE_ONLY",
+      "notes": [
+        "Amendment source: https://www.iso.org/standard/88412.html",
+        "No BCMS conformity or certification claim is permitted."
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "E2-REL-001",
+      "legacy_trace_ids": ["E05"],
+      "title": "Hosted 生命周期零基础设施扇出",
+      "quality_statement": "Hosted 节点新增、停用、恢复、授权和撤销仅改变预期数据事实、审计与 Outbox；不会产生逐节点构建、发布、进程、端口、Manifest 或指针。",
+      "project_custom_assertion": true,
+      "business_risks": ["节点增长导致部署成本线性增长", "Hosted 生命周期误触基础设施", "停用或撤销后访问残留"],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Uses the product quality model to frame reliability, maintainability and performance-related measurement; exact zero-fan-out behavior is project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "NIST SP 800-218 SSDF 1.1",
+          "locator": "PS.3.2",
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Release-component provenance records support independent counting of builds and artifacts.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "Hosted is an implemented SFL operating mode.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when Hosted runtime topology or lifecycle operations change."
+      },
+      "test_basis_refs": [
+        "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E05"
+      ],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E05-FANOUT",
+        "procedure": "Independently diff database/audit/outbox facts and count DNS, Tunnel, systemd, Caddy, build, deploy, restart, process, port, manifest and pointer events from raw inventories and receipts; ignore the test summary result field.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": ["DEV", "STAGING", "PRODUCTION"],
+      "inputs": ["Three Hosted nodes", "create/suspend/reactivate/grant/revoke", "one shared-kernel marker change"],
+      "prelocked_criteria": {
+        "thresholds": ["Hosted-specific infrastructure object count = 0", "per-node infrastructure action count = 0", "shared build/deploy/restart count = 1/1/1", "all expected data/audit/outbox diffs present and no others"],
+        "all_required": true,
+        "unknown_rule": "Any missing raw counter, inventory, receipt or access-negative observation yields UNKNOWN."
+      },
+      "positive_cases": ["Lifecycle changes create only expected facts", "One shared host cutover serves all Hosted samples"],
+      "negative_cases": ["Suspended/revoked identity cannot access", "Any Hosted-specific process/port/manifest/pointer must be detected"],
+      "required_raw_evidence": ["before/after database rows", "audit and Outbox JSONL", "infrastructure call log", "build/deploy/restart receipt", "process/port/manifest/pointer inventories"],
+      "executor_role": "Environment operator with access to lifecycle and release observations",
+      "reviewer_role": "Reviewer independent of E05 test implementation",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
+        "evidence_ref": null,
+        "gaps": ["E2.0 evidence record and independent oracle recomputation not yet completed"]
+      }
+    },
+    {
+      "claim_id": "E2-REL-002",
+      "legacy_trace_ids": ["E06"],
+      "title": "Sovereign 单节点渐进发布与回滚隔离",
+      "quality_statement": "多个 Sovereign 节点可选择同源不可变制品；仅目标节点可执行 A→B→A，非目标节点的指针、进程、配置、数据和历史保持不变。",
+      "project_custom_assertion": true,
+      "business_risks": ["单节点发布波及其他节点", "节点专属源码或构建分叉", "回滚后不健康或历史被重算"],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames reliability and maintainability evaluation; the A-to-B-to-A isolation sequence is project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "NIST SP 800-218 SSDF 1.1",
+          "locator": "PS.3.2",
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Artifact and release provenance support source/build identity verification.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "ISO 22301:2019 + Amd 1:2024",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Recovery evidence is reference-aligned only; no BCMS conformity is claimed.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "Sovereign nodes have independent release pointers in the SFL model.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when release-pointer or Sovereign runtime topology changes."
+      },
+      "test_basis_refs": [
+        "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E06",
+        "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-校准判据.json"
+      ],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E06-POINTER-DIFF",
+        "procedure": "Reconstruct artifact identity and each node pointer/process/config/data/history timeline directly from raw receipts; assert S-B A-to-B-to-A and zero non-target/history changes without reading any summary PASS/check boolean.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": ["DEV", "STAGING", "PRODUCTION"],
+      "inputs": ["S-A and S-C controls", "S-B canary", "artifact A", "one shared artifact B", "target list containing only S-B"],
+      "prelocked_criteria": {
+        "thresholds": ["artifact B identity count = 1", "artifact B build count = 1", "node-specific source count = 0", "S-B sequence = A→B→A", "S-A/S-C total change count = 0", "history recalculation/overwrite count = 0", "S-B final health = ready on A"],
+        "all_required": true,
+        "unknown_rule": "Any missing stage/activation/rollback/control/history raw receipt or mismatched hash yields UNKNOWN."
+      },
+      "positive_cases": ["Only S-B activates B and returns to A", "S-A/S-C remain healthy on A", "Artifact B is eligible for all three nodes"],
+      "negative_cases": ["Detect any S-A/S-C pointer/process/config/data change", "Detect node-specific source/build", "Detect history recalculation or unhealthy rollback"],
+      "required_raw_evidence": ["artifact manifest", "pointer timeline", "activation receipt", "rollback receipt", "non-target diff inputs/output", "four-flow history digests", "all file SHA-256 values"],
+      "executor_role": "Release experiment operator",
+      "reviewer_role": "Reviewer independent of E06 test design and execution",
+      "current_rating": {
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "Raw evidence supports the mechanism in three disposable Docker processes with network=none; this is not a stable real staging environment and has no independent reviewer.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-校准样例.json",
+        "gaps": ["Real staging identity/config/difference record", "Production authorization and observation", "Independent reviewer signature"]
+      }
+    },
+    {
+      "claim_id": "E2-CONT-001",
+      "legacy_trace_ids": ["E07"],
+      "title": "Hosted 开店与 Sovereign 升级连续性",
+      "quality_statement": "Hosted 原节点开店并升级为 Sovereign 时，原身份、Membership、经营线、父边、级号和历史血缘保持不变，仅新增获准的商城与主权资源事实。",
+      "project_custom_assertion": true,
+      "business_risks": ["升级产生重复节点或新血缘", "Membership/级号重置", "历史交易或父边被覆盖"],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames functional suitability and reliability evaluation; identity/lineage invariants are project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "ISO/IEC/IEEE 29119-4:2021",
+          "locator": null,
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Positive transition and negative mutation cases are designed as project test techniques.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "Hosted mall opening and Sovereign upgrade are declared SFL transitions.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when identity, lineage or upgrade state machine changes."
+      },
+      "test_basis_refs": ["05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E07"],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E07-LINEAGE",
+        "procedure": "Independently compare immutable identity/lineage keys and history digests before and after each transition, then enumerate only allowed new mall/sovereignty/resource facts.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": ["DEV", "STAGING"],
+      "inputs": ["Four level samples", "Hosted mall opening", "Two Sovereign upgrades", "pre/post lineage snapshots"],
+      "prelocked_criteria": {
+        "thresholds": ["identity/realm/line/parent/original-parent/level/membership changes = 0", "Hosted infrastructure calls = 0", "unexpected history changes = 0", "node-specific source/build count = 0"],
+        "all_required": true,
+        "unknown_rule": "Any missing before/after immutable-key or history snapshot yields UNKNOWN."
+      },
+      "positive_cases": ["Each original node gains permitted mall capability", "Selected nodes gain Sovereign resources without identity replacement"],
+      "negative_cases": ["Detect new unrelated lineage", "Detect Membership/level reset", "Detect source copy or other-node switch"],
+      "required_raw_evidence": ["lineage before/after rows", "history digests", "infrastructure counters", "upgrade state timeline", "manifest and pointer refs"],
+      "executor_role": "Isolated transition environment operator",
+      "reviewer_role": "Reviewer independent of transition implementation",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
+        "evidence_ref": null,
+        "gaps": ["E2.0 criteria lock, evidence record and independent oracle recomputation"]
+      }
+    },
+    {
+      "claim_id": "E2-TXN-001",
+      "legacy_trace_ids": ["E08"],
+      "title": "多供应商四流交易完整性",
+      "quality_statement": "多供应商订单的订单、商品、现金和财务事实按成交路径对齐且金额守恒；部分退款只逆转选中商品行和原供应商经济腿，关系换版不重算历史。",
+      "project_custom_assertion": true,
+      "business_risks": ["供应商/合同/结算串线", "金额或库存不守恒", "退款逆转其他合法经济腿", "当前关系覆盖历史路径"],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames functional suitability and reliability measurement; four-flow accounting invariants are project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "ISO/IEC/IEEE 29119-4:2021",
+          "locator": null,
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Supports explicit positive, negative and boundary test design at a process-alignment level.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "Multi-supplier four-flow transactions are an SFL business capability.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when order, refund, inventory or finance authority changes."
+      },
+      "test_basis_refs": ["05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E08"],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E08-RECONCILIATION",
+        "procedure": "Recompute line, supplier-leg, payment, refund, inventory and finance totals from authoritative rows and original route versions; compare sets and sums without reading the test result.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": ["DEV", "STAGING", "PRODUCTION"],
+      "inputs": ["Three order lines", "Three supplier legs", "deterministic amounts", "one partial refund", "relationship version change"],
+      "prelocked_criteria": {
+        "thresholds": ["sum(order lines) = order total", "sum(supplier legs) = order total", "refund allocation = selected original line/leg only", "inventory and finance deltas reconcile exactly", "historical route version changes = 0"],
+        "all_required": true,
+        "unknown_rule": "Any missing authoritative flow, route version or currency-unit field yields UNKNOWN rather than inferred balance."
+      },
+      "positive_cases": ["Three independent legs reconcile", "Selected line partially refunds on original route"],
+      "negative_cases": ["Detect cross-leg refund", "Detect duplicate refund", "Detect current-route historical rewrite"],
+      "required_raw_evidence": ["authoritative order/line/leg rows", "inventory ledger", "payment/refund allocations", "finance facts", "original/current route versions"],
+      "executor_role": "Transaction test operator",
+      "reviewer_role": "Finance/domain reviewer independent of test implementation",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
+        "evidence_ref": null,
+        "gaps": ["E2.0 evidence record and independent ledger recomputation"]
+      }
+    },
+    {
+      "claim_id": "E2-REC-001",
+      "legacy_trace_ids": ["E09"],
+      "title": "关键写幂等、中断续跑与独立恢复",
+      "quality_statement": "相同意图五路并发只形成一个权威结果；同键异请求不覆盖；固定断点中断可识别并续跑；单节点恢复不改变非目标节点。",
+      "project_custom_assertion": true,
+      "business_risks": ["重复订单/扣款/库存/退款/Outbox", "冲突请求覆盖", "半套事实不可恢复", "恢复波及其他节点"],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames reliability evaluation; exact idempotency and recovery invariants are project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "ISO 22301:2019 + Amd 1:2024",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Recovery evidence is reference-aligned only and does not assess a BCMS.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "Critical SFL writes require idempotency and recoverable state transitions.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when operation catalog, transaction boundaries or provider steps change."
+      },
+      "test_basis_refs": ["05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E09"],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E09-AUTHORITY-COUNT",
+        "procedure": "Count authoritative business IDs, request hashes, state versions, provider receipts, audit and Outbox rows directly; compare target/non-target snapshots and reconstruct interruption continuation.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": ["DEV", "STAGING"],
+      "inputs": ["Five identical concurrent requests", "same key/different hash", "four fixed interruption points", "single target-node recovery"],
+      "prelocked_criteria": {
+        "thresholds": ["authoritative result count = 1", "all identical requests return one business ID", "conflict changes = 0", "unclassified partial-state count = 0", "non-target change count = 0"],
+        "all_required": true,
+        "unknown_rule": "Any missing request hash, idempotency key, provider receipt or target/non-target snapshot yields UNKNOWN."
+      },
+      "positive_cases": ["Five identical requests converge", "Retry resumes each recorded interruption"],
+      "negative_cases": ["Same key with different hash is rejected", "Detect duplicate side effects", "Detect non-target change"],
+      "required_raw_evidence": ["request/response set", "database rows", "provider receipts", "audit/Outbox rows", "interruption snapshots", "non-target diff"],
+      "executor_role": "Failure-injection test operator",
+      "reviewer_role": "Reviewer independent of operation and recovery implementation",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
+        "evidence_ref": null,
+        "gaps": ["E2.0 criteria lock, raw provider/DB evidence and independent recovery reconstruction"]
+      }
+    },
+    {
+      "claim_id": "E2-REL-003",
+      "legacy_trace_ids": ["E10"],
+      "title": "一次共享变更、一次构建与分时生效",
+      "quality_statement": "一次共享内核变更只形成一个可追溯不可变制品；Hosted 随宿主一次切换，Sovereign 可分时选择版本；各身份在页面、API、任务和服务上的功能等于权威交集。",
+      "project_custom_assertion": true,
+      "business_risks": ["节点专属分支/构建", "Hosted 逐节点切换", "Sovereign 被迫同步升级", "功能越权或合法能力缺失"],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames functional suitability and maintainability measurement; cross-surface SFL intersection is project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "NIST SP 800-218 SSDF 1.1",
+          "locator": "PW.1.2; PS.3.2",
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Trace security requirements/risks/design decisions and preserve release component provenance.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "Shared-kernel release behavior is a declared SFL architecture property.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when build graph, target graph or capability projection changes."
+      },
+      "test_basis_refs": ["05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E10"],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E10-PROVENANCE-FEATURE-DIFF",
+        "procedure": "Independently count build/artifact identities, reconstruct all node pointer timelines, and set-diff expected versus observed operations on each surface from raw responses.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": ["STAGING", "PRODUCTION"],
+      "inputs": ["One side-effect-free shared marker change", "one full Git SHA build", "Hosted host plus three Sovereign nodes", "three identity classes", "four surfaces"],
+      "prelocked_criteria": {
+        "thresholds": ["build count = 1", "artifact identity count = 1", "Hosted per-node action count = 0", "expected/observed capability symmetric difference = 0", "non-target rollback change count = 0"],
+        "all_required": true,
+        "unknown_rule": "Any missing surface, identity, pointer or provenance record yields UNKNOWN."
+      },
+      "positive_cases": ["Hosted host switches once", "S-A/S-B switch at different times while S-C remains old", "all allowed features present"],
+      "negative_cases": ["All denied features remain absent", "Detect repeated or non-equivalent artifacts", "Detect rollback spillover"],
+      "required_raw_evidence": ["patch identity", "build provenance", "artifact manifest", "pointer timeline", "expected and observed feature sets", "rollback/control snapshots"],
+      "executor_role": "Staging release and probe operator",
+      "reviewer_role": "Reviewer independent of build/release and capability-matrix implementation",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
+        "evidence_ref": null,
+        "gaps": ["Complete same-SHA staging release and cross-surface raw evidence"]
+      }
+    },
+    {
+      "claim_id": "E2-SCALE-001",
+      "legacy_trace_ids": ["E11"],
+      "title": "节点规模与代码/构建/Hosted 操作解耦",
+      "quality_statement": "节点从 1 增长到 10、100、1000 时，业务源码与节点专属源码不增长，节点专属源码为零，共享变更仍只构建一个制品，Hosted 逐节点基础设施操作为零。",
+      "project_custom_assertion": true,
+      "business_risks": ["节点规模导致源码复制", "构建次数随节点增长", "Hosted 基础设施线性增长", "规模下跨线或解析错误"],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames performance efficiency and maintainability measurement; exact 1/10/100/1000 counts are project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "ISO/IEC/IEEE 29119-4:2021",
+          "locator": null,
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Scale points and topology combinations are an explicit project test-design set.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "Scale independence is an explicit SFL architecture claim.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when node materialization, build model or Hosted infrastructure changes."
+      },
+      "test_basis_refs": ["05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E11"],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E11-SCALE-COUNTS",
+        "procedure": "Independently count source files, node-specific source, build/artifact identities and Hosted infrastructure events at each locked scale; verify correctness sets separately from latency metrics.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": ["DEV", "STAGING"],
+      "inputs": ["Node counts 1/10/100/1000", "three topology classes", "one shared marker change", "fixed per-node read workload"],
+      "prelocked_criteria": {
+        "thresholds": ["business source file count delta = 0", "node-specific source file count = 0", "build count = 1", "artifact identity count = 1", "Hosted per-node infrastructure action count = 0", "resolution/isolation errors = 0"],
+        "all_required": true,
+        "unknown_rule": "Missing any scale/topology/count or correctness sample yields UNKNOWN; latency is reported without an unapproved pass threshold."
+      },
+      "positive_cases": ["All scale/topology combinations resolve correctly", "One shared artifact serves the declared population model"],
+      "negative_cases": ["Detect generated node source", "Detect build/event count growth", "Detect cross-line/scope resolution"],
+      "required_raw_evidence": ["scale input manifest", "source inventory", "build invocation/provenance log", "infrastructure event log", "resolution outputs", "latency samples"],
+      "executor_role": "Scale test operator",
+      "reviewer_role": "Reviewer independent of generator and counting code",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
+        "evidence_ref": null,
+        "gaps": ["Independent source/build/event recount under E2.0"]
+      }
+    },
+    {
+      "claim_id": "E2-ISO-001",
+      "legacy_trace_ids": ["E12"],
+      "title": "多 Realm、Scope 与节点权威隔离",
+      "quality_statement": "未知/歧义 Host、跨 Realm、跨 Scope、错误节点身份、过期版本和停用身份均不解析到有效权威上下文、不产生业务写入或 Outbox；客户端伪造权威字段不能改变落库归属。",
+      "project_custom_assertion": true,
+      "business_risks": ["跨租户数据访问或写入", "默认节点回退", "客户端伪造落库归属", "兼容路径掩盖权威缺失"],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames product security quality evaluation; SFL Realm/Scope/Node authority fields are project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "OWASP ASVS 5.0.0",
+          "locator": "V8.1.1, V8.2.2, V8.3.1",
+          "mapping_type": "EXACT_OPEN_REQUIREMENT_MAPPING",
+          "alignment_statement": "Maps authorization-rule documentation, data-specific authorization, and trusted service-layer enforcement to E12 isolation probes.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "NIST SP 800-218 SSDF 1.1",
+          "locator": "PW.1.2",
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Tracks security requirements, risks and design decisions for tenant authority boundaries.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "SFL explicitly serves multiple Realm, Scope and node contexts.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when Host resolution, session, membership, scope, capability or write authority changes."
+      },
+      "test_basis_refs": ["05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E12"],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E12-AUTHORITY-DIFF",
+        "procedure": "Independently compare expected versus actual status/error/context and before/after authoritative tables for every positive, invalid and forged-field case; do not use the test program's pass flags.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": ["DEV", "STAGING", "PRODUCTION"],
+      "inputs": ["Two valid node/realm/scope baselines", "seven invalid context cases", "six forged authority fields", "stale/suspended identities"],
+      "prelocked_criteria": {
+        "thresholds": ["valid A/A and B/B expected result mismatch = 0", "invalid request acceptance count = 0", "business write count for invalid cases = 0", "Outbox count for invalid cases = 0", "forged ownership changes = 0", "default-node fallback count = 0"],
+        "all_required": true,
+        "unknown_rule": "Missing any invalid/forgery case or direct database before/after diff yields UNKNOWN."
+      },
+      "positive_cases": ["Valid A/A and B/B remain distinct and succeed as specified"],
+      "negative_cases": ["Unknown/ambiguous Host", "cross-Realm/Scope/Node", "stale/suspended identity", "forged realm/membership/scope/node/mall/role"],
+      "required_raw_evidence": ["exact requests/responses", "resolved context or error", "authoritative-table before/after diff", "Outbox diff", "denial audit", "compatibility-path trace"],
+      "executor_role": "Authorization isolation test operator",
+      "reviewer_role": "Security reviewer independent of authorization implementation and E12 test code",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
+        "evidence_ref": null,
+        "gaps": ["Complete E2.0 negative matrix, direct database oracle and independent review"]
+      }
+    }
+  ]
+}

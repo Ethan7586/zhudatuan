@@ -1,0 +1,333 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://zhudatuan.local/schemas/e2.0/evidence.schema.json",
+  "title": "E2.0 Evidence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_id",
+    "profile_version",
+    "non_gating",
+    "claim_ids",
+    "criteria",
+    "test_basis_refs",
+    "execution",
+    "environment",
+    "source_control",
+    "configuration",
+    "raw_observations",
+    "artifacts",
+    "independent_oracle",
+    "anomalies",
+    "reproduction",
+    "assessment",
+    "review"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema_version": { "const": "e2.0-evidence-v1" },
+    "evidence_id": { "type": "string", "pattern": "^E2-EVID-[A-Z0-9._-]+$" },
+    "profile_version": { "type": "string", "pattern": "^2\\.[0-9]+\\.[0-9]+(-[a-z0-9.-]+)?$" },
+    "non_gating": { "const": true },
+    "claim_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^E2-[A-Z]+-[0-9]{3}$" }
+    },
+    "criteria": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["criteria_id", "path", "sha256", "locked_at", "locked_before_execution"],
+      "properties": {
+        "criteria_id": { "type": "string" },
+        "path": { "type": "string" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "locked_at": { "type": "string", "format": "date-time" },
+        "locked_before_execution": { "const": true }
+      }
+    },
+    "test_basis_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string" }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["started_at", "completed_at", "executor", "invocations"],
+      "properties": {
+        "started_at": { "type": "string", "format": "date-time" },
+        "completed_at": { "type": "string", "format": "date-time" },
+        "executor": { "$ref": "#/$defs/actor" },
+        "invocations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "exact", "sensitive_value_handling"],
+            "properties": {
+              "kind": { "enum": ["COMMAND", "HTTP", "SQL", "MANUAL_OBSERVATION"] },
+              "exact": { "type": "string", "minLength": 1 },
+              "working_directory": { "type": ["string", "null"] },
+              "exit_code": { "type": ["integer", "null"] },
+              "stdout_artifact": { "type": ["string", "null"] },
+              "stderr_artifact": { "type": ["string", "null"] },
+              "sensitive_value_handling": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "environment_id",
+        "description",
+        "owner",
+        "isolation",
+        "real_customer_data",
+        "production_impact",
+        "differences_from_production"
+      ],
+      "properties": {
+        "kind": { "enum": ["DEV", "STAGING", "PRODUCTION"] },
+        "environment_id": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "owner": { "type": "string", "minLength": 1 },
+        "isolation": { "type": "string", "minLength": 1 },
+        "real_customer_data": { "type": "boolean" },
+        "production_impact": { "type": "string", "minLength": 1 },
+        "differences_from_production": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "source_control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "evidence_commit_sha", "execution_tree_state"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "evidence_commit_sha": { "$ref": "#/$defs/gitSha" },
+        "test_item_shas": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/gitSha" }
+        },
+        "execution_tree_state": { "enum": ["CLEAN", "DIRTY", "UNKNOWN"] },
+        "diff_sha256": {
+          "oneOf": [
+            { "$ref": "#/$defs/sha256" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["summary", "digest"],
+      "properties": {
+        "summary": { "type": "string", "minLength": 1 },
+        "digest": {
+          "oneOf": [
+            { "$ref": "#/$defs/sha256" },
+            { "type": "null" }
+          ]
+        },
+        "unknown_fields": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "raw_observations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["observation_id", "source", "value", "captured_at"],
+        "properties": {
+          "observation_id": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 },
+          "value": {},
+          "unit": { "type": ["string", "null"] },
+          "captured_at": { "type": "string", "format": "date-time" },
+          "notes": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path_or_uri", "media_type", "sha256"],
+        "properties": {
+          "path_or_uri": { "type": "string", "minLength": 1 },
+          "media_type": { "type": "string", "minLength": 1 },
+          "sha256": { "$ref": "#/$defs/sha256" },
+          "size_bytes": { "type": ["integer", "null"], "minimum": 0 },
+          "role": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "independent_oracle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "oracle_id",
+        "independent_from_test_program",
+        "reads_test_program_pass",
+        "procedure",
+        "exact_invocation",
+        "evaluator",
+        "input_artifacts",
+        "computed_observations"
+      ],
+      "properties": {
+        "oracle_id": { "type": "string", "minLength": 1 },
+        "independent_from_test_program": { "const": true },
+        "reads_test_program_pass": { "const": false },
+        "procedure": { "type": "string", "minLength": 1 },
+        "exact_invocation": { "type": "string", "minLength": 1 },
+        "evaluator": { "$ref": "#/$defs/actor" },
+        "input_artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" }
+        },
+        "computed_observations": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "object" }
+        }
+      }
+    },
+    "anomalies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["anomaly_id", "description", "impact_on_assessment"],
+        "properties": {
+          "anomaly_id": { "type": "string" },
+          "description": { "type": "string" },
+          "impact_on_assessment": { "type": "string" },
+          "resolution": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "reproduction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prerequisites", "steps", "expected_raw_observations", "cleanup"],
+      "properties": {
+        "prerequisites": { "type": "array", "items": { "type": "string" } },
+        "steps": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "expected_raw_observations": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "cleanup": { "type": "string", "minLength": 1 }
+      }
+    },
+    "assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_outcome", "environment_assurance", "review_assurance", "alignment_depth", "rationale", "gaps"],
+      "properties": {
+        "claim_outcome": { "enum": ["MET", "NOT MET", "UNKNOWN", "NOT APPLICABLE"] },
+        "environment_assurance": { "enum": ["DEV VERIFIED", "STAGING VERIFIED", "PRODUCTION OBSERVED", "NOT ESTABLISHED"] },
+        "review_assurance": { "enum": ["NOT REVIEWED", "INTERNAL PEER REVIEWED", "INDEPENDENTLY REVIEWED"] },
+        "alignment_depth": { "enum": ["QUALITY_MODEL_ALIGNMENT", "PROCESS_ALIGNMENT", "EXACT_OPEN_REQUIREMENT_MAPPING", "PROJECT_CUSTOM"] },
+        "rationale": { "type": "string", "minLength": 1 },
+        "gaps": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewer", "reviewed_at", "independence_statement", "recomputation_artifacts"],
+      "properties": {
+        "reviewer": {
+          "oneOf": [
+            { "$ref": "#/$defs/actor" },
+            { "type": "null" }
+          ]
+        },
+        "reviewed_at": { "type": ["string", "null"], "format": "date-time" },
+        "independence_statement": { "type": ["string", "null"] },
+        "recomputation_artifacts": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "supersedes": { "type": ["string", "null"] }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "assessment": {
+            "type": "object",
+            "properties": { "claim_outcome": { "type": "string", "const": "MET" } },
+            "required": ["claim_outcome"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "assessment": {
+            "type": "object",
+            "properties": {
+              "environment_assurance": { "type": "string", "not": { "const": "NOT ESTABLISHED" } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assessment": {
+            "type": "object",
+            "properties": { "review_assurance": { "type": "string", "const": "INDEPENDENTLY REVIEWED" } },
+            "required": ["review_assurance"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "review": {
+            "type": "object",
+            "properties": {
+              "reviewer": { "$ref": "#/$defs/actor" },
+              "reviewed_at": { "type": "string", "format": "date-time" },
+              "independence_statement": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "gitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor_id", "role", "organization", "relationship_to_test_item"],
+      "properties": {
+        "actor_id": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "minLength": 1 },
+        "organization": { "type": "string", "minLength": 1 },
+        "relationship_to_test_item": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
