@@ -1,0 +1,49 @@
+{
+  "schema_version": "e08-contract-execution-v1",
+  "business_contract": {
+    "path": "02_platform_pingtai/database/supabase/tests/supplier_four_flow_business_contract.sql",
+    "source_sha256": "sha256:bb6f0a0e1a0a77334e598541ad2f41f77bcbfba4e2d2b2ef83d4f83063279090",
+    "started_at": "2026-09-13T18:47:38.497Z",
+    "completed_at": "2026-09-13T18:47:38.530Z",
+    "execution_transform": "Only the terminal cleanup ROLLBACK was changed to COMMIT inside the disposable database so replay sessions and evidence queries could read the synthetic baseline.",
+    "sql_assertion_error": null
+  },
+  "replay_contract": {
+    "path": "02_platform_pingtai/database/supabase/tests/supplier_four_flow_concurrent_replay.sql",
+    "source_sha256": "sha256:61b7d1abc42a62e530174d3db5607d0ab514e12219167bb607974cbfd4db3141",
+    "simultaneous_sessions": [
+      {
+        "attempt": 1,
+        "started_at": "2026-09-13T18:47:38.539Z",
+        "completed_at": "2026-09-13T18:47:38.563Z",
+        "database_error": null
+      },
+      {
+        "attempt": 2,
+        "started_at": "2026-09-13T18:47:38.539Z",
+        "completed_at": "2026-09-13T18:47:38.563Z",
+        "database_error": null
+      },
+      {
+        "attempt": 3,
+        "started_at": "2026-09-13T18:47:38.539Z",
+        "completed_at": "2026-09-13T18:47:38.563Z",
+        "database_error": null
+      },
+      {
+        "attempt": 4,
+        "started_at": "2026-09-13T18:47:38.539Z",
+        "completed_at": "2026-09-13T18:47:38.563Z",
+        "database_error": null
+      },
+      {
+        "attempt": 5,
+        "started_at": "2026-09-13T18:47:38.539Z",
+        "completed_at": "2026-09-13T18:47:38.563Z",
+        "database_error": null
+      }
+    ],
+    "sql_assertion_errors": []
+  },
+  "replay_attempts": 5
+}

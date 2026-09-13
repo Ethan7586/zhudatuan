@@ -762,13 +762,17 @@
       "executor_role": "Transaction test operator",
       "reviewer_role": "Finance/domain reviewer independent of test implementation",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "Formal E08 execution at source SHA 7f69099221fb7468a6cb0668511086bcec6ecd95 replayed all 301 migrations in disposable PostgreSQL 17. Three supplier legs, four forward flows, two selected refunds, five simultaneous replay attempts, atomic failure probes and frozen route versions independently reconciled with zero differences; all three negative oracle mutations were detected.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/E2.0-E08-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["E2.0 evidence record and independent ledger recomputation"]
+        "gaps": [
+          "No stable separately managed staging replay has been performed.",
+          "No authorized production observation has been performed.",
+          "No finance/domain reviewer independent of the E08 test implementation and execution has recomputed and signed the evidence."
+        ]
       }
     },
     {

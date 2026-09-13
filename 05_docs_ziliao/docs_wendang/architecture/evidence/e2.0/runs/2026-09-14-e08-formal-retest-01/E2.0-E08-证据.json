@@ -1,0 +1,451 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E08-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-TXN-001"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E08-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E08-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:022e1dbfc9783c73389b32681cf18cf7b38d833a0c25b7fac7ca9084e9ab93f6",
+    "locked_at": "2026-09-13T18:36:12Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e08-acceptance-repair-20260914",
+      "role": "E08 transaction test and oracle operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the formal fixture orchestration and evidence exporter, executed the SQL contracts and operated the separate raw-ledger oracle; not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-TXN-001",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E08"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T18:46:58.613Z",
+    "completed_at": "2026-09-13T18:47:38.913Z",
+    "executor": {
+      "actor_id": "codex-task-e08-acceptance-repair-20260914",
+      "role": "E08 transaction test and oracle operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the formal fixture orchestration and evidence exporter, executed the SQL contracts and operated the separate raw-ledger oracle; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e08 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "The generated disposable PostgreSQL password and connection URL were used only in process memory and were not persisted in evidence."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-postgresql17-e08-3a452a36df0f4165",
+    "description": "A newly created PostgreSQL 17 Alpine container replayed the complete current migration chain, executed the locked E08 business contract and five simultaneous replay sessions, then exported authoritative rows.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Disposable Docker container zhudatuan-e08-3a452a36df0f4165; synthetic E08 transaction rows only; container removed after execution.",
+    "real_customer_data": false,
+    "production_impact": "None. No production service, database, payment provider, supplier or customer record was contacted.",
+    "differences_from_production": [
+      "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+      "Synthetic transaction, supplier, payment and refund facts rather than customer traffic or provider calls.",
+      "No stable staging environment identity and no production observation."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "7f69099221fb7468a6cb0668511086bcec6ecd95",
+    "test_item_shas": [
+      "7f69099221fb7468a6cb0668511086bcec6ecd95"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "postgres:17-alpine sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73; 301 migrations; locked E08 SQL contracts; 5 simultaneous replay sessions.",
+    "digest": "sha256:d23e59748c41d745415f2a4680f14d7cdba3f54420ef23b0ba6e86291fbd0d75",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E08-REQUIRED-RAW-EVIDENCE-MISSING-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-TOPOLOGY-MISMATCH-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-MONEY-DIFFERENCE-MINOR",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "minor currency unit",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-PAYMENT-MISMATCH-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-FOUR-FLOW-AUTHORITY-MISMATCH-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-INVENTORY-QUANTITY-MISMATCH-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-FORWARD-FINANCE-MISMATCH-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-REFUND-ORIGINAL-TARGET-MISMATCH-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-REVERSAL-FINANCE-MISMATCH-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-DUPLICATE-REPLAY-BUSINESS-FACT-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-HISTORICAL-ROUTE-VERSION-CHANGE-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-ATOMIC-FAILURE-HALF-WRITE-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    },
+    {
+      "observation_id": "OBS-E08-NEGATIVE-ORACLE-PROBE-MISS-COUNT",
+      "source": "inventory-and-finance-reconciliation.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:47:38.717Z",
+      "notes": "Recomputed from authoritative rows; SQL assertion and runner PASS/status fields were not read."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/supplier-route-snapshot.json",
+      "media_type": "application/json",
+      "sha256": "sha256:aa1bacaf682c92705cadfc4d6617ea9ae499044719d8cabdf9194674f4bd12b6",
+      "size_bytes": 23347,
+      "role": "Authoritative order, line, supplier-leg and frozen/current route rows"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/four-flow-forward-facts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:dd178f8fdd1f3802b414b4986daf1c94cc67a0aaa266686e400b7cda1e431250",
+      "size_bytes": 10818,
+      "role": "Inventory, fulfillment, payment and finance forward facts"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/partial-refund-replay.json",
+      "media_type": "application/json",
+      "sha256": "sha256:360c8c79bedb43789bed2d104fe6d98698c5d68b32b96bc07ecf11285c536024",
+      "size_bytes": 17737,
+      "role": "Refund, return, restock, reversal, replay uniqueness and atomicity rows"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/inventory-and-finance-reconciliation.json",
+      "media_type": "application/json",
+      "sha256": "sha256:8b195709aaf71a628589fb2331386f47aafdcf5a6046d357808f0828f3435052",
+      "size_bytes": 3690,
+      "role": "Independent raw-ledger reconciliation and negative oracle probes"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:f9f29f9e518da61f954698aa798dde7210c079e77ee863d3109215f5ea841cc5",
+      "size_bytes": 1790,
+      "role": "Disposable execution environment identity"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/migration-replay.log",
+      "media_type": "text/plain",
+      "sha256": "sha256:e9ab691c84de1fae8d2038ac6ee3e04c70cf23a16a0c6e57ecd79ce60b5d0472",
+      "size_bytes": 69,
+      "role": "Full migration replay completion output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/contract-execution.json",
+      "media_type": "application/json",
+      "sha256": "sha256:ff395453945c328b676d61f4bca280f3c4c7c5b241bad27849f148c7cc346c07",
+      "size_bytes": 1773,
+      "role": "Fixture source digests and replay-session execution record"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:f7c388567f9d51e5fd5c0dc96ed3e874c82559434f5b17924bc76382216c8feb",
+      "size_bytes": 1249,
+      "role": "Exact command, source SHA and cleanup log"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E08-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:022e1dbfc9783c73389b32681cf18cf7b38d833a0c25b7fac7ca9084e9ab93f6",
+      "size_bytes": 5659,
+      "role": "Pre-execution locked E08 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E08-RECONCILIATION",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Recompute order-line and supplier-leg conservation, payment allocation, inventory quantities, forward and reverse finance facts, refund target identity, replay uniqueness and frozen route versions directly from authoritative rows. Mutate copies of the raw rows to prove detection of cross-leg refund, duplicate refund and current-route historical rewrite; do not consume SQL assertion or runner PASS fields.",
+    "exact_invocation": "node 04_tools/scripts/audit/supplier-four-flow.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E08-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/inventory-and-finance-reconciliation.json",
+    "evaluator": {
+      "actor_id": "codex-task-e08-acceptance-repair-20260914",
+      "role": "E08 transaction test and oracle operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the formal fixture orchestration and evidence exporter, executed the SQL contracts and operated the separate raw-ledger oracle; not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E08-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/supplier-route-snapshot.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/four-flow-forward-facts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/partial-refund-replay.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "required_raw_evidence_missing_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "topology_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "money_difference_minor",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "payment_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "four_flow_authority_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "inventory_quantity_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "forward_finance_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "refund_original_target_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "reversal_finance_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "duplicate_replay_business_fact_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "historical_route_version_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "atomic_failure_half_write_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_oracle_probe_miss_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "clean checkout of the recorded source SHA"
+    ],
+    "steps": [
+      "Check out 7f69099221fb7468a6cb0668511086bcec6ecd95.",
+      "Run npm run evidence:e08 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01.",
+      "Read inventory-and-finance-reconciliation.json and verify all listed artifact hashes."
+    ],
+    "expected_raw_observations": [
+      "required raw evidence missing count = 0",
+      "order, line and supplier-leg count mismatch count = 0",
+      "line, supplier-leg and order money difference in minor units = 0",
+      "payment and supplier allocation mismatch count = 0",
+      "line-to-leg and four-flow authority mismatch count = 0",
+      "inventory reservation and restock quantity mismatch count = 0",
+      "forward and reversal finance mismatch count = 0",
+      "refund original line, supplier leg, route or amount mismatch count = 0",
+      "duplicate replay business fact count = 0",
+      "historical route version change count = 0",
+      "atomic failure half-write count = 0",
+      "negative oracle probe miss count = 0"
+    ],
+    "cleanup": "The runner removes the disposable PostgreSQL container in a finally block; only synthetic E08 rows exist in that container."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
+    "rationale": "Three supplier legs, all four forward flows, both selected refunds, five-way replay uniqueness, atomic failure probes and frozen route versions independently reconciled with zero differences; all three negative oracle mutations were detected.",
+    "gaps": [
+      "No stable separately managed staging replay has been performed.",
+      "No authorized production observation has been performed.",
+      "No finance/domain reviewer independent of the E08 test implementation and execution has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}

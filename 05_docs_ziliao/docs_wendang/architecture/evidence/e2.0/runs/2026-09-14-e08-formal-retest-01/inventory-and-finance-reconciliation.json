@@ -1,0 +1,145 @@
+{
+  "schema_version": "e08-independent-reconciliation-v1",
+  "oracle_id": "E2-ORACLE-E08-RECONCILIATION",
+  "executed_at": "2026-09-13T18:47:38.717Z",
+  "reads_test_program_pass": false,
+  "input_artifacts": [
+    {
+      "path": "E2.0-E08-正式重测判据-2026-09-14.json",
+      "sha256": "sha256:022e1dbfc9783c73389b32681cf18cf7b38d833a0c25b7fac7ca9084e9ab93f6",
+      "size_bytes": 5659
+    },
+    {
+      "path": "supplier-route-snapshot.json",
+      "sha256": "sha256:aa1bacaf682c92705cadfc4d6617ea9ae499044719d8cabdf9194674f4bd12b6",
+      "size_bytes": 23347
+    },
+    {
+      "path": "four-flow-forward-facts.json",
+      "sha256": "sha256:dd178f8fdd1f3802b414b4986daf1c94cc67a0aaa266686e400b7cda1e431250",
+      "size_bytes": 10818
+    },
+    {
+      "path": "partial-refund-replay.json",
+      "sha256": "sha256:360c8c79bedb43789bed2d104fe6d98698c5d68b32b96bc07ecf11285c536024",
+      "size_bytes": 17737
+    },
+    {
+      "path": "environment.json",
+      "sha256": "sha256:f9f29f9e518da61f954698aa798dde7210c079e77ee863d3109215f5ea841cc5",
+      "size_bytes": 1790
+    }
+  ],
+  "missing_items": [],
+  "violations": [],
+  "negative_probes": [
+    {
+      "probe_id": "cross_leg_refund",
+      "expected_violation": "REFUND_ALLOCATION_ORIGINAL_LEG_MISMATCH",
+      "detected": true,
+      "detected_codes": [
+        "REFUND_ALLOCATION_ORIGINAL_LEG_MISMATCH"
+      ]
+    },
+    {
+      "probe_id": "duplicate_refund",
+      "expected_violation": "DUPLICATE_REFUND_ALLOCATION",
+      "detected": true,
+      "detected_codes": [
+        "DUPLICATE_REFUND_ALLOCATION",
+        "REFUND_ALLOCATION_ORIGINAL_LEG_MISMATCH"
+      ]
+    },
+    {
+      "probe_id": "current_route_historical_rewrite",
+      "expected_violation": "HISTORICAL_ROUTE_STEP_MISMATCH",
+      "detected": true,
+      "detected_codes": [
+        "FROZEN_AND_CURRENT_VERSION_BASELINE_MISMATCH",
+        "HISTORICAL_ROUTE_STEP_MISMATCH"
+      ]
+    }
+  ],
+  "thresholds": [
+    {
+      "threshold_id": "required_raw_evidence_missing_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "topology_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "money_difference_minor",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "payment_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "four_flow_authority_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "inventory_quantity_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "forward_finance_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "refund_original_target_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "reversal_finance_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "duplicate_replay_business_fact_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "historical_route_version_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "atomic_failure_half_write_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_oracle_probe_miss_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    }
+  ],
+  "claim_outcome": "MET",
+  "environment_assurance": "DEV VERIFIED"
+}
