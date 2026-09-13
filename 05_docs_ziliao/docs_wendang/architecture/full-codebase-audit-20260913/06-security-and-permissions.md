@@ -62,3 +62,12 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 [CONFLICT][E-AU-006-006] SFL registry与Runtime Catalog嵌套对象可在同进程修改，可能使节点Host/ref或共享timeout随加载顺序漂移；固定基线未发现现有写调用，按P2记录F-0032。
 
 本节只记录边界。没有新增权限门禁、没有读取凭据值、没有修改运行配置。
+
+## 8. AU-007 Operation 权限契约
+
+- [FACT][E-AU-007-002/004] `operations.yml` 是 Operation permission 的生成权威；generator 只验证 permission 存在于 PermissionCatalog。生成 Controller 把 permission 原样交给 AccessPipeline，数据库 capability 解算也按 Operation permission 绑定 membership grants。
+- [CONFLICT][E-AU-007-004] `member.storefront.config.manage` 与 `member.storefront.custom.manage` 是实际写库入口，却都绑定 `member.read`。Console 的仅 read 测试上下文同时拥有这两个 manage capability，形成 F-0036/P1 候选并进入 RV-0008。
+- [FACT][E-AU-007-009] `capabilities.yml` 不是运行授权事实源：它只参与 generator 的局部 audience 对照，数据库 capability 与 binding 由 Operations 生成；其 1 个孤儿、5 个 permission 漂移和 156 个缺口按 F-0041 记录。
+- [UNKNOWN] 未读取线上角色、membership grants、entitlement 或真实请求日志，因此不能把 F-0036 写成已发生的越权事故，也不能用静态 fixture 证明线上无人可达。
+
+本 AU 没有修改权限、凭据、会话或线上状态。

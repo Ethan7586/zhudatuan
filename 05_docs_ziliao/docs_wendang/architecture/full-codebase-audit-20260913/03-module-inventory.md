@@ -202,3 +202,18 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Admin Segment Scope | 双段scope解析/映射 | admin-segment-scope | Console/服务消费者 | normalized segment scope | bundle内联 | 32行专项test | 本AU未发现独立问题 |
 
 [FACT] AU-006深入审阅35个人工文件、6,151行，结构性审阅62个人工文件、8,947行，核对7个自动生成文件、1,070行；合计104文件、16,168行。
+
+## 10. AU-007 契约模块清单
+
+| 子模块 | 职责 | 对外入口 | 上游 | 下游/数据所有权 | 发布单元 | 测试 | 当前边界 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Operation definitions | 345条路由、权限、owner、availability与生成目标 | operations.yml / OperationCatalog | 产品/模块定义 | OpenAPI、SDK、HTTP、DB | contract package + consumers | Contract/Voucher/segment/member tests | permission F-0036；schema F-0038；writePath F-0040 |
+| Event definitions | 67条type/version/owner/schema/handlers | events.yml / COMMERCE_EVENTS | 领域producer | RuntimeEventPublisher、DB runtime.event | contract + Commerce | event callgraph门禁 | checksum遗漏F-0039；handler业务留专项 |
+| Error definitions | 1438条code/status | errors.yml / errorStatus | Error/DomainError call sites | ErrorMapper HTTP响应 | contract package | Contract test + check:errors | scanner旧roots F-0037 |
+| Capability shadow catalog | 局部Operation audience对照 | capabilities.yml | 历史能力目录 | 仅contractgen validator | 不直接发布DB | 无专用反事实 | 1孤儿、5permission漂移、156缺项 F-0041 |
+| Contract schema core | JSON/path/date归一化与named allowlist | @shop/contract/schema | generated CommerceSchemas | SDK types/直接tests；生产Controller no-op | contract package | Contract.test | 接受集合不一致 F-0038 |
+| Provider contracts | Provider capability、Manifest、Ports、registrar socket | @shop/contract root | provider实现 | extensions/adapters | contract package | DomainRegistrar test | 本AU未发现独立问题 |
+| contractgen | 读取目录并生成47个当前tracked目标及2个条件Miniapp目标 | workspace generate/check | 四目录、authz、SQL template | contract/OpenAPI/SDK/Commerce/DB | 工具workspace | 仅ClientArtifacts 2例 | 非原子/replace无断言 F-0042 |
+| Contract public utilities | ClientPage、Password、DeepLink、Experience、FinancialAction | package root/subpaths | App/SDK/工具 | 调用者 | contract package | 对应unit | DeepLink边界F-0043；部分零仓内消费者为G1 |
+
+[FACT] AU-007深入审阅41个人工文件、12,089行，结构性反追28个人工文件、3,976行，核对48个生成文件、103,131行；合计117文件、119,196行。

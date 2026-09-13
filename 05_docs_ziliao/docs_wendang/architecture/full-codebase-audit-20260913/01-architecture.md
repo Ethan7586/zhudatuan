@@ -470,3 +470,42 @@ SFL内核对exact key、canonical form、Manifest digest、唯一Host、唯一no
 cache.yml和capacity.yml经单一生成器投影到RuntimeCatalog及Miniapp运行文件，生成器支持--check并由check:generated编排；该权威关系清楚。Miniapp Environment生成器复用了schema，却没有复用TS parser的trim语义，形成F-0033。
 
 本单元完整架构、文件记录和17.1%逆向抽检见 records/AU-006-shared-configuration-kernel/。
+
+## 16. AU-007 增量：契约定义与生成边界
+
+### 16.1 四目录、一主生成器、多发布面
+
+~~~mermaid
+flowchart LR
+  Operations[operations.yml] --> Generator[contractgen]
+  Events[events.yml] --> Generator
+  Capabilities[capabilities.yml] --> Generator
+  Errors[errors.yml] --> Generator
+  Authz[PermissionCatalog] --> Generator
+  Generator --> Package[@shop/contract]
+  Generator --> OpenAPI[OpenAPI]
+  Generator --> SDK[SDK domains]
+  Generator --> HTTP[Commerce HTTP shells]
+  Generator --> EventRuntime[Event registry]
+  Generator --> DB[DB current.sql]
+~~~
+
+[FACT][E-AU-007-002/003] 345个Operation是路由、owner、audience、permission、availability和执行metadata的主要事实源；67个Event同时驱动公共事件目录、运行handler registry与DB schema URI；1438个Error驱动HTTP status map。271个runtime与74个frozen在当前tracked输出中的集合一致。
+
+`capabilities.yml`不是DB发布权威：DB capability/binding从Operations生成；它只参与局部audience校验，且自身存在孤儿、缺项和permission漂移（F-0041）。因此不能再把四个YAML笼统画成同等权威。
+
+### 16.2 运行消费边界
+
+[FACT] HTTP路由注册使用OperationCatalog，授权器使用Operation上的permission，业务执行再由ModuleOperations按writePath分流。事件发布使用生成的EVENT_HANDLERS与COMMERCE_EVENTS version。错误映射使用generated errorStatus；未声明错误退化为INTERNAL_ERROR 500。
+
+[CONFLICT][E-AU-007-004] 两个真实Member写入口使用member.read并被Console只有read permission的fixture固定，形成F-0036/P1候选。
+
+[CONFLICT][E-AU-007-005] 通用“named schema”不是生产HTTP边界：OpenAPI、SDK类型、直接schema test和handler专用schema拥有不同接受集合，形成F-0038。
+
+### 16.3 执行、版本与生成可靠性
+
+- writePath完全由generator的名称/domain heuristic推断，81个runtime非GET走none；具体业务正确性待逐模块确认，机制缺口为F-0040。
+- Event checksum只标识type/version/module，不标识schema/handlers，形成F-0039。
+- generator的顺序直接写与无命中断言replace形成F-0042；当前主要tracked输出仍通过只读集合对账。
+
+完整目录、逐Operation/Event/Capability/Error记录、117文件覆盖与19.5%逆向抽检见 `records/AU-007-contract-definitions-contractgen/`。

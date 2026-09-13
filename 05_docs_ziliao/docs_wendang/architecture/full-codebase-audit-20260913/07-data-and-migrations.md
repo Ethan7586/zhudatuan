@@ -47,3 +47,12 @@
 - 节点Manifest、registry declaration、cache/capacity YAML都是配置数据，但不属于业务数据库事实。它们的生成、digest和runtime pointer不能代替数据库migration ledger。
 - [CONFLICT][E-AU-006-006] registry嵌套声明在进程内可变，但文件和数据库不会被该探针写入；重启会恢复固定JSON。风险是运行期事实漂移，不是持久数据损坏。
 - [UNKNOWN] 线上migration env、Manifest文件与数据库schema head的一致性未读取；不能从example推断live。
+
+## 8. AU-007 契约发布与数据库投影
+
+- [FACT][E-AU-007-003/013] `database/contracts/current.sql` 是 contractgen 的 tracked 输出：它发布 271 个 runtime Operation 与 67 个 Event，并从 Operations 生成 capability/binding；74 个 frozen Operation 不进入运行发布面。
+- [FACT] `capabilities.yml` 不生成数据库 capability 行，因此其存在或漂移不能直接代表数据库当前授权状态。
+- [CONFLICT][E-AU-007-007] `CONTRACT_CHECKSUM` 的 Event 投影遗漏 schema 与 handlers；反事实修改两者会改变数据库 event 行或运行 handler registry，但 checksum 不变，形成 F-0039。
+- [UNKNOWN] tracked `current.sql` 只证明期望发布内容，不证明任一环境已执行、ledger 已登记或数据库当前行与之相同。旧 checksum 与当前输出不同也因历史移除 runtime 阻断职责而不能单独定级为事故。
+
+本 AU 未执行迁移、未连接数据库，也未修改既有 migration 或 ledger。

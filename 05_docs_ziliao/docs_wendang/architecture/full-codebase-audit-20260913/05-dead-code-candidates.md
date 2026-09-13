@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 1、G1 4、G2 0、G3 0、GX 1。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 2、G1 5、G2 0、G3 0、GX 1。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -80,6 +80,31 @@ AU-005 首次建立候选总账。零静态引用、零正式target或测试只�
 | 可否删除 | 否；数据/契约责任与等价替代均未确认 |
 | 二次复核 | G1不强制 |
 
+## DC-0006｜capabilities.yml 影子目录
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G0：不是垃圾，仍有真实构建职责 |
+| 对象 | `01_core_hexin/packages/contract/definitions/capabilities.yml` |
+| 疑似原因 | [STALE] voucher/Operations.md:19 声称该文件已删除；内容又只有190条，存在1个孤儿、5个permission漂移和156个Operation缺项 |
+| 保留证据 | [FACT][E-AU-007-009/014] ContractGenerator.ts:49同步加载该文件，validateCapabilityAudiences对189个能匹配Operation的记录执行audience检查；删除会使generator读文件失败 |
+| 运行结论 | 它不是数据库Capability发布权威，当前只是部分影子校验源；这是F-0041的边界/维护问题，不是零职责文件 |
+| 数据/契约责任 | 保存历史Capability投影并影响正式contractgen check/generate能否启动；外部直接消费者仍未完全排除 |
+| 可否删除 | 否；至少仍有静态加载和构建契约，不满足G3第1、3、5、6、9–13项 |
+| 二次复核 | G0不强制；若未来决定退出该目录，必须作为独立兼容/生成器变更而不是垃圾清理 |
+
+## DC-0007｜零仓内生产消费者的公共 Contract 与 Verification 符号
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，但证据不足 |
+| 对象 | 生成的 EventSerializer.ts 中 `SERIALIZED_EVENT_TYPES`/`serializeEvent`/`SerializedEvent`；Contract.ts 的 `Contract`；VerificationContract.ts 的 `MEMBER_CODE_SECONDS`/`VerificationChallenge`/`VerificationResult` |
+| 疑似原因 | [FACT][E-AU-007-014] 排除定义和generator模板后，固定仓库未找到这些符号的生产调用；实际事件发布使用app/events.ts的EVENT_HANDLERS/eventVersion |
+| 保留证据 | 全部经@shop/contract根入口公开；EventSerializer由contractgen持续生成，Contract/Verification保存类型/时间契约；package外消费者、动态import和历史兼容未排除 |
+| 未排除项 | 外部workspace/npm使用、类型级消费未被文本别名完整捕获、生成API兼容、未来Miniapp/Provider协议 |
+| 可否独立删除 | 否；公共API、生成职责、等价替代、可观察行为和第二次复核均未满足 |
+| 二次复核 | G1不强制；升级G2前需独立查外部消费者与语义版本承诺 |
+
 ## 2. G3 条件对账
 
-上述G0、G1和GX项均不满足“无公共/事件契约、无数据责任、存在等价替代、删除不改变可观察行为、已完成第二次复核”等条件。AU-006未对任何文件提出删除、归档或移动建议。
+上述G0、G1和GX项均不满足“无公共/事件契约、无数据责任、存在等价替代、删除不改变可观察行为、已完成第二次复核”等条件。AU-007未对任何文件提出删除、归档或移动建议。

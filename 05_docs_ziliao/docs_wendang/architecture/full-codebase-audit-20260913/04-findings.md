@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-006 结束时累计：P0 0、P1 候选 6、P2 23、P3 5、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-007 结束时累计：P0 0、P1 候选 7、P2 27、P3 8、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -852,3 +852,196 @@
 - [UNKNOWN][E-AU-006-013] SFL relation history拒绝重叠但允许时间间隙和已结束的最后一段；已定位标准未写明必须连续，因此不把间隙写成缺陷。
 - [UNKNOWN] 未读取线上env、console-runtime.json或Manifest；F-0029的当前配置状态、F-0030门禁在CI上的最近实际结果均未验证。
 - [UNKNOWN] 四个遗漏测试在依赖完整环境中是否通过未验证；本次只证明正式入口遗漏。
+
+## F-0036｜Storefront member 两条写能力由 member.read 授权
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 契约定义 / Member / Access Pipeline |
+| 类型 | 业务授权、读写权限边界、持久数据修改 |
+| 严重级别 | **P1 候选**；未完成 RV-0008 前不作最终 P1 |
+| 置信度 | 高：定义、生成绑定、前端调用、授权解算、handler 和数据库写入已连通；线上主体与调用记录未验证 |
+| 文件和精确位置 | packages/contract/definitions/operations.yml:678-717；contract/src/StorefrontMemberContract.test.ts:28-53；Commerce OperationController.ts:299-323；AccessPipeline.ts:52-99；PgAccessResolvers.ts:145-154；MemberCustomProfileOperations.ts:25-128；Console StorefrontMemberCommand.ts:9-28、StorefrontMemberRoute.test.tsx:305-316；migration 20260911010000:43-47、20260829060000:149-170 |
+| 当前行为 | [FACT][E-AU-007-004] `member.storefront.config.manage` 与 `member.storefront.custom.manage` 均声明 `member.read`。Controller 把该 permission 原样交给 AccessPipeline；数据库 capability 解算按 Operation permission 匹配 membership grants。Console 测试上下文只有 `member.read` 仍拥有两 manage capabilities，真实命令调用 PUT；handler 会 INSERT/DELETE 标签、字段和会员资料 |
+| 预期行为 | 修改商城会员配置/资料的 Operation 应绑定经产品确认的写权限，或由产品明确记录 `member.read` 包含这些写行为；不能让名称为 read 的能力在无额外写授权时隐式获得持久修改语义 |
+| 直接证据 | E-AU-007-004、COM-AU-007-003/004/009、INV-AU-007-003、FM-AU-007-001、RS-AU-007-001 |
+| 调用链或运行入口 | Console StorefrontMemberCustomProfile → StorefrontMemberCommand → generated member SDK → OperationController → AccessPipeline/precheck + capability.session_membership_operations → ModuleOperations → MemberCustomProfileOperations → member/access tables |
+| 用户影响 | [INFERENCE] 只读客服或审阅类角色若同时获得该 Operation entitlement，可修改全商城标签/字段配置或单会员自定义资料；页面和测试均把该组合当作正常路径 |
+| 数据影响 | `saveConfig` 会 upsert 并删除未提交的 tag/field；`saveProfile` 会先删除再重建会员 tag/field values。事务可回滚单次失败，但成功请求会持久改变数据 |
+| 安全影响 | 读权限与写能力边界混淆，构成潜在越权写入；未证明线上当前角色/entitlement 已满足或已有滥用 |
+| 根因 | 新功能引入时复用了 `member.read`，同时 capability/Console 测试把这一绑定固化；已有 `member.manage` 未用于这两条 Operation |
+| 建议方向 | 先由第二审计者与 Ethan 定稿业务权限；后续从当时最新 zdt-next 建单一修复分支，同步 Operation、数据库发布/迁移、角色、Console可见性和正反权限测试；本审计分支不改 |
+| 预计修改范围 | operations 定义、生成物、受管迁移/发布绑定、权限/角色 fixtures、Console 和 Commerce 授权测试；不得顺手收窄其它权限 |
+| 验证方式 | 构造仅 `member.read`、仅确认写权限、显式deny、无entitlement、不同scope五组端到端请求；确认数据库前后值、审计记录与失败无部分写 |
+| 回滚方式 | 修复批次回退单一权限映射提交及对应受管迁移；保留原角色快照和数据备份，禁止在审计分支直接操作 |
+| 是否需要独立复核 | 是，RV-0008；必须重新从角色/entitlement到数据库写入取证 |
+
+为什么不是 P0：本次没有读取线上角色、entitlement、请求日志或数据变更，不能证明正在发生事故。
+
+## F-0037｜Error contract 门禁扫描旧根目录并给出虚假覆盖信号
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 契约生成 / Error catalog / 质量门禁 |
+| 类型 | 检查器路径漂移、错误码契约、假阳性 |
+| 严重级别 | P2 |
+| 置信度 | 高：路径事实与 ErrorMapper 控制流确定；缺口数量是保守词法下界，正式 AST 命令本环境未加载 |
+| 文件和精确位置 | scripts/check/errors.mjs:6-53；package.json:80,123；Commerce ErrorMapper.ts:13-26 |
+| 当前行为 | [FACT][E-AU-007-006] checker 从仓库根扫描 `apps/extensions/packages/scripts/services/tools`；当前前五个业务根不存在，顶层 scripts 无 JS/TS，因此规则不会访问 `01_core_hexin` 或 `04_tools`。修正到当前六个根后，三种与正式规则对应的精确字面量形态得到 1,678 个唯一值/2,256 次出现，其中 899 个未在 errors.yml，至少 294 个属于 Commerce service |
+| 预期行为 | 正式 `check:errors` 必须扫描当前生产源码根，并对每个可由 ErrorMapper 暴露的稳定错误码执行目录存在性检查 |
+| 直接证据 | E-AU-007-006、T-AU-007-048、INV-AU-007-005、FM-AU-007-002、RS-AU-007-003 |
+| 调用链或运行入口 | quality:canonical-hard-cut → check:errors → source traversal → errors.yml；运行时 Error/DomainError → ErrorMapper → generated errorStatus |
+| 用户影响 | 未声明业务错误会被 ErrorMapper 统一变为 `INTERNAL_ERROR`/500，客户端失去可恢复的4xx/409等语义；具体触发频率未验证 |
+| 数据影响 | 无直接写入；错误分类错误可能让调用方错误重试或无法执行补偿 |
+| 安全影响 | 可能把授权/输入错误隐藏成500，但本项不证明权限绕过或信息泄露 |
+| 根因 | 目录前缀整合时只更新 catalog 路径，未更新 scanner roots；门禁也没有“至少扫描一个生产文件”的自校验 |
+| 建议方向 | 独立门禁批次先修当前 roots 与非空扫描断言，再按模块确认 missing code/status；不要一次把 899 项机械加入目录 |
+| 预计修改范围 | errors checker、checker fixtures；后续每业务模块独立更新 errors.yml/生成物/错误契约测试 |
+| 验证方式 | 空root必须失败；当前roots AST扫描；known/missing/template/alias/test-exclusion反事实；ErrorMapper对代表性4xx/409/500映射 |
+| 回滚方式 | checker修复可回退单一提交；catalog治理按模块独立提交和回滚 |
+| 是否需要独立复核 | 否（P2）；若发现线上关键错误被持续误映射，应重新定级 |
+
+
+## F-0038｜Named Operation schema 与 OpenAPI、SDK、生产 HTTP 的接受集合不一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Contract schema / OpenAPI / SDK / Commerce Controller |
+| 类型 | API契约正确性、生成语义、测试可信度 |
+| 严重级别 | P2 |
+| 置信度 | 高 |
+| 文件和精确位置 | contract/src/schema/index.ts:31-115；contractgen/ClientArtifacts.ts:62-86,156-166,208-247；ContractGenerator.ts:384-472；generated OperationController.ts:299-344；SDK ApiClient.ts:25-44,90-117；operations.yml:678-717 |
+| 当前行为 | [FACT][E-AU-007-005] OpenAPI 对 79 个有 requestFields 的非GET Operation 标记 requestBody required；`namedOperationInput` 的 body 对全部 Operation 仍是 optional。690个Operation component没有 required 属性，字段都只是 JsonValue。15个 runtime 写 Operation 的 requestFields 为空，OpenAPI因此只允许空对象，包括实际需要 tags/fields 或 custom_tag_ids 的两条 Member写请求。SDK发送前不parse schema；生产 Controller又按明确历史决策把 contractOperationInput变成no-op |
+| 预期行为 | 同一 Operation 的文档、TypeScript调用面、可执行schema、生产HTTP入口和handler应拥有兼容的接受集合；若通用目录只保存弱元数据，应明确命名和测试边界，不宣称“named强类型运行契约” |
+| 直接证据 | E-AU-007-005/013、T-AU-007-052、INV-AU-007-004、FM-AU-007-003、RS-AU-007-002 |
+| 调用链或运行入口 | operations.yml requestFields → CommerceSchemas/OpenAPI → SDK OperationInputFor/ApiClient → OperationController no-op → 各handler专用解析 |
+| 用户影响 | 外部或内部客户端可按OpenAPI/类型构造服务器拒绝的请求，或省略实际必需body；表现为集成失败和错误码不稳定 |
+| 数据影响 | handler专用schema通常在写入前拒绝，降低部分写风险；尚未逐345项确认所有handler均如此 |
+| 安全影响 | 本项不证明绕过授权；弱通用schema不能被当成请求安全边界 |
+| 根因 | 目录从 structural 升名为 named 时只加入字段allowlist/名称，生产运行时校验随后被明确移除；OpenAPI required规则、SDK类型和测试没有同步重定义 |
+| 建议方向 | AU-008先完成生成物/SDK/handler矩阵；后续按单一业务链决定以专用schema生成真正契约，或诚实降级通用目录语义，不能一次批量猜字段类型 |
+| 预计修改范围 | definitions/schema generator、OpenAPI、SDK types/runtime、Controller/handler边界及兼容测试；可能跨多个小批次 |
+| 验证方式 | 每批选一条Operation执行同一payload矩阵：TypeScript编译、schema.parse、OpenAPI validator、SDK发送、HTTP入口、handler；接受/拒绝集合必须一致 |
+| 回滚方式 | 生成器、定义和全部生成物保持同一提交；保留旧OpenAPI/SDK兼容版本，不在审计分支修改 |
+| 是否需要独立复核 | P2不强制；若外部已公开依赖错误schema，升级为兼容专项 |
+
+## F-0039｜Event schema 与 handler routing 不参与 Contract checksum
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Contract identity / Event generation |
+| 类型 | 版本兼容、制品身份、异步路由 |
+| 严重级别 | P2 |
+| 置信度 | 高：投影与反事实确定；线上是否消费checksum未知 |
+| 文件和精确位置 | contractgen/ContractGenerator.ts:61-65,275-327；events.yml；generated ContractIdentity、app/events.ts、database/contracts/current.sql |
+| 当前行为 | [FACT][E-AU-007-007] checksum的Event部分只含 type/version/module；database event row还含schema，runtime registry还含handlers。内存反事实只改schema与handlers后，checksum输入不变而两个输出均变化 |
+| 预期行为 | 能改变事件载荷契约或消费者路由的定义变化必须旋转可追溯身份，或有独立、同等强度的schema/routing版本与校验 |
+| 直接证据 | E-AU-007-007/016、INV-AU-007-006、FM-AU-007-004、RS-AU-007-004 |
+| 调用链或运行入口 | events.yml → checksum/event artifacts/app events/current.sql → RuntimeEventPublisher/数据库发布 |
+| 用户影响 | 事件定义或handler路由变更可能在相同contract identity下发布，使回滚、兼容诊断和制品对账失真 |
+| 数据影响 | 错误handler或schema兼容会影响projection/notification/reconciliation/referral等派生数据；当前无事件变更或live积压证据 |
+| 安全影响 | 无直接权限绕过证据 |
+| 根因 | eventArtifact为了公共发布只投影三字段，同时被复用于checksum；完整events定义没有单独身份 |
+| 建议方向 | 独立版本批次定义checksum覆盖面或拆分event schema/routing digests；先确认旧runtime checksum已退出权威后的真实消费者 |
+| 预计修改范围 | contractgen checksum、ContractIdentity、DB发布/制品元数据、兼容检查和反事实测试 |
+| 验证方式 | 分别只改type/version/owner/schema/handlers/top-level version，列出每种应否旋转；DB/runtime/SDK消费者做版本兼容测试 |
+| 回滚方式 | 回退identity算法和生成物同一提交；保留旧digest识别的过渡映射 |
+| 是否需要独立复核 | 否（P2）；若发现当前发布系统依赖该checksum作强兼容门禁，需升级复核 |
+
+## F-0040｜关键写路径由名称启发式推断且测试无法发现漏选
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Operation definition / ExecutionKernel |
+| 类型 | 事务边界、幂等、执行状态、架构边界 |
+| 严重级别 | P2 |
+| 置信度 | 高（机制与数量）；具体81项是否应升级为统一执行内核为 UNKNOWN |
+| 文件和精确位置 | contractgen/ContractGenerator.ts:42,93-141；operations.yml 全目录；Contract.test.ts:17-32；Commerce ModuleOperations.ts:92-116；ExecutionKernel.ts |
+| 当前行为 | [FACT][E-AU-007-008] 0/345 Operation显式声明writePath。generator按GET/id后缀、三个特例和11个domain集合推断：none 233、transactional 108、durable 3、provider 1；271个runtime中有81个非GET为none。测试先筛选 `writePath !== none` 再断言元数据，因此不会因某写Operation漏进集合而失败 |
+| 预期行为 | 是否需要business number、执行状态、outbox和统一幂等恢复，应由可审计的业务不变量或显式Operation策略决定，并有全量完整性oracle |
+| 直接证据 | E-AU-007-008、INV-AU-007-007、FM-AU-007-005、RS-AU-007-005、operations.csv |
+| 调用链或运行入口 | Operation ID/method → operationWritePath → CommerceOperations → ModuleOperations → ExecutionKernel或generic write |
+| 用户影响 | 若某业务写被错误归为none，它仍走generic事务/幂等路径，但不会获得统一执行内核的business number、execution checkpoint和operation.completed outbox语义 |
+| 数据影响 | 可能造成跨系统恢复/审计语义不一致；本AU没有断言81项均错误，也未发现具体线上半完成记录 |
+| 安全影响 | 无直接权限绕过；审计可追溯性可能受影响 |
+| 根因 | rollout策略以domain和名称编码在generator，而definition与测试没有独立事实源 |
+| 建议方向 | 按业务模块逐条确认，不做全局批量升级；每次只改少量Operation并验证事务、重试、outbox和回滚 |
+| 预计修改范围 | 每个确认批次涉及operations定义/generator策略或显式字段、生成物、对应Module action与执行测试 |
+| 验证方式 | 对每条候选模拟重复请求、进程中断、事务失败和重放；确认generic或ExecutionKernel哪套不变量符合业务 |
+| 回滚方式 | 每模块单一目的提交；回退Operation策略与生成物，不在审计分支开发 |
+| 是否需要独立复核 | P2不强制；任何拟升级的高价值写入在实施前应专项复核 |
+
+## F-0041｜capabilities.yml 成为残留且部分漂移的影子目录
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Contract capability definition |
+| 类型 | 重复事实源、文档漂移、生成门禁 |
+| 严重级别 | P3 |
+| 置信度 | 高 |
+| 文件和精确位置 | definitions/capabilities.yml:1-951；ContractGenerator.ts:48-54,232-241,286-296；voucher/Operations.md:19 |
+| 当前行为 | [FACT][E-AU-007-009] 190条记录全部kind=operation；`runtime.health.read`没有同ID Operation，5条permission与Operation不同，156个Operation无记录。validator只对成功匹配者比较audience；DB capability/binding实际从Operations生成。文档却称文件已删除 |
+| 预期行为 | Capability目录要么是完整权威并验证ID/owner/permission/audience，要么正式退出并移除加载关系；不能作为不会拒绝关键漂移的影子输入 |
+| 直接证据 | E-AU-007-009、capabilities.csv、COM-AU-007-010、RS-AU-007-006 |
+| 调用链或运行入口 | capabilities.yml → contractgen validateCapabilityAudiences；Operations → database capability rows |
+| 用户影响 | 当前运行输出不直接采用其permission，但维护者可能误判目录权威，生成检查也会对缺项/permission漂移给出绿灯 |
+| 数据影响 | 无当前直接数据写；数据库发布使用Operations避免了当前五处permission漂移传播 |
+| 安全影响 | 影子目录中的permission不是运行授权源；本项不单独造成越权 |
+| 根因 | 能力发布收口到Operations后，旧文件、局部validator和文档没有同步完成同一生命周期 |
+| 建议方向 | 先定稿保留完整目录还是移除；任何删除必须另分支并验证所有外部消费者，本AU按G0保留 |
+| 预计修改范围 | definitions、contractgen validator/tests、文档和可能的生成清单 |
+| 验证方式 | 完整性、孤儿、owner/permission/audience漂移反事实；全仓/外部消费者复核 |
+| 回滚方式 | 回退单一目录治理提交及生成器变化 |
+| 是否需要独立复核 | 否；升级删除候选时必须重新复核 |
+
+## F-0042｜Contract generator 缺少跨文件原子性与模板替换断言
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | contractgen |
+| 类型 | 生成可靠性、可维护性、测试缺口 |
+| 严重级别 | P3 |
+| 置信度 | 高（代码路径）；未执行破坏性故障注入 |
+| 文件和精确位置 | ContractGenerator.ts:69-83,252-297,379-472；ClientArtifacts.test.ts:1-47；contractgen/package.json:5-12 |
+| 当前行为 | [FACT][E-AU-007-010] write模式依次对几十个tracked目标直接writeFile；后段读取template/写入失败不会恢复前序文件。Controller/Handler“加固”由多次字符串/正则replace完成，未断言每次命中。唯一generator测试只有两个SDK文本性质，不加载主Generator |
+| 预期行为 | 一次生成应全成或全不成；模板变更导致替换未命中必须立即失败；测试至少覆盖每个输出族和失败路径 |
+| 直接证据 | E-AU-007-010、INV-AU-007-008、FM-AU-007-007 |
+| 调用链或运行入口 | npm workspace generate/check → ContractGenerator top-level → emit package/SDK/Commerce/DB targets |
+| 用户影响 | 开发者可能在失败后留下混合代际工作树，或生成一个缺少预期加固但仍被同一generator视为current的运行壳 |
+| 数据影响 | generator本身不执行数据库；错误current.sql若后续被人工应用才会影响数据，应用链未确认 |
+| 安全影响 | 无当前漏洞证据；未命中的授权/输入处理替换可能改变边界，因此必须显式检测 |
+| 根因 | generator把已存在源码模板当文本协议，没有结构化模板版本或替换计数；输出无临时目录/commit阶段 |
+| 建议方向 | 独立工具批次先加replace命中断言和临时目录全量生成，再atomic promote；不与契约语义变更混批 |
+| 预计修改范围 | ContractGenerator、fixtures/tests、生成命令；不要求改业务逻辑 |
+| 验证方式 | 每个replace故意改锚点、后段目标只读/缺失、并发双生成、--check无写入；确认工作树零部分变化 |
+| 回滚方式 | 回退工具提交；生成物保持上一完整集合 |
+| 是否需要独立复核 | 否（P3） |
+
+## F-0043｜DeepLink 畸形百分号逃逸契约错误映射
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Contract / DeepLink |
+| 类型 | 边界值、错误契约 |
+| 严重级别 | P3 |
+| 置信度 | 高；固定仓库生产消费者未见 |
+| 文件和精确位置 | contract/src/DeepLinkContract.ts:6-24；DeepLinkContract.test.ts:5-13 |
+| 当前行为 | [FACT][E-AU-007-011] id正则允许任意 `%`；`parseDeepLink('/page/productdetail/index?id=%ZZ')`的字符路径可通过，`miniappDeepLink`随后直接decodeURIComponent并抛原生URIError，而非DEEPLINK_INVALID |
+| 预期行为 | 被契约接受的DeepLink应能稳定roundtrip；畸形percent encoding应在边界被拒绝并使用稳定契约错误 |
+| 直接证据 | E-AU-007-011、T-AU-007-053、FM-AU-007-008、RS-AU-007-007 |
+| 调用链或运行入口 | 外部字符串 → parseDeepLink/DeepLinkSchema → miniappDeepLink → decodeURIComponent/encodeURIComponent |
+| 用户影响 | 调用者若按DEEPLINK_INVALID处理错误，会漏掉原生URIError；当前仓库只找到Miniapp生成器引用route常量，未找到生产调用这两个函数 |
+| 数据影响 | 无 |
+| 安全影响 | 无直接影响 |
+| 根因 | 字符allowlist把 `%` 当普通字符，没有校验 `%HH` 分组；测试只覆盖合法 `%3A` |
+| 建议方向 | 后续小批次统一百分号规范化与错误码，并同步TS/生成Miniapp实现；不在审计分支修复 |
+| 预计修改范围 | DeepLinkContract、测试、build-miniapp-contract及生成物 |
+| 验证方式 | `%`、`%2`、`%ZZ`、`%25`、双编码、Unicode、255字符边界roundtrip矩阵 |
+| 回滚方式 | 回退DeepLink单一提交和对应生成物 |
+| 是否需要独立复核 | 否（P3） |
+
+## 8. AU-007 新增未定级事项
+
+- [STALE][E-AU-007-016] 当前生成 checksum 与旧 Release/runtime migration checksum 不同，但历史已明确移除 database.contract 的 runtime 阻断责任；未读取线上数据库前，不把静态差异写成事故。
+- [UNKNOWN][E-AU-007-008] 81个runtime非GET/`writePath=none`中每条业务是否应进入统一执行内核，必须按模块不变量确认；本AU不作批量推断。
+- [UNKNOWN] 线上Operation/Event/Error发布状态、current.sql应用者、外部SDK/OpenAPI消费者和实际错误/事件数量均未验证。

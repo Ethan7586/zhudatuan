@@ -114,3 +114,13 @@ AU-004 新增 F-0015 至 F-0020：P1 候选 1、P2 5；并扩展既有 P1 候选
 AutoNode从同一provisioning request生成Manifest和console-runtime.json，production provider激活时用active Manifest重解析runtime并记录console_runtime_digest，健康检查只请求JSON URL。浏览器会重新解析Manifest/artifact引用，但不核对runtime API/Identity URL属于Manifest domain，形成F-0029。
 
 当前未读取生产console-runtime.json、env或Manifest，也未运行生成写模式、发布、激活或部署。
+
+## 10. AU-007 契约制品与发布边界
+
+- [FACT][E-AU-007-002/003/013] 四份 YAML 与权限目录经 contractgen 生成 tracked Contract/OpenAPI/SDK/Commerce 壳、事件 registry 和 `database/contracts/current.sql`；当前固定基线的源—产物集合只读复算一致。
+- [FACT] OpenAPI/SDK 保留 345 个 Operation 及 runtime/frozen availability；Commerce Controller/Handler 与数据库发布面只包含 271 个 runtime Operation。Miniapp 两个条件目标因固定基线中目标目录不存在而未生成，不据此判为漂移。
+- [CONFLICT][E-AU-007-010] generator 写模式对多个 tracked 文件顺序直接覆盖，后段失败没有统一回滚；Controller/Handler 加固还依赖未断言命中的文本替换，形成 F-0042。
+- [STALE][E-AU-007-016] 当前 checksum 与旧配置/迁移中的值不同，但历史提交已移除 `database.contract` 的 runtime readiness authority；静态差异不能代替线上发布状态。
+- [UNKNOWN] GitHub 生成检查是否在当前依赖完整环境通过、外部 OpenAPI/SDK 消费者、数据库实际发布行和活跃事件 backlog 均未核验。
+
+本 AU 未运行生成写模式、未构建或发布制品、未推送、未部署。

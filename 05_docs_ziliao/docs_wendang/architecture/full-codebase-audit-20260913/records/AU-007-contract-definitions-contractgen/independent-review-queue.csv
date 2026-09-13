@@ -1,0 +1,2 @@
+"复核编号","对象","触发原因","必须重新检查","当前状态","不得采用的捷径","完成判据"
+"RV-0008","F-0036：Storefront member config/custom manage绑定member.read","P1候选；可能令只读角色持久修改/删除商城会员配置与资料","角色permission来源、operation entitlement、数据库发布绑定、Controller/AccessPipeline、Console可达性、两handler事务和线上只读证据","待第二位独立审计者","不得只看Operation名称、第一次报告或前端按钮；不得在复核中改权限/数据","第二审计者在固定基线独立重建端到端链；确认/反驳影响主体与边界，保留分歧"

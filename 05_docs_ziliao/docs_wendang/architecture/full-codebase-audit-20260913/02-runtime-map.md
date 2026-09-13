@@ -536,3 +536,37 @@ MiniappEnvironment schema
 ~~~
 
 正式check:generated可验证逐字漂移；本worktree缺依赖，未执行到生成比较。完整配置、通信和失败矩阵见AU-006 records。
+
+## 15. AU-007：契约从定义到运行消费者
+
+### 15.1 Operation
+
+~~~text
+operations.yml
+  → normalize/default + operationHash/writePath
+  → CommerceOperations/CommerceSchemas/OpenAPI/SDK
+  → runtime-only OperationController/OperationHandler/current.sql
+  → OperationController.authorize(operation.permission)
+  → AccessPipeline permission + capability + scope
+  → ModuleOperations（GET / generic write / ExecutionKernel）
+  → domain action
+~~~
+
+当前271个runtime ID在Controller、Handler与current.sql齐全；74个frozen只保留在OpenAPI/SDK/设计目录。两条Member manage在该链中以member.read到达真实INSERT/DELETE（F-0036）。
+
+### 15.2 Event 与 Error
+
+~~~text
+events.yml → COMMERCE_EVENTS(version) + app/events(EVENT_HANDLERS)
+           → RuntimeEventPublisher → runtime.inbox/job
+           → current.sql(type/version/owner/schema)
+
+errors.yml → ErrorContract.generated(code/status)
+           → ErrorMapper → HTTP status / INTERNAL_ERROR
+~~~
+
+Event schema和handlers不进入checksum（F-0039）。Error正式门禁扫描旧根，无法证明当前源码错误均有status；保守复算至少899个唯一字面量未声明（F-0037）。
+
+### 15.3 生成与失败
+
+contractgen `--check`逐目标读比；写模式逐文件直接覆盖。任何后段目标失败都可能留下前序新、后序旧的混合工作树；Controller/Handler文本加固的replace不验证命中（F-0042）。本AU没有运行写模式。
