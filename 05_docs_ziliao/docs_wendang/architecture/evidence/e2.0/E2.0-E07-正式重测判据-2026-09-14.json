@@ -1,0 +1,170 @@
+{
+  "schema_version": "e2.0-execution-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E07-FORMAL-RETEST-20260914",
+  "profile_version": "2.0.0",
+  "claim_id": "E2-CONT-001",
+  "legacy_trace_id": "E07",
+  "purpose": "Execute the already-defined E07 Hosted mall-opening and Sovereign-upgrade continuity claim and preserve independently recountable identity, lineage, history, infrastructure, state-timeline, manifest, pointer and rollback evidence. This record mirrors the active E2.0 trace matrix and does not create or expand a product contract.",
+  "locked_at": "2026-09-13T20:51:59Z",
+  "non_gating": true,
+  "authoritative_basis": [
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-CONT-001",
+      "git_commit": "578abc0ada5ae6cdb72f2da914e5532b2526d727",
+      "sha256": "sha256:0bb07aa8e55e0ed1f472038f07478f62873efd40e90e09a776a2d17dc6b9715e"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E07",
+      "git_commit": "578abc0ada5ae6cdb72f2da914e5532b2526d727",
+      "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69"
+    }
+  ],
+  "implementation_basis": [
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql",
+      "git_commit": "578abc0ada5ae6cdb72f2da914e5532b2526d727",
+      "sha256": "sha256:b121389740dc3631ee621b02e644327f74d06cdd143cfb8bf95d57f7b765eabe",
+      "role": "production Hosted mall-opening transaction, capability history and zero-infrastructure contract"
+    },
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql",
+      "git_commit": "578abc0ada5ae6cdb72f2da914e5532b2526d727",
+      "sha256": "sha256:3d43285765285e0b62b8cf95427b2a7b73c5b22a5ad1714e7aacee4a82712151",
+      "role": "production Sovereign upgrade, four-step resource/manifest state machine and rollback contract"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/modules/member/01_public_gongkai/MemberPort.ts",
+      "git_commit": "578abc0ada5ae6cdb72f2da914e5532b2526d727",
+      "sha256": "sha256:228db03f52c0a3aa766eeb74332bc59fa96a3f73efe90e400443ffa67e5e9863",
+      "role": "runtime adapter for the registered opening and upgrade operations"
+    }
+  ],
+  "regression_basis": [
+    {
+      "path": "02_platform_pingtai/database/supabase/tests/sfl_hosted_mall_opening_contract.sql",
+      "git_commit": "578abc0ada5ae6cdb72f2da914e5532b2526d727",
+      "sha256": "sha256:40d9d869ee0ebd5dd0aa2ed1dd1c3676945585bad62d0d7f0d11b93a7a0f49b5",
+      "role": "existing opening continuity, rollback, concurrency and isolation regression"
+    },
+    {
+      "path": "02_platform_pingtai/database/supabase/tests/sfl_sovereign_upgrade_contract.sql",
+      "git_commit": "578abc0ada5ae6cdb72f2da914e5532b2526d727",
+      "sha256": "sha256:3b7b9c5c7950cfb41c29aac0a409ffe736b83f749f0e2f05de261950d453eebd",
+      "role": "existing upgrade lineage, resource, failure-recovery and rollback regression"
+    }
+  ],
+  "sample_matrix": [
+    {
+      "signed_level": "L3",
+      "opening": true,
+      "sovereign_upgrade": false
+    },
+    {
+      "signed_level": "L6",
+      "opening": true,
+      "sovereign_upgrade": true
+    },
+    {
+      "signed_level": "L8",
+      "opening": true,
+      "sovereign_upgrade": true
+    },
+    {
+      "signed_level": "L11",
+      "opening": true,
+      "sovereign_upgrade": false
+    }
+  ],
+  "transition_sequence": [
+    "consumer Hosted to operating_mall Hosted on the original node",
+    "selected operating_mall Hosted to operating_mall Sovereign on the original node",
+    "rollback selected Sovereign upgrades to the recorded Hosted relationship"
+  ],
+  "immutable_identity_and_lineage_fields": [
+    "node_id",
+    "line_id",
+    "realm_id",
+    "parent_node_id",
+    "original_parent_node_id",
+    "signed_level",
+    "membership_id",
+    "account_id",
+    "principal_id",
+    "lineage"
+  ],
+  "allowed_opening_changes": [
+    "node_profile consumer to operating_mall",
+    "mall_id null to one new mall",
+    "capability history appends operating_mall at version 2",
+    "one hosted opening, operating-entity binding, hosted configuration, change and Outbox fact"
+  ],
+  "allowed_upgrade_changes": [
+    "sovereignty_tier hosted to sovereign",
+    "host_sovereign_node_id changes from recorded host to the same original node",
+    "one relation version is appended without changing parent, original parent or signed level",
+    "one four-step upgrade timeline, five domain bindings, one resource binding set and one manifest version",
+    "manifest release_pointer_ref remains null because E07 does not perform a deployment"
+  ],
+  "required_input_artifacts": [
+    "mall-opening-lineage-before-after.json",
+    "mall-opening-infra-counts.json",
+    "sovereign-upgrade-state-timeline.json",
+    "sovereign-upgrade-manifest-pointers.json",
+    "history-digests.json",
+    "nontarget-transition-diff.json",
+    "source-build-counts.json",
+    "rollback-receipts.json",
+    "continuity-database-raw-rows.json",
+    "environment.json"
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E07-LINEAGE",
+    "reads_test_program_pass": false,
+    "procedure": "Independently join and compare every sample's node, Realm, Membership, account, principal, current relation and closure rows before opening, after opening, after selected upgrade and after rollback; recount only the prelocked allowed additions; recompute manifest digests, resource/timeline cardinalities, Hosted infrastructure deltas, non-target digests, history digests and source/build counts. Mutate copies to prove detection of unrelated lineage, Membership/level reset, node-specific source/build growth and another-node switch; do not consume runner PASS fields."
+  },
+  "prelocked_thresholds": [
+    "required raw evidence missing count = 0",
+    "four-level sample and transition completeness mismatch count = 0",
+    "identity/realm/line/parent/original-parent/level/membership/account/principal change count = 0",
+    "current lineage or immutable pre-transition history digest change count = 0",
+    "Hosted opening authority and allowed-addition mismatch count = 0",
+    "Hosted infrastructure call delta = 0",
+    "selected Sovereign target identity replacement count = 0",
+    "Sovereign four-step timeline mismatch count = 0",
+    "Sovereign resource readiness or uniqueness mismatch count = 0",
+    "manifest digest, node binding or release-pointer mismatch count = 0",
+    "non-target transition change count = 0",
+    "unexpected relation/capability/history change count = 0",
+    "business source count or digest change = 0",
+    "node-specific source copy or build count = 0",
+    "rollback restoration mismatch count = 0",
+    "negative oracle probe miss count = 0"
+  ],
+  "positive_cases": [
+    "All L3/L6/L8/L11 samples open a mall on the original Hosted node with one allowed capability append and no infrastructure call.",
+    "Only L6 and L8 become Sovereign on their original identities and produce complete, unique resource and manifest facts.",
+    "Rolling back both selected upgrades restores their recorded Hosted relationship while retaining opening facts and immutable history."
+  ],
+  "negative_cases": [
+    "Detect an unrelated parent/lineage or another-node transition.",
+    "Detect a Membership, principal or signed-level reset.",
+    "Detect a source copy, per-node build, unexpected history rewrite or non-target switch."
+  ],
+  "unknown_rule": "Missing any before/after immutable-key row, history digest, infrastructure count, opening result, upgrade timeline, resource row, manifest/pointer reference, target/non-target snapshot, rollback receipt, source/build observation or environment fact yields UNKNOWN.",
+  "outcome_table": [
+    {
+      "condition": "All required artifacts and fields exist; all four openings and both upgrades are complete; every locked identity, lineage, history, infrastructure, resource, manifest, non-target, source/build and rollback threshold is met; every negative mutation is detected.",
+      "claim_outcome": "MET"
+    },
+    {
+      "condition": "Any complete raw observation contradicts a prelocked continuity, infrastructure, resource, isolation, source/build or rollback threshold.",
+      "claim_outcome": "NOT MET"
+    },
+    {
+      "condition": "Any required artifact, sample, transition, immutable key, history digest, infrastructure counter, timeline, resource, manifest, pointer, non-target snapshot, source/build fact, rollback receipt or environment field is missing or unreadable.",
+      "claim_outcome": "UNKNOWN"
+    }
+  ],
+  "environment_classification": "A successful disposable local PostgreSQL 17 execution with all migrations and synthetic non-production resource references can establish DEV VERIFIED only.",
+  "review_classification": "The criteria designer, executor and oracle operator are the same Codex task; the result remains NOT REVIEWED until a reviewer independent of the transition implementation and counting code recomputes and signs it."
+}
