@@ -121,6 +121,8 @@
     "evidence:e08": "node 04_tools/scripts/audit/supplier-four-flow.pg17-fixture.mjs",
     "test:e11-scale": "node 04_tools/scripts/audit/e11-scale.pg17-fixture.mjs",
     "evidence:e11": "node 04_tools/scripts/audit/e11-scale.pg17-fixture.mjs",
+    "test:e10-release": "node 04_tools/scripts/audit/e10-release.fixture.mjs",
+    "evidence:e10": "node 04_tools/scripts/audit/e10-release.fixture.mjs",
     "test:identity-concurrency": "node 04_tools/scripts/audit/identity-concurrency.pg17-fixture.mjs",
     "test:password-login-stability": "node 04_tools/scripts/audit/password-login-stability.pg17-fixture.mjs",
     "replay:fresh": "npm run replay:schema-fresh && npm run test:inventory-cutover-unsafe && npm run test:environment-bootstrap",
