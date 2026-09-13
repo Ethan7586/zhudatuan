@@ -1,0 +1,215 @@
+{
+  "schema_version": "e2.0-formal-retest-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E01-FORMAL-RETEST-20260914",
+  "profile_version": "2.0.0",
+  "claim_id": "E2-TOPO-001",
+  "legacy_trace_id": "E01",
+  "locked_at": "2026-09-13T23:25:56Z",
+  "purpose": "Execute the already-defined E01 horizontal peer-node claim against H-A, H-B and H-C under one line and parent. The run measures shared Node/Relation/Context paths, Realm/Membership/Scope/Capability/resource isolation, rollback-safe writes, and one shared source/build/artifact identity. This record mirrors the active E2.0 trace matrix and does not create or expand a product contract.",
+  "authoritative_basis": [
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-TOPO-001",
+      "git_commit": "93c4c331022c783fdd394e1d5a3658c3f343c69f",
+      "sha256": "sha256:b9cd8fa9796e51a384ceb627d4923e9cd6f4b00df87cf976f3842b91bcfa545d"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E01",
+      "git_commit": "93c4c331022c783fdd394e1d5a3658c3f343c69f",
+      "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69"
+    }
+  ],
+  "implementation_basis": [
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql",
+      "git_commit": "93c4c331022c783fdd394e1d5a3658c3f343c69f",
+      "sha256": "sha256:5b3ba3d37009210f3bd5f508cd7d9feebda22a55f85b846a39acbe8cb290e304",
+      "role": "Production shared Node and NodeRelation model"
+    },
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql",
+      "git_commit": "93c4c331022c783fdd394e1d5a3658c3f343c69f",
+      "sha256": "sha256:43efeb5af683761df52af5f5ef8893db38c7cfadaf70b98fa84aa57a89f776d7",
+      "role": "Production shared NodeContext and indexed scope resolvers"
+    },
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql",
+      "git_commit": "93c4c331022c783fdd394e1d5a3658c3f343c69f",
+      "sha256": "sha256:5267d9bb3edb759a5b1f6b1380c18fb3370e3a8efe2b59893cb99ad0986b94a9",
+      "role": "Production Realm/Membership/Scope/Capability context-binding functions"
+    },
+    {
+      "path": "01_core_hexin/packages/config/src/SflNodeKernel.ts",
+      "git_commit": "93c4c331022c783fdd394e1d5a3658c3f343c69f",
+      "sha256": "sha256:dbc0183ddda71bfba4440db7162b0b7e2580ecd6da4bae36209925a8f812bc74",
+      "role": "Shared TypeScript NodeContext parser"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/AuthoritativeNodeContextResolver.ts",
+      "git_commit": "93c4c331022c783fdd394e1d5a3658c3f343c69f",
+      "sha256": "sha256:1821b7c0558f7314cfc0f460de6d142bd1ccafa715b57a6cd6cd5f416499edc7",
+      "role": "Single production PostgreSQL-to-TypeScript NodeContext adapter"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts",
+      "git_commit": "93c4c331022c783fdd394e1d5a3658c3f343c69f",
+      "sha256": "sha256:c51fdbc91b24a4afdd1d8b3437c68b9dd04e5d926eeb6dbc5f04292b4e0c7524",
+      "role": "Production Membership, Scope and Capability adapters"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/NodeBoundScopeResolver.ts",
+      "git_commit": "93c4c331022c783fdd394e1d5a3658c3f343c69f",
+      "sha256": "sha256:b1f1ea101aab302a5c5a8d2e5bbc1efb04bc28c443d667aadeabf8809a3b2269",
+      "role": "Production node-to-data-Scope boundary"
+    }
+  ],
+  "regression_basis": [
+    {
+      "path": "02_platform_pingtai/database/supabase/tests/sfl_node_context_scope_contract.sql",
+      "git_commit": "93c4c331022c783fdd394e1d5a3658c3f343c69f",
+      "sha256": "sha256:c8793ee161ed41da53783d43ceb7cb07ca492200cc2ff3fc7d527bf441cf3e4c",
+      "role": "Existing shared NodeContext and scope regression"
+    }
+  ],
+  "environment_classification": "A successful clean-source replay of all production migrations in a disposable PostgreSQL 17 environment, followed by the complete locked E01 matrix and one shared runtime build, can establish DEV VERIFIED only. It is not a stable staging or production observation.",
+  "fixture": {
+    "line_count": 1,
+    "parent_count": 1,
+    "peer_count": 3,
+    "parent_signed_level": "L0",
+    "peer_signed_level": "L1",
+    "peer_nodes": [
+      { "label": "H-A", "sovereignty_tier": "hosted", "variant_capability_expected": true },
+      { "label": "H-B", "sovereignty_tier": "hosted", "variant_capability_expected": false },
+      { "label": "H-C", "sovereignty_tier": "sovereign", "variant_capability_expected": true }
+    ],
+    "distinct_authority_dimensions": ["node_id", "realm_id", "account_id", "membership_id", "scope_id", "resource_id"],
+    "shared_dimensions": ["line_id", "parent_node_id", "signed_level", "node_model", "relation_model", "context_parser", "source_sha", "build_id", "artifact_digest"]
+  },
+  "operation_matrix": {
+    "positive_operations_per_peer": [
+      { "kind": "read", "operation_id": "e01.horizontal.resource.read", "expected_status": 200 },
+      { "kind": "write", "operation_id": "e01.horizontal.resource.write", "expected_status": 200 },
+      { "kind": "capability_probe", "operation_id": "e01.horizontal.capability.probe", "expected_by_peer": { "H-A": 200, "H-B": 403, "H-C": 200 } }
+    ],
+    "positive_observation_count": 9,
+    "cross_node_dimensions": ["realm", "membership", "scope", "node", "resource"],
+    "cross_node_operation_kinds": ["read", "write"],
+    "cross_node_observation_count": 30,
+    "expected_successful_business_write_count": 3,
+    "expected_decision_audit_count": 39,
+    "expected_outbox_count": 3
+  },
+  "model_and_path_threshold": {
+    "node_table_count": 1,
+    "relation_table_count": 1,
+    "closure_table_count": 1,
+    "sql_context_resolver_count": 1,
+    "typescript_context_parser_definition_count": 1,
+    "typescript_context_adapter_definition_count": 1,
+    "peer_context_path_identity_count": 1,
+    "peer_model_identity_count": 1,
+    "node_name_business_branch_count": 0,
+    "source_copy_count": 0
+  },
+  "identity_and_isolation_threshold": {
+    "context_mismatch_count": 0,
+    "authority_mapping_mismatch_count": 0,
+    "distinct_count_per_authority_dimension": 3,
+    "operation_decision_mismatch_count": 0,
+    "cross_node_allowed_count": 0,
+    "cross_node_business_row_count": 0,
+    "cross_node_outbox_count": 0,
+    "non_target_business_write_count": 0,
+    "unexpected_authoritative_diff_count": 0,
+    "rollback_residual_fact_count": 0
+  },
+  "source_and_artifact_threshold": {
+    "source_sha_unique_count": 1,
+    "build_count": 1,
+    "build_id_unique_count": 1,
+    "artifact_identity_count": 1,
+    "artifact_assignment_count": 3,
+    "artifact_assignment_mismatch_count": 0,
+    "node_specific_build_count": 0,
+    "node_specific_source_file_count": 0
+  },
+  "source_inventory_scope": {
+    "roots": [
+      "01_core_hexin/packages/config/src",
+      "01_core_hexin/services/commerce/src/foundation/security",
+      "02_platform_pingtai/database/supabase/migrations"
+    ],
+    "extensions": [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".sql"],
+    "excluded_directory_names": [".next", "coverage", "dist", "node_modules", "playwright-report", "test-results"],
+    "excluded_path_segments": ["06_tests_ceshi", "__tests__", "tests"],
+    "excluded_filename_patterns": [".test.", ".spec."],
+    "node_specific_definition": "A scoped production-source path or source line containing the generated E01 run token, a generated peer node/Realm/Scope/resource identifier, or a conditional branch comparing a node identifier to H-A, H-B or H-C."
+  },
+  "shared_build": {
+    "target": "commerce-api",
+    "marker": "e01-shared-horizontal-version-marker-v1",
+    "exact_command_template": "node 04_tools/scripts/release/build-runtime-bundle.mjs commerce-api <temporary-output-directory> <source-sha>",
+    "expected_build_count": 1,
+    "expected_build_id_unique_count": 1,
+    "expected_artifact_identity_count": 1,
+    "expected_assignment_count": 3,
+    "node_specific_build_count": 0
+  },
+  "required_input_artifacts": [
+    "horizontal-input-manifest.json",
+    "horizontal-topology.json",
+    "horizontal-node-contexts.json",
+    "horizontal-operation-results.json",
+    "horizontal-database-diff.json",
+    "horizontal-model-inventory.json",
+    "horizontal-artifact-identity.json",
+    "environment.json"
+  ],
+  "prelocked_thresholds": [
+    "required raw evidence missing count = 0",
+    "exactly H-A, H-B and H-C share one line, one L0 parent and signed level L1; H-A/H-B are Hosted and H-C is Sovereign",
+    "all three contexts match their authoritative Node, Relation, Realm and Scope rows and use one model and parser-path identity",
+    "node_id, Realm, Account, Membership, Scope and resource distinct counts each = 3",
+    "nine positive operation decisions match the prelocked expectations, including the data-driven H-A/H-C allow and H-B deny capability probe",
+    "all 30 Realm/Membership/Scope/Node/resource cross-node read/write requests are denied with zero business rows and zero Outbox rows",
+    "exactly three positive writes update only their own authoritative resource rows, append 39 expected decision-audit rows and three expected Outbox rows",
+    "unexpected authoritative-table, audit or Outbox diff count = 0 and transaction rollback residual fact count = 0",
+    "one source SHA, one build invocation, one build ID and one immutable artifact identity serve all three peers",
+    "source_copy_count, node_specific_source_file_count, node_name_business_branch_count and node_specific_build_count each = 0",
+    "negative oracle mutation detection miss count = 0"
+  ],
+  "positive_cases": [
+    "Resolve H-A, H-B and H-C through PgAuthoritativeNodeContextResolver and the shared parseAuthoritativeNodeContext path.",
+    "Execute the same read and rollback-safe write operation for all three peers against their own Realm, Membership, Scope and resource.",
+    "Execute one identical capability probe whose H-A/H-C allow and H-B deny result is determined solely by the peer entitlement row.",
+    "Build one commerce-api runtime artifact and assign its single identity to all three peers."
+  ],
+  "negative_cases": [
+    "For every peer and both read/write operations, replace in turn the Realm endpoint, Membership, Scope, Node and resource with the next peer's value.",
+    "Verify every cross-node request is denied, emits no Outbox event and cannot read or modify any business row.",
+    "Scan the locked production-source scope for peer-name conditionals, generated fixture identifiers and node-specific source copies or builds.",
+    "Mutate independent-oracle input copies by swapping one context Scope, admitting one cross-node write and adding a second artifact identity."
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E01-HORIZONTAL",
+    "reads_test_program_pass": false,
+    "procedure": "Read the locked criteria and eight required raw artifacts only; independently reconstruct the expected three-peer topology and authority map; compare every context and all 39 operation observations; derive allowed capability decisions from raw entitlement state; count exact resource/audit/Outbox diffs and rollback residuals; recount model/parser symbols, scoped production-source identifiers, build provenance, artifact file hashes and three peer assignments; mutate copies of context, cross-node operation and artifact inputs to prove detection. Do not consume a runner PASS/status field."
+  },
+  "unknown_rule": "Missing any peer topology row, authority row, context field, operation request/decision, authoritative before/after/rollback snapshot, source/model inventory, build invocation, artifact file hash, peer assignment, environment fact or source-basis digest yields UNKNOWN.",
+  "outcome_table": [
+    {
+      "condition": "All required raw artifacts exist and all prelocked topology, shared-model/path, identity, operation, isolation, authoritative-diff, rollback, source/build/artifact and mutation-detection thresholds are met.",
+      "claim_outcome": "MET"
+    },
+    {
+      "condition": "Any complete raw observation contradicts a prelocked topology, context, operation, isolation, authoritative-diff, rollback or shared-artifact threshold.",
+      "claim_outcome": "NOT MET"
+    },
+    {
+      "condition": "Any required raw artifact or field is missing, unreadable or cannot be independently reconciled.",
+      "claim_outcome": "UNKNOWN"
+    }
+  ],
+  "review_classification": "The criteria designer, executor and oracle operator are the same Codex task; the result remains NOT REVIEWED until a reviewer independent of the E01 implementation, fixture and oracle recomputes and signs it.",
+  "non_gating": true
+}
