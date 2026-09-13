@@ -1,0 +1,113 @@
+{
+  "schema_version": "e2.0-execution-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E08-FORMAL-RETEST-20260914",
+  "profile_version": "2.0.0",
+  "claim_id": "E2-TXN-001",
+  "legacy_trace_id": "E08",
+  "purpose": "Execute the already-defined E08 multi-supplier four-flow claim and preserve independently recomputable ledger evidence. This record mirrors the active E2.0 trace matrix and does not create or expand a product contract.",
+  "locked_at": "2026-09-13T18:36:12Z",
+  "non_gating": true,
+  "authoritative_basis": [
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-TXN-001",
+      "git_commit": "b104206b0eee1e6d81ed654649ebd42afb52cb23",
+      "sha256": "sha256:efd959e1fdf9801c8c69ec68de4b8cfb6b300eb50e439ba891c27ae0d85f228d"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E08",
+      "git_commit": "b104206b0eee1e6d81ed654649ebd42afb52cb23",
+      "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69"
+    }
+  ],
+  "fixture_contracts": [
+    {
+      "path": "02_platform_pingtai/database/supabase/tests/supplier_four_flow_business_contract.sql",
+      "sha256": "sha256:bb6f0a0e1a0a77334e598541ad2f41f77bcbfba4e2d2b2ef83d4f83063279090"
+    },
+    {
+      "path": "02_platform_pingtai/database/supabase/tests/supplier_four_flow_concurrent_replay.sql",
+      "sha256": "sha256:61b7d1abc42a62e530174d3db5607d0ab514e12219167bb607974cbfd4db3141"
+    }
+  ],
+  "expected_fixture": {
+    "order_id": "order:test:four-flow",
+    "order_line_count": 3,
+    "supplier_leg_count": 3,
+    "currency": "CNY",
+    "gross_minor": 3000,
+    "discount_minor": 200,
+    "payable_minor": 2800,
+    "route_levels": ["L0", "L1", "L-2", "L2", "L6", "L7"],
+    "forward_finance_kinds": ["cost", "income", "payable", "receivable"],
+    "selected_aftersales": ["aftersale:test:a", "aftersale:test:b:partial"],
+    "unaffected_order_line": "line:test:b:dropship",
+    "relationship_change": {
+      "relationship_id": "relationship:test:b:line-one",
+      "frozen_version": 1,
+      "current_version": 2,
+      "contract_id": "contract:test:b:warehouse",
+      "frozen_contract_version": 1,
+      "current_contract_version": 2
+    },
+    "concurrent_replay_attempts": 5,
+    "concurrent_expected_counts": {
+      "order_records": 1,
+      "order_lines": 1,
+      "supplier_legs": 1,
+      "aftersales": 1,
+      "line_route_steps": 6,
+      "reverse_route_steps": 6,
+      "refunds": 1,
+      "refund_allocations": 1,
+      "restock_facts": 1,
+      "finance_reversals": 4
+    }
+  },
+  "required_input_artifacts": ["supplier-route-snapshot.json", "four-flow-forward-facts.json", "partial-refund-replay.json", "environment.json"],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E08-RECONCILIATION",
+    "reads_test_program_pass": false,
+    "procedure": "Recompute order-line and supplier-leg conservation, payment allocation, inventory quantities, forward and reverse finance facts, refund target identity, replay uniqueness and frozen route versions directly from authoritative rows. Mutate copies of the raw rows to prove detection of cross-leg refund, duplicate refund and current-route historical rewrite; do not consume SQL assertion or runner PASS fields."
+  },
+  "prelocked_thresholds": [
+    "required raw evidence missing count = 0",
+    "order, line and supplier-leg count mismatch count = 0",
+    "line, supplier-leg and order money difference in minor units = 0",
+    "payment and supplier allocation mismatch count = 0",
+    "line-to-leg and four-flow authority mismatch count = 0",
+    "inventory reservation and restock quantity mismatch count = 0",
+    "forward and reversal finance mismatch count = 0",
+    "refund original line, supplier leg, route or amount mismatch count = 0",
+    "duplicate replay business fact count = 0",
+    "historical route version change count = 0",
+    "atomic failure half-write count = 0",
+    "negative oracle probe miss count = 0"
+  ],
+  "positive_cases": [
+    "Three independent supplier legs reconcile to the order and payment.",
+    "Full and partial refunds reconcile only to each selected original line and supplier leg.",
+    "Five replay attempts retain exactly one business effect per idempotent fact."
+  ],
+  "negative_cases": [
+    "Detect a refund allocation moved to another supplier leg.",
+    "Detect a duplicated refund allocation for one aftersale and line.",
+    "Detect a historical line or route step rewritten to the current relationship or contract version."
+  ],
+  "unknown_rule": "Missing any authoritative order, line, supplier-leg, inventory, payment, refund, finance, route-version, currency-unit or environment field yields UNKNOWN rather than inferred balance.",
+  "outcome_table": [
+    {
+      "condition": "All required artifacts and fields exist; every prelocked difference or mismatch is zero; all three negative oracle probes are detected.",
+      "claim_outcome": "MET"
+    },
+    {
+      "condition": "Any complete authoritative observation contradicts a prelocked threshold.",
+      "claim_outcome": "NOT MET"
+    },
+    {
+      "condition": "Any required artifact, row class, field, hash or environment fact is missing or unreadable.",
+      "claim_outcome": "UNKNOWN"
+    }
+  ],
+  "environment_classification": "A successful disposable local PostgreSQL 17 execution can establish DEV VERIFIED only.",
+  "review_classification": "The criteria designer, executor and oracle operator are the same Codex task; the result remains NOT REVIEWED until a separate eligible finance/domain reviewer recomputes and signs it."
+}
