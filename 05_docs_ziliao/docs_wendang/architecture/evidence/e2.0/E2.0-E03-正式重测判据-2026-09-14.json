@@ -1,0 +1,231 @@
+{
+  "schema_version": "e2.0-formal-retest-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E03-FORMAL-RETEST-20260914",
+  "profile_version": "2.0.0",
+  "claim_id": "E2-AUTH-001",
+  "legacy_trace_id": "E03",
+  "locked_at": "2026-09-13T22:22:20Z",
+  "purpose": "Execute the already-defined E03 five-factor authorization-intersection claim and preserve independently recountable 32-row expected and observed truth tables across page, API, task and trusted service/provider surfaces. This record mirrors the active E2.0 trace matrix and does not create or expand a product contract.",
+  "authoritative_basis": [
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-AUTH-001",
+      "git_commit": "7c5fbb43317c6d24fed0c5a41efe5baa0f17a649",
+      "sha256": "sha256:dfcd06d04636f27b2cf01de7523177ecdc09e4a989de9ed667e4a21b349fcf84"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E03",
+      "git_commit": "7c5fbb43317c6d24fed0c5a41efe5baa0f17a649",
+      "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69"
+    }
+  ],
+  "implementation_basis": [
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/AccessPipeline.ts",
+      "git_commit": "7c5fbb43317c6d24fed0c5a41efe5baa0f17a649",
+      "sha256": "sha256:e1898df98d61016261285b9bd3893f081e9ace69f26adfae699c46b588343b51",
+      "role": "Production fail-closed authorization pipeline and ordered five-factor decision path"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/OperationAvailability.ts",
+      "git_commit": "7c5fbb43317c6d24fed0c5a41efe5baa0f17a649",
+      "sha256": "sha256:330bee6c4b7c847d5688b602512735dd6fc2f62473fca76a7b7c86142cdf4c1a",
+      "role": "Production Operation feature-declaration and resource-readiness resolution"
+    },
+    {
+      "path": "01_core_hexin/packages/authz/src/Policy.ts",
+      "git_commit": "7c5fbb43317c6d24fed0c5a41efe5baa0f17a649",
+      "sha256": "sha256:225f3be72cdd0d4e00f44b66341224e68ad03f78f0e3a75079c36a79193ef2bb",
+      "role": "Production Permission and Scope policy decisions"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts",
+      "git_commit": "7c5fbb43317c6d24fed0c5a41efe5baa0f17a649",
+      "sha256": "sha256:19d39e4b6b5ecafb99798a85ec869b7e1aa9606d28357a0aefc231e7102a9245",
+      "role": "Production API authorization-before-handler boundary"
+    }
+  ],
+  "regression_basis": [
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/AccessPipeline.test.ts",
+      "git_commit": "7c5fbb43317c6d24fed0c5a41efe5baa0f17a649",
+      "sha256": "sha256:2979f44d835b8a752f4cb0ed4b1ed0fa148c7bf99f9da0ddb396266a8f901727",
+      "role": "Existing 32-combination five-factor and first-unmet-dimension regression"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/OperationAvailability.test.ts",
+      "git_commit": "7c5fbb43317c6d24fed0c5a41efe5baa0f17a649",
+      "sha256": "sha256:f0872341033f47d05585299af9f7add1126cbc45e354c751e4ea0a86950d5ddf",
+      "role": "Existing node-manifest feature and resource-readiness regression"
+    },
+    {
+      "path": "04_tools/scripts/audit/e10-feature-probe-runtime.ts",
+      "git_commit": "7c5fbb43317c6d24fed0c5a41efe5baa0f17a649",
+      "sha256": "sha256:0a8e5c2840741c055a34bbd2ec4db82d78e574d3166ba934f497988daf58b2d9",
+      "role": "Existing four-route DEV transport around the same production authorization kernel"
+    }
+  ],
+  "environment_classification": "A successful clean-source replay of all production migrations in a disposable PostgreSQL 17 environment, followed by the complete locked E03 matrix through isolated local page, API, task and service routes around the production authorization kernel, can establish DEV VERIFIED only. It is not a stable staging or production observation.",
+  "dimensions": [
+    "feature_declared",
+    "permission_allowed",
+    "scope_allowed",
+    "capability_available",
+    "resource_ready"
+  ],
+  "dimension_order": [
+    {
+      "dimension": "feature_declared",
+      "denial_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "dimension": "permission_allowed",
+      "denial_reason": "PERMISSION_DENIED"
+    },
+    {
+      "dimension": "scope_allowed",
+      "denial_reason": "SCOPE_DENIED"
+    },
+    {
+      "dimension": "capability_available",
+      "denial_reason": "CAPABILITY_DENIED"
+    },
+    {
+      "dimension": "resource_ready",
+      "denial_reason": "RESOURCE_NOT_READY"
+    }
+  ],
+  "node_membership_matrix": [
+    {
+      "sample_id": "hosted-operating-mall",
+      "sovereignty_tier": "hosted",
+      "node_profile": "operating_mall",
+      "signed_level": "L6",
+      "membership_client": "storefront"
+    },
+    {
+      "sample_id": "sovereign-operating-mall",
+      "sovereignty_tier": "sovereign",
+      "node_profile": "operating_mall",
+      "signed_level": "L6",
+      "membership_client": "storefront"
+    },
+    {
+      "sample_id": "hosted-consumer",
+      "sovereignty_tier": "hosted",
+      "node_profile": "consumer",
+      "signed_level": "L7",
+      "membership_client": "storefront"
+    }
+  ],
+  "operation_matrix": [
+    {
+      "kind": "read",
+      "operation": "member.profile.read",
+      "permission": "member.profile.read",
+      "side_effect_contract": "side-effect-free read"
+    },
+    {
+      "kind": "write",
+      "operation": "member.addresses.manage",
+      "permission": "member.address.manage",
+      "side_effect_contract": "rollback-safe synthetic business write"
+    }
+  ],
+  "surfaces": [
+    "page",
+    "api",
+    "task",
+    "service"
+  ],
+  "surface_semantics": {
+    "page": "The route calls the production authorization pipeline before reporting visible/actionable; it performs no business, Outbox, task or Provider action.",
+    "api": "The route calls the production authorization pipeline before a synthetic read or rollback-safe write against production-shaped PostgreSQL tables; only an allowed write appends an Outbox fact.",
+    "task": "The route calls the production authorization pipeline before reporting read-task execution or inserting an allowed write-task job record.",
+    "service": "The route calls the production authorization pipeline before selecting and calling the deterministic trusted Provider probe; the Provider log is recorded independently of the authorization decision log."
+  },
+  "truth_table_threshold": {
+    "row_count": 32,
+    "surface_count": 4,
+    "observation_count_per_surface": 32,
+    "node_membership_sample_count": 3,
+    "operation_count": 2,
+    "raw_case_decision_count": 768,
+    "all_true_raw_case_allow_count": 24,
+    "denied_raw_case_count": 744,
+    "expected_observed_mismatch_count": 0,
+    "cross_surface_inconsistency_count": 0,
+    "denial_reason_mismatch_count": 0,
+    "missing_correlation_count": 0
+  },
+  "denied_side_effect_threshold": {
+    "business_write_count": 0,
+    "outbox_append_count": 0,
+    "task_enqueue_count": 0,
+    "provider_call_count": 0
+  },
+  "decision_audit_threshold": {
+    "decision_count": 768,
+    "allowed_count": 24,
+    "denied_count": 744,
+    "duplicate_or_missing_decision_count": 0
+  },
+  "probe_boundary": {
+    "authorization": "Every raw case must construct a server-side Actor, independent Membership and NodeContext and invoke AccessPipeline with the fixed read or write Operation and Permission. The expected conjunction and first-unmet reason must be generated separately from raw booleans.",
+    "surface_transport": "All four probes must cross distinct local HTTP routes and independently record the returned surface, correlation_id, observed availability and reason.",
+    "database": "The disposable PostgreSQL instance must replay the complete production migration chain. Synthetic order facts, runtime.outbox, runtime.job and access.decisionaudit rows are selected directly before and after each raw case by correlation_id.",
+    "provider": "The trusted service route must use a deterministic in-process Provider double whose call log is captured separately; no real external Provider is contacted.",
+    "write_safety": "All synthetic business, Outbox and task rows remain confined to the disposable database, which is removed after execution."
+  },
+  "required_input_artifacts": [
+    "authorization-contexts.json",
+    "truth-table-expected.json",
+    "truth-table-observed.json",
+    "authorization-decisions.jsonl",
+    "side-effect-diffs.json",
+    "provider-call-log.json",
+    "environment.json"
+  ],
+  "prelocked_thresholds": [
+    "required raw evidence missing count = 0",
+    "expected truth-table row count = 32 and observed row count per surface = 32",
+    "3 node/Membership samples x 2 Operations x 32 rows x 4 surfaces = 768 raw case decisions",
+    "all 24 all-true raw cases are available and all 744 other raw cases fail closed",
+    "expected versus observed mismatch count = 0",
+    "cross-surface inconsistency count = 0",
+    "first-unmet-dimension denial reason mismatch count = 0",
+    "missing or duplicate correlation/DecisionSink fact count = 0",
+    "denied-row business write, Outbox append, task enqueue and Provider call count = 0",
+    "negative oracle probe miss count = 0"
+  ],
+  "positive_cases": [
+    "For the one all-true truth-table row, both selected Operations are available on all four surfaces for each Hosted operating-mall, Sovereign operating-mall and Hosted consumer Membership.",
+    "The allowed read remains side-effect-free; allowed page/API/task/service behavior matches each surface semantic and every case has one POLICY_ALLOWED DecisionSink fact."
+  ],
+  "negative_cases": [
+    "Each factor false individually while the other four are true for every surface, node/Membership sample and Operation.",
+    "Every remaining multi-false combination for every surface, node/Membership sample and Operation.",
+    "Detect any allow, wrong first-unmet reason, cross-surface difference, missing correlation/decision fact or denied business, Outbox, task or Provider effect."
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E03-TRUTH-TABLE",
+    "reads_test_program_pass": false,
+    "procedure": "Generate all 32 expected rows directly from the five raw booleans, expand each into the exact 3 node/Membership x 2 Operation x 4 surface cases, independently join observations, DecisionSink rows, direct database diffs and Provider calls by correlation_id, recompute conjunction, first-unmet reason, cross-surface equality and denied effects, and mutate copies to prove detection of one false allow, one wrong denial reason and one denied Provider effect. Do not consume runner PASS/status fields."
+  },
+  "unknown_rule": "Missing any required artifact, truth-table row, surface, node/Membership sample, Operation, raw request/response, correlation link, denial reason, direct database before/after record, DecisionSink fact or Provider-call record yields UNKNOWN.",
+  "outcome_table": [
+    {
+      "condition": "All required raw evidence exists; the 32-row expected table and 32 observations per surface expand to exactly 768 uniquely correlated raw cases; all 24 all-true cases allow; all 744 other cases deny for the first unmet dimension; surfaces agree; denied business, Outbox, task and Provider effects are zero; and every negative oracle mutation is detected.",
+      "claim_outcome": "MET"
+    },
+    {
+      "condition": "Any complete raw observation contradicts a prelocked decision, denial-reason, cross-surface, correlation or denied-side-effect threshold.",
+      "claim_outcome": "NOT MET"
+    },
+    {
+      "condition": "Any required raw artifact or field is missing, unreadable or cannot be independently reconciled.",
+      "claim_outcome": "UNKNOWN"
+    }
+  ],
+  "review_classification": "The criteria designer, executor and oracle operator are the same Codex task; the result remains NOT REVIEWED until a reviewer independent of the E03 authorization implementation and test code recomputes and signs it.",
+  "non_gating": true
+}
