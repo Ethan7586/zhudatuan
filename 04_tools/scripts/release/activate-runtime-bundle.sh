@@ -49,6 +49,8 @@ rollback_required=0
 manifest_changed=0
 manifest_path=''
 manifest_backup_path=''
+manifest_env_backup_dir=''
+manifest_env_paths=()
 
 cleanup() {
   unlink "$archive_path" 2>/dev/null || true
@@ -74,6 +76,11 @@ rollback() {
       manifest_rollback_tmp="${manifest_path}.$$.rollback"
       install -o root -g root -m 0644 "$manifest_backup_path" "$manifest_rollback_tmp"
       mv -Tf "$manifest_rollback_tmp" "$manifest_path"
+      for env_path in "${manifest_env_paths[@]}"; do
+        env_rollback_tmp="${env_path}.$$.rollback"
+        cp -a "$manifest_env_backup_dir/$(basename "$env_path")" "$env_rollback_tmp"
+        mv -Tf "$env_rollback_tmp" "$env_path"
+      done
     fi
     for spec in "${target_specs[@]}"; do
       IFS='|' read -r name root unit <<<"$spec"
@@ -118,10 +125,30 @@ if [ "$RELEASE_TARGET" = 'identity-api' ]; then
   mkdir -p "$manifest_backup_dir"
   manifest_backup_path="$manifest_backup_dir/${release_id}-$(date -u +%Y%m%dT%H%M%SZ)-$$.json"
   cp -a "$manifest_path" "$manifest_backup_path"
+  new_manifest_digest="$(jq -r '.manifest_digest' "$next_manifest")"
+  case "$new_manifest_digest" in (sha256:[0-9a-f][0-9a-f]*) ;; (*) echo 'Invalid node manifest digest' >&2; false ;; esac
+  for env_path in /opt/sfl/nodes/hbbtzn-l1/runtime/*.env; do
+    if grep -qx 'NODE_MANIFEST_PATH=/opt/sfl/nodes/hbbtzn-l1/manifest.json' "$env_path"; then
+      grep -q '^NODE_MANIFEST_DIGEST=' "$env_path"
+      manifest_env_paths+=("$env_path")
+    fi
+  done
+  test "${#manifest_env_paths[@]}" -gt 0
+  manifest_env_backup_dir="$manifest_backup_dir/${release_id}-$(date -u +%Y%m%dT%H%M%SZ)-$$.env"
+  mkdir -p "$manifest_env_backup_dir"
+  for env_path in "${manifest_env_paths[@]}"; do
+    cp -a "$env_path" "$manifest_env_backup_dir/$(basename "$env_path")"
+  done
+  manifest_changed=1
   manifest_next_tmp="${manifest_path}.$$.next"
   install -o root -g root -m 0644 "$next_manifest" "$manifest_next_tmp"
   mv -Tf "$manifest_next_tmp" "$manifest_path"
-  manifest_changed=1
+  for env_path in "${manifest_env_paths[@]}"; do
+    env_next_tmp="${env_path}.$$.next"
+    cp -a "$env_path" "$env_next_tmp"
+    sed -i "s|^NODE_MANIFEST_DIGEST=.*$|NODE_MANIFEST_DIGEST=$new_manifest_digest|" "$env_next_tmp"
+    mv -Tf "$env_next_tmp" "$env_path"
+  done
 fi
 for spec in "${target_specs[@]}"; do
   IFS='|' read -r name root unit <<<"$spec"
@@ -154,6 +181,7 @@ printf 'SOURCE_SHA=%s\n' "$SOURCE_SHA"
 if [ "$manifest_changed" = 1 ]; then
   printf 'CURRENT_MANIFEST=%s\n' "$manifest_path"
   printf 'ROLLBACK_MANIFEST=%s\n' "$manifest_backup_path"
+  printf 'ROLLBACK_MANIFEST_ENVS=%s\n' "$manifest_env_backup_dir"
 fi
 for spec in "${target_specs[@]}"; do
   IFS='|' read -r name root unit <<<"$spec"
