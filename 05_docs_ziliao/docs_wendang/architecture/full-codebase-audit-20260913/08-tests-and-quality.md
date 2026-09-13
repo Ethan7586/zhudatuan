@@ -111,3 +111,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 缺口包括异常/缺tenant Scope、错误platform、跨kind同ID、catalog mutation、二级permission explicit deny、custom role permission subset、critical Pipeline level和真实pg bigint类型。F-0053–F-0055在现有套件中不会可靠失败。
 - [FACT][E-AU-010-011] `WebBusinessScopeResolver.test.ts`第三例仍期待旧4参数接口，现实现会在query前抛`AUTH_MEMBERSHIP_CONTEXT_MISSING`；这是F-0056，不是生产实现失败。
 - 正式Authz test/typecheck均退出127，分别缺vitest/tsc且未加载源码；未安装依赖。完整用例、命令、探针及“不证明项”见 `records/AU-010-authz/tests.csv` 和 `validation-results.md`。
+
+## 10. AU-011 Smart Wing Authz 测试可信度
+
+- 包内159行、13个用例直接覆盖self、deny、store/department、tenant mismatch、enterprise ancestor、platform跨tenant、全局grant选择、非层级path、critical与过期step-up；实现oracle不是mock副本。
+- 缺口包括inactive/expiry边界、permission missing、future/exact step-up、公开Set mutation、异常最大窗口与challenge-before-scope。
+- 源码只读探针确认expiry等于now拒绝、900秒整允许、未来拒绝、explicit deny优先、Set mutation改变结果、Infinity接受旧验证、错误critical Scope先challenge。
+- 正式`npm run test --workspace @smart-wing/authz`和`npm run typecheck --workspace @smart-wing/authz`均因Missing script失败。根命令使用`--if-present`会静默跳过，形成F-0060；没有安装依赖或另造正式入口。

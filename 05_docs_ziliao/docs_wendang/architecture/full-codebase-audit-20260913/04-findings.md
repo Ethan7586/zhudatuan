@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-010 结束时累计：P0 0、P1 候选 8、P2 34、P3 16、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-011 结束时累计：P0 0、P1 候选 8、P2 34、P3 19、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -1434,3 +1434,78 @@
 - [UNKNOWN] 正常数据库是否存在缺tenant、错误closure、scope ID冲突或非canonical resolver输出；本AU没有连接线上数据库。
 - [UNKNOWN] `@shop/authz`完整`decide` façade和类型的仓外消费者；已列DC-0012/G1，不得直接删除。
 - [UNKNOWN][E-AU-010-016] Authz正式test/typecheck结果；两者因依赖缺失在源码加载前退出127，未安装依赖。
+
+## F-0060｜Smart Wing Authz 的测试与类型检查被正式入口静默跳过
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@smart-wing/authz` / 测试拓扑 |
+| 类型 | 测试入口缺失、质量信号失真 |
+| 严重级别 | P3 |
+| 置信度 | 高 |
+| 文件和精确位置 | `packages/smart-wing-authz/package.json:1-13`；`src/index.test.ts:1-159`；`tsconfig.json:1-12`；根`package.json:45,50` |
+| 当前行为 | [FACT][E-AU-011-002/013] 包保存159行、13个直接行为用例和独立tsconfig，但没有scripts；根`test:unit`与`typecheck`使用workspaces `--if-present`，会跳过本包。显式workspace命令均返回Missing script |
+| 预期行为 | 人工维护的兼容权限内核应由项目正式命令执行其直接测试与类型检查，或由正式退役记录明确排除并保留替代验证 |
+| 直接证据 | E-AU-011-002、E-AU-011-012、E-AU-011-013、TEST-AU-011-014/015 |
+| 调用链或运行入口 | 根test/typecheck → npm workspaces `--if-present` → 本包无script → 0个本包测试/类型检查 |
+| 用户影响 | Authz回归可以在全仓质量命令中无声漏过；当前兼容protected runtime未正式发布，影响受限 |
+| 数据影响 | 不直接写数据；漏测的授权错误若经手工兼容build使用可影响访问决定 |
+| 安全影响 | 权限内核缺少正式回归信号，但本项不证明当前权限绕过 |
+| 根因 | 包保留源码、测试和tsconfig，却未把生命周期状态落实为可执行脚本或明确归档 |
+| 建议方向 | 后续独立质量批次在“正式接回测试”与“明确退役并迁移唯一契约”之间定稿；不在审计分支修改 |
+| 预计修改范围 | package脚本/根测试拓扑，或退役文档与契约承接；二者不可混做 |
+| 验证方式 | 正式根命令能够明确执行并报告13用例/tsconfig，或正式退役门禁证明不再构建且契约已有承接 |
+| 回滚方式 | 回退单一测试拓扑/退役提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0061｜公开 step-up 最大时限接受非有限值
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@smart-wing/authz` / step-up |
+| 类型 | 边界值、可配置窗口语义 |
+| 严重级别 | P3 |
+| 置信度 | 高：源码反事实确定；当前两个源码caller均未传该选项 |
+| 文件和精确位置 | `packages/smart-wing-authz/src/index.ts:19-20,29-30,41-48` |
+| 当前行为 | [FACT][E-AU-011-010] `stepUpMaxAgeSeconds`未限制为有限非负值；传`Infinity`时2000年的step-up在2026年仍被接受。当前caller使用默认900秒，未发现生产参数化入口 |
+| 预期行为 | 安全时限若公开可配置，应只接受定义域内的有限值；非法值应稳定拒绝或采用已声明默认值 |
+| 直接证据 | E-AU-011-010、PROBE-AU-011-010、INV-AU-011-007 |
+| 调用链或运行入口 | 兼容caller → `decide(options.stepUpMaxAgeSeconds)` → `hasFreshStepUp` → critical allow/challenge |
+| 用户影响 | 只有新增或仓外caller传异常窗口时才会延长身份复核有效期；当前仓内caller未触发 |
+| 数据影响 | 无直接写入 |
+| 安全影响 | 可弱化critical action的recent verification，但当前正式protected runtime未加载且无仓内异常caller |
+| 根因 | 公开数字选项直接进入乘法比较，没有明确输入契约 |
+| 建议方向 | 若兼容链继续存活，独立小批次先定义非法值语义并补边界测试；若退役则由退役证明承接 |
+| 预计修改范围 | 单一纯函数与直接测试 |
+| 验证方式 | NaN、Infinity、负数、0、900秒整、未来时间和默认值矩阵 |
+| 回滚方式 | 回退单一实现/测试提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0062｜Critical 权限在 Scope 不匹配前发起 step-up 挑战
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@smart-wing/authz` / Scope与step-up顺序 |
+| 类型 | 错误状态顺序、无效挑战 |
+| 严重级别 | P3 |
+| 置信度 | 高 |
+| 文件和精确位置 | `packages/smart-wing-authz/src/index.ts:24-32` |
+| 当前行为 | [FACT][E-AU-011-011] binding先计算但其不存在的拒绝位于step-up之后；错误mall scope的critical请求无step-up返回`STEP_UP_REQUIRED`，完成step-up后才返回`SCOPE_MISMATCH` |
+| 预期行为 | 已确定不具资源Scope的请求不应先要求用户执行无效的身份复核；错误原因顺序应稳定反映最早不可恢复条件 |
+| 直接证据 | E-AU-011-011、PROBE-AU-011-011、INV-AU-011-009 |
+| 调用链或运行入口 | Commerce compat route → server-derived ResourceScope → `decide` → critical challenge → 重试 → Scope拒绝 |
+| 用户影响 | 用户被要求完成一次无法改变最终结果的额外验证，之后仍失败；当前compat protected runtime未正式发布 |
+| 数据影响 | 无 |
+| 安全影响 | 没有扩大权限；主要是挑战语义与用户体验失真 |
+| 根因 | step-up分支放在`!binding`拒绝之前 |
+| 建议方向 | 若兼容链保留，独立行为批次由产品确认拒绝优先级并补组合测试 |
+| 预计修改范围 | 判定分支顺序与直接测试 |
+| 验证方式 | valid/invalid Scope × critical/noncritical × fresh/missing step-up全矩阵 |
+| 回滚方式 | 回退单一顺序/测试提交 |
+| 是否需要独立复核 | 否 |
+
+## 12. AU-011 新增未定级事项
+
+- [UNKNOWN] 仓外是否加载该private workspace或手工兼容制品。
+- [UNKNOWN] 是否仍有历史主机运行旧`admin-server.cjs`；本AU只证明当前仓库发布策略禁止它。
+- [UNKNOWN] 86条兼容permission与`public.*`权限模型的正式退役时间及契约承接者。

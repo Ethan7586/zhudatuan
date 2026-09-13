@@ -79,3 +79,10 @@
 - [P1-CANDIDATE] F-0053成功路径会写rolepermission、membershiprole/scopegrant并递增目标access_version；未来修复若需处理已有越界custom role，必须另做受管、可逆的数据清单，不能在审计分支直接删除或改角色。
 - [P2] F-0055的normal路径缓解来自`scope_object`和closure；是否已有缺tenant、错误closure或跨表ID冲突是线上数据UNKNOWN，本AU未连接数据库、未重放migration。
 - ModuleCatalog解析在内存中完成，失败无数据库半状态；35份manifest是否未来驱动migration/startup仍UNKNOWN。
+
+## 12. AU-011 兼容权限数据与迁移责任
+
+- `@smart-wing/authz`本身无SQL或事务；输入由兼容`public.memberships/public.permissions/public.role_permissions/public.membership_scopes`及资源Scope RPC投影，数据所有权在兼容PostgreSQL面。
+- [FACT][E-AU-011-007] custom role创建/更新/assign会比较actor effective permission并检查可授Scope，避免非Owner向上转授；该机制是历史数据责任，禁止因当前正式runtime退役就删除相关迁移。
+- canonical `@shop/authz`使用`access.*`角色、override、scopegrant与organization closure。两个模型只有8个permission code重合；未核对线上双写、迁移ledger或退役数据，因此不存在“已完成迁移”的事实。
+- 本AU未连接数据库、执行SQL、重放迁移或修改ledger；线上是否仍有兼容role/membership数据保持UNKNOWN。

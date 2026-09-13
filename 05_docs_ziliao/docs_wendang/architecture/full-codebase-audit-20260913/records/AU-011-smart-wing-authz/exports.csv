@@ -1,0 +1,6 @@
+"符号编号","文件","符号","种类","可见性","直接生产调用者","测试调用者","输入","输出","状态/副作用","失败","兼容职责","删除等级","结论"
+"SYM-AU-011-001","index.ts","HIGH_RISK_PERMISSIONS","const Set","public","requiresStepUp；包外静态0","index.test间接","PERMISSION_CATALOG模块加载值","Set<Permission>","公开可变singleton","无抛错；mutation改变后续判定","兼容critical目录快照","G1随包；F-0032","活跃内部依赖但公开可变"
+"SYM-AU-011-002","index.ts","isActiveMembership","function","public","decide；包外静态0","index.test间接","Membership,now","boolean","无","非法expiry返回false","兼容Membership状态规则","G1随包","职责单一"
+"SYM-AU-011-003","index.ts","requiresStepUp","function","public","decide；包外静态0","index.test间接","Permission","boolean","读取可变Set","无","兼容critical映射","G1随包；F-0032","结果可被公开Set改写"
+"SYM-AU-011-004","index.ts","decide","function","public","commerce-api auth.ts/adminServer.ts","13包内测试+Commerce tests间接","Membership,Permission,ResourceScope,options","AuthorizationDecision","无持久副作用","稳定deny/challenge/allow reason","兼容授权核心","G1随包","唯一真实决策入口"
+"SYM-AU-011-005","index.ts","can","function","public","包外静态0","0","同decide","boolean","无","只丢弃reason/evidence","便捷兼容API","G1随包","零caller不构成删除证据"

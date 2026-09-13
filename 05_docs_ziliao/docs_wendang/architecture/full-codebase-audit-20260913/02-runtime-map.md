@@ -653,3 +653,16 @@ adapter.send
 生产构造者共7个：Commerce、Purchase、Console Support、Catalog Operator、Identity Registration、Web Business、Mall Provisioning runtimes；明细见AU-010 `runtime-consumers.csv`。Authz随这些制品编译，不单独启动或发布。
 
 角色管理有一条额外分支：`access.roles.manage`先按`access.role.manage`通过完整Pipeline，再由AccessOperations对目标scope直接调用`checkScope(access.scope.manage)`。这条二级调用没有执行该permission的explicit deny前置，见F-0054。完整同步顺序与失败状态见AU-010 `communications.csv`、`state-machines.csv`。
+
+## 19. AU-011：兼容 Membership 到 Authz 的真实链
+
+| 阶段 | 真实入口 | 输入/所有权 | 输出/下一跳 | 当前发布状态 |
+| --- | --- | --- | --- | --- |
+| 会话 | Commerce API签名Cookie或Bearer | session token | membership context RPC | 兼容受保护router未进入当前正式target |
+| Membership | `api_resolve_session_membership_context` | `public.memberships`及角色/权限/Scope投影 | 单一Membership | 数据由兼容数据库拥有 |
+| ResourceScope | 订单/售后/商品security-definer RPC | 服务端资源行 | tenant/org/resource scope | 不信任请求参数作为scope源 |
+| 判定 | `auth.ts` wrapper → `decide` | Membership、permission、ResourceScope、step-up | allow/deny/challenge reason | 13个路由源码消费者 |
+| 直连兼容 | `adminServer.ts` → `decide` | 同上 | handler或拒绝 | `admin-server.cjs`被delivery禁止 |
+| Storefront现行 | Storefront Worker → `routePublicRequest` | 公共请求 | public handler | 不加载上述protected router |
+
+同步判定顺序为membership active/expiry → explicit deny → permission allow → binding筛选/跨tenant规则 → critical step-up → binding存在 → allow。critical错误Scope会先challenge再报Scope不匹配，见F-0062。该包没有队列、Worker注册或异步恢复；每个请求重新纯判定，公开Set mutation只能靠进程重启恢复。

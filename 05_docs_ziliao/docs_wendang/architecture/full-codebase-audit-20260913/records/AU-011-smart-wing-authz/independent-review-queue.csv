@@ -1,0 +1,2 @@
+"复核编号","对象","本AU新增证据","当前状态","必须重新检查","不得采用捷径","完成判据"
+"RV-0009","F-0053 canonical custom role委派","兼容public.*实现已证明actor permission ceiling和Scope ceiling可执行","仍待第二位独立审阅者；同一主审对照不计","两套role写入、assignment、projection和当前线上数据","不得直接复制兼容SQL或宣称两套等价","独立复现canonical越权矩阵并定稿治理模型"

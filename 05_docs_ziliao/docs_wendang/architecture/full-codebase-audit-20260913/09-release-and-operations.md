@@ -146,3 +146,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - F-0053属于角色治理与可能的数据纠偏，F-0054属于二级授权调用，F-0055属于Scope闭表，三者必须拆成独立、可回滚批次。任何批次从当时最新`zdt-next`建立，不在审计分支开发。
 - 本AU未生成候选制品、未运行production build、未推送、未合并、未部署，也未修改线上角色或授权数据。
 - 本AU未运行全量build、未生成制品、未推送、未合并、未部署，也未改变任何线上资源。
+
+## 14. AU-011 Smart Wing Authz 发布状态
+
+- 包没有独立镜像、systemd unit、端口或release target；只可能随兼容Commerce API源码编译。
+- 当前Storefront Worker只加载public router；delivery把`commerce-api/dist/admin-server.cjs`列为forbidden input，deployment checker把Commerce API列为retired。根仍保留`build:compat-admin-reference`手工构建入口。
+- 因此“当前仓库正式图无受保护兼容运行单元”与“源码/测试/数据库契约仍存在”同时成立。删除或恢复前必须核验仓外/历史制品和线上主机，不能仅靠零正式target。
+- 本AU未build、未生成兼容制品、未读取线上服务、未推送、未合并、未部署。

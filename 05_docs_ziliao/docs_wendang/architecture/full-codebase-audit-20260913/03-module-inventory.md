@@ -259,3 +259,16 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Role projection seam | role/override/scopegrant投影为MembershipAccess | session-bound SQL resolver | Access数据库 | AccessPipeline | PostgreSQL+Commerce | Pg/Pipeline局部 | 角色归DB所有；bigint类型F-0057 |
 
 [FACT][E-AU-010-002] 本单元深入审阅10文件、397行；7个生产TS、1个测试、2个配置/清单全部为人工维护，无生成、第三方或构建产物。第一层消费者只作边界追踪，不改变其原覆盖状态。
+
+## 17. AU-011 Smart Wing Authz 模块清单
+
+| 子模块 | 职责 | 对外入口 | 上游 | 下游/数据 | 进程/发布 | 测试 | 当前边界问题 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Package shell | 兼容private workspace与根export | `@smart-wing/authz` | Commerce API两个源码import、根workspace | api-contract | 无独立单元；旧admin制品禁止 | 无正式script | F-0060、DC-0013 |
+| Permission risk快照 | 从86条目录派生25个critical | `HIGH_RISK_PERMISSIONS`、`requiresStepUp` | `decide` | api-contract目录 | 随caller进程 | 间接 | 公开可变Set补强F-0032 |
+| Membership判定 | active/expiry、deny、allow | `isActiveMembership`、`decide` | auth wrapper/adminServer | `public.*` Membership投影 | 兼容链当前无正式target | 13个直接用例 | 正式入口失联F-0060 |
+| Scope判定 | tenant、层级、self与跨tenant binding | `decide`、`can` | 13路由wrapper消费者 | server-derived ResourceScope RPC | 同上 | 主干覆盖 | challenge顺序F-0062 |
+| Step-up | critical最近验证窗口 | `decide` options | 兼容caller | Date纯计算 | 同上 | 900秒边界 | 非有限窗口F-0061 |
+| Compatibility role ceiling | 限制非Owner可创建/分配权限和Scope | PostgreSQL函数/trigger | 兼容角色管理 | `public.*`角色/权限/Scope表 | PostgreSQL兼容面 | 本AU只追接缝 | 值得保留；不等价canonical模型 |
+
+[FACT][E-AU-011-002] 本单元深入审阅4文件、267行；83行实现、159行测试、25行清单/配置全部为人工维护，无生成、第三方或构建产物。第一层消费者与迁移只作边界追踪，不改变其原覆盖状态。

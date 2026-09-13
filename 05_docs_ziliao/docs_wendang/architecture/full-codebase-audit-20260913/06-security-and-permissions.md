@@ -96,3 +96,11 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - [FACT][E-AU-010-009] 权限scopes数组可被同进程修改，补强F-0032。固定仓库未发现生产mutation caller，因此不升级P1。
 - 两条storefront member写Operation的`member.read`映射继续作为F-0036/P1候选与RV-0008；AU-010是同一主审，不能冒充独立复核。
 - 本AU没有读取凭据值、线上角色或用户数据，没有新增/收窄任何权限或安全门禁。
+
+## 12. AU-011 兼容身份、权限与委派边界
+
+- [FACT][E-AU-011-005/006] 兼容链从已验证session投影Membership，资源Scope由数据库行/RPC取得，`decide`不直接信任请求参数；active、expiry、explicit deny、permission、tenant/binding与critical step-up均默认拒绝。
+- [FACT][E-AU-011-007] 兼容custom role数据库函数对非Owner执行effective permission subset和scope ceiling；这是canonical F-0053缺少的内容级委派约束，但表模型与目录不同，不代表可直接搬用。
+- [P3][E-AU-011-009/010/011] critical目录是公开可变Set；异常最大窗口可放宽recent verification；无效Scope先challenge。这三项中只有F-0061/F-0062为本AU新增，Set mutation补强既有F-0032。
+- [FACT][E-AU-011-008] 两套权限目录仅8个code重合，四个重合code risk不同；任何收敛都需产品与数据迁移定稿，不能按包名认定重复。
+- 本AU未读取凭据、线上Membership/角色或请求日志，没有修改权限或线上状态。

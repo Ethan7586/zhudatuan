@@ -611,3 +611,13 @@ flowchart LR
 [FACT][E-AU-010-004] 184个permission与329个受保护Operation在固定源集合中无unknown/unused，critical 54条全部由目录派生step-up。这种单目录闭合值得保留；但目录scopes和SCOPE_KINDS运行时可变，补强既有F-0032。
 
 完整文件、导出、函数、permission/Operation矩阵、状态/FMEA和30%高风险二遍抽检见 `records/AU-010-authz/`。
+
+## 20. AU-011 增量：`@smart-wing/authz` 兼容权限内核
+
+[FACT][E-AU-011-002/003] `@smart-wing/authz` 是267行的private ESM兼容包，公开5个符号；只有`decide`被Commerce API的`auth.ts`与`adminServer.ts`直接导入，13个路由源文件再经`authorize/can` wrapper消费。它不拥有进程、监听端口、镜像或数据库表。
+
+[FACT][E-AU-011-004/005/006] 真实兼容链是签名Cookie/Bearer → session/membership context RPC → `public.memberships/public.permissions/public.role_permissions/public.membership_scopes`投影 → server-derived ResourceScope RPC → `decide`。当前正式发布图只加载Storefront public router并禁止旧`admin-server.cjs`制品，因此这条受保护兼容链没有仓库内正式生产运行单元；源码、手工build、公共契约和测试仍存在，不能视为已完成删除。
+
+[FACT][E-AU-011-007] 兼容数据库在custom role创建、更新和assign时验证非Owner的effective permission与scope ceiling。这是值得保留的委派边界，也为canonical F-0053提供直接对照；两套Authz的数据表、permission目录与部署状态不同，不能互相替代。
+
+[CONFLICT][E-AU-011-008/009/010] 两个permission目录仅共享8个code，且4个共享code的risk不同；兼容`HIGH_RISK_PERMISSIONS`还是公开可变Set。包的主干默认拒绝成立，但测试入口失联、异常step-up窗口和challenge顺序形成F-0060–F-0062。完整证据见`records/AU-011-smart-wing-authz/`。

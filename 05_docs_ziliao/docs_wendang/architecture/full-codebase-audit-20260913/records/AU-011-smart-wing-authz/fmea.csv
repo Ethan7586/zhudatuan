@@ -1,0 +1,5 @@
+"故障编号","链路","故障模式","原因","首个影响","后续影响","检测","等级","恢复","证据"
+"FM-AU-011-001","critical目录→HIGH_RISK_PERMISSIONS","运行期删除critical code","公开可变Set","requiresStepUp返回false","critical操作无challenge","无mutation测试；探针命中","既有P2 F-0032","重启恢复；后续独立不可变批次","E-AU-011-009"
+"FM-AU-011-002","caller option→hasFreshStepUp","无限窗口接受任意旧验证","max seconds无有限值/上限","旧step-up被视为fresh","critical操作允许","现有caller不传；探针命中","P3 F-0061","回退调用/限制option","E-AU-011-010"
+"FM-AU-011-003","critical wrong scope→decision","先challenge后scope拒绝","step-up检查早于binding空检查","用户被要求无效step-up","完成后仍403；reason侧信号","测试无该组合；探针命中","P3 F-0062","重排失败顺序的小批次","E-AU-011-011"
+"FM-AU-011-004","root test/typecheck→workspace","测试与类型静默跳过","package缺script且root使用if-present","13用例不执行","兼容授权回归无正式信号","workspace命令Missing script","P3 F-0060","增加正式入口或明确归档","E-AU-011-013"
