@@ -68,7 +68,7 @@ describe('Sidebar commerce navigation', () => {
     expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
   });
 
-  it('keeps all 11 ordinary main items in order, then profile, then bottom support', () => {
+  it('keeps ordinary main items in order, with engineering immediately above profile', () => {
     const { container } = renderSidebar('enterprise', false, vi.fn());
     const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(primaryNavigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
@@ -77,8 +77,9 @@ describe('Sidebar commerce navigation', () => {
 
     expect(labels).toEqual([
       '生意看板', '数据报表', '商城管理', '商品管理', '供应链管理', '订单管理系统', '分布式平台',
-      '渠道接入系统', '卡券治理台', '财务与对账台', '管理与权限', '系统治理台',
+      '渠道接入系统', '卡券治理台', '财务与对账台', '管理与权限', '系统治理台', '工程与架构',
     ]);
+    expect(labels.at(-1)).toBe('工程与架构');
     expect(primaryNavigation.nextElementSibling).toBe(profile);
     expect(profile?.nextElementSibling).toBe(supportNavigation);
   });

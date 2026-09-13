@@ -5,6 +5,7 @@ import { channelsModule } from '../feature/channel/manifest';
 import { cockpitModule } from '../feature/cockpit/manifest';
 import { controlModule } from '../feature/control/manifest';
 import { financeModule } from '../feature/finance/manifest';
+import { engineeringModule } from '../feature/engineering/manifest';
 import { ordersModule } from '../feature/order/manifest';
 import { productsModule } from '../feature/product/manifest';
 import { supplyChainModule } from '../feature/supply-chain/manifest';
@@ -95,6 +96,7 @@ export const consoleModuleRegistry = defineConsoleModuleRegistry([
   storefrontMembersModule,
   accessModule,
   qualificationModule,
+  engineeringModule,
   reportsModule,
   supportModule,
 ] as const);

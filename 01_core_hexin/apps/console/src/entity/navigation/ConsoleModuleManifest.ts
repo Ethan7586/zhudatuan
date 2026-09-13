@@ -16,6 +16,7 @@ export const consoleModuleIds = [
   'storefront-members',
   'access',
   'qualification',
+  'engineering',
   'reports',
   'support',
 ] as const;

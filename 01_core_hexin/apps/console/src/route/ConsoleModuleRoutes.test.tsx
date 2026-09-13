@@ -61,19 +61,19 @@ describe('Console module route materializer', () => {
   it('injects a valid module handle into every registered route', () => {
     const routes = materializeConsoleModules(consoleModules);
 
-    expect(routes).toHaveLength(34);
+    expect(routes).toHaveLength(38);
     for (const route of routes) {
       expect(isConsoleRouteHandle(route.handle), route.id).toBe(true);
     }
     expect(routes.map(({ handle }) => isConsoleRouteHandle(handle) ? handle.moduleId : undefined)
       .filter((moduleId, index, values) => values.indexOf(moduleId) === index)).toEqual([
         'cockpit', 'control', 'applications', 'products', 'supply-chain', 'orders', 'referral', 'channels',
-        'vouchers', 'finance', 'storefront-members', 'access', 'qualification', 'reports', 'support',
+        'vouchers', 'finance', 'storefront-members', 'access', 'qualification', 'engineering', 'reports', 'support',
       ]);
   });
 
   it('supplies the Router index, all registry routes, the profile route, and the existing wildcard', () => {
-    expect(consoleScopeChildren).toHaveLength(37);
+    expect(consoleScopeChildren).toHaveLength(41);
     expect(consoleScopeChildren[0]).toMatchObject({ index: true });
     expect(consoleScopeChildren.at(-2)).toMatchObject({ path: 'settings/profile' });
     expect(consoleScopeChildren.at(-1)).toMatchObject({ path: '*' });
