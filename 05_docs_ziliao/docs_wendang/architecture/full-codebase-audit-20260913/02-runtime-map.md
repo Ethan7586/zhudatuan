@@ -285,3 +285,98 @@ flowchart LR
 | Auth | Canonical Identity/Registration fetch | 客户端调用点未形成统一超时证据 | runtime 404/非 JSON 可回退 build registry；其它配置错误阻断 | Cookie、ticket exchange、刷新、退出和服务端事务 |
 | Storefront | Compatibility public router 或 vinext；浏览器同源 API/Canonical SDK | Worker 自身未见统一超时；框架/下游待审 | host policy 返回 404/503 no-store；认证 401 清本地 session | CDN/Worker/Node 当前发布所有权与重试 |
 | Miniapp | 只确认 ext config → Environment | UNKNOWN | UNKNOWN | 页面、导航、API、身份、缓存、发布制品全部待外部事实 |
+
+## 11. AU-003：Canonical API、Jobs、Ready 与 Migration
+
+### 11.1 正式 target 与进程
+
+| target | Main | Ready 位置 | 进程职责 | 生产时点实例 |
+| --- | --- | --- | --- | ---: |
+| identity-api | IdentityRegistrationApiMain | ExecStartPost HTTP | 68/70 个 identity/operator operations | 2 |
+| identity-notification-jobs | IdentityNotificationJobsOnlyMain | ExecStartPre runtime | identitynotification | 2 |
+| mall-provisioning-api | MallProvisioningApiMain | ExecStartPost HTTP | health + mall create/read | 1 |
+| support-api | ConsoleSupportMain | ExecStartPost curl | health + support case/message | 1 |
+| purchase-api | PurchaseApiMain | ExecStartPost HTTP | quote/order/payment selected path | 1 |
+| web-api | WebBusinessApiMain | ExecStartPost HTTP + manifest | 16 业务 + 3 health operations | 1 |
+| catalog-api | CatalogOperatorApiMain | ExecStartPost 独立 runtime | 5 catalog + 3 health operations | 1 |
+| catalog-jobs | CatalogJobsMain | ExecStartPre runtime | import/publication/export/+可选 media | 1 |
+| payment-webhook-api | PaymentWebhookApiMain | ExecStartPost 负向 HTTP | WeChat payment webhook only | 1 |
+| payment-jobs | PaymentJobsOnlyMain | ExecStartPre runtime | query/refund | 1 |
+
+[FACT][E-AU-003-015] “生产时点实例”来自 2026-09-13 对授权 ECS 的只读 systemd 快照，共 12 个 active/running 实例；它们不是固定基线制品，表中不推导版本一致性。完整命令、制品和依赖在 records/AU-003-canonical-process-entry-map/process-map.csv。
+
+### 11.2 API 启动与停止
+
+~~~mermaid
+sequenceDiagram
+  participant SD as systemd
+  participant Main
+  participant RT as target runtime
+  participant Boot as bootstrapApi
+  participant HTTP as NodeServer
+  participant Ready
+  SD->>Main: ExecStart
+  Main->>RT: parse env / manifest / secrets / DB
+  Main->>Boot: selected modules + operation IDs
+  Boot->>Boot: load + freeze registries/container
+  Main->>HTTP: listen 127.0.0.1
+  SD->>Ready: ExecStartPost
+  Ready->>HTTP: HTTP probe（多数 API）
+  Note over Ready,RT: Catalog 例外：创建第二个 RT，不请求 HTTP
+  Main->>HTTP: SIGTERM → close
+  Main->>RT: close
+~~~
+
+- [FACT][E-AU-003-005] NodeServer 对请求建立 AbortSignal、限制 2 MiB body、应用运行时 timeout，并在非 health 路径解析节点上下文。
+- [FACT][E-AU-003-008] Payment Webhook 没有 health route；Ready 请求真实 webhook path，但只接受缺签名的确定 400，并由入口测试保存“数据库连接数为 0”的负向契约。
+- [CONFLICT][E-AU-003-019] Catalog Main 自身注册 health route，但 ExecStartPost 不访问它；release health 又只看 systemd active，形成 F-0014。
+
+### 11.3 Jobs 运行与失败传播
+
+~~~mermaid
+flowchart LR
+  Pre[ExecStartPre Ready runtime] --> Main[专用 Jobs Main]
+  Main --> Signal[共享 AbortSignal]
+  Signal --> Runner[QueueJob / JobRunner]
+  Runner --> Claim[(claim runtime.job)]
+  Claim -->|空| Poll[poll wait]
+  Claim -->|有任务| Processor[processor + deadline + heartbeat]
+  Processor -->|成功| Complete[(conditional completed)]
+  Processor -->|失败且可重试| Retry[(queued + available_at)]
+  Processor -->|耗尽| Dead[(deadletter + failed)]
+  Poll --> Runner
+~~~
+
+- [FACT][E-AU-003-010] claim、completion 和 failure 都包含 worker lease；scope-bound Catalog 还包含 scope 条件。
+- [CONFLICT][E-AU-003-011] 空轮询 timer 正常完成不会移除 abort listener。多个 runner 共享 signal 时累积叠加，见 F-0012。
+- [UNKNOWN] 每个 processor 在“副作用成功、completion 更新失败”后的幂等性尚未逐项验证；33 个 generic jobs 不能因有 jobid 声明就视为已证明。
+
+### 11.4 正式迁移路径
+
+~~~mermaid
+sequenceDiagram
+  participant GH as GitHub deploy
+  participant Plan as release planner
+  participant Agent as ECS remote agent
+  participant Exec as DatabaseMigrationExecutor
+  participant DB as PostgreSQL
+  GH->>Plan: HEAD^..HEAD / explicit target
+  Plan->>Agent: database-migration artifact
+  Agent->>Exec: source-SHA execution directory
+  Exec->>DB: ledger before
+  Exec->>DB: advisory lock + ordered SQL
+  DB-->>Exec: SQL COMMIT
+  Exec->>DB: INSERT migration ledger
+  Exec->>DB: target schema validation
+  Exec-->>Agent: applied/noop/failed receipt
+  Agent-->>GH: forward-only result
+~~~
+
+- [FACT][E-AU-003-004] 10 个服务 target 都在计划图中位于 database-migration 之后。
+- [FACT][E-AU-003-012] executor 制品绑定 source SHA，携带 300 SQL 与冻结 history，并用数据库 owner 模式从 loopback 55432 执行。
+- [CONFLICT][E-AU-003-013] SQL 自提交与 ledger INSERT 不原子，见 F-0013。
+- [FACT][E-AU-003-014] 数据库 applied 后若应用 pointer/health 失败，remote agent 只恢复 pointer，明确报告 databaseRollback=not-performed。
+
+### 11.5 图外但禁止删除的入口
+
+ApiMain、JobsMain、FullJobsMain、JobsEntrypoint、MigrationMain、RegistrationMigrationMain 和 SmokeMain 都没有当前 10 个 service target；其中部分被全量构建、staging 配置、动态 import、测试或 legacy unit 使用。AU-003 没有把任何一个标为 G1–G3。

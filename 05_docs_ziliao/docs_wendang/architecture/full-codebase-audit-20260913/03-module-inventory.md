@@ -128,3 +128,25 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Miniapp | 当前只见 App 初始化；页面所有者 UNKNOWN | 当前不存在可审 API client | 生成主题资源；页面样式 UNKNOWN | UNKNOWN | 外部工程、线上制品、完整页面/API/身份/发布链 |
 
 [FACT][E-AU-002-001][E-AU-002-002] 四个应用目录共 700 个固定基线文件：16 个文件/1,756 行累计深入审阅，673 个结构性审阅，8 个自动生成文件，3 个构建产物。结构性审阅只证明入口、可达性、样式/资源关系和 API 第一跳已枚举，不证明实现逻辑已经深审。
+
+## 9. AU-003 Canonical 进程模块库存
+
+| 模块/运行单元 | 职责 | 对外入口 | 上游调用者 | 下游依赖 | 数据所有权 | 运行/发布单元 | 测试范围 | 当前边界问题 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| API Bootstrap + NodeServer | selected module/operation 注册、冻结、HTTP 适配、节点上下文 | bootstrapApi / listen | 七个 target API 与聚合 API | ModuleRegistry、RouteRegistry、HttpApp | 不拥有业务数据 | 被每个 API bundle 内联 | registry/entry/NodeServer tests；本 AU 未运行 | Catalog Ready 未覆盖 serving path（F-0014） |
+| Identity API | 身份注册/会话与选定运营只读/管理面 | WeChat 关闭时 68、开启时 70 operations | Auth、Console、节点 gateway | identity/member/access 等 13 个 selected modules | 待身份专项 | identity-api；L0/L1 | 入口测试静态枚举 | operation 内授权、事务、Cookie 未审 |
+| Mall Provisioning API | 商城创建与读取 | 5 operations | Console | organization/catalog/experience/owner ports | 跨模块单事务责任待审 | mall-provisioning-api | 入口与 CreateMall tests 静态 | CreateMall 发布 impact 漏 target（F-0011） |
+| Support API | 工单与消息 | 7 operations | Console | support runtime/DB | support 候选 | support-api 物理 unit | 无独立 entry test 证据 | Main 内 health 只 warn，systemd curl 才阻断 |
+| Purchase API | quote、order、payment selected mutation/read | 7 operations | Storefront/clients | checkout/order/payment | 各业务模块候选 | purchase-api | 入口测试静态 | 事务/幂等/支付边界未审 |
+| Web Business API | Console/Storefront 非 purchase 业务面与 public catalog 包装 | 19 operations + public router | Console、Storefront | 9 selected modules | 各模块候选 | web-api | 入口测试静态 | 同进程 public/canonical 失败边界待审 |
+| Catalog Operator API | 商品运营 operations 与 node-scoped health | 8 operations | Console、gateway | catalog DB/object store | catalog 候选 | catalog-api | 入口/runtime tests 静态 | Ready 对象分裂（F-0014） |
+| Payment Webhook API | WeChat payment webhook 接纳 | 1 operation | 微信支付平台 | payment gateway/DB/job/audit | payment 候选 | payment-webhook-api | 加密 fixture/幂等测试静态 | 合法路径与 provider timeout 待支付专项 |
+| Jobs Bootstrap + JobRunner | 注册 33 generic jobs、claim/lease/retry/deadletter | bootstrapJobs / QueueJob | Full Jobs 与三个专用 runtimes | PostgreSQL、processors、cache/providers | runtime queue/deadletter 基础设施 | bundle 内联 | JobRunner 单一 scope success test | wait listener 累积（F-0012）；processor 幂等未审 |
+| Identity Notification Jobs | 身份挑战通知消费 | identitynotification | identity producers | DB + challenge dispatchers | identity queue 候选 | identity-notification-jobs；L0/L1 | runtime/config tests 待专项 | 生产快照 NRestarts=189；所查时段可见依赖未就绪重试，189 次的完整原因未确认 |
+| Catalog Jobs | import/publication/export/可选 media | 3+1 QueueJobs | catalog/reporting producers | DB、object store | catalog/reporting queue 候选 | catalog-jobs | 入口/runtime tests 静态 | 多 consumer 与 scope/媒体启用待审 |
+| Payment Jobs | query/refund 恢复消费 | 2 QueueJobs | payment webhook/order/payment producers | DB + gateway | payment queue 候选 | payment-jobs | 入口/runtime tests 静态 | 外部重试/幂等/补偿未审 |
+| OutboxRelay + RuntimeScheduler | 转发 outbox；生成四类周期 job | runtime.outbox / time bucket | Full Jobs | OutboxStore/EventPublisher/LeaseStore/runtime.job | runtime 基础设施 | 当前无正式 Full Jobs target | 未运行 | 同类 wait leak；当前生产所有者未知 |
+| Migration Executor + Runner | 顺序执行迁移、冻结历史、ledger 回执、目标 schema 校验 | release database-migration target | GitHub release/remote agent | PostgreSQL、KMS、artifact files | 全库 schema 演进 | 按发布一次性进程；非 systemd 常驻 | adapter/remote tests；真实 DB 未跑 | SQL/ledger 非原子窗口（F-0013） |
+| Legacy/aggregate entries | ApiMain、JobsMain、FullJobsMain、JobsEntrypoint、MigrationMain、RegistrationMigrationMain、SmokeMain | 本地/staging/历史调用 | 构建、测试、legacy unit或 UNKNOWN | 全域 runtime | 不作新所有权判断 | 无当前 10 个 target | 零散 tests/配置 | 均不满足删除认定条件 |
+
+[FACT][E-AU-003-002] AU-003 深入审阅 43 个文件、1,904 行，结构性审阅 51 个直接依赖文件。33 个 generic jobs 和 300 个迁移只完成入口/结构盘点，不能把本表当作逐任务或逐迁移业务审计完成证明。

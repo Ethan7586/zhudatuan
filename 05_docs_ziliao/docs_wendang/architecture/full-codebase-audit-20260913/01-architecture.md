@@ -304,3 +304,63 @@ flowchart LR
 2. Storefront 同一 fetch 入口横跨边缘策略、Compatibility public API、App Router 和 Canonical SDK；故障在 publicRouter 的 Response/null/reject 与页面 handler 之间传播，后续必须按完整请求链审计。
 3. Console 首屏并行 document prefetch 与 Router SDK loader 有刻意 handoff；正确性依赖同一 session/scope parser 和 Abort 清理，不能把重复请求简单认定为冗余。
 4. Miniapp 没有统一“完整交付单元”定义，不同门禁会对同一片段分别给出通过、ENOENT、缺兼容边或 implemented。
+
+## 12. AU-003 增量：Canonical 进程架构
+
+### 12.1 构建、发布与运行总图
+
+~~~mermaid
+flowchart LR
+  Diff[HEAD^..HEAD 变更] --> Planner[affected-target planner]
+  Planner --> Migration[database-migration]
+  Migration --> Services[10 个 service targets]
+  Services --> Artifacts[19 个 Main / Ready 制品]
+  Artifacts --> Units[systemd units]
+
+  subgraph API[7 个 API 进程]
+    Env[环境与节点 manifest] --> Runtime[target runtime factory]
+    Runtime --> Bootstrap[bootstrapApi]
+    Bootstrap --> Registry[selected modules + operation allow-list]
+    Registry --> Http[HttpApp + loopback NodeServer]
+  end
+
+  subgraph Jobs[3 个正式 Jobs 进程]
+    JReady[ExecStartPre runtime preflight] --> JMain[Jobs Main]
+    JMain --> Queue[QueueJob / JobRunner]
+    Queue --> Pg[(runtime.job / deadletter)]
+  end
+
+  Units --> API
+  Units --> Jobs
+~~~
+
+- [FACT][E-AU-003-003][E-AU-003-004] Commerce 全量构建会按文件名发现 28 个 Main 文件，并显式追加 9 个 seed/local-infra 入口；正式发布由另一套白名单收敛为 10 个 service target 和 19 个 Main/Ready 制品。新增 Main 不会自动成为生产单元。
+- [FACT][E-AU-003-005][E-AU-003-006] 七个 API 都经过显式 selected module/operation allow-list、注册表 freeze 和 loopback NodeServer。聚合 ApiMain 不属于当前正式 target。
+- [FACT][E-AU-003-008][E-AU-003-009] 正式 Jobs 被拆成 Identity Notification、Catalog、Payment 三类；聚合 Full Jobs 的 33 个任务、OutboxRelay 和 RuntimeScheduler 当前没有正式 target。
+
+### 12.2 Ready 是四种不同契约
+
+| 模型 | 运行单元 | 真正验证的对象 | 边界 |
+| --- | --- | --- | --- |
+| 自身 HTTP health | Identity、Mall、Purchase、Web | 已启动进程的端口、health route、runtime compatibility | 不验证所有业务 operation |
+| systemd curl | Support | 已启动 Support 的 /health/ready | 只要求 HTTP 成功 |
+| 负向业务探针 | Payment Webhook | 唯一 webhook route，且缺签名在 DB 前被拒绝 | 不验证合法支付回调 |
+| 独立 runtime preflight | Catalog API 与三个 Jobs | 新 runtime 能读取 manifest/secret/DB/依赖并关闭 | Jobs 使用在 Main 前合理；Catalog API 不证明 serving path，见 F-0014 |
+
+[FACT][E-AU-003-016] 生产时点日志证明 Jobs ExecStartPre 的确会在依赖未就绪时阻止 Main，并由 systemd 重试；这不是固定基线全日可用性证明。
+
+### 12.3 Jobs 与迁移边界
+
+- [FACT][E-AU-003-010] JobRunner 的数据边界是 PostgreSQL runtime.job：SKIP LOCKED/租约 claim、heartbeat、条件完成、事务性 retry/deadletter。processor 自身幂等尚未审。
+- [CONFLICT][E-AU-003-011] 三个轮询 helper 在正常 timeout 后保留 shared AbortSignal listener，见 F-0012。
+- [FACT][E-AU-003-012][E-AU-003-014] 当前正式迁移是 release 期间一次性 executor，不是 systemd 常驻单元；它验证 source、身份、冻结历史、advisory lock、目标 schema，并明确采用 forward-only。
+- [CONFLICT][E-AU-003-013] 现代 SQL 自己提交后，ledger 在下一条语句登记，形成提交/登记非原子窗口，见 F-0013。
+
+### 12.4 当前最主要通信瓶颈
+
+1. 发布影响图不是运行 import 图的自动完备投影；CreateMall 已出现真实消费者与零 target 规则冲突（F-0011）。
+2. Ready 名称没有统一测量语义：同名文件分别验证 HTTP serving、依赖构造或负向业务路径，运维不能只按名称推断覆盖。
+3. Jobs 的消息边界实质是共享数据库队列，不是独立 broker；生产者、consumer、lease、deadletter 和业务事务必须按每个 job 成对复核。
+4. 迁移与应用 pointer 是两个不同回滚域；数据库一旦 applied，后续应用失败只回 pointer，兼容性责任由 migration 设计承担。
+
+完整逐进程、Ready、Jobs 和迁移表见 records/AU-003-canonical-process-entry-map。

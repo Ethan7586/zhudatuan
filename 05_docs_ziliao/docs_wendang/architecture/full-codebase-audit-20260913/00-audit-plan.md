@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 与 AU-002/CP-02 已完成。AU-002 已形成 Console、Auth、Storefront、Miniapp 的页面与运行入口总图，并完成四个应用目录 700 个固定基线文件的本单元覆盖对账。下一单元建议为 AU-003“Canonical API、Jobs、Ready 与 Migration 进程入口总图”，须由 Ethan 另行授权后才开始。
+当前进度：CP-00、CP-00A、AU-001/CP-01、AU-002/CP-02 与 AU-003/CP-03 已完成。AU-003 已形成 Canonical API、Jobs、Ready 与 Migration 进程入口总图：深入审阅 43 个文件、1,904 行，结构性审阅 51 个直接依赖文件，并对 300 个迁移 SQL 只作事务包装机械盘点。下一单元建议为 AU-004“release target、systemd、Cloudflared、Caddy、静态制品和节点部署总图”，须由 Ethan 另行授权后才开始。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -157,8 +157,8 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 1. AU-001：仓库入口与 package/export/build 发现机制，已完成（CP-01）。
 2. AU-002：Console、Auth、Storefront、Miniapp 页面与运行入口总图，已完成（CP-02）。
-3. AU-003：Canonical API、Jobs、Ready 与 Migration 进程入口总图，建议下一单元。
-4. release target、systemd、Cloudflared、Caddy、静态制品和节点部署总图。
+3. AU-003：Canonical API、Jobs、Ready 与 Migration 进程入口总图，已完成（CP-03）。
+4. AU-004：release target、systemd、Cloudflared、Caddy、静态制品和节点部署总图，建议下一单元。
 5. PostgreSQL、Redis、对象存储、Secrets/KMS、队列和共享数据总图。
 6. API、事件、共享数据库和同步调用的初始通信矩阵。
 7. 数据所有权和发布所有权初始矩阵。
