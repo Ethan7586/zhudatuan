@@ -172,6 +172,7 @@ describe('HttpApp contract handshake', () => {
     expect(response.status).toBe(204);
     expect(response.headers.get('access-control-allow-headers')).toContain('x-access-version');
     expect(response.headers.get('access-control-allow-headers')).toContain('x-device-id');
+    expect(response.headers.get('access-control-max-age')).toBe('7200');
   });
 
   it('ends a request when its total deadline is exhausted', async () => {

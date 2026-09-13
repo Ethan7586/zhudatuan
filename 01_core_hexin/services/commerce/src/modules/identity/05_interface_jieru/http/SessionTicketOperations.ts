@@ -50,12 +50,11 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           const passwordMobile = provider === 'password' && /^\+[1-9][0-9]{7,14}$/.test(normalizedSubject)
             ? normalizedSubject
             : undefined;
-          const mobileLookup = passwordMobile === undefined
-            ? undefined
-            : await kms.encrypt('identity/mobile', passwordMobile, { purpose: 'password_login' });
           const mobileTokens = passwordMobile === undefined
             ? undefined
-            : [subject, mobileLookup!.fingerprint, createHash('sha256').update(passwordMobile).digest('hex')];
+            : kms.encrypt('identity/mobile', passwordMobile, { purpose: 'password_login' })
+                .then((mobileLookup) => [subject, mobileLookup.fingerprint,
+                  createHash('sha256').update(passwordMobile).digest('hex')]);
           return {
             body,
             provider,
@@ -69,17 +68,20 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           };
         },
         execute: async (request, database, { body, provider, authorization, host, requestedTarget, application, loginIntent, subject, mobileTokens }) => {
-          const realm = await resolveRealmContext(database, host, requestedTarget, application);
+          const [realm, resolvedMobileTokens] = await Promise.all([
+            resolveRealmContext(database, host, requestedTarget, application),
+            mobileTokens,
+          ]);
           let found: Readonly<{ account_id: string; realm_id: string; principal_id: string; credential_version: number }> | undefined;
           let challengeAccount: SmsLoginPrincipal | undefined;
           let loginChallenge: string | undefined;
           let loginCode: string | undefined;
           if (provider === 'password') {
             const credentialFound = await resolvePasswordLoginCredential(database,
-              mobileTokens === undefined
+              resolvedMobileTokens === undefined
                 ? { realmId: realm.realmId, subjectHash: subject, membershipClient: realm.membershipClient,
                     membershipOrganizationId: realm.membershipOrganizationId }
-                : { realmId: realm.realmId, subjectHash: subject, mobileTokens,
+                : { realmId: realm.realmId, subjectHash: subject, mobileTokens: resolvedMobileTokens,
                     membershipClient: realm.membershipClient,
                     membershipOrganizationId: realm.membershipOrganizationId });
             if (!(await passwords.verify(secretField(body, 'password', 128), credentialFound?.secret_hash ?? null))) {
