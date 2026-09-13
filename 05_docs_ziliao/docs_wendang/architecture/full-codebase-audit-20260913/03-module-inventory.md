@@ -185,3 +185,20 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Catalog media OSS | 多target媒体复制与校验 | adapter/replication job | Catalog Jobs | Aliyun OSS | Catalog逻辑owner；云账户owner UNKNOWN | catalog-media/catalog-jobs | adapter/replication tests结构审阅 | 与Local Objects不可混画；云恢复UNKNOWN |
 
 [FACT] AU-005深入审阅64个人工文件、3,920行，结构性审阅36个人工文件、4,801行，并核对1个自动生成事件映射、150行；合计101文件、8,871行。
+
+## 12. AU-006 共享配置模块库存
+
+| 模块 | 职责 | 对外入口 | 上游调用者 | 下游依赖/输出 | 运行/发布单元 | 测试范围 | 当前边界问题 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Environment primitives | process/browser读取、pick、required、integer、enum、Bearer、distinct | @shop/config/server | 所有专用parser | 冻结值或稳定错误码 | 内联到服务/前端bundle | index.test | 三个公共helper/Client投影暂无生产消费者，G1 |
+| API parsers | API/DB/Secret/KMS/Object/Node键与profile | @shop/config/server | API Main/Ready、部署检查 | 专用Bootstrap | 七类API target | index + 4专用测试 | 四专用测试未进正式script；origin重复语义F-0031/F-0034 |
+| Jobs parsers | full/identity/payment配置 | @shop/config/server | aggregate与dedicated Jobs | Jobs runtimes | identity/payment targets；aggregate无target | index.test | Catalog Jobs另有私有parser；aggregate GX-0001 |
+| Migration/Local parsers | 一次性迁移和local/staging设施 | @shop/config/server | MigrationMain/local tools | DB/文件/TLS/本地服务 | 一次性unit/本地工具 | index.test | local endpoint仅前缀F-0035 |
+| SFL Node Kernel | Manifest/Registry/Topology/digest/Host/ref | sfl-node-kernel | Commerce、Console、AutoNode、检查器 | 节点权威对象 | 构建与各bundle内联 | 720行专项test | 嵌套对象未深冻结F-0032；relation连续性UNKNOWN |
+| SFL Registry | L0/L1声明、resource/domain/target映射 | sfl-node-registry | Identity、Console、生成器 | declaration projections | bundle/build | SFL/Console间接 | 返回同一可变引用F-0032 |
+| Console Runtime Kernel | artifact/node runtime解析与AppConfig | sfl-console-runtime | Console、build/release/AutoNode | API/login origin、scope、NodeContext | Console静态制品+每节点JSON | 223行专项test | runtime URL未绑定Manifest domain F-0029 |
+| Runtime Catalog | cache/capacity生成常量 | @shop/config/runtime | HTTP/Pool/cache/SDK/extensions | TS与Miniapp生成物 | 构建时生成，运行时静态 | check:generated | 正式check本环境未执行；嵌套limits可变F-0032 |
+| Miniapp Environment | ext config schema与生成JS | @shop/config/miniapp + generated JS | generator、app.js | api/mall/version | Miniapp包 | TS仅1个负例 | TS/generated trim漂移F-0033 |
+| Admin Segment Scope | 双段scope解析/映射 | admin-segment-scope | Console/服务消费者 | normalized segment scope | bundle内联 | 32行专项test | 本AU未发现独立问题 |
+
+[FACT] AU-006深入审阅35个人工文件、6,151行，结构性审阅62个人工文件、8,947行，核对7个自动生成文件、1,070行；合计104文件、16,168行。

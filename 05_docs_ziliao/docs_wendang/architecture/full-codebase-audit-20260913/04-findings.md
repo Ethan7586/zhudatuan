@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-005 结束时累计：P0 0、P1 候选 5、P2 20、P3 2、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-006 结束时累计：P0 0、P1 候选 6、P2 23、P3 5、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -683,3 +683,172 @@
 - [UNKNOWN][E-AU-005-012] 当前zhudatuan PostgreSQL、L0/L1 Local Objects、secret catalogs和KMS master key的仓库外备份、恢复演练、RPO/RTO和负责人未取得；不能写成“不存在备份”。
 - [UNKNOWN] 未读取线上runtime表或对象目录，F-0022/F-0024/F-0025/F-0027的历史数量和用户影响规模均未验证。
 - [HYPOTHESIS][QC-009] JobRunner吞掉heartbeat错误后旧processor可能与新lease owner短时并行；是否形成重复副作用必须逐processor审，不在本AU新增编号。
+
+## F-0029｜Console 节点运行地址没有绑定到 Manifest domain
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享配置 / SFL Console Runtime |
+| 类型 | 节点边界、配置完整性、敏感请求目的地 |
+| 严重级别 | **P1 候选**；未完成 RV-0007 前不作最终 P1 |
+| 置信度 | 高：parser、resolver、浏览器加载、SDK header和正向producer均已重追；线上runtime值与实际利用未验证 |
+| 文件和精确位置 | packages/config/src/SflNodeKernelConsole.ts:220-299,330-399,417-438；apps/console/src/shared/config/RuntimeConfig.ts:32-58；packages/sdk/src/RequestContextFactory.ts:27-38、ApiClient.ts:99-110、FetchTransport.ts:6-15；autonode-engine.mjs:397-414 |
+| 当前行为 | [CONFLICT][E-AU-006-005] api_base_url只需为HTTPS origin，identity_entry_url只需HTTPS且无认证/hash；validateNodeRuntimeReferences核对artifact/Manifest digest、resource ref与scope，却不核对两个URL属于Manifest对应surface。resolve直接安装这些URL |
+| 预期行为 | 节点运行配置中的API与Identity目标必须由同一已验证Manifest的domain binding ref解析，或至少与对应Manifest domain做exact交叉校验 |
+| 直接证据 | E-AU-006-005、RS-AU-006-001、INV-AU-006-005、FM-AU-006-001 |
+| 调用链或运行入口 | 浏览器GET /console-runtime.json → parseSflConsoleNodeRuntime → resolveConsoleNodeRuntimeConfig → AppConfig → SDK fetch/window.location.assign |
+| 用户影响 | [INFERENCE] 错误配置可把运营页面登录引向错误域，或使Console全部查询/命令指向错误API；表现可为登录失败、伪登录页、错误数据或操作失败 |
+| 数据影响 | SDK会把scope、版本、幂等键、CSRF及部分action proof作为header发往配置API；目标若允许CORS可接收请求。是否有真实请求到错误域UNKNOWN |
+| 安全影响 | 配置层可改变认证跳转和敏感header目的地，却不破坏当前Manifest/artifact验证；这是跨节点/外域能力边界缺口 |
+| 根因 | runtime binding以裸URL承载资源，而完整性检查只绑定resource_binding_set_ref，未把URL映射回Manifest domain binding |
+| 建议方向 | 后续独立批次先定稿URL应由binding ref派生还是交叉校验；同时覆盖静态artifact和per-node runtime，不在审计分支实施 |
+| 预计修改范围 | SflNodeKernelConsole类型/parser/resolver、registry/AutoNode runtime生成、Console tests与可能的runtime schema兼容 |
+| 验证方式 | 第二审计者构造合法Manifest、合法resource ref但外域API/Identity URL；parser/resolve必须拒绝。再覆盖正常L0/L1、激活换Manifest、旧schema兼容和真实浏览器CORS/redirect边界 |
+| 回滚方式 | 修复批次保留旧runtime schema/文件备份并可回切原解析提交；节点release pointer按正式流程回退 |
+| 是否需要独立复核 | 是，RV-0007；P1强制从producer到浏览器/SDK重新取证 |
+
+为什么不是P0：没有读取线上console-runtime.json，也没有证据证明当前正在错误路由、泄露token或造成事故。现有AutoNode正向producer从同一request.domains生成Manifest与URL，是缓解证据，但不是parser不变量。
+
+## F-0030｜环境所有权门禁与真实读取模型同时出现确定拒绝和漏报
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享配置 / 架构质量门禁 |
+| 类型 | 检查器漂移、配置所有权证据失真 |
+| 严重级别 | P2 |
+| 置信度 | 高：按检查器同一文件选择、正则和report去重做了完整只读复算；正式命令本环境在依赖加载前阻塞 |
+| 文件和精确位置 | scripts/audit/environment.mjs:7-40；scripts/check/source.mjs:8-20,46-78；package.json:107,111,123；Commerce/bootstrap/CatalogJobsRuntime.ts:81-115 |
+| 当前行为 | [FACT][E-AU-006-003] 复算1,743个生产源码得到85条唯一违规、23文件：undeclared 35、outside owner 49、dynamic 1；DEV/BASE_URL等Vite内建键也被报。declared集合来自config包任意大写字符串，且source=process.env的Catalog Jobs自有parser不被直接属性/下标正则识别 |
+| 预期行为 | 正式质量门禁应对当前批准架构给出稳定信号，并以真实环境键声明/允许例外为事实源；所有旁路读取应被一致捕获 |
+| 直接证据 | E-AU-006-003；environment-gate-replica.csv；RS-AU-006-003 |
+| 调用链或运行入口 | quality:canonical-hard-cut → audit:architecture → check:environment → productionSources/regex/report |
+| 用户影响 | 质量流程在依赖完整时会被当前静态状态拒绝，或团队为绕过噪声忽略该门禁；产品运行不由此直接中断 |
+| 数据影响 | 无直接数据写入；漏报可让配置所有权继续漂移 |
+| 安全影响 | 门禁不能可靠证明secret/env读取只发生在声明owner；不等于已发生secret泄露 |
+| 根因 | 用字符串正则近似AST/声明表，并把所有大写字符串当环境键；规则没有Vite内建例外，也不识别source alias/default parameter |
+| 建议方向 | 独立门禁批次先确定允许的owner与框架内建键，再从显式环境schema生成检查集合并补alias/AST测试 |
+| 预计修改范围 | environment checker、config schema/export、前端/工具/CatalogJobs所有权声明和checker fixtures |
+| 验证方式 | 在依赖完整环境执行正式命令；包含owner正例、outside负例、alias、dynamic、Vite built-ins、错误码字符串不算声明六组反事实 |
+| 回滚方式 | 回退单一checker提交；保留当前85条基线快照用于对比，不通过删除规则静默清零 |
+| 是否需要独立复核 | 否（P2）；若后续把它作为生产发布强制门禁，应在实施批次独立验收 |
+
+## F-0031｜Config 正式测试入口遗漏四个专用 Environment 测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享配置 / 测试入口 |
+| 类型 | 测试发现、假阳性 |
+| 严重级别 | P2 |
+| 置信度 | 高 |
+| 文件和精确位置 | packages/config/package.json:7-12；根package.json:49-50；MallProvisioningApiEnvironment.test.ts、PurchaseApiEnvironment.test.ts、PaymentWebhookApiEnvironment.test.ts、WebBusinessApiEnvironment.test.ts |
+| 当前行为 | [FACT][E-AU-006-004] config包有8个测试文件，scripts.test只显式列4个；根test:unit只执行workspace scripts.test，因此四个专用测试不会运行 |
+| 预期行为 | 正式config包与根unit入口应执行全部受维护的专用测试，或明确把排除文件标为非测试/另有正式入口 |
+| 直接证据 | E-AU-006-004、T-AU-006-001/005、RS-AU-006-004 |
+| 调用链或运行入口 | npm run test:unit → npm test --workspaces → @shop/config scripts.test → 显式四文件 |
+| 用户影响 | Purchase、Webhook、Web、Mall Provisioning配置回归可能在config包显示通过时未被断言捕获 |
+| 数据影响 | 无直接数据写入；错误启动配置可能间接阻止对应服务 |
+| 安全影响 | 遗漏测试含endpoint/ref/profile边界，但本项不证明运行实现已有安全缺陷 |
+| 根因 | test脚本维护手写文件列表，新增测试没有同步进入入口 |
+| 建议方向 | 独立测试入口批次采用明确可审计的完整发现方式或补齐列表；不与parser行为修复混批 |
+| 预计修改范围 | config package test script及必要的test discovery约束 |
+| 验证方式 | 先注入每个遗漏文件的反事实失败确认正式入口会失败，再恢复并执行包测试；本次缺vitest未执行 |
+| 回滚方式 | 回退测试入口提交，不影响生产制品 |
+| 是否需要独立复核 | 否（P2） |
+
+## F-0032｜共享配置权威对象只浅冻结，运行期可被改写
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享配置 / SFL Node Registry 与 Runtime Catalog |
+| 类型 | 隐式共享可变状态、配置完整性 |
+| 严重级别 | P2 |
+| 置信度 | 高：隔离Node进程直接观察并改变resolver与共享deadline结果；固定基线未找到现有写调用 |
+| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17 |
+| 当前行为 | [FACT][E-AU-006-006] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功 |
+| 预期行为 | Manifest/Registry/Topology及共享容量/缓存参数作为进程权威，在解析/生成后应不可被消费者改写，或消费者获得隔离副本 |
+| 直接证据 | E-AU-006-006、T-AU-006-004、RS-AU-006-002、INV-AU-006-006 |
+| 调用链或运行入口 | JSON/YAML生成物 module import → exported singleton → Identity/Console/generator/check或HTTP/Pool/cache/SDK consumers |
+| 用户影响 | 若任一同进程消费者意外修改嵌套对象，后续Host/资源ref或timeout/cache/capacity行为可随加载顺序漂移 |
+| 数据影响 | 不修改仓库或数据库，但会改变进程内配置事实；重启恢复原JSON |
+| 安全影响 | 可改变节点/域名选择边界；当前未发现生产写入点，故不升级P1 |
+| 根因 | TypeScript readonly被当成运行时保护，Object.freeze只应用外壳；生成器也直接输出浅冻结对象 |
+| 建议方向 | 独立配置不可变批次选择深冻结、解析时复制或递归生成冻结；先测性能、JSON module与生成物兼容 |
+| 预计修改范围 | SflNodeKernel/Registry、Runtime Catalog生成器及输出、Console/Identity/HTTP/Pool/cache消费者和mutation tests |
+| 验证方式 | Object.isFrozen递归断言；push/assign/sort/splice反事实；resolver与limits前后值不变；正常digest/Host/timeout测试保持 |
+| 回滚方式 | 回退不可变实现和对应生成物同一提交；进程重启恢复；不改声明JSON/YAML含义 |
+| 是否需要独立复核 | 否（P2）；若发现第三方插件可写同一单例则重新定级 |
+
+## F-0033｜Miniapp 源 parser 与生成 parser 的 trim 语义不同
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享配置 / Miniapp生成链 |
+| 类型 | 生成实现漂移、边界输入 |
+| 严重级别 | P3 |
+| 置信度 | 高 |
+| 文件和精确位置 | Environment.ts:25-27；MiniappEnvironment.ts:15-22；build-miniapp-environment.mjs:9；miniprogram/config/Environment.js:22-29 |
+| 当前行为 | [FACT][E-AU-006-008] TS实现先requiredValue并trim再regex；生成JS直接对原字符串regex。同一合法值外包空白时TS接受并归一化，生产Miniapp实现拒绝 |
+| 预期行为 | 共享schema的源实现、生成实现和测试应对相同输入给出相同结果 |
+| 直接证据 | E-AU-006-007/008、INV-AU-006-008 |
+| 调用链或运行入口 | Miniapp schema → generator → Environment.js → app.js / wx.getExtConfigSync |
+| 用户影响 | ext config工具若保留首尾空白，小程序初始化失败；正常无空白值不受影响 |
+| 数据影响 | 无 |
+| 安全影响 | 无直接影响 |
+| 根因 | 生成器复制regex schema但没有复用requiredValue归一化 |
+| 建议方向 | 独立生成器批次先定稿trim或严格拒绝，再让TS/JS共享同一语义并加parity test |
+| 预计修改范围 | MiniappEnvironment、生成器、生成物及定向测试 |
+| 验证方式 | 三字段分别覆盖空白、空值、尾斜杠、非法协议；TS与生成JS结果逐项一致 |
+| 回滚方式 | 回退生成器与生成物同一提交；不得只手改生成JS |
+| 是否需要独立复核 | 否（P3） |
+
+## F-0034｜Web Business 重复 Origin 拒绝分支不可达
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享配置 / API Origin |
+| 类型 | 配置正确性、不可达校验 |
+| 严重级别 | P3 |
+| 置信度 | 高 |
+| 文件和精确位置 | ApiEnvironment.ts:49-53；WebBusinessApiEnvironment.ts:83-85 |
+| 当前行为 | [FACT][E-AU-006-008] apiAllowedOrigins先返回Set去重数组；Web parser随后比较Set大小，因此重复来源永远不会触发WEB_BUSINESS_API_ORIGINS_INVALID，而是静默折叠 |
+| 预期行为 | 若Web parser声明重复为错误，应在去重前拒绝；若允许去重，应删除虚假分支并统一契约 |
+| 直接证据 | E-AU-006-008、RS-AU-006-006 |
+| 调用链或运行入口 | webBusinessApiEnvironment → apiAllowedOrigins → Set → duplicate check |
+| 用户影响 | 错误env不会阻止启动，运维人员可能误以为重复配置已被门禁发现；实际CORS集合不扩大 |
+| 数据影响 | 无 |
+| 安全影响 | 无直接越权；重复值被折叠 |
+| 根因 | 通用helper承担了归一化，专用parser又试图验证已丢失的信息 |
+| 建议方向 | 独立parser一致性批次先定稿拒绝或归一化语义，不与其它配置风险混修 |
+| 预计修改范围 | ApiEnvironment helper、WebBusiness parser和重复输入测试 |
+| 验证方式 | 单个、重复、空段、不同大小写/端口origin表驱动测试 |
+| 回滚方式 | 回退parser提交并恢复原去重语义 |
+| 是否需要独立复核 | 否（P3） |
+
+## F-0035｜LocalEnvironment 的 HTTPS endpoint 只校验字符串前缀
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享配置 / Local infrastructure |
+| 类型 | 启动配置、失败位置 |
+| 严重级别 | P3 |
+| 置信度 | 高 |
+| 文件和精确位置 | packages/config/src/LocalEnvironment.ts:198-208,222-225；同包其它专用secureEndpoint实现 |
+| 当前行为 | [FACT][E-AU-006-008] local secureEndpoint只要求startsWith(https://)并去一个尾斜杠；https://等无法构造URL的值会通过配置阶段，晚至客户端/网络初始化才失败 |
+| 预期行为 | endpoint parser应确认可解析HTTPS URL及项目定稿的auth/query/hash边界，并在资源初始化前给稳定配置错误 |
+| 直接证据 | E-AU-006-008、FN-AU-006-010、FM-AU-006-007 |
+| 调用链或运行入口 | localInfrastructureEnvironment → Local Objects/Secret/KMS clients或readiness |
+| 用户影响 | local/full-staging启动以晚期网络错误失败，诊断位置不准确；生产专用parser多使用严格URL校验 |
+| 数据影响 | 未发现直接写入；部分资源可能在晚失败前已初始化 |
+| 安全影响 | 本项不证明可绕过授权或TLS |
+| 根因 | Local parser与专用生产parser使用两套endpoint校验强度 |
+| 建议方向 | 独立local配置批次统一URL语义和错误码；不顺手扩展权限约束 |
+| 预计修改范围 | LocalEnvironment及localinfra/localobjects定向测试 |
+| 验证方式 | https://、userinfo、query/hash、http loopback、合法HTTPS、尾斜杠矩阵；核对失败发生在启动资源前 |
+| 回滚方式 | 回退单一parser提交；恢复原env后重启本地进程 |
+| 是否需要独立复核 | 否（P3） |
+
+## 7. AU-006 新增未定级事项
+
+- [UNKNOWN][E-AU-006-013] SFL relation history拒绝重叠但允许时间间隙和已结束的最后一段；已定位标准未写明必须连续，因此不把间隙写成缺陷。
+- [UNKNOWN] 未读取线上env、console-runtime.json或Manifest；F-0029的当前配置状态、F-0030门禁在CI上的最近实际结果均未验证。
+- [UNKNOWN] 四个遗漏测试在依赖完整环境中是否通过未验证；本次只证明正式入口遗漏。

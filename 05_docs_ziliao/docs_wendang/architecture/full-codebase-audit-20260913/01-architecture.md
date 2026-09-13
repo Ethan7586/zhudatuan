@@ -433,3 +433,40 @@ flowchart TB
 [FACT][E-AU-005-007][E-AU-005-008] Local Objects与Catalog媒体OSS是两套不同所有权：前者是host/node StateDirectory和内部HTTP，后者是Catalog直连云provider。Local Objects的bytes内容寻址和签名校验清楚；public URL loopback、虚假`clean`和可变digest metadata分别形成F-0025–F-0027。
 
 完整设施、密钥、崩溃点和恢复责任见 `records/AU-005-shared-state-infrastructure-map/`、`06-security-and-permissions.md` 与 `07-data-and-migrations.md`。
+
+## 15. AU-006 增量：共享配置权威
+
+### 15.1 四层配置内核
+
+~~~mermaid
+flowchart LR
+  Env[systemd/env/browser/ext config] --> Parsers[@shop/config Environment parsers]
+  Parsers --> Entry[Main / Ready]
+  Entry --> Runtime[专用 Bootstrap]
+  Declaration[SFL registry declaration] --> Registry[SflNodeRegistry]
+  Registry --> Identity[Identity node projection]
+  Registry --> Console[SFL Console runtime]
+  AutoNode[AutoNode request] --> Manifest[Signed node Manifest]
+  AutoNode --> ConsoleJson[console-runtime.json]
+  ConsoleJson --> Console
+  Yaml[cache.yml + capacity.yml] --> Generator[Runtime config generator]
+  Generator --> SharedLimits[TS/Miniapp generated catalogs]
+~~~
+
+[FACT][E-AU-006-002][E-AU-006-007] 服务环境解析、SFL节点声明、Console节点运行JSON和容量/缓存目录是四个不同事实源。专用Bootstrap通常会在环境解析后再次核对Manifest、domain、feature、resource/secret ref，这是值得保留的双层边界。
+
+[CONFLICT][E-AU-006-003] Catalog Jobs在Commerce Bootstrap内自行解析source=process.env；正式环境所有权检查只识别直接属性/下标读取，因此“config是唯一owner”的门禁规则与真实实现不一致。
+
+### 15.2 节点权威与Console投影
+
+SFL内核对exact key、canonical form、Manifest digest、唯一Host、唯一node/ref和release pointer做严格校验。静态Console declaration从registry的domain binding ref生成API/Identity URL，链路闭合。
+
+[CONFLICT][E-AU-006-005] per-node console-runtime parser只验证URL为HTTPS，并只把runtime binding的resource ref/scope与Manifest核对；URL本身没有映射回Manifest domain。解析后的地址直接驱动登录跳转和SDK请求，形成F-0029/P1候选。
+
+[CONFLICT][E-AU-006-006] Registry与生成Runtime Catalog都只冻结最外层并暴露嵌套引用。隔离运行探针证明修改domain host会改变后续resolver，修改RUNTIME_LIMITS.http会改变共享deadline值；readonly类型不能作为运行期不可变性证据，见F-0032。
+
+### 15.3 生成配置
+
+cache.yml和capacity.yml经单一生成器投影到RuntimeCatalog及Miniapp运行文件，生成器支持--check并由check:generated编排；该权威关系清楚。Miniapp Environment生成器复用了schema，却没有复用TS parser的trim语义，形成F-0033。
+
+本单元完整架构、文件记录和17.1%逆向抽检见 records/AU-006-shared-configuration-kernel/。

@@ -1,0 +1,2 @@
+"复核编号","对象","触发原因","必须重新检查","当前状态","不得采用的捷径","完成判据"
+"RV-0007","F-0029 Console runtime endpoint与Manifest domain绑定","P1候选且可能改变登录目的地、CSRF/action proof接收方","AutoNode request/manifest/runtime生成；production provider激活重绑；gateway console-runtime路由；SflNodeKernelConsole parser/resolve；Console RuntimeConfig；SDK credentials/header；当前live JSON仅在另获只读授权时","待第二位独立审计者","不得只看当前正确的declaration、只跑happy-path test或把HTTPS等同同节点；不得打印真实token/proof","独立构造Manifest内合法Host+runtime外域URL，确认parser/resolve/浏览器链接受或拒绝；核对正向producer与激活漂移窗口；据证据确认/下调严重度"

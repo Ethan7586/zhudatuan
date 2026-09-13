@@ -33,3 +33,33 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 7. current PostgreSQL/Object/KMS backup restore演练证据；若存在仓库外流程，需只读接入证据而不是复制描述。
 
 详细执行结果和不证明项见 `records/AU-005-shared-state-infrastructure-map/tests.csv`。
+
+## 5. AU-006 配置内核测试可信度
+
+### 5.1 已有高质量覆盖
+
+- SflNodeKernel.test.ts用720行覆盖Manifest digest/tamper、exact Host、registry唯一性、Topology关系重叠、层级上限、请求/结果等反事实。
+- SflNodeKernelConsole.test.ts覆盖source/build/artifact digest、Host/surface、resource ref、scope和L0/L1解析。
+- index.test.ts覆盖通用API、Jobs、Local、Migration、Client、Miniapp和节点投影的主要正常/拒绝路径。
+
+这些测试证明被调用函数的局部行为，不证明正式package入口执行了全部测试，也不证明线上JSON/env正确。
+
+### 5.2 正式入口缺口
+
+[FACT][E-AU-006-004] config目录有8个测试文件，package scripts.test只列4个。MallProvisioning、Purchase、PaymentWebhook和WebBusiness四个专用Environment测试不由根test:unit执行，形成F-0031。
+
+[FACT][E-AU-006-011] 正式package测试因vitest未安装在加载前阻塞；check:environment因typescript未安装在加载前阻塞。均记录为环境阻塞，不当作实现失败或通过，也未安装依赖。
+
+### 5.3 门禁可信度
+
+[FACT][E-AU-006-003] 对environment.mjs做同算法静态复算得到85条唯一违规；同时该脚本把任意大写字符串当声明、会把Vite内建DEV/BASE_URL报未声明，并漏掉source=process.env alias parser。它目前不能提供稳定的“环境读取已收口”证明，见F-0030。
+
+### 5.4 新增反事实缺口
+
+1. Console runtime的API/Identity URL必须属于同一Manifest domain。
+2. Registry/Manifest/Topology递归不可变，resolver前后值不随调用者mutation变化。
+3. TS Miniapp parser与生成JS逐输入parity。
+4. Origin重复究竟拒绝还是归一化的定稿测试。
+5. Local endpoint在任何资源初始化前拒绝不可解析URL。
+
+完整执行边界见 records/AU-006-shared-configuration-kernel/tests.csv。

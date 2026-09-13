@@ -46,3 +46,19 @@ actual bundled Main:
 ## 6. 未知项与执行纪律
 
 master key备份、secret catalog生成/替换、token轮换、OSS账户策略和外部云权限不在仓库证据内。任何未来权限调整必须由Ethan明确授权，并从当时最新`zdt-next`建立独立修复分支；本审计文档不授权实施。
+
+## 7. AU-006 配置完整性与凭据目的地
+
+[FACT][E-AU-006-002] 专用服务环境parser多数会限制允许键、loopback bind、HTTPS endpoint、Manifest digest/ref，并要求Secret Store与KMS Bearer不同；这些是启动配置校验，不替代服务端身份/业务授权。
+
+[CONFLICT][E-AU-006-005] Console per-node runtime的API与Identity URL只校验HTTPS，没有与同一Manifest的domain bindings绑定。浏览器随后：
+
+- 把identityEntryUrl用于document redirect；
+- 把apiBaseUrl交给SDK；
+- SDK以credentials=include发请求，并可从shop_csrf cookie或业务上下文加入x-csrf-token、x-action-proof、scope和版本header。
+
+因此runtime JSON的配置权力也包含“选择敏感请求接收方”的权力。当前没有读取线上JSON，也没有证明错误配置或泄露正在发生，故列为F-0029/P1候选而非P0，并等待RV-0007。
+
+[CONFLICT][E-AU-006-006] SFL registry与Runtime Catalog嵌套对象可在同进程修改，可能使节点Host/ref或共享timeout随加载顺序漂移；固定基线未发现现有写调用，按P2记录F-0032。
+
+本节只记录边界。没有新增权限门禁、没有读取凭据值、没有修改运行配置。

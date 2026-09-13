@@ -489,3 +489,50 @@ Console → reporting API → ObjectStore.authorize
 - production registration：Docker Compose、PG17、loopback55432、host bind volume。
 - full staging：外部RDS、独立DynamicUser TLS proxy、loopback55442、CA/hostname验证。
 - production空卷挂载的init脚本只接受PG16/RDS-like前置，和PG17 Compose冲突；现有volume继续运行不能证明恢复路径，见F-0023。
+
+## 14. AU-006：环境、Manifest、Console与生成配置运行链
+
+### 14.1 服务启动配置
+
+~~~text
+systemd EnvironmentFile / process.env
+  → <Service>Environment()：选键、默认、unknown-key与格式校验
+  → Main / ReadyMain
+  → create<Service>Runtime()
+  → 读取并验证 NODE_MANIFEST_PATH / digest / refs / domain / feature
+  → bind loopback、连接DB/Secret/KMS/Object、READY或listen
+~~~
+
+Identity、Catalog、Web、Purchase、Payment Webhook、Mall Provisioning和Identity/Payment Jobs都走config包parser。Catalog Jobs例外：catalogJobsEnvironment定义在Commerce Bootstrap内；ConsoleSupportMain还用动态requiredEnvironment读取通用API键。环境所有权因此是分布式现状，不能只按包目录绘制。
+
+### 14.2 Console启动配置
+
+~~~text
+浏览器访问Console Host
+  → GET same-origin /console-runtime.json, no-store
+  → parseSflConsoleNodeRuntime
+  → exact Console Host定位Manifest
+  → runtime resource ref + scope校验
+  → AppConfig.apiBaseUrl / identityEntryUrl
+  → SDK credentials=include + x-csrf-token / x-action-proof
+     或 window.location.assign(identityEntryUrl)
+~~~
+
+404时才fallback到/console-build.json；其它HTTP错误或JSON/Manifest错误阻止配置安装。[CONFLICT] API/Identity URL没有与Manifest domain bindings交叉核对，见F-0029。AutoNode正向生成从同一request.domains产生Manifest和URL，但浏览器parser不依赖该生成历史。
+
+### 14.3 生成目录传播
+
+~~~text
+cache.yml + capacity.yml
+  → build-runtime-config.mjs --check
+  → RuntimeCatalog.generated.ts
+  → Pool / HTTP server-client / cache / SDK / provider transport
+  └→ Miniapp RuntimeLimits.js + CachePolicy.js
+
+MiniappEnvironment schema
+  → build-miniapp-environment.mjs --check
+  → miniprogram/config/Environment.js
+  → app.js读取wx.getExtConfigSync()
+~~~
+
+正式check:generated可验证逐字漂移；本worktree缺依赖，未执行到生成比较。完整配置、通信和失败矩阵见AU-006 records。

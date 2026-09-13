@@ -1,0 +1,7 @@
+"抽检编号","入口","首次结论","第二次重追路径","结果","独立性","后续"
+"RS-AU-006-001","Console RuntimeConfig","runtime binding未绑定Manifest domain","浏览器fetch→parseNodeRuntime→validate refs→resolve→SDK FetchTransport/headers→AutoNode producer/activation","确认；正向producer一致但parser与消费端不执行不变量","同一主审逆向自检","RV-0007第二位独立复核"
+"RS-AU-006-002","SflNodeRegistry","readonly/freeze保护节点声明","模块导入JSON→validateRegistryDeclaration→Object.freeze外壳→resolver同引用→隔离mutation probe","反驳完整不可变性；只有外壳冻结","同一主审运行反事实","F-0032"
+"RS-AU-006-003","environment quality gate","config是唯一env owner","root quality→environment.mjs→source selection→regex→dedupe→CatalogJobs source alias","确认门禁当前85条拒绝且漏alias parser，owner模型冲突","同一主审按脚本精确复算","F-0030"
+"RS-AU-006-004","config package test","专用parser有对应测试","root test:unit→workspace test→config scripts.test→tracked测试集→git history","实现有测试但四文件不由正式入口执行","同一主审入口反追","F-0031"
+"RS-AU-006-005","RuntimeCatalog.generated","生成物可能为手工常量","consumer import→generated header→build-runtime-config→cache/capacity YAML→check/generated --check","确认生成来源与漂移闸门；不列垃圾","同一主审反向追生成器","依赖完整后执行check"
+"RS-AU-006-006","WebBusiness origins","重复来源会被拒绝","Web parser→apiAllowedOrigins→Set去重→后置Set比较→Bootstrap","反驳；重复检查不可达，实际静默去重","同一主审控制流反查","F-0034"

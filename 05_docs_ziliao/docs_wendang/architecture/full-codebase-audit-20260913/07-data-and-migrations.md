@@ -40,3 +40,10 @@
 ## 6. 恢复与未知项
 
 仓库内未发现当前zhudatuan PostgreSQL、Local Objects、secret catalog或KMS master key的备份创建/restore演练入口；只证明路径和服务restart。云快照、主机外timer或人工runbook可能存在，因此统一标记UNKNOWN，不写成“没有备份”。责任矩阵见 `recovery-ownership.csv`。
+
+## 7. AU-006 迁移与配置所有权补充
+
+- MigrationEnvironment提供通用DATABASE_MIGRATION_CONNECTION_REF与迁移目录投影；RegistrationMigrationEnvironment进一步限制production、loopback、目标schema/ledger和节点refs。实际数据库迁移执行与ledger原子窗口仍以AU-003/F-0013为准，本AU未重放迁移。
+- 节点Manifest、registry declaration、cache/capacity YAML都是配置数据，但不属于业务数据库事实。它们的生成、digest和runtime pointer不能代替数据库migration ledger。
+- [CONFLICT][E-AU-006-006] registry嵌套声明在进程内可变，但文件和数据库不会被该探针写入；重启会恢复固定JSON。风险是运行期事实漂移，不是持久数据损坏。
+- [UNKNOWN] 线上migration env、Manifest文件与数据库schema head的一致性未读取；不能从example推断live。

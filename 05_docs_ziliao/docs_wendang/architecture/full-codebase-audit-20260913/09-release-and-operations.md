@@ -94,3 +94,23 @@ AU-004 新增 F-0015 至 F-0020：P1 候选 1、P2 5；并扩展既有 P1 候选
 ### 8.4 运维未知项
 
 `delivery.yml`只表明采集器不得删除`database-backups`，不表明备份由谁创建、是否可restore。云快照、主机外timer、OSS版本控制与演练记录均未核验，统一保留UNKNOWN。完整责任表见AU-005 `recovery-ownership.csv`。
+
+## 9. AU-006 配置、生成物与节点运行文件
+
+### 9.1 发布前静态配置
+
+- cache.yml与capacity.yml是RuntimeCatalog、Miniapp RuntimeLimits和CachePolicy的权威输入；build-runtime-config支持--check，check:generated会调用它。
+- sfl-node-registry.declaration.json是L0/L1静态声明源；generate-node-manifests --check核对registry输出与每节点Manifest文件。
+- Miniapp Environment.js由MiniappEnvironment schema生成并支持--check；不得手改生成文件。
+
+### 9.2 启动时环境
+
+正式systemd以EnvironmentFile把每节点键交给专用Main parser，parser失败直接阻止服务启动。专用Bootstrap再读取NODE_MANIFEST_PATH并核对digest、node/runtime/resource/secret/domain/feature。env example只证明预期键，不证明主机实际文件。
+
+[CONFLICT] Catalog Jobs环境parser位于Commerce Bootstrap，不在@shop/config；环境所有权门禁又未识别该source alias，见F-0030。
+
+### 9.3 Console节点运行文件
+
+AutoNode从同一provisioning request生成Manifest和console-runtime.json，production provider激活时用active Manifest重解析runtime并记录console_runtime_digest，健康检查只请求JSON URL。浏览器会重新解析Manifest/artifact引用，但不核对runtime API/Identity URL属于Manifest domain，形成F-0029。
+
+当前未读取生产console-runtime.json、env或Manifest，也未运行生成写模式、发布、激活或部署。

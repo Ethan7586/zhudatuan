@@ -1,0 +1,8 @@
+"故障编号","链路/步骤","故障模式","直接原因","首个可观察影响","后续影响","当前检测","严重度","发生可能性","可检测性","恢复/回滚","证据状态"
+"FM-AU-006-001","Console runtime加载→SDK/登录","API或Identity URL指向Manifest外域名","parser只验HTTPS和resource ref","AppConfig安装错误origin","登录跳转错误；请求header可发往该origin","当前没有domain cross-check；健康只取JSON","P1候选","配置错误/替换时确定；当前live未知","低","回切runtime JSON/节点release；修复须新分支","F-0029/E-AU-006-005"
+"FM-AU-006-002","canonical quality→check:environment","门禁确定拒绝当前代码或被绕过","85条静态违规；声明/alias模型非语义","质量流程退出1或对alias旁路无感","发布验证失去稳定信号","依赖完整后输出；本次静态复算","P2","固定基线确定","高","先定义owner/exemption，再单批修门禁","F-0030/E-AU-006-003"
+"FM-AU-006-003","模块加载后共享registry/runtime limits","调用者修改嵌套Host/ref/deadline","只浅冻结并暴露同一引用","后续resolver或HTTP/Pool消费者读取新值","节点选择、Identity/Console投影或timeout可在进程内漂移","无mutation guard/test","P2","存在写入时确定；当前无写引用","低","进程重启；未来深冻结/复制需独立批次","F-0032/E-AU-006-006"
+"FM-AU-006-004","root test:unit→config test","四专用parser断言不执行","package script手列测试且遗漏","CI仍可能显示config包已通过列出的测试","四类生产环境边界回归不被断言捕获","typecheck只能查类型","P2","每次正式unit测试确定","高","独立测试入口批次纳入文件并验证","F-0031/E-AU-006-004"
+"FM-AU-006-005","Miniapp ext config初始化","带首尾空白值在TS接受、生产生成JS拒绝","生成模板未调用requiredValue trim","小程序启动抛配置错误","环境写入工具若保留空白则不可用","无TS/JS parity test","P3","仅边界输入","高","清理配置或统一生成语义","F-0033/E-AU-006-008"
+"FM-AU-006-006","Web API origin解析","重复来源被静默折叠","helper先Set，后置重复检查不可达","服务正常启动而错误配置不显现","配置审计信息丢失，行为仍为同一来源集","无重复拒绝反事实","P3","重复配置时确定","中","独立parser批次定稿去重或拒绝语义","F-0034/E-AU-006-008"
+"FM-AU-006-007","Local infrastructure endpoint解析","https://等非URL值通过配置阶段","startsWith代替URL解析","下游连接或URL构造晚失败","启动错误位置漂移，可能留下部分初始化","无该边界test","P3","无效配置时确定","高","修正env并重启；代码改动另批","F-0035/E-AU-006-008"
