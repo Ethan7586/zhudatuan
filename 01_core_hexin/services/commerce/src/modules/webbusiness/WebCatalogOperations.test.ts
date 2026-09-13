@@ -93,6 +93,7 @@ describe('web catalog management read', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]?.text).toContain("source.scope_id=$1 and source.status='mapped'");
     expect(calls[0]?.text).toContain("'kind','selection-center-v1'");
+    expect(calls[0]?.text).not.toContain('join catalog.category');
     expect(calls[0]?.values).toEqual(['mall:hongtai', '', '', '', '', '', null, null, 51]);
     expect(result).toMatchObject({ status: 200, body: { count: 1, items: [{ id: 'source:1' }] } });
   });

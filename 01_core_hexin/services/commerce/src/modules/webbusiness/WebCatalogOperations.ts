@@ -46,7 +46,8 @@ export function webCatalogActions(): OperationActions {
           product.attributes->>'coverUrl' cover_url,product.attributes->>'subtitle' subtitle,
           jsonb_build_object(
             'kind','selection-center-v1',
-            'categoryId',category.id,'categoryName',coalesce(category.name,'其他商品'),
+            'categoryId',product.category_id,
+            'categoryName',coalesce(nullif(product.attributes->>'categoryName',''),'其他商品'),
             'supplierId',product.owner_partner_id,
             'supplierName',coalesce(nullif(product.attributes->>'supplierName',''),'未标注供应商'),
             'brandId',product.brand_id,
@@ -76,7 +77,6 @@ export function webCatalogActions(): OperationActions {
           from catalog.sourcelisting source
           join catalog.sku sku on sku.id=source.sku_id and sku.status='active'
           join catalog.product product on product.id=sku.product_id and product.status='active'
-          left join catalog.category category on category.id=product.category_id
           left join catalog.listing selected on selected.scope_id=$1 and selected.sku_id=sku.id
             and selected.status<>'retired'
           left join lateral (
