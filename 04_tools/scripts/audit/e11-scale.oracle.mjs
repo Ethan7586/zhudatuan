@@ -9,8 +9,8 @@ const inputNames = Object.freeze(['scale-input-manifest.json', 'scale-code-and-b
 const [criteria, manifest, codeAndBuild, hostedOperations, resolutionMetrics, isolationResults, environment] = await Promise.all([readJson(criteriaPath), ...inputNames.map((name) => readJson(join(runDirectory, name)))]);
 
 const missingItems = requiredEvidence(criteria, manifest, codeAndBuild, hostedOperations, resolutionMetrics, isolationResults, environment);
-const baseline = reconcile(criteria, manifest, codeAndBuild, hostedOperations, resolutionMetrics, isolationResults);
-const negativeProbes = runNegativeProbes(criteria, manifest, codeAndBuild, hostedOperations, resolutionMetrics, isolationResults);
+const baseline = reconcile(criteria, manifest, codeAndBuild, hostedOperations, resolutionMetrics, isolationResults, environment);
+const negativeProbes = runNegativeProbes(criteria, manifest, codeAndBuild, hostedOperations, resolutionMetrics, isolationResults, environment);
 const thresholds = Object.freeze([
   threshold('required_raw_evidence_missing_count', 0, missingItems.length),
   threshold('scale_topology_scenario_completeness_mismatch_count', 0, baseline.counts.scenario),
@@ -68,15 +68,31 @@ function requiredEvidence(criteriaValue, manifestValue, codeValue, operationsVal
   requireArray(operationsValue.per_node_infrastructure_events, 'Hosted per-node infrastructure event ledger', missing, false);
   requireArray(metricsValue.scenarios, 'context resolution scenarios', missing, true);
   requireArray(isolationValue.scenarios, 'isolation scenarios', missing, true);
+  requireValue(codeValue.source_sha, 'source inventory and build source SHA', missing);
   for (const [value, name] of [
     [environmentValue.kind, 'environment kind'],
     [environmentValue.environment_id, 'environment identity'],
     [environmentValue.runtime?.postgres, 'PostgreSQL runtime version'],
     [environmentValue.runtime?.docker_image_id, 'PostgreSQL image identity'],
     [environmentValue.source_control?.sha, 'source commit SHA'],
+    [environmentValue.source_control?.tree_state, 'source tree state'],
     [environmentValue.configuration_digest, 'configuration digest'],
   ])
     requireValue(value, name, missing);
+  for (const build of array(codeValue.build_invocations)) {
+    for (const field of ['invocation_id', 'scope', 'source_sha', 'started_at', 'completed_at', 'exit_code']) requireValue(build?.[field], `build invocation ${field}`, missing);
+  }
+  for (const artifact of array(codeValue.artifacts)) {
+    for (const field of ['artifact_identity', 'target', 'source_sha', 'marker']) requireValue(artifact?.[field], `built artifact ${field}`, missing);
+    requireArray(artifact?.files, 'built artifact file inventory', missing, true);
+    for (const file of array(artifact?.files)) {
+      for (const field of ['path', 'size_bytes', 'sha256']) requireValue(file?.[field], `built artifact file ${field}`, missing);
+    }
+  }
+  for (const assignment of array(codeValue.scenario_artifact_assignments)) {
+    requireValue(assignment?.scenario_id, 'artifact assignment scenario id', missing);
+    requireValue(assignment?.artifact_identity, 'artifact assignment identity', missing);
+  }
 
   const manifestScenarios = byScenario(manifestValue.scenarios);
   const operationScenarios = byScenario(operationsValue.scenarios);
@@ -104,7 +120,11 @@ function requiredEvidence(criteriaValue, manifestValue, codeValue, operationsVal
       }
       requireArray(node?.ancestors, `${scenarioId} node descriptor ancestors`, missing, false);
     }
-    if (operations) requireArray(operations.per_node_infrastructure_events, `${scenarioId} infrastructure events`, missing, false);
+    if (operations) {
+      requireValue(operations.scale, `${scenarioId} Hosted operation scale`, missing);
+      requireValue(operations.hosted_database_provision_call_count, `${scenarioId} Hosted database provision count`, missing);
+      requireArray(operations.per_node_infrastructure_events, `${scenarioId} infrastructure events`, missing, false);
+    }
     if (metrics) {
       requireArray(metrics.provisioning_samples, `${scenarioId} provisioning samples`, missing, true);
       requireArray(metrics.resolution_samples, `${scenarioId} resolution samples`, missing, true);
@@ -112,7 +132,14 @@ function requiredEvidence(criteriaValue, manifestValue, codeValue, operationsVal
       if (array(metrics.provisioning_samples).length < expectedNodeCount) missing.push(`${scenarioId} provisioning outputs`);
       if (array(metrics.resolution_samples).length < expectedNodeCount) missing.push(`${scenarioId} resolution outputs`);
       if (array(metrics.sovereign_control_samples).length < criteriaValue.scale_matrix.sovereign_control_count_per_scenario) missing.push(`${scenarioId} sovereign control outputs`);
+      for (const sample of array(metrics.provisioning_samples)) {
+        requireValue(sample?.node_id, `${scenarioId} provisioning sample node id`, missing);
+        requireValue(sample?.elapsed_ms, `${scenarioId} ${sample?.node_id ?? 'unknown node'} provisioning latency`, missing);
+        requireObject(sample?.result, `${scenarioId} ${sample?.node_id ?? 'unknown node'} provisioning result`, missing);
+      }
       for (const sample of [...array(metrics.resolution_samples), ...array(metrics.sovereign_control_samples)]) {
+        requireValue(sample?.node_id, `${scenarioId} resolution sample node id`, missing);
+        requireValue(sample?.elapsed_ms, `${scenarioId} ${sample?.node_id ?? 'unknown node'} resolution latency`, missing);
         for (const field of ['context', 'scope_self', 'ancestors', 'capability']) {
           if (sample?.[field] === undefined || sample?.[field] === null) missing.push(`${scenarioId} ${sample?.node_id ?? 'unknown node'} ${field}`);
         }
@@ -123,6 +150,10 @@ function requiredEvidence(criteriaValue, manifestValue, codeValue, operationsVal
       for (const field of ['duplicate_node_ids', 'cross_line_closure_rows', 'cross_line_scope_rows', 'profile_counts']) {
         requireArray(isolation[field], `${scenarioId} ${field}`, missing, false);
       }
+      for (const field of ['hosted_nodes', 'provisioning_rows', 'realm_rows', 'current_relation_rows', 'capability_rows', 'closure_rows']) {
+        requireValue(isolation.database_counts?.[field], `${scenarioId} database count ${field}`, missing);
+      }
+      for (const field of ['distinct_line_count', 'maximum_signed_level', 'sovereign_control_count']) requireValue(isolation[field], `${scenarioId} isolation ${field}`, missing);
       requireValue(isolation.rollback_remaining_token_row_count, `${scenarioId} rollback recount`, missing);
     }
   }
@@ -133,12 +164,15 @@ function requiredEvidence(criteriaValue, manifestValue, codeValue, operationsVal
       requireValue(snapshot.file_count, `source file count at scale ${scale}`, missing);
       requireValue(snapshot.inventory_digest, `source digest at scale ${scale}`, missing);
       requireArray(snapshot.entries, `source entries at scale ${scale}`, missing, true);
+      for (const entry of array(snapshot.entries)) {
+        for (const field of ['path', 'size_bytes', 'sha256']) requireValue(entry?.[field], `source entry ${field} at scale ${scale}`, missing);
+      }
     }
   }
   return Object.freeze([...new Set(missing)].sort());
 }
 
-function reconcile(criteriaValue, manifestValue, codeValue, operationsValue, metricsValue, isolationValue) {
+function reconcile(criteriaValue, manifestValue, codeValue, operationsValue, metricsValue, isolationValue, environmentValue) {
   const counts = { scenario: 0, source: 0, build: 0, resolution: 0, isolation: 0, latency: 0 };
   const violations = [];
   const add = (category, code, detail, weight = 1) => {
@@ -187,12 +221,22 @@ function reconcile(criteriaValue, manifestValue, codeValue, operationsValue, met
   const artifacts = array(codeValue.artifacts);
   const artifactIdentities = [...new Set(artifacts.map((entry) => entry.artifact_identity).filter(Boolean))];
   const nodeSpecificBuildCount = builds.filter((entry) => entry.scope !== 'shared-runtime' || entry.assigned_node_id !== null).length + array(codeValue.node_specific_builds).length;
+  if (codeValue.source_sha !== environmentSourceSha() || environmentValue.source_control?.tree_state !== 'CLEAN') {
+    add('build', 'SOURCE_CONTROL_PROVENANCE_MISMATCH', {
+      inventory_source_sha: codeValue.source_sha,
+      environment_source_sha: environmentSourceSha(),
+      tree_state: environmentValue.source_control?.tree_state,
+    });
+  }
   for (const build of builds) {
     if (build.exit_code !== 0 || build.source_sha !== environmentSourceSha() || build.scope !== 'shared-runtime') add('build', 'BUILD_PROVENANCE_MISMATCH', { build });
   }
   for (const artifact of artifacts) {
     const recounted = `sha256:${inventoryDigest(array(artifact.files))}`;
     if (artifact.artifact_identity !== recounted) add('build', 'ARTIFACT_IDENTITY_RECOUNT_MISMATCH', { declared: artifact.artifact_identity, recounted });
+    for (const file of array(artifact.files)) {
+      if (!file?.path || !validSha(file.sha256) || !nonnegative(file.size_bytes)) add('build', 'ARTIFACT_FILE_ENTRY_MALFORMED', { artifact_identity: artifact.artifact_identity, file });
+    }
     if (artifact.target !== 'identity-api' || artifact.marker !== criteriaValue.shared_build.marker || artifact.source_sha !== environmentSourceSha()) {
       add('build', 'ARTIFACT_PROVENANCE_MISMATCH', { artifact_identity: artifact.artifact_identity, target: artifact.target, marker: artifact.marker, source_sha: artifact.source_sha });
     }
@@ -253,7 +297,7 @@ function reconcile(criteriaValue, manifestValue, codeValue, operationsValue, met
   });
 
   function environmentSourceSha() {
-    return codeValue.source_sha ?? null;
+    return environmentValue.source_control?.sha ?? null;
   }
 }
 
@@ -364,7 +408,7 @@ function validateIsolation(scenario, isolation, add) {
   if (!sameMap(expectedProfiles, actualProfiles)) add('isolation', 'PROFILE_COUNT_MISMATCH', { scenario_id: scenario.scenario_id, actual: Object.fromEntries(actualProfiles), expected: Object.fromEntries(expectedProfiles) });
 }
 
-function runNegativeProbes(criteriaValue, manifestValue, codeValue, operationsValue, metricsValue, isolationValue) {
+function runNegativeProbes(criteriaValue, manifestValue, codeValue, operationsValue, metricsValue, isolationValue, environmentValue) {
   const sourceMutation = structuredClone(codeValue);
   const sourceSnapshot = sourceMutation.source_inventory_snapshots[0];
   sourceSnapshot.entries.push({
@@ -390,14 +434,14 @@ function runNegativeProbes(criteriaValue, manifestValue, codeValue, operationsVa
   crossLineMetrics.scenarios[0].resolution_samples[0].context.line_id = 'line:e11-mutated-cross-line';
 
   return Object.freeze([
-    probe('generated-node-source', 'GENERATED_NODE_SOURCE', criteriaValue, manifestValue, sourceMutation, operationsValue, metricsValue, isolationValue),
-    probe('build-and-infrastructure-growth', 'BUILD_PROVENANCE_MISMATCH', criteriaValue, manifestValue, growthCode, growthOperations, metricsValue, isolationValue, ['INFRA_EVENT_COUNT']),
-    probe('cross-line-context-resolution', 'CONTEXT_FIELD_MISMATCH', criteriaValue, manifestValue, codeValue, operationsValue, crossLineMetrics, isolationValue),
+    probe('generated-node-source', 'GENERATED_NODE_SOURCE', criteriaValue, manifestValue, sourceMutation, operationsValue, metricsValue, isolationValue, [], environmentValue),
+    probe('build-and-infrastructure-growth', 'BUILD_PROVENANCE_MISMATCH', criteriaValue, manifestValue, growthCode, growthOperations, metricsValue, isolationValue, ['INFRA_EVENT_COUNT'], environmentValue),
+    probe('cross-line-context-resolution', 'CONTEXT_FIELD_MISMATCH', criteriaValue, manifestValue, codeValue, operationsValue, crossLineMetrics, isolationValue, [], environmentValue),
   ]);
 }
 
-function probe(probeId, expectedCode, criteria, manifest, code, operations, metrics, isolation, alternativeCodes = []) {
-  const result = reconcile(criteria, manifest, code, operations, metrics, isolation);
+function probe(probeId, expectedCode, criteria, manifest, code, operations, metrics, isolation, alternativeCodes = [], environment = {}) {
+  const result = reconcile(criteria, manifest, code, operations, metrics, isolation, environment);
   const detectedCodes = result.violations.map((entry) => entry.code);
   const accepted = [expectedCode, ...alternativeCodes];
   return Object.freeze({
