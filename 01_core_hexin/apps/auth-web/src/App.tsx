@@ -5,9 +5,13 @@
 
 import React from 'react';
 import { MallProvider } from './context/MallContext';
-import { ConsumerIdentityPage } from './screens/ConsumerIdentityPage';
 import { OperatorIdentityPage } from './screens/OperatorIdentityPage';
 import { resolveIdentityEntry } from './services/consumerIdentityEntry';
+
+const ConsumerIdentityPage = React.lazy(async () => {
+  const module = await import('./screens/ConsumerIdentityPage');
+  return { default: module.ConsumerIdentityPage };
+});
 
 export default function App() {
   const search = typeof window === 'undefined' ? '' : window.location.search;
@@ -41,11 +45,13 @@ export default function App() {
               brand={entry.nodeId === 'node:hbbtzn:l1' ? 'hongtai' : 'morvia'}
               onAudienceSwitch={switchAudience}
             />
-          : <ConsumerIdentityPage
-              application={entry.application}
-              brand={entry.nodeId === 'node:hbbtzn:l1' ? 'hongtai' : 'morvia'}
-              onAudienceSwitch={switchAudience}
-            />}
+          : <React.Suspense fallback={<main aria-busy="true" aria-label="正在加载消费者登录入口" />}>
+              <ConsumerIdentityPage
+                application={entry.application}
+                brand={entry.nodeId === 'node:hbbtzn:l1' ? 'hongtai' : 'morvia'}
+                onAudienceSwitch={switchAudience}
+              />
+            </React.Suspense>}
     </MallProvider>
   );
 }
