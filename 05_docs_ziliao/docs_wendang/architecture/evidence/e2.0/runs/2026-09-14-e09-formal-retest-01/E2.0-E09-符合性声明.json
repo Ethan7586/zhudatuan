@@ -1,0 +1,40 @@
+{
+  "$schema": "../../E2.0-符合性声明.schema.json",
+  "schema_version": "e2.0-conformity-statement-v2",
+  "statement_id": "E2-STATEMENT-E09-DEV-20260913",
+  "template": false,
+  "profile_id": "E2.0",
+  "profile_version": "2.0.0",
+  "issued_at": "2026-09-13T20:43:08.398Z",
+  "scope": "E2-REC-001 / legacy E09 at source SHA 54934c682005c6c1bc1d56cf6b61d9fe7d03f2f0, disposable local PostgreSQL 17 and deterministic local provider only.",
+  "claim_ids": [
+    "E2-REC-001"
+  ],
+  "rating": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM"
+  },
+  "evidence_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/E2.0-E09-证据.json"
+  ],
+  "review_evidence_refs": [],
+  "tailoring_refs": [],
+  "gaps": [
+    "No stable separately managed staging replay has been performed.",
+    "The DEV provider is deterministic and local; no authorized real payment, DNS or cloud-provider recovery observation has been performed.",
+    "Synthetic business actions were used behind the five registered operation IDs; this run does not establish each live module handler business contract.",
+    "No reviewer independent of the E09 workload, recovery implementation and oracle has recomputed and signed the evidence."
+  ],
+  "issuer": {
+    "name_or_id": "codex-task-e09-acceptance-repair-20260914",
+    "organization": "zhudatuan internal",
+    "role": "E09 failure-injection test and independent recount operator",
+    "relationship_to_test_item": "Implemented the E09 disposable workload and evidence exporter, executed the production critical-write kernel and operated the separate raw-evidence oracle; not an independent reviewer.",
+    "signed_at": "2026-09-13T20:43:08.398Z"
+  },
+  "reviewer": null,
+  "mandatory_disclaimer": "This is an E2.0 standards-aligned tailored conformity statement, not an ISO, IEEE, NIST, OWASP, PCI SSC, or third-party certification.",
+  "non_gating": true
+}

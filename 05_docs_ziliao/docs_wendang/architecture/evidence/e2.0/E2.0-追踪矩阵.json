@@ -823,13 +823,18 @@
       "executor_role": "Failure-injection test operator",
       "reviewer_role": "Reviewer independent of operation and recovery implementation",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "Formal E09 execution at clean source SHA 54934c682005c6c1bc1d56cf6b61d9fe7d03f2f0 replayed all 301 migrations in disposable PostgreSQL 17 and exercised the production ExecutionKernel, PgUnitOfWork and audit projection across 15 operation/node pairs. Seventy-five simultaneous deliveries converged to one authority per pair, 15 conflicting hashes changed no accepted state, all 60 fixed interruption cases recovered to one terminal business result and unique local provider receipt, and five Sovereign-C recoveries changed neither Hosted node. The independent recount found zero missing evidence or threshold violations and detected all four negative mutations.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/E2.0-E09-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["E2.0 criteria lock, raw provider/DB evidence and independent recovery reconstruction"]
+        "gaps": [
+          "No stable separately managed staging replay has been performed.",
+          "The DEV provider is deterministic and local; no authorized real payment, DNS or cloud-provider recovery observation has been performed.",
+          "Synthetic business actions were used behind the five registered operation IDs; this run does not establish each live module handler business contract.",
+          "No reviewer independent of the E09 workload, recovery implementation and oracle has recomputed and signed the evidence."
+        ]
       }
     },
     {

@@ -1,0 +1,1027 @@
+{
+  "schema_version": "e09-idempotency-five-way-results-v1",
+  "captured_at": "2026-09-13T20:43:08.059Z",
+  "concurrency": 5,
+  "scenarios": [
+    {
+      "scenario_id": "e09:five_way:hosted-a:identity-members-create",
+      "node_id": "node:e09:hosted-a",
+      "node_label": "Hosted-A",
+      "sovereignty_tier": "hosted",
+      "operation_id": "identity.members.create",
+      "operation_label": "register member",
+      "business_fact_kind": "membership",
+      "idempotency_key": "idem:ee063b21cfd938f00745631e",
+      "request_hash": "689c09f6936057c4f53f4fb8e2f343da4e5292420d1815b5911c315c090a89ae",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:ee063b21cfd938f00745631e",
+          "request_hash": "689c09f6936057c4f53f4fb8e2f343da4e5292420d1815b5911c315c090a89ae",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-8725FC0B5B225F49",
+          "response_body_sha256": "f007144075d9a3f4284edf2fe4bf40278074f291403b18880efc3c39ae3fd4e2"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:ee063b21cfd938f00745631e",
+          "request_hash": "689c09f6936057c4f53f4fb8e2f343da4e5292420d1815b5911c315c090a89ae",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-8725FC0B5B225F49",
+          "response_body_sha256": "f007144075d9a3f4284edf2fe4bf40278074f291403b18880efc3c39ae3fd4e2"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:ee063b21cfd938f00745631e",
+          "request_hash": "689c09f6936057c4f53f4fb8e2f343da4e5292420d1815b5911c315c090a89ae",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-8725FC0B5B225F49",
+          "response_body_sha256": "f007144075d9a3f4284edf2fe4bf40278074f291403b18880efc3c39ae3fd4e2"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:ee063b21cfd938f00745631e",
+          "request_hash": "689c09f6936057c4f53f4fb8e2f343da4e5292420d1815b5911c315c090a89ae",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-8725FC0B5B225F49",
+          "response_body_sha256": "f007144075d9a3f4284edf2fe4bf40278074f291403b18880efc3c39ae3fd4e2"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:ee063b21cfd938f00745631e",
+          "request_hash": "689c09f6936057c4f53f4fb8e2f343da4e5292420d1815b5911c315c090a89ae",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-8725FC0B5B225F49",
+          "response_body_sha256": "f007144075d9a3f4284edf2fe4bf40278074f291403b18880efc3c39ae3fd4e2"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:ff6b246fff37d65a6eee272d"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-a:provisioning-malls-create",
+      "node_id": "node:e09:hosted-a",
+      "node_label": "Hosted-A",
+      "sovereignty_tier": "hosted",
+      "operation_id": "provisioning.malls.create",
+      "operation_label": "open mall",
+      "business_fact_kind": "mall",
+      "idempotency_key": "idem:9bac59856aab0a7e7b5c7a47",
+      "request_hash": "39fa425b45a32ec73f55cc835bb1503933b4a0cd9838110b65f3b32aeeecaf4b",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:9bac59856aab0a7e7b5c7a47",
+          "request_hash": "39fa425b45a32ec73f55cc835bb1503933b4a0cd9838110b65f3b32aeeecaf4b",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-100A44F8DE177068",
+          "response_body_sha256": "3fc38a3a15e434f4ffdaf60eb7e738bb3a38489f5519974b7ded97ee36f7c759"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:9bac59856aab0a7e7b5c7a47",
+          "request_hash": "39fa425b45a32ec73f55cc835bb1503933b4a0cd9838110b65f3b32aeeecaf4b",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-100A44F8DE177068",
+          "response_body_sha256": "3fc38a3a15e434f4ffdaf60eb7e738bb3a38489f5519974b7ded97ee36f7c759"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:9bac59856aab0a7e7b5c7a47",
+          "request_hash": "39fa425b45a32ec73f55cc835bb1503933b4a0cd9838110b65f3b32aeeecaf4b",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-100A44F8DE177068",
+          "response_body_sha256": "3fc38a3a15e434f4ffdaf60eb7e738bb3a38489f5519974b7ded97ee36f7c759"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:9bac59856aab0a7e7b5c7a47",
+          "request_hash": "39fa425b45a32ec73f55cc835bb1503933b4a0cd9838110b65f3b32aeeecaf4b",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-100A44F8DE177068",
+          "response_body_sha256": "3fc38a3a15e434f4ffdaf60eb7e738bb3a38489f5519974b7ded97ee36f7c759"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:9bac59856aab0a7e7b5c7a47",
+          "request_hash": "39fa425b45a32ec73f55cc835bb1503933b4a0cd9838110b65f3b32aeeecaf4b",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-100A44F8DE177068",
+          "response_body_sha256": "3fc38a3a15e434f4ffdaf60eb7e738bb3a38489f5519974b7ded97ee36f7c759"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:48a458fde1fa4917373caec2"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-a:member-sovereignty-upgrade",
+      "node_id": "node:e09:hosted-a",
+      "node_label": "Hosted-A",
+      "sovereignty_tier": "hosted",
+      "operation_id": "member.sovereignty.upgrade",
+      "operation_label": "upgrade sovereign",
+      "business_fact_kind": "sovereign_upgrade",
+      "idempotency_key": "idem:a5a17828fa44d85086ee5c7c",
+      "request_hash": "14da7e2b9846c4a94b5ded20cc38c3df6b324e1373828ad00d88e48dd9b846c8",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:a5a17828fa44d85086ee5c7c",
+          "request_hash": "14da7e2b9846c4a94b5ded20cc38c3df6b324e1373828ad00d88e48dd9b846c8",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-FC18F9CE020AD959",
+          "response_body_sha256": "03f5bfcf5f1fd4f1c565641361316b7158b117d1560046277bb1a6140f63bcc3"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:a5a17828fa44d85086ee5c7c",
+          "request_hash": "14da7e2b9846c4a94b5ded20cc38c3df6b324e1373828ad00d88e48dd9b846c8",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-FC18F9CE020AD959",
+          "response_body_sha256": "03f5bfcf5f1fd4f1c565641361316b7158b117d1560046277bb1a6140f63bcc3"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:a5a17828fa44d85086ee5c7c",
+          "request_hash": "14da7e2b9846c4a94b5ded20cc38c3df6b324e1373828ad00d88e48dd9b846c8",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-FC18F9CE020AD959",
+          "response_body_sha256": "03f5bfcf5f1fd4f1c565641361316b7158b117d1560046277bb1a6140f63bcc3"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:a5a17828fa44d85086ee5c7c",
+          "request_hash": "14da7e2b9846c4a94b5ded20cc38c3df6b324e1373828ad00d88e48dd9b846c8",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-FC18F9CE020AD959",
+          "response_body_sha256": "03f5bfcf5f1fd4f1c565641361316b7158b117d1560046277bb1a6140f63bcc3"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:a5a17828fa44d85086ee5c7c",
+          "request_hash": "14da7e2b9846c4a94b5ded20cc38c3df6b324e1373828ad00d88e48dd9b846c8",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-FC18F9CE020AD959",
+          "response_body_sha256": "03f5bfcf5f1fd4f1c565641361316b7158b117d1560046277bb1a6140f63bcc3"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:c3b311815a266012804de7f0"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-a:order-orders-create",
+      "node_id": "node:e09:hosted-a",
+      "node_label": "Hosted-A",
+      "sovereignty_tier": "hosted",
+      "operation_id": "order.orders.create",
+      "operation_label": "place order",
+      "business_fact_kind": "order",
+      "idempotency_key": "idem:f051b48d8b3ebe599d8886b3",
+      "request_hash": "6b77a9b301c1682f9c31fbffe669ba5dd653d9f0eff3c493b550aba175eb11da",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:f051b48d8b3ebe599d8886b3",
+          "request_hash": "6b77a9b301c1682f9c31fbffe669ba5dd653d9f0eff3c493b550aba175eb11da",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-52F477B1BBB8C37A",
+          "response_body_sha256": "aabd19abb2104ae317b81d2ac5191d0ae8692c5af08ac2a506d554e50067a7be"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:f051b48d8b3ebe599d8886b3",
+          "request_hash": "6b77a9b301c1682f9c31fbffe669ba5dd653d9f0eff3c493b550aba175eb11da",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-52F477B1BBB8C37A",
+          "response_body_sha256": "aabd19abb2104ae317b81d2ac5191d0ae8692c5af08ac2a506d554e50067a7be"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:f051b48d8b3ebe599d8886b3",
+          "request_hash": "6b77a9b301c1682f9c31fbffe669ba5dd653d9f0eff3c493b550aba175eb11da",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-52F477B1BBB8C37A",
+          "response_body_sha256": "aabd19abb2104ae317b81d2ac5191d0ae8692c5af08ac2a506d554e50067a7be"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:f051b48d8b3ebe599d8886b3",
+          "request_hash": "6b77a9b301c1682f9c31fbffe669ba5dd653d9f0eff3c493b550aba175eb11da",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-52F477B1BBB8C37A",
+          "response_body_sha256": "aabd19abb2104ae317b81d2ac5191d0ae8692c5af08ac2a506d554e50067a7be"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:f051b48d8b3ebe599d8886b3",
+          "request_hash": "6b77a9b301c1682f9c31fbffe669ba5dd653d9f0eff3c493b550aba175eb11da",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-52F477B1BBB8C37A",
+          "response_body_sha256": "aabd19abb2104ae317b81d2ac5191d0ae8692c5af08ac2a506d554e50067a7be"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:da0afaccbdec24e2b411cffc"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-a:payment-refunds-request",
+      "node_id": "node:e09:hosted-a",
+      "node_label": "Hosted-A",
+      "sovereignty_tier": "hosted",
+      "operation_id": "payment.refunds.request",
+      "operation_label": "refund",
+      "business_fact_kind": "refund",
+      "idempotency_key": "idem:ec265849128e9bad1ed74d7a",
+      "request_hash": "bc0322910d592b9e7077244c287d9d03a745cc00144d342fef04d5a5c68c5fbf",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:ec265849128e9bad1ed74d7a",
+          "request_hash": "bc0322910d592b9e7077244c287d9d03a745cc00144d342fef04d5a5c68c5fbf",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-6B27A951ED1E2541",
+          "response_body_sha256": "483fe59a5d3a8d713455a8ef9d06404784ecd1ccbe02fcf9787e4618a29dcb83"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:ec265849128e9bad1ed74d7a",
+          "request_hash": "bc0322910d592b9e7077244c287d9d03a745cc00144d342fef04d5a5c68c5fbf",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-6B27A951ED1E2541",
+          "response_body_sha256": "483fe59a5d3a8d713455a8ef9d06404784ecd1ccbe02fcf9787e4618a29dcb83"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:ec265849128e9bad1ed74d7a",
+          "request_hash": "bc0322910d592b9e7077244c287d9d03a745cc00144d342fef04d5a5c68c5fbf",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-6B27A951ED1E2541",
+          "response_body_sha256": "483fe59a5d3a8d713455a8ef9d06404784ecd1ccbe02fcf9787e4618a29dcb83"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:ec265849128e9bad1ed74d7a",
+          "request_hash": "bc0322910d592b9e7077244c287d9d03a745cc00144d342fef04d5a5c68c5fbf",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-6B27A951ED1E2541",
+          "response_body_sha256": "483fe59a5d3a8d713455a8ef9d06404784ecd1ccbe02fcf9787e4618a29dcb83"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:ec265849128e9bad1ed74d7a",
+          "request_hash": "bc0322910d592b9e7077244c287d9d03a745cc00144d342fef04d5a5c68c5fbf",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-6B27A951ED1E2541",
+          "response_body_sha256": "483fe59a5d3a8d713455a8ef9d06404784ecd1ccbe02fcf9787e4618a29dcb83"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:760dec3801b63d5f85ac421b"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-b:identity-members-create",
+      "node_id": "node:e09:hosted-b",
+      "node_label": "Hosted-B",
+      "sovereignty_tier": "hosted",
+      "operation_id": "identity.members.create",
+      "operation_label": "register member",
+      "business_fact_kind": "membership",
+      "idempotency_key": "idem:8cf93659842f08ac942d20ff",
+      "request_hash": "15ed7a31d1de26a0df8090929fd5cb6edce67612849b112223d63665191f7449",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:8cf93659842f08ac942d20ff",
+          "request_hash": "15ed7a31d1de26a0df8090929fd5cb6edce67612849b112223d63665191f7449",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-7DD59EE97600F046",
+          "response_body_sha256": "6b9c01624ab77a2b7028ff8aabdfd90fc65223d5d089bd3546356ea62ac2288d"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:8cf93659842f08ac942d20ff",
+          "request_hash": "15ed7a31d1de26a0df8090929fd5cb6edce67612849b112223d63665191f7449",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-7DD59EE97600F046",
+          "response_body_sha256": "6b9c01624ab77a2b7028ff8aabdfd90fc65223d5d089bd3546356ea62ac2288d"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:8cf93659842f08ac942d20ff",
+          "request_hash": "15ed7a31d1de26a0df8090929fd5cb6edce67612849b112223d63665191f7449",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-7DD59EE97600F046",
+          "response_body_sha256": "6b9c01624ab77a2b7028ff8aabdfd90fc65223d5d089bd3546356ea62ac2288d"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:8cf93659842f08ac942d20ff",
+          "request_hash": "15ed7a31d1de26a0df8090929fd5cb6edce67612849b112223d63665191f7449",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-7DD59EE97600F046",
+          "response_body_sha256": "6b9c01624ab77a2b7028ff8aabdfd90fc65223d5d089bd3546356ea62ac2288d"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:8cf93659842f08ac942d20ff",
+          "request_hash": "15ed7a31d1de26a0df8090929fd5cb6edce67612849b112223d63665191f7449",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-7DD59EE97600F046",
+          "response_body_sha256": "6b9c01624ab77a2b7028ff8aabdfd90fc65223d5d089bd3546356ea62ac2288d"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:32ae64f7be1d6767eb7406db"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-b:provisioning-malls-create",
+      "node_id": "node:e09:hosted-b",
+      "node_label": "Hosted-B",
+      "sovereignty_tier": "hosted",
+      "operation_id": "provisioning.malls.create",
+      "operation_label": "open mall",
+      "business_fact_kind": "mall",
+      "idempotency_key": "idem:31a9857808ac52215881d987",
+      "request_hash": "bd77077f7887f1ae181f73ba75612d0aeca0fac2cd411a2cfea4c9b05015f5cd",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:31a9857808ac52215881d987",
+          "request_hash": "bd77077f7887f1ae181f73ba75612d0aeca0fac2cd411a2cfea4c9b05015f5cd",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-1BAEC75283B908CC",
+          "response_body_sha256": "a1ab78a42a32df78e389536f89c437a3a6ae63d7159485fbc6ac095611618a7f"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:31a9857808ac52215881d987",
+          "request_hash": "bd77077f7887f1ae181f73ba75612d0aeca0fac2cd411a2cfea4c9b05015f5cd",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-1BAEC75283B908CC",
+          "response_body_sha256": "a1ab78a42a32df78e389536f89c437a3a6ae63d7159485fbc6ac095611618a7f"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:31a9857808ac52215881d987",
+          "request_hash": "bd77077f7887f1ae181f73ba75612d0aeca0fac2cd411a2cfea4c9b05015f5cd",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-1BAEC75283B908CC",
+          "response_body_sha256": "a1ab78a42a32df78e389536f89c437a3a6ae63d7159485fbc6ac095611618a7f"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:31a9857808ac52215881d987",
+          "request_hash": "bd77077f7887f1ae181f73ba75612d0aeca0fac2cd411a2cfea4c9b05015f5cd",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-1BAEC75283B908CC",
+          "response_body_sha256": "a1ab78a42a32df78e389536f89c437a3a6ae63d7159485fbc6ac095611618a7f"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:31a9857808ac52215881d987",
+          "request_hash": "bd77077f7887f1ae181f73ba75612d0aeca0fac2cd411a2cfea4c9b05015f5cd",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-1BAEC75283B908CC",
+          "response_body_sha256": "a1ab78a42a32df78e389536f89c437a3a6ae63d7159485fbc6ac095611618a7f"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:9a8a8750034b199da11bb104"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-b:member-sovereignty-upgrade",
+      "node_id": "node:e09:hosted-b",
+      "node_label": "Hosted-B",
+      "sovereignty_tier": "hosted",
+      "operation_id": "member.sovereignty.upgrade",
+      "operation_label": "upgrade sovereign",
+      "business_fact_kind": "sovereign_upgrade",
+      "idempotency_key": "idem:6253739063d205485c91b95f",
+      "request_hash": "f82fb5b9bb32896b8032948135250c7a9367b188e7b0b2c7bcae4c8d1529e48f",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:6253739063d205485c91b95f",
+          "request_hash": "f82fb5b9bb32896b8032948135250c7a9367b188e7b0b2c7bcae4c8d1529e48f",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-A0871A9FB669249F",
+          "response_body_sha256": "ebab7b618c9d5c187b4c7f1255bb485aab2c42dc806643399fb7cb3a828522bd"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:6253739063d205485c91b95f",
+          "request_hash": "f82fb5b9bb32896b8032948135250c7a9367b188e7b0b2c7bcae4c8d1529e48f",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-A0871A9FB669249F",
+          "response_body_sha256": "ebab7b618c9d5c187b4c7f1255bb485aab2c42dc806643399fb7cb3a828522bd"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:6253739063d205485c91b95f",
+          "request_hash": "f82fb5b9bb32896b8032948135250c7a9367b188e7b0b2c7bcae4c8d1529e48f",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-A0871A9FB669249F",
+          "response_body_sha256": "ebab7b618c9d5c187b4c7f1255bb485aab2c42dc806643399fb7cb3a828522bd"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:6253739063d205485c91b95f",
+          "request_hash": "f82fb5b9bb32896b8032948135250c7a9367b188e7b0b2c7bcae4c8d1529e48f",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-A0871A9FB669249F",
+          "response_body_sha256": "ebab7b618c9d5c187b4c7f1255bb485aab2c42dc806643399fb7cb3a828522bd"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:6253739063d205485c91b95f",
+          "request_hash": "f82fb5b9bb32896b8032948135250c7a9367b188e7b0b2c7bcae4c8d1529e48f",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-A0871A9FB669249F",
+          "response_body_sha256": "ebab7b618c9d5c187b4c7f1255bb485aab2c42dc806643399fb7cb3a828522bd"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:05ef26aaa572cdb363d137ee"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-b:order-orders-create",
+      "node_id": "node:e09:hosted-b",
+      "node_label": "Hosted-B",
+      "sovereignty_tier": "hosted",
+      "operation_id": "order.orders.create",
+      "operation_label": "place order",
+      "business_fact_kind": "order",
+      "idempotency_key": "idem:035736479584cad5bb3be7c6",
+      "request_hash": "c51b183aa633b0394b4075d92078691116c868f95db70fbd9f2ef888e49943c3",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:035736479584cad5bb3be7c6",
+          "request_hash": "c51b183aa633b0394b4075d92078691116c868f95db70fbd9f2ef888e49943c3",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-29BCAB479BA5C1C4",
+          "response_body_sha256": "a018799e847290ec872b597acc333b886c44385ab03b3b4da770a0046689b509"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:035736479584cad5bb3be7c6",
+          "request_hash": "c51b183aa633b0394b4075d92078691116c868f95db70fbd9f2ef888e49943c3",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-29BCAB479BA5C1C4",
+          "response_body_sha256": "a018799e847290ec872b597acc333b886c44385ab03b3b4da770a0046689b509"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:035736479584cad5bb3be7c6",
+          "request_hash": "c51b183aa633b0394b4075d92078691116c868f95db70fbd9f2ef888e49943c3",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-29BCAB479BA5C1C4",
+          "response_body_sha256": "a018799e847290ec872b597acc333b886c44385ab03b3b4da770a0046689b509"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:035736479584cad5bb3be7c6",
+          "request_hash": "c51b183aa633b0394b4075d92078691116c868f95db70fbd9f2ef888e49943c3",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-29BCAB479BA5C1C4",
+          "response_body_sha256": "a018799e847290ec872b597acc333b886c44385ab03b3b4da770a0046689b509"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:035736479584cad5bb3be7c6",
+          "request_hash": "c51b183aa633b0394b4075d92078691116c868f95db70fbd9f2ef888e49943c3",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-29BCAB479BA5C1C4",
+          "response_body_sha256": "a018799e847290ec872b597acc333b886c44385ab03b3b4da770a0046689b509"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:5ce62e64bd431646eaa4ed7b"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-b:payment-refunds-request",
+      "node_id": "node:e09:hosted-b",
+      "node_label": "Hosted-B",
+      "sovereignty_tier": "hosted",
+      "operation_id": "payment.refunds.request",
+      "operation_label": "refund",
+      "business_fact_kind": "refund",
+      "idempotency_key": "idem:8d7b20926c71e165ea7d394a",
+      "request_hash": "b050c10cd0bc02a0ae254ca94fd0362281b5849a4e0bfd3cd524a5134876800f",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:8d7b20926c71e165ea7d394a",
+          "request_hash": "b050c10cd0bc02a0ae254ca94fd0362281b5849a4e0bfd3cd524a5134876800f",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-09D70455AF495BC0",
+          "response_body_sha256": "17690a62b3acf56fb745ea825e30a3687e780bb7b6467a770d3a58955db5f970"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:8d7b20926c71e165ea7d394a",
+          "request_hash": "b050c10cd0bc02a0ae254ca94fd0362281b5849a4e0bfd3cd524a5134876800f",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-09D70455AF495BC0",
+          "response_body_sha256": "17690a62b3acf56fb745ea825e30a3687e780bb7b6467a770d3a58955db5f970"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:8d7b20926c71e165ea7d394a",
+          "request_hash": "b050c10cd0bc02a0ae254ca94fd0362281b5849a4e0bfd3cd524a5134876800f",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-09D70455AF495BC0",
+          "response_body_sha256": "17690a62b3acf56fb745ea825e30a3687e780bb7b6467a770d3a58955db5f970"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:8d7b20926c71e165ea7d394a",
+          "request_hash": "b050c10cd0bc02a0ae254ca94fd0362281b5849a4e0bfd3cd524a5134876800f",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-09D70455AF495BC0",
+          "response_body_sha256": "17690a62b3acf56fb745ea825e30a3687e780bb7b6467a770d3a58955db5f970"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:8d7b20926c71e165ea7d394a",
+          "request_hash": "b050c10cd0bc02a0ae254ca94fd0362281b5849a4e0bfd3cd524a5134876800f",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-09D70455AF495BC0",
+          "response_body_sha256": "17690a62b3acf56fb745ea825e30a3687e780bb7b6467a770d3a58955db5f970"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:2f9c91c346509f478b8a9553"
+    },
+    {
+      "scenario_id": "e09:five_way:sovereign-c:identity-members-create",
+      "node_id": "node:e09:sovereign-c",
+      "node_label": "Sovereign-C",
+      "sovereignty_tier": "sovereign",
+      "operation_id": "identity.members.create",
+      "operation_label": "register member",
+      "business_fact_kind": "membership",
+      "idempotency_key": "idem:a236bcb59026be2cf60af12f",
+      "request_hash": "9234b14cac4d736ca6e1e787b258131dba3be48d4acee42c3ea432e73a1e6db3",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:a236bcb59026be2cf60af12f",
+          "request_hash": "9234b14cac4d736ca6e1e787b258131dba3be48d4acee42c3ea432e73a1e6db3",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-8AB9C38ED44F4C60",
+          "response_body_sha256": "ad2190096c99da901a938e54bd7642100f8406353a637fce5643ce9ec6d14260"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:a236bcb59026be2cf60af12f",
+          "request_hash": "9234b14cac4d736ca6e1e787b258131dba3be48d4acee42c3ea432e73a1e6db3",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-8AB9C38ED44F4C60",
+          "response_body_sha256": "ad2190096c99da901a938e54bd7642100f8406353a637fce5643ce9ec6d14260"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:a236bcb59026be2cf60af12f",
+          "request_hash": "9234b14cac4d736ca6e1e787b258131dba3be48d4acee42c3ea432e73a1e6db3",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-8AB9C38ED44F4C60",
+          "response_body_sha256": "ad2190096c99da901a938e54bd7642100f8406353a637fce5643ce9ec6d14260"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:a236bcb59026be2cf60af12f",
+          "request_hash": "9234b14cac4d736ca6e1e787b258131dba3be48d4acee42c3ea432e73a1e6db3",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-8AB9C38ED44F4C60",
+          "response_body_sha256": "ad2190096c99da901a938e54bd7642100f8406353a637fce5643ce9ec6d14260"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:a236bcb59026be2cf60af12f",
+          "request_hash": "9234b14cac4d736ca6e1e787b258131dba3be48d4acee42c3ea432e73a1e6db3",
+          "response_status": 201,
+          "response_business_number": "SFL-IDENTITY-8AB9C38ED44F4C60",
+          "response_body_sha256": "ad2190096c99da901a938e54bd7642100f8406353a637fce5643ce9ec6d14260"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:b1b76ec505c0b00ce5952b8e"
+    },
+    {
+      "scenario_id": "e09:five_way:sovereign-c:provisioning-malls-create",
+      "node_id": "node:e09:sovereign-c",
+      "node_label": "Sovereign-C",
+      "sovereignty_tier": "sovereign",
+      "operation_id": "provisioning.malls.create",
+      "operation_label": "open mall",
+      "business_fact_kind": "mall",
+      "idempotency_key": "idem:8bec94035b51d67b997808f8",
+      "request_hash": "21fef741eae32bebd6d4bb6b1195f448773ae86ccdeb93e25e9904966aa2580d",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:8bec94035b51d67b997808f8",
+          "request_hash": "21fef741eae32bebd6d4bb6b1195f448773ae86ccdeb93e25e9904966aa2580d",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-5B18D07874EA499C",
+          "response_body_sha256": "a66c1d48d933cf0b5d3d8e8bf1cdb63d4c96e1bc33a96d39ee14d160b3e65248"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:8bec94035b51d67b997808f8",
+          "request_hash": "21fef741eae32bebd6d4bb6b1195f448773ae86ccdeb93e25e9904966aa2580d",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-5B18D07874EA499C",
+          "response_body_sha256": "a66c1d48d933cf0b5d3d8e8bf1cdb63d4c96e1bc33a96d39ee14d160b3e65248"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:8bec94035b51d67b997808f8",
+          "request_hash": "21fef741eae32bebd6d4bb6b1195f448773ae86ccdeb93e25e9904966aa2580d",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-5B18D07874EA499C",
+          "response_body_sha256": "a66c1d48d933cf0b5d3d8e8bf1cdb63d4c96e1bc33a96d39ee14d160b3e65248"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:8bec94035b51d67b997808f8",
+          "request_hash": "21fef741eae32bebd6d4bb6b1195f448773ae86ccdeb93e25e9904966aa2580d",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-5B18D07874EA499C",
+          "response_body_sha256": "a66c1d48d933cf0b5d3d8e8bf1cdb63d4c96e1bc33a96d39ee14d160b3e65248"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:8bec94035b51d67b997808f8",
+          "request_hash": "21fef741eae32bebd6d4bb6b1195f448773ae86ccdeb93e25e9904966aa2580d",
+          "response_status": 201,
+          "response_business_number": "SFL-PROVISIONING-5B18D07874EA499C",
+          "response_body_sha256": "a66c1d48d933cf0b5d3d8e8bf1cdb63d4c96e1bc33a96d39ee14d160b3e65248"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:f92e64d9bbc70de76dcbc5e5"
+    },
+    {
+      "scenario_id": "e09:five_way:sovereign-c:member-sovereignty-upgrade",
+      "node_id": "node:e09:sovereign-c",
+      "node_label": "Sovereign-C",
+      "sovereignty_tier": "sovereign",
+      "operation_id": "member.sovereignty.upgrade",
+      "operation_label": "upgrade sovereign",
+      "business_fact_kind": "sovereign_upgrade",
+      "idempotency_key": "idem:dc3c49932a6bf3f8919766e7",
+      "request_hash": "23ee2797d5648279628a166700cede3e78d61fcfb44aebe7986a897874427332",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:dc3c49932a6bf3f8919766e7",
+          "request_hash": "23ee2797d5648279628a166700cede3e78d61fcfb44aebe7986a897874427332",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-5F81601F0EDC40D3",
+          "response_body_sha256": "581906b8a9caaa5139be0f9885452e32fa8d5a1b318ca864466cf996ab6198e5"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:dc3c49932a6bf3f8919766e7",
+          "request_hash": "23ee2797d5648279628a166700cede3e78d61fcfb44aebe7986a897874427332",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-5F81601F0EDC40D3",
+          "response_body_sha256": "581906b8a9caaa5139be0f9885452e32fa8d5a1b318ca864466cf996ab6198e5"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:dc3c49932a6bf3f8919766e7",
+          "request_hash": "23ee2797d5648279628a166700cede3e78d61fcfb44aebe7986a897874427332",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-5F81601F0EDC40D3",
+          "response_body_sha256": "581906b8a9caaa5139be0f9885452e32fa8d5a1b318ca864466cf996ab6198e5"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:dc3c49932a6bf3f8919766e7",
+          "request_hash": "23ee2797d5648279628a166700cede3e78d61fcfb44aebe7986a897874427332",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-5F81601F0EDC40D3",
+          "response_body_sha256": "581906b8a9caaa5139be0f9885452e32fa8d5a1b318ca864466cf996ab6198e5"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:dc3c49932a6bf3f8919766e7",
+          "request_hash": "23ee2797d5648279628a166700cede3e78d61fcfb44aebe7986a897874427332",
+          "response_status": 201,
+          "response_business_number": "SFL-MEMBER-5F81601F0EDC40D3",
+          "response_body_sha256": "581906b8a9caaa5139be0f9885452e32fa8d5a1b318ca864466cf996ab6198e5"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:a04c32747d6704f3320d05be"
+    },
+    {
+      "scenario_id": "e09:five_way:sovereign-c:order-orders-create",
+      "node_id": "node:e09:sovereign-c",
+      "node_label": "Sovereign-C",
+      "sovereignty_tier": "sovereign",
+      "operation_id": "order.orders.create",
+      "operation_label": "place order",
+      "business_fact_kind": "order",
+      "idempotency_key": "idem:a0b552b602f94c14be17fd63",
+      "request_hash": "e0d1423702234b43f9c79623ee0851118ed29266ac671d9de5b636614c3c680a",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:a0b552b602f94c14be17fd63",
+          "request_hash": "e0d1423702234b43f9c79623ee0851118ed29266ac671d9de5b636614c3c680a",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-9A40B20352FCCD06",
+          "response_body_sha256": "d93e6b5aad8bc7bbfdc77dab6fc4f7c77244a059d2075dbe52f0ad6cea9f991d"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:a0b552b602f94c14be17fd63",
+          "request_hash": "e0d1423702234b43f9c79623ee0851118ed29266ac671d9de5b636614c3c680a",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-9A40B20352FCCD06",
+          "response_body_sha256": "d93e6b5aad8bc7bbfdc77dab6fc4f7c77244a059d2075dbe52f0ad6cea9f991d"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:a0b552b602f94c14be17fd63",
+          "request_hash": "e0d1423702234b43f9c79623ee0851118ed29266ac671d9de5b636614c3c680a",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-9A40B20352FCCD06",
+          "response_body_sha256": "d93e6b5aad8bc7bbfdc77dab6fc4f7c77244a059d2075dbe52f0ad6cea9f991d"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:a0b552b602f94c14be17fd63",
+          "request_hash": "e0d1423702234b43f9c79623ee0851118ed29266ac671d9de5b636614c3c680a",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-9A40B20352FCCD06",
+          "response_body_sha256": "d93e6b5aad8bc7bbfdc77dab6fc4f7c77244a059d2075dbe52f0ad6cea9f991d"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:a0b552b602f94c14be17fd63",
+          "request_hash": "e0d1423702234b43f9c79623ee0851118ed29266ac671d9de5b636614c3c680a",
+          "response_status": 201,
+          "response_business_number": "SFL-ORDER-9A40B20352FCCD06",
+          "response_body_sha256": "d93e6b5aad8bc7bbfdc77dab6fc4f7c77244a059d2075dbe52f0ad6cea9f991d"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:82d49469c5766c7f70c43bec"
+    },
+    {
+      "scenario_id": "e09:five_way:sovereign-c:payment-refunds-request",
+      "node_id": "node:e09:sovereign-c",
+      "node_label": "Sovereign-C",
+      "sovereignty_tier": "sovereign",
+      "operation_id": "payment.refunds.request",
+      "operation_label": "refund",
+      "business_fact_kind": "refund",
+      "idempotency_key": "idem:95bc8f44b5d65f8c3d69f20f",
+      "request_hash": "c13e1ed3db7cda2eedcc466606b4ef994f1573ea2600f3e36f7147217a3dbbf9",
+      "deliveries": [
+        {
+          "delivery": 1,
+          "idempotency_key": "idem:95bc8f44b5d65f8c3d69f20f",
+          "request_hash": "c13e1ed3db7cda2eedcc466606b4ef994f1573ea2600f3e36f7147217a3dbbf9",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-5078FCF029411403",
+          "response_body_sha256": "5b58f0541e48506b28382251fd8c143dda2c3a61facb5047f7df65ded418ec5d"
+        },
+        {
+          "delivery": 2,
+          "idempotency_key": "idem:95bc8f44b5d65f8c3d69f20f",
+          "request_hash": "c13e1ed3db7cda2eedcc466606b4ef994f1573ea2600f3e36f7147217a3dbbf9",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-5078FCF029411403",
+          "response_body_sha256": "5b58f0541e48506b28382251fd8c143dda2c3a61facb5047f7df65ded418ec5d"
+        },
+        {
+          "delivery": 3,
+          "idempotency_key": "idem:95bc8f44b5d65f8c3d69f20f",
+          "request_hash": "c13e1ed3db7cda2eedcc466606b4ef994f1573ea2600f3e36f7147217a3dbbf9",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-5078FCF029411403",
+          "response_body_sha256": "5b58f0541e48506b28382251fd8c143dda2c3a61facb5047f7df65ded418ec5d"
+        },
+        {
+          "delivery": 4,
+          "idempotency_key": "idem:95bc8f44b5d65f8c3d69f20f",
+          "request_hash": "c13e1ed3db7cda2eedcc466606b4ef994f1573ea2600f3e36f7147217a3dbbf9",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-5078FCF029411403",
+          "response_body_sha256": "5b58f0541e48506b28382251fd8c143dda2c3a61facb5047f7df65ded418ec5d"
+        },
+        {
+          "delivery": 5,
+          "idempotency_key": "idem:95bc8f44b5d65f8c3d69f20f",
+          "request_hash": "c13e1ed3db7cda2eedcc466606b4ef994f1573ea2600f3e36f7147217a3dbbf9",
+          "response_status": 201,
+          "response_business_number": "SFL-PAYMENT-5078FCF029411403",
+          "response_body_sha256": "5b58f0541e48506b28382251fd8c143dda2c3a61facb5047f7df65ded418ec5d"
+        }
+      ],
+      "action_execution_count": 1,
+      "authoritative_rows": {
+        "idempotency": 1,
+        "business_facts": 1,
+        "checkpoints": 2,
+        "runtime_outbox": 2,
+        "audit_records": 1,
+        "provider_commands": 1,
+        "provider_resources": 1,
+        "provider_receipts": 1,
+        "provider_attempts": 1,
+        "execution_state": "completed",
+        "provider_command_state": "completed"
+      },
+      "provider_receipt_id": "provider-receipt:da30f6523e892e82891f4723"
+    }
+  ]
+}

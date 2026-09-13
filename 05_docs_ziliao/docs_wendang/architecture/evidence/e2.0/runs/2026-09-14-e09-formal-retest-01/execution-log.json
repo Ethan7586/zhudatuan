@@ -1,0 +1,23 @@
+{
+  "schema_version": "e09-execution-log-v1",
+  "started_at": "2026-09-13T20:42:26.329Z",
+  "completed_at": "2026-09-13T20:43:08.398Z",
+  "source_sha": "54934c682005c6c1bc1d56cf6b61d9fe7d03f2f0",
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e09 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01",
+    "node 04_tools/scripts/audit/database-contracts.mjs --postgres-fresh <ephemeral-postgres-url>",
+    "node --import tsx 04_tools/scripts/audit/e09-recovery.workload.ts --database-url <ephemeral-postgres-url> --criteria <locked-criteria> --output-directory <run-directory>",
+    "node 04_tools/scripts/audit/e09-recovery.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E09-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/recovery-independent-recount.json"
+  ],
+  "observed_execution": {
+    "five_way_scenarios": 15,
+    "conflict_scenarios": 15,
+    "interruption_scenarios": 60,
+    "recovery_receipts": 60,
+    "isolation_target_recoveries": 5,
+    "non_target_change_count": 0
+  },
+  "cleanup": "docker rm -f zhudatuan-e09-f62994851de943df",
+  "exit_code": 0
+}

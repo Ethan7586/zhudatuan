@@ -1,0 +1,517 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E09-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-REC-001"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E09-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E09-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:38b6193e797229b55885b79ddc9f704255fa25ae8175b538d125216f0c34db0d",
+    "locked_at": "2026-09-13T20:24:21Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e09-acceptance-repair-20260914",
+      "role": "E09 failure-injection test and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E09 disposable workload and evidence exporter, executed the production critical-write kernel and operated the separate raw-evidence oracle; not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-REC-001",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E09",
+    "01_core_hexin/services/commerce/src/foundation/application/ExecutionKernel.ts",
+    "01_core_hexin/services/commerce/src/foundation/application/ModuleOperations.ts",
+    "01_core_hexin/services/commerce/src/foundation/infrastructure/PgUnitOfWork.ts",
+    "02_platform_pingtai/database/supabase/migrations/20260912170000_create_sfl_execution_contract_kernel.sql"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T20:42:26.329Z",
+    "completed_at": "2026-09-13T20:43:08.398Z",
+    "executor": {
+      "actor_id": "codex-task-e09-acceptance-repair-20260914",
+      "role": "E09 failure-injection test and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E09 disposable workload and evidence exporter, executed the production critical-write kernel and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e09 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "The generated disposable PostgreSQL password and connection URL were used only in process memory and were not persisted in evidence."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-postgresql17-e09-f62994851de943df",
+    "description": "A newly created PostgreSQL 17 Alpine container replayed the complete migration chain and executed the locked E09 matrix through the production ExecutionKernel, production PostgreSQL unit of work and production audit projection.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Disposable Docker container zhudatuan-e09-f62994851de943df; synthetic E09 business rows and deterministic local provider rows only; the container was removed after execution.",
+    "real_customer_data": false,
+    "production_impact": "None. No production service, database, DNS provider, payment provider, supplier or customer record was contacted.",
+    "differences_from_production": [
+      "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+      "Synthetic business actions behind five real registered operation IDs rather than live module handlers or customer traffic.",
+      "A deterministic local provider persisted in a separately committed fixture transaction rather than an external payment, DNS or cloud provider.",
+      "No stable separately managed staging execution and no production observation."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "54934c682005c6c1bc1d56cf6b61d9fe7d03f2f0",
+    "test_item_shas": [
+      "54934c682005c6c1bc1d56cf6b61d9fe7d03f2f0"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "postgres:17-alpine sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73; 301 migrations; three nodes; five operations; five-way=15; conflict=15; interruptions=60; target recoveries=5.",
+    "digest": "sha256:566b9a48a935abd9a3a6cdd63e8046b074b7dd6851d58d05f3a8730ab9b1b4c5",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E09-REQUIRED-RAW-EVIDENCE-MISSING-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-OPERATION-NODE-SCENARIO-COMPLETENESS-MISMATCH-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-AUTHORITATIVE-RESULT-COUNT-MISMATCH-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-IDENTICAL-RESPONSE-BUSINESS-ID-MISMATCH-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-REQUEST-HASH-OR-IDEMPOTENCY-KEY-MISSING-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-CONFLICT-REJECTION-MISMATCH-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-CONFLICT-STATE-CHANGE-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-DUPLICATE-BUSINESS-PROVIDER-AUDIT-OR-OUTBOX-SIDE-EFFECT-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-INTERRUPTION-RECOVERY-SCENARIO-COMPLETENESS-MISMATCH-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-UNCLASSIFIED-PARTIAL-STATE-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-RETRY-TERMINAL-STATE-MISMATCH-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-PROVIDER-RECEIPT-MISSING-OR-DUPLICATE-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-NON-TARGET-NODE-CHANGE-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E09-NEGATIVE-ORACLE-PROBE-MISS-COUNT",
+      "source": "recovery-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T20:43:08.218Z",
+      "notes": "Recomputed from the nine locked raw artifacts; no runner PASS/status field was read."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/idempotency-five-way-results.json",
+      "media_type": "application/json",
+      "sha256": "sha256:b278e036587d6942de5a29154793c3e615199bd8bdd3d047a6eee8b467b45aa1",
+      "size_bytes": 45739,
+      "role": "Five simultaneous request/response sets and authoritative cardinalities for every operation/node pair"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/idempotency-conflict-results.json",
+      "media_type": "application/json",
+      "sha256": "sha256:0dedf4f5a35739df1a2c8bb5bd9880003f47503ae85d27cb01d87eb48711a914",
+      "size_bytes": 11399,
+      "role": "Same-key different-hash rejection and before/after state digests"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/interruption-state-diffs.json",
+      "media_type": "application/json",
+      "sha256": "sha256:9d1dbf5f43cb040735f6ee966a14b5f3bb43ca8c4db403d25e97b57ae8a3f117",
+      "size_bytes": 236167,
+      "role": "Before, interrupted and terminal snapshots for all four fixed interruption points"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/recovery-receipts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:b3be8e6c09e3871c15e381bb6c1a6a6285a5ce2c4a3e7df70fb6cdbc96900d59",
+      "size_bytes": 57833,
+      "role": "Reconstructed transaction/provider continuation receipts for every interruption"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/nontarget-isolation-diff.json",
+      "media_type": "application/json",
+      "sha256": "sha256:67881cfdb5a444308ffe972c0bcebede6174d1e069599ecaec6e7671a30877d8",
+      "size_bytes": 1297495,
+      "role": "Target recovery plus complete target/non-target snapshots and canonical diffs"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/database-raw-rows.json",
+      "media_type": "application/json",
+      "sha256": "sha256:843fd2979976fff102eef1cac1ec0b11c481d878bea1f5a7ca2705d5b7b204f8",
+      "size_bytes": 253241,
+      "role": "Raw runtime idempotency, business fact, checkpoint and provider-command rows"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/provider-receipts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:8e823b343660da1e4f4c54f276c4268fd8ef06a7519cd7bea33d5c9ed1fec4e2",
+      "size_bytes": 164645,
+      "role": "Raw deterministic provider resources, receipts and apply-attempt rows"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/audit-and-outbox-rows.json",
+      "media_type": "application/json",
+      "sha256": "sha256:5970c82d0c78a7eeb002a491d79d98e16a932a03266c717a907bcd7896b6e0dd",
+      "size_bytes": 244276,
+      "role": "Raw production audit records and runtime Outbox rows"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:466a971508ac21f46d4376aecc0f48198f3c5e725fe0737923d8b00afbf0d615",
+      "size_bytes": 2041,
+      "role": "Disposable execution environment identity and production differences"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/recovery-independent-recount.json",
+      "media_type": "application/json",
+      "sha256": "sha256:35a70eefbb57637979e06c5dc7b4e74799665c12eb645b58fe94b4b3d22e8bbd",
+      "size_bytes": 5072,
+      "role": "Independent authority, recovery, provider and isolation recount with negative probes"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/workload-execution.json",
+      "media_type": "application/json",
+      "sha256": "sha256:65ed8f76908ce503ec4312889893ca5b0da47eac884317cf53c7b42cf8d17da3",
+      "size_bytes": 389,
+      "role": "Observed E09 workload matrix totals"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/migration-replay.txt",
+      "media_type": "text/plain",
+      "sha256": "sha256:e9ab691c84de1fae8d2038ac6ee3e04c70cf23a16a0c6e57ecd79ce60b5d0472",
+      "size_bytes": 69,
+      "role": "Complete migration replay completion output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:5e62eda40247459333f4966089212840c602fcb059a38ced77f79e9c616a32c9",
+      "size_bytes": 1395,
+      "role": "Exact commands, source SHA, matrix totals and cleanup record"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E09-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:38b6193e797229b55885b79ddc9f704255fa25ae8175b538d125216f0c34db0d",
+      "size_bytes": 7725,
+      "role": "Pre-execution locked E09 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E09-AUTHORITY-COUNT",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Independently recount every operation/node request set, business number, request hash, idempotency row, business fact, audit row, operation outbox row, provider command and provider receipt; reconstruct each interruption from before/failure/retry snapshots; compare target and non-target state digests. Mutate copies to prove detection of a duplicate side effect, conflict overwrite, unclassified partial state and non-target change; do not consume runner PASS fields.",
+    "exact_invocation": "node 04_tools/scripts/audit/e09-recovery.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E09-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/recovery-independent-recount.json",
+    "evaluator": {
+      "actor_id": "codex-task-e09-acceptance-repair-20260914",
+      "role": "E09 failure-injection test and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E09 disposable workload and evidence exporter, executed the production critical-write kernel and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E09-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/idempotency-five-way-results.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/idempotency-conflict-results.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/interruption-state-diffs.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/recovery-receipts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/nontarget-isolation-diff.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/database-raw-rows.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/provider-receipts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/audit-and-outbox-rows.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "required_raw_evidence_missing_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "operation_node_scenario_completeness_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "authoritative_result_count_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "identical_response_business_id_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "request_hash_or_idempotency_key_missing_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "conflict_rejection_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "conflict_state_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "duplicate_business_provider_audit_or_outbox_side_effect_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "interruption_recovery_scenario_completeness_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "unclassified_partial_state_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "retry_terminal_state_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "provider_receipt_missing_or_duplicate_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "non_target_node_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_oracle_probe_miss_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "clean checkout of the recorded source SHA"
+    ],
+    "steps": [
+      "Check out 54934c682005c6c1bc1d56cf6b61d9fe7d03f2f0.",
+      "Run npm run evidence:e09 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01.",
+      "Read recovery-independent-recount.json and independently verify the listed artifact hashes and raw rows."
+    ],
+    "expected_raw_observations": [
+      "required raw evidence missing count = 0",
+      "operation/node scenario completeness mismatch count = 0",
+      "authoritative result count per operation/node = 1",
+      "identical response business ID mismatch count = 0",
+      "request hash or idempotency key missing count = 0",
+      "conflict rejection mismatch count = 0",
+      "conflict state change count = 0",
+      "duplicate business, provider, audit or operation Outbox side-effect count = 0",
+      "interruption/recovery scenario completeness mismatch count = 0",
+      "unclassified partial-state count = 0",
+      "retry terminal-state mismatch count = 0",
+      "provider receipt missing or duplicate count = 0",
+      "non-target node change count = 0",
+      "negative oracle probe miss count = 0"
+    ],
+    "cleanup": "The runner removes the disposable PostgreSQL container in a finally block; no external provider or production resource is created."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
+    "rationale": "All 15 operation/node pairs converged under five simultaneous requests, all conflicts preserved accepted state, all 60 fixed interruption cases recovered to one terminal authority, all local provider receipts remained unique, and Sovereign-C recovery changed no non-target node. All four negative oracle mutations were detected.",
+    "gaps": [
+      "No stable separately managed staging replay has been performed.",
+      "The DEV provider is deterministic and local; no authorized real payment, DNS or cloud-provider recovery observation has been performed.",
+      "Synthetic business actions were used behind the five registered operation IDs; this run does not establish each live module handler business contract.",
+      "No reviewer independent of the E09 workload, recovery implementation and oracle has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}

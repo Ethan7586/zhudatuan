@@ -1,0 +1,11 @@
+{
+  "schema_version": "e09-workload-execution-v1",
+  "captured_at": "2026-09-13T20:43:08.092Z",
+  "executor": "actual production ExecutionKernel + PgUnitOfWork with disposable business/provider fixtures",
+  "five_way_scenarios": 15,
+  "conflict_scenarios": 15,
+  "interruption_scenarios": 60,
+  "recovery_receipts": 60,
+  "isolation_target_recoveries": 5,
+  "non_target_change_count": 0
+}
