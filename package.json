@@ -121,6 +121,8 @@
     "evidence:e03": "node --import tsx 04_tools/scripts/audit/e03-authorization.pg17-fixture.mjs",
     "test:e02-vertical-topology": "node 04_tools/scripts/audit/e02-vertical-topology.pg17-fixture.mjs",
     "evidence:e02": "node 04_tools/scripts/audit/e02-vertical-topology.pg17-fixture.mjs",
+    "test:e01-horizontal-nodes": "node --import tsx 04_tools/scripts/audit/e01-horizontal-nodes.pg17-fixture.mjs",
+    "evidence:e01": "node --import tsx 04_tools/scripts/audit/e01-horizontal-nodes.pg17-fixture.mjs",
     "test:e04-multi-realm": "node --import tsx 04_tools/scripts/audit/e04-multi-realm.pg17-fixture.mjs",
     "evidence:e04": "node --import tsx 04_tools/scripts/audit/e04-multi-realm.pg17-fixture.mjs",
     "test:e05-zero-fanout": "node 04_tools/scripts/audit/e05-zero-fanout.pg17-fixture.mjs",
