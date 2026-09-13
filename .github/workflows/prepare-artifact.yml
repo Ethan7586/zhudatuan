@@ -116,6 +116,13 @@ jobs:
         run: |
           set -euo pipefail
           base="$(git rev-parse HEAD^)"
+          if [ "$RELEASE_TARGET" = "console" ]; then
+            export SHOP_BUILD_COMMIT="$RELEASE_SHA"
+            export SHOP_BUILD_BRANCH="zdt-next"
+            export SHOP_BUILD_DIRTY="false"
+            export SHOP_BUILD_ID="${RELEASE_SHA:0:12}"
+            export SHOP_BUILD_AT="$(git show -s --format=%cI "$RELEASE_SHA")"
+          fi
           mkdir -p .prepare-release/evidence
           run_cold_prepare() {
             label="$1"

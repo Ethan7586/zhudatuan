@@ -73,6 +73,12 @@ test('Console retains optional public acceptance metadata while parallel Prepare
   assert.match(prepareWorkflow, /state-cold-a|run_cold_prepare cold-a/);
   assert.match(prepareWorkflow, /run_cold_prepare cold-b/);
   assert.match(prepareWorkflow, /verify-reproducibility/);
+  assert.match(prepareWorkflow, /SHOP_BUILD_COMMIT="\$RELEASE_SHA"/);
+  assert.match(prepareWorkflow, /SHOP_BUILD_BRANCH="zdt-next"/);
+  assert.match(prepareWorkflow, /SHOP_BUILD_DIRTY="false"/);
+  assert.match(prepareWorkflow, /SHOP_BUILD_ID="\$\{RELEASE_SHA:0:12\}"/);
+  assert.match(prepareWorkflow, /SHOP_BUILD_AT="\$\(git show -s --format=%cI "\$RELEASE_SHA"\)"/);
+  assert.ok(prepareWorkflow.indexOf('SHOP_BUILD_AT=') < prepareWorkflow.indexOf('run_cold_prepare cold-a'));
   assert.match(prepareWorkflow, /ubuntu-24\.04/);
   assert.match(prepareWorkflow, /NPM_VERSION: 10\.9\.4/);
   assert.doesNotMatch(prepareWorkflow, /release_node|deploy-prepared|ZDT_RELEASE_SSH_HOST/);
