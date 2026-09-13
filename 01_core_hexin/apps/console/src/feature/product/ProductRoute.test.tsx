@@ -76,6 +76,17 @@ describe('Product governance workspace', () => {
     expect(await screen.findByText('已选入 1 件商品')).toBeTruthy();
   });
 
+  it('opens free products as the third workspace and reuses manual product creation', async () => {
+    const user = userEvent.setup();
+    renderProductRoute(mallContext, '/products?workspace=free');
+
+    expect(await screen.findByRole('heading', { name: '自由创建你的商品' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '自由商品' }).getAttribute('aria-current')).toBe('page');
+    expect(screen.getByText('创建完成后进入商品目录，仍由商品目录统一审核和上下架。')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: /新建自由商品/ }));
+    expect(await screen.findByRole('dialog', { name: '新建商品' })).toBeTruthy();
+  });
+
   it('renders the product shell and a stable table skeleton before the cold request completes', async () => {
     server.use(http.get('*/api/v1/catalog/listings', async ({ request }) => {
       requests.push(new URL(request.url));

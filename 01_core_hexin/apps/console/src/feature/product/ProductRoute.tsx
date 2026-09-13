@@ -16,6 +16,7 @@ import { canCreateCatalogImport } from './ProductImportCommand';
 import { ProductImportDialog } from './ProductImportDialog';
 import { ProductPagination } from './ProductPagination';
 import { ProductSelectionCenter } from './ProductSelectionCenter';
+import { ProductFreeWorkspace } from './ProductFreeWorkspace';
 import { canSelectProducts, selectProducts } from './ProductSelectionCommand';
 import { canManageListing, canReadPublicationTask, publishReadyListings, readPublicationTask,
   readyPublicationUnavailableReason, retryPublicationFailures, setListingPublication,
@@ -56,6 +57,7 @@ export function Component() {
   const [search, setSearch] = useSearchParams();
   const partnerWorkspace = context.scope.kind === 'supplier' || context.scope.kind === 'brand';
   const selectionWorkspace = !partnerWorkspace && search.get('workspace') === 'selection';
+  const freeWorkspace = !partnerWorkspace && search.get('workspace') === 'free';
   const previewScope = context.scope.kind === 'platform' && context.scope.id === 'platform:preview';
   const limitValue = Number(search.get('limit') ?? 50);
   const limit = pageSizes.has(limitValue) ? limitValue : 50;
@@ -66,7 +68,7 @@ export function Component() {
     category: search.get('category') ?? '',
     supplier: previewScope ? (search.get('supplier') ?? '') : '',
     mall: previewScope ? (search.get('mall') ?? '') : '',
-    status: selectionWorkspace ? '' : search.get('status') ?? '',
+    status: selectionWorkspace || freeWorkspace ? '' : search.get('status') ?? '',
     limit,
     preview: previewScope,
     ...(selectionWorkspace ? { view: 'selection-center' as const } : {}),
@@ -78,6 +80,7 @@ export function Component() {
     placeholderData: keepPreviousData,
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
+    enabled: !freeWorkspace,
   });
   const error = safeQueryError(query.error);
   const condition = queryCondition({
@@ -114,7 +117,7 @@ export function Component() {
   const publicationQuery = useQuery({
     queryKey: publicationKey,
     queryFn: ({ signal }) => readPublicationTask(context, publicationReference, signal),
-    enabled: publicationReadable && pageVisible && !selectionWorkspace,
+    enabled: publicationReadable && pageVisible && !selectionWorkspace && !freeWorkspace,
     retry: false,
     staleTime: 0,
     placeholderData: keepPreviousData,
@@ -229,9 +232,10 @@ export function Component() {
     void navigate(scopePath(context.scope, `imports/catalog/${encodeURIComponent(jobId)}`));
   };
 
-  const changeWorkspace = (workspace: 'catalog' | 'selection') => {
+  const changeWorkspace = (workspace: 'catalog' | 'selection' | 'free') => {
     const next = new URLSearchParams();
     if (workspace === 'selection') next.set('workspace', 'selection');
+    if (workspace === 'free') next.set('workspace', 'free');
     cursorTrail.current = new Map([[1, undefined]]);
     setSelected(new Set());
     setSearch(next);
@@ -344,6 +348,32 @@ export function Component() {
   if (condition === 'denied') {
     return <ResourceState condition="denied" resourceLabel={partnerWorkspace ? '供货工作台' : '商品管理'}
       {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}><span /></ResourceState>;
+  }
+
+  if (freeWorkspace) {
+    return (
+      <section className="productpage">
+        <ProductCatalogHeader
+          previewEnabled={false}
+          partnerWorkspace={false}
+          workspace="free"
+          onWorkspace={changeWorkspace}
+          status=""
+          exportReady={false}
+          writeEnabled={false}
+          releasePending={false}
+          onImport={() => undefined}
+          onCreate={() => undefined}
+          onRelease={() => undefined}
+          onRetry={() => undefined}
+          onExport={() => undefined}
+          onStatus={() => undefined}
+        />
+        <ProductFreeWorkspace enabled={writeEnabled} onCreate={() => setCreateOpen(true)} onImport={() => setImportOpen(true)} />
+        <ProductImportDialog context={context} open={importOpen} onClose={() => setImportOpen(false)} onCreated={openImportResult} />
+        <ProductCreateDialog context={context} open={createOpen} onClose={() => setCreateOpen(false)} onCreated={openImportResult} />
+      </section>
+    );
   }
 
   if (selectionWorkspace) {

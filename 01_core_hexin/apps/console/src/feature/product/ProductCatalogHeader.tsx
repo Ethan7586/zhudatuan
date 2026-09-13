@@ -5,8 +5,8 @@ interface ProductCatalogHeaderProps {
   readonly page?: ListingPage;
   readonly previewEnabled: boolean;
   readonly partnerWorkspace: boolean;
-  readonly workspace: 'catalog' | 'selection';
-  readonly onWorkspace: (workspace: 'catalog' | 'selection') => void;
+  readonly workspace: 'catalog' | 'selection' | 'free';
+  readonly onWorkspace: (workspace: 'catalog' | 'selection' | 'free') => void;
   readonly status: string;
   readonly onStatus: (status: string) => void;
   readonly exportReady: boolean;
@@ -51,13 +51,15 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
                   商品目录{workspace !== 'catalog' || coreTotal === undefined ? null : <strong>{formatCount(coreTotal)}</strong>}
                 </button>
                 <button type="button" aria-current={workspace === 'selection' ? 'page' : undefined} onClick={() => onWorkspace('selection')}>选品中心</button>
+                <button type="button" aria-current={workspace === 'free' ? 'page' : undefined} onClick={() => onWorkspace('free')}>自由商品</button>
               </nav></>
             )}
             <small>{partnerWorkspace ? '维护商品资料与平台采用状态' : workspace === 'selection'
-              ? '从供应链与品牌货盘快速挑选商品' : '点击商品查看资料、供应关系与上下架记录'}</small>
+              ? '从供应链与品牌货盘快速挑选商品' : workspace === 'free'
+                ? '不受现有货盘限制，自由创建或导入商品' : '点击商品查看资料、供应关系与上下架记录'}</small>
           </div>
         </div>
-        {workspace === 'selection' ? null : <div className="productheroactions" role="group" aria-label={partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>
+        {workspace !== 'catalog' ? null : <div className="productheroactions" role="group" aria-label={partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>
           <button className="productaction" type="button" disabled={!writeEnabled} onClick={onImport}
             title={writeEnabled ? '批量导入本企业商品' : '当前范围没有商品导入权限'}>
             <ProductIcon name="upload" />批量导入
