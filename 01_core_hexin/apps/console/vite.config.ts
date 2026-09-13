@@ -18,7 +18,7 @@ export default defineConfig(({ command, mode }) => {
   const build = buildDefinition(environment);
   const clientVersion = normalizeConsoleClientVersion(environment.VITE_CLIENT_VERSION);
   return {
-    plugins: [react(), tailwindcss(), consoleRuntimeEvidence(build, clientVersion)],
+    plugins: [consoleBootPrefetch(environment.VITE_API_BASE_URL, clientVersion), react(), tailwindcss(), consoleRuntimeEvidence(build, clientVersion)],
     define: {
       __SHOP_BUILD_COMMIT__: JSON.stringify(build.commit),
       __SHOP_BUILD_BRANCH__: JSON.stringify(build.branch),
@@ -44,6 +44,32 @@ export default defineConfig(({ command, mode }) => {
     },
   };
 });
+
+function consoleBootPrefetch(apiBaseUrl: string | undefined, clientVersion: string): Plugin {
+  const normalizedApiBaseUrl = apiBaseUrl?.trim().replace(/\/$/, '');
+  return {
+    name: 'console-boot-prefetch',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html) {
+        if (normalizedApiBaseUrl === undefined || normalizedApiBaseUrl === '') return html;
+        const apiOrigin = new URL(normalizedApiBaseUrl).origin;
+        const charset = '<meta charset="UTF-8" />';
+        const hints = `${charset}\n    <link rel="preconnect" href="${apiOrigin}" crossorigin />\n    <script>${earlyBootScript(normalizedApiBaseUrl, clientVersion)}</script>`;
+        return html.replace(charset, hints);
+      },
+    },
+  };
+}
+
+function earlyBootScript(apiBaseUrl: string, clientVersion: string): string {
+  return `(()=>{const api=${scriptValue(apiBaseUrl)},version=${scriptValue(clientVersion)},request=(path)=>fetch(path,{cache:'no-store',credentials:'same-origin',headers:{accept:'application/json'},redirect:'error'});window.__consoleEarlyRuntimePrefetch={node:request('/console-runtime.json'),fallback:request('/console-build.json')};void window.__consoleEarlyRuntimePrefetch.node.catch(()=>undefined);void window.__consoleEarlyRuntimePrefetch.fallback.catch(()=>undefined);const controller=new AbortController(),timeout=window.setTimeout(()=>controller.abort(),1500),slot={apiBaseUrl:api,clientVersion:version,settled:false,abort:()=>controller.abort(),promise:Promise.resolve(undefined)};slot.promise=fetch(api+'/api/v1/identity/session',{credentials:'include',redirect:'error',signal:controller.signal,headers:{accept:'application/json','x-contract-version':'1.0.0','x-client-version':version,'x-trace-id':crypto.randomUUID()}}).then(async(response)=>{if(!response.ok)return undefined;try{return await response.json()}catch{return undefined}},()=>undefined).finally(()=>{window.clearTimeout(timeout);slot.settled=true});window.__consoleEarlySessionPrefetch=slot})();`;
+}
+
+function scriptValue(value: string): string {
+  return JSON.stringify(value).replaceAll('<', '\\u003c');
+}
 
 const repositoryRoot = resolve(import.meta.dirname, '../../..');
 

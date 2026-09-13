@@ -18,13 +18,32 @@ interface Tracked<T> {
   promise: Promise<T | undefined>;
 }
 
+interface EarlySessionPrefetch extends Tracked<unknown> {
+  readonly apiBaseUrl: string;
+  readonly clientVersion: string;
+  readonly abort: () => void;
+}
+
+declare global {
+  interface Window {
+    __consoleEarlySessionPrefetch?: EarlySessionPrefetch;
+  }
+}
+
 const consoleKinds = Object.freeze(['platform', 'distributor', 'tenant', 'enterprise', 'mall']);
 
 export function startDocumentPrefetch(
   appConfig: Pick<ConsoleAppConfig, 'apiBaseUrl' | 'clientVersion'>,
 ): void {
+  const earlySession = window.__consoleEarlySessionPrefetch;
+  delete window.__consoleEarlySessionPrefetch;
+  const useEarlySession = earlySession !== undefined
+    && normalizeBaseUrl(earlySession.apiBaseUrl) === normalizeBaseUrl(appConfig.apiBaseUrl)
+    && earlySession.clientVersion === appConfig.clientVersion;
+  if (earlySession !== undefined && !useEarlySession) earlySession.abort();
   const controllers = new Set<AbortController>();
   window.__consoleAbortDocumentPrefetch = () => {
+    if (useEarlySession) earlySession.abort();
     for (const controller of controllers) controller.abort();
     controllers.clear();
   };
@@ -53,7 +72,9 @@ export function startDocumentPrefetch(
     }));
   };
 
-  const session = readJson<SessionCandidate>('/api/v1/identity/session');
+  const session = useEarlySession
+    ? tracked(earlySession.promise.then((value) => isRecord(value) ? value as SessionCandidate : undefined))
+    : readJson<SessionCandidate>('/api/v1/identity/session');
   window.__consoleSessionPrefetch = tracked(session.promise.then((value) => value === undefined ? undefined : { value }));
   window.__consoleScopePrefetch = tracked(session.promise.then(async (value) => {
     if (value === undefined) return undefined;
@@ -448,6 +469,14 @@ function tracked<T>(promise: Promise<T | undefined>): Tracked<T> {
   const slot: Tracked<T> = { settled: false, promise: Promise.resolve(undefined) };
   slot.promise = Promise.resolve(promise).catch(() => undefined).finally(() => { slot.settled = true; });
   return slot;
+}
+
+function normalizeBaseUrl(value: string): string {
+  return value.trim().replace(/\/$/, '');
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 function isConsoleScope(value: ScopeCandidate | undefined): value is Readonly<{

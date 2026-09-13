@@ -12,6 +12,15 @@ import {
   resolveNodeDomainBindingByHost,
 } from '@shop/config/sfl-node-kernel';
 
+declare global {
+  interface Window {
+    __consoleEarlyRuntimePrefetch?: Readonly<{
+      node: Promise<Response>;
+      fallback: Promise<Response>;
+    }>;
+  }
+}
+
 let installedConfig: ConsoleAppConfig | undefined;
 let loadingConfig: Promise<ConsoleAppConfig> | undefined;
 
@@ -30,13 +39,15 @@ export function requireConsoleRuntimeConfig(): ConsoleAppConfig {
 }
 
 async function loadProductionConfig(hostname: string): Promise<ConsoleAppConfig> {
-  const nodeResponsePromise = fetch('/console-runtime.json', {
+  const early = typeof window === 'undefined' ? undefined : window.__consoleEarlyRuntimePrefetch;
+  if (typeof window !== 'undefined') delete window.__consoleEarlyRuntimePrefetch;
+  const nodeResponsePromise = early?.node ?? fetch('/console-runtime.json', {
     cache: 'no-store',
     credentials: 'same-origin',
     headers: { accept: 'application/json' },
     redirect: 'error',
   });
-  const fallbackResponsePromise = fetch('/console-build.json', {
+  const fallbackResponsePromise = early?.fallback ?? fetch('/console-build.json', {
     cache: 'no-store',
     credentials: 'same-origin',
     headers: { accept: 'application/json' },

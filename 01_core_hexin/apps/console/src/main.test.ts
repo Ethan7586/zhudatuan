@@ -6,6 +6,7 @@ const index = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8');
 const main = readFileSync(resolve(process.cwd(), 'src/main.tsx'), 'utf8');
 const prefetch = readFileSync(resolve(process.cwd(), 'src/shared/api/DocumentPrefetch.ts'), 'utf8');
 const runtime = readFileSync(resolve(process.cwd(), 'src/shared/config/RuntimeConfig.ts'), 'utf8');
+const vite = readFileSync(resolve(process.cwd(), 'vite.config.ts'), 'utf8');
 
 describe('console bootstrap document', () => {
   it('loads the Host-bound NodeManifest before API prefetch or application modules', () => {
@@ -13,15 +14,24 @@ describe('console bootstrap document', () => {
     expect(index).not.toContain('%VITE_CLIENT_VERSION%');
     expect(runtime).toContain("fetch('/console-runtime.json'");
     expect(runtime).toContain("fetch('/console-build.json'");
-    expect(runtime).toContain('const nodeResponsePromise = fetch(');
-    expect(runtime).toContain('const fallbackResponsePromise = fetch(');
-    expect(runtime.indexOf('const fallbackResponsePromise = fetch('))
+    expect(runtime).toContain("early?.node ?? fetch('/console-runtime.json'");
+    expect(runtime).toContain("early?.fallback ?? fetch('/console-build.json'");
+    expect(runtime.indexOf("early?.fallback ?? fetch('/console-build.json'"))
       .toBeLessThan(runtime.indexOf('const nodeResponse = await nodeResponsePromise'));
     expect(prefetch).toContain('fetch(`${appConfig.apiBaseUrl}${path}`');
     expect(prefetch).toContain("'x-client-version': appConfig.clientVersion");
     expect(main.indexOf('loadConsoleRuntimeConfig()')).toBeLessThan(main.indexOf("import('./app/providers')"));
     expect(main).toContain('startDocumentPrefetch(runtimeConfig)');
     expect(main).not.toContain("import('./shared/api/DocumentPrefetch')");
+  });
+
+  it('starts runtime, API connection, and session work from the production HTML head', () => {
+    expect(vite).toContain("name: 'console-boot-prefetch'");
+    expect(vite).toContain('<link rel="preconnect"');
+    expect(vite).toContain("window.__consoleEarlyRuntimePrefetch={node:request('/console-runtime.json'),fallback:request('/console-build.json')}");
+    expect(vite).toContain("api+'/api/v1/identity/session'");
+    expect(prefetch).toContain('const earlySession = window.__consoleEarlySessionPrefetch');
+    expect(prefetch).toContain('earlySession.clientVersion === appConfig.clientVersion');
   });
 
   it('starts the default cockpit read from the validated session context', () => {
