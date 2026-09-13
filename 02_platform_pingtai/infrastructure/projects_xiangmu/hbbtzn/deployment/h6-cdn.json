@@ -1,0 +1,93 @@
+{
+  "schema": "zdt.edge-channel.v1",
+  "id": "h6-cdn",
+  "node": "hbbtzn-l1",
+  "domain": "h6.hbbtzn.com",
+  "origin": {
+    "type": "ipaddr",
+    "content": "123.57.232.253",
+    "port": 4480,
+    "host": "h6-origin.hbbtzn.com",
+    "probePaths": ["/", "/h5", "/api/v1/catalog/public/products?limit=1"]
+  },
+  "aliyun": {
+    "endpoint": "cdn.aliyuncs.com",
+    "regionId": "cn-beijing",
+    "scope": "domestic",
+    "cdnType": "web",
+    "certificate": {
+      "type": "cas",
+      "region": "cn-hangzhou",
+      "idEnv": "ALIYUN_CDN_CERT_ID"
+    },
+    "functions": [
+      {
+        "functionName": "set_req_host_header",
+        "functionArgs": [{"argName": "domain_name", "argValue": "h6-origin.hbbtzn.com"}]
+      },
+      {
+        "functionName": "ali_origin_port_scheme",
+        "functionArgs": [
+          {"argName": "port", "argValue": "4480"},
+          {"argName": "scheme", "argValue": "http"}
+        ]
+      },
+      {
+        "functionName": "path_based_ttl_set",
+        "functionArgs": [
+          {"argName": "path", "argValue": "/"},
+          {"argName": "weight", "argValue": "1"},
+          {"argName": "ttl", "argValue": "10"},
+          {"argName": "swift_origin_cache_high", "argValue": "on"},
+          {"argName": "swift_no_cache_low", "argValue": "off"},
+          {"argName": "swift_follow_cachetime", "argValue": "off"},
+          {"argName": "force_revalidate", "argValue": "off"}
+        ]
+      },
+      {
+        "functionName": "https_force",
+        "functionArgs": [
+          {"argName": "enable", "argValue": "on"},
+          {"argName": "https_rewrite", "argValue": "308"}
+        ]
+      },
+      {
+        "functionName": "gzip",
+        "functionArgs": [{"argName": "enable", "argValue": "on"}]
+      },
+      {
+        "functionName": "brotli",
+        "functionArgs": [{"argName": "enable", "argValue": "on"}]
+      },
+      {
+        "functionName": "https_option",
+        "functionArgs": [
+          {"argName": "http2", "argValue": "on"},
+          {"argName": "ocsp_stapling", "argValue": "on"}
+        ]
+      },
+      {
+        "functionName": "ipv6",
+        "functionArgs": [
+          {"argName": "switch", "argValue": "on"},
+          {"argName": "region", "argValue": "cn.cn"}
+        ]
+      }
+    ]
+  },
+  "cloudflare": {
+    "zoneIdEnv": "CLOUDFLARE_ZONE_ID",
+    "apiTokenEnv": "CLOUDFLARE_API_TOKEN",
+    "baseline": {
+      "type": "CNAME",
+      "content": "4124d4ea-cd3a-4439-9872-86672df64997.cfargotunnel.com",
+      "proxied": true,
+      "ttl": 1
+    },
+    "production": {
+      "type": "CNAME",
+      "proxied": false,
+      "ttl": 60
+    }
+  }
+}

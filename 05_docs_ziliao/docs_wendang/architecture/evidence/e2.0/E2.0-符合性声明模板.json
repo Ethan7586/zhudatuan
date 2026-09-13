@@ -1,0 +1,27 @@
+{
+  "$schema": "./E2.0-符合性声明.schema.json",
+  "schema_version": "e2.0-conformity-statement-v2",
+  "statement_id": "E2-STATEMENT-TEMPLATE",
+  "template": true,
+  "profile_id": "E2.0",
+  "profile_version": "2.0.0",
+  "issued_at": null,
+  "scope": "Replace with an exact product, Git SHA, configuration, environment and observation time window.",
+  "claim_ids": [],
+  "rating": {
+    "claim_outcome": "UNKNOWN",
+    "environment_assurance": "NOT ESTABLISHED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM"
+  },
+  "evidence_refs": [],
+  "review_evidence_refs": [],
+  "tailoring_refs": [],
+  "gaps": [
+    "Template only: no claim, evidence, issuer or reviewer has been supplied."
+  ],
+  "issuer": null,
+  "reviewer": null,
+  "mandatory_disclaimer": "This is an E2.0 standards-aligned tailored conformity statement, not an ISO, IEEE, NIST, OWASP, PCI SSC, or third-party certification.",
+  "non_gating": true
+}

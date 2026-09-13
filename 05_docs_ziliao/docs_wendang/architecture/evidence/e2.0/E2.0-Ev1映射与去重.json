@@ -1,0 +1,134 @@
+{
+  "schema_version": "e2.0-legacy-mapping-v1",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "legacy_profile": {
+    "name": "E v1 内部架构验证标准",
+    "status": "FROZEN",
+    "frozen_on": "2026-09-13",
+    "historical_results_policy": "Preserve every E v1 source and result verbatim. Never rewrite a historical PASS/FAIL/UNKNOWN; add a new E2.0 calibration record instead.",
+    "certification_status": "INTERNAL_ONLY_NOT_CERTIFICATION"
+  },
+  "source_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/16-SFL-统一节点模型全项目总报告与实验计划-2026-09-12.md",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点实体总验收-E05-E12-2026-09-12.json"
+  ],
+  "families": [
+    {
+      "family_id": "NODE_MODEL_TOPOLOGY",
+      "title": "节点模型与拓扑",
+      "legacy_ids": ["E01", "E02"],
+      "mappings": [
+        {
+          "legacy_id": "E01",
+          "e2_claim_id": "E2-TOPO-001",
+          "unique_measurement": "Three peer nodes sharing one model/build/artifact while preserving node, Realm, Membership and Scope isolation",
+          "deduplication_rule": "E01's three-node behavioral sample cannot substitute for E11's 1/10/100/1000 scale curve."
+        },
+        {
+          "legacy_id": "E02",
+          "e2_claim_id": "E2-TOPO-002",
+          "unique_measurement": "One L0-L11 data-driven chain, closure correctness, relation version history and the L12 boundary",
+          "deduplication_rule": "E02 topology and closure facts do not prove E07 lifecycle continuity through opening or upgrade."
+        }
+      ]
+    },
+    {
+      "family_id": "AUTHORIZATION_AND_IDENTITY",
+      "title": "授权交集与身份隔离",
+      "legacy_ids": ["E03", "E04"],
+      "mappings": [
+        {
+          "legacy_id": "E03",
+          "e2_claim_id": "E2-AUTH-001",
+          "unique_measurement": "Complete 32-row five-factor truth table across page, API, task and trusted service/provider surfaces",
+          "deduplication_rule": "E12 invalid-context and forged-authority cases cannot replace E03's complete truth table or four-surface equality evidence."
+        },
+        {
+          "legacy_id": "E04",
+          "e2_claim_id": "E2-ID-001",
+          "unique_measurement": "Shared-credential discovery with separate Account, Membership, Session, lineage, Scope, authority and assets across three Realms",
+          "deduplication_rule": "E12's general authority-isolation matrix cannot replace E04's credential discovery and Realm-switch session-transition evidence."
+        }
+      ]
+    },
+    {
+      "family_id": "RELEASE_AND_SCALE",
+      "title": "发布与规模",
+      "legacy_ids": ["E05", "E06", "E10", "E11"],
+      "mappings": [
+        {
+          "legacy_id": "E05",
+          "e2_claim_id": "E2-REL-001",
+          "unique_measurement": "Hosted lifecycle zero infrastructure fan-out",
+          "deduplication_rule": "Do not reuse E05 build/fan-out counts as E11 scale-point evidence."
+        },
+        {
+          "legacy_id": "E06",
+          "e2_claim_id": "E2-REL-002",
+          "unique_measurement": "Single Sovereign node A-to-B-to-A and non-target isolation",
+          "deduplication_rule": "E06 pointer isolation does not prove E10 cross-surface capability correctness."
+        },
+        {
+          "legacy_id": "E10",
+          "e2_claim_id": "E2-REL-003",
+          "unique_measurement": "One shared change/build across Hosted and staggered Sovereign nodes plus four-surface feature equality",
+          "deduplication_rule": "Artifact identity may be referenced from E06 only when the exact same run/SHA is proven; feature evidence cannot be inherited."
+        },
+        {
+          "legacy_id": "E11",
+          "e2_claim_id": "E2-SCALE-001",
+          "unique_measurement": "1/10/100/1000 scale relationship for source, build and Hosted operations",
+          "deduplication_rule": "Each scale point needs raw counts; E05's three-node sample cannot substitute for the scale curve."
+        }
+      ]
+    },
+    {
+      "family_id": "NODE_UPGRADE_CONTINUITY",
+      "title": "节点升级连续性",
+      "legacy_ids": ["E07"],
+      "mappings": [
+        {
+          "legacy_id": "E07",
+          "e2_claim_id": "E2-CONT-001",
+          "unique_measurement": "Identity, membership, level, parent edge and historical-lineage continuity through Hosted opening and Sovereign upgrade",
+          "deduplication_rule": "Release isolation evidence from E06 does not prove identity/lineage continuity."
+        }
+      ]
+    },
+    {
+      "family_id": "TRANSACTION_INTEGRITY_AND_RECOVERY",
+      "title": "交易完整性与恢复",
+      "legacy_ids": ["E08", "E09"],
+      "mappings": [
+        {
+          "legacy_id": "E08",
+          "e2_claim_id": "E2-TXN-001",
+          "unique_measurement": "Four-flow and supplier-leg accounting invariants including partial refund on the original route",
+          "deduplication_rule": "E08 proves business reconciliation; it does not substitute for E09 concurrency/interruption evidence."
+        },
+        {
+          "legacy_id": "E09",
+          "e2_claim_id": "E2-REC-001",
+          "unique_measurement": "Idempotent concurrency, conflict handling, interruption continuation and non-target recovery isolation",
+          "deduplication_rule": "E09 may reference E08 authoritative rows but must independently prove one-result and recovery behavior."
+        }
+      ]
+    },
+    {
+      "family_id": "MULTI_TENANT_ISOLATION",
+      "title": "多租户隔离",
+      "legacy_ids": ["E12"],
+      "mappings": [
+        {
+          "legacy_id": "E12",
+          "e2_claim_id": "E2-ISO-001",
+          "unique_measurement": "Host, Realm, Scope, Membership and node-authority negative matrix with direct no-write oracle",
+          "deduplication_rule": "Positive context tests from other experiments cannot replace E12's full negative/forgery matrix and database diff."
+        }
+      ]
+    }
+  ],
+  "migration_rule": "A legacy ID remains a traceability alias only. It is never an external standard identifier and never determines an E2.0 assurance level by itself."
+}

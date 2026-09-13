@@ -33,9 +33,9 @@ test('production acceptance is fixed to the eight retained domains', () => {
 });
 
 test('deployment channel 1.2 remains byte-for-byte available during the parallel RC', () => {
-  assert.equal(sha256(deployWorkflow), '9a48f873fd319ae228ad4cb7617d373e96d46593a0da8d1ea571cc3ae5293800');
+  assert.equal(sha256(deployWorkflow), 'd75d32a4c37d565153965f31ebb8a9083c88206e469af1768cdba6f53f83c186');
   assert.equal(sha256(deployOssWorkflow), '39606189d420ff3442b58eda9c89213f0b3b2f8ab1df994d7e457bb6298dadf7');
-  assert.equal(sha256(deployNow), 'f810763f3565578299ccde08a651efe6751373b86742626f56c12101088a797f');
+  assert.equal(sha256(deployNow), '643ad67134bc21278e0800e7d7a87d4e92bbb0e1657f5b47a442f12aaa236385');
 });
 
 test('Console retains optional public acceptance metadata while parallel Prepare and Prepared Deploy remain exact single-target channels', () => {
@@ -80,10 +80,25 @@ test('Console retains optional public acceptance metadata while parallel Prepare
   assert.equal((prepareWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
 });
 
+test('active Deploy retains its exact single-target H6 CDN channel', () => {
+  assert.match(deployWorkflow, /--direct/);
+  assert.match(deployWorkflow, /head_sha:[\s\S]*?required: true/);
+  assert.match(deployWorkflow, /release_target:[\s\S]*?required: true[\s\S]*?type: choice/);
+  assert.match(deployWorkflow, /\^\[0-9a-f\]\{40\}\$/);
+  assert.equal((deployWorkflow.match(/--target "\$RELEASE_TARGET"/g) ?? []).length, 3);
+  assert.match(deployWorkflow, /- h6-cdn/);
+  assert.match(deployWorkflow, /cli\.mjs channel[\s\S]*?--action deploy/);
+  assert.match(deployWorkflow, /ALIYUN_CDN_ACCESS_KEY_ID:[\s\S]*?CLOUDFLARE_API_TOKEN:/);
+  assert.doesNotMatch(deployWorkflow, /affected|target_args|inputs\.head_sha \|\||inputs\.release_target \|\|/);
+  assert.doesNotMatch(deployWorkflow, /Affected Delivery|external_baseline|approve-production/);
+  assert.equal((deployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
+});
+
 test('direct deployment refuses incomplete inputs and never creates a temporary channel', () => {
   assert.match(deployNow, /if \[ "\$#" -ne 3 \]/);
   assert.match(deployNow, /gh workflow view deploy\.yml --ref zdt-next/);
   assert.match(deployNow, /gh workflow run deploy\.yml --ref zdt-next -f head_sha="\$SHA" -f release_node="\$NODE" -f release_target="\$TARGET"/);
+  assert.match(deployNow, /c\.channels\?\.\[target\]\?\.node===node/);
   assert.doesNotMatch(deployNow, /git push|DEPLOY_REF|affected/);
   assert.match(deployPrepared, /gh workflow run deploy-prepared\.yml/);
   assert.doesNotMatch(deployPrepared, /production[_-]approval|zdt-next:prepared-deploy:/);
@@ -357,6 +372,16 @@ test('prepared deployment binds artifact and control-plane provenance before can
   assert.match(preparedDeployWorkflow, /validate-candidate/);
   assert.match(preparedDeployWorkflow, /jobs:\n  prepared:/);
   assert.doesNotMatch(preparedDeployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent|npm ci|release -- build|release -- package/);
+});
+
+test('production deployment binds an exact GitHub SHA directly to Aliyun', () => {
+  assert.match(deployWorkflow, /ref: \$\{\{ inputs\.head_sha \}\}/);
+  assert.match(deployWorkflow, /sha="\$\(git rev-parse HEAD\)"/);
+  assert.match(deployWorkflow, /if \[ "\$sha" != "\$RELEASE_SHA" \]/);
+  assert.ok(deployWorkflow.indexOf('mkdir -p .direct-release') < deployWorkflow.indexOf('if [ "$RELEASE_TARGET" = "h6-cdn" ]'));
+  assert.match(deployWorkflow, /--environment production[\s\S]*?--direct/);
+  assert.match(deployWorkflow, /jobs:\n  deploy:/);
+  assert.doesNotMatch(deployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent/);
   assert.match(qualityWorkflow, /^on:\n  workflow_dispatch:/m);
 });
 

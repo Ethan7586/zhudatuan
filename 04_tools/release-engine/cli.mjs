@@ -2,6 +2,7 @@
 import { resolve } from 'node:path';
 
 import { loadAdapter } from './src/adapter.mjs';
+import { channelCommand } from './src/channel.mjs';
 import { e06SovereignCommand } from './src/e06-sovereign.mjs';
 import { asDeliveryError } from './src/errors.mjs';
 import {
@@ -39,6 +40,7 @@ const commands = Object.freeze({
   seed: seedCommand,
   status: statusCommand,
   layer: layerCommand,
+  channel: channelCommand,
   'accept-e06': e06SovereignCommand,
 });
 
@@ -116,6 +118,6 @@ function printResult(result, format) {
 
 function printHelp() {
   process.stdout.write(
-    `统一 AI 发布引擎\n\n用法：\n  node 04_tools/release-engine/cli.mjs <plan|install|build|package|publish|verify-reproducibility|validate-prepared|deploy-prepared|deploy|verify|rollback|status|seed|baseline|layer|accept-e06> [选项]\n\n关键选项：\n  --adapter <path>             项目适配器\n  --state-directory <path>     本次运行的隔离状态根\n  --from <git-ref>             差异起点；accept-e06 的制品 A\n  --to <git-ref>               差异终点；accept-e06 的制品 B\n  --node <node-key>            目标节点，可重复\n  --plan <plan.json>           构建所用计划\n  --build <build.json>         打包所用构建证据\n  --package <package.json>     Prepare 发布所用制品集合\n  --left-package <package.json>  确定性证明的第一个冷制品\n  --right-package <package.json> 确定性证明的第二个冷制品\n  --prepare                    强制单目标 Prepare，保留测试与类型检查\n  --target <target-id>         单一目标\n  --source-sha <sha>           完整来源提交\n  --control-sha <sha>          当前发布控制面完整提交\n  --github-run-id <id>         GitHub Actions 运行编号\n  --github-run-attempt <n>     GitHub Actions 重试编号\n  --expected-remote-agent-sha256 <sha256>  预期远端 Agent 文件摘要\n  --expected-remote-policy-sha256 <sha256> 预期远端策略文件摘要\n  --approve-seed <project:seed-layout:sha>\n  --approve-baseline <project:baseline:sha>\n  --source-node-modules <path> 依赖层来源\n  --destination <path>         依赖层安装根目录\n  --output <path>              输出回执或 accept-e06 证据目录\n  --summary <path>             accept-e06 的总验收回执\n  --image <image>              accept-e06 使用的本地 Docker 镜像\n  --dry-run                    只展示部署意图\n  --format <human|json>\n`
+    `统一 AI 发布引擎\n\n用法：\n  node 04_tools/release-engine/cli.mjs <plan|install|build|package|publish|verify-reproducibility|validate-prepared|deploy-prepared|deploy|verify|rollback|status|seed|baseline|layer|channel|accept-e06> [选项]\n\n关键选项：\n  --adapter <path>             项目适配器\n  --state-directory <path>     本次运行的隔离状态根\n  --from <git-ref>             差异起点；accept-e06 的制品 A\n  --to <git-ref>               差异终点；accept-e06 的制品 B\n  --node <node-key>            目标节点，可重复\n  --plan <plan.json>           构建所用计划\n  --build <build.json>         打包所用构建证据\n  --package <package.json>     部署或 Prepare 发布所用制品集合\n  --left-package <package.json>  确定性证明的第一个冷制品\n  --right-package <package.json> 确定性证明的第二个冷制品\n  --prepare                    强制单目标 Prepare，保留测试与类型检查\n  --environment <candidate|production>\n  --approve-production <project:sha>\n  --mode <agent-candidate|agent|runtime-candidate|runtime|verify>\n  --approve-install <project:install:sha>\n  --target <target-id>         计划、部署、状态、回滚、初始登记、依赖层或通道目标\n  --action <status|establish|deploy|rollback>\n  --source-sha <sha>           完整来源、安装、初始登记、基线导入或通道部署提交\n  --control-sha <sha>          当前发布控制面完整提交\n  --github-run-id <id>         GitHub Actions 运行编号\n  --github-run-attempt <n>     GitHub Actions 重试编号\n  --expected-remote-agent-sha256 <sha256>  预期远端 Agent 文件摘要\n  --expected-remote-policy-sha256 <sha256> 预期远端策略文件摘要\n  --approve-seed <project:seed-layout:sha>\n  --approve-baseline <project:baseline:sha>\n  --source-node-modules <path> 依赖层来源\n  --destination <path>         依赖层安装根目录\n  --output <path>              输出回执或 accept-e06 证据目录\n  --summary <path>             accept-e06 的总验收回执\n  --image <image>              accept-e06 使用的本地 Docker 镜像\n  --dry-run                    只展示部署意图\n  --format <human|json>\n`
   );
 }

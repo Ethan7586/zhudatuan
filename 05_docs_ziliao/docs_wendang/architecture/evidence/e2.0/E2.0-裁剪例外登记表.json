@@ -1,0 +1,55 @@
+{
+  "schema_version": "e2.0-tailoring-register-v1",
+  "profile_version": "2.0.0",
+  "retrieved_on": "2026-09-13",
+  "non_gating": true,
+  "entries": [
+    {
+      "tailoring_id": "E2-TAILOR-PCI-001",
+      "subject": "PCI DSS 4.0.1 requirement mapping",
+      "status": "NOT_ACTIVATED",
+      "reason": "The E2.0 baseline has no confirmed scope decision that zdt-next directly stores, processes or transmits cardholder data. The profile therefore does not map PCI DSS requirements and does not claim either compliance or formal out-of-scope status.",
+      "approved_by": "Ethan — current task directive",
+      "approved_on": "2026-09-13",
+      "valid_until": null,
+      "review_conditions": [
+        "Evidence that the system directly stores, processes or transmits cardholder data or sensitive authentication data.",
+        "A payment-channel or architecture change that may bring the environment into PCI DSS scope.",
+        "A scope determination requested by an acquirer, payment brand, QSA or other compliance-accepting entity."
+      ]
+    },
+    {
+      "tailoring_id": "E2-TAILOR-29119-001",
+      "subject": "Formal conformity to ISO/IEC/IEEE 29119",
+      "status": "DEFERRED",
+      "reason": "Only official public metadata and preview material were used. This is enough for a process-alignment profile but not for clause-by-clause formal conformity.",
+      "approved_by": "Ethan — current task directive",
+      "approved_on": "2026-09-13",
+      "valid_until": null,
+      "review_conditions": [
+        "Authorized full text for each claimed applicable part is obtained.",
+        "A formal conformity claim is proposed and every requirement receives an applicability/tailoring record."
+      ]
+    },
+    {
+      "tailoring_id": "E2-TAILOR-22301-001",
+      "subject": "ISO 22301 BCMS conformity or certification",
+      "status": "NOT APPLICABLE",
+      "reason": "E2.0 uses continuity/recovery concepts only as reference alignment for selected technical experiments; it does not assess an organizational business continuity management system.",
+      "approved_by": "Ethan — current task directive",
+      "approved_on": "2026-09-13",
+      "valid_until": null,
+      "review_conditions": ["Ethan starts a separately scoped BCMS conformity or certification initiative."]
+    },
+    {
+      "tailoring_id": "E2-TAILOR-GATE-001",
+      "subject": "Use of E2.0 as a runtime, merge, release or deployment gate",
+      "status": "NOT APPLICABLE",
+      "reason": "The product boundary makes E2.0 measurement, evidence and reporting only. FAIL/UNKNOWN cannot block or alter system operation.",
+      "approved_by": "Ethan — current task directive",
+      "approved_on": "2026-09-13",
+      "valid_until": null,
+      "review_conditions": ["Only an explicit future authorization from Ethan for one named item may create a separate mandatory gate; that gate would not be implied by E2.0."]
+    }
+  ]
+}

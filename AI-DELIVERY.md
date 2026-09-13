@@ -1,4 +1,4 @@
-# AI 发布通道 1.3（预构建不可变制品）
+# AI 发布通道（现役直达部署与 1.3 RC）
 
 1.3 作为并行 RC 通道加入现有发布体系：GitHub `Prepare Artifact` 生成制品，GitHub `Prepared Deploy` 验证或部署已经存在的制品。现有 1.2 `Deploy`、`Deploy via Wuhan OSS` 和 `scripts/deploy-now.sh` 在首次 1.3 生产候选完成验证前保持原样可用。1.3 两条工作流一次都只接受一个 target；不支持空目标、affected 或多目标扇出。
 
@@ -8,11 +8,21 @@ Ethan 在独立任务中输入“部署”才是首次 1.3 生产授权。AI 只
 
 通道建设、Prepare 和 Deploy 是三个不同动作。建设完成后必须停止；Prepare 完成后也不得顺带 Deploy。生产切流仍须 Ethan 在独立任务中明确输入“部署”。
 
-1.2 本地生产触发入口保持不变：
+## 通道与部署严格分离
+
+- 目标没有现成通道时，部署立即停止并报告“通道尚未建立”。
+- “部署”不得创建或修改工作流、脚本、制品路径、SSH、ECS、数据库或其他基础设施。
+- 只有 Ethan 明确要求建立目标通道时才允许建设；通道建成后停止，等待新的“部署”口令。
+- 部署不等待或调用测试、类型检查、候选、审批、外部基线或浏览器验收。
+- 部署耗时只计算 GitHub Deploy 工作流从触发到成功或失败终态的时间。
+
+  1.2 本地生产触发入口保持不变：
 
 ```bash
-scripts/deploy-now.sh <target> <full-source-sha> <node>
+scripts/deploy-now.sh [target] [full-source-sha] [node]
 ```
+
+参数留空时使用 GitHub `zdt-next` 的精确 HEAD 和 `hbbtzn-l1`；目标必须已由上下文明确，不能借空参数扩大到全部受影响目标。
 
 独立授权后的 1.3 生产触发入口是：
 
@@ -20,9 +30,23 @@ scripts/deploy-now.sh <target> <full-source-sha> <node>
 scripts/deploy-prepared.sh <target> <full-source-sha> <node>
 ```
 
+## 现役 Deploy 与 H6 CDN
+
+H6 阿里云 CDN 使用同一个 GitHub `Deploy` 工作流，登记目标为 `h6-cdn`。它不重新构建 Storefront 制品，只在确认阿里云 CDN、HTTPS、直连源站和预切流探测均正常后，把 H6 的 Cloudflare DNS 从 Tunnel 回滚点切换到阿里云 CDN CNAME。状态、通道建立意图和回滚统一通过：
+
+```bash
+npm run release -- channel --target h6-cdn --node hbbtzn-l1 --action status
+npm run release -- channel --target h6-cdn --node hbbtzn-l1 --action establish
+npm run release -- channel --target h6-cdn --node hbbtzn-l1 --action rollback
+```
+
+建立通道不得执行 `--action deploy`；首次切流仍须等待新的“部署 H6”口令。
+
 ## Prepare Artifact（构建通道）
 
 `.github/workflows/prepare-artifact.yml` 接受一个完整 source SHA 和一个 target：
+
+## Prepare 唯一执行链
 
 ```text
 精确 checkout → 固定 ubuntu-24.04 x64 / Node 22.22.0 / npm 10.9.4
@@ -48,6 +72,43 @@ npm run release -- publish --package <package.json> --source-sha <source-sha> --
 GitHub dependency cache 只减少重复下载。缓存丢失会触发重新安装和构建，不会改变制品身份，也不能被 Deploy 使用。GitHub Actions receipt artifact 只保存审计回执；唯一可部署来源是 OSS。
 
 Storefront publish 必须读取完整运行证据并 fail closed：`ok=true`、Linux x64、Node 22.22.0、制品内无 `node_modules`，首页/H5/动态路由均返回有效 HTML，且哈希静态资源完成 200、immutable cache 与 304 验证。任一字段缺失或不符时，在任何 OSS 对象上传前停止。
+
+## 现役 Deploy 唯一执行链
+
+```text
+精确 Git SHA
+  → GitHub Deploy（单 Job）
+  → 只运行生产构建
+  → 上传阿里云不可变版本目录
+  → 记录 previous
+  → 原子切换 current
+  → 重启目标服务
+```
+
+`h6-cdn` 是边缘路由目标，其唯一执行链为：精确 Git SHA → GitHub `Deploy` 单 Job → 直连源站与 CDN CNAME 探测 → Cloudflare DNS 原子切换。它不改运行制品指针、不重启业务服务。
+
+部署不依赖 `.github/workflows/quality.yml`。Affected Delivery 仅可被人工单独调用，不能成为 Deploy 的前置任务。
+
+## 不属于门禁的机械约束
+
+- Git SHA 必须精确，避免其他任务的提交混入。
+- 制品传输保留摘要和路径安全检查，避免传输损坏或目录逃逸。
+- 同一节点和目标使用互斥锁，避免两个发布同时改写指针。
+- 每次切换保存 previous；重启命令失败时恢复旧指针。
+- 应用构建、SSH 传输或服务重启命令自身失败，表示部署没有完成，不是额外审批。
+
+## 发布引擎直达模式
+
+`--direct` 只执行构建、制品生成、传输和切换：
+
+```bash
+node 04_tools/release-engine/cli.mjs plan --from <base> --to <sha> --node <node> --direct
+node 04_tools/release-engine/cli.mjs build --plan <plan.json>
+node 04_tools/release-engine/cli.mjs package --build <build.json>
+node 04_tools/release-engine/cli.mjs deploy --package <package.json> --node <node> --environment production --direct
+```
+
+直达模式不运行 tests、typecheck、build preflight、candidate checks、production approval、remote preflight、health checks 或 external baseline。
 
 ## OSS 制品协议
 

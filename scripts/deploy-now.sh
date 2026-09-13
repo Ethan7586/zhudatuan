@@ -18,7 +18,7 @@ if [[ ! "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
   echo "Deploy stopped: commit must be one full lowercase Git SHA." >&2
   exit 64
 fi
-if ! node -e 'const c=require("./02_platform_pingtai/infrastructure/release/zdt-next.release.json"); const [target,node]=process.argv.slice(1); if (!c.targets[target] || !c.nodes[node]?.deployments?.[target]) process.exit(1)' "$TARGET" "$NODE"; then
+if ! node -e 'const c=require("./02_platform_pingtai/infrastructure/release/zdt-next.release.json"); const [target,node]=process.argv.slice(1); const runtime=Boolean(c.targets[target]&&c.nodes[node]?.deployments?.[target]); const channel=c.channels?.[target]?.node===node; if (!runtime&&!channel) process.exit(1)' "$TARGET" "$NODE"; then
   echo "Deploy stopped: no configured channel for ${NODE}/${TARGET}." >&2
   exit 64
 fi
