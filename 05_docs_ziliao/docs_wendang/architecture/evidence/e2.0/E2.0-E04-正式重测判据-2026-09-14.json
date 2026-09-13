@@ -1,0 +1,194 @@
+{
+  "schema_version": "e2.0-formal-retest-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E04-FORMAL-RETEST-20260914",
+  "profile_version": "2.0.0",
+  "claim_id": "E2-ID-001",
+  "legacy_trace_id": "E04",
+  "locked_at": "2026-09-13T21:51:44Z",
+  "purpose": "Execute the already-defined E04 shared-credential, three-Realm identity and session-isolation claim and preserve independently recountable discovery, identifier, positive asset, six-transition, 48-negative and authoritative database-diff evidence. This record mirrors the active E2.0 trace matrix and does not create or expand a product contract.",
+  "authoritative_basis": [
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-ID-001",
+      "git_commit": "ea4ddb9514d71c78c0a1272ba1036d1160d944eb",
+      "sha256": "sha256:9bdc2ff3b88f26feddd6f5a2fa5bd56d547ed6299429ac76ace9b6a2692b25f6"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E04",
+      "git_commit": "ea4ddb9514d71c78c0a1272ba1036d1160d944eb",
+      "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69"
+    }
+  ],
+  "implementation_basis": [
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql",
+      "git_commit": "ea4ddb9514d71c78c0a1272ba1036d1160d944eb",
+      "sha256": "sha256:031939070132c1af56a8bd4c55797d49079399b61fdba86d0ff2a741a8b47366",
+      "role": "Production Realm-contained Account, Membership and Host-bound Session resolution"
+    },
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql",
+      "git_commit": "ea4ddb9514d71c78c0a1272ba1036d1160d944eb",
+      "sha256": "sha256:99cc8a08ac4cb32e4ab0dc5ae22c91f5c0fdcda1d7749691d56d44c48ce32840",
+      "role": "Production directed Realm-switch intent issue and one-time target-session binding"
+    },
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql",
+      "git_commit": "ea4ddb9514d71c78c0a1272ba1036d1160d944eb",
+      "sha256": "sha256:5267d9bb3edb759a5b1f6b1380c18fb3370e3a8efe2b59893cb99ad0986b94a9",
+      "role": "Production session-bound Membership and Scope resolution"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/modules/identity/03_application_yingyong/services_fuwu/SmsLogin.ts",
+      "git_commit": "ea4ddb9514d71c78c0a1272ba1036d1160d944eb",
+      "sha256": "sha256:26e695eab5924e6cd0ab79ebdefcd276a3305ac30985c39ca09d1d3fe4905912",
+      "role": "Production Realm-contained shared-subject credential lookup"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/NodeBoundScopeResolver.ts",
+      "git_commit": "ea4ddb9514d71c78c0a1272ba1036d1160d944eb",
+      "sha256": "sha256:b1f1ea101aab302a5c5a8d2e5bbc1efb04bc28c443d667aadeabf8809a3b2269",
+      "role": "Production node-bound Scope rejection"
+    }
+  ],
+  "regression_basis": [
+    {
+      "path": "02_platform_pingtai/database/supabase/tests/sfl_multi_realm_membership_contract.sql",
+      "git_commit": "ea4ddb9514d71c78c0a1272ba1036d1160d944eb",
+      "sha256": "sha256:b239534bc98a250683d4c167a17d421dedb16cbc40a5b514f188acfa0bb1d8fc",
+      "role": "Existing same-credential three-Realm isolation regression"
+    },
+    {
+      "path": "04_tools/scripts/check/sfl-multi-realm-membership.pg17-fixture.mjs",
+      "git_commit": "ea4ddb9514d71c78c0a1272ba1036d1160d944eb",
+      "sha256": "sha256:464e9139ef600ce7d10ef2e44ef957566a7027441e491c38febf52c8502adc2a",
+      "role": "Existing PostgreSQL 17 E04 replay"
+    }
+  ],
+  "environment_classification": "A successful clean-source replay of all production migrations in a disposable PostgreSQL 17 environment, followed by the complete locked E04 matrix, can establish DEV VERIFIED only. It is not a stable staging or production observation.",
+  "realm_matrix": [
+    {
+      "realm_label": "A",
+      "signed_level": "L6",
+      "membership_client": "storefront",
+      "node_profile": "consumer"
+    },
+    {
+      "realm_label": "B",
+      "signed_level": "L8",
+      "membership_client": "storefront",
+      "node_profile": "consumer"
+    },
+    {
+      "realm_label": "C",
+      "signed_level": "L0",
+      "membership_client": "operator",
+      "node_profile": "operating_mall"
+    }
+  ],
+  "credential_discovery_threshold": {
+    "shared_credential_reference_count": 1,
+    "realm_specific_credential_row_count": 3,
+    "realm_specific_resolution_count": 3,
+    "resolution_mismatch_count": 0,
+    "cross_realm_resolution_count": 0
+  },
+  "identifier_threshold": {
+    "realm_count": 3,
+    "distinct_account_count": 3,
+    "distinct_principal_count": 3,
+    "distinct_membership_count": 3,
+    "distinct_base_session_count": 3,
+    "distinct_node_count": 3,
+    "distinct_lineage_identity_count": 3,
+    "distinct_scope_grant_count": 3,
+    "distinct_asset_count": 3,
+    "identifier_merge_count": 0
+  },
+  "positive_threshold": {
+    "case_count": 3,
+    "accepted_count": 3,
+    "active_membership_count_per_accepted_request": 1,
+    "expected_asset_mismatch_count": 0,
+    "write_count_per_case": 1
+  },
+  "transition_threshold": {
+    "directed_pair_count": 6,
+    "consumed_login_intent_count": 6,
+    "fresh_target_session_count": 6,
+    "source_session_target_resolution_count": 0,
+    "target_session_target_resolution_count": 6,
+    "source_authority_residue_count": 0,
+    "multi_membership_activation_count": 0
+  },
+  "negative_matrix": {
+    "directed_pair_count": 6,
+    "misuse_variants": ["source_session", "source_membership", "source_scope", "source_node_identity"],
+    "operation_kinds": ["read", "write"],
+    "expected_observation_count": 48,
+    "acceptance_count": 0,
+    "cross_realm_data_disclosure_count": 0,
+    "authoritative_write_count": 0,
+    "outbox_delta": 0
+  },
+  "probe_boundary": {
+    "credential_discovery": "Call the production resolvePasswordLoginCredential query separately inside each entry Realm with one shared synthetic subject hash.",
+    "session": "Call identity.resolve_session(text,text) with the target Host; a source token must activate no target Membership.",
+    "membership": "Call access.resolve_session_membership(text,text,text,text) with the resolved target Realm/client/organization; a source Membership must not resolve.",
+    "scope": "Call access.resolve_session_scope(text,text,text,text,text,text,text) and the production @shop/authz checkScope decision; a source Realm Scope must be denied.",
+    "node": "Call the production NodeBoundScopeResolver; a source node Scope must raise NODE_SCOPE_MISMATCH.",
+    "asset": "Only after all production authority boundaries accept, read or update the target synthetic ordering.orderrecord row whose participant Realm, Account, Membership, node and Scope identifiers all match. The direct row adapter is test-only and creates no public operation or contract.",
+    "write_safety": "Each negative write runs inside a savepoint and is rolled back after the before/after observation even if a regression incorrectly accepts it."
+  },
+  "required_input_artifacts": [
+    "multi-realm-identity-map.json",
+    "multi-realm-positive-results.json",
+    "multi-realm-session-transitions.json",
+    "multi-realm-negative-results.json",
+    "multi-realm-database-diff.json",
+    "environment.json"
+  ],
+  "prelocked_thresholds": [
+    "required raw evidence missing count = 0",
+    "shared credential Realm-specific discovery mismatch count = 0",
+    "cross-Realm Account, principal, Membership, base Session, lineage, Scope-grant or asset identifier merge count = 0",
+    "valid own-Realm positive case count = 3 and expected asset mismatch count = 0",
+    "all 6 directed Realm pairs issue and consume one intent into a fresh target Session",
+    "source Session target resolution and source authority residue count = 0",
+    "more-than-one active Membership count per request = 0",
+    "all 6 directed pairs x 4 source-authority misuse variants x read/write = 48 negative observations",
+    "negative acceptance, cross-Realm data disclosure and authoritative write count = 0",
+    "negative-matrix authoritative table and Outbox delta = 0",
+    "negative oracle probe miss count = 0"
+  ],
+  "positive_cases": [
+    "Resolve the shared synthetic credential independently in Realm A, B and C and obtain exactly the Realm-specific Account and Membership.",
+    "Resolve each base Session only at its own Host, activate exactly one Membership, pass its own Scope and node boundary, and read/update only its own order asset.",
+    "For every directed Realm pair, consume a one-time login intent into a newly issued target Session whose resolved authority contains only target identifiers."
+  ],
+  "negative_cases": [
+    "For each of A→B, A→C, B→A, B→C, C→A and C→B, reuse the source Session, Membership, Scope or node identity for both read and rollback-safe write.",
+    "Detect any target acceptance, target asset disclosure, authoritative write, Outbox append, multiple active Memberships or source identifier residue."
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E04-MULTI-REALM",
+    "reads_test_program_pass": false,
+    "procedure": "Independently reconstruct the three-Realm credential and identifier map, enumerate all six ordered source-to-target transitions, verify every fresh target Session from raw login-intent and resolver records, enumerate the exact 48 source-authority misuse observations, recompute disclosure/write/Outbox and table diffs, and mutate copies to prove detection of one identifier merge, one transition residue and one accepted negative. Do not consume runner PASS fields."
+  },
+  "unknown_rule": "Missing any required artifact, Realm, credential discovery result, identifier category, own-asset positive case, directed pair, fresh target Session, misuse variant, operation kind, request/response record, authoritative before/after row or Outbox observation yields UNKNOWN.",
+  "outcome_table": [
+    {
+      "condition": "All required raw evidence exists; three Realm-specific identities and assets remain distinct; all three own-Realm positives are exact; all six switches bind fresh target Sessions with zero source residue; all 48 negatives deny with zero disclosure, write and Outbox delta; and every negative oracle mutation is detected.",
+      "claim_outcome": "MET"
+    },
+    {
+      "condition": "Any complete raw observation contradicts a prelocked identity, Session, transition, authority, asset, write or isolation threshold.",
+      "claim_outcome": "NOT MET"
+    },
+    {
+      "condition": "Any required raw artifact or field is missing, unreadable or cannot be independently reconciled.",
+      "claim_outcome": "UNKNOWN"
+    }
+  ],
+  "review_classification": "The criteria designer, executor and oracle operator are the same Codex task; the result remains NOT REVIEWED until a reviewer independent of the E04 identity/session implementation and test code recomputes and signs it.",
+  "non_gating": true
+}
