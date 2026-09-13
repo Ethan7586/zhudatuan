@@ -1,0 +1,327 @@
+{
+  "schema_version": "e01-horizontal-node-contexts-v1",
+  "captured_at": "2026-09-13T23:54:30.298Z",
+  "resolver": "PgAuthoritativeNodeContextResolver.resolve",
+  "database_function": "organization.resolve_node_context(text)",
+  "parser": "parseAuthoritativeNodeContext",
+  "path_identity": "organization.resolve_node_context(text)->PgAuthoritativeNodeContextResolver.resolve->parseAuthoritativeNodeContext",
+  "observations": [
+    {
+      "peer_label": "H-A",
+      "expected": {
+        "line_id": "line:e01-9231bee8:v1",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "parent_node_id": "node:e01-parent-9231bee8:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "mall_id": "mall:e01-ha-9231bee8",
+        "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      },
+      "observed": {
+        "line_id": "line:e01-9231bee8:v1",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "parent_node_id": "node:e01-parent-9231bee8:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "mall_id": "mall:e01-ha-9231bee8",
+        "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      },
+      "path_identity": "organization.resolve_node_context(text)->PgAuthoritativeNodeContextResolver.resolve->parseAuthoritativeNodeContext"
+    },
+    {
+      "peer_label": "H-B",
+      "expected": {
+        "line_id": "line:e01-9231bee8:v1",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "parent_node_id": "node:e01-parent-9231bee8:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "mall_id": "mall:e01-hb-9231bee8",
+        "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      },
+      "observed": {
+        "line_id": "line:e01-9231bee8:v1",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "parent_node_id": "node:e01-parent-9231bee8:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "mall_id": "mall:e01-hb-9231bee8",
+        "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      },
+      "path_identity": "organization.resolve_node_context(text)->PgAuthoritativeNodeContextResolver.resolve->parseAuthoritativeNodeContext"
+    },
+    {
+      "peer_label": "H-C",
+      "expected": {
+        "line_id": "line:e01-9231bee8:v1",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "parent_node_id": "node:e01-parent-9231bee8:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "sovereign",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "mall_id": "mall:e01-hc-9231bee8",
+        "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      },
+      "observed": {
+        "line_id": "line:e01-9231bee8:v1",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "parent_node_id": "node:e01-parent-9231bee8:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "sovereign",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "mall_id": "mall:e01-hc-9231bee8",
+        "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      },
+      "path_identity": "organization.resolve_node_context(text)->PgAuthoritativeNodeContextResolver.resolve->parseAuthoritativeNodeContext"
+    }
+  ],
+  "authority_map": [
+    {
+      "peer_label": "H-A",
+      "expected": {
+        "label": "H-A",
+        "line_id": "line:e01-9231bee8:v1",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "parent_node_id": "node:e01-parent-9231bee8:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+        "account_id": "account:e01-ha-9231bee8",
+        "principal_id": "principal:e01-ha-9231bee8",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "accounts_host": "accounts.e01-ha-9231bee8.test",
+        "variant_capability_expected": true
+      },
+      "identity": {
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "line_id": "line:e01-9231bee8:v1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "host_node_id": "node:e01-parent-9231bee8:l0",
+        "account_id": "account:e01-ha-9231bee8",
+        "principal_id": "principal:e01-ha-9231bee8",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "organization_id": "mall:e01-ha-9231bee8",
+        "client": "operator",
+        "status": "active",
+        "scope_grant_id": "scopegrant:e01-ha-9231bee8",
+        "granted_scope_id": "mall:e01-ha-9231bee8",
+        "session_id": "session:e01-ha-9231bee8"
+      },
+      "capabilities": [
+        {
+          "capability_id": "e01.horizontal.capability.probe",
+          "state": "enabled",
+          "scope_id": "mall:e01-ha-9231bee8"
+        },
+        {
+          "capability_id": "e01.horizontal.resource.read",
+          "state": "enabled",
+          "scope_id": "mall:e01-ha-9231bee8"
+        },
+        {
+          "capability_id": "e01.horizontal.resource.write",
+          "state": "enabled",
+          "scope_id": "mall:e01-ha-9231bee8"
+        }
+      ],
+      "resources": [
+        {
+          "resource_id": "order:e01-ha-9231bee8",
+          "scope_id": "mall:e01-ha-9231bee8",
+          "member_id": "member:e01-ha-9231bee8",
+          "mall_id": "mall:e01-ha-9231bee8",
+          "operating_node_id": "node:e01-ha-9231bee8:l1",
+          "operating_line_id": "line:e01-9231bee8:v1",
+          "participant_node_id": "node:e01-ha-9231bee8:l1",
+          "participant_membership_id": "membership:e01-ha-9231bee8",
+          "participant_realm_id": "realm:e01-ha-9231bee8",
+          "participant_account_id": "account:e01-ha-9231bee8",
+          "version": "1",
+          "evidence": {
+            "peer": "H-A",
+            "fixture": "E01"
+          }
+        }
+      ]
+    },
+    {
+      "peer_label": "H-B",
+      "expected": {
+        "label": "H-B",
+        "line_id": "line:e01-9231bee8:v1",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "parent_node_id": "node:e01-parent-9231bee8:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+        "account_id": "account:e01-hb-9231bee8",
+        "principal_id": "principal:e01-hb-9231bee8",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "accounts_host": "accounts.e01-hb-9231bee8.test",
+        "variant_capability_expected": false
+      },
+      "identity": {
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "line_id": "line:e01-9231bee8:v1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "host_node_id": "node:e01-parent-9231bee8:l0",
+        "account_id": "account:e01-hb-9231bee8",
+        "principal_id": "principal:e01-hb-9231bee8",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "organization_id": "mall:e01-hb-9231bee8",
+        "client": "operator",
+        "status": "active",
+        "scope_grant_id": "scopegrant:e01-hb-9231bee8",
+        "granted_scope_id": "mall:e01-hb-9231bee8",
+        "session_id": "session:e01-hb-9231bee8"
+      },
+      "capabilities": [
+        {
+          "capability_id": "e01.horizontal.capability.probe",
+          "state": "disabled",
+          "scope_id": "mall:e01-hb-9231bee8"
+        },
+        {
+          "capability_id": "e01.horizontal.resource.read",
+          "state": "enabled",
+          "scope_id": "mall:e01-hb-9231bee8"
+        },
+        {
+          "capability_id": "e01.horizontal.resource.write",
+          "state": "enabled",
+          "scope_id": "mall:e01-hb-9231bee8"
+        }
+      ],
+      "resources": [
+        {
+          "resource_id": "order:e01-hb-9231bee8",
+          "scope_id": "mall:e01-hb-9231bee8",
+          "member_id": "member:e01-hb-9231bee8",
+          "mall_id": "mall:e01-hb-9231bee8",
+          "operating_node_id": "node:e01-hb-9231bee8:l1",
+          "operating_line_id": "line:e01-9231bee8:v1",
+          "participant_node_id": "node:e01-hb-9231bee8:l1",
+          "participant_membership_id": "membership:e01-hb-9231bee8",
+          "participant_realm_id": "realm:e01-hb-9231bee8",
+          "participant_account_id": "account:e01-hb-9231bee8",
+          "version": "1",
+          "evidence": {
+            "peer": "H-B",
+            "fixture": "E01"
+          }
+        }
+      ]
+    },
+    {
+      "peer_label": "H-C",
+      "expected": {
+        "label": "H-C",
+        "line_id": "line:e01-9231bee8:v1",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "parent_node_id": "node:e01-parent-9231bee8:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "sovereign",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+        "account_id": "account:e01-hc-9231bee8",
+        "principal_id": "principal:e01-hc-9231bee8",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "accounts_host": "accounts.e01-hc-9231bee8.test",
+        "variant_capability_expected": true
+      },
+      "identity": {
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "line_id": "line:e01-9231bee8:v1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "host_node_id": null,
+        "account_id": "account:e01-hc-9231bee8",
+        "principal_id": "principal:e01-hc-9231bee8",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "organization_id": "mall:e01-hc-9231bee8",
+        "client": "operator",
+        "status": "active",
+        "scope_grant_id": "scopegrant:e01-hc-9231bee8",
+        "granted_scope_id": "mall:e01-hc-9231bee8",
+        "session_id": "session:e01-hc-9231bee8"
+      },
+      "capabilities": [
+        {
+          "capability_id": "e01.horizontal.capability.probe",
+          "state": "enabled",
+          "scope_id": "mall:e01-hc-9231bee8"
+        },
+        {
+          "capability_id": "e01.horizontal.resource.read",
+          "state": "enabled",
+          "scope_id": "mall:e01-hc-9231bee8"
+        },
+        {
+          "capability_id": "e01.horizontal.resource.write",
+          "state": "enabled",
+          "scope_id": "mall:e01-hc-9231bee8"
+        }
+      ],
+      "resources": [
+        {
+          "resource_id": "order:e01-hc-9231bee8",
+          "scope_id": "mall:e01-hc-9231bee8",
+          "member_id": "member:e01-hc-9231bee8",
+          "mall_id": "mall:e01-hc-9231bee8",
+          "operating_node_id": "node:e01-hc-9231bee8:l1",
+          "operating_line_id": "line:e01-9231bee8:v1",
+          "participant_node_id": "node:e01-hc-9231bee8:l1",
+          "participant_membership_id": "membership:e01-hc-9231bee8",
+          "participant_realm_id": "realm:e01-hc-9231bee8",
+          "participant_account_id": "account:e01-hc-9231bee8",
+          "version": "1",
+          "evidence": {
+            "peer": "H-C",
+            "fixture": "E01"
+          }
+        }
+      ]
+    }
+  ]
+}

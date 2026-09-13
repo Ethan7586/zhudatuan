@@ -1,0 +1,22 @@
+{
+  "schema_version": "e01-execution-log-v1",
+  "started_at": "2026-09-13T23:52:49.106Z",
+  "completed_at": "2026-09-13T23:54:30.761Z",
+  "source_sha": "7bd7f513d048663e75b660a4156d985760493ab4",
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e01 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01",
+    "node 04_tools/scripts/release/build-runtime-bundle.mjs commerce-api <temporary-output-directory> 7bd7f513d048663e75b660a4156d985760493ab4",
+    "node 04_tools/scripts/audit/database-contracts.mjs --identity-realm-isolation <ephemeral-postgres-url> local-disposable-fixture",
+    "node 04_tools/scripts/audit/e01-horizontal-nodes.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E01-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-independent-recount.json"
+  ],
+  "observed_execution": {
+    "peer_count": 3,
+    "positive_observation_count": 9,
+    "cross_node_observation_count": 30,
+    "successful_business_write_count": 3,
+    "rollback_residual_fact_count": 0
+  },
+  "cleanup": "database ROLLBACK; docker rm -f zhudatuan-e01-9231bee81cf14bd8; remove temporary shared artifact directory",
+  "exit_code": 0
+}

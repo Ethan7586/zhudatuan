@@ -1,0 +1,4268 @@
+{
+  "schema_version": "e01-horizontal-operation-results-v1",
+  "captured_at": "2026-09-13T23:54:30.298Z",
+  "production_authority_path": [
+    "identity.resolve_session(token_hash,host)",
+    "access.resolve_session_membership(membership,realm,client,organization)",
+    "access.resolve_session_scope(membership,realm,client,organization,operation,resource,scope)",
+    "capability.session_membership_operations(membership,realm,client,organization)",
+    "PgAuthoritativeNodeContextResolver.resolve(node)",
+    "NodeBoundScopeResolver.resolve(actor,operation)",
+    "ordering.orderrecord identity predicate"
+  ],
+  "positive_results": [
+    {
+      "case_id": "case:e01:9231bee8:positive:h-a:read",
+      "source_peer_label": "H-A",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 200,
+      "denial": null,
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-ha-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-ha-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-A 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-ha-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-A 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-ha-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-ha-9231bee8",
+          "mall_id": "mall:e01-ha-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-ha-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-ha-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-A 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [
+        {
+          "id": "order:e01-ha-9231bee8",
+          "scope_id": "mall:e01-ha-9231bee8",
+          "participant_realm_id": "realm:e01-ha-9231bee8",
+          "participant_account_id": "account:e01-ha-9231bee8",
+          "participant_membership_id": "membership:e01-ha-9231bee8",
+          "participant_node_id": "node:e01-ha-9231bee8:l1",
+          "version": "1",
+          "evidence": {
+            "peer": "H-A",
+            "fixture": "E01"
+          }
+        }
+      ],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8"
+    },
+    {
+      "case_id": "case:e01:9231bee8:positive:h-a:write",
+      "source_peer_label": "H-A",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 200,
+      "denial": null,
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-ha-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-ha-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-A 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-ha-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-A 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-ha-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-ha-9231bee8",
+          "mall_id": "mall:e01-ha-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-ha-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-ha-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-A 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [
+        {
+          "id": "order:e01-ha-9231bee8",
+          "scope_id": "mall:e01-ha-9231bee8",
+          "participant_realm_id": "realm:e01-ha-9231bee8",
+          "participant_account_id": "account:e01-ha-9231bee8",
+          "participant_membership_id": "membership:e01-ha-9231bee8",
+          "participant_node_id": "node:e01-ha-9231bee8:l1",
+          "version": "2",
+          "evidence": {
+            "peer": "H-A",
+            "fixture": "E01",
+            "e01_trace": "trace:e01:9231bee8:positive:h-a:write"
+          }
+        }
+      ],
+      "emitted_outbox": {
+        "id": "outbox:trace:e01:9231bee8:positive:h-a:write",
+        "event_type": "runtime.operation.completed",
+        "aggregate_type": "operation",
+        "aggregate_id": "order:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "trace_id": "trace:e01:9231bee8:positive:h-a:write",
+        "payload": {
+          "node_id": "node:e01-ha-9231bee8:l1",
+          "synthetic": true,
+          "operation_id": "e01.horizontal.resource.write"
+        }
+      },
+      "audit_scope_id": "mall:e01-ha-9231bee8"
+    },
+    {
+      "case_id": "case:e01:9231bee8:positive:h-a:capability_probe",
+      "source_peer_label": "H-A",
+      "kind": "capability_probe",
+      "operation_id": "e01.horizontal.capability.probe",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.capability.probe",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 200,
+      "denial": null,
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-ha-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-ha-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-A 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-ha-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-A 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-ha-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-ha-9231bee8",
+          "mall_id": "mall:e01-ha-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-ha-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-ha-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-A 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [
+        {
+          "id": "order:e01-ha-9231bee8",
+          "scope_id": "mall:e01-ha-9231bee8",
+          "participant_realm_id": "realm:e01-ha-9231bee8",
+          "participant_account_id": "account:e01-ha-9231bee8",
+          "participant_membership_id": "membership:e01-ha-9231bee8",
+          "participant_node_id": "node:e01-ha-9231bee8:l1",
+          "version": "2",
+          "evidence": {
+            "peer": "H-A",
+            "fixture": "E01",
+            "e01_trace": "trace:e01:9231bee8:positive:h-a:write"
+          }
+        }
+      ],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8"
+    },
+    {
+      "case_id": "case:e01:9231bee8:positive:h-b:read",
+      "source_peer_label": "H-B",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 200,
+      "denial": null,
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hb-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hb-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-B 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hb-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-B 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 2,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hb-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hb-9231bee8",
+          "mall_id": "mall:e01-hb-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hb-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hb-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-B 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [
+        {
+          "id": "order:e01-hb-9231bee8",
+          "scope_id": "mall:e01-hb-9231bee8",
+          "participant_realm_id": "realm:e01-hb-9231bee8",
+          "participant_account_id": "account:e01-hb-9231bee8",
+          "participant_membership_id": "membership:e01-hb-9231bee8",
+          "participant_node_id": "node:e01-hb-9231bee8:l1",
+          "version": "1",
+          "evidence": {
+            "peer": "H-B",
+            "fixture": "E01"
+          }
+        }
+      ],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8"
+    },
+    {
+      "case_id": "case:e01:9231bee8:positive:h-b:write",
+      "source_peer_label": "H-B",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 200,
+      "denial": null,
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hb-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hb-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-B 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hb-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-B 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 2,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hb-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hb-9231bee8",
+          "mall_id": "mall:e01-hb-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hb-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hb-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-B 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [
+        {
+          "id": "order:e01-hb-9231bee8",
+          "scope_id": "mall:e01-hb-9231bee8",
+          "participant_realm_id": "realm:e01-hb-9231bee8",
+          "participant_account_id": "account:e01-hb-9231bee8",
+          "participant_membership_id": "membership:e01-hb-9231bee8",
+          "participant_node_id": "node:e01-hb-9231bee8:l1",
+          "version": "2",
+          "evidence": {
+            "peer": "H-B",
+            "fixture": "E01",
+            "e01_trace": "trace:e01:9231bee8:positive:h-b:write"
+          }
+        }
+      ],
+      "emitted_outbox": {
+        "id": "outbox:trace:e01:9231bee8:positive:h-b:write",
+        "event_type": "runtime.operation.completed",
+        "aggregate_type": "operation",
+        "aggregate_id": "order:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "trace_id": "trace:e01:9231bee8:positive:h-b:write",
+        "payload": {
+          "node_id": "node:e01-hb-9231bee8:l1",
+          "synthetic": true,
+          "operation_id": "e01.horizontal.resource.write"
+        }
+      },
+      "audit_scope_id": "mall:e01-hb-9231bee8"
+    },
+    {
+      "case_id": "case:e01:9231bee8:positive:h-b:capability_probe",
+      "source_peer_label": "H-B",
+      "kind": "capability_probe",
+      "operation_id": "e01.horizontal.capability.probe",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.capability.probe",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "capability",
+        "reason": "CAPABILITY_UNAVAILABLE"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hb-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hb-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-B 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hb-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-B 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 2,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8"
+    },
+    {
+      "case_id": "case:e01:9231bee8:positive:h-c:read",
+      "source_peer_label": "H-C",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 200,
+      "denial": null,
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hc-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hc-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-C 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hc-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-C 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hc-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hc-9231bee8",
+          "mall_id": "mall:e01-hc-9231bee8",
+          "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hc-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hc-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-C 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [
+        {
+          "id": "order:e01-hc-9231bee8",
+          "scope_id": "mall:e01-hc-9231bee8",
+          "participant_realm_id": "realm:e01-hc-9231bee8",
+          "participant_account_id": "account:e01-hc-9231bee8",
+          "participant_membership_id": "membership:e01-hc-9231bee8",
+          "participant_node_id": "node:e01-hc-9231bee8:l1",
+          "version": "1",
+          "evidence": {
+            "peer": "H-C",
+            "fixture": "E01"
+          }
+        }
+      ],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8"
+    },
+    {
+      "case_id": "case:e01:9231bee8:positive:h-c:write",
+      "source_peer_label": "H-C",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 200,
+      "denial": null,
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hc-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hc-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-C 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hc-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-C 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hc-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hc-9231bee8",
+          "mall_id": "mall:e01-hc-9231bee8",
+          "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hc-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hc-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-C 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [
+        {
+          "id": "order:e01-hc-9231bee8",
+          "scope_id": "mall:e01-hc-9231bee8",
+          "participant_realm_id": "realm:e01-hc-9231bee8",
+          "participant_account_id": "account:e01-hc-9231bee8",
+          "participant_membership_id": "membership:e01-hc-9231bee8",
+          "participant_node_id": "node:e01-hc-9231bee8:l1",
+          "version": "2",
+          "evidence": {
+            "peer": "H-C",
+            "fixture": "E01",
+            "e01_trace": "trace:e01:9231bee8:positive:h-c:write"
+          }
+        }
+      ],
+      "emitted_outbox": {
+        "id": "outbox:trace:e01:9231bee8:positive:h-c:write",
+        "event_type": "runtime.operation.completed",
+        "aggregate_type": "operation",
+        "aggregate_id": "order:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "trace_id": "trace:e01:9231bee8:positive:h-c:write",
+        "payload": {
+          "node_id": "node:e01-hc-9231bee8:l1",
+          "synthetic": true,
+          "operation_id": "e01.horizontal.resource.write"
+        }
+      },
+      "audit_scope_id": "mall:e01-hc-9231bee8"
+    },
+    {
+      "case_id": "case:e01:9231bee8:positive:h-c:capability_probe",
+      "source_peer_label": "H-C",
+      "kind": "capability_probe",
+      "operation_id": "e01.horizontal.capability.probe",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.capability.probe",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 200,
+      "denial": null,
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hc-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hc-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-C 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hc-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-C 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hc-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hc-9231bee8",
+          "mall_id": "mall:e01-hc-9231bee8",
+          "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hc-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hc-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-C 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [
+        {
+          "id": "order:e01-hc-9231bee8",
+          "scope_id": "mall:e01-hc-9231bee8",
+          "participant_realm_id": "realm:e01-hc-9231bee8",
+          "participant_account_id": "account:e01-hc-9231bee8",
+          "participant_membership_id": "membership:e01-hc-9231bee8",
+          "participant_node_id": "node:e01-hc-9231bee8:l1",
+          "version": "2",
+          "evidence": {
+            "peer": "H-C",
+            "fixture": "E01",
+            "e01_trace": "trace:e01:9231bee8:positive:h-c:write"
+          }
+        }
+      ],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8"
+    }
+  ],
+  "cross_node_results": [
+    {
+      "case_id": "case:e01:9231bee8:cross:h-a:realm:read",
+      "source_peer_label": "H-A",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "realm",
+        "reason": "AUTHENTICATION_REQUIRED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 0,
+          "rows": []
+        },
+        "membership": null,
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8",
+      "donor_peer_label": "H-B",
+      "misuse_dimension": "realm"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-a:realm:write",
+      "source_peer_label": "H-A",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "realm",
+        "reason": "AUTHENTICATION_REQUIRED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 0,
+          "rows": []
+        },
+        "membership": null,
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8",
+      "donor_peer_label": "H-B",
+      "misuse_dimension": "realm"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-a:membership:read",
+      "source_peer_label": "H-A",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "membership",
+        "reason": "MEMBERSHIP_CONTEXT_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 0,
+          "rows": []
+        },
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8",
+      "donor_peer_label": "H-B",
+      "misuse_dimension": "membership"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-a:membership:write",
+      "source_peer_label": "H-A",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "membership",
+        "reason": "MEMBERSHIP_CONTEXT_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 0,
+          "rows": []
+        },
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8",
+      "donor_peer_label": "H-B",
+      "misuse_dimension": "membership"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-a:scope:read",
+      "source_peer_label": "H-A",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-ha-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-ha-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-A 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-ha-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-A 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-ha-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-ha-9231bee8",
+          "mall_id": "mall:e01-ha-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-ha-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-ha-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-A 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8",
+      "donor_peer_label": "H-B",
+      "misuse_dimension": "scope"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-a:scope:write",
+      "source_peer_label": "H-A",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-ha-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-ha-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-A 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-ha-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-A 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-ha-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-ha-9231bee8",
+          "mall_id": "mall:e01-ha-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-ha-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-ha-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-A 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8",
+      "donor_peer_label": "H-B",
+      "misuse_dimension": "scope"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-a:node:read",
+      "source_peer_label": "H-A",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "node",
+        "reason": "NODE_SCOPE_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-ha-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-ha-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-A 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-ha-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-A 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hb-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hb-9231bee8",
+          "mall_id": "mall:e01-hb-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8",
+      "donor_peer_label": "H-B",
+      "misuse_dimension": "node"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-a:node:write",
+      "source_peer_label": "H-A",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "node",
+        "reason": "NODE_SCOPE_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-ha-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-ha-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-A 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-ha-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-A 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hb-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hb-9231bee8",
+          "mall_id": "mall:e01-hb-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8",
+      "donor_peer_label": "H-B",
+      "misuse_dimension": "node"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-a:resource:read",
+      "source_peer_label": "H-A",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-ha-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-ha-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-A 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hb-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-B 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-ha-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-ha-9231bee8",
+          "mall_id": "mall:e01-ha-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-ha-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-ha-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-A 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8",
+      "donor_peer_label": "H-B",
+      "misuse_dimension": "resource"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-a:resource:write",
+      "source_peer_label": "H-A",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-ha-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-ha-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-ha-9231bee8",
+              "account_id": "account:e01-ha-9231bee8",
+              "realm_id": "realm:e01-ha-9231bee8",
+              "session_id": "session:e01-ha-9231bee8",
+              "membership_id": "membership:e01-ha-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-ha-9231bee8",
+              "entry_realm_id": "realm:e01-ha-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-ha-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-ha-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-ha-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-ha-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-A 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hb-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-B 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-ha-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-ha-9231bee8",
+          "mall_id": "mall:e01-ha-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-ha-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-ha-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-A 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-ha-9231bee8",
+      "donor_peer_label": "H-B",
+      "misuse_dimension": "resource"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-b:realm:read",
+      "source_peer_label": "H-B",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "realm",
+        "reason": "AUTHENTICATION_REQUIRED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 0,
+          "rows": []
+        },
+        "membership": null,
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8",
+      "donor_peer_label": "H-C",
+      "misuse_dimension": "realm"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-b:realm:write",
+      "source_peer_label": "H-B",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "realm",
+        "reason": "AUTHENTICATION_REQUIRED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 0,
+          "rows": []
+        },
+        "membership": null,
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8",
+      "donor_peer_label": "H-C",
+      "misuse_dimension": "realm"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-b:membership:read",
+      "source_peer_label": "H-B",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "membership",
+        "reason": "MEMBERSHIP_CONTEXT_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 0,
+          "rows": []
+        },
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8",
+      "donor_peer_label": "H-C",
+      "misuse_dimension": "membership"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-b:membership:write",
+      "source_peer_label": "H-B",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "membership",
+        "reason": "MEMBERSHIP_CONTEXT_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 0,
+          "rows": []
+        },
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8",
+      "donor_peer_label": "H-C",
+      "misuse_dimension": "membership"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-b:scope:read",
+      "source_peer_label": "H-B",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hb-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hb-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-B 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hb-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-B 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 2,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hb-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hb-9231bee8",
+          "mall_id": "mall:e01-hb-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hb-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hb-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-B 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8",
+      "donor_peer_label": "H-C",
+      "misuse_dimension": "scope"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-b:scope:write",
+      "source_peer_label": "H-B",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hb-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hb-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-B 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hb-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-B 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 2,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hb-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hb-9231bee8",
+          "mall_id": "mall:e01-hb-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hb-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hb-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-B 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8",
+      "donor_peer_label": "H-C",
+      "misuse_dimension": "scope"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-b:node:read",
+      "source_peer_label": "H-B",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "node",
+        "reason": "NODE_SCOPE_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hb-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hb-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-B 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hb-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-B 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 2,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hc-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hc-9231bee8",
+          "mall_id": "mall:e01-hc-9231bee8",
+          "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8",
+      "donor_peer_label": "H-C",
+      "misuse_dimension": "node"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-b:node:write",
+      "source_peer_label": "H-B",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hb-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "node",
+        "reason": "NODE_SCOPE_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hb-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hb-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-B 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hb-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-B 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 2,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hc-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hc-9231bee8",
+          "mall_id": "mall:e01-hc-9231bee8",
+          "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8",
+      "donor_peer_label": "H-C",
+      "misuse_dimension": "node"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-b:resource:read",
+      "source_peer_label": "H-B",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hb-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hb-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-B 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hc-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-C 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 2,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hb-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hb-9231bee8",
+          "mall_id": "mall:e01-hb-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hb-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hb-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-B 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8",
+      "donor_peer_label": "H-C",
+      "misuse_dimension": "resource"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-b:resource:write",
+      "source_peer_label": "H-B",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hb-9231bee8.test",
+        "membership_id": "membership:e01-hb-9231bee8",
+        "scope_id": "mall:e01-hb-9231bee8",
+        "node_id": "node:e01-hb-9231bee8:l1",
+        "realm_id": "realm:e01-hb-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hb-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hb-9231bee8",
+              "account_id": "account:e01-hb-9231bee8",
+              "realm_id": "realm:e01-hb-9231bee8",
+              "session_id": "session:e01-hb-9231bee8",
+              "membership_id": "membership:e01-hb-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hb-9231bee8",
+              "entry_realm_id": "realm:e01-hb-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hb-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hb-9231bee8",
+              "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hb-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hb-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-B 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hc-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-C 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 2,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hb-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hb-9231bee8",
+          "mall_id": "mall:e01-hb-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hb-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hb-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-B 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hb-9231bee8",
+      "donor_peer_label": "H-C",
+      "misuse_dimension": "resource"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-c:realm:read",
+      "source_peer_label": "H-C",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "realm",
+        "reason": "AUTHENTICATION_REQUIRED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 0,
+          "rows": []
+        },
+        "membership": null,
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8",
+      "donor_peer_label": "H-A",
+      "misuse_dimension": "realm"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-c:realm:write",
+      "source_peer_label": "H-C",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-ha-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "realm",
+        "reason": "AUTHENTICATION_REQUIRED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 0,
+          "rows": []
+        },
+        "membership": null,
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8",
+      "donor_peer_label": "H-A",
+      "misuse_dimension": "realm"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-c:membership:read",
+      "source_peer_label": "H-C",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "membership",
+        "reason": "MEMBERSHIP_CONTEXT_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 0,
+          "rows": []
+        },
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8",
+      "donor_peer_label": "H-A",
+      "misuse_dimension": "membership"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-c:membership:write",
+      "source_peer_label": "H-C",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-ha-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "membership",
+        "reason": "MEMBERSHIP_CONTEXT_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 0,
+          "rows": []
+        },
+        "scope": null,
+        "capabilities": null,
+        "node_context": null,
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8",
+      "donor_peer_label": "H-A",
+      "misuse_dimension": "membership"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-c:scope:read",
+      "source_peer_label": "H-C",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hc-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hc-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-C 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hc-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-C 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hc-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hc-9231bee8",
+          "mall_id": "mall:e01-hc-9231bee8",
+          "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hc-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hc-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-C 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8",
+      "donor_peer_label": "H-A",
+      "misuse_dimension": "scope"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-c:scope:write",
+      "source_peer_label": "H-C",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-ha-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hc-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hc-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-C 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hc-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-C 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hc-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hc-9231bee8",
+          "mall_id": "mall:e01-hc-9231bee8",
+          "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hc-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hc-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-C 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8",
+      "donor_peer_label": "H-A",
+      "misuse_dimension": "scope"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-c:node:read",
+      "source_peer_label": "H-C",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "node",
+        "reason": "NODE_SCOPE_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hc-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hc-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-C 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hc-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-C 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-ha-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-ha-9231bee8",
+          "mall_id": "mall:e01-ha-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8",
+      "donor_peer_label": "H-A",
+      "misuse_dimension": "node"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-c:node:write",
+      "source_peer_label": "H-C",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-ha-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-hc-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "node",
+        "reason": "NODE_SCOPE_MISMATCH"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hc-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hc-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-C 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-hc-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-C 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-ha-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-ha-9231bee8",
+          "mall_id": "mall:e01-ha-9231bee8",
+          "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": null
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8",
+      "donor_peer_label": "H-A",
+      "misuse_dimension": "node"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-c:resource:read",
+      "source_peer_label": "H-C",
+      "kind": "read",
+      "operation_id": "e01.horizontal.resource.read",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.read",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hc-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hc-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-C 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-ha-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-A 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hc-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hc-9231bee8",
+          "mall_id": "mall:e01-hc-9231bee8",
+          "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hc-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hc-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-C 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8",
+      "donor_peer_label": "H-A",
+      "misuse_dimension": "resource"
+    },
+    {
+      "case_id": "case:e01:9231bee8:cross:h-c:resource:write",
+      "source_peer_label": "H-C",
+      "kind": "write",
+      "operation_id": "e01.horizontal.resource.write",
+      "request": {
+        "endpoint_host": "accounts.e01-hc-9231bee8.test",
+        "membership_id": "membership:e01-hc-9231bee8",
+        "scope_id": "mall:e01-hc-9231bee8",
+        "node_id": "node:e01-hc-9231bee8:l1",
+        "realm_id": "realm:e01-hc-9231bee8",
+        "resource_id": "order:e01-ha-9231bee8",
+        "operation_id": "e01.horizontal.resource.write",
+        "synthetic_session_ref": "session:e01-hc-9231bee8",
+        "credential_material_persisted": false
+      },
+      "status": 403,
+      "denial": {
+        "stage": "resource",
+        "reason": "RESOURCE_ISOLATED"
+      },
+      "authorization": {
+        "session": {
+          "row_count": 1,
+          "rows": [
+            {
+              "actor_id": "principal:e01-hc-9231bee8",
+              "account_id": "account:e01-hc-9231bee8",
+              "realm_id": "realm:e01-hc-9231bee8",
+              "session_id": "session:e01-hc-9231bee8",
+              "membership_id": "membership:e01-hc-9231bee8",
+              "credential_version": "1",
+              "access_version": "1",
+              "target": "console",
+              "membership_client": "operator",
+              "governance_organization_id": "mall:e01-hc-9231bee8",
+              "entry_realm_id": "realm:e01-hc-9231bee8",
+              "line_id": "line:e01-9231bee8:v1",
+              "node_id": "node:e01-hc-9231bee8:l1",
+              "parent_node_id": "node:e01-parent-9231bee8:l0",
+              "signed_level": "L1",
+              "node_profile": "operating_mall",
+              "mall_id": "mall:e01-hc-9231bee8",
+              "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+              "relation_version": 1
+            }
+          ]
+        },
+        "membership": {
+          "row_count": 1,
+          "rows": [
+            {
+              "id": "membership:e01-hc-9231bee8",
+              "active": true,
+              "access_version": "1",
+              "denies": [],
+              "grants": [
+                {
+                  "scope": {
+                    "id": "mall:e01-hc-9231bee8",
+                    "kind": "mall",
+                    "name": "E01 H-C 9231bee8",
+                    "path": []
+                  },
+                  "expires": null,
+                  "effective": "1970-01-01T00:00:00+00:00",
+                  "permissions": [
+                    "e01.horizontal.read",
+                    "e01.horizontal.variant",
+                    "e01.horizontal.write"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "scope": {
+          "row_count": 1,
+          "rows": [
+            {
+              "scope": {
+                "id": "mall:e01-ha-9231bee8",
+                "kind": "mall",
+                "name": "E01 H-A 9231bee8",
+                "path": []
+              }
+            }
+          ]
+        },
+        "capabilities": {
+          "row_count": 3,
+          "rows": [
+            {
+              "operation_id": "e01.horizontal.capability.probe"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.read"
+            },
+            {
+              "operation_id": "e01.horizontal.resource.write"
+            }
+          ]
+        },
+        "node_context": {
+          "line_id": "line:e01-9231bee8:v1",
+          "node_id": "node:e01-hc-9231bee8:l1",
+          "parent_node_id": "node:e01-parent-9231bee8:l0",
+          "signed_level": "L1",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "realm_id": "realm:e01-hc-9231bee8",
+          "mall_id": "mall:e01-hc-9231bee8",
+          "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        "node_boundary": {
+          "expected_scope_id": "mall:e01-hc-9231bee8",
+          "resolved_scope": {
+            "id": "mall:e01-hc-9231bee8",
+            "kind": "mall",
+            "name": "E01 H-C 9231bee8",
+            "path": []
+          }
+        }
+      },
+      "read_rows": [],
+      "write_rows": [],
+      "emitted_outbox": null,
+      "audit_scope_id": "mall:e01-hc-9231bee8",
+      "donor_peer_label": "H-A",
+      "misuse_dimension": "resource"
+    }
+  ]
+}

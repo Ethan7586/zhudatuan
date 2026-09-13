@@ -1,0 +1,36 @@
+{
+  "schema_version": "e01-environment-v1",
+  "captured_at": "2026-09-13T23:54:30.302Z",
+  "kind": "DEV",
+  "environment_id": "local-disposable-postgresql17-e01-9231bee81cf14bd8",
+  "description": "A newly created PostgreSQL 17 Alpine container replayed the complete production migration chain and executed the locked E01 three-peer horizontal context, operation and isolation matrix plus one shared commerce-api runtime build.",
+  "owner": "Ethan-controlled local Codex workspace",
+  "isolation": "Disposable Docker container zhudatuan-e01-9231bee81cf14bd8; synthetic E01 nodes, identities, scopes, capabilities and resources only; the database transaction was rolled back and the container was removed after execution.",
+  "real_customer_data": false,
+  "production_impact": "None. No production service, database, DNS provider, payment provider, supplier or customer record was contacted.",
+  "differences_from_production": [
+    "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+    "Synthetic H-A, H-B and H-C identities and rollback-safe resources rather than customer traffic.",
+    "The shared runtime artifact was built locally and not activated on a Hosted or Sovereign runtime.",
+    "No stable staging environment identity and no production observation."
+  ],
+  "runtime": {
+    "node": "v22.22.3",
+    "os": "darwin 25.5.0",
+    "docker_server": "29.7.2",
+    "postgres": "PostgreSQL 17.11 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "docker_image": "postgres:17-alpine",
+    "docker_image_id": "sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+    "migration_count": 302,
+    "endpoint": "127.0.0.1:62679/zhudatuan_registration"
+  },
+  "source_control": {
+    "sha": "7bd7f513d048663e75b660a4156d985760493ab4",
+    "branch": "codex/e2-acceptance-repair",
+    "tree_state": "CLEAN",
+    "status": ""
+  },
+  "source_inventory_digest": "sha256:ea229a74809a24448fd97005fabcec008a95d099438e4534784fe5444f218c06",
+  "artifact_identity": "sha256:9c2dec3a31bf6dcf4fd6cd45464b5abbe8165013f7f12507f67375ca9e606715",
+  "configuration_digest": "sha256:220fbbef156807b3c5b767a404f758ce6c6f4cf450074df09973a63dc17d5d9e"
+}

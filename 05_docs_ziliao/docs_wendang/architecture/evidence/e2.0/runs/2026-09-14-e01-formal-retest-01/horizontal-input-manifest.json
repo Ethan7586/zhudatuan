@@ -1,0 +1,112 @@
+{
+  "schema_version": "e01-horizontal-input-manifest-v1",
+  "captured_at": "2026-09-13T23:54:30.298Z",
+  "run_token": "9231bee8",
+  "line_id": "line:e01-9231bee8:v1",
+  "parent": {
+    "label": "H-PARENT",
+    "line_id": "line:e01-9231bee8:v1",
+    "node_id": "node:e01-parent-9231bee8:l0",
+    "parent_node_id": null,
+    "signed_level": "L0",
+    "sovereignty_tier": "sovereign",
+    "node_profile": "operating_mall",
+    "realm_id": "realm:e01-parent-9231bee8",
+    "scope_id": "mall:e01-parent-9231bee8"
+  },
+  "peers": [
+    {
+      "label": "H-A",
+      "line_id": "line:e01-9231bee8:v1",
+      "node_id": "node:e01-ha-9231bee8:l1",
+      "parent_node_id": "node:e01-parent-9231bee8:l0",
+      "signed_level": "L1",
+      "sovereignty_tier": "hosted",
+      "node_profile": "operating_mall",
+      "realm_id": "realm:e01-ha-9231bee8",
+      "scope_id": "mall:e01-ha-9231bee8",
+      "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+      "account_id": "account:e01-ha-9231bee8",
+      "principal_id": "principal:e01-ha-9231bee8",
+      "membership_id": "membership:e01-ha-9231bee8",
+      "resource_id": "order:e01-ha-9231bee8",
+      "accounts_host": "accounts.e01-ha-9231bee8.test",
+      "variant_capability_expected": true
+    },
+    {
+      "label": "H-B",
+      "line_id": "line:e01-9231bee8:v1",
+      "node_id": "node:e01-hb-9231bee8:l1",
+      "parent_node_id": "node:e01-parent-9231bee8:l0",
+      "signed_level": "L1",
+      "sovereignty_tier": "hosted",
+      "node_profile": "operating_mall",
+      "realm_id": "realm:e01-hb-9231bee8",
+      "scope_id": "mall:e01-hb-9231bee8",
+      "host_sovereign_node_id": "node:e01-parent-9231bee8:l0",
+      "account_id": "account:e01-hb-9231bee8",
+      "principal_id": "principal:e01-hb-9231bee8",
+      "membership_id": "membership:e01-hb-9231bee8",
+      "resource_id": "order:e01-hb-9231bee8",
+      "accounts_host": "accounts.e01-hb-9231bee8.test",
+      "variant_capability_expected": false
+    },
+    {
+      "label": "H-C",
+      "line_id": "line:e01-9231bee8:v1",
+      "node_id": "node:e01-hc-9231bee8:l1",
+      "parent_node_id": "node:e01-parent-9231bee8:l0",
+      "signed_level": "L1",
+      "sovereignty_tier": "sovereign",
+      "node_profile": "operating_mall",
+      "realm_id": "realm:e01-hc-9231bee8",
+      "scope_id": "mall:e01-hc-9231bee8",
+      "host_sovereign_node_id": "node:e01-hc-9231bee8:l1",
+      "account_id": "account:e01-hc-9231bee8",
+      "principal_id": "principal:e01-hc-9231bee8",
+      "membership_id": "membership:e01-hc-9231bee8",
+      "resource_id": "order:e01-hc-9231bee8",
+      "accounts_host": "accounts.e01-hc-9231bee8.test",
+      "variant_capability_expected": true
+    }
+  ],
+  "operation_matrix": {
+    "positive_operations_per_peer": [
+      {
+        "kind": "read",
+        "operation_id": "e01.horizontal.resource.read",
+        "expected_status": 200
+      },
+      {
+        "kind": "write",
+        "operation_id": "e01.horizontal.resource.write",
+        "expected_status": 200
+      },
+      {
+        "kind": "capability_probe",
+        "operation_id": "e01.horizontal.capability.probe",
+        "expected_by_peer": {
+          "H-A": 200,
+          "H-B": 403,
+          "H-C": 200
+        }
+      }
+    ],
+    "positive_observation_count": 9,
+    "cross_node_dimensions": [
+      "realm",
+      "membership",
+      "scope",
+      "node",
+      "resource"
+    ],
+    "cross_node_operation_kinds": [
+      "read",
+      "write"
+    ],
+    "cross_node_observation_count": 30,
+    "expected_successful_business_write_count": 3,
+    "expected_decision_audit_count": 39,
+    "expected_outbox_count": 3
+  }
+}

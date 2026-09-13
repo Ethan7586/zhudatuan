@@ -1,0 +1,322 @@
+{
+  "schema_version": "e01-horizontal-independent-recount-v1",
+  "oracle_id": "E2-ORACLE-E01-HORIZONTAL",
+  "executed_at": "2026-09-13T23:54:30.539Z",
+  "criteria_id": "E2-CRITERIA-E01-FORMAL-RETEST-20260914",
+  "run_directory": "/Users/Ethan/.codex/worktrees/e9b4/zdt-next/05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01",
+  "reads_test_program_pass": false,
+  "input_artifacts": [
+    {
+      "path": "horizontal-input-manifest.json",
+      "sha256": "sha256:70a173ac7b4421709d0d30be81ff20be424816a09c067cea467723ac24fa97a2",
+      "size_bytes": 3635
+    },
+    {
+      "path": "horizontal-topology.json",
+      "sha256": "sha256:70c82a95625ed14c048920d7bca3ab2a025c1bd6981450070f4d02d6722239dd",
+      "size_bytes": 4575
+    },
+    {
+      "path": "horizontal-node-contexts.json",
+      "sha256": "sha256:f0cac9e5f20fd8b4975ec75332ea7f0a7c5b69c3d625f5e81f1239ad611b2f18",
+      "size_bytes": 12410
+    },
+    {
+      "path": "horizontal-operation-results.json",
+      "sha256": "sha256:73ba2780c1200314dbeaf17501114c95e45912501b8517db5f598459d80e9a71",
+      "size_bytes": 143747
+    },
+    {
+      "path": "horizontal-database-diff.json",
+      "sha256": "sha256:d74942be8560f80037ef1afdf0729f969f6b97f7c6013ea817abef68481a9bf2",
+      "size_bytes": 147828
+    },
+    {
+      "path": "horizontal-model-inventory.json",
+      "sha256": "sha256:07f12fb29bf19863fbad589188cdf8a63c1fe648127b0e31de2836162375cc50",
+      "size_bytes": 90546
+    },
+    {
+      "path": "horizontal-artifact-identity.json",
+      "sha256": "sha256:7ceeee8eacab9e4a2c747e1bcf6806537dd70828bb098af6bea02370d8b9174f",
+      "size_bytes": 97198
+    },
+    {
+      "path": "environment.json",
+      "sha256": "sha256:a36dfa243e79b0408c4c2bed99c57bda6f7a36d81d05ef3992fbbe62feda32e7",
+      "size_bytes": 2221
+    }
+  ],
+  "missing_items": [],
+  "violations": [],
+  "thresholds": [
+    {
+      "threshold_id": "horizontal_topology_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "peer_count",
+      "expected": 3,
+      "actual": 3,
+      "met": true
+    },
+    {
+      "threshold_id": "line_unique_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "parent_unique_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "signed_level_unique_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "context_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "peer_context_path_identity_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "authority_mapping_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "authority_dimension_distinct_count_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "positive_observation_count",
+      "expected": 9,
+      "actual": 9,
+      "met": true
+    },
+    {
+      "threshold_id": "positive_operation_decision_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "successful_business_write_count",
+      "expected": 3,
+      "actual": 3,
+      "met": true
+    },
+    {
+      "threshold_id": "positive_non_target_business_write_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "cross_node_observation_count",
+      "expected": 30,
+      "actual": 30,
+      "met": true
+    },
+    {
+      "threshold_id": "cross_node_request_or_decision_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "cross_node_allowed_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "cross_node_business_row_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "cross_node_outbox_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "decision_audit_count",
+      "expected": 39,
+      "actual": 39,
+      "met": true
+    },
+    {
+      "threshold_id": "outbox_count",
+      "expected": 3,
+      "actual": 3,
+      "met": true
+    },
+    {
+      "threshold_id": "business_resource_version_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "unexpected_authoritative_diff_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "transaction_rollback_residual_fact_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "shared_model_table_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "sql_context_resolver_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "typescript_context_parser_definition_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "typescript_context_adapter_definition_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "peer_model_identity_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "source_copy_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "node_name_business_branch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "node_specific_source_file_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "source_inventory_recount_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "source_sha_unique_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "build_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "build_id_unique_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "artifact_identity_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "artifact_assignment_count",
+      "expected": 3,
+      "actual": 3,
+      "met": true
+    },
+    {
+      "threshold_id": "artifact_assignment_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "artifact_provenance_or_digest_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "node_specific_build_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "dev_environment_ready",
+      "expected": true,
+      "actual": true,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_oracle_mutation_detection_miss_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    }
+  ],
+  "mutation_probes": [
+    {
+      "probe_id": "swap-one-context-scope",
+      "detected": true
+    },
+    {
+      "probe_id": "admit-one-cross-node-write",
+      "detected": true
+    },
+    {
+      "probe_id": "add-second-artifact-identity",
+      "detected": true
+    }
+  ],
+  "claim_outcome": "MET",
+  "environment_assurance": "DEV VERIFIED"
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "../../E2.0-符合性声明.schema.json",
+  "schema_version": "e2.0-conformity-statement-v2",
+  "statement_id": "E2-STATEMENT-E01-DEV-20260913",
+  "template": false,
+  "profile_id": "E2.0",
+  "profile_version": "2.0.0",
+  "issued_at": "2026-09-13T23:54:30.761Z",
+  "scope": "E2-TOPO-001 / legacy E01 at source SHA 7bd7f513d048663e75b660a4156d985760493ab4, disposable local PostgreSQL 17 horizontal peer-node execution and local shared runtime build.",
+  "claim_ids": [
+    "E2-TOPO-001"
+  ],
+  "rating": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM"
+  },
+  "evidence_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/E2.0-E01-证据.json"
+  ],
+  "review_evidence_refs": [],
+  "tailoring_refs": [],
+  "gaps": [
+    "No stable separately managed staging replay has been performed.",
+    "No authorized production observation has been performed.",
+    "All H-A, H-B and H-C nodes, identities, scopes, capabilities and resources were synthetic and transaction-rolled-back.",
+    "The one shared commerce-api artifact was built and inventoried locally but was not activated on Hosted or Sovereign infrastructure.",
+    "No reviewer independent of the E01 fixture, exporter and oracle has recomputed and signed the evidence."
+  ],
+  "issuer": {
+    "name_or_id": "codex-task-e01-acceptance-repair-20260914",
+    "organization": "zhudatuan internal",
+    "role": "E01 horizontal shared-node-model test operator",
+    "relationship_to_test_item": "Implemented the missing E01 formal exporter and operated the separate raw-evidence oracle; did not change the production node model and is not an independent reviewer.",
+    "signed_at": "2026-09-13T23:54:30.761Z"
+  },
+  "reviewer": null,
+  "mandatory_disclaimer": "This is an E2.0 standards-aligned tailored conformity statement, not an ISO, IEEE, NIST, OWASP, PCI SSC, or third-party certification.",
+  "non_gating": true
+}

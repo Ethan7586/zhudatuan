@@ -221,14 +221,18 @@
       "executor_role": "Horizontal node-model test operator",
       "reviewer_role": "Reviewer independent of the node-model implementation and E01 test code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E01 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay at 7bd7f513d048663e75b660a4156d985760493ab4 independently reconciled H-A, H-B and H-C under one line, parent and signed L1 level through one Node/Relation/Closure model, one production context parser path and one source/build/artifact identity. All context and authority maps matched; nine positive outcomes followed per-node data, all thirty Realm/Membership/Scope/Node/resource cross-node requests were denied without business-row or Outbox leakage, all three writes remained target-local, rollback left no E01 facts, and all three oracle mutations were detected.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/E2.0-E01-证据.json",
         "review_evidence_ref": null,
         "gaps": [
-          "E2.0 evidence record and independent oracle recomputation"
+          "No stable separately managed staging replay has been performed.",
+          "No authorized production observation has been performed.",
+          "All H-A, H-B and H-C nodes, identities, scopes, capabilities and resources were synthetic and transaction-rolled-back.",
+          "The one shared commerce-api artifact was built and inventoried locally but was not activated on Hosted or Sovereign infrastructure.",
+          "No reviewer independent of the E01 fixture, exporter and oracle has recomputed and signed the evidence."
         ]
       }
     },
