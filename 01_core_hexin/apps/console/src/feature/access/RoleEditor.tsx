@@ -19,6 +19,7 @@ export interface RoleEditorRecord {
   readonly permissions: readonly string[];
   readonly member_count: number;
   readonly governance: boolean;
+  readonly governance_level: 'owner' | 'senior_administrator' | 'administrator' | null;
   readonly editable: boolean;
   readonly members: AccessRole['members'];
   readonly scopes: AccessRole['scopes'];
@@ -150,7 +151,9 @@ export function RoleEditor({
               </label>
               {!role.editable ? (
                 <p className="roleeditorreadonly" role="status">
-                  Owner 与治理身份只读展示，不提供普通角色编辑入口。
+                  {role.governance_level === 'senior_administrator'
+                    ? '高级管理员的权限模板只读；唯一 Owner 可在“成员与范围”中升级或降级管理员。'
+                    : 'Owner 与治理身份只读展示，不提供普通角色编辑入口。'}
                 </p>
               ) : canWrite ? null : (
                 <p className="roleeditorreadonly" role="status">

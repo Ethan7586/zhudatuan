@@ -140,8 +140,9 @@ function effectivePermissionsMatch(member: AccessMembership, roles: readonly Acc
   const denied = new Set(member.denies);
   const effective = new Set(member.effective_permissions);
   if ([...denied].some((permission) => effective.has(permission))) return false;
-  return member.roles.every((assignment) => (rolePermissions.get(assignment.role) ?? [])
-    .filter((permission) => !denied.has(permission)).every((permission) => effective.has(permission)));
+  const expected = new Set(member.roles.flatMap((assignment) => rolePermissions.get(assignment.role) ?? [])
+    .filter((permission) => !denied.has(permission)));
+  return expected.size === effective.size && [...expected].every((permission) => effective.has(permission));
 }
 
 function assignmentsMatch(before: AccessMembership, member: AccessMembership): boolean {

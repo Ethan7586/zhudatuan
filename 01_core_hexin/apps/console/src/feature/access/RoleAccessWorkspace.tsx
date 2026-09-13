@@ -437,9 +437,10 @@ function queryErrorTitle(error: Error): string {
 }
 
 function toEditorRecord(role: AccessRole): RoleEditorRecord {
-  return { ...role, persisted: true };
+  return { ...role, governance_level: role.governance_level ?? null, persisted: true };
 }
 
 function newRoleDraft(id: string): RoleEditorRecord {
-  return { id, name: '', status: 'active', permissions: [], member_count: 0, governance: false, editable: true, members: [], scopes: [], persisted: false };
+  return { id, name: '', status: 'active', permissions: [], member_count: 0, governance: false,
+    governance_level: null, editable: true, members: [], scopes: [], persisted: false };
 }
