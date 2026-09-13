@@ -74,6 +74,13 @@ export const OrderSchema = z.object({
   created_at: z.string().check(z.minLength(1)),
   updated_at: z.string().check(z.minLength(1)),
   version: DatabaseIntegerSchema,
+  product_summary: z.optional(z.nullable(z.object({
+    title: z.string().check(z.minLength(1)),
+    sku: z.string().check(z.minLength(1)),
+    quantity: DatabaseIntegerSchema,
+    lineCount: DatabaseIntegerSchema,
+  }))),
+  inventory_summary: z.optional(z.nullable(z.enum(['committed', 'active', 'released', 'other']))),
   lines: z.optional(
     z.array(
       z.object({

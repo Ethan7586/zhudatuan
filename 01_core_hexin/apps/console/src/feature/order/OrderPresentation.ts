@@ -50,6 +50,10 @@ export function financeLabel(order: OrderRecord): string {
 }
 
 export function inventoryLabel(order: OrderRecord): string {
+  if (order.inventory_summary === 'committed') return '库存已扣减';
+  if (order.inventory_summary === 'active') return '库存已锁定';
+  if (order.inventory_summary === 'released') return '库存已释放';
+  if (order.inventory_summary === 'other') return '库存状态处理中';
   const reservations = order.inventory_reservations ?? [];
   if (reservations.some(({ state }) => state === 'committed')) return '库存已扣减';
   if (reservations.some(({ state }) => state === 'active')) return '库存已锁定';
@@ -98,6 +102,11 @@ export function formatOrderTime(value: string): string {
 }
 
 export function productSummary(order: OrderRecord): Readonly<{ title: string; detail: string }> {
+  if (order.product_summary !== undefined && order.product_summary !== null) {
+    const summary = order.product_summary;
+    return { title: summary.title,
+      detail: `${summary.sku} · 共 ${summary.quantity} 件${summary.lineCount > 1 ? ` / ${summary.lineCount} 类` : ''}` };
+  }
   const lines = [...(order.lines ?? [])].sort((left, right) => left.id.localeCompare(right.id));
   const first = lines[0];
   if (first === undefined) return { title: '商品明细不可用', detail: '当前订单快照未返回商品行' };
