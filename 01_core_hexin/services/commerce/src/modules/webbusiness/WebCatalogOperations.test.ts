@@ -78,6 +78,24 @@ describe('web catalog management read', () => {
       items: [], count: 0, preview: { kind: 'console-product-v1', totalCount: 12 },
     } });
   });
+
+  it('returns mapped products for the console selection center', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, (text) => text.includes('from catalog.sourcelisting source') ? [{
+      id: 'source:1', sku_id: 'sku:1', product_id: 'product:1', title: '候选商品', status: 'mapped',
+      version: 0, cursor_sort: '2026-09-14T00:00:00.000Z', selection: { kind: 'selection-center-v1', selected: true },
+    }] : []);
+    const read = webCatalogActions()['catalog.listings.read'];
+    if (typeof read !== 'function') throw new Error('WEB_CATALOG_LISTING_READ_ACTION_MISSING');
+
+    const result = await read(request({ view: 'selection-center' }), database);
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.text).toContain("source.scope_id=$1 and source.status='mapped'");
+    expect(calls[0]?.text).toContain("'kind','selection-center-v1'");
+    expect(calls[0]?.values).toEqual(['mall:hongtai', '', '', '', '', '', null, null, 51]);
+    expect(result).toMatchObject({ status: 200, body: { count: 1, items: [{ id: 'source:1' }] } });
+  });
 });
 
 interface QueryCall { readonly text: string; readonly values: readonly unknown[] }
