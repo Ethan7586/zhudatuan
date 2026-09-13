@@ -5,21 +5,18 @@ import { useNavigate } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { scopePath } from '../../shared/url/ScopePath';
-import { productKey, readProducts, type ProductQuery } from '../product/ProductQuery';
+import { productKey, readProducts } from '../product/ProductQuery';
 import { supplyPartnersFromListingPage, type SupplyPartnerSummary } from './SupplyChainModel';
+import { supplyChainQuery } from './SupplyChainPrefetch';
 import './supply-chain.css';
-
-const supplyQuery: ProductQuery = Object.freeze({
-  q: '', category: '', status: '', limit: 1, preview: true, view: 'supply-network',
-});
 
 export function Component() {
   const context = useConsoleContext();
   const navigate = useNavigate();
   const [queryText, setQueryText] = useState('');
   const query = useQuery({
-    queryKey: productKey(context, supplyQuery),
-    queryFn: ({ signal }) => readProducts(context, supplyQuery, signal),
+    queryKey: productKey(context, supplyChainQuery),
+    queryFn: ({ signal }) => readProducts(context, supplyChainQuery, signal),
     placeholderData: keepPreviousData,
     staleTime: 5 * 60_000,
     retry: false,

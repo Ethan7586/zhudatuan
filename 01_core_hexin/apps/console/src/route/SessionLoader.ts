@@ -48,6 +48,7 @@ interface ConsoleProductPrefetch {
     cursor?: string;
     limit: number;
     preview: boolean;
+    view?: 'supply-network';
   }>;
   readonly value: unknown;
 }
