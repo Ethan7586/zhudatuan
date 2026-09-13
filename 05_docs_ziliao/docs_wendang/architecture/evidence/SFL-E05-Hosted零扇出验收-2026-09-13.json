@@ -1,0 +1,47 @@
+{
+  "schema": "sfl.e05.hosted-zero-fanout-acceptance.v1",
+  "experiment": "E05",
+  "executed_at": "2026-09-13T08:20:00Z",
+  "environment": {
+    "database": "disposable PostgreSQL 17",
+    "migration_inventory": 301,
+    "shared_host_release": "production zhudatuan-l0/identity-api"
+  },
+  "result": "PASS",
+  "observed": {
+    "hosted_nodes": 3,
+    "operations": ["create", "suspend", "reactivate", "grant", "revoke"],
+    "database_only_lifecycle": true,
+    "audit_rows": 7,
+    "outbox_rows": 7,
+    "hosted_manifest_rows": 0,
+    "hosted_resource_binding_rows": 0,
+    "hosted_infrastructure_action_count": 0,
+    "shared_host_build_count": 1,
+    "shared_host_artifact_identity_count": 1,
+    "shared_host_deploy_count": 1,
+    "shared_host_restart_count": 1,
+    "hosted_per_node_action_count": 0,
+    "suspended_access_denied": true,
+    "reactivated_access_allowed": true,
+    "revoked_extra_scope_denied": true,
+    "production_shared_host_ready": true
+  },
+  "evidence": {
+    "before_after": "e05-hosted-zero-fanout/hosted-before-after.sql.json",
+    "audit_outbox": "e05-hosted-zero-fanout/hosted-audit-outbox.jsonl",
+    "infrastructure_counts": "e05-hosted-zero-fanout/hosted-infrastructure-call-counts.json",
+    "shared_release_receipt": "e05-hosted-zero-fanout/hosted-shared-release-receipt.json",
+    "database_contract": "02_platform_pingtai/database/supabase/tests/sfl_hosted_zero_fanout_contract.sql",
+    "replay_command": "npm run check:sfl-hosted-zero-fanout",
+    "production_workflow_run": "https://github.com/Ethan7586/zhudatuan/actions/runs/34731958020"
+  },
+  "exhaustive_boundary": {
+    "all_five_lifecycle_categories_observed": true,
+    "any_hosted_infrastructure_call": false,
+    "any_hosted_manifest_pointer_process_or_port": false,
+    "any_access_after_suspend_or_revoke": false,
+    "any_per_hosted_node_build_deploy_or_restart": false
+  },
+  "conclusion": "E05 passes: Hosted lifecycle changes are database facts with audit and Outbox only; the shared host changed once through one artifact, one deployment and one restart without Hosted per-node fan-out."
+}
