@@ -21,19 +21,13 @@
 
 origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次审计。任何后续修复从修复时最新主线建立独立小分支。
 
-## 3. 当前阶段边界
+## 3. 当前阶段与检查点
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前仍是第一阶段，只完成：
+当前进度：CP-00 与 CP-00A 已完成；AU-001/CP-01“仓库入口与自动发现机制”已完成，形成真实架构、运行关系和模块清单初版。下一单元固定为 AU-002“Console、Auth、Storefront、Miniapp 页面与运行入口总图”。
 
-1. CP-00 固定基线。
-2. 4,238 文件覆盖总账。
-3. 微观深审记录规范。
-4. 全仓审计执行计划。
-5. 既有基线和覆盖清单的证据标签语义。
-
-当前阶段不得开始批量阅读架构模块、业务模块或迁移实现。提交本计划后立即停止。
+“检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
 ## 4. 审计单元定义
 
@@ -150,10 +144,10 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 ### 阶段 0：基线与方法
 
-状态：当前阶段。
+状态：已完成。
 
 - CP-00：基线、初始入口库存和覆盖总账，已完成。
-- CP-00A：微观记录规范、证据标签和执行计划。
+- CP-00A：微观记录规范、证据标签和执行计划，已完成。
 
 验收：分支固定；覆盖清单与 4,238 基线文件逐项一致；计划覆盖补充协议全部专项。
 
@@ -161,8 +155,8 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 架构阶段先于任何垃圾代码判断，拆成独立 AU：
 
-1. 仓库入口与 package/export/build 发现机制。
-2. Console、Auth、Storefront、Miniapp 页面与运行入口总图。
+1. AU-001：仓库入口与 package/export/build 发现机制，已完成（CP-01）。
+2. AU-002：Console、Auth、Storefront、Miniapp 页面与运行入口总图，下一单元。
 3. Canonical Commerce、Compatibility API、Ready/Main/Jobs/Migration 进程入口总图。
 4. release target、systemd、Cloudflared、Caddy、静态制品和节点部署总图。
 5. PostgreSQL、Redis、对象存储、Secrets/KMS、队列和共享数据总图。
@@ -511,9 +505,9 @@ Miniapp：
 
 ## 16. 下一审计单元
 
-本检查点完成后停止。下一会话建议只执行：
+CP-01 提交后结束当前单一目的会话。下一会话只执行：
 
-- AU-001：仓库入口与自动发现机制。
-- 目的：从 package exports、build entry、路由发现、Worker、systemd、GitHub 和脚本注册中建立“哪些文件能进入运行”的第一张证据图。
-- 输出：records/AU-001-repository-entry-discovery，以及 01-architecture.md、02-runtime-map.md 和 03-module-inventory.md 的对应初始段落。
-- 禁止：深入评审任一业务模块、定级垃圾代码、运行全量测试或修改源码。
+- AU-002：Console、Auth、Storefront、Miniapp 页面与运行入口总图。
+- 目的：分别确认页面挂载、动态 import、运行时配置、CSS/资源收集和前端到 API 的第一跳；只形成前端入口全图，不深审业务 Handler。
+- 输入：CP-01 的 `01-architecture.md`、`02-runtime-map.md`、`03-module-inventory.md`、覆盖总账和 `records/AU-001-repository-entry-discovery`。
+- 禁止：修复 F-0001/F-0002/F-0003、改任何前端源码/配置、定级垃圾代码、运行全量 E2E 或跨入后端业务深审。

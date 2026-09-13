@@ -1,0 +1,7 @@
+"测试编号","正式入口或验证","范围","执行结果","反事实可信度","证明","不证明","证据"
+"T-AU-001-001","npm run dev --workspace @shop/auth -- --help","Playwright 首个 webServer 的 npm workspace 解析","失败；退出 1；No workspaces found","高：失败发生在页面服务启动前的真实 npm 解析层","F-0002 至少一个启动项不可达","其它四项和完整 E2E 的最终结果","E-AU-001-005"
+"T-AU-001-002","静态核对 5 个 Playwright workspace 与 43 个 lock workspace","全部 webServer 名称","仅 @shop/console 存在","高：同一 npm workspace 命名事实源","四个配置名不在当前图中","改名后服务/用例可运行","E-AU-001-003;E-AU-001-004"
+"T-AU-001-003","Console registry 现有单测定位","registry issue 与 route materializer","未执行；依赖未安装且 AU 只验证入口结论","待后续反事实运行","测试文件存在且直接导入被审函数","测试当前通过或能捕获全部实现破坏","E-AU-001-007;E-AU-001-008"
+"T-AU-001-004","Commerce RouteRegistry 现有单测定位","route duplicate/freeze/match","未执行；本 AU 未产生需要运行实现测试的新增事实争议","待后续反事实运行","有直接单测和 HTTP 集成消费者","所有路由契约正确","E-AU-001-012"
+"T-AU-001-005","release planner 现有 node:test 定位","workspace impact","未执行；未修改引擎且依赖环境未准备","现有 fixture 直接调用 workspace resolver；service impact 覆盖待审","存在 workspace impact 定向测试","service esbuild 图所有分支被测","E-AU-001-016"
+"T-AU-001-006","直连 SNI GET /","fufu Console 公网根","404","高：直接测量 publicAcceptance 要求的 URL 行为","观察时不满足 200","事故持续时间、根因和所有用户影响","E-AU-001-021"
