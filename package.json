@@ -119,6 +119,8 @@
     "evidence:e12": "node 04_tools/scripts/audit/identity-realm-isolation.pg17-fixture.mjs",
     "test:supplier-four-flow": "node 04_tools/scripts/audit/supplier-four-flow.pg17-fixture.mjs",
     "evidence:e08": "node 04_tools/scripts/audit/supplier-four-flow.pg17-fixture.mjs",
+    "test:e09-recovery": "node 04_tools/scripts/audit/e09-recovery.pg17-fixture.mjs",
+    "evidence:e09": "node 04_tools/scripts/audit/e09-recovery.pg17-fixture.mjs",
     "test:e11-scale": "node 04_tools/scripts/audit/e11-scale.pg17-fixture.mjs",
     "evidence:e11": "node 04_tools/scripts/audit/e11-scale.pg17-fixture.mjs",
     "test:e10-release": "node 04_tools/scripts/audit/e10-release.fixture.mjs",
