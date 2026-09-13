@@ -14,6 +14,10 @@ declare global {
     __consoleProductPrefetch?: DocumentPrefetch<ConsoleProductPrefetch>;
     __consoleSupportPrefetch?: DocumentPrefetch<ConsoleSupportPrefetch>;
     __consoleQualificationPrefetch?: DocumentPrefetch<ConsoleQualificationPrefetch>;
+    __consoleOrderPrefetch?: DocumentPrefetch<ConsoleOrderPrefetch>;
+    __consoleFinanceOverviewPrefetch?: DocumentPrefetch<ConsoleScopedPrefetch>;
+    __consoleFinanceReconciliationPrefetch?: DocumentPrefetch<ConsoleFinanceReconciliationPrefetch>;
+    __consoleApplicationPrefetch?: DocumentPrefetch<ConsoleApplicationPrefetch>;
   }
 }
 
@@ -67,6 +71,43 @@ interface ConsoleQualificationPrefetch {
   readonly scopeId: string;
   readonly accessVersion: number;
   readonly value: unknown;
+}
+
+interface ConsoleScopedPrefetch {
+  readonly scopeKind: ConsoleScope['kind'];
+  readonly scopeId: string;
+  readonly accessVersion: number;
+  readonly value: unknown;
+}
+
+interface ConsoleOrderPrefetch extends ConsoleScopedPrefetch {
+  readonly query: Readonly<{
+    order: string;
+    placed: string;
+    lifecycle: string;
+    payment: string;
+    fulfillment: string;
+    mall: string;
+    view: string;
+    cursor?: string;
+  }>;
+}
+
+interface ConsoleFinanceReconciliationPrefetch extends ConsoleScopedPrefetch {
+  readonly query: Readonly<{
+    q: string;
+    period: string;
+    channel: string;
+    mall: string;
+    status: string;
+    difference: string;
+    cursor?: string;
+    limit: number;
+  }>;
+}
+
+interface ConsoleApplicationPrefetch extends ConsoleScopedPrefetch {
+  readonly cursor?: string;
 }
 
 const LANDING_SESSION_HANDOFF_MS = 5_000;

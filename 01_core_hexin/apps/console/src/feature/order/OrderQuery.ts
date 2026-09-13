@@ -34,6 +34,8 @@ export const orderKey = (context: ConsoleContext, filter: OrderQuery) =>
   ] as const);
 
 export async function readOrders(context: ConsoleContext, filter: OrderQuery, signal: AbortSignal) {
+  const prefetched = await takeDocumentOrderPrefetch(context, filter, signal);
+  if (prefetched !== undefined) return prefetched;
   const value = await ordersRead(
     {
       query: {
@@ -56,4 +58,45 @@ export async function readOrders(context: ConsoleContext, filter: OrderQuery, si
     ? (value as Record<string, unknown>).exports as unknown[]
     : [];
   return Object.freeze({ ...page, exports: Object.freeze(exports.map(parseOrderExportTask)) });
+}
+
+async function takeDocumentOrderPrefetch(context: ConsoleContext, filter: OrderQuery, signal: AbortSignal) {
+  if (typeof window === 'undefined') return undefined;
+  const slot = window.__consoleOrderPrefetch;
+  delete window.__consoleOrderPrefetch;
+  if (slot === undefined) return undefined;
+  if (signal.aborted) {
+    window.__consoleAbortDocumentPrefetch?.();
+    throw signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
+  }
+  let rejectAbort: (cause: unknown) => void = () => undefined;
+  const aborted = new Promise<never>((_resolve, reject) => { rejectAbort = reject; });
+  const abort = () => {
+    window.__consoleAbortDocumentPrefetch?.();
+    rejectAbort(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
+  };
+  signal.addEventListener('abort', abort, { once: true });
+  try {
+    const value = await Promise.race([slot.promise, aborted]);
+    const query = value?.query;
+    const matches = value?.scopeKind === context.scope.kind
+      && value.scopeId === context.scope.id
+      && value.accessVersion === context.session.accessVersion
+      && query?.order === filter.order
+      && query.placed === (filter.placed ?? '')
+      && query.lifecycle === (filter.lifecycle ?? '')
+      && query.payment === (filter.payment ?? '')
+      && query.fulfillment === (filter.fulfillment ?? '')
+      && query.mall === (filter.mall ?? '')
+      && query.view === (filter.view ?? 'all')
+      && query.cursor === filter.cursor;
+    if (!matches) return undefined;
+    const parsed = OrderPageSchema.safeParse(value.value);
+    if (!parsed.success) return undefined;
+    const raw = value.value as Record<string, unknown>;
+    const exports = Array.isArray(raw.exports) ? raw.exports : [];
+    return Object.freeze({ ...parsed.data, exports: Object.freeze(exports.map(parseOrderExportTask)) });
+  } finally {
+    signal.removeEventListener('abort', abort);
+  }
 }

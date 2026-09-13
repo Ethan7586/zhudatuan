@@ -63,6 +63,26 @@ describe('console bootstrap document', () => {
     expect(prefetch).toContain("value.capabilities.includes('qualification.center.read')");
   });
 
+  it('starts the exact order read as soon as the session resolves', () => {
+    expect(prefetch).toContain('window.__consoleOrderPrefetch = tracked(');
+    expect(prefetch).toContain('`/api/v1/orders?${parameters.toString()}`');
+    expect(prefetch).toContain("value.capabilities.includes('order.orders.read')");
+    expect(prefetch).toContain("new URLSearchParams({ limit: '50', exports: 'true' })");
+  });
+
+  it('starts both finance reads without waiting for the finance route bundle', () => {
+    expect(prefetch).toContain('window.__consoleFinanceOverviewPrefetch = tracked(');
+    expect(prefetch).toContain("'/api/v1/finance/overview'");
+    expect(prefetch).toContain('window.__consoleFinanceReconciliationPrefetch = tracked(');
+    expect(prefetch).toContain('`/api/v1/finance/reconciliations?${parameters.toString()}`');
+  });
+
+  it('starts the exact store-decoration application read as soon as the session resolves', () => {
+    expect(prefetch).toContain('window.__consoleApplicationPrefetch = tracked(');
+    expect(prefetch).toContain('`/api/v1/experiences/applications?${parameters.toString()}`');
+    expect(prefetch).toContain("value.capabilities.includes('experience.applications.read')");
+  });
+
   it('preloads the current route and shell beside the provider bootstrap', () => {
     expect(main).toContain("import('./shared/interaction/ConsoleModulePreload')");
     expect(main).toContain('preloadCurrentConsoleBoot(window.location.pathname)');

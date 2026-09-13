@@ -33,6 +33,8 @@ export const financeReconciliationKey = (context: ConsoleContext, filter: Financ
   ] as const);
 
 export async function readFinanceReconciliations(context: ConsoleContext, filter: FinanceReconciliationQuery, signal: AbortSignal) {
+  const prefetched = await takeDocumentFinanceReconciliationPrefetch(context, filter, signal);
+  if (prefetched !== undefined) return prefetched;
   const preview = isFinancePreviewContext(context);
   const value = await reconciliationsRead(
     {
@@ -50,4 +52,46 @@ export async function readFinanceReconciliations(context: ConsoleContext, filter
     consoleRequest(context.scope, signal, context.session.accessVersion)
   );
   return FinanceReconciliationPageSchema.parse(value);
+}
+
+async function takeDocumentFinanceReconciliationPrefetch(
+  context: ConsoleContext,
+  filter: FinanceReconciliationQuery,
+  signal: AbortSignal,
+) {
+  if (typeof window === 'undefined') return undefined;
+  const slot = window.__consoleFinanceReconciliationPrefetch;
+  delete window.__consoleFinanceReconciliationPrefetch;
+  if (slot === undefined) return undefined;
+  if (signal.aborted) {
+    window.__consoleAbortDocumentPrefetch?.();
+    throw signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
+  }
+  let rejectAbort: (cause: unknown) => void = () => undefined;
+  const aborted = new Promise<never>((_resolve, reject) => { rejectAbort = reject; });
+  const abort = () => {
+    window.__consoleAbortDocumentPrefetch?.();
+    rejectAbort(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
+  };
+  signal.addEventListener('abort', abort, { once: true });
+  try {
+    const value = await Promise.race([slot.promise, aborted]);
+    const query = value?.query;
+    const matches = value?.scopeKind === context.scope.kind
+      && value.scopeId === context.scope.id
+      && value.accessVersion === context.session.accessVersion
+      && query?.q === filter.q
+      && query.period === filter.period
+      && query.channel === filter.channel
+      && query.mall === filter.mall
+      && query.status === filter.status
+      && query.difference === filter.difference
+      && query.cursor === filter.cursor
+      && query.limit === filter.limit;
+    if (!matches) return undefined;
+    const parsed = FinanceReconciliationPageSchema.safeParse(value.value);
+    return parsed.success ? parsed.data : undefined;
+  } finally {
+    signal.removeEventListener('abort', abort);
+  }
 }

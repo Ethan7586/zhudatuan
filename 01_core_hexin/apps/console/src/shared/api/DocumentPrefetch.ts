@@ -187,6 +187,132 @@ export function startDocumentPrefetch(
       value: qualifications,
     });
   }));
+  window.__consoleOrderPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('order.orders.read')) return undefined;
+    const match = location.pathname.match(/^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/([^/]+)\/orders\/?$/);
+    let direct: Readonly<{ kind: 'platform' | 'distributor' | 'tenant' | 'enterprise' | 'mall'; id: string }> | undefined;
+    try {
+      const candidate = match?.[1] === undefined ? undefined : { kind: match[1], id: decodeURIComponent(match[2]!) };
+      direct = isConsoleScope(candidate) ? candidate : undefined;
+    } catch { direct = undefined; }
+    if (direct === undefined) return undefined;
+    const search = new URLSearchParams(location.search);
+    const query = {
+      order: search.get('order') ?? '',
+      placed: search.get('placed') ?? '',
+      lifecycle: search.get('lifecycle') ?? '',
+      payment: search.get('payment') ?? '',
+      fulfillment: search.get('fulfillment') ?? '',
+      mall: search.get('mall') ?? '',
+      view: search.get('view') ?? 'all',
+      ...(search.get('cursor') !== null ? { cursor: search.get('cursor')! } : {}),
+    } as const;
+    const parameters = new URLSearchParams({ limit: '50', exports: 'true' });
+    if (query.order !== '') parameters.set('order', query.order);
+    if (query.placed !== '') parameters.set('placed', query.placed);
+    if (query.lifecycle !== '') parameters.set('lifecycle', query.lifecycle);
+    if (query.payment !== '') parameters.set('payment', query.payment);
+    if (query.fulfillment !== '') parameters.set('fulfillment', query.fulfillment);
+    if (query.mall !== '') parameters.set('mall', query.mall);
+    if (query.view !== 'all') parameters.set('view', query.view);
+    if (query.cursor !== undefined) parameters.set('cursor', query.cursor);
+    return readJson<unknown>(`/api/v1/orders?${parameters.toString()}`, {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((orders) => orders === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      query,
+      value: orders,
+    });
+  }));
+  window.__consoleFinanceOverviewPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('finance.overview.read')) return undefined;
+    const direct = directScopeFor('finance');
+    if (direct === undefined) return undefined;
+    return readJson<unknown>('/api/v1/finance/overview', {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((overview) => overview === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      value: overview,
+    });
+  }));
+  window.__consoleFinanceReconciliationPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('finance.reconciliations.read')) return undefined;
+    const direct = directScopeFor('finance');
+    if (direct === undefined) return undefined;
+    const search = new URLSearchParams(location.search);
+    const requestedTab = search.get('tab') ?? 'payments';
+    const tab = ['payments', 'refunds', 'rules', 'audit'].includes(requestedTab) ? requestedTab : 'payments';
+    if (tab !== 'payments') return undefined;
+    const preview = direct.kind === 'platform' && direct.id === 'platform:preview';
+    const requestedLimit = Number(search.get('limit') ?? 50);
+    const query = {
+      q: preview ? search.get('q') ?? '' : '',
+      period: preview ? search.get('reconPeriod') ?? '' : '',
+      channel: preview ? search.get('channel') ?? '' : '',
+      mall: preview ? search.get('mall') ?? '' : '',
+      status: preview ? search.get('status') ?? '' : '',
+      difference: preview ? search.get('difference') ?? '' : '',
+      ...(search.get('cursor') !== null ? { cursor: search.get('cursor')! } : {}),
+      limit: [20, 50].includes(requestedLimit) ? requestedLimit : 50,
+    } as const;
+    const parameters = new URLSearchParams({ limit: String(query.limit) });
+    if (query.cursor !== undefined) parameters.set('cursor', query.cursor);
+    if (query.q !== '') parameters.set('q', query.q);
+    if (query.period !== '') parameters.set('period', query.period);
+    if (query.channel !== '') parameters.set('channel', query.channel);
+    if (query.mall !== '') parameters.set('mall', query.mall);
+    if (query.status !== '') parameters.set('status', query.status);
+    if (query.difference !== '') parameters.set('difference', query.difference);
+    return readJson<unknown>(`/api/v1/finance/reconciliations?${parameters.toString()}`, {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((reconciliations) => reconciliations === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      query,
+      value: reconciliations,
+    });
+  }));
+  window.__consoleApplicationPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('experience.applications.read')) return undefined;
+    const direct = directScopeFor('applications');
+    if (direct === undefined) return undefined;
+    const cursor = new URLSearchParams(location.search).get('cursor') ?? undefined;
+    const parameters = new URLSearchParams({ limit: '50' });
+    if (cursor !== undefined) parameters.set('cursor', cursor);
+    return readJson<unknown>(`/api/v1/experiences/applications?${parameters.toString()}`, {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((applications) => applications === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      ...(cursor === undefined ? {} : { cursor }),
+      value: applications,
+    });
+  }));
+}
+
+function directScopeFor(suffix: string): Readonly<{
+  kind: 'platform' | 'distributor' | 'tenant' | 'enterprise' | 'mall';
+  id: string;
+}> | undefined {
+  const match = location.pathname.match(new RegExp(`^/scopes/(platform|distributor|tenant|enterprise|mall)/([^/]+)/${suffix}/?$`));
+  try {
+    const candidate = match?.[1] === undefined ? undefined : { kind: match[1], id: decodeURIComponent(match[2]!) };
+    return isConsoleScope(candidate) ? candidate : undefined;
+  } catch { return undefined; }
 }
 
 function tracked<T>(promise: Promise<T | undefined>): Tracked<T> {
