@@ -12,7 +12,7 @@ export function webReportingOperations(context: ModuleContext): ModuleOperations
   const repository = (database: OperationDatabase) => new PgReportingRepository(database);
   return new ModuleOperations('reporting', pool, context.container.get(AUDIT_SINK),
     getDashboardOperations(repository, pool.workload('query'),
-      context.container.has(CACHE) ? context.container.get(CACHE) : WEB_REPORTING_CACHE),
+      context.container.has(CACHE) ? context.container.get(CACHE) : WEB_REPORTING_CACHE, async () => 0),
     WEB_REPORTING_OPERATION_IDS);
 }
 

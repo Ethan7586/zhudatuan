@@ -16,7 +16,7 @@ describe('web reporting dashboard read', () => {
     const cacheReads: string[] = [];
     const pool = databasePool({
       connect: async () => { connections += 1; throw new Error('CACHE_HIT_MUST_NOT_CONNECT'); },
-      query: async () => result([{ version: 42 }]),
+      query: async () => { throw new Error('WEB_REPORTING_MUST_NOT_READ_PROJECTION_OFFSET'); },
     });
     const cache = memoryCache(async <T>(key: string) => { cacheReads.push(key); return cached as T; });
 
@@ -25,7 +25,7 @@ describe('web reporting dashboard read', () => {
     expect(connections).toBe(0);
     expect(cacheReads).toHaveLength(1);
     expect(cacheReads[0]).toBe(VersionedKey.create('reporting', {
-      scope: 'mall:test', metric: 'dashboard', period: '30days', projectionversion: 42,
+      scope: 'mall:test', metric: 'dashboard', period: '30days', projectionversion: 0,
     }));
   });
 
@@ -43,7 +43,7 @@ describe('web reporting dashboard read', () => {
     } as unknown as PoolClient;
     const pool = databasePool({
       connect: async () => client,
-      query: async () => result([{ version: 42 }]),
+      query: async () => { throw new Error('WEB_REPORTING_MUST_NOT_READ_PROJECTION_OFFSET'); },
     });
     const cache = memoryCache(async () => null, async (key, value, seconds) => {
       writes.push({ key, value, seconds }); return true;
@@ -70,7 +70,7 @@ describe('web reporting dashboard read', () => {
     } as unknown as PoolClient;
     const pool = databasePool({
       connect: async () => { connections += 1; return client; },
-      query: async () => result([{ version: 7 }]),
+      query: async () => { throw new Error('WEB_REPORTING_MUST_NOT_READ_PROJECTION_OFFSET'); },
     });
     const operations = webReportingOperations(context(pool));
 

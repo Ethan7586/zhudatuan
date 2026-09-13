@@ -9,11 +9,13 @@ import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { MetricRow, ReportDimension, ReportPeriod } from '../../02_domain_yewu/model/Metric';
 import type { ReportingFactory } from '../../01_public_gongkai/ReportingPort';
 
-export function getDashboardOperations(factory: ReportingFactory<OperationDatabase>, pool: DatabasePool, cache: Cache): OperationActions {
-  return { 'reporting.dashboard.read': metricOperation(factory, pool, cache, null) };
+export function getDashboardOperations(factory: ReportingFactory<OperationDatabase>, pool: DatabasePool, cache: Cache,
+  projectionVersion: (scope: string) => Promise<number> = (scope) => reportingProjectionVersion(pool, scope)): OperationActions {
+  return { 'reporting.dashboard.read': metricOperation(factory, pool, cache, null, projectionVersion) };
 }
 
-export function metricOperation(factory: ReportingFactory<OperationDatabase>, pool: DatabasePool, cache: Cache, dimension: ReportDimension | null) {
+export function metricOperation(factory: ReportingFactory<OperationDatabase>, pool: DatabasePool, cache: Cache, dimension: ReportDimension | null,
+  projectionVersion: (scope: string) => Promise<number> = (scope) => reportingProjectionVersion(pool, scope)) {
   return operationLifecycle({
     prepare: async (request: OperationRequest) => {
       const access = requireAccess(request);
@@ -23,9 +25,7 @@ export function metricOperation(factory: ReportingFactory<OperationDatabase>, po
       const supplier = queryText(request, 'supplierid');
       const selectedDimension = supplier === null ? dimension : supplierSection(request) ?? dimension;
       const cacheable = application === null && supplier === null && page.sort === null;
-      const projection = cacheable ? await pool.query<{ version: number }>(`select version::integer from runtime.projectionoffset
-        where projection='commerce' and shard=$1`, [access.scope.id]) : null;
-      const version = projection?.rows[0]?.version ?? 0;
+      const version = cacheable ? await projectionVersion(access.scope.id) : 0;
       const key = cacheable ? VersionedKey.create('reporting', { scope: access.scope.id,
         metric: selectedDimension ?? 'dashboard', period: selectedPeriod, projectionversion: version }) : null;
       const cached = key ? await cache.get<OperationResult>(key) : null;
@@ -46,6 +46,12 @@ export function metricOperation(factory: ReportingFactory<OperationDatabase>, po
       return result;
     },
   });
+}
+
+async function reportingProjectionVersion(pool: DatabasePool, scope: string): Promise<number> {
+  const projection = await pool.query<{ version: number }>(`select version::integer from runtime.projectionoffset
+    where projection='commerce' and shard=$1`, [scope]);
+  return projection.rows[0]?.version ?? 0;
 }
 
 function metricPage(rows: readonly MetricRow[], limit: number, summary?: unknown): OperationResult {
