@@ -50,7 +50,8 @@ const accountsHost = (node) => node.entries.find((entry) => entry.kind === 'acco
 const returnOrigin = (node, target) => node.targets.find((candidate) => candidate.target === target)?.returnOrigin
   ?? (() => { throw new Error(`IDENTITY_TARGET_MISSING:${node.nodeId}:${target}`); })();
 
-export async function verifyIdentityRealmIsolation(database) {
+export async function verifyIdentityRealmIsolation(database, options = {}) {
+  let formalEvidence = null;
   await database.exec('begin');
   try {
     await assertCanonicalIdentityNodeManifest(database);
@@ -95,6 +96,22 @@ export async function verifyIdentityRealmIsolation(database) {
         'session:realm-isolation:l'||level,
         encode(public.digest('session-token:realm-isolation:l'||level,'sha256'),'hex')
       from generate_series(0,11) level;
+
+      insert into organization.organization(
+        id,kind,parent_id,name,timezone,status,version,created_at,updated_at
+      )
+      select organization_id,'mall','enterprise-zhudatuan','E12 Realm L1 Mall','Asia/Shanghai',
+        'active',1,clock_timestamp(),clock_timestamp()
+      from identity_realm_fixture where level=1
+      on conflict(id) do nothing;
+      insert into organization.unitclosure(ancestor_id,descendant_id,depth)
+      select closure.ancestor_id,fixture.organization_id,closure.depth+1
+      from identity_realm_fixture fixture
+      join organization.unitclosure closure on closure.descendant_id='enterprise-zhudatuan'
+      where fixture.level=1
+      union all
+      select organization_id,organization_id,0 from identity_realm_fixture where level=1
+      on conflict do nothing;
 
       insert into identity.realm(
         id,node_id,status,created_at,updated_at,node_profile,mall_id,host_node_id,host_node_profile
@@ -522,6 +539,10 @@ export async function verifyIdentityRealmIsolation(database) {
       throw new Error('IDENTITY_REALM_PERMISSION_ISOLATION_INVALID');
     }
 
+    if (options.collectEvidence === true) {
+      formalEvidence = await collectFormalE12Evidence(database);
+    }
+
     await database.exec(`update identity.account set credential_version=credential_version+1
       where id='account:realm-isolation:l11' and realm_id='realm:l11';`);
     await expectScalar(database, `select count(*)::integer value from identity_realm_fixture fixture
@@ -535,6 +556,474 @@ export async function verifyIdentityRealmIsolation(database) {
   } finally {
     await database.exec('rollback');
   }
+  return formalEvidence;
+}
+
+async function collectFormalE12Evidence(database) {
+  const capturedAt = new Date().toISOString();
+  const nodes = await database.query(`select level,node_id,realm_id,mall_id,accounts_host,organization_id,
+      principal_id,account_id,membership_id,session_id,token_hash,membership_client
+    from identity_realm_fixture where level in(0,1) order by level`);
+  const nodeB = nodes.rows[0];
+  const nodeA = nodes.rows[1];
+  if (!nodeA || !nodeB) throw new Error('E12_FORMAL_BASELINE_FIXTURE_MISSING');
+
+  await installCrossScopeFixture(database, nodeA);
+  const before = await snapshotPersistentState(database, nodeA, nodeB);
+
+  const positiveCases = [
+    await resolveSessionCase(database, 'E12-POS-A-A', nodeA, nodeA.accounts_host),
+    await resolveSessionCase(database, 'E12-POS-B-B', nodeB, nodeB.accounts_host),
+  ];
+
+  const unknownHost = await resolveSessionCase(database, 'E12-NEG-01-UNKNOWN-HOST', nodeA, 'unknown.e12.invalid');
+  const ambiguousHost = await probeAmbiguousDatabaseHost(database, nodeA, nodeB);
+  const crossRealm = await resolveSessionCase(database, 'E12-NEG-03-CROSS-REALM-HOST', nodeA, nodeB.accounts_host);
+  const crossScope = await probeCrossScope(database, nodeA, nodeB);
+  const wrongNode = await probeWrongNodeScope(nodeA, nodeB);
+  const staleVersion = await probeSessionMutation(database, {
+    caseId: 'E12-NEG-06-STALE-ACCESS-VERSION',
+    savepoint: 'e12_stale_access_version',
+    mutationSql: `update access.membership set access_version=access_version+1 where id=$1`,
+    parameters: [nodeA.membership_id],
+    source: nodeA,
+  });
+  const suspendedNode = await probeSessionMutation(database, {
+    caseId: 'E12-NEG-07A-SUSPENDED-NODE',
+    savepoint: 'e12_suspended_node',
+    mutationSql: `update organization.node set status='suspended',updated_at=clock_timestamp() where id=$1`,
+    parameters: [nodeA.node_id],
+    source: nodeA,
+  });
+  const suspendedMembership = await probeSessionMutation(database, {
+    caseId: 'E12-NEG-07B-SUSPENDED-MEMBERSHIP',
+    savepoint: 'e12_suspended_membership',
+    mutationSql: `update access.membership set status='suspended' where id=$1`,
+    parameters: [nodeA.membership_id],
+    source: nodeA,
+  });
+  const crossRealmWrite = await probeCrossRealmWrite(database, nodeA, nodeB);
+  const forgeryCases = await probeAuthorityForgeries(database, nodeA, nodeB);
+  const compatibilityPath = await probeCompatibilityPath(database);
+  const after = await snapshotPersistentState(database, nodeA, nodeB);
+
+  return Object.freeze({
+    schema_version: 'e12-database-raw-evidence-v1',
+    captured_at: capturedAt,
+    baselines: Object.freeze({
+      node_a: baselineIdentity(nodeA),
+      node_b: baselineIdentity(nodeB),
+    }),
+    positive_cases: positiveCases,
+    invalid_cases: [
+      unknownHost,
+      ambiguousHost,
+      Object.freeze({ ...crossRealm, cross_realm_write_probe: crossRealmWrite }),
+      crossScope,
+      wrongNode,
+      staleVersion,
+      Object.freeze({
+        case_id: 'E12-NEG-07-SUSPENDED-NODE-OR-MEMBERSHIP',
+        request: { variants: ['suspended_node', 'suspended_membership'] },
+        response: { node: suspendedNode.response, membership: suspendedMembership.response },
+        variants: [suspendedNode, suspendedMembership],
+      }),
+    ],
+    forgery_cases: forgeryCases,
+    database_before: before,
+    database_after: after,
+    database_diff: compareSnapshots(before, after),
+    compatibility_path: compatibilityPath,
+  });
+}
+
+function baselineIdentity(row) {
+  return Object.freeze({
+    node_id: row.node_id,
+    realm_id: row.realm_id,
+    scope_id: row.organization_id,
+    mall_id: row.mall_id,
+    accounts_host: row.accounts_host,
+    principal_id: row.principal_id,
+    account_id: row.account_id,
+    membership_id: row.membership_id,
+    session_id: row.session_id,
+  });
+}
+
+async function installCrossScopeFixture(database, nodeA) {
+  await database.query(`insert into access.role(id,scope_id,name,status,version)
+      values('role:e12-cross-scope-a',$1,'E12 Cross Scope A','active',1)`, [nodeA.organization_id]);
+  await database.exec(`insert into access.rolepermission(role_id,permission_id,effect)
+    select 'role:e12-cross-scope-a',id,'allow' from access.permission where code='access.scope.manage';`);
+  await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at)
+      values($1,'role:e12-cross-scope-a',clock_timestamp())`, [nodeA.membership_id]);
+  await database.query(`insert into access.scopegrant(
+      id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version
+    ) values('scope:e12-cross-scope-a',$1,'mall',$2,$2,'allow',clock_timestamp(),1)`,
+  [nodeA.membership_id, nodeA.organization_id]);
+}
+
+async function resolveSessionCase(database, caseId, source, host) {
+  const result = await database.query(`select actor_id,account_id,realm_id,session_id,membership_id,
+      credential_version,access_version,target,membership_client,governance_organization_id,
+      entry_realm_id,line_id,node_id,parent_node_id,signed_level,node_profile,mall_id,
+      host_sovereign_node_id,relation_version
+    from identity.resolve_session($1,$2)`, [source.token_hash, host]);
+  return Object.freeze({
+    case_id: caseId,
+    request: {
+      boundary: 'identity.resolve_session(text,text)',
+      token_hash: source.token_hash,
+      entry_host: host,
+    },
+    expected_context: caseId.startsWith('E12-POS-') ? {
+      account_id: source.account_id,
+      realm_id: source.realm_id,
+      membership_id: source.membership_id,
+      node_id: source.node_id,
+      mall_id: source.mall_id,
+    } : null,
+    response: { row_count: result.rows.length, resolved_context: result.rows[0] ?? null },
+  });
+}
+
+async function probeAmbiguousDatabaseHost(database, nodeA, nodeB) {
+  await database.exec('savepoint e12_ambiguous_host');
+  let databaseError = null;
+  try {
+    await database.query(`insert into identity.realmentry(host,realm_id,kind,status,created_at)
+      values($1,$2,'accounts','active',clock_timestamp())`, [nodeA.accounts_host, nodeB.realm_id]);
+  } catch (cause) {
+    databaseError = serializeError(cause);
+  }
+  await database.exec('rollback to savepoint e12_ambiguous_host; release savepoint e12_ambiguous_host;');
+  const remaining = await database.query('select host,realm_id from identity.realmentry where host=$1 order by realm_id', [nodeA.accounts_host]);
+  return Object.freeze({
+    case_id: 'E12-NEG-02-AMBIGUOUS-HOST',
+    request: {
+      boundary: 'identity.realmentry authority uniqueness',
+      host: nodeA.accounts_host,
+      existing_realm_id: nodeA.realm_id,
+      attempted_realm_id: nodeB.realm_id,
+    },
+    response: { database_error: databaseError, authoritative_rows: remaining.rows },
+  });
+}
+
+async function probeCrossScope(database, nodeA, nodeB) {
+  const membership = await database.query(`select resolved.id,resolved.active,resolved.access_version,
+      resolved.denies,resolved.grants
+    from access.resolve_session_membership($1,$2,$3,$4) resolved`,
+  [nodeA.membership_id, nodeA.realm_id, nodeA.membership_client, nodeA.organization_id]);
+  const scope = await database.query(`select resolved.scope
+    from access.resolve_session_scope($1,$2,$3,$4,'access.scopes.manage',null,$5) resolved`,
+  [nodeA.membership_id, nodeA.realm_id, nodeA.membership_client, nodeA.organization_id, nodeB.organization_id]);
+  const membershipRow = membership.rows[0];
+  const scopeRow = scope.rows[0];
+  if (!membershipRow || !scopeRow?.scope) {
+    throw new Error(`E12_CROSS_SCOPE_RAW_CONTEXT_MISSING:${JSON.stringify({
+      membership_rows: membership.rows,
+      scope_rows: scope.rows,
+      context: {
+        membership_id: nodeA.membership_id,
+        realm_id: nodeA.realm_id,
+        client: nodeA.membership_client,
+        organization_id: nodeA.organization_id,
+        requested_scope_id: nodeB.organization_id,
+      },
+    })}`);
+  }
+  const { checkScope } = await import('@shop/authz');
+  const decision = checkScope({
+    id: membershipRow.id,
+    active: membershipRow.active,
+    accessVersion: Number(membershipRow.access_version),
+    denies: membershipRow.denies,
+    grants: membershipRow.grants,
+  }, 'access.scope.manage', scopeRow.scope, new Date());
+  return Object.freeze({
+    case_id: 'E12-NEG-04-CROSS-SCOPE',
+    request: {
+      membership_id: nodeA.membership_id,
+      membership_realm_id: nodeA.realm_id,
+      membership_scope_id: nodeA.organization_id,
+      requested_scope_id: nodeB.organization_id,
+      operation: 'access.scopes.manage',
+      permission: 'access.scope.manage',
+    },
+    response: {
+      resolved_scope: scopeRow.scope,
+      membership_access: membershipRow,
+      policy_decision: decision,
+    },
+  });
+}
+
+async function probeWrongNodeScope(nodeA, nodeB) {
+  const { NodeBoundScopeResolver } = await import('../../../01_core_hexin/services/commerce/src/foundation/security/NodeBoundScopeResolver.ts');
+  const foreignScope = Object.freeze({ kind: 'tenant', id: nodeB.organization_id, path: Object.freeze([]) });
+  const resolver = new NodeBoundScopeResolver({ resolve: async () => foreignScope }, nodeA.organization_id);
+  let error = null;
+  try {
+    await resolver.resolve({ id: nodeA.principal_id }, 'access.scopes.manage');
+  } catch (cause) {
+    error = serializeError(cause);
+  }
+  return Object.freeze({
+    case_id: 'E12-NEG-05-WRONG-NODE-IDENTITY',
+    request: {
+      authoritative_node_id: nodeA.node_id,
+      claimed_node_id: nodeB.node_id,
+      expected_scope_id: nodeA.organization_id,
+      claimed_node_scope_id: nodeB.organization_id,
+    },
+    response: { error, resolved_foreign_scope: foreignScope },
+  });
+}
+
+async function probeSessionMutation(database, input) {
+  await database.exec(`savepoint ${input.savepoint}`);
+  await database.query(input.mutationSql, input.parameters);
+  const response = await resolveSessionCase(database, input.caseId, input.source, input.source.accounts_host);
+  await database.exec(`rollback to savepoint ${input.savepoint}; release savepoint ${input.savepoint};`);
+  return response;
+}
+
+async function probeCrossRealmWrite(database, nodeA, nodeB) {
+  const access = await buildAccessContext(database, nodeA);
+  const action = await sessionRevokeAction();
+  const trace = 'e12-invalid-cross-realm-write';
+  await database.exec('savepoint e12_cross_realm_write');
+  const before = await writeProbeRows(database, nodeA, nodeB, trace);
+  let response = null;
+  let error = null;
+  try {
+    response = await action(operationRequest(access, nodeB.session_id, trace, {}), database);
+  } catch (cause) {
+    error = serializeError(cause);
+  }
+  const after = await writeProbeRows(database, nodeA, nodeB, trace);
+  await database.exec('rollback to savepoint e12_cross_realm_write; release savepoint e12_cross_realm_write;');
+  return Object.freeze({
+    request: { source_realm_id: nodeA.realm_id, target_session_id: nodeB.session_id, target_realm_id: nodeB.realm_id },
+    response,
+    error,
+    before,
+    after,
+  });
+}
+
+async function probeAuthorityForgeries(database, nodeA, nodeB) {
+  const access = await buildAccessContext(database, nodeA);
+  const action = await sessionRevokeAction();
+  const forgeries = [
+    ['realm', nodeB.realm_id, 'x-realm-id'],
+    ['membership', nodeB.membership_id, 'x-membership-id'],
+    ['scope', nodeB.organization_id, 'x-scope-hint'],
+    ['node_id', nodeB.node_id, 'x-sfl-node-id'],
+    ['mall_id', nodeB.mall_id, 'x-mall-id'],
+    ['role', 'role-platform-owner-v2', 'x-role'],
+  ];
+  const cases = [];
+  for (const [field, value, header] of forgeries) {
+    const savepoint = `e12_forgery_${field}`;
+    const trace = `e12-forgery-${field}`;
+    const injected = { [field]: value };
+    await database.exec(`savepoint ${savepoint}`);
+    const before = await writeProbeRows(database, nodeA, nodeB, trace);
+    let response = null;
+    let error = null;
+    try {
+      response = await action(operationRequest(access, nodeA.session_id, trace, { header, value, injected }), database);
+    } catch (cause) {
+      error = serializeError(cause);
+    }
+    const after = await writeProbeRows(database, nodeA, nodeB, trace);
+    await database.exec(`rollback to savepoint ${savepoint}; release savepoint ${savepoint};`);
+    cases.push(Object.freeze({
+      case_id: `E12-FORGE-${field.toUpperCase()}`,
+      field,
+      request: {
+        method: 'DELETE',
+        operation: 'identity.sessions.revoke',
+        path_session_id: nodeA.session_id,
+        headers: { [header]: value },
+        body: injected,
+      },
+      authoritative_context: {
+        realm_id: access.actor.realm,
+        membership_id: access.membership.id,
+        scope_id: access.scope.id,
+        node_id: nodeA.node_id,
+        mall_id: nodeA.mall_id,
+        role_ids: ['role:self', 'role:e12-cross-scope-a'],
+      },
+      response,
+      error,
+      database_before: before,
+      database_after_write_before_rollback: after,
+    }));
+  }
+  return Object.freeze(cases);
+}
+
+async function buildAccessContext(database, node) {
+  const session = await resolveSessionCase(database, 'E12-INTERNAL-ACCESS-CONTEXT', node, node.accounts_host);
+  const actor = session.response.resolved_context;
+  if (!actor) throw new Error('E12_ACCESS_SESSION_UNRESOLVED');
+  const membership = await database.query(`select resolved.id,resolved.active,resolved.access_version,
+      resolved.denies,resolved.grants from access.resolve_session_membership($1,$2,$3,$4) resolved`,
+  [actor.membership_id, actor.realm_id, actor.membership_client, actor.governance_organization_id]);
+  const scope = await database.query(`select resolved.scope from access.resolve_session_scope(
+      $1,$2,$3,$4,'identity.sessions.revoke',$5,null) resolved`,
+  [actor.membership_id, actor.realm_id, actor.membership_client, actor.governance_organization_id, actor.session_id]);
+  const membershipRow = membership.rows[0];
+  if (!membershipRow || !scope.rows[0]?.scope) throw new Error('E12_ACCESS_CONTEXT_INCOMPLETE');
+  return Object.freeze({
+    actor: Object.freeze({
+      id: actor.actor_id,
+      account: actor.account_id,
+      realm: actor.realm_id,
+      membershipClient: actor.membership_client,
+      governanceOrganization: actor.governance_organization_id,
+      session: actor.session_id,
+      membership: actor.membership_id,
+      credentialVersion: Number(actor.credential_version),
+      accessVersion: Number(actor.access_version),
+      target: actor.target,
+      assurance: Object.freeze({ level: 1 }),
+    }),
+    membership: Object.freeze({
+      id: membershipRow.id,
+      active: membershipRow.active,
+      accessVersion: Number(membershipRow.access_version),
+      denies: membershipRow.denies,
+      grants: membershipRow.grants,
+    }),
+    scope: scope.rows[0].scope,
+    accessVersion: Number(actor.access_version),
+    capabilities: Object.freeze(['identity.sessions.revoke']),
+    assurance: Object.freeze({ level: 1 }),
+    trace: 'e12-authoritative-access-context',
+  });
+}
+
+async function sessionRevokeAction() {
+  const { sessionTicketOperations } = await import('../../../01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/SessionTicketOperations.ts');
+  const actions = sessionTicketOperations({
+    codeDigest: () => '',
+    digest: () => '',
+    kms: {},
+    passwords: {},
+    tickets: {},
+  });
+  const action = actions['identity.sessions.revoke'];
+  if (typeof action !== 'function') throw new Error('E12_SESSION_REVOKE_ACTION_MISSING');
+  return action;
+}
+
+function operationRequest(access, sessionId, trace, forgery) {
+  const headers = forgery.header === undefined ? {} : { [forgery.header]: String(forgery.value) };
+  const body = forgery.injected ?? {};
+  return Object.freeze({
+    type: 'identity.sessions.revoke',
+    access,
+    input: Object.freeze({
+      path: Object.freeze({ sessionid: sessionId }),
+      query: Object.freeze({}),
+      headers: Object.freeze(headers),
+      body: Object.freeze(body),
+      rawBody: JSON.stringify(body),
+      deadline: Date.now() + 30_000,
+      signal: new AbortController().signal,
+      idempotency: trace,
+    }),
+  });
+}
+
+async function writeProbeRows(database, nodeA, nodeB, trace) {
+  const [sessions, outbox] = await Promise.all([
+    database.query(`select id,realm_id,membership_id,revoked_at,revoked_reason
+      from identity.session where id in($1,$2) order by id`, [nodeA.session_id, nodeB.session_id]),
+    database.query(`select event_type,aggregate_type,aggregate_id,scope_id,trace_id,payload
+      from runtime.outbox where trace_id=$1 order by id`, [trace]),
+  ]);
+  return Object.freeze({ sessions: sessions.rows, outbox: outbox.rows });
+}
+
+async function probeCompatibilityPath(database) {
+  const availability = await database.query(`select
+      to_regprocedure('identity.resolve_session(text)')::text legacy_session_resolver,
+      to_regprocedure('identity.resolve_session(text,text)')::text authoritative_session_resolver,
+      to_regprocedure('identity.resolve_active_membership_context(text,text,text)')::text active_membership_resolver,
+      to_regprocedure('access.resolve_session_membership(text,text,text,text)')::text scoped_membership_resolver,
+      to_regprocedure('access.resolve_session_scope(text,text,text,text,text,text,text)')::text scoped_scope_resolver`);
+  return Object.freeze({
+    request_path: [
+      'server-authoritative Host resolver',
+      'identity.resolve_session(text,text)',
+      'identity.resolve_active_membership_context(text,text,text)',
+      'access.resolve_session_membership(text,text,text,text)',
+      'access.resolve_session_scope(text,text,text,text,text,text,text)',
+    ],
+    resolver_availability: availability.rows[0],
+  });
+}
+
+async function snapshotPersistentState(database, nodeA, nodeB) {
+  const tables = await database.query(`select schemaname,tablename from pg_tables
+    where schemaname not like 'pg_%' and schemaname not in('information_schema','supabase_migrations')
+    order by schemaname,tablename`);
+  const tableDigests = {};
+  for (const { schemaname, tablename } of tables.rows) {
+    const identifier = `${quoteIdentifier(schemaname)}.${quoteIdentifier(tablename)}`;
+    const digest = await database.query(`select count(*)::integer row_count,
+      md5(coalesce(string_agg(row_json,E'\\n' order by row_json),'')) content_md5
+      from(select row_to_json(e12_snapshot_record_9f31)::text row_json
+        from ${identifier} e12_snapshot_record_9f31) rows`);
+    tableDigests[`${schemaname}.${tablename}`] = digest.rows[0];
+  }
+  const ownership = await database.query(`select 'realm' record_type,id,coalesce(node_id,'') owner_a,
+      coalesce(status,'') owner_b,coalesce(mall_id,'') owner_c from identity.realm where id in($1,$2)
+    union all select 'account',id,realm_id,status,credential_version::text from identity.account where id in($3,$4)
+    union all select 'membership',id,coalesce(realm_id,''),coalesce(account_id,''),organization_id
+      from access.membership where id in($5,$6)
+    union all select 'node',id,realm_id,status,coalesce(mall_id,'') from organization.node where id in($7,$8)
+    order by record_type,id`, [nodeA.realm_id, nodeB.realm_id, nodeA.account_id, nodeB.account_id,
+    nodeA.membership_id, nodeB.membership_id, nodeA.node_id, nodeB.node_id]);
+  const outbox = await database.query(`select count(*)::integer row_count,
+    count(*) filter(where trace_id like 'e12-%')::integer e12_row_count from runtime.outbox`);
+  return Object.freeze({ table_digests: tableDigests, authoritative_ownership_rows: ownership.rows, outbox: outbox.rows[0] });
+}
+
+function compareSnapshots(before, after) {
+  const changedTables = Object.keys(before.table_digests).filter((table) =>
+    JSON.stringify(before.table_digests[table]) !== JSON.stringify(after.table_digests[table]));
+  return Object.freeze({
+    changed_tables: changedTables,
+    changed_table_count: changedTables.length,
+    authoritative_ownership_changed: JSON.stringify(before.authoritative_ownership_rows)
+      !== JSON.stringify(after.authoritative_ownership_rows),
+    outbox_row_delta: Number(after.outbox.row_count) - Number(before.outbox.row_count),
+    e12_outbox_row_delta: Number(after.outbox.e12_row_count) - Number(before.outbox.e12_row_count),
+  });
+}
+
+function quoteIdentifier(value) {
+  return `"${String(value).replaceAll('"', '""')}"`;
+}
+
+function serializeError(cause) {
+  if (cause && typeof cause === 'object') {
+    return Object.freeze({
+      name: cause.name ?? 'Error',
+      message: cause.message ?? String(cause),
+      code: cause.code ?? null,
+      operation_result: cause.result ?? null,
+    });
+  }
+  return Object.freeze({ name: 'Error', message: String(cause), code: null, operation_result: null });
 }
 
 async function assertCanonicalIdentityNodeManifest(database) {

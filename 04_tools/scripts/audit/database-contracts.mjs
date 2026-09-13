@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { PGlite } from '@electric-sql/pglite';
 import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
@@ -366,7 +366,12 @@ try {
     }
     if (mode === '--identity-realm-isolation') {
       const { verifyIdentityRealmIsolation } = await import('./identity-realm-isolation.mjs');
-      await verifyIdentityRealmIsolation(database);
+      const evidencePath = process.env.E12_DATABASE_EVIDENCE_PATH;
+      const evidence = await verifyIdentityRealmIsolation(database, { collectEvidence: evidencePath !== undefined });
+      if (evidencePath !== undefined) {
+        if (evidence === null) throw new Error('IDENTITY_REALM_EVIDENCE_NOT_COLLECTED');
+        await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, { flag: 'wx' });
+      }
       console.log('identity realm isolation passed: nodes=L0-L11 profiles=operating_mall:6,consumer:6 accounts=12 l0-l1-surfaces=4 cross-host=0 login-intent=issue/wrong-target/consume/replay password-scope=pass logout-scope=pass node-lifecycle=2');
     }
     console.log(`target schema replay passed: migrations=${applied} historical=94 repair=${REPAIR_FILES.length}`);

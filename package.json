@@ -116,6 +116,7 @@
     "test:inventory-cutover-unsafe": "node 04_tools/scripts/audit/database-contracts.mjs --inventory-cutover-unsafe",
     "test:environment-bootstrap": "node 04_tools/scripts/audit/database-contracts.mjs --environment-bootstrap",
     "test:identity-realms": "node 04_tools/scripts/audit/identity-realm-isolation.pg17-fixture.mjs",
+    "evidence:e12": "node 04_tools/scripts/audit/identity-realm-isolation.pg17-fixture.mjs",
     "test:identity-concurrency": "node 04_tools/scripts/audit/identity-concurrency.pg17-fixture.mjs",
     "test:password-login-stability": "node 04_tools/scripts/audit/password-login-stability.pg17-fixture.mjs",
     "replay:fresh": "npm run replay:schema-fresh && npm run test:inventory-cutover-unsafe && npm run test:environment-bootstrap",
