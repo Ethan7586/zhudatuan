@@ -9,6 +9,7 @@ const redis = vi.hoisted(() => {
     connect: vi.fn(async () => undefined),
     close: vi.fn(async () => undefined),
     destroy: vi.fn(),
+    withAbortSignal: vi.fn((_signal: AbortSignal) => client),
     get: vi.fn(async () => null),
     set: vi.fn(async () => 'OK'),
     del: vi.fn(async () => 1),
@@ -26,6 +27,7 @@ describe('Redis cache availability', () => {
     vi.clearAllMocks();
     redis.client.isOpen = true;
     redis.client.isReady = true;
+    redis.client.withAbortSignal.mockImplementation((_signal: AbortSignal) => redis.client);
   });
 
   it('notifies a full-jobs supervisor when an established connection degrades', async () => {
@@ -46,5 +48,15 @@ describe('Redis cache availability', () => {
     redis.listeners.get('error')?.(new Error('ECONNRESET'));
     redis.listeners.get('error')?.(new Error('ECONNRESET'));
     expect(unavailable).toHaveBeenCalledTimes(1);
+  });
+
+  it('bounds optional cache commands so a slow cache cannot hold the business request', async () => {
+    const cache = new RedisCache(async () => 'rediss://staging.redis.example:6379');
+    await cache.start();
+
+    await cache.get('reporting:key');
+
+    expect(redis.client.withAbortSignal).toHaveBeenCalledTimes(1);
+    expect(redis.client.withAbortSignal.mock.calls[0]?.[0]).toBeInstanceOf(AbortSignal);
   });
 });
