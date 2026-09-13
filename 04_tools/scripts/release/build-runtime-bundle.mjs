@@ -65,6 +65,12 @@ if (releaseTarget === 'database-migrations') {
       );
     }
   }
+  if (releaseTarget === 'identity-api') {
+    await copy(
+      '02_platform_pingtai/config/node-manifests/hbbtzn-l1.json',
+      join(outputRoot, 'targets/identity-api/node-manifest.json'),
+    );
+  }
 }
 
 await writeFile(
