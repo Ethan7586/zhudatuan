@@ -143,6 +143,41 @@ describe('member directory pagination', () => {
     expect(screen.getByRole('row', { name: '查看管理员 缓存会员' })).toBeTruthy();
   });
 
+  it('demotes a senior administrator from the detail panel and verifies the authoritative reread', async () => {
+    let senior = true;
+    let requestBody: unknown;
+    const target = { ...member('target', '高级管理员 · 7586'), mobile: '19287247586' };
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json({ items: [{ ...target,
+        display_name: senior ? '高级管理员 · 7586' : '管理员 · 7586', access_version: senior ? 7 : 8 }], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json({
+        items: [{ ...accessMembership('membership:target', senior ? '高级管理员 · 7586' : '管理员 · 7586', senior),
+          access_version: senior ? 7 : 8, effective_permissions: senior ? ['member.members.read'] : [] }],
+        count: 1,
+        roles: [{ id: 'role-senior-administrator-v1:tenant-zhudatuan', name: '高级管理员', status: 'active',
+          version: 1, permissions: ['member.members.read'], member_count: senior ? 1 : 0, governance: true,
+          governance_level: 'senior_administrator', editable: false, members: [], scopes: [] }],
+      })),
+      http.put('*/api/v1/access/roles/:roleid', async ({ request }) => {
+        requestBody = await request.json();
+        senior = false;
+        return HttpResponse.json({ action: 'revoke', changed: true,
+          role: 'role-senior-administrator-v1:tenant-zhudatuan', membership: 'membership:target', scope,
+          scope_source: 'direct', access_version: 8 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWorkspace(ownerContext());
+    await user.click(await screen.findByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
+
+    await user.click(screen.getByRole('button', { name: '降级为普通管理员' }));
+
+    expect((await screen.findAllByText('管理员 · 7586')).length).toBeGreaterThan(0);
+    expect(requestBody).toMatchObject({ action: 'revoke', membership: 'membership:target',
+      scope: 'organization-platform-root', scopeSource: 'direct' });
+    expect(screen.queryByRole('button', { name: '降级为普通管理员' })).toBeNull();
+  });
+
 });
 
 function renderWorkspace(value: ConsoleContext = context, client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })) {
@@ -157,6 +192,19 @@ function renderWorkspace(value: ConsoleContext = context, client = new QueryClie
   );
 }
 
+function ownerContext(): ConsoleContext {
+  return {
+    ...context,
+    session: {
+      ...context.session,
+      permissions: ['access.role.manage'],
+      capabilities: ['member.members.read', 'access.center.read', 'access.roles.manage'],
+      csrf: 'csrf:owner',
+      governance: { level: 'owner', organization: 'tenant-zhudatuan', exactOwner: true },
+    },
+  };
+}
+
 function accessMembership(id: string, displayName: string, managementRole: boolean) {
   return {
     id,
@@ -166,7 +214,7 @@ function accessMembership(id: string, displayName: string, managementRole: boole
     display_name: displayName,
     employee_no: null,
     roles: managementRole ? [{
-      role: 'role:senior-administrator',
+      role: 'role-senior-administrator-v1:tenant-zhudatuan',
       name: '高级管理员',
       scope,
       scope_source: 'direct',

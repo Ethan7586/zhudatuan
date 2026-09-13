@@ -1,5 +1,5 @@
 import { Empty, ResourceState, type ResourceCondition } from '@shop/design';
-import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -16,7 +16,8 @@ import { isManagementRole } from './ManagementRole';
 import type { Member } from '../member/MemberSchema';
 import '../storefront-member/storefront-member.css';
 import { ACCESS_QUERY_STALE_TIME_MS, accessKey, readAccess } from './AccessQuery';
-import type { AccessMembership } from './AccessSchema';
+import { roleCommandAvailable, saveAccessRoleAssignment, verifyAccessRoleAssignment } from './AccessRoleCommand';
+import type { AccessMembership, AccessRole } from './AccessSchema';
 import { invitationRecordsAvailable, invitationRecordsKey, readInvitationRecords } from './InvitationRecordsQuery';
 import type { InvitationRecord } from './InvitationRecordsSchema';
 import './member-access-discord.css';
@@ -233,6 +234,11 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
             resetAvailable={resetAvailable}
             onClose={closeDetail}
             onReset={setResetTarget}
+            onRefresh={async () => {
+              const [refreshedMembers, refreshedAccess] = await Promise.all([memberQuery.refetch(), accessQuery.refetch()]);
+              if (refreshedMembers.data === undefined || refreshedAccess.data === undefined) throw new Error('ADMINISTRATOR_REREAD_FAILED');
+              return { members: refreshedMembers.data.items, access: refreshedAccess.data.items, roles: refreshedAccess.data.roles };
+            }}
             onManage={(roleId, view) => {
               const path = scopePath(context.scope, 'settings/access');
               const params = new URLSearchParams();
@@ -306,6 +312,7 @@ function MemberDetail({
   resetAvailable,
   onClose,
   onReset,
+  onRefresh,
   onManage,
 }: Readonly<{
   row: MemberAccessRow | undefined;
@@ -314,6 +321,7 @@ function MemberDetail({
   resetAvailable: boolean;
   onClose: () => void;
   onReset: (member: Member) => void;
+  onRefresh: () => Promise<Readonly<{ members: readonly Member[]; access: readonly AccessMembership[]; roles: readonly AccessRole[] }>>;
   onManage: (roleId?: string, view?: 'permissions' | 'members') => void;
 }>) {
   const detailRef = useRef<HTMLElement>(null);
@@ -342,6 +350,22 @@ function MemberDetail({
   );
   const version = row?.access?.access_version ?? row?.member?.access_version;
   const canReset = resetAvailable && row?.member?.reset_allowed === true;
+  const seniorAssignment = roles.find((role) => /高级|senior/i.test(`${role.role} ${role.name}`));
+  const canManageAdministrator = row !== undefined && context.session.governance?.level === 'owner'
+    && roleCommandAvailable(context) && !isOwner(row) && !isSelf(row, context);
+  const demoteMutation = useMutation({
+    mutationFn: async () => {
+      if (row?.access === undefined || seniorAssignment === undefined) throw new Error('SENIOR_ADMINISTRATOR_ASSIGNMENT_NOT_FOUND');
+      const draft = { action: 'revoke' as const, role: seniorAssignment.role, membership: row.access.id,
+        scope: seniorAssignment.scope, scopeSource: seniorAssignment.scope_source === 'inherited' ? 'inherited' as const : 'direct' as const,
+        accessVersion: row.access.access_version };
+      const receipt = await saveAccessRoleAssignment(context, draft);
+      const reread = await onRefresh();
+      verifyAccessRoleAssignment(draft, receipt, row.access, reread.roles, reread.access);
+      return receipt;
+    },
+  });
+  const actionError = safeQueryError(demoteMutation.error);
   return (
     <aside ref={detailRef} className="storefrontmemberdetail" aria-hidden={!open} aria-label={administrator ? '管理员详情' : '成员详情'} tabIndex={-1}>
       <header className="storefrontmemberpanelheading">
@@ -417,6 +441,16 @@ function MemberDetail({
               </button>
             </footer>
           ) : null}
+          {canManageAdministrator ? (
+            <footer className="memberaccessdetailactions" aria-label="管理员级别与状态">
+              {seniorAssignment === undefined ? null : (
+                <button type="button" disabled={demoteMutation.isPending} onClick={() => demoteMutation.mutate()}>
+                  {demoteMutation.isPending ? '正在降级并核对…' : '降级为普通管理员'}
+                </button>
+              )}
+            </footer>
+          ) : null}
+          {actionError === undefined ? null : <div className="storefrontmemberdetailerror" role="alert"><p>{actionError}</p></div>}
           {row.member?.reset_block_reason === null || row.member?.reset_block_reason === undefined ? null : <div className="storefrontmemberemptyline">注册重置限制：{row.member.reset_block_reason}</div>}
           <p className="storefrontmembernotice">成员与授权关系来自当前范围真实数据，管理操作按当前权限开放</p>
         </div>
