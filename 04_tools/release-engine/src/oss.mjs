@@ -93,6 +93,23 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
   const releaseManifestBody = Buffer.from(prettyStableJson(releaseManifest));
   const releaseManifestSha256 = sha256(releaseManifestBody);
   const releaseManifestObject = `${prefix}/release-manifest-${releaseManifestSha256}.json`;
+  const releaseIndexUnsigned = {
+    schema: 'ai.delivery.oss-release-index.v1',
+    protocolVersion: 1,
+    project: adapter.project,
+    target,
+    sourceSha,
+    artifactIdentity: artifact.archive.sha256,
+    releaseManifest: {
+      object: releaseManifestObject,
+      sha256: `sha256:${releaseManifestSha256}`,
+      manifestDigest: releaseManifest.manifestDigest,
+    },
+  };
+  const releaseIndex = { ...releaseIndexUnsigned, indexDigest: digest(releaseIndexUnsigned) };
+  const releaseIndexBody = Buffer.from(prettyStableJson(releaseIndex));
+  const releaseIndexSha256 = sha256(releaseIndexBody);
+  const releaseIndexObject = `${objectRoot(adapter.project, target, sourceSha, options.prefix)}/release-index.json`;
   const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
 
   const publicationStarted = performance.now();
@@ -100,6 +117,7 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
     await client.putImmutable(archiveObject, archive, 'application/gzip'),
     await client.putImmutable(runtimeManifestObject, runtimeManifestBody, 'application/json'),
     await client.putImmutable(releaseManifestObject, releaseManifestBody, 'application/json'),
+    await client.putImmutable(releaseIndexObject, releaseIndexBody, 'application/json'),
   ];
   const publicationMs = elapsed(publicationStarted);
   const uploadedBytes = objects.filter((item) => item.status === 'uploaded').reduce((total, item) => total + item.bytes, 0);
@@ -115,6 +133,11 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
       sha256: `sha256:${releaseManifestSha256}`,
       manifestDigest: releaseManifest.manifestDigest,
     },
+    releaseIndex: {
+      object: releaseIndexObject,
+      sha256: `sha256:${releaseIndexSha256}`,
+      indexDigest: releaseIndex.indexDigest,
+    },
     objects,
     cacheStatus: objects.every((item) => item.status === 'hit_remote') ? 'hit_remote' : objects.every((item) => item.status === 'uploaded') ? 'miss' : 'partial_hit',
     timings: {
@@ -127,7 +150,7 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
       publication: publicationMs,
       total: elapsed(started),
     },
-    traffic: { artifactBytes: archive.byteLength + runtimeManifestBody.byteLength + releaseManifestBody.byteLength, uploadedBytes, reusedBytes },
+    traffic: { artifactBytes: archive.byteLength + runtimeManifestBody.byteLength + releaseManifestBody.byteLength + releaseIndexBody.byteLength, uploadedBytes, reusedBytes },
     completedAt: new Date().toISOString(),
   };
   if (options.output) {
@@ -146,16 +169,17 @@ export async function resolvePreparedArtifact(adapter, options, dependencies = {
   invariant(Boolean(adapter.nodes[node]?.deployments?.[target]), 'OSS_NODE_TARGET_MISMATCH', `Unknown deployment ${node}/${target}`);
   const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
   const root = `${objectRoot(adapter.project, target, sourceSha, options.prefix)}/`;
-  const listed = await client.listPrefix(root);
-  const releaseObjects = listed.filter((object) => new RegExp(`^${escapeRegExp(root)}[a-f0-9]{64}/release-manifest-[a-f0-9]{64}\\.json$`).test(object));
-  invariant(releaseObjects.length > 0, 'OSS_ARTIFACT_NOT_FOUND', `No prepared artifact exists for ${target}/${sourceSha}`);
-  invariant(releaseObjects.length === 1, 'OSS_ARTIFACT_AMBIGUOUS', `More than one prepared artifact exists for ${target}/${sourceSha}`, { releaseObjects });
-  const releaseManifestObject = releaseObjects[0];
+  const releaseIndexObject = `${root}release-index.json`;
+  const releaseIndexBody = await client.getObject(releaseIndexObject, 'OSS_ARTIFACT_NOT_FOUND');
+  const releaseIndex = JSON.parse(releaseIndexBody.toString('utf8'));
+  validateReleaseIndex(releaseIndex, { adapter, target, sourceSha, root });
+  const releaseManifestObject = releaseIndex.releaseManifest.object;
   const releaseManifestBody = await client.getObject(releaseManifestObject);
-  const declaredReleaseHash = releaseManifestObject.match(/release-manifest-([a-f0-9]{64})\.json$/)?.[1];
-  invariant(sha256(releaseManifestBody) === declaredReleaseHash, 'OSS_RELEASE_MANIFEST_HASH_MISMATCH', 'Release manifest content hash differs');
+  invariant(`sha256:${sha256(releaseManifestBody)}` === releaseIndex.releaseManifest.sha256, 'OSS_RELEASE_MANIFEST_HASH_MISMATCH', 'Release manifest content hash differs');
   const manifest = JSON.parse(releaseManifestBody.toString('utf8'));
   validateReleaseManifest(manifest, { adapter, target, sourceSha, node, root });
+  invariant(manifest.manifestDigest === releaseIndex.releaseManifest.manifestDigest, 'OSS_RELEASE_INDEX_MANIFEST_MISMATCH', 'Release index semantic digest differs from the manifest');
+  invariant(manifest.artifact.sha256 === releaseIndex.artifactIdentity, 'OSS_RELEASE_INDEX_ARTIFACT_MISMATCH', 'Release index artifact identity differs from the manifest');
 
   const runtimeManifestBody = await client.getObject(manifest.runtimeManifest.object);
   invariant(digest(runtimeManifestBody) === manifest.runtimeManifest.sha256, 'OSS_RUNTIME_MANIFEST_HASH_MISMATCH', 'Runtime manifest content hash differs');
@@ -181,6 +205,8 @@ export async function resolvePreparedArtifact(adapter, options, dependencies = {
     target,
     sourceSha,
     node,
+    releaseIndexObject,
+    releaseIndex,
     releaseManifestObject,
     manifest,
     runtimeManifest,
@@ -234,9 +260,9 @@ export function createOssClient(configuration, dependencies = {}) {
         sha256: response.headers.get('x-oss-meta-sha256'),
       };
     },
-    async getObject(object) {
+    async getObject(object, missingCode = 'OSS_OBJECT_NOT_FOUND') {
       const response = await request('GET', object);
-      await assertResponse(response, response.status === 404 ? 'OSS_OBJECT_NOT_FOUND' : 'OSS_GET_FAILED');
+      await assertResponse(response, response.status === 404 ? missingCode : 'OSS_GET_FAILED');
       return Buffer.from(await response.arrayBuffer());
     },
     async listPrefix(prefix) {
@@ -319,6 +345,27 @@ async function verifyExisting(client, existing, object, expectedBody, expectedSh
   const actual = await client.getObject(object);
   invariant(sha256(actual) === expectedSha256, 'OSS_IMMUTABLE_OBJECT_CONFLICT', 'Existing immutable object content differs', { object });
   return { object, status: 'hit_remote', bytes: expectedBody.byteLength, sha256: `sha256:${expectedSha256}` };
+}
+
+function validateReleaseIndex(index, { adapter, target, sourceSha, root }) {
+  invariant(index.schema === 'ai.delivery.oss-release-index.v1' && index.protocolVersion === 1, 'OSS_RELEASE_INDEX_SCHEMA_INVALID', 'Release index schema is unsupported');
+  invariant(index.project === adapter.project, 'OSS_RELEASE_INDEX_PROJECT_MISMATCH', 'Release index project differs');
+  invariant(index.target === target, 'OSS_RELEASE_INDEX_TARGET_MISMATCH', 'Release index target differs');
+  invariant(index.sourceSha === sourceSha, 'OSS_RELEASE_INDEX_SOURCE_SHA_MISMATCH', 'Release index source SHA differs');
+  invariant(/^sha256:[a-f0-9]{64}$/.test(index.artifactIdentity), 'OSS_RELEASE_INDEX_ARTIFACT_INVALID', 'Release index artifact identity is invalid');
+  invariant(
+    typeof index.releaseManifest?.object === 'string' && new RegExp(`^${escapeRegExp(root)}[a-f0-9]{64}/release-manifest-[a-f0-9]{64}\\.json$`).test(index.releaseManifest.object),
+    'OSS_RELEASE_INDEX_OBJECT_INVALID',
+    'Release index manifest object is outside its content-addressed source prefix'
+  );
+  invariant(/^sha256:[a-f0-9]{64}$/.test(index.releaseManifest?.sha256), 'OSS_RELEASE_INDEX_HASH_INVALID', 'Release index manifest hash is invalid');
+  invariant(/^sha256:[a-f0-9]{64}$/.test(index.releaseManifest?.manifestDigest), 'OSS_RELEASE_INDEX_DIGEST_INVALID', 'Release index manifest semantic digest is invalid');
+  const objectHash = index.releaseManifest.object.match(/release-manifest-([a-f0-9]{64})\.json$/)?.[1];
+  invariant(index.releaseManifest.sha256 === `sha256:${objectHash}`, 'OSS_RELEASE_INDEX_HASH_MISMATCH', 'Release index manifest path and hash differ');
+  const claimed = index.indexDigest;
+  const unsigned = { ...index };
+  delete unsigned.indexDigest;
+  invariant(claimed === digest(unsigned), 'OSS_RELEASE_INDEX_DIGEST_MISMATCH', 'Release index semantic digest differs');
 }
 
 function validateReleaseManifest(manifest, { adapter, target, sourceSha, node, root }) {

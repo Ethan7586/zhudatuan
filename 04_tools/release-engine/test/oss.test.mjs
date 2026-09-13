@@ -8,9 +8,9 @@ import { createOssClient, deriveInternalEndpoint, publishPreparedArtifact, resol
 import { runCommand } from '../src/runner.mjs';
 import { digest, prettyStableJson, sha256 } from '../src/stable.mjs';
 
-test('two preparations of one source produce one immutable identity and a remote cache hit', async () => {
+test('two preparations of one source produce one immutable identity and resolve without bucket enumeration', async () => {
   const fixture = await prepareFixture();
-  const remote = memoryOss();
+  const remote = memoryOss({ denyList: true });
   const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
   const options = publishOptions(fixture);
   const first = await publishPreparedArtifact(fixture.adapter, options, { client });
@@ -20,11 +20,13 @@ test('two preparations of one source produce one immutable identity and a remote
   assert.equal(second.cacheStatus, 'hit_remote');
   assert.equal(first.artifactIdentity, second.artifactIdentity);
   assert.equal(first.releaseManifest.object, second.releaseManifest.object);
-  assert.equal(remote.puts, 3);
-  assert.equal(remote.objects.size, 3);
+  assert.equal(remote.puts, 4);
+  assert.equal(remote.objects.size, 4);
+  const root = `fixture/app/${fixture.sourceSha}/`;
+  assert.equal(first.releaseIndex.object, `${root}release-index.json`);
   for (const object of remote.objects.keys()) {
-    assert.match(object, new RegExp(`fixture/app/${fixture.sourceSha}/[a-f0-9]{64}/`));
-    assert.match(object, /[a-f0-9]{64}/);
+    assert.match(object, new RegExp(`^${root}`));
+    if (object !== first.releaseIndex.object) assert.match(object, new RegExp(`^${root}[a-f0-9]{64}/`));
   }
 
   const resolved = await resolvePreparedArtifact(
@@ -52,7 +54,7 @@ test('first immutable publication does not require HeadObject on absent objects'
   const receipt = await publishPreparedArtifact(fixture.adapter, publishOptions(fixture), { client });
 
   assert.equal(receipt.cacheStatus, 'miss');
-  assert.equal(remote.puts, 3);
+  assert.equal(remote.puts, 4);
 });
 
 test('Storefront publication fails closed unless complete Linux x64 runtime evidence is present', async (t) => {
@@ -140,6 +142,17 @@ test('resolution stops before deployment for missing, tampered, target, source, 
         const key = originalKey.replace(/release-manifest-[a-f0-9]{64}\.json$/, `release-manifest-${sha256(body)}.json`);
         remote.objects.delete(originalKey);
         remote.objects.set(key, { body, sha256: sha256(body), contentType: 'application/json' });
+        const indexKey = published.releaseIndex.object;
+        const index = JSON.parse(remote.objects.get(indexKey).body);
+        index.releaseManifest = {
+          object: key,
+          sha256: `sha256:${sha256(body)}`,
+          manifestDigest: release.manifestDigest,
+        };
+        delete index.indexDigest;
+        index.indexDigest = digest(index);
+        const indexBody = Buffer.from(prettyStableJson(index));
+        remote.objects.set(indexKey, { body: indexBody, sha256: sha256(indexBody), contentType: 'application/json' });
       }
       const expected = {
         tampered: 'OSS_RELEASE_MANIFEST_HASH_MISMATCH',
@@ -297,7 +310,7 @@ function credentials() {
   return { accessKeyId: 'id', accessKeySecret: 'secret', bucket: 'bucket', endpoint: 'oss.example.test' };
 }
 
-function memoryOss({ denyMissingHead = false } = {}) {
+function memoryOss({ denyList = false, denyMissingHead = false } = {}) {
   const state = {
     objects: new Map(),
     puts: 0,
@@ -306,6 +319,7 @@ function memoryOss({ denyMissingHead = false } = {}) {
       const method = options.method ?? 'GET';
       const object = decodeURIComponent(requestUrl.pathname.replace(/^\//, ''));
       if (method === 'GET' && object === '' && requestUrl.searchParams.get('list-type') === '2') {
+        if (denyList) return new Response('denied', { status: 403 });
         const prefix = requestUrl.searchParams.get('prefix') ?? '';
         const keys = [...state.objects.keys()].filter((key) => key.startsWith(prefix)).sort();
         return new Response(`<ListBucketResult><IsTruncated>false</IsTruncated>${keys.map((key) => `<Contents><Key>${encodeURIComponent(key)}</Key></Contents>`).join('')}</ListBucketResult>`, { status: 200 });
