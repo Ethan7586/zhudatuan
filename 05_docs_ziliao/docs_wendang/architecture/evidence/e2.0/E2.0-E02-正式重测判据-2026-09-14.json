@@ -1,0 +1,164 @@
+{
+  "schema_version": "e2.0-formal-retest-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E02-FORMAL-RETEST-20260914",
+  "profile_version": "2.0.0",
+  "claim_id": "E2-TOPO-002",
+  "legacy_trace_id": "E02",
+  "locked_at": "2026-09-13T23:02:34Z",
+  "purpose": "Execute the already-defined E02 L0-L11 vertical-topology claim against one complete same-line chain, its indexed closure, one append-only relation-version transition, the L12 boundary and the level-derived-authority boundary. This record mirrors the active E2.0 trace matrix and does not create or expand a product contract.",
+  "authoritative_basis": [
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-TOPO-002",
+      "git_commit": "593dfae7d7824f25ec366d9433514c45f9179621",
+      "sha256": "sha256:3c0824eb61ad67f10215d05ef160305c9460cbc1740c789de0711e555ec393cd"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E02",
+      "git_commit": "593dfae7d7824f25ec366d9433514c45f9179621",
+      "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69"
+    }
+  ],
+  "implementation_basis": [
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql",
+      "git_commit": "593dfae7d7824f25ec366d9433514c45f9179621",
+      "sha256": "sha256:5b3ba3d37009210f3bd5f508cd7d9feebda22a55f85b846a39acbe8cb290e304",
+      "role": "Production Node and append-only NodeRelation model"
+    },
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql",
+      "git_commit": "593dfae7d7824f25ec366d9433514c45f9179621",
+      "sha256": "sha256:43efeb5af683761df52af5f5ef8893db38c7cfadaf70b98fa84aa57a89f776d7",
+      "role": "Production NodeClosure maintenance and shared context/scope resolvers"
+    },
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260913023000_enforce_sfl_vertical_level_adjacency.sql",
+      "git_commit": "593dfae7d7824f25ec366d9433514c45f9179621",
+      "sha256": "sha256:28c9d6778eba5358a3090820a70c30a4644e57bee9aac03b30b7a423668842f3",
+      "role": "Production same-line active-parent and immediately preceding-level write guard"
+    },
+    {
+      "path": "01_core_hexin/packages/config/src/SflNodeKernel.ts",
+      "git_commit": "593dfae7d7824f25ec366d9433514c45f9179621",
+      "sha256": "sha256:dbc0183ddda71bfba4440db7162b0b7e2580ecd6da4bae36209925a8f812bc74",
+      "role": "Shared TypeScript topology parser and relation-history validation"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/AuthoritativeNodeContextResolver.ts",
+      "git_commit": "593dfae7d7824f25ec366d9433514c45f9179621",
+      "sha256": "sha256:1821b7c0558f7314cfc0f460de6d142bd1ccafa715b57a6cd6cd5f416499edc7",
+      "role": "Single production adapter path for context, self, ancestors, descendants and subtree"
+    }
+  ],
+  "regression_basis": [
+    {
+      "path": "02_platform_pingtai/database/supabase/tests/sfl_node_sovereignty_contract.sql",
+      "git_commit": "593dfae7d7824f25ec366d9433514c45f9179621",
+      "sha256": "sha256:069c36647e4665c95c2fe06a756a3358ca438977c984eafa0d6694d100393fc3",
+      "role": "Existing full L0-L11 model, version-history, skip-level, cross-line, dual-parent and L12 regression"
+    }
+  ],
+  "environment_classification": "A successful clean-source replay of all production migrations in a disposable PostgreSQL 17 environment followed by the complete locked E02 matrix can establish DEV VERIFIED only. It is not a stable staging or production observation.",
+  "fixture": {
+    "line_count": 1,
+    "node_ids": ["V-L0", "V-L1", "V-L2", "V-L3", "V-L4", "V-L5", "V-L6", "V-L7", "V-L8", "V-L9", "V-L10", "V-L11"],
+    "node_count": 12,
+    "current_parent_edge_count": 11,
+    "root_level": "L0",
+    "maximum_level": "L11",
+    "relation_version_target": "V-L6",
+    "initial_effective_at": "2026-09-14T00:00:00.000Z",
+    "changed_effective_at": "2026-09-14T01:00:00.000Z"
+  },
+  "closure_threshold": {
+    "current_row_count": 78,
+    "self_total": 12,
+    "ancestor_total": 66,
+    "descendant_total": 66,
+    "subtree_total": 78,
+    "row_mismatch_count": 0,
+    "resolver_mismatch_count": 0
+  },
+  "relation_version_threshold": {
+    "target_relation_row_count": 2,
+    "current_relation_row_count": 1,
+    "preserved_historical_row_count": 1,
+    "historical_path_mismatch_count": 0,
+    "current_path_mismatch_count": 0
+  },
+  "model_and_path_threshold": {
+    "node_table_count": 1,
+    "relation_table_count": 1,
+    "closure_table_count": 1,
+    "level_specific_table_or_column_count": 0,
+    "context_resolver_count": 1,
+    "scope_resolver_count": 4,
+    "levels_using_shared_context_path": 12,
+    "levels_using_each_shared_scope_path": 12
+  },
+  "boundary_threshold": {
+    "l12_fact_count": 0,
+    "accepted_negative_probe_count": 0,
+    "negative_probe_residual_fact_count": 0,
+    "signed_level_only_permission_change_count": 0,
+    "signed_level_only_sovereignty_change_count": 0,
+    "signed_level_only_sovereign_resource_change_count": 0
+  },
+  "required_input_artifacts": [
+    "vertical-input-manifest.json",
+    "vertical-node-relations.json",
+    "vertical-context-matrix.json",
+    "vertical-closure-matrix.json",
+    "vertical-relation-version-diff.json",
+    "vertical-negative-probes.json",
+    "vertical-authority-counters.json",
+    "environment.json"
+  ],
+  "prelocked_thresholds": [
+    "required raw evidence missing count = 0",
+    "node count = 12, current parent-edge count = 11 and L12 fact count = 0",
+    "all 12 levels use one Node table, one NodeRelation table, one NodeClosure table and the same context/scope resolver functions",
+    "all 11 parent edges are same-line and connect each L1-L11 node to the immediately preceding level",
+    "current closure row count = 78; self total = 12; ancestor total = 66; descendant total = 66; subtree total = 78",
+    "independently derived closure and all per-level resolver result mismatch counts = 0",
+    "V-L6 relation version count = 2 with one preserved historical interval and one current interval",
+    "historical and current path reconstruction mismatch counts = 0",
+    "skip-level, second-parent, cross-line and L12 probes are all rejected and leave zero residual facts",
+    "permission, sovereignty and sovereign-resource changes caused solely by signed_level each = 0",
+    "negative oracle mutation detection miss count = 0"
+  ],
+  "positive_cases": [
+    "Create V-L0 through V-L11 through the shared Node and NodeRelation model and resolve NodeContext at every level.",
+    "Resolve self, ancestors, descendants and subtree through the same four production functions at every level.",
+    "Append relation version 2 for V-L6 without overwriting version 1, then reconstruct the path for both effective intervals."
+  ],
+  "negative_cases": [
+    "Attempt an L8 to L6 skip-level relation.",
+    "Attempt a second current relation for an existing node.",
+    "Attempt a parent edge to a node on another line.",
+    "Attempt to create an L12 relation and verify that no L12 fact remains.",
+    "Compare explicit access, sovereignty and sovereign-resource facts before and after signed-level relations are written."
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E02-VERTICAL",
+    "reads_test_program_pass": false,
+    "procedure": "Read the locked criteria and required raw artifacts only; derive the expected L0-L11 parent map and both effective-interval paths directly from raw relation rows; derive all expected closure pairs and per-level self, ancestors, descendants and subtree results independently; compare model/path catalog facts, negative probe errors, residual counters, L12 facts and level-derived authority counters; mutate copies of the closure, relation history and negative-probe records to prove detection. Do not consume a runner PASS/status field."
+  },
+  "unknown_rule": "Missing any level, parent-edge interval, complete closure row, per-level resolver result, relation-version row, historical path, negative probe, L12 count, authority counter, environment fact or source-basis digest yields UNKNOWN.",
+  "outcome_table": [
+    {
+      "condition": "All required raw artifacts exist and all prelocked topology, model/path, closure, relation-version, boundary, authority and mutation-detection thresholds are met.",
+      "claim_outcome": "MET"
+    },
+    {
+      "condition": "Any complete raw observation contradicts a prelocked topology, closure, version, boundary or authority threshold.",
+      "claim_outcome": "NOT MET"
+    },
+    {
+      "condition": "Any required raw artifact or field is missing, unreadable or cannot be independently reconciled.",
+      "claim_outcome": "UNKNOWN"
+    }
+  ],
+  "review_classification": "The criteria designer, executor and oracle operator are the same Codex task; the result remains NOT REVIEWED until a reviewer independent of the E02 topology implementation and test code recomputes and signs it.",
+  "non_gating": true
+}
