@@ -1,19 +1,38 @@
 import { Badge, Button, MasterDetail, MasterItem, ResourceState, Surface, WorkspaceHero } from '@shop/design';
-import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
 import { appConfig } from '../../shared/config/AppConfig';
 import { formatDate } from '../../shared/ui/Format';
 import { scopePath } from '../../shared/url/ScopePath';
-import { applicationKey, readApplications } from '../application/ApplicationQuery';
+import { applicationKey, applicationRootKey, readApplications } from '../application/ApplicationQuery';
 import type { Application } from '../application/ApplicationSchema';
+import {
+  canCreateMall,
+  completeMallCreateStepup,
+  createMall,
+  isMallMobileMissing,
+  isMallStepupRequired,
+  mallCreationError,
+  mallCreationRequiresStepup,
+  mallEnterpriseScopes,
+  mallMobileEnrollmentRequired,
+  mallProvisioningScope,
+  newMallCreateAttempt,
+  startMallCreateStepup,
+  type CreatedMall,
+  type MallCreateAttempt,
+  type MallCreateDraft,
+  type MallStepupChallenge,
+} from '../application/MallCreateCommand';
 import {
   applicationStatusLabel,
   applicationStatusTone,
   publicationLabel,
 } from '../application/ApplicationPresentation';
+import { PlatformCreateDialog, type PlatformCreatePhase } from './PlatformCreateDialog';
 import './distributed-platform.css';
 
 type DirectorySelection = Readonly<{ kind: 'node' }> | Readonly<{ kind: 'application'; application: Application }>;
@@ -22,8 +41,21 @@ type TopologyLayout = 'tree' | 'flow';
 export function Component() {
   const context = useConsoleContext();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useSearchParams();
+  const [createPhase, setCreatePhase] = useState<PlatformCreatePhase>('form');
+  const [createError, setCreateError] = useState<string>();
+  const [createAttempt, setCreateAttempt] = useState<MallCreateAttempt>();
+  const [createChallenge, setCreateChallenge] = useState<MallStepupChallenge>();
+  const [createResult, setCreateResult] = useState<CreatedMall>();
+  const [stepupCompleted, setStepupCompleted] = useState(false);
+  const [mobileEnrollment, setMobileEnrollment] = useState(false);
   const manifest = appConfig.nodeManifest;
+  const provisioningScope = mallProvisioningScope(context);
+  const enterpriseScopes = mallEnterpriseScopes(context);
+  const createAvailable = canCreateMall(context, provisioningScope);
+  const nextPlatformLevel = nextLevel(manifest.signed_level);
+  const createOpen = search.get('create') === 'platform';
   const query = useQuery({
     queryKey: applicationKey(context),
     queryFn: ({ signal }) => readApplications(context, undefined, signal),
@@ -68,6 +100,107 @@ export function Component() {
     else next.set('layout', layout);
     setSearch(next, { replace: true });
   };
+  const openPlatformCreate = () => {
+    const next = new URLSearchParams(search);
+    next.set('create', 'platform');
+    setCreatePhase('form');
+    setCreateError(undefined);
+    setMobileEnrollment(mallMobileEnrollmentRequired(context));
+    setSearch(next);
+  };
+  const closePlatformCreate = () => {
+    if (createPhase === 'starting' || createPhase === 'verifying' || createPhase === 'creating') return;
+    const next = new URLSearchParams(search);
+    next.delete('create');
+    if (createResult !== undefined) next.set('selected', createResult.applicationId);
+    setSearch(next);
+    setCreatePhase('form');
+    setCreateError(undefined);
+    setCreateAttempt(undefined);
+    setCreateChallenge(undefined);
+    setCreateResult(undefined);
+    setStepupCompleted(false);
+    setMobileEnrollment(false);
+  };
+  const requestStepup = async (attempt: MallCreateAttempt) => {
+    if (provisioningScope === undefined) {
+      setCreateError(mallCreationError(new Error('MALL_CREATE_NOT_AVAILABLE')));
+      setCreatePhase('form');
+      return;
+    }
+    setCreatePhase('starting');
+    try {
+      const challenge = await startMallCreateStepup(context, provisioningScope);
+      setCreateAttempt(attempt);
+      setCreateChallenge(challenge);
+      setCreatePhase('verification');
+    } catch (cause) {
+      if (isMallMobileMissing(cause)) {
+        setCreateError(undefined);
+        setCreatePhase('form');
+        setMobileEnrollment(true);
+        return;
+      }
+      setCreateError(mallCreationError(cause));
+      setCreatePhase('form');
+    }
+  };
+  const provisionPlatform = async (attempt: MallCreateAttempt) => {
+    if (provisioningScope === undefined) {
+      setCreateError(mallCreationError(new Error('MALL_CREATE_NOT_AVAILABLE')));
+      setCreatePhase('form');
+      return;
+    }
+    setCreatePhase('creating');
+    try {
+      const result = await createMall(context, provisioningScope, attempt);
+      setCreateResult(result);
+      setCreateError(undefined);
+      setCreatePhase('success');
+      await queryClient.invalidateQueries({ queryKey: applicationRootKey(context) });
+    } catch (cause) {
+      if (isMallStepupRequired(cause)) {
+        setStepupCompleted(false);
+        await requestStepup(attempt);
+        return;
+      }
+      setCreateError(mallCreationError(cause));
+      setCreatePhase('form');
+    }
+  };
+  const beginPlatformCreate = async (draft: MallCreateDraft) => {
+    if (!createAvailable || provisioningScope === undefined) {
+      setCreateError(mallCreationError(new Error('MALL_CREATE_NOT_AVAILABLE')));
+      return;
+    }
+    setCreateError(undefined);
+    const attempt = sameCreateDraft(createAttempt, draft) ? createAttempt : newMallCreateAttempt(draft);
+    setCreateAttempt(attempt);
+    if (mallMobileEnrollmentRequired(context)) {
+      setCreatePhase('form');
+      setMobileEnrollment(true);
+      return;
+    }
+    if (mallCreationRequiresStepup(context) && !stepupCompleted) {
+      await requestStepup(attempt);
+      return;
+    }
+    await provisionPlatform(attempt);
+  };
+  const verifyAndCreate = async (code: string) => {
+    if (provisioningScope === undefined || createChallenge === undefined || createAttempt === undefined) return;
+    setCreateError(undefined);
+    setCreatePhase('verifying');
+    try {
+      await completeMallCreateStepup(context, provisioningScope, createChallenge.id, code);
+      setStepupCompleted(true);
+      setCreateChallenge(undefined);
+      await provisionPlatform(createAttempt);
+    } catch (cause) {
+      setCreateError(mallCreationError(cause));
+      setCreatePhase('verification');
+    }
+  };
 
   return (
     <section className="distributedplatform" aria-labelledby="distributedplatformtitle">
@@ -83,8 +216,8 @@ export function Component() {
           </Badge>
         </>}
         actions={<>
-          <Button onPress={() => navigate(scopePath(context.scope, 'referral/settings'))}>收益与结算</Button>
-          <Button tone="primary" onPress={() => navigate(scopePath(context.scope, 'applications'))}>创建商城应用</Button>
+          <Button onPress={() => { void navigate(scopePath(context.scope, 'referral/settings')); }}>收益与结算</Button>
+          <Button tone="primary" onPress={openPlatformCreate}>创建下级平台</Button>
         </>}
       />
 
@@ -148,6 +281,25 @@ export function Component() {
             : <ApplicationDetail application={selection.application} />}
         />
       </ResourceState>
+      {createOpen ? <PlatformCreateDialog
+        open
+        phase={createPhase}
+        context={context}
+        enterprises={enterpriseScopes}
+        preferredEnterpriseId={context.scope.kind === 'enterprise' || context.scope.kind === 'mall'
+          ? context.scope.id : enterpriseScopes[0]?.id}
+        available={createAvailable}
+        sourceLevel={manifest.signed_level}
+        targetLevel={nextPlatformLevel}
+        challengeExpiresAt={createChallenge?.expires_at}
+        error={createError}
+        result={createResult}
+        mobileEnrollment={mobileEnrollment}
+        onSubmit={(draft) => { void beginPlatformCreate(draft); }}
+        onVerify={(code) => { void verifyAndCreate(code); }}
+        onRelogin={() => window.location.assign(appConfig.identityEntryUrl)}
+        onClose={closePlatformCreate}
+      /> : null}
     </section>
   );
 }
@@ -203,7 +355,7 @@ function NodeDetail({ layout, onLayoutChange }: Readonly<{
               id={manifest.parent_node_id}
               level={parentLevel(manifest.signed_level)}
               name={platformName(manifest.parent_node_id)}
-              role="上级平台"
+              relation="上级平台"
             />
             <span className="distributedplatformtopologyconnector" aria-hidden="true" />
           </>}
@@ -212,7 +364,7 @@ function NodeDetail({ layout, onLayoutChange }: Readonly<{
             id={manifest.node_id}
             level={manifest.signed_level}
             name={platformName(manifest.node_id)}
-            role="当前平台"
+            relation="当前平台"
           />
         </div>
       </section>
@@ -247,16 +399,16 @@ function NodeDetail({ layout, onLayoutChange }: Readonly<{
   );
 }
 
-function TopologyNode({ current = false, id, level, name, role }: Readonly<{
+function TopologyNode({ current = false, id, level, name, relation }: Readonly<{
   current?: boolean;
   id: string;
   level: string;
   name: string;
-  role: string;
+  relation: string;
 }>) {
   return (
     <article className="distributedplatformtopologynode" data-current={current || undefined}>
-      <div><span>{role}</span><strong>{name}</strong><small>{id}</small></div>
+      <div><span>{relation}</span><strong>{name}</strong><small>{id}</small></div>
       <Badge tone={current ? 'info' : 'neutral'}>{level}</Badge>
     </article>
   );
@@ -299,7 +451,7 @@ function ApplicationDetail({ application }: Readonly<{ application: Application 
           <strong>商城应用</strong>
           <p>已经拥有独立商城与 H5 内容；建立独立 NodeManifest、身份入口和发布指针后，才成为完整下级平台。</p>
         </div>
-        <Button tone="primary" onPress={() => navigate(scopePath({ kind: 'mall', id: application.mall_id ?? context.scope.id }, 'cockpit'))}>
+        <Button tone="primary" onPress={() => { void navigate(scopePath({ kind: 'mall', id: application.mall_id ?? context.scope.id }, 'cockpit')); }}>
           进入商城工作台
         </Button>
       </section>
@@ -339,4 +491,17 @@ function profileLabel(value: string | null): string {
 function parentLevel(level: string): string {
   const value = Number.parseInt(level.slice(1), 10);
   return Number.isNaN(value) ? '上级' : `L${Math.max(0, value - 1)}`;
+}
+
+function nextLevel(level: string): string | undefined {
+  const value = Number.parseInt(level.slice(1), 10);
+  return Number.isInteger(value) && value >= 0 && value < 11 ? `L${value + 1}` : undefined;
+}
+
+function sameCreateDraft(attempt: MallCreateAttempt | undefined, draft: MallCreateDraft): attempt is MallCreateAttempt {
+  return attempt !== undefined
+    && attempt.enterpriseId === draft.enterpriseId.trim()
+    && attempt.name === draft.name.trim()
+    && attempt.code === draft.code.trim()
+    && attempt.publicSlug === draft.publicSlug.trim();
 }

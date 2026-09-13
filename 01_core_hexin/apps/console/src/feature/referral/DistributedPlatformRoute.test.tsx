@@ -9,6 +9,9 @@ import { ConsoleContextProvider } from '../../entity/session/ConsoleContext';
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { Component } from './DistributedPlatformRoute';
 
+let createdBody: unknown;
+let createdIdempotency: string | null;
+
 const server = setupServer(
   http.get('*/api/v1/experiences/applications', () => HttpResponse.json({
     items: [{
@@ -28,12 +31,35 @@ const server = setupServer(
     }],
     count: 1,
   })),
+  http.post('*/api/v1/provisioning/malls', async ({ request }) => {
+    createdBody = await request.json();
+    createdIdempotency = request.headers.get('idempotency-key');
+    return HttpResponse.json({
+      mallId: 'mall:huazhong',
+      enterpriseId: 'mall:benefits',
+      applicationId: 'application:huazhong',
+      poolId: 'pool:huazhong',
+      organizationId: 'mall:huazhong',
+      scopeId: 'mall:huazhong',
+      parentId: 'mall:benefits',
+      ownerMembershipId: 'membership:huazhong-owner',
+      ownerMemberId: 'member:commerce',
+      ownerPrincipalId: 'actor:commerce',
+      code: 'HUAZHONG',
+      publicSlug: 'h6',
+      name: '华中甄选平台',
+      state: 'ready',
+      publicationState: 'draft',
+    }, { status: 201 });
+  }),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
   cleanup();
   server.resetHandlers();
+  createdBody = undefined;
+  createdIdempotency = null;
 });
 afterAll(() => server.close());
 
@@ -64,6 +90,43 @@ describe('Distributed platform workspace', () => {
     expect(screen.getAllByText('mall:benefits').length).toBeGreaterThan(0);
     expect(screen.getByText('已经拥有独立商城与 H5 内容；建立独立 NodeManifest、身份入口和发布指针后，才成为完整下级平台。')).toBeTruthy();
   });
+
+  it('creates a real hosted platform core through the existing mall provisioning operation', async () => {
+    const user = userEvent.setup();
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <MemoryRouter initialEntries={['/platforms']}>
+        <QueryClientProvider client={client}>
+          <ConsoleContextProvider value={context}>
+            <Component />
+          </ConsoleContextProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+
+    await screen.findByRole('heading', { level: 1, name: '分布式平台' });
+    await user.click(screen.getByRole('button', { name: '创建下级平台' }));
+    expect(screen.getAllByText('L0').length).toBeGreaterThan(0);
+    expect(screen.getByText('L1')).toBeTruthy();
+
+    await user.type(screen.getByLabelText('平台名称'), '华中甄选平台');
+    await user.type(screen.getByLabelText('平台代码'), 'huazhong');
+    await user.click(screen.getByRole('button', { name: '下一步' }));
+    expect(screen.getByText('标准托管平台')).toBeTruthy();
+    expect(screen.getByText('只展示本次会真实生成的内容，不收集无落点资料。')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '下一步' }));
+    await user.click(screen.getByRole('button', { name: '确认创建' }));
+
+    expect(await screen.findByText('平台核心已经建立，目录正在刷新。')).toBeTruthy();
+    expect(screen.getByText('h6.hbbtzn.com')).toBeTruthy();
+    expect(createdBody).toEqual({
+      enterpriseId: 'mall:benefits',
+      name: '华中甄选平台',
+      code: 'HUAZHONG',
+      publicSlug: 'auto-h5',
+    });
+    expect(createdIdempotency).toBeTruthy();
+  });
 });
 
 const scope = { kind: 'mall' as const, id: 'mall:benefits', name: '鸿泰惠民通' };
@@ -74,9 +137,11 @@ const context: ConsoleContext = {
     scope,
     scopes: [scope],
     accessVersion: 11,
-    permissions: ['experience.application.read'],
-    capabilities: ['experience.applications.read'],
-    assurance: { level: 2 },
+    permissions: ['experience.application.read', 'organization.layer.manage'],
+    capabilities: ['experience.applications.read', 'provisioning.malls.create'],
+    assurance: { level: 3, verified: '2026-09-14T00:00:00.000Z' },
+    security: { hasLocalCredential: true, phoneMasked: '138****0000', passwordChangedAt: null },
+    csrf: 'csrf-token-for-test',
     target: 'console',
     syncedAt: '2026-09-14T00:00:00.000Z',
   },
