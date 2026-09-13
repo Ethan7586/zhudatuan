@@ -2,12 +2,13 @@
 
 ## 1. 本版边界
 
-本文件是 AU-001“仓库入口与自动发现机制”的架构初版，只回答代码如何被发现、注册、构建并进入运行环境。它不是业务模块深审结论，不证明所有运行单元都健康，也不产生任何删除授权。
+本文件截至 AU-002 已完成“仓库入口与自动发现机制”以及四个客户端页面/运行入口总图。它不是业务模块深审结论，不证明所有运行单元都健康，也不产生任何删除授权。
 
 - 固定基线：`5a1ce71eebbefaa826368a9e1dc17730f9363bc4`
 - 证据明细：`records/AU-001-repository-entry-discovery/evidence.csv`
-- 微观记录：`records/AU-001-repository-entry-discovery/files.csv`、`exports.csv`、`functions.csv`
-- 状态：架构阶段第 1 个审计单元；后续运行、数据、通信和故障传播 AU 会增量修正本图。
+- 页面入口证据：`records/AU-002-frontend-runtime-entry-map/evidence.csv`、`routes.csv`、`styles-and-assets.csv`
+- 微观记录：`records/AU-001-repository-entry-discovery/{files,exports,functions}.csv`；`records/AU-002-frontend-runtime-entry-map/{files,exports,functions}.csv`
+- 状态：架构阶段前 2 个审计单元已完成；后续服务进程、数据、通信和故障传播 AU 会增量修正本图。
 
 ## 2. 核心结论
 
@@ -16,8 +17,10 @@
 3. [FACT][E-AU-001-014][E-AU-001-015] Commerce 存在两套不同目的的入口发现：本地/全量构建扫描全部 `*Main.ts`，正式服务构建只接受 10 个显式 target 映射。
 4. [FACT][E-AU-001-016] 发布影响分析同时使用 workspace 反向依赖图和 esbuild 服务入口图；无法收窄时倾向选择可达运行目标上界。
 5. [FACT][E-AU-001-009] Storefront 的 Worker/Node fetch 入口先调用 Compatibility Commerce API 的 public router，再回落到 vinext App Router。因此 Compatibility API 不是一个可仅凭“无独立发布 target”判定无用的孤立服务。
-6. [CONFLICT][E-AU-001-017][E-AU-001-020][E-AU-001-021] Console 的发布 target、仓库 Caddy 路径和线上实际 Caddy 路径不是同一指针体系；观察时 `console.fufu.wang/` 返回 404。该项为 F-0001（P1 候选），尚待独立复核。
-7. [CONFLICT][E-AU-001-018][E-AU-001-019][E-AU-001-022] 仓库声明的生产 unit/target 不能完整重建观察时线上运行单元：至少两个活跃 unit 没有基线内同名 unit 文件。
+6. [FACT][E-AU-002-003][E-AU-002-004][E-AU-002-008][E-AU-002-013] 四个客户端不是同一种运行形态：Console 是 Browser Router；Auth 是 host/query 分流；Storefront 是 App Router + Worker 双入口；Miniapp 只有 App 初始化片段。
+7. [CONFLICT][E-AU-002-010][E-AU-002-018][E-AU-002-020] Auth 和 Miniapp 的机器声明均不能同时解释当前运行入口：Auth 批准组件/锁哈希漂移，Miniapp 的 candidate/tests/navigation/runtimegraph/delivery matrix 对“完整客户端”使用互相冲突的判据。
+8. [CONFLICT][E-AU-001-017][E-AU-001-020][E-AU-001-021] Console 的发布 target、仓库 Caddy 路径和线上实际 Caddy 路径不是同一指针体系；观察时 `console.fufu.wang/` 返回 404。该项为 F-0001（P1 候选），尚待独立复核。
+9. [CONFLICT][E-AU-001-018][E-AU-001-019][E-AU-001-022] 仓库声明的生产 unit/target 不能完整重建观察时线上运行单元：至少两个活跃 unit 没有基线内同名 unit 文件。
 
 ## 3. 总体运行架构
 
@@ -217,3 +220,87 @@ flowchart LR
 7. miniapp 文件由哪个完整客户端工程消费。
 
 这些未知项会进入后续独立 AU；任何一项都不能被转换成 G3 删除结论。
+
+## 11. AU-002 增量：四客户端真实入口架构
+
+### 11.1 总图
+
+```mermaid
+flowchart LR
+  subgraph Console[Console / Vite]
+    CH[index.html] --> CM[main.tsx]
+    CM --> CRuntime[console runtime/build]
+    CRuntime --> CPrefetch[document prefetch]
+    CM --> CProviders[dynamic providers]
+    CProviders --> CRouter[Browser Router]
+    CRouter --> CLoader[landing/scope loaders]
+    CRouter --> CManifest[15 manifests / 34 lazy routes]
+    CLoader --> CApi[Canonical API first hop]
+  end
+
+  subgraph Auth[Auth / Vite]
+    AH[index.html] --> AM[main.tsx]
+    AM --> ABuild[build registry fast path]
+    AM --> ARuntime[identity-runtime.json]
+    ABuild --> AApp[App host/query resolver]
+    ARuntime --> AApp
+    AApp --> AConsumer[ConsumerIdentityPage]
+    AApp --> AOperator[OperatorIdentityPage]
+    AApp --> AInvalid[Invalid entry]
+    AConsumer --> AApi[Identity API]
+    AOperator --> AApi
+   end
+
+  subgraph Store[Storefront / vinext]
+    Request[Request] --> SWorker[Worker/Node fetch]
+    SWorker --> Policy[host/runtime/showcase policy]
+    Policy --> SPublic[Compatibility publicRouter]
+    SPublic -->|null| SApp[App Router]
+    SPublic -->|Response| PublicApi[Public API]
+    SApp --> Layout[layout + globals.css + prefetch]
+    Layout --> Pages["/, /h5, /[device], desktop"]
+    Pages --> ProdLoader[dynamic productionApi]
+    ProdLoader --> Sdk[Canonical SDK client]
+  end
+
+  subgraph Mini[Miniapp fragment]
+    Wx[WeChat loader] --> MApp[app.js]
+    MApp --> MEnv[generated Environment]
+    MApp --> MGlobal[App.globalData]
+    Missing[app.json/pages/api/actions absent]
+  end
+```
+
+### 11.2 Console 边界
+
+- [FACT][E-AU-002-003] `main.tsx` 在动态加载 React providers 前完成 runtime config 接纳并启动首文档预取；root 缺失同步失败，runtime/provider 失败显示可见错误页，已识别的旧 chunk 失败可触发一次 reload。
+- [FACT][E-AU-002-004] Browser Router 的稳定父路径是 `/scopes/:scopeKind/:scopeId`。15 个 enabled manifest 共有 34 条 module route，再加 profile 与 scope/global wildcard。路由所有权来自显式 manifest，不来自目录扫描。
+- [FACT][E-AU-002-005][E-AU-002-006] landing/scope loaders 是页面和 API 之间的第一层边界：document prefetch 最多交接 1.5 秒，畸形/超时回退 SDK；scope 必须属于当前 session；profile 403 可降级但 401 不能被 profile fallback 掩盖。
+- [FACT][E-AU-002-007] 70 个 CSS 的生产根为 main 的四个 design sheets + `style.css`；后者继续收集 shell/feature/responsive/legacy/VI。6 个 CSS 没有文件名消费者，但均保留为未分级证据，不能据此删除。
+
+### 11.3 Auth 边界
+
+- [FACT][E-AU-002-008] build registry 已知道当前 host 时，App 在 runtime fetch settle 前渲染；同源 runtime 若存在，会校验 envelope、registry 和 accounts host。404/非 JSON 可以回退 build registry，其它错误显示运行配置错误页。
+- [FACT][E-AU-002-009] Auth 没有 Browser Router；URL 状态由 `hostname + application/target/client/admin_origin/surface` 解析。consumer 必须精确匹配当前 node；只有 `operating_mall` node 可进入 operator 默认路径。
+- [CONFLICT][E-AU-002-010] `owner-approved-ui.json` 和 `SOURCE-MANIFEST.md` 仍指向 LoginPage，但当前 App 不加载它；正式哈希门禁也失败。此冲突是 F-0005，不是 LoginPage 删除依据。
+- [CONFLICT][E-AU-002-011][E-AU-002-012] Auth API 第一跳存在 9 个成功响应校验被丢弃的点，详见 F-0007；后端 handler、Cookie 和 ticket 生命周期留给身份专项。
+
+### 11.4 Storefront 边界
+
+- [FACT][E-AU-002-013][E-AU-002-014] Vite 把 `worker/index.ts` 作为 Cloudflare main，vinext 同时支持 `start` 的 Node 模式。每个请求先过 labs/runtime/showcase 分支，再进入 Compatibility public router；未命中才交给 App Router。
+- [FACT][E-AU-002-015] `/` 与 `/h5` 的 layout 在浏览器 head 预发 `/api/v1/catalog/public/products?limit=100`，客户端 publicCatalogApi 可复用 Response。认证能力通过 `loadProductionApi()` 动态导入，再由节点绑定的 SDK client 发往 consumer/canonical API。
+- [FACT][E-AU-002-016] `[device]` 接住任意单段参数；五个前缀映射到 desktop/mobile/tablet lazy frame。未知参数仅证明组件显示“不存在”文本，HTTP 404/200 未验证。
+- [FACT][E-AU-002-017] App Router 实际样式根是 `app/globals.css`；`src/index.css` 无当前消费者。图外状态不产生删除结论。
+
+### 11.5 Miniapp 边界
+
+- [FACT][E-AU-002-018] `app.js` 的唯一行为是把 `wx.getExtConfigSync()` 交给生成 Environment，并写入 `App.globalData.environment`；其余 8 文件由四条生成链产生。
+- [CONFLICT][E-AU-002-019][E-AU-002-020] 当前仓库不能提供 app manifest、页面、API client 或 action dispatcher；但 candidate、tests 和 delivery matrix 仍把它列为当前/required 客户端。该项为 F-0006。
+- [UNKNOWN] 外部完整小程序工程、微信平台当前版本和该 9 文件目录的真实交付消费者均未验证。
+
+### 11.6 当前最主要通信瓶颈
+
+1. Auth 的 UI approval、运行 import 图和节点 runtime 是三套不同事实面，当前没有一个命令同时验证“批准组件已真实挂载且使用正确节点”。
+2. Storefront 同一 fetch 入口横跨边缘策略、Compatibility public API、App Router 和 Canonical SDK；故障在 publicRouter 的 Response/null/reject 与页面 handler 之间传播，后续必须按完整请求链审计。
+3. Console 首屏并行 document prefetch 与 Router SDK loader 有刻意 handoff；正确性依赖同一 session/scope parser 和 Abort 清理，不能把重复请求简单认定为冗余。
+4. Miniapp 没有统一“完整交付单元”定义，不同门禁会对同一片段分别给出通过、ENOENT、缺兼容边或 implemented。

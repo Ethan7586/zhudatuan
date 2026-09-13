@@ -1,4 +1,4 @@
-# 全代码库系统审计｜02 运行关系图初版
+# 全代码库系统审计｜02 运行关系图
 
 ## 1. 适用范围
 
@@ -8,10 +8,10 @@
 
 | 表面 | 构建/启动入口 | 路由发现 | 进入 API 的方式 | 发布单元 | 结论 |
 | --- | --- | --- | --- | --- | --- |
-| Console | `index.html` → `src/main.tsx` → providers → ConsoleApp | ConsoleRouter + 15 个显式 manifest | 页面模块经 SDK/HTTP；详细调用待模块审计 | `console` 静态制品 | [FACT][E-AU-001-007][E-AU-001-023] |
-| Auth Web | `index.html` → `src/main.tsx` → App | host/query 选择 consumer/operator；无 Browser Router 证据 | Identity API；链路待 AU-身份专项 | `auth-web` 静态制品 | [FACT][E-AU-001-023] |
-| Storefront | `vinext start` 或 Worker fetch | App Router 文件发现 | fetch 先进入 Compatibility `routePublicRequest`，未命中再进入页面 | `storefront` Node 制品；另有 h5/mini wrangler 声明 | [FACT][E-AU-001-009][E-AU-001-010] |
-| Miniapp | 基线仅有 `miniprogram/app.js` 与生成资源 | [UNKNOWN] 无完整页面/项目清单 | [UNKNOWN] | [UNKNOWN] | [FACT][E-AU-001-024] 不能据此判废弃 |
+| Console | `index.html` → `main.tsx` → runtime 接纳/首文档预取 → providers → ConsoleRouter | `/`、`/scopes/:scopeKind/:scopeId`；15 个显式 manifest、34 条模块 route | landing/scope loader 先走同源预取，失败或超时回退 SDK；逐模块 operation 待后续 AU | `console` 静态制品 | [FACT][E-AU-002-003][E-AU-002-004][E-AU-002-005][E-AU-002-006][E-AU-002-007] |
+| Auth Web | `index.html` → `main.tsx` → build/runtime node registry → App | 无 Browser Router；由 hostname 与 application/target/client/admin_origin/surface 分流 consumer/operator/invalid | Canonical Identity/Registration HTTP client；Cookie/ticket 服务端链待身份 AU | `auth-web` 静态制品 | [FACT][E-AU-002-008][E-AU-002-009][E-AU-002-010][E-AU-002-011][E-AU-002-012]；机器批准清单冲突见 F-0005 |
+| Storefront | Cloudflare `worker/index.ts` fetch 或 `vinext start` | `/`、`/h5`、`/[device]`、`/desktop-1920[/frame|/inspect]` | Worker 先尝试 Compatibility public router；页面 public catalog 同源 fetch；认证 API 动态加载 Canonical SDK client | `storefront` Node 制品；另有 h5/mini wrangler 声明 | [FACT][E-AU-002-013][E-AU-002-014][E-AU-002-015][E-AU-002-016][E-AU-002-017] |
+| Miniapp | 微信 runtime → `miniprogram/app.js` → 生成 Environment | [CONFLICT] 当前没有 app.json、pages 或项目清单 | [UNKNOWN] 当前没有 API client/action dispatcher；外部工程状态未验证 | [UNKNOWN] candidate 会复制当前片段，但完整发布单元不在基线中 | [FACT][E-AU-002-018][E-AU-002-019][E-AU-002-020]；不能据此判废弃 |
 
 ### 2.1 Console 路由骨架
 
@@ -181,10 +181,107 @@ flowchart LR
 
 ## 9. 后续运行图审计入口
 
-1. AU-002：Console、Auth、Storefront、Miniapp 页面与运行入口全图。
+1. AU-002：Console、Auth、Storefront、Miniapp 页面与运行入口全图——已完成。
 2. AU-003：Canonical API/Jobs/Ready/Migration 进程入口全图。
 3. AU-004：release target、systemd、Cloudflared、Caddy、静态制品和节点部署全图，并独立复核 F-0001。
 4. AU-005：PostgreSQL、Redis、对象存储、Secrets/KMS、队列。
 5. AU-006：同步/异步/共享数据库通信矩阵。
 
-在这些单元完成前，本文件是可续接初版，不是“运行架构已 100% 验证”的声明。
+在这些单元完成前，本文件是可续接地图，不是“运行架构已 100% 验证”的声明。
+
+## 10. AU-002 四客户端运行链
+
+### 10.1 Console
+
+```mermaid
+sequenceDiagram
+  participant Browser
+  participant Main as main.tsx
+  participant Runtime as RuntimeConfig
+  participant Loader as SessionLoader
+  participant Router as ConsoleRouter
+  participant Module as Module Route
+  participant API as Canonical API
+  Browser->>Main: index.html/module script
+  Main->>Runtime: 接纳 node/runtime config
+  Main->>Loader: 启动首文档预取
+  Main->>Router: 动态加载 providers 后挂载
+  Router->>Loader: landing 或 scope loader
+  Loader->>API: 预取 Response 或 SDK 回退
+  Loader-->>Router: session/profile/scope context
+  Router->>Module: 15 manifests / 34 routes
+  Module->>API: operation-specific SDK/HTTP
+```
+
+- [FACT][E-AU-002-003][E-AU-002-004][E-AU-002-005][E-AU-002-006] runtime 失败会显示可见错误；document prefetch 最多交接 1.5 秒，畸形、超时或缺失时走 SDK；scope 必须属于当前 session。
+- [FACT][E-AU-002-007] 70 个 CSS 的生产收集根已追到 `main.tsx` 的四个 design sheet 与 `style.css`。6 个无文件名消费者的 CSS 只登记证据，没有垃圾代码结论。
+
+### 10.2 Auth Web
+
+```mermaid
+sequenceDiagram
+  participant Browser
+  participant Main as main.tsx
+  participant Registry as Identity node registry
+  participant App
+  participant Page as Consumer/Operator page
+  participant API as Identity API
+  Browser->>Main: accounts host + query
+  Main->>Registry: build registry；并尝试同源 runtime
+  Registry-->>App: 当前 node 或配置错误
+  App->>Page: consumer/operator/invalid 分流
+  Page->>API: identity/registration request
+  API-->>Page: JSON response
+```
+
+- [FACT][E-AU-002-008][E-AU-002-009] App 不使用 Browser Router；当前 host 是身份节点边界，consumer application/target 必须精确匹配。
+- [CONFLICT][E-AU-002-010] Owner-approved 清单仍指定 LoginPage，实际 App 不挂载它，且三个锁定文件哈希漂移，见 F-0005。
+- [CONFLICT][E-AU-002-011][E-AU-002-012] 两个 HTTP client 的九处成功响应调用 `safeParse` 后丢弃结果，见 F-0007；这不等于已证明服务端授权失效。
+
+### 10.3 Storefront Web
+
+```mermaid
+sequenceDiagram
+  participant Browser
+  participant Worker as worker/index.ts
+  participant Public as Compatibility publicRouter
+  participant App as vinext App Router
+  participant SDK as Canonical SDK client
+  Browser->>Worker: HTTP request
+  Worker->>Worker: labs/runtime/showcase policy
+  Worker->>Public: routePublicRequest
+  alt public API 命中
+    Public-->>Browser: Response
+  else 未命中
+    Worker->>App: vinext handler.fetch
+    App-->>Browser: 页面/资源 Response
+    Browser->>SDK: 动态加载认证 API
+  end
+```
+
+- [FACT][E-AU-002-013][E-AU-002-014][E-AU-002-015][E-AU-002-016] `worker/index.ts` 是 Cloudflare main；Node 模式由 `vinext start` 提供。首页/H5 首屏同源预取 public catalog，认证请求通过节点绑定 SDK client。
+- [UNKNOWN][E-AU-002-016] 任意单段 URL 会进入 `[device]`，未知参数会显示不可用文本，但实际 HTTP 状态未运行验证。
+- [FACT][E-AU-002-017] 当前 App Router 样式根是 `app/globals.css`；`src/index.css` 图外，但尚未形成删除候选。
+
+### 10.4 Miniapp
+
+```mermaid
+flowchart LR
+  WeChat[微信 runtime] --> AppJS[miniprogram/app.js]
+  Ext[wx.getExtConfigSync] --> AppJS
+  Generated[8 个生成文件] --> AppJS
+  AppJS --> Global[App.globalData.environment]
+  Missing[app.json / pages / api client / actions] -. 基线缺失 .-> AppJS
+```
+
+- [FACT][E-AU-002-018] `app.js` 只初始化生成 Environment；其余 8 文件来自四条生成链。
+- [CONFLICT][E-AU-002-019][E-AU-002-020] navigation、runtimegraph、test topology、candidate 与 delivery matrix 对“当前完整客户端”的判据不一致，见 F-0006。外部工程和线上发布状态仍为 UNKNOWN。
+
+### 10.5 第一跳通信与失败边界
+
+| 客户端 | 第一跳 | 超时/取消 | 失败与恢复 | 尚未验证 |
+| --- | --- | --- | --- | --- |
+| Console | 同源首文档预取或 Canonical SDK | prefetch 1.5 秒交接；loader 接收 AbortSignal | runtime/provider 有可见错误；401 转登录；旧 chunk 可单次 reload | 各业务 operation 的幂等、服务端超时和真实页面状态 |
+| Auth | Canonical Identity/Registration fetch | 客户端调用点未形成统一超时证据 | runtime 404/非 JSON 可回退 build registry；其它配置错误阻断 | Cookie、ticket exchange、刷新、退出和服务端事务 |
+| Storefront | Compatibility public router 或 vinext；浏览器同源 API/Canonical SDK | Worker 自身未见统一超时；框架/下游待审 | host policy 返回 404/503 no-store；认证 401 清本地 session | CDN/Worker/Node 当前发布所有权与重试 |
+| Miniapp | 只确认 ext config → Environment | UNKNOWN | UNKNOWN | 页面、导航、API、身份、缓存、发布制品全部待外部事实 |

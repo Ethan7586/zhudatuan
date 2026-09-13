@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00 与 CP-00A 已完成；AU-001/CP-01“仓库入口与自动发现机制”已完成，形成真实架构、运行关系和模块清单初版。下一单元固定为 AU-002“Console、Auth、Storefront、Miniapp 页面与运行入口总图”。
+当前进度：CP-00、CP-00A、AU-001/CP-01 与 AU-002/CP-02 已完成。AU-002 已形成 Console、Auth、Storefront、Miniapp 的页面与运行入口总图，并完成四个应用目录 700 个固定基线文件的本单元覆盖对账。下一单元建议为 AU-003“Canonical API、Jobs、Ready 与 Migration 进程入口总图”，须由 Ethan 另行授权后才开始。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -156,8 +156,8 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 架构阶段先于任何垃圾代码判断，拆成独立 AU：
 
 1. AU-001：仓库入口与 package/export/build 发现机制，已完成（CP-01）。
-2. AU-002：Console、Auth、Storefront、Miniapp 页面与运行入口总图，下一单元。
-3. Canonical Commerce、Compatibility API、Ready/Main/Jobs/Migration 进程入口总图。
+2. AU-002：Console、Auth、Storefront、Miniapp 页面与运行入口总图，已完成（CP-02）。
+3. AU-003：Canonical API、Jobs、Ready 与 Migration 进程入口总图，建议下一单元。
 4. release target、systemd、Cloudflared、Caddy、静态制品和节点部署总图。
 5. PostgreSQL、Redis、对象存储、Secrets/KMS、队列和共享数据总图。
 6. API、事件、共享数据库和同步调用的初始通信矩阵。
@@ -505,9 +505,9 @@ Miniapp：
 
 ## 16. 下一审计单元
 
-CP-01 提交后结束当前单一目的会话。下一会话只执行：
+CP-02 提交后结束当前单一目的会话。后续只有在 Ethan 明确授权时才执行：
 
-- AU-002：Console、Auth、Storefront、Miniapp 页面与运行入口总图。
-- 目的：分别确认页面挂载、动态 import、运行时配置、CSS/资源收集和前端到 API 的第一跳；只形成前端入口全图，不深审业务 Handler。
-- 输入：CP-01 的 `01-architecture.md`、`02-runtime-map.md`、`03-module-inventory.md`、覆盖总账和 `records/AU-001-repository-entry-discovery`。
-- 禁止：修复 F-0001/F-0002/F-0003、改任何前端源码/配置、定级垃圾代码、运行全量 E2E 或跨入后端业务深审。
+- AU-003：Canonical API、Jobs、Ready 与 Migration 进程入口总图。
+- 目的：确认每个 target 的进程入口、模块装配、启动/就绪边界和迁移执行入口；只形成服务进程总图，不深审单个业务 Handler。
+- 输入：CP-02 的 `01-architecture.md`、`02-runtime-map.md`、`03-module-inventory.md`、覆盖总账和 AU-001/AU-002 记录。
+- 禁止：修复任何已记录问题、改源码/配置/工作流/迁移、运行数据库全量重放、进入业务模块实现深审或推送/部署。

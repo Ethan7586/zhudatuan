@@ -1,17 +1,17 @@
-# 全代码库系统审计｜03 模块清单初版
+# 全代码库系统审计｜03 模块清单
 
 ## 1. 说明
 
-本清单在 AU-001 只登记可由入口、注册、构建和发布证据证明的模块边界。业务数据所有权、权限边界和完整 API/事件契约仍标为 UNKNOWN，不能把空白理解为“不存在”。
+本清单截至 AU-002 登记可由入口、注册、构建、发布、页面可达性和 API 第一跳证明的模块边界。业务数据所有权、服务端权限边界和完整 API/事件契约仍标为 UNKNOWN，不能把空白理解为“不存在”。
 
 ## 2. 一级模块
 
 | 模块 | 职责 | 对外入口 | 上游 | 下游 | 数据所有权 | API/事件契约 | 运行进程 | 发布单元 | 测试范围 | 当前边界问题 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Console Shell | Operator UI 启动、作用域壳、导航和模块路由 | `index.html`、`src/main.tsx`、ConsoleRouter | 浏览器、runtime config | 15 个 Console 模块、SDK/API | [UNKNOWN] 浏览器缓存待审 | manifest route + SDK，待逐页 | 静态浏览器应用 | console | route/registry 单测、Playwright 计划入口 | [CONFLICT] fufu 静态根与 release pointer 分裂；E2E 配置失效 |
-| Auth Web | consumer/operator 身份入口 | `index.html`、`src/main.tsx`、App | 浏览器、host/query | Identity API | [UNKNOWN] session/cookie | identity contract，待身份 AU | 静态浏览器应用 | auth-web | workspace Vitest；Playwright 当前名称错误 | ESLint glob 未覆盖 auth-web；登录链未审 |
-| Storefront Web | 商城页面、同源 public API 调度 | App Router、`worker/index.ts` | 浏览器、Cloudflare/Node | Compatibility publicRouter、vinext | Compatibility DB 读写待审 | public API + 页面路由 | vinext Node 或 Worker fetch | storefront；Cloudflare 状态 UNKNOWN | workspace tests、性能检查 | 同一入口横跨 Node/Worker；部署所有权双轨待证实 |
-| Miniapp 生成片段 | 微信端环境、领域常量、主题和品牌生成目标 | `miniprogram/app.js` | 生成器或外部工程 UNKNOWN | Storefront/API UNKNOWN | UNKNOWN | UNKNOWN | 未发现完整可启动工程 | UNKNOWN | 生成器检查 | 缺项目/页面清单，不得据此判废弃 |
+| Console Shell | Operator UI 启动、runtime 接纳、作用域壳、导航和模块路由 | `index.html`、`main.tsx`、`ConsoleRouter`、landing/scope loaders | 浏览器、node/runtime config | 15 个 manifest/34 routes、document prefetch、Canonical SDK/API | session/profile/scope 在浏览器内；服务端数据归属 UNKNOWN | manifest route + Operation SDK，待逐页 | 静态浏览器应用 | console | route/registry/loader 源码测试；正式 E2E 配置失效 | [CONFLICT] fufu 静态根与 release pointer 分裂；70 CSS 中 6 个图外，尚未定级 |
+| Auth Web | consumer/operator 身份节点入口与页面状态机 | `index.html`、`main.tsx`、App、host/query entry resolver | 浏览器、build/runtime node registry | Identity/Registration HTTP clients | [UNKNOWN] session/cookie/ticket | identity response schemas；服务端契约待身份 AU | 静态浏览器应用 | auth-web | workspace Vitest 清单；缺 malformed 2xx 反事实 | Owner-approved UI 与实际挂载/哈希冲突；九处 Schema 结果被丢弃；登录全链未审 |
+| Storefront Web | 商城 App Router 页面、同源 public API 和认证 SDK 调度 | `worker/index.ts`；`/`、`/h5`、`/[device]`、desktop 路由 | 浏览器、Cloudflare 或 Node | Compatibility publicRouter、vinext handler、Canonical SDK | Compatibility DB/Canonical API 数据所有权待审 | public API + App Router + RequestContext | vinext Node 或 Worker fetch | storefront；Cloudflare 当前发布状态 UNKNOWN | workspace/static markup tests；真实状态码未验 | 同一入口横跨 Node/Worker；认证 API 动态边界；部署所有权双轨待证实 |
+| Miniapp 生成片段 | 微信端 Environment、领域常量、主题和品牌生成输出 | `miniprogram/app.js` | 四条生成链、`wx.getExtConfigSync()`；外部工程 UNKNOWN | 只确认 `App.globalData.environment` | UNKNOWN | [CONFLICT] delivery matrix 声称业务能力，但当前 API client 缺失 | 仅 App 初始化片段，未发现完整可启动工程 | candidate 会复制片段；完整发布单元 UNKNOWN | test topology 只检查 app.js；navigation 必现缺 app.json | 多套机器规则对 required/current 拓扑互相冲突；不得据此判废弃 |
 | Compatibility Commerce API | Storefront 兼容 public API 与参考 admin server | publicRouter；adminServer | Storefront Worker；参考构建 | Compatibility 数据库、外部 AI/HTTP 待审 | Compatibility schema 待审 | Express/public route | public router 编入 Storefront；admin server 是否在线 UNKNOWN | 无独立 release target | service tests | 被源码嵌入 Storefront，不能按独立 target 缺失判无用 |
 | Canonical API Composition | 目标化 API 进程组装 | 7 个 API Main + Ready；ConsoleSupportMain | systemd/release | 32 Commerce 模块、RouteRegistry | 按业务模块待审 | OperationCatalog | 多个 Node API 进程 | identity/mall/support/purchase/web/catalog/payment-webhook | bootstrap、HTTP、契约测试 | Profile 与模块 allow-list 需 AU-003 逐项核对 |
 | Canonical Jobs Composition | 目标化后台任务组装 | identity/catalog/payment Jobs Main/Ready；聚合入口 | systemd/release、数据库队列 | 32 模块、33 Job | runtime.job 等待审 | Job catalog、event schema | 多个 Node Jobs 进程 | identity-notification/catalog-jobs/payment-jobs | jobs/bootstrap/repository tests | 生产者消费者、去重、租约和恢复未配对 |
@@ -46,7 +46,7 @@
 | reports | `reports` | feature/report/manifest.ts | 仅结构性审阅 |
 | support | `support/:caseId?` | feature/support/manifest.ts | 仅结构性审阅 |
 
-每个 manifest 是否正确声明 operation、权限、空态、错误态和真实页面组件，留给独立模块 AU。
+AU-002 已结构性核对全部 manifest、静态/动态可达性以及路由装配；每个 manifest 对应页面的 operation、权限、空态、错误态和业务正确性仍留给独立模块 AU。Console 的入口骨架与 loader 已深入审阅，不等于 15 个页面模块均已深入审阅。
 
 ## 4. Canonical Commerce 模块目录
 
@@ -117,3 +117,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 ## 7. 下一轮拆分原则
 
 后续不会把“Console”“Commerce”一次性作为一个超大模块审完，而会按完整链路拆分。例如：Console Cockpit 页面 → SDK operation → Canonical route → handler → repository → table；或 payment event → runtime.job → payment-jobs consumer →外部支付方→重试/补偿。每个单元仍只写报告，不在审计分支修复。
+
+## 8. AU-002 客户端边界对账
+
+| 客户端 | 页面/路由所有者 | API 第一跳所有者 | 样式根 | 数据所有权结论 | 当前主要 UNKNOWN |
+| --- | --- | --- | --- | --- | --- |
+| Console | ConsoleRouter + 15 个显式 manifests | SessionLoader/document prefetch 与各模块 SDK | 四个 design sheets + `style.css` 收集链 | 浏览器只持有 session/profile/scope 视图；业务表归属未审 | 34 routes 的逐页授权、状态、operation 与真实 API 终点 |
+| Auth | App + node entry resolver，无 Browser Router | canonicalIdentity/canonicalRegistration | `main.tsx` 静态样式入口 | 身份服务拥有关系待服务端专项；浏览器 Cookie/ticket 生命周期未审 | Owner-approved 权威页面、完整登录/刷新/退出、后端事务 |
+| Storefront | vinext App Router；Worker 先行分流 | Compatibility publicRouter；浏览器 public catalog/Canonical SDK | `app/globals.css` | Compatibility 与 Canonical 双数据来源的所有权未定 | Cloudflare/Node 当前发布者、缓存、未知 device HTTP 状态 |
+| Miniapp | 当前只见 App 初始化；页面所有者 UNKNOWN | 当前不存在可审 API client | 生成主题资源；页面样式 UNKNOWN | UNKNOWN | 外部工程、线上制品、完整页面/API/身份/发布链 |
+
+[FACT][E-AU-002-001][E-AU-002-002] 四个应用目录共 700 个固定基线文件：16 个文件/1,756 行累计深入审阅，673 个结构性审阅，8 个自动生成文件，3 个构建产物。结构性审阅只证明入口、可达性、样式/资源关系和 API 第一跳已枚举，不证明实现逻辑已经深审。
