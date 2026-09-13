@@ -36,6 +36,7 @@ export const AccessRoleSchema = z.object({
   permissions: z.array(z.string().min(1)),
   member_count: DatabaseIntegerSchema,
   governance: z.boolean(),
+  governance_level: z.enum(['owner', 'senior_administrator', 'administrator']).nullable().optional(),
   editable: z.boolean(),
   members: z.array(AccessRoleMemberSchema).default([]),
   scopes: z.array(z.object({

@@ -184,6 +184,8 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
 
 async function manageRoleAssignment(request: OperationRequest, database: OperationDatabase, access: ReturnType<typeof requireAccess>,
   role: string, action: 'assign' | 'revoke'): Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
+  const seniorRoleRequested = role.startsWith('role-senior-administrator-v1:');
+  if (seniorRoleRequested && access.governance?.isExactOwner !== true) throw new Error('OWNER_REQUIRED_FOR_SENIOR_ADMINISTRATOR');
   const body = bodyRecord(request);
   const membership = textField(body, 'membership');
   const kind = textField(body, 'kind');
@@ -196,6 +198,8 @@ async function manageRoleAssignment(request: OperationRequest, database: Operati
     target_membership_scope: unknown;
     target_access_version: string | number;
     role_id: string;
+    senior_role: boolean;
+    target_is_owner: boolean;
     management_role: boolean;
     target_membership_id: string | null;
     target_client: string | null;
@@ -205,7 +209,10 @@ async function manageRoleAssignment(request: OperationRequest, database: Operati
     target_realm_binding: boolean;
     target_organization_binding: boolean;
   }>(`select access.scope_object($1) scope,access.scope_object(target.organization_id) target_membership_scope,
-    target.access_version target_access_version,role.id role_id,target.id target_membership_id,
+    target.access_version target_access_version,role.id role_id,
+    role.id='role-senior-administrator-v1:'||role.scope_id senior_role,
+    exists(select 1 from access.platformowner owner where owner.singleton=true and owner.state='active'
+      and owner.membership_id=target.id) target_is_owner,target.id target_membership_id,
     target.client target_client,target.status target_status,target.realm_id target_realm_id,
     actor.realm_id actor_realm_id,
     exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
@@ -221,18 +228,23 @@ async function manageRoleAssignment(request: OperationRequest, database: Operati
           and other.audience<>'operator')) management_role
     from access.membership target
     join access.membership actor on actor.id=$5 and actor.status='active' and actor.client='operator'
-    join access.role role on role.id=$3 and role.scope_id=$4 and role.status='active'
+    join access.role role on role.id=$3 and role.status='active'
       and role.id not in('role:self','role-platform-owner-v2','role-platform-owner-successor-v1','role-zhudatuan-pending-operator')
-    where target.id=$2 for update of target`, [scope, membership, role, access.scope.id, access.membership.id]);
+      and (role.scope_id=$4 or ($6::boolean and role.id='role-senior-administrator-v1:'||role.scope_id
+        and exists(select 1 from organization.unitclosure roleboundary
+          where roleboundary.ancestor_id=role.scope_id and roleboundary.descendant_id=$4)))
+    where target.id=$2 for update of target`, [scope, membership, role, access.scope.id, access.membership.id,
+      access.governance?.isExactOwner === true]);
   const target = resolved.rows[0];
   if (target === undefined) throw new Error('ROLE_ASSIGNMENT_NOT_AVAILABLE');
+  if (target.target_is_owner) throw new Error('OWNER_ROLE_LEVEL_IMMUTABLE');
   const targetScope = canonicalScope(target.scope);
   const targetMembershipScope = canonicalScope(target.target_membership_scope);
   if (target.management_role) requireManagementTarget(target, targetScope);
   else if (target.target_status !== 'active') throw new Error('ROLE_ASSIGNMENT_NOT_AVAILABLE');
   const scopeDecision = targetScope === null ? null : checkScope(access.membership, 'access.scope.manage', targetScope, new Date());
   if (targetScope === null || targetMembershipScope === null || kind !== targetScope.kind
-    || !scopeContains(access.scope, targetScope)
+    || (!scopeContains(access.scope, targetScope) && !target.senior_role)
     || scopeDecision === null || 'reason' in scopeDecision
     || !scopesAreRelated(targetScope, targetMembershipScope)) throw new Error('CANNOT_GRANT_UNOWNED_SCOPE');
   const currentVersion = numericVersion(target.target_access_version);
@@ -245,9 +257,19 @@ async function manageRoleAssignment(request: OperationRequest, database: Operati
         and assignment.effective_at<=clock_timestamp() and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
         and (assignment.assigned_scope_id=$3 or (assignment.assigned_scope_id is null and role.scope_id=$3))
       returning assignment.scope_source`, [membership, role, targetScope.id]);
-    const accessVersion = removed.rows.length === 0 ? currentVersion
-      : await raiseMembershipVersion(database, membership, currentVersion);
-    return { status: 200, body: Object.freeze({ action, changed: removed.rows.length > 0, role, membership,
+    const removedScope = target.senior_role && removed.rows.length > 0 ? await database.query(`update access.scopegrant scopegrant
+      set expires_at=clock_timestamp() where scopegrant.membership_id=$1 and scopegrant.scope_kind=$2
+        and scopegrant.scope_id=$3 and scopegrant.effect='allow' and scopegrant.effective_at<=clock_timestamp()
+        and (scopegrant.expires_at is null or scopegrant.expires_at>clock_timestamp())
+        and not exists(select 1 from access.membershiprole assignment join access.role assigned_role on assigned_role.id=assignment.role_id
+          where assignment.membership_id=$1 and assignment.effective_at<=clock_timestamp()
+            and (assignment.expires_at is null or assignment.expires_at>clock_timestamp())
+            and coalesce(assignment.assigned_scope_id,assigned_role.scope_id)=$3)
+      returning scopegrant.id`, [membership, targetScope.kind, targetScope.id]) : { rows: [] };
+    const changed = removed.rows.length > 0 || removedScope.rows.length > 0;
+    if (changed && target.senior_role) await updateOperatorGovernanceName(database, membership, 'administrator');
+    const accessVersion = changed ? await raiseMembershipVersion(database, membership, currentVersion) : currentVersion;
+    return { status: 200, body: Object.freeze({ action, changed, role, membership,
       scope: targetScope, scope_source: removed.rows[0]?.scope_source ?? source, access_version: accessVersion }) };
   }
 
@@ -277,9 +299,22 @@ async function manageRoleAssignment(request: OperationRequest, database: Operati
     returning role_id`, [membership, role, access.membership.id, targetScope.kind, targetScope.id,
     canonicalScopePath(targetScope), source]);
   const changed = scopeAdded || assigned.rows.length > 0;
+  if (changed && target.senior_role) await updateOperatorGovernanceName(database, membership, 'senior_administrator');
   const accessVersion = changed ? await raiseMembershipVersion(database, membership, currentVersion) : currentVersion;
   return { status: 200, body: Object.freeze({ action, changed, role, membership, scope: targetScope,
     scope_source: source, access_version: accessVersion }) };
+}
+
+async function updateOperatorGovernanceName(database: OperationDatabase, membership: string,
+  level: 'administrator' | 'senior_administrator'): Promise<void> {
+  const label = level === 'senior_administrator' ? '高级管理员' : '管理员';
+  await database.query(`update access.membership membership set operator_display_name=case
+      when coalesce(membership.operator_display_name,profile.display_name) ~ '^(高级管理员|管理员) · .+$'
+        or profile.display_name ~ '^L([0-9]|10|11)消费者[0-9]{4}$'
+        then $2||' · '||coalesce(nullif(right(profile.mobile_masked,4),''),right(profile.display_name,4))
+      else coalesce(membership.operator_display_name,profile.display_name) end
+    from member.profile profile where membership.id=$1 and membership.member_id=profile.id
+      and membership.client='operator'`, [membership, label]);
 }
 
 async function deleteCustomRole(request: OperationRequest, database: OperationDatabase, access: ReturnType<typeof requireAccess>,

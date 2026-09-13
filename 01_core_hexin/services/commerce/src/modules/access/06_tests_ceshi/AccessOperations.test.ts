@@ -148,6 +148,55 @@ describe('access scope management boundary', () => {
     expect(harness.queries.some((query) => query.includes('delete from access.membershiprole'))).toBe(false);
   });
 
+  it('lets the exact Owner promote an active operator through the ancestor senior role without touching storefront membership', async () => {
+    const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true });
+
+    const response = await accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('assign'));
+
+    expect(response).toMatchObject({ status: 200, body: { action: 'assign', changed: true,
+      role: 'role-senior-administrator-v1:tenant-a', membership: 'membership:target',
+      scope_source: 'direct', access_version: 3 } });
+    expect(harness.queries.some((query) => query.includes("roleboundary.ancestor_id=role.scope_id"))).toBe(true);
+    expect(harness.calls.find(({ text }) => text.includes('insert into access.membershiprole'))?.values.slice(0, 7)).toEqual([
+      'membership:target', 'role-senior-administrator-v1:tenant-a', 'membership:manager', 'tenant', tenantA.id,
+      'organization-platform-root/tenant-a', 'direct',
+    ]);
+    expect(harness.calls.find(({ text }) => text.includes('set operator_display_name=case'))?.values)
+      .toEqual(['membership:target', '高级管理员']);
+    expect(harness.queries.some((query) => /delete from access\.membership\b/.test(query))).toBe(false);
+  });
+
+  it('lets the exact Owner demote a senior administrator and retires only its unused senior Scope', async () => {
+    const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true,
+      revokedSeniorScope: true });
+
+    const response = await accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('revoke'));
+
+    expect(response).toMatchObject({ status: 200, body: { action: 'revoke', changed: true,
+      role: 'role-senior-administrator-v1:tenant-a', access_version: 3 } });
+    const scopeRevoke = harness.queries.find((query) => query.startsWith('update access.scopegrant scopegrant'));
+    expect(scopeRevoke).toContain('not exists(select 1 from access.membershiprole assignment');
+    expect(harness.calls.find(({ text }) => text.includes('set operator_display_name=case'))?.values)
+      .toEqual(['membership:target', '管理员']);
+    expect(harness.queries.some((query) => /delete from (access\.)?membership\b/.test(query))).toBe(false);
+  });
+
+  it('rejects senior role changes by a non-Owner before any database write', async () => {
+    const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true });
+
+    await expect(accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('assign', accessContext(mallA, platform))))
+      .rejects.toThrow('OWNER_REQUIRED_FOR_SENIOR_ADMINISTRATOR');
+    expect(harness.queries.some((query) => query.includes('insert into access.membershiprole'))).toBe(false);
+  });
+
+  it('keeps the unique Owner immutable during senior role scheduling', async () => {
+    const harness = operationHarness({ scope: tenantA, targetMembershipScope: mallA, seniorRole: true, targetIsOwner: true });
+
+    await expect(accessOperations(context(harness.pool)).invoke(seniorAssignmentRequest('assign')))
+      .rejects.toThrow('OWNER_ROLE_LEVEL_IMMUTABLE');
+    expect(harness.queries.some((query) => query.includes('insert into access.membershiprole'))).toBe(false);
+  });
+
   it('deletes a custom identity only after detaching its relations and preserves member rows', async () => {
     const harness = operationHarness();
 
@@ -315,6 +364,18 @@ function assignmentRequest(action: 'assign' | 'revoke', scopeSource: 'direct' | 
   };
 }
 
+function seniorAssignmentRequest(action: 'assign' | 'revoke', access: AccessContext = ownerAccess(mallA)): OperationRequest {
+  return {
+    type: 'access.roles.manage', access,
+    input: {
+      path: { roleid: 'role-senior-administrator-v1:tenant-a' }, query: {}, headers: {},
+      body: { action, membership: 'membership:target', kind: 'tenant', scope: tenantA.id, scopeSource: 'direct' }, rawBody: '',
+      deadline: Date.now() + 5_000, signal: new AbortController().signal,
+      idempotency: `senior-role:${action}`, expectedVersion: 2,
+    },
+  };
+}
+
 function deleteRoleRequest(): OperationRequest {
   return {
     type: 'access.roles.manage', access: managerAccess(),
@@ -327,7 +388,12 @@ function deleteRoleRequest(): OperationRequest {
 }
 
 function ownerAccess(scope: AccessContext['scope']): AccessContext {
-  return accessContext(scope, platform);
+  const access = accessContext(scope, platform);
+  return { ...access, governance: { governanceLevel: 'owner', isExactOwner: true,
+    actorMembershipId: access.membership.id, actorPrincipalId: access.actor.id,
+    organizationId: tenantA.id, ownerMembershipId: access.membership.id,
+    scope: { kind: 'tenant', semanticId: tenantA.id, storageId: tenantA.id, organizationId: tenantA.id },
+    resolvedAt: new Date('2026-09-01T00:00:00.000Z') } };
 }
 
 function tenantManagerAccess(scope: AccessContext['scope']): AccessContext {
@@ -354,6 +420,7 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
   assignedTargetMembershipScope?: unknown;
   targetClient?: string; targetStatus?: string; targetRealm?: string; actorRealm?: string;
   targetRealmBinding?: boolean; targetOrganizationBinding?: boolean; managementRole?: boolean;
+  seniorRole?: boolean; targetIsOwner?: boolean; revokedSeniorScope?: boolean;
   roleRows?: readonly Record<string, unknown>[] }> = {}): Readonly<{
   pool: DatabasePool;
   queries: readonly string[];
@@ -378,7 +445,9 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
           target_organization_binding: options.targetOrganizationBinding ?? true };
         if (text.includes('target.access_version target_access_version')) return result([{ ...target, scope: options.scope ?? mallA,
           target_membership_scope: options.targetMembershipScope ?? tenantA, target_access_version: 2,
-          role_id: 'role:finance', management_role: options.managementRole ?? true }]);
+          role_id: options.seniorRole ? 'role-senior-administrator-v1:tenant-a' : 'role:finance',
+          senior_role: options.seniorRole ?? false, target_is_owner: options.targetIsOwner ?? false,
+          management_role: options.managementRole ?? true }]);
         return result([{ ...target, scope: options.scope ?? null, target_membership_scope: options.targetMembershipScope ?? null }]);
       }
       if (text.includes('permission.code=any($2::text[])') && text.includes('from access.membershiprole assignment')) {
@@ -395,8 +464,9 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
       }
       if (text.includes('select id from access.scopegrant')) return result([{ id: 'scope:inherited' }]);
       if (text.includes('insert into access.scopegrant')) return result([{ id: 'scope:new', access_version: 3 }]);
-      if (text.includes('insert into access.membershiprole')) return result([{ role_id: 'role:finance' }]);
+      if (text.includes('insert into access.membershiprole')) return result([{ role_id: options.seniorRole ? 'role-senior-administrator-v1:tenant-a' : 'role:finance' }]);
       if (text.startsWith('update access.membershiprole assignment')) return result([{ scope_source: 'direct' }]);
+      if (text.startsWith('update access.scopegrant scopegrant')) return result(options.revokedSeniorScope ? [{ id: 'scope:senior' }] : []);
       if (text.startsWith('update access.membership') && text.includes('set access_version=')) {
         if (text.includes('id=any') || text.includes('assignment.role_id=$1')) {
           return result([{ id: 'membership:target', access_version: 3 }]);

@@ -55,7 +55,7 @@ export function accessOperatorReadActions(): OperationActions {
                 or (effectiveboundary.ancestor_id=(resolvedgrant->'scope'->>'id') and effectiveboundary.descendant_id=$1)))) effective),'[]') effective_permissions
         from access.membership membership join member.profile profile on profile.id=membership.member_id
         left join lateral access.resolve_membership(membership.id) resolved on true
-        where exists(select 1 from organization.unitclosure boundary
+        where membership.client='operator' and exists(select 1 from organization.unitclosure boundary
           where boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id)
         and ($2::text is null or membership.id>$2)
         order by membership.id limit $3`, [access.scope.id, page.id, page.fetch]),
@@ -70,8 +70,11 @@ export function accessOperatorReadActions(): OperationActions {
               and exists(select 1 from organization.unitclosure memberboundary
                 where memberboundary.ancestor_id=$1 and memberboundary.descendant_id=membership.organization_id)
               and (coalesce(assignment.assigned_scope_id,role.scope_id)=$1 or exists(
-                select 1 from organization.unitclosure assignmentboundary where assignmentboundary.ancestor_id=$1
-                  and assignmentboundary.descendant_id=coalesce(assignment.assigned_scope_id,role.scope_id)))) member_count,
+                select 1 from organization.unitclosure assignmentboundary where
+                  (assignmentboundary.ancestor_id=$1
+                    and assignmentboundary.descendant_id=coalesce(assignment.assigned_scope_id,role.scope_id))
+                  or (assignmentboundary.ancestor_id=coalesce(assignment.assigned_scope_id,role.scope_id)
+                    and assignmentboundary.descendant_id=$1)))) member_count,
           coalesce((select jsonb_agg(jsonb_build_object(
             'membership',membership.id,'member_id',profile.id,'display_name',profile.display_name,
             'employee_no',membership.employee_no,'access_version',membership.access_version,
@@ -87,8 +90,11 @@ export function accessOperatorReadActions(): OperationActions {
               and exists(select 1 from organization.unitclosure boundary
                 where boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id)
               and (coalesce(assignment.assigned_scope_id,role.scope_id)=$1 or exists(
-                select 1 from organization.unitclosure assignmentboundary where assignmentboundary.ancestor_id=$1
-                  and assignmentboundary.descendant_id=coalesce(assignment.assigned_scope_id,role.scope_id)))),'[]') members,
+                select 1 from organization.unitclosure assignmentboundary where
+                  (assignmentboundary.ancestor_id=$1
+                    and assignmentboundary.descendant_id=coalesce(assignment.assigned_scope_id,role.scope_id))
+                  or (assignmentboundary.ancestor_id=coalesce(assignment.assigned_scope_id,role.scope_id)
+                    and assignmentboundary.descendant_id=$1)))),'[]') members,
           coalesce((select jsonb_agg(jsonb_build_object('scope',access.scope_object(scoped.scope_id),
             'source',scoped.scope_source,'member_count',scoped.member_count)
             order by scoped.scope_id,scoped.scope_source) from (
@@ -102,8 +108,11 @@ export function accessOperatorReadActions(): OperationActions {
                 and exists(select 1 from organization.unitclosure boundary
                   where boundary.ancestor_id=$1 and boundary.descendant_id=membership.organization_id)
                 and (coalesce(assignment.assigned_scope_id,role.scope_id)=$1 or exists(
-                  select 1 from organization.unitclosure assignmentboundary where assignmentboundary.ancestor_id=$1
-                    and assignmentboundary.descendant_id=coalesce(assignment.assigned_scope_id,role.scope_id)))
+                  select 1 from organization.unitclosure assignmentboundary where
+                    (assignmentboundary.ancestor_id=$1
+                      and assignmentboundary.descendant_id=coalesce(assignment.assigned_scope_id,role.scope_id))
+                    or (assignmentboundary.ancestor_id=coalesce(assignment.assigned_scope_id,role.scope_id)
+                      and assignmentboundary.descendant_id=$1)))
               group by coalesce(assignment.assigned_scope_id,role.scope_id),coalesce(assignment.scope_source,'inherited')
             ) scoped),'[]') scopes,
           (role.id in('role:self','role-platform-owner-v2','role-platform-owner-successor-v1','role-zhudatuan-pending-operator')

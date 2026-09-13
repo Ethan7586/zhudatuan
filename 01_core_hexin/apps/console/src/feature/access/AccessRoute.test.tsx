@@ -19,6 +19,7 @@ interface WireRole {
   permissions: string[];
   member_count: string;
   governance: boolean;
+  governance_level?: 'owner' | 'senior_administrator' | 'administrator' | null;
   editable: boolean;
   members: WireRoleMember[];
   scopes: WireRoleScope[];
@@ -592,6 +593,52 @@ describe('custom identity and permission directory', () => {
     expect(members[0]?.access_version).toBe('5');
     expect(assignmentWrites.map(({ body }) => body.action)).toEqual(['assign', 'assign']);
     expect(reads).toBeGreaterThanOrEqual(3);
+  });
+
+  it('lets the exact Owner upgrade and demote an administrator from the senior role template', async () => {
+    roles.push({ id: 'role-senior-administrator-v1:tenant:one', name: '高级管理员', status: 'active', version: '1',
+      permissions: ['order.read', 'member.members.read'], member_count: '0', governance: true,
+      governance_level: 'senior_administrator', editable: false, members: [], scopes: [] });
+    const member = memberFixture();
+    member.roles.push(assignment('role-finance', '财务观察', tenantScope, 'direct'));
+    members = [member];
+    recompute(member);
+    syncRoleMetadata();
+    const user = userEvent.setup();
+    const mallOwner: ConsoleContext = { ...context, scope: mallScope, scopes: [tenantScope, mallScope],
+      session: { ...context.session, scope: mallScope, scopes: [tenantScope, mallScope] } };
+
+    renderWorkspace(mallOwner, '/scopes/mall/mall%3Aone/settings/access?role=role-senior-administrator-v1%3Atenant%3Aone&view=members');
+
+    await user.click(await screen.findByRole('button', { name: '升级为高级管理员' }));
+    expect(screen.getByText('选择要升级的普通管理员')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '确认升级并重读' }));
+    expect(await screen.findByText(/已升级为高级管理员/)).toBeTruthy();
+    expect(member.roles.map(({ role }) => role).sort()).toEqual([
+      'role-finance', 'role-senior-administrator-v1:tenant:one',
+    ]);
+    expect(assignmentWrites[0]?.body).toMatchObject({ action: 'assign', kind: 'tenant', scope: 'tenant:one' });
+
+    await user.click(screen.getByRole('button', { name: '降级为普通管理员' }));
+    expect(await screen.findByText(/已降级为普通管理员/)).toBeTruthy();
+    expect(member.roles.map(({ role }) => role)).toEqual(['role-finance']);
+    expect(member.effective_permissions).toEqual(['finance.overview.read', 'order.read']);
+    expect(assignmentWrites.map(({ body }) => body.action)).toEqual(['assign', 'revoke']);
+  });
+
+  it('keeps senior administrator scheduling read-only for non-Owner sessions', async () => {
+    roles.push({ id: 'role-senior-administrator-v1:tenant:one', name: '高级管理员', status: 'active', version: '1',
+      permissions: ['order.read'], member_count: '0', governance: true, governance_level: 'senior_administrator',
+      editable: false, members: [], scopes: [] });
+    members = [memberFixture()];
+    syncRoleMetadata();
+    const administrator: ConsoleContext = { ...context, session: { ...context.session,
+      governance: { level: 'administrator', exactOwner: false, organization: 'tenant:one' } } };
+
+    renderWorkspace(administrator, '/scopes/tenant/tenant%3Aone/settings/access?role=role-senior-administrator-v1%3Atenant%3Aone&view=members');
+
+    expect(await screen.findByText('只有当前唯一 Owner 可以升级或降级高级管理员。')).toBeTruthy();
+    expect((screen.getByRole('button', { name: '升级为高级管理员' }) as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('persists an inherited scope and revokes only that identity while keeping the other identity and member account', async () => {

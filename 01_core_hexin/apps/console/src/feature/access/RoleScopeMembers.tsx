@@ -22,9 +22,14 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
   const [scopeSource, setScopeSource] = useState<'direct' | 'inherited'>('direct');
   const [selectedScopeKey, setSelectedScopeKey] = useState<string>();
   const [deleteArmed, setDeleteArmed] = useState(false);
-  const selectedMember = members.find(({ id }) => id === selectedMemberId) ?? members[0];
-  const directScopes = useMemo(() => uniqueScopes([context.scope, ...context.scopes].filter((scope) => withinScope(context.scope, scope))),
-    [context.scope, context.scopes]);
+  const seniorGovernanceRole = role.governance_level === 'senior_administrator';
+  const assignableMembers = useMemo(() => seniorGovernanceRole
+    ? members.filter((member) => !member.roles.some(({ role: roleId }) => roleId === 'role-platform-owner-v2'))
+    : members, [members, seniorGovernanceRole]);
+  const selectedMember = assignableMembers.find(({ id }) => id === selectedMemberId) ?? assignableMembers[0];
+  const directScopes = useMemo(() => uniqueScopes([context.scope, ...context.scopes].filter((scope) => seniorGovernanceRole
+    ? scope.kind === 'tenant' && scope.id === context.session.governance?.organization
+    : withinScope(context.scope, scope))), [context.scope, context.scopes, context.session.governance?.organization, seniorGovernanceRole]);
   const inheritedScopes = useMemo(() => selectedMember === undefined ? [] : uniqueScopes(selectedMember.scopes
     .filter(({ effect }) => effect === 'allow')
     .map(({ kind, scope }) => ({ kind, id: scope })))
@@ -32,7 +37,9 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
   const scopeOptions = scopeSource === 'direct' ? directScopes : inheritedScopes;
   const selectedScope = scopeOptions.find((scope) => scopeKey(scope) === selectedScopeKey) ?? scopeOptions[0];
   const canWriteRole = role.editable && roleCommandAvailable(context);
-  const canAssign = canWriteRole && context.session.permissions.includes('access.scope.manage');
+  const canManageSeniorRole = seniorGovernanceRole && context.session.governance?.exactOwner === true;
+  const canAssign = (canWriteRole || (canManageSeniorRole && roleCommandAvailable(context)))
+    && context.session.permissions.includes('access.scope.manage');
 
   const assignMutation = useMutation({
     mutationFn: async () => {
@@ -45,7 +52,9 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
     },
     onSuccess: ({ member, receipt }) => {
       setAssignmentOpen(false);
-      onNotice(`“${role.name}”已分配给 ${member.display_name}，${scopeSourceLabel(receipt.scope_source)} ${scopeLabel(receipt.scope)}；成员、身份、权限与 Access Version v${receipt.access_version} 已重读核对。`);
+      onNotice(seniorGovernanceRole
+        ? `${member.display_name} 已升级为高级管理员；角色、权限、Scope 与 Access Version v${receipt.access_version} 已重读核对，商城会员身份未改动。`
+        : `“${role.name}”已分配给 ${member.display_name}，${scopeSourceLabel(receipt.scope_source)} ${scopeLabel(receipt.scope)}；成员、身份、权限与 Access Version v${receipt.access_version} 已重读核对。`);
     },
   });
   const revokeMutation = useMutation({
@@ -59,7 +68,9 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
       verifyAccessRoleAssignment(draft, receipt, before, reread.roles, reread.items);
       return { assignment, receipt };
     },
-    onSuccess: ({ assignment, receipt }) => onNotice(`已撤销 ${assignment.display_name} 的“${role.name}”身份（${scopeLabel(assignment.scope)}），其他身份与成员账户保持不变；Access Version v${receipt.access_version} 已重读核对。`),
+    onSuccess: ({ assignment, receipt }) => onNotice(seniorGovernanceRole
+      ? `${assignment.display_name} 已降级为普通管理员；高级角色与对应 Scope 已撤销，其他管理员角色及商城会员身份保持不变；Access Version v${receipt.access_version} 已重读核对。`
+      : `已撤销 ${assignment.display_name} 的“${role.name}”身份（${scopeLabel(assignment.scope)}），其他身份与成员账户保持不变；Access Version v${receipt.access_version} 已重读核对。`),
   });
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -90,9 +101,9 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
 
     <Surface className="roleassignedmembers" depth="flat" padding="default" radius="large">
       <header><div><p>已分配成员</p><strong>{role.member_count} 位</strong></div>
-        <Button type="button" size="compact" isDisabled={!canAssign || pending || members.length === 0}
+        <Button type="button" size="compact" isDisabled={!canAssign || pending || assignableMembers.length === 0}
           onPress={() => { setAssignmentOpen((open) => !open); setDeleteArmed(false); assignMutation.reset(); }}>
-          {assignmentOpen ? '收起分配' : '＋ 分配成员'}
+          {assignmentOpen ? '收起操作' : seniorGovernanceRole ? '升级为高级管理员' : '＋ 分配成员'}
         </Button>
       </header>
       {role.members.length === 0 ? <span>当前范围内尚未分配成员。</span> : <ul>{role.members.map((assignment) => (
@@ -101,16 +112,18 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
           <div><Badge tone={assignment.scope_source === 'direct' ? 'info' : 'neutral'}>{scopeSourceLabel(assignment.scope_source)}</Badge>
             <small>{scopeLabel(assignment.scope)}</small></div>
           <Button type="button" tone="quiet" size="compact" isDisabled={!canAssign || pending}
-            onPress={() => { revokeMutation.reset(); deleteMutation.reset(); revokeMutation.mutate(assignment); }}>撤销</Button>
+            onPress={() => { revokeMutation.reset(); deleteMutation.reset(); revokeMutation.mutate(assignment); }}>
+            {seniorGovernanceRole ? '降级为普通管理员' : '撤销'}
+          </Button>
         </li>
       ))}</ul>}
     </Surface>
 
     {assignmentOpen ? <div className="roleassignmentform">
-      <strong>分配“{role.name}”</strong>
-      <label>成员<select value={selectedMember?.id ?? ''} disabled={pending || members.length === 0}
+      <strong>{seniorGovernanceRole ? '选择要升级的普通管理员' : `分配“${role.name}”`}</strong>
+      <label>成员<select value={selectedMember?.id ?? ''} disabled={pending || assignableMembers.length === 0}
         onChange={(event) => { setSelectedMemberId(event.target.value); setSelectedScopeKey(undefined); assignMutation.reset(); }}>
-        {members.map((member) => <option key={member.id} value={member.id}>{member.display_name} · {member.roles.length} 个身份</option>)}
+        {assignableMembers.map((member) => <option key={member.id} value={member.id}>{member.display_name} · {member.roles.length} 个身份</option>)}
       </select></label>
       <label>范围来源<select value={scopeSource} disabled={pending} onChange={(event) => {
         setScopeSource(event.target.value as 'direct' | 'inherited'); setSelectedScopeKey(undefined); assignMutation.reset();
@@ -123,10 +136,12 @@ export function RoleScopeMembers({ context, role, members, onRefresh, onNotice, 
       {duplicate ? <p role="status">该成员已在此范围拥有当前身份，无需重复分配。</p> : null}
       <Button type="button" tone="primary" isPending={assignMutation.isPending}
         isDisabled={!canAssign || pending || duplicate || selectedMember === undefined || selectedScope === undefined}
-        onPress={() => assignMutation.mutate()}>确认分配并重读</Button>
+        onPress={() => assignMutation.mutate()}>{seniorGovernanceRole ? '确认升级并重读' : '确认分配并重读'}</Button>
     </div> : null}
 
-    {!canAssign && role.editable ? <p className="rolescopepermission" role="status">当前会话缺少身份与范围的完整管理能力；成员关系保持只读。</p> : null}
+    {!canAssign && (role.editable || seniorGovernanceRole) ? <p className="rolescopepermission" role="status">
+      {seniorGovernanceRole ? '只有当前唯一 Owner 可以升级或降级高级管理员。' : '当前会话缺少身份与范围的完整管理能力；成员关系保持只读。'}
+    </p> : null}
     {error === undefined ? null : <div className="roleassignmenterror" data-kind={error.kind} role="alert"><strong>{error.title}</strong><p>{error.detail}</p></div>}
 
     {role.editable ? <div className="roledelete">
