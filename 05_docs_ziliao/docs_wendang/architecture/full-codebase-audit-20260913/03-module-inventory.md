@@ -245,3 +245,17 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Module manifest/catalog | 描述模块capability/入口并潜在拓扑解析 | module barrel→root | 35 manifests；Catalog仅自身tests | Map/Set/manifest对象 | 无 | ModuleManifest/Selection/Plan | 当前manifest编入Commerce；Catalog无生产caller | Catalog 4合成例；34 manifest tests | 37 missing + mutable snapshot F-0049；Catalog G1 |
 
 [FACT][E-AU-009-002] 本单元深入审阅40文件、983行；全部为人工代码/配置，无生成、第三方或构建产物。
+
+## 16. AU-010 Authz 模块清单
+
+| 子模块 | 职责 | 对外入口 | 上游 | 下游/数据 | 进程/发布 | 测试 | 当前边界问题 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Package shell | private ESM、根barrel、test/typecheck | `@shop/authz` | 4个package依赖、29源码imports | 6个源模块 | 编入消费者 | 正式命令缺deps阻塞 | contractgen绕过export F-0058 |
+| Permission model | risk/code/definition类型 | PermissionRisk/Permission/PermissionDefinition | PermissionCatalog | Console/contractgen/Policy | 同上 | 间接 | 类型不负责runtime解析 |
+| PermissionCatalog | 184 code、33 category、risk/stepup/scopes、lookup | PERMISSION_CATALOG/permissionDefinition | 人工目录 | 329 Operation、DB产物、Console | 构建期+各bundle | 目录局部测试 | custom role委派F-0053；浅冻结F-0032；UI标签F-0059 |
+| Scope model | 11 kind、id、tenant、path、grant有效期 | Scope/ScopeGrant/SCOPE_KINDS | DB resolvers/SDK/Console | Policy、Access、Mall | 各bundle | Policy/Pg/NodeBound | tenant类型过宽与containment F-0055 |
+| Policy stages | active/version/deny/grant/scope/step-up | precheck/checkScope/checkAssurance | AccessPipeline/AccessOperations | reason/evidence | 7个Commerce runtime | 4 package+2 security+Pipeline矩阵 | 二级stage误用F-0054 |
+| Complete façade | 一次性完整纯判定 | decide/DecisionContext/Decision | 仅测试；仓外UNKNOWN | reason/evidence | 无生产caller | 两组测试 | DC-0012/G1，禁止删除 |
+| Role projection seam | role/override/scopegrant投影为MembershipAccess | session-bound SQL resolver | Access数据库 | AccessPipeline | PostgreSQL+Commerce | Pg/Pipeline局部 | 角色归DB所有；bigint类型F-0057 |
+
+[FACT][E-AU-010-002] 本单元深入审阅10文件、397行；7个生产TS、1个测试、2个配置/清单全部为人工维护，无生成、第三方或构建产物。第一层消费者只作边界追踪，不改变其原覆盖状态。

@@ -85,3 +85,14 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - Kernel的Clock/Money/Entity/Retry等原语均不读取当前用户、token、role或permission。调用者若把敏感值传入event/error/provider URL，责任属于调用链；本AU没有发现Kernel主动日志或凭据持久化。
 - F-0048涉及外部写重试和access token所在provider URL，但没有证明凭据泄露或权限绕过；不因“安全”名义在审计分支新增守卫。
 - Module manifests的37个missing中包含identity/access命名，但Catalog没有生产构造者；不得把静态图缺口写成授权失效。身份与授权从AU-010另行逐链审计。
+
+## 11. AU-010 Authz、角色与 Scope 权限边界
+
+- [FACT][E-AU-010-004/006] PermissionCatalog拥有184个permission元数据；OperationCatalog拥有permission到329个受保护Operation的映射；数据库拥有role、rolepermission、membershiprole、membershipoverride和scopegrant；AccessPipeline拥有请求期组合顺序。前端permission隐藏不是最终授权。
+- [FACT][E-AU-010-006/007] 正常顺序是Audience → session-bound Membership/version → explicit deny/allow → server-derived Scope → capability → assurance → risk/proof。数据库提供同快照`evaluated_at`并使旧access version在下一请求失效，值得保留。
+- [P1-CANDIDATE][E-AU-010-004/006] custom role内容没有actor permission subset或Owner-only集合约束；固定ID的senior/Owner边界可被相同permission内容的custom role绕过，见F-0053/RV-0009。未查线上角色，不是P0。
+- [P2][E-AU-010-008] 角色assign/revoke的二级`access.scope.manage`只调用checkScope，因此explicit deny不生效，见F-0054。
+- [P2][E-AU-010-010] Policy对异常Scope不是完整fail closed；正常canonical数据库路径是缓解项，不是内核正确性的替代证据，见F-0055。
+- [FACT][E-AU-010-009] 权限scopes数组可被同进程修改，补强F-0032。固定仓库未发现生产mutation caller，因此不升级P1。
+- 两条storefront member写Operation的`member.read`映射继续作为F-0036/P1候选与RV-0008；AU-010是同一主审，不能冒充独立复核。
+- 本AU没有读取凭据值、线上角色或用户数据，没有新增/收窄任何权限或安全门禁。

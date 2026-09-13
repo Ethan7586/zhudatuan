@@ -578,3 +578,36 @@ flowchart LR
 - Gate 契约明确只含 disabled/observe，真实 Commerce GateEngine 只记录观察；它不拥有身份、会话或授权裁决。
 
 完整 40 文件、54 导出、30 组关键函数、状态/FMEA 及 12.5% 逆向抽检见 `records/AU-009-kernel/`。
+
+## 19. AU-010 增量：`@shop/authz` 权限决策内核
+
+[FACT][E-AU-010-002/003] `@shop/authz` 是397行的private ESM共享包，18个公开符号由29个源码文件直接消费；它没有监听端口、数据库连接、Worker、独立镜像或release target。contractgen另从内部路径直接读取PermissionCatalog，形成F-0058的包边界绕行。
+
+~~~mermaid
+flowchart LR
+  Catalog[PermissionCatalog 184] --> Contractgen
+  Definitions[operations.yml 345] --> Contractgen
+  Contractgen --> Operation[OperationCatalog / Controller]
+  Contractgen --> DBContract[permission / capability DB contract]
+  Operation --> Pipeline[AccessPipeline]
+  DB[(access + identity + organization)] --> Resolvers[Session-bound resolvers]
+  Resolvers --> Pipeline
+  Pipeline --> Pre[precheck]
+  Pipeline --> Scope[checkScope]
+  Pipeline --> Assurance[checkAssurance]
+  Pipeline --> Gates[capability / availability / risk / proof]
+  Gates --> Handler[Module handler]
+  Pipeline --> DecisionAudit[decisionaudit]
+  Console --> Catalog
+  AccessRole[Access role management] --> Scope
+~~~
+
+[FACT][E-AU-010-005/006/007] 正式授权边界由7个Commerce runtime构造的同一AccessPipeline执行。角色/override/scopegrant由数据库投影为MembershipAccess；Authz包只拥有permission元数据和纯判定，不拥有角色表或数据。数据库快照时间、Membership ID和current access version的多重核对是当前最强的边界设计。
+
+[CONFLICT][E-AU-010-004/008] 分阶段API允许Pipeline插入其它门禁，但也把“必须先对同一permission执行precheck”的约束留给caller。Access角色分配对第二个`access.scope.manage`只执行checkScope，显式deny因此失效（F-0054）。更上层的custom role写入还没有actor permission subset/Owner-only内容约束，可把固定ID治理边界包装进任意custom role（F-0053）。
+
+[CONFLICT][E-AU-010-010] Scope containment假定上游输入canonical；platform无条件覆盖、缺tenant跳过隔离和exact ID忽略kind使异常投影可能扩大权限（F-0055）。正常Pg/Web resolver由数据库生成scope，因此本结论是“内核边界缺口+生产canonical缓解”，不是已证明线上跨租户事故。
+
+[FACT][E-AU-010-004] 184个permission与329个受保护Operation在固定源集合中无unknown/unused，critical 54条全部由目录派生step-up。这种单目录闭合值得保留；但目录scopes和SCOPE_KINDS运行时可变，补强既有F-0032。
+
+完整文件、导出、函数、permission/Operation矩阵、状态/FMEA和30%高风险二遍抽检见 `records/AU-010-authz/`。

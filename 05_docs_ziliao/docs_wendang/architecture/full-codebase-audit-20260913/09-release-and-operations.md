@@ -137,4 +137,12 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - `@shop/kernel`为private workspace package且无独立build artifact、OCI、systemd unit、release target或线上配置。其代码随Commerce/Vendor/SDK/testing消费者编译，发布身份由这些上层制品hash承担。
 - package声明 `sideEffects:false`；人工审阅确认barrel和大多数模块顶层只声明类型/常量。Deadline timer、Circuit/Rate/Semaphore状态都在显式构造后产生，不在module import时启动。
 - Kernel变更会横跨多个上层制品，未来修复F-0047–F-0052必须从修复时最新 `zdt-next` 建立独立小分支，按单一原语定向测试后再做受影响typecheck/build；审计分支不是候选制品。
+
+## 13. AU-010 Authz 制品与运维边界
+
+- `@shop/authz`没有独立进程、镜像、systemd unit、端口或release target。它被编进Console、Commerce各API runtime、SDK/工具和测试制品；变更permission元数据还会经contractgen改变OpenAPI/checksum和数据库contract产物。
+- 7个生产AccessPipeline构造者分别位于Commerce、Purchase、Console Support、Catalog Operator、Identity Registration、Web Business和Mall Provisioning runtime；Authz修复的验证面不能只跑包单测。
+- Permission目录与Operation绑定当前源集合闭合，但线上数据库是否已应用同版本migration未核验；仓库产物一致不等于线上权限表一致。
+- F-0053属于角色治理与可能的数据纠偏，F-0054属于二级授权调用，F-0055属于Scope闭表，三者必须拆成独立、可回滚批次。任何批次从当时最新`zdt-next`建立，不在审计分支开发。
+- 本AU未生成候选制品、未运行production build、未推送、未合并、未部署，也未修改线上角色或授权数据。
 - 本AU未运行全量build、未生成制品、未推送、未合并、未部署，也未改变任何线上资源。

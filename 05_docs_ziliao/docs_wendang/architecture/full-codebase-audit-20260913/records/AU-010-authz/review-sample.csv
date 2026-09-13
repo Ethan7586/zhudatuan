@@ -1,0 +1,4 @@
+"抽检编号","抽检策略","抽检文件","原结论","重新从入口追踪","复核结论","遗漏/扩大范围"
+"RS-AU-010-001","高风险核心判定全取；占包10文件的10%","01_core_hexin/packages/authz/src/Policy.ts","完整判定默认拒绝；裸stage有前置条件；contains异常输入缺口","AccessPipeline完整顺序→AccessOperations裸checkScope→DB Scope来源→反事实","一致；新增F-0054/F-0055证据更精确","未扩大到smart-wing-authz或全部Access模块"
+"RS-AU-010-002","高风险事实目录全取；累计20%","01_core_hexin/packages/authz/src/PermissionCatalog.ts","184目录闭合但scopes浅冻结；F-0036映射原样执行","contractgen→Operation/DB产物→Console目录→mutation探针","一致；补充F-0053/F-0058/F-0059接缝","业务映射意图仍按模块UNKNOWN"
+"RS-AU-010-003","高风险oracle全取；累计30%","01_core_hexin/packages/authz/src/Policy.test.ts","4例覆盖正常主干但缺异常scope、mutation、二级deny","逐断言对应生产分支→security/AccessPipeline/WebBusiness tests→正式命令","一致；确认F-0054/F-0055无回归oracle及F-0056测试漂移","同一主审，不是RV-0008/RV-0009"

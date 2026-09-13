@@ -633,3 +633,23 @@ adapter.send
 ### 17.3 模块描述不是启动注册
 
 [FACT][E-AU-009-006/007] `module.manifest.ts → defineModuleManifest` 在模块加载时发生；固定仓库没有 `new ModuleCatalog(realManifests)` 的生产链。35 份 manifest 的 37 个 missing provider 因此记录为潜在执行契约冲突，不伪造成当前 Commerce 启动失败。真实启动仍由 Bootstrap/CommerceModule/app composition 注册，后续独立 AU 审阅。
+
+## 18. AU-010：Permission 到 Handler 的真实授权链
+
+| 阶段 | 真实入口 | 输入 | 输出/下一跳 | 失败传播 |
+| --- | --- | --- | --- | --- |
+| 契约 | operations.yml + PermissionCatalog | 345 Operation、184 permission | contractgen生成Operation/DB/元数据 | unknown permission使生成失败 |
+| HTTP | generated OperationController | headers、operation、permission、resource | PipelineAuthorizer | public跳过；其它失败不进handler |
+| Session | PgSessionResolver | Bearer/Cookie hash、entry host | server-derived Actor | 缺失/realm/node不符拒绝 |
+| Membership | PgMembershipResolver | membership+realm+client+organization | grants、denies、DB evaluatedAt | 无快照/时间非法拒绝 |
+| Permission | `precheck` | active/version/deny/allow | scope阶段 | reason映射为membership/permission错误 |
+| Scope | Pg/Web/NodeBound resolver + `checkScope` | operation/resource/scopeHint | canonical Scope/evidence | scope kind/containment失败拒绝 |
+| 能力 | capability + availability | membership/operation/resource | 可执行Operation | 缺能力/资源未就绪拒绝 |
+| Assurance/Risk | checkAssurance + StepupPolicy + RiskGate | critical、level、verified、scope | allow/challenge/review/deny | 不进入handler |
+| 财务proof | ActionProof | operation/headers | 验证结果 | proof/idempotency/version缺失拒绝 |
+| 记录 | PgDecisionSink | actor/operation/scope/outcome/reason | decisionaudit | sink失败保持fail closed但可遮蔽原错误 |
+| 执行 | ModuleOperations | AccessContext | query/transactional handler | 进入业务事务 |
+
+生产构造者共7个：Commerce、Purchase、Console Support、Catalog Operator、Identity Registration、Web Business、Mall Provisioning runtimes；明细见AU-010 `runtime-consumers.csv`。Authz随这些制品编译，不单独启动或发布。
+
+角色管理有一条额外分支：`access.roles.manage`先按`access.role.manage`通过完整Pipeline，再由AccessOperations对目标scope直接调用`checkScope(access.scope.manage)`。这条二级调用没有执行该permission的explicit deny前置，见F-0054。完整同步顺序与失败状态见AU-010 `communications.csv`、`state-machines.csv`。

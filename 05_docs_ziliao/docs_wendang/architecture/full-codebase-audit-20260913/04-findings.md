@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-009 结束时累计：P0 0、P1 候选 7、P2 31、P3 13、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-010 结束时累计：P0 0、P1 候选 8、P2 34、P3 16、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -759,21 +759,21 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块 | 共享配置 / SFL Node Registry 与 Runtime Catalog |
+| 模块 | 共享配置 / SFL Node Registry、Runtime Catalog、Kernel 与 Authz目录 |
 | 类型 | 隐式共享可变状态、配置完整性 |
 | 严重级别 | P2 |
-| 置信度 | 高：隔离Node进程直接观察并改变resolver与共享deadline结果；固定基线未找到现有写调用 |
-| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17；`services/commerce/src/app/events.ts`；`RuntimeEventPublisher.ts`；`packages/kernel/src/Currency.ts:1-13` |
-| 当前行为 | [FACT][E-AU-006-006][E-AU-008-011][E-AU-009-018] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功。生成的`EVENT_HANDLERS`同样导出可变Map singleton。Kernel的`CURRENCIES`虽为`as const`但运行数组可push，`Currency.code`也可改写；隔离反事实追加USD后validator立即接受。当前仓库未发现这些mutation的生产调用 |
+| 置信度 | 高：隔离Node进程直接观察并改变resolver、共享deadline、Currency和Authz permission scope结果；固定基线未找到现有生产写调用 |
+| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17；`services/commerce/src/app/events.ts`；`RuntimeEventPublisher.ts`；`packages/kernel/src/Currency.ts:1-13`；`packages/authz/src/PermissionCatalog.ts:4-11,198-205`、`ScopeKind.ts:1-2` |
+| 当前行为 | [FACT][E-AU-006-006][E-AU-008-011][E-AU-009-018][E-AU-010-009] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功。生成的`EVENT_HANDLERS`同样导出可变Map singleton。Kernel的`CURRENCIES`运行数组和实例code可改写。Authz的184个definition外壳虽冻结，但80条默认scoped permission共享同一未冻结数组；给一条追加owner后另一条的授权接受集同时变化，导出的SCOPE_KINDS也可变。当前仓库未发现这些mutation的生产调用 |
 | 预期行为 | Manifest/Registry/Topology及共享容量/缓存参数作为进程权威，在解析/生成后应不可被消费者改写，或消费者获得隔离副本 |
-| 直接证据 | E-AU-006-006、E-AU-008-011、E-AU-009-018、T-AU-006-004、RS-AU-006-002、INV-AU-006-006、INV-AU-009-010、FM-AU-008-005、FM-AU-009-009 |
-| 调用链或运行入口 | JSON/YAML生成物 module import → exported singleton → Identity/Console/generator/check或HTTP/Pool/cache/SDK consumers；events.ts Map → RuntimeEventPublisher → inbox/job |
-| 用户影响 | 若任一同进程消费者意外修改嵌套对象，后续Host/资源ref或timeout/cache/capacity行为可随加载顺序漂移 |
+| 直接证据 | E-AU-006-006、E-AU-008-011、E-AU-009-018、E-AU-010-009、T-AU-006-004、RS-AU-006-002、INV-AU-006-006、INV-AU-009-010、INV-AU-010-011、FM-AU-008-005、FM-AU-009-009 |
+| 调用链或运行入口 | JSON/YAML/TS module import → exported singleton → Identity/Console/generator/check或HTTP/Pool/cache/SDK/Authz consumers；events.ts Map → RuntimeEventPublisher → inbox/job；permissionDefinition.scopes → AccessPipeline checkScope |
+| 用户影响 | 若任一同进程消费者意外修改嵌套对象，后续Host/资源ref、timeout/cache/capacity或permission允许的scope kind会随加载顺序漂移 |
 | 数据影响 | 不修改仓库或数据库，但会改变进程内配置事实；重启恢复原JSON |
-| 安全影响 | 可改变节点/域名选择边界；当前未发现生产写入点，故不升级P1 |
+| 安全影响 | 可改变节点/域名和permission scope选择边界；当前未发现生产写入点，故不升级P1 |
 | 根因 | TypeScript readonly被当成运行时保护，Object.freeze只应用外壳；生成器也直接输出浅冻结对象 |
 | 建议方向 | 独立配置不可变批次选择深冻结、解析时复制或递归生成冻结；先测性能、JSON module与生成物兼容 |
-| 预计修改范围 | SflNodeKernel/Registry、Runtime Catalog生成器及输出、Console/Identity/HTTP/Pool/cache消费者和mutation tests |
+| 预计修改范围 | SflNodeKernel/Registry、Runtime Catalog生成器及输出、Kernel Currency、Authz目录/ScopeKind、Console/Identity/HTTP/Pool/cache/权限消费者和mutation tests；后续仍须按单一子系统拆批 |
 | 验证方式 | Object.isFrozen递归断言；push/assign/sort/splice反事实；resolver与limits前后值不变；正常digest/Host/timeout测试保持 |
 | 回滚方式 | 回退不可变实现和对应生成物同一提交；进程重启恢复；不改声明JSON/YAML含义 |
 | 是否需要独立复核 | 否（P2）；若发现第三方插件可写同一单例则重新定级 |
@@ -862,9 +862,9 @@
 | 严重级别 | **P1 候选**；未完成 RV-0008 前不作最终 P1 |
 | 置信度 | 高：定义、生成绑定、前端调用、授权解算、handler 和数据库写入已连通；线上主体与调用记录未验证 |
 | 文件和精确位置 | packages/contract/definitions/operations.yml:678-717；contract/src/StorefrontMemberContract.test.ts:28-53；Commerce OperationController.ts:299-323；AccessPipeline.ts:52-99；PgAccessResolvers.ts:145-154；MemberCustomProfileOperations.ts:25-128；Console StorefrontMemberCommand.ts:9-28、StorefrontMemberRoute.test.tsx:305-316；migration 20260911010000:43-47、20260829060000:149-170 |
-| 当前行为 | [FACT][E-AU-007-004] `member.storefront.config.manage` 与 `member.storefront.custom.manage` 均声明 `member.read`。Controller 把该 permission 原样交给 AccessPipeline；数据库 capability 解算按 Operation permission 匹配 membership grants。Console 测试上下文只有 `member.read` 仍拥有两 manage capabilities，真实命令调用 PUT；handler 会 INSERT/DELETE 标签、字段和会员资料 |
+| 当前行为 | [FACT][E-AU-007-004][E-AU-010-014] `member.storefront.config.manage` 与 `member.storefront.custom.manage` 均声明 `member.read`。Controller 把该 permission 原样交给 AccessPipeline；数据库 capability 解算按 Operation permission 匹配 membership grants。Console 测试上下文只有 `member.read` 仍拥有两 manage capabilities，真实命令调用 PUT；handler 会 INSERT/DELETE 标签、字段和会员资料；AU-010 重新核对 Authz 内核，未发现任何额外写权限判断 |
 | 预期行为 | 修改商城会员配置/资料的 Operation 应绑定经产品确认的写权限，或由产品明确记录 `member.read` 包含这些写行为；不能让名称为 read 的能力在无额外写授权时隐式获得持久修改语义 |
-| 直接证据 | E-AU-007-004、COM-AU-007-003/004/009、INV-AU-007-003、FM-AU-007-001、RS-AU-007-001 |
+| 直接证据 | E-AU-007-004、E-AU-010-014、COM-AU-007-003/004/009、INV-AU-007-003、FM-AU-007-001、RS-AU-007-001 |
 | 调用链或运行入口 | Console StorefrontMemberCustomProfile → StorefrontMemberCommand → generated member SDK → OperationController → AccessPipeline/precheck + capability.session_membership_operations → ModuleOperations → MemberCustomProfileOperations → member/access tables |
 | 用户影响 | [INFERENCE] 只读客服或审阅类角色若同时获得该 Operation entitlement，可修改全商城标签/字段配置或单会员自定义资料；页面和测试均把该组合当作正常路径 |
 | 数据影响 | `saveConfig` 会 upsert 并删除未提交的 tag/field；`saveProfile` 会先删除再重建会员 tag/field values。事务可回滚单次失败，但成功请求会持久改变数据 |
@@ -1264,3 +1264,173 @@
 - [UNKNOWN] `@shop/kernel` 的仓外消费者、超过24.85天的Deadline调用者和ModuleCatalog未来startup意图未取得证据。
 - [UNKNOWN] WeChat平台是否对相同subscribe payload做隐式去重，以及生产是否发生lost-response重复发送；本AU未访问供应商或线上日志。
 - [UNKNOWN][E-AU-009-017] Kernel test/typecheck的实现结果未知：两者均因本地缺`vitest`/`tsc`在源码加载前阻塞；没有写成通过或实现失败，也未安装依赖。
+
+## F-0053｜自定义角色可铸造并转授角色管理者未拥有的关键权限
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Authz / Access角色管理 / Console |
+| 类型 | 权限提升、角色委派、治理边界 |
+| 严重级别 | **P1 候选**；未完成 RV-0009 前不作最终 P1 |
+| 置信度 | 高：UI可选集、HTTP permission、服务端写入、assignment和membership投影控制流已连通；线上是否存在受限role manager或已利用记录未知 |
+| 文件和精确位置 | `packages/authz/src/PermissionCatalog.ts:20-29`；`contract/definitions/operations.yml:418-433`；Console `AccessRoleCatalog.ts:18-26`、`RoleEditor.tsx:61-88,216-243`、`AccessRoleCommand.ts:29-36`；Commerce `AccessOperations.ts:22-64,185-305`；migration `20260829060000_zhudatuan_operator_invitation_registration.sql:85-145`、`20260902140000_align_senior_administrator_business_permissions.sql:109-130` |
+| 当前行为 | [FACT][E-AU-010-004/006] 任何拥有`access.role.manage`与对应Operation capability的Console主体都看到全部184个permission。服务端仅要求`permissions`为字符串数组，随后把所有存在的code写入custom role，不比较actor effective permissions，也不排除内建高级管理员明确列为Owner-only的`access.role.manage`、`access.scope.manage`、`capability.assignment.manage`、`identity.registration.reset`等。角色分配只按固定`role-senior-administrator-v1:` ID要求Owner；相同关键权限装入custom role不会触发该分支，数据库随后把它们投影到目标Membership grants |
+| 预期行为 | 非Owner角色管理者可转授的permission集合必须由产品明确闭合，至少不能超过其有效权限/治理级别，也不能仅通过换一个custom role ID绕过现有Owner-only集合 |
+| 直接证据 | E-AU-010-004、E-AU-010-005、E-AU-010-006、COM-AU-010-010/011/012、INV-AU-010-009、FM-AU-010-001 |
+| 调用链或运行入口 | Console RoleEditor → AccessRoleCommand → PUT `access.roles.manage` → AccessPipeline(`access.role.manage`) → AccessOperations重建rolepermission → `manageRoleAssignment` → membershiprole/scopegrant/access_version → `access.resolve_session_membership` → 后续Operation授权 |
+| 用户影响 | [INFERENCE] 被委派一个有限“角色管理员”的主体可以创建包含更高治理能力的custom role并转授给自己或同范围成员，从而获得原委派未表达的权限；具体可操作对象仍受scope、target和step-up约束 |
+| 数据影响 | 成功请求持久写`access.role`、`rolepermission`、`membershiprole`、`scopegrant`并递增目标access_version；可改变后续请求的授权结果 |
+| 安全影响 | 存在正常API可达的权限提升链；不依赖异常Scope。是否已有可利用主体取决于线上角色与entitlement，尚未核验 |
+| 根因 | 权限目录只有risk/scope元数据，没有“可由谁授予”的委派关系；Access handler把role ID特例当作治理边界，没有对custom role内容执行actor subset/Owner-only校验 |
+| 建议方向 | 先由RV-0009与Ethan定稿可授予集合/治理层级；后续从当时最新`zdt-next`建立单一修复分支，只收敛角色委派判定及正反测试，不在审计分支新增安全规则 |
+| 预计修改范围 | Access角色命令、permission委派元数据或现有治理resolver、Console可选集、数据库角色/版本处理、定向HTTP/DB测试；具体范围待产品定稿 |
+| 验证方式 | Owner、受限role manager、普通管理员三主体 × 自有permission、非自有普通permission、Owner-only permission × create/assign/self/other/跨scope；逐项核对HTTP、role rows、access_version和下一请求实际授权 |
+| 回滚方式 | 修复批次回退单一提交；对已创建的越界custom role另做受管数据清单和可逆迁移，先保存role/assignment/version快照 |
+| 是否需要独立复核 | 是，RV-0009；必须重新检查线上角色数据、不能只复述旧handoff文档 |
+
+为什么不是 P0：固定基线证明可执行权限提升机制，但本次没有读取线上角色、assignment、调用日志或异常授权记录，不能证明正在发生严重事故。`P0`必须有当前事故证据，不能沿用历史文档标签。
+
+## F-0054｜角色分配的二级 Scope 权限检查跳过显式 deny
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Authz Policy / Access角色分配 |
+| 类型 | 显式拒绝绕过、分阶段API误用 |
+| 严重级别 | P2 |
+| 置信度 | 高：真实调用位置和实际Policy反事实均确定；线上是否存在allow+deny组合未知 |
+| 文件和精确位置 | `packages/authz/src/Policy.ts:30-43`；Commerce `AccessPipeline.ts:64-87`；`AccessOperations.ts:76-107,185-249`；`AccessOperations.test.ts:414-421` |
+| 当前行为 | [FACT][E-AU-010-008] `access.roles.manage`入口完整预检的是`access.role.manage`。角色assign/revoke随后直接调用`checkScope(membership,'access.scope.manage',targetScope,...)`；该stage只查allow grant、有效期和containment，不查`membership.denies`。确定性输入中`access.scope.manage`同时allow+explicit deny，route precheck返回null，二级checkScope仍返回evidence |
+| 预期行为 | 业务代码若额外要求第二个permission，必须对这个permission执行包含active/version/explicit deny/allow的完整前置，再检查scope；显式deny不能因调用stage子集而失效 |
+| 直接证据 | E-AU-010-008、COM-AU-010-011、INV-AU-010-002、FM-AU-010-002、PROBE-AU-010-008 |
+| 调用链或运行入口 | `access.roles.manage` HTTP → AccessPipeline完整检查role.manage → AccessOperations `manageRoleAssignment` → 裸checkScope(scope.manage) → membershiprole/scopegrant写入 |
+| 用户影响 | [INFERENCE] 同时拥有scope.manage allow、但被显式deny该权限的角色管理员仍可在角色分配路径使用这项二级权限；直接`access.scopes.manage`仍由顶层precheck正确拒绝 |
+| 数据影响 | 可assign/revoke角色、增加scopegrant并递增目标Membership版本；条件限定在冲突allow+deny投影 |
+| 安全影响 | 显式deny语义在一个高权限写入口失效；未证明线上存在对应组合或滥用 |
+| 根因 | `checkScope`是有隐藏前置条件的stage API；生产caller把它当完整permission决策使用，测试fixture又直接注入AccessContext而绕过顶层组合 |
+| 建议方向 | 独立Access授权修复批次复用完整判定或显式执行同permission precheck；不得与F-0053治理模型定稿混成一次大改 |
+| 预计修改范围 | AccessOperations二级授权调用与定向角色assignment测试；可能无需改Authz API，需由修复设计确认 |
+| 验证方式 | scope.manage allow、deny、allow+deny、过期allow、错误version、不同scope六组；每组断言数据库零/有写和decision evidence |
+| 回滚方式 | 回退二级授权单一提交；无迁移时不涉及数据结构回滚 |
+| 是否需要独立复核 | 否；若线上确认已有越权写再重新定级 |
+
+## F-0055｜Scope containment 对异常 platform、缺 tenant 和跨 kind 同 ID 失效关闭不足
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Authz Scope / PostgreSQL Scope投影 |
+| 类型 | 租户隔离、范围判定、边界输入 |
+| 严重级别 | P2 |
+| 置信度 | 高：三个纯Policy反事实命中；当前正常Pg路径通常生成canonical Scope，异常数据可达性未在线核验 |
+| 文件和精确位置 | `packages/authz/src/Scope.ts:3-15`、`Policy.ts:38-65`、`Policy.test.ts:14-46`；Commerce `PgAccessResolvers.ts:133-141`、`WebBusinessScopeResolver.ts:19-45`；`database/contracts/current.sql:1141-1165` |
+| 当前行为 | [FACT][E-AU-010-010] `contains`对任何`grant.kind==='platform'`立即true；非self/owner grant只有自身tenant存在时才比较tenant；exact ID分支不比较grant/resource kind。实际固定源码分别接受错误platform ID、缺tenant的跨租户enterprise ancestor，以及tenant grant与mall resource同ID |
+| 预期行为 | Scope边界接收到不完整或不规范投影时应拒绝；非平台层级两侧tenant必须完整相等，exact命中必须绑定kind+id，platform必须来自canonical root/ancestor |
+| 直接证据 | E-AU-010-007、E-AU-010-010、INV-AU-010-005/006/007、FM-AU-010-003、PROBE-AU-010-003..005 |
+| 调用链或运行入口 | access tables/organization closure → `access.scope_object` → Pg/Web ScopeResolver → AccessPipeline → checkScope/contains；或公开decide的仓外caller |
+| 用户影响 | [INFERENCE] 若数据库closure、scope function、新resolver或仓外caller产生异常Scope，可能把授权扩大到错误kind或tenant；正常canonical组织树路径降低风险，不等于内核已fail closed |
+| 数据影响 | Authz本身不写数据；错误allow后的handler可读写何种数据取决于Operation |
+| 安全影响 | 潜在跨租户/跨范围授权；没有证据证明固定线上数据当前异常，故不升级P1/P0 |
+| 根因 | `Scope`把tenant对全部kind声明为可选，Policy假定上游已经canonical；Pg JSON结果又没有完整runtime schema验证，测试只覆盖tenant双方存在的负例 |
+| 建议方向 | 独立Scope语义批次先定稿11-kind闭表和canonical platform规则，再决定在resolver边界验证、Policy内拒绝或二者组合；不得直接新增规则而跳过产品确认 |
+| 预计修改范围 | Scope类型/decoder、Policy containment、Pg/Web resolver、11-kind负向测试，可能涉及数据异常核验；不一定需要迁移 |
+| 验证方式 | 11 kind × tenant missing/equal/different × exact/path/wrong-kind/wrong-platform性质矩阵；再用真实DB fixture证明canonical输出仍通过 |
+| 回滚方式 | 回退Scope/Policy单一提交；若清理异常数据则另备份并使用受管迁移 |
+| 是否需要独立复核 | 否；安全专项建议复核，若线上异常数据命中则重新定级 |
+
+## F-0056｜WebBusiness Scope 正式单测仍调用已退出的四参数契约
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce Security tests / WebBusinessScopeResolver |
+| 类型 | 测试漂移、假性回归阻塞 |
+| 严重级别 | P2 |
+| 置信度 | 高：vitest配置包含该文件，固定源码直接调用在数据库前确定失败 |
+| 文件和精确位置 | `services/commerce/vitest.config.ts:28-29`；`modules/webbusiness/WebBusinessScopeResolver.test.ts:7-15,50-59`；`foundation/security/AccessContext.ts:103-111`；`PgAccessResolvers.ts:133-141` |
+| 当前行为 | [FACT][E-AU-010-011] 2026-09-12后canonical resolver要求realm/client/governanceOrganization并调用`access.resolve_session_scope`七参数函数；测试第三例仍期待`access.resolve_scope`和四个参数，actor也没有三个context字段。实际调用抛`AUTH_MEMBERSHIP_CONTEXT_MISSING`，pool query为0 |
+| 预期行为 | 正式unit test应使用当前session-bound actor并断言七参数函数，且生产退回旧未绑定resolver时必须失败 |
+| 直接证据 | E-AU-010-011、INV-AU-010-012、FM-AU-010-004 |
+| 调用链或运行入口 | `npm test --workspace @shop/commerce` → vitest config `src/**/*.test.ts` → WebBusinessScopeResolver第三例 → PgScopeResolver |
+| 用户影响 | 不直接改变生产；依赖完整时正式unit suite会被旧fixture阻断，降低权限回归信号可信度 |
+| 数据影响 | 测试mock不写真实数据库 |
+| 安全影响 | session-bound权限读取边界缺少可信回归，后续退化可能更难被发现 |
+| 根因 | resolver接口迁移更新了生产代码和部分测试，没有同步该共享console路径fixture/oracle |
+| 建议方向 | 独立测试修复批次只更新actor context、SQL和参数断言，并增加退回旧resolver的反事实；不改生产实现 |
+| 预计修改范围 | 单一测试文件，必要时共享fixture |
+| 验证方式 | 定向运行该文件，再运行Commerce unit；断言七参数、context mismatch和旧函数名反事实 |
+| 回滚方式 | 回退测试单一提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0057｜Access Version 的 PostgreSQL bigint 运行值与 number 类型声明不一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce PostgreSQL Access resolvers / Authz types |
+| 类型 | 运行时类型、测试真实性、API契约 |
+| 严重级别 | P3 |
+| 置信度 | 高：锁定pg版本、默认OID parser和源码均直接核对；线上是否另有仓外parser配置未知 |
+| 文件和精确位置 | `packages/authz/src/Policy.ts:5-18`；Commerce `PgAccessResolvers.ts:17-45,49-129`、`Pool.ts:1-21`、`AccessPipeline.ts:64-72`；migration `20260912240000_bind_permission_reads_to_session_membership.sql:26-31,110-129`；Console `ConsoleSession.ts:20-25` |
+| 当前行为 | [FACT][E-AU-010-012] SQL函数把credential/access version声明为bigint；pg 8.16.3默认OID 20 parser把`7`返回string，仓内没有`types.setTypeParser`。Resolver row、Actor、MembershipAccess和AccessContext都声明number且直接返回row值；测试fixtures全部给number。三个数据库来源在正常路径同为string，严格相等当前可通过；Console边界另用DatabaseIntegerSchema归一化 |
+| 预期行为 | 数据库adapter必须把bigint显式、安全地归一化为number，或从端口到wire如实建模string；测试应使用真实driver类型，不能依赖静态泛型改变运行值 |
+| 直接证据 | E-AU-010-007、E-AU-010-012、INV-AU-010-010、FM-AU-010-005 |
+| 调用链或运行入口 | identity/access bigint → pg parser → PgSession/Membership/VersionResolver → AccessPipeline strict equality → AccessContext → session响应/执行上下文 |
+| 用户影响 | 当前同型比较通常不阻断请求；未来任一consumer做`Number.isSafeInteger`、算术或严格response schema时可能错误拒绝或发出string |
+| 数据影响 | 当前未证明产生错误写；version写入SQL参数接受string数字 |
+| 安全影响 | 可能削弱版本边界的类型保证，但未发现当前比较绕过 |
+| 根因 | TypeScript query泛型被误当运行时解码；adapter没有集中bigint转换，mock又复制声明而非驱动事实 |
+| 建议方向 | 独立DB adapter批次选择safe integer转换或端到端string模型，先确认版本上限与wire兼容；不在审计分支修改 |
+| 预计修改范围 | PgAccessResolvers、AccessContext/Authz类型或decoder、真实pg fixture、Session response兼容测试 |
+| 验证方式 | pg17 fixture返回1、MAX_SAFE_INTEGER、越界bigint、null；逐项断言三resolver、strict equality和HTTP schema |
+| 回滚方式 | 回退adapter/type单一提交；无数据迁移 |
+| 是否需要独立复核 | 否 |
+
+## F-0058｜contractgen 绕过 `@shop/authz` export 直接导入 workspace 源文件
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | contractgen / Authz package boundary |
+| 类型 | 模块边界、构建耦合 |
+| 严重级别 | P3 |
+| 置信度 | 高 |
+| 文件和精确位置 | `tools/contractgen/package.json:13-21`；`ContractGenerator.ts:1-6,52-65,223-229,280-298`；`packages/authz/package.json:9-13` |
+| 当前行为 | [FACT][E-AU-010-003] contractgen明确声明`@shop/authz:1.0.0`依赖，却从四层相对路径直接import`packages/authz/src/PermissionCatalog`；permission验证、checksum、OpenAPI和数据库产物全部依赖该内部路径 |
+| 预期行为 | workspace消费者通过声明的package export加载公共目录，避免目录移动、编译边界或package实现重排无意破坏generator |
+| 直接证据 | E-AU-010-003、COM-AU-010-001/002、FM-AU-010-006 |
+| 调用链或运行入口 | `@shop/contractgen` generate/check → 相对源码import → PermissionCatalog → Contract/OpenAPI/DB产物 |
+| 用户影响 | Authz目录重排或独立打包时contractgen在生成前失败；不直接影响已运行服务 |
+| 数据影响 | 失败会阻断未来数据库contract产物生成，但本项不证明现有产物错误 |
+| 安全影响 | 无直接权限绕过；边界绕行增加权限目录变更漏测风险 |
+| 根因 | 包整合后保留历史相对源码路径，manifest依赖没有成为真实解析入口 |
+| 建议方向 | 独立工具边界批次改用正式export并加包边界测试；与permission语义修改分开 |
+| 预计修改范围 | ContractGenerator import和工具测试；无需改目录内容 |
+| 验证方式 | contractgen check/generate定向运行；从临时package布局加载公共export并验证产物零漂移 |
+| 回滚方式 | 回退单一import/test提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0059｜Console 两份权限分类映射同时遗漏 `approval`
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Authz PermissionCatalog / Console权限界面 |
+| 类型 | 用户可见文案、重复事实源漂移 |
+| 严重级别 | P3 |
+| 置信度 | 高 |
+| 文件和精确位置 | `packages/authz/src/PermissionCatalog.ts:30-32`；Console `AccessRoleCatalog.ts:3-23`、`ProfileModel.ts:36-69,91-98`；`ScopePresentation.ts:35-40` |
+| 当前行为 | [FACT][E-AU-010-017] 目录有33类和3条approval permission；角色编辑与Profile各维护一份中文label map，两份都没有approval。一个fallback直接返回category，另一个normalizeConsoleCopy也不翻译approval，最终显示英文分组名 |
+| 预期行为 | 所有目录category在中文Console有穷尽、单一的显示映射；新增分类缺label时测试应失败 |
+| 直接证据 | E-AU-010-017、COM-AU-010-010、FM-AU-010-007 |
+| 调用链或运行入口 | PermissionCatalog → PERMISSION_GROUPS/Profile permissionGroups → RoleEditor/Profile UI |
+| 用户影响 | 权限管理界面中的审批分类显示英文且两个页面可能继续独立漂移 |
+| 数据影响 | 无 |
+| 安全影响 | 不改变服务端授权；可能降低权限含义可读性 |
+| 根因 | category显示名在两个consumer手工复制，未对PermissionCatalog做穷尽校验 |
+| 建议方向 | 独立Console小批次统一映射并加33类集合测试；不修改permission code |
+| 预计修改范围 | Console共享展示映射和定向测试 |
+| 验证方式 | 目录category与label key集合严格相等；打开角色/Profile权限分组检查中文文案 |
+| 回滚方式 | 回退Console文案/测试提交 |
+| 是否需要独立复核 | 否 |
+
+## 11. AU-010 新增未定级事项
+
+- [UNKNOWN] 七个非GET但绑定`.read` permission的Operation中，除F-0036两条外，其余五条是否符合产品语义；不能仅按名称登记缺陷。
+- [UNKNOWN] 正常数据库是否存在缺tenant、错误closure、scope ID冲突或非canonical resolver输出；本AU没有连接线上数据库。
+- [UNKNOWN] `@shop/authz`完整`decide` façade和类型的仓外消费者；已列DC-0012/G1，不得直接删除。
+- [UNKNOWN][E-AU-010-016] Authz正式test/typecheck结果；两者因依赖缺失在源码加载前退出127，未安装依赖。

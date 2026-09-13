@@ -70,4 +70,12 @@
 - [FACT] `domainEvent`浅冻结envelope和payload外壳；当前OutboxStore在调用数据库前同步 `JSON.stringify`。本AU未观察到持久化前的异步mutation窗口，但nested payload、BigInt/cycle与事务语义仍留给事件/领域专项。
 - Money使用safe-integer minor unit并检查加减乘溢出，是值得保留的金额边界；运行时可变Currency目录属于进程一致性F-0032，不是迁移问题。
 - [INFERENCE][E-AU-009-005] F-0048的风险位于外部provider副作用：本地dispatch唯一性无法回滚同一次执行内部的第二个无键POST。当前没有证据证明产生重复数据库行。
+
+## 11. AU-010 权限数据、快照与迁移接缝
+
+- Authz包本身不连接数据库、不拥有表、不写migration。`access.permission`、role、rolepermission、membershiprole、membershipoverride、scopegrant和decisionaudit由PostgreSQL Access域拥有；organization closure/scope_object拥有canonical Scope投影。
+- [FACT][E-AU-010-007] PgMembershipResolver在一个materialized查询中返回grants/denies和数据库`evaluated_at`；Policy对effective/expiry复用同一时间，避免应用时钟与多行读取漂移。Session projection和current membership version另行核对。
+- [FACT][E-AU-010-012] access/credential version为PostgreSQL bigint，pg运行时返回string而TS端口声明number；当前三路比较通常同型通过，数据adapter真实性问题见F-0057。
+- [P1-CANDIDATE] F-0053成功路径会写rolepermission、membershiprole/scopegrant并递增目标access_version；未来修复若需处理已有越界custom role，必须另做受管、可逆的数据清单，不能在审计分支直接删除或改角色。
+- [P2] F-0055的normal路径缓解来自`scope_object`和closure；是否已有缺tenant、错误closure或跨表ID冲突是线上数据UNKNOWN，本AU未连接数据库、未重放migration。
 - ModuleCatalog解析在内存中完成，失败无数据库半状态；35份manifest是否未来驱动migration/startup仍UNKNOWN。

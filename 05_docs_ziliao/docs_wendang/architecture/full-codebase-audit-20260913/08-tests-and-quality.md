@@ -103,3 +103,11 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - ModuleCatalog四例使用合成manifest，不加载35份真实manifest，不测重复provides、输入mutation或返回Map mutation（F-0049）。
 - ValueObject、Deadline长timer/sync throw、TestId第18项都无测试；只读实际源码反事实分别命中F-0050/F-0051/F-0052中的可执行部分。
 - 正式test/typecheck均退出127，分别缺vitest/tsc并在源码加载前阻塞。没有安装依赖或把环境阻塞写成实现失败。完整13条测试/命令记录见 `records/AU-009-kernel/tests.csv`。
+
+## 9. AU-010 Authz 测试可信度
+
+- Authz包有4个vitest用例，quality security另有2个Node test；AccessPipeline表驱动展开45个实例，覆盖5维32组合、首失败顺序、audience、Membership ID与授权scope传递。
+- 主干默认拒绝、显式deny、跨tenant、expiry、critical step-up均有直接oracle；PermissionCatalog 184 code与329个受保护Operation的闭合由本AU静态复算确认。
+- 缺口包括异常/缺tenant Scope、错误platform、跨kind同ID、catalog mutation、二级permission explicit deny、custom role permission subset、critical Pipeline level和真实pg bigint类型。F-0053–F-0055在现有套件中不会可靠失败。
+- [FACT][E-AU-010-011] `WebBusinessScopeResolver.test.ts`第三例仍期待旧4参数接口，现实现会在query前抛`AUTH_MEMBERSHIP_CONTEXT_MISSING`；这是F-0056，不是生产实现失败。
+- 正式Authz test/typecheck均退出127，分别缺vitest/tsc且未加载源码；未安装依赖。完整用例、命令、探针及“不证明项”见 `records/AU-010-authz/tests.csv` 和 `validation-results.md`。
