@@ -20,8 +20,17 @@ const forbidden = [
 test('current executable files contain no retired release-level authority', async () => {
   const { stdout } = await execFileAsync('git', ['ls-files', '-co', '--exclude-standard'], { maxBuffer: 20 * 1024 * 1024 });
   const findings = [];
-  for (const path of stdout.trim().split('\n').filter((entry) => executable.test(entry) && !ignored.test(entry))) {
-    const source = await readFile(path, 'utf8');
+  for (const path of stdout
+    .trim()
+    .split('\n')
+    .filter((entry) => executable.test(entry) && !ignored.test(entry))) {
+    let source;
+    try {
+      source = await readFile(path, 'utf8');
+    } catch (error) {
+      if (error?.code === 'ENOENT') continue;
+      throw error;
+    }
     for (const pattern of forbidden) if (pattern.test(source)) findings.push(`${path}: ${pattern}`);
   }
   assert.deepEqual(findings, []);

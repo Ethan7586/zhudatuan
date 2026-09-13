@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import { chmod, lstat, mkdir, mkdtemp, readFile, readlink, writeFile } from 'node:fs/promises';
@@ -61,29 +61,121 @@ test('stages, activates, rolls back and reports status with immutable releases',
   assert.equal(verified.result.checks.length, 1);
 });
 
-test('direct mode checks health and automatically restores the immutable previous release', async () => {
+test('OSS direct mode checks health and automatically restores the immutable previous release', async () => {
   const fixture = await createFixture();
-  fixture.policy.nodes.local.deployments.app.healthChecks = [{
-    argv: [process.execPath, '-e', "const fs=require('node:fs');process.exit(fs.readFileSync(process.argv[1],'utf8').trim()==='unhealthy'?8:0)", '{{currentDir}}/app.txt'],
-  }];
+  fixture.policy.nodes.local.deployments.app.healthChecks = [
+    {
+      argv: [process.execPath, '-e', "const fs=require('node:fs');process.exit(fs.readFileSync(process.argv[1],'utf8').trim()==='unhealthy'?8:0)", '{{currentDir}}/app.txt'],
+    },
+  ];
   await writePolicy(fixture);
 
   const baseline = await createArtifact(fixture, 'healthy', 'c'.repeat(40));
-  await invoke(fixture, 'stage-direct', baseline);
-  const activated = await invoke(fixture, 'activate-direct', baseline);
-  assert.equal(activated.result.mode, 'direct-activated');
-  assert.equal(activated.result.direct, true);
-  assert.equal(activated.result.readiness.status, 'ready');
-  assert.equal(activated.result.receipt.finalStatus, 'success');
+  const activated = await invokeOss(fixture, baseline, await artifactPayload(baseline));
+  assert.equal(activated.result.activation.mode, 'direct-activated');
+  assert.equal(activated.result.activation.direct, true);
+  assert.equal(activated.result.activation.readiness.status, 'ready');
+  assert.equal(activated.result.activation.receipt.finalStatus, 'success');
   const baselineCurrent = await readlink(join(fixture.pointerRoot, 'current'));
 
   const candidate = await createArtifact(fixture, 'unhealthy', 'd'.repeat(40));
-  await invoke(fixture, 'stage-direct', candidate);
-  const failed = await captureAgentFailure(() => invoke(fixture, 'activate-direct', candidate));
+  const candidatePayload = await artifactPayload(candidate);
+  const failed = await captureAgentFailure(() => invokeOss(fixture, candidate, candidatePayload));
   assert.equal(failed.code, 'CUTOVER_FAILED_AND_ROLLED_BACK');
   assert.equal(failed.details.rollback.finalCurrent, baselineCurrent);
   assert.equal(failed.details.rollback.readiness.status, 'ready');
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), baselineCurrent);
+});
+
+test('OSS direct mode downloads once, activates, and repeats from the remote immutable cache', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'oss-prepared', '7'.repeat(40));
+  const payload = await artifactPayload(artifact);
+  const first = await invokeOss(fixture, artifact, payload);
+  assert.equal(first.result.schema, 'ai.delivery.oss-direct.v1');
+  assert.equal(first.result.cacheStatus, 'miss');
+  assert.ok(first.result.downloadedBytes > 0);
+  assert.equal(first.result.activation.mode, 'direct-activated');
+  assert.equal(first.result.activation.receipt.finalStatus, 'success');
+  assert.equal(first.result.activation.receipt.sourceSha, artifact.sourceSha);
+  assert.equal(first.result.activation.receipt.controlPlane.sourceSha, 'f'.repeat(40));
+  assert.deepEqual(first.result.activation.receipt.controlPlane.github, { runId: '123456', runAttempt: '2' });
+  assert.equal(first.result.activation.receipt.controlPlane.remoteAgentSha256, `sha256:${await hashFile(agent)}`);
+  assert.equal(first.result.activation.receipt.controlPlane.remotePolicySha256, `sha256:${await hashFile(join(fixture.policyRoot, 'fixture.json'))}`);
+  assert.equal(JSON.stringify(first).includes('data:application'), false);
+
+  const repeated = await invokeOss(fixture, artifact, {
+    artifactUrl: 'http://127.0.0.1:1/not-used',
+    manifestUrl: 'http://127.0.0.1:1/not-used',
+  });
+  assert.match(repeated.result.cacheStatus, /^hit_(?:candidate|current)$/);
+  assert.equal(repeated.result.downloadedBytes, 0);
+  assert.equal(repeated.result.activation.mode, 'direct-verify-only');
+  assert.equal(repeated.result.activation.receipt.finalStatus, 'success');
+});
+
+test('OSS download failure leaves the current production pointer unchanged', async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'baseline', '6'.repeat(40));
+  await invokeOss(fixture, baseline, await artifactPayload(baseline));
+  const current = await readlink(join(fixture.pointerRoot, 'current'));
+  const candidate = await createArtifact(fixture, 'never-downloaded', '5'.repeat(40));
+  const failed = await captureAgentFailure(() =>
+    invokeOss(fixture, candidate, {
+      artifactUrl: 'http://127.0.0.1:1/unavailable',
+      manifestUrl: 'http://127.0.0.1:1/unavailable',
+    })
+  );
+  assert.equal(failed.code, 'OSS_DOWNLOAD_FAILED');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
+});
+
+test('OSS direct mode rejects missing deployment control-plane provenance before download', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'not-deployed', '4'.repeat(40));
+  const payload = await artifactPayload(artifact);
+  const failed = await captureAgentFailure(() => invokeOss(fixture, artifact, payload, false));
+  assert.equal(failed.code, 'CONTROL_PLANE_SHA_REQUIRED');
+  await assert.rejects(
+    () => readlink(join(fixture.pointerRoot, 'current')),
+    (error) => error.code === 'ENOENT'
+  );
+  await assert.rejects(
+    () => lstat(fixture.pointerRoot),
+    (error) => error.code === 'ENOENT'
+  );
+});
+
+test('prepared v2 actions reject Agent or policy drift before download and cutover', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'drift-refused', '1'.repeat(40));
+  const payload = await artifactPayload(artifact);
+  const agentMismatch = await captureAgentFailure(() => invokeOss(fixture, artifact, payload, true, 'deploy-oss-direct-v2', { remoteAgentSha256: `sha256:${'0'.repeat(64)}` }));
+  assert.equal(agentMismatch.code, 'REMOTE_AGENT_SHA256_MISMATCH');
+  const policyMismatch = await captureAgentFailure(() => invokeOss(fixture, artifact, payload, true, 'deploy-oss-direct-v2', { remotePolicySha256: `sha256:${'0'.repeat(64)}` }));
+  assert.equal(policyMismatch.code, 'REMOTE_POLICY_SHA256_MISMATCH');
+  await assert.rejects(
+    () => readlink(join(fixture.pointerRoot, 'current')),
+    (error) => error.code === 'ENOENT'
+  );
+  await assert.rejects(
+    () => lstat(fixture.pointerRoot),
+    (error) => error.code === 'ENOENT'
+  );
+});
+
+test('prepared candidate validation downloads and checks the release without moving current', async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'baseline', '3'.repeat(40));
+  await invokeOss(fixture, baseline, await artifactPayload(baseline));
+  const current = await readlink(join(fixture.pointerRoot, 'current'));
+  const candidate = await createArtifact(fixture, 'candidate-only', '2'.repeat(40));
+  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v2');
+  assert.equal(validated.result.schema, 'ai.delivery.oss-candidate.v1');
+  assert.equal(validated.result.current.unchanged, true);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
+  assert.match(await readlink(join(fixture.pointerRoot, 'candidate')), new RegExp(candidate.sourceSha));
+  assert.equal(validated.result.controlPlane.sourceSha, 'f'.repeat(40));
 });
 
 test('server locks are scoped by project, node and target without a production-wide lock', async () => {
@@ -141,10 +233,13 @@ test('stops safely when current changes after artifact lookup', async () => {
   const fixture = await createFixture();
   const artifact = await createArtifact(fixture, 'compare-and-swap', 'a'.repeat(40));
   await invoke(fixture, 'stage', artifact);
-  await assert.rejects(() => invoke(fixture, 'activate', artifact, null, 'local', '/unexpected/current'), (error) => {
-    assert.match(error.stderr, /CURRENT_POINTER_CHANGED/);
-    return true;
-  });
+  await assert.rejects(
+    () => invoke(fixture, 'activate', artifact, null, 'local', '/unexpected/current'),
+    (error) => {
+      assert.match(error.stderr, /CURRENT_POINTER_CHANGED/);
+      return true;
+    }
+  );
   await assert.rejects(() => readlink(join(fixture.pointerRoot, 'current')), { code: 'ENOENT' });
 });
 
@@ -166,9 +261,11 @@ test('waits for a service that becomes ready after two seconds', async () => {
   const fixture = await createFixture();
   const readyAt = join(fixture.root, 'ready-at');
   fixture.policy.readiness = { timeoutMs: 3_000, intervalMs: 100, attemptTimeoutMs: 200, hardFailureGraceMs: 500 };
-  fixture.policy.nodes.local.deployments.app.healthChecks = [{
-    argv: [process.execPath, '-e', "const fs=require('node:fs');process.exit(Date.now()>=Number(fs.readFileSync(process.argv[1],'utf8'))?0:75)", readyAt],
-  }];
+  fixture.policy.nodes.local.deployments.app.healthChecks = [
+    {
+      argv: [process.execPath, '-e', "const fs=require('node:fs');process.exit(Date.now()>=Number(fs.readFileSync(process.argv[1],'utf8'))?0:75)", readyAt],
+    },
+  ];
   await writeFile(readyAt, String(Date.now() + 2_000));
   await writePolicy(fixture);
   const artifact = await createArtifact(fixture, 'delayed-ready', 'a'.repeat(40));
@@ -184,9 +281,11 @@ test('retries transient HTTP 503 failures until the fourth attempt succeeds', as
   const fixture = await createFixture();
   const counter = join(fixture.root, 'health-attempts');
   await writeFile(counter, '0');
-  fixture.policy.nodes.local.deployments.app.healthChecks = [{
-    argv: [process.execPath, '-e', "const fs=require('node:fs');const p=process.argv[1];const n=Number(fs.readFileSync(p,'utf8'))+1;fs.writeFileSync(p,String(n));if(n<4){process.stderr.write('HTTP 503');process.exit(22)}", counter],
-  }];
+  fixture.policy.nodes.local.deployments.app.healthChecks = [
+    {
+      argv: [process.execPath, '-e', "const fs=require('node:fs');const p=process.argv[1];const n=Number(fs.readFileSync(p,'utf8'))+1;fs.writeFileSync(p,String(n));if(n<4){process.stderr.write('HTTP 503');process.exit(22)}", counter],
+    },
+  ];
   await writePolicy(fixture);
   const artifact = await createArtifact(fixture, 'transient-503', 'b'.repeat(40));
   await invoke(fixture, 'stage', artifact);
@@ -204,7 +303,9 @@ test('systemd dependency-isolated mode is used for activation and rollback', asy
   await mkdir(bin);
   await writeFile(pidFile, '100\n');
   const systemctl = join(bin, 'systemctl');
-  await writeFile(systemctl, `#!/bin/sh
+  await writeFile(
+    systemctl,
+    `#!/bin/sh
 if [ "$1" = "show" ]; then
   value=$(cat "$AI_TEST_PID_FILE")
   case " $* " in
@@ -216,7 +317,8 @@ fi
 printf '%s\\n' "$*" >> "$AI_TEST_LOG_FILE"
 value=$(cat "$AI_TEST_PID_FILE")
 expr "$value" + 1 > "$AI_TEST_PID_FILE"
-`);
+`
+  );
   await chmod(systemctl, 0o755);
   fixture.environment = { PATH: `${bin}:${process.env.PATH}`, AI_TEST_PID_FILE: pidFile, AI_TEST_LOG_FILE: logFile };
   fixture.policy.nodes.local.deployments.app.restart = { kind: 'systemd', name: 'fixture.service', jobMode: 'ignore-dependencies' };
@@ -248,7 +350,9 @@ test('a systemd hard failure starts pointer recovery within three seconds', asyn
   await writeFile(restartFile, '0\n');
   await writeFile(commandLog, '');
   const systemctl = join(bin, 'systemctl');
-  await writeFile(systemctl, `#!/bin/sh
+  await writeFile(
+    systemctl,
+    `#!/bin/sh
 value=$(cat "$AI_TEST_RESTART_FILE")
 if [ "$1" = "show" ]; then
   case " $* " in
@@ -267,7 +371,8 @@ if [ "$1" = "show" ]; then
 fi
 printf '%s\n' "$*" >> "$AI_TEST_COMMAND_LOG"
 expr "$value" + 1 > "$AI_TEST_RESTART_FILE"
-`);
+`
+  );
   await chmod(systemctl, 0o755);
   fixture.environment = { PATH: `${bin}:${process.env.PATH}`, AI_TEST_RESTART_FILE: restartFile, AI_TEST_COMMAND_LOG: commandLog };
   fixture.policy.nodes.local.deployments.app.restart = { kind: 'systemd', name: 'fixture.service', jobMode: 'ignore-dependencies' };
@@ -341,7 +446,9 @@ test('fails with the exact protected service name when a non-target PID changes'
   await writeFile(protectedPid, '900\n');
   await writeFile(mutateProtected, '0\n');
   const systemctl = join(bin, 'systemctl');
-  await writeFile(systemctl, `#!/bin/sh
+  await writeFile(
+    systemctl,
+    `#!/bin/sh
 last=''
 for argument in "$@"; do last="$argument"; done
 if [ "$1" = "show" ]; then
@@ -362,7 +469,8 @@ case " $* " in
     fi
     ;;
 esac
-`);
+`
+  );
   await chmod(systemctl, 0o755);
   fixture.environment = {
     PATH: `${bin}:${process.env.PATH}`,
@@ -426,10 +534,13 @@ test('rejects a tampered archive before creating a candidate', async () => {
   const fixture = await createFixture();
   const artifact = await createArtifact(fixture, 'original', 'e'.repeat(40));
   await writeFile(artifact.archive.path, 'tampered');
-  await assert.rejects(() => invoke(fixture, 'stage', artifact), (error) => {
-    assert.match(error.stderr, /ARTIFACT_ARCHIVE_HASH_MISMATCH/);
-    return true;
-  });
+  await assert.rejects(
+    () => invoke(fixture, 'stage', artifact),
+    (error) => {
+      assert.match(error.stderr, /ARTIFACT_ARCHIVE_HASH_MISMATCH/);
+      return true;
+    }
+  );
 });
 
 test('rejects a manifest that names a forbidden dependency directory', async () => {
@@ -444,10 +555,13 @@ test('rejects a manifest that names a forbidden dependency directory', async () 
   await writeFile(artifact.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   artifact.treeDigest = manifest.treeDigest;
   artifact.manifestDigest = manifest.manifestDigest;
-  await assert.rejects(() => invoke(fixture, 'stage', artifact), (error) => {
-    assert.match(error.stderr, /ARTIFACT_FORBIDDEN_PATH/);
-    return true;
-  });
+  await assert.rejects(
+    () => invoke(fixture, 'stage', artifact),
+    (error) => {
+      assert.match(error.stderr, /ARTIFACT_FORBIDDEN_PATH/);
+      return true;
+    }
+  );
 });
 
 test('rejects an unsafe digest before deriving a release path', async () => {
@@ -459,10 +573,13 @@ test('rejects an unsafe digest before deriving a release path', async () => {
   manifest.manifestDigest = digest(manifest);
   await writeFile(artifact.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   artifact.treeDigest = manifest.treeDigest;
-  await assert.rejects(() => invoke(fixture, 'stage', artifact), (error) => {
-    assert.match(error.stderr, /ARTIFACT_TREE_DIGEST_INVALID/);
-    return true;
-  });
+  await assert.rejects(
+    () => invoke(fixture, 'stage', artifact),
+    (error) => {
+      assert.match(error.stderr, /ARTIFACT_TREE_DIGEST_INVALID/);
+      return true;
+    }
+  );
 });
 
 test('candidate failure never moves the candidate or current pointer', async () => {
@@ -470,12 +587,17 @@ test('candidate failure never moves the candidate or current pointer', async () 
   const artifact = await createArtifact(fixture, 'candidate-failure', 'f'.repeat(40));
   fixture.policy.nodes.local.deployments.app.candidateChecks = [{ argv: [process.execPath, '-e', 'process.exit(9)'] }];
   await writePolicy(fixture);
-  await assert.rejects(() => invoke(fixture, 'stage', artifact), (error) => {
-    assert.match(error.stderr, /REMOTE_COMMAND_FAILED/);
-    return true;
-  });
+  await assert.rejects(
+    () => invoke(fixture, 'stage', artifact),
+    (error) => {
+      assert.match(error.stderr, /REMOTE_COMMAND_FAILED/);
+      return true;
+    }
+  );
   const audit = (await readFile(join(fixture.root, 'audit', 'fixture.jsonl'), 'utf8'))
-    .trim().split('\n').map((line) => JSON.parse(line));
+    .trim()
+    .split('\n')
+    .map((line) => JSON.parse(line));
   assert.ok(audit.some((record) => record.action === 'stage' && record.error?.code === 'REMOTE_COMMAND_FAILED'));
   await assert.rejects(() => readlink(join(fixture.pointerRoot, 'candidate')), { code: 'ENOENT' });
   await assert.rejects(() => readlink(join(fixture.pointerRoot, 'current')), { code: 'ENOENT' });
@@ -508,10 +630,13 @@ test('production activation requires the exact source approval', async () => {
   const fixture = await createFixture();
   const artifact = await createArtifact(fixture, 'approval', '1'.repeat(40));
   await invoke(fixture, 'stage', artifact);
-  await assert.rejects(() => invoke(fixture, 'activate', artifact, 'fixture:wrong'), (error) => {
-    assert.match(error.stderr, /PRODUCTION_APPROVAL_INVALID/);
-    return true;
-  });
+  await assert.rejects(
+    () => invoke(fixture, 'activate', artifact, 'fixture:wrong'),
+    (error) => {
+      assert.match(error.stderr, /PRODUCTION_APPROVAL_INVALID/);
+      return true;
+    }
+  );
   await assert.rejects(() => readlink(join(fixture.pointerRoot, 'current')), { code: 'ENOENT' });
 });
 
@@ -530,7 +655,10 @@ test('database migration activation records the selected ledger delta, retries a
   assert.equal(activated.result.restart.commandCount, 0);
   assert.equal(activated.result.receipt.restart.commandCount, 0);
   assert.equal(activated.result.receipt.databaseMigration.status, 'applied');
-  assert.deepEqual(activated.result.receipt.databaseMigration.selected.map((item) => item.version), ['20990102000000']);
+  assert.deepEqual(
+    activated.result.receipt.databaseMigration.selected.map((item) => item.version),
+    ['20990102000000']
+  );
   assert.equal(activated.result.receipt.databaseMigration.ledgerBefore.count, 1);
   assert.equal(activated.result.receipt.databaseMigration.ledgerAfter.count, 2);
   assert.equal(activated.result.receipt.databaseRecovery.databaseRollback, 'not-performed');
@@ -627,17 +755,23 @@ test('requires and binds a declared dependency layer', async () => {
     productionRoot: join(fixture.root, 'layers'),
   };
   const artifact = await createArtifact(fixture, 'layered', '2'.repeat(40), layerConfig);
-  await assert.rejects(() => invoke(fixture, 'stage', artifact), (error) => {
-    assert.match(error.stderr, /DEPENDENCY_LAYER_MISSING/);
-    return true;
-  });
+  await assert.rejects(
+    () => invoke(fixture, 'stage', artifact),
+    (error) => {
+      assert.match(error.stderr, /DEPENDENCY_LAYER_MISSING/);
+      return true;
+    }
+  );
   const layer = join(layerConfig.productionRoot, artifact.dependencyLayer.digest.slice(7));
   await mkdir(layer, { recursive: true });
-  await writeFile(join(layer, 'AI_DELIVERY_LAYER.json'), `${JSON.stringify({
-    schema: 'ai.delivery.dependency-layer.v1',
-    digest: artifact.dependencyLayer.digest,
-    runtime: layerConfig.runtime,
-  })}\n`);
+  await writeFile(
+    join(layer, 'AI_DELIVERY_LAYER.json'),
+    `${JSON.stringify({
+      schema: 'ai.delivery.dependency-layer.v1',
+      digest: artifact.dependencyLayer.digest,
+      runtime: layerConfig.runtime,
+    })}\n`
+  );
   await invoke(fixture, 'stage', artifact);
   await invoke(fixture, 'activate', artifact);
   assert.equal(await readlink(join(fixture.pointerRoot, 'runtime')), layer);
@@ -664,16 +798,38 @@ test('stages a missing declared dependency layer atomically', async () => {
   const source = join(fixture.root, 'layer-source');
   await mkdir(join(source, 'node_modules', 'runtime-package'), { recursive: true });
   await writeFile(join(source, 'node_modules', 'runtime-package', 'index.js'), 'export default true;\n');
-  await writeFile(join(source, 'AI_DELIVERY_LAYER.json'), `${JSON.stringify({
-    schema: 'ai.delivery.dependency-layer.v1',
-    project: 'fixture',
-    target: 'app',
-    digest: artifact.dependencyLayer.digest,
-    runtime: layerConfig.runtime,
-  })}\n`);
+  await writeFile(
+    join(source, 'AI_DELIVERY_LAYER.json'),
+    `${JSON.stringify({
+      schema: 'ai.delivery.dependency-layer.v1',
+      project: 'fixture',
+      target: 'app',
+      digest: artifact.dependencyLayer.digest,
+      runtime: layerConfig.runtime,
+    })}\n`
+  );
   const archive = join(fixture.policy.incomingRoot, 'dependency-layer.tar.gz');
   await execFileAsync('tar', ['-czf', archive, '-C', source, '.']);
-  const args = [agent, 'stage-layer', '--project', 'fixture', '--node', 'local', '--target', 'app', '--archive', archive, '--sha256', await hashFile(archive), '--digest', artifact.dependencyLayer.digest, '--runtime', layerConfig.runtime, '--production-root', layerConfig.productionRoot];
+  const args = [
+    agent,
+    'stage-layer',
+    '--project',
+    'fixture',
+    '--node',
+    'local',
+    '--target',
+    'app',
+    '--archive',
+    archive,
+    '--sha256',
+    await hashFile(archive),
+    '--digest',
+    artifact.dependencyLayer.digest,
+    '--runtime',
+    layerConfig.runtime,
+    '--production-root',
+    layerConfig.productionRoot,
+  ];
   const staged = await execFileAsync(process.execPath, args, { env: { ...process.env, AI_DELIVERY_POLICY_ROOT: fixture.policyRoot }, maxBuffer: 1024 * 1024 });
   assert.equal(JSON.parse(staged.stdout).result.reused, false);
   const layer = join(layerConfig.productionRoot, artifact.dependencyLayer.digest.slice(7));
@@ -716,10 +872,13 @@ test('seeds the immutable rollback baseline once without activating a candidate'
   assert.equal(seeded.result.seeded, true);
   assert.match(await readlink(join(fixture.pointerRoot, 'current')), /seed-/);
   assert.match(await readlink(join(fixture.pointerRoot, 'runtime')), /\/layers\/[a-f0-9]{64}$/);
-  await assert.rejects(() => invoke(fixture, 'seed', { sourceSha }, `fixture:seed-layout:${sourceSha}`), (error) => {
-    assert.match(error.stderr, /CURRENT_POINTER_ALREADY_EXISTS/);
-    return true;
-  });
+  await assert.rejects(
+    () => invoke(fixture, 'seed', { sourceSha }, `fixture:seed-layout:${sourceSha}`),
+    (error) => {
+      assert.match(error.stderr, /CURRENT_POINTER_ALREADY_EXISTS/);
+      return true;
+    }
+  );
 });
 
 test('adopts an unmanaged current directory as the immutable rollback baseline', async () => {
@@ -855,10 +1014,7 @@ function migrationDeployment(fixture, environmentFile) {
     pointerRoot: fixture.pointerRoot,
     allowFirstActivation: true,
     restart: { kind: 'none', name: 'none' },
-    candidateChecks: [
-      { argv: ['test', '-f', '{{candidateDir}}/executor/DatabaseMigrationExecutor.js'] },
-      { argv: ['test', '-d', '{{candidateDir}}/database/supabase/migrations'] },
-    ],
+    candidateChecks: [{ argv: ['test', '-f', '{{candidateDir}}/executor/DatabaseMigrationExecutor.js'] }, { argv: ['test', '-d', '{{candidateDir}}/database/supabase/migrations'] }],
     healthChecks: [],
     databaseMigration: {
       executionRoot: join(fixture.root, 'execution-releases'),
@@ -880,7 +1036,9 @@ async function createMigrationArtifact(fixture, sourceSha) {
   await writeFile(join(directory, 'database', 'supabase', 'migrations', '20990101000000_first.sql'), 'select 1;\n');
   await writeFile(join(directory, 'database', 'supabase', 'migrations', '20990102000000_second.sql'), 'select 2;\n');
   await writeFile(join(directory, 'database', 'contracts', 'history.json'), '{}\n');
-  await writeFile(join(directory, 'executor', 'DatabaseMigrationExecutor.js'), `
+  await writeFile(
+    join(directory, 'executor', 'DatabaseMigrationExecutor.js'),
+    `
 import { createHash } from 'node:crypto';
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -900,7 +1058,8 @@ if (process.env.AI_TEST_FAIL === '1') {
 const afterRecords = [...beforeRecords, ...selected.map((item) => ({ version: item.version, name: item.file, statements: [] }))];
 await writeFile(ledgerPath, JSON.stringify(afterRecords));
 process.stdout.write(JSON.stringify({ schema: 'ai.delivery.database-migration-result.v1', sourceSha: process.env.AI_DELIVERY_SOURCE_SHA, status: selected.length ? 'applied' : 'noop', selected, ledgerBefore: evidence(beforeRecords), ledgerAfter: evidence(afterRecords), applied: selected, error: null }) + '\\n');
-`);
+`
+  );
   const evidence = { target: 'app', directory, deletions: [], ...(await treeEvidence(directory, ['executor/DatabaseMigrationExecutor.js'])) };
   const adapter = { project: 'fixture', projectRoot: fixture.root, targets: { app: { kind: 'migration', criticalFiles: ['executor/DatabaseMigrationExecutor.js'], dependencyLayer: null } } };
   const plan = { to: { sha: sourceSha }, planDigest: digest({ sourceSha }) };
@@ -910,11 +1069,14 @@ process.stdout.write(JSON.stringify({ schema: 'ai.delivery.database-migration-re
 async function materializeLayer(fixture, artifact, layerConfig) {
   const layer = join(layerConfig.productionRoot, artifact.dependencyLayer.digest.slice(7));
   await mkdir(layer, { recursive: true });
-  await writeFile(join(layer, 'AI_DELIVERY_LAYER.json'), `${JSON.stringify({
-    schema: 'ai.delivery.dependency-layer.v1',
-    digest: artifact.dependencyLayer.digest,
-    runtime: layerConfig.runtime,
-  })}\n`);
+  await writeFile(
+    join(layer, 'AI_DELIVERY_LAYER.json'),
+    `${JSON.stringify({
+      schema: 'ai.delivery.dependency-layer.v1',
+      digest: artifact.dependencyLayer.digest,
+      runtime: layerConfig.runtime,
+    })}\n`
+  );
   return layer;
 }
 
@@ -936,8 +1098,12 @@ async function invoke(fixture, action, artifact, approval = null, node = 'local'
   } else if (action === 'activate') {
     let current = expectedCurrent;
     if (current === undefined) {
-      try { current = await readlink(join(node === 'local' ? fixture.pointerRoot : fixture.peerPointerRoot, 'current')); }
-      catch (error) { if (error?.code === 'ENOENT') current = 'none'; else throw error; }
+      try {
+        current = await readlink(join(node === 'local' ? fixture.pointerRoot : fixture.peerPointerRoot, 'current'));
+      } catch (error) {
+        if (error?.code === 'ENOENT') current = 'none';
+        else throw error;
+      }
     }
     args.push('--approval', approval ?? `fixture:${artifact.sourceSha}`, '--expected-current', current);
   } else if (action === 'activate-direct') {
@@ -950,4 +1116,67 @@ async function invoke(fixture, action, artifact, approval = null, node = 'local'
     maxBuffer: 1024 * 1024,
   });
   return JSON.parse(result.stdout);
+}
+
+async function artifactPayload(artifact) {
+  const [archive, manifest] = await Promise.all([readFile(artifact.archive.path), readFile(artifact.manifestPath)]);
+  return {
+    artifactUrl: `data:application/gzip;base64,${archive.toString('base64')}`,
+    manifestUrl: `data:application/json;base64,${manifest.toString('base64')}`,
+  };
+}
+
+async function invokeOss(fixture, artifact, payload, includeControlPlane = true, action = 'deploy-oss-direct-v2', expectedOverrides = {}) {
+  const args = [
+    agent,
+    action,
+    '--project',
+    'fixture',
+    '--node',
+    'local',
+    '--target',
+    'app',
+    '--source-sha',
+    artifact.sourceSha,
+    '--sha256',
+    artifact.archive.sha256.slice(7),
+    '--tree-digest',
+    artifact.treeDigest,
+    '--manifest-digest',
+    artifact.manifestDigest,
+  ];
+  if (includeControlPlane) {
+    args.push('--control-sha', 'f'.repeat(40), '--github-run-id', '123456', '--github-run-attempt', '2');
+    if (action.endsWith('-v2')) {
+      args.push(
+        '--expected-remote-agent-sha256',
+        expectedOverrides.remoteAgentSha256 ?? `sha256:${await hashFile(agent)}`,
+        '--expected-remote-policy-sha256',
+        expectedOverrides.remotePolicySha256 ?? `sha256:${await hashFile(join(fixture.policyRoot, 'fixture.json'))}`
+      );
+    }
+  }
+  return new Promise((resolveInvoke, rejectInvoke) => {
+    const child = spawn(process.execPath, args, {
+      env: { ...process.env, ...(fixture.environment ?? {}), AI_DELIVERY_POLICY_ROOT: fixture.policyRoot },
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    const stdout = [];
+    const stderr = [];
+    child.stdout.on('data', (chunk) => stdout.push(chunk));
+    child.stderr.on('data', (chunk) => stderr.push(chunk));
+    child.on('error', rejectInvoke);
+    child.on('close', (status) => {
+      const output = Buffer.concat(stdout).toString('utf8');
+      const errorOutput = Buffer.concat(stderr).toString('utf8');
+      if (status === 0) resolveInvoke(JSON.parse(output));
+      else {
+        const error = new Error(`remote agent exited ${status}`);
+        error.stdout = output;
+        error.stderr = errorOutput;
+        rejectInvoke(error);
+      }
+    });
+    child.stdin.end(`${JSON.stringify(payload)}\n`);
+  });
 }

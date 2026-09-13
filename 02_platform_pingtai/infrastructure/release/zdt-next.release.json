@@ -20,6 +20,15 @@
     "timeoutMs": 12000,
     "domains": ["accounts.zhudatuan.com","api.zhudatuan.com","console.zhudatuan.com","www.zhudatuan.com","zhudatuan.com","hbbtzn.com","www.hbbtzn.com","console.hbbtzn.com"]
   },
+  "channels": {
+    "h6-cdn": {
+      "id": "h6-cdn",
+      "kind": "edge",
+      "node": "hbbtzn-l1",
+      "manifest": "../projects_xiangmu/hbbtzn/deployment/h6-cdn.json",
+      "providerModule": "../../../04_tools/release-engine/adapters/zdt-next/h6-cdn-channel.mjs"
+    }
+  },
   "impactResolvers": {
     "commerce-services": {"module":"../../../04_tools/release-engine/adapters/zdt-next/service-impact.mjs"},
     "workspace-graph": {"module":"../../../04_tools/release-engine/adapters/zdt-next/workspace-impact.mjs"}
@@ -562,7 +571,7 @@
     {
       "id": "delivery-tooling",
       "targets": [],
-      "include": [".github/workflows/quality.yml",".github/workflows/deploy.yml","scripts/deploy-now.sh","04_tools/release-engine/**","02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh","02_platform_pingtai/infrastructure/release/zdt-next.release.json","02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json"],
+      "include": [".github/workflows/quality.yml",".github/workflows/deploy.yml",".github/workflows/prepare-artifact.yml",".github/workflows/deploy-prepared.yml","scripts/deploy-now.sh","scripts/deploy-prepared.sh","04_tools/release-engine/**","02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh","02_platform_pingtai/infrastructure/release/zdt-next.release.json","02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json"],
       "reason": "delivery tooling is validated in the planning job and is not a production artifact"
     },
     {

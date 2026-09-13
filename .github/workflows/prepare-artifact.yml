@@ -1,0 +1,223 @@
+name: Prepare Artifact
+run-name: Prepare Artifact ${{ inputs.head_sha }} ${{ inputs.release_target }}
+
+# Official 1.3 Prepare channel. Dependency caches accelerate npm ci only. Two
+# isolated empty release state roots must independently produce cold cache misses
+# and byte-identical artifacts before OSS publication is allowed.
+on:
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: Exact 40-character zdt-next source commit to build
+        required: true
+        type: string
+      release_target:
+        description: One runtime target to build and publish
+        required: true
+        type: choice
+        options:
+          - catalog-media
+          - storefront
+          - auth-web
+          - console
+          - identity-api
+          - identity-notification-jobs
+          - mall-provisioning-api
+          - support-api
+          - purchase-api
+          - web-api
+          - catalog-api
+          - catalog-jobs
+          - payment-webhook-api
+          - payment-jobs
+          - database-migration
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zdt-next-prepare-${{ inputs.head_sha }}-${{ inputs.release_target }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22.22.0
+  NPM_VERSION: 10.9.4
+  RUNNER_IMAGE: ubuntu-24.04-x64
+  RELEASE_SHA: ${{ inputs.head_sha }}
+  RELEASE_TARGET: ${{ inputs.release_target }}
+  CONTROL_SHA: ${{ github.sha }}
+  CONTROL_REF: ${{ github.ref }}
+  VITE_API_BASE_URL: https://api.hbbtzn.com
+  VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
+  VITE_ZHUDIAN_SOLUTION_ORIGIN: https://labs.hbbtzn.com
+  VITE_CLIENT_VERSION: 0.0.0-g${{ inputs.head_sha }}
+
+jobs:
+  prepare:
+    name: Two cold builds → immutable OSS artifact
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Validate exact single-target request
+        shell: bash
+        run: |
+          if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "head_sha must be one full lowercase Git commit SHA" >&2
+            exit 64
+          fi
+          if [[ -z "$RELEASE_TARGET" ]]; then
+            echo "release_target is required" >&2
+            exit 64
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: ${{ inputs.head_sha }}
+
+      - name: Verify source belongs to the exact zdt-next history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$CONTROL_REF" != "refs/heads/zdt-next" ]; then
+            echo "Prepare Artifact must run from refs/heads/zdt-next" >&2
+            exit 64
+          fi
+          merge_base="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${RELEASE_SHA}...${CONTROL_SHA}" --jq '.merge_base_commit.sha')"
+          if [ "$merge_base" != "$RELEASE_SHA" ]; then
+            echo "head_sha must belong to the exact zdt-next history" >&2
+            exit 64
+          fi
+
+      - name: Restore dependency cache for npm install acceleration only
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Fix and verify build environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
+          test "$(node --version)" = "v${NODE_VERSION}"
+          test "$(npm --version)" = "$NPM_VERSION"
+          test "$(node -p 'process.platform')" = linux
+          test "$(node -p 'process.arch')" = x64
+
+      - name: Install build dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build and package twice from isolated empty state roots
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="$(git rev-parse HEAD^)"
+          if [ "$RELEASE_TARGET" = "console" ]; then
+            export SHOP_BUILD_COMMIT="$RELEASE_SHA"
+            export SHOP_BUILD_BRANCH="zdt-next"
+            export SHOP_BUILD_DIRTY="false"
+            export SHOP_BUILD_ID="${RELEASE_SHA:0:12}"
+            export SHOP_BUILD_AT="$(git show -s --format=%cI "$RELEASE_SHA")"
+          fi
+          mkdir -p .prepare-release/evidence
+          run_cold_prepare() {
+            label="$1"
+            state=".prepare-release/state-${label}"
+            evidence=".prepare-release/evidence/${label}"
+            if [ -e "$state" ]; then
+              echo "Cold Prepare state root already exists: $state" >&2
+              exit 1
+            fi
+            mkdir -p "$evidence"
+            npm run --silent release -- plan \
+              --state-directory "$state" \
+              --from "$base" \
+              --to "$RELEASE_SHA" \
+              --target "$RELEASE_TARGET" \
+              --prepare \
+              --format json > "$evidence/plan-envelope.json"
+            plan_path="$(node -e "const r=require('./$evidence/plan-envelope.json');if(!r.ok||!r.result.deployRequired||r.result.targets.length!==1)throw new Error('Prepare plan is not one target');process.stdout.write(r.result.planPath)")"
+            npm run --silent release -- build \
+              --state-directory "$state" \
+              --plan "$plan_path" \
+              --format json > "$evidence/build-envelope.json"
+            build_path="$(node -e "const r=require('./$evidence/build-envelope.json');if(!r.ok)throw new Error('Build failed');process.stdout.write(r.result.buildPath)")"
+            npm run --silent release -- package \
+              --state-directory "$state" \
+              --build "$build_path" \
+              --format json > "$evidence/package-envelope.json"
+            node -e "const r=require('./$evidence/package-envelope.json');if(!r.ok||r.result.artifacts.length!==1||r.result.artifacts[0].packageCache!=='miss')throw new Error('Prepare package was not a cold cache miss');process.stdout.write(r.result.packagePath)"
+          }
+          left_package="$(run_cold_prepare cold-a)"
+          right_package="$(run_cold_prepare cold-b)"
+          npm run --silent release -- verify-reproducibility \
+            --left-package "$left_package" \
+            --right-package "$right_package" \
+            --output .prepare-release/reproducibility-evidence.json \
+            --format json > .prepare-release/evidence/reproducibility-envelope.json
+          printf 'package_path=%s\n' "$left_package" >> "$GITHUB_OUTPUT"
+
+      - name: Run prepared Storefront artifact on Linux x64
+        if: inputs.release_target == 'storefront'
+        env:
+          PACKAGE_PATH: ${{ steps.package.outputs.package_path }}
+        run: |
+          set -euo pipefail
+          mkdir -p .prepare-release/storefront-runtime
+          artifact_path="$(node -e "const p=require(process.env.PACKAGE_PATH);process.stdout.write(p.artifacts[0].archive.path)")"
+          tar -xzf "$artifact_path" -C .prepare-release/storefront-runtime
+          STOREFRONT_DIST=.prepare-release/storefront-runtime/app/dist \
+            node 04_tools/release-engine/test/storefront-linux-runtime-fixture.mjs \
+            > .prepare-release/storefront-runtime-evidence.json
+
+      - name: Publish immutable artifact and manifests to OSS
+        id: publish
+        env:
+          PACKAGE_PATH: ${{ steps.package.outputs.package_path }}
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_args=()
+          if [ "$RELEASE_TARGET" = storefront ]; then
+            runtime_args+=(--runtime-evidence .prepare-release/storefront-runtime-evidence.json)
+          fi
+          npm run --silent release -- publish \
+            --package "$PACKAGE_PATH" \
+            --source-sha "$RELEASE_SHA" \
+            --target "$RELEASE_TARGET" \
+            --npm-version "$NPM_VERSION" \
+            --runner-image "$RUNNER_IMAGE" \
+            --repository "$GITHUB_REPOSITORY" \
+            --output .prepare-release/prepare-receipt.json \
+            "${runtime_args[@]}" \
+            --format json | tee .prepare-release/evidence/publish-envelope.json
+          node -e "const r=require('./.prepare-release/evidence/publish-envelope.json');const x=r.result;if(!r.ok)process.exit(1);process.stdout.write('Prepared: '+x.sourceSha+' '+x.target+' '+x.artifactIdentity+' '+x.cacheStatus+' '+x.timings.total+'ms\\n')" \
+            >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve receipts only
+        uses: actions/upload-artifact@v4
+        with:
+          name: prepare-receipt-${{ inputs.release_target }}-${{ inputs.head_sha }}
+          path: |
+            .prepare-release/evidence/cold-a/plan-envelope.json
+            .prepare-release/evidence/cold-a/build-envelope.json
+            .prepare-release/evidence/cold-a/package-envelope.json
+            .prepare-release/evidence/cold-b/plan-envelope.json
+            .prepare-release/evidence/cold-b/build-envelope.json
+            .prepare-release/evidence/cold-b/package-envelope.json
+            .prepare-release/evidence/reproducibility-envelope.json
+            .prepare-release/evidence/publish-envelope.json
+            .prepare-release/reproducibility-evidence.json
+            .prepare-release/prepare-receipt.json
+            .prepare-release/storefront-runtime-evidence.json
+          if-no-files-found: ignore
+          retention-days: 30

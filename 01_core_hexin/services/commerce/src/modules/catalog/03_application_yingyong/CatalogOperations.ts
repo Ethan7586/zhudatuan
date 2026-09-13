@@ -114,6 +114,76 @@ export function catalogActions(context: ModuleContext): OperationActions {
           ...(network.rows[0]?.preview === undefined ? {} : { preview: network.rows[0].preview }),
         } };
       }
+      if (!storefront && view === 'selection-center') {
+        const supplier = queryValue(request.input.query.supplier);
+        const brand = queryValue(request.input.query.brand);
+        const selection = queryValue(request.input.query.selection);
+        const result = await database.query(
+          `select source.id,source.sku_id,product.id product_id,product.title,source.status,0::bigint version,
+          source.observed_at cursor_sort,sku.code,product.product_type,
+          product.attributes->>'coverUrl' cover_url,product.attributes->>'subtitle' subtitle,
+          jsonb_build_object(
+            'kind','selection-center-v1',
+            'categoryId',category.id,'categoryName',coalesce(category.name,'其他商品'),
+            'supplierId',product.owner_partner_id,
+            'supplierName',coalesce(nullif(product.attributes->>'supplierName',''),'未标注供应商'),
+            'brandId',product.brand_id,
+            'brandName',coalesce(nullif(product.attributes->>'brand',''),'未标注品牌'),
+            'sourceChannel',coalesce(nullif(product.attributes->>'supplyChannel',''),source.provider),
+            'supplyPriceMinor',coalesce(
+              case when product.attributes->>'procurementCostMinor'~'^[0-9]+$'
+                then (product.attributes->>'procurementCostMinor')::bigint end,offer.amount_minor),
+            'suggestedRetailMinor',coalesce(
+              case when product.attributes->>'suggestedRetailMinor'~'^[0-9]+$'
+                then (product.attributes->>'suggestedRetailMinor')::bigint end,offer.compare_minor,offer.amount_minor),
+            'availableStock',stock.available,
+            'marketSales30d',case when product.attributes->>'marketSales30d'~'^[0-9]+$'
+              then (product.attributes->>'marketSales30d')::bigint end,
+            'peerLowestPriceMinor',case when product.attributes->>'peerLowestPriceMinor'~'^[0-9]+$'
+              then (product.attributes->>'peerLowestPriceMinor')::bigint end,
+            'mallSales30d',case when product.attributes->>'mallSales30d'~'^[0-9]+$'
+              then (product.attributes->>'mallSales30d')::bigint end,
+            'clickThroughRateBps',case when product.attributes->>'clickThroughRateBps'~'^[0-9]+$'
+              then (product.attributes->>'clickThroughRateBps')::bigint end,
+            'recommendationScore',case when product.attributes->>'recommendationScore'~'^[0-9]+$'
+              then (product.attributes->>'recommendationScore')::bigint end,
+            'salesGrowthBps',case when product.attributes->>'salesGrowthBps'~'^[0-9]+$'
+              then (product.attributes->>'salesGrowthBps')::bigint end,
+            'selected',selected.id is not null
+          ) selection
+          from catalog.sourcelisting source
+          join catalog.sku sku on sku.id=source.sku_id and sku.status='active'
+          join catalog.product product on product.id=sku.product_id and product.status='active'
+          left join catalog.category category on category.id=product.category_id
+          left join catalog.listing selected on selected.scope_id=$1 and selected.sku_id=sku.id
+            and selected.status<>'retired'
+          left join lateral (
+            select price.amount_minor,price.compare_minor from pricing.pricebook book
+            join pricing.price price on price.book_id=book.id
+            where book.scope_id=$1 and book.status='active' and price.sku_id=sku.id
+              and price.effective_at<=clock_timestamp()
+              and (price.expires_at is null or price.expires_at>clock_timestamp())
+            order by price.effective_at desc,price.id limit 1
+          ) offer on true
+          left join lateral (
+            select coalesce(sum(greatest(item.onhand-item.safety,0)),0)::bigint available
+            from inventory.stockitem item where item.scope_id=$1 and item.sku_id=sku.id and item.status='active'
+          ) stock on true
+          where source.scope_id=$1 and source.status='mapped'
+            and ($2='' or product.title ilike '%'||$2||'%' or sku.code ilike '%'||$2||'%'
+              or (product.attributes->>'brand') ilike '%'||$2||'%'
+              or coalesce(product.attributes->>'supplierName','') ilike '%'||$2||'%')
+            and ($3='' or product.category_id=$3)
+            and ($4='' or product.owner_partner_id=$4)
+            and ($5='' or product.brand_id=$5 or (product.attributes->>'brand')=$5)
+            and ($6='' or ($6='selected' and selected.id is not null)
+              or ($6='available' and selected.id is null))
+            and ($7::timestamptz is null or (source.observed_at,source.id)<($7::timestamptz,$8))
+          order by source.observed_at desc,source.id desc limit $9`,
+          [access.scope.id, query, category, supplier, brand, selection, page.sort, page.id, page.fetch],
+        );
+        return keysetResult(result, page, 'cursor_sort');
+      }
       if (access.scope.kind === 'supplier') {
         const result = await database.query(
           `select source.id,source.sku_id,coalesce(product.title,source.external_id) title,

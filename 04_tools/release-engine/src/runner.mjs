@@ -17,8 +17,9 @@ export async function runCommand(spec, context) {
       cwd,
       env: { ...process.env, ...context.environment, ...(spec.environment ?? {}) },
       shell: false,
-      stdio: ['ignore', 'pipe', 'pipe'],
+      stdio: [spec.input === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
     });
+    if (spec.input !== undefined) child.stdin.end(spec.input);
     child.stdout.on('data', (chunk) => output.push(chunk));
     child.stderr.on('data', (chunk) => output.push(chunk));
     child.on('error', reject);
@@ -48,7 +49,7 @@ export async function runCommand(spec, context) {
       outputTail: log.slice(-4_000),
     });
   }
-  return { name: spec.name, argv, cwd, startedAt, durationMs, exitCode: result.exitCode, output: log, outputTail: log.slice(-2_000) };
+  return { name: spec.name, argv, cwd, startedAt, durationMs, exitCode: result.exitCode, ...(spec.input === undefined ? {} : { inputBytes: Buffer.byteLength(spec.input) }), output: log, outputTail: log.slice(-2_000) };
 }
 
 export function expandArgv(argv, context) {

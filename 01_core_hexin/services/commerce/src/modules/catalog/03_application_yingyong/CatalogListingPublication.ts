@@ -66,6 +66,25 @@ export async function setListingPublication(
 export async function setListingBatchPublication(request: OperationRequest, database: OperationDatabase) {
   const access = requireAccess(request);
   const body = bodyRecord(request);
+  if (body.action === 'select') {
+    const ids = publicationIds(body.ids);
+    const listingIds = ids.map(() => `listing:${randomUUID()}`);
+    const result = await database.query(
+      `with ${SELECTED_STOREFRONT_POOL_CTE},
+      requested(source_id,listing_id) as(select * from unnest($1::text[],$3::text[]))
+      insert into catalog.listing(id,scope_id,pool_id,sku_id,title,status,effective_at,expires_at,version,created_at,updated_at)
+      select requested.listing_id,$2,selected_pool.pool_id,source.sku_id,product.title,'draft',null,null,0,
+        clock_timestamp(),clock_timestamp()
+      from requested join catalog.sourcelisting source on source.id=requested.source_id
+        and source.scope_id=$2 and source.status='mapped'
+      join catalog.sku sku on sku.id=source.sku_id and sku.status='active'
+      join catalog.product product on product.id=sku.product_id and product.status='active'
+      cross join selected_pool
+      on conflict(scope_id,sku_id) do nothing returning id,status,version`,
+      [ids, access.scope.id, listingIds],
+    );
+    return { status: 200, body: { action: 'select', items: result.rows, count: result.rowCount } };
+  }
   if (body.action === 'publish_ready') {
     const ids = body.ids === undefined
       ? (await database.query<ListingIdRow>(`select listing.id from catalog.listing listing

@@ -7,16 +7,13 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
 import { setTimeout as delay } from 'node:timers/promises';
+import { fileURLToPath } from 'node:url';
 
 let actionName = 'unknown';
 let loadedPolicy = null;
 let loadedContext = null;
 
-const FORBIDDEN_DIRECTORIES = new Set([
-  '.git', '.npm', '.nyc_output', '.turbo', '_cacache',
-  'coverage', 'logs', 'node_modules', 'playwright-report',
-  'releases', 'test-results', 'tmp', 'temp',
-]);
+const FORBIDDEN_DIRECTORIES = new Set(['.git', '.npm', '.nyc_output', '.turbo', '_cacache', 'coverage', 'logs', 'node_modules', 'playwright-report', 'releases', 'test-results', 'tmp', 'temp']);
 const MAX_ARTIFACT_BYTES = 150_000_000;
 const MAX_DEPENDENCY_LAYER_ARCHIVE_BYTES = 1_500_000_000;
 const DEFAULT_READINESS = Object.freeze({
@@ -32,7 +29,9 @@ try {
   const options = parseOptions(tokens);
   const policyRoot = process.env.AI_DELIVERY_POLICY_ROOT ?? '/etc/ai-delivery/projects';
   const project = safeName(required(options.project, 'PROJECT_REQUIRED'));
-  const policy = JSON.parse(await readFile(join(policyRoot, `${project}.json`), 'utf8'));
+  const policyPath = join(policyRoot, `${project}.json`);
+  const policyBody = await readFile(policyPath);
+  const policy = JSON.parse(policyBody.toString('utf8'));
   loadedPolicy = policy;
   validatePolicy(policy, project);
   const nodeKey = safeName(required(options.node, 'NODE_REQUIRED'));
@@ -40,8 +39,11 @@ try {
   const nodePolicy = policy.nodes?.[nodeKey];
   const deployment = nodePolicy?.deployments?.[targetId];
   assert(deployment, 'DEPLOYMENT_NOT_ALLOWED');
-  const context = { project, node: nodeKey, target: targetId, deployment, nodePolicy, policy };
+  const preparedActions = new Set(['deploy-oss-direct', 'validate-oss-candidate', 'deploy-oss-direct-v2', 'validate-oss-candidate-v2']);
+  const controlPlane = preparedActions.has(action) ? await preparedControlPlane(options, policyBody) : null;
+  const context = { project, node: nodeKey, target: targetId, deployment, nodePolicy, policy, controlPlane };
   loadedContext = context;
+  if (preparedActions.has(action) && action.endsWith('-v2')) assertExpectedPreparedControlPlane(controlPlane, options);
 
   let result;
   if (action === 'lookup') result = await lookup(context, options);
@@ -51,6 +53,9 @@ try {
   else if (action === 'reuse-direct') result = await withLocks(context, false, () => reuse(context, options, true), { version: options.treeDigest, operation: 'reuse-artifact-direct' });
   else if (action === 'stage') result = await withLocks(context, false, () => stage(context, options), { version: options.treeDigest });
   else if (action === 'stage-direct') result = await withLocks(context, false, () => stage(context, options, true), { version: options.treeDigest, operation: 'stage-direct' });
+  else if (action === 'validate-oss-candidate' || action === 'validate-oss-candidate-v2')
+    result = await withLocks(context, false, () => validateOssCandidate(context, options), { version: options.sourceSha, operation: 'validate-oss-candidate' });
+  else if (action === 'deploy-oss-direct' || action === 'deploy-oss-direct-v2') result = await withLocks(context, true, () => deployOssDirect(context, options), { version: options.sourceSha, operation: 'deploy-oss-direct' });
   else if (action === 'preflight') result = await preflight(context);
   else if (action === 'baseline') result = await withLocks(context, true, () => importBaseline(context, options), { version: options.sourceSha, operation: 'import-baseline' });
   else if (action === 'seed') result = await withLocks(context, true, () => seed(context, options), { version: options.sourceSha, operation: 'seed-layout' });
@@ -197,15 +202,23 @@ async function seedDependencyLayer(context) {
     await mkdir(temporary, { recursive: true, mode: 0o755 });
     try {
       await cloneTree(source, join(temporary, 'node_modules'));
-      await writeFile(join(temporary, 'AI_DELIVERY_LAYER.json'), `${JSON.stringify({
-        schema: 'ai.delivery.dependency-layer.v1',
-        project: context.project,
-        digest: layerDigest,
-        runtime: definition.runtime,
-        keyFiles,
-        seededFrom: source,
-        createdAt: new Date().toISOString(),
-      }, null, 2)}\n`, { mode: 0o444 });
+      await writeFile(
+        join(temporary, 'AI_DELIVERY_LAYER.json'),
+        `${JSON.stringify(
+          {
+            schema: 'ai.delivery.dependency-layer.v1',
+            project: context.project,
+            digest: layerDigest,
+            runtime: definition.runtime,
+            keyFiles,
+            seededFrom: source,
+            createdAt: new Date().toISOString(),
+          },
+          null,
+          2
+        )}\n`,
+        { mode: 0o444 }
+      );
       await mkdir(productionRoot, { recursive: true });
       await rename(temporary, destination);
     } finally {
@@ -261,6 +274,8 @@ async function stage(context, options, direct = false) {
   assert(manifest.archive?.bytes === archiveStats.size, 'ARTIFACT_ARCHIVE_BYTES_MISMATCH', { expected: manifest.archive?.bytes, actual: archiveStats.size });
   assert(options.sha256 === manifest.archive.sha256.slice(7), 'ARTIFACT_DECLARED_HASH_MISMATCH');
   assert(options.treeDigest === manifest.treeDigest, 'ARTIFACT_DECLARED_TREE_MISMATCH');
+  if (options.sourceSha) assert(options.sourceSha === manifest.sourceSha, 'ARTIFACT_DECLARED_SOURCE_MISMATCH');
+  if (options.manifestDigest) assert(options.manifestDigest === manifest.manifestDigest, 'ARTIFACT_DECLARED_MANIFEST_MISMATCH');
   assertManifestEntries(manifest);
   const claimedDigest = manifest.manifestDigest;
   const unsigned = { ...manifest };
@@ -301,7 +316,7 @@ async function stage(context, options, direct = false) {
   }
   timings.materialize = Date.now() - materializeStarted;
   const checksStarted = Date.now();
-  if (!direct) await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: release, currentDir: await pointer(context.deployment.pointerRoot, 'current') ?? '', ...contextSummary(context) });
+  if (!direct) await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: release, currentDir: (await pointer(context.deployment.pointerRoot, 'current')) ?? '', ...contextSummary(context) });
   timings.candidateChecks = Date.now() - checksStarted;
   const pointerStarted = Date.now();
   await atomicPointer(join(root, 'candidate'), release);
@@ -322,6 +337,105 @@ async function stage(context, options, direct = false) {
     reusedBytes: 0,
     timings,
   };
+}
+
+async function deployOssDirect(context, options) {
+  const started = Date.now();
+  const prepared = await prepareOssCandidate(context, options, true);
+  const activation = await activateDirect(context, options);
+  return {
+    ...prepared,
+    schema: 'ai.delivery.oss-direct.v1',
+    activation,
+    timings: { ...prepared.timings, total: Date.now() - started },
+  };
+}
+
+async function validateOssCandidate(context, options) {
+  return prepareOssCandidate(context, options, false);
+}
+
+async function prepareOssCandidate(context, options, direct) {
+  const started = Date.now();
+  const identity = artifactIdentity(context, options);
+  const found = await lookup(context, options);
+  let staged;
+  let downloadedBytes = 0;
+  let downloadMs = 0;
+  if (found.exists) {
+    staged = await reuse(context, options, direct);
+  } else {
+    const payload = await readStdinJson();
+    const incomingRoot = resolve(required(context.policy.incomingRoot, 'INCOMING_ROOT_REQUIRED'));
+    assertAllowedRoot(context.policy, incomingRoot);
+    await mkdir(incomingRoot, { recursive: true, mode: 0o700 });
+    const stem = `${safeName(context.project)}--${safeName(context.node)}--${safeName(context.target)}--${identity.archiveSha256}.candidate-${process.pid}-${Date.now()}`;
+    const archive = join(incomingRoot, `${stem}.tar.gz`);
+    const manifest = join(incomingRoot, `${stem}.artifact.json`);
+    const downloadStarted = Date.now();
+    try {
+      const manifestDownload = await downloadObject(payload.manifestUrl, manifest, 5_000_000, 'manifest');
+      const artifactDownload = await downloadObject(payload.artifactUrl, archive, MAX_ARTIFACT_BYTES, 'artifact');
+      downloadedBytes = manifestDownload.bytes + artifactDownload.bytes;
+      downloadMs = Date.now() - downloadStarted;
+      staged = await stage(context, { ...options, archive, manifest }, direct);
+    } finally {
+      await Promise.all([rm(archive, { force: true }), rm(manifest, { force: true })]);
+    }
+  }
+  const currentAfter = await pointer(context.deployment.pointerRoot, 'current');
+  assert(currentAfter === found.current, 'CANDIDATE_VALIDATION_MOVED_CURRENT', { before: found.current, after: currentAfter });
+  return {
+    schema: 'ai.delivery.oss-candidate.v1',
+    sourceSha: identity.sourceSha,
+    artifactSha256: `sha256:${identity.archiveSha256}`,
+    controlPlane: context.controlPlane,
+    cacheStatus: found.exists ? found.status : 'miss',
+    downloadedBytes,
+    reusedBytes: found.exists ? found.artifactBytes : 0,
+    staged,
+    current: { before: found.current, after: currentAfter, unchanged: true },
+    timings: {
+      artifactLookup: found.artifactLookupMs,
+      download: downloadMs,
+      candidate: staged.timings?.candidateChecks ?? 0,
+      total: Date.now() - started,
+    },
+  };
+}
+
+async function readStdinJson() {
+  const chunks = [];
+  let bytes = 0;
+  for await (const chunk of process.stdin) {
+    bytes += chunk.length;
+    assert(bytes <= 64 * 1024, 'OSS_DOWNLOAD_PAYLOAD_TOO_LARGE');
+    chunks.push(chunk);
+  }
+  let payload;
+  try {
+    payload = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  } catch {
+    throw failure('OSS_DOWNLOAD_PAYLOAD_INVALID');
+  }
+  assert(typeof payload.artifactUrl === 'string' && typeof payload.manifestUrl === 'string', 'OSS_DOWNLOAD_URL_REQUIRED');
+  return payload;
+}
+
+async function downloadObject(url, destination, maximumBytes, kind) {
+  let response;
+  try {
+    response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(120_000) });
+  } catch (error) {
+    throw failure('OSS_DOWNLOAD_FAILED', { kind, cause: error?.cause?.code ?? error?.name ?? 'FETCH_FAILED' });
+  }
+  assert(response.ok, 'OSS_DOWNLOAD_FAILED', { kind, status: response.status });
+  const declaredBytes = Number(response.headers.get('content-length') ?? '0');
+  assert(Number.isFinite(declaredBytes) && declaredBytes <= maximumBytes, 'OSS_DOWNLOAD_SIZE_INVALID', { kind, declaredBytes, maximumBytes });
+  const body = Buffer.from(await response.arrayBuffer());
+  assert(body.byteLength <= maximumBytes, 'OSS_DOWNLOAD_SIZE_INVALID', { kind, bytes: body.byteLength, maximumBytes });
+  await writeFile(destination, body, { flag: 'wx', mode: 0o600 });
+  return { bytes: body.byteLength };
 }
 
 async function verifyArchiveEntries(archive) {
@@ -417,7 +531,7 @@ async function activate(context, options) {
   const expectedApproval = `${context.project}:${manifest.sourceSha}`;
   assert(options.approval === expectedApproval, 'PRODUCTION_APPROVAL_INVALID', { expectedApproval });
   const candidateStarted = Date.now();
-  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: candidate, currentDir: await pointer(root, 'current') ?? '', ...contextSummary(context) });
+  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: candidate, currentDir: (await pointer(root, 'current')) ?? '', ...contextSummary(context) });
   const capacity = await capacityEvidence(context, manifest.archive?.bytes ?? manifest.totalBytes ?? 0);
   await chmod(candidate, 0o755);
   timings.candidate = Date.now() - candidateStarted;
@@ -488,7 +602,20 @@ async function activate(context, options) {
       cutoverMs: timings.health + timings.isolation,
       timings,
       protectedProcesses: { before: protectedBefore, after: protectedAfter },
-      receipt: await deploymentReceipt(context, manifest, { pointersBefore, rollbackPoint, capacity, caddyBefore, caddyAfter, readiness, targetProcessBefore, targetProcessAfter: await processId(context.deployment.restart), protectedBefore, protectedAfter, databaseMigration, finalStatus: 'success' }),
+      receipt: await deploymentReceipt(context, manifest, {
+        pointersBefore,
+        rollbackPoint,
+        capacity,
+        caddyBefore,
+        caddyAfter,
+        readiness,
+        targetProcessBefore,
+        targetProcessAfter: await processId(context.deployment.restart),
+        protectedBefore,
+        protectedAfter,
+        databaseMigration,
+        finalStatus: 'success',
+      }),
     };
   }
   let readiness;
@@ -646,7 +773,20 @@ async function activate(context, options) {
     timings,
     targetProcess: { before: targetProcessBefore, after: await processId(context.deployment.restart) },
     protectedProcesses: { before: protectedBefore, after: protectedAfter },
-    receipt: await deploymentReceipt(context, manifest, { pointersBefore, rollbackPoint, capacity, caddyBefore, caddyAfter: await caddySemanticEvidence(context.policy), readiness, targetProcessBefore, targetProcessAfter: await processId(context.deployment.restart), protectedBefore, protectedAfter, databaseMigration, finalStatus: 'success' }),
+    receipt: await deploymentReceipt(context, manifest, {
+      pointersBefore,
+      rollbackPoint,
+      capacity,
+      caddyBefore,
+      caddyAfter: await caddySemanticEvidence(context.policy),
+      readiness,
+      targetProcessBefore,
+      targetProcessAfter: await processId(context.deployment.restart),
+      protectedBefore,
+      protectedAfter,
+      databaseMigration,
+      finalStatus: 'success',
+    }),
   };
 }
 
@@ -657,7 +797,7 @@ async function preflight(context) {
   assert(candidate, 'CANDIDATE_MISSING');
   const manifest = JSON.parse(await readFile(join(candidate, 'AI_DELIVERY_ARTIFACT.json'), 'utf8'));
   const started = performance.now();
-  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: candidate, currentDir: await pointer(root, 'current') ?? '', ...contextSummary(context) });
+  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: candidate, currentDir: (await pointer(root, 'current')) ?? '', ...contextSummary(context) });
   return {
     candidate,
     artifact: artifactSummary(manifest),
@@ -689,14 +829,12 @@ async function executeDatabaseMigration(context, candidate, manifest) {
     }
   } else {
     const existing = await readJson(join(executionDirectory, 'AI_DELIVERY_ARTIFACT.json'));
-    assert(existing?.sourceSha === manifest.sourceSha && existing?.treeDigest === manifest.treeDigest
-      && existing?.manifestDigest === manifest.manifestDigest, 'DATABASE_MIGRATION_EXECUTION_RELEASE_MISMATCH', { executionDirectory });
+    assert(existing?.sourceSha === manifest.sourceSha && existing?.treeDigest === manifest.treeDigest && existing?.manifestDigest === manifest.manifestDigest, 'DATABASE_MIGRATION_EXECUTION_RELEASE_MISMATCH', { executionDirectory });
   }
   await chmod(executionDirectory, 0o755);
   const runner = resolve(executionDirectory, definition.runner);
   const migrationDirectory = resolve(executionDirectory, definition.migrationDirectory);
-  assert(runner.startsWith(`${executionDirectory}/`) && migrationDirectory.startsWith(`${executionDirectory}/`),
-    'DATABASE_MIGRATION_EXECUTION_PATH_UNSAFE', { runner, migrationDirectory });
+  assert(runner.startsWith(`${executionDirectory}/`) && migrationDirectory.startsWith(`${executionDirectory}/`), 'DATABASE_MIGRATION_EXECUTION_PATH_UNSAFE', { runner, migrationDirectory });
   const environment = {
     PATH: process.env.PATH ?? '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
     NODE_ENV: 'production',
@@ -721,15 +859,28 @@ async function executeDatabaseMigration(context, candidate, manifest) {
       timeoutMs: definition.timeoutMs ?? 300_000,
     });
     const result = parseJsonOutput(executed.stdout);
-    assert(result?.schema === 'ai.delivery.database-migration-result.v1' && result.sourceSha === manifest.sourceSha,
-      'DATABASE_MIGRATION_RESULT_INVALID', { executionDirectory });
+    assert(result?.schema === 'ai.delivery.database-migration-result.v1' && result.sourceSha === manifest.sourceSha, 'DATABASE_MIGRATION_RESULT_INVALID', { executionDirectory });
     assert(['applied', 'noop'].includes(result.status), 'DATABASE_MIGRATION_RESULT_FAILED', { databaseMigration: result });
     return { ...result, executionDirectory, credentialSources: [environmentFile, ...(credentialFile === null ? [] : [credentialFile])], restart: restartEvidence(context.deployment.restart, false) };
   } catch (error) {
     const reported = parseJsonOutput(error?.details?.outputTail ?? '', false);
-    const databaseMigration = reported?.schema === 'ai.delivery.database-migration-result.v1'
-      ? { ...reported, executionDirectory, credentialSources: [environmentFile, ...(credentialFile === null ? [] : [credentialFile])], restart: restartEvidence(context.deployment.restart, false) }
-      : { schema: 'ai.delivery.database-migration-result.v1', sourceSha: manifest.sourceSha, status: 'failed', selectionStatus: 'unavailable', selected: null, ledgerBefore: null, ledgerAfter: null, applied: null, error: errorEvidence(error), executionDirectory, credentialSources: [environmentFile, ...(credentialFile === null ? [] : [credentialFile])], restart: restartEvidence(context.deployment.restart, false) };
+    const databaseMigration =
+      reported?.schema === 'ai.delivery.database-migration-result.v1'
+        ? { ...reported, executionDirectory, credentialSources: [environmentFile, ...(credentialFile === null ? [] : [credentialFile])], restart: restartEvidence(context.deployment.restart, false) }
+        : {
+            schema: 'ai.delivery.database-migration-result.v1',
+            sourceSha: manifest.sourceSha,
+            status: 'failed',
+            selectionStatus: 'unavailable',
+            selected: null,
+            ledgerBefore: null,
+            ledgerAfter: null,
+            applied: null,
+            error: errorEvidence(error),
+            executionDirectory,
+            credentialSources: [environmentFile, ...(credentialFile === null ? [] : [credentialFile])],
+            restart: restartEvidence(context.deployment.restart, false),
+          };
     throw failure('DATABASE_MIGRATION_EXECUTOR_FAILED', { databaseMigration });
   }
 }
@@ -761,14 +912,15 @@ async function runtimeIdentity(definition) {
   const gidResult = await command(['id', '-g', user]);
   const uid = Number(uidResult.stdout.trim());
   const gid = Number(gidResult.stdout.trim());
-  assert(Number.isInteger(uid) && uid >= 0 && Number.isInteger(gid) && gid >= 0,
-    'DATABASE_MIGRATION_RUNTIME_ID_INVALID', { user, group });
+  assert(Number.isInteger(uid) && uid >= 0 && Number.isInteger(gid) && gid >= 0, 'DATABASE_MIGRATION_RUNTIME_ID_INVALID', { user, group });
   return { uid, gid };
 }
 
 function parseJsonOutput(output, requiredOutput = true) {
   for (const line of String(output).trim().split('\n').reverse()) {
-    try { return JSON.parse(line); } catch {}
+    try {
+      return JSON.parse(line);
+    } catch {}
   }
   assert(!requiredOutput, 'DATABASE_MIGRATION_RESULT_MISSING');
   return null;
@@ -793,12 +945,7 @@ async function rollback(context) {
       previous: await pointer(root, 'previous'),
     });
   }
-  const [current, previous, currentRuntime, previousRuntime] = await Promise.all([
-    pointer(root, 'current'),
-    pointer(root, 'previous'),
-    pointer(root, 'runtime'),
-    pointer(root, 'previous-runtime'),
-  ]);
+  const [current, previous, currentRuntime, previousRuntime] = await Promise.all([pointer(root, 'current'), pointer(root, 'previous'), pointer(root, 'runtime'), pointer(root, 'previous-runtime')]);
   assert(previous, 'ROLLBACK_POINTER_MISSING');
   await ensureTraversablePointerRoot(context);
   const protectedBefore = await protectedProcessSnapshot(context);
@@ -887,7 +1034,7 @@ async function stageDependencyLayer(context, options) {
   const archiveStats = await lstat(archive);
   assert(archiveStats.isFile() && archiveStats.size <= MAX_DEPENDENCY_LAYER_ARCHIVE_BYTES, 'DEPENDENCY_LAYER_ARCHIVE_SIZE_INVALID', { bytes: archiveStats.size, limitBytes: MAX_DEPENDENCY_LAYER_ARCHIVE_BYTES });
   assert(/^[a-f0-9]{64}$/.test(options.sha256), 'DEPENDENCY_LAYER_ARCHIVE_HASH_INVALID');
-  assert(await hashFile(archive) === options.sha256, 'DEPENDENCY_LAYER_ARCHIVE_HASH_MISMATCH');
+  assert((await hashFile(archive)) === options.sha256, 'DEPENDENCY_LAYER_ARCHIVE_HASH_MISMATCH');
   const destination = join(layer.productionRoot, layer.digest.slice(7));
   if (await exists(destination)) {
     const reused = await dependencyLayerLookup(context, options);
@@ -947,10 +1094,7 @@ async function dependencyLayerPath(context, layer) {
 async function withLocks(context, _production, work, details = {}) {
   const lockRoot = context.policy.lockRoot ?? '/run/lock/ai-delivery';
   const projectLockRoot = join(lockRoot, 'projects', safeName(context.project));
-  const paths = [
-    join(projectLockRoot, 'nodes', `${safeName(context.node)}.lock`),
-    join(projectLockRoot, 'targets', safeName(context.node), `${safeName(context.target)}.lock`),
-  ];
+  const paths = [join(projectLockRoot, 'nodes', `${safeName(context.node)}.lock`), join(projectLockRoot, 'targets', safeName(context.node), `${safeName(context.target)}.lock`)];
   const releases = [];
   try {
     for (const path of paths) releases.push(await acquireDirectoryLock(path, context, context.policy.staleLockSeconds ?? 3600, details));
@@ -1006,6 +1150,7 @@ async function deploymentReceipt(context, manifest, evidence) {
     schema: 'ai.delivery.receipt.v1',
     version: `${manifest.sourceSha}-${manifest.treeDigest.slice(7, 19)}`,
     sourceSha: manifest.sourceSha,
+    ...(context.controlPlane ? { controlPlane: context.controlPlane } : {}),
     ...contextSummary(context),
     artifact: artifactSummary(manifest),
     pointers: { before: evidence.pointersBefore, after: pointersAfter },
@@ -1050,16 +1195,24 @@ async function acquireDirectoryLock(path, context, staleSeconds, details) {
       throw failure('DELIVERY_LOCKED', { path, owner });
     }
   }
-  await writeFile(join(path, 'owner.json'), `${JSON.stringify({
-    schema: 'ai.delivery.lock.v1',
-    pid: process.pid,
-    host: hostname(),
-    publisher: process.env.AI_DELIVERY_ACTOR ?? process.env.SUDO_USER ?? process.env.USER ?? 'unknown',
-    startedAt: new Date().toISOString(),
-    service: context.deployment.restart?.name ?? 'none',
-    ...contextSummary(context),
-    ...details,
-  }, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
+  await writeFile(
+    join(path, 'owner.json'),
+    `${JSON.stringify(
+      {
+        schema: 'ai.delivery.lock.v1',
+        pid: process.pid,
+        host: hostname(),
+        publisher: process.env.AI_DELIVERY_ACTOR ?? process.env.SUDO_USER ?? process.env.USER ?? 'unknown',
+        startedAt: new Date().toISOString(),
+        service: context.deployment.restart?.name ?? 'none',
+        ...contextSummary(context),
+        ...details,
+      },
+      null,
+      2
+    )}\n`,
+    { flag: 'wx', mode: 0o600 }
+  );
   return () => rm(path, { recursive: true, force: true });
 }
 
@@ -1226,15 +1379,13 @@ async function processState(definition = { kind: 'none', name: 'none' }) {
     return { kind: 'pm2', name: definition.name, pid, activeState: pid === '0' ? 'inactive' : 'active' };
   }
   if (definition.kind === 'systemd') {
-    const result = await command([
-      'systemctl', 'show',
-      '--property=ActiveState',
-      '--property=SubState',
-      '--property=Result',
-      '--property=MainPID',
-      definition.name,
-    ], { acceptExitCodes: [0, 3], timeoutMs: 2_000 });
-    const properties = Object.fromEntries(result.stdout.split('\n').filter((line) => line.includes('=')).map((line) => line.split(/=(.*)/s).slice(0, 2)));
+    const result = await command(['systemctl', 'show', '--property=ActiveState', '--property=SubState', '--property=Result', '--property=MainPID', definition.name], { acceptExitCodes: [0, 3], timeoutMs: 2_000 });
+    const properties = Object.fromEntries(
+      result.stdout
+        .split('\n')
+        .filter((line) => line.includes('='))
+        .map((line) => line.split(/=(.*)/s).slice(0, 2))
+    );
     return {
       kind: 'systemd',
       name: definition.name,
@@ -1428,7 +1579,11 @@ function stableJson(value) {
 function sortValue(value) {
   if (Array.isArray(value)) return value.map(sortValue);
   if (value && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
-    return Object.fromEntries(Object.keys(value).sort().map((key) => [key, sortValue(value[key])]));
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, sortValue(value[key])])
+    );
   }
   return value;
 }
@@ -1486,7 +1641,11 @@ async function statusPointer(root, name) {
 
 function assertAllowedRoot(policy, path) {
   assert(path.startsWith('/') && path !== '/', 'POINTER_ROOT_UNSAFE', { path });
-  assert((policy.allowedRoots ?? []).some((root) => path === root || path.startsWith(`${root}/`)), 'POINTER_ROOT_NOT_ALLOWED', { path });
+  assert(
+    (policy.allowedRoots ?? []).some((root) => path === root || path.startsWith(`${root}/`)),
+    'POINTER_ROOT_NOT_ALLOWED',
+    { path }
+  );
 }
 
 function assertIncomingPath(policy, path) {
@@ -1519,36 +1678,29 @@ function validatePolicy(policy, project) {
       if (deployment.databaseMigration) {
         const migration = deployment.databaseMigration;
         assert(deployment.restart?.kind === 'none', 'POLICY_DATABASE_MIGRATION_RESTART_FORBIDDEN', { node, target });
-        assert(typeof migration.executionRoot === 'string' && typeof migration.environmentFile === 'string',
-          'POLICY_DATABASE_MIGRATION_SOURCE_REQUIRED', { node, target });
+        assert(typeof migration.executionRoot === 'string' && typeof migration.environmentFile === 'string', 'POLICY_DATABASE_MIGRATION_SOURCE_REQUIRED', { node, target });
         assertAllowedRoot(policy, migration.executionRoot);
         assertAllowedRoot(policy, migration.environmentFile);
         if (migration.executionMode === 'database-owner') {
           assert(typeof migration.credentialFile === 'string', 'POLICY_DATABASE_MIGRATION_OWNER_CREDENTIAL_REQUIRED', { node, target });
           assertAllowedRoot(policy, migration.credentialFile);
-          assert(migration.ownerDatabaseHost === '127.0.0.1' && Number.isInteger(migration.ownerDatabasePort)
-            && migration.ownerDatabasePort > 0 && migration.ownerDatabasePort <= 65535,
-          'POLICY_DATABASE_MIGRATION_OWNER_ENDPOINT_INVALID', { node, target });
+          assert(migration.ownerDatabaseHost === '127.0.0.1' && Number.isInteger(migration.ownerDatabasePort) && migration.ownerDatabasePort > 0 && migration.ownerDatabasePort <= 65535, 'POLICY_DATABASE_MIGRATION_OWNER_ENDPOINT_INVALID', {
+            node,
+            target,
+          });
         } else {
-          assert(migration.executionMode === undefined || migration.executionMode === 'migration-role',
-            'POLICY_DATABASE_MIGRATION_EXECUTION_MODE_INVALID', { node, target });
-          assert(migration.credentialFile === undefined && migration.ownerDatabaseHost === undefined
-            && migration.ownerDatabasePort === undefined, 'POLICY_DATABASE_MIGRATION_OWNER_CONFIGURATION_UNEXPECTED', { node, target });
+          assert(migration.executionMode === undefined || migration.executionMode === 'migration-role', 'POLICY_DATABASE_MIGRATION_EXECUTION_MODE_INVALID', { node, target });
+          assert(migration.credentialFile === undefined && migration.ownerDatabaseHost === undefined && migration.ownerDatabasePort === undefined, 'POLICY_DATABASE_MIGRATION_OWNER_CONFIGURATION_UNEXPECTED', { node, target });
         }
-        assert(safeRelative(migration.runner) && safeRelative(migration.migrationDirectory),
-          'POLICY_DATABASE_MIGRATION_PATH_INVALID', { node, target });
-        assert(migration.nodeBinary === undefined || (typeof migration.nodeBinary === 'string' && migration.nodeBinary.startsWith('/')),
-          'POLICY_DATABASE_MIGRATION_NODE_INVALID', { node, target });
-        assert(Number.isInteger(migration.timeoutMs) && migration.timeoutMs > 0,
-          'POLICY_DATABASE_MIGRATION_TIMEOUT_INVALID', { node, target });
-        assert((migration.runtimeUser === undefined) === (migration.runtimeGroup === undefined),
-          'POLICY_DATABASE_MIGRATION_IDENTITY_INCOMPLETE', { node, target });
+        assert(safeRelative(migration.runner) && safeRelative(migration.migrationDirectory), 'POLICY_DATABASE_MIGRATION_PATH_INVALID', { node, target });
+        assert(migration.nodeBinary === undefined || (typeof migration.nodeBinary === 'string' && migration.nodeBinary.startsWith('/')), 'POLICY_DATABASE_MIGRATION_NODE_INVALID', { node, target });
+        assert(Number.isInteger(migration.timeoutMs) && migration.timeoutMs > 0, 'POLICY_DATABASE_MIGRATION_TIMEOUT_INVALID', { node, target });
+        assert((migration.runtimeUser === undefined) === (migration.runtimeGroup === undefined), 'POLICY_DATABASE_MIGRATION_IDENTITY_INCOMPLETE', { node, target });
         if (migration.runtimeUser) {
           safeName(migration.runtimeUser);
           safeName(migration.runtimeGroup);
         }
-        assert(migration.recovery?.mode === 'forward-only' && typeof migration.recovery.snapshot === 'string',
-          'POLICY_DATABASE_MIGRATION_RECOVERY_INVALID', { node, target });
+        assert(migration.recovery?.mode === 'forward-only' && typeof migration.recovery.snapshot === 'string', 'POLICY_DATABASE_MIGRATION_RECOVERY_INVALID', { node, target });
       }
       if (deployment.allowBaselineImport !== undefined) assert(typeof deployment.allowBaselineImport === 'boolean', 'POLICY_BASELINE_IMPORT_INVALID', { node, target });
       for (const input of deployment.seedInputs ?? []) {
@@ -1602,6 +1754,36 @@ function contextSummary(context) {
   return { project: context.project, node: context.node, target: context.target };
 }
 
+async function preparedControlPlane(options, policyBody) {
+  const sourceSha = required(options.controlSha, 'CONTROL_PLANE_SHA_REQUIRED');
+  const runId = required(options.githubRunId, 'CONTROL_PLANE_RUN_ID_REQUIRED');
+  const runAttempt = required(options.githubRunAttempt, 'CONTROL_PLANE_RUN_ATTEMPT_REQUIRED');
+  assert(/^[a-f0-9]{40}$/.test(sourceSha), 'CONTROL_PLANE_SHA_INVALID');
+  assert(/^[1-9][0-9]*$/.test(runId), 'CONTROL_PLANE_RUN_ID_INVALID');
+  assert(/^[1-9][0-9]*$/.test(runAttempt), 'CONTROL_PLANE_RUN_ATTEMPT_INVALID');
+  return {
+    sourceSha,
+    github: { runId, runAttempt },
+    remoteAgentSha256: `sha256:${await hashFile(fileURLToPath(import.meta.url))}`,
+    remotePolicySha256: `sha256:${createHash('sha256').update(policyBody).digest('hex')}`,
+  };
+}
+
+function assertExpectedPreparedControlPlane(controlPlane, options) {
+  const expectedAgentSha256 = required(options.expectedRemoteAgentSha256, 'EXPECTED_REMOTE_AGENT_SHA256_REQUIRED');
+  const expectedPolicySha256 = required(options.expectedRemotePolicySha256, 'EXPECTED_REMOTE_POLICY_SHA256_REQUIRED');
+  assert(/^sha256:[a-f0-9]{64}$/.test(expectedAgentSha256), 'EXPECTED_REMOTE_AGENT_SHA256_INVALID');
+  assert(/^sha256:[a-f0-9]{64}$/.test(expectedPolicySha256), 'EXPECTED_REMOTE_POLICY_SHA256_INVALID');
+  assert(controlPlane.remoteAgentSha256 === expectedAgentSha256, 'REMOTE_AGENT_SHA256_MISMATCH', {
+    expected: expectedAgentSha256,
+    actual: controlPlane.remoteAgentSha256,
+  });
+  assert(controlPlane.remotePolicySha256 === expectedPolicySha256, 'REMOTE_POLICY_SHA256_MISMATCH', {
+    expected: expectedPolicySha256,
+    actual: controlPlane.remotePolicySha256,
+  });
+}
+
 function expand(value, values) {
   return String(value).replace(/\{\{([A-Za-z][A-Za-z0-9]*)\}\}/g, (_, key) => {
     assert(key in values, 'CHECK_TEMPLATE_UNKNOWN', { key });
@@ -1616,7 +1798,11 @@ async function audit(policy, record) {
 }
 
 async function readJson(path) {
-  try { return JSON.parse(await readFile(path, 'utf8')); } catch { return null; }
+  try {
+    return JSON.parse(await readFile(path, 'utf8'));
+  } catch {
+    return null;
+  }
 }
 
 async function readLock(path) {
@@ -1625,16 +1811,32 @@ async function readLock(path) {
 }
 
 async function exists(path) {
-  try { await lstat(path); return true; } catch (error) { if (error?.code === 'ENOENT') return false; throw error; }
+  try {
+    await lstat(path);
+    return true;
+  } catch (error) {
+    if (error?.code === 'ENOENT') return false;
+    throw error;
+  }
 }
 
 async function lstatOrNull(path) {
-  try { return await lstat(path); } catch (error) { if (error?.code === 'ENOENT') return null; throw error; }
+  try {
+    return await lstat(path);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return null;
+    throw error;
+  }
 }
 
 function isAlive(pid) {
   if (!Number.isInteger(pid)) return false;
-  try { process.kill(pid, 0); return true; } catch { return false; }
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function safeName(value) {

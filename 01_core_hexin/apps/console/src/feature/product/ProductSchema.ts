@@ -53,6 +53,27 @@ const ProductListingPreviewSchema = z.object({
   changes: z.array(ProductPreviewChangeSchema),
 });
 
+export const ProductSelectionPreviewSchema = z.object({
+  kind: z.literal('selection-center-v1'),
+  categoryId: z.nullable(z.string()),
+  categoryName: z.string().check(z.minLength(1)),
+  supplierId: z.nullable(z.string()),
+  supplierName: z.string().check(z.minLength(1)),
+  brandId: z.nullable(z.string()),
+  brandName: z.string().check(z.minLength(1)),
+  sourceChannel: z.string().check(z.minLength(1)),
+  supplyPriceMinor: z.nullable(DatabaseIntegerSchema),
+  suggestedRetailMinor: z.nullable(DatabaseIntegerSchema),
+  availableStock: z.nullable(DatabaseIntegerSchema),
+  marketSales30d: z.optional(z.nullable(DatabaseIntegerSchema)),
+  peerLowestPriceMinor: z.optional(z.nullable(DatabaseIntegerSchema)),
+  mallSales30d: z.optional(z.nullable(DatabaseIntegerSchema)),
+  clickThroughRateBps: z.optional(z.nullable(DatabaseIntegerSchema)),
+  recommendationScore: z.optional(z.nullable(DatabaseIntegerSchema)),
+  salesGrowthBps: z.optional(z.nullable(DatabaseIntegerSchema)),
+  selected: z.boolean(),
+});
+
 export const ProductManagementStatusSchema = z.enum(['needs_attention', 'pending_review', 'published', 'unpublished']);
 
 export const ListingSchema = z.object({
@@ -73,6 +94,17 @@ export const ListingSchema = z.object({
   sku_count: z.optional(DatabaseIntegerSchema),
   management_status: z.optional(ProductManagementStatusSchema),
   preview: z.optional(ProductListingPreviewSchema),
+  selection: z.optional(ProductSelectionPreviewSchema),
+});
+
+export const ProductSelectionReceiptSchema = z.object({
+  action: z.literal('select'),
+  count: DatabaseIntegerSchema,
+  items: z.array(z.object({
+    id: z.string().check(z.minLength(1)),
+    status: z.string().check(z.minLength(1)),
+    version: DatabaseIntegerSchema,
+  })),
 });
 
 export const ListingPublicationReceiptSchema = z.object({
@@ -216,6 +248,8 @@ export const ListingPageSchema = z.object({
 
 export type ProductFilter = z.infer<typeof ProductFilterSchema>;
 export type Listing = z.infer<typeof ListingSchema>;
+export type ProductSelectionPreview = z.infer<typeof ProductSelectionPreviewSchema>;
+export type ProductSelectionReceipt = z.infer<typeof ProductSelectionReceiptSchema>;
 export type ListingBatchPublicationReceipt = z.infer<typeof ListingBatchPublicationReceiptSchema>;
 export type CatalogPublicationFailure = z.infer<typeof CatalogPublicationFailureSchema>;
 export type CatalogPublicationTask = z.infer<typeof CatalogPublicationTaskSchema>;

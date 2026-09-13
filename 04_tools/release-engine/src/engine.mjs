@@ -9,9 +9,12 @@ import { DeliveryError, invariant } from './errors.mjs';
 import { assertBuildRefIsCheckedOut, assertWorktreeClean, currentHead } from './git.mjs';
 import { layerCommand } from './layer.mjs';
 import { acquireLocks } from './lock.mjs';
+import { ossClientFromEnvironment, publishPreparedArtifact, resolveDownloadEndpoint, resolvePreparedArtifact } from './oss.mjs';
 import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
 import { createRun, readJson, statePaths, writeJson } from './state.mjs';
+
+const SHA256_PATTERN = /^sha256:[a-f0-9]{64}$/;
 
 export async function planCommand(adapter, options) {
   const started = performance.now();
@@ -76,14 +79,17 @@ export async function packageCommand(adapter, options) {
   const runDirectory = dirname(buildPath);
   const plan = await readJson(join(runDirectory, 'plan.json'));
   invariant(build.sourceSha === plan.to.sha, 'PACKAGE_SOURCE_MISMATCH', 'Build and plan source differ');
+  const state = statePaths(adapter);
   const artifacts = [];
-  for (const target of build.targets) artifacts.push(await packageTarget(adapter, plan, target, runDirectory, statePaths(adapter).artifacts));
+  for (const target of build.targets) artifacts.push(await packageTarget(adapter, plan, target, runDirectory, state.artifacts));
   const result = {
     schema: 'ai.delivery.package-set.v1',
     project: adapter.project,
     runId: build.runId,
+    stateRoot: state.root,
     sourceSha: build.sourceSha,
     direct: plan.direct === true,
+    prepare: plan.prepare === true,
     requestedTargets: plan.requestedTargets ?? [],
     targetScope: plan.targetScope ?? { mode: 'affected', requestedTargets: [], excludedChangeCount: 0 },
     deploymentOrder: plan.deploymentOrder ?? build.targets.map((target) => target.target),
@@ -95,6 +101,164 @@ export async function packageCommand(adapter, options) {
   return { ...result, packagePath: join(runDirectory, 'package.json') };
 }
 
+export async function publishCommand(adapter, options) {
+  return publishPreparedArtifact(adapter, options);
+}
+
+export async function validatePreparedCommand(adapter, options) {
+  return preparedArtifactCommand(adapter, options, true);
+}
+
+export async function deployPreparedCommand(adapter, options) {
+  return preparedArtifactCommand(adapter, options, false);
+}
+
+async function preparedArtifactCommand(adapter, options, candidateOnly) {
+  const started = performance.now();
+  const sourceSha = required(options.sourceSha, 'PREPARED_DEPLOY_SOURCE_SHA_REQUIRED');
+  invariant(/^[a-f0-9]{40}$/.test(sourceSha), 'PREPARED_DEPLOY_SOURCE_SHA_INVALID', 'Prepared deploy requires one full lowercase Git commit SHA');
+  const controlSha = required(options.controlSha, 'PREPARED_DEPLOY_CONTROL_SHA_REQUIRED');
+  const githubRunId = required(options.githubRunId, 'PREPARED_DEPLOY_RUN_ID_REQUIRED');
+  const githubRunAttempt = required(options.githubRunAttempt, 'PREPARED_DEPLOY_RUN_ATTEMPT_REQUIRED');
+  invariant(/^[a-f0-9]{40}$/.test(controlSha), 'PREPARED_DEPLOY_CONTROL_SHA_INVALID', 'Prepared deploy requires the exact release control-plane SHA');
+  invariant(/^[1-9][0-9]*$/.test(githubRunId), 'PREPARED_DEPLOY_RUN_ID_INVALID', 'Prepared deploy requires the GitHub run id');
+  invariant(/^[1-9][0-9]*$/.test(githubRunAttempt), 'PREPARED_DEPLOY_RUN_ATTEMPT_INVALID', 'Prepared deploy requires the GitHub run attempt');
+  const expectedRemoteAgentSha256 = required(options.expectedRemoteAgentSha256, 'PREPARED_DEPLOY_REMOTE_AGENT_SHA256_REQUIRED');
+  const expectedRemotePolicySha256 = required(options.expectedRemotePolicySha256, 'PREPARED_DEPLOY_REMOTE_POLICY_SHA256_REQUIRED');
+  invariant(SHA256_PATTERN.test(expectedRemoteAgentSha256), 'PREPARED_DEPLOY_REMOTE_AGENT_SHA256_INVALID', 'Prepared deploy requires the expected remote Agent SHA-256');
+  invariant(SHA256_PATTERN.test(expectedRemotePolicySha256), 'PREPARED_DEPLOY_REMOTE_POLICY_SHA256_INVALID', 'Prepared deploy requires the expected remote policy SHA-256');
+  const target = required(options.target, 'PREPARED_DEPLOY_TARGET_REQUIRED');
+  invariant(Boolean(adapter.targets[target]), 'PREPARED_DEPLOY_TARGET_UNKNOWN', `Unknown target ${target}`);
+  const nodes = options.nodes ?? [];
+  invariant(nodes.length === 1, 'PREPARED_DEPLOY_NODE_REQUIRED', 'Prepared deploy requires exactly one explicit node');
+  const requestedNode = nodes[0];
+  invariant(Boolean(adapter.nodes[requestedNode]?.deployments?.[target]), 'PREPARED_DEPLOY_NODE_TARGET_MISMATCH', `Unknown deployment ${requestedNode}/${target}`);
+  const resolvedDeployment = resolveDeployment(adapter, requestedNode, target);
+  const resolution = await resolvePreparedArtifact(adapter, { ...options, node: requestedNode });
+  const publicClient = ossClientFromEnvironment(options.endpoint);
+  const downloadEndpoint = resolveDownloadEndpoint(publicClient.endpoint, options.internalEndpoint ?? process.env.ALIYUN_OSS_INTERNAL_ENDPOINT);
+  const downloadClient = ossClientFromEnvironment(downloadEndpoint);
+  const transport = resolvedDeployment.node.transport ?? adapter.transport;
+  invariant(transport?.kind === 'ssh', 'PREPARED_DEPLOY_REQUIRES_SSH', 'Prepared deploy requires the declared SSH transport');
+  const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
+  invariant(Boolean(host), 'DEPLOY_SSH_HOST_MISSING', `SSH host missing for ${resolvedDeployment.executionNode}`);
+  const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
+  const artifact = resolution.manifest.artifact;
+  const runtimeManifest = resolution.manifest.runtimeManifest;
+  const remoteStarted = performance.now();
+  const remote = await runCommand(
+    {
+      name: `${candidateOnly ? 'validate' : 'deploy'}-prepared:${resolvedDeployment.executionNode}:${target}`,
+      argv: [
+        'ssh',
+        host,
+        remoteAgent,
+        candidateOnly ? 'validate-oss-candidate-v2' : 'deploy-oss-direct-v2',
+        '--project',
+        adapter.project,
+        '--node',
+        resolvedDeployment.executionNode,
+        '--target',
+        target,
+        '--source-sha',
+        sourceSha,
+        '--sha256',
+        artifact.sha256.slice(7),
+        '--tree-digest',
+        artifact.treeDigest,
+        '--manifest-digest',
+        runtimeManifest.manifestDigest,
+        '--control-sha',
+        controlSha,
+        '--github-run-id',
+        githubRunId,
+        '--github-run-attempt',
+        githubRunAttempt,
+        '--expected-remote-agent-sha256',
+        expectedRemoteAgentSha256,
+        '--expected-remote-policy-sha256',
+        expectedRemotePolicySha256,
+      ],
+      input: `${JSON.stringify({
+        artifactUrl: downloadClient.signGet(artifact.object, 900),
+        manifestUrl: downloadClient.signGet(runtimeManifest.object, 900),
+      })}\n`,
+      timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+    },
+    basicContext(adapter)
+  );
+  const remoteResult = parseCommandJson(remote)?.result;
+  if (candidateOnly) {
+    invariant(remoteResult?.schema === 'ai.delivery.oss-candidate.v1' && remoteResult.current?.unchanged === true, 'PREPARED_CANDIDATE_EVIDENCE_MISSING', 'Remote prepared candidate validation did not prove current remained unchanged');
+  } else {
+    invariant(Boolean(remoteResult?.activation?.receipt), 'PREPARED_DEPLOY_RECEIPT_MISSING', 'Remote prepared deploy did not return an activation receipt');
+  }
+  const controlPlane = candidateOnly ? remoteResult.controlPlane : remoteResult.activation.receipt.controlPlane;
+  assertPreparedControlPlane(controlPlane, {
+    sourceSha: controlSha,
+    githubRunId,
+    githubRunAttempt,
+    remoteAgentSha256: expectedRemoteAgentSha256,
+    remotePolicySha256: expectedRemotePolicySha256,
+  });
+  return {
+    schema: candidateOnly ? 'ai.delivery.prepared-candidate.v1' : 'ai.delivery.prepared-deploy.v1',
+    project: adapter.project,
+    sourceSha,
+    artifactSourceSha: sourceSha,
+    controlPlane,
+    target,
+    requestedNode,
+    node: resolvedDeployment.executionNode,
+    artifactIdentity: artifact.sha256,
+    releaseManifestObject: resolution.releaseManifestObject,
+    finalStatus: candidateOnly ? 'candidate-validated' : 'success',
+    cacheStatus: remoteResult.cacheStatus,
+    repeatedDeployment: candidateOnly ? false : remoteResult.activation.alreadyCurrent === true,
+    timings: {
+      artifactLookup: resolution.timings.artifactLookup,
+      download: remoteResult.timings?.download ?? 0,
+      candidate: remoteResult.timings?.candidate ?? 0,
+      cutover: remoteResult.activation?.timings?.cutover ?? 0,
+      restart: remoteResult.activation?.timings?.restart ?? 0,
+      health: remoteResult.activation?.timings?.health ?? 0,
+      rollback: remoteResult.timings?.rollback ?? 0,
+      remoteTotal: elapsed(remoteStarted),
+      total: elapsed(started),
+    },
+    traffic: {
+      artifactBytes: artifact.bytes + runtimeManifest.bytes,
+      downloadedBytes: remoteResult.downloadedBytes ?? 0,
+      reusedBytes: remoteResult.reusedBytes ?? 0,
+    },
+    ...(candidateOnly ? { candidateEvidence: remoteResult.current } : { receipt: remoteResult.activation.receipt }),
+    completedAt: new Date().toISOString(),
+  };
+}
+
+export function assertPreparedControlPlane(controlPlane, expected) {
+  invariant(
+    controlPlane?.sourceSha === expected.sourceSha && controlPlane.github?.runId === expected.githubRunId && controlPlane.github?.runAttempt === expected.githubRunAttempt,
+    'PREPARED_DEPLOY_CONTROL_PROVENANCE_MISMATCH',
+    'Remote deployment receipt control-plane provenance differs'
+  );
+  invariant(
+    SHA256_PATTERN.test(controlPlane.remoteAgentSha256 ?? '') && SHA256_PATTERN.test(controlPlane.remotePolicySha256 ?? ''),
+    'PREPARED_DEPLOY_REMOTE_PROVENANCE_MISSING',
+    'Remote deployment receipt is missing Agent or policy digest'
+  );
+  invariant(
+    controlPlane.remoteAgentSha256 === expected.remoteAgentSha256 && controlPlane.remotePolicySha256 === expected.remotePolicySha256,
+    'PREPARED_DEPLOY_REMOTE_PROVENANCE_MISMATCH',
+    'Remote Agent or policy digest differs from the exact release control plane',
+    {
+      expected: { remoteAgentSha256: expected.remoteAgentSha256, remotePolicySha256: expected.remotePolicySha256 },
+      actual: { remoteAgentSha256: controlPlane.remoteAgentSha256, remotePolicySha256: controlPlane.remotePolicySha256 },
+    }
+  );
+  return controlPlane;
+}
+
 export async function deployCommand(adapter, options) {
   const started = performance.now();
   const packagePath = requiredPath(options.package, 'DEPLOY_PACKAGE_REQUIRED');
@@ -103,23 +267,21 @@ export async function deployCommand(adapter, options) {
   const direct = options.direct === true;
   const nodes = options.nodes ?? [];
   if (direct) {
-    invariant(typeof options.target === 'string' && options.target.length > 0,
-      'DIRECT_TARGET_REQUIRED', 'Direct delivery requires exactly one explicit target');
-    invariant(nodes.length === 1,
-      'DIRECT_NODE_REQUIRED', 'Direct delivery requires exactly one explicit node');
-    invariant(/^[a-f0-9]{40}$/.test(packageSet.sourceSha ?? ''),
-      'DIRECT_SHA_REQUIRED', 'Direct delivery package requires one full lowercase Git commit SHA');
+    invariant(typeof options.target === 'string' && options.target.length > 0, 'DIRECT_TARGET_REQUIRED', 'Direct delivery requires exactly one explicit target');
+    invariant(nodes.length === 1, 'DIRECT_NODE_REQUIRED', 'Direct delivery requires exactly one explicit node');
+    invariant(/^[a-f0-9]{40}$/.test(packageSet.sourceSha ?? ''), 'DIRECT_SHA_REQUIRED', 'Direct delivery package requires one full lowercase Git commit SHA');
   }
   const requestedTargets = options.target === undefined ? [] : deploymentTargetClosure(adapter, options.target);
   if (options.target !== undefined) {
     invariant(Boolean(adapter.targets[options.target]), 'DEPLOY_TARGET_UNKNOWN', `Unknown target ${options.target}`);
-    invariant(packageSet.artifacts.some((artifact) => artifact.target === options.target), 'DEPLOY_TARGET_NOT_PACKAGED', `Package does not contain target ${options.target}`);
+    invariant(
+      packageSet.artifacts.some((artifact) => artifact.target === options.target),
+      'DEPLOY_TARGET_NOT_PACKAGED',
+      `Package does not contain target ${options.target}`
+    );
   }
-  invariant(!direct || requestedTargets.length === 1,
-    'DIRECT_SCOPE_EXPANSION_FORBIDDEN', 'Direct delivery cannot expand beyond the one requested target', { requestedTargets });
-  const artifacts = requestedTargets.length > 0
-    ? packageSet.artifacts.filter((artifact) => requestedTargets.includes(artifact.target))
-    : packageSet.artifacts;
+  invariant(!direct || requestedTargets.length === 1, 'DIRECT_SCOPE_EXPANSION_FORBIDDEN', 'Direct delivery cannot expand beyond the one requested target', { requestedTargets });
+  const artifacts = requestedTargets.length > 0 ? packageSet.artifacts.filter((artifact) => requestedTargets.includes(artifact.target)) : packageSet.artifacts;
   invariant(nodes.length > 0, 'DEPLOY_NODE_REQUIRED', 'Deploy requires at least one explicit --node');
   const environment = options.environment ?? 'candidate';
   invariant(['candidate', 'production'].includes(environment), 'DEPLOY_ENVIRONMENT_INVALID', 'Environment must be candidate or production');
@@ -148,9 +310,7 @@ export async function deployCommand(adapter, options) {
   const results = [];
   const failedMigrations = new Set();
   for (const item of deployments.values()) {
-    const blockers = environment === 'production'
-      ? (adapter.targets[item.artifact.target]?.after ?? []).filter((target) => failedMigrations.has(target))
-      : [];
+    const blockers = environment === 'production' ? (adapter.targets[item.artifact.target]?.after ?? []).filter((target) => failedMigrations.has(target)) : [];
     if (blockers.length > 0) {
       results.push({
         ok: false,
@@ -162,10 +322,7 @@ export async function deployCommand(adapter, options) {
       });
       continue;
     }
-    const release = await acquireLocks([
-      join(paths.locks, 'nodes', `${item.nodeKey}.lock`),
-      join(paths.locks, 'targets', item.nodeKey, `${item.artifact.target}.lock`),
-    ], {
+    const release = await acquireLocks([join(paths.locks, 'nodes', `${item.nodeKey}.lock`), join(paths.locks, 'targets', item.nodeKey, `${item.artifact.target}.lock`)], {
       project: adapter.project,
       phase: `deploy:${environment}`,
       sourceSha: packageSet.sourceSha,
@@ -186,9 +343,18 @@ export async function deployCommand(adapter, options) {
   const timings = aggregateDeployTimings(successful);
   timings.package = packageSet.timings?.package ?? 0;
   timings.total = elapsed(started);
-  const result = { schema: 'ai.delivery.deploy.v1', project: adapter.project, environment, sourceSha: packageSet.sourceSha,
+  const result = {
+    schema: 'ai.delivery.deploy.v1',
+    project: adapter.project,
+    environment,
+    sourceSha: packageSet.sourceSha,
     requestedTargets: options.target === undefined ? [] : [options.target],
-    finalStatus: results.every((item) => item.ok) ? 'success' : successful.length > 0 ? 'partial-failure' : 'failure', results, timings, traffic: aggregateDeployTraffic(successful), completedAt: new Date().toISOString() };
+    finalStatus: results.every((item) => item.ok) ? 'success' : successful.length > 0 ? 'partial-failure' : 'failure',
+    results,
+    timings,
+    traffic: aggregateDeployTraffic(successful),
+    completedAt: new Date().toISOString(),
+  };
   await writeJson(join(dirname(packagePath), `deploy-${environment}.json`), result);
   invariant(result.finalStatus === 'success', 'DEPLOYMENT_OBJECTS_FAILED', 'One or more independently locked deployment objects failed', result);
   return result;
@@ -265,7 +431,14 @@ export async function installCommand(adapter, options) {
   invariant(remoteHash.output.trim().split(/\s+/)[0] === archiveSha256, 'INSTALL_ARCHIVE_HASH_MISMATCH', 'Remote installation archive hash differs');
   await runCommand({ name: `install-directory:${mode}`, argv: ['ssh', host, 'mkdir', '-p', remoteRoot], timeoutMs: 30_000 }, basicContext(adapter));
   await runCommand({ name: `install-extract:${mode}`, argv: ['ssh', host, 'tar', '-xzf', remoteArchive, '-C', remoteRoot], timeoutMs: 120_000 }, basicContext(adapter));
-  const installed = await runCommand({ name: `install-apply:${mode}`, argv: ['ssh', host, 'flock', '-n', `/run/lock/ai-delivery/${adapter.project}-bootstrap.lock`, 'bash', `${remoteRoot}/02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh`, mode, remoteRoot, nodeScope], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+  const installed = await runCommand(
+    {
+      name: `install-apply:${mode}`,
+      argv: ['ssh', host, 'flock', '-n', `/run/lock/ai-delivery/${adapter.project}-bootstrap.lock`, 'bash', `${remoteRoot}/02_platform_pingtai/infrastructure/release/install-ai-delivery-agent.sh`, mode, remoteRoot, nodeScope],
+      timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+    },
+    basicContext(adapter)
+  );
   await runCommand({ name: `install-cleanup:${mode}`, argv: ['ssh', host, 'rm', '-f', remoteArchive], timeoutMs: 30_000 }, basicContext(adapter));
   return {
     schema: 'ai.delivery.install.v1',
@@ -294,14 +467,16 @@ export async function verifyCommand(adapter, options) {
   const results = [];
   let index = 0;
   for (const command of deployment.health ?? []) {
-    results.push(await runCommand(command, {
-      projectRoot: adapter.projectRoot,
-      environment: {},
-      changedFiles: [],
-      logPath: join(statePaths(adapter).root, 'verification', `${nodeKey}-${targetId}-${index++}.log`),
-      node: nodeKey,
-      target: targetId,
-    }));
+    results.push(
+      await runCommand(command, {
+        projectRoot: adapter.projectRoot,
+        environment: {},
+        changedFiles: [],
+        logPath: join(statePaths(adapter).root, 'verification', `${nodeKey}-${targetId}-${index++}.log`),
+        node: nodeKey,
+        target: targetId,
+      })
+    );
   }
   return { schema: 'ai.delivery.verify.v1', project: adapter.project, node: nodeKey, target: targetId, results, timings: { verify: elapsed(started), total: elapsed(started) }, completedAt: new Date().toISOString() };
 }
@@ -325,11 +500,14 @@ export async function seedCommand(adapter, options) {
   const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
   invariant(Boolean(host), 'DEPLOY_SSH_HOST_MISSING', `SSH host missing for ${nodeKey}`);
   const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
-  const result = await runCommand({
-    name: `seed:${nodeKey}:${targetId}`,
-    argv: ['ssh', host, remoteAgent, 'seed', '--project', adapter.project, '--node', nodeKey, '--target', targetId, '--source-sha', sourceSha, '--approval', expected],
-    timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
-  }, basicContext(adapter));
+  const result = await runCommand(
+    {
+      name: `seed:${nodeKey}:${targetId}`,
+      argv: ['ssh', host, remoteAgent, 'seed', '--project', adapter.project, '--node', nodeKey, '--target', targetId, '--source-sha', sourceSha, '--approval', expected],
+      timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+    },
+    basicContext(adapter)
+  );
   return { schema: 'ai.delivery.seed.v1', project: adapter.project, node: nodeKey, target: targetId, durationMs: result.durationMs, remote: parseCommandJson(result) };
 }
 
@@ -348,11 +526,14 @@ export async function baselineCommand(adapter, options) {
   const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
   invariant(Boolean(host), 'DEPLOY_SSH_HOST_MISSING', `SSH host missing for ${nodeKey}`);
   const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
-  const result = await runCommand({
-    name: `baseline:${nodeKey}:${targetId}`,
-    argv: ['ssh', host, remoteAgent, 'baseline', '--project', adapter.project, '--node', nodeKey, '--target', targetId, '--source-sha', sourceSha, '--approval', expected],
-    timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
-  }, basicContext(adapter));
+  const result = await runCommand(
+    {
+      name: `baseline:${nodeKey}:${targetId}`,
+      argv: ['ssh', host, remoteAgent, 'baseline', '--project', adapter.project, '--node', nodeKey, '--target', targetId, '--source-sha', sourceSha, '--approval', expected],
+      timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+    },
+    basicContext(adapter)
+  );
   return { schema: 'ai.delivery.baseline.v1', project: adapter.project, node: nodeKey, target: targetId, durationMs: result.durationMs, remote: parseCommandJson(result) };
 }
 
@@ -376,13 +557,20 @@ async function executeDeployment(adapter, item, environment, options) {
   const incoming = `${transport.incomingRoot ?? '/opt/ai-delivery/incoming'}/${incomingName}.tar.gz`;
   const incomingManifest = `${transport.incomingRoot ?? '/opt/ai-delivery/incoming'}/${incomingName}.artifact.json`;
   const identityArgs = [
-    '--project', adapter.project,
-    '--node', item.nodeKey,
-    '--target', item.artifact.target,
-    '--source-sha', item.artifact.sourceSha,
-    '--sha256', item.artifact.archive.sha256.slice(7),
-    '--tree-digest', item.artifact.treeDigest,
-    '--manifest-digest', item.artifact.manifestDigest,
+    '--project',
+    adapter.project,
+    '--node',
+    item.nodeKey,
+    '--target',
+    item.artifact.target,
+    '--source-sha',
+    item.artifact.sourceSha,
+    '--sha256',
+    item.artifact.archive.sha256.slice(7),
+    '--tree-digest',
+    item.artifact.treeDigest,
+    '--manifest-digest',
+    item.artifact.manifestDigest,
   ];
   const manifestBytes = (await lstat(item.artifact.manifestPath)).size;
   const artifactBytes = item.artifact.archive.bytes + manifestBytes;
@@ -398,12 +586,37 @@ async function executeDeployment(adapter, item, environment, options) {
     const action = direct ? 'reuse-direct' : 'reuse';
     staged = await runCommand({ name: `${action}:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, action, ...identityArgs], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
   } else {
-    const uploadArchive = await runCommand({ name: `upload-archive:${item.nodeKey}:${item.artifact.target}`, argv: ['scp', item.artifact.archive.path, `${host}:${incoming}`], timeoutMs: transport.uploadTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
-    const uploadManifest = await runCommand({ name: `upload-manifest:${item.nodeKey}:${item.artifact.target}`, argv: ['scp', item.artifact.manifestPath, `${host}:${incomingManifest}`], timeoutMs: transport.uploadTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+    const uploadArchive = await runCommand(
+      { name: `upload-archive:${item.nodeKey}:${item.artifact.target}`, argv: ['scp', item.artifact.archive.path, `${host}:${incoming}`], timeoutMs: transport.uploadTimeoutMs ?? 10 * 60_000 },
+      basicContext(adapter)
+    );
+    const uploadManifest = await runCommand(
+      { name: `upload-manifest:${item.nodeKey}:${item.artifact.target}`, argv: ['scp', item.artifact.manifestPath, `${host}:${incomingManifest}`], timeoutMs: transport.uploadTimeoutMs ?? 10 * 60_000 },
+      basicContext(adapter)
+    );
     uploadDurationMs = uploadArchive.durationMs + uploadManifest.durationMs;
     uploadedBytes = artifactBytes;
     const action = direct ? 'stage-direct' : 'stage';
-    const stageArgv = ['ssh', host, remoteAgent, action, '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--archive', incoming, '--manifest', incomingManifest, '--sha256', item.artifact.archive.sha256.slice(7), '--tree-digest', item.artifact.treeDigest];
+    const stageArgv = [
+      'ssh',
+      host,
+      remoteAgent,
+      action,
+      '--project',
+      adapter.project,
+      '--node',
+      item.nodeKey,
+      '--target',
+      item.artifact.target,
+      '--archive',
+      incoming,
+      '--manifest',
+      incomingManifest,
+      '--sha256',
+      item.artifact.archive.sha256.slice(7),
+      '--tree-digest',
+      item.artifact.treeDigest,
+    ];
     staged = await runCommand({ name: `${action}:${item.nodeKey}:${item.artifact.target}`, argv: stageArgv, timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
   }
   const stagedRemote = parseCommandJson(staged);
@@ -415,13 +628,35 @@ async function executeDeployment(adapter, item, environment, options) {
   let targetExternal = null;
   if (environment === 'production') {
     if (!direct) {
-      const preflightCommand = await runCommand({ name: `preflight:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'preflight', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+      const preflightCommand = await runCommand(
+        {
+          name: `preflight:${item.nodeKey}:${item.artifact.target}`,
+          argv: ['ssh', host, remoteAgent, 'preflight', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target],
+          timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+        },
+        basicContext(adapter)
+      );
       preflight = parseCommandJson(preflightCommand);
     }
     if (!direct && options.externalBaseline === true) externalBefore = await externalDomainSnapshot(adapter);
     const activateArgv = direct
       ? ['ssh', host, remoteAgent, 'activate-direct', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--source-sha', item.artifact.sourceSha]
-      : ['ssh', host, remoteAgent, 'activate', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--approval', `${adapter.project}:${item.artifact.sourceSha}`, '--expected-current', preflight.result.rollbackPoint.pointers.current ?? 'none'];
+      : [
+          'ssh',
+          host,
+          remoteAgent,
+          'activate',
+          '--project',
+          adapter.project,
+          '--node',
+          item.nodeKey,
+          '--target',
+          item.artifact.target,
+          '--approval',
+          `${adapter.project}:${item.artifact.sourceSha}`,
+          '--expected-current',
+          preflight.result.rollbackPoint.pointers.current ?? 'none',
+        ];
     if (!direct && preflight.result.caddySemantic?.digest) activateArgv.push('--expected-caddy-semantic', preflight.result.caddySemantic.digest);
     try {
       activated = await runCommand({ name: `activate:${item.nodeKey}:${item.artifact.target}`, argv: activateArgv, timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
@@ -436,20 +671,25 @@ async function executeDeployment(adapter, item, environment, options) {
     }
     result = activated;
     if (!direct && options.externalBaseline === true) {
-      [externalAfter, targetExternal] = await Promise.all([
-        externalDomainSnapshot(adapter),
-        externalTargetSnapshot(item.deployment),
-      ]);
+      [externalAfter, targetExternal] = await Promise.all([externalDomainSnapshot(adapter), externalTargetSnapshot(item.deployment)]);
       const domainDifferences = compareDomainSnapshots(externalBefore, externalAfter);
       if (domainDifferences.length > 0 || targetExternal?.passed === false) {
-        const rolledBack = await runCommand({ name: `external-acceptance-rollback:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'rollback', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
-        const [afterRollback, targetAfterRollback] = await Promise.all([
-          externalDomainSnapshot(adapter),
-          externalTargetSnapshot(item.deployment),
-        ]);
+        const rolledBack = await runCommand(
+          {
+            name: `external-acceptance-rollback:${item.nodeKey}:${item.artifact.target}`,
+            argv: ['ssh', host, remoteAgent, 'rollback', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target],
+            timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+          },
+          basicContext(adapter)
+        );
+        const [afterRollback, targetAfterRollback] = await Promise.all([externalDomainSnapshot(adapter), externalTargetSnapshot(item.deployment)]);
         const rollbackDifferences = compareDomainSnapshots(externalBefore, afterRollback);
         const targetFailed = targetExternal?.passed === false;
-        throw new DeliveryError(targetFailed ? 'TARGET_EXTERNAL_ACCEPTANCE_FAILED' : 'EXTERNAL_ACCEPTANCE_CHANGED', targetFailed ? 'Target public acceptance failed; target was rolled back' : 'External domain baseline changed; target was rolled back', { domainDifferences, rollbackDifferences, before: externalBefore, after: externalAfter, afterRollback, target: targetExternal, targetAfterRollback, rollback: parseCommandJson(rolledBack), activation: parseCommandJson(activated) });
+        throw new DeliveryError(
+          targetFailed ? 'TARGET_EXTERNAL_ACCEPTANCE_FAILED' : 'EXTERNAL_ACCEPTANCE_CHANGED',
+          targetFailed ? 'Target public acceptance failed; target was rolled back' : 'External domain baseline changed; target was rolled back',
+          { domainDifferences, rollbackDifferences, before: externalBefore, after: externalAfter, afterRollback, target: targetExternal, targetAfterRollback, rollback: parseCommandJson(rolledBack), activation: parseCommandJson(activated) }
+        );
       }
     }
   }
@@ -476,14 +716,16 @@ async function executeDeployment(adapter, item, environment, options) {
       isolation: activationTimings.isolation ?? 0,
       remoteTotal: activated?.durationMs ?? 0,
     },
-    receipt: activatedRemote?.result?.receipt ? {
-      ...activatedRemote.result.receipt,
-      externalAcceptance: direct
-        ? { status: 'skipped-direct' }
-        : options.externalBaseline === true
-          ? { status: 'passed', count: externalAfter.length, before: externalBefore, after: externalAfter, differences: [], target: targetExternal }
-          : { status: 'not-requested' },
-    } : null,
+    receipt: activatedRemote?.result?.receipt
+      ? {
+          ...activatedRemote.result.receipt,
+          externalAcceptance: direct
+            ? { status: 'skipped-direct' }
+            : options.externalBaseline === true
+              ? { status: 'passed', count: externalAfter.length, before: externalBefore, after: externalAfter, differences: [], target: targetExternal }
+              : { status: 'not-requested' },
+        }
+      : null,
     remote: { lookup: lookupRemote, stage: stagedRemote, preflight, activate: activatedRemote, final: parseCommandJson(result) },
     pointerRoot: item.deployment.pointerRoot,
     service: item.deployment.service,
@@ -494,16 +736,15 @@ async function ensureRemoteDependencyLayer(adapter, item, transport, host, remot
   const layer = item.artifact.dependencyLayer;
   if (!layer) return { durationMs: 0, uploadedBytes: 0, reusedBytes: 0 };
   const started = performance.now();
-  const identityArgs = [
-    '--digest', layer.digest,
-    '--runtime', layer.runtime,
-    '--production-root', layer.productionRoot,
-  ];
-  const lookup = await runCommand({
-    name: `layer-lookup:${item.nodeKey}:${item.artifact.target}`,
-    argv: ['ssh', host, remoteAgent, 'layer-lookup', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, ...identityArgs],
-    timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
-  }, basicContext(adapter));
+  const identityArgs = ['--digest', layer.digest, '--runtime', layer.runtime, '--production-root', layer.productionRoot];
+  const lookup = await runCommand(
+    {
+      name: `layer-lookup:${item.nodeKey}:${item.artifact.target}`,
+      argv: ['ssh', host, remoteAgent, 'layer-lookup', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, ...identityArgs],
+      timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+    },
+    basicContext(adapter)
+  );
   if (parseCommandJson(lookup)?.result?.exists) {
     return { durationMs: elapsed(started), uploadedBytes: 0, reusedBytes: parseCommandJson(lookup).result.bytes ?? 0 };
   }
@@ -516,38 +757,49 @@ async function ensureRemoteDependencyLayer(adapter, item, transport, host, remot
   });
   invariant(prepared.digest === layer.digest, 'DEPENDENCY_LAYER_LOCAL_MISMATCH', 'Prepared dependency layer differs from artifact declaration');
   const archive = join(localRoot, `${layer.digest.slice(7)}.tar.gz`);
-  await runCommand({
-    name: `layer-package:${item.nodeKey}:${item.artifact.target}`,
-    argv: ['tar', '-czf', archive, '-C', prepared.destination, '.'],
-    timeoutMs: 20 * 60_000,
-  }, basicContext(adapter));
+  await runCommand(
+    {
+      name: `layer-package:${item.nodeKey}:${item.artifact.target}`,
+      argv: ['tar', '-czf', archive, '-C', prepared.destination, '.'],
+      timeoutMs: 20 * 60_000,
+    },
+    basicContext(adapter)
+  );
   const archiveStats = await lstat(archive);
   const archiveHash = await hashLocalFile(archive);
   const incoming = `${transport.incomingRoot ?? '/opt/ai-delivery/incoming'}/${adapter.project}--layer--${layer.digest.slice(7)}.tar.gz`;
-  await runCommand({
-    name: `layer-upload:${item.nodeKey}:${item.artifact.target}`,
-    argv: ['scp', archive, `${host}:${incoming}`],
-    timeoutMs: transport.uploadTimeoutMs ?? 10 * 60_000,
-  }, basicContext(adapter));
-  await runCommand({
-    name: `layer-stage:${item.nodeKey}:${item.artifact.target}`,
-    argv: ['ssh', host, remoteAgent, 'stage-layer', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--archive', incoming, '--sha256', archiveHash, ...identityArgs],
-    timeoutMs: transport.deployTimeoutMs ?? 20 * 60_000,
-  }, basicContext(adapter));
+  await runCommand(
+    {
+      name: `layer-upload:${item.nodeKey}:${item.artifact.target}`,
+      argv: ['scp', archive, `${host}:${incoming}`],
+      timeoutMs: transport.uploadTimeoutMs ?? 10 * 60_000,
+    },
+    basicContext(adapter)
+  );
+  await runCommand(
+    {
+      name: `layer-stage:${item.nodeKey}:${item.artifact.target}`,
+      argv: ['ssh', host, remoteAgent, 'stage-layer', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--archive', incoming, '--sha256', archiveHash, ...identityArgs],
+      timeoutMs: transport.deployTimeoutMs ?? 20 * 60_000,
+    },
+    basicContext(adapter)
+  );
   return { durationMs: elapsed(started), uploadedBytes: archiveStats.size, reusedBytes: 0 };
 }
 
 async function externalDomainSnapshot(adapter) {
   const domains = adapter.productionAcceptance?.domains ?? [];
   invariant(domains.length === 8 && new Set(domains).size === 8, 'PRODUCTION_DOMAIN_BASELINE_INVALID', 'Production acceptance requires exactly 8 unique retained domains');
-  const observations = await Promise.all(domains.map(async (host) => {
-    try {
-      const response = await fetch(`https://${host}/`, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(adapter.productionAcceptance?.timeoutMs ?? 12_000) });
-      return { host, status: response.status, statusText: response.statusText || '' };
-    } catch (error) {
-      return { host, status: null, statusText: 'NO_HTTP_STATUS', error: error?.cause?.code ?? error?.name ?? 'FETCH_FAILED' };
-    }
-  }));
+  const observations = await Promise.all(
+    domains.map(async (host) => {
+      try {
+        const response = await fetch(`https://${host}/`, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(adapter.productionAcceptance?.timeoutMs ?? 12_000) });
+        return { host, status: response.status, statusText: response.statusText || '' };
+      } catch (error) {
+        return { host, status: null, statusText: 'NO_HTTP_STATUS', error: error?.cause?.code ?? error?.name ?? 'FETCH_FAILED' };
+      }
+    })
+  );
   return observations.sort((left, right) => left.host.localeCompare(right.host));
 }
 
@@ -639,7 +891,10 @@ async function remoteControlCommand(adapter, options, action) {
   const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
   invariant(Boolean(host), 'DEPLOY_SSH_HOST_MISSING', `SSH host missing for ${nodeKey}`);
   const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
-  const result = await runCommand({ name: `${action}:${nodeKey}:${targetId}`, argv: ['ssh', host, remoteAgent, action, '--project', adapter.project, '--node', nodeKey, '--target', targetId, '--pointer-root', deployment.pointerRoot, '--service', deployment.service] }, basicContext(adapter));
+  const result = await runCommand(
+    { name: `${action}:${nodeKey}:${targetId}`, argv: ['ssh', host, remoteAgent, action, '--project', adapter.project, '--node', nodeKey, '--target', targetId, '--pointer-root', deployment.pointerRoot, '--service', deployment.service] },
+    basicContext(adapter)
+  );
   return { schema: `ai.delivery.${action}.v1`, project: adapter.project, node: nodeKey, target: targetId, durationMs: result.durationMs, remote: parseCommandJson(result) };
 }
 
@@ -688,8 +943,13 @@ function parseCommandJson(command) {
 }
 
 function parseRemoteFailure(output) {
-  for (const line of String(output ?? '').trim().split('\n').reverse()) {
-    try { return JSON.parse(line); } catch {}
+  for (const line of String(output ?? '')
+    .trim()
+    .split('\n')
+    .reverse()) {
+    try {
+      return JSON.parse(line);
+    } catch {}
   }
   return null;
 }

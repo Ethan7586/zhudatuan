@@ -91,7 +91,7 @@
     "check:frontendmanifest": "node 04_tools/scripts/evidence/frontendmanifest.mjs --check",
     "check:tests": "node 04_tools/scripts/check/tests.mjs",
     "check:lines": "node 04_tools/scripts/check-line-budget.mjs",
-    "check:deployment": "node 04_tools/scripts/check/deployment.mjs",
+    "check:deployment": "npm run test:release-engine && node --test 04_tools/scripts/check/deployment.test.mjs && node 04_tools/scripts/check/deployment.mjs",
     "check:supplychain": "node 04_tools/scripts/check/supplychain.mjs",
     "check:bundles": "node 04_tools/scripts/audit/bundles.mjs",
     "check:extensions": "node 04_tools/scripts/audit/extensions.mjs",
@@ -132,6 +132,8 @@
     "audit:prod": "npm audit --omit=dev"
   },
   "devDependencies": {
+    "@alicloud/cdn20180510": "9.2.0",
+    "@alicloud/openapi-client": "0.4.15",
     "@axe-core/playwright": "4.13.0",
     "@electric-sql/pglite": "0.4.3",
     "@eslint/js": "10.0.1",

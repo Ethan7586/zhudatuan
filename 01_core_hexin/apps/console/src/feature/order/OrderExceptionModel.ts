@@ -58,10 +58,10 @@ const INCIDENT_DETAILS: Readonly<Record<IncidentKind, Omit<OrderIncident, 'order
   referral: {
     title: '佣金归因待确认',
     reason: '订单已满足归因条件，返佣关系尚未完成确认。',
-    ownerSystem: '分销返佣系统',
+    ownerSystem: '分布式平台',
     ownerRole: '分销运营',
-    actionLabel: '进入分销返佣系统处理',
-    actionRoute: 'referral',
+    actionLabel: '进入收益与结算处理',
+    actionRoute: 'referral/settings',
     lastEvent: 'referral.attribution.pending',
     targetMinutes: 15,
   },

@@ -1,0 +1,186 @@
+name: Prepared Deploy
+run-name: Prepared Deploy ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
+
+# Official 1.3 prepared-release channel. Candidate validation is the default and cannot
+# move the production current pointer. The deployment command dispatches operation=deploy;
+# no generated approval string is accepted, and the unchanged 1.2 Deploy remains available.
+on:
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: Exact 40-character source commit already prepared in OSS
+        required: true
+        type: string
+      release_target:
+        description: One prepared runtime target
+        required: true
+        type: choice
+        options:
+          - catalog-media
+          - storefront
+          - auth-web
+          - console
+          - identity-api
+          - identity-notification-jobs
+          - mall-provisioning-api
+          - support-api
+          - purchase-api
+          - web-api
+          - catalog-api
+          - catalog-jobs
+          - payment-webhook-api
+          - payment-jobs
+          - database-migration
+      release_node:
+        description: One sovereign node
+        required: true
+        type: choice
+        options:
+          - hbbtzn-l1
+          - zhudatuan-l0
+      operation:
+        description: Validate the downloaded candidate or explicitly switch production
+        required: true
+        default: validate-candidate
+        type: choice
+        options:
+          - validate-candidate
+          - deploy
+permissions:
+  contents: read
+
+concurrency:
+  group: zdt-next-prepared-${{ inputs.release_node }}-${{ inputs.release_target }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22.22.0
+  RELEASE_SHA: ${{ inputs.head_sha }}
+  RELEASE_NODE: ${{ inputs.release_node }}
+  RELEASE_TARGET: ${{ inputs.release_target }}
+  RELEASE_OPERATION: ${{ inputs.operation }}
+  CONTROL_SHA: ${{ github.sha }}
+  CONTROL_REF: ${{ github.ref }}
+  ZDT_RELEASE_SSH_HOST: root@123.57.232.253
+
+jobs:
+  prepared:
+    name: ${{ inputs.operation }} OSS artifact → ${{ inputs.release_node }}/${{ inputs.release_target }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Validate exact request
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]] || [[ ! "$CONTROL_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "source and control-plane SHAs must be full lowercase Git commit SHAs" >&2
+            exit 64
+          fi
+          if [[ -z "$RELEASE_NODE" || -z "$RELEASE_TARGET" ]]; then
+            echo "release_node and release_target are required" >&2
+            exit 64
+          fi
+          if [ "$RELEASE_OPERATION" != validate-candidate ] && [ "$RELEASE_OPERATION" != deploy ]; then
+            echo "operation must be validate-candidate or deploy" >&2
+            exit 64
+          fi
+
+      - name: Load exact release control plane only
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            package.json
+            04_tools/release-engine
+            02_platform_pingtai/infrastructure/release/zdt-next.release.json
+            02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json
+            02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts
+
+      - name: Verify source belongs to the exact zdt-next history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$CONTROL_REF" != "refs/heads/zdt-next" ]; then
+            echo "Prepared Deploy must run from refs/heads/zdt-next" >&2
+            exit 64
+          fi
+          merge_base="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${RELEASE_SHA}...${CONTROL_SHA}" --jq '.merge_base_commit.sha')"
+          if [ "$merge_base" != "$RELEASE_SHA" ]; then
+            echo "head_sha must belong to the exact zdt-next history" >&2
+            exit 64
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Verify control-plane checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$CONTROL_SHA"
+          test "$(node --version)" = "v${NODE_VERSION}"
+
+      - name: Configure existing Aliyun transport
+        env:
+          RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+        run: |
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$RELEASE_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          install -m 600 02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts "$HOME/.ssh/known_hosts"
+          ssh-keygen -F 123.57.232.253 -f "$HOME/.ssh/known_hosts" >/dev/null
+          printf '%s\n' \
+            'Host 123.57.232.253' \
+            '  HostKeyAlgorithms ssh-ed25519' \
+            '  IdentitiesOnly yes' \
+            '  StrictHostKeyChecking yes' \
+            '  UserKnownHostsFile ~/.ssh/known_hosts' \
+            > "$HOME/.ssh/config"
+          chmod 600 "$HOME/.ssh/config"
+
+      - name: Resolve, verify and process prepared artifact
+        env:
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+          ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .prepared-release
+          command=validate-prepared
+          expected_status=candidate-validated
+          if [ "$RELEASE_OPERATION" = deploy ]; then
+            command=deploy-prepared
+            expected_status=success
+          fi
+          expected_agent_sha256="sha256:$(sha256sum 04_tools/release-engine/remote/agent.mjs | cut -d' ' -f1)"
+          expected_policy_sha256="sha256:$(sha256sum 02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json | cut -d' ' -f1)"
+          npm run --silent release -- "$command" \
+            --source-sha "$RELEASE_SHA" \
+            --control-sha "$CONTROL_SHA" \
+            --github-run-id "$GITHUB_RUN_ID" \
+            --github-run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --expected-remote-agent-sha256 "$expected_agent_sha256" \
+            --expected-remote-policy-sha256 "$expected_policy_sha256" \
+            --node "$RELEASE_NODE" \
+            --target "$RELEASE_TARGET" \
+            --format json | tee .prepared-release/envelope.json
+          EXPECTED_STATUS="$expected_status" node -e "const r=require('./.prepared-release/envelope.json');const x=r.result;if(!r.ok||x.finalStatus!==process.env.EXPECTED_STATUS)process.exit(1);process.stdout.write(x.finalStatus+': artifact='+x.artifactSourceSha+' control='+x.controlPlane.sourceSha+' agent='+x.controlPlane.remoteAgentSha256+' policy='+x.controlPlane.remotePolicySha256+' '+x.timings.total+'ms\\n')" \
+            >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve candidate or deployment receipt
+        uses: actions/upload-artifact@v4
+        with:
+          name: prepared-${{ inputs.operation }}-${{ inputs.release_target }}-${{ inputs.head_sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .prepared-release/envelope.json
+          if-no-files-found: error
+          retention-days: 90

@@ -2,10 +2,26 @@
 import { resolve } from 'node:path';
 
 import { loadAdapter } from './src/adapter.mjs';
+import { channelCommand } from './src/channel.mjs';
 import { e06SovereignCommand } from './src/e06-sovereign.mjs';
 import { asDeliveryError } from './src/errors.mjs';
-import { baselineCommand, buildCommand, deployCommand, installCommand, packageCommand, planCommand, rollbackCommand, seedCommand, statusCommand, verifyCommand } from './src/engine.mjs';
+import {
+  baselineCommand,
+  buildCommand,
+  deployCommand,
+  deployPreparedCommand,
+  installCommand,
+  packageCommand,
+  planCommand,
+  publishCommand,
+  rollbackCommand,
+  seedCommand,
+  statusCommand,
+  validatePreparedCommand,
+  verifyCommand,
+} from './src/engine.mjs';
 import { layerCommand } from './src/layer.mjs';
+import { verifyReproducibilityCommand } from './src/reproducibility.mjs';
 
 const DEFAULT_ADAPTER = '02_platform_pingtai/infrastructure/release/zdt-next.release.json';
 const commands = Object.freeze({
@@ -13,13 +29,18 @@ const commands = Object.freeze({
   install: installCommand,
   build: buildCommand,
   package: packageCommand,
+  publish: publishCommand,
+  'verify-reproducibility': verifyReproducibilityCommand,
+  'validate-prepared': validatePreparedCommand,
   deploy: deployCommand,
+  'deploy-prepared': deployPreparedCommand,
   verify: verifyCommand,
   rollback: rollbackCommand,
   baseline: baselineCommand,
   seed: seedCommand,
   status: statusCommand,
   layer: layerCommand,
+  channel: channelCommand,
   'accept-e06': e06SovereignCommand,
 });
 
@@ -31,7 +52,8 @@ try {
   } else {
     const implementation = commands[command];
     if (!implementation) throw new Error(`UNKNOWN_COMMAND:${command}`);
-    const adapter = await loadAdapter(options.adapter ?? process.env.AI_DELIVERY_ADAPTER ?? DEFAULT_ADAPTER, process.cwd());
+    const loadedAdapter = await loadAdapter(options.adapter ?? process.env.AI_DELIVERY_ADAPTER ?? DEFAULT_ADAPTER, process.cwd());
+    const adapter = options.stateDirectory ? Object.freeze({ ...loadedAdapter, stateDirectory: options.stateDirectory }) : loadedAdapter;
     const result = await implementation(adapter, options);
     printResult(result, options.format ?? 'human');
   }
@@ -48,7 +70,7 @@ export function parseArguments(args) {
     const token = rest[index];
     if (!token.startsWith('--')) throw new Error(`ARGUMENT_INVALID:${token}`);
     const key = token.slice(2).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-    if (['direct', 'dryRun', 'externalBaseline', 'help'].includes(key)) {
+    if (['direct', 'prepare', 'dryRun', 'externalBaseline', 'help'].includes(key)) {
       options[key] = true;
       continue;
     }
@@ -67,12 +89,9 @@ function printResult(result, format) {
     process.stdout.write(`${JSON.stringify({ ok: true, result }, null, 2)}\n`);
     return;
   }
-  const lines = [
-    `AI 发布引擎：${result.schema}`,
-    `项目：${result.project}`,
-  ];
+  const lines = [`AI 发布引擎：${result.schema}`, `项目：${result.project}`];
   if (result.runId) lines.push(`运行编号：${result.runId}`);
-  if (result.targets) lines.push(`目标：${result.targets.map((target) => typeof target === 'string' ? target : target.target).join(', ') || '无'}`);
+  if (result.targets) lines.push(`目标：${result.targets.map((target) => (typeof target === 'string' ? target : target.target)).join(', ') || '无'}`);
   if (result.selectedNodes) lines.push(`节点：${result.selectedNodes.join(', ') || '尚未选择（部署前必须显式指定）'}`);
   if (result.selectedRealms?.length) lines.push(`身份域：${result.selectedRealms.join(', ')}`);
   if (result.impactFlags?.length) lines.push(`核心影响：${result.impactFlags.join(', ')}`);
@@ -82,11 +101,23 @@ function printResult(result, format) {
   if (result.planPath) lines.push(`计划：${resolve(result.planPath)}`);
   if (result.buildPath) lines.push(`构建证据：${resolve(result.buildPath)}`);
   if (result.packagePath) lines.push(`制品清单：${resolve(result.packagePath)}`);
-  if (result.timings) lines.push(`计时：${Object.entries(result.timings).map(([name, milliseconds]) => `${name}=${milliseconds}ms`).join(', ')}`);
-  if (result.traffic) lines.push(`流量：${Object.entries(result.traffic).map(([name, bytes]) => `${name}=${bytes}`).join(', ')}`);
+  if (result.timings)
+    lines.push(
+      `计时：${Object.entries(result.timings)
+        .map(([name, milliseconds]) => `${name}=${milliseconds}ms`)
+        .join(', ')}`
+    );
+  if (result.traffic)
+    lines.push(
+      `流量：${Object.entries(result.traffic)
+        .map(([name, bytes]) => `${name}=${bytes}`)
+        .join(', ')}`
+    );
   process.stdout.write(`${lines.join('\n')}\n`);
 }
 
 function printHelp() {
-  process.stdout.write(`统一 AI 发布引擎\n\n用法：\n  node 04_tools/release-engine/cli.mjs <plan|install|build|package|deploy|verify|rollback|status|seed|baseline|layer|accept-e06> [选项]\n\n关键选项：\n  --adapter <path>             项目适配器\n  --from <git-ref>             差异起点；accept-e06 的制品 A\n  --to <git-ref>               差异终点；accept-e06 的制品 B\n  --node <node-key>            目标节点，可重复\n  --plan <plan.json>           构建所用计划\n  --build <build.json>         打包所用构建证据\n  --package <package.json>     部署所用制品集合\n  --environment <candidate|production>\n  --approve-production <project:sha>\n  --mode <agent-candidate|agent|runtime-candidate|verify>\n  --approve-install <project:install:sha>\n  --target <target-id>         计划、部署、状态、回滚、初始登记或依赖层目标\n  --source-sha <sha>           安装、初始登记或基线导入对应的提交\n  --approve-seed <project:seed-layout:sha>\n  --approve-baseline <project:baseline:sha>\n  --source-node-modules <path> 依赖层来源\n  --destination <path>         依赖层安装根目录\n  --output <path>              accept-e06 的六份 staging 证据目录\n  --summary <path>             accept-e06 的总验收回执\n  --image <image>              accept-e06 使用的本地 Docker 镜像\n  --dry-run                    只展示部署意图\n  --format <human|json>\n`);
+  process.stdout.write(
+    `统一 AI 发布引擎\n\n用法：\n  node 04_tools/release-engine/cli.mjs <plan|install|build|package|publish|verify-reproducibility|validate-prepared|deploy-prepared|deploy|verify|rollback|status|seed|baseline|layer|channel|accept-e06> [选项]\n\n关键选项：\n  --adapter <path>             项目适配器\n  --state-directory <path>     本次运行的隔离状态根\n  --from <git-ref>             差异起点；accept-e06 的制品 A\n  --to <git-ref>               差异终点；accept-e06 的制品 B\n  --node <node-key>            目标节点，可重复\n  --plan <plan.json>           构建所用计划\n  --build <build.json>         打包所用构建证据\n  --package <package.json>     部署或 Prepare 发布所用制品集合\n  --left-package <package.json>  确定性证明的第一个冷制品\n  --right-package <package.json> 确定性证明的第二个冷制品\n  --prepare                    强制单目标 Prepare，保留测试与类型检查\n  --environment <candidate|production>\n  --approve-production <project:sha>\n  --mode <agent-candidate|agent|runtime-candidate|runtime|verify>\n  --approve-install <project:install:sha>\n  --target <target-id>         计划、部署、状态、回滚、初始登记、依赖层或通道目标\n  --action <status|establish|deploy|rollback>\n  --source-sha <sha>           完整来源、安装、初始登记、基线导入或通道部署提交\n  --control-sha <sha>          当前发布控制面完整提交\n  --github-run-id <id>         GitHub Actions 运行编号\n  --github-run-attempt <n>     GitHub Actions 重试编号\n  --expected-remote-agent-sha256 <sha256>  预期远端 Agent 文件摘要\n  --expected-remote-policy-sha256 <sha256> 预期远端策略文件摘要\n  --approve-seed <project:seed-layout:sha>\n  --approve-baseline <project:baseline:sha>\n  --source-node-modules <path> 依赖层来源\n  --destination <path>         依赖层安装根目录\n  --output <path>              输出回执或 accept-e06 证据目录\n  --summary <path>             accept-e06 的总验收回执\n  --image <image>              accept-e06 使用的本地 Docker 镜像\n  --dry-run                    只展示部署意图\n  --format <human|json>\n`
+  );
 }

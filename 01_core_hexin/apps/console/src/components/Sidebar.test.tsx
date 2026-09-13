@@ -58,13 +58,13 @@ describe('Sidebar commerce navigation', () => {
     expect(target.getAttribute('title')).toBe(expected);
   });
 
-  it('opens the referral workspace independently from B2B channels', async () => {
+  it('opens the distributed platform workspace independently from B2B channels', async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
     renderSidebar('mall', false, onNavigate);
 
-    await user.click(screen.getByRole('button', { name: '分销返佣系统' }));
-    expect(onNavigate).toHaveBeenCalledWith('referral/settings');
+    await user.click(screen.getByRole('button', { name: '分布式平台' }));
+    expect(onNavigate).toHaveBeenCalledWith('platforms');
     expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
   });
 
@@ -76,7 +76,7 @@ describe('Sidebar commerce navigation', () => {
     const supportNavigation = screen.getByRole('navigation', { name: '服务中心' });
 
     expect(labels).toEqual([
-      '生意看板', '数据报表', '商城管理', '商品管理', '供应链管理', '订单管理系统', '分销返佣系统',
+      '生意看板', '数据报表', '商城管理', '商品管理', '供应链管理', '订单管理系统', '分布式平台',
       '渠道接入系统', '卡券治理台', '财务与对账台', '管理与权限', '系统治理台',
     ]);
     expect(primaryNavigation.nextElementSibling).toBe(profile);
