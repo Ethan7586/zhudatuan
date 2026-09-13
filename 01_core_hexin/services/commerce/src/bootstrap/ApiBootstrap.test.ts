@@ -39,4 +39,32 @@ describe('API bootstrap SFL NodeContext assembly', () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({ node: 'node:zhudatuan:l0', digest: expect.stringMatching(/^sha256:/) });
   });
+
+  it('allows every registered Console surface only when the shared runtime declares that surface', async () => {
+    const bootstrapped = await bootstrapApi({
+      modules: [],
+      extensions: new ExtensionRegistry({ verify: async () => true } as never),
+      configure: bindServerNodeManifestRegistry,
+      allowedOrigins: ['https://console.zhudatuan.com'],
+      allowedOriginSurfaces: ['surface:console'],
+      telemetry: commerceTelemetry(),
+      operationIds: [],
+    });
+
+    for (const origin of ['https://console.fufu.wang', 'https://console.hbbtzn.com']) {
+      const response = await bootstrapped.app.handle(new Request('https://api.hbbtzn.com/api/v1/support/cases', {
+        method: 'OPTIONS',
+        headers: { origin, 'access-control-request-method': 'POST' },
+      }));
+      expect(response.status).toBe(204);
+      expect(response.headers.get('access-control-allow-origin')).toBe(origin);
+    }
+
+    const denied = await bootstrapped.app.handle(new Request('https://api.hbbtzn.com/api/v1/support/cases', {
+      method: 'OPTIONS',
+      headers: { origin: 'https://console.example.com', 'access-control-request-method': 'POST' },
+    }));
+    expect(denied.status).toBe(403);
+    await expect(denied.json()).resolves.toMatchObject({ code: 'ORIGIN_DENIED' });
+  });
 });

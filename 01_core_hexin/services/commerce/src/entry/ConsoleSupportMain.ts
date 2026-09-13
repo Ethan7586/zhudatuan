@@ -24,7 +24,8 @@ const environment: ApiEnvironment = Object.freeze({
 const runtime = await createConsoleSupportRuntime(environment);
 const modules = [defineModule('runtime', [], consoleSupportHealth), defineModule('support', [], supportRoutes)];
 const bootstrapped = await bootstrapApi({ modules, extensions: runtime.extensions, configure: runtime.configure,
-  allowedOrigins: apiAllowedOrigins(environment), telemetry: runtime.telemetry, operationIds: CONSOLE_SUPPORT_OPERATIONS });
+  allowedOrigins: apiAllowedOrigins(environment), allowedOriginSurfaces: ['surface:console'],
+  telemetry: runtime.telemetry, operationIds: CONSOLE_SUPPORT_OPERATIONS });
 const ready = await bootstrapped.app.handle(new Request('http://127.0.0.1/health/ready'));
 if (!ready.ok) console.warn(`CONSOLE_SUPPORT_STARTUP_WARNING:${ready.status}`);
 const server = listen(bootstrapped.app, apiPort(environment), '127.0.0.1', bootstrapped.nodeContextResolver);

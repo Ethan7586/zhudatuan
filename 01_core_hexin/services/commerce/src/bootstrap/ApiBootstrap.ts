@@ -51,6 +51,7 @@ export interface ApiBootstrapOptions {
   readonly extensions: ExtensionRegistry;
   readonly configure?: (container: Container) => void | Promise<void>;
   readonly allowedOrigins: readonly string[];
+  readonly allowedOriginSurfaces?: readonly string[];
   readonly telemetry: Telemetry;
   readonly operationIds?: readonly OperationId[];
   readonly gateEngine?: GateEngine;
@@ -83,16 +84,20 @@ export async function bootstrapApi(options: ApiBootstrapOptions): Promise<Readon
   const nodeContextResolver = nodeManifestRegistry === undefined ? undefined : createNodeContextResolver(nodeManifestRegistry);
   const allowedOrigins = nodeManifestRegistry === undefined
     ? options.allowedOrigins
-    : expandRuntimeOrigins(options.allowedOrigins, nodeManifestRegistry);
+    : expandRuntimeOrigins(options.allowedOrigins, nodeManifestRegistry, options.allowedOriginSurfaces ?? []);
   return Object.freeze({ app: new HttpApp(routes, allowedOrigins, undefined, undefined, new OperationMetrics(options.telemetry),
     options.gateEngine, nodeContextResolver),
     modules: modules.catalog(), routes, nodeContextResolver });
 }
 
-function expandRuntimeOrigins(origins: readonly string[], registry: NodeManifestRegistry): readonly string[] {
-  const surfaces = new Set(registry.manifests.flatMap((manifest) => manifest.domain_bindings
+function expandRuntimeOrigins(
+  origins: readonly string[],
+  registry: NodeManifestRegistry,
+  declaredSurfaces: readonly string[],
+): readonly string[] {
+  const surfaces = new Set([...declaredSurfaces, ...registry.manifests.flatMap((manifest) => manifest.domain_bindings
     .filter((binding) => origins.includes(`https://${binding.host}`))
-    .map((binding) => binding.surface_ref)));
+    .map((binding) => binding.surface_ref))]);
   if (surfaces.size === 0) return origins;
   return Object.freeze([...new Set([...origins, ...registry.manifests.flatMap((manifest) => manifest.domain_bindings
     .filter((binding) => surfaces.has(binding.surface_ref))
