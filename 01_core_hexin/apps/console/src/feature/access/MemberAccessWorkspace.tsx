@@ -1,5 +1,5 @@
 import { Empty, ResourceState, type ResourceCondition } from '@shop/design';
-import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
@@ -16,7 +16,8 @@ import { isManagementRole } from './ManagementRole';
 import type { Member } from '../member/MemberSchema';
 import '../storefront-member/storefront-member.css';
 import { ACCESS_QUERY_STALE_TIME_MS, accessKey, readAccess } from './AccessQuery';
-import type { AccessMembership } from './AccessSchema';
+import { offboardAdministrator, roleCommandAvailable, saveAccessRoleAssignment, verifyAccessRoleAssignment } from './AccessRoleCommand';
+import type { AccessMembership, AccessRole } from './AccessSchema';
 import { invitationRecordsAvailable, invitationRecordsKey, readInvitationRecords } from './InvitationRecordsQuery';
 import type { InvitationRecord } from './InvitationRecordsSchema';
 import './member-access-discord.css';
@@ -233,6 +234,12 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
             resetAvailable={resetAvailable}
             onClose={closeDetail}
             onReset={setResetTarget}
+            onRefresh={async () => {
+              const [refreshedMembers, refreshedAccess] = await Promise.all([memberQuery.refetch(), accessQuery.refetch()]);
+              if (refreshedMembers.data === undefined || refreshedAccess.data === undefined) throw new Error('ADMINISTRATOR_REREAD_FAILED');
+              return { members: refreshedMembers.data.items, access: refreshedAccess.data.items, roles: refreshedAccess.data.roles };
+            }}
+            onRemoved={closeDetail}
             onManage={(roleId, view) => {
               const path = scopePath(context.scope, 'settings/access');
               const params = new URLSearchParams();
@@ -273,7 +280,7 @@ function MemberDirectory({ rows, selectedId, onSelect }: Readonly<{ rows: readon
               <span className="storefrontmemberperson" role="cell">
                 <i>{rowName(row).slice(0, 1)}</i>
                 <strong>{rowName(row)}</strong>
-                <small>管理员身份</small>
+                <small>{row.member?.mobile ?? row.member?.mobile_masked ?? '管理员身份'}</small>
               </span>
               <BindingState bound={row.member?.login_identity_bound} trueLabel="已绑定" falseLabel="未绑定" unknownLabel="待补充" />
               <span className="memberaccessrole" data-administrator={isAdministrator(row)} role="cell">
@@ -306,6 +313,8 @@ function MemberDetail({
   resetAvailable,
   onClose,
   onReset,
+  onRefresh,
+  onRemoved,
   onManage,
 }: Readonly<{
   row: MemberAccessRow | undefined;
@@ -314,14 +323,20 @@ function MemberDetail({
   resetAvailable: boolean;
   onClose: () => void;
   onReset: (member: Member) => void;
+  onRefresh: () => Promise<Readonly<{ members: readonly Member[]; access: readonly AccessMembership[]; roles: readonly AccessRole[] }>>;
+  onRemoved: () => void;
   onManage: (roleId?: string, view?: 'permissions' | 'members') => void;
 }>) {
   const detailRef = useRef<HTMLElement>(null);
   const [tab, setTab] = useState<MemberDetailTab>('profile');
+  const [offboardArmed, setOffboardArmed] = useState(false);
   useEffect(() => {
     if (open) detailRef.current?.focus({ preventScroll: true });
   }, [open]);
-  useEffect(() => setTab('profile'), [row?.id]);
+  useEffect(() => {
+    setTab('profile');
+    setOffboardArmed(false);
+  }, [row?.id]);
   const administrator = row === undefined ? false : isAdministrator(row);
   const roles = row?.managementRoles ?? [];
   const scopes = row?.access?.scopes ?? [];
@@ -342,6 +357,34 @@ function MemberDetail({
   );
   const version = row?.access?.access_version ?? row?.member?.access_version;
   const canReset = resetAvailable && row?.member?.reset_allowed === true;
+  const seniorAssignment = roles.find((role) => /高级|senior/i.test(`${role.role} ${role.name}`));
+  const canManageAdministrator = row !== undefined && context.session.governance?.level === 'owner'
+    && roleCommandAvailable(context) && !isOwner(row) && !isSelf(row, context);
+  const demoteMutation = useMutation({
+    mutationFn: async () => {
+      if (row?.access === undefined || seniorAssignment === undefined) throw new Error('SENIOR_ADMINISTRATOR_ASSIGNMENT_NOT_FOUND');
+      const draft = { action: 'revoke' as const, role: seniorAssignment.role, membership: row.access.id,
+        scope: seniorAssignment.scope, scopeSource: seniorAssignment.scope_source === 'inherited' ? 'inherited' as const : 'direct' as const,
+        accessVersion: row.access.access_version };
+      const receipt = await saveAccessRoleAssignment(context, draft);
+      const reread = await onRefresh();
+      verifyAccessRoleAssignment(draft, receipt, row.access, reread.roles, reread.access);
+      return receipt;
+    },
+  });
+  const offboardMutation = useMutation({
+    mutationFn: async () => {
+      if (row?.access === undefined) throw new Error('ADMINISTRATOR_ACCESS_RECORD_NOT_FOUND');
+      const receipt = await offboardAdministrator(context, row.access.id, row.access.access_version);
+      const reread = await onRefresh();
+      if (reread.members.some((member) => member.membership_id === row.id)
+        || reread.access.some((membership) => membership.id === row.id)) throw new Error('ADMINISTRATOR_OFFBOARD_VERIFICATION_FAILED');
+      return receipt;
+    },
+    onSuccess: onRemoved,
+  });
+  const actionPending = demoteMutation.isPending || offboardMutation.isPending;
+  const actionError = safeQueryError(demoteMutation.error ?? offboardMutation.error);
   return (
     <aside ref={detailRef} className="storefrontmemberdetail" aria-hidden={!open} aria-label={administrator ? '管理员详情' : '成员详情'} tabIndex={-1}>
       <header className="storefrontmemberpanelheading">
@@ -417,6 +460,25 @@ function MemberDetail({
               </button>
             </footer>
           ) : null}
+          {canManageAdministrator ? (
+            <footer className="memberaccessdetailactions" aria-label="管理员级别与状态">
+              {seniorAssignment === undefined ? null : (
+                <button type="button" disabled={actionPending} onClick={() => {
+                  setOffboardArmed(false);
+                  offboardMutation.reset();
+                  demoteMutation.mutate();
+                }}>{demoteMutation.isPending ? '正在降级并核对…' : '降级为普通管理员'}</button>
+              )}
+              <button type="button" data-tone="danger" disabled={actionPending} onClick={() => {
+                demoteMutation.reset();
+                offboardMutation.reset();
+                if (offboardArmed) offboardMutation.mutate();
+                else setOffboardArmed(true);
+              }}>{offboardMutation.isPending ? '正在移除并核对…' : offboardArmed ? '确认移除管理员' : '删除管理员'}</button>
+            </footer>
+          ) : null}
+          {offboardArmed && !offboardMutation.isPending ? <div className="storefrontmemberemptyline">只移除管理身份；商城 L 等级、订单与会员关系不会改变。再次点击确认。</div> : null}
+          {actionError === undefined ? null : <div className="storefrontmemberdetailerror" role="alert"><p>{actionError}</p></div>}
           {row.member?.reset_block_reason === null || row.member?.reset_block_reason === undefined ? null : <div className="storefrontmemberemptyline">注册重置限制：{row.member.reset_block_reason}</div>}
           <p className="storefrontmembernotice">成员与授权关系来自当前范围真实数据，管理操作按当前权限开放</p>
         </div>
@@ -433,6 +495,7 @@ function ProfileTab({ row, version }: Readonly<{ row: MemberAccessRow; version: 
         <span>真实成员档案</span>
       </header>
       <dl className="storefrontmemberfacts">
+        <Fact label="管理员手机号" value={row.member?.mobile ?? row.member?.mobile_masked ?? '未绑定'} />
         <Fact label="员工号" value={row.member?.employee_no ?? '未设置'} />
         <Fact label="身份端" value={clientLabel(row.member?.client)} />
         <Fact label="登录身份" value={row.member === undefined ? '待补充' : row.member.login_identity_bound ? '已绑定' : '未绑定'} tone={row.member?.login_identity_bound ? 'success' : 'muted'} />
@@ -688,7 +751,8 @@ function hasOperation(context: ConsoleContext, operation: string): boolean {
   return context.session.capabilities.includes(operation) || context.session.permissions.includes(operation);
 }
 function rowSearchText(row: MemberAccessRow): string {
-  return [rowName(row), row.member?.employee_no, clientLabel(row.member?.client), ...row.managementRoles.map((role) => role.name)]
+  return [rowName(row), row.member?.mobile, row.member?.mobile_masked, row.member?.employee_no,
+    clientLabel(row.member?.client), ...row.managementRoles.map((role) => role.name)]
     .filter((value): value is string => typeof value === 'string')
     .join(' ')
     .toLocaleLowerCase('zh-CN');

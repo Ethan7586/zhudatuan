@@ -197,6 +197,32 @@ describe('access scope management boundary', () => {
     expect(harness.queries.some((query) => query.includes('insert into access.membershiprole'))).toBe(false);
   });
 
+  it('offboards only the selected operator identity and leaves every storefront membership untouched', async () => {
+    const harness = operationHarness();
+
+    const response = await accessOperations(context(harness.pool)).invoke(offboardAdministratorRequest());
+
+    expect(response).toMatchObject({ status: 200, body: { action: 'offboard', changed: true,
+      membership: 'membership:target', status: 'offboarded', access_version: 3 } });
+    expect(harness.queries.some((query) => query.startsWith('update access.membershiprole set expires_at'))).toBe(true);
+    expect(harness.queries.some((query) => query.startsWith('update access.scopegrant set expires_at'))).toBe(true);
+    expect(harness.queries.some((query) => query.startsWith('update identity.session set revoked_at'))).toBe(true);
+    const membershipWrite = harness.queries.find((query) => query.startsWith('update access.membership\n    set status='));
+    expect(membershipWrite).toContain("where id=$1 and client='operator'");
+    expect(harness.queries.some((query) => query.includes("client='storefront'"))).toBe(false);
+    expect(harness.queries.some((query) => /delete from (access|member|identity)\./.test(query))).toBe(false);
+  });
+
+  it('does not offboard an administrator when the caller is not Owner', async () => {
+    const harness = operationHarness();
+    const request = offboardAdministratorRequest();
+
+    await expect(accessOperations(context(harness.pool)).invoke({ ...request, access: managerAccess() }))
+      .rejects.toThrow('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
+
+    expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(false);
+  });
+
   it('deletes a custom identity only after detaching its relations and preserves member rows', async () => {
     const harness = operationHarness();
 
@@ -387,6 +413,17 @@ function deleteRoleRequest(): OperationRequest {
   };
 }
 
+function offboardAdministratorRequest(): OperationRequest {
+  return {
+    type: 'access.roles.manage', access: ownerAccess(mallA),
+    input: {
+      path: { roleid: 'role:self' }, query: {}, headers: {}, body: { action: 'offboard', membership: 'membership:target' }, rawBody: '',
+      deadline: Date.now() + 5_000, signal: new AbortController().signal,
+      idempotency: 'administrator-offboard:target', expectedVersion: 2,
+    },
+  };
+}
+
 function ownerAccess(scope: AccessContext['scope']): AccessContext {
   const access = accessContext(scope, platform);
   return { ...access, governance: { governanceLevel: 'owner', isExactOwner: true,
@@ -456,6 +493,9 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
           management_role: options.managementRole ?? true }]);
         return result([{ ...target, scope: options.scope ?? null, target_membership_scope: options.targetMembershipScope ?? null }]);
       }
+      if (text.startsWith('select target.id,target.access_version')) return result([{
+        id: 'membership:target', access_version: 2, target_is_owner: options.targetIsOwner ?? false,
+      }]);
       if (text.includes('permission.code=any($2::text[])') && text.includes('from access.membershiprole assignment')) {
         return result([{ target_membership_id: 'membership:target', target_client: options.targetClient ?? 'operator',
           target_status: options.targetStatus ?? 'active', target_realm_id: options.targetRealm ?? 'realm:tenant-a',
@@ -479,6 +519,7 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
         }
         return result([{ access_version: 3 }]);
       }
+      if (text.startsWith('update access.membership\n    set status=')) return result([{ access_version: 3 }]);
       if (text.startsWith('select id,name,version from access.role')) return result([{ id: 'role:finance', name: '财务', version: 3 }]);
       if (text.startsWith('delete from access.membershiprole')) return result([{ membership_id: 'membership:target' }]);
       if (text.startsWith('delete from access.role where')) return result([{ id: 'role:finance', name: '财务' }]);

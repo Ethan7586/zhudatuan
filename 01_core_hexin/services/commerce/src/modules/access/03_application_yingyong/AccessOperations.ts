@@ -23,6 +23,7 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       const access = requireAccess(request);
       const body = bodyRecord(request);
       const role = request.input.path.roleid!;
+      if (body.action === 'offboard') return offboardAdministrator(request, database, access);
       if (body.action === 'assign' || body.action === 'revoke') {
         return manageRoleAssignment(request, database, access, role, body.action);
       }
@@ -180,6 +181,49 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
       return { status: 200, body: cancelled, headers: { etag: `"${String(cancelled.version)}"` } };
     },
   });
+}
+
+async function offboardAdministrator(request: OperationRequest, database: OperationDatabase,
+  access: ReturnType<typeof requireAccess>): Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
+  if (access.governance?.governanceLevel !== 'owner') throw new Error('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
+  const membership = textField(bodyRecord(request), 'membership');
+  const expectedVersion = requireExpectedVersion(request);
+  const target = (await database.query<{
+    id: string;
+    access_version: string | number;
+    target_is_owner: boolean;
+  }>(`select target.id,target.access_version,
+      exists(select 1 from access.platformowner owner where owner.singleton=true and owner.state='active'
+        and owner.membership_id=target.id) target_is_owner
+    from access.membership target
+    where target.id=$1 and target.client='operator' and target.status='active'
+    for update of target`, [membership])).rows[0];
+  if (target === undefined) throw new Error('ADMINISTRATOR_NOT_ACTIVE');
+  if (target.target_is_owner) throw new Error('OWNER_ROLE_LEVEL_IMMUTABLE');
+  const currentVersion = numericVersion(target.access_version);
+  if (currentVersion !== expectedVersion) throw new Error('VERSION_CONFLICT');
+  const changedAt = new Date();
+  await database.query(`update access.membershiprole set expires_at=$2
+    where membership_id=$1 and effective_at<=$2 and (expires_at is null or expires_at>$2)`, [membership, changedAt]);
+  await database.query(`update access.scopegrant set expires_at=$2
+    where membership_id=$1 and effective_at<=$2 and (expires_at is null or expires_at>$2)`, [membership, changedAt]);
+  await database.query(`update access.membershipoverride set revoked_at=$2
+    where membership_id=$1 and revoked_at is null and effective_at<=$2
+      and (expires_at is null or expires_at>$2)`, [membership, changedAt]);
+  await database.query(`update access.administratorsegmentscope scope set status='revoked',revoked_at=$2
+    from access.administratoridentity identity where identity.membership_id=$1
+      and scope.administrator_identity_id=identity.id and scope.status='active'`, [membership, changedAt]);
+  await database.query(`update access.administratoridentity set status='revoked',revoked_at=$2,version=version+1
+    where membership_id=$1 and status='active'`, [membership, changedAt]);
+  await database.query(`update identity.session set revoked_at=$2,revoked_reason='administrator_offboarded'
+    where membership_id=$1 and revoked_at is null`, [membership, changedAt]);
+  const changed = (await database.query<{ access_version: string | number }>(`update access.membership
+    set status='offboarded',left_at=$2,access_version=access_version+1
+    where id=$1 and client='operator' and status='active' and access_version=$3
+    returning access_version`, [membership, changedAt, currentVersion])).rows[0];
+  if (changed === undefined) throw new Error('VERSION_CONFLICT');
+  return { status: 200, body: Object.freeze({ action: 'offboard', changed: true, membership,
+    status: 'offboarded', access_version: numericVersion(changed.access_version) }) };
 }
 
 async function manageRoleAssignment(request: OperationRequest, database: OperationDatabase, access: ReturnType<typeof requireAccess>,

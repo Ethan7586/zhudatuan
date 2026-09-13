@@ -920,6 +920,28 @@ describe('canonical member registration security boundary', () => {
     const grant = harness.queries.find(({ text }) => text.includes('insert into access.scopegrant'));
     expect(grant?.values).toContain('tenant-zhudatuan');
   });
+
+  it('reactivates an offboarded operator after a new administrator invitation without changing storefront membership', async () => {
+    const harness = registrationHarness({
+      challengeAccepted: true, subjectExists: true, inviteAccepted: true, operatorInvite: true, seniorInvite: true,
+      storefrontOrganizationId: 'mall:d1708f04df2dd8a61736852c4900fb43', boundMobileRealm: 'realm:l1',
+      credentialSecret: 'existing-password-hash', existingOperatorStatus: 'offboarded',
+    });
+    const base = registrationRequest('registration:reactivate-operator');
+    const body = { ...(base.input.body as Readonly<Record<string, unknown>>) } as Record<string, unknown>;
+    delete body.password;
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke({
+      ...base,
+      input: { ...base.input, headers: { ...base.input.headers, host: 'api.hbbtzn.com' }, body },
+    });
+
+    expect(response).toMatchObject({ status: 201, body: { id: 'membership:existing-operator', client: 'operator',
+      status: 'active', governanceLevel: 'senior_administrator' } });
+    expect(harness.queries.some(({ text }) => text.startsWith("update access.membership set status='active'"))).toBe(true);
+    expect(harness.queries.some(({ text }) => text.includes('insert into access.membership(') && text.includes("'operator'"))).toBe(false);
+    expect(harness.queries.some(({ text }) => text.includes("client='storefront'") && text.startsWith('update'))).toBe(false);
+  });
 });
 
 function registrationRequest(idempotency: string, directLogin = false): OperationRequest {
@@ -1145,7 +1167,7 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
   challengePrincipal?: string | null; boundMobilePrincipal?: string | null; boundMobileRealm?: string;
   credentialSecret?: string; ownerPasswordRotation?: boolean; loginMemberships?: boolean;
   loginMembershipRows?: ReadonlyArray<Readonly<{ id: string; access_version: number; client: string; organization_id: string }>>;
-  existingMembership?: boolean; wechatGrant?: boolean; wechatConflict?: boolean; wechatUpdate?: boolean }>): Readonly<{
+  existingMembership?: boolean; existingOperatorStatus?: string; wechatGrant?: boolean; wechatConflict?: boolean; wechatUpdate?: boolean }>): Readonly<{
   pool: DatabasePool;
   queries: ReadonlyArray<Readonly<{ text: string; values: readonly unknown[] }>>;
 }> {
@@ -1396,7 +1418,16 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
         }] : []);
       }
       if (text.includes("select * from access.membership") && text.includes("client='operator'")) {
-        return result([]);
+        return result(input.existingOperatorStatus === undefined ? [] : [{
+          id: 'membership:existing-operator', member_id: 'member:existing-phone',
+          organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43', client: 'operator',
+          status: input.existingOperatorStatus, access_version: 3, joined_at: '2026-09-03T00:00:00.000Z', left_at: null,
+        }]);
+      }
+      if (text.startsWith("update access.membership set status='active'")) {
+        return result([{ id: String(values[0]), member_id: String(values[3]), organization_id: String(values[4]),
+          client: 'operator', realm_id: String(values[5]), account_id: String(values[6]), status: 'active',
+          access_version: 4, joined_at: '2026-09-13T00:00:00.000Z', left_at: null }]);
       }
       if (text.includes('insert into access.membership(') && text.includes('returning *')) {
         return result([{

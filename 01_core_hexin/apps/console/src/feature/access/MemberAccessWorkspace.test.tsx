@@ -110,6 +110,24 @@ describe('member directory pagination', () => {
     expect(screen.queryByText('当前登录者')).toBeNull();
   });
 
+  it('shows the authoritative administrator mobile in the directory and detail panel', async () => {
+    const target = { ...member('target', '高级管理员 · 7586'), mobile: '19287247586', mobile_masked: '192****7586' };
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json({ items: [target], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json({
+        items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [],
+      })),
+    );
+    const user = userEvent.setup();
+
+    renderWorkspace();
+
+    expect(await screen.findByText('19287247586')).toBeTruthy();
+    await user.click(screen.getByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
+    expect(screen.getByText('管理员手机号')).toBeTruthy();
+    expect(screen.getAllByText('19287247586')).toHaveLength(2);
+  });
+
   it('keeps cached members visible when the background refresh fails', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     client.setQueryData(memberKey(context), { items: [member('member:cached', '缓存会员')], count: 1 });
@@ -123,6 +141,68 @@ describe('member directory pagination', () => {
     expect(await screen.findByRole('row', { name: '查看管理员 缓存会员' })).toBeTruthy();
     expect(await screen.findByText('刷新失败，已保留已有会员名单')).toBeTruthy();
     expect(screen.getByRole('row', { name: '查看管理员 缓存会员' })).toBeTruthy();
+  });
+
+  it('offboards the operator identity only after confirmation and removes it after authoritative reread', async () => {
+    let offboarded = false;
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json(offboarded
+        ? { items: [], count: 0 }
+        : { items: [{ ...member('target', '高级管理员 · 7586'), mobile: '19287247586' }], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json(offboarded
+        ? { items: [], count: 0, roles: [] }
+        : { items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [] })),
+      http.put('*/api/v1/access/roles/:roleid', async () => {
+        offboarded = true;
+        return HttpResponse.json({ action: 'offboard', changed: true, membership: 'membership:target',
+          status: 'offboarded', access_version: 8 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWorkspace(ownerContext());
+    await user.click(await screen.findByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
+
+    await user.click(screen.getByRole('button', { name: '删除管理员' }));
+    expect(screen.getByText('只移除管理身份；商城 L 等级、订单与会员关系不会改变。再次点击确认。')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '确认移除管理员' }));
+
+    expect(await screen.findByText('暂无管理员')).toBeTruthy();
+    expect(screen.queryByRole('row', { name: '查看管理员 高级管理员 · 7586' })).toBeNull();
+  });
+
+  it('demotes a senior administrator from the detail panel and verifies the authoritative reread', async () => {
+    let senior = true;
+    let requestBody: unknown;
+    const target = { ...member('target', '高级管理员 · 7586'), mobile: '19287247586' };
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json({ items: [{ ...target,
+        display_name: senior ? '高级管理员 · 7586' : '管理员 · 7586', access_version: senior ? 7 : 8 }], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json({
+        items: [{ ...accessMembership('membership:target', senior ? '高级管理员 · 7586' : '管理员 · 7586', senior),
+          access_version: senior ? 7 : 8, effective_permissions: senior ? ['member.members.read'] : [] }],
+        count: 1,
+        roles: [{ id: 'role-senior-administrator-v1:tenant-zhudatuan', name: '高级管理员', status: 'active',
+          version: 1, permissions: ['member.members.read'], member_count: senior ? 1 : 0, governance: true,
+          governance_level: 'senior_administrator', editable: false, members: [], scopes: [] }],
+      })),
+      http.put('*/api/v1/access/roles/:roleid', async ({ request }) => {
+        requestBody = await request.json();
+        senior = false;
+        return HttpResponse.json({ action: 'revoke', changed: true,
+          role: 'role-senior-administrator-v1:tenant-zhudatuan', membership: 'membership:target', scope,
+          scope_source: 'direct', access_version: 8 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWorkspace(ownerContext());
+    await user.click(await screen.findByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
+
+    await user.click(screen.getByRole('button', { name: '降级为普通管理员' }));
+
+    expect((await screen.findAllByText('管理员 · 7586')).length).toBeGreaterThan(0);
+    expect(requestBody).toMatchObject({ action: 'revoke', membership: 'membership:target',
+      scope: 'organization-platform-root', scopeSource: 'direct' });
+    expect(screen.queryByRole('button', { name: '降级为普通管理员' })).toBeNull();
   });
 
 });
@@ -139,6 +219,19 @@ function renderWorkspace(value: ConsoleContext = context, client = new QueryClie
   );
 }
 
+function ownerContext(): ConsoleContext {
+  return {
+    ...context,
+    session: {
+      ...context.session,
+      permissions: ['access.role.manage'],
+      capabilities: ['member.members.read', 'access.center.read', 'access.roles.manage'],
+      csrf: 'csrf:owner',
+      governance: { level: 'owner', organization: 'tenant-zhudatuan', exactOwner: true },
+    },
+  };
+}
+
 function accessMembership(id: string, displayName: string, managementRole: boolean) {
   return {
     id,
@@ -148,7 +241,7 @@ function accessMembership(id: string, displayName: string, managementRole: boole
     display_name: displayName,
     employee_no: null,
     roles: managementRole ? [{
-      role: 'role:senior-administrator',
+      role: 'role-senior-administrator-v1:tenant-zhudatuan',
       name: '高级管理员',
       scope,
       scope_source: 'direct',

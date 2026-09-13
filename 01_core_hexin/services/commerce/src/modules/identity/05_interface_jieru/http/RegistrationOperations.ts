@@ -296,9 +296,25 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
                     and realm_id=$3 and account_id=$4`,
                   [resolvedMember, organization, accountRealm, resolvedAccount]
                 );
-            if (current.rows[0] && current.rows[0].status !== 'active') reject(403, 'MEMBERSHIP_INACTIVE');
-            if (current.rows[0] && registrationTarget.target_client === 'operator') reject(409, 'IDENTITY_SUBJECT_EXISTS');
-            result = current.rows[0] ?? (registrationTarget.target_client === 'operator'
+            const reactivatableOperator = registrationTarget.target_client === 'operator'
+              && current.rows[0]?.status === 'offboarded';
+            if (current.rows[0] && current.rows[0].status !== 'active' && !reactivatableOperator) reject(403, 'MEMBERSHIP_INACTIVE');
+            if (current.rows[0] && registrationTarget.target_client === 'operator' && !reactivatableOperator) reject(409, 'IDENTITY_SUBJECT_EXISTS');
+            result = reactivatableOperator
+              ? await accessPort.reactivateOperatorRegistration(database, String(current.rows[0]!.id), {
+                  operatorMembership,
+                  governanceParentMembership: registrationTarget.created_by,
+                  member: resolvedMember,
+                  principal: resolvedPrincipal,
+                  realm: accountRealm,
+                  account: resolvedAccount,
+                  operatorOrganization: operatorRealm!.membershipOrganizationId,
+                  managementOrganization: organization,
+                  operatorRole: registrationTarget.role_id,
+                  operatorDisplayName: operatorDisplayName!,
+                  operatorScopes: [scopes[3], scopes[4]],
+                })
+              : current.rows[0] ?? (registrationTarget.target_client === 'operator'
               ? await accessPort.createOperatorRegistration(database, {
                   operatorMembership,
                   governanceParentMembership: registrationTarget.created_by,

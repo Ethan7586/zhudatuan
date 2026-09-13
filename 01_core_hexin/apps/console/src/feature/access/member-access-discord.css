@@ -309,6 +309,10 @@
   background: #143a8f;
   color: #fff;
 }
+.memberaccessdetailactions button[data-tone='danger'] {
+  border-color: #e0a29d;
+  color: #b42318;
+}
 .memberaccessworkspace .storefrontmemberemptyline button {
   min-height: 30px;
   margin-top: 8px;

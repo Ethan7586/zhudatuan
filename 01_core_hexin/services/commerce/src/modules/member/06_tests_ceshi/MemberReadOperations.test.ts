@@ -11,11 +11,13 @@ import type { OperationDatabase } from '../../../foundation/application/ModuleOp
 import type { OperationRequest } from '../../../foundation/application/OperationHandler';
 import { memberOperatorReadActions } from '../03_application_yingyong/MemberReadOperations';
 
+const testKms = Object.freeze({ decrypt: async (_key: string, ciphertext: string) => ciphertext });
+
 describe('member directory scope boundary', () => {
   it('reads only the actor governance subtree while preserving organization scope and keyset pagination', async () => {
     const query = vi.fn(async (_sql: string, _values: readonly unknown[] = []) =>
       result([{ id: 'member:one', membership_id: 'membership:one', directory_sort: '2026-09-02T03:28:35.000000Z' }]));
-    const action = memberOperatorReadActions()['member.members.read'];
+    const action = memberOperatorReadActions(testKms)['member.members.read'];
     if (typeof action !== 'function') throw new Error('MEMBER_READ_ACTION_MISSING');
 
     const response = await action(request(), { query } as unknown as OperationDatabase);
@@ -38,7 +40,7 @@ describe('member directory scope boundary', () => {
     expect(sql).toContain('governance_parent_profile.display_name governance_parent_name');
     expect(sql).toContain('(anchor.directory_sort,anchor.id)<($2::text,$3::text)');
     expect(sql).toContain('order by anchor.directory_sort desc,anchor.id desc');
-    expect(values).toEqual(['organization-platform-root', null, null, 51, 'principal:owner', 'membership:owner', true, 'membership:owner']);
+    expect(values).toEqual(['organization-platform-root', null, null, 51, 'principal:owner', 'membership:owner', true, 'membership:owner', true]);
   });
 
   it('returns active operator Memberships without requiring role assignments or mixing in storefront identity', async () => {
@@ -50,10 +52,11 @@ describe('member directory scope boundary', () => {
         );
         create table identity.principal(id text primary key,version integer not null,status text not null);
         create table identity.credential(principal_id text not null,provider text not null,status text not null);
+        create table identity.account(id text,realm_id text,mobile_ciphertext text,mobile_masked text);
         create table access.membership(
           id text primary key,member_id text not null,organization_id text not null,client text not null,
           employee_no text,status text not null,access_version integer not null,joined_at timestamptz,
-          governance_parent_membership_id text,operator_display_name text
+          governance_parent_membership_id text,operator_display_name text,realm_id text,account_id text
         );
         create table organization.unitclosure(ancestor_id text not null,descendant_id text not null);
         insert into member.profile values
@@ -64,26 +67,36 @@ describe('member directory scope boundary', () => {
         insert into identity.principal values
           ('principal:owner',1,'active'),('principal:shared',1,'active'),
           ('principal:inactive',1,'active'),('principal:outside',1,'active');
-        insert into access.membership values
+        insert into access.membership(
+          id,member_id,organization_id,client,employee_no,status,access_version,joined_at,governance_parent_membership_id
+        ) values
           ('membership:owner','member:owner','organization-platform-root','operator',null,'active',1,'2026-09-01T00:00:00Z',null),
           ('membership:operator:shared','member:shared','organization-platform-root','operator',null,'active',1,'2026-09-02T00:00:00Z','membership:owner'),
           ('membership:storefront:shared','member:shared','organization-platform-root','storefront',null,'active',1,'2026-09-03T00:00:00Z','membership:owner'),
           ('membership:inactive','member:inactive','organization-platform-root','operator',null,'inactive',1,'2026-09-04T00:00:00Z','membership:owner'),
           ('membership:outside','member:outside','mall:outside','operator',null,'active',1,'2026-09-05T00:00:00Z','membership:owner');
+        update access.membership set realm_id='realm:admin',account_id='account:'||id where client='operator';
+        insert into identity.account values
+          ('account:membership:owner','realm:admin','13800138000','138****8000'),
+          ('account:membership:operator:shared','realm:admin','19287247586','192****7586'),
+          ('account:membership:inactive','realm:admin','13900139000','139****9000'),
+          ('account:membership:outside','realm:admin','13700137000','137****7000');
         insert into organization.unitclosure values ('organization-platform-root','organization-platform-root');`);
 
-      const action = memberOperatorReadActions()['member.members.read'];
+      const action = memberOperatorReadActions(testKms)['member.members.read'];
       if (typeof action !== 'function') throw new Error('MEMBER_READ_ACTION_MISSING');
       const response = await action(request(), database as unknown as OperationDatabase);
       const items = (response.body as { readonly items: readonly {
         readonly membership_id: string;
         readonly client: string;
         readonly display_name: string;
+        readonly mobile: string | null;
       }[] }).items;
 
       expect(items.map(({ membership_id }) => membership_id)).toEqual(['membership:operator:shared', 'membership:owner']);
       expect(items.every(({ client }) => client === 'operator')).toBe(true);
       expect(items.map(({ display_name }) => display_name)).toEqual(['同主体管理员', 'Owner']);
+      expect(items.map(({ mobile }) => mobile)).toEqual(['19287247586', '13800138000']);
     } finally {
       await database.close();
     }
@@ -97,7 +110,7 @@ describe('member directory scope boundary', () => {
       max_uses: 1, use_count: 0, starts_at: '2026-09-02T12:00:00.000Z', expires_at: '2026-09-09T12:00:00.000Z',
       accepted_at: null, status: 'active', created_at: '2026-09-02T12:00:00.000Z', version: 0,
     }]));
-    const action = memberOperatorReadActions()['member.invitations.read'];
+    const action = memberOperatorReadActions(testKms)['member.invitations.read'];
     if (typeof action !== 'function') throw new Error('MEMBER_INVITATION_READ_ACTION_MISSING');
 
     const response = await action(invitationRequest(), { query } as unknown as OperationDatabase);
@@ -251,7 +264,7 @@ describe('storefront member directory boundary', () => {
           ('order:other-member','HT20260907001',9900,'CNY','paid','delivered','none','member:wechat','mall:one','2026-09-07T10:00:00Z'),
           ('order:other-mall','HT20260908001',8800,'CNY','paid','delivered','none','member:shared','mall:two','2026-09-08T10:00:00Z');`);
 
-      const action = memberOperatorReadActions()['member.storefront.members.read'];
+      const action = memberOperatorReadActions(testKms)['member.storefront.members.read'];
       if (typeof action !== 'function') throw new Error('STOREFRONT_MEMBER_READ_ACTION_MISSING');
       const response = await action(storefrontRequest('mall:one'), database as unknown as OperationDatabase);
       const page = StorefrontMemberPageSchema.parse(response.body);
@@ -283,9 +296,9 @@ describe('storefront member directory boundary', () => {
       )).body);
       expect(second.items.map(({ membership_id }) => membership_id)).toEqual(['membership:storefront:one']);
 
-      const detailAction = memberOperatorReadActions()['member.storefront.detail.read'];
-      const inviteesAction = memberOperatorReadActions()['member.storefront.invitees.read'];
-      const ordersAction = memberOperatorReadActions()['member.storefront.orders.read'];
+      const detailAction = memberOperatorReadActions(testKms)['member.storefront.detail.read'];
+      const inviteesAction = memberOperatorReadActions(testKms)['member.storefront.invitees.read'];
+      const ordersAction = memberOperatorReadActions(testKms)['member.storefront.orders.read'];
       if (typeof detailAction !== 'function' || typeof inviteesAction !== 'function' || typeof ordersAction !== 'function') {
         throw new Error('STOREFRONT_MEMBER_PROFILE_ACTION_MISSING');
       }
@@ -328,7 +341,7 @@ describe('storefront member directory boundary', () => {
 
   it('rejects non-mall scopes before querying', async () => {
     const query = vi.fn();
-    const action = memberOperatorReadActions()['member.storefront.members.read'];
+    const action = memberOperatorReadActions(testKms)['member.storefront.members.read'];
     if (typeof action !== 'function') throw new Error('STOREFRONT_MEMBER_READ_ACTION_MISSING');
 
     await expect(action(storefrontRequest('organization-platform-root', {}, 'platform'), {
@@ -344,7 +357,7 @@ function request(): OperationRequest {
     access: {
       scope: { id: 'organization-platform-root' },
       actor: { id: 'principal:owner' },
-      governance: { ownerMembershipId: 'membership:owner', isExactOwner: true, actorMembershipId: 'membership:owner' },
+      governance: { ownerMembershipId: 'membership:owner', isExactOwner: true, actorMembershipId: 'membership:owner', governanceLevel: 'owner' },
     },
     input: {
       path: {}, query: {}, headers: {}, body: null, rawBody: '',
