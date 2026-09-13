@@ -10,7 +10,7 @@ const endpointAvailable = runtimeConnection !== undefined && adminConnection !==
 
 describe.runIf(endpointAvailable)('SFL hosted node provisioning engine', () => {
   const suffix = randomUUID().replaceAll('-', '').slice(0, 10);
-  const rootNodeId = 'node:zhudatuan:l0';
+  const parentNodeId = 'node:hbbtzn:l1';
   const effectiveAt = '2026-09-11T00:00:00.000Z';
   const admin = new Client({ connectionString: adminConnection });
   const port = new HostedNodeProvisioningPort();
@@ -24,7 +24,7 @@ describe.runIf(endpointAvailable)('SFL hosted node provisioning engine', () => {
   });
 
   it('collapses five concurrent copies and repeated calls into one fact set', async () => {
-    const request = await operatingRequest('concurrent', 5, rootNodeId);
+    const request = await operatingRequest('concurrent', 2, parentNodeId);
     const results = await Promise.all(Array.from({ length: 5 }, () => transact(request)));
 
     expect(results.filter((result) => !result.replayed)).toHaveLength(1);
@@ -41,7 +41,7 @@ describe.runIf(endpointAvailable)('SFL hosted node provisioning engine', () => {
   });
 
   it('rolls back an injected post-node failure and retries to one complete fact set', async () => {
-    const request = await operatingRequest('rollback', 5, rootNodeId);
+    const request = await operatingRequest('rollback', 2, parentNodeId);
     await admin.query(`create function pg_temp.reject_hosted_relation_fixture()
       returns trigger language plpgsql as $body$ begin
         if new.node_id=$q$${request.node_id}$q$ then raise exception 'HOSTED_RELATION_FIXTURE_INTERRUPTED'; end if;
@@ -60,7 +60,7 @@ describe.runIf(endpointAvailable)('SFL hosted node provisioning engine', () => {
   });
 
   it('lets only one idempotency key claim a contested node id', async () => {
-    const first = await consumerRequest('rival', 6, rootNodeId);
+    const first = await consumerRequest('rival', 2, parentNodeId);
     const second = { ...first, idempotency_key: `${first.idempotency_key}:second`, trace_id: `${first.trace_id}:second` };
     const settled = await Promise.allSettled([transact(first), transact(second)]);
 
@@ -115,7 +115,7 @@ describe.runIf(endpointAvailable)('SFL hosted node provisioning engine', () => {
       nodeId,
       profile,
       mallId,
-      profile === 'consumer' ? rootNodeId : null,
+      profile === 'consumer' ? parentNodeId : null,
       profile === 'consumer' ? 'operating_mall' : null,
       effectiveAt,
     ]);

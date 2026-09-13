@@ -29,8 +29,8 @@ describe.runIf(endpointAvailable)('SFL NodeContext and Scope Resolver engine', (
   beforeAll(async () => {
     await admin.connect();
     await runtime.connect();
-    let parentNodeId = rootNodeId;
-    for (const level of [2, 5, 6, 7, 8, 9, 10, 11]) {
+    let parentNodeId = sovereignL1NodeId;
+    for (const level of [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]) {
       const nodeId = `node:context-it-${suffix}:l${level}`;
       const profile = level === 2 || level === 5 ? 'operating_mall' : 'consumer';
       const mallId = profile === 'operating_mall' ? `mall:context:${suffix}:l${level}` : null;
@@ -39,7 +39,7 @@ describe.runIf(endpointAvailable)('SFL NodeContext and Scope Resolver engine', (
         `insert into identity.realm(
         id,node_id,status,node_profile,mall_id,host_node_id,host_node_profile,created_at,updated_at
       ) values($1,$2,'active',$3,$4,$5,$6,$7,$7)`,
-        [realmId, nodeId, profile, mallId, profile === 'consumer' ? rootNodeId : null, profile === 'consumer' ? 'operating_mall' : null, effectiveAt]
+        [realmId, nodeId, profile, mallId, profile === 'consumer' ? sovereignL1NodeId : null, profile === 'consumer' ? 'operating_mall' : null, effectiveAt]
       );
       const request: HostedNodeProvisioningRequest = {
         idempotency_key: `context-it:${suffix}:l${level}`,
@@ -82,7 +82,7 @@ describe.runIf(endpointAvailable)('SFL NodeContext and Scope Resolver engine', (
       ['L6', 'hosted', 'consumer'],
       ['L11', 'hosted', 'consumer'],
     ]);
-    expect(contexts.slice(2).every((context) => context.host_sovereign_node_id === rootNodeId)).toBe(true);
+    expect(contexts.slice(2).every((context) => context.host_sovereign_node_id === sovereignL1NodeId)).toBe(true);
     expect(contexts[3]?.realm_id).not.toBe(contexts[4]?.realm_id);
     expect(contexts[3]?.node_id).not.toBe(contexts[4]?.node_id);
     expect(Object.keys(contexts[4]!)).not.toEqual(
@@ -105,7 +105,7 @@ describe.runIf(endpointAvailable)('SFL NodeContext and Scope Resolver engine', (
       line_id: 'line:zhudatuan:commerce:v1',
       realm_id: `realm:context-${suffix}-l6`,
       parent_node_id: node(5),
-      host_sovereign_node_id: rootNodeId,
+      host_sovereign_node_id: sovereignL1NodeId,
       relation_version: 1,
       node_profile: 'consumer',
     });
@@ -118,11 +118,11 @@ describe.runIf(endpointAvailable)('SFL NodeContext and Scope Resolver engine', (
 
     await expect(scopeResolver.self(l11)).resolves.toMatchObject([{ node_id: node(11), distance: 0 }]);
     const ancestors = await scopeResolver.ancestors(l11);
-    expect(ancestors).toHaveLength(8);
+    expect(ancestors).toHaveLength(11);
     expect(ancestors[0]).toMatchObject({ node_id: node(10), distance: 1 });
-    expect(ancestors.at(-1)).toMatchObject({ node_id: rootNodeId, distance: 8 });
+    expect(ancestors.at(-1)).toMatchObject({ node_id: rootNodeId, distance: 11 });
     const descendants = await scopeResolver.descendants(root);
-    expect(descendants.filter((entry) => entry.node_id.includes(suffix))).toHaveLength(8);
+    expect(descendants.filter((entry) => entry.node_id.includes(suffix))).toHaveLength(10);
     await expect(scopeResolver.subtree(l5)).resolves.toHaveLength(7);
   });
 
@@ -135,12 +135,12 @@ describe.runIf(endpointAvailable)('SFL NodeContext and Scope Resolver engine', (
     await admin.query(
       `insert into organization.noderelation(
       line_id,node_id,parent_node_id,original_parent_node_id,signed_level,host_sovereign_node_id,relation_version,effective_at
-    ) values('line:zhudatuan:commerce:v1',$1,$2,$3,'L6',$2,2,$4)`,
-      [node(6), rootNodeId, node(5), changedAt]
+    ) values('line:zhudatuan:commerce:v1',$1,$2,$3,'L6',$4,2,$5)`,
+      [node(6), node(5), node(5), sovereignL1NodeId, changedAt]
     );
 
     await expect(contextResolver.resolve(node(6))).resolves.toMatchObject({
-      parent_node_id: rootNodeId,
+      parent_node_id: node(5),
       relation_version: 2,
       effective_at: changedAt,
     });
@@ -151,10 +151,10 @@ describe.runIf(endpointAvailable)('SFL NodeContext and Scope Resolver engine', (
     );
     expect(history.rows).toEqual([
       { relation_version: '1', parent_node_id: node(5), current: false },
-      { relation_version: '2', parent_node_id: rootNodeId, current: true },
+      { relation_version: '2', parent_node_id: node(5), current: true },
     ]);
     const l11 = await contextResolver.resolve(node(11));
-    expect((await scopeResolver.ancestors(l11)).some((entry) => entry.node_id === node(5))).toBe(false);
+    expect((await scopeResolver.ancestors(l11)).some((entry) => entry.node_id === node(5))).toBe(true);
 
     await admin.query('update organization.node set status=$1,updated_at=$2 where id=$3', ['suspended', changedAt, node(11)]);
     await expect(contextResolver.resolve(node(11))).resolves.toMatchObject({ status: 'suspended' });

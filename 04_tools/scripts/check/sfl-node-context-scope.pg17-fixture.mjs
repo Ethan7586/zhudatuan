@@ -30,6 +30,7 @@ try {
       '02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql',
       '02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql',
       '02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql',
+      '02_platform_pingtai/database/supabase/migrations/20260913023000_enforce_sfl_vertical_level_adjacency.sql',
       '02_platform_pingtai/database/supabase/tests/sfl_node_context_scope_contract.sql',
     ].map((path) => readFile(join(repositoryRoot, path), 'utf8'))
   );

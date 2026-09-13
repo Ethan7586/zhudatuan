@@ -30,6 +30,7 @@ try {
     '02_platform_pingtai/database/supabase/tests/sfl_hosted_node_provisioning_bootstrap.sql',
     '02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql',
     '02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql',
+    '02_platform_pingtai/database/supabase/migrations/20260913023000_enforce_sfl_vertical_level_adjacency.sql',
     '02_platform_pingtai/database/supabase/tests/sfl_node_sovereignty_contract.sql',
     '02_platform_pingtai/database/supabase/tests/sfl_hosted_node_provisioning_contract.sql',
   ].map((path) => readFile(join(repositoryRoot, path), 'utf8')));
@@ -41,7 +42,7 @@ try {
   await run('npm', ['--workspace', '@shop/commerce', 'run', 'test:integration', '--', 'HostedNodeProvisioningEngine.test.ts'], {
     environment: { SHOP_TEST_ADMIN_DATABASE_URL: adminUrl, SHOP_TEST_DATABASE_URL: runtimeUrl },
   });
-  console.log('SFL hosted node PostgreSQL 17 acceptance passed: samples=L1/L5/L6/L11 concurrency=5 rollback=atomic infrastructure=0');
+  console.log('SFL hosted node PostgreSQL 17 acceptance passed: samples=L2-L11 adjacency=strict concurrency=5 rollback=atomic infrastructure=0');
 } finally {
   await run('docker', ['rm', '-f', container], { allowFailure: true, quiet: true });
 }

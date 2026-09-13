@@ -133,10 +133,14 @@ export async function verifyIdentityRealmIsolation(database, options = {}) {
         line_id,node_id,parent_node_id,original_parent_node_id,signed_level,host_sovereign_node_id,
         relation_version,effective_at
       )
-      select root.line_id,fixture.node_id,root.id,root.id,'L'||fixture.level,root.id,1,clock_timestamp()
+      select root.line_id,fixture.node_id,
+        case when fixture.level=2 then 'node:hbbtzn:l1' else 'node:fixture:l'||(fixture.level-1) end,
+        case when fixture.level=2 then 'node:hbbtzn:l1' else 'node:fixture:l'||(fixture.level-1) end,
+        'L'||fixture.level,root.id,1,clock_timestamp()
       from identity_realm_fixture fixture
       cross join organization.node root
-      where fixture.level>=2 and root.id='node:zhudatuan:l0';
+      where fixture.level>=2 and root.id='node:zhudatuan:l0'
+      order by fixture.level;
 
       insert into identity.realmentry(host,realm_id,kind,status,created_at)
       select accounts_host,realm_id,'accounts','active',clock_timestamp()
