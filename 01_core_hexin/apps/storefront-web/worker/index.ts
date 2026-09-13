@@ -1,7 +1,7 @@
 import handler from 'vinext/server/app-router-entry';
 import { routePublicRequest } from '../../../services/commerce-api/src/api/routes/publicRouter';
 import type { WorkerEnv } from '../../../services/commerce-api/src/api/types';
-import { isLabsApiPathBlocked, isShowcaseHostAllowed, isShowcasePath, isStorefrontRuntimeConfigurationAllowed } from '../src/config/showcaseAccess';
+import { isShowcaseHostAllowed, isShowcasePath, isStorefrontRuntimeConfigurationAllowed } from '../src/config/showcaseAccess';
 
 type Env = Parameters<typeof handler.fetch>[1] & WorkerEnv;
 
@@ -19,16 +19,6 @@ const worker = {
   async fetch(request: Request, env: Env, ctx: Parameters<typeof handler.fetch>[2]): Promise<Response> {
     const resolvedEnv = resolveEnv(env);
     const requestUrl = new URL(request.url);
-    if (isLabsApiPathBlocked(requestUrl.hostname, requestUrl.pathname)) {
-      return new Response('Not Found', {
-        status: 404,
-        headers: {
-          'cache-control': 'no-store',
-          'content-type': 'text/plain; charset=utf-8',
-          'x-content-type-options': 'nosniff',
-        },
-      });
-    }
     if (!isStorefrontRuntimeConfigurationAllowed(requestUrl.hostname, resolvedEnv.APP_ENV, resolvedEnv.AUTH_MODE)) {
       return new Response('Service Unavailable', {
         status: 503,

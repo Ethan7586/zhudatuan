@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isLabsApiPathBlocked, isShowcaseHostAllowed, isShowcasePath, isStorefrontRuntimeConfigurationAllowed } from './showcaseAccess';
+import { isShowcaseHostAllowed, isShowcasePath, isStorefrontRuntimeConfigurationAllowed } from './showcaseAccess';
 
 describe('showcase host boundary', () => {
   it.each(['/desktop-1920', '/desktop-1920/inspect', '/mini-program', '/android-app/detail', '/tablet-app', '/laptop-web'])('recognizes preview-only path %s', (path) => {
@@ -10,21 +10,13 @@ describe('showcase host boundary', () => {
     expect(isShowcasePath(path)).toBe(false);
   });
 
-  it('allows previews only on labs or an explicit local development host', () => {
-    expect(isShowcaseHostAllowed('labs.zhudatuan.com', 'production')).toBe(true);
+  it('allows previews only on an explicit local development host', () => {
+    expect(isShowcaseHostAllowed('retired-preview.example', 'production')).toBe(false);
     expect(isShowcaseHostAllowed('fufu.wang', 'production')).toBe(false);
     expect(isShowcaseHostAllowed('www.fufu.wang', 'production')).toBe(false);
     expect(isShowcaseHostAllowed('127.0.0.1', 'development')).toBe(true);
     expect(isShowcaseHostAllowed('localhost', undefined)).toBe(true);
     expect(isShowcaseHostAllowed('127.0.0.1', 'production')).toBe(false);
-  });
-
-  it('prevents the labs preview host from reaching the compatibility API', () => {
-    expect(isLabsApiPathBlocked('labs.zhudatuan.com', '/api/health')).toBe(true);
-    expect(isLabsApiPathBlocked('labs.zhudatuan.com', '/api/v1/auth/login')).toBe(true);
-    expect(isLabsApiPathBlocked('labs.zhudatuan.com', '/api/v1/orders')).toBe(true);
-    expect(isLabsApiPathBlocked('labs.zhudatuan.com', '/laptop-web')).toBe(false);
-    expect(isLabsApiPathBlocked('fufu.wang', '/api/v1/orders')).toBe(false);
   });
 
   it('fails closed when a production storefront host could enable development authentication', () => {
@@ -40,7 +32,7 @@ describe('showcase host boundary', () => {
     expect(isStorefrontRuntimeConfigurationAllowed('accounts.fufu.wang', undefined, undefined)).toBe(false);
     expect(isStorefrontRuntimeConfigurationAllowed('console.fufu.wang', 'development', 'development')).toBe(false);
     expect(isStorefrontRuntimeConfigurationAllowed('console.fufu.wang', undefined, undefined)).toBe(false);
-    expect(isStorefrontRuntimeConfigurationAllowed('labs.zhudatuan.com', 'development', 'development')).toBe(true);
+    expect(isStorefrontRuntimeConfigurationAllowed('retired-preview.example', 'development', 'development')).toBe(false);
     expect(isStorefrontRuntimeConfigurationAllowed('127.0.0.1', undefined, undefined)).toBe(true);
     expect(isStorefrontRuntimeConfigurationAllowed('127.0.0.1', 'production', 'membership')).toBe(false);
     expect(isStorefrontRuntimeConfigurationAllowed('hbbtzn.com', 'production', 'membership')).toBe(true);

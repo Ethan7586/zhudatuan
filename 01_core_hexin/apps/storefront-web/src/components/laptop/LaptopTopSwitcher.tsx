@@ -98,7 +98,6 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
             disabled={previewControlsDisabled}
             aria-disabled={previewControlsDisabled}
             className="px-2 py-1 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 font-medium flex items-center gap-1 transition-all cursor-pointer text-[11px]"
-            title={previewControlsDisabled ? '微信小程序仅在 labs.zhudatuan.com 设计预览站开放' : '微信小程序 (390×844)'}
           >
             <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
             <span>微信小程序</span>
@@ -110,7 +109,6 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
             disabled={previewControlsDisabled}
             aria-disabled={previewControlsDisabled}
             className="px-2 py-1 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 font-medium flex items-center gap-1 transition-all cursor-pointer text-[11px]"
-            title={previewControlsDisabled ? 'Android 预览仅在 labs.zhudatuan.com 设计预览站开放' : 'Android 手机 (412×915)'}
           >
             <AppWindow className="w-3.5 h-3.5 text-amber-400" />
             <span>Android手机</span>
@@ -125,7 +123,6 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
             disabled={previewControlsDisabled}
             aria-disabled={previewControlsDisabled}
             className="px-2 py-1 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 font-medium flex items-center gap-1 transition-all cursor-pointer text-[11px]"
-            title={previewControlsDisabled ? 'Tablet 预览仅在 labs.zhudatuan.com 设计预览站开放' : 'Tablet 横屏 (1280×800)'}
           >
             <Tablet className="w-3.5 h-3.5 text-purple-300" />
             <span>Tablet横屏</span>
@@ -140,7 +137,6 @@ export const LaptopTopSwitcher: React.FC<LaptopTopSwitcherProps> = ({ surface = 
             disabled={previewControlsDisabled}
             aria-disabled={previewControlsDisabled}
             className="px-2 py-1 rounded-lg text-blue-200 hover:text-white hover:bg-white/10 font-medium flex items-center gap-1 transition-all cursor-pointer text-[11px]"
-            title={previewControlsDisabled ? 'Tablet 预览仅在 labs.zhudatuan.com 设计预览站开放' : 'Tablet 竖屏 (800×1280)'}
           >
             <Tablet className="w-3.5 h-3.5 text-purple-300 rotate-90" />
             <span>Tablet竖屏</span>

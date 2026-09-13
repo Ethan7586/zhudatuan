@@ -30,7 +30,7 @@
 - `archives/` 中的任何檔案；它只作找回證據，不是制品來源。
 - `02_platform_pingtai/infrastructure/aliyun/delivery.yml`、`02_platform_pingtai/infrastructure/storefront-compatibility/aliyun/` 與 `04_tools/scripts/release/candidate.mjs` 不得用於築大團候選制品；其路由或入口仍屬舊項目。
 
-築大團部署只能讀取 `02_platform_pingtai/infrastructure/zhudatuan/aliyun/`。Console 的 `/design-references/*` 與 `/demo/*` 在正式後臺域返回 404，只能由 `labs.zhudatuan.com` 讀取；這保留 Owner 指定的三套原始設計參考，同時不把它們當正式後臺頁面。
+築大團部署只能讀取 `02_platform_pingtai/infrastructure/zhudatuan/aliyun/`。Console 的 `/design-references/*` 與 `/demo/*` 在正式後臺域返回 404；公開設計預覽域已下線，這些資料不再由生產域名對外提供。
 
 ## 為何沒有直接使用 21 號 API 覆蓋新版 Console
 

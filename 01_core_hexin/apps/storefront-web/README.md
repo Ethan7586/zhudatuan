@@ -23,7 +23,7 @@ npm run dev
 
 正式 `/` 入口由 `src/StorefrontRoot.tsx` 承载，直接使用同一套 `StorefrontWebFrame` 与生产数据 Provider。上述多端预览也复用该组件族，但演示数据只允许存在于明确的预览路由，不能进入正式入口。
 
-正式根入口的设备切换器只保留 Web 视口与六个业务页面切换；小程序、Android、Tablet、Laptop 与 Desktop 展示路由只属于 `labs.zhudatuan.com`。Runtime 在 `APP_ENV=production` 时会对 `zhudatuan.com` 的直接预览 URL 返回 404，本地开发才允许 `127.0.0.1`／`localhost`。未登录用户通过页头进入 `https://accounts.zhudatuan.com`，本地开发只允许 `.env` 中明确列出的 `http://127.0.0.1:3002` 或 `http://localhost:3002`。
+正式根入口的设备切换器只保留 Web 视口与六个业务页面切换；小程序、Android、Tablet、Laptop 与 Desktop 展示路由仅供本地开发使用。Runtime 在 `APP_ENV=production` 时会对公开域名的直接预览 URL 返回 404，本地开发才允许 `127.0.0.1`／`localhost`。未登录用户通过页头进入 `https://accounts.zhudatuan.com`，本地开发只允许 `.env` 中明确列出的 `http://127.0.0.1:3002` 或 `http://localhost:3002`。
 
 旧 `src/App.tsx`、`src/screens/*` 及其专属 UI 已退出标准工程；禁止重新接入正式根路由。
 

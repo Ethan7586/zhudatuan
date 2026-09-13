@@ -122,9 +122,6 @@ routes:
   media:
     host: media.zhudatuan.com
     root: /opt/zhudatuan/media
-  labs:
-    host: labs.zhudatuan.com
-    transactionApi: disabled
   chat:
     host: chat.zhudatuan.com
     status: pending
