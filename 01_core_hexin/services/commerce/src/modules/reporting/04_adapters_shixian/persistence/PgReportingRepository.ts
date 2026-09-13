@@ -21,10 +21,41 @@ interface ExportRecord {
 export class PgReportingRepository implements ReportingPort {
   constructor(private readonly database: OperationDatabase) {}
 
-  async cockpit(scope: string, supplier: string | null, period: MetricQuery['period']): Promise<CockpitSummary> {
-    const result = await this.database.query<{ summary: CockpitSummary }>(
-      'select reporting.cockpit($1,$2,$3) summary', [scope, supplier, period]);
-    return required(result.rows[0], 'REPORT_COCKPIT_FAILED').summary;
+  async dashboard(query: MetricQuery): Promise<Readonly<{ rows: readonly MetricRow[]; summary: CockpitSummary }>> {
+    if (query.supplier !== null && query.dimension !== null) {
+      const result = await this.database.query<{ metrics: readonly MetricRecord[]; summary: CockpitSummary }>(`select
+        coalesce(jsonb_agg(to_jsonb(rows) order by rows."cursorTime" desc,rows."cursorId" desc),'[]'::jsonb) metrics,
+        reporting.cockpit($1,$2,$4) summary from (
+          select code,version,scope,period,dimensions,value,unit,watermark,"projectionVersion","cursorTime","cursorId" from (
+            select item.code,item.version,item.scope,item.period,item.dimensions,item.value,item.unit,
+              item.watermark,CAST(item.projection_version AS float8) "projectionVersion",item.cursor_time "cursorTime",item.cursor_id "cursorId"
+            from reporting.supplier_metric_rows($1,$2,$3,$4) item
+          ) metric_rows where ($5::timestamptz is null or ("cursorTime","cursorId")<($5::timestamptz,$6))
+          order by "cursorTime" desc,"cursorId" desc limit $7
+        ) rows`,
+      [query.scope, query.supplier, query.dimension, query.period, query.cursorTime, query.cursorId, query.fetch]);
+      return dashboardResult(required(result.rows[0], 'REPORT_COCKPIT_FAILED'));
+    }
+    const result = await this.database.query<{ metrics: readonly MetricRecord[]; summary: CockpitSummary }>(`select
+      coalesce(jsonb_agg(to_jsonb(rows) order by rows."cursorTime" desc,rows."cursorId" desc),'[]'::jsonb) metrics,
+      reporting.cockpit($1,$8,$4) summary from (
+        select fact.metric_id code,fact.metric_version version,fact.scope_id scope,
+          jsonb_build_object('from',fact.period_start,'to',fact.period_end,'timezone',fact.timezone) period,fact.dimensions,
+          fact.value_numeric::float8 value,metric.unit, fact.watermark, CAST(fact.projection_version AS float8) "projectionVersion",
+          fact.period_end "cursorTime",fact.metric_id||':'||md5(fact.dimensions::text) "cursorId"
+        from reporting.fact fact join reporting.metric metric on metric.id=fact.metric_id and metric.version=fact.metric_version
+        where fact.scope_id=$1 and ($2::text is null or fact.metric_id like $2||'.%')
+          and ($3::text is null or fact.dimensions->>'application'=$3)
+          and fact.period_start>=case $4 when 'yesterday' then date_trunc('day',clock_timestamp() at time zone fact.timezone) at time zone fact.timezone-interval '1 day'
+            when '7days' then date_trunc('day',clock_timestamp() at time zone fact.timezone) at time zone fact.timezone-interval '6 days'
+            when '30days' then date_trunc('day',clock_timestamp() at time zone fact.timezone) at time zone fact.timezone-interval '29 days'
+            else date_trunc('day',clock_timestamp() at time zone fact.timezone) at time zone fact.timezone end
+          and ($4<>'yesterday' or fact.period_end<=date_trunc('day',clock_timestamp() at time zone fact.timezone) at time zone fact.timezone)
+          and ($5::timestamptz is null or (fact.period_end,fact.metric_id||':'||md5(fact.dimensions::text))<($5::timestamptz,$6))
+        order by fact.period_end desc,"cursorId" desc limit $7
+      ) rows`,
+    [query.scope, query.dimension, query.application, query.period, query.cursorTime, query.cursorId, query.fetch, query.supplier]);
+    return dashboardResult(required(result.rows[0], 'REPORT_COCKPIT_FAILED'));
   }
 
   async metrics(query: MetricQuery): Promise<readonly MetricRow[]> {
@@ -246,6 +277,11 @@ export class PgReportingRepository implements ReportingPort {
       and (not job.filter?'to' or fact.period_end<=(job.filter->>'to')::timestamptz) order by key limit $3`, [id, cursor, fetch]);
     return result.rows;
   }
+}
+
+function dashboardResult(value: Readonly<{ metrics: readonly MetricRecord[]; summary: CockpitSummary }>):
+Readonly<{ rows: readonly MetricRow[]; summary: CockpitSummary }> {
+  return Object.freeze({ rows: value.metrics.map((row) => Object.freeze(row)), summary: value.summary });
 }
 
 function exportSelect(): string {

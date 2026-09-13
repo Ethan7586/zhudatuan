@@ -34,12 +34,14 @@ export function metricOperation(factory: ReportingFactory<OperationDatabase>, po
     shortCircuit: (_request, prepared) => prepared.cached ?? undefined,
     execute: async (_request, database, prepared) => {
       const repository = factory(database);
-      const rows = await repository.metrics({ scope: prepared.access.scope.id, dimension: prepared.selectedDimension,
+      const query = { scope: prepared.access.scope.id, dimension: prepared.selectedDimension,
         period: prepared.selectedPeriod, application: prepared.application, supplier: prepared.supplier,
-        cursorTime: prepared.page.sort, cursorId: prepared.page.id, fetch: prepared.page.fetch });
-      const summary = dimension === null
-        ? await repository.cockpit(prepared.access.scope.id, prepared.supplier, prepared.selectedPeriod) : undefined;
-      return metricPage(rows, prepared.page.limit, summary);
+        cursorTime: prepared.page.sort, cursorId: prepared.page.id, fetch: prepared.page.fetch };
+      if (dimension === null) {
+        const dashboard = await repository.dashboard(query);
+        return metricPage(dashboard.rows, prepared.page.limit, dashboard.summary);
+      }
+      return metricPage(await repository.metrics(query), prepared.page.limit);
     },
     finalize: async (_request, result, prepared) => {
       if (prepared.key) await cache.put(prepared.key, result, CACHE_CATALOG.reporting.staleSeconds);
