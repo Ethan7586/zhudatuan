@@ -6,7 +6,7 @@
 | ------------------ | ----------------------- | ---- | ----------------------------------------------- |
 | `hbbtzn.com`       | `smart-wing-storefront` | 3000 | `01_core_hexin/apps/storefront-web` + `01_core_hexin/services/commerce-api` |
 | `hbbtzn.com/login` | `smart-wing-auth-web`   | 3010 | `01_core_hexin/apps/auth-web`（统一登录）                     |
-| `smart.hbbtzn.com` | `smart-wing-admin-api`  | 3001 | `01_core_hexin/apps/admin-web` + `01_core_hexin/services/commerce-api`      |
+| `console.hbbtzn.com` | `smart-wing-admin-api`  | 3001 | `01_core_hexin/apps/admin-web` + `01_core_hexin/services/commerce-api`      |
 
 可选的北京同地域读镜像为第四个 PM2 进程 `smart-wing-core-read-cache`，仅监听 `127.0.0.1:3002`，不经过 Caddy。环境变量完整时，日常发布脚本会自动启动或重载它；未配置 Tair 时不会启动，也不会影响主站回源数据库。
 
@@ -38,7 +38,7 @@ bash 02_platform_pingtai/infrastructure/aliyun/deploy.sh
 ```bash
 curl -fsS http://127.0.0.1:3000/api/health
 curl -I https://hbbtzn.com
-curl -I https://smart.hbbtzn.com
+curl -I https://console.hbbtzn.com
 ```
 
 ## 启用核心读镜像

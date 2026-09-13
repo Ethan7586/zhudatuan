@@ -12,7 +12,7 @@ routes:
     paths: [/api/v1, /health]
   storefront: { host: hbbtzn.com, artifact: storefront }
   auth: { host: auth.hbbtzn.com, artifact: auth }
-  console: { host: smart.hbbtzn.com, artifact: console }
+  console: { host: console.hbbtzn.com, artifact: console }
   store: { host: store.hbbtzn.com, artifact: store }
   supplier: { host: supplier.hbbtzn.com, artifact: supplier }
   miniapp: { appid: wx4df4137881a1d2bc, artifact: miniapp }
