@@ -162,7 +162,7 @@ describe('Product governance workspace', () => {
     expect(csvRowCount(await readBlob(download.blobs[0]!))).toBe(productPage.items.length + 1);
     expect(requests).toHaveLength(1);
     expect(writes).toHaveLength(0);
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: '新建商品' }).disabled).toBe(true);
+    expect(screen.queryByRole('button', { name: '新建商品' })).toBeNull();
     expect(screen.getByRole<HTMLButtonElement>('button', { name: '批量导入' }).disabled).toBe(true);
     expect(screen.getByRole('columnheader', { name: '商品信息' })).toBeTruthy();
     expect(screen.queryByRole('columnheader', { name: '售价' })).toBeNull();
@@ -266,7 +266,7 @@ describe('Product governance workspace', () => {
     const release = screen.getByRole<HTMLButtonElement>('button', { name: '一键审核上架 1' });
     await waitFor(() => expect(release.disabled).toBe(false));
     expect(release.classList.contains('productreleaseaction')).toBe(true);
-    expect(screen.getByRole('button', { name: '新建商品' }).classList.contains('productcreateaction')).toBe(true);
+    expect(screen.queryByRole('button', { name: '新建商品' })).toBeNull();
     expect(release.title).toBe('一次审核并上架当前商城全部合格商品');
     expect(screen.queryByText(/^暂不可用：/)).toBeNull();
     await user.click(release);
@@ -390,7 +390,7 @@ describe('Product governance workspace', () => {
     expect(await screen.findByText('任务 ID：catalogpublication:retry-child')).toBeTruthy();
   });
 
-  it('enables manual creation, standard-package import and publication in an authorized mall', async () => {
+  it('keeps creation in the self-owned workspace while enabling import and publication in the catalog', async () => {
     const user = userEvent.setup();
     server.use(http.delete('*/api/v1/catalog/listings/listing%3A1/publication', () => {
       writes.push('DELETE');
@@ -399,13 +399,9 @@ describe('Product governance workspace', () => {
     renderProductRoute(mallContext);
     await screen.findByRole('table', { name: '商品列表' });
 
-    const create = screen.getByRole<HTMLButtonElement>('button', { name: '新建商品' });
     const importing = screen.getByRole<HTMLButtonElement>('button', { name: '批量导入' });
-    expect(create.disabled).toBe(false);
+    expect(screen.queryByRole('button', { name: '新建商品' })).toBeNull();
     expect(importing.disabled).toBe(false);
-    await user.click(create);
-    expect(screen.getByTestId('route-location').textContent)
-      .toBe('/scopes/mall/mall%3Ahongtai/products/owned/new');
     await user.click(importing);
     expect(screen.getByTestId('route-location').textContent)
       .toBe('/scopes/mall/mall%3Ahongtai/products/owned/new');

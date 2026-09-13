@@ -85,10 +85,10 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
                   : `一键审核上架${pendingReviewCount === undefined || pendingReviewCount === 0 ? '' : ` ${formatCount(pendingReviewCount)}`}`}
             </button>
           )}
-          <button className="productaction productcreateaction" type="button" disabled={!writeEnabled} onClick={onCreate}
-            title={writeEnabled ? workspace === 'free' ? '新建当前商城自主经营的商品' : '手工录入单个商品并保存为草稿' : '当前范围没有商品创建权限'}>
-            <ProductIcon name="plus" />{workspace === 'free' ? '新建自有商品' : '新建商品'}
-          </button>
+          {workspace !== 'free' ? null : <button className="productaction productcreateaction" type="button" disabled={!writeEnabled} onClick={onCreate}
+            title={writeEnabled ? '新建当前商城自主经营的商品' : '当前范围没有商品创建权限'}>
+            <ProductIcon name="plus" />新建自有商品
+          </button>}
         </div>}
         <p id="productcontractnotice" className="sr-only">
           商品写操作仅在当前商城已授权的管理范围内可用。
