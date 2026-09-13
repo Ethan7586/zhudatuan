@@ -445,7 +445,7 @@ export class ProductionNodeActivationProvider {
     if (journal === null) {
       journal = {
         schema_version: 'sfl.autonode-provider-tunnel-journal.v1',
-        tunnel_name: nodeActivationTunnelName(context.request),
+        tunnel_name: nodeActivationTunnelName(context.request, context.candidate.manifest),
         tunnel_secret: randomBytes(32).toString('base64'),
         owned: true,
       };
@@ -583,11 +583,15 @@ export class ProductionNodeActivationProvider {
       if (response.status !== 200) throw new Error(`AUTONODE_LOCAL_HEALTH_FAILED:${service}:${response.status}`);
       local.push({ service, port, status: response.status });
     }
+    const hosts = Object.fromEntries(context.candidate.manifest.domain_bindings.map((binding) => [
+      binding.surface_ref.slice('surface:'.length),
+      binding.host,
+    ]));
     const publicTargets = [
-      ['gateway', `https://${context.request.provisioning_request.domains.api}/health/gateway`],
-      ['console-runtime', `https://${context.request.provisioning_request.domains.console}/console-runtime.json`],
-      ['identity-runtime', `https://${context.request.provisioning_request.domains.identity}/identity-runtime.json`],
-      ['storefront', `https://${context.request.provisioning_request.domains.storefront}/`],
+      ['gateway', `https://${hosts.api}/health/gateway`],
+      ['console-runtime', `https://${hosts.console}/console-runtime.json`],
+      ['identity-runtime', `https://${hosts.identity}/identity-runtime.json`],
+      ['storefront', `https://${hosts.storefront}/`],
     ];
     const external = [];
     for (const [name, url] of publicTargets) {

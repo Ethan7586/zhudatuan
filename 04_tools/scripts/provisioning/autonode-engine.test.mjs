@@ -85,6 +85,7 @@ test('one shared artifact provisions three durable and independently rollbackabl
   assert(replayed.every((result) => result.receipt.candidate_bundle_digest === results[0].receipt.candidate_bundle_digest));
   assert.equal(replayed[0].ledger.step_receipts.length, AUTONODE_PROVISIONING_STEPS.length);
   assert.deepEqual(Object.values(replayed[0].ledger.attempts), Array(AUTONODE_PROVISIONING_STEPS.length).fill(1));
+  assert.equal(replayed[0].ledger.request.hierarchy, undefined);
 
   const firstBefore = await directoryDigest(results[0].nodeDirectory);
   const thirdBefore = await directoryDigest(results[2].nodeDirectory);

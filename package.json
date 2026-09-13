@@ -73,6 +73,8 @@
     "check:sfl-hosted-mall-opening": "node 04_tools/scripts/check/sfl-hosted-mall-opening.pg17-fixture.mjs",
     "check:sfl-hosted-zero-fanout": "node 04_tools/scripts/check/sfl-hosted-zero-fanout.pg17-fixture.mjs",
     "check:sfl-sovereign-upgrade": "node 04_tools/scripts/check/sfl-sovereign-upgrade.pg17-fixture.mjs && node --import tsx --test 04_tools/scripts/provisioning/autonode-engine.test.mjs 04_tools/scripts/provisioning/autonode-sovereign-upgrade.test.mjs",
+    "check:sfl-recursive-runtime": "node --import tsx --test 04_tools/scripts/provisioning/autonode-engine.test.mjs 04_tools/scripts/provisioning/autonode-recursive.test.mjs 04_tools/scripts/provisioning/autonode-activation-engine.test.mjs 04_tools/scripts/provisioning/autonode-production-provider.test.mjs",
+    "autonode:activate": "node --import tsx 04_tools/scripts/provisioning/autonode-activate.mjs",
     "check:sfl-administrator-segment-scope": "node 04_tools/scripts/check/sfl-administrator-segment-scope.pg17-fixture.mjs",
     "check:session-membership-permission-consumption": "node 04_tools/scripts/check/session-membership-permission-consumption.pg17-fixture.mjs",
     "check:sfl-execution-contract-kernel": "node 04_tools/scripts/check/sfl-execution-contract-kernel.mjs && node 04_tools/scripts/check/sfl-execution-contract-kernel.pg17-fixture.mjs",

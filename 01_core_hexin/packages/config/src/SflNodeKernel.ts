@@ -364,6 +364,9 @@ export interface NodeManifestReleaseEvidence {
 }
 
 export interface ResolvedNodeContext extends NodeContext {
+  readonly root_node_id: string;
+  readonly ancestry: readonly string[];
+  readonly level: number;
   readonly host: string;
   readonly surface: string;
   readonly host_binding: DomainBindingRef;
@@ -1267,6 +1270,7 @@ export function resolveNodeDomainBindingByHost(manifest: NodeManifest, host: str
 export function resolveNodeContextByHost(registry: NodeManifestRegistry, host: string): ResolvedNodeContext {
   const manifest = resolveNodeManifestByHost(registry, host);
   const hostBinding = resolveNodeDomainBindingByHost(manifest, host);
+  const hierarchy = resolveNodeHierarchy(registry, manifest.node_id);
   return Object.freeze({
     line_id: manifest.line_id,
     node_id: manifest.node_id,
@@ -1275,6 +1279,7 @@ export function resolveNodeContextByHost(registry: NodeManifestRegistry, host: s
     node_profile: manifest.node_profile,
     mall_id: manifest.mall_id,
     host_node_id: manifest.host_node_id,
+    ...hierarchy,
     host: hostBinding.host,
     surface: hostBinding.surface_ref,
     host_binding: hostBinding,
@@ -1282,6 +1287,28 @@ export function resolveNodeContextByHost(registry: NodeManifestRegistry, host: s
     realm: manifest.realm_ref,
     manifest_digest: manifest.manifest_digest,
     manifest,
+  });
+}
+
+export function resolveNodeHierarchy(
+  registry: NodeManifestRegistry,
+  nodeId: string,
+): Readonly<{ root_node_id: string; ancestry: readonly string[]; level: number }> {
+  const manifestsByNode = new Map(registry.manifests.map((manifest) => [manifest.node_id, manifest]));
+  const target = manifestsByNode.get(nodeId);
+  if (target === undefined) throw new Error(`SFL_NODE_MANIFEST_NODE_UNKNOWN:${nodeId}`);
+  const ancestry = [target.node_id];
+  let cursor = target;
+  while (cursor.parent_node_id !== null) {
+    const parent = manifestsByNode.get(cursor.parent_node_id);
+    if (parent === undefined) throw new Error(`SFL_NODE_MANIFEST_PARENT_UNKNOWN:${cursor.node_id}`);
+    ancestry.unshift(parent.node_id);
+    cursor = parent;
+  }
+  return Object.freeze({
+    root_node_id: ancestry[0]!,
+    ancestry: Object.freeze(ancestry),
+    level: signedLevelNumber(target.signed_level),
   });
 }
 

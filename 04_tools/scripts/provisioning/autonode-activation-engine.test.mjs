@@ -10,7 +10,11 @@ import {
   AUTONODE_ACTIVATION_STEPS,
   NodeActivationEngine,
 } from './autonode-activation-engine.mjs';
-import { AUTONODE_REQUEST_SCHEMA_VERSION } from './autonode-engine.mjs';
+import {
+  AUTONODE_RECURSIVE_REQUEST_SCHEMA_VERSION,
+  AUTONODE_REQUEST_SCHEMA_VERSION,
+  FileNodeProvisioningEngine,
+} from './autonode-engine.mjs';
 
 test('three sibling L1 activations share one artifact and isolate rollback and restore', async (context) => {
   const root = await activationRoot();
@@ -56,6 +60,26 @@ test('three sibling L1 activations share one artifact and isolate rollback and r
   assert.equal(provider.snapshot(active[0].candidate.manifest.node_id), firstBefore);
   assert.equal(provider.snapshot(active[2].candidate.manifest.node_id), thirdBefore);
   assert.notEqual(provider.snapshot(active[1].candidate.manifest.node_id), emptySnapshot());
+});
+
+test('a recursive child resolves its level and inherited hosts before activation', async (context) => {
+  const root = await activationRoot();
+  context.after(() => rm(root, { recursive: true, force: true }));
+  const artifact = sharedArtifact();
+  const parentRequest = activationRequest(root, 3, artifact);
+  const parent = await new FileNodeProvisioningEngine(join(root, 'candidate'))
+    .provision(parentRequest.provisioning_request);
+  const request = recursiveActivationRequest(root, parent.manifest.node_id, artifact);
+  const engine = new NodeActivationEngine(root, new MemoryProvider());
+
+  const planned = await engine.plan(request);
+  assert.equal(planned.candidate.manifest.signed_level, 'L2');
+  assert.equal(planned.plan.node_id, planned.candidate.manifest.node_id);
+  assert(planned.plan.node_directory.endsWith('/child-runtime-l2'));
+  assert(planned.plan.hosts.every((host) => host.startsWith('child-runtime.')));
+
+  const active = await engine.apply(request, planned.plan.plan_digest);
+  assert.equal(active.ledger.status, 'ACTIVE');
 });
 
 test('every real-provider step resumes after interruption without duplicate resources', async (context) => {
@@ -285,6 +309,56 @@ function activationRequest(root, index, artifact) {
           source_binding_ref: 'dns-zone:example.invalid',
         },
         wechat_identity: { mode: 'DISABLED' },
+        payment: { mode: 'DISABLED' },
+      },
+    },
+    target: {
+      environment: 'staging',
+      node_root: join(root, 'nodes'),
+      release_directory: join(root, 'release'),
+      runtime_profile_ref: join(root, 'runtime-profile.json'),
+      systemd_unit_root: join(root, 'systemd'),
+    },
+  });
+}
+
+function recursiveActivationRequest(root, parentNodeId, artifact) {
+  return Object.freeze({
+    schema_version: AUTONODE_ACTIVATION_REQUEST_SCHEMA_VERSION,
+    activation_request_id: 'activation:child-runtime',
+    idempotency_key: 'activation-key:child-runtime',
+    provisioning_request: {
+      schema_version: AUTONODE_RECURSIVE_REQUEST_SCHEMA_VERSION,
+      provisioning_request_id: 'provisioning:child-runtime',
+      idempotency_key: 'provisioning-key:child-runtime',
+      created_at: '2026-09-09T04:00:00.000Z',
+      line_id: 'line:zhudatuan:commerce:v1',
+      parent_node_id: parentNodeId,
+      node_slug: 'child-runtime',
+      display_name: 'Child runtime',
+      business: {
+        scope_id: 'scope:autonode:child',
+        enterprise_id: 'organization:autonode:child',
+        code: 'CHILD_RUNTIME',
+        public_slug: 'child-runtime',
+        name: 'Child runtime',
+      },
+      created_by: {
+        actor_id: 'principal:autonode:child',
+        membership_id: 'membership:autonode:child',
+        authorized_operation: 'provisioning.nodes.create',
+      },
+      artifact,
+      resources: {
+        tunnel: true,
+        tls: true,
+        secrets: true,
+        wechat_identity: false,
+        payment: false,
+        callbacks: false,
+      },
+      binding_sources: {
+        domains: { mode: 'INHERIT_PARENT' },
         payment: { mode: 'DISABLED' },
       },
     },

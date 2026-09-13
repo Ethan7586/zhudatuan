@@ -20,6 +20,7 @@ import { CreateMall } from '../../../01_core_hexin/services/commerce/src/modules
 import { gatewayConfiguration } from '../release/generate-sfl-node-gateway.mjs';
 
 export const AUTONODE_REQUEST_SCHEMA_VERSION = 'sfl.autonode-request.v2';
+export const AUTONODE_RECURSIVE_REQUEST_SCHEMA_VERSION = 'sfl.autonode-request.v3';
 export const AUTONODE_LEGACY_REQUEST_SCHEMA_VERSION = 'sfl.autonode-request.v1';
 export const AUTONODE_LEDGER_SCHEMA_VERSION = 'sfl.autonode-ledger.v1';
 export const AUTONODE_RESOURCE_REGISTRY_SCHEMA_VERSION = 'sfl.autonode-resource-registry.v1';
@@ -86,9 +87,10 @@ export class FileNodeProvisioningEngine {
   }
 
   async provision(input, options = {}) {
-    const request = normalizeRequest(input);
+    const submittedRequest = normalizeRequest(input);
     await this.#prepareRoot();
     return await withLock(this.stateRoot, 'engine', async () => {
+      const request = await this.#resolveRequest(submittedRequest);
       const identity = requestIdentity(request);
       const ledgerFile = join(this.stateRoot, 'requests', `${identity.idempotencyDigest}.json`);
       let ledger = await readJson(ledgerFile);
@@ -120,14 +122,16 @@ export class FileNodeProvisioningEngine {
         await writeJsonAtomic(ledgerFile, ledger);
         await options.afterStep?.(step, structuredClone(ledger));
       }
+      await this.#markNodeReady(request);
       return await this.#result(ledger);
     });
   }
 
   async rollback(input, reason = 'candidate rollback') {
-    const request = normalizeRequest(input);
+    const submittedRequest = normalizeRequest(input);
     await this.#prepareRoot();
     return await withLock(this.stateRoot, 'engine', async () => {
+      const request = await this.#resolveRequest(submittedRequest);
       const identity = requestIdentity(request);
       const ledgerFile = join(this.stateRoot, 'requests', `${identity.idempotencyDigest}.json`);
       let ledger = await readJson(ledgerFile);
@@ -151,6 +155,8 @@ export class FileNodeProvisioningEngine {
 
       const nodesFile = join(this.stateRoot, 'nodes.json');
       const nodes = await this.#nodeRegistry();
+      const child = Object.entries(nodes.nodes).find(([, fact]) => fact.parent_node_id === identity.nodeId);
+      if (child !== undefined) throw new Error(`AUTONODE_NODE_HAS_CHILDREN:${child[0]}`);
       if (nodes.nodes[identity.nodeId]?.idempotency_digest === identity.idempotencyDigest) {
         delete nodes.nodes[identity.nodeId];
       }
@@ -187,13 +193,37 @@ export class FileNodeProvisioningEngine {
   }
 
   async read(input) {
-    const request = normalizeRequest(input);
+    const submittedRequest = normalizeRequest(input);
     await this.#prepareRoot();
+    const request = await this.#resolveRequest(submittedRequest);
     const identity = requestIdentity(request);
     const ledger = await readJson(join(this.stateRoot, 'requests', `${identity.idempotencyDigest}.json`));
     if (ledger === null) return null;
     assertReplayMatches(ledger, request, identity);
     return structuredClone(ledger);
+  }
+
+  async restore(input) {
+    const submittedRequest = normalizeRequest(input);
+    await this.#prepareRoot();
+    await withLock(this.stateRoot, 'engine', async () => {
+      const request = await this.#resolveRequest(submittedRequest);
+      const identity = requestIdentity(request);
+      const ledgerFile = join(this.stateRoot, 'requests', `${identity.idempotencyDigest}.json`);
+      const previous = await readJson(ledgerFile);
+      if (previous === null) throw new Error('AUTONODE_REQUEST_UNKNOWN');
+      assertReplayMatches(previous, request, identity);
+      if (previous.state !== 'ROLLED_BACK') return;
+      await this.#claimNode(request, identity.idempotencyDigest);
+      const restored = {
+        ...initialLedger(request, identity),
+        created_at: previous.created_at,
+        restoration_count: (previous.restoration_count ?? 0) + 1,
+        restored_from_receipt_ref: previous.rollback_receipt_ref,
+      };
+      await writeJsonAtomic(ledgerFile, restored);
+    });
+    return await this.provision(input);
   }
 
   async #prepareRoot() {
@@ -215,9 +245,19 @@ export class FileNodeProvisioningEngine {
     if (existing !== undefined && existing.idempotency_digest !== idempotencyDigest) {
       throw new Error(`AUTONODE_NODE_ALREADY_CLAIMED:${identity.nodeId}`);
     }
+    const hierarchy = requestHierarchy(request);
     registry.nodes[identity.nodeId] = {
       provisioning_request_id: request.provisioning_request_id,
       idempotency_digest: idempotencyDigest,
+      line_id: request.line_id,
+      parent_node_id: request.parent_node_id,
+      root_node_id: hierarchy.root_node_id,
+      ancestry: hierarchy.ancestry,
+      level: hierarchy.level,
+      signed_level: request.signed_level,
+      node_directory_ref: relative(this.root, this.#nodeDirectory(request)),
+      artifact: request.artifact,
+      status: 'PROVISIONING',
     };
     registry.revision += 1;
     await writeJsonAtomic(nodesFile, registry);
@@ -237,6 +277,69 @@ export class FileNodeProvisioningEngine {
       revision: 0,
       allocations: {},
     };
+  }
+
+  async #resolveRequest(request) {
+    if (request.schema_version !== AUTONODE_RECURSIVE_REQUEST_SCHEMA_VERSION) return request;
+    const nodes = await this.#nodeRegistry();
+    const parent = nodes.nodes[request.parent_node_id];
+    if (parent === undefined || parent.status !== 'CANDIDATE_READY') {
+      throw new Error(`AUTONODE_PARENT_NOT_READY:${request.parent_node_id}`);
+    }
+    if (parent.line_id !== request.line_id) throw new Error('AUTONODE_PARENT_LINE_MISMATCH');
+    if (parent.level < 1 || parent.level >= 5) throw new Error('AUTONODE_CHILD_LEVEL_INVALID');
+    if (canonicalJson(parent.artifact) !== canonicalJson(request.artifact)) {
+      throw new Error('AUTONODE_PARENT_ARTIFACT_MISMATCH');
+    }
+    const signedLevel = `L${parent.level + 1}`;
+    const identity = requestIdentity({ ...request, signed_level: signedLevel });
+    const parentDirectory = resolveInside(this.root, parent.node_directory_ref);
+    const parentManifest = await readRequiredJson(join(parentDirectory, 'manifest.json'));
+    const parentResources = await readRequiredJson(join(parentDirectory, 'runtime', 'resource-plan.json'));
+    const domains = request.binding_sources.domains.mode === 'INHERIT_PARENT'
+      ? Object.fromEntries(parentManifest.domain_bindings.map((binding) => [
+        binding.surface_ref.slice('surface:'.length),
+        `${request.node_slug}.${binding.host}`,
+      ]))
+      : request.domains;
+    const bindingSources = resolveRecursiveBindingSources(
+      request,
+      identity,
+      parent,
+      parentManifest,
+      parentResources,
+    );
+    return Object.freeze({
+      ...request,
+      signed_level: signedLevel,
+      domains: Object.freeze(domains),
+      binding_sources: bindingSources,
+      hierarchy: Object.freeze({
+        root_node_id: parent.root_node_id,
+        ancestry: Object.freeze([...parent.ancestry, identity.nodeId]),
+        level: parent.level + 1,
+      }),
+    });
+  }
+
+  async #markNodeReady(request) {
+    const identity = requestIdentity(request);
+    const nodes = await this.#nodeRegistry();
+    const fact = nodes.nodes[identity.nodeId];
+    if (fact === undefined) throw new Error('AUTONODE_NODE_FACT_MISSING');
+    const manifest = await readRequiredJson(join(this.#nodeDirectory(request), 'manifest.json'));
+    nodes.nodes[identity.nodeId] = {
+      ...fact,
+      status: 'CANDIDATE_READY',
+      realm_ref: manifest.realm_ref,
+      data_scope_ref: manifest.data_scope_ref,
+      mall_id: manifest.mall_id,
+      manifest_ref: relative(this.root, join(this.#nodeDirectory(request), 'manifest.json')),
+      resource_plan_ref: relative(this.root, join(this.#nodeDirectory(request), 'runtime', 'resource-plan.json')),
+      release_pointer_ref: relative(this.root, join(this.#nodeDirectory(request), 'release-pointer.json')),
+    };
+    nodes.revision += 1;
+    await writeJsonAtomic(join(this.stateRoot, 'nodes.json'), nodes);
   }
 
   #nodeDirectory(request) {
@@ -325,16 +428,28 @@ export class FileNodeProvisioningEngine {
 
     const externalBindings = externalBindingPlan(request, identity);
     const bindingSources = requestBindingSources(request);
+    const recursive = request.schema_version === AUTONODE_RECURSIVE_REQUEST_SCHEMA_VERSION;
+    const resolutionReceipts = recursive
+      ? [bindingSources.domains.resolution_receipt, bindingSources.payment.resolution_receipt]
+      : [];
     const plan = Object.freeze({
       schema_version: 'sfl.autonode-resource-plan.v1',
       provisioning_request_id: request.provisioning_request_id,
       node_id: identity.nodeId,
       resource_binding_set_ref: reference(`resource-binding-set:${identity.nodeToken}`),
       local_status: 'RESERVED',
-      external_status: externalBindings.length === 0 ? 'NOT_REQUIRED' : 'WAITING_EXTERNAL',
+      external_status: externalBindings.length === 0
+        ? 'NOT_REQUIRED'
+        : externalBindings.every((binding) => binding.status === 'RESOLVED') ? 'RESOLVED' : 'WAITING_EXTERNAL',
+      hierarchy: requestHierarchy(request),
       hosts: requestedHosts,
       ports: allocation.ports,
       binding_sources: bindingSources,
+      effective_resources: recursive ? Object.freeze({
+        domains: bindingSources.domains.effective_resource,
+        payment: bindingSources.payment.effective_resource,
+      }) : undefined,
+      resolution_receipts: resolutionReceipts,
       external_bindings: externalBindings,
     });
     const file = join(this.#nodeDirectory(request), 'runtime', 'resource-plan.json');
@@ -442,6 +557,9 @@ export class FileNodeProvisioningEngine {
       line_id: request.line_id,
       node_id: identity.nodeId,
       parent_node_id: request.parent_node_id,
+      root_node_id: requestHierarchy(request).root_node_id,
+      ancestry: requestHierarchy(request).ancestry,
+      level: requestHierarchy(request).level,
       signed_level: request.signed_level,
       manifest_id: manifest.manifest_id,
       manifest_version: manifest.manifest_version,
@@ -484,19 +602,19 @@ function normalizeRequest(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('AUTONODE_REQUEST_INVALID');
   const schemaVersion = value.schema_version;
   if (schemaVersion !== AUTONODE_REQUEST_SCHEMA_VERSION
+    && schemaVersion !== AUTONODE_RECURSIVE_REQUEST_SCHEMA_VERSION
     && schemaVersion !== AUTONODE_LEGACY_REQUEST_SCHEMA_VERSION) throw new Error('AUTONODE_REQUEST_SCHEMA_INVALID');
-  const signedLevel = requiredText(value.signed_level, 'signed_level');
-  if (!/^L(?:[1-9]|1[01])$/.test(signedLevel)) throw new Error('AUTONODE_SIGNED_LEVEL_INVALID');
+  const recursive = schemaVersion === AUTONODE_RECURSIVE_REQUEST_SCHEMA_VERSION;
+  const signedLevel = recursive ? null : requiredText(value.signed_level, 'signed_level');
+  if (!recursive && !/^L(?:[1-9]|1[01])$/.test(signedLevel)) throw new Error('AUTONODE_SIGNED_LEVEL_INVALID');
+  if (recursive && value.signed_level !== undefined) throw new Error('AUTONODE_RECURSIVE_LEVEL_FORBIDDEN');
   const nodeSlug = requiredText(value.node_slug, 'node_slug').toLowerCase();
   if (!/^[a-z][a-z0-9-]{2,31}$/.test(nodeSlug)) throw new Error('AUTONODE_NODE_SLUG_INVALID');
   const createdAt = new Date(requiredText(value.created_at, 'created_at'));
   if (Number.isNaN(createdAt.valueOf())) throw new Error('AUTONODE_CREATED_AT_INVALID');
-  const domains = requiredRecord(value.domains, 'domains');
-  const normalizedDomains = Object.fromEntries(['api', 'console', 'identity', 'storefront'].map((surface) => [
-    surface,
-    hostName(domains[surface], surface),
-  ]));
-  if (new Set(Object.values(normalizedDomains)).size !== 4) throw new Error('AUTONODE_DOMAIN_AMBIGUOUS');
+  const normalizedDomains = value.domains === undefined && recursive
+    ? null
+    : normalizeDomains(value.domains);
   const business = requiredRecord(value.business, 'business');
   const createdBy = requiredRecord(value.created_by, 'created_by');
   const artifact = requiredRecord(value.artifact, 'artifact');
@@ -528,10 +646,10 @@ function normalizeRequest(value) {
     created_at: createdAt.toISOString(),
     line_id: requiredText(value.line_id, 'line_id'),
     parent_node_id: requiredText(value.parent_node_id, 'parent_node_id'),
-    signed_level: signedLevel,
+    ...(recursive ? {} : { signed_level: signedLevel }),
     node_slug: nodeSlug,
     display_name: requiredText(value.display_name, 'display_name'),
-    domains: Object.freeze(normalizedDomains),
+    ...(normalizedDomains === null ? {} : { domains: Object.freeze(normalizedDomains) }),
     business: Object.freeze({
       scope_id: requiredText(business.scope_id, 'business.scope_id'),
       enterprise_id: requiredText(business.enterprise_id, 'business.enterprise_id'),
@@ -555,7 +673,11 @@ function normalizeRequest(value) {
     resources: normalizedResources,
   };
   if (schemaVersion === AUTONODE_REQUEST_SCHEMA_VERSION) {
-    normalized.binding_sources = normalizeBindingSources(
+    normalized.binding_sources = normalizeBindingSources(value.binding_sources, normalized.parent_node_id,
+      normalizedDomains, normalizedResources);
+  }
+  if (recursive) {
+    normalized.binding_sources = normalizeRecursiveBindingSources(
       value.binding_sources,
       normalized.parent_node_id,
       normalizedDomains,
@@ -563,6 +685,61 @@ function normalizeRequest(value) {
     );
   }
   return Object.freeze(normalized);
+}
+
+function normalizeDomains(value) {
+  const domains = requiredRecord(value, 'domains');
+  const normalized = Object.fromEntries(['api', 'console', 'identity', 'storefront'].map((surface) => [
+    surface,
+    hostName(domains[surface], surface),
+  ]));
+  if (new Set(Object.values(normalized)).size !== 4) throw new Error('AUTONODE_DOMAIN_AMBIGUOUS');
+  return Object.freeze(normalized);
+}
+
+function normalizeRecursiveBindingSources(value, parentNodeId, domains, resources) {
+  const sources = requiredRecord(value, 'binding_sources');
+  const domain = requiredRecord(sources.domains, 'binding_sources.domains');
+  const domainMode = bindingMode(domain.mode, 'binding_sources.domains.mode', false);
+  if (domainMode === 'OWN' && domains === null) throw new Error('AUTONODE_OWN_DOMAINS_REQUIRED');
+  if (domainMode === 'INHERIT_PARENT' && domains !== null) throw new Error('AUTONODE_INHERITED_DOMAINS_FORBIDDEN');
+  const payment = requiredRecord(sources.payment, 'binding_sources.payment');
+  const paymentMode = bindingMode(payment.mode, 'binding_sources.payment.mode', true);
+  if (paymentMode === 'DISABLED' && resources.payment) {
+    throw new Error('AUTONODE_BINDING_RESOURCE_MISMATCH:binding_sources.payment');
+  }
+  return Object.freeze({
+    domains: Object.freeze({
+      mode: domainMode,
+      source_node_id: domainMode === 'INHERIT_PARENT' ? parentNodeId : null,
+      source_binding_ref: optionalRef(domain.source_binding_ref, 'binding_sources.domains.source_binding_ref'),
+      dns_ref: optionalRef(domain.dns_ref, 'binding_sources.domains.dns_ref'),
+      tls_ref: optionalRef(domain.tls_ref, 'binding_sources.domains.tls_ref'),
+      tunnel_ref: optionalRef(domain.tunnel_ref, 'binding_sources.domains.tunnel_ref'),
+    }),
+    wechat_identity: Object.freeze({
+      mode: 'DISABLED', effective_status: 'DISABLED', source_node_id: null, source_binding_ref: null,
+    }),
+    payment: Object.freeze({
+      mode: paymentMode,
+      effective_status: paymentMode === 'DISABLED' ? 'DISABLED' : 'PENDING_RESOLUTION',
+      source_node_id: paymentMode === 'INHERIT_PARENT' ? parentNodeId : null,
+      source_binding_ref: optionalRef(payment.source_binding_ref, 'binding_sources.payment.source_binding_ref'),
+      provider_ref: optionalRef(payment.provider_ref, 'binding_sources.payment.provider_ref'),
+      merchant_ref: optionalRef(payment.merchant_ref, 'binding_sources.payment.merchant_ref'),
+      callback_ref: optionalRef(payment.callback_ref, 'binding_sources.payment.callback_ref'),
+      secret_ref: optionalRef(payment.secret_ref, 'binding_sources.payment.secret_ref'),
+    }),
+  });
+}
+
+function optionalRef(value, name) {
+  if (value === undefined || value === null) return null;
+  const ref = requiredRecord(value, name);
+  return Object.freeze({
+    ref: requiredText(ref.ref, `${name}.ref`),
+    version: requiredText(ref.version, `${name}.version`),
+  });
 }
 
 function normalizeBindingSources(value, parentNodeId, domains, resources) {
@@ -658,6 +835,103 @@ function requestBindingSources(request) {
   });
 }
 
+function resolveRecursiveBindingSources(request, identity, parent, parentManifest, parentResources) {
+  const domain = request.binding_sources.domains;
+  const parentDomainRef = parentManifest.resource_binding_set_ref;
+  const ownDomainRefs = [domain.source_binding_ref, domain.dns_ref, domain.tls_ref, domain.tunnel_ref];
+  const domainResolved = domain.mode === 'INHERIT_PARENT'
+    ? parentManifest.domain_bindings.length > 0 && parentDomainRef?.ref && parentDomainRef?.version
+    : ownDomainRefs.every((value) => value !== null);
+  const effectiveDomain = domain.mode === 'INHERIT_PARENT'
+    ? {
+      ref: parentDomainRef.ref,
+      version: parentDomainRef.version,
+      dns_ref: parentResources.effective_resources?.domains?.dns_ref ?? null,
+      tls_ref: parentResources.effective_resources?.domains?.tls_ref ?? null,
+      tunnel_ref: parentResources.effective_resources?.domains?.tunnel_ref ?? null,
+    }
+    : {
+      ref: domain.source_binding_ref?.ref ?? null,
+      version: domain.source_binding_ref?.version ?? null,
+      dns_ref: domain.dns_ref,
+      tls_ref: domain.tls_ref,
+      tunnel_ref: domain.tunnel_ref,
+    };
+
+  const payment = request.binding_sources.payment;
+  const parentPaymentRef = parentManifest.payment_binding_refs[0] ?? null;
+  const ownPaymentRefs = [payment.source_binding_ref, payment.provider_ref, payment.merchant_ref,
+    payment.callback_ref, payment.secret_ref];
+  const paymentResolved = payment.mode === 'DISABLED'
+    || (payment.mode === 'INHERIT_PARENT'
+      ? parentPaymentRef !== null
+      : ownPaymentRefs.every((value) => value !== null));
+  const effectivePayment = payment.mode === 'DISABLED'
+    ? null
+    : payment.mode === 'INHERIT_PARENT'
+      ? {
+        ref: parentPaymentRef?.ref ?? null,
+        version: parentPaymentRef?.version ?? null,
+        provider_ref: parentResources.effective_resources?.payment?.provider_ref ?? null,
+        merchant_ref: parentResources.effective_resources?.payment?.merchant_ref ?? null,
+        callback_ref: parentResources.effective_resources?.payment?.callback_ref ?? null,
+        secret_ref: null,
+      }
+      : {
+        ref: payment.source_binding_ref?.ref ?? null,
+        version: payment.source_binding_ref?.version ?? null,
+        provider_ref: payment.provider_ref,
+        merchant_ref: payment.merchant_ref,
+        callback_ref: payment.callback_ref,
+        secret_ref: payment.secret_ref,
+      };
+  const resolvedAt = request.created_at;
+  const domainReceipt = Object.freeze({
+    schema_version: 'sfl.autonode-resource-resolution-receipt.v1',
+    kind: 'domains',
+    node_id: identity.nodeId,
+    mode: domain.mode,
+    source_node_id: domain.mode === 'INHERIT_PARENT' ? request.parent_node_id : identity.nodeId,
+    source_ref: effectiveDomain.ref,
+    source_version: effectiveDomain.version,
+    status: domainResolved ? 'RESOLVED' : 'WAITING_EXTERNAL',
+    resolved_at: domainResolved ? resolvedAt : null,
+  });
+  const paymentReceipt = Object.freeze({
+    schema_version: 'sfl.autonode-resource-resolution-receipt.v1',
+    kind: 'payment',
+    node_id: identity.nodeId,
+    mode: payment.mode,
+    source_node_id: payment.mode === 'INHERIT_PARENT' ? request.parent_node_id : payment.mode === 'OWN' ? identity.nodeId : null,
+    source_ref: effectivePayment?.ref ?? null,
+    source_version: effectivePayment?.version ?? null,
+    status: paymentResolved ? 'RESOLVED' : 'WAITING_EXTERNAL',
+    resolved_at: paymentResolved ? resolvedAt : null,
+  });
+  return Object.freeze({
+    domains: Object.freeze({
+      ...domain,
+      source_node_id: domainReceipt.source_node_id,
+      source_binding_ref: effectiveDomain.ref,
+      source_version: effectiveDomain.version,
+      resolution_status: domainReceipt.status,
+      effective_resource: Object.freeze(effectiveDomain),
+      resolution_receipt: domainReceipt,
+    }),
+    wechat_identity: request.binding_sources.wechat_identity,
+    payment: Object.freeze({
+      ...payment,
+      source_node_id: paymentReceipt.source_node_id,
+      source_binding_ref: effectivePayment?.ref ?? null,
+      source_version: effectivePayment?.version ?? null,
+      effective_status: payment.mode === 'DISABLED' ? 'DISABLED' : 'ENABLED',
+      resolution_status: paymentReceipt.status,
+      effective_resource: effectivePayment === null ? null : Object.freeze(effectivePayment),
+      resolution_receipt: paymentReceipt,
+    }),
+  });
+}
+
 function requestIdentity(request) {
   const level = request.signed_level.toLowerCase();
   const nodeToken = `${request.node_slug}:${level}`;
@@ -667,6 +941,16 @@ function requestIdentity(request) {
     runtimeInstance: `${request.node_slug}-${level}`,
     idempotencyDigest: sha256(request.idempotency_key),
     requestDigest: digestJson(request),
+  });
+}
+
+function requestHierarchy(request) {
+  if (request.hierarchy !== undefined) return request.hierarchy;
+  const identity = requestIdentity(request);
+  return Object.freeze({
+    root_node_id: request.parent_node_id,
+    ancestry: Object.freeze([request.parent_node_id, identity.nodeId]),
+    level: Number(request.signed_level.slice(1)),
   });
 }
 
@@ -785,7 +1069,15 @@ function manifestSpec(request, identity, business) {
     data_scope_ref: reference(mallId ?? `scope:${identity.nodeToken}`),
     resource_binding_set_ref: reference(`resource-binding-set:${identity.nodeToken}`),
     secret_binding_set_ref: reference(`${nodeSecretPrefix(identity)}/secrets`),
-    payment_binding_refs: request.resources.payment ? [reference(`payment-binding:${identity.nodeToken}`)] : [],
+    payment_binding_refs: request.resources.payment ? [
+      request.schema_version === AUTONODE_RECURSIVE_REQUEST_SCHEMA_VERSION
+        && bindingSources.payment.effective_resource?.ref
+        ? {
+          ref: bindingSources.payment.effective_resource.ref,
+          version: bindingSources.payment.effective_resource.version,
+        }
+        : reference(`payment-binding:${identity.nodeToken}`),
+    ] : [],
     callback_binding_refs: request.resources.callbacks ? [reference(`callback-binding:${identity.nodeToken}`)] : [],
     runtime_instance_id: `runtime:${identity.nodeToken}:commerce`,
     runtime_config_ref: reference(`runtime-config:${identity.nodeToken}`),
@@ -802,6 +1094,9 @@ function manifestSpec(request, identity, business) {
 
 function externalBindingPlan(request, identity) {
   const bindingSources = requestBindingSources(request);
+  const recursive = request.schema_version === AUTONODE_RECURSIVE_REQUEST_SCHEMA_VERSION;
+  const domainStatus = recursive ? bindingSources.domains.resolution_status : 'WAITING_EXTERNAL';
+  const paymentStatus = recursive ? bindingSources.payment.resolution_status : 'WAITING_EXTERNAL';
   const bindings = Object.entries(request.domains).map(([surface, host]) => ({
     kind: 'domain',
     ref: `domain:${identity.nodeToken}:${surface}`,
@@ -809,7 +1104,7 @@ function externalBindingPlan(request, identity) {
     source_mode: bindingSources.domains.mode,
     source_node_id: bindingSources.domains.source_node_id,
     source_binding_ref: bindingSources.domains.source_binding_ref,
-    status: 'WAITING_EXTERNAL',
+    status: domainStatus,
   }));
   const referenceByKind = {
     tunnel: `tunnel-binding:${identity.nodeToken}`,
@@ -832,7 +1127,11 @@ function externalBindingPlan(request, identity) {
         source_node_id: source.source_node_id,
         source_binding_ref: source.source_binding_ref,
       }),
-      status: 'WAITING_EXTERNAL',
+      status: recursive
+        ? ['tunnel', 'tls'].includes(kind) ? domainStatus
+          : ['payment', 'callbacks'].includes(kind) ? paymentStatus
+            : 'RESOLVED'
+        : 'WAITING_EXTERNAL',
     });
   }
   return bindings;

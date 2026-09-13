@@ -38,8 +38,10 @@ export function parseNodeActivationRequest(value) {
   return normalizeActivationRequest(value);
 }
 
-export function nodeActivationTunnelName(request) {
-  const instance = `${request.provisioning_request.node_slug}-${request.provisioning_request.signed_level.toLowerCase()}`;
+export function nodeActivationTunnelName(request, manifest) {
+  const signedLevel = manifest?.signed_level ?? request.provisioning_request.signed_level;
+  if (typeof signedLevel !== 'string') throw new Error('AUTONODE_ACTIVATION_LEVEL_UNRESOLVED');
+  const instance = `${request.provisioning_request.node_slug}-${signedLevel.toLowerCase()}`;
   return `${instance.slice(0, 52)}-${sha256(request.activation_request_id).slice(0, 10)}`;
 }
 
@@ -284,8 +286,9 @@ export class NodeActivationEngine {
 }
 
 async function activationPlan(request, candidate) {
-  const instance = `${request.provisioning_request.node_slug}-${request.provisioning_request.signed_level.toLowerCase()}`;
+  const instance = `${request.provisioning_request.node_slug}-${candidate.manifest.signed_level.toLowerCase()}`;
   const nodeDirectory = join(request.target.node_root, instance);
+  const hosts = manifestHosts(candidate.manifest);
   const systemd = await readRequiredJson(join(candidate.nodeDirectory, 'runtime', 'systemd-instances.json'));
   const systemdTemplates = [...new Set(systemd.instances.map(({ unit }) =>
     join(request.target.systemd_unit_root, `${unit.split('@')[0]}@.service`)))].sort();
@@ -304,15 +307,15 @@ async function activationPlan(request, candidate) {
       join(nodeDirectory, 'runtime', 'tls', 'origin-ca.crt'),
     ],
       [`revoke and remove the certificate created for ${candidate.manifest.node_id}`]),
-    operation('TUNNEL_BOUND', [`tunnel:${nodeActivationTunnelName(request)}`],
-      [`delete owned tunnel tunnel:${nodeActivationTunnelName(request)}`]),
-    operation('DNS_BOUND', Object.values(request.provisioning_request.domains).sort(),
+    operation('TUNNEL_BOUND', [`tunnel:${nodeActivationTunnelName(request, candidate.manifest)}`],
+      [`delete owned tunnel tunnel:${nodeActivationTunnelName(request, candidate.manifest)}`]),
+    operation('DNS_BOUND', Object.values(hosts).sort(),
       [`delete only DNS record IDs recorded for ${candidate.manifest.node_id}`]),
     operation('SYSTEMD_READY', [...systemdTemplates, ...systemd.instances.map(({ unit }) => unit)],
       [`disable only ${instance} systemd instances`]),
     operation('PROCESSES_READY', systemd.instances.map(({ unit }) => unit),
       [`stop only ${instance} systemd instances`]),
-    operation('HEALTH_VERIFIED', healthTargets(request.provisioning_request), []),
+    operation('HEALTH_VERIFIED', healthTargets(hosts), []),
     operation('ACTIVE', [join(nodeDirectory, 'manifest.json'), join(nodeDirectory, 'receipts', 'activation.json')],
       [`restore the previous manifest and pointer for ${candidate.manifest.node_id}`]),
   ];
@@ -332,7 +335,7 @@ async function activationPlan(request, candidate) {
     immutable_artifact_digest: artifact.immutable_artifact_digest,
     source_tree_copy_count: 0,
     node_specific_build_count: 0,
-    hosts: Object.values(request.provisioning_request.domains).sort(),
+    hosts: Object.values(hosts).sort(),
     operations,
   };
   return Object.freeze({ ...value, plan_digest: digestJson(value) });
@@ -342,12 +345,24 @@ function operation(step, targets, rollback) {
   return Object.freeze({ step, targets: Object.freeze([...targets]), rollback: Object.freeze([...rollback]) });
 }
 
-function healthTargets(request) {
+function manifestHosts(manifest) {
+  const entries = manifest.domain_bindings.map((binding) => [
+    binding.surface_ref.slice('surface:'.length),
+    binding.host,
+  ]);
+  const hosts = Object.fromEntries(entries);
+  for (const surface of ['api', 'console', 'identity', 'storefront']) {
+    if (typeof hosts[surface] !== 'string') throw new Error(`AUTONODE_MANIFEST_HOST_MISSING:${surface}`);
+  }
+  return Object.freeze(hosts);
+}
+
+function healthTargets(hosts) {
   return Object.freeze([
-    `https://${request.domains.api}/health/gateway`,
-    `https://${request.domains.console}/console-runtime.json`,
-    `https://${request.domains.identity}/health/ready`,
-    `https://${request.domains.storefront}/`,
+    `https://${hosts.api}/health/gateway`,
+    `https://${hosts.console}/console-runtime.json`,
+    `https://${hosts.identity}/health/ready`,
+    `https://${hosts.storefront}/`,
   ]);
 }
 

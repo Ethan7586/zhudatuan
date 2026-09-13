@@ -27,6 +27,7 @@ import {
   parseSflNodeTopology,
   resolveNodeRecord,
   resolveNodeManifestByHost,
+  resolveNodeHierarchy,
   serializeNodeManifest,
   serializeNodeManifestRegistry,
   validateNodeManifestOwnership,
@@ -195,6 +196,17 @@ describe('SFL node kernel', () => {
     await expect(parseNodeManifestRegistry(registry)).resolves.toEqual(registry);
     await expect(deserializeNodeManifest(serializeNodeManifest(manifest))).resolves.toEqual(manifest);
     await expect(deserializeNodeManifestRegistry(serializeNodeManifestRegistry(registry))).resolves.toEqual(registry);
+  });
+
+  it('resolves the persisted parent chain into root, ancestry, and level facts', () => {
+    const l1 = manifestByLevel('L1');
+    const hierarchy = resolveNodeHierarchy(registry, l1.node_id);
+
+    expect(hierarchy.root_node_id).toBe(manifestByLevel('L0').node_id);
+    expect(hierarchy.level).toBe(1);
+    expect(hierarchy.ancestry.map((nodeId) => manifestByNode(nodeId).signed_level)).toEqual([
+      'L0', 'L1',
+    ]);
   });
 
   it('rejects malformed JSON, extra fields, invalid lifecycle, malformed digest, and incomplete references', async () => {
