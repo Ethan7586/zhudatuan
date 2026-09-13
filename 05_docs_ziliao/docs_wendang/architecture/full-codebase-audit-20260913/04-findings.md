@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-008 结束时累计：P0 0、P1 候选 7、P2 29、P3 9、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-009 结束时累计：P0 0、P1 候选 7、P2 31、P3 13、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -763,10 +763,10 @@
 | 类型 | 隐式共享可变状态、配置完整性 |
 | 严重级别 | P2 |
 | 置信度 | 高：隔离Node进程直接观察并改变resolver与共享deadline结果；固定基线未找到现有写调用 |
-| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17；`services/commerce/src/app/events.ts`；`RuntimeEventPublisher.ts` |
-| 当前行为 | [FACT][E-AU-006-006][E-AU-008-011] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功。生成的`EVENT_HANDLERS`同样导出可变Map singleton；当前仓库未发现set/delete/clear调用 |
+| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17；`services/commerce/src/app/events.ts`；`RuntimeEventPublisher.ts`；`packages/kernel/src/Currency.ts:1-13` |
+| 当前行为 | [FACT][E-AU-006-006][E-AU-008-011][E-AU-009-018] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功。生成的`EVENT_HANDLERS`同样导出可变Map singleton。Kernel的`CURRENCIES`虽为`as const`但运行数组可push，`Currency.code`也可改写；隔离反事实追加USD后validator立即接受。当前仓库未发现这些mutation的生产调用 |
 | 预期行为 | Manifest/Registry/Topology及共享容量/缓存参数作为进程权威，在解析/生成后应不可被消费者改写，或消费者获得隔离副本 |
-| 直接证据 | E-AU-006-006、E-AU-008-011、T-AU-006-004、RS-AU-006-002、INV-AU-006-006、FM-AU-008-005 |
+| 直接证据 | E-AU-006-006、E-AU-008-011、E-AU-009-018、T-AU-006-004、RS-AU-006-002、INV-AU-006-006、INV-AU-009-010、FM-AU-008-005、FM-AU-009-009 |
 | 调用链或运行入口 | JSON/YAML生成物 module import → exported singleton → Identity/Console/generator/check或HTTP/Pool/cache/SDK consumers；events.ts Map → RuntimeEventPublisher → inbox/job |
 | 用户影响 | 若任一同进程消费者意外修改嵌套对象，后续Host/资源ref或timeout/cache/capacity行为可随加载顺序漂移 |
 | 数据影响 | 不修改仓库或数据库，但会改变进程内配置事实；重启恢复原JSON |
@@ -887,9 +887,9 @@
 | 严重级别 | P2 |
 | 置信度 | 高：路径事实与 ErrorMapper 控制流确定；缺口数量是保守词法下界，正式 AST 命令本环境未加载 |
 | 文件和精确位置 | scripts/check/errors.mjs:6-53；package.json:80,123；Commerce ErrorMapper.ts:13-26 |
-| 当前行为 | [FACT][E-AU-007-006] checker 从仓库根扫描 `apps/extensions/packages/scripts/services/tools`；当前前五个业务根不存在，顶层 scripts 无 JS/TS，因此规则不会访问 `01_core_hexin` 或 `04_tools`。修正到当前六个根后，三种与正式规则对应的精确字面量形态得到 1,678 个唯一值/2,256 次出现，其中 899 个未在 errors.yml，至少 294 个属于 Commerce service |
+| 当前行为 | [FACT][E-AU-007-006][E-AU-009-016] checker 从仓库根扫描 `apps/extensions/packages/scripts/services/tools`；当前前五个业务根不存在，顶层 scripts 无 JS/TS，因此规则不会访问 `01_core_hexin` 或 `04_tools`。修正到当前六个根后，三种与正式规则对应的精确字面量形态得到 1,678 个唯一值/2,256 次出现，其中 899 个未在 errors.yml，至少 294 个属于 Commerce service；Kernel `Retry.ts:24` 的 fallback `RETRY_FAILED` 是新增确认实例，而目录只有 `RETRY_EXHAUSTED` |
 | 预期行为 | 正式 `check:errors` 必须扫描当前生产源码根，并对每个可由 ErrorMapper 暴露的稳定错误码执行目录存在性检查 |
-| 直接证据 | E-AU-007-006、T-AU-007-048、INV-AU-007-005、FM-AU-007-002、RS-AU-007-003 |
+| 直接证据 | E-AU-007-006、E-AU-009-016、T-AU-007-048、INV-AU-007-005、FM-AU-007-002、FM-AU-009-008、RS-AU-007-003 |
 | 调用链或运行入口 | quality:canonical-hard-cut → check:errors → source traversal → errors.yml；运行时 Error/DomainError → ErrorMapper → generated errorStatus |
 | 用户影响 | 未声明业务错误会被 ErrorMapper 统一变为 `INTERNAL_ERROR`/500，客户端失去可恢复的4xx/409等语义；具体触发频率未验证 |
 | 数据影响 | 无直接写入；错误分类错误可能让调用方错误重试或无法执行补偿 |
@@ -1120,3 +1120,147 @@
 - [UNKNOWN] 线上Console/API是否运行固定基线、proof命令的真实调用频率与F-0044实际用户影响均未验证；本AU未访问线上。
 - [UNKNOWN] `@shop/sdk`仓外消费者、外部Miniapp工程/微信发布流水线和人工应用`database/contracts/current.sql`的历史流程均未排除。
 - [UNVERIFIED][E-AU-008-008] SDK test/typecheck、Miniapp generated check与runtimegraph均在业务逻辑前因本地依赖缺失阻塞；没有任何一项被写成通过或实现失败。
+
+## F-0047｜CircuitBreaker 的并发完成顺序可撤销 open，classifier 异常可锁死 probe
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/kernel` / 外部调用可靠性 |
+| 类型 | 并发竞态、状态机、失败恢复 |
+| 严重级别 | P2 |
+| 置信度 | 高：实际固定基线源码的两个确定性Promise反事实均命中；线上并发和classifier异常频率未知 |
+| 文件和精确位置 | `packages/kernel/src/CircuitBreaker.ts:15-50`；`services/commerce/src/foundation/performance/Executor.ts:18-38`；`extensions/vendors/core/src/CircuitPolicy.ts:4-21` |
+| 当前行为 | [FACT][E-AU-009-004] threshold=1时两个closed调用并行，A失败后state=open，较早已开始的B随后成功会由`succeed()`无条件重置为closed。另在half-open probe失败后，若`countsAsFailure`自身抛错，`fail/succeed`均不执行，state保持halfopen且probing=true，后续全部run抛`CIRCUIT_OPEN` |
+| 预期行为 | 一次调用的完成只能更新它被允许进入时对应的circuit代际；任何operation/classifier结束路径都必须释放probe或进入明确closed/open状态 |
+| 直接证据 | E-AU-009-004、INV-AU-009-002/003、STATE-AU-009-001..007、FM-AU-009-001/002 |
+| 调用链或运行入口 | Commerce HttpClient/provider adapter → Executor共享CircuitBreaker；VendorClient → CircuitPolicy共享CircuitBreaker → 外部HTTP |
+| 用户影响 | [INFERENCE] open被旧成功撤销会继续向故障依赖放行调用；probe锁死会使已恢复依赖仍被当前实例持续拒绝。实际受影响请求量未验证 |
+| 数据影响 | 无Kernel直接写；外部写调用被过度放行或持续拒绝，具体半完成数据由各adapter决定 |
+| 安全影响 | 未发现直接权限或凭据影响 |
+| 根因 | 状态机没有调用代际/token；`succeed`无条件closed，classifier调用不在保证probe恢复的保护区 |
+| 建议方向 | 后续独立可靠性批次先定稿代际/half-open状态表，再以最小状态转换修改覆盖两个反事实；不与retry或provider修复混批 |
+| 预计修改范围 | CircuitBreaker及定向并发测试；调用者原则上无需改动，需验证Vendor与Executor行为 |
+| 验证方式 | closed并发成功/失败全部完成顺序、open恢复、两个probe竞争、operation/classifier同步/异步异常矩阵；每步断言state/probing和调用次数 |
+| 回滚方式 | 回退CircuitBreaker单一提交；原实现不涉及数据迁移 |
+| 是否需要独立复核 | 否（P2）；若证明线上大面积依赖雪崩或持续拒绝则重新定级 |
+
+## F-0048｜`businesskeywrite` 未绑定业务幂等键，WeChat lost-response 可重发无键 POST
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Kernel Retry / Commerce HttpClient / Notification WeChat adapter |
+| 类型 | 幂等、重试、外部副作用、契约错位 |
+| 严重级别 | P2 |
+| 置信度 | 高（重试控制流和key丢弃确定）；第一次请求是否在外部生效、微信是否隐式去重未知 |
+| 文件和精确位置 | `packages/kernel/src/Retry.ts:4-16,42-47`；`services/commerce/src/foundation/performance/Executor.ts:8-35`；`foundation/http/HttpClient.ts:18-20,54-56`；`modules/notification/04_adapters_shixian/adapter/WechatChannel.ts:27-39`；`06_tests_ceshi/DeliveryChannel.test.ts:18-27` |
+| 当前行为 | [FACT][E-AU-009-005/011] Retry只校验mode字符串和次数/延迟；ExecutionContext/HttpCallContext没有idempotency key。HttpClient对businesskeywrite的connection/response/transport失败照常重试。WechatChannel收到`request.idempotency`却既不发送也不绑定到payload，仅以`mode: businesskeywrite`发送subscribe POST |
+| 预期行为 | 任何可自动重试的业务写必须把稳定业务键绑定到provider可识别的请求，或在没有该保证时只尝试一次；模式名不能替代可执行幂等契约 |
+| 直接证据 | E-AU-009-005、E-AU-009-011、INV-AU-009-004、STATE-AU-009-009、FM-AU-009-003 |
+| 调用链或运行入口 | Notification job/dispatcher → WechatChannel.send → HttpClient.send → Executor → retry → `api.weixin.qq.com/.../message/subscribe/send` |
+| 用户影响 | [INFERENCE] 第一次消息已被微信接受但响应丢失时，同一用户可能收到重复订阅通知；外部发生率和平台去重未知 |
+| 数据影响 | 本地数据库去重不能撤销同一次执行内的第二个外部POST；未证明本地重复行 |
+| 安全影响 | 未发现直接权限影响；URL含access token是既有provider协议，本项不复制凭据 |
+| 根因 | Kernel重试契约只编码意图标签；Commerce执行上下文没有key字段；Wechat adapter丢弃上游已有dispatch idempotency |
+| 建议方向 | 单独定稿“key由Kernel强制”或“每adapter自证”边界；先修一条WeChat链并以lost-response反事实验收，不顺手改其它provider |
+| 预计修改范围 | Retry/ExecutionContext/HttpCallContext与Wechat adapter/tests中的最小一致集合；具体由设计选择决定 |
+| 验证方式 | 首次fetch记录外部已接收后抛transport error、第二次调用计数；有key/无key、read/write/none、connection/response/HTTP error矩阵 |
+| 回滚方式 | 回退独立重试契约提交；不改数据库迁移或线上provider状态 |
+| 是否需要独立复核 | 否（P2）；若生产日志证明重复通知规模重大则重新定级 |
+
+## F-0049｜ModuleCatalog 的 capability 协议与现行 manifests 不闭合，且“immutable”索引可分裂
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/kernel` ModuleCatalog / Commerce module manifests |
+| 类型 | 架构契约、模块边界、共享可变状态 |
+| 严重级别 | P3 |
+| 置信度 | 高（35份manifest全量复算和实际mutation反事实）；当前生产没有ModuleCatalog构造者 |
+| 文件和精确位置 | `packages/kernel/src/module_jiexianban/ModuleCatalog.ts:13-126`；`ModuleManifest.ts:13-34`；35个 `services/commerce/src/modules/*/module.manifest.ts` |
+| 当前行为 | [FACT][E-AU-009-006/007] 35 manifests提供51个唯一capability并声明92个requires，其中37个required值无provider，多数使用module ID而不是`*.read/manage` capability。Catalog保留调用者manifest和数组引用；构造后mutation可令`get()`看到新增值而`providersFor()`索引看不到。单manifest重复同一provides还会把自身报成两个歧义provider |
+| 预期行为 | manifest依赖和resolver使用同一稳定命名空间；catalog构造后查询/解析来自同一不可变快照，并拒绝重复/畸形声明 |
+| 直接证据 | E-AU-009-006、E-AU-009-007、INV-AU-009-006、STATE-AU-009-012、FM-AU-009-004、module-manifest-resolution.csv |
+| 调用链或运行入口 | 当前：35 module文件加载 → defineModuleManifest → 各module index；潜在：startup → new ModuleCatalog → resolve。固定仓库只存在后者的4个合成测试，无生产构造者 |
+| 用户影响 | 当前未证明运行影响；若未来按注释接入startup，选中相关module会报missing/ambiguous或受调用者mutation影响 |
+| 数据影响 | 无当前数据库读写；潜在启动失败发生在业务处理前 |
+| 安全影响 | 依赖图可能包含access/identity能力，但当前无运行接线，不能推导权限绕过 |
+| 根因 | Manifest `CapabilityId`只是string，35份文件分别以module ID/capability ID维护；readonly类型和注释被当成运行时不可变性 |
+| 建议方向 | 先由架构所有者决定manifest是可执行startup契约还是说明性元数据；再单独统一命名空间、验证与snapshot，不得机械改37项 |
+| 预计修改范围 | Kernel catalog/manifest、35份manifest及其34个测试，或明确移除未接线执行承诺；需拆小批次 |
+| 验证方式 | 真实35份manifest全集resolve、每个selection、duplicate provides、输入/返回mutation、optional/binding/cycle矩阵；同时验证正式startup是否接线 |
+| 回滚方式 | 每批按单一module/协议提交回退；当前无数据迁移 |
+| 是否需要独立复核 | 否（P3）；ModuleCatalog自身列G1而非删除候选 |
+
+## F-0050｜ValueObject canonical equality 对 Date、非有限数及非 JSON 值不成立
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/kernel` 领域值对象 |
+| 类型 | 正确性、类型与运行时接受集、序列化 |
+| 严重级别 | P3 |
+| 置信度 | 高：实际源码反事实命中；当前唯一生产子类PaymentReference只有两个字符串字段 |
+| 文件和精确位置 | `packages/kernel/src/ValueObject.ts:1-17`；`services/commerce/src/modules/payment_zhifu/02_domain_yewu/models_moxing/PaymentReference.ts:6-12` |
+| 当前行为 | [FACT][E-AU-009-008] canonical对所有object枚举entries：两个不同Date都成为`{}`；`JSON.stringify(NaN)`与Infinity都成为`null`，因此均判相等。BigInt会抛序列化错误，循环对象会递归失败；泛型的nested unknown未排除这些输入 |
+| 预期行为 | ValueObject支持的值域必须明确且equals对该值域全定义；业务不同值不能碰撞，不支持的值应在构造时确定拒绝 |
+| 直接证据 | E-AU-009-008、INV-AU-009-007、FM-AU-009-005、RS-AU-009-001 |
+| 调用链或运行入口 | 当前 PaymentReference → Commerce foundation ValueObject re-export → Kernel constructor/equals；未来公共子类可直接使用根导出 |
+| 用户影响 | 当前PaymentReference平面字符串不触发；未来含日期/非有限数的值对象可能错误去重、漏报变化或在比较时抛错 |
+| 数据影响 | 无当前写入证据；错误比较可能间接改变未来状态决策 |
+| 安全影响 | 无直接证据 |
+| 根因 | TypeScript `Record<string, unknown>` 接受集大于自制JSON canonicalizer；算法未定义特殊对象、非有限数、BigInt和cycle |
+| 建议方向 | 独立值对象批次先定稿仅JSON值还是可扩展类型，再选择显式字段比较/受限canonical；保持PaymentReference现有行为测试 |
+| 预计修改范围 | ValueObject和新边界测试；若收窄类型，需逐个审外部子类 |
+| 验证方式 | property顺序、nested array/object、Date、NaN/Infinity、undefined、BigInt、Map/Set、cycle及外部mutation矩阵 |
+| 回滚方式 | 回退单一Kernel提交；无数据迁移 |
+| 是否需要独立复核 | 否（P3） |
+
+## F-0051｜Deadline 对长时限提前中止，并在同步抛错 callback 上遗留 listener
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/kernel/deadline` / 可靠性 |
+| 类型 | 时间边界、资源清理、异步正确性 |
+| 严重级别 | P3 |
+| 置信度 | 高（控制流和平台timer上限明确）；仓内现行deadline均远短于边界 |
+| 文件和精确位置 | `packages/kernel/src/deadline/index.ts:3,12-25,30-64` |
+| 当前行为 | [FACT][E-AU-009-009] after/at接受任意正safe-integer期限，但构造只设置一次`min(MAX_TIMER, expiresAt-now)` timer；超过2,147,483,647ms时会在约24.85天提前abort而不重新计算。`run()`在注册listener后直接调用operation，再对返回值安装`.finally`；同步throw/非Promise会让executor拒绝但不移除listener |
+| 预期行为 | signal不应早于expiresAt中止；operation的同步/异步所有退出路径都应移除listener，dispose应拥有清楚且可测的资源责任 |
+| 直接证据 | E-AU-009-009、INV-AU-009-005、STATE-AU-009-010/011、FM-AU-009-006 |
+| 调用链或运行入口 | SDK ApiClient、Commerce Executor/jobs、VendorClient → Deadline.at/after → AbortSignal → fetch/wait；仓内未发现超过24.85天期限 |
+| 用户影响 | 当前短请求未受长timer问题影响；仓外长任务可能提前取消，同一Deadline频繁同步失败的run可能积累listener |
+| 数据影响 | 提前取消可能留下由上层决定的外部半完成操作；Kernel本身不写数据库 |
+| 安全影响 | 无直接证据 |
+| 根因 | timer上限被当成实际期限而非分段调度；Promise callback调用不先规范为异步链或try/finally |
+| 建议方向 | 单独Deadline批次实现分段重算与全退出清理，并先穷举timer/abort竞态；不与Circuit修复混批 |
+| 预计修改范围 | Deadline及其直接单元测试；验证SDK/Executor/Vendor调用保持 |
+| 验证方式 | fake clock跨MAX、parent abort、dispose前后、同步throw、reject、resolve、abort同tick、多个run/listener计数 |
+| 回滚方式 | 回退Deadline单一提交；无迁移 |
+| 是否需要独立复核 | 否（P3） |
+
+## F-0052｜TestIdGenerator 第 18 个输出违反 Kernel Id 字母表
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/testing` / `@shop/kernel` ID 接缝 |
+| 类型 | 测试基础设施正确性、契约漂移 |
+| 严重级别 | P3 |
+| 置信度 | 高：实际Kernel parser反事实确定；固定仓库没有TestIdGenerator调用者 |
+| 文件和精确位置 | `packages/testing/src/TestIdGenerator.ts:3-9`；`packages/kernel/src/Id.ts:1-10` |
+| 当前行为 | [FACT][E-AU-009-010] generator使用JavaScript普通base32并转大写；sequence=18得到`...0I`，而Id正则的Crockford字母表排除I/L/O/U，`Id.parse`抛`ID_INVALID` |
+| 预期行为 | 测试生成器每个输出都必须满足它实现的`IdGenerator`端口和实际`Id.parse`，至少跨完整字母表周期保持有效且确定 |
+| 直接证据 | E-AU-009-010、INV-AU-009-008、FM-AU-009-007 |
+| 调用链或运行入口 | 测试fixture → TestIdGenerator.next(prefix) → 普通base32 → Kernel Id.parse；当前只有testing包公开导出，无仓内caller |
+| 用户影响 | 不影响当前生产；仓外或未来测试创建第18个ID时会异常中止并可能误判业务实现 |
+| 数据影响 | 无生产数据影响 |
+| 安全影响 | 无 |
+| 根因 | parser与generator各自维护不同字母表，生成器没有复用Kernel编码规则，也没有自有测试 |
+| 建议方向 | 独立testing小批次共享同一字母表/编码器并新增周期测试；不在审计分支修复 |
+| 预计修改范围 | TestIdGenerator和testing定向测试；Kernel Id parser原则上无需改 |
+| 验证方式 | 生成至少1,024个不同prefix/sequence，全部经Id.parse，断言确定性、唯一性、长度和禁字 |
+| 回滚方式 | 回退testing单一提交 |
+| 是否需要独立复核 | 否（P3） |
+
+## 10. AU-009 新增未定级事项
+
+- [UNKNOWN] `@shop/kernel` 的仓外消费者、超过24.85天的Deadline调用者和ModuleCatalog未来startup意图未取得证据。
+- [UNKNOWN] WeChat平台是否对相同subscribe payload做隐式去重，以及生产是否发生lost-response重复发送；本AU未访问供应商或线上日志。
+- [UNKNOWN][E-AU-009-017] Kernel test/typecheck的实现结果未知：两者均因本地缺`vitest`/`tsc`在源码加载前阻塞；没有写成通过或实现失败，也未安装依赖。

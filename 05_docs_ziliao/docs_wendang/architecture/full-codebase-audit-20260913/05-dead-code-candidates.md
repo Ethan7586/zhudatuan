@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 2、G1 7、G2 0、G3 0、GX 1。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 2、G1 9、G2 0、G3 0、GX 1。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -129,6 +129,31 @@ AU-005 首次建立候选总账。零静态引用、零正式target或测试只�
 | 可否独立删除 | 否；零仓内调用不能排除公共API、历史兼容和外部运行责任 |
 | 二次复核 | G1不强制；升级G2/G3前必须查发布包消费者与Miniapp所有权 |
 
+## DC-0010｜ModuleCatalog capability resolver
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，但证据不足 |
+| 对象 | `packages/kernel/src/module_jiexianban/ModuleCatalog.ts` 的 `ModuleCatalog`、`ModuleSelection`、`ResolvedModulePlan` |
+| 疑似原因 | [FACT][E-AU-009-003/006/014] 固定仓库只有自身4个测试构造ModuleCatalog；35份Commerce manifests只调用defineModuleManifest，正式startup使用另一套composition入口 |
+| 保留证据 | 它仍经`@shop/kernel`根入口公开，保存仓库唯一capability provider/binding/topological resolver与missing/ambiguous/cycle契约；需求文档还引用历史ModuleCatalog测试路径 |
+| 当前问题 | 35份manifest有37个required capability无provider，输入/返回对象又不具运行时不可变性，已登记F-0049；实现有缺陷不能作为删除依据 |
+| 未排除项 | 仓外消费者、未来startup计划、公共类型兼容、架构所有者是否将其视为待接线能力、等价替代的正式确认 |
+| 可否独立删除 | 否；公共API、测试规格、兼容/未来责任、等价替代、可观察行为与第二次复核均未满足 |
+| 二次复核 | G1不强制；升级G2前须先定稿manifest执行责任并查仓外消费者 |
+
+## DC-0011｜零仓内生产调用的 Kernel 公共原语组
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，但证据不足 |
+| 对象 | `Email`、`Hash`、`Mobile`、`Page/page`、`Result/success/failure`、`Version`、`Specification/AndSpecification/OrSpecification` |
+| 疑似原因 | [FACT][E-AU-009-003/014] 排除定义、barrel、同词普通变量/类型后，前六组没有仓内生产caller；Specification只有Commerce foundation兼容re-export而无下游生产caller |
+| 保留证据 | 全部仍经private workspace包`@shop/kernel`根入口公开；分别保存值校验、分页/result/版本/规格组合语义，外部workspace或历史制品消费者未排除；Specification还有明确兼容转发 |
+| 未排除项 | 仓外源码与已发布制品、动态包消费、类型级别别名、历史回滚、后续identity/member/API模块、正式deprecated周期和可验证等价替代 |
+| 可否独立删除 | 否；只满足“仓内静态生产caller不足”，不满足G3的公共API、兼容、等价替代、行为不变、验证/恢复和第二次复核条件 |
+| 二次复核 | G1不强制；逐符号证据见AU-009 `dead-code-symbols.csv`，不得把整组机械删除 |
+
 ## 2. G3 条件对账
 
-上述G0、G1和GX项均不满足“无公共/事件契约、无数据责任、存在等价替代、删除不改变可观察行为、已完成第二次复核”等条件。AU-008未对任何文件提出删除、归档或移动建议。
+上述G0、G1和GX项均不满足“无公共/事件契约、无数据责任、存在等价替代、删除不改变可观察行为、已完成第二次复核”等条件。AU-009未对任何文件提出删除、归档或移动建议。

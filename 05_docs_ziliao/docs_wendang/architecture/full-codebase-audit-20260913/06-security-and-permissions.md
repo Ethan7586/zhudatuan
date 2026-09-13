@@ -78,3 +78,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - [CONFLICT] Console与API是不同origin，生产HttpApp的CORS预检白名单遗漏该头，真实请求在身份/业务授权之前被浏览器阻断；browser mock却允许。这是F-0044/P2可用性缺陷，不是授权绕过。
 - 修复方向不得删除proof、缩短授权链或新增权限规则；只应在未来独立批次统一现有客户端/HTTP/mock头契约，并验证请求仍由既有AccessPipeline裁决。
 - WechatTransport和release检查未发现凭据写入报告或制品的新证据；线上bundle与日志未读取，保持UNKNOWN。本AU未修改任何权限、凭据、会话或线上状态。
+
+## 10. AU-009 Kernel 的权限边界
+
+- [FACT][E-AU-009-015] Kernel Gate只定义 `disabled | observe` 及plugin输入/结果；Commerce GateEngine对observe插件执行观察并把插件异常记录为error decision，不改变AccessPipeline授权结论。它不是身份、会话、permission、scope或数据库RLS所有者。
+- Kernel的Clock/Money/Entity/Retry等原语均不读取当前用户、token、role或permission。调用者若把敏感值传入event/error/provider URL，责任属于调用链；本AU没有发现Kernel主动日志或凭据持久化。
+- F-0048涉及外部写重试和access token所在provider URL，但没有证明凭据泄露或权限绕过；不因“安全”名义在审计分支新增守卫。
+- Module manifests的37个missing中包含identity/access命名，但Catalog没有生产构造者；不得把静态图缺口写成授权失效。身份与授权从AU-010另行逐链审计。

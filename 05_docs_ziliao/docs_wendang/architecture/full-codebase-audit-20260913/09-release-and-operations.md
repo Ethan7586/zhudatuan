@@ -131,3 +131,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - `events.json`只含type/version/module，event schema/handlers变化不会旋转该字段，补强F-0039；但Commerce OCI、commit、SBOM和candidate/stage证据仍提供其它溯源，不能夸大为全部制品不可追踪。
 - SDK operation代码由Console/Auth/Storefront各自目录hash进入候选，Commerce generated shells由OCI hash覆盖；Miniapp两个domain模块随全部9文件进入Miniapp目录hash。`current.sql`不进入candidate。
 - stage、promote、validate和validatebundle继续传播并核对这些分层hash。本AU只读源码并本地复算，未构建候选、未读取线上release、未推送、未部署。
+
+## 12. AU-009 Kernel 制品与运维边界
+
+- `@shop/kernel`为private workspace package且无独立build artifact、OCI、systemd unit、release target或线上配置。其代码随Commerce/Vendor/SDK/testing消费者编译，发布身份由这些上层制品hash承担。
+- package声明 `sideEffects:false`；人工审阅确认barrel和大多数模块顶层只声明类型/常量。Deadline timer、Circuit/Rate/Semaphore状态都在显式构造后产生，不在module import时启动。
+- Kernel变更会横跨多个上层制品，未来修复F-0047–F-0052必须从修复时最新 `zdt-next` 建立独立小分支，按单一原语定向测试后再做受影响typecheck/build；审计分支不是候选制品。
+- 本AU未运行全量build、未生成制品、未推送、未合并、未部署，也未改变任何线上资源。

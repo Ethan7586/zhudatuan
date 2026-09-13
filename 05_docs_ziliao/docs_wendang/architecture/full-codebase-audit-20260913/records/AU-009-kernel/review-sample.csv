@@ -1,0 +1,6 @@
+"抽检编号","确定性顺序键","抽检文件","原结论","重新从入口追踪","复核结论","遗漏/扩大范围"
+"RS-AU-009-001","02b94b92bdd5","01_core_hexin/packages/kernel/src/ValueObject.ts","generic canonical equality对Date/nonfinite值不正确；当前唯一子类flat strings","PaymentReference→Commerce foundation re-export→ValueObject constructor/equals→canonical","一致；F-0050保持P3且不扩大到当前支付事故","无"
+"RS-AU-009-002","077d7a55ee2","01_core_hexin/packages/kernel/src/Entity.ts","只校验非空id并冻结实例；Order为真实子类","Order→foundation Entity re-export→constructor/id","一致；没有共享状态或独立问题","无"
+"RS-AU-009-003","0d0ec51d3745","01_core_hexin/packages/kernel/src/Aggregate.ts","事件缓冲为实例私有；Reservation为唯一生产子类但当前不record events","Reservation→foundation Aggregate re-export→pending/record/pullEvents并在pull时清空","一致；零事件使用不足以认定基类可删","保留公共/未来契约，未列G3"
+"RS-AU-009-004","1712db338017","01_core_hexin/packages/kernel/src/gate_menjin/index.ts","纯type barrel承担root兼容导出","Operation gate→HttpApp→GateEngine/GateRegistry","一致；模块加载无运行副作用","无"
+"RS-AU-009-005","23b45fabaa31","01_core_hexin/packages/kernel/src/gate_menjin/GateDeclaration.ts","mode只有disabled/observe是明确设计边界","contract OperationGateDeclaration同值→HttpApp转换→GateEngine observe","一致；不能把无enforce写成缺陷或权限无效","无"

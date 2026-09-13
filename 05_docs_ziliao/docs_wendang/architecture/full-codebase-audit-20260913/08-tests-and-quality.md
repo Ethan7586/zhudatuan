@@ -94,3 +94,12 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - WechatTransport只有abort一例；success/fail、string/object/undefined、序列化异常、重复callback和callback-after-abort均未覆盖（F-0046）。RetryPolicy也没有直接或端到端的重试次数、408/429/5xx与deadline矩阵。
 - 正式`npm test --workspace @shop/sdk`因vitest缺失退出127，typecheck因tsc缺失退出127，`build-miniapp-contract --check`因zod缺失退出1，`check:runtimegraph`因typescript缺失退出1。均在业务逻辑前阻塞，未记为通过或实现失败，也未安装依赖。
 - 只读集合复算确认345/271/74 Operation分层、67 Event registry以及SDK/运行壳缺项均为0；runtimegraph静态复算确认1个缺文件和3个旧token期望。完整38条记录见`records/AU-008-generated-contract-runtime-chain/tests.csv`。
+
+## 8. AU-009 Kernel 测试可信度
+
+- Kernel有3个测试文件、9个用例：Money 1、Resilience 4、ModuleCatalog 4。Money对浮点minor和加法溢出的反事实直接；其余公共值对象没有Kernel直接测试。
+- Circuit测试只走串行open/recover和classifier=false，无法发现旧成功覆盖新open或classifier抛错锁死probe（F-0047）。
+- Retry测试只走read模式的一次失败后成功；标题中的“safe mode”没有比较businesskeywrite/none，也没有要求业务key，消费者HttpClient/Wechat测试同样漏掉lost-response（F-0048）。
+- ModuleCatalog四例使用合成manifest，不加载35份真实manifest，不测重复provides、输入mutation或返回Map mutation（F-0049）。
+- ValueObject、Deadline长timer/sync throw、TestId第18项都无测试；只读实际源码反事实分别命中F-0050/F-0051/F-0052中的可执行部分。
+- 正式test/typecheck均退出127，分别缺vitest/tsc并在源码加载前阻塞。没有安装依赖或把环境阻塞写成实现失败。完整13条测试/命令记录见 `records/AU-009-kernel/tests.csv`。

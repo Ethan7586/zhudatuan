@@ -233,3 +233,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Runtime graph checker | 架构token/文件存在性门禁 | `check:runtimegraph` | audit/quality scripts | 源码只读扫描 | CI/本地质量入口 | 无自有反事实fixture | 仍要求退休契约并读缺文件F-0045 |
 
 [FACT] AU-008深入审阅32个人工文件、1,835行，结构性反追31个人工文件、4,047行，核对43个自动生成文件、76,940行；合计106文件、82,822行。
+
+## 15. AU-009 Kernel 模块清单
+
+| 模块 | 职责 | 对外入口 | 上游调用者 | 下游依赖 | 数据所有权 | API/事件契约 | 进程/发布单元 | 测试范围 | 当前边界问题 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Kernel package shell | ESM workspace、barrel与编译范围 | `@shop/kernel`、`@shop/kernel/deadline` | 72源码文件、4个消费者package依赖 | 27个root barrel模块 | 无 | 54个声明导出 | 编入调用者制品，无独立target | package test/typecheck入口 | 依赖缺失未执行；公共面含G1零caller符号 |
+| Domain primitives | ID/时间/金额/实体/聚合/事件/值对象 | 根入口classes/types/functions | Commerce领域、Outbox、testing | JS基础类型/Object.freeze | 无；调用方拥有表/事务 | DomainEvent envelope、value语义 | Commerce/测试制品 | Money 1例；多数无直接测试 | ValueObject F-0050；Currency补强F-0032；TestId seam F-0052 |
+| Resilience primitives | deadline、rate、concurrency、circuit、retry | 根入口 + deadline subpath | Commerce Executor/HttpClient、Vendor、SDK | Timer、AbortSignal、注入operation | 无；包裹外部副作用 | Error code、RetryMode、CircuitState | 各调用者制品 | Resilience 4例及消费者tests | Circuit F-0047；幂等F-0048；Deadline F-0051 |
+| Gate contract | 观察声明、上下文、decision和plugin端口 | gate barrel→root | Operation/HttpApp/GateEngine | Commerce plugin实现 | 无 | disabled/observe类型契约 | Commerce API OCI | GateEngine/HttpApp消费者tests | 不得误画为授权器；当前边界一致 |
+| Module manifest/catalog | 描述模块capability/入口并潜在拓扑解析 | module barrel→root | 35 manifests；Catalog仅自身tests | Map/Set/manifest对象 | 无 | ModuleManifest/Selection/Plan | 当前manifest编入Commerce；Catalog无生产caller | Catalog 4合成例；34 manifest tests | 37 missing + mutable snapshot F-0049；Catalog G1 |
+
+[FACT][E-AU-009-002] 本单元深入审阅40文件、983行；全部为人工代码/配置，无生成、第三方或构建产物。

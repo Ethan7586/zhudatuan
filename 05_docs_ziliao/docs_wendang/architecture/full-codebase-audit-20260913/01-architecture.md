@@ -544,3 +544,37 @@ flowchart LR
 - Miniapp两个生成domain模块有候选制品责任但零运行引用；外部工程未知，继续保留在F-0006而非删除候选升级。
 
 完整文件记录、通信/FMEA/不变量矩阵与18.5%确定性逆向抽检见 `records/AU-008-generated-contract-runtime-chain/`。
+
+## 18. AU-009 增量：`@shop/kernel` 共享内核
+
+### 18.1 编译共享，不是运行单元
+
+[FACT][E-AU-009-003] Kernel 是 private ESM workspace package，公开根入口和 `./deadline` subpath；72 个源码文件直接 import/re-export，最终编入 Commerce、Vendor、SDK 和 testing 各自制品。它没有 Main、监听端口、数据库连接、Worker 注册、独立镜像或 release target，不能画成单独服务。
+
+~~~mermaid
+flowchart LR
+  Commerce[Commerce] --> K[Kernel]
+  Vendor[Vendor core] --> K
+  SDK[SDK ApiClient] --> KD[Kernel deadline]
+  Testing[testing] --> K
+  K --> Domain[Domain primitives]
+  K --> Res[Resilience primitives]
+  K --> Gate[Gate types]
+  K --> Mod[Module contracts]
+~~~
+
+### 18.2 可靠性组合边界
+
+[FACT][E-AU-009-004/005] Commerce 外部 HTTP 的真实顺序是 RateLimiter → Bulkhead → CircuitBreaker → Retry → Deadline 约束下的 fetch；Vendor 使用同一 CircuitBreaker/Retry/Deadline，但另有自己的并发和幂等 attempt 门禁。共享原语降低了 adapter 重复实现，这是值得保留的方向。
+
+[CONFLICT][E-AU-009-004] Circuit 状态没有调用代际，旧成功可关闭新 open；classifier 异常可留下永久 half-open probe（F-0047）。[CONFLICT][E-AU-009-005] `businesskeywrite` 只是一枚 mode 标签，Commerce WeChat 链丢弃已有业务键却允许 transport retry（F-0048）。因此“统一执行器”并不自动证明并发和幂等不变量成立。
+
+### 18.3 领域与模块边界
+
+- Money 的 safe-integer minor unit 及算术溢出检查是当前高质量设计；Currency 运行对象可变则补入既有 F-0032。
+- Entity/Aggregate/DomainEvent 由 Commerce 领域和 Outbox 接缝消费；Kernel 不拥有表或事务。Aggregate 的 `pullEvents` 会立即清空内部缓冲，持久化失败恢复责任在调用者，后续领域 AU 继续核对。
+- ValueObject 的通用类型大于 canonical 算法支持集，形成 F-0050；当前 PaymentReference 平面字符串未触发。
+- [FACT][E-AU-009-006/007] 35 份 module manifests 活跃维护，但 ModuleCatalog 无生产构造者，且两者的 capability 集合不闭合并存在可变快照问题（F-0049）。说明性 manifest 与可执行 startup catalog 目前是两条边界。
+- Gate 契约明确只含 disabled/observe，真实 Commerce GateEngine 只记录观察；它不拥有身份、会话或授权裁决。
+
+完整 40 文件、54 导出、30 组关键函数、状态/FMEA 及 12.5% 逆向抽检见 `records/AU-009-kernel/`。

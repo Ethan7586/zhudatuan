@@ -598,3 +598,38 @@ Console command
 ### 16.2 微信异步链
 
 `createWechatCommerce`是公开factory但固定仓库无生产caller。WechatTransport把AbortSignal传到native task；success分支却可能产出非string或在已settled后抛序列化异常，使Promise无法完成（F-0046）。这不证明线上Miniapp受影响，外部消费者仍为UNKNOWN。
+
+## 17. AU-009：Kernel 到真实消费者
+
+### 17.1 运行装载
+
+| Kernel板块 | 主要上游 | 主要下游 | 进程/发布单元 | 数据所有权 |
+| --- | --- | --- | --- | --- |
+| Domain values | Commerce domain/foundation | Money/Entity/Event/ValueObject结果 | Commerce API/Jobs OCI | 无；调用方领域/数据库拥有 |
+| Resilience | HttpClient、VendorClient、SDK | timer、AbortSignal、注入operation/fetch | 各调用者制品 | 无；可能包裹外部副作用 |
+| Gate types | Operation/HttpApp | GateEngine/GateRegistry plugins | Commerce API OCI | 无；只观察，不授权 |
+| Module contracts | 35 module files | module index；潜在ModuleCatalog | 当前只作为Commerce编译元数据 | 无 |
+| Testing seam | TestIdGenerator/TestClock | Kernel Id/Clock | 测试进程 | 无生产数据 |
+
+### 17.2 外部调用顺序与失败传播
+
+~~~text
+adapter.send
+  → HttpClient.send
+  → Executor.run
+  → RateLimiter.acquire(deadline)
+  → Bulkhead.run(signal)
+  → CircuitBreaker.run(classifier)
+  → retry(operation, policy)
+  → HttpClient.sendOnce(fetch + phase timers)
+  → provider
+~~~
+
+- 任一 rate/bulkhead/circuit/deadline 拒绝都在数据库之外向 adapter 抛错；具体业务补偿由调用者拥有。
+- Executor 在 `finally` 中 dispose 统一 deadline；HttpClient 在 `finally` 清 phase timer 并移除 abort listener。
+- CircuitBreaker 是每个 Executor/VendorClient 实例共享状态，因而真实存在并发完成顺序；F-0047 不是纯理论单调用分支。
+- Retry 没有业务 key 输入。Email 等 adapter 自行发送 provider key，Wechat 没有；同一 mode 在不同 adapter 上并不代表同一幂等保障（F-0048）。
+
+### 17.3 模块描述不是启动注册
+
+[FACT][E-AU-009-006/007] `module.manifest.ts → defineModuleManifest` 在模块加载时发生；固定仓库没有 `new ModuleCatalog(realManifests)` 的生产链。35 份 manifest 的 37 个 missing provider 因此记录为潜在执行契约冲突，不伪造成当前 Commerce 启动失败。真实启动仍由 Bootstrap/CommerceModule/app composition 注册，后续独立 AU 审阅。

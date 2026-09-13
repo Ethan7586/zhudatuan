@@ -63,3 +63,11 @@
 - release candidate、migration runner、服务启动入口和受管迁移目录均未加载该文件。它当前是tracked生成快照与测试oracle，不是已证明的迁移。
 - [UNKNOWN] 历史或仓外人工流程是否直接应用该SQL；因此不能删除、执行或把它当作恢复入口。若未来调查，必须先对账migration ledger、操作者流程和数据库现状。
 - 本AU未执行SQL、迁移或数据库连接，也未修改ledger。
+
+## 10. AU-009 Kernel 数据边界
+
+- Kernel 40文件没有数据库连接、SQL、migration或表所有权。Entity/Aggregate/DomainEvent只是进程内领域端口；真实持久化由Commerce repository/OutboxStore拥有。
+- [FACT] `domainEvent`浅冻结envelope和payload外壳；当前OutboxStore在调用数据库前同步 `JSON.stringify`。本AU未观察到持久化前的异步mutation窗口，但nested payload、BigInt/cycle与事务语义仍留给事件/领域专项。
+- Money使用safe-integer minor unit并检查加减乘溢出，是值得保留的金额边界；运行时可变Currency目录属于进程一致性F-0032，不是迁移问题。
+- [INFERENCE][E-AU-009-005] F-0048的风险位于外部provider副作用：本地dispatch唯一性无法回滚同一次执行内部的第二个无键POST。当前没有证据证明产生重复数据库行。
+- ModuleCatalog解析在内存中完成，失败无数据库半状态；35份manifest是否未来驱动migration/startup仍UNKNOWN。
