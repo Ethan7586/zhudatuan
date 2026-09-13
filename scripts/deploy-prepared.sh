@@ -31,6 +31,11 @@ if [ "$REMOTE_SHA" != "$SHA" ]; then
   echo "Deploy stopped: exact commit is not available to GitHub." >&2
   exit 1
 fi
+ZDT_NEXT_MERGE_BASE="$(gh api "repos/{owner}/{repo}/compare/${SHA}...zdt-next" --jq .merge_base_commit.sha 2>/dev/null || true)"
+if [ "$ZDT_NEXT_MERGE_BASE" != "$SHA" ]; then
+  echo "Deploy stopped: exact commit does not belong to zdt-next history." >&2
+  exit 64
+fi
 if ! gh workflow view deploy-prepared.yml --ref zdt-next --yaml >/dev/null 2>&1; then
   echo "Deploy stopped: the zdt-next Deploy channel does not exist." >&2
   exit 1

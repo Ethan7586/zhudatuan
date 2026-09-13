@@ -1,6 +1,6 @@
 # AI 发布通道（现役直达部署与 1.3 RC）
 
-1.3 作为并行 RC 通道加入现有发布体系：GitHub `Prepare Artifact` 生成制品，GitHub `Prepared Deploy` 验证或部署已经存在的制品。现有 1.2 `Deploy`、`Deploy via Wuhan OSS` 和 `scripts/deploy-now.sh` 在首次 1.3 生产候选完成验证前保持原样可用。1.3 两条工作流一次都只接受一个 target；不支持空目标、affected 或多目标扇出。
+1.3 作为并行 RC 通道加入现有发布体系：GitHub `Prepare Artifact` 生成制品，GitHub `Prepared Deploy` 验证或部署已经存在的制品。现有 1.2 `Deploy`、`Deploy via Wuhan OSS` 和 `scripts/deploy-now.sh` 在首次 1.3 生产候选完成验证前保持原样可用。1.3 两条工作流一次都只接受一个 target；不支持空目标、affected 或多目标扇出；工作流必须从 `zdt-next` 触发，source SHA 必须属于该次精确 `zdt-next` 控制提交的历史。
 
 ## 用户入口与授权
 

@@ -60,6 +60,7 @@ env:
   RELEASE_TARGET: ${{ inputs.release_target }}
   RELEASE_OPERATION: ${{ inputs.operation }}
   CONTROL_SHA: ${{ github.sha }}
+  CONTROL_REF: ${{ github.ref }}
   ZDT_RELEASE_SSH_HOST: root@123.57.232.253
 
 jobs:
@@ -97,6 +98,22 @@ jobs:
             02_platform_pingtai/infrastructure/release/zdt-next.release.json
             02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json
             02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts
+
+      - name: Verify source belongs to the exact zdt-next history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$CONTROL_REF" != "refs/heads/zdt-next" ]; then
+            echo "Prepared Deploy must run from refs/heads/zdt-next" >&2
+            exit 64
+          fi
+          merge_base="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${RELEASE_SHA}...${CONTROL_SHA}" --jq '.merge_base_commit.sha')"
+          if [ "$merge_base" != "$RELEASE_SHA" ]; then
+            echo "head_sha must belong to the exact zdt-next history" >&2
+            exit 64
+          fi
 
       - uses: actions/setup-node@v4
         with:

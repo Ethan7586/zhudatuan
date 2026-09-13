@@ -104,6 +104,19 @@ test('direct deployment refuses incomplete inputs and never creates a temporary 
   assert.doesNotMatch(deployPrepared, /production[_-]approval|zdt-next:prepared-deploy:/);
 });
 
+test('parallel 1.3 accepts only source commits in the exact zdt-next history', () => {
+  for (const workflow of [prepareWorkflow, preparedDeployWorkflow]) {
+    assert.match(workflow, /CONTROL_SHA: \$\{\{ github\.sha \}\}/);
+    assert.match(workflow, /CONTROL_REF: \$\{\{ github\.ref \}\}/);
+    assert.match(workflow, /\[ "\$CONTROL_REF" != "refs\/heads\/zdt-next" \]/);
+    assert.match(workflow, /compare\/\$\{RELEASE_SHA\}\.\.\.\$\{CONTROL_SHA\}/);
+    assert.match(workflow, /--jq '\.merge_base_commit\.sha'/);
+    assert.match(workflow, /\[ "\$merge_base" != "\$RELEASE_SHA" \]/);
+  }
+  assert.match(deployPrepared, /compare\/\$\{SHA\}\.\.\.zdt-next/);
+  assert.match(deployPrepared, /\[ "\$ZDT_NEXT_MERGE_BASE" != "\$SHA" \]/);
+});
+
 test('build and remote adapters agree on every pointer and process', () => {
   for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
     for (const [target, deployment] of Object.entries(node.deployments)) {

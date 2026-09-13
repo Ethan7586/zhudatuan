@@ -45,6 +45,8 @@ env:
   RUNNER_IMAGE: ubuntu-24.04-x64
   RELEASE_SHA: ${{ inputs.head_sha }}
   RELEASE_TARGET: ${{ inputs.release_target }}
+  CONTROL_SHA: ${{ github.sha }}
+  CONTROL_REF: ${{ github.ref }}
   VITE_API_BASE_URL: https://api.hbbtzn.com
   VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
   VITE_ZHUDIAN_SOLUTION_ORIGIN: https://labs.hbbtzn.com
@@ -72,6 +74,22 @@ jobs:
         with:
           fetch-depth: 2
           ref: ${{ inputs.head_sha }}
+
+      - name: Verify source belongs to the exact zdt-next history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$CONTROL_REF" != "refs/heads/zdt-next" ]; then
+            echo "Prepare Artifact must run from refs/heads/zdt-next" >&2
+            exit 64
+          fi
+          merge_base="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${RELEASE_SHA}...${CONTROL_SHA}" --jq '.merge_base_commit.sha')"
+          if [ "$merge_base" != "$RELEASE_SHA" ]; then
+            echo "head_sha must belong to the exact zdt-next history" >&2
+            exit 64
+          fi
 
       - name: Restore dependency cache for npm install acceleration only
         uses: actions/setup-node@v4
