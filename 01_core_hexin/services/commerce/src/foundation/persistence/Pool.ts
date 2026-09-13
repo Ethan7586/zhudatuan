@@ -22,13 +22,17 @@ export function createPool(connection: string, profile: PoolProfile, metrics = n
 }
 
 export function poolConfiguration(workload: DatabaseWorkload): Readonly<{
-  max: number; connectionTimeoutMillis: number; idleTimeoutMillis: number; application_name: string; options: string;
+  max: number; min: number; connectionTimeoutMillis: number; idleTimeoutMillis: number; keepAlive: boolean;
+  keepAliveInitialDelayMillis: number; application_name: string; options: string;
 }> {
   const limits = RUNTIME_LIMITS.pool[workload];
   return Object.freeze({
     max: limits.maximumConnections,
+    min: workload === 'query' ? 1 : 0,
     connectionTimeoutMillis: limits.connectionTimeoutMilliseconds,
     idleTimeoutMillis: limits.idleTimeoutMilliseconds,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 1_000,
     application_name: `shop-${workload}`,
     options: `-c statement_timeout=${limits.statementTimeoutMilliseconds} -c idle_in_transaction_session_timeout=${limits.idleTransactionTimeoutMilliseconds}`,
   });

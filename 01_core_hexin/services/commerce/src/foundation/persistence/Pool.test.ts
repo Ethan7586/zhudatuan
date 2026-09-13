@@ -10,6 +10,10 @@ describe('database pool profiles', () => {
     expect(query.max).toBe(RUNTIME_LIMITS.pool.query.maximumConnections);
     expect(command.max).toBe(RUNTIME_LIMITS.pool.command.maximumConnections);
     expect(worker.max).toBe(RUNTIME_LIMITS.pool.worker.maximumConnections);
+    expect(query.min).toBe(1);
+    expect(command.min).toBe(0);
+    expect(query.keepAlive).toBe(true);
+    expect(query.keepAliveInitialDelayMillis).toBe(1_000);
     expect(new Set([query.application_name, command.application_name, worker.application_name]).size).toBe(3);
     expect(query.options).toContain(`statement_timeout=${RUNTIME_LIMITS.pool.query.statementTimeoutMilliseconds}`);
   });

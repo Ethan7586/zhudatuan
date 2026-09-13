@@ -5,6 +5,7 @@ import type { OperationRequest, OperationResult } from '../../../../foundation/a
 import { encodeCursor, queryPage } from '../../../../foundation/interface/Validation';
 import type { Cache } from '../../../../foundation/cache/Cache';
 import { VersionedKey } from '../../../../foundation/cache/VersionedKey';
+import { SingleFlight } from '../../../../foundation/application/SingleFlight';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { MetricRow, ReportDimension, ReportPeriod } from '../../02_domain_yewu/model/Metric';
 import type { ReportingFactory } from '../../01_public_gongkai/ReportingPort';
@@ -16,6 +17,7 @@ export function getDashboardOperations(factory: ReportingFactory<OperationDataba
 
 export function metricOperation(factory: ReportingFactory<OperationDatabase>, pool: DatabasePool, cache: Cache, dimension: ReportDimension | null,
   projectionVersion: (scope: string) => Promise<number> = (scope) => reportingProjectionVersion(pool, scope)) {
+  const active = new SingleFlight<OperationResult>();
   return operationLifecycle({
     prepare: async (request: OperationRequest) => {
       const access = requireAccess(request);
@@ -33,18 +35,20 @@ export function metricOperation(factory: ReportingFactory<OperationDatabase>, po
     },
     shortCircuit: (_request, prepared) => prepared.cached ?? undefined,
     execute: async (_request, database, prepared) => {
-      const repository = factory(database);
-      const rows = await repository.metrics({ scope: prepared.access.scope.id, dimension: prepared.selectedDimension,
-        period: prepared.selectedPeriod, application: prepared.application, supplier: prepared.supplier,
-        cursorTime: prepared.page.sort, cursorId: prepared.page.id, fetch: prepared.page.fetch });
-      const summary = dimension === null
-        ? await repository.cockpit(prepared.access.scope.id, prepared.supplier, prepared.selectedPeriod) : undefined;
-      return metricPage(rows, prepared.page.limit, summary);
+      const load = async () => {
+        const repository = factory(database);
+        const rows = await repository.metrics({ scope: prepared.access.scope.id, dimension: prepared.selectedDimension,
+          period: prepared.selectedPeriod, application: prepared.application, supplier: prepared.supplier,
+          cursorTime: prepared.page.sort, cursorId: prepared.page.id, fetch: prepared.page.fetch });
+        const summary = dimension === null
+          ? await repository.cockpit(prepared.access.scope.id, prepared.supplier, prepared.selectedPeriod) : undefined;
+        const result = metricPage(rows, prepared.page.limit, summary);
+        if (prepared.key) await cache.put(prepared.key, result, CACHE_CATALOG.reporting.staleSeconds);
+        return result;
+      };
+      return prepared.key ? active.run(prepared.key, load) : load();
     },
-    finalize: async (_request, result, prepared) => {
-      if (prepared.key) await cache.put(prepared.key, result, CACHE_CATALOG.reporting.staleSeconds);
-      return result;
-    },
+    finalize: async (_request, result) => result,
   });
 }
 

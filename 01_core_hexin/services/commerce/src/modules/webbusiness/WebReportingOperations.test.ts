@@ -105,6 +105,34 @@ describe('web reporting dashboard read', () => {
 
     expect(connections).toBe(1);
   });
+
+  it('coalesces simultaneous dashboard cache misses into one reporting query', async () => {
+    let release: (() => void) | undefined;
+    const blocked = new Promise<void>((resolve) => { release = resolve; });
+    let dashboardQueries = 0;
+    const client = {
+      query: async (text: string) => {
+        if (text.includes('reporting.cockpit')) {
+          dashboardQueries += 1;
+          await blocked;
+          return result([{ metrics: [], summary: { coalesced: true } }]);
+        }
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool = databasePool({ connect: async () => client, query: async () => result([]) });
+    const operations = webReportingOperations(context(pool, memoryCache(async () => null)));
+
+    const first = operations.invoke(request('mall:burst'));
+    const second = operations.invoke(request('mall:burst'));
+    await Promise.resolve();
+    await Promise.resolve();
+    release?.();
+
+    await expect(Promise.all([first, second])).resolves.toHaveLength(2);
+    expect(dashboardQueries).toBe(1);
+  });
 });
 
 function request(scope = 'mall:test'): OperationRequest {
