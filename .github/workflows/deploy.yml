@@ -56,6 +56,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
+      - name: Install build dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
       - name: Resolve exact version and direct plan
         id: release
         run: |
@@ -76,9 +79,6 @@ jobs:
           plan_path="$(node -e "const r=require('./.direct-release/plan-envelope.json');if(!r.ok||!r.result.deployRequired)throw new Error('No deployable target for this version');process.stdout.write(r.result.planPath)")"
           printf 'sha=%s\nplan_path=%s\n' "$sha" "$plan_path" >> "$GITHUB_OUTPUT"
           printf 'Direct version: `%s`\n' "$sha" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Install build dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Configure Aliyun transport
         env:
