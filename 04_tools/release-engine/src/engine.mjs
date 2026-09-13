@@ -529,7 +529,7 @@ async function ensureRemoteDependencyLayer(adapter, item, transport, host, remot
 
 async function externalDomainSnapshot(adapter) {
   const domains = adapter.productionAcceptance?.domains ?? [];
-  invariant(domains.length === 9 && new Set(domains).size === 9, 'PRODUCTION_DOMAIN_BASELINE_INVALID', 'Production acceptance requires exactly 9 unique retained domains');
+  invariant(domains.length === 8 && new Set(domains).size === 8, 'PRODUCTION_DOMAIN_BASELINE_INVALID', 'Production acceptance requires exactly 8 unique retained domains');
   const observations = await Promise.all(domains.map(async (host) => {
     try {
       const response = await fetch(`https://${host}/`, { method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(adapter.productionAcceptance?.timeoutMs ?? 12_000) });

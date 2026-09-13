@@ -14,13 +14,13 @@ const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/qual
 const databaseMigrationExecutor = await readFile(join(projectRoot,
   '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'), 'utf8');
 
-test('production acceptance is fixed to the nine retained domains', () => {
-  assert.equal(adapter.productionAcceptance.domains.length, 9);
-  assert.equal(new Set(adapter.productionAcceptance.domains).size, 9);
+test('production acceptance is fixed to the eight retained domains', () => {
+  assert.equal(adapter.productionAcceptance.domains.length, 8);
+  assert.equal(new Set(adapter.productionAcceptance.domains).size, 8);
   assert.deepEqual(adapter.productionAcceptance.domains, [
     'accounts.zhudatuan.com', 'api.zhudatuan.com', 'console.zhudatuan.com',
     'www.zhudatuan.com', 'zhudatuan.com', 'hbbtzn.com', 'www.hbbtzn.com',
-    'smart.hbbtzn.com', 'console.hbbtzn.com',
+    'console.hbbtzn.com',
   ]);
   assert.equal(policy.caddyConfig, '/etc/caddy/Caddyfile');
   assert.equal(policy.minimumFreeBytes, 15 * 1024 ** 3);

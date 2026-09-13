@@ -27,7 +27,7 @@ zhudatuan.com, www.zhudatuan.com, hbbtzn.com, www.hbbtzn.com {
   }
 }
 
-console.zhudatuan.com, smart.hbbtzn.com {
+console.zhudatuan.com, console.hbbtzn.com {
   encode gzip
 
   # 运营后台页面由 admin-web 服务，但身份、会话与交易 API 必须统一经过
