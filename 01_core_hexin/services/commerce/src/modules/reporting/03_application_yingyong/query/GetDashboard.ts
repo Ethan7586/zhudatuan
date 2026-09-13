@@ -22,11 +22,11 @@ export function metricOperation(factory: ReportingFactory<OperationDatabase>, po
       const application = queryText(request, 'applicationid');
       const supplier = queryText(request, 'supplierid');
       const selectedDimension = supplier === null ? dimension : supplierSection(request) ?? dimension;
-      const cacheable = application === null && page.sort === null;
+      const cacheable = application === null && supplier === null && page.sort === null;
       const projection = cacheable ? await pool.query<{ version: number }>(`select version::integer from runtime.projectionoffset
         where projection='commerce' and shard=$1`, [access.scope.id]) : null;
       const version = projection?.rows[0]?.version ?? 0;
-      const key = cacheable ? VersionedKey.create('reporting', { scope: access.scope.id, supplier: supplier ?? 'all',
+      const key = cacheable ? VersionedKey.create('reporting', { scope: access.scope.id,
         metric: selectedDimension ?? 'dashboard', period: selectedPeriod, projectionversion: version }) : null;
       const cached = key ? await cache.get<OperationResult>(key) : null;
       return { access, page, selectedPeriod, application, supplier, selectedDimension, key, cached };
