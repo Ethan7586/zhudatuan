@@ -1,10 +1,7 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router';
-import { Component as EngineeringRoute } from './EngineeringRoute';
-import { Component as IncidentTechnologyRoute } from './IncidentTechnologyRoute';
-import { Component as ReleaseVersionRoute } from './ReleaseVersionRoute';
-import { Component as RuntimeStatusRoute } from './RuntimeStatusRoute';
+import { Component as EngineeringWorkspaceRoute } from './EngineeringWorkspaceRoute';
 import { engineeringModule } from './manifest';
 
 afterEach(cleanup);
@@ -20,7 +17,7 @@ describe('Engineering and architecture center', () => {
   });
 
   it('keeps Storefront and Console in L1 while H6 remains in L2', () => {
-    renderPage(<EngineeringRoute />, 'system/engineering');
+    renderPage('system/engineering');
     const l1 = screen.getByRole('heading', { name: '公共平台与运行服务' }).closest('section');
     const l2 = screen.getByRole('heading', { name: '商城与业务入口' }).closest('section');
     expect(l1).not.toBeNull();
@@ -33,7 +30,7 @@ describe('Engineering and architecture center', () => {
   });
 
   it('routes the four center tabs within the current scope', () => {
-    renderPage(<EngineeringRoute />, 'system/engineering');
+    renderPage('system/engineering');
     const tabs = screen.getByRole('navigation', { name: '工程与架构中心页面' });
     expect(within(tabs).getAllByRole('link').map((link) => link.textContent))
       .toEqual(['工程与架构', '运行状态', '发布与版本', '故障与技术']);
@@ -47,28 +44,53 @@ describe('Engineering and architecture center', () => {
   });
 
   it.each([
-    [RuntimeStatusRoute, 'system/status', '系统运行状态', '实时运行数据尚未接入'],
-    [IncidentTechnologyRoute, 'system/incidents', '故障与技术支持', '故障数据尚未接入'],
-  ] as const)('renders an honest %s page without invented live state', (Page, suffix, title, notice) => {
-    renderPage(<Page />, suffix);
+    ['system/status', '系统运行状态', '实时运行数据尚未接入'],
+    ['system/incidents', '故障与技术支持', '故障数据尚未接入'],
+  ] as const)('renders an honest %s page without invented live state', (suffix, title, notice) => {
+    renderPage(suffix);
     expect(screen.getByRole('heading', { name: title })).toBeTruthy();
     expect(screen.getByText(notice)).toBeTruthy();
   });
 
   it('renders the Chinese production release ledger newest first', () => {
-    renderPage(<ReleaseVersionRoute />, 'system/releases');
+    renderPage('system/releases');
     expect(screen.getByRole('heading', { name: '发布与版本' })).toBeTruthy();
     expect(screen.getByText('版本登记规则')).toBeTruthy();
     const versions = screen.getAllByText(/^v\d+\.\d+\.\d+$/).map((node) => node.textContent);
-    expect(versions).toEqual(['v1.1.0', 'v1.1.0', 'v1.0.4', 'v1.0.3']);
+    expect(versions).toEqual(['v1.1.0', 'v1.0.4', 'v1.0.3']);
     expect(screen.getByText('工程与架构中心正式上线')).toBeTruthy();
     expect(screen.getByText('中文版本更新账本')).toBeTruthy();
   });
+
+  it('keeps the engineering frame mounted while switching internal tabs', () => {
+    renderPage('system/engineering');
+    const brand = screen.getByAltText('MORVIA · zhudatuan 主打团');
+    fireEvent.click(screen.getByRole('link', { name: '发布与版本' }));
+    expect(screen.getByAltText('MORVIA · zhudatuan 主打团')).toBe(brand);
+    expect(screen.getByRole('heading', { name: '发布与版本' })).toBeTruthy();
+    expect(screen.getByText('系统架构关系').closest('[role="tabpanel"]')?.hasAttribute('hidden')).toBe(true);
+  });
+
+  it('restores the scroll position independently for each internal tab', () => {
+    const { container } = renderPage('system/engineering');
+    const workspace = container.querySelector<HTMLElement>('.workspacebody');
+    expect(workspace).not.toBeNull();
+    if (workspace === null) return;
+    workspace.scrollTop = 144;
+    fireEvent.click(screen.getByRole('link', { name: '发布与版本' }));
+    expect(workspace.scrollTop).toBe(0);
+    workspace.scrollTop = 287;
+    fireEvent.click(screen.getByRole('link', { name: '工程与架构' }));
+    expect(workspace.scrollTop).toBe(144);
+  });
 });
 
-function renderPage(element: React.ReactNode, suffix: string) {
+function renderPage(suffix: string) {
   const path = `/scopes/platform/organization-platform-root/${suffix}`;
-  return render(<MemoryRouter initialEntries={[path]}><Routes>
-    <Route path="/scopes/:scopeKind/:scopeId/*" element={element} />
-  </Routes></MemoryRouter>);
+  return render(<div className="workspacebody"><MemoryRouter initialEntries={[path]}><Routes>
+      <Route path="/scopes/:scopeKind/:scopeId">
+        {engineeringModule.routes.map((route) => <Route key={route.id} path={route.path}
+          element={<EngineeringWorkspaceRoute />} />)}
+      </Route>
+    </Routes></MemoryRouter></div>);
 }

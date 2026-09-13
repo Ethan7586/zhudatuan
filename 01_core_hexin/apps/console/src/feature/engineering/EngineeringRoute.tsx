@@ -1,4 +1,4 @@
-import { EngineeringFrame, MetricGrid, StatusPill } from './EngineeringFrame';
+import { MetricGrid, StatusPill } from './EngineeringFrame';
 
 const layers = [
   { id: 'L0', title: '核心基础设施', items: ['计算与存储', '网络与安全', '云平台基础组件'] },
@@ -14,9 +14,8 @@ const technologies = [
   ['边缘与交付', 'GitHub Actions · 阿里云 OSS / ECS · Cloudflare DNS'],
 ] as const;
 
-export function Component() {
-  return <EngineeringFrame eyebrow="SYSTEM GOVERNANCE · ENGINEERING"
-    title="工程与架构中心" description="统一查看系统架构、技术能力、发布基础设施与演进记录">
+export function EngineeringOverviewContent() {
+  return <>
     <MetricGrid metrics={[
       { label: '架构层级', value: 'L0 / L1 / L2', detail: '三层职责与依赖边界' },
       { label: '部署基础设施', value: '1.3 正式版', detail: '预构建不可变制品', tone: 'ready' },
@@ -62,5 +61,5 @@ export function Component() {
         {technologies.map(([title, detail]) => <div key={title}><strong>{title}</strong><span>{detail}</span></div>)}
       </div>
     </article>
-  </EngineeringFrame>;
+  </>;
 }

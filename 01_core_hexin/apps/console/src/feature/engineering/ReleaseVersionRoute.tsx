@@ -1,14 +1,13 @@
 import { CONSOLE_RELEASES } from '../../entity/release/ConsoleReleaseLedger';
 import { requireConsoleRuntimeConfig } from '../../shared/config/RuntimeConfig';
-import { EngineeringFrame, HonestNotice, StatusPill } from './EngineeringFrame';
+import { HonestNotice, StatusPill } from './EngineeringFrame';
 
-export function Component() {
+export function ReleaseVersionContent() {
   const runtimeSourceSha = readRuntimeSourceSha();
-  return <EngineeringFrame eyebrow="SYSTEM GOVERNANCE · RELEASES"
-    title="发布与版本" description="查看已经进入生产环境的功能、优化和修复记录">
+  return <>
     <header className="engineeringreleaseheading">
       <div><h2>版本更新记录</h2><p>每次生产发布形成一条记录，最新版本位于最上方。</p></div>
-      <span>当前生产版本 <strong>{CONSOLE_RELEASES[0].version}</strong></span>
+      <span>当前 Console 构建 <strong>{runtimeSourceSha}</strong> · 登记版本 {CONSOLE_RELEASES[0].version}</span>
     </header>
 
     <ol className="engineeringreleaselist">
@@ -41,7 +40,7 @@ export function Component() {
     <HonestNotice title="版本登记规则">
       功能说明随不可变制品一起准备；只有完成生产部署的版本才进入本页，提交但未部署的改动不标记为已上线。
     </HonestNotice>
-  </EngineeringFrame>;
+  </>;
 }
 
 function readRuntimeSourceSha(): string {

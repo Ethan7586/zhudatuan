@@ -1,41 +1,61 @@
-import type { ReactNode } from 'react';
+import { type CSSProperties, type ReactNode, useLayoutEffect, useRef } from 'react';
 import { NavLink, useParams } from 'react-router';
 import { scopePath } from '../../shared/url/ScopePath';
 import './engineering.css';
 
-const tabs = [
-  { suffix: 'system/engineering', label: '工程与架构' },
-  { suffix: 'system/status', label: '运行状态' },
-  { suffix: 'system/releases', label: '发布与版本' },
-  { suffix: 'system/incidents', label: '故障与技术' },
+export const engineeringTabs = [
+  { id: 'engineering', suffix: 'system/engineering', label: '工程与架构' },
+  { id: 'status', suffix: 'system/status', label: '运行状态' },
+  { id: 'releases', suffix: 'system/releases', label: '发布与版本' },
+  { id: 'incidents', suffix: 'system/incidents', label: '故障与技术' },
 ] as const;
+
+export type EngineeringViewId = (typeof engineeringTabs)[number]['id'];
 
 interface EngineeringFrameProps {
   readonly eyebrow: string;
   readonly title: string;
   readonly description: string;
+  readonly activeView: EngineeringViewId;
   readonly children: ReactNode;
 }
 
-export function EngineeringFrame({ eyebrow, title, description, children }: EngineeringFrameProps) {
+export function EngineeringFrame({ eyebrow, title, description, activeView, children }: EngineeringFrameProps) {
   const { scopeKind = 'platform', scopeId = 'organization-platform-root' } = useParams();
   const scope = { kind: scopeKind, id: scopeId };
+  const pageRef = useRef<HTMLElement>(null);
+  const scrollPositions = useRef<Partial<Record<EngineeringViewId, number>>>({});
+  const activeIndex = engineeringTabs.findIndex(({ id }) => id === activeView);
 
-  return <section className="engineeringpage">
+  const workspace = () => pageRef.current?.closest<HTMLElement>('.workspacebody') ?? null;
+  const rememberScroll = () => {
+    const container = workspace();
+    if (container !== null) scrollPositions.current[activeView] = container.scrollTop;
+  };
+
+  useLayoutEffect(() => {
+    const container = workspace();
+    if (container !== null) container.scrollTop = scrollPositions.current[activeView] ?? 0;
+  }, [activeView]);
+
+  return <section className="engineeringpage" ref={pageRef}>
     <header className="engineeringhero">
       <div className="engineeringherocopy">
         <span className="engineeringeyebrow">{eyebrow}</span>
         <h1>{title}</h1>
         <p>{description}</p>
       </div>
-      <img className="engineeringbrand" src="/brand/morvia-compact-lockup.svg"
+      <img className="engineeringbrand" src="/brand/morvia-compact-lockup.svg" width="460" height="120"
+        decoding="async" fetchPriority="high"
         alt="MORVIA · zhudatuan 主打团" />
     </header>
-    <nav className="engineeringtabs" aria-label="工程与架构中心页面">
-      {tabs.map((tab) => <NavLink key={tab.suffix} to={scopePath(scope, tab.suffix)}
+    <nav className="engineeringtabs" aria-label="工程与架构中心页面"
+      style={{ '--engineering-active-tab': activeIndex } as CSSProperties}>
+      {engineeringTabs.map((tab) => <NavLink key={tab.suffix} to={scopePath(scope, tab.suffix)}
+        onClick={rememberScroll} preventScrollReset
         className={({ isActive }) => isActive ? 'isactive' : undefined}>{tab.label}</NavLink>)}
     </nav>
-    {children}
+    <div className="engineeringcontent">{children}</div>
   </section>;
 }
 

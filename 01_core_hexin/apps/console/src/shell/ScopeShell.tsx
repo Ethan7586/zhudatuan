@@ -82,7 +82,7 @@ export function ScopeShell() {
       const heading = document.querySelector<HTMLElement>('.workspacebody h1');
       if (heading === null) return false;
       heading.setAttribute('tabindex', '-1');
-      heading.focus();
+      heading.focus({ preventScroll: true });
       return true;
     };
     const frame = requestAnimationFrame(() => {
@@ -276,7 +276,10 @@ export function ScopeShell() {
               </>}
             </div>
             <div className="scopestatus">
-              {navigation.state === 'idle' ? null : <span role="status">正在切换…</span>}
+              <span className="scopenavigationstatus" role="status" aria-live="polite"
+                data-visible={navigation.state === 'idle' ? 'false' : 'true'}>
+                {navigation.state === 'idle' ? '' : '正在切换内容…'}
+              </span>
               <span>{controlContext ? '状态评估于' : '数据更新于'} {formatRailTime(context.session.syncedAt)}</span>
             </div>
           </div>
@@ -289,7 +292,7 @@ export function ScopeShell() {
           </main>
           <footer className="consolefooter">
             <span data-testid="console-build-info" title={buildInfo.detailLabel}>{buildInfo.footerLabel} · © 2026 {brandName}运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
-            <span className="consolefooterstatus"><i aria-hidden="true" />服务运行正常</span>
+            <span className="consolefooterstatus"><i aria-hidden="true" />控制台页面已加载</span>
             <code>AI 调用需服务端授权</code>
           </footer>
         </div>
@@ -300,6 +303,12 @@ export function ScopeShell() {
 
 export function WorkspaceRouteLoading({ moduleId }: Readonly<{ moduleId: string | undefined }>) {
   const supplyChain = moduleId === 'supply-chain';
+  if (moduleId === 'engineering') return <section className="engineeringrouteskeleton" role="status" aria-live="polite">
+    <header><span /><div /></header>
+    <nav aria-hidden="true">{Array.from({ length: 4 }, (_, index) => <i key={index} />)}</nav>
+    <div aria-hidden="true">{Array.from({ length: 4 }, (_, index) => <i key={index} />)}</div>
+    <small>正在准备工程中心内容…</small>
+  </section>;
   return <section className="workspacerouteloading" role="status" aria-live="polite">
     <span className="workspacerouteloadingicon" aria-hidden="true" />
     <strong>{supplyChain ? '正在打开供应链管理…' : '正在打开工作台…'}</strong>

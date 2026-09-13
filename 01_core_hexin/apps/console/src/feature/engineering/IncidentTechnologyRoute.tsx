@@ -1,4 +1,4 @@
-import { EngineeringFrame, HonestNotice, MetricGrid, StatusPill } from './EngineeringFrame';
+import { HonestNotice, MetricGrid, StatusPill } from './EngineeringFrame';
 
 const runbooks = [
   ['登录异常排查', '身份入口、会话与回跳路径'],
@@ -7,9 +7,8 @@ const runbooks = [
   ['网络线路切换', 'DNS、CDN、源站与回退路径'],
 ] as const;
 
-export function Component() {
-  return <EngineeringFrame eyebrow="SYSTEM GOVERNANCE · INCIDENTS"
-    title="故障与技术支持" description="统一记录生产故障、技术问题、处置进度与复盘知识">
+export function IncidentTechnologyContent() {
+  return <>
     <MetricGrid metrics={[
       { label: '实时故障源', value: '待接入', detail: '不推断当前故障数量', tone: 'waiting' },
       { label: '技术问题源', value: '待接入', detail: '等待统一问题台账', tone: 'waiting' },
@@ -39,5 +38,5 @@ export function Component() {
         <li><b>04</b><strong>复盘</strong><span>记录原因与长期改进</span></li>
       </ol>
     </article>
-  </EngineeringFrame>;
+  </>;
 }

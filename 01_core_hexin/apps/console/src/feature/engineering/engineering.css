@@ -52,15 +52,17 @@
 
 .engineeringbrand {
   width: 184px;
-  height: auto;
+  height: 48px;
   margin-top: 4px;
 }
 
 .engineeringtabs {
-  display: flex;
+  --engineering-active-tab: 0;
+  position: relative;
+  display: grid;
   min-height: 46px;
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
   align-items: stretch;
-  gap: 6px;
   overflow-x: auto;
   border: 1px solid var(--engineering-line);
   border-radius: 12px;
@@ -68,7 +70,22 @@
   background: #fff;
 }
 
+.engineeringtabs::before {
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc((100% - 10px) / 4);
+  border-radius: 8px;
+  background: var(--engineering-blue);
+  content: '';
+  transform: translateX(calc(var(--engineering-active-tab) * 100%));
+  transition: transform 180ms cubic-bezier(.2, .8, .2, 1);
+}
+
 .engineeringtabs a {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   min-width: max-content;
   align-items: center;
@@ -79,10 +96,15 @@
   font-size: 13px;
   font-weight: 650;
   text-decoration: none;
+  transition: color 140ms ease;
 }
 
 .engineeringtabs a:hover { background: #f2f5fb; color: var(--engineering-blue); }
-.engineeringtabs a.isactive { background: var(--engineering-blue); color: #fff; }
+.engineeringtabs a.isactive { background: transparent; color: #fff; }
+
+.engineeringcontent { min-height: 650px; }
+.engineeringview { display: grid; gap: 16px; min-height: 650px; align-content: start; }
+.engineeringview[hidden] { display: none; }
 
 .engineeringmetrics {
   display: grid;
