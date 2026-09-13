@@ -1,0 +1,116 @@
+name: Deploy via Wuhan OSS
+run-name: Wuhan OSS → ECS console-static ${{ inputs.head_sha || github.sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: Exact zdt-next commit; empty uses current zdt-next
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zdt-next-wuhan-oss-console-static
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22.22.0
+  VITE_API_BASE_URL: https://api.hbbtzn.com
+  VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
+
+jobs:
+  console-static:
+    name: Build once → OSS → atomic console switch
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          ref: ${{ inputs.head_sha || 'zdt-next' }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install build dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build console-static artifact
+        id: artifact
+        run: |
+          set -euo pipefail
+          source_sha="$(git rev-parse HEAD)"
+          export VITE_CLIENT_VERSION="0.0.0-g${source_sha}"
+          npm run build:console
+
+          built_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          printf '{"sourceSha":"%s","builtAt":"%s"}\n' "$source_sha" "$built_at" \
+            > 01_core_hexin/apps/console/dist/release-version.json
+
+          mkdir -p .oss-release/package/static
+          cp -a 01_core_hexin/apps/console/dist/. .oss-release/package/static/
+          tar -C .oss-release/package -czf .oss-release/console-static.tar.gz static
+          artifact_sha="$(sha256sum .oss-release/console-static.tar.gz | awk '{print $1}')"
+          object="zdt-next/console-static/${source_sha}/${artifact_sha}.tar.gz"
+          manifest_object="zdt-next/console-static/${source_sha}/${artifact_sha}.json"
+          printf '{"target":"console-static","sourceSha":"%s","artifactSha256":"%s","object":"%s","builtAt":"%s"}\n' \
+            "$source_sha" "$artifact_sha" "$object" "$built_at" > .oss-release/manifest.json
+          {
+            printf 'source_sha=%s\n' "$source_sha"
+            printf 'artifact_sha=%s\n' "$artifact_sha"
+            printf 'object=%s\n' "$object"
+            printf 'manifest_object=%s\n' "$manifest_object"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload immutable artifact to Wuhan OSS
+        env:
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        run: |
+          set -euo pipefail
+          node 04_tools/scripts/release/oss-artifact.mjs upload \
+            --file .oss-release/console-static.tar.gz \
+            --object "${{ steps.artifact.outputs.object }}" \
+            --content-type application/gzip
+          node 04_tools/scripts/release/oss-artifact.mjs upload \
+            --file .oss-release/manifest.json \
+            --object "${{ steps.artifact.outputs.manifest_object }}" \
+            --content-type application/json
+
+      - name: Switch console-static on ECS
+        env:
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+          RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
+          ARTIFACT_SHA: ${{ steps.artifact.outputs.artifact_sha }}
+          SOURCE_SHA: ${{ steps.artifact.outputs.source_sha }}
+          ARTIFACT_OBJECT: ${{ steps.artifact.outputs.object }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$RELEASE_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          ssh-keyscan -H 123.57.232.253 >> "$HOME/.ssh/known_hosts"
+          artifact_url="$(node 04_tools/scripts/release/oss-artifact.mjs sign-get --object "$ARTIFACT_OBJECT" --ttl 900)"
+          {
+            printf 'ARTIFACT_URL=%q\n' "$artifact_url"
+            printf 'ARTIFACT_SHA=%q\n' "$ARTIFACT_SHA"
+            printf 'SOURCE_SHA=%q\n' "$SOURCE_SHA"
+            cat 04_tools/scripts/release/activate-console-static.sh
+          } | ssh root@123.57.232.253 'bash -s' | tee .oss-release/deploy-result.txt
+          {
+            printf '### 武汉 OSS Console 发布完成\n\n'
+            printf -- '- 源版本：`%s`\n' "$SOURCE_SHA"
+            printf -- '- 制品 SHA256：`%s`\n' "$ARTIFACT_SHA"
+            printf -- '- OSS 对象：`%s`\n' "$ARTIFACT_OBJECT"
+            grep -E '^(DEPLOYED_RELEASE|ROLLBACK_TARGET)=' .oss-release/deploy-result.txt | sed 's/^/- /'
+          } >> "$GITHUB_STEP_SUMMARY"
