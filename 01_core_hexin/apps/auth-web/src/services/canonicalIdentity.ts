@@ -21,6 +21,15 @@ const MembershipSelectionSchema = z.strictObject({
   })),
 });
 
+const TicketExchangeSchema = z.strictObject({
+  returnTarget: z.strictObject({
+    url: z.url(),
+    proof: z.string().min(16),
+    expiresAt: z.iso.datetime(),
+  }),
+  expiresIn: z.number().int().positive(),
+});
+
 const SessionCreatedSchema = z.object({
   session: z.string().min(1),
   csrf: z.string().min(16),
@@ -31,18 +40,10 @@ const SessionCreatedSchema = z.object({
     ticket: z.string().min(64).max(128),
     state: z.string().min(32).max(128),
   }),
+  exchange: TicketExchangeSchema.optional(),
 });
 
 const LoginResultSchema = z.union([MembershipSelectionSchema, SessionCreatedSchema]);
-
-const TicketExchangeSchema = z.strictObject({
-  returnTarget: z.strictObject({
-    url: z.url(),
-    proof: z.string().min(16),
-    expiresAt: z.iso.datetime(),
-  }),
-  expiresIn: z.number().int().positive(),
-});
 
 const LoginChallengeSchema = z.strictObject({
   id: z.string().min(1),
@@ -325,13 +326,17 @@ async function authorizeCanonicalCredential(
     ...(context.application === undefined ? {} : { application: context.application }),
     ...(loginIntent === undefined ? {} : { loginIntent }),
     authorization: authorization.request,
-  }, signal, { origin });
+    exchange: authorization.secret,
+  }, signal, { origin, simple: true });
   void LoginResultSchema.safeParse(sessionResponse);
   const output = sessionResponse as z.infer<typeof LoginResultSchema>;
   if ('memberships' in output) return Object.freeze({ kind: 'selection', selection: output });
   const expectedSessionTarget = context.expectedSessionTarget ?? target;
   if (output.target !== expectedSessionTarget) {
     throw new Error(expectedSessionTarget === 'storefront' ? '登录身份不属于消费者商城' : '登录身份不属于运营后台');
+  }
+  if (output.exchange !== undefined) {
+    return Object.freeze({ kind: 'authenticated', session: output, exchange: output.exchange });
   }
   const exchangeResponse = await identityRequest('/api/v1/identity/tickets/exchange', {
     ticket: output.callback.ticket,
@@ -382,24 +387,28 @@ async function identityRequest(
   path: string,
   body: Readonly<Record<string, unknown>>,
   signal?: AbortSignal,
-  options: Readonly<{ credentials?: RequestCredentials; action?: string; origin?: string }> = {},
+  options: Readonly<{ credentials?: RequestCredentials; action?: string; origin?: string; simple?: boolean }> = {},
 ): Promise<unknown> {
   const credentials = options.credentials ?? 'include';
   const csrf = credentials === 'include' ? csrfToken() : null;
-  const request = () => fetch(new URL(path, options.origin ?? apiOrigin()), {
-    method: 'POST',
-    credentials,
-    headers: {
-      'content-type': 'application/json',
-      'idempotency-key': createSecureId(),
-      'x-client-version': clientVersion(),
-      'x-device-id': deviceId(),
-      'x-request-id': createSecureId(),
-      ...(csrf === null ? {} : { 'x-csrf-token': csrf }),
-    },
-    body: JSON.stringify(body),
-    signal,
-  });
+  const request = () => {
+    const idempotencyKey = createSecureId();
+    const metadata = { idempotencyKey, clientVersion: clientVersion(), deviceId: deviceId() };
+    return fetch(new URL(path, options.origin ?? apiOrigin()), {
+      method: 'POST',
+      credentials,
+      headers: options.simple ? { 'content-type': 'text/plain;charset=UTF-8' } : {
+        'content-type': 'application/json',
+        'idempotency-key': idempotencyKey,
+        'x-client-version': metadata.clientVersion,
+        'x-device-id': metadata.deviceId,
+        'x-request-id': createSecureId(),
+        ...(csrf === null ? {} : { 'x-csrf-token': csrf }),
+      },
+      body: JSON.stringify(options.simple ? { ...body, _transport: metadata } : body),
+      signal,
+    });
+  };
   let response = await request();
   let payload = await response.json().catch(() => null);
   if (credentials === 'include' && responseCode(payload, response.status) === 'CSRF_TOKEN_INVALID') {

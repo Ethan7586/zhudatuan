@@ -191,13 +191,7 @@ describe('canonical console identity', () => {
     expect(String(sessionUrl)).toBe('http://127.0.0.1:3001/api/v1/identity/sessions');
     expect(sessionInit).toMatchObject({ method: 'POST', credentials: 'include' });
     const sessionHeaders = sessionInit?.headers as Record<string, string>;
-    expect(sessionHeaders).toMatchObject({
-      'content-type': 'application/json',
-      'x-client-version': process.env.VITE_CLIENT_VERSION ?? '0.0.0',
-      'x-device-id': expect.any(String),
-      'x-request-id': expect.any(String),
-      'idempotency-key': expect.any(String),
-    });
+    expect(sessionHeaders).toEqual({ 'content-type': 'text/plain;charset=UTF-8' });
     expect(sessionHeaders).not.toHaveProperty('x-contract-version');
 
     const sessionBody = JSON.parse(String(sessionInit?.body));
@@ -211,15 +205,20 @@ describe('canonical console identity', () => {
         nonce: expect.any(String),
         challenge: expect.any(String),
       },
+      _transport: {
+        idempotencyKey: expect.any(String),
+        clientVersion: process.env.VITE_CLIENT_VERSION ?? '0.0.0',
+        deviceId: expect.any(String),
+      },
     });
 
     const [exchangeUrl, exchangeInit] = fetchMock.mock.calls[1];
     expect(String(exchangeUrl)).toBe('http://127.0.0.1:3001/api/v1/identity/tickets/exchange');
     expect(exchangeInit).toMatchObject({ method: 'POST', credentials: 'include' });
     const exchangeHeaders = exchangeInit?.headers as Record<string, string>;
-    expect(exchangeHeaders['x-device-id']).toBe(sessionHeaders['x-device-id']);
-    expect(exchangeHeaders['idempotency-key']).not.toBe(sessionHeaders['idempotency-key']);
-    expect(exchangeHeaders['x-request-id']).not.toBe(sessionHeaders['x-request-id']);
+    expect(exchangeHeaders['x-device-id']).toBe(sessionBody._transport.deviceId);
+    expect(exchangeHeaders['idempotency-key']).not.toBe(sessionBody._transport.idempotencyKey);
+    expect(exchangeHeaders['x-request-id']).toEqual(expect.any(String));
 
     const exchangeBody = JSON.parse(String(exchangeInit?.body));
     expect(exchangeBody).toMatchObject({
@@ -229,6 +228,27 @@ describe('canonical console identity', () => {
       verifier: expect.any(String),
     });
     expect(exchangeBody.verifier).not.toBe(sessionBody.authorization.challenge);
+  });
+
+  it('uses a server-completed ticket exchange without a second browser round trip', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
+      ...sessionCreated(),
+      exchange: {
+        returnTarget: { url: CONSOLE_DESTINATION, proof: VALID_PROOF, expiresAt: '2099-01-01T00:00:00.000Z' },
+        expiresIn: 3_600,
+      },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(loginCanonicalConsole('ethan', 'Original!Password1')).resolves.toEqual({
+      kind: 'authenticated', membership: 'membership-console-owner', redirectUrl: CONSOLE_DESTINATION,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const init = fetchMock.mock.calls[0]?.[1];
+    expect(init?.headers).toEqual({ 'content-type': 'text/plain;charset=UTF-8' });
+    const body = JSON.parse(String(init?.body));
+    expect(body.exchange).toMatchObject({ nonce: body.authorization.nonce, verifier: expect.any(String) });
+    expect(body.exchange.verifier).not.toBe(body.authorization.challenge);
   });
 
   it('requests and accepts only the Hongtai Console return target', async () => {
