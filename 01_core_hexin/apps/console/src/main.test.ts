@@ -28,10 +28,13 @@ describe('console bootstrap document', () => {
   it('starts runtime, API connection, and session work from the production HTML head', () => {
     expect(vite).toContain("name: 'console-boot-prefetch'");
     expect(vite).toContain('<link rel="preconnect"');
-    expect(vite).toContain("window.__consoleEarlyRuntimePrefetch={node:request('/console-runtime.json'),fallback:request('/console-build.json')}");
-    expect(vite).toContain("api+'/api/v1/identity/session'");
+    expect(vite).toContain("window.__consoleEarlyRuntimePrefetch={node:documentRequest('/console-runtime.json'),fallback:documentRequest('/console-build.json')}");
+    expect(vite).toContain("apiRead('/api/v1/identity/session')");
+    expect(vite).toContain("apiRead('/api/v1/organizations/layers?limit=1000'");
+    expect(vite).toContain('profile=value.profile??await apiRead');
     expect(prefetch).toContain('const earlySession = window.__consoleEarlySessionPrefetch');
     expect(prefetch).toContain('earlySession.clientVersion === appConfig.clientVersion');
+    expect(prefetch).toContain('earlySession.scope as ReturnType<typeof startScopePrefetch>');
   });
 
   it('starts the default cockpit read from the validated session context', () => {
@@ -128,7 +131,8 @@ describe('console bootstrap document', () => {
   it('starts profile and organization context reads without adding API calls', () => {
     expect(prefetch).toContain("readJson<unknown>('/api/v1/members/me', headers)");
     expect(prefetch).toContain("readJson<unknown>('/api/v1/organizations/layers?limit=1000'");
-    expect(prefetch).toContain('window.__consoleScopePrefetch = tracked(');
+    expect(prefetch).toContain('const startScopePrefetch = () => tracked(');
+    expect(prefetch).toContain('earlySession.scope as ReturnType<typeof startScopePrefetch>');
   });
 
   it('starts with the shared route loading state instead of an empty root', () => {

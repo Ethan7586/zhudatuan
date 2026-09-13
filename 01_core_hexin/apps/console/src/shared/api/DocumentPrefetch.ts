@@ -22,6 +22,7 @@ interface EarlySessionPrefetch extends Tracked<unknown> {
   readonly apiBaseUrl: string;
   readonly clientVersion: string;
   readonly abort: () => void;
+  readonly scope?: Tracked<unknown>;
 }
 
 declare global {
@@ -76,7 +77,7 @@ export function startDocumentPrefetch(
     ? tracked(earlySession.promise.then((value) => isRecord(value) ? value as SessionCandidate : undefined))
     : readJson<SessionCandidate>('/api/v1/identity/session');
   window.__consoleSessionPrefetch = tracked(session.promise.then((value) => value === undefined ? undefined : { value }));
-  window.__consoleScopePrefetch = tracked(session.promise.then(async (value) => {
+  const startScopePrefetch = () => tracked(session.promise.then(async (value) => {
     if (value === undefined) return undefined;
     const roots = Array.isArray(value?.scopes) ? value.scopes.filter(isConsoleScope) : [];
     if (!Number.isInteger(value?.accessVersion) || roots.length === 0) return undefined;
@@ -99,6 +100,9 @@ export function startDocumentPrefetch(
       layers: await Promise.all(layers),
     };
   }));
+  window.__consoleScopePrefetch = useEarlySession && earlySession.scope !== undefined
+    ? earlySession.scope as ReturnType<typeof startScopePrefetch>
+    : startScopePrefetch();
   window.__consoleCockpitPrefetch = tracked(session.promise.then((value) => {
     if (value === undefined) return undefined;
     const match = location.pathname.match(/^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/([^/]+)\/cockpit\/?$/);

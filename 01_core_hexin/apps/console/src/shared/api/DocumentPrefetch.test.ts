@@ -33,6 +33,38 @@ describe('early session prefetch handoff', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it('reuses the HTML-started scope and permission work without duplicate profile reads', async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    const root = { kind: 'mall', id: 'mall:early' } as const;
+    const scopeValue = {
+      accessVersion: config.clientVersion.length,
+      roots: [root],
+      profile: { display_name: 'Ethan', employee_no: null },
+      layers: [],
+    };
+    window.__consoleEarlySessionPrefetch = {
+      apiBaseUrl: config.apiBaseUrl,
+      clientVersion: config.clientVersion,
+      settled: true,
+      abort: vi.fn(),
+      promise: Promise.resolve({
+        ...earlyValue,
+        accessVersion: scopeValue.accessVersion,
+        scope: root,
+        scopes: [root],
+        profile: scopeValue.profile,
+      }),
+      scope: { settled: true, promise: Promise.resolve(scopeValue) },
+    };
+
+    startDocumentPrefetch(config);
+
+    await expect(window.__consoleScopePrefetch?.promise).resolves.toEqual(scopeValue);
+    expect(fetch.mock.calls.some(([url]) => String(url).includes('/api/v1/members/me'))).toBe(false);
+    expect(fetch.mock.calls.some(([url]) => String(url).includes('/api/v1/organizations/layers'))).toBe(false);
+  });
+
   it('rejects a session from another API origin and starts the authoritative request', async () => {
     const abort = vi.fn();
     const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(earlyValue), {
@@ -46,11 +78,16 @@ describe('early session prefetch handoff', () => {
       settled: false,
       abort,
       promise: new Promise(() => undefined),
+      scope: {
+        settled: true,
+        promise: Promise.resolve({ accessVersion: 999, roots: [], profile: undefined, layers: [] }),
+      },
     };
 
     startDocumentPrefetch(config);
 
     await expect(window.__consoleSessionPrefetch?.promise).resolves.toEqual({ value: earlyValue });
+    await expect(window.__consoleScopePrefetch?.promise).resolves.toBeUndefined();
     expect(abort).toHaveBeenCalledOnce();
     expect(fetch).toHaveBeenCalledWith(
       'https://api.hbbtzn.com/api/v1/identity/session',
