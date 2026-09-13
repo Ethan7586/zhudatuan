@@ -251,8 +251,6 @@ export function createOssClient(configuration, dependencies = {}) {
     async putImmutable(object, body, contentType = 'application/octet-stream') {
       const bytes = Buffer.isBuffer(body) ? body : Buffer.from(body);
       const contentSha256 = sha256(bytes);
-      const existing = await this.headObject(object);
-      if (existing.exists) return verifyExisting(this, existing, object, bytes, contentSha256);
       const contentMd5 = createHash('md5').update(bytes).digest('base64');
       const response = await request('PUT', object, {
         body: bytes,
@@ -264,8 +262,8 @@ export function createOssClient(configuration, dependencies = {}) {
         },
       });
       if (response.status === 409) {
-        const raced = await this.headObject(object);
-        return verifyExisting(this, raced, object, bytes, contentSha256);
+        const existing = await this.headObject(object);
+        return verifyExisting(this, existing, object, bytes, contentSha256);
       }
       await assertResponse(response, 'OSS_IMMUTABLE_PUT_FAILED');
       return { object, status: 'uploaded', bytes: bytes.byteLength, sha256: `sha256:${contentSha256}` };

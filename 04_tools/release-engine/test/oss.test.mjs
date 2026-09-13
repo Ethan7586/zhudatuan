@@ -44,6 +44,17 @@ test('two preparations of one source produce one immutable identity and a remote
   assert.equal(JSON.parse(await readFile(options.output, 'utf8')).cacheStatus, 'hit_remote');
 });
 
+test('first immutable publication does not require HeadObject on absent objects', async () => {
+  const fixture = await prepareFixture();
+  const remote = memoryOss({ denyMissingHead: true });
+  const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
+
+  const receipt = await publishPreparedArtifact(fixture.adapter, publishOptions(fixture), { client });
+
+  assert.equal(receipt.cacheStatus, 'miss');
+  assert.equal(remote.puts, 3);
+});
+
 test('Storefront publication fails closed unless complete Linux x64 runtime evidence is present', async (t) => {
   const invalidCases = [
     ['missing', null, 'PREPARE_RUNTIME_EVIDENCE_REQUIRED'],
@@ -286,7 +297,7 @@ function credentials() {
   return { accessKeyId: 'id', accessKeySecret: 'secret', bucket: 'bucket', endpoint: 'oss.example.test' };
 }
 
-function memoryOss() {
+function memoryOss({ denyMissingHead = false } = {}) {
   const state = {
     objects: new Map(),
     puts: 0,
@@ -301,7 +312,7 @@ function memoryOss() {
       }
       const existing = state.objects.get(object);
       if (method === 'HEAD') {
-        if (!existing) return new Response(null, { status: 404 });
+        if (!existing) return new Response(null, { status: denyMissingHead ? 403 : 404 });
         return new Response(null, { status: 200, headers: { 'content-length': String(existing.body.byteLength), 'x-oss-meta-sha256': existing.sha256 } });
       }
       if (method === 'GET') return existing ? new Response(existing.body, { status: 200, headers: { 'content-length': String(existing.body.byteLength), 'x-oss-meta-sha256': existing.sha256 } }) : new Response('missing', { status: 404 });
