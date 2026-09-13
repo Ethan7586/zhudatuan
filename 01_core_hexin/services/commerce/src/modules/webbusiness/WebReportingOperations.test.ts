@@ -58,17 +58,40 @@ describe('web reporting dashboard read', () => {
     expect(writes[0]?.value).toEqual(response);
     expect(writes[0]?.seconds).toBeGreaterThan(0);
   });
+
+  it('uses a process-local cache when the web runtime has no shared cache binding', async () => {
+    let connections = 0;
+    const client = {
+      query: async (text: string) => {
+        if (text.includes('select reporting.cockpit')) return result([{ summary: { cachedLocally: true } }]);
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool = databasePool({
+      connect: async () => { connections += 1; return client; },
+      query: async () => result([{ version: 7 }]),
+    });
+    const operations = webReportingOperations(context(pool));
+
+    await operations.invoke(request('mall:local-cache'));
+    await expect(operations.invoke(request('mall:local-cache'))).resolves.toMatchObject({
+      status: 200, body: { summary: { cachedLocally: true } },
+    });
+
+    expect(connections).toBe(1);
+  });
 });
 
-function request(): OperationRequest {
+function request(scope = 'mall:test'): OperationRequest {
   return {
     type: 'reporting.dashboard.read',
     access: {
       actor: { id: 'principal:operator', session: 'session:operator', membership: 'membership:operator', credentialVersion: 1,
         accessVersion: 1, target: 'console', assurance: { level: 1 } },
       membership: { id: 'membership:operator', active: true, accessVersion: 1, denies: [], grants: [] },
-      scope: { id: 'mall:test', kind: 'mall', path: [] },
-      mallContext: { mall_id: 'mall:test' }, mall_id: 'mall:test', accessVersion: 1,
+      scope: { id: scope, kind: 'mall', path: [] },
+      mallContext: { mall_id: scope }, mall_id: scope, accessVersion: 1,
       capabilities: ['reporting.dashboard.read'], assurance: { level: 1 }, trace: 'trace:dashboard',
     },
     input: {
@@ -78,10 +101,10 @@ function request(): OperationRequest {
   };
 }
 
-function context(pool: DatabasePool, cache: Cache): ModuleContext {
+function context(pool: DatabasePool, cache?: Cache): ModuleContext {
   const container = new Container();
   container.bind(DATABASE_POOL, pool);
-  container.bind(CACHE, cache);
+  if (cache) container.bind(CACHE, cache);
   container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
   return { container } as unknown as ModuleContext;
 }
