@@ -1,8 +1,8 @@
 {
   "$schema": "./E2.0-证据.schema.json",
-  "schema_version": "e2.0-evidence-v1",
-  "evidence_id": "E2-EVID-E06-CALIBRATION-20260913",
-  "profile_version": "2.0.0-baseline",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E06-CALIBRATION-SCHEMA-V2-20260913",
+  "profile_version": "2.0.0",
   "non_gating": true,
   "claim_ids": ["E2-REL-002"],
   "criteria": {
@@ -10,7 +10,13 @@
     "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-校准判据.json",
     "sha256": "sha256:0374e9ab693b571261be328e20eafc1ef3c00ac9a141449d2949214c2d91a4fc",
     "locked_at": "2026-09-13T09:26:26Z",
-    "locked_before_execution": true
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-01a09a0a-db53-7ce0-bbe8-c9f817911bb4",
+      "role": "E2.0 calibration criteria designer",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Authored the E2.0 baseline criteria and later operated the oracle; not an independent reviewer."
+    }
   },
   "test_basis_refs": [
     "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E06",
@@ -303,6 +309,7 @@
     "environment_assurance": "DEV VERIFIED",
     "review_assurance": "NOT REVIEWED",
     "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
     "rationale": "All prelocked E06 mechanism thresholds can be independently recomputed from the six hash-identified raw receipts. The observed environment is three disposable local Docker processes with network=none and no production effects, so the highest honest level is DEV VERIFIED. No independent person or organization reviewed the result.",
     "gaps": [
       "Real STAGING VERIFIED execution",
@@ -315,9 +322,12 @@
     "reviewer": null,
     "reviewed_at": null,
     "independence_statement": null,
-    "recomputation_artifacts": [
-      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-独立oracle.jq"
-    ]
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
   },
-  "supersedes": null
+  "supersedes": "E2-EVID-E06-CALIBRATION-20260913"
 }

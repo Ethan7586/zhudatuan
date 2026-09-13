@@ -1,12 +1,19 @@
 {
   "$schema": "./E2.0-追踪矩阵.schema.json",
-  "schema_version": "e2.0-traceability-matrix-v1",
+  "schema_version": "e2.0-traceability-matrix-v2",
   "profile": {
     "id": "E2.0",
     "name": "E2.0 国际标准对标验收体系",
-    "version": "2.0.0-baseline",
+    "version": "2.0.0",
     "classification": "standards-aligned-tailored-conformity-profile",
-    "certification_claim": false
+    "certification_claim": false,
+    "criteria_lock": {
+      "status": "LOCKED",
+      "locked_on": "2026-09-13",
+      "predecessor_commit": "72ab307ffc0dffff424d929c003fbe06b1386457",
+      "identity": "GIT_COMMIT_CONTAINING_PROFILE",
+      "change_rule": "The Git commit containing this profile is the lock identity. Any criterion, scope, schema or result-enum change requires a new profile version and preservation of this revision."
+    }
   },
   "non_gating": true,
   "retrieved_on": "2026-09-13",
@@ -82,7 +89,7 @@
       "official_url": "https://github.com/OWASP/ASVS/tree/v5.0.0",
       "retrieved_on": "2026-09-13",
       "access_depth": "OFFICIAL_PUBLIC_FULL_TEXT",
-      "profile_usage": "Exact open requirement IDs for E12 web authorization isolation only.",
+      "profile_usage": "Exact open requirement IDs for E03 authorization intersection and E04/E12 Realm, data and service-layer isolation.",
       "scope_status": "ACTIVE",
       "notes": ["Mapping is not an OWASP certification or an assertion that all ASVS requirements were assessed."]
     },
@@ -131,6 +138,399 @@
     }
   ],
   "claims": [
+    {
+      "claim_id": "E2-TOPO-001",
+      "legacy_trace_ids": [
+        "E01"
+      ],
+      "title": "同级节点共享模型与横向隔离",
+      "quality_statement": "同一 line 和 parent 下的三个同级节点由同一节点模型、源码和制品服务；差异只来自权威节点、身份、Scope、Capability 和资源数据，且请求与写入不串节点。",
+      "project_custom_assertion": true,
+      "business_risks": [
+        "同级节点分化为专属模型、业务分支或制品",
+        "Realm、Membership 或 Scope 串线",
+        "节点名称硬编码替代权威数据决策"
+      ],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames functional suitability, reliability, security and maintainability evaluation; the shared SFL node model and zero-cross-node behavior are project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "ISO/IEC/IEEE 29119-4:2021",
+          "locator": null,
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Uses positive, negative and boundary-oriented test design across three peer nodes without claiming clause-level conformity.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "Horizontal peer nodes are an explicit SFL topology and isolation claim.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when Node, Relation, NodeContext, Membership, Scope, Capability or artifact topology changes."
+      },
+      "test_basis_refs": [
+        "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E01"
+      ],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E01-HORIZONTAL",
+        "procedure": "Independently reconstruct each node context, compare expected versus observed operation decisions and authoritative writes, and count source/build/artifact identities from raw inventories; do not read the test program's pass field.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": [
+        "DEV",
+        "STAGING",
+        "PRODUCTION"
+      ],
+      "inputs": [
+        "H-A, H-B and H-C under one line and parent at signed level L1",
+        "distinct Realm, Membership and Scope data for each node",
+        "one immutable source/build/artifact identity",
+        "the same read and rollback-safe write operations for all three nodes"
+      ],
+      "prelocked_criteria": {
+        "thresholds": [
+          "all 3 nodes resolve through the same Node/Relation/Context model and parser path",
+          "source_sha/build_id/artifact_digest unique count = 1 and source_copy_count = node_specific_build_count = 0",
+          "expected versus observed context or operation-decision mismatch count = 0",
+          "cross-node/Realm/Membership/Scope read or write count = 0",
+          "unexpected authoritative-table, audit or Outbox diff count = 0"
+        ],
+        "all_required": true,
+        "unknown_rule": "Missing any of the three node rows, operation observations, authoritative before/after diffs, or source/build/artifact inventories yields UNKNOWN."
+      },
+      "positive_cases": [
+        "The same operation set resolves and executes according to each node's declared identity and Scope",
+        "One shared source/build/artifact serves all three peer nodes"
+      ],
+      "negative_cases": [
+        "Cross-node Realm, Membership and Scope reuse",
+        "Any second source copy, node-specific build, model path or node-name business branch"
+      ],
+      "required_raw_evidence": [
+        "horizontal topology and context rows",
+        "exact operation requests and raw decisions",
+        "authoritative-table/audit/Outbox before-and-after diffs",
+        "source/build/artifact identity inventories",
+        "node-specific branch/build counters"
+      ],
+      "executor_role": "Horizontal node-model test operator",
+      "reviewer_role": "Reviewer independent of the node-model implementation and E01 test code",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E01 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
+        "evidence_ref": null,
+        "review_evidence_ref": null,
+        "gaps": [
+          "E2.0 evidence record and independent oracle recomputation"
+        ]
+      }
+    },
+    {
+      "claim_id": "E2-TOPO-002",
+      "legacy_trace_ids": [
+        "E02"
+      ],
+      "title": "L0—L11 统一纵向链与关系版本完整性",
+      "quality_statement": "L0—L11 的 12 个节点使用同一数据模型和解析路径；父边、级号、闭包和关系版本均为可验证数据，历史关系不被覆盖，不产生 L12 业务事实。",
+      "project_custom_assertion": true,
+      "business_risks": [
+        "层级专属模型或代码路径增生",
+        "跳级、双父、跨线借链或闭包错误",
+        "关系换版覆盖历史交易路径",
+        "级号被当作管理权或主权资源的自动授予"
+      ],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames functional correctness, reliability and maintainability of a data-driven hierarchy; L0-L11 and the L12 boundary are project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "ISO/IEC/IEEE 29119-4:2021",
+          "locator": null,
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Uses boundary, state-transition and structure-oriented test design without claiming clause-level conformity.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "The L0-L11 data-driven chain is an explicit SFL topology claim.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when NodeRelation, NodeClosure, signed-level boundaries or relation versioning changes."
+      },
+      "test_basis_refs": [
+        "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E02"
+      ],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E02-VERTICAL",
+        "procedure": "Independently derive the expected 12-node chain and closure rows from raw parent edges, compare every active interval and relation version, and count L12 facts; ignore test summary results.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": [
+        "DEV",
+        "STAGING"
+      ],
+      "inputs": [
+        "12 nodes V-L0 through V-L11",
+        "11 initial same-line parent edges",
+        "one non-transaction node relation-version change",
+        "self, ancestors, descendants and subtree resolution operations"
+      ],
+      "prelocked_criteria": {
+        "thresholds": [
+          "node count = 12, current parent-edge count = 11 and L12 fact count = 0",
+          "all levels use one Node/Relation/Closure model and one resolution path",
+          "per effective interval each non-root node has exactly one same-line parent and L0 has none",
+          "derived self/ancestor/descendant/subtree rows mismatch count = 0",
+          "relation change creates a new version while preserving the old edge and historical path",
+          "permission or sovereignty change caused solely by signed_level count = 0"
+        ],
+        "all_required": true,
+        "unknown_rule": "Missing any level, edge interval, closure row, version diff, boundary observation or authority comparison yields UNKNOWN."
+      },
+      "positive_cases": [
+        "Resolve self, ancestors, descendants and subtree at every level",
+        "Change one relation version and reconstruct both old and current paths"
+      ],
+      "negative_cases": [
+        "Attempt a skip-level, second-parent or cross-line edge",
+        "Probe the L11 boundary without creating an L12 fact",
+        "Check that a higher signed level alone grants no permission or sovereign resource"
+      ],
+      "required_raw_evidence": [
+        "node and parent-edge rows with effective intervals",
+        "complete closure matrix",
+        "relation-version before-and-after diff",
+        "historical path reconstruction",
+        "L12 and level-derived-authority counters"
+      ],
+      "executor_role": "Vertical topology and relation-version test operator",
+      "reviewer_role": "Reviewer independent of the hierarchy implementation and E02 test code",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E02 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
+        "evidence_ref": null,
+        "review_evidence_ref": null,
+        "gaps": [
+          "E2.0 evidence record and independent chain/closure recomputation"
+        ]
+      }
+    },
+    {
+      "claim_id": "E2-AUTH-001",
+      "legacy_trace_ids": [
+        "E03"
+      ],
+      "title": "功能、权限、Scope、Capability 与资源就绪五维交集",
+      "quality_statement": "功能可见性与可执行性等于 feature declaration、Permission、Scope、Capability 和 resource readiness 五个布尔维度的交集；任一为 false 都在页面、API、任务和服务层失败关闭且零副作用。",
+      "project_custom_assertion": true,
+      "business_risks": [
+        "单个权限或前端可见性绕过完整授权交集",
+        "页面、API、任务和服务层决策不一致",
+        "被拒绝请求仍产生落库、Outbox 或 Provider 副作用"
+      ],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames functional correctness and security quality; the five-factor SFL intersection and four-surface equality are project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "OWASP ASVS 5.0.0",
+          "locator": "V8.1.1, V8.2.1, V8.2.2, V8.3.1",
+          "mapping_type": "EXACT_OPEN_REQUIREMENT_MAPPING",
+          "alignment_statement": "Maps documented authorization rules, explicit function permission, data-specific access and trusted service-layer enforcement to the E03 truth table.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "NIST SP 800-218 SSDF 1.1",
+          "locator": "PW.1.2",
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Tracks security requirements, risks and design decisions for the authorization intersection.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "The five-factor decision is an explicit SFL authorization and capability contract.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when Operation declarations, Permission, Scope, Capability, resource readiness or any decision surface changes."
+      },
+      "test_basis_refs": [
+        "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E03"
+      ],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E03-TRUTH-TABLE",
+        "procedure": "Generate the expected allow value as the conjunction of the five raw booleans for all 32 rows, compare page/API/task/service observations, and independently diff database, Outbox and provider-call facts without reading test pass flags.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": [
+        "DEV",
+        "STAGING"
+      ],
+      "inputs": [
+        "all 2^5 = 32 combinations of feature_declared, permission_allowed, scope_allowed, capability_available and resource_ready",
+        "one side-effect-free read operation and one rollback-safe write operation",
+        "page, API, task and trusted service/provider probes",
+        "Hosted, Sovereign and consumer sample memberships"
+      ],
+      "prelocked_criteria": {
+        "thresholds": [
+          "truth-table row count = 32 and observation count per surface = 32",
+          "the all-true row is available on every applicable surface",
+          "each of the other 31 rows fails closed on page, API, task and service/provider surfaces",
+          "expected versus observed decision mismatch count = 0",
+          "cross-surface inconsistency count = 0",
+          "denied-row business write, Outbox and provider-call count = 0"
+        ],
+        "all_required": true,
+        "unknown_rule": "Any missing truth-table row, surface observation, denial reason, correlation link or direct side-effect diff yields UNKNOWN."
+      },
+      "positive_cases": [
+        "All five dimensions true for each selected operation and node type"
+      ],
+      "negative_cases": [
+        "Each of the five dimensions false individually while the others are true",
+        "All remaining multi-false combinations across all four decision surfaces"
+      ],
+      "required_raw_evidence": [
+        "expected and observed 32-row truth tables",
+        "page/API/task/service raw decisions with correlation IDs",
+        "denial reasons",
+        "database and Outbox before-and-after diffs",
+        "provider selection/call log"
+      ],
+      "executor_role": "Cross-surface authorization truth-table operator",
+      "reviewer_role": "Security reviewer independent of authorization implementation and E03 test code",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E03 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
+        "evidence_ref": null,
+        "review_evidence_ref": null,
+        "gaps": [
+          "E2.0 32-row four-surface evidence record and independent side-effect recomputation"
+        ]
+      }
+    },
+    {
+      "claim_id": "E2-ID-001",
+      "legacy_trace_ids": [
+        "E04"
+      ],
+      "title": "同一凭据跨 Realm 的身份与会话隔离",
+      "quality_statement": "同一凭据跨 Realm 仅用于发现可选身份，不合并 Account、Membership、Session、父链、Scope、权限或资产；切换 Realm 必须换发目标会话，来源权威零残留。",
+      "project_custom_assertion": true,
+      "business_risks": [
+        "按手机号或凭据跨 Realm 合并账号与资产",
+        "单次请求同时激活多个 Membership",
+        "来源 Session、Scope 或权限在目标 Realm 残留",
+        "跨 Realm 负向请求读取数据或产生写入"
+      ],
+      "standard_mappings": [
+        {
+          "standard_id": "ISO/IEC 25010:2023",
+          "locator": null,
+          "mapping_type": "QUALITY_MODEL_ALIGNMENT",
+          "alignment_statement": "Frames security and functional correctness of identity isolation; the shared-credential Realm model is project-custom.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "OWASP ASVS 5.0.0",
+          "locator": "V8.2.2, V8.3.1",
+          "mapping_type": "EXACT_OPEN_REQUIREMENT_MAPPING",
+          "alignment_statement": "Maps data-specific authorization and trusted service-layer enforcement to cross-Realm identity and asset-isolation probes.",
+          "exact_clause_conformity_claimed": false
+        },
+        {
+          "standard_id": "NIST SP 800-218 SSDF 1.1",
+          "locator": "PW.1.2",
+          "mapping_type": "PROCESS_ALIGNMENT",
+          "alignment_statement": "Tracks security requirements, risks and design decisions for Realm identity boundaries.",
+          "exact_clause_conformity_claimed": false
+        }
+      ],
+      "applicability": {
+        "status": "APPLICABLE",
+        "rationale": "A credential may discover identities in multiple Realms while authority must remain Realm-specific.",
+        "tailoring_ref": null,
+        "review_trigger": "Reassess when credential discovery, Account, Membership, Session, Realm switching, Scope or asset ownership changes."
+      },
+      "test_basis_refs": [
+        "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E04"
+      ],
+      "independent_oracle": {
+        "oracle_id": "E2-ORACLE-E04-MULTI-REALM",
+        "procedure": "Independently compare account/membership/session/lineage/scope/asset identifiers across three Realms, enumerate all directed Realm transitions and misuse observations, and diff authoritative writes without using test summary results.",
+        "does_not_read_test_pass": true
+      },
+      "target_environments": [
+        "DEV",
+        "STAGING"
+      ],
+      "inputs": [
+        "one credential reference discoverable in Realms A, B and C",
+        "three independent Account/Membership/Scope/asset fixtures",
+        "3 valid own-asset sessions",
+        "6 directed Realm switches",
+        "source Session, Membership, Scope and node-identity misuse for read and rollback-safe write"
+      ],
+      "prelocked_criteria": {
+        "thresholds": [
+          "valid own-Realm positive case count = 3 with expected asset mismatch count = 0",
+          "for 3 Realms, all 6 directed source-to-target pairs cover 4 misuse variants x read/write = 48 negative observations",
+          "negative acceptance, cross-Realm data disclosure and authoritative write count = 0",
+          "each request has exactly 1 active Membership",
+          "all 6 Realm switches issue a target session and source Session/permission residue count = 0",
+          "cross-Realm Account, Membership, Session, lineage, Scope or asset identifier merge count = 0"
+        ],
+        "all_required": true,
+        "unknown_rule": "Any missing positive Realm, directed pair, misuse variant, switch transition, identifier map or authoritative before/after diff yields UNKNOWN."
+      },
+      "positive_cases": [
+        "Log in separately to A, B and C and read only the active Membership's own assets",
+        "Switch each ordered source Realm to each target Realm through a newly issued target session"
+      ],
+      "negative_cases": [
+        "Reuse source Session, Membership, Scope or node identity for read and write against every other Realm",
+        "Attempt to retain source authority after each Realm switch"
+      ],
+      "required_raw_evidence": [
+        "three-Realm credential-to-identity map",
+        "Account/Membership/Session/lineage/Scope/asset identifiers",
+        "exact positive and 48 negative request/response observations",
+        "six session transition records",
+        "authoritative-table and Outbox before-and-after diffs"
+      ],
+      "executor_role": "Multi-Realm identity and session-isolation test operator",
+      "reviewer_role": "Security reviewer independent of identity/session implementation and E04 test code",
+      "current_rating": {
+        "claim_outcome": "UNKNOWN",
+        "environment_assurance": "NOT ESTABLISHED",
+        "review_assurance": "NOT REVIEWED",
+        "rationale": "E04 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
+        "evidence_ref": null,
+        "review_evidence_ref": null,
+        "gaps": [
+          "E2.0 three-Realm evidence record and independent identity/session recomputation"
+        ]
+      }
+    },
     {
       "claim_id": "E2-REL-001",
       "legacy_trace_ids": ["E05"],
@@ -186,6 +586,7 @@
         "review_assurance": "NOT REVIEWED",
         "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
         "evidence_ref": null,
+        "review_evidence_ref": null,
         "gaps": ["E2.0 evidence record and independent oracle recomputation not yet completed"]
       }
     },
@@ -252,6 +653,7 @@
         "review_assurance": "NOT REVIEWED",
         "rationale": "Raw evidence supports the mechanism in three disposable Docker processes with network=none; this is not a stable real staging environment and has no independent reviewer.",
         "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E06-校准样例.json",
+        "review_evidence_ref": null,
         "gaps": ["Real staging identity/config/difference record", "Production authorization and observation", "Independent reviewer signature"]
       }
     },
@@ -308,6 +710,7 @@
         "review_assurance": "NOT REVIEWED",
         "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
         "evidence_ref": null,
+        "review_evidence_ref": null,
         "gaps": ["E2.0 criteria lock, evidence record and independent oracle recomputation"]
       }
     },
@@ -364,6 +767,7 @@
         "review_assurance": "NOT REVIEWED",
         "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
         "evidence_ref": null,
+        "review_evidence_ref": null,
         "gaps": ["E2.0 evidence record and independent ledger recomputation"]
       }
     },
@@ -420,6 +824,7 @@
         "review_assurance": "NOT REVIEWED",
         "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
         "evidence_ref": null,
+        "review_evidence_ref": null,
         "gaps": ["E2.0 criteria lock, raw provider/DB evidence and independent recovery reconstruction"]
       }
     },
@@ -476,6 +881,7 @@
         "review_assurance": "NOT REVIEWED",
         "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
         "evidence_ref": null,
+        "review_evidence_ref": null,
         "gaps": ["Complete same-SHA staging release and cross-surface raw evidence"]
       }
     },
@@ -532,6 +938,7 @@
         "review_assurance": "NOT REVIEWED",
         "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
         "evidence_ref": null,
+        "review_evidence_ref": null,
         "gaps": ["Independent source/build/event recount under E2.0"]
       }
     },
@@ -595,6 +1002,7 @@
         "review_assurance": "NOT REVIEWED",
         "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
         "evidence_ref": null,
+        "review_evidence_ref": null,
         "gaps": ["Complete E2.0 negative matrix, direct database oracle and independent review"]
       }
     }

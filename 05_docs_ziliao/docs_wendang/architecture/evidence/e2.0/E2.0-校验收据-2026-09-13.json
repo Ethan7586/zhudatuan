@@ -1,9 +1,9 @@
 {
-  "schema_version": "e2.0-validation-receipt-v1",
-  "profile_version": "2.0.0-baseline",
-  "validated_at": "2026-09-13T09:39:19Z",
+  "schema_version": "e2.0-validation-receipt-v2",
+  "profile_version": "2.0.0",
+  "validated_at": "2026-09-13T10:21:25Z",
   "non_gating": true,
-  "scope": "Documentation, JSON/JSON Schema, traceability semantics, evidence hashes, local links and official-source references only. No business code, service, release or deployment was executed.",
+  "scope": "Formal-ruler documentation, JSON/JSON Schema, E01-E12 traceability, rating-combination closure, evidence hashes, local links and official-source references only. No E01-E12 full rerun, business code, service, release or deployment was executed.",
   "validators": {
     "json_syntax": {
       "tool": "jq",
@@ -17,14 +17,33 @@
         "E2.0-追踪矩阵.schema.json -> E2.0-追踪矩阵.json",
         "E2.0-证据.schema.json -> E2.0-E06-校准样例.json",
         "E2.0-符合性声明.schema.json -> E2.0-符合性声明模板.json"
+      ],
+      "positive_combinations_accepted": "10/10",
+      "contradictory_combinations_rejected": "19/19",
+      "negative_classes": [
+        "MET or NOT MET with NOT ESTABLISHED",
+        "NOT APPLICABLE without an applicability/tailoring reference or with a conflicting applicability status",
+        "DEV evidence labelled STAGING VERIFIED",
+        "established environment assurance without an evidence reference",
+        "NOT REVIEWED with a reviewer",
+        "peer reviewer equal to executor",
+        "independent reviewer not external to the delivery team",
+        "reviewed matrix or statement rating without review evidence",
+        "exact open requirement mapping without a locator",
+        "template carrying a MET result"
       ]
     },
     "semantic_traceability": {
       "result": "VALID",
       "observed": {
-        "claim_count": 8,
+        "claim_count": 12,
         "standard_registry_count": 9,
-        "legacy_ids_exactly_once": ["E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12"],
+        "legacy_ids_exactly_once": ["E01", "E02", "E03", "E04", "E05", "E06", "E07", "E08", "E09", "E10", "E11", "E12"],
+        "criteria_lock_status": "LOCKED",
+        "criteria_lock_identity": "GIT_COMMIT_CONTAINING_PROFILE",
+        "predecessor_commit_preserved": "72ab307ffc0dffff424d929c003fbe06b1386457",
+        "e01_e04_initial_rating": "UNKNOWN / NOT ESTABLISHED / NOT REVIEWED",
+        "duplicate_reviewer_executor_actor_id_semantic_negative_rejected": "1/1",
         "all_standard_mapping_ids_resolve": true,
         "all_claims_have_external_mapping_or_project_custom_marker": true,
         "all_oracles_refuse_test_program_pass_as_input": true,
@@ -35,6 +54,7 @@
       "result": "VALID",
       "artifact_hash_and_size_pairs_checked": 8,
       "criteria_locked_before_oracle_execution": true,
+      "schema_migration": "The v2 E06 record supersedes the RC1 record only to add explicit applicability/review relationship fields; criteria hash, raw artifact hashes, observations and rating are unchanged.",
       "independent_oracle_exit_code": 0,
       "all_prelocked_thresholds_met": true,
       "assurance_ceiling": "DEV VERIFIED",
@@ -67,6 +87,6 @@
       "transport_note": "NIST, OWASP and PCI SSC URLs returned HTTP 200 to automated retrieval. ISO URLs were successfully read through official web retrieval but returned HTTP 403 to a raw curl check because ISO blocks that automated transport; this is not treated as a broken citation."
     }
   },
-  "final_result": "E2.0 ALIGNMENT BASELINE VALID",
-  "forbidden_interpretation": "This validation receipt is not an international certification, a PCI assessment, a production acceptance, or a runtime/merge/release/deployment gate."
+  "final_result": "E2.0 FORMAL RULER LOCK VALID; E01-E12 RE-EXECUTION NOT RUN",
+  "forbidden_interpretation": "This validation receipt is not an E01-E12 full acceptance result, an international certification, a PCI assessment, a production acceptance, or a runtime/merge/release/deployment gate."
 }

@@ -7,17 +7,29 @@
   "required": ["schema_version", "profile", "non_gating", "retrieved_on", "standards", "claims"],
   "properties": {
     "$schema": { "type": "string" },
-    "schema_version": { "const": "e2.0-traceability-matrix-v1" },
+    "schema_version": { "const": "e2.0-traceability-matrix-v2" },
     "profile": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "name", "version", "classification", "certification_claim"],
+      "required": ["id", "name", "version", "classification", "certification_claim", "criteria_lock"],
       "properties": {
         "id": { "const": "E2.0" },
         "name": { "const": "E2.0 国际标准对标验收体系" },
         "version": { "type": "string" },
         "classification": { "const": "standards-aligned-tailored-conformity-profile" },
-        "certification_claim": { "const": false }
+        "certification_claim": { "const": false },
+        "criteria_lock": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "locked_on", "predecessor_commit", "identity", "change_rule"],
+          "properties": {
+            "status": { "const": "LOCKED" },
+            "locked_on": { "type": "string", "format": "date" },
+            "predecessor_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+            "identity": { "const": "GIT_COMMIT_CONTAINING_PROFILE" },
+            "change_rule": { "type": "string", "minLength": 1 }
+          }
+        }
       }
     },
     "non_gating": { "const": true },
@@ -89,7 +101,20 @@
                 "mapping_type": { "enum": ["QUALITY_MODEL_ALIGNMENT", "PROCESS_ALIGNMENT", "EXACT_OPEN_REQUIREMENT_MAPPING", "PROJECT_CUSTOM"] },
                 "alignment_statement": { "type": "string", "minLength": 1 },
                 "exact_clause_conformity_claimed": { "type": "boolean" }
-              }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "type": "object",
+                    "properties": { "mapping_type": { "const": "EXACT_OPEN_REQUIREMENT_MAPPING" } },
+                    "required": ["mapping_type"]
+                  },
+                  "then": {
+                    "type": "object",
+                    "properties": { "locator": { "type": "string", "minLength": 1 } }
+                  }
+                }
+              ]
             }
           },
           "applicability": {
@@ -134,13 +159,14 @@
           "current_rating": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["claim_outcome", "environment_assurance", "review_assurance", "rationale", "evidence_ref", "gaps"],
+            "required": ["claim_outcome", "environment_assurance", "review_assurance", "rationale", "evidence_ref", "review_evidence_ref", "gaps"],
             "properties": {
               "claim_outcome": { "enum": ["MET", "NOT MET", "UNKNOWN", "NOT APPLICABLE"] },
               "environment_assurance": { "enum": ["DEV VERIFIED", "STAGING VERIFIED", "PRODUCTION OBSERVED", "NOT ESTABLISHED"] },
               "review_assurance": { "enum": ["NOT REVIEWED", "INTERNAL PEER REVIEWED", "INDEPENDENTLY REVIEWED"] },
               "rationale": { "type": "string", "minLength": 1 },
               "evidence_ref": { "type": ["string", "null"] },
+              "review_evidence_ref": { "type": ["string", "null"] },
               "gaps": { "type": "array", "items": { "type": "string" } }
             }
           }
@@ -153,6 +179,97 @@
           {
             "properties": { "standard_mappings": { "type": "array", "minItems": 1 } },
             "required": ["standard_mappings"]
+          }
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": { "applicability": { "type": "object", "properties": { "status": { "const": "APPLICABLE" } }, "required": ["status"] } }
+            },
+            "then": {
+              "properties": { "current_rating": { "type": "object", "properties": { "claim_outcome": { "enum": ["MET", "NOT MET", "UNKNOWN"] } } } }
+            }
+          },
+          {
+            "if": {
+              "properties": { "applicability": { "type": "object", "properties": { "status": { "const": "NOT APPLICABLE" } }, "required": ["status"] } }
+            },
+            "then": {
+              "properties": {
+                "applicability": { "type": "object", "properties": { "tailoring_ref": { "type": "string", "minLength": 1 } } },
+                "current_rating": {
+                  "type": "object",
+                  "properties": {
+                    "claim_outcome": { "const": "NOT APPLICABLE" },
+                    "environment_assurance": { "const": "NOT ESTABLISHED" },
+                    "evidence_ref": { "type": "null" }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": { "applicability": { "type": "object", "properties": { "status": { "const": "UNKNOWN" } }, "required": ["status"] } }
+            },
+            "then": {
+              "properties": {
+                "current_rating": {
+                  "type": "object",
+                  "properties": {
+                    "claim_outcome": { "const": "UNKNOWN" },
+                    "environment_assurance": { "const": "NOT ESTABLISHED" },
+                    "evidence_ref": { "type": "null" }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": { "current_rating": { "type": "object", "properties": { "claim_outcome": { "enum": ["MET", "NOT MET"] } }, "required": ["claim_outcome"] } }
+            },
+            "then": {
+              "properties": {
+                "current_rating": {
+                  "type": "object",
+                  "properties": {
+                    "environment_assurance": { "not": { "const": "NOT ESTABLISHED" } },
+                    "evidence_ref": { "type": "string", "minLength": 1 }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "current_rating": {
+                  "type": "object",
+                  "properties": { "environment_assurance": { "enum": ["DEV VERIFIED", "STAGING VERIFIED", "PRODUCTION OBSERVED"] } },
+                  "required": ["environment_assurance"]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "current_rating": {
+                  "type": "object",
+                  "properties": { "evidence_ref": { "type": "string", "minLength": 1 } }
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": { "current_rating": { "type": "object", "properties": { "review_assurance": { "const": "NOT REVIEWED" } }, "required": ["review_assurance"] } }
+            },
+            "then": {
+              "properties": { "current_rating": { "type": "object", "properties": { "review_evidence_ref": { "type": "null" } } } }
+            },
+            "else": {
+              "properties": { "current_rating": { "type": "object", "properties": { "review_evidence_ref": { "type": "string", "minLength": 1 } } } }
+            }
           }
         ]
       }

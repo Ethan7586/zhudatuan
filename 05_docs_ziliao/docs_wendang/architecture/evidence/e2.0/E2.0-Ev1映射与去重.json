@@ -1,6 +1,6 @@
 {
   "schema_version": "e2.0-legacy-mapping-v1",
-  "profile_version": "2.0.0-baseline",
+  "profile_version": "2.0.0",
   "non_gating": true,
   "legacy_profile": {
     "name": "E v1 内部架构验证标准",
@@ -15,6 +15,44 @@
     "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点实体总验收-E05-E12-2026-09-12.json"
   ],
   "families": [
+    {
+      "family_id": "NODE_MODEL_TOPOLOGY",
+      "title": "节点模型与拓扑",
+      "legacy_ids": ["E01", "E02"],
+      "mappings": [
+        {
+          "legacy_id": "E01",
+          "e2_claim_id": "E2-TOPO-001",
+          "unique_measurement": "Three peer nodes sharing one model/build/artifact while preserving node, Realm, Membership and Scope isolation",
+          "deduplication_rule": "E01's three-node behavioral sample cannot substitute for E11's 1/10/100/1000 scale curve."
+        },
+        {
+          "legacy_id": "E02",
+          "e2_claim_id": "E2-TOPO-002",
+          "unique_measurement": "One L0-L11 data-driven chain, closure correctness, relation version history and the L12 boundary",
+          "deduplication_rule": "E02 topology and closure facts do not prove E07 lifecycle continuity through opening or upgrade."
+        }
+      ]
+    },
+    {
+      "family_id": "AUTHORIZATION_AND_IDENTITY",
+      "title": "授权交集与身份隔离",
+      "legacy_ids": ["E03", "E04"],
+      "mappings": [
+        {
+          "legacy_id": "E03",
+          "e2_claim_id": "E2-AUTH-001",
+          "unique_measurement": "Complete 32-row five-factor truth table across page, API, task and trusted service/provider surfaces",
+          "deduplication_rule": "E12 invalid-context and forged-authority cases cannot replace E03's complete truth table or four-surface equality evidence."
+        },
+        {
+          "legacy_id": "E04",
+          "e2_claim_id": "E2-ID-001",
+          "unique_measurement": "Shared-credential discovery with separate Account, Membership, Session, lineage, Scope, authority and assets across three Realms",
+          "deduplication_rule": "E12's general authority-isolation matrix cannot replace E04's credential discovery and Realm-switch session-transition evidence."
+        }
+      ]
+    },
     {
       "family_id": "RELEASE_AND_SCALE",
       "title": "发布与规模",

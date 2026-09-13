@@ -26,7 +26,7 @@
   ],
   "properties": {
     "$schema": { "type": "string" },
-    "schema_version": { "const": "e2.0-evidence-v1" },
+    "schema_version": { "const": "e2.0-evidence-v2" },
     "evidence_id": { "type": "string", "pattern": "^E2-EVID-[A-Z0-9._-]+$" },
     "profile_version": { "type": "string", "pattern": "^2\\.[0-9]+\\.[0-9]+(-[a-z0-9.-]+)?$" },
     "non_gating": { "const": true },
@@ -39,13 +39,14 @@
     "criteria": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["criteria_id", "path", "sha256", "locked_at", "locked_before_execution"],
+      "required": ["criteria_id", "path", "sha256", "locked_at", "locked_before_execution", "test_designer"],
       "properties": {
         "criteria_id": { "type": "string" },
         "path": { "type": "string" },
         "sha256": { "$ref": "#/$defs/sha256" },
         "locked_at": { "type": "string", "format": "date-time" },
-        "locked_before_execution": { "const": true }
+        "locked_before_execution": { "const": true },
+        "test_designer": { "$ref": "#/$defs/actor" }
       }
     },
     "test_basis_refs": {
@@ -241,12 +242,18 @@
     "assessment": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["claim_outcome", "environment_assurance", "review_assurance", "alignment_depth", "rationale", "gaps"],
+      "required": ["claim_outcome", "environment_assurance", "review_assurance", "alignment_depth", "applicability_ref", "rationale", "gaps"],
       "properties": {
         "claim_outcome": { "enum": ["MET", "NOT MET", "UNKNOWN", "NOT APPLICABLE"] },
         "environment_assurance": { "enum": ["DEV VERIFIED", "STAGING VERIFIED", "PRODUCTION OBSERVED", "NOT ESTABLISHED"] },
         "review_assurance": { "enum": ["NOT REVIEWED", "INTERNAL PEER REVIEWED", "INDEPENDENTLY REVIEWED"] },
         "alignment_depth": { "enum": ["QUALITY_MODEL_ALIGNMENT", "PROCESS_ALIGNMENT", "EXACT_OPEN_REQUIREMENT_MAPPING", "PROJECT_CUSTOM"] },
+        "applicability_ref": {
+          "oneOf": [
+            { "type": "string", "minLength": 1 },
+            { "type": "null" }
+          ]
+        },
         "rationale": { "type": "string", "minLength": 1 },
         "gaps": { "type": "array", "items": { "type": "string" } }
       }
@@ -254,7 +261,17 @@
     "review": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["reviewer", "reviewed_at", "independence_statement", "recomputation_artifacts"],
+      "required": [
+        "reviewer",
+        "reviewed_at",
+        "independence_statement",
+        "review_completed",
+        "same_as_executor",
+        "same_as_test_designer",
+        "external_to_delivery_team",
+        "conflicts_disclosed",
+        "recomputation_artifacts"
+      ],
       "properties": {
         "reviewer": {
           "oneOf": [
@@ -264,7 +281,12 @@
         },
         "reviewed_at": { "type": ["string", "null"], "format": "date-time" },
         "independence_statement": { "type": ["string", "null"] },
-        "recomputation_artifacts": { "type": "array", "items": { "type": "string" } }
+        "review_completed": { "type": "boolean" },
+        "same_as_executor": { "type": ["boolean", "null"] },
+        "same_as_test_designer": { "type": ["boolean", "null"] },
+        "external_to_delivery_team": { "type": ["boolean", "null"] },
+        "conflicts_disclosed": { "type": ["boolean", "null"] },
+        "recomputation_artifacts": { "type": "array", "items": { "type": "string", "minLength": 1 } }
       }
     },
     "supersedes": { "type": ["string", "null"] }
@@ -275,7 +297,7 @@
         "properties": {
           "assessment": {
             "type": "object",
-            "properties": { "claim_outcome": { "type": "string", "const": "MET" } },
+            "properties": { "claim_outcome": { "enum": ["MET", "NOT MET"] } },
             "required": ["claim_outcome"]
           }
         }
@@ -286,6 +308,118 @@
             "type": "object",
             "properties": {
               "environment_assurance": { "type": "string", "not": { "const": "NOT ESTABLISHED" } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assessment": {
+            "type": "object",
+            "properties": { "claim_outcome": { "const": "NOT APPLICABLE" } },
+            "required": ["claim_outcome"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "assessment": {
+            "type": "object",
+            "properties": {
+              "environment_assurance": { "const": "NOT ESTABLISHED" },
+              "applicability_ref": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "assessment": {
+            "type": "object",
+            "properties": { "applicability_ref": { "type": "null" } }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "environment": { "type": "object", "properties": { "kind": { "const": "DEV" } }, "required": ["kind"] } }
+      },
+      "then": {
+        "properties": { "assessment": { "type": "object", "properties": { "environment_assurance": { "enum": ["DEV VERIFIED", "NOT ESTABLISHED"] } } } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "environment": { "type": "object", "properties": { "kind": { "const": "STAGING" } }, "required": ["kind"] } }
+      },
+      "then": {
+        "properties": { "assessment": { "type": "object", "properties": { "environment_assurance": { "enum": ["STAGING VERIFIED", "NOT ESTABLISHED"] } } } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "environment": { "type": "object", "properties": { "kind": { "const": "PRODUCTION" } }, "required": ["kind"] } }
+      },
+      "then": {
+        "properties": { "assessment": { "type": "object", "properties": { "environment_assurance": { "enum": ["PRODUCTION OBSERVED", "NOT ESTABLISHED"] } } } }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assessment": {
+            "type": "object",
+            "properties": { "review_assurance": { "const": "NOT REVIEWED" } },
+            "required": ["review_assurance"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "review": {
+            "type": "object",
+            "properties": {
+              "reviewer": { "type": "null" },
+              "reviewed_at": { "type": "null" },
+              "independence_statement": { "type": "null" },
+              "review_completed": { "const": false },
+              "same_as_executor": { "type": "null" },
+              "same_as_test_designer": { "type": "null" },
+              "external_to_delivery_team": { "type": "null" },
+              "conflicts_disclosed": { "type": "null" },
+              "recomputation_artifacts": { "type": "array", "maxItems": 0 }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "assessment": {
+            "type": "object",
+            "properties": { "review_assurance": { "const": "INTERNAL PEER REVIEWED" } },
+            "required": ["review_assurance"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "review": {
+            "type": "object",
+            "properties": {
+              "reviewer": { "$ref": "#/$defs/actor" },
+              "reviewed_at": { "type": "string", "format": "date-time" },
+              "independence_statement": { "type": "string", "minLength": 1 },
+              "review_completed": { "const": true },
+              "same_as_executor": { "const": false },
+              "same_as_test_designer": { "const": false },
+              "external_to_delivery_team": { "type": "boolean" },
+              "conflicts_disclosed": { "const": true },
+              "recomputation_artifacts": { "type": "array", "minItems": 1 }
             }
           }
         }
@@ -308,7 +442,13 @@
             "properties": {
               "reviewer": { "$ref": "#/$defs/actor" },
               "reviewed_at": { "type": "string", "format": "date-time" },
-              "independence_statement": { "type": "string", "minLength": 1 }
+              "independence_statement": { "type": "string", "minLength": 1 },
+              "review_completed": { "const": true },
+              "same_as_executor": { "const": false },
+              "same_as_test_designer": { "const": false },
+              "external_to_delivery_team": { "const": true },
+              "conflicts_disclosed": { "const": true },
+              "recomputation_artifacts": { "type": "array", "minItems": 1 }
             }
           }
         }

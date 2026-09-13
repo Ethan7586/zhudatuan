@@ -15,6 +15,7 @@
     "claim_ids",
     "rating",
     "evidence_refs",
+    "review_evidence_refs",
     "tailoring_refs",
     "gaps",
     "issuer",
@@ -24,7 +25,7 @@
   ],
   "properties": {
     "$schema": { "type": "string" },
-    "schema_version": { "const": "e2.0-conformity-statement-v1" },
+    "schema_version": { "const": "e2.0-conformity-statement-v2" },
     "statement_id": { "type": "string", "pattern": "^E2-STATEMENT-[A-Z0-9._-]+$" },
     "template": { "type": "boolean" },
     "profile_id": { "const": "E2.0" },
@@ -43,8 +44,9 @@
         "alignment_depth": { "enum": ["QUALITY_MODEL_ALIGNMENT", "PROCESS_ALIGNMENT", "EXACT_OPEN_REQUIREMENT_MAPPING", "PROJECT_CUSTOM"] }
       }
     },
-    "evidence_refs": { "type": "array", "items": { "type": "string" } },
-    "tailoring_refs": { "type": "array", "items": { "type": "string" } },
+    "evidence_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "review_evidence_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "tailoring_refs": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "gaps": { "type": "array", "items": { "type": "string" } },
     "issuer": {
       "oneOf": [
@@ -54,7 +56,7 @@
     },
     "reviewer": {
       "oneOf": [
-        { "$ref": "#/$defs/signatory" },
+        { "$ref": "#/$defs/reviewerSignatory" },
         { "type": "null" }
       ]
     },
@@ -65,16 +67,26 @@
   },
   "allOf": [
     {
-      "if": {
+      "if": { "properties": { "template": { "const": true } }, "required": ["template"] },
+      "then": {
         "properties": {
+          "issued_at": { "type": "null" },
+          "claim_ids": { "type": "array", "maxItems": 0 },
           "rating": {
             "type": "object",
-            "properties": { "review_assurance": { "type": "string", "const": "INDEPENDENTLY REVIEWED" } },
-            "required": ["review_assurance"]
-          }
+            "properties": {
+              "claim_outcome": { "const": "UNKNOWN" },
+              "environment_assurance": { "const": "NOT ESTABLISHED" },
+              "review_assurance": { "const": "NOT REVIEWED" }
+            }
+          },
+          "evidence_refs": { "type": "array", "maxItems": 0 },
+          "review_evidence_refs": { "type": "array", "maxItems": 0 },
+          "tailoring_refs": { "type": "array", "maxItems": 0 },
+          "issuer": { "type": "null" },
+          "reviewer": { "type": "null" }
         }
-      },
-      "then": { "properties": { "reviewer": { "$ref": "#/$defs/signatory" } } }
+      }
     },
     {
       "if": { "properties": { "template": { "type": "boolean", "const": false } }, "required": ["template"] },
@@ -82,8 +94,101 @@
         "properties": {
           "issued_at": { "type": "string", "format": "date-time" },
           "issuer": { "$ref": "#/$defs/signatory" },
-          "claim_ids": { "type": "array", "minItems": 1 },
+          "claim_ids": { "type": "array", "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "rating": { "type": "object", "properties": { "claim_outcome": { "enum": ["MET", "NOT MET"] } }, "required": ["claim_outcome"] } }
+      },
+      "then": {
+        "properties": {
+          "rating": { "type": "object", "properties": { "environment_assurance": { "not": { "const": "NOT ESTABLISHED" } } } },
           "evidence_refs": { "type": "array", "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "rating": { "type": "object", "properties": { "claim_outcome": { "const": "NOT APPLICABLE" } }, "required": ["claim_outcome"] } }
+      },
+      "then": {
+        "properties": {
+          "rating": { "type": "object", "properties": { "environment_assurance": { "const": "NOT ESTABLISHED" } } },
+          "tailoring_refs": { "type": "array", "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rating": {
+            "type": "object",
+            "properties": { "environment_assurance": { "enum": ["DEV VERIFIED", "STAGING VERIFIED", "PRODUCTION OBSERVED"] } },
+            "required": ["environment_assurance"]
+          }
+        }
+      },
+      "then": {
+        "properties": { "evidence_refs": { "type": "array", "minItems": 1 } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "rating": { "type": "object", "properties": { "review_assurance": { "const": "NOT REVIEWED" } }, "required": ["review_assurance"] } }
+      },
+      "then": {
+        "properties": {
+          "reviewer": { "type": "null" },
+          "review_evidence_refs": { "type": "array", "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "rating": { "type": "object", "properties": { "review_assurance": { "const": "INTERNAL PEER REVIEWED" } }, "required": ["review_assurance"] } }
+      },
+      "then": {
+        "properties": {
+          "reviewer": {
+            "allOf": [
+              { "$ref": "#/$defs/reviewerSignatory" },
+              {
+                "type": "object",
+                "properties": {
+                  "same_as_executor": { "const": false },
+                  "same_as_test_designer": { "const": false },
+                  "conflicts_disclosed": { "const": true }
+                }
+              }
+            ]
+          },
+          "review_evidence_refs": { "type": "array", "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "rating": { "type": "object", "properties": { "review_assurance": { "const": "INDEPENDENTLY REVIEWED" } }, "required": ["review_assurance"] } }
+      },
+      "then": {
+        "properties": {
+          "reviewer": {
+            "allOf": [
+              { "$ref": "#/$defs/reviewerSignatory" },
+              {
+                "type": "object",
+                "properties": {
+                  "same_as_executor": { "const": false },
+                  "same_as_test_designer": { "const": false },
+                  "external_to_delivery_team": { "const": true },
+                  "conflicts_disclosed": { "const": true }
+                }
+              }
+            ]
+          },
+          "review_evidence_refs": { "type": "array", "minItems": 1 }
         }
       }
     }
@@ -99,6 +204,32 @@
         "role": { "type": "string", "minLength": 1 },
         "relationship_to_test_item": { "type": "string", "minLength": 1 },
         "signed_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "reviewerSignatory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name_or_id",
+        "organization",
+        "role",
+        "relationship_to_test_item",
+        "signed_at",
+        "same_as_executor",
+        "same_as_test_designer",
+        "external_to_delivery_team",
+        "conflicts_disclosed"
+      ],
+      "properties": {
+        "name_or_id": { "type": "string", "minLength": 1 },
+        "organization": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "minLength": 1 },
+        "relationship_to_test_item": { "type": "string", "minLength": 1 },
+        "signed_at": { "type": "string", "format": "date-time" },
+        "same_as_executor": { "type": "boolean" },
+        "same_as_test_designer": { "type": "boolean" },
+        "external_to_delivery_team": { "type": "boolean" },
+        "conflicts_disclosed": { "type": "boolean" }
       }
     }
   }
