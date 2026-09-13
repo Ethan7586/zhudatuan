@@ -937,13 +937,17 @@
       "executor_role": "Scale test operator",
       "reviewer_role": "Reviewer independent of generator and counting code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "Formal E11 execution at clean source SHA 8630eabaae848ed3757bc7f252fb1fb2947af75f replayed all 301 migrations in disposable PostgreSQL 17 and ran twelve locked scale/topology scenarios covering 3,333 generated-node and 36 sovereign-control observations. The independent recount found the same 2,010 business-source files and digest at all four scales, one shared build and artifact identity, zero node-specific source/build or Hosted per-node infrastructure events, and zero resolution/isolation differences; all three negative oracle mutations were detected.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/E2.0-E11-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["Independent source/build/event recount under E2.0"]
+        "gaps": [
+          "No stable separately managed staging replay has been performed.",
+          "No authorized production infrastructure audit-log observation has been performed.",
+          "No reviewer independent of the E11 generator, counting code and execution has recomputed and signed the evidence."
+        ]
       }
     },
     {

@@ -1,0 +1,211 @@
+{
+  "schema_version": "e11-independent-scale-recount-v1",
+  "oracle_id": "E2-ORACLE-E11-SCALE-COUNTS",
+  "executed_at": "2026-09-13T19:26:08.880Z",
+  "reads_test_program_pass": false,
+  "input_artifacts": [
+    {
+      "path": "E2.0-E11-正式重测判据-2026-09-14.json",
+      "sha256": "sha256:19c21f74879504d6475e780eee10aa3f8c091b0fd6c3fcdafcf6d509a13d9a8f",
+      "size_bytes": 6800
+    },
+    {
+      "path": "scale-input-manifest.json",
+      "sha256": "sha256:99f892a536d7e05eda46766ca929030d36b69c1ba01e86d815cd4d11cd7f4398",
+      "size_bytes": 2511300
+    },
+    {
+      "path": "scale-code-and-build-counts.json",
+      "sha256": "sha256:6a6928957c59f41ceb62c21911693582ee00da342c1ff013c79d0588c9adc25a",
+      "size_bytes": 1965005
+    },
+    {
+      "path": "scale-hosted-operation-counts.json",
+      "sha256": "sha256:e1998789387fc71343605bd71240c4ea625df5ac2300e0e1feab8245363a64eb",
+      "size_bytes": 3604
+    },
+    {
+      "path": "scale-context-resolution-metrics.json",
+      "sha256": "sha256:c76cfc591b1cec7313ed27f66a58b7306a912fcc79722c6405fcb994dd7be58f",
+      "size_bytes": 12763895
+    },
+    {
+      "path": "scale-isolation-results.json",
+      "sha256": "sha256:592869adffbe637ae478d3244273c4a3ffc05d4fdfb8c93a61b318d5e1855e71",
+      "size_bytes": 9630
+    },
+    {
+      "path": "environment.json",
+      "sha256": "sha256:f4959932d70b534b33ed9d3e96145367613760e5fbcecd46dc18598b3b7058d3",
+      "size_bytes": 1920
+    }
+  ],
+  "missing_items": [],
+  "violations": [],
+  "negative_probes": [
+    {
+      "probe_id": "generated-node-source",
+      "expected_violation": [
+        "GENERATED_NODE_SOURCE"
+      ],
+      "detected": true,
+      "detected_codes": [
+        "GENERATED_NODE_SOURCE"
+      ]
+    },
+    {
+      "probe_id": "build-and-infrastructure-growth",
+      "expected_violation": [
+        "BUILD_PROVENANCE_MISMATCH",
+        "INFRA_EVENT_COUNT"
+      ],
+      "detected": true,
+      "detected_codes": [
+        "BUILD_PROVENANCE_MISMATCH",
+        "INFRA_EVENT_COUNT"
+      ]
+    },
+    {
+      "probe_id": "cross-line-context-resolution",
+      "expected_violation": [
+        "CONTEXT_FIELD_MISMATCH"
+      ],
+      "detected": true,
+      "detected_codes": [
+        "CONTEXT_FIELD_MISMATCH"
+      ]
+    }
+  ],
+  "latency_observations": [
+    {
+      "kind": "provisioning",
+      "sample_count": 3333,
+      "minimum_ms": 1.032,
+      "p50_ms": 1.993,
+      "p95_ms": 3.749,
+      "maximum_ms": 27.259
+    },
+    {
+      "kind": "resolution",
+      "sample_count": 3333,
+      "minimum_ms": 1.149,
+      "p50_ms": 1.953,
+      "p95_ms": 4.327,
+      "maximum_ms": 136.358
+    },
+    {
+      "kind": "control",
+      "sample_count": 36,
+      "minimum_ms": 1.156,
+      "p50_ms": 1.607,
+      "p95_ms": 2.311,
+      "maximum_ms": 2.794
+    }
+  ],
+  "thresholds": [
+    {
+      "threshold_id": "required_raw_evidence_missing_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "scale_topology_scenario_completeness_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "business_source_file_count_delta",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "business_source_inventory_digest_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "source_inventory_recount_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "node_specific_business_source_file_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "build_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "artifact_identity_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "build_provenance_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "node_specific_build_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "hosted_per_node_infrastructure_action_total",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "hosted_per_node_infrastructure_action_scale_delta",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "context_scope_capability_and_control_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "isolation_aggregate_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "duplicate_node_and_cross_line_row_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "missing_or_malformed_latency_sample_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_oracle_probe_miss_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    }
+  ],
+  "claim_outcome": "MET",
+  "environment_assurance": "DEV VERIFIED"
+}

@@ -1,0 +1,536 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E11-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-SCALE-001"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E11-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E11-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:19c21f74879504d6475e780eee10aa3f8c091b0fd6c3fcdafcf6d509a13d9a8f",
+    "locked_at": "2026-09-13T19:02:03Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e11-acceptance-repair-20260914",
+      "role": "E11 scale test and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E11 fixture orchestration and evidence exporter, executed the disposable database and shared build, and operated the separate raw-evidence oracle; not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-SCALE-001",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E11",
+    "04_tools/scripts/release/build-runtime-bundle.mjs",
+    "01_core_hexin/services/commerce/src/modules/provisioning/01_public_gongkai/HostedNodeProvisioningPort.ts"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T19:25:00.213Z",
+    "completed_at": "2026-09-13T19:26:09.113Z",
+    "executor": {
+      "actor_id": "codex-task-e11-acceptance-repair-20260914",
+      "role": "E11 scale test and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E11 fixture orchestration and evidence exporter, executed the disposable database and shared build, and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e11 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "The generated disposable PostgreSQL password and connection URL were used only in process memory and were not persisted in evidence."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-postgresql17-e11-59a3f187ae344aba",
+    "description": "A newly created PostgreSQL 17 Alpine container replayed the complete migration chain and executed twelve locked E11 scale/topology scenarios; one local shared identity-api runtime artifact was built for all scenarios.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Disposable Docker container zhudatuan-e11-59a3f187ae344aba; synthetic E11 nodes only; each scenario rolled back and the container was removed after execution.",
+    "real_customer_data": false,
+    "production_impact": "None. No production service, database, DNS provider, payment provider, supplier or customer record was contacted.",
+    "differences_from_production": [
+      "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+      "Synthetic Hosted and sovereign-control nodes rather than customer traffic.",
+      "Local build provenance and operation observation rather than production deployment or cloud audit logs.",
+      "No stable staging environment identity and no production observation."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "8630eabaae848ed3757bc7f252fb1fb2947af75f",
+    "test_item_shas": [
+      "8630eabaae848ed3757bc7f252fb1fb2947af75f"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "postgres:17-alpine sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73; 301 migrations; four scales; three topologies; 12 scenarios; 3333 generated-node observations; one shared identity-api build.",
+    "digest": "sha256:c5bf0376791b6aeb8cc69f6174fc8f6a8e323212c98009cd19f73f69bef8112d",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E11-REQUIRED-RAW-EVIDENCE-MISSING-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-SCALE-TOPOLOGY-SCENARIO-COMPLETENESS-MISMATCH-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-BUSINESS-SOURCE-FILE-COUNT-DELTA",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-BUSINESS-SOURCE-INVENTORY-DIGEST-CHANGE-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-SOURCE-INVENTORY-RECOUNT-MISMATCH-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-NODE-SPECIFIC-BUSINESS-SOURCE-FILE-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-BUILD-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-ARTIFACT-IDENTITY-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-BUILD-PROVENANCE-MISMATCH-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-NODE-SPECIFIC-BUILD-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-HOSTED-PER-NODE-INFRASTRUCTURE-ACTION-TOTAL",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-HOSTED-PER-NODE-INFRASTRUCTURE-ACTION-SCALE-DELTA",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-CONTEXT-SCOPE-CAPABILITY-AND-CONTROL-MISMATCH-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-ISOLATION-AGGREGATE-MISMATCH-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-DUPLICATE-NODE-AND-CROSS-LINE-ROW-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-MISSING-OR-MALFORMED-LATENCY-SAMPLE-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    },
+    {
+      "observation_id": "OBS-E11-NEGATIVE-ORACLE-PROBE-MISS-COUNT",
+      "source": "scale-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:26:08.880Z",
+      "notes": "Recomputed from the six required raw artifacts; runner PASS/status fields were not read. Latency magnitude was reported separately and had no acceptance threshold."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-input-manifest.json",
+      "media_type": "application/json",
+      "sha256": "sha256:99f892a536d7e05eda46766ca929030d36b69c1ba01e86d815cd4d11cd7f4398",
+      "size_bytes": 2511300,
+      "role": "Locked four-scale by three-topology input descriptors and sovereign controls"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-code-and-build-counts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:6a6928957c59f41ceb62c21911693582ee00da342c1ff013c79d0588c9adc25a",
+      "size_bytes": 1965005,
+      "role": "Per-scale business-source inventories and one actual shared runtime build provenance"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-hosted-operation-counts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:e1998789387fc71343605bd71240c4ea625df5ac2300e0e1feab8245363a64eb",
+      "size_bytes": 3604,
+      "role": "Hosted database operations and empty per-node infrastructure event ledger"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-context-resolution-metrics.json",
+      "media_type": "application/json",
+      "sha256": "sha256:c76cfc591b1cec7313ed27f66a58b7306a912fcc79722c6405fcb994dd7be58f",
+      "size_bytes": 12763895,
+      "role": "Raw per-node provisioning, context, scope, capability and latency observations"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-isolation-results.json",
+      "media_type": "application/json",
+      "sha256": "sha256:592869adffbe637ae478d3244273c4a3ffc05d4fdfb8c93a61b318d5e1855e71",
+      "size_bytes": 9630,
+      "role": "Database cardinality, closure, line isolation, duplicate and rollback recounts"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-independent-recount.json",
+      "media_type": "application/json",
+      "sha256": "sha256:ed7c67a81098ebf55c97939d8e9aeed0d3ab111f1ae41e85a16abf88e0da3e34",
+      "size_bytes": 5170,
+      "role": "Independent source/build/event/resolution recount and negative mutation probes"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:f4959932d70b534b33ed9d3e96145367613760e5fbcecd46dc18598b3b7058d3",
+      "size_bytes": 1920,
+      "role": "Disposable execution environment identity"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/migration-replay.txt",
+      "media_type": "text/plain",
+      "sha256": "sha256:e9ab691c84de1fae8d2038ac6ee3e04c70cf23a16a0c6e57ecd79ce60b5d0472",
+      "size_bytes": 69,
+      "role": "Complete migration replay completion output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:0c26d4650103855d32e8788e5b591a114cb261f0a0a6d9c13124e1f1123dc11f",
+      "size_bytes": 1532,
+      "role": "Exact commands, source SHA, execution totals and cleanup record"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E11-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:19c21f74879504d6475e780eee10aa3f8c091b0fd6c3fcdafcf6d509a13d9a8f",
+      "size_bytes": 6800,
+      "role": "Pre-execution locked E11 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E11-SCALE-COUNTS",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Independently recount source inventory entries and digests at every scale, actual build invocations and artifact identities, Hosted per-node infrastructure events, scenario and topology completeness, per-node context/scope/capability outputs, sovereign controls, isolation aggregates and latency sample presence. Mutate copies to prove detection of generated node source, build/event growth and cross-line resolution; do not consume runner PASS fields.",
+    "exact_invocation": "node 04_tools/scripts/audit/e11-scale.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E11-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-independent-recount.json",
+    "evaluator": {
+      "actor_id": "codex-task-e11-acceptance-repair-20260914",
+      "role": "E11 scale test and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E11 fixture orchestration and evidence exporter, executed the disposable database and shared build, and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E11-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-input-manifest.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-code-and-build-counts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-hosted-operation-counts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-context-resolution-metrics.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-isolation-results.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "required_raw_evidence_missing_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "scale_topology_scenario_completeness_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "business_source_file_count_delta",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "business_source_inventory_digest_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "source_inventory_recount_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "node_specific_business_source_file_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "build_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "artifact_identity_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "build_provenance_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "node_specific_build_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "hosted_per_node_infrastructure_action_total",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "hosted_per_node_infrastructure_action_scale_delta",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "context_scope_capability_and_control_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "isolation_aggregate_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "duplicate_node_and_cross_line_row_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "missing_or_malformed_latency_sample_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_oracle_probe_miss_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "clean checkout of the recorded source SHA"
+    ],
+    "steps": [
+      "Check out 8630eabaae848ed3757bc7f252fb1fb2947af75f.",
+      "Run npm run evidence:e11 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01.",
+      "Read scale-independent-recount.json and independently verify the listed artifact hashes."
+    ],
+    "expected_raw_observations": [
+      "required raw evidence missing count = 0",
+      "scale/topology scenario completeness mismatch count = 0",
+      "business source file count delta from 1 to 1000 nodes = 0",
+      "business source inventory digest changes = 0",
+      "node-specific business source file count = 0",
+      "build count = 1",
+      "artifact identity count = 1",
+      "node-specific build count = 0",
+      "Hosted per-node infrastructure action total and scale delta = 0",
+      "context, scope, capability and sovereign control mismatch count = 0",
+      "duplicate node and cross-line closure/scope row count = 0",
+      "missing or malformed latency sample count = 0",
+      "negative oracle probe miss count = 0"
+    ],
+    "cleanup": "The runner rolls back every scenario, removes the disposable PostgreSQL container in a finally block, and deletes its temporary shared build output."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
+    "rationale": "All twelve scale/topology scenarios were complete; source count and digest stayed constant, one shared artifact identity served all scenarios, Hosted per-node infrastructure events remained zero, and every generated/control node reconciled without duplicate or cross-line rows. All three negative oracle mutations were detected.",
+    "gaps": [
+      "No stable separately managed staging replay has been performed.",
+      "No authorized production infrastructure audit-log observation has been performed.",
+      "No reviewer independent of the E11 generator, counting code and execution has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}

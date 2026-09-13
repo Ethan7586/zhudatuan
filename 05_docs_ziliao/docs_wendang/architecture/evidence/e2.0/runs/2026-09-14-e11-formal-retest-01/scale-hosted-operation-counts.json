@@ -1,0 +1,114 @@
+{
+  "schema_version": "e11-scale-hosted-operation-counts-v1",
+  "captured_at": "2026-09-13T19:26:01.763Z",
+  "observer_boundary": {
+    "observed_categories": [
+      "cloud resource creation",
+      "runtime deployment",
+      "DNS mutation",
+      "external payment/provider provisioning"
+    ],
+    "interpretation": "Hosted node creation in every scenario invoked only organization.provision_hosted_node(jsonb). Docker startup, one migration replay and one shared runtime build are shared test-environment operations, not per-node Hosted infrastructure actions."
+  },
+  "shared_environment_operations": [
+    {
+      "kind": "disposable-postgresql-start",
+      "count": 1
+    },
+    {
+      "kind": "complete-migration-replay",
+      "count": 1
+    },
+    {
+      "kind": "shared-identity-api-runtime-build",
+      "count": 1
+    }
+  ],
+  "per_node_infrastructure_events": [],
+  "scenarios": [
+    {
+      "scenario_id": "scale-0001-peer-horizontal",
+      "scale": 1,
+      "topology_id": "peer-horizontal",
+      "hosted_database_provision_call_count": 1,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-0001-multi-line-horizontal",
+      "scale": 1,
+      "topology_id": "multi-line-horizontal",
+      "hosted_database_provision_call_count": 1,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-0001-l0-l11-vertical-mixed",
+      "scale": 1,
+      "topology_id": "l0-l11-vertical-mixed",
+      "hosted_database_provision_call_count": 1,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-0010-peer-horizontal",
+      "scale": 10,
+      "topology_id": "peer-horizontal",
+      "hosted_database_provision_call_count": 10,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-0010-multi-line-horizontal",
+      "scale": 10,
+      "topology_id": "multi-line-horizontal",
+      "hosted_database_provision_call_count": 10,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-0010-l0-l11-vertical-mixed",
+      "scale": 10,
+      "topology_id": "l0-l11-vertical-mixed",
+      "hosted_database_provision_call_count": 10,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-0100-peer-horizontal",
+      "scale": 100,
+      "topology_id": "peer-horizontal",
+      "hosted_database_provision_call_count": 100,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-0100-multi-line-horizontal",
+      "scale": 100,
+      "topology_id": "multi-line-horizontal",
+      "hosted_database_provision_call_count": 100,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-0100-l0-l11-vertical-mixed",
+      "scale": 100,
+      "topology_id": "l0-l11-vertical-mixed",
+      "hosted_database_provision_call_count": 100,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-1000-peer-horizontal",
+      "scale": 1000,
+      "topology_id": "peer-horizontal",
+      "hosted_database_provision_call_count": 1000,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-1000-multi-line-horizontal",
+      "scale": 1000,
+      "topology_id": "multi-line-horizontal",
+      "hosted_database_provision_call_count": 1000,
+      "per_node_infrastructure_events": []
+    },
+    {
+      "scenario_id": "scale-1000-l0-l11-vertical-mixed",
+      "scale": 1000,
+      "topology_id": "l0-l11-vertical-mixed",
+      "hosted_database_provision_call_count": 1000,
+      "per_node_infrastructure_events": []
+    }
+  ]
+}
