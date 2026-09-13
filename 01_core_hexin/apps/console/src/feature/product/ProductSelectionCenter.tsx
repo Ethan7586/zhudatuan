@@ -30,6 +30,13 @@ export function ProductSelectionCenter({ rows, query, selected, canSelect, pendi
   const available = visible.filter(({ selection }) => selection?.selected === false);
   const visibleSelected = available.filter(({ id }) => selected.has(id));
   const allSelected = available.length > 0 && available.every(({ id }) => selected.has(id));
+  const marketSales = sumKnown(candidates.map(({ selection }) => selection?.marketSales30d));
+  const mallSales = sumKnown(candidates.map(({ selection }) => selection?.mallSales30d));
+  const averageClickRate = averageKnown(candidates.map(({ selection }) => selection?.clickThroughRateBps));
+  const pricedCandidates = candidates.filter(({ selection }) => selection?.peerLowestPriceMinor != null
+    && selection.suggestedRetailMinor != null);
+  const priceAdvantage = pricedCandidates.length === 0 ? null : pricedCandidates.filter(({ selection }) =>
+    selection!.suggestedRetailMinor! <= selection!.peerLowestPriceMinor!).length;
 
   return (
     <section className="selectioncenter" aria-labelledby="selectioncentertitle">
@@ -37,13 +44,13 @@ export function ProductSelectionCenter({ rows, query, selected, canSelect, pendi
         <div>
           <span className="selectioneyebrow">CURATED COMMERCE</span>
           <h2 id="selectioncentertitle">找到值得卖的商品</h2>
-          <p>从合作供应链与品牌商品中快速筛选，一次选入自己的商品目录。</p>
+          <p>用市场销量、价格优势和本店经营数据，快速判断什么值得选。</p>
         </div>
-        <dl aria-label="当前候选商品概况">
-          <div><dt>本页候选</dt><dd>{candidates.length}</dd></div>
-          <div><dt>合作供应链</dt><dd>{suppliers.size}</dd></div>
-          <div><dt>品牌</dt><dd>{brands.size}</dd></div>
-          <div><dt>待选入</dt><dd>{candidates.filter(({ selection }) => !selection?.selected).length}</dd></div>
+        <dl aria-label="当前选品经营数据">
+          <div><dt>市场近 30 天销量</dt><dd>{metricCount(marketSales)}</dd></div>
+          <div><dt>本店选品成交</dt><dd>{metricCount(mallSales)}</dd></div>
+          <div><dt>平均点击率</dt><dd>{rate(averageClickRate)}</dd></div>
+          <div><dt>价格优势商品</dt><dd>{metricCount(priceAdvantage)}</dd></div>
         </dl>
       </header>
 
@@ -116,7 +123,10 @@ function SelectionCard({ row, checked, canSelect, pending, onToggle, onSelect }:
           <img src={row.cover_url} alt="" loading="lazy" decoding="async"
             onError={(event) => { event.currentTarget.hidden = true; }} />
         )}
-        <span>{detail.sourceChannel}</span>
+        <span className="selectionsource">{detail.sourceChannel}</span>
+        {detail.recommendationScore == null ? null : <span className="selectionscore">
+          推荐 {detail.recommendationScore}{detail.salesGrowthBps == null ? null : <em>+{rate(detail.salesGrowthBps)}</em>}
+        </span>}
         {detail.selected ? <strong><ProductIcon name="check" />已在商品目录</strong> : (
           <label><input type="checkbox" checked={checked} onChange={onToggle} aria-label={`选择 ${row.title}`} /></label>
         )}
@@ -130,6 +140,12 @@ function SelectionCard({ row, checked, canSelect, pending, onToggle, onSelect }:
           <div><dt>建议售价</dt><dd>{money(detail.suggestedRetailMinor)}</dd></div>
           <div><dt>预计毛利</dt><dd className="selectionmargin">{margin}</dd></div>
         </dl>
+        <div className="selectionsignals" aria-label="商品选品数据">
+          <div><span>市场销量</span><strong className="selectionhot">{metricCount(detail.marketSales30d)}</strong></div>
+          <div><span>同款低价</span><strong>{money(detail.peerLowestPriceMinor)}</strong></div>
+          <div><span>本店销量</span><strong>{metricCount(detail.mallSales30d)}</strong></div>
+          <div><span>点击率</span><strong className="selectiongood">{rate(detail.clickThroughRateBps)}</strong></div>
+        </div>
         <div className="selectioncardmeta"><span>{detail.supplierName}</span><span>可用库存 {stock(detail.availableStock)}</span></div>
         <button type="button" disabled={detail.selected || !canSelect || pending} onClick={onSelect}>
           {detail.selected ? <><ProductIcon name="check" />已选入</> : <><ProductIcon name="plus" />选入商品目录</>}
@@ -139,8 +155,8 @@ function SelectionCard({ row, checked, canSelect, pending, onToggle, onSelect }:
   );
 }
 
-function money(value: number | null): string {
-  return value === null ? '待确认' : new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(value / 100);
+function money(value: number | null | undefined): string {
+  return value == null ? '待同步' : new Intl.NumberFormat('zh-CN', { style: 'currency', currency: 'CNY' }).format(value / 100);
 }
 
 function stock(value: number | null): string {
@@ -150,4 +166,24 @@ function stock(value: number | null): string {
 function grossMargin(cost: number | null, retail: number | null): string {
   if (cost === null || retail === null || retail <= 0) return '待计算';
   return `${Math.max(0, Math.round(((retail - cost) / retail) * 100))}%`;
+}
+
+function sumKnown(values: readonly (number | null | undefined)[]): number | null {
+  const known = values.filter((value): value is number => value != null);
+  return known.length === 0 ? null : known.reduce((sum, value) => sum + value, 0);
+}
+
+function averageKnown(values: readonly (number | null | undefined)[]): number | null {
+  const known = values.filter((value): value is number => value != null);
+  return known.length === 0 ? null : Math.round(known.reduce((sum, value) => sum + value, 0) / known.length);
+}
+
+function metricCount(value: number | null | undefined): string {
+  if (value == null) return '待同步';
+  if (value >= 10_000) return `${new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 1 }).format(value / 10_000)}万`;
+  return new Intl.NumberFormat('zh-CN').format(value);
+}
+
+function rate(value: number | null | undefined): string {
+  return value == null ? '待同步' : `${new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 1 }).format(value / 100)}%`;
 }

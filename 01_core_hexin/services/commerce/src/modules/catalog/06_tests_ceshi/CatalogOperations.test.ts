@@ -125,6 +125,8 @@ describe('catalog mall command boundaries', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]?.text).toContain("source.scope_id=$1 and source.status='mapped'");
     expect(calls[0]?.text).toContain("'kind','selection-center-v1'");
+    expect(calls[0]?.text).toContain("'marketSales30d'");
+    expect(calls[0]?.text).toContain("'clickThroughRateBps'");
     expect(calls[0]?.text).toContain("'selected',selected.id is not null");
     expect(calls[0]?.values).toEqual(['mall:hongtai', '候选', '', '', '', '', null, null, 51]);
     expect(result).toMatchObject({ status: 200, body: { count: 1, items: [{ id: 'source:1' }] } });

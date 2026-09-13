@@ -137,6 +137,18 @@ export function catalogActions(context: ModuleContext): OperationActions {
               case when product.attributes->>'suggestedRetailMinor'~'^[0-9]+$'
                 then (product.attributes->>'suggestedRetailMinor')::bigint end,offer.compare_minor,offer.amount_minor),
             'availableStock',stock.available,
+            'marketSales30d',case when product.attributes->>'marketSales30d'~'^[0-9]+$'
+              then (product.attributes->>'marketSales30d')::bigint end,
+            'peerLowestPriceMinor',case when product.attributes->>'peerLowestPriceMinor'~'^[0-9]+$'
+              then (product.attributes->>'peerLowestPriceMinor')::bigint end,
+            'mallSales30d',case when product.attributes->>'mallSales30d'~'^[0-9]+$'
+              then (product.attributes->>'mallSales30d')::bigint end,
+            'clickThroughRateBps',case when product.attributes->>'clickThroughRateBps'~'^[0-9]+$'
+              then (product.attributes->>'clickThroughRateBps')::bigint end,
+            'recommendationScore',case when product.attributes->>'recommendationScore'~'^[0-9]+$'
+              then (product.attributes->>'recommendationScore')::bigint end,
+            'salesGrowthBps',case when product.attributes->>'salesGrowthBps'~'^[0-9]+$'
+              then (product.attributes->>'salesGrowthBps')::bigint end,
             'selected',selected.id is not null
           ) selection
           from catalog.sourcelisting source

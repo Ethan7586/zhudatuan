@@ -28,8 +28,10 @@
 .selectioncard[data-selected='true'] { background: #fbfcfe; }
 .selectionmedia { position: relative; display: grid; height: 148px; overflow: hidden; background: linear-gradient(145deg,#f0f4fb,#e5ecf8); place-items: center; }
 .selectionmedia > svg { width: 40px; color: #a7b5ca; }
-.selectionmedia img { width: 100%; height: 100%; object-fit: cover; }
-.selectionmedia > span { position: absolute; top: 10px; left: 10px; max-width: calc(100% - 58px); overflow: hidden; border: 1px solid rgb(255 255 255 / 70%); border-radius: 999px; background: rgb(255 255 255 / 88%); padding: 4px 8px; color: #3f4d63; font-size: 9px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; backdrop-filter: blur(8px); }
+.selectionmedia img { width: 84%; height: 84%; border-radius: 8px; object-fit: contain; }
+.selectionsource { position: absolute; top: 10px; left: 10px; max-width: calc(100% - 58px); overflow: hidden; border: 1px solid rgb(255 255 255 / 70%); border-radius: 999px; background: rgb(255 255 255 / 88%); padding: 4px 8px; color: #3f4d63; font-size: 9px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; backdrop-filter: blur(8px); }
+.selectionscore { position: absolute; bottom: 10px; left: 10px; border-radius: 999px; background: rgb(16 32 59 / 86%); padding: 5px 9px; color: #fff; font-size: 9px; font-weight: 750; }
+.selectionscore em { margin-left: 5px; color: #7ee2af; font-style: normal; }
 .selectionmedia label { position: absolute; top: 10px; right: 10px; display: grid; width: 28px; height: 28px; border: 1px solid rgb(255 255 255 / 80%); border-radius: 8px; background: rgb(255 255 255 / 90%); place-items: center; }
 .selectionmedia label input { width: 15px; height: 15px; accent-color: #2867df; }
 .selectionmedia > strong { position: absolute; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 4px; border-radius: 999px; background: rgb(20 58 143 / 88%); padding: 5px 9px; color: #fff; font-size: 9px; }
@@ -45,6 +47,13 @@
 .selectioncard dt { color: #8a95a6; font-size: 9px; }
 .selectioncard dd { overflow: hidden; margin: 3px 0 0; color: #25324a; font-size: 12px; font-weight: 760; text-overflow: ellipsis; white-space: nowrap; }
 .selectioncard dd.selectionmargin { color: #168053; }
+.selectionsignals { display: grid; margin-top: 12px; border: 1px solid #e7ecf3; border-radius: 8px; background: #f8fafc; padding: 8px; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 6px; }
+.selectionsignals div { min-width: 0; border-right: 1px solid #e2e8f0; padding-right: 5px; }
+.selectionsignals div:last-child { border-right: 0; }
+.selectionsignals span { display: block; overflow: hidden; color: #8a95a6; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.selectionsignals strong { display: block; overflow: hidden; margin-top: 4px; color: #263752; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.selectionsignals strong.selectionhot { color: #d6532f; }
+.selectionsignals strong.selectiongood { color: #168053; }
 .selectioncardmeta { display: flex; justify-content: space-between; gap: 8px; margin-top: 12px; color: #7d899b; font-size: 9px; }
 .selectioncardmeta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .selectioncardbody > button { display: flex; width: 100%; height: 36px; align-items: center; justify-content: center; gap: 6px; margin-top: 11px; border: 1px solid #2867df; border-radius: 8px; background: #2867df; color: #fff; font-size: 11px; font-weight: 750; cursor: pointer; }

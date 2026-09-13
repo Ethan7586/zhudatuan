@@ -65,6 +65,11 @@ describe('Product governance workspace', () => {
     expect(requests[0]?.searchParams.get('view')).toBe('selection-center');
     expect(screen.getByText('宏泰供应链')).toBeTruthy();
     expect(screen.getByText('宏泰品牌')).toBeTruthy();
+    expect(screen.getByText('市场近 30 天销量')).toBeTruthy();
+    const insights = screen.getByLabelText('商品选品数据');
+    expect(within(insights).getByText('1.3万')).toBeTruthy();
+    expect(within(insights).getByText('8.7%')).toBeTruthy();
+    expect(document.querySelector('.selectionscore')?.textContent).toContain('推荐 94');
 
     await user.click(screen.getByRole('button', { name: '选入商品目录' }));
     await waitFor(() => expect(batchActions).toEqual(['select']));
@@ -500,6 +505,8 @@ const selectionPage = {
       kind: 'selection-center-v1', categoryId: 'category:life', categoryName: '生活用品',
       supplierId: 'supplier:hongtai', supplierName: '宏泰供应链', brandId: 'brand:hongtai', brandName: '宏泰品牌',
       sourceChannel: '品牌直供', supplyPriceMinor: 3690, suggestedRetailMinor: 5990, availableStock: 286, selected: false,
+      marketSales30d: 12680, peerLowestPriceMinor: 6590, mallSales30d: 1326,
+      clickThroughRateBps: 870, recommendationScore: 94, salesGrowthBps: 1800,
     },
   }],
   count: 1,

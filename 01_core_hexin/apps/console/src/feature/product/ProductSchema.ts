@@ -65,6 +65,12 @@ export const ProductSelectionPreviewSchema = z.object({
   supplyPriceMinor: z.nullable(DatabaseIntegerSchema),
   suggestedRetailMinor: z.nullable(DatabaseIntegerSchema),
   availableStock: z.nullable(DatabaseIntegerSchema),
+  marketSales30d: z.optional(z.nullable(DatabaseIntegerSchema)),
+  peerLowestPriceMinor: z.optional(z.nullable(DatabaseIntegerSchema)),
+  mallSales30d: z.optional(z.nullable(DatabaseIntegerSchema)),
+  clickThroughRateBps: z.optional(z.nullable(DatabaseIntegerSchema)),
+  recommendationScore: z.optional(z.nullable(DatabaseIntegerSchema)),
+  salesGrowthBps: z.optional(z.nullable(DatabaseIntegerSchema)),
   selected: z.boolean(),
 });
 
