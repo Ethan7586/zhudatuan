@@ -91,7 +91,7 @@ async function takeDocumentProductPrefetch(
       && query.cursor === filter.cursor
       && query.limit === (filter.limit ?? 50)
       && query.preview === (filter.preview ?? false)
-      && filter.view === undefined;
+      && query.view === filter.view;
     if (!matches) return undefined;
     const parsed = ListingPageSchema.safeParse(value.value);
     return parsed.success ? parsed.data : undefined;

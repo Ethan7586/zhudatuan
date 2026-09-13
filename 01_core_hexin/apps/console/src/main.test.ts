@@ -39,10 +39,16 @@ describe('console bootstrap document', () => {
   });
 
   it('starts the exact product listing read as soon as the session resolves', () => {
-    expect(prefetch).toContain("location.pathname.match(/^\\/scopes\\/(platform|distributor|tenant|enterprise|mall)\\/([^/]+)\\/products");
+    expect(prefetch).toContain("location.pathname.match(/^\\/scopes\\/(platform|distributor|tenant|enterprise|mall)\\/([^/]+)\\/(products|supply-chain)");
     expect(prefetch).toContain('window.__consoleProductPrefetch = tracked(');
     expect(prefetch).toContain('`/api/v1/catalog/listings?${parameters.toString()}`');
     expect(prefetch).toContain("value.capabilities.includes('catalog.listings.read')");
+  });
+
+  it('starts the exact supply network read on a direct supply-chain load', () => {
+    expect(prefetch).toContain('(products|supply-chain)');
+    expect(prefetch).toContain("match?.[3] === 'supply-chain'");
+    expect(prefetch).toContain("parameters.set('view', query.view)");
   });
 
   it('makes every document prefetch observable and immediately abortable by navigation', () => {

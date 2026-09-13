@@ -112,6 +112,11 @@ export function ScopeShell() {
     return import('../feature/product/ProductPrefetch').then(({ prefetchProducts }) =>
       prefetchProducts(queryClient, context));
   }, [context, queryClient]);
+  const prepareSupplyChain = useCallback(() => {
+    if (!context.session.capabilities.includes('catalog.listings.read')) return Promise.resolve();
+    return import('../feature/supply-chain/SupplyChainPrefetch').then(({ prefetchSupplyChain }) =>
+      prefetchSupplyChain(queryClient, context));
+  }, [context, queryClient]);
   const openRoute = (suffix: string) => {
     setMobileOpen(false);
     const preferredScopeKind = selectConsoleModuleByEntryPath(suffix)?.navigation.preferredScopeKind;
@@ -124,17 +129,23 @@ export function ScopeShell() {
     void preloadConsoleModule(moduleId, intent)?.catch(() => undefined);
     if (moduleId === 'access') prepareMembers();
     if (moduleId === 'products') void prepareProducts();
-  }, [prepareMembers, prepareProducts]);
+    if (moduleId === 'supply-chain') void prepareSupplyChain();
+  }, [prepareMembers, prepareProducts, prepareSupplyChain]);
 
   useEffect(() => {
     const productAvailable = context.session.capabilities.includes('catalog.listings.read');
+    const supplyChainAvailable = context.session.capabilities.includes('catalog.listings.read');
     const memberAvailable = context.scope.kind === 'mall' && context.session.capabilities.includes('member.members.read');
-    if (!productAvailable && !memberAvailable) return undefined;
+    if (!productAvailable && !supplyChainAvailable && !memberAvailable) return undefined;
     const prepare = async () => {
-      if (activeModule?.id !== 'products' && productAvailable) {
-        await preloadConsoleModule('products', 'idle')?.catch(() => undefined);
-        await prepareProducts();
-      }
+      await Promise.all([
+        activeModule?.id !== 'products' && productAvailable
+          ? preloadConsoleModule('products', 'idle')?.catch(() => undefined).then(() => prepareProducts())
+          : undefined,
+        activeModule?.id !== 'supply-chain' && supplyChainAvailable
+          ? preloadConsoleModule('supply-chain', 'idle')?.catch(() => undefined).then(() => prepareSupplyChain())
+          : undefined,
+      ]);
       if (activeModule?.id !== 'products' && activeModule?.id !== 'access' && memberAvailable) {
         await preloadConsoleModule('access', 'idle')?.catch(() => undefined);
         prepareMembers();
@@ -147,7 +158,7 @@ export function ScopeShell() {
     const timer = window.setTimeout(() => { void prepare(); }, 200);
     return () => window.clearTimeout(timer);
   }, [activeModule?.id, context.scope.id, context.scope.kind, context.session.capabilities,
-    context.session.membership, prepareMembers, prepareProducts]);
+    context.session.membership, prepareMembers, prepareProducts, prepareSupplyChain]);
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
     if (next !== undefined) navigateAfterCancel(`${scopePath(next, currentSuffix || 'cockpit')}${location.search}`);
