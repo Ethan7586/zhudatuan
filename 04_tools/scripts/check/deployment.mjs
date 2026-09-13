@@ -1,68 +1,220 @@
+#!/usr/bin/env node
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+import { parse } from 'yaml';
+
+import { validateAdapter } from '../../release-engine/src/adapter.mjs';
 
 const root = resolve(import.meta.dirname, '../../..');
-const files = [
-  '02_platform_pingtai/infrastructure/aliyun/runtime.template.yml',
-  '02_platform_pingtai/infrastructure/aliyun/migration.template.yml',
-  '02_platform_pingtai/infrastructure/aliyun/delivery.yml',
-  '02_platform_pingtai/infrastructure/aliyun/backup.yml',
-  '02_platform_pingtai/infrastructure/aliyun/deploy.sh',
-  '02_platform_pingtai/infrastructure/aliyun/Dockerfile',
-  '04_tools/scripts/release/validate.mjs',
-  '04_tools/scripts/release/validatebundle.mjs',
-  '04_tools/scripts/release/candidate.mjs',
-  '04_tools/scripts/release/cutover.mjs',
-  '04_tools/scripts/release/stage.mjs',
-  '04_tools/scripts/release/promote.mjs',
-  '.github/workflows/quality.yml',
-];
-const source = files.map((file) => `${file}\n${readFileSync(resolve(root, file), 'utf8')}`).join('\n');
-const lifecycleFiles = [
-  '02_platform_pingtai/infrastructure/zhudatuan/aliyun/delivery.yml',
-  '02_platform_pingtai/infrastructure/zhudatuan/aliyun/install-release-policy.sh',
-  '02_platform_pingtai/infrastructure/zhudatuan/aliyun/release-policy.sh',
-  '02_platform_pingtai/infrastructure/zhudatuan/aliyun/release-retention.conf.example',
-  '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/zhudatuan-release-policy.service',
-  '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/zhudatuan-release-policy.timer',
-  '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd/zhudatuan-release-policy.path',
-];
-const lifecycleSource = lifecycleFiles.map((file) => `${file}\n${readFileSync(resolve(root, file), 'utf8')}`).join('\n');
-const controlledReleaseFiles = [
-  '04_tools/release-engine/src/engine.mjs',
-  '04_tools/release-engine/remote/agent.mjs',
-  '02_platform_pingtai/infrastructure/release/zdt-next.release.json',
-  '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json',
-  '.github/workflows/quality.yml',
-];
-const controlledReleaseSource = controlledReleaseFiles.map((file) => `${file}\n${readFileSync(resolve(root, file), 'utf8')}`).join('\n');
-const retired = ['admin-web', 'commerce-api', 'core-read-cache', '01_core_hexin/services/jobs', 'pm2', 'vite preview', '/api/ai', 'admin-voucher-test'];
-for (const value of retired) if (source.toLowerCase().includes(value)) throw new Error(`RETIRED_DEPLOYMENT_REFERENCE:${value}`);
-for (const value of ['ApiMain.js', 'JobsMain.js', 'MigrationMain.js', 'SmokeMain.js', '/health/live', '/health/ready', '/health/startup', 'replicas: 3', 'replicas: 2', 'sha256:', 'cosign verify-blob', 'providerSandboxAccepted', 'stagePassed', 'SHOP_CUTOVER_CONTROLLER', 'SHOP_CUTOVER_EVIDENCE', 'shop.cutover.v1', 'requirementsReleased', '5 25 50 100', 'automatic rollback']) {
-  if (!source.includes(value)) throw new Error(`DEPLOYMENT_CONTRACT_MISSING:${value}`);
+
+export function validateDeploymentContract({ adapter, policy, workflow, packageJson }) {
+  validateAdapter(adapter);
+  assert(policy?.schema === 'ai.delivery.remote-policy.v1', 'DEPLOY_POLICY_SCHEMA_INVALID');
+  assert(policy.project === adapter.project, 'DEPLOY_POLICY_PROJECT_MISMATCH');
+  for (const field of ['incomingRoot', 'lockRoot', 'rollbackRoot', 'auditRoot']) {
+    assert(typeof policy[field] === 'string' && policy[field].startsWith('/'), `DEPLOY_POLICY_${field.toUpperCase()}_INVALID`);
+  }
+
+  const physicalDeployments = validateDeploymentOwnership(adapter, policy);
+  const workflowSummary = validateDeployWorkflow(adapter, workflow);
+  validateRootCommands(packageJson);
+
+  return Object.freeze({
+    project: adapter.project,
+    targets: Object.keys(adapter.targets).length,
+    channels: Object.keys(adapter.channels ?? {}).length,
+    nodes: Object.keys(adapter.nodes).length,
+    physicalDeployments,
+    workflowCommands: workflowSummary.commands,
+  });
 }
-for (const command of ['npm ci', 'npm run check:cleaninstall', 'npm run check:artifacts', 'npm run check:migrations', 'npm run test:sql', 'npm run typecheck', 'npm run test:unit', 'npm run test:contract', 'npm run test:component', 'npm run test:journey', 'npm run test:security', 'npm run test:performance', 'npm run replay:postgres', 'npm run test:integration', 'npm run test:adapters', 'npm run build']) {
-  if (!source.includes(command)) throw new Error(`CI_COMMAND_MISSING:${command}`);
+
+function validateDeploymentOwnership(adapter, policy) {
+  assert(policy.nodes && typeof policy.nodes === 'object', 'DEPLOY_POLICY_NODES_MISSING');
+  const expected = new Set();
+  const pointers = new Set();
+
+  for (const [nodeKey, node] of Object.entries(adapter.nodes)) {
+    for (const [target, deployment] of Object.entries(node.deployments)) {
+      const owner = deployment.hostedBy ?? nodeKey;
+      const remote = policy.nodes[owner]?.deployments?.[target];
+      assert(remote, 'DEPLOY_POLICY_TARGET_MISSING', `${owner}/${target}`);
+      assert(remote.pointerRoot === deployment.pointerRoot, 'DEPLOY_POINTER_MISMATCH', `${nodeKey}/${target}`);
+      assert(remote.restart?.name === deployment.service, 'DEPLOY_PROCESS_MISMATCH', `${nodeKey}/${target}`);
+      if (deployment.hostedBy === undefined) expected.add(`${owner}/${target}`);
+    }
+  }
+
+  const actual = [];
+  for (const [nodeKey, node] of Object.entries(policy.nodes)) {
+    for (const [target, deployment] of Object.entries(node.deployments ?? {})) {
+      actual.push(`${nodeKey}/${target}`);
+      assert(!pointers.has(deployment.pointerRoot), 'DEPLOY_POINTER_DUPLICATE', deployment.pointerRoot);
+      pointers.add(deployment.pointerRoot);
+      if (deployment.restart?.kind === 'systemd') {
+        assert(deployment.restart.jobMode === 'ignore-dependencies', 'DEPLOY_RESTART_SCOPE_INVALID', `${nodeKey}/${target}`);
+        assert(Array.isArray(deployment.seedInputs) && deployment.seedInputs.length > 0, 'DEPLOY_ROLLBACK_BASELINE_MISSING', `${nodeKey}/${target}`);
+        assert(deployment.allowFirstActivation !== true, 'DEPLOY_FIRST_ACTIVATION_FORBIDDEN', `${nodeKey}/${target}`);
+        assert(Array.isArray(deployment.candidateChecks) && deployment.candidateChecks.length > 0, 'DEPLOY_CANDIDATE_CHECKS_MISSING', `${nodeKey}/${target}`);
+        assert(Array.isArray(deployment.healthChecks) && deployment.healthChecks.length > 0, 'DEPLOY_HEALTH_CHECKS_MISSING', `${nodeKey}/${target}`);
+      }
+    }
+  }
+  assertSameSet(actual, [...expected], 'DEPLOY_POLICY_TARGET_SET_MISMATCH');
+  return actual.length;
 }
-for (const client of ['console', 'storefront', 'auth', 'miniapp']) {
-  if (!source.includes(client)) throw new Error(`CLIENT_ARTIFACT_MISSING:${client}`);
+
+function validateDeployWorkflow(adapter, workflow) {
+  const dispatch = workflow?.on?.workflow_dispatch;
+  const inputs = dispatch?.inputs;
+  assert(inputs?.head_sha?.required === true && inputs.head_sha.type === 'string', 'DEPLOY_WORKFLOW_SHA_INPUT_INVALID');
+  assert(inputs?.release_target?.required === true && inputs.release_target.type === 'choice', 'DEPLOY_WORKFLOW_TARGET_INPUT_INVALID');
+  assert(inputs?.release_node?.required === true && inputs.release_node.type === 'choice', 'DEPLOY_WORKFLOW_NODE_INPUT_INVALID');
+
+  assertSameSet(inputs.release_target.options, [...Object.keys(adapter.channels ?? {}), ...Object.keys(adapter.targets)], 'DEPLOY_WORKFLOW_TARGETS_MISMATCH');
+  assertSameSet(inputs.release_node.options, Object.keys(adapter.nodes), 'DEPLOY_WORKFLOW_NODES_MISMATCH');
+  assert(workflow.permissions?.contents === 'read', 'DEPLOY_WORKFLOW_PERMISSIONS_INVALID');
+  const expectedLock = `${adapter.project}-direct-` + '${{ inputs.release_node }}-${{ inputs.release_target }}';
+  assert(workflow.concurrency?.group === expectedLock, 'DEPLOY_WORKFLOW_LOCK_SCOPE_INVALID');
+  assert(workflow.concurrency?.['cancel-in-progress'] === false, 'DEPLOY_WORKFLOW_CANCELLATION_INVALID');
+  assert(workflow.env?.RELEASE_SHA === '${{ inputs.head_sha }}', 'DEPLOY_WORKFLOW_SHA_BINDING_INVALID');
+  assert(workflow.env?.RELEASE_NODE === '${{ inputs.release_node }}', 'DEPLOY_WORKFLOW_NODE_BINDING_INVALID');
+  assert(workflow.env?.RELEASE_TARGET === '${{ inputs.release_target }}', 'DEPLOY_WORKFLOW_TARGET_BINDING_INVALID');
+
+  const steps = workflow.jobs?.deploy?.steps;
+  assert(Array.isArray(steps), 'DEPLOY_WORKFLOW_STEPS_MISSING');
+  const checkout = steps.find((step) => typeof step.uses === 'string' && step.uses.startsWith('actions/checkout@'));
+  assert(checkout?.with?.ref === '${{ inputs.head_sha }}', 'DEPLOY_WORKFLOW_CHECKOUT_NOT_EXACT');
+
+  const shell = executableShell(steps);
+  assert(shell.includes('if [ "$sha" != "$RELEASE_SHA" ]; then'), 'DEPLOY_WORKFLOW_CHECKOUT_GUARD_MISSING');
+  for (const channel of Object.keys(adapter.channels ?? {})) {
+    assert(shell.includes(`if [ "$RELEASE_TARGET" = "${channel}" ]; then`), 'DEPLOY_WORKFLOW_CHANNEL_BRANCH_MISSING', channel);
+  }
+
+  const commands = releaseCommands(steps);
+  requireCommand(commands, 'plan', {
+    '--from': '$base',
+    '--to': '$sha',
+    '--node': '$RELEASE_NODE',
+    '--target': '$RELEASE_TARGET',
+    '--direct': true,
+    '--format': 'json',
+  });
+  requireCommand(commands, 'build', { '--plan': '$PLAN_PATH', '--format': 'json' });
+  requireCommand(commands, 'package', { '--build': '$build_path', '--format': 'json' });
+  requireCommand(commands, 'deploy', {
+    '--package': '$package_path',
+    '--node': '$RELEASE_NODE',
+    '--target': '$RELEASE_TARGET',
+    '--environment': 'production',
+    '--direct': true,
+    '--format': 'json',
+  });
+  if (Object.keys(adapter.channels ?? {}).length > 0) {
+    requireCommand(commands, 'channel', {
+      '--target': '$RELEASE_TARGET',
+      '--node': '$RELEASE_NODE',
+      '--action': 'deploy',
+      '--source-sha': '$RELEASE_SHA',
+      '--format': 'json',
+    });
+  }
+
+  return { commands: commands.length };
 }
-for (const token of [
-  'KEEP_RECENT_PER_ROOT=12',
-  'MAX_RELEASES_PER_ROOT=30',
-  'MIN_FREE_GIB=15',
-  'release-policy preflight',
-  'release-policy postdeploy',
-  'item_in_use_now',
-  'rm -rf --one-file-system',
-  'PathChanged=/opt/zhudatuan/current',
-  'OnUnitActiveSec=1h',
-]) {
-  if (!lifecycleSource.includes(token)) throw new Error(`RELEASE_LIFECYCLE_POLICY_MISSING:${token}`);
+
+function validateRootCommands(packageJson) {
+  assert(packageJson.scripts?.['test:release-engine'] === 'node --test 04_tools/release-engine/test/*.test.mjs', 'DEPLOY_BEHAVIOR_SUITE_INVALID');
+  const stages = (packageJson.scripts?.['check:deployment'] ?? '').split('&&').map((stage) => stage.trim());
+  const expectedStages = ['npm run test:release-engine', 'node --test 04_tools/scripts/check/deployment.test.mjs', 'node 04_tools/scripts/check/deployment.mjs'];
+  assert(stages.length === expectedStages.length && expectedStages.every((stage, index) => stages[index] === stage), 'DEPLOY_CHECK_ORCHESTRATION_INVALID');
+  assert(
+    (packageJson.scripts?.['quality:canonical-hard-cut'] ?? '')
+      .split('&&')
+      .map((stage) => stage.trim())
+      .includes('npm run check:deployment'),
+    'DEPLOY_QUALITY_ENTRY_MISSING'
+  );
 }
-for (const token of ['ai.delivery.receipt.v1', 'externalAcceptance', 'rollbackPoint', 'protectedProcesses', 'minimumFreeBytes', 'expected-caddy-semantic', '--environment candidate', 'agent-candidate']) {
-  if (!controlledReleaseSource.includes(token)) throw new Error(`CONTROLLED_RELEASE_CONTRACT_MISSING:${token}`);
+
+function releaseCommands(steps) {
+  const commands = [];
+  for (const step of steps) {
+    if (typeof step.run !== 'string') continue;
+    const shell = executableShell([step]);
+    const matcher = /(?:^|\n)[ \t]*node[ \t]+04_tools\/release-engine\/cli\.mjs[ \t]+([a-z0-9-]+)([^\n]*)/g;
+    for (const match of shell.matchAll(matcher)) {
+      commands.push({ action: match[1], tokens: shellTokens(match[2]) });
+    }
+  }
+  return commands;
 }
-if (controlledReleaseSource.includes("production.lock")) throw new Error('CONTROLLED_RELEASE_GLOBAL_LOCK_FORBIDDEN');
-if (/quality\.yml[\s\S]*--environment production/.test(controlledReleaseSource)) throw new Error('CI_PRODUCTION_CUTOVER_FORBIDDEN');
-console.log('deployment contract: hard-cut, immutable, signed, highly available');
+
+function executableShell(steps) {
+  return steps
+    .filter((step) => typeof step.run === 'string')
+    .map((step) =>
+      step.run
+        .split('\n')
+        .map(stripShellComment)
+        .join('\n')
+        .replace(/\\\r?\n[ \t]*/g, ' ')
+    )
+    .join('\n');
+}
+
+function stripShellComment(line) {
+  let quote;
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index];
+    if (character === '\\' && quote !== "'") {
+      index += 1;
+      continue;
+    }
+    if ((character === "'" || character === '"') && (quote === undefined || quote === character)) {
+      quote = quote === character ? undefined : character;
+      continue;
+    }
+    if (character === '#' && quote === undefined && (index === 0 || /\s/.test(line[index - 1]))) return line.slice(0, index);
+  }
+  return line;
+}
+
+function shellTokens(value) {
+  return [...value.matchAll(/"([^"]*)"|'([^']*)'|([^\s]+)/g)].map((match) => match[1] ?? match[2] ?? match[3]);
+}
+
+function requireCommand(commands, action, expected) {
+  const matches = commands.filter((command) => command.action === action);
+  assert(matches.length === 1, 'DEPLOY_WORKFLOW_COMMAND_COUNT', action);
+  const tokens = matches[0].tokens;
+  for (const [option, value] of Object.entries(expected)) {
+    const index = tokens.indexOf(option);
+    assert(index >= 0, 'DEPLOY_WORKFLOW_COMMAND_OPTION_MISSING', `${action}:${option}`);
+    if (value !== true) assert(tokens[index + 1] === value, 'DEPLOY_WORKFLOW_COMMAND_OPTION_INVALID', `${action}:${option}`);
+  }
+}
+
+function assertSameSet(actual, expected, code) {
+  assert(Array.isArray(actual), code);
+  const actualSet = new Set(actual);
+  const expectedSet = new Set(expected);
+  assert(actualSet.size === actual.length && actualSet.size === expectedSet.size && [...expectedSet].every((value) => actualSet.has(value)), code);
+}
+
+function assert(condition, code, detail) {
+  if (!condition) throw new Error(detail === undefined ? code : `${code}:${detail}`);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const summary = validateDeploymentContract({
+    adapter: JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8')),
+    policy: JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8')),
+    workflow: parse(readFileSync(resolve(root, '.github/workflows/deploy.yml'), 'utf8')),
+    packageJson: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')),
+  });
+  console.log(`deployment contract: project=${summary.project} targets=${summary.targets} channels=${summary.channels} nodes=${summary.nodes} physical=${summary.physicalDeployments} commands=${summary.workflowCommands}`);
+}
