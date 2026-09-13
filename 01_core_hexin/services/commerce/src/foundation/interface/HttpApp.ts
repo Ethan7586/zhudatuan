@@ -48,16 +48,19 @@ export class HttpApp {
       if (!route) return secure(404, { code: 'NOT_FOUND', message: 'NOT_FOUND', requestId }, requestId, origin);
       const operation = OperationCatalog.get(route.operation);
       observedOperation = operation.id;
-      observedPhase = 'csrf';
-      assertCsrf(request, origin, operation.id);
       observedPhase = 'request';
       const nodeContext = route.operation.startsWith('runtime.health.')
         ? undefined
         : requestNodeContext(request.headers) ?? this.nodeContexts?.resolve(request.headers.get('host') ?? url.host);
       observedNodeContext = nodeContext;
-      const payload = await parseBody(request);
+      const simpleSession = isSimpleIdentitySession(request, operation.id);
+      if (simpleSession && !origin) throw new Error('ORIGIN_REQUIRED');
+      const parsed = await parseBody(request, simpleSession);
+      const payload = simpleSession ? unpackSimpleIdentitySession(parsed) : parsed;
       deadline.throwIfExpired();
-      const requestHeaders = Object.freeze(Object.fromEntries(request.headers.entries()));
+      const requestHeaders = Object.freeze({ ...Object.fromEntries(request.headers.entries()), ...payload.headers });
+      observedPhase = 'csrf';
+      assertCsrf(request.method, requestHeaders, origin, operation.id, simpleSession);
       const headers = nodeContext === undefined ? requestHeaders : bindRequestNodeContext(requestHeaders, nodeContext);
       observedPhase = 'gate';
       await observeOperationGates(this.gateEngine, operation.id, operation.gates, requestId, traceId);
@@ -135,19 +138,49 @@ function bodyCode(value: unknown): string | undefined {
   return typeof code === 'string' ? code : undefined;
 }
 
-async function parseBody(request: Request): Promise<{ readonly body: unknown; readonly raw: string }> {
+type ParsedBody = Readonly<{ body: unknown; raw: string; headers?: Readonly<Record<string, string>> }>;
+
+async function parseBody(request: Request, allowText = false): Promise<ParsedBody> {
   if (request.method === 'GET' || request.method === 'HEAD') return { body: undefined, raw: '' };
   const contentLength = Number(request.headers.get('content-length') ?? 0);
   if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) throw new Error('REQUEST_BODY_TOO_LARGE');
   const text = await request.text();
   if (Buffer.byteLength(text) > MAX_BODY_BYTES) throw new Error('REQUEST_BODY_TOO_LARGE');
   if (text.length === 0) return { body: undefined, raw: '' };
-  if (request.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase() !== 'application/json') throw new Error('CONTENT_TYPE_UNSUPPORTED');
+  const mediaType = request.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase();
+  if (mediaType !== 'application/json' && !(allowText && mediaType === 'text/plain')) throw new Error('CONTENT_TYPE_UNSUPPORTED');
   try {
     return { body: JSON.parse(text) as unknown, raw: text };
   } catch {
     throw new Error('REQUEST_JSON_INVALID');
   }
+}
+
+function isSimpleIdentitySession(request: Request, operation: string): boolean {
+  return operation === 'identity.sessions.create'
+    && request.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase() === 'text/plain';
+}
+
+function unpackSimpleIdentitySession(payload: ParsedBody): ParsedBody {
+  if (payload.body === null || typeof payload.body !== 'object' || Array.isArray(payload.body)) throw new Error('REQUEST_JSON_INVALID');
+  const body = payload.body as Record<string, unknown>;
+  const transport = body._transport;
+  if (transport === null || typeof transport !== 'object' || Array.isArray(transport)) throw new Error('REQUEST_JSON_INVALID');
+  const metadata = transport as Record<string, unknown>;
+  const idempotencyKey = transportField(metadata.idempotencyKey, 255);
+  const clientVersion = transportField(metadata.clientVersion, 64);
+  const device = transportField(metadata.deviceId, 128);
+  const { _transport: _ignored, ...operationBody } = body;
+  return {
+    body: operationBody,
+    raw: JSON.stringify(operationBody),
+    headers: { 'idempotency-key': idempotencyKey, 'x-client-version': clientVersion, 'x-device-id': device },
+  };
+}
+
+function transportField(value: unknown, maximum: number): string {
+  if (typeof value !== 'string' || value.length < 1 || value.length > maximum) throw new Error('REQUEST_JSON_INVALID');
+  return value;
 }
 
 function secure(status: number, body: unknown, requestId: string, origin?: string | null, headers: Readonly<Record<string, string>> = {}): Response {
@@ -173,14 +206,15 @@ function preflight(request: Request, requestId: string, origin: string | null): 
     'access-control-max-age': '7200', 'access-control-allow-credentials': 'true' });
 }
 
-function assertCsrf(request: Request, origin: string | null, operation: string): void {
-  if (['GET','HEAD','OPTIONS'].includes(request.method)) return;
+function assertCsrf(method: string, headers: Readonly<Record<string, string>>, origin: string | null, operation: string, simpleSession: boolean): void {
+  if (['GET','HEAD','OPTIONS'].includes(method)) return;
   if (operation === 'identity.tickets.exchange') return;
-  const cookie = request.headers.get('cookie');
+  if (simpleSession) return;
+  const cookie = headers.cookie;
   if (!cookie?.split(';').some((part) => part.trim().startsWith('shop_session='))) return;
   if (!origin) throw new Error('ORIGIN_REQUIRED');
   const expected = cookieValue(cookie, 'shop_csrf');
-  if (!expected || request.headers.get('x-csrf-token') !== expected) throw new Error('CSRF_TOKEN_INVALID');
+  if (!expected || headers['x-csrf-token'] !== expected) throw new Error('CSRF_TOKEN_INVALID');
 }
 
 function cookieValue(cookie: string, name: string): string | null {

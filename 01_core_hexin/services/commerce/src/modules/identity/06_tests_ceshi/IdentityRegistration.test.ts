@@ -468,6 +468,25 @@ describe('canonical member registration security boundary', () => {
     expect(ticket?.values[6]).toBe('console');
   });
 
+  it('completes the Console ticket exchange inside the session transaction when requested', async () => {
+    const password = 'Current!Password1';
+    const harness = registrationHarness({ challengeAccepted: false, subjectExists: false,
+      boundMobilePrincipal: 'principal:hongtai-operator', credentialSecret: await new PasswordPolicy().hash(password),
+      loginMembershipRows: [
+        { id: 'membership:hongtai:operator', access_version: 1, client: 'operator', organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43' },
+      ] });
+
+    const response = await identityRegistrationOperations(context(harness.pool)).invoke(passwordLoginRequest(SUBJECT, password, {
+      target: 'console',
+    }, 'api.hbbtzn.com', true));
+
+    expect(response).toMatchObject({ status: 201, body: {
+      membership: 'membership:hongtai:operator', target: 'console',
+      exchange: { returnTarget: { url: 'https://console.hbbtzn.com/' }, expiresIn: expect.any(Number) },
+    } });
+    expect(harness.queries.some(({ text }) => text.includes('update identity.authticket ticket set consumed_at'))).toBe(true);
+  });
+
   it('limits storefront login memberships to the requested application organization', async () => {
     const password = 'Current!Password1';
     const harness = registrationHarness({ challengeAccepted: false, subjectExists: false, storefrontAvailable: true,
@@ -1048,13 +1067,18 @@ function challengeRequest(body: Readonly<Record<string, unknown>>): OperationReq
 
 function passwordLoginRequest(subject: string, password: string,
   entry: Readonly<{ target: string; application?: string }> = { target: 'console' },
-  host = 'api.zhudatuan.com'): OperationRequest {
+  host = 'api.zhudatuan.com', directExchange = false): OperationRequest {
+  const verifier = 'v'.repeat(43);
+  const authorization = directExchange
+    ? { state: 's'.repeat(32), nonce: 'n'.repeat(32), challenge: createHash('sha256').update(verifier).digest('base64url') }
+    : authorizationRequest();
   return {
     type: 'identity.sessions.create',
     access: null,
     input: {
       path: {}, query: {}, headers: { host, 'x-device-id': 'device:password-login-test' },
-      body: { provider: 'password', subject, password, ...entry, authorization: authorizationRequest() },
+      body: { provider: 'password', subject, password, ...entry, authorization,
+        ...(directExchange ? { exchange: { nonce: authorization.nonce, verifier } } : {}) },
       rawBody: '', deadline: Date.now() + 5_000, signal: new AbortController().signal,
       idempotency: 'password:mobile-login',
     },
@@ -1192,6 +1216,9 @@ function registrationHarness(input: Readonly<{ challengeAccepted: boolean; subje
       }
       if (text.includes('insert into runtime.idempotency')) requestHash = String(values[3]);
       if (text.includes("update runtime.idempotency set state='completed'")) return { rows: [], rowCount: 1 } as unknown as QueryResult;
+      if (text.includes('update identity.authticket ticket set consumed_at')) {
+        return result([{ target: 'console', return_origin: 'https://console.hbbtzn.com/', expires_at: new Date(Date.now() + 3_600_000) }]);
+      }
       if (text.startsWith('select request_hash,state,response')) {
         return result([{ request_hash: requestHash, state: 'started', response: null }]);
       }

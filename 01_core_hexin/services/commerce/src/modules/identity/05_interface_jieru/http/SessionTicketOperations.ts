@@ -41,6 +41,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           const loginIntent = body.loginIntent === undefined ? undefined : secretField(body, 'loginIntent', 128);
           if (loginIntent !== undefined && !/^[A-Za-z0-9_-]{64}$/.test(loginIntent)) throw new Error('LOGIN_INTENT_INVALID');
           const authorization = AuthTransaction.start(body.authorization);
+          const directExchange = directExchangeSecret(body.exchange);
           const provider = body.provider === undefined ? 'password' : textField(body, 'provider', 32);
           if (provider !== 'password' && provider !== 'phone_otp') throw new Error('CREDENTIAL_PROVIDER_INVALID');
           const normalizedSubject = provider === 'phone_otp'
@@ -63,11 +64,12 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
             requestedTarget,
             application,
             loginIntent,
+            directExchange,
             subject,
             mobileTokens,
           };
         },
-        execute: async (request, database, { body, provider, authorization, host, requestedTarget, application, loginIntent, subject, mobileTokens }) => {
+        execute: async (request, database, { body, provider, authorization, host, requestedTarget, application, loginIntent, directExchange, subject, mobileTokens }) => {
           const [realm, resolvedMobileTokens] = await Promise.all([
             resolveRealmContext(database, host, requestedTarget, application),
             mobileTokens,
@@ -207,8 +209,16 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           const csrf = randomBytes(32).toString('base64url');
           const target = authMembershipTarget(realm.target);
           const callback = await tickets.issue(database, id, found.realm_id, found.account_id, realm.target, authorization);
+          const direct = directExchange === undefined
+            ? undefined
+            : await tickets.consume(database, { ...directExchange, ...callback }, token, realm.realmId);
+          const directExpiresIn = direct === undefined
+            ? undefined
+            : Math.max(1, Math.min(43_200, Math.floor((direct.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
           return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id,
-            target, callback, active_context: activeContext }, headers: sessionCookies(token, csrf, 43_200) };
+            target, callback, active_context: activeContext,
+            ...(direct === undefined ? {} : { exchange: { returnTarget: direct.returnTarget, expiresIn: directExpiresIn } }) },
+          headers: sessionCookies(token, csrf, 43_200) };
         },
       }),
       'identity.loginintents.create': async (request, database) => {
@@ -375,4 +385,14 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         return session === access.actor.session ? { ...response, headers: sessionCookies('', '', 0) } : response;
       },
   };
+}
+
+function directExchangeSecret(value: unknown): Readonly<{ nonce: string; verifier: string }> | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('AUTH_EXCHANGE_INVALID');
+  const exchange = value as Readonly<Record<string, unknown>>;
+  return Object.freeze({
+    nonce: secretField(exchange, 'nonce', 128),
+    verifier: secretField(exchange, 'verifier', 128),
+  });
 }
