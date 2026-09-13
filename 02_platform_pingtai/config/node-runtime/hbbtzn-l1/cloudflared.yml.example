@@ -21,6 +21,8 @@ ingress:
     service: https://127.0.0.1:4430
   - hostname: h5.hbbtzn.com
     service: https://127.0.0.1:4430
+  - hostname: h6.hbbtzn.com
+    service: https://127.0.0.1:4430
   - hostname: mall.hbbtzn.com
     service: https://127.0.0.1:4430
   - service: http_status:404

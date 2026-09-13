@@ -11,6 +11,12 @@ export interface StorefrontPresentationIdentity {
   readonly brandName: string;
 }
 
+export function hbbtznH5Application(hostname: string): string | undefined {
+  const match = /^h([0-9]+)\.hbbtzn\.com$/i.exec(hostname.trim());
+  if (!match || Number(match[1]) < 6) return undefined;
+  return `h${Number(match[1])}`;
+}
+
 function currentStorefrontHostname(): string {
   if (typeof window !== 'undefined' && window.location?.hostname) return window.location.hostname;
   const configured = (process.env.SFL_STOREFRONT_HOSTNAME ?? process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME)?.trim();
@@ -38,7 +44,10 @@ export function resolveStorefrontNode(
   const selectedHostname = hostname ?? browserHostname
     ?? process.env.SFL_STOREFRONT_HOSTNAME ?? process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME;
   if (selectedHostname === undefined || selectedHostname === '') throw new Error('商城身份节点主机缺失');
-  const node = identityNodeForStorefrontHost(registry, selectedHostname);
+  const node = identityNodeForStorefrontHost(registry, selectedHostname)
+    ?? (hbbtznH5Application(selectedHostname) === undefined
+      ? null
+      : identityNodeForStorefrontHost(registry, 'hbbtzn.com'));
   if (node === null) throw new Error('商城身份节点无效');
   return node;
 }
@@ -49,12 +58,15 @@ export function resolveStorefrontApplication(
   registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
 ): string {
   const node = resolveStorefrontNode(hostname, registry);
+  const selectedHostname = hostname ?? (typeof window === 'undefined' ? undefined : window.location?.hostname)
+    ?? process.env.SFL_STOREFRONT_HOSTNAME ?? process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME;
+  const hostApplication = selectedHostname === undefined ? undefined : hbbtznH5Application(selectedHostname);
   const explicit = configured?.trim() || (browserRuntimeRegistrySource() ? undefined
     : (process.env.SFL_STOREFRONT_APPLICATION ?? process.env.NEXT_PUBLIC_STOREFRONT_APPLICATION)?.trim());
-  if (explicit !== undefined && explicit !== '' && explicit !== node.consumerApplication) {
+  if (hostApplication === undefined && explicit !== undefined && explicit !== '' && explicit !== node.consumerApplication) {
     throw new Error('商城身份节点无效');
   }
-  return node.consumerApplication;
+  return hostApplication ?? node.consumerApplication;
 }
 
 export function resolveStorefrontAuthTarget(
@@ -63,7 +75,7 @@ export function resolveStorefrontAuthTarget(
   registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
 ): string {
   const node = resolveStorefrontNode(hostname, registry);
-  if (application !== node.consumerApplication) throw new Error('商城身份节点无效');
+  if (application !== resolveStorefrontApplication(hostname, undefined, registry)) throw new Error('商城身份节点无效');
   return node.consumerTarget;
 }
 
@@ -74,9 +86,7 @@ export function resolveStorefrontPresentationIdentity(
   registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
 ): StorefrontPresentationIdentity {
   const node = resolveStorefrontNode(hostname, registry);
-  if (resolveStorefrontApplication(hostname, configured, registry) !== node.consumerApplication) {
-    throw new Error('商城身份节点无效');
-  }
+  resolveStorefrontApplication(hostname, configured, registry);
   return { mallName: node.mallName, brandName: node.brandName };
 }
 

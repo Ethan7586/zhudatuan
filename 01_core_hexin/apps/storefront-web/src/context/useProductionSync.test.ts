@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ProductionApiError } from '../services/productionApi';
-import { authenticatedMall, shouldCloseMemberSession, shouldRetainProductionSnapshot } from './useProductionSync';
+import { authenticatedMall, publicMall, shouldCloseMemberSession, shouldRetainProductionSnapshot } from './useProductionSync';
 
 describe('production synchronization recovery', () => {
   it('retains the visible snapshot during a temporary network interruption', () => {
@@ -21,5 +21,11 @@ describe('production synchronization recovery', () => {
         mallName: '宏泰甄选', brandName: '宏泰甄选', enterpriseName: '已授权企业',
       },
     })).toMatchObject({ mallName: '宏泰甄选', logoText: '宏泰甄选', id: 'mall:one' });
+  });
+
+  it('uses the public storefront name for an unauthenticated H5 shell', () => {
+    expect(publicMall({ id: 'mall:h5', name: '智慧通' })).toMatchObject({
+      id: 'mall:h5', mallName: '智慧通', logoText: '智慧通', badge: '公开商城',
+    });
   });
 });

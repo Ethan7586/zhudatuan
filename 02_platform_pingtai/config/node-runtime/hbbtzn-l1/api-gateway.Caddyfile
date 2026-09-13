@@ -74,7 +74,7 @@ https://:4430 {
 	}
 
 	@storefrontPublicCatalog {
-		host h5.hbbtzn.com hbbtzn.com mall.hbbtzn.com www.hbbtzn.com
+		host h5.hbbtzn.com h6.hbbtzn.com hbbtzn.com mall.hbbtzn.com www.hbbtzn.com
 		method GET HEAD OPTIONS
 		path /api/v1/catalog/public/products*
 	}
@@ -220,7 +220,7 @@ https://:4430 {
 		file_server
 	}
 
-	@storefront host h5.hbbtzn.com hbbtzn.com mall.hbbtzn.com www.hbbtzn.com
+	@storefront host h5.hbbtzn.com h6.hbbtzn.com hbbtzn.com mall.hbbtzn.com www.hbbtzn.com
 	handle @storefront {
 		reverse_proxy 127.0.0.1:4410 {
 			header_up Host {http.request.host}

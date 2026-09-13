@@ -79,6 +79,26 @@ describe('public catalog HTTP handler', () => {
     expect(query).toHaveBeenCalledWith('select * from catalog.public_storefront_catalog($1,$2,$3,$4)',
       ['zdt-l1-verify', 24, 0, null]);
   });
+
+  it('derives sequential hbbtzn H5 applications from their hostnames', async () => {
+    const query = vi.fn(async () => result([]));
+    const handler = new PublicCatalogHttpHandler(
+      { handle: vi.fn(async () => new Response(null, { status: 404 })) },
+      pool(query),
+      'zdt-l1-verify',
+      ['https://h6.hbbtzn.com'],
+      { 'h6.hbbtzn.com': 'zdt-l1-verify' },
+    );
+
+    const response = await handler.handle(new Request(
+      'https://h6.hbbtzn.com/api/v1/catalog/public/products',
+      { headers: { origin: 'https://h6.hbbtzn.com' } },
+    ));
+
+    expect(response.status).toBe(200);
+    expect(query).toHaveBeenCalledWith('select * from catalog.public_storefront_catalog($1,$2,$3,$4)',
+      ['h6', 24, 0, null]);
+  });
 });
 
 function pool(query: ReturnType<typeof vi.fn>): DatabasePool {

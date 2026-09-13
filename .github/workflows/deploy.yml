@@ -38,6 +38,7 @@ env:
   ZDT_RELEASE_SSH_HOST: root@123.57.232.253
   VITE_API_BASE_URL: https://api.hbbtzn.com
   VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
+  VITE_ZHUDIAN_SOLUTION_ORIGIN: https://labs.hbbtzn.com
   VITE_CLIENT_VERSION: 0.0.0-g${{ inputs.head_sha || github.sha }}
 
 jobs:

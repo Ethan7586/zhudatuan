@@ -45,6 +45,10 @@ export class CreateMall {
     private readonly owners: MallOwnerProvisioningPort = mallOwnerProvisioningPort,
   ) {}
 
+  async allocatePublicSlug(database: OperationDatabase): Promise<string> {
+    return await this.experience.allocateH5PublicSlug(database);
+  }
+
   plan(input: CreateMallInput): MallProvisioningPlan {
     const mall = stableId('mall', `${input.parent}:${input.code}`);
     const application = stableId('application', input.publicSlug);

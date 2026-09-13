@@ -8,6 +8,12 @@ describe('H5 storefront runtime request', () => {
     expect(resolved.url).toBe('https://h5.fufu.wang/h5?from=miniapp');
   });
 
+  it.each(['h5.hbbtzn.com', 'h6.hbbtzn.com', 'h27.hbbtzn.com'])('serves %s through the H5 page', (hostname) => {
+    const resolved = resolveH5RuntimeRequest(new Request(`https://${hostname}/products`));
+
+    expect(resolved.url).toBe(`https://${hostname}/h5`);
+  });
+
   it.each(['/assets/app.js', '/_next/static/app.js', '/api/v1/catalog/listings'])('preserves runtime path %s', (pathname) => {
     const request = new Request(`https://h5.fufu.wang${pathname}`);
 

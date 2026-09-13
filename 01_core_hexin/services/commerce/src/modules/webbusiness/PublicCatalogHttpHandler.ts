@@ -41,11 +41,12 @@ export class PublicCatalogHttpHandler implements HttpRequestHandler {
     const requestId = request.headers.get('x-request-id') ?? randomUUID();
     const origin = request.headers.get('origin');
     if (origin && !this.origins.has(origin)) return response(403, { code: 'ORIGIN_DENIED', requestId }, requestId);
-    const hostApplicationSlug = this.applicationSlugByHost[url.hostname.toLowerCase()];
+    const hostApplicationSlug = hbbtznH5Application(url.hostname)
+      ?? this.applicationSlugByHost[url.hostname.toLowerCase()];
     const selectedApplicationSlug = hostApplicationSlug ?? this.defaultApplicationSlug;
     const requestedApplicationSlug = url.searchParams.get('mall')?.trim();
     const applicationSlug = requestedApplicationSlug || selectedApplicationSlug;
-    if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(applicationSlug)) {
+    if (!validPublicSlug(applicationSlug)) {
       return response(400, { code: 'PUBLIC_MALL_INVALID', requestId }, requestId, origin);
     }
     if (requestedApplicationSlug && requestedApplicationSlug !== selectedApplicationSlug) {
@@ -67,6 +68,16 @@ export class PublicCatalogHttpHandler implements HttpRequestHandler {
       pagination: { nextCursor: items.length === limit ? String(offset + items.length) : null },
     }, requestId, origin, 'public, max-age=30');
   }
+}
+
+function hbbtznH5Application(hostname: string): string | undefined {
+  const match = /^h([0-9]+)\.hbbtzn\.com$/i.exec(hostname.trim());
+  if (!match || Number(match[1]) < 6) return undefined;
+  return `h${Number(match[1])}`;
+}
+
+function validPublicSlug(value: string): boolean {
+  return /^[a-z0-9][a-z0-9-]{2,47}$/.test(value) || /^h[0-9]+$/.test(value);
 }
 
 function product(row: CatalogRow) {

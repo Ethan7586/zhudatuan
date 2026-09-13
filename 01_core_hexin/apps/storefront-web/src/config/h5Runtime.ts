@@ -1,9 +1,9 @@
 import { PRODUCTION_IDENTITY_NODE_REGISTRY } from '@shop/sdk/identity-node';
+import { hbbtznH5Application } from './storefrontIdentity';
 
-const H5_STOREFRONT_HOST = PRODUCTION_IDENTITY_NODE_REGISTRY.nodes
-  .find((node) => node.nodeId === 'node:zhudatuan:l0')
-  ?.storefrontHosts.find((host) => host.startsWith('h5.'));
-if (!H5_STOREFRONT_HOST) throw new Error('H5_STOREFRONT_HOST_MISSING');
+const H5_STOREFRONT_HOSTS = new Set(PRODUCTION_IDENTITY_NODE_REGISTRY.nodes
+  .flatMap((node) => node.storefrontHosts.filter((host) => host.startsWith('h5.'))));
+if (H5_STOREFRONT_HOSTS.size === 0) throw new Error('H5_STOREFRONT_HOST_MISSING');
 const H5_DOCUMENT_PATH = '/h5';
 
 function isStaticAssetPath(pathname: string): boolean {
@@ -14,7 +14,7 @@ function isStaticAssetPath(pathname: string): boolean {
 
 export function resolveH5RuntimeRequest(request: Request): Request {
   const target = new URL(request.url);
-  if (target.hostname !== H5_STOREFRONT_HOST
+  if ((!H5_STOREFRONT_HOSTS.has(target.hostname) && hbbtznH5Application(target.hostname) === undefined)
     || (request.method !== 'GET' && request.method !== 'HEAD')
     || target.pathname === '/api'
     || target.pathname.startsWith('/api/')

@@ -64,6 +64,17 @@ export function authenticatedMall(bootstrap: ApiBootstrap): EnterpriseMall {
   };
 }
 
+export function publicMall(storefront: Readonly<{ id: string; name: string }>): EnterpriseMall {
+  return {
+    ...UNRESOLVED_MALL,
+    id: storefront.id,
+    mallName: storefront.name,
+    logoText: storefront.name,
+    badge: '公开商城',
+    welcomeBanner: `欢迎来到${storefront.name}。`,
+  };
+}
+
 export function useProductionSync(setters: ProductionSyncSetters, enabled = true) {
   const syncVersionRef = useRef(0);
   const productionRefreshRef = useRef<Promise<void> | null>(null);
@@ -114,6 +125,7 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     const publisher = createCatalogPublisher(() => syncVersion === syncVersionRef.current, publishCatalog);
     const publicCatalogRequest = loadCompleteCatalog(listPublicProducts);
     const productionApiRequest = loadProductionApi();
+    const publicStorefrontRequest = productionApiRequest.then((productionApi) => productionApi.getPublicStorefront());
     void publicCatalogRequest.then(publisher.commitPublic).catch(() => undefined);
     let bootstrap: ApiBootstrap;
     try {
@@ -126,6 +138,15 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
         setters.setSessionStatus('guest');
       } else {
         setters.setSessionStatus((current) => current === 'checking' ? 'guest' : current);
+      }
+      try {
+        const resolvedMall = publicMall(await publicStorefrontRequest);
+        if (syncVersion === syncVersionRef.current) {
+          setters.setCurrentMall(resolvedMall);
+          setters.setMalls([resolvedMall]);
+        }
+      } catch {
+        // Keep the static guest shell when the public storefront identity is unavailable.
       }
       try {
         publisher.commitPublic(await publicCatalogRequest);

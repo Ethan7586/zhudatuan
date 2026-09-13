@@ -21,7 +21,7 @@ export class MallOrganizationProvisioningPort {
     const parent = await database.query<{ id: string }>(`select parent.id from organization.organization root
       join organization.unitclosure visible on visible.ancestor_id=root.id
       join organization.organization parent on parent.id=visible.descendant_id
-      where root.id=$1 and root.kind='platform' and root.status='active'
+      where root.id=$1 and root.kind in('platform','mall') and root.status='active'
         and parent.id=$2 and parent.status='active' and (
           parent.kind='enterprise' or (parent.kind='mall' and exists(
             select 1 from organization.organization enterprise

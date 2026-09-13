@@ -19,9 +19,8 @@ export function provisioningOperations(context: ModuleContext): ModuleOperations
       const access = requireAccess(request);
       const body = bodyRecord(request);
       const code = textField(body, 'code', 32);
-      const publicSlug = textField(body, 'publicSlug', 48);
       if (!/^[A-Z][A-Z0-9_]{2,31}$/.test(code)) throw new Error('VALIDATION_FAILED:code');
-      if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(publicSlug)) throw new Error('VALIDATION_FAILED:publicSlug');
+      const publicSlug = await createMall.allocatePublicSlug(database);
       const plan = createMall.plan({
         scope: access.scope.id,
         parent: optionalText(body, 'parentId') ?? textField(body, 'enterpriseId'),

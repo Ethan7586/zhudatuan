@@ -14,6 +14,14 @@ export interface MallExperienceProvisioning {
 }
 
 export class ExperienceProvisioningPort {
+  async allocateH5PublicSlug(database: OperationDatabase): Promise<string> {
+    await database.query("select pg_advisory_xact_lock(hashtext('hbbtzn:h5-domain-sequence:v1'))");
+    const result = await database.query<{ next_sequence: number }>(`select greatest(6,
+      coalesce(max(substring(public_slug from '^h([0-9]+)$')::integer) + 1,6)) next_sequence
+      from experience.application where public_slug ~ '^h[0-9]+$'`);
+    return `h${result.rows[0]?.next_sequence ?? 6}`;
+  }
+
   async publicSlugConflict(database: OperationDatabase, publicSlug: string, application: string): Promise<boolean> {
     const existing = await database.query(`select 1 from experience.application where public_slug=$1 or id=$2 limit 1`, [publicSlug, application]);
     return existing.rows[0] !== undefined;

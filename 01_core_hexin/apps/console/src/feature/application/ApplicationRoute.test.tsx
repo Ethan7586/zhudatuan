@@ -34,13 +34,13 @@ const server = setupServer(
       enterpriseId: body.enterpriseId,
     };
     applicationItems = [{
-      id: 'application:zhenxuan', code: body.code, public_slug: body.publicSlug, name: body.name, status: 'draft', version: 0,
-      head_sequence: 1, head_validation_state: 'valid', published_sequence: null, domain: null,
+      id: 'application:zhenxuan', code: body.code, public_slug: 'h6', name: body.name, status: 'draft', version: 0,
+      head_sequence: 1, head_validation_state: 'valid', published_sequence: null, domain: 'h5',
       mall_id: 'mall:zhenxuan', pool_id: 'pool:zhenxuan', updated_at: '2026-09-01T23:20:00.000Z',
     }, ...applicationItems];
     return HttpResponse.json({
       mallId: 'mall:zhenxuan', enterpriseId: body.enterpriseId, applicationId: 'application:zhenxuan', poolId: 'pool:zhenxuan',
-      code: body.code, publicSlug: body.publicSlug, name: body.name, state: 'ready', publicationState: 'draft',
+      code: body.code, publicSlug: 'h6', name: body.name, state: 'ready', publicationState: 'draft',
     }, { status: 201 });
   }),
   http.all('*/api/v1/experiences/**', ({ request }) => {
@@ -83,23 +83,22 @@ describe('Commerce application workspace', () => {
 
     await user.click(screen.getByRole('button', { name: '创建商城' }));
     let dialog = await screen.findByRole('dialog', { name: '创建商城' });
-    expect((within(dialog).getByRole('combobox', { name: '所属集团' }) as HTMLSelectElement).value).toBe('enterprise:hongtai');
+    expect((within(dialog).getByRole('combobox', { name: '所属上级' }) as HTMLSelectElement).value).toBe('enterprise:hongtai');
     await user.type(within(dialog).getByRole('textbox', { name: '商城名称' }), '主打团甄选商城');
     await user.type(within(dialog).getByRole('textbox', { name: '商城代码' }), 'ZDT_SELECT');
-    await user.type(within(dialog).getByRole('textbox', { name: '访问标识' }), 'zdt-select');
+    expect(within(dialog).getByText('h6.hbbtzn.com 起')).toBeTruthy();
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
     await user.type(within(dialog).getByRole('textbox', { name: '企业／主体名称' }), '主打团科技有限公司');
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
-    await user.selectOptions(within(dialog).getByRole('combobox', { name: '域名方案' }), 'custom');
-    await user.type(within(dialog).getByRole('textbox', { name: '自有域名' }), 'shop.zhudatuan.com');
+    expect(within(dialog).getByText(/h6\.hbbtzn\.com → h7\.hbbtzn\.com/)).toBeTruthy();
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
     await user.selectOptions(within(dialog).getAllByRole('combobox', { name: '接入方式' })[0]!, 'authorize');
     await user.type(within(dialog).getByRole('textbox', { name: '小程序 AppID' }), 'wx1234567890');
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
     await user.click(within(dialog).getByRole('button', { name: '下一步' }));
     expect(within(dialog).getByText('主打团科技有限公司')).toBeTruthy();
-    expect(within(dialog).getByText('shop.zhudatuan.com')).toBeTruthy();
+    expect(within(dialog).getByText('h6.hbbtzn.com 起自动顺序分配')).toBeTruthy();
     await user.click(within(dialog).getByRole('button', { name: '确认创建' }));
 
     dialog = await screen.findByRole('dialog', { name: '验证后创建商城' });
@@ -108,6 +107,7 @@ describe('Commerce application workspace', () => {
 
     dialog = await screen.findByRole('dialog', { name: '商城创建完成' });
     expect(within(dialog).getByText('mall:zhenxuan')).toBeTruthy();
+    expect(within(dialog).getByText('h6.hbbtzn.com')).toBeTruthy();
     expect(within(dialog).getByText('草稿，等待店铺装修')).toBeTruthy();
     expect(writes).toEqual(['identity.stepup.start', 'identity.stepup.complete', 'provisioning.malls.create']);
     expect(provisioningRequest?.scope).toBe('organization-platform-root');
@@ -212,6 +212,10 @@ describe('Commerce application workspace', () => {
     expect(new URLSearchParams(currentSearch).get('campaign')).toBe('keep');
     await user.click(screen.getByRole('button', { name: '已发布' }));
     await waitFor(() => expect(new URLSearchParams(currentSearch).get('view')).toBe('published'));
+    await user.click(screen.getByRole('button', { name: '创建商城' }));
+    const dialog = await screen.findByRole('dialog', { name: '创建商城' });
+    expect((within(dialog).getByRole('combobox', { name: '所属上级' }) as HTMLSelectElement).value)
+      .toBe('mall:hongtai-benefits');
   });
 });
 
@@ -243,7 +247,7 @@ function scope(kind: ConsoleScope['kind'], id: string, name: string): ConsoleSco
 }
 
 function contextFor(activeScope: ConsoleScope): ConsoleContext {
-  const management = activeScope.kind === 'platform' || activeScope.kind === 'enterprise';
+  const management = activeScope.kind === 'platform' || activeScope.kind === 'enterprise' || activeScope.kind === 'mall';
   const platform = activeScope.kind === 'platform' ? activeScope : scope('platform', 'organization-platform-root', '主打团平台');
   const scopes = management
     ? activeScope.kind === 'platform'

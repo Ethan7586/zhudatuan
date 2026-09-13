@@ -89,7 +89,7 @@ function applicationColumns(mode: CommerceWorkspaceMode, actions: ApplicationAct
       render: (row) => (
         <div className="commercepublication">
           <strong>{publicationLabel(row)}</strong>
-          <span>{row.domain ?? '域名未绑定'}</span>
+          <span>{storefrontDomain(row.domain)}</span>
         </div>
       ),
     },
@@ -136,6 +136,11 @@ function applicationColumns(mode: CommerceWorkspaceMode, actions: ApplicationAct
       ),
     },
   ]);
+}
+
+function storefrontDomain(domain: string | null | undefined): string {
+  if (domain === null || domain === undefined) return '域名未绑定';
+  return /^h\d+$/.test(domain) ? `${domain}.hbbtzn.com` : domain;
 }
 
 function tableCaption(mode: CommerceWorkspaceMode): string {

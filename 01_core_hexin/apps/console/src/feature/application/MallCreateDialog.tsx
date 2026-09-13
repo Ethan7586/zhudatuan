@@ -7,7 +7,6 @@ import { MallMobileEnrollment } from './MallMobileEnrollment';
 
 export type MallCreatePhase = 'form' | 'starting' | 'verification' | 'verifying' | 'creating' | 'success';
 const MALL_CODE_PATTERN = /^[A-Z][A-Z0-9_]{2,31}$/;
-const MALL_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{2,47}$/;
 const OTP_PATTERN = /^\d{6}$/;
 
 export function MallCreateDialog({
@@ -46,8 +45,7 @@ export function MallCreateDialog({
   const busy = phase === 'starting' || phase === 'verifying' || phase === 'creating';
 
   const valid = draft.enterpriseId !== '' && draft.name.trim().length > 0
-    && MALL_CODE_PATTERN.test(draft.code)
-    && MALL_SLUG_PATTERN.test(draft.publicSlug);
+    && MALL_CODE_PATTERN.test(draft.code);
   const updateDraft = (field: keyof MallOpeningDraft, value: string) => {
     setDraft((current) => ({ ...current, [field]: value }));
   };
@@ -98,7 +96,7 @@ function Success({ result, onClose }: Readonly<{ result: CreatedMall; onClose: (
       <div><dt>商城名称</dt><dd>{result.name}</dd></div>
       <div><dt>商城代码</dt><dd>{result.code}</dd></div>
       <div><dt>商城 ID</dt><dd>{result.mallId}</dd></div>
-      <div><dt>访问标识</dt><dd>{result.publicSlug}</dd></div>
+      <div><dt>H5 地址</dt><dd>{result.publicSlug}.hbbtzn.com</dd></div>
       <div><dt>商品池</dt><dd>{result.poolId}</dd></div>
       <div><dt>发布状态</dt><dd>草稿，等待店铺装修</dd></div>
     </dl>

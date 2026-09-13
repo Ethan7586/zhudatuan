@@ -4,10 +4,28 @@ import type { OperationDatabase } from '../../../../foundation/application/Modul
 import { CreateMall } from '../../03_application_yingyong/CreateMall';
 
 describe('mall provisioning engine', () => {
-  it('creates one independent mall root, empty product pool and valid storefront draft', async () => {
+  it('allocates h6.hbbtzn.com when h5 is already reserved', async () => {
+    const database = recordingDatabase([], () => []);
+
+    await expect(new CreateMall().allocatePublicSlug(database)).resolves.toBe('h6');
+  });
+
+  it('advances through occupied H5 numbers under one allocation lock', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, (text) => text.startsWith('select greatest')
+      ? [{ next_sequence: 8 }]
+      : []);
+
+    await expect(new CreateMall().allocatePublicSlug(database)).resolves.toBe('h8');
+    expect(calls[0]?.text).toContain('pg_advisory_xact_lock');
+    expect(calls[1]?.text).toContain('greatest(6');
+    expect(calls[1]?.text).toContain("public_slug ~ '^h[0-9]+$'");
+  });
+
+  it('creates one independent L2 mall below an L1 mall with an empty product pool and valid storefront draft', async () => {
     const calls: QueryCall[] = [];
     const database = recordingDatabase(calls, (text) => {
-      if (text.startsWith('select parent.id')) return [{ id: 'enterprise:one' }];
+      if (text.startsWith('select parent.id')) return [{ id: 'mall:l1' }];
       if (text.startsWith('select membership_id')) return [{
         membership_id: 'membership:mall-owner', member_id: 'member:owner', principal_id: 'principal:owner',
       }];
@@ -15,8 +33,8 @@ describe('mall provisioning engine', () => {
     });
     const engine = new CreateMall();
     const plan = engine.plan({
-      scope: 'organization-platform-root',
-      parent: 'enterprise:one',
+      scope: 'mall:l1',
+      parent: 'mall:l1',
       code: 'MALL_ONE',
       publicSlug: 'mall-one',
       name: '一号商城',
@@ -31,8 +49,8 @@ describe('mall provisioning engine', () => {
       organizationId: plan.mall,
       scopeId: plan.mall,
       mallId: plan.mall,
-      parentId: 'enterprise:one',
-      enterpriseId: 'enterprise:one',
+      parentId: 'mall:l1',
+      enterpriseId: 'mall:l1',
       applicationId: plan.application,
       poolId: plan.pool,
       ownerMembershipId: 'membership:mall-owner',
@@ -50,6 +68,8 @@ describe('mall provisioning engine', () => {
     expect(calls.some(({ text }) => text.startsWith('insert into experience.application'))).toBe(true);
     expect(calls.some(({ text }) => text.startsWith('insert into experience.version'))).toBe(true);
     expect(calls.some(({ text }) => text.startsWith('insert into experience.binding'))).toBe(true);
+    expect(calls.find(({ text }) => text.startsWith('select parent.id'))?.text)
+      .toContain("root.kind in('platform','mall')");
     const version = calls.find(({ text }) => text.startsWith('insert into experience.version'));
     expect(JSON.parse(String(version?.values[2]))).toMatchObject({ version: 2, application: plan.application });
   });

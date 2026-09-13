@@ -5,7 +5,7 @@ import type { MallCreateDraft } from './MallCreateCommand';
 import './MallCreateJourney.css';
 
 const steps = [
-  { label: '商城信息', detail: '名称与访问标识' },
+  { label: '商城信息', detail: '名称与自动 H5 域名' },
   { label: '主体资料', detail: '公司与联系人' },
   { label: '经营资料', detail: '类目与店铺类型' },
   { label: '域名品牌', detail: '域名与视觉资产' },
@@ -55,7 +55,7 @@ export function initialMallOpeningDraft(enterpriseId: string): MallOpeningDraft 
     enterpriseId,
     name: '',
     code: '',
-    publicSlug: '',
+    publicSlug: 'auto-h5',
     subjectType: 'enterprise',
     companyName: '',
     creditCode: '',
@@ -151,8 +151,8 @@ export function MallCreateJourney({
           <div><small>STEP {String(step + 1).padStart(2, '0')}</small><h3 id="mallcreatestagetitle">{currentStep.label}</h3></div>
           <span>{currentStep.detail}</span>
         </header>
-        {!available ? <p className="notice" role="status">当前范围没有商城创建能力，请切换到平台控制范围。</p> : null}
-        {enterprises.length === 0 ? <p className="notice" role="status">当前没有可用于建店的集团范围。</p> : null}
+        {!available ? <p className="notice" role="status">当前范围没有下级商城创建能力。</p> : null}
+        {enterprises.length === 0 ? <p className="notice" role="status">当前没有可用于建店的上级范围。</p> : null}
         <JourneyStep step={step} draft={draft} enterprises={enterprises} busy={busy} onChange={onChange} />
         {error === undefined ? null : <p className="notice" role="alert">{error}</p>}
       </section>
@@ -198,11 +198,11 @@ type StepProps = Readonly<{
 
 function BasicStep({ draft, enterprises, busy, onChange }: StepProps & Readonly<{ enterprises: readonly ConsoleScope[] }>) {
   return <div className="mallcreatefields">
-    <p className="mallcreatesectionintro">先建立唯一商城身份。这里的四项会真正进入现有商城创建接口。</p>
+    <p className="mallcreatesectionintro">先建立唯一商城身份；h5 已占用，H5 域名由系统从 h6.hbbtzn.com 起自动顺序分配。</p>
     <div className="fieldgrid">
-      <label>所属集团
-        <select aria-label="所属集团" value={draft.enterpriseId} disabled={busy} required onChange={(event) => onChange('enterpriseId', event.target.value)}>
-          <option value="">请选择集团</option>
+      <label>所属上级
+        <select aria-label="所属上级" value={draft.enterpriseId} disabled={busy} required onChange={(event) => onChange('enterpriseId', event.target.value)}>
+          <option value="">请选择上级</option>
           {enterprises.map((enterprise) => <option key={enterprise.id} value={enterprise.id}>{enterprise.name ?? enterprise.id}</option>)}
         </select>
       </label>
@@ -213,10 +213,7 @@ function BasicStep({ draft, enterprises, busy, onChange }: StepProps & Readonly<
         <input aria-label="商城代码" value={draft.code} maxLength={32} disabled={busy} required placeholder="例如：ZHENXUAN" onChange={(event) => onChange('code', event.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))} />
         <small className="muted">3～32 位，以字母开头，只使用大写字母、数字和下划线。</small>
       </label>
-      <label>访问标识
-        <input aria-label="访问标识" value={draft.publicSlug} maxLength={48} disabled={busy} required placeholder="例如：zhenxuan" onChange={(event) => onChange('publicSlug', event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} />
-        <small className="muted">3～48 位，用于商城访问地址，只使用小写字母、数字和短横线。</small>
-      </label>
+      <div className="mallcreateaddresspreview"><small>自动 H5 地址</small><strong>h6.hbbtzn.com 起</strong><span>下一家依次使用 h7、h8……</span></div>
     </div>
   </div>;
 }
@@ -252,14 +249,11 @@ function BusinessStep({ draft, busy, onChange }: StepProps) {
 }
 
 function DomainStep({ draft, busy, onChange }: StepProps) {
-  const preview = draft.publicSlug === '' ? '等待填写访问标识' : `zhudatuan.com/m/${draft.publicSlug}`;
   return <div className="mallcreatefields">
-    <p className="mallcreatesectionintro">先确定平台地址，再决定是否绑定商家自有域名；证书与解析由后续后台能力接管。</p>
-    <div className="mallcreateaddresspreview"><small>平台访问地址（预览）</small><strong>{preview}</strong><span>最终地址规则以后端发布配置为准</span></div>
+    <p className="mallcreatesectionintro">每个 H5 使用独立的 hbbtzn.com 子域名，系统创建时自动选择下一个空闲编号。</p>
+    <div className="mallcreateaddresspreview"><small>域名分配规则</small><strong>h6.hbbtzn.com → h7.hbbtzn.com → h8.hbbtzn.com</strong><span>HTTPS 证书由平台统一托管</span></div>
     <div className="fieldgrid">
-      <SelectField label="域名方案" field="domainMode" value={draft.domainMode} busy={busy} onChange={onChange} options={[['platform', '先使用平台地址'], ['custom', '绑定自有域名'], ['later', '稍后配置']]} />
-      {draft.domainMode === 'custom' ? <TextField label="自有域名" field="customDomain" value={draft.customDomain} busy={busy} onChange={onChange} placeholder="例如：shop.example.com" /> : null}
-      <SelectField label="HTTPS 证书" field="certificateMode" value={draft.certificateMode} busy={busy} onChange={onChange} options={[['managed', '平台自动申请'], ['self', '商家提供证书'], ['later', '稍后配置']]} />
+      <SelectField label="HTTPS 证书" field="certificateMode" value={draft.certificateMode} busy={busy} onChange={onChange} options={[['managed', '平台自动申请']]} />
     </div>
     <div className="mallcreateuploads">
       <UploadField label="商城 Logo" field="brandLogoFile" value={draft.brandLogoFile} busy={busy} onChange={onChange} hint="建议正方形 PNG；本轮不上传。" />
@@ -309,18 +303,18 @@ function ReviewStep({ draft }: Readonly<{ draft: MallOpeningDraft }>) {
   return <div className="mallcreatereview">
     <p className="mallcreatesectionintro">确认商城核心信息。扩展资料将在对应后台模块接通后分别保存，不会混入商城创建接口。</p>
     <div className="mallcreatesummary">
-      <Summary label="商城" value={draft.name || '未填写'} detail={`${draft.code || '—'} · ${draft.publicSlug || '—'}`} tone="ready" />
+      <Summary label="商城" value={draft.name || '未填写'} detail={`${draft.code || '—'} · H5 域名自动分配`} tone="ready" />
       <Summary label="经营主体" value={draft.companyName || '待补充'} detail={subjectLabel(draft.subjectType)} tone={draft.companyName === '' ? 'waiting' : 'ready'} />
-      <Summary label="域名" value={domainSummary(draft)} detail={draft.certificateMode === 'managed' ? '平台托管证书' : '证书待配置'} tone="waiting" />
+      <Summary label="域名" value={domainSummary()} detail="平台托管证书" tone="waiting" />
       <Summary label="微信小程序" value={channelSummary(draft.miniProgramMode)} detail={draft.miniProgramAppId || '未提交授权资料'} tone={draft.miniProgramMode === 'later' ? 'waiting' : 'ready'} />
       <Summary label="微信公众号" value={channelSummary(draft.officialAccountMode)} detail={draft.officialAccountAppId || '未提交授权资料'} tone={draft.officialAccountMode === 'later' ? 'waiting' : 'ready'} />
       <Summary label="支付与履约" value={paymentSummary(draft.paymentPlan)} detail={deliverySummary(draft.deliveryMode)} tone="waiting" />
     </div>
     <section className="mallcreatecommitboundary" role="note">
       <strong>本次真正提交</strong>
-      <ul><li>商城名称、代码与访问标识</li><li>所属集团与独立商城身份</li><li>独立商品池和开店草稿</li></ul>
+      <ul><li>商城名称、代码与自动 H5 域名</li><li>所属集团与独立商城身份</li><li>独立商品池和开店草稿</li></ul>
       <strong>暂不提交后台</strong>
-      <ul><li>公司证照与联系人资料</li><li>自有域名、Logo 与证书</li><li>小程序、公众号、支付、物流和发票配置</li></ul>
+      <ul><li>公司证照与联系人资料</li><li>Logo 与浏览器图标</li><li>小程序、公众号、支付、物流和发票配置</li></ul>
     </section>
   </div>;
 }
@@ -390,10 +384,8 @@ function channelSummary(value: string): string {
   return ({ later: '稍后接入', authorize: '授权已有账号', register: '申请新账号' } as Record<string, string>)[value] ?? value;
 }
 
-function domainSummary(draft: MallOpeningDraft): string {
-  if (draft.domainMode === 'custom') return draft.customDomain || '待填写自有域名';
-  if (draft.domainMode === 'later') return '稍后配置';
-  return draft.publicSlug === '' ? '平台地址待生成' : `zhudatuan.com/m/${draft.publicSlug}`;
+function domainSummary(): string {
+  return 'h6.hbbtzn.com 起自动顺序分配';
 }
 
 function paymentSummary(value: string): string {

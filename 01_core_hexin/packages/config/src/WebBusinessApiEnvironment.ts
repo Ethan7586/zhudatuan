@@ -87,7 +87,7 @@ export function validateWebBusinessApiEnvironment(source: EnvironmentSource): vo
     throw new Error('NODE_MANIFEST_DIGEST_INVALID');
   }
   webBusinessApiPort(source);
-  if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(source.PUBLIC_MALL_SLUG!)) throw new Error('PUBLIC_MALL_SLUG_INVALID');
+  if (!validPublicMallSlug(source.PUBLIC_MALL_SLUG!)) throw new Error('PUBLIC_MALL_SLUG_INVALID');
   webBusinessApiPublicMallHostMappings(source);
 }
 
@@ -112,12 +112,16 @@ export function webBusinessApiPublicMallHostMappings(
     const host = entry.slice(0, separator).trim().toLowerCase();
     const slug = entry.slice(separator + 1).trim();
     if (separator < 1 || !/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(host)
-      || !/^[a-z0-9][a-z0-9-]{2,47}$/.test(slug) || mappings[host] !== undefined) {
+      || !validPublicMallSlug(slug) || mappings[host] !== undefined) {
       throw new Error('PUBLIC_MALL_HOST_MAPPINGS_INVALID');
     }
     mappings[host] = slug;
   }
   return Object.freeze(mappings);
+}
+
+function validPublicMallSlug(value: string): boolean {
+  return /^[a-z0-9][a-z0-9-]{2,47}$/.test(value) || /^h[0-9]+$/.test(value);
 }
 
 function secureEndpoint(value: string | undefined, code: string): void {

@@ -16,6 +16,7 @@ domains:
   storefrontAliases:
     - www.hbbtzn.com
     - h5.hbbtzn.com
+    - h6.hbbtzn.com
     - mall.hbbtzn.com
   console: console.hbbtzn.com
   accounts: accounts.hbbtzn.com

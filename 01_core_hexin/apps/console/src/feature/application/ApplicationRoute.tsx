@@ -446,7 +446,8 @@ export function Component() {
       {command?.kind === 'copy' ? <ApplicationCopyDialog context={context} record={command.record} onClose={closeCommand} onSuccess={completeCommand} /> : null}
       {command?.kind === 'disable' ? <ApplicationDisableDialog context={context} record={command.record} onClose={closeCommand} onSuccess={completeCommand} /> : null}
       {mallCreateOpen ? <MallCreateDialog open phase={mallCreatePhase} enterprises={enterpriseScopes}
-        preferredEnterpriseId={context.scope.kind === 'enterprise' ? context.scope.id : enterpriseScopes[0]?.id}
+        preferredEnterpriseId={context.scope.kind === 'enterprise' || context.scope.kind === 'mall'
+          ? context.scope.id : enterpriseScopes[0]?.id}
         available={mallCreateAvailable} challengeExpiresAt={mallCreateChallenge?.expires_at}
         error={mallCreateError} result={mallCreateResult} context={context} mobileEnrollment={mallMobileEnrollment}
         onSubmit={(draft) => { void beginMallCreate(draft); }} onVerify={(code) => { void verifyAndCreateMall(code); }}

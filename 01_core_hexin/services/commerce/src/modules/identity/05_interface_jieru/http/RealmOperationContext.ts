@@ -54,7 +54,7 @@ export function registrationReference(body: Readonly<Record<string, unknown>>): 
 
 export function storefrontSlug(body: Readonly<Record<string, unknown>>): string {
   const value = textField(body, 'application', 48).trim();
-  if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(value)) throw new Error('STOREFRONT_NOT_FOUND');
+  if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(value) && !/^h[0-9]+$/.test(value)) throw new Error('STOREFRONT_NOT_FOUND');
   return value;
 }
 

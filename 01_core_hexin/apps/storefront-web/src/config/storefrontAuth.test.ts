@@ -38,6 +38,9 @@ describe('storefront auth origin boundary', () => {
     expect(resolveStorefrontApplication('internal.fufu.wang')).toBe('zhudatuan-storefront');
     expect(resolveStorefrontApplication('beta.fufu.wang')).toBe('zhudatuan-storefront');
     expect(resolveStorefrontApplication('mall.hbbtzn.com')).toBe('zdt-l1-verify');
+    expect(resolveStorefrontApplication('h5.hbbtzn.com')).toBe('zdt-l1-verify');
+    expect(resolveStorefrontApplication('h6.hbbtzn.com')).toBe('h6');
+    expect(resolveStorefrontApplication('h27.hbbtzn.com')).toBe('h27');
     const zhudatuan = new URL(storefrontAuthHref('fufu.wang'));
     const hongtai = new URL(storefrontAuthHref('hbbtzn.com'));
     expect(zhudatuan.origin).toBe('https://accounts.fufu.wang');

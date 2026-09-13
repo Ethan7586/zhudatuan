@@ -186,7 +186,7 @@ function applicationIdentity(body: Readonly<Record<string, unknown>>): Readonly<
   const code = textField(body, 'code', 32);
   const publicSlug = textField(body, 'publicSlug', 48);
   if (!/^[A-Z][A-Z0-9_]{2,31}$/.test(code)) throw new Error('VALIDATION_FAILED:code');
-  if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(publicSlug)) throw new Error('VALIDATION_FAILED:publicSlug');
+  if (!/^[a-z0-9][a-z0-9-]{2,47}$/.test(publicSlug) && !/^h[0-9]+$/.test(publicSlug)) throw new Error('VALIDATION_FAILED:publicSlug');
   return Object.freeze({ code, publicSlug });
 }
 

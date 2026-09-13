@@ -158,6 +158,12 @@
           "surface_ref": "surface:storefront"
         },
         {
+          "host": "h6.hbbtzn.com",
+          "binding_ref": { "ref": "domain:hbbtzn:l1:storefront:h6", "version": "1" },
+          "application_ref": "application:fa37de9da4b13b3a18882ece23d6bee2",
+          "surface_ref": "surface:storefront"
+        },
+        {
           "host": "mall.hbbtzn.com",
           "binding_ref": { "ref": "domain:hbbtzn:l1:storefront:mall", "version": "1" },
           "application_ref": "application:efea797b2469a1280086d3d9f1fe1355",
@@ -169,6 +175,7 @@
         { "ref": "application:commerce-api", "version": "1" },
         { "ref": "application:console", "version": "1" },
         { "ref": "application:efea797b2469a1280086d3d9f1fe1355", "version": "1" },
+        { "ref": "application:fa37de9da4b13b3a18882ece23d6bee2", "version": "1" },
         { "ref": "application:identity", "version": "1" }
       ],
       "surfaces": [

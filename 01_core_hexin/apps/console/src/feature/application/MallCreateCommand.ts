@@ -74,13 +74,16 @@ export type MallStepupChallenge = z.infer<typeof StepupChallengeSchema>;
 export type MallMobileChallenge = z.infer<typeof MobileChallengeSchema>;
 
 export function mallProvisioningScope(context: ConsoleContext): ConsoleScope | undefined {
-  if (context.scope.kind === 'platform') return context.scope;
+  if (context.scope.kind === 'platform' || context.scope.kind === 'mall') return context.scope;
   return context.scopes.find((scope) => scope.kind === 'platform');
 }
 
 export function mallEnterpriseScopes(context: ConsoleContext): readonly ConsoleScope[] {
-  const values = context.scope.kind === 'enterprise' ? [context.scope, ...context.scopes] : context.scopes;
-  const unique = [...new Map(values.filter((scope) => scope.kind === 'enterprise').map((scope) => [scope.id, scope])).values()];
+  const values = context.scope.kind === 'enterprise' || context.scope.kind === 'mall'
+    ? [context.scope, ...context.scopes]
+    : context.scopes;
+  const unique = [...new Map(values.filter((scope) => scope.kind === 'enterprise' || scope.kind === 'mall')
+    .map((scope) => [scope.id, scope])).values()];
   return Object.freeze(unique.sort((left, right) => (left.name ?? left.id).localeCompare(right.name ?? right.id)));
 }
 

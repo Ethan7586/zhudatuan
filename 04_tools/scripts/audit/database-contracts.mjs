@@ -225,6 +225,7 @@ const REPAIR_FILES = [
   '20260913020500_backfill_hbbtzn_storefront_member_l6.sql',
   '20260913021500_align_purchase_supplier_flow_access.sql',
   '20260913021600_align_purchase_operation_completion_outbox.sql',
+  '20260913022500_enable_hbbtzn_l2_h5_provisioning.sql',
 ];
 
 const mode = process.argv[2];
