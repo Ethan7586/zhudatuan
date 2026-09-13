@@ -1,4 +1,4 @@
-import { Badge, Button, MasterDetail, Surface, WorkspaceHero } from '@shop/design';
+import { Badge, Button, Surface } from '@shop/design';
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { selectConsoleNavigationItems } from '../../entity/navigation/ConsoleNavigation';
@@ -47,26 +47,9 @@ export function Component() {
     ? roles.governance.map(({ label }) => label).join(' + ')
     : '';
 
-  const profileMaster = <div className="profilestack">
-    {businessWorkspaceAvailable ? null : (
-      <Surface className="profiledegradednotice" depth="low" padding="compact" role="status">
-        <strong>待授权管理员</strong>
-        <span>账号已开通，正在等待 Owner 或高级管理员分配业务身份；授权后菜单、待办与业务数据会按实际权限出现。</span>
-      </Surface>
-    )}
-    {context.profileState === 'unavailable' ? (
-      <Surface className="profiledegradednotice" depth="low" padding="compact" role="status">
-        <strong>个人资料暂不可用</strong>
-        <span>工作空间和业务功能仍可继续使用，请稍后刷新重试。</span>
-      </Surface>
-    ) : null}
+  const accountCard = (
     <Surface className="profilepanel profilebasicpanel" depth="low" padding="spacious" role="region" aria-labelledby="profilebasictitle">
-      <SectionHeading eyebrow="ACCOUNT" title="基本资料" description="账户归属个人，与工作身份分开管理。" id="profilebasictitle" />
-      <div className="profileidentity">
-        <span className="profileavatar" aria-hidden="true">{avatarLetter(context.profile.display_name)}</span>
-        <h3>{normalizeConsoleCopy(context.profile.display_name)}</h3>
-        <Badge tone={profileStatus.tone}>{profileStatus.label}</Badge>
-      </div>
+      <SectionHeading eyebrow="ACCOUNT" title="账户资料" description="账户归属个人，不随工作范围切换。" id="profilebasictitle" />
       <dl className="profilefacts">
         <Fact label="员工号" value={context.profile.employee_no ?? '未设置'} />
         <Fact label="脱敏手机号" value={phone} />
@@ -76,7 +59,9 @@ export function Component() {
         <Fact label="会话同步" value={formatDateTime(context.session.syncedAt)} />
       </dl>
     </Surface>
+  );
 
+  const workspaceCard = (
     <Surface className="profilepanel profileworkspacepanel" depth="low" padding="spacious" role="region" aria-labelledby="profileworkspacetitle">
       <SectionHeading eyebrow="WORKSPACE" title="当前工作空间" description="切换后，菜单与数据按授权范围重新计算。" id="profileworkspacetitle" />
       <div className="profilecurrentscope">
@@ -89,7 +74,7 @@ export function Component() {
         <Fact label="路径层数" value={`${scopeTrail.length} 层`} />
       </dl>
     </Surface>
-  </div>;
+  );
 
   const profileDetail = <Surface className="profilepanel profileauthoritypanel" depth="low" padding="spacious" role="region" aria-labelledby="profileauthoritytitle">
     <SectionHeading eyebrow="IDENTITY & ACCESS" title="我的身份与实际权限" description="只展示当前范围内真正生效的结果。" id="profileauthoritytitle"
@@ -151,25 +136,64 @@ export function Component() {
 
   return (
     <section className="profileworkspace" aria-label="个人信息工作台">
-      <WorkspaceHero className="profilepagehero" eyebrow="PERSONAL CENTER · ACCOUNT & ACCESS" title="个人信息"
-        description="管理账户资料，并清楚了解“我以什么身份、在哪个范围、可以做什么”。"
-        meta={governanceIdentity === '' ? undefined : (
-          <div className="profileprimaryidentity" role="status" aria-label={`当前治理身份：${governanceIdentity}`}>
-            <span>当前治理身份</span>
-            <strong>{governanceIdentity}</strong>
+      <header className="profilehero">
+        <div className="profileherotopline">
+          <img src="/brand/morvia-compact-lockup.svg" alt="MORVIA" />
+          <span>账户与工作身份</span>
+        </div>
+        <div className="profileherobody">
+          <div className="profileherocopy">
+            <p>PERSONAL CENTER</p>
+            <h1>个人信息</h1>
+            <span>一个页面看清账户、工作身份、授权范围与安全状态。</span>
           </div>
-        )} />
+          <div className="profileidentityplate">
+            <span className="profileavatar" aria-hidden="true">{avatarLetter(context.profile.display_name)}</span>
+            <div className="profileidentitycopy">
+              <span>当前账户</span>
+              <strong>{normalizeConsoleCopy(context.profile.display_name)}</strong>
+              <small>{businessIdentity} · {scopeDisplayName(context.scope)}</small>
+            </div>
+            <Badge tone={profileStatus.tone}>{profileStatus.label}</Badge>
+            <div className="profileidentitymetrics">
+              <div role={governanceIdentity === '' ? undefined : 'status'}
+                aria-label={governanceIdentity === '' ? undefined : `当前治理身份：${governanceIdentity}`}>
+                <span>治理身份</span><strong>{governanceIdentity || '未分配'}</strong>
+              </div>
+              <div><span>有效权限</span><strong>{permissionCount} 项</strong></div>
+              <div><span>认证强度</span><strong>AAL{context.session.assurance.level}</strong></div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {businessWorkspaceAvailable ? null : (
+        <Surface className="profiledegradednotice" depth="low" padding="compact" role="status">
+          <strong>待授权管理员</strong>
+          <span>账号已开通，正在等待 Owner 或高级管理员分配业务身份；授权后菜单、待办与业务数据会按实际权限出现。</span>
+        </Surface>
+      )}
+      {context.profileState === 'unavailable' ? (
+        <Surface className="profiledegradednotice" depth="low" padding="compact" role="status">
+          <strong>个人资料暂不可用</strong>
+          <span>工作空间和业务功能仍可继续使用，请稍后刷新重试。</span>
+        </Surface>
+      ) : null}
 
       <Surface className="profileinfobanner" depth="flat" padding="default" radius="large">
-        <span className="profileinfoicon" aria-hidden="true">i</span>
-        <div><strong>身份名称由组织自由定义</strong><p>真正生效的是权限集合与管理范围，“财务”只是便于理解与分配的名称。</p></div>
+        <span className="profileinfoicon" aria-hidden="true">01</span>
+        <div><strong>身份名称用于表达分工，权限与范围决定实际能力</strong><p>例如“财务”只是组织名称，不会自行扩大任何系统权限。</p></div>
         <Button tone="quiet" onPress={() => document.getElementById('profilepermissiontitle')?.scrollIntoView({ block: 'start' })}>
-          查看权限说明 →
+          查看权限明细
         </Button>
       </Surface>
 
-      <MasterDetail className="profilemasterdetail" master={profileMaster} detail={profileDetail}
-        masterLabel="基本资料与当前工作空间" detailLabel="身份、范围与实际权限" />
+      <div className="profileoverviewgrid" aria-label="账户与当前工作空间">
+        {accountCard}
+        {workspaceCard}
+      </div>
+
+      {profileDetail}
     </section>
   );
 }

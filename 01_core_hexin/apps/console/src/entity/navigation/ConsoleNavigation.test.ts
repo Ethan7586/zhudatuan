@@ -5,7 +5,7 @@ import { consoleModules } from '../../route/ConsoleModuleRegistry';
 import { selectConsoleNavigationItems } from './ConsoleNavigation';
 
 describe('Console navigation selector', () => {
-  it('derives the 13 ordinary main items and bottom support in navigation order', () => {
+  it('derives the 12 ordinary main items followed by engineering and support', () => {
     const items = selectConsoleNavigationItems(consoleModules, 'enterprise');
 
     expect(items.filter(({ placement }) => placement === 'main').map(({ moduleId, label, icon, order }) => ({ moduleId, label, icon, order }))).toEqual([
@@ -21,9 +21,9 @@ describe('Console navigation selector', () => {
       { moduleId: 'finance', label: '财务与对账台', icon: 'finance', order: 90 },
       { moduleId: 'access', label: '管理与权限', icon: 'members', order: 100 },
       { moduleId: 'qualification', label: '系统治理台', icon: 'system', order: 110 },
-      { moduleId: 'engineering', label: '工程与架构', icon: 'system', order: 120 },
     ]);
     expect(items.filter(({ placement }) => placement === 'bottom')).toEqual([
+      expect.objectContaining({ moduleId: 'engineering', suffix: 'system/engineering', label: '工程与架构', icon: 'system', order: 120 }),
       expect.objectContaining({ moduleId: 'support', suffix: 'support', label: '服务中心', icon: 'support', order: 130 }),
     ]);
     expect(items.find(({ moduleId }) => moduleId === 'control')).toBeUndefined();

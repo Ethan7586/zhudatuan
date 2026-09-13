@@ -113,7 +113,7 @@ describe('registered Console modules', () => {
     expect(consoleModules.every(({ status }) => status === 'enabled')).toBe(true);
     expect(consoleModules.filter(({ navigation }) => navigation.placement === 'main').map(({ id }) => id)).toEqual([
       'cockpit', 'control', 'applications', 'products', 'supply-chain', 'orders', 'referral', 'channels',
-      'vouchers', 'finance', 'storefront-members', 'access', 'qualification', 'engineering', 'reports',
+      'vouchers', 'finance', 'storefront-members', 'access', 'qualification', 'reports',
     ]);
     expect(consoleModuleById.get('reports')?.navigation).toMatchObject({
       placement: 'main', group: 'overview', order: 15, icon: 'trend',
@@ -122,6 +122,7 @@ describe('registered Console modules', () => {
       placement: 'main', group: 'overview', label: '商家服务中心', icon: 'control', scopeKinds: ['platform'],
     });
     expect(consoleModuleById.get('support')?.navigation).toMatchObject({ placement: 'bottom', label: '服务中心' });
+    expect(consoleModuleById.get('engineering')?.navigation).toMatchObject({ placement: 'bottom', label: '工程与架构', order: 120 });
     expect(consoleModuleById.get('referral')?.navigation).toMatchObject({ preferredScopeKind: 'mall' });
   });
 

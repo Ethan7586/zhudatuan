@@ -100,10 +100,11 @@ describe('personal profile workspace', () => {
   it('locks the desktop, narrow-tablet, mobile, and minimum-width responsive modes', () => {
     const css = ['profile.css', 'profile-access.css', 'profile-responsive.css']
       .map((file) => readFileSync(`src/feature/profile/${file}`, 'utf8')).join('\n');
-    expect(css).toMatch(/@media \(max-width: 82\.125rem\)/);
-    expect(css).toMatch(/\.profilemasterdetail[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
-    expect(css).toMatch(/@media \(min-width: 40\.0625rem\) and \(max-width: 82\.125rem\)/);
-    expect(css).toMatch(/grid-template-areas:[\s\S]*'avatar name'[\s\S]*'avatar status'/);
+    expect(css).toMatch(/@media \(max-width: 72rem\)/);
+    expect(css).toMatch(/@media \(max-width: 60rem\)/);
+    expect(css).toMatch(/\.profileoverviewgrid[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
+    expect(css).toMatch(/@media \(max-width: 40rem\)/);
+    expect(css).toMatch(/\.profileidentitymetrics[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
     expect(css).toMatch(/@media \(max-width: 22rem\)/);
     expect(css).toMatch(/overflow-wrap: anywhere/);
   });

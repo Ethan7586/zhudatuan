@@ -68,20 +68,21 @@ describe('Sidebar commerce navigation', () => {
     expect(screen.getByRole('button', { name: '渠道接入系统' })).toBeTruthy();
   });
 
-  it('keeps ordinary main items in order, with engineering immediately above profile', () => {
+  it('keeps engineering immediately below profile and above customer service', () => {
     const { container } = renderSidebar('enterprise', false, vi.fn());
     const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
     const labels = within(primaryNavigation).getAllByRole('button').map((button) => button.getAttribute('aria-label'));
     const profile = container.querySelector('.sidebarprofile');
+    const engineeringNavigation = screen.getByRole('navigation', { name: '工程与架构' });
     const supportNavigation = screen.getByRole('navigation', { name: '服务中心' });
 
     expect(labels).toEqual([
       '生意看板', '数据报表', '商城管理', '商品管理', '供应链管理', '订单管理系统', '分布式平台',
-      '渠道接入系统', '卡券治理台', '财务与对账台', '管理与权限', '系统治理台', '工程与架构',
+      '渠道接入系统', '卡券治理台', '财务与对账台', '管理与权限', '系统治理台',
     ]);
-    expect(labels.at(-1)).toBe('工程与架构');
     expect(primaryNavigation.nextElementSibling).toBe(profile);
-    expect(profile?.nextElementSibling).toBe(supportNavigation);
+    expect(profile?.nextElementSibling).toBe(engineeringNavigation);
+    expect(engineeringNavigation.nextElementSibling).toBe(supportNavigation);
   });
 
   it('opens the personal center from the profile control and marks it active', async () => {
@@ -128,18 +129,20 @@ describe('Sidebar commerce navigation', () => {
     expect(onNavigate).not.toHaveBeenCalled();
   });
 
-  it.each([false, true])('keeps the profile above bottom-pinned customer service when collapsed=%s', async (collapsed) => {
+  it.each([false, true])('keeps profile, engineering, and customer service in bottom order when collapsed=%s', async (collapsed) => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
     const { container } = renderSidebar('mall', collapsed, onNavigate);
     const primaryNavigation = screen.getByRole('navigation', { name: '工作台与治理系统' });
+    const engineeringNavigation = screen.getByRole('navigation', { name: '工程与架构' });
     const supportNavigation = screen.getByRole('navigation', { name: '服务中心' });
     const supportButton = within(supportNavigation).getByRole('button', { name: '服务中心' });
     const profile = container.querySelector('.sidebarprofile');
 
     expect(profile).toBeInstanceOf(HTMLElement);
     expect(primaryNavigation.nextElementSibling).toBe(profile);
-    expect(profile?.nextElementSibling).toBe(supportNavigation);
+    expect(profile?.nextElementSibling).toBe(engineeringNavigation);
+    expect(engineeringNavigation.nextElementSibling).toBe(supportNavigation);
     expect(navigationCss).toMatch(/\.sidebarnavigation\s*\{[^}]*flex:\s*0 1 auto;/);
     expect(navigationCss).toMatch(/\.sidebarsupport\s*\{[^}]*margin-top:\s*auto;/);
     expect(navigationCss).toMatch(/\.consolesidebar > \.sidebarprofile\s*\{[^}]*margin-top:\s*0;/);

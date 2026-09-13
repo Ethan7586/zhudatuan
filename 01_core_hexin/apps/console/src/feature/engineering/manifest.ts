@@ -4,7 +4,7 @@ export const engineeringModule = {
   id: 'engineering',
   status: 'enabled',
   navigation: {
-    placement: 'main',
+    placement: 'bottom',
     group: 'organization',
     order: 120,
     label: '工程与架构',

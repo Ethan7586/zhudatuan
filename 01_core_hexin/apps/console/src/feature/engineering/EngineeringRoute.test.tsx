@@ -12,7 +12,7 @@ afterEach(cleanup);
 describe('Engineering and architecture center', () => {
   it('registers one platform-preferred entry and reuses the existing runtime read capability for all routes', () => {
     expect(engineeringModule.navigation).toMatchObject({
-      placement: 'main', order: 120, label: '工程与架构', preferredScopeKind: 'platform',
+      placement: 'bottom', order: 120, label: '工程与架构', preferredScopeKind: 'platform',
     });
     expect(engineeringModule.routes).toHaveLength(4);
     expect(engineeringModule.routes.every(({ operations }) =>
