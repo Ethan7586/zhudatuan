@@ -5,6 +5,8 @@ interface ProductCatalogHeaderProps {
   readonly page?: ListingPage;
   readonly previewEnabled: boolean;
   readonly partnerWorkspace: boolean;
+  readonly workspace: 'catalog' | 'selection';
+  readonly onWorkspace: (workspace: 'catalog' | 'selection') => void;
   readonly status: string;
   readonly onStatus: (status: string) => void;
   readonly exportReady: boolean;
@@ -28,7 +30,7 @@ const tabs = Object.freeze([
   { key: 'unpublished', label: '已下架' },
 ] as const);
 
-export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, status, onStatus, exportReady, writeEnabled, releaseDisabledReason,
+export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, workspace, onWorkspace, status, onStatus, exportReady, writeEnabled, releaseDisabledReason,
   releasePending, publicationTask, releaseFeedback, onImport, onCreate, onExport, onRelease, onRetry }: ProductCatalogHeaderProps) {
   const preview = previewEnabled && page?.preview?.kind === 'console-product-v1' ? page.preview : undefined;
   const coreTotal = preview === undefined ? page?.total_count : preview.facets.statuses.reduce((total, facet) => total + facet.count, 0) || preview.totalCount;
@@ -43,12 +45,19 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, s
       <header className="producthero">
         <div className="productherotitle">
           <div>
-            <h1>{partnerWorkspace ? '我的商品' : '商品目录'}</h1>
-            {coreTotal === undefined ? null : <strong>{formatCount(coreTotal)}</strong>}
-            <small>{partnerWorkspace ? '维护商品资料与平台采用状态' : '点击商品查看资料、供应关系与上下架记录'}</small>
+            {partnerWorkspace ? <><h1>我的商品</h1>{coreTotal === undefined ? null : <strong>{formatCount(coreTotal)}</strong>}</> : (
+              <><h1 className="sr-only">商品管理</h1><nav className="productworkspacetabs" aria-label="商品工作区">
+                <button type="button" aria-current={workspace === 'catalog' ? 'page' : undefined} onClick={() => onWorkspace('catalog')}>
+                  商品目录{workspace !== 'catalog' || coreTotal === undefined ? null : <strong>{formatCount(coreTotal)}</strong>}
+                </button>
+                <button type="button" aria-current={workspace === 'selection' ? 'page' : undefined} onClick={() => onWorkspace('selection')}>选品中心</button>
+              </nav></>
+            )}
+            <small>{partnerWorkspace ? '维护商品资料与平台采用状态' : workspace === 'selection'
+              ? '从供应链与品牌货盘快速挑选商品' : '点击商品查看资料、供应关系与上下架记录'}</small>
           </div>
         </div>
-        <div className="productheroactions" role="group" aria-label={partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>
+        {workspace === 'selection' ? null : <div className="productheroactions" role="group" aria-label={partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>
           <button className="productaction" type="button" disabled={!writeEnabled} onClick={onImport}
             title={writeEnabled ? '批量导入本企业商品' : '当前范围没有商品导入权限'}>
             <ProductIcon name="upload" />批量导入
@@ -75,12 +84,12 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, s
             title={writeEnabled ? '手工录入单个商品并保存为草稿' : '当前范围没有商品创建权限'}>
             <ProductIcon name="plus" />新建商品
           </button>
-        </div>
+        </div>}
         <p id="productcontractnotice" className="sr-only">
           商品写操作仅在当前商城已授权的管理范围内可用。
         </p>
       </header>
-      {!partnerWorkspace && releaseStateVisible ? (
+      {workspace === 'catalog' && !partnerWorkspace && releaseStateVisible ? (
         <section id="productreleasestate" className="productreleasestate" aria-label="商品发布状态">
           {publicationTask === undefined ? null : (
             <PublicationTaskStatus task={publicationTask} retryPending={releasePending} onRetry={onRetry} />
@@ -92,7 +101,7 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, s
           )}
         </section>
       ) : null}
-      <nav className="producttabs" aria-label="按商品状态筛选">
+      {workspace === 'catalog' ? <nav className="producttabs" aria-label="按商品状态筛选">
         {tabs.map((tab) => {
           const count = tab.key === '' ? coreTotal : preview?.facets.statuses.find((facet) => facet.value === tab.key)?.count
             ?? page?.status_counts?.[tab.key];
@@ -104,7 +113,7 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, s
             </button>
           );
         })}
-      </nav>
+      </nav> : null}
     </>
   );
 }

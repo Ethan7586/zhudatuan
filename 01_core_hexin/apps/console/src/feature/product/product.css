@@ -66,6 +66,30 @@
   font-weight: 800;
   letter-spacing: -0.02em;
 }
+.productworkspacetabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.productworkspacetabs button {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 0 11px;
+  color: #6b778c;
+  font-size: 16px;
+  font-weight: 760;
+  letter-spacing: -.015em;
+  cursor: pointer;
+}
+.productworkspacetabs button:first-child { margin-left: -11px; }
+.productworkspacetabs button:hover { background: #f4f7fb; color: #253858; }
+.productworkspacetabs button[aria-current='page'] { background: #edf3ff; color: #143a8f; }
+.productworkspacetabs button strong { min-width: 25px; height: 22px; padding: 0 7px; background: #fff; font-size: 11px; }
 .productherotitle strong {
   display: grid;
   min-width: 26px;

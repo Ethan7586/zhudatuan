@@ -15,6 +15,8 @@ import { ProductFilterForm } from './ProductFilter';
 import { canCreateCatalogImport } from './ProductImportCommand';
 import { ProductImportDialog } from './ProductImportDialog';
 import { ProductPagination } from './ProductPagination';
+import { ProductSelectionCenter } from './ProductSelectionCenter';
+import { canSelectProducts, selectProducts } from './ProductSelectionCommand';
 import { canManageListing, canReadPublicationTask, publishReadyListings, readPublicationTask,
   readyPublicationUnavailableReason, retryPublicationFailures, setListingPublication,
   type ListingPublicationAction } from './ProductPublicationCommand';
@@ -27,6 +29,7 @@ import './product-dialogs.css';
 import './product-drawer.css';
 import './product-drawer-panels.css';
 import './product-responsive.css';
+import './product-selection.css';
 
 const allColumns: readonly ProductColumnKey[] = Object.freeze(['category', 'sku', 'malls', 'price', 'stock', 'status', 'updated']);
 const coreColumns: readonly ProductColumnKey[] = Object.freeze(['category', 'sku', 'status', 'updated']);
@@ -52,6 +55,7 @@ export function Component() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useSearchParams();
   const partnerWorkspace = context.scope.kind === 'supplier' || context.scope.kind === 'brand';
+  const selectionWorkspace = !partnerWorkspace && search.get('workspace') === 'selection';
   const previewScope = context.scope.kind === 'platform' && context.scope.id === 'platform:preview';
   const limitValue = Number(search.get('limit') ?? 50);
   const limit = pageSizes.has(limitValue) ? limitValue : 50;
@@ -62,9 +66,10 @@ export function Component() {
     category: search.get('category') ?? '',
     supplier: previewScope ? (search.get('supplier') ?? '') : '',
     mall: previewScope ? (search.get('mall') ?? '') : '',
-    status: search.get('status') ?? '',
+    status: selectionWorkspace ? '' : search.get('status') ?? '',
     limit,
     preview: previewScope,
+    ...(selectionWorkspace ? { view: 'selection-center' as const } : {}),
     ...(search.get('cursor') === null ? {} : { cursor: search.get('cursor')! }),
   };
   const query = useQuery({
@@ -85,7 +90,7 @@ export function Component() {
   });
   const previewEnabled = previewScope && query.data?.preview?.kind === 'console-product-v1';
   const selectedId = search.get('selected') ?? undefined;
-  const selectedListing = query.data?.items.find((item) => item.id === selectedId);
+  const selectedListing = selectionWorkspace ? undefined : query.data?.items.find((item) => item.id === selectedId);
   const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [batchOpen, setBatchOpen] = useState(false);
@@ -109,7 +114,7 @@ export function Component() {
   const publicationQuery = useQuery({
     queryKey: publicationKey,
     queryFn: ({ signal }) => readPublicationTask(context, publicationReference, signal),
-    enabled: publicationReadable && pageVisible,
+    enabled: publicationReadable && pageVisible && !selectionWorkspace,
     retry: false,
     staleTime: 0,
     placeholderData: keepPreviousData,
@@ -122,6 +127,13 @@ export function Component() {
     mutationFn: ({ listing, action }: Readonly<{ listing: Listing; action: ListingPublicationAction }>) =>
       setListingPublication(context, listing, action),
     onSuccess: () => { void queryClient.invalidateQueries({ queryKey: productKey(context, filter) }); },
+  });
+  const selection = useMutation({
+    mutationFn: (ids: readonly string[]) => selectProducts(context, ids),
+    onSuccess: () => {
+      setSelected(new Set());
+      void queryClient.invalidateQueries({ queryKey: catalogListingScopeKey(context) });
+    },
   });
   const readyPublication = useMutation({
     mutationFn: () => publishReadyListings(context),
@@ -217,6 +229,24 @@ export function Component() {
     void navigate(scopePath(context.scope, `imports/catalog/${encodeURIComponent(jobId)}`));
   };
 
+  const changeWorkspace = (workspace: 'catalog' | 'selection') => {
+    const next = new URLSearchParams();
+    if (workspace === 'selection') next.set('workspace', 'selection');
+    cursorTrail.current = new Map([[1, undefined]]);
+    setSelected(new Set());
+    setSearch(next);
+  };
+
+  const applySelectionQuery = (value: string) => {
+    const next = new URLSearchParams();
+    next.set('workspace', 'selection');
+    if (value !== '') next.set('q', value);
+    if (limit !== 50) next.set('limit', String(limit));
+    cursorTrail.current = new Map([[1, undefined]]);
+    setSelected(new Set());
+    setSearch(next);
+  };
+
   const apply = (value: ProductFilter) => {
     const next = new URLSearchParams();
     if (value.q !== '') next.set('q', value.q);
@@ -292,6 +322,16 @@ export function Component() {
       }
       return next;
     });
+  const toggleSelectionRows = (ids: readonly string[]) =>
+    setSelected((current) => {
+      const next = new Set(current);
+      const remove = ids.length > 0 && ids.every((id) => next.has(id));
+      for (const id of ids) {
+        if (remove) next.delete(id);
+        else next.add(id);
+      }
+      return next;
+    });
   const toggleColumn = (key: ProductColumnKey) =>
     setVisibleColumns((current) => {
       const next = new Set(current);
@@ -306,6 +346,53 @@ export function Component() {
       {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}><span /></ResourceState>;
   }
 
+  if (selectionWorkspace) {
+    const selectionFeedback = selection.error !== null
+      ? `选入失败：${selection.error instanceof Error ? selection.error.message : '请稍后重试'}`
+      : selection.data === undefined ? undefined : `已选入 ${selection.data.count} 件商品`;
+    return (
+      <section className="productpage">
+        <ProductCatalogHeader
+          {...(query.data === undefined ? {} : { page: query.data })}
+          previewEnabled={false}
+          partnerWorkspace={false}
+          workspace="selection"
+          onWorkspace={changeWorkspace}
+          status=""
+          exportReady={false}
+          writeEnabled={false}
+          releasePending={false}
+          onImport={() => undefined}
+          onCreate={() => undefined}
+          onRelease={() => undefined}
+          onRetry={() => undefined}
+          onExport={() => undefined}
+          onStatus={() => undefined}
+        />
+        <ResourceState condition={condition} {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}>
+          {query.data === undefined ? <span /> : (
+            <>
+              <ProductSelectionCenter
+                rows={query.data.items}
+                query={filter.q}
+                selected={selected}
+                canSelect={canSelectProducts(context)}
+                pending={selection.isPending}
+                {...(selectionFeedback === undefined ? {} : { feedback: selectionFeedback })}
+                onQuery={applySelectionQuery}
+                onToggle={toggleRow}
+                onToggleAll={toggleSelectionRows}
+                onSelect={(ids) => selection.mutate(ids)}
+              />
+              <ProductPagination count={query.data.count} page={page} limit={limit} canPrevious={canPrevious}
+                canNext={query.data.nextCursor !== undefined} onPrevious={previousPage} onNext={nextPage} onLimit={changeLimit} />
+            </>
+          )}
+        </ResourceState>
+      </section>
+    );
+  }
+
   return (
     <section className="productpage" data-drawer={selectedListing === undefined ? 'closed' : 'open'}>
       <div className="productworkspace">
@@ -314,6 +401,8 @@ export function Component() {
         {...(query.data === undefined ? {} : { page: query.data })}
         previewEnabled={previewEnabled}
         partnerWorkspace={partnerWorkspace}
+        workspace="catalog"
+        onWorkspace={changeWorkspace}
         status={filter.status ?? ''}
         exportReady={query.data !== undefined}
         writeEnabled={writeEnabled}

@@ -110,6 +110,26 @@ describe('catalog mall command boundaries', () => {
     } });
   });
 
+  it('reads the current mall selection pool from mapped supply products', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, (text) => text.includes('from catalog.sourcelisting source') ? [{
+      id: 'source:1', sku_id: 'sku:1', product_id: 'product:1', title: '候选商品', status: 'mapped',
+      version: 0, cursor_sort: '2026-09-14T00:00:00.000Z', selection: { kind: 'selection-center-v1', selected: false },
+    }] : []);
+    const actions = catalogActions({ container: { get: () => ({}) } } as unknown as ModuleContext);
+    const read = actions['catalog.listings.read'];
+    if (typeof read !== 'function') throw new Error('CATALOG_LISTING_READ_ACTION_MISSING');
+
+    const result = await read(request('catalog.listings.read', {}, undefined, { view: 'selection-center', q: '候选' }), database);
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.text).toContain("source.scope_id=$1 and source.status='mapped'");
+    expect(calls[0]?.text).toContain("'kind','selection-center-v1'");
+    expect(calls[0]?.text).toContain("'selected',selected.id is not null");
+    expect(calls[0]?.values).toEqual(['mall:hongtai', '候选', '', '', '', '', null, null, 51]);
+    expect(result).toMatchObject({ status: 200, body: { count: 1, items: [{ id: 'source:1' }] } });
+  });
+
   it('queues ready draft publication for the current mall worker', async () => {
     const calls: QueryCall[] = [];
     const database = recordingDatabase(calls, (text) => text.startsWith('select listing.id')
@@ -130,6 +150,24 @@ describe('catalog mall command boundaries', () => {
       total: 2, processed: 0, target_ids: ['listing:1', 'listing:2'], failures: [],
       idempotency_key: 'catalog-test-key',
     });
+  });
+
+  it('selects mapped source products into the active mall storefront pool', async () => {
+    const calls: QueryCall[] = [];
+    const database = recordingDatabase(calls, (text) => text.startsWith('with selected_pool')
+      ? [{ id: 'listing:new', status: 'draft', version: 0 }] : []);
+
+    const result = await setListingBatchPublication(
+      request('catalog.listings.batch', {}, undefined, {}, { action: 'select', ids: ['source:1'] }),
+      database,
+    );
+
+    expect(result).toMatchObject({ status: 200, body: { action: 'select', count: 1 } });
+    expect(calls[0]?.text).toContain('from requested join catalog.sourcelisting source');
+    expect(calls[0]?.text).toContain('on conflict(scope_id,sku_id) do nothing');
+    expect(calls[0]?.values[0]).toEqual(['source:1']);
+    expect(calls[0]?.values[1]).toBe('mall:hongtai');
+    expect(calls[0]?.values[2]).toEqual([expect.stringMatching(/^listing:/)]);
   });
 
   it('reads durable publication status only from the current mall scope', async () => {

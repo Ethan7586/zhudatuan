@@ -42,6 +42,35 @@ afterEach(() => {
 afterAll(() => server.close());
 
 describe('Product governance workspace', () => {
+  it('switches to a visual selection pool and selects a candidate into the mall catalog', async () => {
+    const user = userEvent.setup();
+    server.use(
+      http.get('*/api/v1/catalog/listings', ({ request }) => {
+        requests.push(new URL(request.url));
+        return HttpResponse.json(selectionPage);
+      }),
+      http.post('*/api/v1/catalog/listings/batches', async ({ request }) => {
+        const body = await request.json() as { action?: string; ids?: string[] };
+        batchActions.push(body.action ?? '');
+        expect(body.ids).toEqual(['source:1']);
+        return HttpResponse.json({ action: 'select', count: 1, items: [{ id: 'listing:new', status: 'draft', version: 0 }] });
+      }),
+    );
+
+    renderProductRoute(mallContext, '/products?workspace=selection');
+
+    expect(await screen.findByRole('heading', { name: '找到值得卖的商品' })).toBeTruthy();
+    expect(screen.getByRole('navigation', { name: '商品工作区' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '选品中心' }).getAttribute('aria-current')).toBe('page');
+    expect(requests[0]?.searchParams.get('view')).toBe('selection-center');
+    expect(screen.getByText('宏泰供应链')).toBeTruthy();
+    expect(screen.getByText('宏泰品牌')).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: '选入商品目录' }));
+    await waitFor(() => expect(batchActions).toEqual(['select']));
+    expect(await screen.findByText('已选入 1 件商品')).toBeTruthy();
+  });
+
   it('renders the product shell and a stable table skeleton before the cold request completes', async () => {
     server.use(http.get('*/api/v1/catalog/listings', async ({ request }) => {
       requests.push(new URL(request.url));
@@ -50,7 +79,8 @@ describe('Product governance workspace', () => {
     }));
     renderProductRoute(mallContext);
 
-    expect(screen.getByRole('heading', { level: 1, name: '商品目录' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: '商品管理' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /商品目录/ }).getAttribute('aria-current')).toBe('page');
     expect(screen.queryByText('CATALOG OPERATIONS')).toBeNull();
     expect(screen.queryByRole('button', { name: '更多条件' })).toBeNull();
     expect(screen.getByRole('status', { name: '正在加载商品列表' })).toBeTruthy();
@@ -93,7 +123,7 @@ describe('Product governance workspace', () => {
     expect(within(access).getByText('「商品管理」不可访问')).toBeTruthy();
     expect(screen.queryByRole('complementary', { name: '核心商品 商品详情' })).toBeNull();
     expect(screen.queryByRole('table', { name: '商品列表' })).toBeNull();
-    expect(screen.queryByRole('heading', { level: 1, name: '商品目录' })).toBeNull();
+    expect(screen.queryByRole('heading', { level: 1, name: '商品管理' })).toBeNull();
     expect(screen.queryByRole('region', { name: '商品筛选' })).toBeNull();
     expect(screen.queryByText('核心商品')).toBeNull();
     expect(screen.queryByRole('button', { name: '新建商品' })).toBeNull();
@@ -396,10 +426,10 @@ describe('Product governance workspace', () => {
   });
 });
 
-function renderProductRoute(value: ConsoleContext = context) {
+function renderProductRoute(value: ConsoleContext = context, entry = '/products') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
   return render(
-    <MemoryRouter initialEntries={['/products']}>
+    <MemoryRouter initialEntries={[entry]}>
       <QueryClientProvider client={client}>
           <ConsoleContextProvider value={value}>
             <Component />
@@ -460,6 +490,19 @@ const productPage = {
   count: 1,
   total_count: 4,
   status_counts: { needs_attention: 1, pending_review: 1, published: 1, unpublished: 1 },
+};
+
+const selectionPage = {
+  items: [{
+    id: 'source:1', sku_id: 'sku:1', product_id: 'product:1', title: '轻盈随行保温杯', status: 'mapped',
+    version: 0, code: 'HT-CUP-001', product_type: 'physical', subtitle: '食品级内胆，适合办公与出行',
+    selection: {
+      kind: 'selection-center-v1', categoryId: 'category:life', categoryName: '生活用品',
+      supplierId: 'supplier:hongtai', supplierName: '宏泰供应链', brandId: 'brand:hongtai', brandName: '宏泰品牌',
+      sourceChannel: '品牌直供', supplyPriceMinor: 3690, suggestedRetailMinor: 5990, availableStock: 286, selected: false,
+    },
+  }],
+  count: 1,
 };
 
 function publicationTask(overrides: Readonly<Record<string, unknown>> = {}) {

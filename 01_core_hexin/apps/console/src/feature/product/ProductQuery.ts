@@ -15,7 +15,7 @@ export interface ProductQuery {
   readonly cursor?: string;
   readonly limit?: number;
   readonly preview?: boolean;
-  readonly view?: 'supply-network';
+  readonly view?: 'supply-network' | 'selection-center';
 }
 
 export const productKey = (context: ConsoleContext, filter: ProductQuery) =>
