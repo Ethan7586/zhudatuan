@@ -18,7 +18,7 @@
   },
   "productionAcceptance": {
     "timeoutMs": 12000,
-    "domains": ["accounts.zhudatuan.com","api.zhudatuan.com","console.zhudatuan.com","labs.zhudatuan.com","www.zhudatuan.com","zhudatuan.com","hbbtzn.com","www.hbbtzn.com","smart.hbbtzn.com","t.hbbtzn.com","test.hbbtzn.com","ts.hbbtzn.com","tshop.hbbtzn.com","tmini.hbbtzn.com","tmvp.hbbtzn.com"]
+    "domains": ["accounts.zhudatuan.com","api.zhudatuan.com","console.zhudatuan.com","www.zhudatuan.com","zhudatuan.com","hbbtzn.com","www.hbbtzn.com","smart.hbbtzn.com","console.hbbtzn.com"]
   },
   "impactResolvers": {
     "commerce-services": {"module":"../../../04_tools/release-engine/adapters/zdt-next/service-impact.mjs"},

@@ -14,7 +14,7 @@
     "deliveryConfig": "02_platform_pingtai/infrastructure/zhudatuan/aliyun/delivery.yml",
     "processConfig": "02_platform_pingtai/infrastructure/zhudatuan/aliyun/ecosystem.config.cjs",
     "forbiddenInputs": ["02_platform_pingtai/infrastructure/storefront-compatibility/aliyun/Caddyfile", "../archives"],
-    "requiredHosts": ["fufu.wang", "accounts.fufu.wang", "console.fufu.wang", "api.fufu.wang", "media.zhudatuan.com", "labs.zhudatuan.com", "chat.zhudatuan.com"],
+    "requiredHosts": ["fufu.wang", "accounts.fufu.wang", "console.fufu.wang", "api.fufu.wang", "media.zhudatuan.com", "chat.zhudatuan.com"],
     "forbiddenRuntimeTokens": ["/opt/smart-wing", "01_core_hexin/apps/auth/dist", "01_core_hexin/apps/storefront/dist", "admin-server.cjs"],
     "requiredRuntimeEnvironment": [
       "APP_ENV=production",

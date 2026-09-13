@@ -12,9 +12,8 @@ export interface StorefrontPresentationIdentity {
 }
 
 export function hbbtznH5Application(hostname: string): string | undefined {
-  const match = /^h([0-9]+)\.hbbtzn\.com$/i.exec(hostname.trim());
-  if (!match || Number(match[1]) < 6) return undefined;
-  return `h${Number(match[1])}`;
+  const level = /^h([6-9]|\d\d+)\.hbbtzn\.com$/i.exec(hostname.trim())?.[1];
+  return level && `h${Number(level)}`;
 }
 
 function currentStorefrontHostname(): string {
@@ -40,10 +39,7 @@ export function resolveStorefrontNode(
   hostname?: string,
   registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
 ): IdentityNodeDefinition {
-  const browserHostname = typeof window === 'undefined' ? undefined : window.location?.hostname;
-  const selectedHostname = hostname ?? browserHostname
-    ?? process.env.SFL_STOREFRONT_HOSTNAME ?? process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME;
-  if (selectedHostname === undefined || selectedHostname === '') throw new Error('商城身份节点主机缺失');
+  const selectedHostname = hostname ?? currentStorefrontHostname();
   const node = identityNodeForStorefrontHost(registry, selectedHostname)
     ?? (hbbtznH5Application(selectedHostname) === undefined
       ? null
@@ -58,9 +54,7 @@ export function resolveStorefrontApplication(
   registry: IdentityNodeRegistry = storefrontIdentityNodeRegistry(),
 ): string {
   const node = resolveStorefrontNode(hostname, registry);
-  const selectedHostname = hostname ?? (typeof window === 'undefined' ? undefined : window.location?.hostname)
-    ?? process.env.SFL_STOREFRONT_HOSTNAME ?? process.env.NEXT_PUBLIC_STOREFRONT_HOSTNAME;
-  const hostApplication = selectedHostname === undefined ? undefined : hbbtznH5Application(selectedHostname);
+  const hostApplication = hbbtznH5Application(hostname ?? currentStorefrontHostname());
   const explicit = configured?.trim() || (browserRuntimeRegistrySource() ? undefined
     : (process.env.SFL_STOREFRONT_APPLICATION ?? process.env.NEXT_PUBLIC_STOREFRONT_APPLICATION)?.trim());
   if (hostApplication === undefined && explicit !== undefined && explicit !== '' && explicit !== node.consumerApplication) {
