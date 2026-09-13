@@ -28,6 +28,8 @@ export const reportKey = (context: ConsoleContext, view: ReportView, period: Rep
 
 export async function readReport(context: ConsoleContext, view: ReportView, period: ReportPeriod, cursor: string | undefined,
   signal: AbortSignal, supplier?: string) {
+  const prefetched = await takeDocumentReportPrefetch(context, view, period, cursor, supplier, signal);
+  if (prefetched !== undefined) return prefetched;
   const input = { query: { limit: 50, period, ...(cursor === undefined ? {} : { cursor }),
     ...(supplier === undefined ? {} : { supplierid: supplier, suppliersection: supplierSection(view) }) } };
   const request = consoleRequest(context.scope, signal, context.session.accessVersion);
@@ -40,6 +42,46 @@ export async function readReport(context: ConsoleContext, view: ReportView, peri
               : view === 'voucher' ? await voucherconsumptionRead(input, request)
                 : await salesRead(input, request);
   return ReportPageSchema.parse(value);
+}
+
+async function takeDocumentReportPrefetch(
+  context: ConsoleContext,
+  view: ReportView,
+  period: ReportPeriod,
+  cursor: string | undefined,
+  supplier: string | undefined,
+  signal: AbortSignal,
+) {
+  if (typeof window === 'undefined') return undefined;
+  const slot = window.__consoleReportPrefetch;
+  delete window.__consoleReportPrefetch;
+  if (slot === undefined) return undefined;
+  if (signal.aborted) {
+    window.__consoleAbortDocumentPrefetch?.();
+    throw signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
+  }
+  let rejectAbort: (cause: unknown) => void = () => undefined;
+  const aborted = new Promise<never>((_resolve, reject) => { rejectAbort = reject; });
+  const abort = () => {
+    window.__consoleAbortDocumentPrefetch?.();
+    rejectAbort(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
+  };
+  signal.addEventListener('abort', abort, { once: true });
+  try {
+    const value = await Promise.race([slot.promise, aborted]);
+    const matches = value?.scopeKind === context.scope.kind
+      && value.scopeId === context.scope.id
+      && value.accessVersion === context.session.accessVersion
+      && value.view === view
+      && value.period === period
+      && value.cursor === cursor
+      && value.supplier === supplier;
+    if (!matches) return undefined;
+    const parsed = ReportPageSchema.safeParse(value.value);
+    return parsed.success ? parsed.data : undefined;
+  } finally {
+    signal.removeEventListener('abort', abort);
+  }
 }
 
 function reportOperation(view: ReportView): string {

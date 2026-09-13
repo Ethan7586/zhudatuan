@@ -18,6 +18,11 @@ declare global {
     __consoleFinanceOverviewPrefetch?: DocumentPrefetch<ConsoleScopedPrefetch>;
     __consoleFinanceReconciliationPrefetch?: DocumentPrefetch<ConsoleFinanceReconciliationPrefetch>;
     __consoleApplicationPrefetch?: DocumentPrefetch<ConsoleApplicationPrefetch>;
+    __consoleMemberPrefetch?: DocumentPrefetch<ConsoleCursorPrefetch>;
+    __consoleAccessPrefetch?: DocumentPrefetch<ConsoleCursorPrefetch>;
+    __consoleVoucherPrefetch?: DocumentPrefetch<ConsoleVoucherPrefetch>;
+    __consoleReportPrefetch?: DocumentPrefetch<ConsoleReportPrefetch>;
+    __consoleReportSupplierPrefetch?: DocumentPrefetch<ConsoleScopedPrefetch>;
   }
 }
 
@@ -108,6 +113,20 @@ interface ConsoleFinanceReconciliationPrefetch extends ConsoleScopedPrefetch {
 
 interface ConsoleApplicationPrefetch extends ConsoleScopedPrefetch {
   readonly cursor?: string;
+}
+
+interface ConsoleCursorPrefetch extends ConsoleScopedPrefetch {
+  readonly cursor?: string;
+}
+
+interface ConsoleVoucherPrefetch extends ConsoleCursorPrefetch {
+  readonly view: 'programs' | 'libraries' | 'reserves' | 'batches';
+}
+
+interface ConsoleReportPrefetch extends ConsoleCursorPrefetch {
+  readonly view: string;
+  readonly period: string;
+  readonly supplier?: string;
 }
 
 const LANDING_SESSION_HANDOFF_MS = 5_000;

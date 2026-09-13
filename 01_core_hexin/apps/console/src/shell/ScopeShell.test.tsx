@@ -154,7 +154,8 @@ describe('ScopeShell route handles', () => {
     const source = readFileSync('src/shell/ScopeShell.tsx', 'utf8');
     expect(source).toContain('useMatches()');
     expect(source).toContain("cancelQueries({ queryKey: ['console'], type: 'active' })");
-    expect(source).toContain("preloadConsoleModule(moduleId, 'idle')");
+    expect(source).toContain('preloadConsoleModule(moduleId, intent)');
+    expect(source).not.toContain("preloadConsoleModule(moduleId, 'idle')");
     expect(source).not.toMatch(/professionalRouteFromPath|workstationFromPath|new Set\(|ApplicationScope/);
   });
 });

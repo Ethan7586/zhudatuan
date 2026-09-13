@@ -302,6 +302,135 @@ export function startDocumentPrefetch(
       value: applications,
     });
   }));
+  window.__consoleMemberPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('member.members.read')) return undefined;
+    const direct = directScopeFor('settings/members');
+    if (direct === undefined) return undefined;
+    const cursor = new URLSearchParams(location.search).get('cursor') ?? undefined;
+    const parameters = new URLSearchParams({ limit: '20' });
+    if (cursor !== undefined) parameters.set('cursor', cursor);
+    return readJson<unknown>(`/api/v1/members?${parameters.toString()}`, {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((members) => members === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      ...(cursor === undefined ? {} : { cursor }),
+      value: members,
+    });
+  }));
+  window.__consoleAccessPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('access.center.read')) return undefined;
+    const direct = directScopeFor('settings/members');
+    if (direct === undefined) return undefined;
+    return readJson<unknown>('/api/v1/access/center?limit=500', {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((access) => access === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      value: access,
+    });
+  }));
+  window.__consoleVoucherPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion) || !Array.isArray(value.capabilities)) return undefined;
+    const direct = directScopeFor('vouchers');
+    if (direct === undefined) return undefined;
+    const search = new URLSearchParams(location.search);
+    const requested = search.get('view');
+    const operations = {
+      programs: 'voucher.programs.read', libraries: 'voucher.cardlibraries.read',
+      reserves: 'voucher.reserves.read', batches: 'voucher.batches.read',
+    } as const;
+    const views = ['programs', 'libraries', 'reserves', 'batches'] as const;
+    const view = views.includes(requested as typeof views[number])
+      ? requested as typeof views[number]
+      : views.find((candidate) => value.capabilities!.includes(operations[candidate])) ?? 'programs';
+    if (!value.capabilities.includes(operations[view])) return undefined;
+    const cursor = search.get('cursor') ?? undefined;
+    const paths = {
+      programs: '/api/v1/vouchers/programs', libraries: '/api/v1/vouchers/cardlibraries',
+      reserves: '/api/v1/vouchers/reserves', batches: '/api/v1/vouchers/batches',
+    } as const;
+    const parameters = new URLSearchParams({ limit: '50' });
+    if (cursor !== undefined) parameters.set('cursor', cursor);
+    return readJson<unknown>(`${paths[view]}?${parameters.toString()}`, {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((vouchers) => vouchers === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      view,
+      ...(cursor === undefined ? {} : { cursor }),
+      value: vouchers,
+    });
+  }));
+  window.__consoleReportPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion) || !Array.isArray(value.capabilities)) return undefined;
+    const direct = directScopeFor('reports');
+    if (direct === undefined) return undefined;
+    const search = new URLSearchParams(location.search);
+    const reportViews = ['sales', 'products', 'malls', 'categories', 'channels', 'powderclass', 'voucher', 'fulfillment', 'settlements'] as const;
+    const supplierViews = ['sales', 'products', 'categories', 'channels', 'fulfillment', 'settlements'] as const;
+    const rawView = search.get('view');
+    const requested = reportViews.includes(rawView as typeof reportViews[number]) ? rawView as typeof reportViews[number] : 'sales';
+    const supplier = search.get('supplier') ?? undefined;
+    const view = supplier !== undefined && !supplierViews.includes(requested as typeof supplierViews[number]) ? 'sales' : requested;
+    const rawPeriod = search.get('period');
+    const periods = ['realtime', 'yesterday', '7days', '30days'] as const;
+    const period = periods.includes(rawPeriod as typeof periods[number]) ? rawPeriod as typeof periods[number] : '30days';
+    const cursor = search.get('cursor') ?? undefined;
+    const operation = view === 'voucher' ? 'reporting.voucherconsumption.read'
+      : view === 'fulfillment' || view === 'settlements' ? 'reporting.sales.read' : `reporting.${view}.read`;
+    if (!value.capabilities.includes(operation)) return undefined;
+    const paths = {
+      sales: 'sales', products: 'products', malls: 'malls', categories: 'categories', channels: 'channels',
+      powderclass: 'powderclass', voucher: 'voucherconsumption', fulfillment: 'sales', settlements: 'sales',
+    } as const;
+    const supplierSections = {
+      sales: 'sales', products: 'product', malls: 'malls', categories: 'category', channels: 'channel',
+      powderclass: 'powderclass', voucher: 'voucher', fulfillment: 'fulfillment', settlements: 'settlement',
+    } as const;
+    const parameters = new URLSearchParams({ limit: '50', period });
+    if (cursor !== undefined) parameters.set('cursor', cursor);
+    if (supplier !== undefined) {
+      parameters.set('supplierid', supplier);
+      parameters.set('suppliersection', supplierSections[view]);
+    }
+    return readJson<unknown>(`/api/v1/reports/${paths[view]}?${parameters.toString()}`, {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((report) => report === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      view,
+      period,
+      ...(cursor === undefined ? {} : { cursor }),
+      ...(supplier === undefined ? {} : { supplier }),
+      value: report,
+    });
+  }));
+  window.__consoleReportSupplierPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('catalog.listings.read')) return undefined;
+    const direct = directScopeFor('reports');
+    if (direct === undefined) return undefined;
+    return readJson<unknown>('/api/v1/catalog/listings?limit=100', {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((listings) => listings === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      value: listings,
+    });
+  }));
 }
 
 function directScopeFor(suffix: string): Readonly<{

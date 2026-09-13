@@ -83,6 +83,26 @@ describe('console bootstrap document', () => {
     expect(prefetch).toContain("value.capabilities.includes('experience.applications.read')");
   });
 
+  it('starts both member-management reads as soon as the session resolves', () => {
+    expect(prefetch).toContain('window.__consoleMemberPrefetch = tracked(');
+    expect(prefetch).toContain('`/api/v1/members?${parameters.toString()}`');
+    expect(prefetch).toContain('window.__consoleAccessPrefetch = tracked(');
+    expect(prefetch).toContain("'/api/v1/access/center?limit=500'");
+  });
+
+  it('starts only the selected voucher view read as soon as the session resolves', () => {
+    expect(prefetch).toContain('window.__consoleVoucherPrefetch = tracked(');
+    expect(prefetch).toContain('`${paths[view]}?${parameters.toString()}`');
+    expect(prefetch).toContain("programs: 'voucher.programs.read'");
+  });
+
+  it('starts the exact report and supplier perspective reads together', () => {
+    expect(prefetch).toContain('window.__consoleReportPrefetch = tracked(');
+    expect(prefetch).toContain('`/api/v1/reports/${paths[view]}?${parameters.toString()}`');
+    expect(prefetch).toContain('window.__consoleReportSupplierPrefetch = tracked(');
+    expect(prefetch).toContain("'/api/v1/catalog/listings?limit=100'");
+  });
+
   it('preloads the current route and shell beside the provider bootstrap', () => {
     expect(main).toContain("import('./shared/interaction/ConsoleModulePreload')");
     expect(main).toContain('preloadCurrentConsoleBoot(window.location.pathname)');
