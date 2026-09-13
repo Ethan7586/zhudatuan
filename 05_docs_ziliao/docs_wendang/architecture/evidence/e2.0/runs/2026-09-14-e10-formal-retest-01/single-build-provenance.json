@@ -1,0 +1,59 @@
+{
+  "schema_version": "e10-single-build-provenance-v1",
+  "experiment": "E10",
+  "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+  "build_invocations": [
+    {
+      "invocation_id": "e10-build-e77ec8c39233",
+      "scope": "shared-kernel-candidate",
+      "assigned_node_id": null,
+      "command": "node 04_tools/scripts/audit/e10-shared-build.mjs <temporary-artifact-B-directory> <source-B-sha>",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "started_at": "2026-09-13T19:56:04.067Z",
+      "completed_at": "2026-09-13T19:56:04.309Z",
+      "exit_code": 0,
+      "stdout": [
+        "service build: target=identity-api entries=IdentityRegistrationApiMain,IdentityRegistrationApiReadyMain",
+        "runtime bundle built: identity-api b17ebd598dbc899005100d3f289e1bc15fd5db45",
+        "E10 shared candidate built: b17ebd598dbc899005100d3f289e1bc15fd5db45"
+      ],
+      "stderr": [],
+      "artifact_identity": "sha256:27aa05b2a2f829c32530e10b4b652df819cd83aeda1ae32585a30c879080930e"
+    }
+  ],
+  "node_specific_builds": [],
+  "candidate_artifact_assignments": [
+    {
+      "node_id": "H-A",
+      "release": "B",
+      "artifact_identity": "sha256:27aa05b2a2f829c32530e10b4b652df819cd83aeda1ae32585a30c879080930e"
+    },
+    {
+      "node_id": "H-B",
+      "release": "B",
+      "artifact_identity": "sha256:27aa05b2a2f829c32530e10b4b652df819cd83aeda1ae32585a30c879080930e"
+    },
+    {
+      "node_id": "H-C",
+      "release": "B",
+      "artifact_identity": "sha256:27aa05b2a2f829c32530e10b4b652df819cd83aeda1ae32585a30c879080930e"
+    },
+    {
+      "node_id": "S-A",
+      "release": "B",
+      "artifact_identity": "sha256:27aa05b2a2f829c32530e10b4b652df819cd83aeda1ae32585a30c879080930e"
+    },
+    {
+      "node_id": "S-B",
+      "release": "B",
+      "artifact_identity": "sha256:27aa05b2a2f829c32530e10b4b652df819cd83aeda1ae32585a30c879080930e"
+    }
+  ],
+  "baseline_fixture": {
+    "build_count_during_execution": 0,
+    "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+    "artifact_identity": "sha256:7211035fd7ecd4b898dc5799e5c47cc23ecb3b32a352bf2002382b0fb86a431d",
+    "derivation": "Copied from the byte-identical candidate runtime after the source diff proved that only the external shared marker changed; release and marker metadata were restored to source A values.",
+    "runtime_bundle_sha256": "sha256:3838947da8f977429824c761ef1c2006e34df339e4a1c547a0c888950675b933"
+  }
+}

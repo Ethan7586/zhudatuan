@@ -1,0 +1,2883 @@
+{
+  "schema_version": "e10-identity-feature-matrix-expected-v1",
+  "experiment": "E10",
+  "source_pair": {
+    "from_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+    "to_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+    "merge_base": "dfb32c2c1fefc537b74205e54bfac757a5773612"
+  },
+  "model": {
+    "schema_version": "e10-probe-policy-v1",
+    "identities": [
+      {
+        "identity_id": "storefront-member",
+        "target": "storefront",
+        "membership_client": "storefront",
+        "permissions": [
+          "member.profile.read",
+          "catalog.listing.read",
+          "order.read"
+        ],
+        "operation_ids": [
+          "member.profile.read",
+          "catalog.listings.read",
+          "order.orders.read"
+        ],
+        "grant_scope": {
+          "kind": "owner",
+          "id": "member:e10",
+          "path": []
+        },
+        "resolved_scope": {
+          "kind": "owner",
+          "id": "member:e10",
+          "path": []
+        },
+        "operations": [
+          {
+            "id": "member.profile.read",
+            "permission": "member.profile.read"
+          },
+          {
+            "id": "catalog.listings.read",
+            "permission": "catalog.listing.read"
+          },
+          {
+            "id": "order.orders.read",
+            "permission": "order.read"
+          }
+        ]
+      },
+      {
+        "identity_id": "operator",
+        "target": "console",
+        "membership_client": "operator",
+        "permissions": [
+          "access.center.read",
+          "catalog.pool.read",
+          "runtime.health.read"
+        ],
+        "operation_ids": [
+          "access.center.read",
+          "catalog.pools.read",
+          "runtime.health.dependency"
+        ],
+        "grant_scope": {
+          "kind": "platform",
+          "id": "platform:e10",
+          "path": []
+        },
+        "resolved_scope": {
+          "kind": "platform",
+          "id": "platform:e10",
+          "path": []
+        },
+        "operations": [
+          {
+            "id": "access.center.read",
+            "permission": "access.center.read"
+          },
+          {
+            "id": "catalog.pools.read",
+            "permission": "catalog.pool.read"
+          },
+          {
+            "id": "runtime.health.dependency",
+            "permission": "runtime.health.read"
+          }
+        ]
+      },
+      {
+        "identity_id": "bounded-administrator",
+        "target": "console",
+        "membership_client": "operator",
+        "permissions": [
+          "access.center.read",
+          "catalog.pool.read",
+          "runtime.health.read"
+        ],
+        "operation_ids": [
+          "access.center.read",
+          "catalog.pools.read",
+          "runtime.health.dependency"
+        ],
+        "grant_scope": {
+          "kind": "store",
+          "id": "store:e10",
+          "tenant": "tenant:e10",
+          "path": [
+            {
+              "kind": "mall",
+              "id": "mall:e10"
+            }
+          ]
+        },
+        "resolved_scope": {
+          "kind": "store",
+          "id": "store:e10",
+          "tenant": "tenant:e10",
+          "path": [
+            {
+              "kind": "mall",
+              "id": "mall:e10"
+            }
+          ]
+        },
+        "operations": [
+          {
+            "id": "access.center.read",
+            "permission": "access.center.read"
+          },
+          {
+            "id": "catalog.pools.read",
+            "permission": "catalog.pool.read"
+          },
+          {
+            "id": "runtime.health.dependency",
+            "permission": "runtime.health.read"
+          }
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "node_id": "H-A",
+        "enabled_features": [
+          "identity",
+          "catalog",
+          "checkout",
+          "orders",
+          "console"
+        ],
+        "capabilities": [
+          "member.profile.read",
+          "catalog.listings.read",
+          "order.orders.read",
+          "access.center.read",
+          "catalog.pools.read",
+          "runtime.health.dependency"
+        ],
+        "resource_not_ready_operations": []
+      },
+      {
+        "node_id": "H-B",
+        "enabled_features": [
+          "identity",
+          "catalog",
+          "checkout",
+          "console"
+        ],
+        "capabilities": [
+          "member.profile.read",
+          "catalog.listings.read",
+          "order.orders.read",
+          "access.center.read",
+          "catalog.pools.read",
+          "runtime.health.dependency"
+        ],
+        "resource_not_ready_operations": []
+      },
+      {
+        "node_id": "H-C",
+        "enabled_features": [
+          "identity",
+          "catalog",
+          "checkout",
+          "orders",
+          "console"
+        ],
+        "capabilities": [
+          "member.profile.read",
+          "catalog.listings.read",
+          "order.orders.read",
+          "access.center.read",
+          "catalog.pools.read",
+          "runtime.health.dependency"
+        ],
+        "resource_not_ready_operations": [
+          "catalog.listings.read"
+        ]
+      },
+      {
+        "node_id": "S-A",
+        "enabled_features": [
+          "identity",
+          "catalog",
+          "checkout",
+          "orders",
+          "console"
+        ],
+        "capabilities": [
+          "member.profile.read",
+          "catalog.listings.read",
+          "order.orders.read",
+          "catalog.pools.read",
+          "runtime.health.dependency"
+        ],
+        "resource_not_ready_operations": []
+      },
+      {
+        "node_id": "S-B",
+        "enabled_features": [
+          "identity",
+          "catalog",
+          "checkout",
+          "orders",
+          "console"
+        ],
+        "capabilities": [
+          "member.profile.read",
+          "catalog.listings.read",
+          "order.orders.read",
+          "access.center.read",
+          "catalog.pools.read",
+          "runtime.health.dependency"
+        ],
+        "resource_not_ready_operations": []
+      },
+      {
+        "node_id": "S-C",
+        "enabled_features": [
+          "identity",
+          "catalog",
+          "checkout",
+          "orders",
+          "console"
+        ],
+        "capabilities": [
+          "member.profile.read",
+          "catalog.listings.read",
+          "order.orders.read",
+          "access.center.read",
+          "catalog.pools.read",
+          "runtime.health.dependency"
+        ],
+        "resource_not_ready_operations": []
+      }
+    ]
+  },
+  "surfaces": [
+    "page",
+    "api",
+    "task",
+    "service"
+  ],
+  "cells": [
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": []
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,5647 @@
+{
+  "schema_version": "e10-identity-feature-matrix-observed-v1",
+  "experiment": "E10",
+  "probe_engine": "Bundled production AccessPipeline and NodeOperationAvailabilityResolver behind four distinct read-only HTTP probe routes.",
+  "cells": [
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "deny",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "deny",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "deny",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "deny",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "deny",
+          "reason": "RESOURCE_NOT_READY"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "deny",
+          "reason": "RESOURCE_NOT_READY"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "deny",
+          "reason": "RESOURCE_NOT_READY"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "deny",
+          "reason": "RESOURCE_NOT_READY"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_staggered_activation",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-A",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "deny",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "deny",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "deny",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read"
+      ],
+      "denials": [
+        {
+          "operation": "order.orders.read",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "deny",
+          "reason": "FEATURE_NOT_DECLARED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-B",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "deny",
+          "reason": "RESOURCE_NOT_READY"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "deny",
+          "reason": "RESOURCE_NOT_READY"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "deny",
+          "reason": "RESOURCE_NOT_READY"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.listings.read",
+          "reason": "RESOURCE_NOT_READY"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "deny",
+          "reason": "RESOURCE_NOT_READY"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "H-C",
+      "deployment": "hosted",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-A",
+      "deployment": "s-a",
+      "release": "B",
+      "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+      "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+      "marker": "e10-shared-marker-v1-B",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "access.center.read",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "deny",
+          "reason": "CAPABILITY_DENIED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-B",
+      "deployment": "s-b",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "storefront-member",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "catalog.listings.read",
+        "member.profile.read",
+        "order.orders.read"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "member.profile.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.listings.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "order.orders.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "operator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "catalog.pools.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "page",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "api",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "task",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    },
+    {
+      "phase": "after_s_b_rollback",
+      "node_id": "S-C",
+      "deployment": "s-c",
+      "release": "A",
+      "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "marker": "e10-shared-marker-v1-A",
+      "identity_id": "bounded-administrator",
+      "surface": "service",
+      "http_status": 200,
+      "engine": "AccessPipeline+NodeOperationAvailabilityResolver",
+      "allowed_operations": [
+        "access.center.read",
+        "runtime.health.dependency"
+      ],
+      "denials": [
+        {
+          "operation": "catalog.pools.read",
+          "reason": "SCOPE_DENIED"
+        }
+      ],
+      "decision_count": 3,
+      "decisions": [
+        {
+          "operation": "access.center.read",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        },
+        {
+          "operation": "catalog.pools.read",
+          "outcome": "deny",
+          "reason": "SCOPE_DENIED"
+        },
+        {
+          "operation": "runtime.health.dependency",
+          "outcome": "allow",
+          "reason": "POLICY_ALLOWED"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "schema_version": "e10-single-node-rollback-and-isolation-v1",
+  "experiment": "E10",
+  "target_node": "S-B",
+  "rollback_receipt": {
+    "sequence": 4,
+    "action_id": "e10-action-4",
+    "action_kind": "rollback",
+    "action_scope": "sovereign-node",
+    "deployment": "s-b",
+    "logical_nodes": [
+      "S-B"
+    ],
+    "hosted_per_node_action": false,
+    "pointer_before": "../../artifacts/B",
+    "pointer_after": "../../artifacts/A",
+    "release_before": "B",
+    "release_after": "A",
+    "started_at": "2026-09-13T19:56:29.913Z",
+    "completed_at": "2026-09-13T19:56:31.048Z",
+    "container_restart_exit_code": 0
+  },
+  "target_before": {
+    "node_id": "S-B",
+    "deployment": "s-b",
+    "pointer_target": "../../artifacts/B",
+    "release": "B",
+    "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+    "build_id": "e10:b17ebd598dbc899005100d3f289e1bc15fd5db45:2026-09-13T19:56:04.107Z",
+    "marker": "e10-shared-marker-v1-B",
+    "health_status": "ready"
+  },
+  "target_after": {
+    "node_id": "S-B",
+    "deployment": "s-b",
+    "pointer_target": "../../artifacts/A",
+    "release": "A",
+    "source_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+    "build_id": "e10:preexisting-baseline:dfb32c2c1fefc537b74205e54bfac757a5773612",
+    "marker": "e10-shared-marker-v1-A",
+    "health_status": "ready"
+  },
+  "non_target_nodes": [
+    "H-A",
+    "H-B",
+    "H-C",
+    "S-A",
+    "S-C"
+  ],
+  "non_target_state_diffs": [],
+  "non_target_feature_diffs": [],
+  "non_target_change_count": 0,
+  "rollback_target_changed_from_b_to_a": true
+}

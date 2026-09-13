@@ -880,13 +880,18 @@
       "executor_role": "Staging release and probe operator",
       "reviewer_role": "Reviewer independent of build/release and capability-matrix implementation",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "Formal E10 execution used the clean marker-only transition dfb32c2c1fefc537b74205e54bfac757a5773612→b17ebd598dbc899005100d3f289e1bc15fd5db45 and one candidate build. One Hosted host pointer switch changed H-A/H-B/H-C with zero Hosted per-node actions; S-A and S-B activated in separate ordered actions while S-C remained on A; S-B then rolled back alone. The independent oracle found zero differences across all 144 expected/observed node, identity, surface and phase cells, zero non-target rollback changes, and detected all three negative mutations.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/E2.0-E10-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["Complete same-SHA staging release and cross-surface raw evidence"]
+        "gaps": [
+          "No stable separately managed staging release replay has been performed.",
+          "No authorized production deployment or production cloud audit-log observation has been performed.",
+          "The page, API, task and service observations are isolated read-only probe transports around the production authorization kernel, not full production adapters with real traffic.",
+          "No reviewer independent of the E10 build, release fixture and oracle has recomputed and signed the evidence."
+        ]
       }
     },
     {

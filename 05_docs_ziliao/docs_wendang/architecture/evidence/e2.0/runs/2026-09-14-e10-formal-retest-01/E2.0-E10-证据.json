@@ -1,0 +1,496 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E10-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-REL-003"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E10-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E10-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:15497923f5ce641101ed3d851a4f3431cb66126dddc551eb2d0c2470b75c2742",
+    "locked_at": "2026-09-13T19:43:49Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e10-acceptance-repair-20260914",
+      "role": "E10 release probe and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and operated the disposable E10 build/release fixture and the separate raw-evidence oracle; not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-REL-003",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E10",
+    "01_core_hexin/services/commerce/src/foundation/security/AccessPipeline.ts",
+    "01_core_hexin/services/commerce/src/foundation/security/OperationAvailability.ts",
+    "04_tools/scripts/release/build-runtime-bundle.mjs",
+    "04_tools/release-engine/adapters/zdt-next/workspace-resolver.mjs"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T19:56:03.827Z",
+    "completed_at": "2026-09-13T19:56:41.468Z",
+    "executor": {
+      "actor_id": "codex-task-e10-acceptance-repair-20260914",
+      "role": "E10 release probe and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and operated the disposable E10 build/release fixture and the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e10 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "No credential, customer record or external endpoint was used. Container names and temporary paths contain only random run tokens."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-docker-e10-e77ec8c39233",
+    "description": "Four disposable network-isolated Node.js containers represented one shared Hosted host and three independently switched Sovereign runtimes.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Docker --network none; read-only bind mount; synthetic node policies; containers zhudatuan-e10-e77ec8c39233-hosted, zhudatuan-e10-e77ec8c39233-s-a, zhudatuan-e10-e77ec8c39233-s-b, zhudatuan-e10-e77ec8c39233-s-c removed after observation.",
+    "real_customer_data": false,
+    "production_impact": "None. No production host, staging host, DNS provider, database, payment provider, supplier or customer record was contacted.",
+    "differences_from_production": [
+      "Disposable local Docker processes rather than a stable separately managed staging environment.",
+      "Synthetic logical nodes and identities rather than real staging tenants or customer traffic.",
+      "Four read-only HTTP probe adapters exercise the real authorization kernel but are not the production UI, queue worker or service transport adapters.",
+      "No production deployment or cloud-provider audit log was observed."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+    "test_item_shas": [
+      "dfb32c2c1fefc537b74205e54bfac757a5773612",
+      "b17ebd598dbc899005100d3f289e1bc15fd5db45"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": "sha256:a1826e061a939ff8a0cb848b1d527480de17b0120c0236f297c14116c88819f2"
+  },
+  "configuration": {
+    "summary": "node:22.22.0-bookworm-slim sha256:dd9d21971ec4395903fa6143c2b9267d048ae01ca6d3ea96f16cb30df6187d94; one Hosted host plus three Sovereign processes; six logical nodes; three identities; four surfaces; two full feature-matrix phases; one candidate build.",
+    "digest": "sha256:5bfecb92f473c2e2585ad9cb99296db72eb7c2b42581652ec9e94db3d34d9cea",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E10-REQUIRED-MISSING-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-PATCH-MISMATCH-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-CANDIDATE-BUILD-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-CANDIDATE-ARTIFACT-IDENTITY-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-NODE-SPECIFIC-SOURCE-AND-BUILD-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-HOSTED-HOST-SWITCH-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-HOSTED-PER-NODE-ACTION-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-POINTER-MISMATCH-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-FEATURE-CELL-COMPLETENESS-MISMATCH-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-EXPECTED-DECLARATION-DIFFERENCE-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-OBSERVED-CAPABILITY-SYMMETRIC-DIFFERENCE-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-DENIAL-REASON-MISMATCH-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-ROLLBACK-NON-TARGET-CHANGE-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    },
+    {
+      "observation_id": "OBS-E10-NEGATIVE-ORACLE-PROBE-MISS-COUNT",
+      "source": "release-feature-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T19:56:41.810Z",
+      "notes": "Recomputed from the eight required raw artifacts. The oracle did not consume a runner PASS/status field."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/shared-change.patch-id.txt",
+      "media_type": "text/plain",
+      "sha256": "sha256:7e8f2ca21270a0303e627c6eaf3ced4281debe9c11ce7675fa883cf864e28ce6",
+      "size_bytes": 500,
+      "role": "Exact source A/B marker patch identity and Git diff digest"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/single-build-provenance.json",
+      "media_type": "application/json",
+      "sha256": "sha256:4e8f37d93c15e510e1c99b742fb0e8d3e9a9d9959d3632fcd06ae50dddde2bda",
+      "size_bytes": 2447,
+      "role": "One candidate build invocation and shared artifact assignments"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/immutable-artifact-manifest.json",
+      "media_type": "application/json",
+      "sha256": "sha256:c468217dac21d0c372e7ca305ef1d55dede384b976e35f72bd606ec45a8c05a9",
+      "size_bytes": 5557,
+      "role": "Recountable baseline and candidate artifact tree manifests"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/node-pointer-timeline.json",
+      "media_type": "application/json",
+      "sha256": "sha256:1fbfcea7edeb7ad0177680b6cf5e5840697a308ed374beb38a60ed203a862a89",
+      "size_bytes": 21983,
+      "role": "Hosted and Sovereign pointer actions plus five fleet snapshots"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/identity-feature-matrix.expected.json",
+      "media_type": "application/json",
+      "sha256": "sha256:a8224cf840ba990932665837a74701b6d8cbcf1856881d847416611d161afd33",
+      "size_bytes": 78270,
+      "role": "Locked raw policies and declared expected identity/node/surface intersections"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/identity-feature-matrix.observed.json",
+      "media_type": "application/json",
+      "sha256": "sha256:ecdf2be2f55d989530b469827b90e5b2e624929357e06747528817ffaf2b1a71",
+      "size_bytes": 164713,
+      "role": "Raw responses from the bundled production authorization kernel on four probe routes"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/single-node-rollback-and-isolation.json",
+      "media_type": "application/json",
+      "sha256": "sha256:7a5d1f16d97e7b2e3dee44ae9a0de86138813eb00f8eebb74b7ee4044155bed7",
+      "size_bytes": 1573,
+      "role": "S-B rollback receipt and non-target state/feature diffs"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:c441c52a17070a405b74c115e454cee90777656c919c0a42831dc6aeb741f5b7",
+      "size_bytes": 2339,
+      "role": "Disposable Docker environment identity and external-contact counters"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/release-feature-independent-recount.json",
+      "media_type": "application/json",
+      "sha256": "sha256:aa629136a78effefceadb33772f52ee90ae429a9fb7f8f453e076ee241ab3094",
+      "size_bytes": 3964,
+      "role": "Independent provenance, pointer, capability-set and rollback recount with negative mutations"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:4d65b5276e3c69d468dbceff1b7407ef871a5060f2d742bc387ab693ea78a7ec",
+      "size_bytes": 1931,
+      "role": "Exact execution stages, source pair, summary and cleanup"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E10-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:15497923f5ce641101ed3d851a4f3431cb66126dddc551eb2d0c2470b75c2742",
+      "size_bytes": 14144,
+      "role": "Pre-execution locked E10 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E10-PROVENANCE-FEATURE-DIFF",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Independently verify the exact one-file Git patch and marker pair, recount build and immutable artifact identities, reconstruct all Hosted and Sovereign pointer phases and actions, recompute every identity/node/surface capability intersection from locked raw policy inputs, set-diff it against both declared expected and HTTP-observed outputs, and independently diff rollback controls. Mutate copies to prove detection of a repeated/non-equivalent build, a denied feature exposed by one surface and non-target rollback spillover.",
+    "exact_invocation": "node 04_tools/scripts/audit/e10-release.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E10-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/release-feature-independent-recount.json",
+    "evaluator": {
+      "actor_id": "codex-task-e10-acceptance-repair-20260914",
+      "role": "E10 release probe and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and operated the disposable E10 build/release fixture and the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E10-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/shared-change.patch-id.txt",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/single-build-provenance.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/immutable-artifact-manifest.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/node-pointer-timeline.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/identity-feature-matrix.expected.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/identity-feature-matrix.observed.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/single-node-rollback-and-isolation.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "required_missing_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "patch_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "candidate_build_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "candidate_artifact_identity_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "node_specific_source_and_build_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "hosted_host_switch_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "hosted_per_node_action_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "pointer_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "feature_cell_completeness_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "expected_declaration_difference_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "observed_capability_symmetric_difference_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "denial_reason_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "rollback_non_target_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_oracle_probe_miss_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "clean checkout of the recorded source B SHA with source A in Git history"
+    ],
+    "steps": [
+      "Check out b17ebd598dbc899005100d3f289e1bc15fd5db45.",
+      "Run npm run evidence:e10 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01.",
+      "Read release-feature-independent-recount.json and independently verify each listed artifact hash."
+    ],
+    "expected_raw_observations": [
+      "required raw evidence missing count = 0",
+      "shared changed path count = 1 and exact path is the marker",
+      "candidate build count = 1",
+      "candidate artifact identity count = 1",
+      "node-specific source and build count = 0",
+      "Hosted host switch count = 1",
+      "Hosted per-node action count = 0",
+      "required pointer phase/action mismatch count = 0",
+      "expected and observed feature cell completeness mismatch count = 0",
+      "expected declaration/recomputed symmetric difference = 0",
+      "observed/recomputed capability symmetric difference = 0",
+      "denial reason mismatch count = 0",
+      "S-B rollback non-target change count = 0",
+      "negative oracle probe miss count = 0"
+    ],
+    "cleanup": "The runner removes all four disposable containers and its temporary artifact/pointer tree in finally blocks."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
+    "rationale": "The independent recount verified one marker-only source transition, one candidate build and identity, one Hosted host switch with zero Hosted per-node actions, staggered S-A/S-B activation with S-C retained on A, complete equality across 144 identity/node/surface/phase cells, isolated S-B rollback and detection of all three negative mutations.",
+    "gaps": [
+      "No stable separately managed staging release replay has been performed.",
+      "No authorized production deployment or production cloud audit-log observation has been performed.",
+      "The page, API, task and service observations are isolated read-only probe transports around the production authorization kernel, not full production adapters with real traffic.",
+      "No reviewer independent of the E10 build, release fixture and oracle has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}
