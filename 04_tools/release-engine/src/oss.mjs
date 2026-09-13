@@ -228,12 +228,9 @@ export function ossClientFromEnvironment(endpoint, dependencies = {}) {
   );
 }
 
-export function deriveInternalEndpoint(publicEndpoint, override) {
+export function resolveDownloadEndpoint(publicEndpoint, override) {
   if (override) return normalizeEndpoint(override);
-  const endpoint = normalizeEndpoint(publicEndpoint);
-  if (endpoint.includes('-internal.')) return endpoint;
-  invariant(/\.aliyuncs\.com$/.test(endpoint), 'OSS_INTERNAL_ENDPOINT_REQUIRED', 'An OSS internal endpoint is required for ECS download');
-  return endpoint.replace(/\.aliyuncs\.com$/, '-internal.aliyuncs.com');
+  return normalizeEndpoint(publicEndpoint);
 }
 
 export function createOssClient(configuration, dependencies = {}) {

@@ -9,7 +9,7 @@ import { DeliveryError, invariant } from './errors.mjs';
 import { assertBuildRefIsCheckedOut, assertWorktreeClean, currentHead } from './git.mjs';
 import { layerCommand } from './layer.mjs';
 import { acquireLocks } from './lock.mjs';
-import { deriveInternalEndpoint, ossClientFromEnvironment, publishPreparedArtifact, resolvePreparedArtifact } from './oss.mjs';
+import { ossClientFromEnvironment, publishPreparedArtifact, resolveDownloadEndpoint, resolvePreparedArtifact } from './oss.mjs';
 import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
 import { createRun, readJson, statePaths, writeJson } from './state.mjs';
@@ -136,8 +136,8 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const resolvedDeployment = resolveDeployment(adapter, requestedNode, target);
   const resolution = await resolvePreparedArtifact(adapter, { ...options, node: requestedNode });
   const publicClient = ossClientFromEnvironment(options.endpoint);
-  const internalEndpoint = deriveInternalEndpoint(publicClient.endpoint, options.internalEndpoint ?? process.env.ALIYUN_OSS_INTERNAL_ENDPOINT);
-  const internalClient = ossClientFromEnvironment(internalEndpoint);
+  const downloadEndpoint = resolveDownloadEndpoint(publicClient.endpoint, options.internalEndpoint ?? process.env.ALIYUN_OSS_INTERNAL_ENDPOINT);
+  const downloadClient = ossClientFromEnvironment(downloadEndpoint);
   const transport = resolvedDeployment.node.transport ?? adapter.transport;
   invariant(transport?.kind === 'ssh', 'PREPARED_DEPLOY_REQUIRES_SSH', 'Prepared deploy requires the declared SSH transport');
   const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
@@ -180,8 +180,8 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
         expectedRemotePolicySha256,
       ],
       input: `${JSON.stringify({
-        artifactUrl: internalClient.signGet(artifact.object, 900),
-        manifestUrl: internalClient.signGet(runtimeManifest.object, 900),
+        artifactUrl: downloadClient.signGet(artifact.object, 900),
+        manifestUrl: downloadClient.signGet(runtimeManifest.object, 900),
       })}\n`,
       timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
     },

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { createOssClient, deriveInternalEndpoint, publishPreparedArtifact, resolvePreparedArtifact } from '../src/oss.mjs';
+import { createOssClient, publishPreparedArtifact, resolveDownloadEndpoint, resolvePreparedArtifact } from '../src/oss.mjs';
 import { runCommand } from '../src/runner.mjs';
 import { digest, prettyStableJson, sha256 } from '../src/stable.mjs';
 
@@ -178,9 +178,9 @@ test('resolution stops before deployment for missing, tampered, target, source, 
   }
 });
 
-test('ECS download derives the same-region internal endpoint and keeps signed input out of command evidence', async () => {
-  assert.equal(deriveInternalEndpoint('https://oss-cn-beijing.aliyuncs.com'), 'oss-cn-beijing-internal.aliyuncs.com');
-  assert.equal(deriveInternalEndpoint('oss-cn-beijing.aliyuncs.com', 'oss-cn-beijing-internal.aliyuncs.com'), 'oss-cn-beijing-internal.aliyuncs.com');
+test('ECS download uses the reachable public endpoint unless an internal endpoint is explicit and keeps signed input out of command evidence', async () => {
+  assert.equal(resolveDownloadEndpoint('https://oss-cn-beijing.aliyuncs.com'), 'oss-cn-beijing.aliyuncs.com');
+  assert.equal(resolveDownloadEndpoint('oss-cn-beijing.aliyuncs.com', 'oss-cn-beijing-internal.aliyuncs.com'), 'oss-cn-beijing-internal.aliyuncs.com');
   const secretInput = 'https://bucket.oss-cn-beijing-internal.aliyuncs.com/object?Signature=sensitive';
   const result = await runCommand(
     {
