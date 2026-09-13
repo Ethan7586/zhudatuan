@@ -59,6 +59,28 @@ describe('web reporting dashboard read', () => {
     expect(writes[0]?.seconds).toBeGreaterThan(0);
   });
 
+  it('normalizes database timestamp values when a dashboard cursor is present', async () => {
+    const rows = Array.from({ length: 101 }, (_, index) => ({
+      code: `sales.metric.${index}`, cursorTime: new Date('2026-09-13T00:00:00.000Z'), cursorId: `metric:${index}`,
+    }));
+    const client = {
+      query: async (text: string) => {
+        if (text.includes('from reporting.fact')) return result(rows);
+        if (text.includes('select reporting.cockpit')) return result([{ summary: {} }]);
+        return result([]);
+      },
+      release: () => undefined,
+    } as unknown as PoolClient;
+    const pool = databasePool({
+      connect: async () => client,
+      query: async () => { throw new Error('WEB_REPORTING_MUST_NOT_READ_PROJECTION_OFFSET'); },
+    });
+
+    const response = await webReportingOperations(context(pool, memoryCache(async () => null))).invoke(request());
+
+    expect(response).toMatchObject({ status: 200, body: { count: 100, nextCursor: expect.any(String) } });
+  });
+
   it('uses a process-local cache when the web runtime has no shared cache binding', async () => {
     let connections = 0;
     const client = {

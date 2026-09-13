@@ -59,8 +59,14 @@ function metricPage(rows: readonly MetricRow[], limit: number, summary?: unknown
   const visible = more ? rows.slice(0, limit) : rows;
   const last = visible.at(-1);
   const items = visible.map(({ cursorTime: _time, cursorId: _id, ...metric }) => metric);
-  const nextCursor = more && last ? encodeCursor({ sort: last.cursorTime, id: last.cursorId }) : undefined;
+  const nextCursor = more && last ? encodeCursor({ sort: cursorText(last.cursorTime), id: cursorText(last.cursorId) }) : undefined;
   return { status: 200, body: { items, count: items.length, ...(nextCursor ? { nextCursor } : {}), ...(summary === undefined ? {} : { summary }) } };
+}
+
+function cursorText(value: unknown): string {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string' && value.length > 0) return value;
+  throw new Error('CURSOR_RESULT_POSITION_INVALID');
 }
 
 function period(request: OperationRequest): ReportPeriod {
