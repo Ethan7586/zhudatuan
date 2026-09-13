@@ -23,7 +23,7 @@ test('two preparations of one source produce one immutable identity and a remote
   assert.equal(remote.puts, 3);
   assert.equal(remote.objects.size, 3);
   for (const object of remote.objects.keys()) {
-    assert.match(object, new RegExp(`ai-delivery/v1/fixture/app/${fixture.sourceSha}/[a-f0-9]{64}/`));
+    assert.match(object, new RegExp(`fixture/app/${fixture.sourceSha}/[a-f0-9]{64}/`));
     assert.match(object, /[a-f0-9]{64}/);
   }
 

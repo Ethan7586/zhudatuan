@@ -6,7 +6,7 @@ import { resolvePackageArtifactPaths } from './artifact.mjs';
 import { DeliveryError, invariant } from './errors.mjs';
 import { digest, prettyStableJson, sha256 } from './stable.mjs';
 
-const DEFAULT_PREFIX = 'ai-delivery/v1';
+const DEFAULT_PREFIX = '';
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const SOURCE_SHA_PATTERN = /^[a-f0-9]{40}$/;
 const STOREFRONT_RUNTIME_NODE = 'v22.22.0';
@@ -145,7 +145,7 @@ export async function resolvePreparedArtifact(adapter, options, dependencies = {
   const node = required(options.node, 'OSS_NODE_REQUIRED');
   invariant(Boolean(adapter.nodes[node]?.deployments?.[target]), 'OSS_NODE_TARGET_MISMATCH', `Unknown deployment ${node}/${target}`);
   const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
-  const root = `${normalizePrefix(options.prefix)}/${adapter.project}/${target}/${sourceSha}/`;
+  const root = `${objectRoot(adapter.project, target, sourceSha, options.prefix)}/`;
   const listed = await client.listPrefix(root);
   const releaseObjects = listed.filter((object) => new RegExp(`^${escapeRegExp(root)}[a-f0-9]{64}/release-manifest-[a-f0-9]{64}\\.json$`).test(object));
   invariant(releaseObjects.length > 0, 'OSS_ARTIFACT_NOT_FOUND', `No prepared artifact exists for ${target}/${sourceSha}`);
@@ -423,12 +423,16 @@ function exactSourceSha(value, code) {
 
 function objectPrefix(project, target, sourceSha, archiveSha256, prefix) {
   invariant(SHA256_PATTERN.test(archiveSha256), 'OSS_ARCHIVE_DIGEST_INVALID', 'Archive digest is invalid');
-  return `${normalizePrefix(prefix)}/${project}/${target}/${sourceSha}/${archiveSha256}`;
+  return `${objectRoot(project, target, sourceSha, prefix)}/${archiveSha256}`;
+}
+
+function objectRoot(project, target, sourceSha, prefix) {
+  return [normalizePrefix(prefix), project, target, sourceSha].filter(Boolean).join('/');
 }
 
 function normalizePrefix(prefix = DEFAULT_PREFIX) {
-  const value = String(prefix || DEFAULT_PREFIX).replace(/^\/+|\/+$/g, '');
-  invariant(value.length > 0 && !value.split('/').includes('..'), 'OSS_PREFIX_INVALID', 'OSS object prefix is invalid');
+  const value = String(prefix ?? DEFAULT_PREFIX).replace(/^\/+|\/+$/g, '');
+  invariant(!value.split('/').includes('..'), 'OSS_PREFIX_INVALID', 'OSS object prefix is invalid');
   return value;
 }
 
