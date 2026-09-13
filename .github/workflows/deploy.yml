@@ -97,13 +97,13 @@ jobs:
             echo "checked out commit does not match head_sha" >&2
             exit 1
           fi
+          mkdir -p .direct-release
           if [ "$RELEASE_TARGET" = "h6-cdn" ]; then
             printf 'sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
             printf 'Direct edge version: `%s`\n' "$sha" >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           base="$(git rev-parse HEAD^)"
-          mkdir -p .direct-release
           node 04_tools/release-engine/cli.mjs plan \
             --from "$base" \
             --to "$sha" \

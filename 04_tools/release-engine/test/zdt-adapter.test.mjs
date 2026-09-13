@@ -320,6 +320,8 @@ test('production deployment binds an exact GitHub SHA directly to Aliyun', () =>
   assert.match(deployWorkflow, /ref: \$\{\{ inputs\.head_sha \}\}/);
   assert.match(deployWorkflow, /sha="\$\(git rev-parse HEAD\)"/);
   assert.match(deployWorkflow, /if \[ "\$sha" != "\$RELEASE_SHA" \]/);
+  assert.ok(deployWorkflow.indexOf('mkdir -p .direct-release')
+    < deployWorkflow.indexOf('if [ "$RELEASE_TARGET" = "h6-cdn" ]'));
   assert.match(deployWorkflow, /--environment production[\s\S]*?--direct/);
   assert.match(deployWorkflow, /jobs:\n  deploy:/);
   assert.doesNotMatch(deployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent/);
