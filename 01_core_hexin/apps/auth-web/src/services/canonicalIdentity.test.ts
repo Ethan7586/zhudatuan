@@ -3,6 +3,7 @@ import {
   createCanonicalLoginChallenge,
   createCanonicalPasswordResetChallenge,
   currentCanonicalStorefrontOrganization,
+  hasCurrentCanonicalConsoleSession,
   loginCanonicalConsole,
   loginCanonicalConsoleWithOtp,
   loginCanonicalStorefront,
@@ -84,6 +85,19 @@ afterEach(() => {
 });
 
 describe('canonical console identity', () => {
+  it('resumes a current Console session with a CORS-simple read', async () => {
+    setWindowHostname('accounts.hbbtzn.com');
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({ target: 'console' }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(hasCurrentCanonicalConsoleSession()).resolves.toBe(true);
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toBe('https://api.hbbtzn.com/api/v1/identity/session');
+    expect(init).toMatchObject({ method: 'GET', credentials: 'include', redirect: 'error' });
+    expect(init?.headers).toEqual({ accept: 'application/json' });
+  });
+
   it('requests a login-only challenge for the canonical mobile number', async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(jsonResponse({
       id: 'challenge:login:1234567890',

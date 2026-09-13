@@ -5,6 +5,7 @@ import type { Membership } from '../types';
 import type { CanonicalInvitation } from '../services/canonicalRegistration';
 import { useIdentityActions } from './useIdentityActions';
 import { MorviaIdentityShell } from './MorviaIdentityShell';
+import { claimRecentConsoleSession, markConsoleResumeAttempt, rememberConsoleSession } from '../services/consoleResume';
 
 type PageMode = 'login' | 'register' | 'reset';
 type OperatorActionKey =
@@ -60,9 +61,27 @@ export const OperatorIdentityPage: React.FC<Readonly<{
 
   useEffect(() => {
     if (initialInvite) return;
-    const timer = window.setTimeout(preloadCanonicalIdentity, 0);
-    return () => window.clearTimeout(timer);
-  }, [initialInvite]);
+    if (claimRecentConsoleSession(expectedOrigin)) {
+      window.location.replace(expectedOrigin);
+      return;
+    }
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      void loadCanonicalIdentity()
+        .then((identity) => identity.hasCurrentCanonicalConsoleSession(controller.signal))
+        .then((active) => {
+          if (!active || controller.signal.aborted) return;
+          rememberConsoleSession(expectedOrigin);
+          markConsoleResumeAttempt(expectedOrigin);
+          window.location.replace(expectedOrigin);
+        })
+        .catch(() => undefined);
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [initialInvite, expectedOrigin]);
 
   const changeMode = (next: PageMode) => {
     identityActions.cancel();
@@ -95,6 +114,8 @@ export const OperatorIdentityPage: React.FC<Readonly<{
           : ['server-response'],
         onSuccess: (result) => {
           if (result.kind === 'authenticated') {
+            rememberConsoleSession(expectedOrigin);
+            markConsoleResumeAttempt(expectedOrigin);
             window.location.assign(result.redirectUrl);
             return;
           }

@@ -62,6 +62,10 @@ const CurrentStorefrontSessionSchema = z.object({
   governance: z.object({ organization: z.string().min(1) }),
 });
 
+const CurrentConsoleSessionSchema = z.object({
+  target: z.literal('console'),
+});
+
 export type CanonicalConsoleLoginResult =
   | Readonly<{ kind: 'selection'; context: PreAuthContext }>
   | Readonly<{ kind: 'authenticated'; membership: string; redirectUrl: string }>;
@@ -110,6 +114,18 @@ export async function currentCanonicalStorefrontOrganization(signal?: AbortSigna
     return parsed.success ? parsed.data.governance.organization : null;
   });
   return waitForSharedRequest(request, signal);
+}
+
+export async function hasCurrentCanonicalConsoleSession(signal?: AbortSignal): Promise<boolean> {
+  const response = await fetch(new URL('/api/v1/identity/session', apiOrigin()), {
+    method: 'GET',
+    credentials: 'include',
+    redirect: 'error',
+    headers: { accept: 'application/json' },
+    signal,
+  });
+  if (!response.ok) return false;
+  return CurrentConsoleSessionSchema.safeParse(await response.json().catch(() => null)).success;
 }
 
 function waitForSharedRequest<Value>(request: Promise<Value>, signal?: AbortSignal): Promise<Value> {

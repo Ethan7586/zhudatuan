@@ -9,6 +9,10 @@ const registration = vi.hoisted(() => ({
   resolveInvite: vi.fn(),
 }));
 
+const identity = vi.hoisted(() => ({
+  currentSession: vi.fn(),
+}));
+
 vi.mock('../services/canonicalRegistration', () => ({
   createCanonicalMember: registration.createMember,
   createCanonicalRegistrationChallenge: registration.createChallenge,
@@ -17,6 +21,7 @@ vi.mock('../services/canonicalRegistration', () => ({
 
 vi.mock('../services/canonicalIdentity', () => ({
   createCanonicalPasswordResetChallenge: vi.fn(),
+  hasCurrentCanonicalConsoleSession: identity.currentSession,
   loginCanonicalConsole: vi.fn(),
   resetCanonicalPassword: vi.fn(),
 }));
@@ -39,6 +44,7 @@ beforeEach(() => {
   registration.createChallenge.mockResolvedValue({
     challengeId: 'challenge:one', purpose: 'registration', expiresAt: '2026-09-12T01:00:00.000Z', identityExists: true,
   });
+  identity.currentSession.mockResolvedValue(false);
 });
 
 afterEach(() => {
