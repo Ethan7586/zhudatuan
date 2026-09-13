@@ -15,7 +15,6 @@ import { canCreateCatalogImport } from './ProductImportCommand';
 import { ProductImportDialog } from './ProductImportDialog';
 import { ProductPagination } from './ProductPagination';
 import { ProductSelectionCenter } from './ProductSelectionCenter';
-import { ProductFreeWorkspace } from './ProductFreeWorkspace';
 import { canSelectProducts, selectProducts } from './ProductSelectionCommand';
 import { canManageListing, canReadPublicationTask, publishReadyListings, readPublicationTask,
   readyPublicationUnavailableReason, retryPublicationFailures, setListingPublication,
@@ -67,7 +66,7 @@ export function Component() {
     category: search.get('category') ?? '',
     supplier: previewScope ? (search.get('supplier') ?? '') : '',
     mall: previewScope ? (search.get('mall') ?? '') : '',
-    status: selectionWorkspace || freeWorkspace ? '' : search.get('status') ?? '',
+    status: selectionWorkspace ? '' : search.get('status') ?? '',
     limit,
     preview: previewScope,
     ...(selectionWorkspace ? { view: 'selection-center' as const } : {}),
@@ -79,7 +78,7 @@ export function Component() {
     placeholderData: keepPreviousData,
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
-    enabled: !freeWorkspace,
+    enabled: true,
   });
   const error = safeQueryError(query.error);
   const condition = queryCondition({
@@ -250,6 +249,7 @@ export function Component() {
 
   const apply = (value: ProductFilter) => {
     const next = new URLSearchParams();
+    if (freeWorkspace) next.set('workspace', 'free');
     if (value.q !== '') next.set('q', value.q);
     if (value.category !== '') next.set('category', value.category);
     if (previewScope && value.supplier !== '') next.set('supplier', value.supplier);
@@ -347,33 +347,6 @@ export function Component() {
       {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}><span /></ResourceState>;
   }
 
-  if (freeWorkspace) {
-    return (
-      <section className="productpage">
-        <ProductCatalogHeader
-          previewEnabled={false}
-          partnerWorkspace={false}
-          workspace="free"
-          onWorkspace={changeWorkspace}
-          status=""
-          exportReady={false}
-          writeEnabled={false}
-          releasePending={false}
-          onImport={() => undefined}
-          onCreate={() => undefined}
-          onRelease={() => undefined}
-          onRetry={() => undefined}
-          onExport={() => undefined}
-          onStatus={() => undefined}
-        />
-        <ProductFreeWorkspace enabled={writeEnabled}
-          onCreate={() => { void navigate(scopePath(context.scope, 'products/owned/new')); }}
-          onImport={() => setImportOpen(true)} />
-        <ProductImportDialog context={context} open={importOpen} onClose={() => setImportOpen(false)} onCreated={openImportResult} />
-      </section>
-    );
-  }
-
   if (selectionWorkspace) {
     const selectionFeedback = selection.error !== null
       ? `选入失败：${selection.error instanceof Error ? selection.error.message : '请稍后重试'}`
@@ -429,7 +402,7 @@ export function Component() {
         {...(query.data === undefined ? {} : { page: query.data })}
         previewEnabled={previewEnabled}
         partnerWorkspace={partnerWorkspace}
-        workspace="catalog"
+        workspace={freeWorkspace ? 'free' : 'catalog'}
         onWorkspace={changeWorkspace}
         status={filter.status ?? ''}
         exportReady={query.data !== undefined}

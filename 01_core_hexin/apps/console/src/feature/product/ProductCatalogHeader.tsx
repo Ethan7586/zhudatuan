@@ -59,16 +59,16 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
                 ? '创建或导入当前商城自主经营的商品' : '点击商品查看资料、供应关系与上下架记录'}</small>
           </div>
         </div>
-        {workspace !== 'catalog' ? null : <div className="productheroactions" role="group" aria-label={partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>
+        {workspace === 'selection' ? null : <div className="productheroactions" role="group" aria-label={workspace === 'free' ? '自有商品操作' : partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>
           <button className="productaction" type="button" disabled={!writeEnabled} onClick={onImport}
-            title={writeEnabled ? '批量导入本企业商品' : '当前范围没有商品导入权限'}>
+            title={writeEnabled ? workspace === 'free' ? '批量导入自有商品' : '批量导入本企业商品' : '当前范围没有商品导入权限'}>
             <ProductIcon name="upload" />批量导入
           </button>
-          <button className="productaction" type="button" disabled={!exportReady} onClick={onExport}
+          {workspace === 'free' ? null : <button className="productaction" type="button" disabled={!exportReady} onClick={onExport}
             title={exportReady ? '仅导出当前已加载页，不包含其他分页' : '等待当前页加载完成'}>
             <ProductIcon name="download" />导出当前页
-          </button>
-          {partnerWorkspace ? null : (
+          </button>}
+          {workspace === 'free' || partnerWorkspace ? null : (
             <button className="productaction productreleaseaction" type="button"
               disabled={releaseDisabledReason !== undefined}
               aria-describedby={releaseStateVisible ? 'productreleasestate' : undefined}
@@ -83,8 +83,8 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
             </button>
           )}
           <button className="productaction productcreateaction" type="button" disabled={!writeEnabled} onClick={onCreate}
-            title={writeEnabled ? '手工录入单个商品并保存为草稿' : '当前范围没有商品创建权限'}>
-            <ProductIcon name="plus" />新建商品
+            title={writeEnabled ? workspace === 'free' ? '新建当前商城自主经营的商品' : '手工录入单个商品并保存为草稿' : '当前范围没有商品创建权限'}>
+            <ProductIcon name="plus" />{workspace === 'free' ? '新建自有商品' : '新建商品'}
           </button>
         </div>}
         <p id="productcontractnotice" className="sr-only">
@@ -103,7 +103,7 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
           )}
         </section>
       ) : null}
-      {workspace === 'catalog' ? <nav className="producttabs" aria-label="按商品状态筛选">
+      {workspace !== 'selection' ? <nav className="producttabs" aria-label="按商品状态筛选">
         {tabs.map((tab) => {
           const count = tab.key === '' ? coreTotal : preview?.facets.statuses.find((facet) => facet.value === tab.key)?.count
             ?? page?.status_counts?.[tab.key];

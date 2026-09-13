@@ -76,14 +76,14 @@ describe('Product governance workspace', () => {
     expect(await screen.findByText('已选入 1 件商品')).toBeTruthy();
   });
 
-  it('opens free products as the third workspace and reuses manual product creation', async () => {
+  it('keeps existing products visible in the self-owned workspace and places creation actions in the header', async () => {
     const user = userEvent.setup();
     renderProductRoute(mallContext, '/products?workspace=free');
 
-    expect(await screen.findByRole('heading', { name: '创建自有商品' })).toBeTruthy();
+    expect(await screen.findByRole('table', { name: '商品列表' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '自有商品' }).getAttribute('aria-current')).toBe('page');
-    expect(screen.getByText('创建完成后进入商品目录，仍由商品目录统一审核和上下架。')).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: /新建自有商品/ }));
+    expect(screen.getByRole('button', { name: '批量导入' })).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '新建自有商品' }));
     expect(screen.getByTestId('route-location').textContent)
       .toBe('/scopes/mall/mall%3Ahongtai/products/owned/new');
   });
