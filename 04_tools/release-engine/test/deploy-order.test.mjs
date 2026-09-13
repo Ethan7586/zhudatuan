@@ -71,6 +71,22 @@ test('explicit deployment target ignores unrelated packaged migration artifacts'
   assert.match(await readFile(join(scoped.localRoot, 'local', 'consumer', 'current.txt'), 'utf8'), /releases/);
 });
 
+test('direct deploy refuses an omitted target or more than one node', async () => {
+  const scoped = await fixture();
+  await assert.rejects(
+    () => deployCommand(scoped.adapter, {
+      package: scoped.packagePath, nodes: ['local'], environment: 'production', direct: true,
+    }),
+    (error) => error.code === 'DIRECT_TARGET_REQUIRED',
+  );
+  await assert.rejects(
+    () => deployCommand(scoped.adapter, {
+      package: scoped.packagePath, nodes: ['local', 'local'], target: 'consumer', environment: 'production', direct: true,
+    }),
+    (error) => error.code === 'DIRECT_NODE_REQUIRED',
+  );
+});
+
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), 'ai-delivery-deploy-order-'));
   const localRoot = join(root, 'remote');

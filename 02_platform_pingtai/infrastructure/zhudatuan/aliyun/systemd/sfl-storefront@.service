@@ -3,7 +3,6 @@ Description=SFL node-bound storefront (%i)
 After=network-online.target
 Wants=network-online.target
 ConditionPathExists=/opt/sfl/nodes/%i/targets/storefront/current/app/dist/server/index.js
-ConditionPathExists=/opt/sfl/nodes/%i/targets/storefront/runtime/node_modules/vinext/dist/cli.js
 ConditionPathExists=/opt/sfl/nodes/%i/runtime/storefront.env
 
 [Service]
@@ -14,7 +13,7 @@ Environment=NODE_ENV=production
 Environment=APP_ENV=production
 Environment=AUTH_MODE=membership
 EnvironmentFile=/opt/sfl/nodes/%i/runtime/storefront.env
-ExecStart=/usr/bin/node /opt/sfl/nodes/%i/targets/storefront/runtime/node_modules/vinext/dist/cli.js start --hostname 127.0.0.1 --port ${STOREFRONT_PORT}
+ExecStart=/bin/sh -c 'if [ -f /opt/sfl/nodes/%i/targets/storefront/current/app/dist/start.mjs ]; then exec /usr/bin/node /opt/sfl/nodes/%i/targets/storefront/current/app/dist/start.mjs; else exec /usr/bin/node /opt/sfl/nodes/%i/targets/storefront/runtime/node_modules/vinext/dist/cli.js start --hostname 127.0.0.1 --port ${STOREFRONT_PORT}; fi'
 Restart=on-failure
 RestartSec=3
 TimeoutStartSec=30

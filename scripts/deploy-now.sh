@@ -1,34 +1,45 @@
 #!/usr/bin/env bash
 # GitHub -> Aliyun direct deployment.
 # Usage:
-#   scripts/deploy-now.sh                       # affected targets from the current task commit
-#   scripts/deploy-now.sh console               # console from the current task commit
-#   scripts/deploy-now.sh console <commit>      # console from an exact commit
-#   scripts/deploy-now.sh console <commit> zhudatuan-l0
+#   scripts/deploy-now.sh <target> <full-commit-sha> <node>
 
 set -euo pipefail
 export PATH=/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin
 
-TARGET="${1:-}"
-SHA="${2:-}"
-NODE="${3:-hbbtzn-l1}"
-if [ -z "$SHA" ]; then
-  SHA="$(git rev-parse HEAD)"
-else
-  SHA="$(git rev-parse "${SHA}^{commit}")"
-fi
-DEPLOY_REF="codex/deploy-${SHA:0:12}"
-git push origin "${SHA}:refs/heads/${DEPLOY_REF}" --quiet
-
-dispatch=(workflow run deploy.yml --ref "$DEPLOY_REF" -f head_sha="$SHA" -f release_node="$NODE")
-if [ -n "$TARGET" ]; then
-  dispatch+=(-f release_target="$TARGET")
+if [ "$#" -ne 3 ]; then
+  echo "Usage: scripts/deploy-now.sh <target> <full-commit-sha> <node>" >&2
+  exit 64
 fi
 
-echo "Direct deploy: ${SHA} -> ${NODE}/${TARGET:-affected}"
-gh "${dispatch[@]}"
+TARGET="$1"
+SHA="$2"
+NODE="$3"
+if [[ ! "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
+  echo "Deploy stopped: commit must be one full lowercase Git SHA." >&2
+  exit 64
+fi
+if ! node -e 'const c=require("./02_platform_pingtai/infrastructure/release/zdt-next.release.json"); const [target,node]=process.argv.slice(1); if (!c.targets[target] || !c.nodes[node]?.deployments?.[target]) process.exit(1)' "$TARGET" "$NODE"; then
+  echo "Deploy stopped: no configured channel for ${NODE}/${TARGET}." >&2
+  exit 64
+fi
+if [ "$(git rev-parse "${SHA}^{commit}")" != "$SHA" ]; then
+  echo "Deploy stopped: exact commit is unavailable in this worktree." >&2
+  exit 64
+fi
+REMOTE_SHA="$(gh api "repos/{owner}/{repo}/commits/${SHA}" --jq .sha 2>/dev/null || true)"
+if [ "$REMOTE_SHA" != "$SHA" ]; then
+  echo "Deploy stopped: exact commit is not available to GitHub." >&2
+  exit 1
+fi
+if ! gh workflow view deploy.yml --ref zdt-next >/dev/null 2>&1; then
+  echo "Deploy stopped: the zdt-next Deploy channel does not exist." >&2
+  exit 1
+fi
 
-TITLE="Direct ${SHA} ${NODE} ${TARGET:-affected}"
+echo "Direct deploy: ${SHA} -> ${NODE}/${TARGET}"
+gh workflow run deploy.yml --ref zdt-next -f head_sha="$SHA" -f release_node="$NODE" -f release_target="$TARGET"
+
+TITLE="Deploy ${SHA} ${NODE} ${TARGET}"
 RUN_ID=""
 for _ in {1..20}; do
   RUN_ID="$(gh run list --workflow deploy.yml --event workflow_dispatch --limit 20 \

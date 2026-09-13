@@ -386,7 +386,6 @@ async function reuse(context, options, direct = false) {
 }
 
 async function activateDirect(context, options) {
-  const started = Date.now();
   const root = context.deployment.pointerRoot;
   assertAllowedRoot(context.policy, root);
   const candidate = await pointer(root, 'candidate');
@@ -394,78 +393,16 @@ async function activateDirect(context, options) {
   const manifest = JSON.parse(await readFile(join(candidate, 'AI_DELIVERY_ARTIFACT.json'), 'utf8'));
   const sourceSha = required(options.sourceSha, 'DIRECT_SOURCE_SHA_REQUIRED');
   assert(manifest.sourceSha === sourceSha, 'DIRECT_SOURCE_SHA_MISMATCH', { expected: sourceSha, actual: manifest.sourceSha });
-  await chmod(candidate, 0o755);
-  await ensureTraversablePointerRoot(context);
-
-  const pointersBefore = await pointerSnapshot(root);
   const previousCurrent = await pointer(root, 'current');
-  const previousRuntime = await pointer(root, 'runtime');
-  const candidateRuntime = await dependencyLayerPath(context, manifest.dependencyLayer);
-  let databaseMigration = null;
-
-  if (context.deployment.databaseMigration) {
-    databaseMigration = await executeDatabaseMigration(context, candidate, manifest);
-  }
-
-  if (previousCurrent === candidate) {
-    return {
-      mode: 'direct-already-current',
-      sourceSha,
-      current: candidate,
-      previous: await pointer(root, 'previous'),
-      runtime: previousRuntime,
-      restart: restartEvidence(context.deployment.restart, false),
-      databaseMigration,
-      timings: { total: Date.now() - started },
-      receipt: directReceipt(context, manifest, previousCurrent, candidate, databaseMigration, 'success'),
-    };
-  }
-
-  let activationRestart = restartEvidence(context.deployment.restart, false);
-  try {
-    if (previousCurrent) await atomicPointer(join(root, 'previous'), previousCurrent);
-    if (previousRuntime) await atomicPointer(join(root, 'previous-runtime'), previousRuntime);
-    if (candidateRuntime) await atomicPointer(join(root, 'runtime'), candidateRuntime);
-    await atomicPointer(join(root, 'current'), candidate);
-    activationRestart = await restart(context.deployment.restart);
-  } catch (error) {
-    await restoreOptionalPointer(join(root, 'current'), previousCurrent);
-    await restoreOptionalPointer(join(root, 'runtime'), previousRuntime);
-    if (previousCurrent) await restart(context.deployment.restart);
-    throw failure('DIRECT_ACTIVATION_FAILED', {
-      cause: errorEvidence(error),
-      sourceSha,
-      pointersBefore,
-      restoredCurrent: await pointer(root, 'current'),
-      restoredRuntime: await pointer(root, 'runtime'),
-    });
-  }
-
+  const activated = await activate(context, {
+    ...options,
+    approval: `${context.project}:${sourceSha}`,
+    expectedCurrent: previousCurrent ?? 'none',
+  });
   return {
-    mode: 'direct-activated',
-    sourceSha,
-    current: candidate,
-    previous: previousCurrent,
-    runtime: await pointer(root, 'runtime'),
-    restart: activationRestart,
-    databaseMigration,
-    timings: { total: Date.now() - started },
-    receipt: directReceipt(context, manifest, previousCurrent, candidate, databaseMigration, 'success'),
-  };
-}
-
-function directReceipt(context, manifest, previous, current, databaseMigration, finalStatus) {
-  return {
-    schema: 'ai.delivery.direct-receipt.v1',
-    project: context.project,
-    node: context.node,
-    target: context.target,
-    sourceSha: manifest.sourceSha,
-    previous,
-    current,
-    databaseMigration,
-    finalStatus,
-    completedAt: new Date().toISOString(),
+    ...activated,
+    direct: true,
+    mode: activated.alreadyCurrent ? 'direct-verify-only' : 'direct-activated',
   };
 }
 

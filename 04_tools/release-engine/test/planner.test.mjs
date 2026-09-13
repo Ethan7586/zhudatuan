@@ -105,8 +105,9 @@ test('explicit Console scope produces no work for a migration-only change and re
 
 test('direct explicit scope always builds the requested target without validations', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const { stdout: currentSha } = await execFileAsync('git', ['rev-parse', 'HEAD']);
   const plan = await createPlan(real, {
-    from: 'HEAD', to: 'HEAD', target: 'console', direct: true,
+    from: 'HEAD^', to: currentSha.trim(), target: 'console', direct: true,
     files: ['.github/workflows/deploy.yml'], nodes: ['hbbtzn-l1'],
   });
   assert.equal(plan.direct, true);
@@ -118,6 +119,24 @@ test('direct explicit scope always builds the requested target without validatio
   assert.deepEqual(plan.actions.typecheck, []);
   assert.equal(plan.actions.build.length, 1);
   assert.equal(plan.productionApproval.required, false);
+});
+
+test('direct scope rejects every incomplete or expanding request before planning', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const { stdout: currentSha } = await execFileAsync('git', ['rev-parse', 'HEAD']);
+  const exactSha = currentSha.trim();
+  await assert.rejects(
+    () => createPlan(real, { from: 'HEAD^', to: exactSha, direct: true, nodes: ['hbbtzn-l1'] }),
+    (error) => error.code === 'DIRECT_TARGET_REQUIRED',
+  );
+  await assert.rejects(
+    () => createPlan(real, { from: 'HEAD^', to: exactSha, target: 'console', direct: true, nodes: [] }),
+    (error) => error.code === 'DIRECT_NODE_REQUIRED',
+  );
+  await assert.rejects(
+    () => createPlan(real, { from: 'HEAD^', to: 'HEAD', target: 'console', direct: true, nodes: ['hbbtzn-l1'] }),
+    (error) => error.code === 'DIRECT_SHA_REQUIRED',
+  );
 });
 
 test('workspace lock diff follows an added internal dependency only to Console', async () => {

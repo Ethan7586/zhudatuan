@@ -100,18 +100,28 @@ export async function deployCommand(adapter, options) {
   const packagePath = requiredPath(options.package, 'DEPLOY_PACKAGE_REQUIRED');
   const packageSet = await resolvePackageArtifactPaths(packagePath, await readJson(packagePath));
   invariant(packageSet.project === adapter.project, 'DEPLOY_PROJECT_MISMATCH', 'Package belongs to another project');
+  const direct = options.direct === true;
+  const nodes = options.nodes ?? [];
+  if (direct) {
+    invariant(typeof options.target === 'string' && options.target.length > 0,
+      'DIRECT_TARGET_REQUIRED', 'Direct delivery requires exactly one explicit target');
+    invariant(nodes.length === 1,
+      'DIRECT_NODE_REQUIRED', 'Direct delivery requires exactly one explicit node');
+    invariant(/^[a-f0-9]{40}$/.test(packageSet.sourceSha ?? ''),
+      'DIRECT_SHA_REQUIRED', 'Direct delivery package requires one full lowercase Git commit SHA');
+  }
   const requestedTargets = options.target === undefined ? [] : deploymentTargetClosure(adapter, options.target);
   if (options.target !== undefined) {
     invariant(Boolean(adapter.targets[options.target]), 'DEPLOY_TARGET_UNKNOWN', `Unknown target ${options.target}`);
     invariant(packageSet.artifacts.some((artifact) => artifact.target === options.target), 'DEPLOY_TARGET_NOT_PACKAGED', `Package does not contain target ${options.target}`);
   }
+  invariant(!direct || requestedTargets.length === 1,
+    'DIRECT_SCOPE_EXPANSION_FORBIDDEN', 'Direct delivery cannot expand beyond the one requested target', { requestedTargets });
   const artifacts = requestedTargets.length > 0
     ? packageSet.artifacts.filter((artifact) => requestedTargets.includes(artifact.target))
     : packageSet.artifacts;
-  const nodes = options.nodes ?? [];
   invariant(nodes.length > 0, 'DEPLOY_NODE_REQUIRED', 'Deploy requires at least one explicit --node');
   const environment = options.environment ?? 'candidate';
-  const direct = options.direct === true;
   invariant(['candidate', 'production'].includes(environment), 'DEPLOY_ENVIRONMENT_INVALID', 'Environment must be candidate or production');
   if (environment === 'production' && !direct) {
     const expected = `${adapter.project}:${packageSet.sourceSha}`;

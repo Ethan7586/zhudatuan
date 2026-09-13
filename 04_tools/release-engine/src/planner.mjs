@@ -5,6 +5,15 @@ import { invariant } from './errors.mjs';
 import { resolveDeployment } from './adapter.mjs';
 
 export async function createPlan(adapter, options = {}) {
+  const direct = options.direct === true;
+  if (direct) {
+    invariant(typeof options.target === 'string' && options.target.length > 0,
+      'DIRECT_TARGET_REQUIRED', 'Direct delivery requires exactly one explicit target');
+    invariant((options.nodes ?? []).length === 1,
+      'DIRECT_NODE_REQUIRED', 'Direct delivery requires exactly one explicit node');
+    invariant(/^[a-f0-9]{40}$/.test(options.to ?? ''),
+      'DIRECT_SHA_REQUIRED', 'Direct delivery requires one full lowercase Git commit SHA');
+  }
   const fromRef = options.from ?? adapter.defaultBaseRef ?? 'HEAD^';
   const toRef = options.to ?? 'HEAD';
   const requestedTargets = options.target === undefined ? [] : [options.target];
@@ -16,7 +25,6 @@ export async function createPlan(adapter, options = {}) {
   const changes = await changedFiles(adapter.projectRoot, fromSha, toSha, options.files ?? []);
   const initial = classifyChanges(adapter, changes);
   const refined = await refineDynamicImpact(adapter, initial, changes, { fromSha, toSha });
-  const direct = options.direct === true;
   const classification = requestedTargets.length > 0
     ? direct
       ? { ...refined, targets: requestedTargets, reasons: ['explicit direct deployment'], validations: [], touches: [], unknownFiles: [] }
@@ -24,6 +32,8 @@ export async function createPlan(adapter, options = {}) {
     : refined;
   const scopedChanges = requestedTargets.length > 0 ? changes.filter((change) => classification.files.some((file) => sameChange(file, change))) : changes;
   const targets = expandTargetDependencies(adapter, classification.targets);
+  invariant(!direct || targets.length === 1,
+    'DIRECT_SCOPE_EXPANSION_FORBIDDEN', 'Direct delivery cannot expand beyond the one requested target', { requestedTargets, targets });
   const requestedNodes = options.nodes ?? [];
   for (const node of requestedNodes) invariant(Boolean(adapter.nodes[node]), 'PLAN_NODE_UNKNOWN', `Unknown node ${node}`);
   const eligibleNodes = eligibleNodesForTargets(adapter, targets);

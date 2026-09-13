@@ -61,18 +61,29 @@ test('stages, activates, rolls back and reports status with immutable releases',
   assert.equal(verified.result.checks.length, 1);
 });
 
-test('direct mode skips candidate and health checks while preserving immutable pointers', async () => {
+test('direct mode checks health and automatically restores the immutable previous release', async () => {
   const fixture = await createFixture();
-  fixture.policy.nodes.local.deployments.app.candidateChecks = [{ argv: [process.execPath, '-e', 'process.exit(7)'] }];
-  fixture.policy.nodes.local.deployments.app.healthChecks = [{ argv: [process.execPath, '-e', 'process.exit(8)'] }];
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{
+    argv: [process.execPath, '-e', "const fs=require('node:fs');process.exit(fs.readFileSync(process.argv[1],'utf8').trim()==='unhealthy'?8:0)", '{{currentDir}}/app.txt'],
+  }];
   await writePolicy(fixture);
-  const artifact = await createArtifact(fixture, 'direct', 'd'.repeat(40));
-  await invoke(fixture, 'stage-direct', artifact);
-  const activated = await invoke(fixture, 'activate-direct', artifact);
+
+  const baseline = await createArtifact(fixture, 'healthy', 'c'.repeat(40));
+  await invoke(fixture, 'stage-direct', baseline);
+  const activated = await invoke(fixture, 'activate-direct', baseline);
   assert.equal(activated.result.mode, 'direct-activated');
-  assert.equal(activated.result.sourceSha, artifact.sourceSha);
+  assert.equal(activated.result.direct, true);
+  assert.equal(activated.result.readiness.status, 'ready');
   assert.equal(activated.result.receipt.finalStatus, 'success');
-  assert.match(await readlink(join(fixture.pointerRoot, 'current')), new RegExp(artifact.treeDigest.slice(7)));
+  const baselineCurrent = await readlink(join(fixture.pointerRoot, 'current'));
+
+  const candidate = await createArtifact(fixture, 'unhealthy', 'd'.repeat(40));
+  await invoke(fixture, 'stage-direct', candidate);
+  const failed = await captureAgentFailure(() => invoke(fixture, 'activate-direct', candidate));
+  assert.equal(failed.code, 'CUTOVER_FAILED_AND_ROLLED_BACK');
+  assert.equal(failed.details.rollback.finalCurrent, baselineCurrent);
+  assert.equal(failed.details.rollback.readiness.status, 'ready');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), baselineCurrent);
 });
 
 test('server locks are scoped by project, node and target without a production-wide lock', async () => {

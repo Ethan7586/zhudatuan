@@ -52,13 +52,7 @@
       "artifactInputs": [
         {"source":"01_core_hexin/apps/storefront-web/dist","destination":"app/dist"}
       ],
-      "criticalFiles": ["app/dist/server/index.js"],
-      "dependencyLayer": {
-        "strategy": "shared-content-addressed",
-        "runtime": "node22-linux-x64-vinext",
-        "keyFiles": ["package-lock.json","01_core_hexin/apps/storefront-web/package.json"],
-        "productionRoot": "/opt/ai-delivery/dependency-layers"
-      },
+      "criticalFiles": ["app/dist/start.mjs","app/dist/production-runtime.json","app/dist/server/index.js"],
       "estimateSeconds": 300,
       "workspace": "@smart-wing/storefront-web"
     },

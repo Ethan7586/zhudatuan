@@ -11,6 +11,10 @@ const policy = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/
 const deployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy.yml'), 'utf8');
 const deployNow = await readFile(join(projectRoot, 'scripts/deploy-now.sh'), 'utf8');
 const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/quality.yml'), 'utf8');
+const storefrontUnit = await readFile(join(systemdRoot, 'sfl-storefront@.service'), 'utf8');
+const storefrontPackage = JSON.parse(await readFile(join(projectRoot, '01_core_hexin/apps/storefront-web/package.json'), 'utf8'));
+const storefrontRuntimeBuilder = await readFile(join(projectRoot,
+  '01_core_hexin/apps/storefront-web/scripts/build-production-runtime.mjs'), 'utf8');
 const databaseMigrationExecutor = await readFile(join(projectRoot,
   '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'), 'utf8');
 
@@ -27,7 +31,7 @@ test('production acceptance is fixed to the eight retained domains', () => {
   assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
 });
 
-test('Console retains optional public acceptance metadata while Deploy uses direct mode', () => {
+test('Console retains optional public acceptance metadata while Deploy uses exact single-target direct mode', () => {
   assert.deepEqual(adapter.nodes['zhudatuan-l0'].deployments.console.publicAcceptance, {
     url: 'https://console.fufu.wang/', allowedStatuses: [200], timeoutMs: 12000,
   });
@@ -35,15 +39,20 @@ test('Console retains optional public acceptance metadata while Deploy uses dire
     url: 'https://console.hbbtzn.com/', allowedStatuses: [200], timeoutMs: 12000,
   });
   assert.match(deployWorkflow, /--direct/);
+  assert.match(deployWorkflow, /head_sha:[\s\S]*?required: true/);
+  assert.match(deployWorkflow, /release_target:[\s\S]*?required: true[\s\S]*?type: choice/);
+  assert.match(deployWorkflow, /\^\[0-9a-f\]\{40\}\$/);
+  assert.equal((deployWorkflow.match(/--target "\$RELEASE_TARGET"/g) ?? []).length, 2);
+  assert.doesNotMatch(deployWorkflow, /affected|target_args|inputs\.head_sha \|\||inputs\.release_target \|\|/);
   assert.doesNotMatch(deployWorkflow, /Affected Delivery|external_baseline|approve-production/);
   assert.equal((deployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
 });
 
-test('direct deployment pins and publishes the current task commit', () => {
-  assert.match(deployNow, /SHA="\$\(git rev-parse HEAD\)"/);
-  assert.match(deployNow, /git push origin "\$\{SHA\}:refs\/heads\/\$\{DEPLOY_REF\}" --quiet/);
-  assert.match(deployNow, /workflow run deploy\.yml --ref "\$DEPLOY_REF" -f head_sha="\$SHA"/);
-  assert.doesNotMatch(deployNow, /rev-parse origin\/zdt-next/);
+test('direct deployment refuses incomplete inputs and never creates a temporary channel', () => {
+  assert.match(deployNow, /if \[ "\$#" -ne 3 \]/);
+  assert.match(deployNow, /gh workflow view deploy\.yml --ref zdt-next/);
+  assert.match(deployNow, /gh workflow run deploy\.yml --ref zdt-next -f head_sha="\$SHA" -f release_node="\$NODE" -f release_target="\$TARGET"/);
+  assert.doesNotMatch(deployNow, /git push|DEPLOY_REF|affected/);
 });
 
 test('build and remote adapters agree on every pointer and process', () => {
@@ -220,21 +229,28 @@ test('console support managed unit supplies every environment value required bef
   assert.match(source, /^EnvironmentFile=\/opt\/zhudatuan\/shared\/console-support\.env$/m);
 });
 
-test('storefront seed dependency identity matches the build adapter', () => {
-  const expected = adapter.targets.storefront.dependencyLayer;
+test('storefront ships a self-contained production server and keeps the old runtime only as rollback fallback', () => {
   const storefrontHosts = { 'zhudatuan-l0': 'zhudatuan.com', 'hbbtzn-l1': 'hbbtzn.com' };
-  assert.deepEqual(adapter.targets.storefront.criticalFiles, ['app/dist/server/index.js']);
+  assert.equal(adapter.targets.storefront.dependencyLayer, undefined);
+  assert.deepEqual(adapter.targets.storefront.criticalFiles, [
+    'app/dist/start.mjs', 'app/dist/production-runtime.json', 'app/dist/server/index.js',
+  ]);
   for (const [nodeKey, node] of Object.entries(policy.nodes)) {
     assert.deepEqual(node.deployments.storefront.seedInputs, [{ source: '01_core_hexin/apps/storefront-web/dist', destination: 'app/dist' }]);
+    assert.equal(node.deployments.storefront.seedDependencyLayer, undefined);
+    assert.ok(node.deployments.storefront.candidateChecks.some((check) => check.argv.includes('{{candidateDir}}/app/dist/start.mjs')));
     assert.ok(node.deployments.storefront.candidateChecks.some((check) => check.argv.includes('{{candidateDir}}/app/dist/server/index.js')));
     const healthArgv = node.deployments.storefront.healthChecks.find((check) => check.argv.includes('curl'))?.argv ?? [];
     assert.ok(healthArgv.includes(`Host: ${storefrontHosts[nodeKey]}`), `${nodeKey} health check carries the real Host boundary`);
     assert.ok(healthArgv.includes(`X-Forwarded-Host: ${storefrontHosts[nodeKey]}`), `${nodeKey} health check carries the forwarded Host boundary`);
-    const seeded = node.deployments.storefront.seedDependencyLayer;
-    assert.equal(seeded.runtime, expected.runtime);
-    assert.deepEqual(seeded.keyFiles, expected.keyFiles);
-    assert.equal(seeded.productionRoot, expected.productionRoot);
   }
+  assert.match(storefrontPackage.scripts.build, /build-production-runtime\.mjs/);
+  assert.match(storefrontRuntimeBuilder, /bundle: true/);
+  assert.match(storefrontRuntimeBuilder, /packages: 'bundle'/);
+  assert.match(storefrontRuntimeBuilder, /STOREFRONT_RUNTIME_EXTERNAL_DEPENDENCY/);
+  assert.match(storefrontUnit, /current\/app\/dist\/start\.mjs/);
+  assert.match(storefrontUnit, /runtime\/node_modules\/vinext\/dist\/cli\.js/);
+  assert.doesNotMatch(storefrontUnit, /^ConditionPathExists=.*runtime\/node_modules/m);
   assert.equal(policy.nodes['zhudatuan-l0'].deployments.storefront.pointerRoot, '/opt/sfl/nodes/zhudatuan-l0/targets/storefront');
   assert.deepEqual(policy.nodes['zhudatuan-l0'].deployments.storefront.restart, {
     kind: 'systemd',
@@ -297,8 +313,9 @@ test('first activation is limited to pointer-only content and migration evidence
 });
 
 test('production deployment binds an exact GitHub SHA directly to Aliyun', () => {
-  assert.match(deployWorkflow, /ref: \$\{\{ inputs\.head_sha \|\| 'zdt-next' \}\}/);
+  assert.match(deployWorkflow, /ref: \$\{\{ inputs\.head_sha \}\}/);
   assert.match(deployWorkflow, /sha="\$\(git rev-parse HEAD\)"/);
+  assert.match(deployWorkflow, /if \[ "\$sha" != "\$RELEASE_SHA" \]/);
   assert.match(deployWorkflow, /--environment production[\s\S]*?--direct/);
   assert.match(deployWorkflow, /jobs:\n  deploy:/);
   assert.doesNotMatch(deployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent/);
