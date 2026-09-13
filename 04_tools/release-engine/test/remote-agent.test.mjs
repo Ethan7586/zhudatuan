@@ -97,6 +97,12 @@ test('OSS direct mode downloads once, activates, and repeats from the remote imm
   assert.ok(first.result.downloadedBytes > 0);
   assert.equal(first.result.activation.mode, 'direct-activated');
   assert.equal(first.result.activation.receipt.finalStatus, 'success');
+  assert.equal(first.result.activation.receipt.sourceSha, artifact.sourceSha);
+  assert.equal(first.result.activation.receipt.controlPlane.sourceSha, 'f'.repeat(40));
+  assert.deepEqual(first.result.activation.receipt.controlPlane.github, { runId: '123456', runAttempt: '2' });
+  assert.equal(first.result.activation.receipt.controlPlane.remoteAgentSha256, `sha256:${await hashFile(agent)}`);
+  assert.equal(first.result.activation.receipt.controlPlane.remotePolicySha256, `sha256:${await hashFile(join(fixture.policyRoot, 'fixture.json'))}`);
+  assert.equal(JSON.stringify(first).includes('data:application'), false);
 
   const repeated = await invokeOss(fixture, artifact, {
     artifactUrl: 'http://127.0.0.1:1/not-used',
@@ -122,6 +128,32 @@ test('OSS download failure leaves the current production pointer unchanged', asy
   );
   assert.equal(failed.code, 'OSS_DOWNLOAD_FAILED');
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
+});
+
+test('OSS direct mode rejects missing deployment control-plane provenance before download', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'not-deployed', '4'.repeat(40));
+  const payload = await artifactPayload(artifact);
+  const failed = await captureAgentFailure(() => invokeOss(fixture, artifact, payload, false));
+  assert.equal(failed.code, 'CONTROL_PLANE_SHA_REQUIRED');
+  await assert.rejects(
+    () => readlink(join(fixture.pointerRoot, 'current')),
+    (error) => error.code === 'ENOENT'
+  );
+});
+
+test('prepared candidate validation downloads and checks the release without moving current', async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'baseline', '3'.repeat(40));
+  await invokeOss(fixture, baseline, await artifactPayload(baseline));
+  const current = await readlink(join(fixture.pointerRoot, 'current'));
+  const candidate = await createArtifact(fixture, 'candidate-only', '2'.repeat(40));
+  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate');
+  assert.equal(validated.result.schema, 'ai.delivery.oss-candidate.v1');
+  assert.equal(validated.result.current.unchanged, true);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
+  assert.match(await readlink(join(fixture.pointerRoot, 'candidate')), new RegExp(candidate.sourceSha));
+  assert.equal(validated.result.controlPlane.sourceSha, 'f'.repeat(40));
 });
 
 test('server locks are scoped by project, node and target without a production-wide lock', async () => {
@@ -1072,10 +1104,10 @@ async function artifactPayload(artifact) {
   };
 }
 
-async function invokeOss(fixture, artifact, payload) {
+async function invokeOss(fixture, artifact, payload, includeControlPlane = true, action = 'deploy-oss-direct') {
   const args = [
     agent,
-    'deploy-oss-direct',
+    action,
     '--project',
     'fixture',
     '--node',
@@ -1091,6 +1123,7 @@ async function invokeOss(fixture, artifact, payload) {
     '--manifest-digest',
     artifact.manifestDigest,
   ];
+  if (includeControlPlane) args.push('--control-sha', 'f'.repeat(40), '--github-run-id', '123456', '--github-run-attempt', '2');
   return new Promise((resolveInvoke, rejectInvoke) => {
     const child = spawn(process.execPath, args, {
       env: { ...process.env, ...(fixture.environment ?? {}), AI_DELIVERY_POLICY_ROOT: fixture.policyRoot },

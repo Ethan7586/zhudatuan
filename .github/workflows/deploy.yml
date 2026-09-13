@@ -1,17 +1,18 @@
 name: Deploy
 run-name: Deploy ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
 
-# Deployment channel 1.3 consumes an already prepared immutable OSS artifact.
-# It never installs dependencies, tests, builds, packages, or publishes artifacts.
+# Direct production delivery. This workflow builds the requested runtime target and
+# sends it straight from GitHub to Aliyun in one job. Quality workflows are separate
+# tools and are never prerequisites for this workflow.
 on:
   workflow_dispatch:
     inputs:
       head_sha:
-        description: Exact 40-character source commit already prepared in OSS
+        description: Exact 40-character zdt-next commit to deploy
         required: true
         type: string
       release_target:
-        description: One prepared runtime target
+        description: One runtime target
         required: true
         type: choice
         options:
@@ -31,7 +32,7 @@ on:
           - payment-jobs
           - database-migration
       release_node:
-        description: One sovereign node
+        description: Sovereign node
         required: true
         type: choice
         options:
@@ -42,7 +43,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: zdt-next-prepared-${{ inputs.release_node }}-${{ inputs.release_target }}
+  group: zdt-next-direct-${{ inputs.release_node }}-${{ inputs.release_target }}
   cancel-in-progress: false
 
 env:
@@ -51,12 +52,16 @@ env:
   RELEASE_NODE: ${{ inputs.release_node }}
   RELEASE_TARGET: ${{ inputs.release_target }}
   ZDT_RELEASE_SSH_HOST: root@123.57.232.253
+  VITE_API_BASE_URL: https://api.hbbtzn.com
+  VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
+  VITE_ZHUDIAN_SOLUTION_ORIGIN: https://labs.hbbtzn.com
+  VITE_CLIENT_VERSION: 0.0.0-g${{ inputs.head_sha }}
 
 jobs:
   deploy:
-    name: OSS immutable artifact → ${{ inputs.release_node }}/${{ inputs.release_target }}
+    name: GitHub → Aliyun ${{ inputs.release_node }}/${{ inputs.release_target }}
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     steps:
       - name: Validate exact single-target request
         shell: bash
@@ -70,22 +75,41 @@ jobs:
             exit 64
           fi
 
-      - name: Load current release control plane only
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
-          fetch-depth: 1
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |
-            package.json
-            04_tools/release-engine
-            02_platform_pingtai/infrastructure/release/zdt-next.release.json
+          fetch-depth: 2
+          ref: ${{ inputs.head_sha }}
 
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: Configure existing Aliyun transport
+      - name: Install build dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Resolve exact version and direct plan
+        id: release
+        run: |
+          sha="$(git rev-parse HEAD)"
+          if [ "$sha" != "$RELEASE_SHA" ]; then
+            echo "checked out commit does not match head_sha" >&2
+            exit 1
+          fi
+          base="$(git rev-parse HEAD^)"
+          mkdir -p .direct-release
+          node 04_tools/release-engine/cli.mjs plan \
+            --from "$base" \
+            --to "$sha" \
+            --node "$RELEASE_NODE" \
+            --target "$RELEASE_TARGET" \
+            --direct \
+            --format json > .direct-release/plan-envelope.json
+          plan_path="$(node -e "const r=require('./.direct-release/plan-envelope.json');if(!r.ok||!r.result.deployRequired)throw new Error('No deployable target for this version');process.stdout.write(r.result.planPath)")"
+          printf 'sha=%s\nplan_path=%s\n' "$sha" "$plan_path" >> "$GITHUB_OUTPUT"
+          printf 'Direct version: `%s`\n' "$sha" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Configure Aliyun transport
         env:
           RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
         run: |
@@ -94,21 +118,19 @@ jobs:
           chmod 600 "$HOME/.ssh/id_ed25519"
           ssh-keyscan -H 123.57.232.253 >> "$HOME/.ssh/known_hosts"
 
-      - name: Resolve, verify, download and switch prepared artifact
+      - name: Build, transfer and switch production
         env:
-          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
-          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
-          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
-          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
-          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
-          ALIYUN_OSS_INTERNAL_ENDPOINT: ${{ secrets.ALIYUN_OSS_INTERNAL_ENDPOINT }}
+          PLAN_PATH: ${{ steps.release.outputs.plan_path }}
         run: |
-          set -euo pipefail
-          mkdir -p .direct-release
-          npm run --silent release -- deploy-prepared \
-            --source-sha "$RELEASE_SHA" \
+          node 04_tools/release-engine/cli.mjs build --plan "$PLAN_PATH" --format json > .direct-release/build-envelope.json
+          build_path="$(node -e "const r=require('./.direct-release/build-envelope.json');if(!r.ok)throw new Error('Build failed');process.stdout.write(r.result.buildPath)")"
+          node 04_tools/release-engine/cli.mjs package --build "$build_path" --format json > .direct-release/package-envelope.json
+          package_path="$(node -e "const r=require('./.direct-release/package-envelope.json');if(!r.ok)throw new Error('Package failed');process.stdout.write(r.result.packagePath)")"
+          node 04_tools/release-engine/cli.mjs deploy \
+            --package "$package_path" \
             --node "$RELEASE_NODE" \
             --target "$RELEASE_TARGET" \
+            --environment production \
+            --direct \
             --format json | tee .direct-release/deploy-envelope.json
-          node -e "const r=require('./.direct-release/deploy-envelope.json');const x=r.result;if(!r.ok||x.finalStatus!=='success')process.exit(1);process.stdout.write('Prepared deploy: '+x.sourceSha+' '+x.target+' '+x.cacheStatus+' '+x.timings.total+'ms\\n')" \
-            >> "$GITHUB_STEP_SUMMARY"
+          node -e "const r=require('./.direct-release/deploy-envelope.json');const x=r.result;if(!r.ok||x.finalStatus!=='success')process.exit(1);console.log('Direct deployment: '+x.sourceSha+' '+x.finalStatus);" >> "$GITHUB_STEP_SUMMARY"

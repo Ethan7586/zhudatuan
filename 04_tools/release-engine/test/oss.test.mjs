@@ -44,6 +44,49 @@ test('two preparations of one source produce one immutable identity and a remote
   assert.equal(JSON.parse(await readFile(options.output, 'utf8')).cacheStatus, 'hit_remote');
 });
 
+test('Storefront publication fails closed unless complete Linux x64 runtime evidence is present', async (t) => {
+  const invalidCases = [
+    ['missing', null, 'PREPARE_RUNTIME_EVIDENCE_REQUIRED'],
+    ['failed', { ok: false }, 'PREPARE_RUNTIME_VERIFICATION_FAILED'],
+    ['platform', { platform: 'darwin' }, 'PREPARE_RUNTIME_PLATFORM_INVALID'],
+    ['architecture', { arch: 'arm64' }, 'PREPARE_RUNTIME_PLATFORM_INVALID'],
+    ['node modules', { nodeModulesPresent: true }, 'PREPARE_RUNTIME_NODE_MODULES_INVALID'],
+    ['dynamic route', { routes: { dynamic: null } }, 'PREPARE_RUNTIME_ROUTES_INCOMPLETE'],
+    ['hashed static asset', { staticAsset: { name: 'index.css' } }, 'PREPARE_RUNTIME_STATIC_ASSET_INCOMPLETE'],
+  ];
+  for (const [name, override, expected] of invalidCases) {
+    await t.test(name, async () => {
+      const fixture = await prepareFixture('storefront');
+      const remote = memoryOss();
+      const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
+      let runtimeEvidence;
+      if (override) {
+        runtimeEvidence = join(fixture.run, 'runtime-evidence.json');
+        await writeFile(runtimeEvidence, JSON.stringify(mergeRuntimeEvidence(validStorefrontRuntimeEvidence(), override)));
+      }
+      await assert.rejects(
+        () => publishPreparedArtifact(fixture.adapter, publishOptions(fixture, { runtimeEvidence }), { client }),
+        (error) => error.code === expected
+      );
+      assert.equal(remote.puts, 0);
+      assert.equal(remote.objects.size, 0);
+    });
+  }
+
+  const fixture = await prepareFixture('storefront');
+  const runtimeEvidence = join(fixture.run, 'runtime-evidence.json');
+  await writeFile(runtimeEvidence, JSON.stringify(validStorefrontRuntimeEvidence()));
+  const remote = memoryOss();
+  const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
+  const published = await publishPreparedArtifact(fixture.adapter, publishOptions(fixture, { runtimeEvidence }), { client });
+  const release = JSON.parse(remote.objects.get(published.releaseManifest.object).body);
+  assert.equal(release.runtimeVerification.status, 'passed');
+  assert.equal(release.runtimeVerification.platform, 'linux');
+  assert.equal(release.runtimeVerification.arch, 'x64');
+  assert.equal(release.runtimeVerification.nodeModulesPresent, false);
+  assert.equal(release.runtimeVerification.staticAsset.name, 'index-AbCdEf12.css');
+});
+
 test('resolution stops before deployment for missing, tampered, target, source, node, and archive digest mismatches', async (t) => {
   await t.test('missing artifact', async () => {
     const fixture = await prepareFixture();
@@ -127,7 +170,7 @@ test('ECS download derives the same-region internal endpoint and keeps signed in
   assert.equal(JSON.stringify(result).includes('Signature=sensitive'), false);
 });
 
-async function prepareFixture() {
+async function prepareFixture(target = 'app') {
   const root = await mkdtemp(join(tmpdir(), 'ai-delivery-oss-'));
   const run = join(root, 'run');
   const artifactRoot = join(root, 'artifact');
@@ -135,16 +178,16 @@ async function prepareFixture() {
   await mkdir(artifactRoot, { recursive: true });
   await writeFile(join(root, 'package-lock.json'), '{"lockfileVersion":3}\n');
   const sourceSha = 'a'.repeat(40);
-  const archivePath = join(artifactRoot, 'app.tar.gz');
+  const archivePath = join(artifactRoot, `${target}.tar.gz`);
   const archive = Buffer.from('deterministic artifact');
   await writeFile(archivePath, archive);
   const entries = [];
   const runtimeUnsigned = {
     schema: 'ai.delivery.artifact.v1',
     engineVersion: 2,
-    artifactId: 'fixture-app',
+    artifactId: `fixture-${target}`,
     project: 'fixture',
-    target: 'app',
+    target,
     targetKind: 'frontend',
     sourceSha,
     contractTransition: { mode: 'contract-pool-pending', legacyRuntimeAuthority: 'disabled', localContractAuthority: 'forbidden' },
@@ -159,7 +202,7 @@ async function prepareFixture() {
     archive: { sha256: `sha256:${sha256(archive)}`, bytes: archive.byteLength },
   };
   const runtimeManifest = { ...runtimeUnsigned, manifestDigest: digest(runtimeUnsigned) };
-  const manifestPath = join(artifactRoot, 'app.artifact.json');
+  const manifestPath = join(artifactRoot, `${target}.artifact.json`);
   await writeFile(manifestPath, prettyStableJson(runtimeManifest));
   const plan = {
     schema: 'ai.delivery.plan.v2',
@@ -192,21 +235,50 @@ async function prepareFixture() {
   const adapter = {
     project: 'fixture',
     projectRoot: root,
-    targets: { app: { kind: 'frontend' } },
-    nodes: { 'node-a': { deployments: { app: {} } }, 'node-b': { deployments: {} } },
+    targets: { [target]: { kind: 'frontend' } },
+    nodes: { 'node-a': { deployments: { [target]: {} } }, 'node-b': { deployments: {} } },
   };
-  return { root, run, sourceSha, packagePath, adapter };
+  return { root, run, sourceSha, target, packagePath, adapter };
 }
 
-function publishOptions(fixture) {
+function publishOptions(fixture, overrides = {}) {
   return {
     package: fixture.packagePath,
     sourceSha: fixture.sourceSha,
-    target: 'app',
+    target: fixture.target,
     npmVersion: '10.9.4',
     runnerImage: 'ubuntu24',
     repository: 'owner/repository',
     output: join(fixture.run, 'prepare-receipt.json'),
+    ...overrides,
+  };
+}
+
+function validStorefrontRuntimeEvidence() {
+  const route = { status: 200, contentType: 'text/html; charset=utf-8', bytes: 100 };
+  return {
+    ok: true,
+    platform: 'linux',
+    arch: 'x64',
+    node: 'v22.22.0',
+    routes: { home: route, h5: route, dynamic: route },
+    staticAsset: {
+      name: 'index-AbCdEf12.css',
+      miss: { status: 200, contentType: 'text/css', bytes: 40 },
+      hit: { status: 304, contentType: null, bytes: 0 },
+      cacheControl: 'public, max-age=31536000, immutable',
+      etag: 'W/"AbCdEf12"',
+    },
+    nodeModulesPresent: false,
+  };
+}
+
+function mergeRuntimeEvidence(base, override) {
+  return {
+    ...base,
+    ...override,
+    routes: { ...base.routes, ...override.routes },
+    staticAsset: { ...base.staticAsset, ...override.staticAsset },
   };
 }
 

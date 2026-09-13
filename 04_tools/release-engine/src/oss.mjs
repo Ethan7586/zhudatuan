@@ -9,6 +9,7 @@ import { digest, prettyStableJson, sha256 } from './stable.mjs';
 const DEFAULT_PREFIX = 'ai-delivery/v1';
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const SOURCE_SHA_PATTERN = /^[a-f0-9]{40}$/;
+const STOREFRONT_RUNTIME_NODE = 'v22.22.0';
 
 export async function publishPreparedArtifact(adapter, options, dependencies = {}) {
   const started = performance.now();
@@ -359,16 +360,46 @@ function normalizedValidations(phases = {}) {
 }
 
 async function normalizedRuntimeVerification(path, target) {
-  if (!path) return target === 'storefront' ? { status: 'required-but-not-recorded' } : { status: 'not-required' };
+  if (!path) {
+    invariant(target !== 'storefront', 'PREPARE_RUNTIME_EVIDENCE_REQUIRED', 'Storefront publication requires Linux x64 runtime evidence');
+    return { status: 'not-required' };
+  }
   const evidence = JSON.parse(await readFile(resolve(path), 'utf8'));
   invariant(evidence.ok === true, 'PREPARE_RUNTIME_VERIFICATION_FAILED', 'Runtime verification did not pass');
+  if (target === 'storefront') {
+    invariant(evidence.platform === 'linux' && evidence.arch === 'x64' && evidence.node === STOREFRONT_RUNTIME_NODE, 'PREPARE_RUNTIME_PLATFORM_INVALID', `Storefront runtime evidence must be linux/x64/${STOREFRONT_RUNTIME_NODE}`);
+    invariant(evidence.nodeModulesPresent === false, 'PREPARE_RUNTIME_NODE_MODULES_INVALID', 'Storefront runtime artifact must not contain node_modules');
+    for (const route of ['home', 'h5', 'dynamic']) {
+      const result = evidence.routes?.[route];
+      invariant(
+        result?.status === 200 && /^text\/html(?:;|$)/.test(result.contentType ?? '') && Number.isSafeInteger(result.bytes) && result.bytes > 0,
+        'PREPARE_RUNTIME_ROUTES_INCOMPLETE',
+        `Storefront runtime route evidence is incomplete: ${route}`
+      );
+    }
+    const asset = evidence.staticAsset;
+    invariant(
+      typeof asset?.name === 'string' &&
+        /-[A-Za-z0-9_-]{8,}\.(?:css|js|mjs)$/.test(asset.name) &&
+        asset.miss?.status === 200 &&
+        Number.isSafeInteger(asset.miss?.bytes) &&
+        asset.miss.bytes > 0 &&
+        asset.hit?.status === 304 &&
+        asset.hit?.bytes === 0 &&
+        /(?:^|,)\s*immutable(?:,|$)/i.test(asset.cacheControl ?? '') &&
+        typeof asset.etag === 'string' &&
+        asset.etag.length > 0,
+      'PREPARE_RUNTIME_STATIC_ASSET_INCOMPLETE',
+      'Storefront hashed static asset evidence is incomplete'
+    );
+  }
   return {
     status: 'passed',
     platform: evidence.platform,
     arch: evidence.arch,
     node: evidence.node,
     routes: evidence.routes,
-    staticAsset: evidence.staticAsset ? { miss: evidence.staticAsset.miss, hit: evidence.staticAsset.hit, cacheControl: evidence.staticAsset.cacheControl } : null,
+    staticAsset: evidence.staticAsset ? { name: evidence.staticAsset.name, miss: evidence.staticAsset.miss, hit: evidence.staticAsset.hit, cacheControl: evidence.staticAsset.cacheControl, etag: evidence.staticAsset.etag } : null,
     nodeModulesPresent: evidence.nodeModulesPresent,
   };
 }

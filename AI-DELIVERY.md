@@ -1,17 +1,23 @@
 # AI 发布通道 1.3（预构建不可变制品）
 
-生产发布分成两个互不混合的动作：GitHub `Prepare Artifact` 生成制品，GitHub `Deploy` 只部署已经存在的制品。两条通道一次都只接受一个 target；不支持空目标、affected 或多目标扇出。
+1.3 作为并行 RC 通道加入现有发布体系：GitHub `Prepare Artifact` 生成制品，GitHub `Prepared Deploy` 验证或部署已经存在的制品。现有 1.2 `Deploy`、`Deploy via Wuhan OSS` 和 `scripts/deploy-now.sh` 在首次 1.3 生产候选完成验证前保持原样可用。1.3 两条工作流一次都只接受一个 target；不支持空目标、affected 或多目标扇出。
 
 ## 用户入口与授权
 
-Ethan 在当前任务中输入“部署”即为生产授权。AI 只部署已存在的精确制品，不得在 Deploy 中修代码、安装依赖、测试、构建、打包、发布制品、推送分支或建设通道。目标或完整 40 位 source SHA 不明确时只询问缺失项。
+Ethan 在独立任务中输入“部署”才是首次 1.3 生产授权。AI 只部署已存在的精确制品，不得在 Prepared Deploy 中修代码、安装依赖、测试、构建、打包、发布制品、推送分支或建设通道。目标或完整 40 位 source SHA 不明确时只询问缺失项。
 
 通道建设、Prepare 和 Deploy 是三个不同动作。建设完成后必须停止；Prepare 完成后也不得顺带 Deploy。生产切流仍须 Ethan 在独立任务中明确输入“部署”。
 
-本地生产触发入口保持不变：
+1.2 本地生产触发入口保持不变：
 
 ```bash
 scripts/deploy-now.sh <target> <full-source-sha> <node>
+```
+
+独立授权后的 1.3 生产触发入口是：
+
+```bash
+scripts/deploy-prepared.sh <target> <full-source-sha> <node>
 ```
 
 ## Prepare Artifact（构建通道）
@@ -19,22 +25,29 @@ scripts/deploy-now.sh <target> <full-source-sha> <node>
 `.github/workflows/prepare-artifact.yml` 接受一个完整 source SHA 和一个 target：
 
 ```text
-精确 checkout → dependency cache（仅加速）→ npm ci
-  → 目标测试/类型检查 → 生产构建 → 确定性打包
+精确 checkout → 固定 ubuntu-24.04 x64 / Node 22.22.0 / npm 10.9.4
+  → dependency cache（只加速 npm ci）
+  → 隔离空状态根 A：目标测试/类型检查 → 生产构建 → 冷打包 miss
+  → 隔离空状态根 B：目标测试/类型检查 → 生产构建 → 冷打包 miss
+  → 比较 tree/manifest/archive/大小/完整文件清单
   → Linux x64 运行验收（Storefront）→ OSS 不可变发布
 ```
 
 统一命令是：
 
 ```bash
-npm run release -- plan --from <parent-sha> --to <source-sha> --target <target> --prepare
-npm run release -- build --plan <plan.json>
-npm run release -- package --build <build.json>
+npm run release -- plan --state-directory <cold-root-a> --from <parent-sha> --to <source-sha> --target <target> --prepare
+npm run release -- build --state-directory <cold-root-a> --plan <plan-a.json>
+npm run release -- package --state-directory <cold-root-a> --build <build-a.json>
+# 对 cold-root-b 独立重复以上三步，双方 packageCache 必须都是 miss
+npm run release -- verify-reproducibility --left-package <package-a.json> --right-package <package-b.json>
 npm run release -- publish --package <package.json> --source-sha <source-sha> --target <target> \
   --npm-version <version> --runner-image <image> --output <prepare-receipt.json>
 ```
 
 GitHub dependency cache 只减少重复下载。缓存丢失会触发重新安装和构建，不会改变制品身份，也不能被 Deploy 使用。GitHub Actions receipt artifact 只保存审计回执；唯一可部署来源是 OSS。
+
+Storefront publish 必须读取完整运行证据并 fail closed：`ok=true`、Linux x64、Node 22.22.0、制品内无 `node_modules`，首页/H5/动态路由均返回有效 HTML，且哈希静态资源完成 200、immutable cache 与 304 验证。任一字段缺失或不符时，在任何 OSS 对象上传前停止。
 
 ## OSS 制品协议
 
@@ -58,9 +71,9 @@ release-manifest-<release-manifest-file-sha256>.json
 
 1.3 不删除任何 OSS 制品。生命周期清理在建立“读取全部节点 current/previous 指针并生成保护集”的独立回收器之前保持关闭；未来至少保留每个节点当前版和回滚版，建议普通制品至少保留 90 天。当前或回滚所需对象不得由日期规则直接删除。
 
-## Deploy（纯部署通道）
+## Prepared Deploy（1.3 纯部署通道）
 
-`.github/workflows/deploy.yml` 必须输入一个完整 source SHA、一个 node 和一个 target。它只稀疏读取当前发布控制面，不 checkout 业务源版本，不执行 `npm ci`、测试、类型检查、构建、打包或上传。
+`.github/workflows/deploy-prepared.yml` 必须输入一个完整 source SHA、一个 node 和一个 target。默认操作是 `validate-candidate`，只解析、下载、校验并设置候选，不移动 current。`deploy` 操作需要独立任务中的明确生产授权。工作流只稀疏读取当前发布控制面，不 checkout 业务源版本，不执行 `npm ci`、测试、类型检查、构建、打包或上传。
 
 ```text
 OSS 前缀查询 → 唯一 release manifest
@@ -75,7 +88,11 @@ OSS 前缀查询 → 唯一 release manifest
 统一命令是：
 
 ```bash
-npm run release -- deploy-prepared --source-sha <source-sha> --node <node> --target <target>
+npm run release -- validate-prepared --source-sha <source-sha> --node <node> --target <target> \
+  --control-sha <workflow-sha> --github-run-id <run-id> --github-run-attempt <attempt>
+npm run release -- deploy-prepared --source-sha <source-sha> --node <node> --target <target> \
+  --control-sha <workflow-sha> --github-run-id <run-id> --github-run-attempt <attempt> \
+  --production-approval zdt-next:prepared-deploy:<source-sha>:<node>:<target>
 ```
 
 OSS 中制品不存在、对象下载失败、摘要/清单不符或 project/target/node/source SHA 不符时，远端切换不会开始。同一精确制品可重复部署；ECS 已有不可变版本时跳过下载并执行健康复核。相同制品也可部署到清单声明的其他节点，不重新构建。
@@ -84,13 +101,15 @@ OSS 中制品不存在、对象下载失败、摘要/清单不符或 project/tar
 
 ## 计时与回执
 
-Prepare 单独报告 `plan/tests/typecheck/build/materialize/package/publication/total`；Deploy 单独报告 `artifactLookup/download/candidate/cutover/restart/health/remoteTotal/total`。不得把 Prepare 时间算进 Deploy，也不得为缩短数字删除摘要校验、候选检查、健康检查或回滚。
+Prepare 单独报告两次冷构建摘要、确定性比较和 `plan/tests/typecheck/build/materialize/package/publication/total`；Prepared Deploy 单独报告 `artifactLookup/download/candidate/cutover/restart/health/remoteTotal/total`。生产回执把业务制品 `sourceSha` 与控制面 `controlPlane.sourceSha` 分开，并记录 GitHub run id/attempt、远端 Agent 文件 SHA-256 和远端 policy SHA-256。签名 URL、OSS 凭据和 SSH 密钥不得进入回执。不得把 Prepare 时间算进 Deploy，也不得为缩短数字删除摘要校验、候选检查、健康检查或回滚。
 
 ## 兼容与启用顺序
 
 Storefront 继续使用 1.2 的自包含生产运行包和现有 systemd 单元，不恢复 `node_modules` 依赖层。1.3 复用现有候选目录、current/previous 指针、健康检查、回滚回执和单目标锁；只为远端 Agent 增加 OSS 下载动作。
 
-生产启用必须作为独立任务执行：合并 1.3 → 安装并验证新版远端 Agent → 配置/核对 OSS 最小权限与 Endpoint → 手工 Prepare 一个目标 → 仅做候选解析验证 → Ethan 再次明确“部署”后才允许首次生产切流。
+生产启用必须按独立任务串行执行：合并并行 1.3 通道，同时保留 1.2 → 配置并核对 OSS/凭据/Endpoint → 安装并验证新版远端 Agent → 手工 Prepare 一个目标 → 运行 `validate-candidate`，只做候选解析、下载和校验 → Ethan 在新的独立任务中明确“部署”后，才允许首次 1.3 生产切流。任一前置步骤失败都停止 1.3，继续使用未改动的 1.2。
+
+首次 1.3 生产部署成功也不自动退役 1.2。只有后续独立清理任务获得 Ethan 明确授权后，才允许删除旧工作流或改变 `scripts/deploy-now.sh`。
 
 ## E06 一次性 staging 验收
 

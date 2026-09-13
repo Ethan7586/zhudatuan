@@ -4,6 +4,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
+import { deployPreparedCommand, validatePreparedCommand } from '../src/engine.mjs';
+
 const releaseEngineRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 test('external baseline is an explicit boolean CLI option', () => {
@@ -33,6 +35,26 @@ test('artifact preparation is an explicit boolean CLI option with separate publi
   });
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /publish\|deploy-prepared/);
+  assert.match(result.stdout, /publish\|verify-reproducibility\|validate-prepared\|deploy-prepared/);
   assert.match(result.stdout, /--prepare/);
+  assert.match(result.stdout, /verify-reproducibility/);
+  assert.match(result.stdout, /--state-directory/);
+});
+
+test('prepared commands require exact control provenance and an independent production approval', async () => {
+  const adapter = {
+    project: 'fixture',
+    projectRoot: process.cwd(),
+    targets: { app: {} },
+    nodes: { local: { deployments: { app: {} } } },
+  };
+  const base = { sourceSha: 'a'.repeat(40), target: 'app', nodes: ['local'] };
+  await assert.rejects(
+    () => validatePreparedCommand(adapter, base),
+    (error) => error.code === 'PREPARED_DEPLOY_CONTROL_SHA_REQUIRED'
+  );
+  await assert.rejects(
+    () => deployPreparedCommand(adapter, { ...base, controlSha: 'b'.repeat(40), githubRunId: '10', githubRunAttempt: '1' }),
+    (error) => error.code === 'PREPARED_DEPLOY_APPROVAL_INVALID'
+  );
 });

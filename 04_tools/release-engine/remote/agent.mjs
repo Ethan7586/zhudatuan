@@ -7,6 +7,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
 import { setTimeout as delay } from 'node:timers/promises';
+import { fileURLToPath } from 'node:url';
 
 let actionName = 'unknown';
 let loadedPolicy = null;
@@ -28,7 +29,9 @@ try {
   const options = parseOptions(tokens);
   const policyRoot = process.env.AI_DELIVERY_POLICY_ROOT ?? '/etc/ai-delivery/projects';
   const project = safeName(required(options.project, 'PROJECT_REQUIRED'));
-  const policy = JSON.parse(await readFile(join(policyRoot, `${project}.json`), 'utf8'));
+  const policyPath = join(policyRoot, `${project}.json`);
+  const policyBody = await readFile(policyPath);
+  const policy = JSON.parse(policyBody.toString('utf8'));
   loadedPolicy = policy;
   validatePolicy(policy, project);
   const nodeKey = safeName(required(options.node, 'NODE_REQUIRED'));
@@ -36,7 +39,8 @@ try {
   const nodePolicy = policy.nodes?.[nodeKey];
   const deployment = nodePolicy?.deployments?.[targetId];
   assert(deployment, 'DEPLOYMENT_NOT_ALLOWED');
-  const context = { project, node: nodeKey, target: targetId, deployment, nodePolicy, policy };
+  const controlPlane = ['deploy-oss-direct', 'validate-oss-candidate'].includes(action) ? await preparedControlPlane(options, policyBody) : null;
+  const context = { project, node: nodeKey, target: targetId, deployment, nodePolicy, policy, controlPlane };
   loadedContext = context;
 
   let result;
@@ -47,6 +51,7 @@ try {
   else if (action === 'reuse-direct') result = await withLocks(context, false, () => reuse(context, options, true), { version: options.treeDigest, operation: 'reuse-artifact-direct' });
   else if (action === 'stage') result = await withLocks(context, false, () => stage(context, options), { version: options.treeDigest });
   else if (action === 'stage-direct') result = await withLocks(context, false, () => stage(context, options, true), { version: options.treeDigest, operation: 'stage-direct' });
+  else if (action === 'validate-oss-candidate') result = await withLocks(context, false, () => validateOssCandidate(context, options), { version: options.sourceSha, operation: 'validate-oss-candidate' });
   else if (action === 'deploy-oss-direct') result = await withLocks(context, true, () => deployOssDirect(context, options), { version: options.sourceSha, operation: 'deploy-oss-direct' });
   else if (action === 'preflight') result = await preflight(context);
   else if (action === 'baseline') result = await withLocks(context, true, () => importBaseline(context, options), { version: options.sourceSha, operation: 'import-baseline' });
@@ -333,13 +338,29 @@ async function stage(context, options, direct = false) {
 
 async function deployOssDirect(context, options) {
   const started = Date.now();
+  const prepared = await prepareOssCandidate(context, options, true);
+  const activation = await activateDirect(context, options);
+  return {
+    ...prepared,
+    schema: 'ai.delivery.oss-direct.v1',
+    activation,
+    timings: { ...prepared.timings, total: Date.now() - started },
+  };
+}
+
+async function validateOssCandidate(context, options) {
+  return prepareOssCandidate(context, options, false);
+}
+
+async function prepareOssCandidate(context, options, direct) {
+  const started = Date.now();
   const identity = artifactIdentity(context, options);
   const found = await lookup(context, options);
   let staged;
   let downloadedBytes = 0;
   let downloadMs = 0;
   if (found.exists) {
-    staged = await reuse(context, options, true);
+    staged = await reuse(context, options, direct);
   } else {
     const payload = await readStdinJson();
     const incomingRoot = resolve(required(context.policy.incomingRoot, 'INCOMING_ROOT_REQUIRED'));
@@ -354,21 +375,23 @@ async function deployOssDirect(context, options) {
       const artifactDownload = await downloadObject(payload.artifactUrl, archive, MAX_ARTIFACT_BYTES, 'artifact');
       downloadedBytes = manifestDownload.bytes + artifactDownload.bytes;
       downloadMs = Date.now() - downloadStarted;
-      staged = await stage(context, { ...options, archive, manifest }, true);
+      staged = await stage(context, { ...options, archive, manifest }, direct);
     } finally {
       await Promise.all([rm(archive, { force: true }), rm(manifest, { force: true })]);
     }
   }
-  const activation = await activateDirect(context, options);
+  const currentAfter = await pointer(context.deployment.pointerRoot, 'current');
+  assert(currentAfter === found.current, 'CANDIDATE_VALIDATION_MOVED_CURRENT', { before: found.current, after: currentAfter });
   return {
-    schema: 'ai.delivery.oss-direct.v1',
+    schema: 'ai.delivery.oss-candidate.v1',
     sourceSha: identity.sourceSha,
     artifactSha256: `sha256:${identity.archiveSha256}`,
+    controlPlane: context.controlPlane,
     cacheStatus: found.exists ? found.status : 'miss',
     downloadedBytes,
     reusedBytes: found.exists ? found.artifactBytes : 0,
     staged,
-    activation,
+    current: { before: found.current, after: currentAfter, unchanged: true },
     timings: {
       artifactLookup: found.artifactLookupMs,
       download: downloadMs,
@@ -1124,6 +1147,7 @@ async function deploymentReceipt(context, manifest, evidence) {
     schema: 'ai.delivery.receipt.v1',
     version: `${manifest.sourceSha}-${manifest.treeDigest.slice(7, 19)}`,
     sourceSha: manifest.sourceSha,
+    ...(context.controlPlane ? { controlPlane: context.controlPlane } : {}),
     ...contextSummary(context),
     artifact: artifactSummary(manifest),
     pointers: { before: evidence.pointersBefore, after: pointersAfter },
@@ -1725,6 +1749,21 @@ function parseOptions(tokens) {
 
 function contextSummary(context) {
   return { project: context.project, node: context.node, target: context.target };
+}
+
+async function preparedControlPlane(options, policyBody) {
+  const sourceSha = required(options.controlSha, 'CONTROL_PLANE_SHA_REQUIRED');
+  const runId = required(options.githubRunId, 'CONTROL_PLANE_RUN_ID_REQUIRED');
+  const runAttempt = required(options.githubRunAttempt, 'CONTROL_PLANE_RUN_ATTEMPT_REQUIRED');
+  assert(/^[a-f0-9]{40}$/.test(sourceSha), 'CONTROL_PLANE_SHA_INVALID');
+  assert(/^[1-9][0-9]*$/.test(runId), 'CONTROL_PLANE_RUN_ID_INVALID');
+  assert(/^[1-9][0-9]*$/.test(runAttempt), 'CONTROL_PLANE_RUN_ATTEMPT_INVALID');
+  return {
+    sourceSha,
+    github: { runId, runAttempt },
+    remoteAgentSha256: `sha256:${await hashFile(fileURLToPath(import.meta.url))}`,
+    remotePolicySha256: `sha256:${createHash('sha256').update(policyBody).digest('hex')}`,
+  };
 }
 
 function expand(value, values) {

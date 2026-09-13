@@ -37,6 +37,7 @@ const controlledReleaseFiles = [
   '.github/workflows/quality.yml',
   '.github/workflows/prepare-artifact.yml',
   '.github/workflows/deploy.yml',
+  '.github/workflows/deploy-prepared.yml',
 ];
 const controlledReleaseSource = controlledReleaseFiles.map((file) => `${file}\n${readFileSync(resolve(root, file), 'utf8')}`).join('\n');
 const retired = ['admin-web', 'commerce-api', 'core-read-cache', '01_core_hexin/services/jobs', 'pm2', 'vite preview', '/api/ai', 'admin-voucher-test'];
@@ -103,7 +104,18 @@ for (const token of [
 for (const token of ['ai.delivery.receipt.v1', 'externalAcceptance', 'rollbackPoint', 'protectedProcesses', 'minimumFreeBytes', 'expected-caddy-semantic', '--environment candidate', 'agent-candidate']) {
   if (!controlledReleaseSource.includes(token)) throw new Error(`CONTROLLED_RELEASE_CONTRACT_MISSING:${token}`);
 }
-for (const token of ['ai.delivery.oss-release.v1', 'x-oss-forbid-overwrite', 'deploy-prepared', 'deploy-oss-direct', 'hit_remote']) {
+for (const token of [
+  'ai.delivery.oss-release.v1',
+  'x-oss-forbid-overwrite',
+  'verify-reproducibility',
+  'validate-prepared',
+  'deploy-prepared',
+  'validate-oss-candidate',
+  'deploy-oss-direct',
+  'remoteAgentSha256',
+  'remotePolicySha256',
+  'hit_remote',
+]) {
   if (!controlledReleaseSource.includes(token)) throw new Error(`PREPARED_DELIVERY_CONTRACT_MISSING:${token}`);
 }
 if (controlledReleaseSource.includes('production.lock')) throw new Error('CONTROLLED_RELEASE_GLOBAL_LOCK_FORBIDDEN');

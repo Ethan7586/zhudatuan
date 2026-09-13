@@ -77,12 +77,14 @@ export async function packageCommand(adapter, options) {
   const runDirectory = dirname(buildPath);
   const plan = await readJson(join(runDirectory, 'plan.json'));
   invariant(build.sourceSha === plan.to.sha, 'PACKAGE_SOURCE_MISMATCH', 'Build and plan source differ');
+  const state = statePaths(adapter);
   const artifacts = [];
-  for (const target of build.targets) artifacts.push(await packageTarget(adapter, plan, target, runDirectory, statePaths(adapter).artifacts));
+  for (const target of build.targets) artifacts.push(await packageTarget(adapter, plan, target, runDirectory, state.artifacts));
   const result = {
     schema: 'ai.delivery.package-set.v1',
     project: adapter.project,
     runId: build.runId,
+    stateRoot: state.root,
     sourceSha: build.sourceSha,
     direct: plan.direct === true,
     prepare: plan.prepare === true,
@@ -101,16 +103,34 @@ export async function publishCommand(adapter, options) {
   return publishPreparedArtifact(adapter, options);
 }
 
+export async function validatePreparedCommand(adapter, options) {
+  return preparedArtifactCommand(adapter, options, true);
+}
+
 export async function deployPreparedCommand(adapter, options) {
+  return preparedArtifactCommand(adapter, options, false);
+}
+
+async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const started = performance.now();
   const sourceSha = required(options.sourceSha, 'PREPARED_DEPLOY_SOURCE_SHA_REQUIRED');
   invariant(/^[a-f0-9]{40}$/.test(sourceSha), 'PREPARED_DEPLOY_SOURCE_SHA_INVALID', 'Prepared deploy requires one full lowercase Git commit SHA');
+  const controlSha = required(options.controlSha, 'PREPARED_DEPLOY_CONTROL_SHA_REQUIRED');
+  const githubRunId = required(options.githubRunId, 'PREPARED_DEPLOY_RUN_ID_REQUIRED');
+  const githubRunAttempt = required(options.githubRunAttempt, 'PREPARED_DEPLOY_RUN_ATTEMPT_REQUIRED');
+  invariant(/^[a-f0-9]{40}$/.test(controlSha), 'PREPARED_DEPLOY_CONTROL_SHA_INVALID', 'Prepared deploy requires the exact release control-plane SHA');
+  invariant(/^[1-9][0-9]*$/.test(githubRunId), 'PREPARED_DEPLOY_RUN_ID_INVALID', 'Prepared deploy requires the GitHub run id');
+  invariant(/^[1-9][0-9]*$/.test(githubRunAttempt), 'PREPARED_DEPLOY_RUN_ATTEMPT_INVALID', 'Prepared deploy requires the GitHub run attempt');
   const target = required(options.target, 'PREPARED_DEPLOY_TARGET_REQUIRED');
   invariant(Boolean(adapter.targets[target]), 'PREPARED_DEPLOY_TARGET_UNKNOWN', `Unknown target ${target}`);
   const nodes = options.nodes ?? [];
   invariant(nodes.length === 1, 'PREPARED_DEPLOY_NODE_REQUIRED', 'Prepared deploy requires exactly one explicit node');
   const requestedNode = nodes[0];
   invariant(Boolean(adapter.nodes[requestedNode]?.deployments?.[target]), 'PREPARED_DEPLOY_NODE_TARGET_MISMATCH', `Unknown deployment ${requestedNode}/${target}`);
+  if (!candidateOnly) {
+    const expectedApproval = `${adapter.project}:prepared-deploy:${sourceSha}:${requestedNode}:${target}`;
+    invariant(options.productionApproval === expectedApproval, 'PREPARED_DEPLOY_APPROVAL_INVALID', `Prepared production deploy requires ${expectedApproval}`);
+  }
   const resolvedDeployment = resolveDeployment(adapter, requestedNode, target);
   const resolution = await resolvePreparedArtifact(adapter, { ...options, node: requestedNode });
   const publicClient = ossClientFromEnvironment(options.endpoint);
@@ -126,12 +146,12 @@ export async function deployPreparedCommand(adapter, options) {
   const remoteStarted = performance.now();
   const remote = await runCommand(
     {
-      name: `deploy-prepared:${resolvedDeployment.executionNode}:${target}`,
+      name: `${candidateOnly ? 'validate' : 'deploy'}-prepared:${resolvedDeployment.executionNode}:${target}`,
       argv: [
         'ssh',
         host,
         remoteAgent,
-        'deploy-oss-direct',
+        candidateOnly ? 'validate-oss-candidate' : 'deploy-oss-direct',
         '--project',
         adapter.project,
         '--node',
@@ -146,6 +166,12 @@ export async function deployPreparedCommand(adapter, options) {
         artifact.treeDigest,
         '--manifest-digest',
         runtimeManifest.manifestDigest,
+        '--control-sha',
+        controlSha,
+        '--github-run-id',
+        githubRunId,
+        '--github-run-attempt',
+        githubRunAttempt,
       ],
       input: `${JSON.stringify({
         artifactUrl: internalClient.signGet(artifact.object, 900),
@@ -156,26 +182,43 @@ export async function deployPreparedCommand(adapter, options) {
     basicContext(adapter)
   );
   const remoteResult = parseCommandJson(remote)?.result;
-  invariant(Boolean(remoteResult?.activation?.receipt), 'PREPARED_DEPLOY_RECEIPT_MISSING', 'Remote prepared deploy did not return an activation receipt');
+  if (candidateOnly) {
+    invariant(remoteResult?.schema === 'ai.delivery.oss-candidate.v1' && remoteResult.current?.unchanged === true, 'PREPARED_CANDIDATE_EVIDENCE_MISSING', 'Remote prepared candidate validation did not prove current remained unchanged');
+  } else {
+    invariant(Boolean(remoteResult?.activation?.receipt), 'PREPARED_DEPLOY_RECEIPT_MISSING', 'Remote prepared deploy did not return an activation receipt');
+  }
+  const controlPlane = candidateOnly ? remoteResult.controlPlane : remoteResult.activation.receipt.controlPlane;
+  invariant(
+    controlPlane?.sourceSha === controlSha && controlPlane.github?.runId === githubRunId && controlPlane.github?.runAttempt === githubRunAttempt,
+    'PREPARED_DEPLOY_CONTROL_PROVENANCE_MISMATCH',
+    'Remote deployment receipt control-plane provenance differs'
+  );
+  invariant(
+    /^sha256:[a-f0-9]{64}$/.test(controlPlane.remoteAgentSha256 ?? '') && /^sha256:[a-f0-9]{64}$/.test(controlPlane.remotePolicySha256 ?? ''),
+    'PREPARED_DEPLOY_REMOTE_PROVENANCE_MISSING',
+    'Remote deployment receipt is missing Agent or policy digest'
+  );
   return {
-    schema: 'ai.delivery.prepared-deploy.v1',
+    schema: candidateOnly ? 'ai.delivery.prepared-candidate.v1' : 'ai.delivery.prepared-deploy.v1',
     project: adapter.project,
     sourceSha,
+    artifactSourceSha: sourceSha,
+    controlPlane,
     target,
     requestedNode,
     node: resolvedDeployment.executionNode,
     artifactIdentity: artifact.sha256,
     releaseManifestObject: resolution.releaseManifestObject,
-    finalStatus: 'success',
+    finalStatus: candidateOnly ? 'candidate-validated' : 'success',
     cacheStatus: remoteResult.cacheStatus,
-    repeatedDeployment: remoteResult.activation.alreadyCurrent === true,
+    repeatedDeployment: candidateOnly ? false : remoteResult.activation.alreadyCurrent === true,
     timings: {
       artifactLookup: resolution.timings.artifactLookup,
       download: remoteResult.timings?.download ?? 0,
       candidate: remoteResult.timings?.candidate ?? 0,
-      cutover: remoteResult.activation.timings?.cutover ?? 0,
-      restart: remoteResult.activation.timings?.restart ?? 0,
-      health: remoteResult.activation.timings?.health ?? 0,
+      cutover: remoteResult.activation?.timings?.cutover ?? 0,
+      restart: remoteResult.activation?.timings?.restart ?? 0,
+      health: remoteResult.activation?.timings?.health ?? 0,
       rollback: remoteResult.timings?.rollback ?? 0,
       remoteTotal: elapsed(remoteStarted),
       total: elapsed(started),
@@ -185,7 +228,7 @@ export async function deployPreparedCommand(adapter, options) {
       downloadedBytes: remoteResult.downloadedBytes ?? 0,
       reusedBytes: remoteResult.reusedBytes ?? 0,
     },
-    receipt: remoteResult.activation.receipt,
+    ...(candidateOnly ? { candidateEvidence: remoteResult.current } : { receipt: remoteResult.activation.receipt }),
     completedAt: new Date().toISOString(),
   };
 }
