@@ -67,19 +67,20 @@ assert.doesNotMatch(workerSource, /\b(?:await|return)\s+fetch\s*\(/);
 assert.match(workerSource, /status:\s*410/);
 
 const tunnel = await text('02_platform_pingtai', 'config', 'node-runtime', 'hbbtzn-l1', 'cloudflared.yml.example');
-for (const host of ['api', 'accounts', 'console', 'www', 'h5', 'mall']) assert.match(tunnel, new RegExp(`hostname: ${host}\\.hbbtzn\\.com`));
+const tunnelSubdomains = ['api', 'accounts', 'console', 'www', 'h5', 'h6', 'mall'];
+for (const host of tunnelSubdomains) assert.match(tunnel, new RegExp(`hostname: ${host}\\.hbbtzn\\.com`));
 assert.match(tunnel, /hostname: hbbtzn\.com/);
 assert.match(tunnel, /credentials-file: \/opt\/sfl\/nodes\/hbbtzn-l1\/tunnel\/credentials\.json/);
 assert.match(tunnel, /matchSNItoHost: true/);
 assert.doesNotMatch(tunnel, /httpHostHeader/);
 assert.doesNotMatch(tunnel, /zhudatuan\.com/);
-assert.equal((tunnel.match(/service: https:\/\/127\.0\.0\.1:4430/g) ?? []).length, 7);
+assert.equal((tunnel.match(/service: https:\/\/127\.0\.0\.1:4430/g) ?? []).length, tunnelSubdomains.length + 1);
 assert.match(tunnel, /- service: http_status:404/);
 
 const gateway = await text('02_platform_pingtai', 'config', 'node-runtime', 'hbbtzn-l1', 'api-gateway.Caddyfile');
 assert.doesNotMatch(gateway, /zhudatuan\.com/);
 assert.match(gateway, /host api\.hbbtzn\.com/);
-assert.match(gateway, /@storefrontPublicCatalog\s*\{\s*host h5\.hbbtzn\.com hbbtzn\.com mall\.hbbtzn\.com www\.hbbtzn\.com\s*method GET HEAD OPTIONS\s*path \/api\/v1\/catalog\/public\/products\*/);
+assert.match(gateway, /@storefrontPublicCatalog\s*\{\s*host h5\.hbbtzn\.com h6\.hbbtzn\.com hbbtzn\.com mall\.hbbtzn\.com www\.hbbtzn\.com\s*method GET HEAD OPTIONS\s*path \/api\/v1\/catalog\/public\/products\*/);
 assert.match(gateway, /@catalogBatch/);
 assert.match(gateway, /path \/api\/v1\/catalog\/listings\/batches/);
 for (const port of [4322, 4323, 4324, 4326, 4331, 4433]) assert.match(gateway, new RegExp(`reverse_proxy 127\\.0\\.0\\.1:${port}`));
