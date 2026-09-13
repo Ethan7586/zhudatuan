@@ -1,0 +1,43 @@
+import { access, mkdir } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { join, resolve } from 'node:path';
+
+import { createAutoNodeControlServer } from './autonode-control-server.mjs';
+import { AutoNodeActivationCliExecutor } from './autonode-task-executor.mjs';
+import { AutoNodeTaskEngine } from './autonode-task-engine.mjs';
+
+const host = process.env.AUTONODE_CONTROL_HOST ?? '127.0.0.1';
+const port = number(process.env.AUTONODE_CONTROL_PORT ?? '4370', 'AUTONODE_CONTROL_PORT');
+const taskStateRoot = resolve(process.env.AUTONODE_TASK_STATE_ROOT ?? '/var/lib/sfl-autonode-control');
+const activationStateRoot = resolve(process.env.AUTONODE_ACTIVATION_STATE_ROOT ?? join(taskStateRoot, 'activation'));
+const providerStateRoot = resolve(process.env.AUTONODE_PROVIDER_STATE_ROOT ?? join(taskStateRoot, 'provider'));
+const sourceRoot = resolve(process.env.AUTONODE_SOURCE_ROOT ?? '/opt/sfl/nodes/hbbtzn-l1/current');
+
+await mkdir(taskStateRoot, { recursive: true });
+await mkdir(activationStateRoot, { recursive: true });
+await mkdir(providerStateRoot, { recursive: true });
+await access(join(sourceRoot, '04_tools/scripts/provisioning/autonode-activate.mjs'));
+createRequire(join(sourceRoot, 'package.json')).resolve('tsx');
+
+const executor = new AutoNodeActivationCliExecutor({
+  sourceRoot,
+  stateRoot: activationStateRoot,
+  providerStateRoot,
+});
+const engine = new AutoNodeTaskEngine(taskStateRoot, executor);
+const recovered = await engine.recover();
+const server = createAutoNodeControlServer(engine);
+
+server.listen(port, host, () => {
+  process.stdout.write(`AUTONODE_CONTROL_READY host=${host} port=${port} recovered=${recovered}\n`);
+});
+
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.once(signal, () => server.close(() => process.exit(0)));
+}
+
+function number(value, name) {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > 65_535) throw new Error(`${name}_INVALID`);
+  return parsed;
+}

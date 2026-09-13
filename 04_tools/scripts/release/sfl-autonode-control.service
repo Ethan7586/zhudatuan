@@ -1,0 +1,20 @@
+[Unit]
+Description=SFL AutoNode control plane
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Environment=AUTONODE_CONTROL_HOST=127.0.0.1
+Environment=AUTONODE_CONTROL_PORT=4370
+Environment=AUTONODE_TASK_STATE_ROOT=/var/lib/sfl-autonode-control
+Environment=AUTONODE_ACTIVATION_STATE_ROOT=/var/lib/sfl-autonode-control/activation
+Environment=AUTONODE_PROVIDER_STATE_ROOT=/var/lib/sfl-autonode-control/provider
+Environment=AUTONODE_SOURCE_ROOT=/opt/sfl/nodes/hbbtzn-l1/current
+ExecStart=/usr/bin/node /opt/sfl/control/node-operations/current/runtime/autonode-control-main.mjs
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

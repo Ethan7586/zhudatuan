@@ -32,12 +32,20 @@ if (releaseTarget === 'node-operations') {
     'autonode-operate.mjs',
     'autonode-operations-engine.mjs',
     'autonode-operations-provider.mjs',
+    'autonode-control-main.mjs',
+    'autonode-control-server.mjs',
+    'autonode-task-engine.mjs',
+    'autonode-task-executor.mjs',
   ]) {
     await copy(
       `04_tools/scripts/provisioning/${file}`,
       join(outputRoot, `runtime/${file}`),
     );
   }
+  await copy(
+    '04_tools/scripts/release/sfl-autonode-control.service',
+    join(outputRoot, 'systemd/sfl-autonode-control.service'),
+  );
 } else if (releaseTarget === 'database-migrations') {
   await run('node', ['04_tools/release-engine/adapters/zdt-next/build-database-migration.mjs']);
   await copy(
