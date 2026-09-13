@@ -9,7 +9,6 @@ import { scopePath } from '../../shared/url/ScopePath';
 import { ProductBatchPreview } from './ProductBatchPreview';
 import { ProductCatalogHeader } from './ProductCatalogHeader';
 import { ProductColumnSettings } from './ProductColumnSettings';
-import { ProductCreateDialog } from './ProductCreateDialog';
 import { ProductDrawer } from './ProductDrawer';
 import { ProductFilterForm } from './ProductFilter';
 import { canCreateCatalogImport } from './ProductImportCommand';
@@ -98,7 +97,6 @@ export function Component() {
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [batchOpen, setBatchOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [createOpen, setCreateOpen] = useState(false);
   const [publicationReference, setPublicationReference] = useState(() =>
     readPublicationTaskHint(context) ?? 'catalogpublication:latest');
   const [publicationDiscoveryPending, setPublicationDiscoveryPending] = useState(() =>
@@ -228,7 +226,6 @@ export function Component() {
         ? { tone: 'error' as const, message: '发布任务状态读取失败，请刷新页面后重试。' } : undefined;
   const openImportResult = (jobId: string) => {
     setImportOpen(false);
-    setCreateOpen(false);
     void navigate(scopePath(context.scope, `imports/catalog/${encodeURIComponent(jobId)}`));
   };
 
@@ -369,9 +366,10 @@ export function Component() {
           onExport={() => undefined}
           onStatus={() => undefined}
         />
-        <ProductFreeWorkspace enabled={writeEnabled} onCreate={() => setCreateOpen(true)} onImport={() => setImportOpen(true)} />
+        <ProductFreeWorkspace enabled={writeEnabled}
+          onCreate={() => { void navigate(scopePath(context.scope, 'products/owned/new')); }}
+          onImport={() => setImportOpen(true)} />
         <ProductImportDialog context={context} open={importOpen} onClose={() => setImportOpen(false)} onCreated={openImportResult} />
-        <ProductCreateDialog context={context} open={createOpen} onClose={() => setCreateOpen(false)} onCreated={openImportResult} />
       </section>
     );
   }
@@ -441,7 +439,7 @@ export function Component() {
         {...(publicationTask === undefined ? {} : { publicationTask })}
         {...(releaseFeedback === undefined ? {} : { releaseFeedback })}
         onImport={() => setImportOpen(true)}
-        onCreate={() => setCreateOpen(true)}
+        onCreate={() => { void navigate(scopePath(context.scope, 'products/owned/new')); }}
         onRelease={() => readyPublication.mutate()}
         onRetry={() => publicationTask === undefined ? undefined : retryPublication.mutate(publicationTask)}
         onExport={() => downloadCurrentPageCsv({ rows: query.data?.items ?? [], columns: productCsvColumns,
@@ -513,7 +511,6 @@ export function Component() {
       <ProductColumnSettings open={columnsOpen} visible={visibleColumns} onChange={toggleColumn} onClose={() => setColumnsOpen(false)} />
       <ProductBatchPreview open={batchOpen} rows={selectedRows} onClose={() => setBatchOpen(false)} />
       <ProductImportDialog context={context} open={importOpen} onClose={() => setImportOpen(false)} onCreated={openImportResult} />
-      <ProductCreateDialog context={context} open={createOpen} onClose={() => setCreateOpen(false)} onCreated={openImportResult} />
     </section>
   );
 }

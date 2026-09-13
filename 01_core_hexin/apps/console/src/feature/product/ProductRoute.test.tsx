@@ -84,7 +84,8 @@ describe('Product governance workspace', () => {
     expect(screen.getByRole('button', { name: '自有商品' }).getAttribute('aria-current')).toBe('page');
     expect(screen.getByText('创建完成后进入商品目录，仍由商品目录统一审核和上下架。')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: /新建自有商品/ }));
-    expect(await screen.findByRole('dialog', { name: '新建商品' })).toBeTruthy();
+    expect(screen.getByTestId('route-location').textContent)
+      .toBe('/scopes/mall/mall%3Ahongtai/products/owned/new');
   });
 
   it('renders the product shell and a stable table skeleton before the cold request completes', async () => {
@@ -400,8 +401,8 @@ describe('Product governance workspace', () => {
     expect(create.disabled).toBe(false);
     expect(importing.disabled).toBe(false);
     await user.click(create);
-    expect(await screen.findByRole('dialog', { name: '新建商品' })).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: '取消' }));
+    expect(screen.getByTestId('route-location').textContent)
+      .toBe('/scopes/mall/mall%3Ahongtai/products/owned/new');
     await user.click(importing);
     expect(await screen.findByRole('dialog', { name: '批量导入商品' })).toBeTruthy();
     await user.click(screen.getByRole('button', { name: '取消' }));

@@ -26,6 +26,7 @@ export interface ManualProductDraft {
   readonly compareMinor?: number;
   readonly available: number;
   readonly specifications: Readonly<Record<string, string>>;
+  readonly attributes?: Readonly<Record<string, string | number>>;
 }
 
 export function canCreateCatalogImport(context: ConsoleContext): boolean {
@@ -110,7 +111,7 @@ export function manualCatalogPackage(draft: ManualProductDraft): string {
       source: { row: 1, productRef: `manual-product-${token}`, skuRef: `manual-sku-${token}` },
       product: {
         title: draft.title, description: draft.description, category: draft.category, type: draft.productType,
-        attributes: { entryMode: 'manual' }, media: [{ kind: 'image', url: draft.mediaUrl }],
+        attributes: { entryMode: 'manual', ...draft.attributes }, media: [{ kind: 'image', url: draft.mediaUrl }],
       },
       sku: { code: draft.skuCode, specifications: draft.specifications },
       offer: { currency: 'CNY', amountMinor: draft.amountMinor, ...(draft.compareMinor === undefined ? {} : { compareMinor: draft.compareMinor }) },

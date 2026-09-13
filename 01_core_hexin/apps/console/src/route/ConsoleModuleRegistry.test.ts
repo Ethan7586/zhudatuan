@@ -104,7 +104,7 @@ describe('registered Console modules', () => {
     const paths = routes.map(({ path }) => path);
 
     expect(routes.filter(({ kind }) => kind === 'redirect')).toHaveLength(0);
-    expect(routes.filter(({ kind }) => kind !== 'redirect')).toHaveLength(38);
+    expect(routes.filter(({ kind }) => kind !== 'redirect')).toHaveLength(39);
     expect(new Set(routeIds).size).toBe(routeIds.length);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -153,7 +153,7 @@ describe('registered Console modules', () => {
     const transitionEdges = literalEdges.filter(({ target }) => target?.startsWith('../'))
       .sort((left, right) => `${left.source}:${left.target}`.localeCompare(`${right.source}:${right.target}`));
 
-    expect(literalEdges).toHaveLength(37);
+    expect(literalEdges).toHaveLength(38);
     expect(transitionEdges).toEqual([
       { source: 'src/feature/access/manifest.ts', target: '../importing/ImportRoute' },
       { source: 'src/feature/access/manifest.ts', target: '../member/MemberRoute' },

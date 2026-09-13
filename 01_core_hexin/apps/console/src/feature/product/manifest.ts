@@ -24,6 +24,14 @@ export const productsModule = {
       },
     },
     {
+      id: 'products.owned-create',
+      path: 'products/owned/new',
+      kind: 'child',
+      lazy: () => import('./OwnedProductCreateRoute'),
+      operations: ['catalog.imports.create', 'catalog.imports.read'],
+      presentation: { title: '新建自有商品', summary: '创建当前商城自主经营的商品' },
+    },
+    {
       id: 'products.detail',
       path: 'products/:productId',
       kind: 'detail',
