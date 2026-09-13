@@ -15,6 +15,7 @@ on:
           - identity-api
           - workers
           - database-migrations
+          - node-operations
       head_sha:
         description: Exact zdt-next commit; empty uses current zdt-next
         required: false
@@ -121,6 +122,7 @@ jobs:
           case "$RELEASE_TARGET" in
             console-static) activation_script=04_tools/scripts/release/activate-console-static.sh ;;
             database-migrations) activation_script=04_tools/scripts/release/activate-database-migrations.sh ;;
+            node-operations) activation_script=04_tools/scripts/release/activate-node-operations.sh ;;
             commerce-api|identity-api|workers) activation_script=04_tools/scripts/release/activate-runtime-bundle.sh ;;
             *) echo "Unsupported release target: $RELEASE_TARGET" >&2; exit 1 ;;
           esac

@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { serviceTargets } from '../../release-engine/adapters/zdt-next/service-targets.mjs';
 
 const [releaseTarget, outputRoot, sourceSha] = process.argv.slice(2);
-if (!['commerce-api', 'identity-api', 'workers', 'database-migrations'].includes(releaseTarget)) {
+if (!['commerce-api', 'identity-api', 'workers', 'database-migrations', 'node-operations'].includes(releaseTarget)) {
   throw new Error(`RUNTIME_BUNDLE_TARGET_UNKNOWN:${releaseTarget}`);
 }
 if (!outputRoot) throw new Error('RUNTIME_BUNDLE_OUTPUT_REQUIRED');
@@ -27,7 +27,18 @@ const groups = Object.freeze({
 });
 
 await mkdir(outputRoot, { recursive: true });
-if (releaseTarget === 'database-migrations') {
+if (releaseTarget === 'node-operations') {
+  for (const file of [
+    'autonode-operate.mjs',
+    'autonode-operations-engine.mjs',
+    'autonode-operations-provider.mjs',
+  ]) {
+    await copy(
+      `04_tools/scripts/provisioning/${file}`,
+      join(outputRoot, `runtime/${file}`),
+    );
+  }
+} else if (releaseTarget === 'database-migrations') {
   await run('node', ['04_tools/release-engine/adapters/zdt-next/build-database-migration.mjs']);
   await copy(
     '01_core_hexin/services/commerce/dist/DatabaseMigrationExecutor.js',
