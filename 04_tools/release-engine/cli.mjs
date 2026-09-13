@@ -46,7 +46,7 @@ export function parseArguments(args) {
     const token = rest[index];
     if (!token.startsWith('--')) throw new Error(`ARGUMENT_INVALID:${token}`);
     const key = token.slice(2).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-    if (['dryRun', 'externalBaseline', 'help'].includes(key)) {
+    if (['direct', 'dryRun', 'externalBaseline', 'help'].includes(key)) {
       options[key] = true;
       continue;
     }

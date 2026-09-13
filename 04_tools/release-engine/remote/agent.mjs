@@ -48,11 +48,14 @@ try {
   else if (action === 'layer-lookup') result = await dependencyLayerLookup(context, options);
   else if (action === 'stage-layer') result = await withLocks(context, false, () => stageDependencyLayer(context, options), { version: options.digest, operation: 'stage-dependency-layer' });
   else if (action === 'reuse') result = await withLocks(context, false, () => reuse(context, options), { version: options.treeDigest, operation: 'reuse-artifact' });
+  else if (action === 'reuse-direct') result = await withLocks(context, false, () => reuse(context, options, true), { version: options.treeDigest, operation: 'reuse-artifact-direct' });
   else if (action === 'stage') result = await withLocks(context, false, () => stage(context, options), { version: options.treeDigest });
+  else if (action === 'stage-direct') result = await withLocks(context, false, () => stage(context, options, true), { version: options.treeDigest, operation: 'stage-direct' });
   else if (action === 'preflight') result = await preflight(context);
   else if (action === 'baseline') result = await withLocks(context, true, () => importBaseline(context, options), { version: options.sourceSha, operation: 'import-baseline' });
   else if (action === 'seed') result = await withLocks(context, true, () => seed(context, options), { version: options.sourceSha, operation: 'seed-layout' });
   else if (action === 'activate') result = await withLocks(context, true, () => activate(context, options), { version: options.approval?.split(':').at(-1) });
+  else if (action === 'activate-direct') result = await withLocks(context, true, () => activateDirect(context, options), { version: options.sourceSha, operation: 'activate-direct' });
   else if (action === 'rollback') result = await withLocks(context, true, () => rollback(context), { operation: 'rollback' });
   else if (action === 'verify') result = await withLocks(context, false, () => verifyCurrent(context), { operation: 'verify' });
   else if (action === 'status') result = await status(context);
@@ -234,7 +237,7 @@ async function cloneTree(source, destination) {
   }
 }
 
-async function stage(context, options) {
+async function stage(context, options, direct = false) {
   const started = Date.now();
   const timings = { validation: 0, materialize: 0, candidateChecks: 0, pointer: 0, cleanup: 0 };
   const validationStarted = Date.now();
@@ -298,7 +301,7 @@ async function stage(context, options) {
   }
   timings.materialize = Date.now() - materializeStarted;
   const checksStarted = Date.now();
-  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: release, currentDir: await pointer(context.deployment.pointerRoot, 'current') ?? '', ...contextSummary(context) });
+  if (!direct) await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: release, currentDir: await pointer(context.deployment.pointerRoot, 'current') ?? '', ...contextSummary(context) });
   timings.candidateChecks = Date.now() - checksStarted;
   const pointerStarted = Date.now();
   await atomicPointer(join(root, 'candidate'), release);
@@ -356,16 +359,18 @@ async function lookup(context, options) {
   };
 }
 
-async function reuse(context, options) {
+async function reuse(context, options, direct = false) {
   const started = Date.now();
   const found = await lookup(context, options);
   assert(found.exists, 'ARTIFACT_REUSE_MISSING', found);
   const checksStarted = Date.now();
-  await runChecks(context.deployment.candidateChecks ?? [], {
-    candidateDir: found.release,
-    currentDir: found.current ?? '',
-    ...contextSummary(context),
-  });
+  if (!direct) {
+    await runChecks(context.deployment.candidateChecks ?? [], {
+      candidateDir: found.release,
+      currentDir: found.current ?? '',
+      ...contextSummary(context),
+    });
+  }
   const candidateChecks = Date.now() - checksStarted;
   await ensureTraversablePointerRoot(context);
   const pointerStarted = Date.now();
@@ -377,6 +382,90 @@ async function reuse(context, options) {
     candidate: found.release,
     cacheStatus: found.status,
     timings: { artifactLookup: found.artifactLookupMs, candidateChecks, pointer: pointerMs, total: Date.now() - started },
+  };
+}
+
+async function activateDirect(context, options) {
+  const started = Date.now();
+  const root = context.deployment.pointerRoot;
+  assertAllowedRoot(context.policy, root);
+  const candidate = await pointer(root, 'candidate');
+  assert(candidate, 'CANDIDATE_MISSING');
+  const manifest = JSON.parse(await readFile(join(candidate, 'AI_DELIVERY_ARTIFACT.json'), 'utf8'));
+  const sourceSha = required(options.sourceSha, 'DIRECT_SOURCE_SHA_REQUIRED');
+  assert(manifest.sourceSha === sourceSha, 'DIRECT_SOURCE_SHA_MISMATCH', { expected: sourceSha, actual: manifest.sourceSha });
+  await chmod(candidate, 0o755);
+  await ensureTraversablePointerRoot(context);
+
+  const pointersBefore = await pointerSnapshot(root);
+  const previousCurrent = await pointer(root, 'current');
+  const previousRuntime = await pointer(root, 'runtime');
+  const candidateRuntime = await dependencyLayerPath(context, manifest.dependencyLayer);
+  let databaseMigration = null;
+
+  if (context.deployment.databaseMigration) {
+    databaseMigration = await executeDatabaseMigration(context, candidate, manifest);
+  }
+
+  if (previousCurrent === candidate) {
+    return {
+      mode: 'direct-already-current',
+      sourceSha,
+      current: candidate,
+      previous: await pointer(root, 'previous'),
+      runtime: previousRuntime,
+      restart: restartEvidence(context.deployment.restart, false),
+      databaseMigration,
+      timings: { total: Date.now() - started },
+      receipt: directReceipt(context, manifest, previousCurrent, candidate, databaseMigration, 'success'),
+    };
+  }
+
+  let activationRestart = restartEvidence(context.deployment.restart, false);
+  try {
+    if (previousCurrent) await atomicPointer(join(root, 'previous'), previousCurrent);
+    if (previousRuntime) await atomicPointer(join(root, 'previous-runtime'), previousRuntime);
+    if (candidateRuntime) await atomicPointer(join(root, 'runtime'), candidateRuntime);
+    await atomicPointer(join(root, 'current'), candidate);
+    activationRestart = await restart(context.deployment.restart);
+  } catch (error) {
+    await restoreOptionalPointer(join(root, 'current'), previousCurrent);
+    await restoreOptionalPointer(join(root, 'runtime'), previousRuntime);
+    if (previousCurrent) await restart(context.deployment.restart);
+    throw failure('DIRECT_ACTIVATION_FAILED', {
+      cause: errorEvidence(error),
+      sourceSha,
+      pointersBefore,
+      restoredCurrent: await pointer(root, 'current'),
+      restoredRuntime: await pointer(root, 'runtime'),
+    });
+  }
+
+  return {
+    mode: 'direct-activated',
+    sourceSha,
+    current: candidate,
+    previous: previousCurrent,
+    runtime: await pointer(root, 'runtime'),
+    restart: activationRestart,
+    databaseMigration,
+    timings: { total: Date.now() - started },
+    receipt: directReceipt(context, manifest, previousCurrent, candidate, databaseMigration, 'success'),
+  };
+}
+
+function directReceipt(context, manifest, previous, current, databaseMigration, finalStatus) {
+  return {
+    schema: 'ai.delivery.direct-receipt.v1',
+    project: context.project,
+    node: context.node,
+    target: context.target,
+    sourceSha: manifest.sourceSha,
+    previous,
+    current,
+    databaseMigration,
+    finalStatus,
+    completedAt: new Date().toISOString(),
   };
 }
 

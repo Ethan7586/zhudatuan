@@ -16,7 +16,12 @@ export async function createPlan(adapter, options = {}) {
   const changes = await changedFiles(adapter.projectRoot, fromSha, toSha, options.files ?? []);
   const initial = classifyChanges(adapter, changes);
   const refined = await refineDynamicImpact(adapter, initial, changes, { fromSha, toSha });
-  const classification = requestedTargets.length > 0 ? scopeClassification(adapter, refined, requestedTargets) : refined;
+  const direct = options.direct === true;
+  const classification = requestedTargets.length > 0
+    ? direct
+      ? { ...refined, targets: requestedTargets, reasons: ['explicit direct deployment'], validations: [], touches: [], unknownFiles: [] }
+      : scopeClassification(adapter, refined, requestedTargets)
+    : refined;
   const scopedChanges = requestedTargets.length > 0 ? changes.filter((change) => classification.files.some((file) => sameChange(file, change))) : changes;
   const targets = expandTargetDependencies(adapter, classification.targets);
   const requestedNodes = options.nodes ?? [];
@@ -25,10 +30,10 @@ export async function createPlan(adapter, options = {}) {
   for (const node of requestedNodes) {
     for (const target of targets) invariant(Boolean(adapter.nodes[node].deployments[target]), 'PLAN_NODE_TARGET_UNSUPPORTED', `${node} does not deploy ${target}`);
   }
-  const actions = materializeActions(adapter, targets, requestedNodes, scopedChanges, classification.validations);
+  const actions = materializeActions(adapter, targets, requestedNodes, scopedChanges, classification.validations, direct);
   const deploymentOrder = orderTargets(adapter, targets);
   const plan = {
-    schema: 'ai.delivery.plan.v2', engineVersion: 2, project: adapter.project, adapter: adapter.adapterPath,
+    schema: 'ai.delivery.plan.v2', engineVersion: 2, project: adapter.project, adapter: adapter.adapterPath, direct,
     from: { ref: fromRef, sha: fromSha }, to: { ref: toRef, sha: toSha }, deployRequired: targets.length > 0,
     changes: scopedChanges, classifications: classification.files, reasons: classification.reasons, targets,
     requestedTargets,
@@ -45,7 +50,7 @@ export async function createPlan(adapter, options = {}) {
     prohibitedRestarts: requestedNodes.flatMap((nodeKey) => Object.entries(adapter.nodes[nodeKey].deployments)
       .filter(([target]) => !targets.includes(target))
       .map(([target, deployment]) => ({ node: nodeKey, target, service: deployment.service }))),
-    productionApproval: { required: true, token: `${adapter.project}:${toSha}` },
+    productionApproval: direct ? { required: false, token: null } : { required: true, token: `${adapter.project}:${toSha}` },
     estimates: estimate(adapter, targets, actions),
   };
   return Object.freeze({ ...plan, generatedAt: new Date().toISOString(), planDigest: digest(plan) });
@@ -181,14 +186,14 @@ function eligibleNodesForTargets(adapter, targets) {
   return Object.entries(adapter.nodes).filter(([, node]) => targets.every((target) => Boolean(node.deployments[target]))).map(([key]) => key).sort();
 }
 
-function materializeActions(adapter, targets, selectedNodes, changes, validations) {
+function materializeActions(adapter, targets, selectedNodes, changes, validations, direct = false) {
   const changed = changes.map((change) => change.path);
-  const preflight = targets.length > 0 ? decorateCommands(adapter.buildPreflight ?? [], 'workspace', changed) : [];
-  const tests = decorateCommands(validations, 'changed-files', changed), typecheck = [], build = [], artifactInputs = [];
+  const preflight = !direct && targets.length > 0 ? decorateCommands(adapter.buildPreflight ?? [], 'workspace', changed) : [];
+  const tests = direct ? [] : decorateCommands(validations, 'changed-files', changed), typecheck = [], build = [], artifactInputs = [];
   for (const targetId of targets) {
     const target = adapter.targets[targetId];
-    tests.push(...decorateCommands(target.tests, targetId, changed));
-    typecheck.push(...decorateCommands(target.typecheck, targetId, changed));
+    if (!direct) tests.push(...decorateCommands(target.tests, targetId, changed));
+    if (!direct) typecheck.push(...decorateCommands(target.typecheck, targetId, changed));
     build.push(...decorateCommands(target.build, targetId, changed));
     artifactInputs.push(...target.artifactInputs.map((input) => ({ ...input, target: targetId })));
   }

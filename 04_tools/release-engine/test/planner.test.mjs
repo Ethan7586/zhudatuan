@@ -103,6 +103,23 @@ test('explicit Console scope produces no work for a migration-only change and re
     (error) => error.code === 'PLAN_TARGET_UNKNOWN');
 });
 
+test('direct explicit scope always builds the requested target without validations', async () => {
+  const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+  const plan = await createPlan(real, {
+    from: 'HEAD', to: 'HEAD', target: 'console', direct: true,
+    files: ['.github/workflows/deploy.yml'], nodes: ['hbbtzn-l1'],
+  });
+  assert.equal(plan.direct, true);
+  assert.equal(plan.deployRequired, true);
+  assert.deepEqual(plan.targets, ['console']);
+  assert.deepEqual(plan.requiredValidations, []);
+  assert.deepEqual(plan.actions.preflight, []);
+  assert.deepEqual(plan.actions.tests, []);
+  assert.deepEqual(plan.actions.typecheck, []);
+  assert.equal(plan.actions.build.length, 1);
+  assert.equal(plan.productionApproval.required, false);
+});
+
 test('workspace lock diff follows an added internal dependency only to Console', async () => {
   const root = await mkdtemp(join(tmpdir(), 'release-engine-workspace-'));
   try {

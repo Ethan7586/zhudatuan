@@ -15,3 +15,13 @@ test('external baseline is an explicit boolean CLI option', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /统一 AI 发布引擎/);
 });
+
+test('direct deployment is an explicit boolean CLI option', () => {
+  const result = spawnSync(process.execPath, ['cli.mjs', 'deploy', '--direct', '--help'], {
+    cwd: releaseEngineRoot,
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /统一 AI 发布引擎/);
+});

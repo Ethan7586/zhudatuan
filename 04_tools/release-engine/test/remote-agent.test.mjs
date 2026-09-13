@@ -61,6 +61,20 @@ test('stages, activates, rolls back and reports status with immutable releases',
   assert.equal(verified.result.checks.length, 1);
 });
 
+test('direct mode skips candidate and health checks while preserving immutable pointers', async () => {
+  const fixture = await createFixture();
+  fixture.policy.nodes.local.deployments.app.candidateChecks = [{ argv: [process.execPath, '-e', 'process.exit(7)'] }];
+  fixture.policy.nodes.local.deployments.app.healthChecks = [{ argv: [process.execPath, '-e', 'process.exit(8)'] }];
+  await writePolicy(fixture);
+  const artifact = await createArtifact(fixture, 'direct', 'd'.repeat(40));
+  await invoke(fixture, 'stage-direct', artifact);
+  const activated = await invoke(fixture, 'activate-direct', artifact);
+  assert.equal(activated.result.mode, 'direct-activated');
+  assert.equal(activated.result.sourceSha, artifact.sourceSha);
+  assert.equal(activated.result.receipt.finalStatus, 'success');
+  assert.match(await readlink(join(fixture.pointerRoot, 'current')), new RegExp(artifact.treeDigest.slice(7)));
+});
+
 test('server locks are scoped by project, node and target without a production-wide lock', async () => {
   const source = await readFile(agent, 'utf8');
   assert.doesNotMatch(source, /production\.lock/);
@@ -904,9 +918,9 @@ async function captureAgentFailure(action) {
 
 async function invoke(fixture, action, artifact, approval = null, node = 'local', expectedCurrent = undefined) {
   const args = [agent, action, '--project', 'fixture', '--node', node, '--target', 'app'];
-  if (action === 'stage') {
+  if (action === 'stage' || action === 'stage-direct') {
     args.push('--archive', artifact.archive.path, '--manifest', artifact.manifestPath, '--sha256', artifact.archive.sha256.slice(7), '--tree-digest', artifact.treeDigest);
-  } else if (action === 'lookup' || action === 'reuse') {
+  } else if (action === 'lookup' || action === 'reuse' || action === 'reuse-direct') {
     args.push('--source-sha', artifact.sourceSha, '--sha256', artifact.archive.sha256.slice(7), '--tree-digest', artifact.treeDigest, '--manifest-digest', artifact.manifestDigest);
   } else if (action === 'activate') {
     let current = expectedCurrent;
@@ -915,6 +929,8 @@ async function invoke(fixture, action, artifact, approval = null, node = 'local'
       catch (error) { if (error?.code === 'ENOENT') current = 'none'; else throw error; }
     }
     args.push('--approval', approval ?? `fixture:${artifact.sourceSha}`, '--expected-current', current);
+  } else if (action === 'activate-direct') {
+    args.push('--source-sha', artifact.sourceSha);
   } else if (action === 'seed') {
     args.push('--source-sha', artifact.sourceSha, '--approval', approval ?? `fixture:seed-layout:${artifact.sourceSha}`);
   }

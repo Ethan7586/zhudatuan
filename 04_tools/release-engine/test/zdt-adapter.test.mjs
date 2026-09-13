@@ -25,15 +25,16 @@ test('production acceptance is fixed to the protected fifteen-domain baseline', 
   assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
 });
 
-test('Console production cutover verifies the node-specific public entry by default', () => {
+test('Console retains optional public acceptance metadata while Deploy uses direct mode', () => {
   assert.deepEqual(adapter.nodes['zhudatuan-l0'].deployments.console.publicAcceptance, {
     url: 'https://console.fufu.wang/', allowedStatuses: [200], timeoutMs: 12000,
   });
   assert.deepEqual(adapter.nodes['hbbtzn-l1'].deployments.console.publicAcceptance, {
     url: 'https://console.hbbtzn.com/', allowedStatuses: [200], timeoutMs: 12000,
   });
-  assert.match(deployWorkflow, /external_baseline:[\s\S]*?default: true/);
-  assert.match(deployWorkflow, /inputs\.external_baseline && '--external-baseline'/);
+  assert.match(deployWorkflow, /--direct/);
+  assert.doesNotMatch(deployWorkflow, /Affected Delivery|external_baseline|approve-production/);
+  assert.equal((deployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
 });
 
 test('build and remote adapters agree on every pointer and process', () => {
@@ -286,27 +287,11 @@ test('first activation is limited to pointer-only content and migration evidence
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
 });
 
-test('production deployment binds identity to the downloaded candidate package', () => {
-  assert.match(deployWorkflow, /p\.sourceSha!==process\.env\.TARGET_SHA/);
-  assert.match(deployWorkflow, /release-candidate-\$TARGET_SHA-\$RELEASE_TARGET/);
-  assert.match(deployWorkflow, /--target "\$RELEASE_TARGET"/);
-  assert.match(deployWorkflow, /requested\.length!==1\|\|requested\[0\]!==process\.env\.RELEASE_TARGET/);
-  assert.match(qualityWorkflow, /--target "\$RELEASE_TARGET"/);
-  assert.match(qualityWorkflow, /release-candidate-\$\{\{ needs\.plan\.outputs\.head_sha \}\}-\$\{\{ inputs\.release_target \|\| 'all' \}\}/);
-  assert.match(deployWorkflow, /mv \.candidate-download\/\.ai-delivery \.ai-delivery/);
-  assert.doesNotMatch(deployWorkflow, /candidate_sha.*TARGET_SHA/);
-  const hideCandidate = deployWorkflow.indexOf('mv .ci-release "$candidate_release"');
-  const install = deployWorkflow.indexOf('--approve-install "zdt-next:install:${{ steps.sha.outputs.sha }}"');
-  const isolateInstallState = deployWorkflow.indexOf('mv .ai-delivery "$RUNNER_TEMP/agent-install-state"');
-  const restoreCandidate = deployWorkflow.indexOf('mv "$candidate_release" .ci-release');
-  const cutover = deployWorkflow.indexOf('node 04_tools/release-engine/cli.mjs deploy');
-  assert.ok(
-    hideCandidate >= 0
-      && install > hideCandidate
-      && isolateInstallState > install
-      && restoreCandidate > isolateInstallState
-      && cutover > restoreCandidate,
-    'production installs the exact commit agent from a clean checkout before restoring and deploying the candidate',
-  );
-  assert.match(deployWorkflow, /install-production-agent\.json/);
+test('production deployment binds an exact GitHub SHA directly to Aliyun', () => {
+  assert.match(deployWorkflow, /ref: \$\{\{ inputs\.head_sha \|\| 'zdt-next' \}\}/);
+  assert.match(deployWorkflow, /sha="\$\(git rev-parse HEAD\)"/);
+  assert.match(deployWorkflow, /--environment production[\s\S]*?--direct/);
+  assert.match(deployWorkflow, /jobs:\n  deploy:/);
+  assert.doesNotMatch(deployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent/);
+  assert.match(qualityWorkflow, /^on:\n  workflow_dispatch:/m);
 });

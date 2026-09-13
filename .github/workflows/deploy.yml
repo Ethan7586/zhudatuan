@@ -1,32 +1,22 @@
 name: Deploy
+run-name: Direct ${{ inputs.head_sha || github.sha }} ${{ inputs.release_node }} ${{ inputs.release_target || 'affected' }}
 
-# 秒级切流：只把 CI 已经校验并暂存好的候选制品切成 current，重启一个目标服务。
-# 不跑测试、不构建、不打包、不浏览器验收；切流时默认核对 15 域名前后基线与目标公网入口。
-# 触发本工作流（Run workflow / scripts/deploy-now.sh）即为 Ethan 的生产授权。
-
+# Direct production delivery. This workflow builds the requested runtime target and
+# sends it straight from GitHub to Aliyun in one job. Quality workflows are separate
+# tools and are never prerequisites for this workflow.
 on:
   workflow_dispatch:
     inputs:
       head_sha:
-        description: 要切上生产的 zdt-next commit（留空=最新 zdt-next）
-        required: false
-        type: string
-      candidate_run_id:
-        description: 要切换的绿色候选运行编号（留空=自动选择该提交最新一次）
+        description: Exact zdt-next commit to deploy; empty means current zdt-next
         required: false
         type: string
       release_target:
-        description: 要切换的唯一运行目标
-        required: true
-        default: console
-        type: string
-      external_baseline:
-        description: 核对 15 域名前后基线与目标公网入口，漂移或目标异常时自动回滚
+        description: Runtime target; empty means all targets affected by this commit
         required: false
-        default: true
-        type: boolean
+        type: string
       release_node:
-        description: 要切换的主权节点
+        description: Sovereign node
         required: true
         default: hbbtzn-l1
         type: choice
@@ -36,139 +26,83 @@ on:
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
-  group: zdt-next-deploy
+  group: zdt-next-direct-${{ inputs.release_node }}-${{ inputs.release_target || 'affected' }}
   cancel-in-progress: false
 
 env:
   NODE_VERSION: 22.22.0
   RELEASE_NODE: ${{ inputs.release_node }}
   RELEASE_TARGET: ${{ inputs.release_target }}
+  ZDT_RELEASE_SSH_HOST: root@123.57.232.253
 
 jobs:
-  cutover:
-    name: 切流 ${{ inputs.release_node }}/${{ inputs.release_target }}
+  deploy:
+    name: GitHub → Aliyun ${{ inputs.release_node }}/${{ inputs.release_target || 'affected' }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
-    env:
-      ZDT_RELEASE_SSH_HOST: root@123.57.232.253
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
           ref: ${{ inputs.head_sha || 'zdt-next' }}
-
-      - name: 解析目标 SHA
-        id: sha
-        run: |
-          sha="$(git rev-parse HEAD)"
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          printf '目标 commit: `%s` — %s\n' "$sha" "$(git log -1 --format=%s)" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: 取回 CI 已校验的候选制品
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CANDIDATE_RUN_ID: ${{ inputs.candidate_run_id }}
-          TARGET_SHA: ${{ steps.sha.outputs.sha }}
+      - name: Resolve exact version and direct plan
+        id: release
         run: |
-          run_id="$CANDIDATE_RUN_ID"
-          if [ -z "$run_id" ]; then
-            mapfile -t candidate_runs < <(gh run list --workflow 'Affected Delivery' --branch zdt-next --limit 20 \
-              --json databaseId,conclusion \
-              --jq '.[] | select(.conclusion=="success") | .databaseId')
-          else
-            candidate="$(gh run view "$run_id" --json conclusion,workflowName \
-              --jq '[.conclusion,.workflowName] | @tsv')"
-            IFS=$'\t' read -r candidate_conclusion candidate_workflow <<< "$candidate"
-            if [ "$candidate_conclusion" != "success" ] || [ "$candidate_workflow" != "Affected Delivery" ]; then
-              echo "::error::候选运行结果或工作流不匹配。"
-              exit 1
-            fi
-            candidate_runs=("$run_id")
+          sha="$(git rev-parse HEAD)"
+          base="$(git rev-parse HEAD^)"
+          target_args=()
+          if [ -n "$RELEASE_TARGET" ]; then
+            target_args+=(--target "$RELEASE_TARGET")
           fi
+          mkdir -p .direct-release
+          node 04_tools/release-engine/cli.mjs plan \
+            --from "$base" \
+            --to "$sha" \
+            --node "$RELEASE_NODE" \
+            "${target_args[@]}" \
+            --direct \
+            --format json > .direct-release/plan-envelope.json
+          plan_path="$(node -e "const r=require('./.direct-release/plan-envelope.json');if(!r.ok||!r.result.deployRequired)throw new Error('No deployable target for this version');process.stdout.write(r.result.planPath)")"
+          printf 'sha=%s\nplan_path=%s\n' "$sha" "$plan_path" >> "$GITHUB_OUTPUT"
+          printf 'Direct version: `%s`\n' "$sha" >> "$GITHUB_STEP_SUMMARY"
 
-          matched_run=""
-          for candidate_run in "${candidate_runs[@]}"; do
-            rm -rf .candidate-download
-            if gh run download "$candidate_run" -n "release-candidate-$TARGET_SHA-$RELEASE_TARGET" -D .candidate-download; then
-              matched_run="$candidate_run"
-              break
-            fi
-          done
-          if [ -z "$matched_run" ]; then
-            echo "::error::找不到该 SHA 对应的绿色候选制品；请先生成候选。"
-            exit 1
-          fi
-          test -f .candidate-download/.ci-release/package.json
-          test -d .candidate-download/.ai-delivery/artifacts
-          mv .candidate-download/.ci-release .ci-release
-          mv .candidate-download/.ai-delivery .ai-delivery
-          node -e "const p=require('./.ci-release/package.json');const requested=p.requestedTargets??[];if(p.project!=='zdt-next'||p.sourceSha!==process.env.TARGET_SHA){throw new Error('候选包内来源与目标提交不一致')}if(requested.length!==1||requested[0]!==process.env.RELEASE_TARGET){throw new Error('候选包目标与本次切流目标不一致')}"
-          printf '候选运行: `%s`，包内来源: `%s`，目标: `%s`\n' "$matched_run" "$TARGET_SHA" "$RELEASE_TARGET" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: 安装发布引擎依赖
+      - name: Install build dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: 配置切流 SSH
+      - name: Configure Aliyun transport
         env:
           RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
         run: |
-          test -n "$RELEASE_SSH_KEY"
           install -d -m 700 "$HOME/.ssh"
           printf '%s\n' "$RELEASE_SSH_KEY" > "$HOME/.ssh/id_ed25519"
           chmod 600 "$HOME/.ssh/id_ed25519"
           ssh-keyscan -H 123.57.232.253 >> "$HOME/.ssh/known_hosts"
 
-      - name: 生产切流
-        id: cutover
+      - name: Build, transfer and switch production
+        env:
+          PLAN_PATH: ${{ steps.release.outputs.plan_path }}
         run: |
-          set -o pipefail
-          candidate_release="$RUNNER_TEMP/candidate-ci-release"
-          candidate_artifacts="$RUNNER_TEMP/candidate-ai-delivery"
-          mv .ci-release "$candidate_release"
-          mv .ai-delivery "$candidate_artifacts"
-          node 04_tools/release-engine/cli.mjs install \
-            --mode agent \
-            --source-sha "${{ steps.sha.outputs.sha }}" \
-            --approve-install "zdt-next:install:${{ steps.sha.outputs.sha }}" \
-            --format json > "$RUNNER_TEMP/install-production-agent.json"
-          if [ -d .ai-delivery ]; then
-            mv .ai-delivery "$RUNNER_TEMP/agent-install-state"
+          target_args=()
+          if [ -n "$RELEASE_TARGET" ]; then
+            target_args+=(--target "$RELEASE_TARGET")
           fi
-          mv "$candidate_release" .ci-release
-          mv "$candidate_artifacts" .ai-delivery
-          mv "$RUNNER_TEMP/install-production-agent.json" .ci-release/install-production-agent.json
+          node 04_tools/release-engine/cli.mjs build --plan "$PLAN_PATH" --format json > .direct-release/build-envelope.json
+          build_path="$(node -e "const r=require('./.direct-release/build-envelope.json');if(!r.ok)throw new Error('Build failed');process.stdout.write(r.result.buildPath)")"
+          node 04_tools/release-engine/cli.mjs package --build "$build_path" --format json > .direct-release/package-envelope.json
+          package_path="$(node -e "const r=require('./.direct-release/package-envelope.json');if(!r.ok)throw new Error('Package failed');process.stdout.write(r.result.packagePath)")"
           node 04_tools/release-engine/cli.mjs deploy \
-            --package .ci-release/package.json \
+            --package "$package_path" \
             --node "$RELEASE_NODE" \
-            --target "$RELEASE_TARGET" \
+            "${target_args[@]}" \
             --environment production \
-            --approve-production "zdt-next:${{ steps.sha.outputs.sha }}" \
-            ${{ inputs.external_baseline && '--external-baseline' || '' }} \
-            --format json | tee .ci-release/deploy-production.json
-          node -e "const r=require('./.ci-release/deploy-production.json');const status=r.result?.finalStatus??r.finalStatus;if(r.ok!==true||status!=='success'){console.error('切流失败：'+(status||r.error?.code||'unknown'));process.exit(1)}"
-
-      - name: 记录切流回执
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: deploy-production-${{ steps.sha.outputs.sha }}-${{ inputs.release_target }}
-          path: |
-            .ci-release/install-production-agent.json
-            .ci-release/deploy-production.json
-          if-no-files-found: ignore
-          retention-days: 30
-
-      - name: 摘要
-        if: always()
-        run: |
-          if [ -f .ci-release/deploy-production.json ]; then
-            node -e "const r=require('./.ci-release/deploy-production.json');const t=r.result?.timings??r.timings??{};console.log('切流结果：'+(r.result?.finalStatus||r.finalStatus||r.error?.code||'unknown'));console.log('计时：'+Object.entries(t).map(([k,v])=>k+'='+v+'ms').join(' '));" >> "$GITHUB_STEP_SUMMARY" || true
-          fi
+            --direct \
+            --format json | tee .direct-release/deploy-envelope.json
+          node -e "const r=require('./.direct-release/deploy-envelope.json');const x=r.result;if(!r.ok||x.finalStatus!=='success')process.exit(1);console.log('Direct deployment: '+x.sourceSha+' '+x.finalStatus);" >> "$GITHUB_STEP_SUMMARY"

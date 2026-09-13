@@ -83,6 +83,7 @@ export async function packageCommand(adapter, options) {
     project: adapter.project,
     runId: build.runId,
     sourceSha: build.sourceSha,
+    direct: plan.direct === true,
     requestedTargets: plan.requestedTargets ?? [],
     targetScope: plan.targetScope ?? { mode: 'affected', requestedTargets: [], excludedChangeCount: 0 },
     deploymentOrder: plan.deploymentOrder ?? build.targets.map((target) => target.target),
@@ -110,8 +111,9 @@ export async function deployCommand(adapter, options) {
   const nodes = options.nodes ?? [];
   invariant(nodes.length > 0, 'DEPLOY_NODE_REQUIRED', 'Deploy requires at least one explicit --node');
   const environment = options.environment ?? 'candidate';
+  const direct = options.direct === true;
   invariant(['candidate', 'production'].includes(environment), 'DEPLOY_ENVIRONMENT_INVALID', 'Environment must be candidate or production');
-  if (environment === 'production') {
+  if (environment === 'production' && !direct) {
     const expected = `${adapter.project}:${packageSet.sourceSha}`;
     invariant(options.approveProduction === expected, 'PRODUCTION_APPROVAL_REQUIRED', `Production requires --approve-production ${expected}`);
   }
@@ -374,6 +376,7 @@ async function executeDeployment(adapter, item, environment, options) {
   ];
   const manifestBytes = (await lstat(item.artifact.manifestPath)).size;
   const artifactBytes = item.artifact.archive.bytes + manifestBytes;
+  const direct = options.direct === true;
   const dependencyLayer = await ensureRemoteDependencyLayer(adapter, item, transport, host, remoteAgent);
   const lookup = await runCommand({ name: `artifact-lookup:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'lookup', ...identityArgs], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
   const lookupRemote = parseCommandJson(lookup);
@@ -382,14 +385,16 @@ async function executeDeployment(adapter, item, environment, options) {
   let uploadedBytes = 0;
   let staged;
   if (lookupResult.exists) {
-    staged = await runCommand({ name: `reuse:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'reuse', ...identityArgs], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+    const action = direct ? 'reuse-direct' : 'reuse';
+    staged = await runCommand({ name: `${action}:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, action, ...identityArgs], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
   } else {
     const uploadArchive = await runCommand({ name: `upload-archive:${item.nodeKey}:${item.artifact.target}`, argv: ['scp', item.artifact.archive.path, `${host}:${incoming}`], timeoutMs: transport.uploadTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
     const uploadManifest = await runCommand({ name: `upload-manifest:${item.nodeKey}:${item.artifact.target}`, argv: ['scp', item.artifact.manifestPath, `${host}:${incomingManifest}`], timeoutMs: transport.uploadTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
     uploadDurationMs = uploadArchive.durationMs + uploadManifest.durationMs;
     uploadedBytes = artifactBytes;
-    const stageArgv = ['ssh', host, remoteAgent, 'stage', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--archive', incoming, '--manifest', incomingManifest, '--sha256', item.artifact.archive.sha256.slice(7), '--tree-digest', item.artifact.treeDigest];
-    staged = await runCommand({ name: `stage:${item.nodeKey}:${item.artifact.target}`, argv: stageArgv, timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+    const action = direct ? 'stage-direct' : 'stage';
+    const stageArgv = ['ssh', host, remoteAgent, action, '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--archive', incoming, '--manifest', incomingManifest, '--sha256', item.artifact.archive.sha256.slice(7), '--tree-digest', item.artifact.treeDigest];
+    staged = await runCommand({ name: `${action}:${item.nodeKey}:${item.artifact.target}`, argv: stageArgv, timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
   }
   const stagedRemote = parseCommandJson(staged);
   let result = staged;
@@ -399,11 +404,15 @@ async function executeDeployment(adapter, item, environment, options) {
   let externalAfter = null;
   let targetExternal = null;
   if (environment === 'production') {
-    const preflightCommand = await runCommand({ name: `preflight:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'preflight', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
-    preflight = parseCommandJson(preflightCommand);
-    if (options.externalBaseline === true) externalBefore = await externalDomainSnapshot(adapter);
-    const activateArgv = ['ssh', host, remoteAgent, 'activate', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--approval', `${adapter.project}:${item.artifact.sourceSha}`, '--expected-current', preflight.result.rollbackPoint.pointers.current ?? 'none'];
-    if (preflight.result.caddySemantic?.digest) activateArgv.push('--expected-caddy-semantic', preflight.result.caddySemantic.digest);
+    if (!direct) {
+      const preflightCommand = await runCommand({ name: `preflight:${item.nodeKey}:${item.artifact.target}`, argv: ['ssh', host, remoteAgent, 'preflight', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target], timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
+      preflight = parseCommandJson(preflightCommand);
+    }
+    if (!direct && options.externalBaseline === true) externalBefore = await externalDomainSnapshot(adapter);
+    const activateArgv = direct
+      ? ['ssh', host, remoteAgent, 'activate-direct', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--source-sha', item.artifact.sourceSha]
+      : ['ssh', host, remoteAgent, 'activate', '--project', adapter.project, '--node', item.nodeKey, '--target', item.artifact.target, '--approval', `${adapter.project}:${item.artifact.sourceSha}`, '--expected-current', preflight.result.rollbackPoint.pointers.current ?? 'none'];
+    if (!direct && preflight.result.caddySemantic?.digest) activateArgv.push('--expected-caddy-semantic', preflight.result.caddySemantic.digest);
     try {
       activated = await runCommand({ name: `activate:${item.nodeKey}:${item.artifact.target}`, argv: activateArgv, timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000 }, basicContext(adapter));
     } catch (error) {
@@ -416,7 +425,7 @@ async function executeDeployment(adapter, item, environment, options) {
       });
     }
     result = activated;
-    if (options.externalBaseline === true) {
+    if (!direct && options.externalBaseline === true) {
       [externalAfter, targetExternal] = await Promise.all([
         externalDomainSnapshot(adapter),
         externalTargetSnapshot(item.deployment),
@@ -459,9 +468,11 @@ async function executeDeployment(adapter, item, environment, options) {
     },
     receipt: activatedRemote?.result?.receipt ? {
       ...activatedRemote.result.receipt,
-      externalAcceptance: options.externalBaseline === true
-        ? { status: 'passed', count: externalAfter.length, before: externalBefore, after: externalAfter, differences: [], target: targetExternal }
-        : { status: 'not-requested' },
+      externalAcceptance: direct
+        ? { status: 'skipped-direct' }
+        : options.externalBaseline === true
+          ? { status: 'passed', count: externalAfter.length, before: externalBefore, after: externalAfter, differences: [], target: targetExternal }
+          : { status: 'not-requested' },
     } : null,
     remote: { lookup: lookupRemote, stage: stagedRemote, preflight, activate: activatedRemote, final: parseCommandJson(result) },
     pointerRoot: item.deployment.pointerRoot,

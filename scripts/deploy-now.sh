@@ -1,31 +1,45 @@
 #!/usr/bin/env bash
-# 秒级切流：把 zdt-next 的一个 commit 切成生产 current。
-# 用法：
-#   scripts/deploy-now.sh console              # 切最新 zdt-next 的 Console 候选
-#   scripts/deploy-now.sh console <commit>     # 切指定 commit 的 Console 候选
-#
-# 它只是触发 GitHub 的 Deploy 工作流并盯着它跑完。
-# 不在本地 build / test / package / deploy。
+# GitHub -> Aliyun direct deployment.
+# Usage:
+#   scripts/deploy-now.sh                       # affected targets from latest zdt-next
+#   scripts/deploy-now.sh console               # console from latest zdt-next
+#   scripts/deploy-now.sh console <commit>      # console from an exact commit
+#   scripts/deploy-now.sh console <commit> zhudatuan-l0
 
 set -euo pipefail
 export PATH=/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin
 
 TARGET="${1:-}"
 SHA="${2:-}"
-if [ -z "$TARGET" ]; then
-  echo "用法: scripts/deploy-now.sh <target> [commit]" >&2
-  exit 64
-fi
+NODE="${3:-hbbtzn-l1}"
 if [ -z "$SHA" ]; then
   git fetch origin zdt-next --quiet
   SHA="$(git rev-parse origin/zdt-next)"
 fi
 
-echo "触发 Deploy 工作流，运行目标: ${TARGET}，commit: ${SHA}"
-gh workflow run deploy.yml -f head_sha="$SHA" -f release_target="$TARGET" -f external_baseline=true
+dispatch=(workflow run deploy.yml --ref zdt-next -f head_sha="$SHA" -f release_node="$NODE")
+if [ -n "$TARGET" ]; then
+  dispatch+=(-f release_target="$TARGET")
+fi
 
-# 等它出现在运行列表里
-sleep 4
-RUN_ID="$(gh run list --workflow deploy.yml --limit 1 --json databaseId -q '.[0].databaseId')"
-echo "运行编号: $RUN_ID"
+echo "Direct deploy: ${SHA} -> ${NODE}/${TARGET:-affected}"
+gh "${dispatch[@]}"
+
+TITLE="Direct ${SHA} ${NODE} ${TARGET:-affected}"
+RUN_ID=""
+for _ in {1..20}; do
+  RUN_ID="$(gh run list --workflow deploy.yml --event workflow_dispatch --limit 20 \
+    --json databaseId,displayTitle \
+    --jq ".[] | select(.displayTitle == \"$TITLE\") | .databaseId" | head -1)"
+  if [ -n "$RUN_ID" ]; then
+    break
+  fi
+  sleep 1
+done
+if [ -z "$RUN_ID" ]; then
+  echo "Direct deployment was dispatched but its run id was not found." >&2
+  exit 1
+fi
+
+echo "GitHub run: $RUN_ID"
 gh run watch "$RUN_ID" --exit-status
