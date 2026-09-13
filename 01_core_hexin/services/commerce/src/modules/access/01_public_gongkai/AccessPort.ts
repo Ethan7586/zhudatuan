@@ -97,6 +97,25 @@ export class AccessPort {
     return row;
   }
 
+  async reactivateOperatorRegistration(database: OperationDatabase, membershipId: string,
+    input: OperatorRegistrationMembership): Promise<Readonly<Record<string, unknown>>> {
+    const membership = await database.query(`update access.membership set status='active',left_at=null,
+      joined_at=transaction_timestamp(),governance_parent_membership_id=$2,operator_display_name=$3,
+      access_version=access_version+1
+      where id=$1 and member_id=$4 and organization_id=$5 and client='operator' and status='offboarded'
+        and realm_id=$6 and account_id=$7 returning *`, [membershipId, input.governanceParentMembership,
+      input.operatorDisplayName, input.member, input.operatorOrganization, input.realm, input.account]);
+    const row = membership.rows[0];
+    if (!row) throw new Error('MEMBERSHIP_REACTIVATION_FAILED');
+    await database.query(`insert into access.membershiprole(membership_id,role_id,effective_at) values
+      ($1,$2,transaction_timestamp()),($1,'role:self',transaction_timestamp())`, [membershipId, input.operatorRole]);
+    await database.query(`insert into access.scopegrant(id,membership_id,scope_kind,scope_id,scope_path,effect,effective_at,access_version) values
+      ($1,$2,'tenant',$3,$3,'allow',transaction_timestamp(),$6),($4,$2,'self',$5,$5,'allow',transaction_timestamp(),$6)`,
+    [input.operatorScopes[0], membershipId, input.managementOrganization, input.operatorScopes[1],
+      `self:${input.principal}`, Number((row as Readonly<Record<string, unknown>>).access_version)]);
+    return row as Readonly<Record<string, unknown>>;
+  }
+
   async createInvitedRegistration(database: OperationDatabase, input: InvitedRegistrationMembership): Promise<Readonly<Record<string, unknown>>> {
     const storefront = await database.query(`insert into access.membership(id,member_id,organization_id,client,status,access_version,joined_at)
       values($1,$2,$3,'storefront','active',1,transaction_timestamp()) returning *`,

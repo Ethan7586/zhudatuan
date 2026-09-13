@@ -59,6 +59,26 @@ export async function saveAccessRoleAssignment(context: ConsoleContext, draft: A
   return AccessRoleAssignmentReceiptSchema.parse(response);
 }
 
+export async function offboardAdministrator(context: ConsoleContext, membership: string, accessVersion: number,
+  signal?: AbortSignal): Promise<Readonly<{ action: 'offboard'; changed: true; membership: string; status: 'offboarded'; access_version: number }>> {
+  if (!roleCommandAvailable(context)) throw new Error('ACCESS_ROLE_COMMAND_NOT_AVAILABLE');
+  const response = await rolesManage(
+    { path: { roleid: 'role:self' }, body: { action: 'offboard', membership } },
+    consoleCommand(context.scope, {
+      accessVersion: context.session.accessVersion,
+      csrfToken: context.session.csrf!,
+      expectedVersion: accessVersion,
+      ...(signal === undefined ? {} : { signal }),
+    }),
+  );
+  if (response === undefined || response.action !== 'offboard' || response.changed !== true
+    || response.membership !== membership || response.status !== 'offboarded'
+    || typeof response.access_version !== 'number' || response.access_version <= accessVersion) {
+    throw new Error('ADMINISTRATOR_OFFBOARD_VERIFICATION_FAILED');
+  }
+  return response as Readonly<{ action: 'offboard'; changed: true; membership: string; status: 'offboarded'; access_version: number }>;
+}
+
 export async function deleteAccessRole(context: ConsoleContext, role: Pick<AccessRole, 'id' | 'version'>, signal?: AbortSignal) {
   if (!roleCommandAvailable(context)) throw new Error('ACCESS_ROLE_COMMAND_NOT_AVAILABLE');
   const response = await rolesManage(

@@ -143,6 +143,33 @@ describe('member directory pagination', () => {
     expect(screen.getByRole('row', { name: '查看管理员 缓存会员' })).toBeTruthy();
   });
 
+  it('offboards the operator identity only after confirmation and removes it after authoritative reread', async () => {
+    let offboarded = false;
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json(offboarded
+        ? { items: [], count: 0 }
+        : { items: [{ ...member('target', '高级管理员 · 7586'), mobile: '19287247586' }], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json(offboarded
+        ? { items: [], count: 0, roles: [] }
+        : { items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [] })),
+      http.put('*/api/v1/access/roles/:roleid', async () => {
+        offboarded = true;
+        return HttpResponse.json({ action: 'offboard', changed: true, membership: 'membership:target',
+          status: 'offboarded', access_version: 8 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWorkspace(ownerContext());
+    await user.click(await screen.findByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
+
+    await user.click(screen.getByRole('button', { name: '删除管理员' }));
+    expect(screen.getByText('只移除管理身份；商城 L 等级、订单与会员关系不会改变。再次点击确认。')).toBeTruthy();
+    await user.click(screen.getByRole('button', { name: '确认移除管理员' }));
+
+    expect(await screen.findByText('暂无管理员')).toBeTruthy();
+    expect(screen.queryByRole('row', { name: '查看管理员 高级管理员 · 7586' })).toBeNull();
+  });
+
   it('demotes a senior administrator from the detail panel and verifies the authoritative reread', async () => {
     let senior = true;
     let requestBody: unknown;

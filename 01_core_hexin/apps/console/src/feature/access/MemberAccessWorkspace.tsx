@@ -16,7 +16,7 @@ import { isManagementRole } from './ManagementRole';
 import type { Member } from '../member/MemberSchema';
 import '../storefront-member/storefront-member.css';
 import { ACCESS_QUERY_STALE_TIME_MS, accessKey, readAccess } from './AccessQuery';
-import { roleCommandAvailable, saveAccessRoleAssignment, verifyAccessRoleAssignment } from './AccessRoleCommand';
+import { offboardAdministrator, roleCommandAvailable, saveAccessRoleAssignment, verifyAccessRoleAssignment } from './AccessRoleCommand';
 import type { AccessMembership, AccessRole } from './AccessSchema';
 import { invitationRecordsAvailable, invitationRecordsKey, readInvitationRecords } from './InvitationRecordsQuery';
 import type { InvitationRecord } from './InvitationRecordsSchema';
@@ -239,6 +239,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
               if (refreshedMembers.data === undefined || refreshedAccess.data === undefined) throw new Error('ADMINISTRATOR_REREAD_FAILED');
               return { members: refreshedMembers.data.items, access: refreshedAccess.data.items, roles: refreshedAccess.data.roles };
             }}
+            onRemoved={closeDetail}
             onManage={(roleId, view) => {
               const path = scopePath(context.scope, 'settings/access');
               const params = new URLSearchParams();
@@ -313,6 +314,7 @@ function MemberDetail({
   onClose,
   onReset,
   onRefresh,
+  onRemoved,
   onManage,
 }: Readonly<{
   row: MemberAccessRow | undefined;
@@ -322,14 +324,19 @@ function MemberDetail({
   onClose: () => void;
   onReset: (member: Member) => void;
   onRefresh: () => Promise<Readonly<{ members: readonly Member[]; access: readonly AccessMembership[]; roles: readonly AccessRole[] }>>;
+  onRemoved: () => void;
   onManage: (roleId?: string, view?: 'permissions' | 'members') => void;
 }>) {
   const detailRef = useRef<HTMLElement>(null);
   const [tab, setTab] = useState<MemberDetailTab>('profile');
+  const [offboardArmed, setOffboardArmed] = useState(false);
   useEffect(() => {
     if (open) detailRef.current?.focus({ preventScroll: true });
   }, [open]);
-  useEffect(() => setTab('profile'), [row?.id]);
+  useEffect(() => {
+    setTab('profile');
+    setOffboardArmed(false);
+  }, [row?.id]);
   const administrator = row === undefined ? false : isAdministrator(row);
   const roles = row?.managementRoles ?? [];
   const scopes = row?.access?.scopes ?? [];
@@ -365,7 +372,19 @@ function MemberDetail({
       return receipt;
     },
   });
-  const actionError = safeQueryError(demoteMutation.error);
+  const offboardMutation = useMutation({
+    mutationFn: async () => {
+      if (row?.access === undefined) throw new Error('ADMINISTRATOR_ACCESS_RECORD_NOT_FOUND');
+      const receipt = await offboardAdministrator(context, row.access.id, row.access.access_version);
+      const reread = await onRefresh();
+      if (reread.members.some((member) => member.membership_id === row.id)
+        || reread.access.some((membership) => membership.id === row.id)) throw new Error('ADMINISTRATOR_OFFBOARD_VERIFICATION_FAILED');
+      return receipt;
+    },
+    onSuccess: onRemoved,
+  });
+  const actionPending = demoteMutation.isPending || offboardMutation.isPending;
+  const actionError = safeQueryError(demoteMutation.error ?? offboardMutation.error);
   return (
     <aside ref={detailRef} className="storefrontmemberdetail" aria-hidden={!open} aria-label={administrator ? '管理员详情' : '成员详情'} tabIndex={-1}>
       <header className="storefrontmemberpanelheading">
@@ -444,12 +463,21 @@ function MemberDetail({
           {canManageAdministrator ? (
             <footer className="memberaccessdetailactions" aria-label="管理员级别与状态">
               {seniorAssignment === undefined ? null : (
-                <button type="button" disabled={demoteMutation.isPending} onClick={() => demoteMutation.mutate()}>
-                  {demoteMutation.isPending ? '正在降级并核对…' : '降级为普通管理员'}
-                </button>
+                <button type="button" disabled={actionPending} onClick={() => {
+                  setOffboardArmed(false);
+                  offboardMutation.reset();
+                  demoteMutation.mutate();
+                }}>{demoteMutation.isPending ? '正在降级并核对…' : '降级为普通管理员'}</button>
               )}
+              <button type="button" data-tone="danger" disabled={actionPending} onClick={() => {
+                demoteMutation.reset();
+                offboardMutation.reset();
+                if (offboardArmed) offboardMutation.mutate();
+                else setOffboardArmed(true);
+              }}>{offboardMutation.isPending ? '正在移除并核对…' : offboardArmed ? '确认移除管理员' : '删除管理员'}</button>
             </footer>
           ) : null}
+          {offboardArmed && !offboardMutation.isPending ? <div className="storefrontmemberemptyline">只移除管理身份；商城 L 等级、订单与会员关系不会改变。再次点击确认。</div> : null}
           {actionError === undefined ? null : <div className="storefrontmemberdetailerror" role="alert"><p>{actionError}</p></div>}
           {row.member?.reset_block_reason === null || row.member?.reset_block_reason === undefined ? null : <div className="storefrontmemberemptyline">注册重置限制：{row.member.reset_block_reason}</div>}
           <p className="storefrontmembernotice">成员与授权关系来自当前范围真实数据，管理操作按当前权限开放</p>
