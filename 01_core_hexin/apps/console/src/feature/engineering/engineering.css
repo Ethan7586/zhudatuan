@@ -61,9 +61,11 @@
   --sw-stable-tabs-text: #5e6980;
   --sw-stable-tabs-hover: #f2f5fb;
   border-color: var(--engineering-line);
+  box-shadow: 0 3px 12px rgb(20 58 143 / 7%);
 }
 
 .engineeringtabs a.isactive { color: #fff; }
+.engineeringtabs a:hover:not(.isactive) { background: #eaf1ff; color: var(--engineering-blue); }
 
 .engineeringcontent { min-height: 650px; }
 .engineeringview { display: grid; gap: 16px; min-height: 650px; align-content: start; }
@@ -81,6 +83,19 @@
   border: 1px solid var(--engineering-line);
   border-radius: 12px;
   background: #fff;
+}
+
+.engineeringmetric,
+.engineeringpanel {
+  box-shadow: 0 2px 7px rgb(13 45 114 / 6%);
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.engineeringmetric:hover,
+.engineeringpanel:hover {
+  border-color: #b7c9e8;
+  background: linear-gradient(135deg, #fff 72%, #f2f6ff);
+  box-shadow: 0 9px 24px rgb(13 45 114 / 11%);
 }
 
 .engineeringmetric {
