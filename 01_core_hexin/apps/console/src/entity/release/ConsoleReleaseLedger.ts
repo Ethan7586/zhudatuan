@@ -60,4 +60,3 @@ export const CONSOLE_RELEASES = Object.freeze([
 ] as const satisfies readonly ConsoleRelease[]);
 
 export const CURRENT_CONSOLE_RELEASE = CONSOLE_RELEASES[0];
-
