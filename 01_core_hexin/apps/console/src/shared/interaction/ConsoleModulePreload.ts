@@ -82,3 +82,25 @@ export function loadConsoleModuleRoute<Result>(
 ): Promise<Result> {
   return consoleModulePreloader.loadRoute(moduleId, routeId, loader);
 }
+
+export async function preloadCurrentConsoleBoot(pathname: string): Promise<void> {
+  const suffix = pathname.match(/^\/scopes\/[^/]+\/[^/]+\/(.+?)\/?$/)?.[1];
+  const route = suffix === undefined ? undefined : consoleModules
+    .flatMap((module) => module.status !== 'enabled' ? [] : module.routes.map((candidate) => ({ module, candidate })))
+    .find(({ candidate }) => consoleRoutePathMatches(candidate.path, suffix) && 'lazy' in candidate);
+  await Promise.all([
+    route === undefined || !('lazy' in route.candidate)
+      ? undefined
+      : loadConsoleModuleRoute(route.module.id, route.candidate.id, route.candidate.lazy),
+    import('../../components/Header'),
+    import('../../components/Sidebar'),
+    import('@shop/design/access-denied'),
+  ]);
+}
+
+export function consoleRoutePathMatches(routePath: string, suffix: string): boolean {
+  const routeSegments = routePath.replace(/^\/+|\/+$/g, '').split('/');
+  const suffixSegments = suffix.replace(/^\/+|\/+$/g, '').split('/');
+  return routeSegments.length === suffixSegments.length && routeSegments.every((segment, index) =>
+    segment.startsWith(':') ? suffixSegments[index]?.length !== 0 : segment === suffixSegments[index]);
+}

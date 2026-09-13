@@ -1,8 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createConsoleInteractionTelemetry } from './ConsoleInteractionTelemetry';
-import { createConsoleModulePreloader } from './ConsoleModulePreload';
+import { consoleRoutePathMatches, createConsoleModulePreloader } from './ConsoleModulePreload';
 
 describe('Console module preloader', () => {
+  it('matches both entry and parameterized direct routes for document boot', () => {
+    expect(consoleRoutePathMatches('settings/qualification', 'settings/qualification')).toBe(true);
+    expect(consoleRoutePathMatches('support/:caseId', 'support/case%3Aone')).toBe(true);
+    expect(consoleRoutePathMatches('support/:caseId', 'orders/case%3Aone')).toBe(false);
+  });
+
   it('shares one route load across navigation intent and actual routing', async () => {
     let release: ((value: unknown) => void) | undefined;
     const loader = vi.fn(() => new Promise<unknown>((resolve) => { release = resolve; }));

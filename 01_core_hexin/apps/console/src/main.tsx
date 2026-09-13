@@ -17,6 +17,9 @@ if (!root) throw new Error('APP_ROOT_MISSING');
 const renderer = createRoot(root);
 void loadConsoleRuntimeConfig().then(async (runtimeConfig) => {
   startDocumentPrefetch(runtimeConfig);
+  void import('./shared/interaction/ConsoleModulePreload')
+    .then(({ preloadCurrentConsoleBoot }) => preloadCurrentConsoleBoot(window.location.pathname))
+    .catch(() => undefined);
   return await import('./app/providers');
 }).then(
   ({ Providers }) => {

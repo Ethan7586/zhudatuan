@@ -57,6 +57,17 @@ describe('console bootstrap document', () => {
     expect(prefetch).toContain("value.capabilities.includes('support.cases.read')");
   });
 
+  it('starts the exact qualification read as soon as the session resolves', () => {
+    expect(prefetch).toContain('window.__consoleQualificationPrefetch = tracked(');
+    expect(prefetch).toContain("'/api/v1/qualifications?limit=50'");
+    expect(prefetch).toContain("value.capabilities.includes('qualification.center.read')");
+  });
+
+  it('preloads the current route and shell beside the provider bootstrap', () => {
+    expect(main).toContain("import('./shared/interaction/ConsoleModulePreload')");
+    expect(main).toContain('preloadCurrentConsoleBoot(window.location.pathname)');
+  });
+
   it('makes every document prefetch observable and immediately abortable by navigation', () => {
     expect(prefetch).toContain('const slot: Tracked<T> = { settled: false');
     expect(prefetch).toContain('window.__consoleAbortDocumentPrefetch = () =>');

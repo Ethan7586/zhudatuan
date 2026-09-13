@@ -167,6 +167,26 @@ export function startDocumentPrefetch(
       value: cases,
     });
   }));
+  window.__consoleQualificationPrefetch = tracked(session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)
+      || !Array.isArray(value.capabilities) || !value.capabilities.includes('qualification.center.read')) return undefined;
+    const match = location.pathname.match(/^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/([^/]+)\/settings\/qualification\/?$/);
+    let direct: Readonly<{ kind: 'platform' | 'distributor' | 'tenant' | 'enterprise' | 'mall'; id: string }> | undefined;
+    try {
+      const candidate = match?.[1] === undefined ? undefined : { kind: match[1], id: decodeURIComponent(match[2]!) };
+      direct = isConsoleScope(candidate) ? candidate : undefined;
+    } catch { direct = undefined; }
+    if (direct === undefined) return undefined;
+    return readJson<unknown>('/api/v1/qualifications?limit=50', {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    }).promise.then((qualifications) => qualifications === undefined ? undefined : {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      value: qualifications,
+    });
+  }));
 }
 
 function tracked<T>(promise: Promise<T | undefined>): Tracked<T> {
