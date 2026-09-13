@@ -70,3 +70,27 @@ AU-004 新增 F-0015 至 F-0020：P1 候选 1、P2 5；并扩展既有 P1 候选
 - 未运行全量 build、全量测试、数据库重放、故障注入；未改变生产文件、unit、指针、网络、数据库或云资源。
 
 完整 target、node、unit、edge、锁、失败传播和测试证据见 `records/AU-004-release-node-runtime-map/`。
+
+## 8. AU-005 共享状态运行与恢复
+
+### 8.1 运行单元
+
+- `zhudatuan-registration-database.service`管理Docker PostgreSQL；数据不在release目录，而在host bind volume。
+- `zhudatuan-internal-runtime.service`并联启动global Secret Store/KMS；`sfl-secret-store@.service`提供L0 node secret；`sfl-catalog-object-store@.service`分别提供L0/L1对象目录。
+- full staging使用独立Internal Runtime DynamicUser和PostgreSQL TLS proxy；它与production registration Docker不是同一拓扑。
+- Redis没有当前production daemon或正式dedicated target声明；连接由aggregate runtime从Secret Store解析外部URL。
+
+### 8.2 发布图缺口
+
+[CONFLICT][E-AU-005-003] release target/remote policy只有identity-notification、catalog、payment三类Jobs，没有OutboxRelay、RuntimeScheduler和cleanup owner。部署单个dedicated worker不能恢复通用outbox发布链，见F-0022。
+
+### 8.3 恢复路径
+
+- existing PostgreSQL volume可由Docker/systemd重启；fresh PG17 volume会进入与init版本guard冲突的路径，见F-0023。
+- completed Local Objects随StateDirectory保留；未完成upload在进程重启时丢失。仓库未见current对象备份/restore入口。
+- KMS仅有`local-v1`单master；没有仓库内keyring/rotation/rewrap。恢复依赖外部保留原master，负责人UNKNOWN。
+- outbox/job状态随PostgreSQL持久；恢复是否发生取决于对应worker正式存在和claim语义，不由systemd active单独证明。
+
+### 8.4 运维未知项
+
+`delivery.yml`只表明采集器不得删除`database-backups`，不表明备份由谁创建、是否可restore。云快照、主机外timer、OSS版本控制与演练记录均未核验，统一保留UNKNOWN。完整责任表见AU-005 `recovery-ownership.csv`。

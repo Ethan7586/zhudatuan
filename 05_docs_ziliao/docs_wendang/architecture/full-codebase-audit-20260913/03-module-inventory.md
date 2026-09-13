@@ -169,3 +169,19 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Legacy deploy兼容 | 历史发布/检查线索 | 退役或人工脚本 | UNKNOWN/check:deployment | origin/main/旧Caddy路径 | 历史责任 | 非正式target | 无运行验证 | 不满足删除条件 |
 
 [FACT][E-AU-004-013] AU-004 深入审阅45个人工文件、4,283行，结构性审阅28个人工文件、9,347行，并核对2个自动生成node manifest、396行；大型engine/provider只对发布关键逻辑形成结构性结论，生成输出也不计作逐行人工审阅。
+
+## 11. AU-005 共享状态模块库存
+
+| 模块 | 职责 | 对外入口 | 上游 | 下游 | 数据/密钥所有权 | 运行/发布单元 | 测试范围 | 当前边界问题 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| PostgreSQL runtime | 连接池、事务上下文、业务及runtime持久状态 | pg pool/SQL/functions | APIs、Jobs、Migration | host PG17或staging RDS proxy | 各业务schema+runtime平台共享表 | registration DB systemd；database-migration target | Pool/UoW/context/PG16 fixture | fresh PG17 init冲突F-0023；backup owner UNKNOWN |
+| Redis cache | 非权威JSON TTL cache | Cache token | aggregate CommerceRuntime | 外部Redis | 外部服务；应用仅key | 当前无dedicated target | Cache/RedisCache tests | 同进程不重连F-0028 |
+| Outbox relay | outbox claim、顺序、retry/deadletter | OutboxRelay | runtime.outbox producers | RuntimeEventPublisher | runtime.outbox | 仅JobsMain/FullJobsMain；无正式target | store/publisher mocks | 正式控制面缺失F-0022；GX-0001 |
+| Event publisher | event version→inbox dedup→handler jobs | RuntimeEventPublisher | OutboxRelay | runtime.inbox/job | runtime平台 | 随aggregate Jobs | Event/Publisher tests | 被测实现无正式上游进程 |
+| Job runner/scheduler | claim、lease、heartbeat、deadline、retry、schedule、cleanup | QueueJob/JobRunner/RuntimeScheduler | dedicated/aggregate entries | processors/runtime tables | runtime.job/lease/deadletter | identity/catalog/payment dedicated；aggregate缺失 | JobRunner/Catalog runtime tests | generic export回收F-0024；processor幂等未审 |
+| Secret Store | ref→secret value | loopback HTTPS 8543/8553 | 所有workloads | JSON catalog | catalog文件owner UNKNOWN | internal runtime/node secret service | Handler/Catalog/policy tests | production Main绕过授权F-0021 |
+| Local KMS | envelope encrypt/decrypt | loopback HTTPS 8544/8644 | 需要敏感字段加密的workloads | AES-GCM/单master | master owner UNKNOWN；ciphertext归业务 | internal runtime | Handler/LocalKms tests | Main绕过授权；rotation/restore UNKNOWN |
+| Local Objects | upload/read/inspect/signed read | loopback HTTPS 8555/8655 | Catalog/Reporting/Import/API | node StateDirectory | L0/L1 node-local | sfl object store systemd | LocalObjects test | loopback public URL、clean、metadata F-0025–27 |
+| Catalog media OSS | 多target媒体复制与校验 | adapter/replication job | Catalog Jobs | Aliyun OSS | Catalog逻辑owner；云账户owner UNKNOWN | catalog-media/catalog-jobs | adapter/replication tests结构审阅 | 与Local Objects不可混画；云恢复UNKNOWN |
+
+[FACT] AU-005深入审阅64个人工文件、3,920行，结构性审阅36个人工文件、4,801行，并核对1个自动生成事件映射、150行；合计101文件、8,871行。

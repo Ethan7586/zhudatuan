@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01、AU-002/CP-02、AU-003/CP-03 与 AU-004/CP-04 已完成。AU-004 已形成 GitHub、release target、制品、节点 pointer、systemd、Caddy、Cloudflared、OSS 与 AutoNode 控制面的真实运行总图：深入审阅 45 个人工文件、4,283 行，结构性审阅 28 个人工文件、9,347 行，并核对 2 个自动生成 node manifest、396 行。下一单元建议为 AU-005“PostgreSQL、Redis、对象存储、Secrets/KMS、队列与共享状态总图”，须由 Ethan 另行授权后才开始。
+当前进度：CP-00、CP-00A、AU-001/CP-01、AU-002/CP-02、AU-003/CP-03、AU-004/CP-04 与 AU-005/CP-05 已完成。AU-005 已形成 PostgreSQL、Redis、runtime队列、Local Objects、Secrets/KMS、Catalog OSS与恢复责任总图：深入审阅64个人工文件、3,920行，结构性审阅36个人工文件、4,801行，并核对1个自动生成事件映射、150行。阶段1的入口、进程、发布、通信、数据所有权与故障传播骨架已闭合；下一单元须由Ethan另行授权。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -159,10 +159,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 2. AU-002：Console、Auth、Storefront、Miniapp 页面与运行入口总图，已完成（CP-02）。
 3. AU-003：Canonical API、Jobs、Ready 与 Migration 进程入口总图，已完成（CP-03）。
 4. AU-004：release target、systemd、Cloudflared、Caddy、静态制品和节点部署总图，已完成（CP-04）。
-5. PostgreSQL、Redis、对象存储、Secrets/KMS、队列和共享数据总图。
-6. API、事件、共享数据库和同步调用的初始通信矩阵。
-7. 数据所有权和发布所有权初始矩阵。
-8. 正常路径与故障传播骨架。
+5. AU-005：PostgreSQL、Redis、对象存储、Secrets/KMS、队列和共享数据总图，已完成（CP-05）；同时完成API/事件/共享数据库初始通信矩阵、数据/恢复所有权矩阵与故障传播骨架。
 
 每个 AU 只完成一张可复核图及对应证据，不在同一会话深审业务实现。
 
@@ -505,9 +502,9 @@ Miniapp：
 
 ## 16. 下一审计单元
 
-CP-04 提交后结束当前单一目的会话。后续只有在 Ethan 明确授权时才执行：
+CP-05 提交后结束当前单一目的会话。后续只有在 Ethan 明确授权时才执行：
 
-- AU-005：PostgreSQL、Redis、对象存储、Secrets/KMS、队列与共享状态总图。
-- 目的：确认每类状态设施的创建入口、运行进程、连接者、数据/密钥所有者、共享边界和恢复责任；只形成数据基础设施图，不深审各业务表或任务 processor。
-- 输入：CP-04 的 `01-architecture.md`、`02-runtime-map.md`、`03-module-inventory.md`、`09-release-and-operations.md`、覆盖总账和 AU-001–AU-004 记录。
-- 禁止：读取或披露凭据明文、执行数据库全量重放、改变缓存/对象/队列/云资源状态、修复任何已记录问题、改源码/配置/工作流/迁移或推送/部署。
+- AU-006：`@shop/config` 环境契约与共享配置内核。
+- 目的：逐文件深审环境键的来源、profile差异、默认值、unknown-key拒绝、Secret ref边界、生产/测试差异和所有消费者；一次只审config模块，不进入身份或业务handler。
+- 输入：CP-05的架构/运行/模块/权限/数据/测试文档、覆盖总账及AU-005配置矩阵。
+- 禁止：读取或披露凭据值、修改env/config/源码、补安全门禁、修复F-0021–F-0028、安装依赖、改变线上状态、推送或部署。

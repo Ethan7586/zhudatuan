@@ -10,7 +10,7 @@
 | --- | --- | --- | --- | --- | --- |
 | Console | `index.html` → `main.tsx` → runtime 接纳/首文档预取 → providers → ConsoleRouter | `/`、`/scopes/:scopeKind/:scopeId`；15 个显式 manifest、34 条模块 route | landing/scope loader 先走同源预取，失败或超时回退 SDK；逐模块 operation 待后续 AU | `console` 静态制品 | [FACT][E-AU-002-003][E-AU-002-004][E-AU-002-005][E-AU-002-006][E-AU-002-007] |
 | Auth Web | `index.html` → `main.tsx` → build/runtime node registry → App | 无 Browser Router；由 hostname 与 application/target/client/admin_origin/surface 分流 consumer/operator/invalid | Canonical Identity/Registration HTTP client；Cookie/ticket 服务端链待身份 AU | `auth-web` 静态制品 | [FACT][E-AU-002-008][E-AU-002-009][E-AU-002-010][E-AU-002-011][E-AU-002-012]；机器批准清单冲突见 F-0005 |
-| Storefront | Cloudflare `worker/index.ts` fetch 或 `vinext start` | `/`、`/h5`、`/[device]`、`/desktop-1920[/frame|/inspect]` | Worker 先尝试 Compatibility public router；页面 public catalog 同源 fetch；认证 API 动态加载 Canonical SDK client | `storefront` Node 制品；另有 h5/mini wrangler 声明 | [FACT][E-AU-002-013][E-AU-002-014][E-AU-002-015][E-AU-002-016][E-AU-002-017] |
+| Storefront | Cloudflare `worker/index.ts` fetch 或 `vinext start` | `/`、`/h5`、`/[device]`、`/desktop-1920[/frame\|/inspect]` | Worker 先尝试 Compatibility public router；页面 public catalog 同源 fetch；认证 API 动态加载 Canonical SDK client | `storefront` Node 制品；另有 h5/mini wrangler 声明 | [FACT][E-AU-002-013][E-AU-002-014][E-AU-002-015][E-AU-002-016][E-AU-002-017] |
 | Miniapp | 微信 runtime → `miniprogram/app.js` → 生成 Environment | [CONFLICT] 当前没有 app.json、pages 或项目清单 | [UNKNOWN] 当前没有 API client/action dispatcher；外部工程状态未验证 | [UNKNOWN] candidate 会复制当前片段，但完整发布单元不在基线中 | [FACT][E-AU-002-018][E-AU-002-019][E-AU-002-020]；不能据此判废弃 |
 
 ### 2.1 Console 路由骨架
@@ -427,3 +427,65 @@ sequenceDiagram
 - installer的runtime模式与AutoNode是独立人工控制面；正式workflow只使用agent安装模式。
 - release retention通过timer/path保护current、previous、runtime、进程CWD、pin、recent和grace；行为测试仍受本机Bash版本阻塞。
 - database-migration是forward-only；应用pointer恢复不等于数据库回滚。
+
+## 13. AU-005：数据库、队列、Secret/KMS 与对象运行链
+
+### 13.1 服务启动与连接
+
+~~~mermaid
+sequenceDiagram
+  participant SD as systemd/release target
+  participant IR as Internal Runtime
+  participant S as Secret Store
+  participant K as KMS
+  participant A as API/Jobs
+  participant P as PostgreSQL
+  participant O as Node Object Store
+  SD->>IR: InternalRuntimeMain / Local*Main
+  IR->>S: spawn loopback TLS
+  IR->>K: spawn loopback TLS
+  SD->>O: LocalObjectsMain per node
+  SD->>A: dedicated API/Jobs bundle
+  A->>S: bearer + connection/config refs
+  S-->>A: values
+  A->>P: role-specific pool
+  A->>K: bearer + keyRef/context
+  A->>O: object bearer
+~~~
+
+[CONFLICT][E-AU-005-006] 图中两个Bearer箭头只在客户端存在；Secret/KMS服务端Main没有执行对应认证和资源授权。
+
+### 13.2 异步事件断点
+
+~~~text
+正式业务事务
+  → runtime.outbox（已接线）
+  → OutboxRelay（实现存在，正式target缺失）
+  → RuntimeEventPublisher
+  → runtime.inbox + runtime.job（同事务）
+  → dedicated/aggregate processor
+~~~
+
+全仓49个非测试文件包含runtime.outbox写入语句，其中34个在commerce运行源码；production正式图只有三类dedicated Jobs，full-staging聚合unit被要求保持inactive。未读取live backlog，因此“固定基线没有live通用relay/scheduler”是FACT/CONFLICT，“线上已有积压”仍是UNKNOWN。
+
+### 13.3 Job恢复路径
+
+- scoped与identity claim可领取lease过期的running；generic数据库函数只领取queued。
+- Catalog export配置没有scope，因而走generic分支；cleanup可重排过期running，但cleanup属于缺失的aggregate控制面，见F-0024。
+- processor错误由有界backoff和deadletter收口；processor外部副作用幂等留各模块专项。
+
+### 13.4 Object与浏览器
+
+~~~text
+Console → reporting API → ObjectStore.authorize
+        → https://127.0.0.1:<node-port>/v1/public/<ref>?signature=...
+        → 远端浏览器连接自身（F-0025）
+~~~
+
+私有对象路由仍要求object bearer；完成对象落StateDirectory，未完成upload仅在进程内。没有在仓库Caddy/release配置中找到public URL rewrite。
+
+### 13.5 PostgreSQL两种拓扑
+
+- production registration：Docker Compose、PG17、loopback55432、host bind volume。
+- full staging：外部RDS、独立DynamicUser TLS proxy、loopback55442、CA/hostname验证。
+- production空卷挂载的init脚本只接受PG16/RDS-like前置，和PG17 Compose冲突；现有volume继续运行不能证明恢复路径，见F-0023。

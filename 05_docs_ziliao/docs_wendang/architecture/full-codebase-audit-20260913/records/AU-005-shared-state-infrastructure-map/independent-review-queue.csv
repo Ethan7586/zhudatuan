@@ -1,0 +1,5 @@
+"复核编号","对象","触发原因","必须重新检查","当前状态","不得采用的捷径","完成判据"
+"RV-0003","F-0021 Secret/KMS生产授权接线","P1候选且涉及凭据/解密边界","production与staging systemd；artifact build map；Run/RuntimeEntries；Main/Handler/policy；客户端Bearer；loopback可达主体；401/403/200穷举","待第二位独立审计者","不得只运行Handler tests或复述本报告；不得读取/打印secret明文","独立证据链确认或反驳生产入口是否执行authenticate+require，并重定级影响"
+"RV-0004","F-0022 Outbox/Scheduler正式运行缺口","P1候选且影响跨模块异步副作用","至少三类正式API producer；outbox事务；relay/publisher/inbox/job；generated handler map；release/remote target；systemd；任何外部手工入口；只读backlog需另获授权","待第二位独立审计者","不得以类存在、测试通过或零文件名引用直接下结论；不得修改/清理队列","独立确认真实运行进程、受影响可达事件、live与否边界和恢复责任；分歧取较保守结论"
+"RV-0005","F-0023 PG17首次初始化冲突","P1候选且涉及灾难恢复","systemd→compose→official entrypoint；image digest major；empty/nonempty volume；全部init env/role/address前置；pg16 fixture/check；隔离PG17重放计划","待第二位独立审计者","不得触碰production volume，不得把现有容器active当fresh restore通过","在隔离临时volume复现或反驳首个失败点，并确认无生产数据/凭据输出"
+"RV-0006","GX-0001 aggregate Jobs/relay/scheduler删除风险","GX强制独立复核","静态/动态/build/package/staging/audit/运维入口；所有outbox producer；scheduler/cleanup唯一职责；等价替代与恢复","待第二位独立审计者","不得因正式target为零就标G3，不得只搜索文件名","独立确认其唯一契约和未来去向；没有正式替代与迁移计划前保持GX"

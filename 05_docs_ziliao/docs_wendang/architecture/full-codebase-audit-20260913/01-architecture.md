@@ -404,3 +404,32 @@ flowchart TB
 [CONFLICT][E-AU-004-009][E-AU-004-010] HBBTZN gateway Caddy 从正式 target pointer 提供静态文件并反代 L0/L1 服务；fufu active Caddy 则从另一套 runtime-recovery current 读取 Auth/Console。观察时这两个 root 都缺 index，而正式 release pointer 的 index 存在，公网两个入口均为 404。active Caddy blob 不属于固定基线或仓库历史，权威安装者仍 UNKNOWN。
 
 完整发布、制品、node、systemd、edge 与锁关系见 `09-release-and-operations.md` 和 `records/AU-004-release-node-runtime-map/`。
+
+## 14. AU-005 增量：共享状态基础设施
+
+### 14.1 持久状态与易失状态
+
+| 状态设施 | 权威状态 | 进程/入口 | 共享范围 | 恢复边界 |
+| --- | --- | --- | --- | --- |
+| PostgreSQL | 业务schema及runtime outbox/inbox/job/lease/deadletter | production Docker PG17；staging RDS经TLS proxy | 多API/Jobs共享，角色/schema/scope逻辑隔离 | restart明确；backup/restore owner UNKNOWN；fresh init有F-0023 |
+| Redis | 非权威cache | aggregate CommerceRuntime | 跨进程外部服务；当前dedicated targets不消费 | fail-open；同进程不重连F-0028 |
+| Local Objects | node-local bytes/metadata/path | L0 8555、L1 8655 systemd StateDirectory | token/目录/manifest按node隔离 | completed保留、upload易失；backup owner UNKNOWN |
+| Secret Store | 外部JSON catalog→进程内只读Map | global 8543、L0 8553 | workload按ref读取的意图边界 | 文件恢复owner UNKNOWN；生产授权未接F-0021 |
+| Local KMS | 单master派生、ciphertext在业务DB | global 8544/staging8644 | keyRef+context加密域 | 仅local-v1；master备份/轮换owner UNKNOWN |
+| Catalog media OSS | 云对象 | Catalog media adapter/job | 多target provider边界 | size/hash核验；云恢复UNKNOWN |
+
+### 14.2 数据库就是消息总线
+
+[FACT][E-AU-005-002][E-AU-005-004] 系统没有独立消息broker；异步边界建立在同一PostgreSQL的outbox、inbox、job、lease和deadletter上。业务写与outbox同事务，inbox去重与job enqueue同事务，aggregate内claim保持顺序；该设计本身值得保留。
+
+[CONFLICT][E-AU-005-003] 唯一创建OutboxRelay和RuntimeScheduler的JobsMain/FullJobsMain不在production正式target图；full-staging聚合unit又被明确保持inactive。production worker只覆盖identity notification、Catalog和Payment专用队列，因此“实现完整”与“运行链存在”发生分裂，见F-0022。
+
+### 14.3 权限与进程边界
+
+[CONFLICT][E-AU-005-006] Secret/KMS客户端、授权Handler、exact-resource policy和文档声明一致；实际build/systemd运行的Main绕过这套授权。服务只监听loopback、systemd非root和文件隔离仍有价值，但不能替代workload身份与ref授权，见F-0021。
+
+### 14.4 对象边界
+
+[FACT][E-AU-005-007][E-AU-005-008] Local Objects与Catalog媒体OSS是两套不同所有权：前者是host/node StateDirectory和内部HTTP，后者是Catalog直连云provider。Local Objects的bytes内容寻址和签名校验清楚；public URL loopback、虚假`clean`和可变digest metadata分别形成F-0025–F-0027。
+
+完整设施、密钥、崩溃点和恢复责任见 `records/AU-005-shared-state-infrastructure-map/`、`06-security-and-permissions.md` 与 `07-data-and-migrations.md`。

@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-004 结束时累计：P0 0、P1 候选 2、P2 16、P3 1、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-005 结束时累计：P0 0、P1 候选 5、P2 20、P3 2、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -493,3 +493,193 @@
 - [UNKNOWN][E-AU-004-012] AutoNode具有完整外部资源控制面，但固定基线没有正式workflow/package执行入口；是否由外部runbook调用尚未验证。
 - [UNKNOWN][E-AU-004-009] Cloudflare tunnel、DNS与OSS账户侧策略没有纳入本单元；仓库example和公开HTTP只能证明局部链路。
 - [FACT][E-AU-004-018] legacy deploy、零target control-plane文件及AutoNode入口均未满足垃圾代码认定条件，本单元不新增G1–GX候选。
+
+## F-0021｜Secret Store 与 KMS 的生产入口绕过已有工作负载授权
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享状态 / Secret Store、KMS |
+| 类型 | 身份验证、资源授权、生产接线与测试对象不一致 |
+| 严重级别 | **P1 候选**；未完成 RV-0003 前不作最终 P1 |
+| 置信度 | 高（build、systemd、Main、Handler、policy和客户端闭环）；未观察真实未授权调用 |
+| 文件和精确位置 | `04_tools/tools/localsecrets/src/Main.ts:5-25`、`Handler.ts:8-24`；`04_tools/tools/localkms/src/Main.ts:5-33`、`Handler.ts:9-34`；`04_tools/tools/localinfra/src/WorkloadAccessPolicy.ts:82-147`、`Run.ts:4-30`；`04_tools/scripts/build-commerce.mjs:10-20`；`01_core_hexin/services/commerce/src/foundation/infrastructure/SecretStore.ts:26-45`、`KmsClient.ts:11-47` |
+| 当前行为 | [CONFLICT][E-AU-005-006][E-AU-005-016] 客户端始终发送Bearer；授权版Handler会在读取path/body前执行authenticate并对ref/keyRef执行require。实际打包的两个Main自行定义handler，完全不读取authorization header、不调用Handler，也不加载已经由环境解析器返回的workload policy。全仓排除测试和定义后的两个Handler生产引用数均为0 |
+| 预期行为 | [FACT] 仓库运行说明及现有授权实现都要求`/health/ready`以外先验证workload Bearer，再限制到精确ref/keyRef |
+| 直接证据 | E-AU-005-006、E-AU-005-014、E-AU-005-016；RS-AU-005-001/002；secret-key-ownership.csv |
+| 调用链或运行入口 | systemd → `InternalRuntimeMain.js`/`LocalSecretsMain.js` → build map → `Run.ts` → `localsecrets/Main.ts`、`localkms/Main.ts`；staging虽注入policy credential，仍走相同Main |
+| 用户影响 | [INFERENCE] 同主机上能连接loopback端口的进程可枚举已知ref读取secret，或对已知keyRef调用加解密；未证明外部网络可直接访问或已有滥用 |
+| 数据影响 | 可能暴露数据库/第三方配置secret或解密受KMS保护字段；未读取任何明文、未确认实际暴露记录 |
+| 安全影响 | 工作负载隔离和最小资源授权在生产服务端未执行；loopback限制缩小网络面，但不替代进程身份授权 |
+| 根因 | 旧Main业务handler与后加的授权Handler/policy并存，构建和运行入口继续指向旧Main组合 |
+| 建议方向 | 只有在Ethan授权后，独立修复批次复用现有Handler/policy并对production/staging两种profile做无token、错token、越权ref和正确ref四类反事实；本审计不增加新安全策略 |
+| 预计修改范围 | 两个Main的组合入口、必要的policy加载和对应入口测试；不应同时改加密原语或secret目录结构 |
+| 验证方式 | 第二审计者重新从unit追到bundle source；隔离环境验证health 200、缺/错Bearer 401、越权403、正确授权成功，并确认日志不含值 |
+| 回滚方式 | 修复分支保留原bundle；若接线影响启动，回退单一入口提交，不更换master key或secret值 |
+| 是否需要独立复核 | 是，RV-0003；P1与权限边界强制100%重追 |
+
+## F-0022｜正式运行目标没有 OutboxRelay 与 RuntimeScheduler
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享状态 / runtime outbox、inbox、job、scheduler |
+| 类型 | 异步控制面缺失、注册与部署边界漂移 |
+| 严重级别 | **P1 候选**；未完成 RV-0004 前不作最终 P1 |
+| 置信度 | 高（构造点和正式target图）；live积压与所有producer可达性未验证 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/entry/JobsMain.ts:11-25`、`FullJobsMain.ts:11-31`；`foundation/infrastructure/OutboxRelay.ts:11-37`、`RuntimeEventPublisher.ts:8-27`、`RuntimeScheduler.ts:11-42`；`app/events.ts:74-142`；`02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json:20-69` |
+| 当前行为 | [CONFLICT][E-AU-005-003][E-AU-005-004] 全仓49个非测试文件包含`runtime.outbox`写入语句，其中34个在commerce运行源码；generated handler表将事件映射到projection、notification、reconciliation、referral等job。唯一构造relay/scheduler的入口是JobsMain/FullJobsMain，但production release/remote policy只部署identity-notification、catalog、payment dedicated Jobs；full-staging聚合Jobs unit又被显式要求保持inactive；未发现DB trigger把该outbox自动转job |
+| 预期行为 | 已提交outbox应有唯一、可观察、可恢复的正式发布进程；周期expiry/cleanup也应有明确scheduler owner |
+| 直接证据 | E-AU-005-003、E-AU-005-004、E-AU-005-016；RS-AU-005-003/004；queue-crash-matrix.csv |
+| 调用链或运行入口 | 正式API/Jobs业务事务 → `runtime.outbox`；预期下游为OutboxRelay → RuntimeEventPublisher → inbox+runtime.job → job processors；实际正式target图在relay前断开 |
+| 用户影响 | [INFERENCE] 可达producer产生的通知、投影、对账、推荐/返利等异步结果不会发生；具体业务影响取决于哪类producer当前可达和是否有图外进程 |
+| 数据影响 | 业务事实与outbox原子保存，不等于数据丢失；但派生状态/通知可能长期滞后。live backlog未查询 |
+| 安全影响 | 无直接权限绕过证据；cleanup缺席可能延长敏感运行记录保留期，未验证实际数据 |
+| 根因 | 运行入口从聚合Jobs收敛到专用workers时，没有为通用outbox relay、scheduler和cleanup保留正式发布单元或替代实现 |
+| 建议方向 | 独立架构批次先确认唯一异步控制面和当前积压，再决定挂载现有aggregate能力还是拆成专用target；禁止先删outbox/handler或盲目重放 |
+| 预计修改范围 | release target、systemd/entry与只读backlog/readiness；不与业务processor修复混批 |
+| 验证方式 | 第二审计者从至少三个正式API重追producer；核对正式进程/active unit；经授权只读统计unpublished/oldest age，并用隔离事件验证exactly-once enqueue语义 |
+| 回滚方式 | 新控制面应可停用并恢复原target集合；outbox行保留，补偿/重放按event id与inbox事实执行 |
+| 是否需要独立复核 | 是，RV-0004；P1且跨模块异步链强制100%重追 |
+
+## F-0023｜生产 PostgreSQL 17 编排与仅接受 PostgreSQL 16 的初始化脚本互斥
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享状态 / PostgreSQL 创建与恢复 |
+| 类型 | 版本契约、首次初始化、灾难恢复路径 |
+| 严重级别 | **P1 候选**；未完成 RV-0005 前不作最终 P1 |
+| 置信度 | 高（显式major条件）；现有非空volume不受首次init路径影响 |
+| 文件和精确位置 | `02_platform_pingtai/infrastructure/zhudatuan/aliyun/registration-compose.yml:3-35`；`postgres-init-registration.sh:3-28,54-115`；`postgres.env.example:1-15`；`04_tools/scripts/check/registration-deployment.mjs:5-22,73-118,160-190`；`audit/postgres-init-registration.pg16-fixture.mjs` |
+| 当前行为 | [CONFLICT][E-AU-005-010] Compose固定`postgres:17-alpine`并把init脚本挂到`docker-entrypoint-initdb.d`；脚本明确拒绝`server_version_num>=170000`，还要求expected RDS address及预建的`zhudatuanregistrationboundary`。env example不含expected address，Compose也未见空卷脚本前置role creator；检查器只要求PG16 fixture覆盖 |
+| 预期行为 | 固定生产镜像、空卷初始化、恢复演练和检查fixture必须接受同一明确major及同一目标类型，能在隔离新卷上从零成功或明确拒绝不支持的拓扑 |
+| 直接证据 | E-AU-005-010、E-AU-005-014、E-AU-005-016；RS-AU-005-006；branches-and-states.md |
+| 调用链或运行入口 | `zhudatuan-registration-database.service` → Docker Compose PG17 → 空data directory → `10-registration-roles.sh` → version guard首个确定失败 |
+| 用户影响 | [INFERENCE] 当前volume丢失、新节点或灾备恢复到空卷时数据库服务无法就绪，所有依赖registration DB的入口不可用 |
+| 数据影响 | 不直接修改现有数据；危险在恢复失败和恢复时间不可预测。未执行生产volume或全量重放 |
+| 安全影响 | 无直接安全缺口；绕过guard或伪造ledger不是允许的解决方式 |
+| 根因 | RDS/PG16初始化契约被挂入本地PG17容器恢复路径，检查脚本只验证token和PG16 fixture，没有交叉验证运行镜像major/目标前置 |
+| 建议方向 | 独立恢复设计批次先由Ethan确认权威拓扑与major，再在一次性隔离新卷验证；不得修改已登记迁移、不得拿生产卷试验 |
+| 预计修改范围 | Compose/init/env/check/恢复文档中的单一兼容组合；不能与业务迁移变更混批 |
+| 验证方式 | 第二审计者在隔离临时volume穷举PG17当前配置、权威major、缺键、错误地址、非空target和成功路径；记录首个失败且不输出secret |
+| 回滚方式 | 现有production volume保持不动；未来配置提交可回退，数据库迁移仍按forward-only处理 |
+| 是否需要独立复核 | 是，RV-0005；P1和恢复路径强制100%重追 |
+
+## F-0024｜通用 job claim 不回收过期 running，正式 Catalog export 使用该分支
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享状态 / JobRunner、Catalog export |
+| 类型 | 崩溃恢复、租约状态机 |
+| 严重级别 | P2 |
+| 置信度 | 高；线上孤儿job数量未验证 |
+| 文件和精确位置 | `foundation/application/JobRunner.ts:47-69,78-106`；`bootstrap/CatalogJobsRuntime.ts:150-206`；`20260821012000_create_runtime_control.sql:167-188`；`modules/runtime/RuntimeJobs.ts:10-26` |
+| 当前行为 | [CONFLICT][E-AU-005-005] scoped claim显式接受lease过期的running；通用`runtime.claim_job`只选queued。Catalog import/publication配置有scope，reporting export的独立配置漏scope，因此正式Catalog Jobs的export走通用分支。进程在claim后退出会留下无法被同类worker再领的running job；cleanup能重排但它属于F-0022缺失的aggregate控制面 |
+| 预期行为 | 所有带lease的claim路径都应在lease到期后由明确owner安全恢复，或明确使用外部reaper且该reaper正式运行 |
+| 直接证据 | E-AU-005-005、RS-AU-005-005；QC-005/QC-006 |
+| 调用链或运行入口 | `CatalogJobsMain` → `createCatalogJobs` → export `QueueJob` → `JobRunner.run` generic branch → `runtime.claim_job` |
+| 用户影响 | 某次导出在worker异常退出后可永久显示处理中，后续轮询不能完成或下载 |
+| 数据影响 | export业务状态和runtime.job漂移；已生成对象/分页进度是否残留取决于崩溃点，留reporting专项 |
+| 安全影响 | 无直接安全影响 |
+| 根因 | scoped worker引入新的回收SQL时，export配置仍落入旧通用函数；恢复又隐式依赖未部署cleanup |
+| 建议方向 | 独立job lease批次统一claim/reaper所有权并对export崩溃点做反事实，不与processor业务重构混批 |
+| 预计修改范围 | claim SQL或export runner配置及定向测试；若涉及迁移须新建受管迁移 |
+| 验证方式 | 隔离DB创建queued→claim→过期running，重启相同worker应恰好恢复一次；同时验证未过期、不同scope和副作用幂等 |
+| 回滚方式 | 回退应用配置；若新增迁移遵守forward-only，以后续迁移恢复旧语义，不改ledger |
+| 是否需要独立复核 | 否（P2）；若live存在大量关键任务孤儿则升级复核 |
+
+## F-0025｜Local Objects 给浏览器签发 loopback 下载地址
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享状态 / Local Objects、Reporting、Console |
+| 类型 | API契约、客户端/服务端地址边界 |
+| 严重级别 | P2 |
+| 置信度 | 高（值从Main到anchor无改写）；线上completed export未验证 |
+| 文件和精确位置 | `04_tools/tools/localobjects/src/Main.ts:5-12,20-23,58-68`；`LocalObjects.ts:121-140`；`foundation/infrastructure/ObjectStore.ts:80-89`；`modules/reporting/.../GetExport.ts:14-20`；`apps/console/.../OrderExportWorkspace.tsx:94-107,228-234` |
+| 当前行为 | [CONFLICT][E-AU-005-007][E-AU-005-017] Main构造`publicEndpoint=https://127.0.0.1:<object-port>`；authorize将其原样返回，API原样放入download，Console anchor直接导航。仓库Caddy/release图未发现`/v1/public`公网反代或URL重写 |
+| 预期行为 | 返回给远端浏览器的临时URL应指向浏览器可到达且仍验证签名的公开网关，或下载由API代理 |
+| 直接证据 | E-AU-005-007、E-AU-005-017、RS-AU-005-007 |
+| 调用链或运行入口 | Console下载 → reporting export read → ObjectStore.authorize → LocalObjects signed URL → browser `127.0.0.1` |
+| 用户影响 | 远端运营用户无法下载已经完成的订单导出；浏览器会连接用户自己的机器 |
+| 数据影响 | 对象仍在服务器StateDirectory，不是数据删除；访问路径不可用 |
+| 安全影响 | 若用户本机恰有该端口服务，URL/query会发送到本机服务；签名短期有效，未观察实际泄露 |
+| 根因 | 内部服务监听地址同时被当作浏览器public endpoint |
+| 建议方向 | 独立对象下载契约批次确定权威public host/proxy；不同时改对象格式或导出业务 |
+| 预计修改范围 | object runtime配置/Main、edge路由或reporting下载代理中的一种权威方案及E2E |
+| 验证方式 | 隔离生成completed export，远端浏览器URL host非loopback、签名有效、过期/篡改拒绝，其他对象私有路由仍不可公网访问 |
+| 回滚方式 | 回退单一URL接线提交；对象与数据库引用不变 |
+| 是否需要独立复核 | 否（P2）；上线前需真实页面网络验收 |
+
+## F-0026｜Local Objects 未扫描内容却把上传结果标记为 clean
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享状态 / Local Objects、Import、Reporting |
+| 类型 | 状态真实性、内容信任契约 |
+| 严重级别 | P2 |
+| 置信度 | 高（直接赋值和全仓scanner负向搜索）；恶意内容影响未验证 |
+| 文件和精确位置 | `04_tools/tools/localobjects/src/LocalObjects.ts:67-91`；`foundation/infrastructure/ObjectStore.ts:5-24,43-77,123-131`；`modules/reporting/.../ExportJobRunner.ts:42-48`；ImportFile/ImportOperations消费者 |
+| 当前行为 | [CONFLICT][E-AU-005-008] complete只验证分片、size和SHA-256，随后无条件写`scan:'clean'`；仓库LocalObjects链没有scanner、quarantine或scan receipt。多个消费者把`clean`作为继续导入/完成导出的信任条件 |
+| 预期行为 | `clean`必须表示可追溯扫描器实际给出的结果；若系统只承诺完整性，应使用不虚构扫描事实的状态契约 |
+| 直接证据 | E-AU-005-008、RS-AU-005-008；INV-AU-005-007 |
+| 调用链或运行入口 | HttpObjectStore upload → LocalObjects.complete → metadata.clean → inspect → import/reporting gate |
+| 用户影响 | 用户可被告知文件已通过安全检查，实际只验证字节完整性；具体解析器可利用性留业务专项 |
+| 数据影响 | 未扫描文件可进入持久对象目录和后续数据导入；未证明已有恶意对象 |
+| 安全影响 | 信任状态是假阳性；风险大小取决于文件来源和解析器，本AU不夸大为已利用 |
+| 根因 | 单一`StoredObject`类型把完整性成功与恶意内容扫描成功合并成固定字面量 |
+| 建议方向 | 由Ethan决定是否需要扫描能力；若需要，独立批次定义pending/clean/rejected与可验证receipt；若不需要，独立契约批次移除虚假语义。审计不实施安全约束 |
+| 预计修改范围 | ObjectStore契约、LocalObjects adapter及实际消费者/tests；需要先评估兼容字段 |
+| 验证方式 | 反事实文件必须在扫描成功前不能得到clean；scanner失败/超时/重试/拒绝均有稳定状态。若选择无扫描语义，则调用方不得把完整性写成clean |
+| 回滚方式 | 保留原对象bytes和metadata备份；契约迁移需兼容旧记录，不直接删字段/对象 |
+| 是否需要独立复核 | 否（P2）；若确认公网任意上传并由高危解析器执行则重新定级 |
+
+## F-0027｜内容哈希唯一 metadata 会被相同字节的后续上传覆盖
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享状态 / Local Objects |
+| 类型 | 数据模型、不变性、并发/重复写 |
+| 严重级别 | P2 |
+| 置信度 | 高（确定文件键和写顺序）；实际collision频率未知 |
+| 文件和精确位置 | `04_tools/tools/localobjects/src/LocalObjects.ts:67-118,149-155`；`LocalObjects.test.ts` |
+| 当前行为 | [CONFLICT][E-AU-005-008] reference和metadata文件都只按内容SHA-256；metadata同时包含path/contentType。相同bytes以不同path或contentType再次complete时，后一次覆盖同一metadata JSON；旧path文件仍指同一reference，随后inspect返回后一次path/contentType |
+| 预期行为 | 内容寻址bytes可去重，但一个既有reference的可观察metadata应不可变，或path/contentType应按逻辑对象独立保存 |
+| 直接证据 | E-AU-005-008、RS-AU-005-008；INV-AU-005-008 |
+| 调用链或运行入口 | upload A → digest ref/metadataA/pathA；upload B同bytes → 同ref/metadataB/pathB；find(pathA) → ref → metadataB |
+| 用户影响 | 旧对象下载content-type或展示名称/审计path可在无旧调用者写入时变化 |
+| 数据影响 | bytes不变，但metadata历史和path归属被覆盖；并发完成时最后写入者获胜 |
+| 安全影响 | content-type漂移可能改变浏览器处理方式；未验证公网可利用路径 |
+| 根因 | 把内容实体和逻辑path实体压在同一digest metadata记录上，文件系统多写步骤也无事务 |
+| 建议方向 | 独立对象模型批次先决定reference不变量和兼容迁移；不得删除现有对象或path索引 |
+| 预计修改范围 | LocalObjects metadata/path模型、ObjectStore返回契约、迁移/恢复工具和collision tests |
+| 验证方式 | 同bytes同/异path、同/异content-type、并发complete、metadata写中断四组；旧引用观察必须满足定稿不变量 |
+| 回滚方式 | 新索引并行写、可逆切读；保留旧digest files直到验证完毕 |
+| 是否需要独立复核 | 否（P2）；数据迁移设计实施前需专项复核 |
+
+## F-0028｜Redis 瞬时失败后不会在同一进程内恢复
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 共享状态 / Redis cache |
+| 类型 | 可用性、恢复状态机 |
+| 严重级别 | P3 |
+| 置信度 | 高（状态机无恢复边）；当前正式dedicated target不消费Redis |
+| 文件和精确位置 | `foundation/cache/RedisCache.ts:4-25,27-85`；`bootstrap/CommerceRuntime.ts:62-77`；`packages/config/src/ApiEnvironment.ts`、`JobsEnvironment.ts` |
+| 当前行为 | [FACT][E-AU-005-009] client配置`reconnectStrategy:false`；start或get/put/remove异常后进入degraded，destroy/丢弃client。实例没有restart/reconnect方法，后续全部返回miss/false直到整个服务进程重启 |
+| 预期行为 | 既然Redis是可降级cache，瞬时故障后应有明确、有界、可观察的恢复策略，或明确要求进程重启并由运行平台执行 |
+| 直接证据 | E-AU-005-009、RS-AU-005-009；Redis状态图 |
+| 调用链或运行入口 | aggregate createRuntime → RedisCache.start → external Redis；当前formal dedicated API/jobs使用专用runtime，aggregate target不存在 |
+| 用户影响 | 在使用该路径的staging/未来aggregate进程中，短暂Redis故障可造成持续cache miss和性能退化；不构成权威数据丢失 |
+| 数据影响 | 无，cache被设计为非权威/fail-open |
+| 安全影响 | 无直接安全影响 |
+| 根因 | 一次性bootstrap连接模型与fail-open状态结合，没有恢复转移 |
+| 建议方向 | 若该runtime重新成为正式target，独立cache批次定义有界重连、退避和指标；不与业务cache key重构混批 |
+| 预计修改范围 | RedisCache状态机及定向fake-client tests |
+| 验证方式 | startup失败后恢复、运行中断连后恢复、持续失败退避、close期间不重连、listener只按状态转移触发 |
+| 回滚方式 | 回退cache状态机提交；服务重启恢复原一次性连接语义 |
+| 是否需要独立复核 | 否（P3） |
+
+## 6. AU-005 新增未定级事项
+
+- [UNKNOWN][E-AU-005-012] 当前zhudatuan PostgreSQL、L0/L1 Local Objects、secret catalogs和KMS master key的仓库外备份、恢复演练、RPO/RTO和负责人未取得；不能写成“不存在备份”。
+- [UNKNOWN] 未读取线上runtime表或对象目录，F-0022/F-0024/F-0025/F-0027的历史数量和用户影响规模均未验证。
+- [HYPOTHESIS][QC-009] JobRunner吞掉heartbeat错误后旧processor可能与新lease owner短时并行；是否形成重复副作用必须逐processor审，不在本AU新增编号。
