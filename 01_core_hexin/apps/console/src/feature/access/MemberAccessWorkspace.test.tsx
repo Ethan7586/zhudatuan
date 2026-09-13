@@ -110,6 +110,24 @@ describe('member directory pagination', () => {
     expect(screen.queryByText('当前登录者')).toBeNull();
   });
 
+  it('shows the authoritative administrator mobile in the directory and detail panel', async () => {
+    const target = { ...member('target', '高级管理员 · 7586'), mobile: '19287247586', mobile_masked: '192****7586' };
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json({ items: [target], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json({
+        items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [],
+      })),
+    );
+    const user = userEvent.setup();
+
+    renderWorkspace();
+
+    expect(await screen.findByText('19287247586')).toBeTruthy();
+    await user.click(screen.getByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
+    expect(screen.getByText('管理员手机号')).toBeTruthy();
+    expect(screen.getAllByText('19287247586')).toHaveLength(2);
+  });
+
   it('keeps cached members visible when the background refresh fails', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
     client.setQueryData(memberKey(context), { items: [member('member:cached', '缓存会员')], count: 1 });

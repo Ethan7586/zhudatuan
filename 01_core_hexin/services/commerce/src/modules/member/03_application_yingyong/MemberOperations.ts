@@ -18,7 +18,7 @@ export function memberOperations(context: ModuleContext): ModuleOperations {
   return new ModuleOperations('member', pool, context.container.get(AUDIT_SINK), {
     ...memberImportOperations(context),
     ...memberCustomProfileActions(),
-    ...memberOperatorReadActions(),
+    ...memberOperatorReadActions(kms),
     'member.profile.read': async (request, database) => {
       const access = requireAccess(request);
       return rowResult(await database.query(`select profile.id,profile.display_name,profile.status,profile.mobile_token is not null mobile_bound,

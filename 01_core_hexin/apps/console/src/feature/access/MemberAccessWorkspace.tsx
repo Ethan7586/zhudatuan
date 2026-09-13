@@ -273,7 +273,7 @@ function MemberDirectory({ rows, selectedId, onSelect }: Readonly<{ rows: readon
               <span className="storefrontmemberperson" role="cell">
                 <i>{rowName(row).slice(0, 1)}</i>
                 <strong>{rowName(row)}</strong>
-                <small>管理员身份</small>
+                <small>{row.member?.mobile ?? row.member?.mobile_masked ?? '管理员身份'}</small>
               </span>
               <BindingState bound={row.member?.login_identity_bound} trueLabel="已绑定" falseLabel="未绑定" unknownLabel="待补充" />
               <span className="memberaccessrole" data-administrator={isAdministrator(row)} role="cell">
@@ -433,6 +433,7 @@ function ProfileTab({ row, version }: Readonly<{ row: MemberAccessRow; version: 
         <span>真实成员档案</span>
       </header>
       <dl className="storefrontmemberfacts">
+        <Fact label="管理员手机号" value={row.member?.mobile ?? row.member?.mobile_masked ?? '未绑定'} />
         <Fact label="员工号" value={row.member?.employee_no ?? '未设置'} />
         <Fact label="身份端" value={clientLabel(row.member?.client)} />
         <Fact label="登录身份" value={row.member === undefined ? '待补充' : row.member.login_identity_bound ? '已绑定' : '未绑定'} tone={row.member?.login_identity_bound ? 'success' : 'muted'} />
@@ -688,7 +689,8 @@ function hasOperation(context: ConsoleContext, operation: string): boolean {
   return context.session.capabilities.includes(operation) || context.session.permissions.includes(operation);
 }
 function rowSearchText(row: MemberAccessRow): string {
-  return [rowName(row), row.member?.employee_no, clientLabel(row.member?.client), ...row.managementRoles.map((role) => role.name)]
+  return [rowName(row), row.member?.mobile, row.member?.mobile_masked, row.member?.employee_no,
+    clientLabel(row.member?.client), ...row.managementRoles.map((role) => role.name)]
     .filter((value): value is string => typeof value === 'string')
     .join(' ')
     .toLocaleLowerCase('zh-CN');

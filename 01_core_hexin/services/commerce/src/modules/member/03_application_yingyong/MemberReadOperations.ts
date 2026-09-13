@@ -8,6 +8,7 @@ import {
 import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../../foundation/application/AuditSink';
 import { ModuleOperations, requireAccess, rowResult, type OperationActions } from '../../../foundation/application/ModuleOperations';
+import { KMS_CLIENT, type KmsClient } from '../../../foundation/infrastructure/KmsClient';
 import { keysetResult, queryPage } from '../../../foundation/interface/Validation';
 import { DATABASE_POOL } from '../../../foundation/persistence/Pool';
 import { requireGovernanceContext } from '../../../foundation/security/AccessContext';
@@ -22,13 +23,13 @@ export const MEMBER_OPERATOR_READ_OPERATION_IDS = Object.freeze([
   'member.imports.read',
 ] as const satisfies readonly OperationId[]);
 
-export function memberOperatorReadActions(): OperationActions {
+export function memberOperatorReadActions(kms: Pick<KmsClient, 'decrypt'>): OperationActions {
   return {
     'member.members.read': async (request, database) => {
       const access = requireAccess(request);
       const governance = requireGovernanceContext(access);
       const page = queryPage(request);
-      const result = await database.query(`with recursive governance_subtree(membership_id) as(
+      const result = await database.query<OperatorDirectoryRow>(`with recursive governance_subtree(membership_id) as(
         select actor.id
         from access.membership actor
         where actor.id=$8 and actor.client='operator' and actor.status='active'
@@ -43,12 +44,14 @@ export function memberOperatorReadActions(): OperationActions {
           principal.version principal_version,principal.status principal_status,
           membership.id membership_id,membership.client,membership.employee_no,membership.status membership_status,
           membership.access_version,membership.joined_at,membership.governance_parent_membership_id,
+          account.mobile_masked,case when $9::boolean then account.mobile_ciphertext else null end mobile_ciphertext,
           governance_parent_profile.display_name governance_parent_name,
           to_char(coalesce(membership.joined_at,to_timestamp(0)) at time zone 'UTC',
             'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') directory_sort
         from access.membership membership
         join member.profile profile on profile.id=membership.member_id
         join identity.principal principal on principal.id=profile.principal_id
+        left join identity.account account on account.id=membership.account_id and account.realm_id=membership.realm_id
         left join access.membership governance_parent
           on governance_parent.id=membership.governance_parent_membership_id
         left join member.profile governance_parent_profile on governance_parent_profile.id=governance_parent.member_id
@@ -81,8 +84,12 @@ export function memberOperatorReadActions(): OperationActions {
           else null end reset_block_reason
       from selected anchor order by anchor.directory_sort desc,anchor.id desc limit $4`,
       [access.scope.id, page.sort, page.id, page.fetch, access.actor.id, governance.ownerMembershipId ?? null,
-        governance.isExactOwner, governance.actorMembershipId]);
-      return keysetResult(result, page, 'directory_sort', 'id');
+        governance.isExactOwner, governance.actorMembershipId, governance.governanceLevel === 'owner']);
+      const rows = await Promise.all(result.rows.map(async ({ mobile_ciphertext: ciphertext, ...row }) => Object.freeze({
+        ...row,
+        mobile: ciphertext == null ? null : await kms.decrypt('identity/mobile', ciphertext, { principal: row.principal_id }),
+      })));
+      return keysetResult({ ...result, rows }, page, 'directory_sort', 'id');
     },
     'member.storefront.members.read': async (request, database) => {
       const access = requireAccess(request);
@@ -259,7 +266,14 @@ export function memberOperatorReadActions(): OperationActions {
 
 export function memberOperatorReadOperations(context: ModuleContext): ModuleOperations {
   return new ModuleOperations('member', context.container.get(DATABASE_POOL), context.container.get(AUDIT_SINK),
-    memberOperatorReadActions(), MEMBER_OPERATOR_READ_OPERATION_IDS);
+    memberOperatorReadActions(context.container.get(KMS_CLIENT)), MEMBER_OPERATOR_READ_OPERATION_IDS);
+}
+
+interface OperatorDirectoryRow extends Readonly<Record<string, unknown>> {
+  readonly id: string;
+  readonly directory_sort: string;
+  readonly principal_id: string;
+  readonly mobile_ciphertext?: string | null;
 }
 
 function queryValue(value: string | readonly string[] | undefined): string {
