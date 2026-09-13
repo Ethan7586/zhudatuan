@@ -1,77 +1,103 @@
-# AI 直达部署（部署纯洁性契约 1.1）
+# AI 发布通道 1.3（预构建不可变制品）
 
-生产部署只有一条有效路径：GitHub `Deploy` 工作流直达阿里云。
+生产发布分成两个互不混合的动作：GitHub `Prepare Artifact` 生成制品，GitHub `Deploy` 只部署已经存在的制品。两条通道一次都只接受一个 target；不支持空目标、affected 或多目标扇出。
 
-## 用户入口
+## 用户入口与授权
 
-Ethan 在当前任务中输入“部署”即为生产授权。AI 只使用已经存在、已经登记且无需修改代码或云资源即可触发的部署通道，不得再次索要确认，也不得把测试、类型检查、候选、审批或验收插入部署路径。
+Ethan 在当前任务中输入“部署”即为生产授权。AI 只部署已存在的精确制品，不得在 Deploy 中修代码、安装依赖、测试、构建、打包、发布制品、推送分支或建设通道。目标或完整 40 位 source SHA 不明确时只询问缺失项。
 
-“部署”只允许执行现有提交的发布，不允许顺手修代码、改测试或文档、清理权限、处理其他项目或扩大范围。若构建、传输或重启失败，立即停止并只报告失败点；后续修复必须等待 Ethan 明确输入“修复部署”。
+通道建设、Prepare 和 Deploy 是三个不同动作。建设完成后必须停止；Prepare 完成后也不得顺带 Deploy。生产切流仍须 Ethan 在独立任务中明确输入“部署”。
 
-一次部署只处理上下文已经明确的一个目标。目标不明确时只询问目标；不得默认部署全部受影响目标。只有 Ethan 明确指定多个目标时才能扩大到指定范围。
-
-## 通道与部署严格分离
-
-- 目标没有现成通道时，本次部署立即停止，只报告“通道尚未建立”，并单独询问是否建立。
-- 不得以“部署”为由创建或修改 GitHub 工作流、发布脚本、制品路径、SSH、ECS、数据库或其他基础设施。
-- 只有 Ethan 明确输入“建立 <目标> 部署通道”才允许建设通道。
-- 通道建设完成后立即停止，不得顺带执行第一次部署；必须等待新的“部署”口令。
-- 部署运行期间收到的非部署请求排队到部署结束后单独处理，不得混入当前运行。
-- 部署耗时只计算 GitHub Deploy 工作流从触发到成功或失败终态的时间；建设和修复时间必须单独报告。
-
-本地触发入口：
+本地生产触发入口保持不变：
 
 ```bash
-scripts/deploy-now.sh [target] [commit] [node]
+scripts/deploy-now.sh <target> <full-source-sha> <node>
 ```
 
-- `target` 应使用上下文中已经明确且已经具有现成通道的单一目标；只有 Ethan 明确指定全部受影响目标时才可留空。
-- `commit` 留空：使用 GitHub `zdt-next` 的精确 HEAD。
-- `node` 留空：使用 `hbbtzn-l1`。
+## Prepare Artifact（构建通道）
 
-## 唯一执行链
+`.github/workflows/prepare-artifact.yml` 接受一个完整 source SHA 和一个 target：
 
 ```text
-精确 Git SHA
-  -> GitHub Deploy（单 Job）
-  -> 只运行生产构建
-  -> 上传阿里云不可变版本目录
-  -> 记录 previous
-  -> 原子切换 current
-  -> 重启目标服务
+精确 checkout → dependency cache（仅加速）→ npm ci
+  → 目标测试/类型检查 → 生产构建 → 确定性打包
+  → Linux x64 运行验收（Storefront）→ OSS 不可变发布
 ```
 
-部署不依赖 `.github/workflows/quality.yml`。Affected Delivery 仅可被人工单独调用，不能成为 Deploy 的前置任务。
-
-## 不属于门禁的机械约束
-
-- Git SHA 必须精确，避免其他任务的提交混入。
-- 制品传输保留摘要和路径安全检查，避免传输损坏或目录逃逸。
-- 同一节点和目标使用互斥锁，避免两个发布同时改写指针。
-- 每次切换保存 previous；重启命令失败时恢复旧指针。
-- 应用构建、SSH 传输或服务重启命令自身失败，表示部署没有完成，不是额外审批。
-
-## 发布引擎直达模式
-
-`--direct` 只执行构建、制品生成、传输和切换：
+统一命令是：
 
 ```bash
-node 04_tools/release-engine/cli.mjs plan --from <base> --to <sha> --node <node> --direct
-node 04_tools/release-engine/cli.mjs build --plan <plan.json>
-node 04_tools/release-engine/cli.mjs package --build <build.json>
-node 04_tools/release-engine/cli.mjs deploy --package <package.json> --node <node> --environment production --direct
+npm run release -- plan --from <parent-sha> --to <source-sha> --target <target> --prepare
+npm run release -- build --plan <plan.json>
+npm run release -- package --build <build.json>
+npm run release -- publish --package <package.json> --source-sha <source-sha> --target <target> \
+  --npm-version <version> --runner-image <image> --output <prepare-receipt.json>
 ```
 
-直达模式不运行 tests、typecheck、build preflight、candidate checks、production approval、remote preflight、health checks 或 external baseline。
+GitHub dependency cache 只减少重复下载。缓存丢失会触发重新安装和构建，不会改变制品身份，也不能被 Deploy 使用。GitHub Actions receipt artifact 只保存审计回执；唯一可部署来源是 OSS。
+
+## OSS 制品协议
+
+每个对象都以内容摘要命名，基础前缀为：
+
+```text
+ai-delivery/v1/<project>/<target>/<full-source-sha>/<artifact-sha256>/
+```
+
+目录内有三种不可变对象：
+
+```text
+artifact-<artifact-sha256>.tar.gz
+artifact-manifest-<manifest-file-sha256>.json
+release-manifest-<release-manifest-file-sha256>.json
+```
+
+`release-manifest` 记录 project、target、完整 source SHA、可用节点、运行制品与运行清单摘要、构建平台/架构/Node/npm/Runner 版本、父提交、计划与 lockfile 摘要、执行过的验证、Storefront Linux x64 运行证据，以及保留策略。时间戳和 GitHub run id 只进入 receipt，不进入制品身份。
+
+上传使用 `x-oss-forbid-overwrite: true`。同名对象存在时必须验证长度与 SHA-256 后报告 `hit_remote`；内容不同则停止。相同 source SHA/target 若出现两个不同 release manifest，Deploy 报 `OSS_ARTIFACT_AMBIGUOUS`，不得自行选择。
+
+1.3 不删除任何 OSS 制品。生命周期清理在建立“读取全部节点 current/previous 指针并生成保护集”的独立回收器之前保持关闭；未来至少保留每个节点当前版和回滚版，建议普通制品至少保留 90 天。当前或回滚所需对象不得由日期规则直接删除。
+
+## Deploy（纯部署通道）
+
+`.github/workflows/deploy.yml` 必须输入一个完整 source SHA、一个 node 和一个 target。它只稀疏读取当前发布控制面，不 checkout 业务源版本，不执行 `npm ci`、测试、类型检查、构建、打包或上传。
+
+```text
+OSS 前缀查询 → 唯一 release manifest
+  → project/target/node/source SHA/manifest/SHA-256/长度校验
+  → ECS 通过同地域 OSS 内网 Endpoint 下载
+  → 远端再次校验 manifest 与 SHA-256
+  → 候选检查 → previous 回滚点 → 原子 current 切换
+  → 仅重启目标服务 → 最长 30 秒健康检查
+  → 成功回执；失败自动恢复旧指针并复验旧版本
+```
+
+统一命令是：
+
+```bash
+npm run release -- deploy-prepared --source-sha <source-sha> --node <node> --target <target>
+```
+
+OSS 中制品不存在、对象下载失败、摘要/清单不符或 project/target/node/source SHA 不符时，远端切换不会开始。同一精确制品可重复部署；ECS 已有不可变版本时跳过下载并执行健康复核。相同制品也可部署到清单声明的其他节点，不重新构建。
+
+预签名下载 URL 只经 stdin 交给远端 Agent，不进入命令参数、回执或审计日志。凭据只来自现有 GitHub Secrets；仓库、制品和回执不保存凭据。
+
+## 计时与回执
+
+Prepare 单独报告 `plan/tests/typecheck/build/materialize/package/publication/total`；Deploy 单独报告 `artifactLookup/download/candidate/cutover/restart/health/remoteTotal/total`。不得把 Prepare 时间算进 Deploy，也不得为缩短数字删除摘要校验、候选检查、健康检查或回滚。
+
+## 兼容与启用顺序
+
+Storefront 继续使用 1.2 的自包含生产运行包和现有 systemd 单元，不恢复 `node_modules` 依赖层。1.3 复用现有候选目录、current/previous 指针、健康检查、回滚回执和单目标锁；只为远端 Agent 增加 OSS 下载动作。
+
+生产启用必须作为独立任务执行：合并 1.3 → 安装并验证新版远端 Agent → 配置/核对 OSS 最小权限与 Endpoint → 手工 Prepare 一个目标 → 仅做候选解析验证 → Ethan 再次明确“部署”后才允许首次生产切流。
 
 ## E06 一次性 staging 验收
 
-E06 的三个 Sovereign 验收节点只通过统一发布入口建立和操作：
+E06 的 Sovereign 验收仍通过现有入口：
 
 ```bash
 npm run release -- accept-e06 --from <artifact-A-ref> --to <artifact-B-ref>
 ```
 
-该命令只创建三个一次性 Docker staging 节点，使用正式制品清单和发布代理语义对 S-B 执行
-`A→B→A`，采集指针、进程、健康、配置、数据与四流历史证据后销毁节点。它不触发 GitHub
-Deploy，不连接生产主机，不修改生产指针、正式域名或生产数据，也不调用支付渠道。
+该命令只操作一次性 Docker staging，不连接生产主机或修改生产指针。

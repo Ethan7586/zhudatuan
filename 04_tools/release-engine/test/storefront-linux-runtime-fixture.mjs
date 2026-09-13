@@ -36,6 +36,8 @@ try {
   assert.equal(process.arch, 'x64');
   assert.equal(process.version, 'v22.22.0');
   assert.equal(existsSync(join(distRoot, 'node_modules')), false);
+  const vinextRuntimeManifests = await Promise.all(['server/vinext-server.json', 'server/ssr/vinext-server.json'].map(async (path) => JSON.parse(await readFile(join(distRoot, path), 'utf8'))));
+  assert.ok(vinextRuntimeManifests.every((manifest) => manifest.prerenderSecret === 'injected-at-runtime'));
   const home = await waitUntilReady('/');
   const readyMs = Math.round(performance.now() - startedAt);
   const h5 = await request('/h5');

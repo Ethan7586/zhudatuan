@@ -1,0 +1,161 @@
+name: Prepare Artifact
+run-name: Prepare Artifact ${{ inputs.head_sha }} ${{ inputs.release_target }}
+
+# Build channel only. Dependency caches may accelerate this job but never become
+# deployable artifacts or participate in artifact identity.
+on:
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: Exact 40-character zdt-next source commit to build
+        required: true
+        type: string
+      release_target:
+        description: One runtime target to build and publish
+        required: true
+        type: choice
+        options:
+          - catalog-media
+          - storefront
+          - auth-web
+          - console
+          - identity-api
+          - identity-notification-jobs
+          - mall-provisioning-api
+          - support-api
+          - purchase-api
+          - web-api
+          - catalog-api
+          - catalog-jobs
+          - payment-webhook-api
+          - payment-jobs
+          - database-migration
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zdt-next-prepare-${{ inputs.head_sha }}-${{ inputs.release_target }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 22.22.0
+  RELEASE_SHA: ${{ inputs.head_sha }}
+  RELEASE_TARGET: ${{ inputs.release_target }}
+  VITE_API_BASE_URL: https://api.hbbtzn.com
+  VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
+  VITE_ZHUDIAN_SOLUTION_ORIGIN: https://labs.hbbtzn.com
+  VITE_CLIENT_VERSION: 0.0.0-g${{ inputs.head_sha }}
+
+jobs:
+  prepare:
+    name: Build once → immutable OSS artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Validate exact single-target request
+        shell: bash
+        run: |
+          if [[ ! "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "head_sha must be one full lowercase Git commit SHA" >&2
+            exit 64
+          fi
+          if [[ -z "$RELEASE_TARGET" ]]; then
+            echo "release_target is required" >&2
+            exit 64
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: ${{ inputs.head_sha }}
+
+      - name: Restore dependency cache for build acceleration only
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install build dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Test, typecheck, build and package one target
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          checked_out_sha="$(git rev-parse HEAD)"
+          if [ "$checked_out_sha" != "$RELEASE_SHA" ]; then
+            echo "checked out commit does not match head_sha" >&2
+            exit 1
+          fi
+          base="$(git rev-parse HEAD^)"
+          mkdir -p .prepare-release
+          npm run --silent release -- plan \
+            --from "$base" \
+            --to "$RELEASE_SHA" \
+            --target "$RELEASE_TARGET" \
+            --prepare \
+            --format json > .prepare-release/plan-envelope.json
+          plan_path="$(node -e "const r=require('./.prepare-release/plan-envelope.json');if(!r.ok||!r.result.deployRequired||r.result.targets.length!==1)throw new Error('Prepare plan is not one target');process.stdout.write(r.result.planPath)")"
+          npm run --silent release -- build --plan "$plan_path" --format json > .prepare-release/build-envelope.json
+          build_path="$(node -e "const r=require('./.prepare-release/build-envelope.json');if(!r.ok)throw new Error('Build failed');process.stdout.write(r.result.buildPath)")"
+          npm run --silent release -- package --build "$build_path" --format json > .prepare-release/package-envelope.json
+          package_path="$(node -e "const r=require('./.prepare-release/package-envelope.json');if(!r.ok||r.result.artifacts.length!==1)throw new Error('Package failed');process.stdout.write(r.result.packagePath)")"
+          printf 'package_path=%s\n' "$package_path" >> "$GITHUB_OUTPUT"
+
+      - name: Run prepared Storefront artifact on Linux x64
+        if: inputs.release_target == 'storefront'
+        env:
+          PACKAGE_PATH: ${{ steps.package.outputs.package_path }}
+        run: |
+          set -euo pipefail
+          mkdir -p .prepare-release/storefront-runtime
+          artifact_path="$(node -e "const p=require(process.env.PACKAGE_PATH);process.stdout.write(p.artifacts[0].archive.path)")"
+          tar -xzf "$artifact_path" -C .prepare-release/storefront-runtime
+          STOREFRONT_DIST=.prepare-release/storefront-runtime/app/dist \
+            node 04_tools/release-engine/test/storefront-linux-runtime-fixture.mjs \
+            > .prepare-release/storefront-runtime-evidence.json
+
+      - name: Publish immutable artifact and manifests to OSS
+        id: publish
+        env:
+          PACKAGE_PATH: ${{ steps.package.outputs.package_path }}
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_args=()
+          if [ "$RELEASE_TARGET" = storefront ]; then
+            runtime_args+=(--runtime-evidence .prepare-release/storefront-runtime-evidence.json)
+          fi
+          npm run --silent release -- publish \
+            --package "$PACKAGE_PATH" \
+            --source-sha "$RELEASE_SHA" \
+            --target "$RELEASE_TARGET" \
+            --npm-version "$(npm --version)" \
+            --runner-image "${ImageOS:-linux}" \
+            --repository "$GITHUB_REPOSITORY" \
+            --output .prepare-release/prepare-receipt.json \
+            "${runtime_args[@]}" \
+            --format json | tee .prepare-release/publish-envelope.json
+          node -e "const r=require('./.prepare-release/publish-envelope.json');const x=r.result;if(!r.ok)process.exit(1);process.stdout.write('Prepared: '+x.sourceSha+' '+x.target+' '+x.artifactIdentity+' '+x.cacheStatus+' '+x.timings.total+'ms\\n')" \
+            >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve receipts (not deployable artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: prepare-receipt-${{ inputs.release_target }}-${{ inputs.head_sha }}
+          path: |
+            .prepare-release/plan-envelope.json
+            .prepare-release/build-envelope.json
+            .prepare-release/package-envelope.json
+            .prepare-release/publish-envelope.json
+            .prepare-release/prepare-receipt.json
+            .prepare-release/storefront-runtime-evidence.json
+          if-no-files-found: ignore
+          retention-days: 30

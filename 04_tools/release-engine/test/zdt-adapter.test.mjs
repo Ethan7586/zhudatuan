@@ -9,43 +9,49 @@ const systemdRoot = join(projectRoot, '02_platform_pingtai/infrastructure/zhudat
 const adapter = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8'));
 const policy = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8'));
 const deployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy.yml'), 'utf8');
+const prepareWorkflow = await readFile(join(projectRoot, '.github/workflows/prepare-artifact.yml'), 'utf8');
 const deployNow = await readFile(join(projectRoot, 'scripts/deploy-now.sh'), 'utf8');
 const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/quality.yml'), 'utf8');
 const storefrontUnit = await readFile(join(systemdRoot, 'sfl-storefront@.service'), 'utf8');
 const storefrontPackage = JSON.parse(await readFile(join(projectRoot, '01_core_hexin/apps/storefront-web/package.json'), 'utf8'));
-const storefrontRuntimeBuilder = await readFile(join(projectRoot,
-  '01_core_hexin/apps/storefront-web/scripts/build-production-runtime.mjs'), 'utf8');
-const databaseMigrationExecutor = await readFile(join(projectRoot,
-  '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'), 'utf8');
+const storefrontRuntimeBuilder = await readFile(join(projectRoot, '01_core_hexin/apps/storefront-web/scripts/build-production-runtime.mjs'), 'utf8');
+const databaseMigrationExecutor = await readFile(join(projectRoot, '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'), 'utf8');
 
 test('production acceptance is fixed to the eight retained domains', () => {
   assert.equal(adapter.productionAcceptance.domains.length, 8);
   assert.equal(new Set(adapter.productionAcceptance.domains).size, 8);
-  assert.deepEqual(adapter.productionAcceptance.domains, [
-    'accounts.zhudatuan.com', 'api.zhudatuan.com', 'console.zhudatuan.com',
-    'www.zhudatuan.com', 'zhudatuan.com', 'hbbtzn.com', 'www.hbbtzn.com',
-    'console.hbbtzn.com',
-  ]);
+  assert.deepEqual(adapter.productionAcceptance.domains, ['accounts.zhudatuan.com', 'api.zhudatuan.com', 'console.zhudatuan.com', 'www.zhudatuan.com', 'zhudatuan.com', 'hbbtzn.com', 'www.hbbtzn.com', 'console.hbbtzn.com']);
   assert.equal(policy.caddyConfig, '/etc/caddy/Caddyfile');
   assert.equal(policy.minimumFreeBytes, 15 * 1024 ** 3);
   assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
 });
 
-test('Console retains optional public acceptance metadata while Deploy uses exact single-target direct mode', () => {
+test('Console retains optional public acceptance metadata while Prepare and Deploy remain exact single-target channels', () => {
   assert.deepEqual(adapter.nodes['zhudatuan-l0'].deployments.console.publicAcceptance, {
-    url: 'https://console.fufu.wang/', allowedStatuses: [200], timeoutMs: 12000,
+    url: 'https://console.fufu.wang/',
+    allowedStatuses: [200],
+    timeoutMs: 12000,
   });
   assert.deepEqual(adapter.nodes['hbbtzn-l1'].deployments.console.publicAcceptance, {
-    url: 'https://console.hbbtzn.com/', allowedStatuses: [200], timeoutMs: 12000,
+    url: 'https://console.hbbtzn.com/',
+    allowedStatuses: [200],
+    timeoutMs: 12000,
   });
-  assert.match(deployWorkflow, /--direct/);
+  assert.match(deployWorkflow, /deploy-prepared/);
   assert.match(deployWorkflow, /head_sha:[\s\S]*?required: true/);
   assert.match(deployWorkflow, /release_target:[\s\S]*?required: true[\s\S]*?type: choice/);
   assert.match(deployWorkflow, /\^\[0-9a-f\]\{40\}\$/);
-  assert.equal((deployWorkflow.match(/--target "\$RELEASE_TARGET"/g) ?? []).length, 2);
+  assert.equal((deployWorkflow.match(/--target "\$RELEASE_TARGET"/g) ?? []).length, 1);
   assert.doesNotMatch(deployWorkflow, /affected|target_args|inputs\.head_sha \|\||inputs\.release_target \|\|/);
-  assert.doesNotMatch(deployWorkflow, /Affected Delivery|external_baseline|approve-production/);
+  assert.doesNotMatch(deployWorkflow, /Affected Delivery|external_baseline|approve-production|npm ci|release -- (?:build|package|publish)/);
+  assert.match(prepareWorkflow, /--prepare/);
+  assert.match(prepareWorkflow, /npm ci/);
+  assert.match(prepareWorkflow, /release -- build/);
+  assert.match(prepareWorkflow, /release -- package/);
+  assert.match(prepareWorkflow, /release -- publish/);
+  assert.doesNotMatch(prepareWorkflow, /release_node|deploy-prepared|ZDT_RELEASE_SSH_HOST/);
   assert.equal((deployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
+  assert.equal((prepareWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
 });
 
 test('direct deployment refuses incomplete inputs and never creates a temporary channel', () => {
@@ -160,9 +166,10 @@ test('artifacts never carry the repository node_modules tree', () => {
 
 test('database migration packages the official runner inputs and uses the managed production connection source', () => {
   const target = adapter.targets['database-migration'];
-  assert.deepEqual(target.build.map((command) => command.argv), [
-    ['node', '04_tools/release-engine/adapters/zdt-next/build-database-migration.mjs'],
-  ]);
+  assert.deepEqual(
+    target.build.map((command) => command.argv),
+    [['node', '04_tools/release-engine/adapters/zdt-next/build-database-migration.mjs']]
+  );
   assert.deepEqual(target.artifactInputs, [
     { source: '01_core_hexin/services/commerce/dist/DatabaseMigrationExecutor.js', destination: 'executor/DatabaseMigrationExecutor.js' },
     { source: '01_core_hexin/services/commerce/dist/DatabaseMigrationExecutor.js.map', destination: 'executor/DatabaseMigrationExecutor.js.map' },
@@ -232,9 +239,7 @@ test('console support managed unit supplies every environment value required bef
 test('storefront ships a self-contained production server and keeps the old runtime only as rollback fallback', () => {
   const storefrontHosts = { 'zhudatuan-l0': 'zhudatuan.com', 'hbbtzn-l1': 'hbbtzn.com' };
   assert.equal(adapter.targets.storefront.dependencyLayer, undefined);
-  assert.deepEqual(adapter.targets.storefront.criticalFiles, [
-    'app/dist/start.mjs', 'app/dist/production-runtime.json', 'app/dist/server/index.js',
-  ]);
+  assert.deepEqual(adapter.targets.storefront.criticalFiles, ['app/dist/start.mjs', 'app/dist/production-runtime.json', 'app/dist/server/index.js']);
   for (const [nodeKey, node] of Object.entries(policy.nodes)) {
     assert.deepEqual(node.deployments.storefront.seedInputs, [{ source: '01_core_hexin/apps/storefront-web/dist', destination: 'app/dist' }]);
     assert.equal(node.deployments.storefront.seedDependencyLayer, undefined);
@@ -248,6 +253,11 @@ test('storefront ships a self-contained production server and keeps the old runt
   assert.match(storefrontRuntimeBuilder, /bundle: true/);
   assert.match(storefrontRuntimeBuilder, /packages: 'bundle'/);
   assert.match(storefrontRuntimeBuilder, /STOREFRONT_RUNTIME_EXTERNAL_DEPENDENCY/);
+  assert.match(storefrontRuntimeBuilder, /__VINEXT_DRAFT_SECRET/);
+  assert.match(storefrontRuntimeBuilder, /__VINEXT_PRERENDER_SECRET/);
+  assert.match(storefrontRuntimeBuilder, /STOREFRONT_DRAFT_SECRET_SHAPE_CHANGED/);
+  assert.match(storefrontRuntimeBuilder, /STOREFRONT_BUILD_ID_SHAPE_CHANGED/);
+  assert.match(storefrontRuntimeBuilder, /injected-at-runtime/);
   assert.match(storefrontUnit, /current\/app\/dist\/start\.mjs/);
   assert.match(storefrontUnit, /runtime\/node_modules\/vinext\/dist\/cli\.js/);
   assert.doesNotMatch(storefrontUnit, /^ConditionPathExists=.*runtime\/node_modules/m);
@@ -300,24 +310,18 @@ test('first activation is limited to pointer-only content and migration evidence
       if (deployment.allowFirstActivation === true) firstActivations.push(`${node}/${target}`);
     }
   }
-  assert.deepEqual(firstActivations.sort(), [
-    'hbbtzn-l1/catalog-media',
-    'zhudatuan-l0/auth-web',
-    'zhudatuan-l0/catalog-media',
-    'zhudatuan-l0/console',
-    'zhudatuan-l0/database-migration',
-  ]);
+  assert.deepEqual(firstActivations.sort(), ['hbbtzn-l1/catalog-media', 'zhudatuan-l0/auth-web', 'zhudatuan-l0/catalog-media', 'zhudatuan-l0/console', 'zhudatuan-l0/database-migration']);
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['auth-web'].restart.kind, 'none');
   assert.equal(policy.nodes['zhudatuan-l0'].deployments.console.restart.kind, 'none');
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
 });
 
 test('production deployment binds an exact GitHub SHA directly to Aliyun', () => {
-  assert.match(deployWorkflow, /ref: \$\{\{ inputs\.head_sha \}\}/);
-  assert.match(deployWorkflow, /sha="\$\(git rev-parse HEAD\)"/);
-  assert.match(deployWorkflow, /if \[ "\$sha" != "\$RELEASE_SHA" \]/);
-  assert.match(deployWorkflow, /--environment production[\s\S]*?--direct/);
+  assert.match(deployWorkflow, /ref: \$\{\{ github\.sha \}\}/);
+  assert.match(deployWorkflow, /--source-sha "\$RELEASE_SHA"/);
+  assert.match(deployWorkflow, /--node "\$RELEASE_NODE"/);
+  assert.match(deployWorkflow, /deploy-prepared/);
   assert.match(deployWorkflow, /jobs:\n  deploy:/);
-  assert.doesNotMatch(deployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent/);
+  assert.doesNotMatch(deployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent|npm ci|release -- build|release -- package/);
   assert.match(qualityWorkflow, /^on:\n  workflow_dispatch:/m);
 });

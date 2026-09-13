@@ -30,18 +30,58 @@ const lifecycleFiles = [
 const lifecycleSource = lifecycleFiles.map((file) => `${file}\n${readFileSync(resolve(root, file), 'utf8')}`).join('\n');
 const controlledReleaseFiles = [
   '04_tools/release-engine/src/engine.mjs',
+  '04_tools/release-engine/src/oss.mjs',
   '04_tools/release-engine/remote/agent.mjs',
   '02_platform_pingtai/infrastructure/release/zdt-next.release.json',
   '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json',
   '.github/workflows/quality.yml',
+  '.github/workflows/prepare-artifact.yml',
+  '.github/workflows/deploy.yml',
 ];
 const controlledReleaseSource = controlledReleaseFiles.map((file) => `${file}\n${readFileSync(resolve(root, file), 'utf8')}`).join('\n');
 const retired = ['admin-web', 'commerce-api', 'core-read-cache', '01_core_hexin/services/jobs', 'pm2', 'vite preview', '/api/ai', 'admin-voucher-test'];
 for (const value of retired) if (source.toLowerCase().includes(value)) throw new Error(`RETIRED_DEPLOYMENT_REFERENCE:${value}`);
-for (const value of ['ApiMain.js', 'JobsMain.js', 'MigrationMain.js', 'SmokeMain.js', '/health/live', '/health/ready', '/health/startup', 'replicas: 3', 'replicas: 2', 'sha256:', 'cosign verify-blob', 'providerSandboxAccepted', 'stagePassed', 'SHOP_CUTOVER_CONTROLLER', 'SHOP_CUTOVER_EVIDENCE', 'shop.cutover.v1', 'requirementsReleased', '5 25 50 100', 'automatic rollback']) {
+for (const value of [
+  'ApiMain.js',
+  'JobsMain.js',
+  'MigrationMain.js',
+  'SmokeMain.js',
+  '/health/live',
+  '/health/ready',
+  '/health/startup',
+  'replicas: 3',
+  'replicas: 2',
+  'sha256:',
+  'cosign verify-blob',
+  'providerSandboxAccepted',
+  'stagePassed',
+  'SHOP_CUTOVER_CONTROLLER',
+  'SHOP_CUTOVER_EVIDENCE',
+  'shop.cutover.v1',
+  'requirementsReleased',
+  '5 25 50 100',
+  'automatic rollback',
+]) {
   if (!source.includes(value)) throw new Error(`DEPLOYMENT_CONTRACT_MISSING:${value}`);
 }
-for (const command of ['npm ci', 'npm run check:cleaninstall', 'npm run check:artifacts', 'npm run check:migrations', 'npm run test:sql', 'npm run typecheck', 'npm run test:unit', 'npm run test:contract', 'npm run test:component', 'npm run test:journey', 'npm run test:security', 'npm run test:performance', 'npm run replay:postgres', 'npm run test:integration', 'npm run test:adapters', 'npm run build']) {
+for (const command of [
+  'npm ci',
+  'npm run check:cleaninstall',
+  'npm run check:artifacts',
+  'npm run check:migrations',
+  'npm run test:sql',
+  'npm run typecheck',
+  'npm run test:unit',
+  'npm run test:contract',
+  'npm run test:component',
+  'npm run test:journey',
+  'npm run test:security',
+  'npm run test:performance',
+  'npm run replay:postgres',
+  'npm run test:integration',
+  'npm run test:adapters',
+  'npm run build',
+]) {
   if (!source.includes(command)) throw new Error(`CI_COMMAND_MISSING:${command}`);
 }
 for (const client of ['console', 'storefront', 'auth', 'miniapp']) {
@@ -63,6 +103,9 @@ for (const token of [
 for (const token of ['ai.delivery.receipt.v1', 'externalAcceptance', 'rollbackPoint', 'protectedProcesses', 'minimumFreeBytes', 'expected-caddy-semantic', '--environment candidate', 'agent-candidate']) {
   if (!controlledReleaseSource.includes(token)) throw new Error(`CONTROLLED_RELEASE_CONTRACT_MISSING:${token}`);
 }
-if (controlledReleaseSource.includes("production.lock")) throw new Error('CONTROLLED_RELEASE_GLOBAL_LOCK_FORBIDDEN');
+for (const token of ['ai.delivery.oss-release.v1', 'x-oss-forbid-overwrite', 'deploy-prepared', 'deploy-oss-direct', 'hit_remote']) {
+  if (!controlledReleaseSource.includes(token)) throw new Error(`PREPARED_DELIVERY_CONTRACT_MISSING:${token}`);
+}
+if (controlledReleaseSource.includes('production.lock')) throw new Error('CONTROLLED_RELEASE_GLOBAL_LOCK_FORBIDDEN');
 if (/quality\.yml[\s\S]*--environment production/.test(controlledReleaseSource)) throw new Error('CI_PRODUCTION_CUTOVER_FORBIDDEN');
 console.log('deployment contract: hard-cut, immutable, signed, highly available');

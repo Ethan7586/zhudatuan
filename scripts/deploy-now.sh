@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# GitHub -> Aliyun direct deployment.
+# Deploy one already prepared OSS artifact to one Aliyun node.
 # Usage:
 #   scripts/deploy-now.sh <target> <full-commit-sha> <node>
 
@@ -36,7 +36,7 @@ if ! gh workflow view deploy.yml --ref zdt-next --yaml >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "Direct deploy: ${SHA} -> ${NODE}/${TARGET}"
+echo "Prepared deploy: ${SHA} -> ${NODE}/${TARGET}"
 gh workflow run deploy.yml --ref zdt-next -f head_sha="$SHA" -f release_node="$NODE" -f release_target="$TARGET"
 
 TITLE="Deploy ${SHA} ${NODE} ${TARGET}"
@@ -51,7 +51,7 @@ for _ in {1..20}; do
   sleep 1
 done
 if [ -z "$RUN_ID" ]; then
-  echo "Direct deployment was dispatched but its run id was not found." >&2
+  echo "Prepared deployment was dispatched but its run id was not found." >&2
   exit 1
 fi
 
