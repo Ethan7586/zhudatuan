@@ -294,7 +294,7 @@ test('service definitions use target pointers instead of node-wide code pointers
 test('console support managed unit supplies every environment value required before secret resolution', async () => {
   const source = await readFile(join(systemdRoot, 'zhudatuan-console-support.service'), 'utf8');
   assert.match(source, /^Environment=API_PORT=4324$/m);
-  assert.match(source, /^Environment=API_ALLOWED_ORIGINS=https:\/\/console\.zhudatuan\.com$/m);
+  assert.match(source, /^Environment=API_ALLOWED_ORIGINS=https:\/\/console\.zhudatuan\.com,https:\/\/console\.hbbtzn\.com$/m);
   assert.match(source, /^EnvironmentFile=\/opt\/zhudatuan\/shared\/console-support\.env$/m);
 });
 
