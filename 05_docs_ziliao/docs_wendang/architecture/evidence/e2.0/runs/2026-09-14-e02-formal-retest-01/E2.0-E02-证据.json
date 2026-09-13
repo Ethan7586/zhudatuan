@@ -1,0 +1,965 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E02-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-TOPO-002"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E02-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E02-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:36f46002f0c889bd79ac996bcf3d60d1dc06ed67e7dc18cd9ec3be2a5209545e",
+    "locked_at": "2026-09-13T23:02:34Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e02-acceptance-repair-20260914",
+      "role": "E02 vertical topology and relation-version test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E02 adjacency repair and formal exporter and operated the separate raw-evidence oracle; not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-TOPO-002",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E02",
+    "02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql",
+    "02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql",
+    "02_platform_pingtai/database/supabase/migrations/20260913023000_enforce_sfl_vertical_level_adjacency.sql",
+    "01_core_hexin/packages/config/src/SflNodeKernel.ts",
+    "01_core_hexin/services/commerce/src/foundation/security/AuthoritativeNodeContextResolver.ts",
+    "02_platform_pingtai/database/supabase/tests/sfl_node_sovereignty_contract.sql"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T23:15:41.485Z",
+    "completed_at": "2026-09-13T23:16:21.340Z",
+    "executor": {
+      "actor_id": "codex-task-e02-acceptance-repair-20260914",
+      "role": "E02 vertical topology and relation-version test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E02 adjacency repair and formal exporter and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e02 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "The disposable PostgreSQL password and connection URL were used only in process memory and were not persisted. All node, realm, line and probe identifiers were synthetic and removed by transaction rollback and container cleanup."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-postgresql17-e02-ac6cba98ecce4c87",
+    "description": "A newly created PostgreSQL 17 Alpine container replayed the complete production migration chain and executed the locked E02 L0-L11 vertical topology, relation-version and negative-boundary matrix.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Disposable Docker container zhudatuan-e02-ac6cba98ecce4c87; synthetic E02 nodes only; the topology transaction was rolled back and the container was removed after execution.",
+    "real_customer_data": false,
+    "production_impact": "None. No production service, database, DNS provider, payment provider, supplier or customer record was contacted.",
+    "differences_from_production": [
+      "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+      "Synthetic L0-L11 topology rather than customer traffic or production relationship history.",
+      "No stable staging environment identity and no production observation."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "deb3c5d716b6437c11952c9157a2210746703329",
+    "test_item_shas": [
+      "deb3c5d716b6437c11952c9157a2210746703329"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "postgres:17-alpine sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73; 302 migrations; one 12-node L0-L11 chain; 78 current closure rows; 4 negative probes.",
+    "digest": "sha256:4ed942882df9c19e572824045c2e48bc8918d3c48a2c704211d5175334851c5b",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E02-NODE-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 12,
+        "actual": 12,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-LEVEL-SEQUENCE",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-CURRENT-PARENT-EDGE-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 11,
+        "actual": 11,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-L12-FACT-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-SAME-LINE-ADJACENT-PARENT-MISMATCH-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-INITIAL-CLOSURE-ROW-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 78,
+        "actual": 78,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-CURRENT-CLOSURE-ROW-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 78,
+        "actual": 78,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-DERIVED-CLOSURE-MISMATCH-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-SELF-TOTAL",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 12,
+        "actual": 12,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-ANCESTOR-TOTAL",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 66,
+        "actual": 66,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-DESCENDANT-TOTAL",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 66,
+        "actual": 66,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-SUBTREE-TOTAL",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 78,
+        "actual": 78,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-RESOLVER-MISMATCH-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-CONTEXT-OBSERVATION-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 12,
+        "actual": 12,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-CONTEXT-MISMATCH-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-TARGET-RELATION-VERSION-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 2,
+        "actual": 2,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-PRESERVED-HISTORICAL-RELATION-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-CURRENT-RELATION-VERSION-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-HISTORICAL-PATH-MISMATCH-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-CURRENT-PATH-MISMATCH-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-SHARED-MODEL-TABLE-SET",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": [
+          "node",
+          "nodeclosure",
+          "noderelation"
+        ],
+        "actual": [
+          "node",
+          "nodeclosure",
+          "noderelation"
+        ],
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-LEVEL-SPECIFIC-TABLE-OR-COLUMN-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-CONTEXT-RESOLVER-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-SCOPE-RESOLVER-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 4,
+        "actual": 4,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-LEVELS-USING-SHARED-CONTEXT-PATH",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 12,
+        "actual": 12,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-LEVELS-USING-EACH-SHARED-SCOPE-PATH",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 12,
+        "actual": 12,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-ACCEPTED-NEGATIVE-PROBE-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-NEGATIVE-PROBE-ERROR-MISMATCH-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-NEGATIVE-PROBE-RESIDUAL-FACT-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-TRANSACTION-ROLLBACK-REMAINING-FACT-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-SIGNED-LEVEL-ONLY-PERMISSION-CHANGE-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-SIGNED-LEVEL-ONLY-SOVEREIGNTY-CHANGE-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-SIGNED-LEVEL-ONLY-SOVEREIGN-RESOURCE-CHANGE-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-HIGHER-LEVEL-AUTHORITY-COMPARISON-MISMATCH-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-DEV-ENVIRONMENT-READY",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": true,
+        "actual": true,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E02-NEGATIVE-ORACLE-MUTATION-DETECTION-MISS-COUNT",
+      "source": "vertical-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:16:21.169Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-input-manifest.json",
+      "media_type": "application/json",
+      "sha256": "sha256:2d1bf3f081b5763344248dcc615e0e9f1169216891c96b56859ee7483b24e5a7",
+      "size_bytes": 6075,
+      "role": "Synthetic V-L0 through V-L11 node, line, profile, parent and effective-time inputs"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-node-relations.json",
+      "media_type": "application/json",
+      "sha256": "sha256:9f009938838edaf7204ed53cc86fd567f8e2e812b893e8ec8f5f9c9e297c1b38",
+      "size_bytes": 10040,
+      "role": "Raw initial and post-version NodeRelation rows with effective intervals"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-context-matrix.json",
+      "media_type": "application/json",
+      "sha256": "sha256:5a9c77f685bd6a1aba3395541d73a36a42d7d2ba3a26b8a1ef4b9a34203a6068",
+      "size_bytes": 14197,
+      "role": "NodeContext results for all twelve levels before and after relation versioning"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-closure-matrix.json",
+      "media_type": "application/json",
+      "sha256": "sha256:64a4666ffa50daaa3e423962ef6f340b3cde7bf219da16ce6a5a5be53ae0be34",
+      "size_bytes": 157949,
+      "role": "Complete current and historical closure rows plus all per-level scope resolver outputs"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-relation-version-diff.json",
+      "media_type": "application/json",
+      "sha256": "sha256:07a894296a44fe71e31a6f987bb5c19a5b2f59b5e8da111bc98ed79efaf979bd",
+      "size_bytes": 2910,
+      "role": "V-L6 relation versions and raw historical/current path reconstructions"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-negative-probes.json",
+      "media_type": "application/json",
+      "sha256": "sha256:3b708fe9b425f04a83e77c41368f1867ee558673c28a451245afb0630fbfa9de",
+      "size_bytes": 1103,
+      "role": "Skip-level, second-parent, cross-line and L12 rejection observations plus rollback counts"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-authority-counters.json",
+      "media_type": "application/json",
+      "sha256": "sha256:7c1611a9fed381b7aada9160641adf60098de3b01adaf2d68cc41cb2e2d6d57c",
+      "size_bytes": 10819,
+      "role": "Permission, sovereignty, resource and shared model/path before/after counters"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:89768ec85ddce554bae5ce8495fabb9e25287e6d55415dd5142e1d51bff8ccf3",
+      "size_bytes": 1819,
+      "role": "Disposable PostgreSQL 17 environment and complete migration replay identity"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-independent-recount.json",
+      "media_type": "application/json",
+      "sha256": "sha256:ea2b92cf56caf51b680370f5afdf483b8a2d51dd3b127ad646765e2076548983",
+      "size_bytes": 7194,
+      "role": "Independent parent, closure, resolver, history, boundary and authority recomputation"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/migration-replay.txt",
+      "media_type": "text/plain",
+      "sha256": "sha256:21f2ca92105fccaf3cf355d129b1a9aace9aebeec1c56d85cdefa34a2cda2c4e",
+      "size_bytes": 69,
+      "role": "Complete production migration replay completion output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:3c679bd52f7d642dae7cec2e76235fc2a2101fb4213245a00a966e51f3ea3aff",
+      "size_bytes": 1382,
+      "role": "Exact command, source SHA, execution totals and cleanup record"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E02-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:36f46002f0c889bd79ac996bcf3d60d1dc06ed67e7dc18cd9ec3be2a5209545e",
+      "size_bytes": 9121,
+      "role": "Pre-execution locked E02 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E02-VERTICAL",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Read the locked criteria and required raw artifacts only; derive the expected L0-L11 parent map and both effective-interval paths directly from raw relation rows; derive all expected closure pairs and per-level self, ancestors, descendants and subtree results independently; compare model/path catalog facts, negative probe errors, residual counters, L12 facts and level-derived authority counters; mutate copies of the closure, relation history and negative-probe records to prove detection. Do not consume a runner PASS/status field.",
+    "exact_invocation": "node 04_tools/scripts/audit/e02-vertical-topology.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E02-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-independent-recount.json",
+    "evaluator": {
+      "actor_id": "codex-task-e02-acceptance-repair-20260914",
+      "role": "E02 vertical topology and relation-version test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E02 adjacency repair and formal exporter and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E02-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-input-manifest.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-node-relations.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-context-matrix.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-closure-matrix.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-relation-version-diff.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-negative-probes.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-authority-counters.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "node_count",
+        "expected": 12,
+        "actual": 12,
+        "met": true
+      },
+      {
+        "threshold_id": "level_sequence",
+        "expected": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "met": true
+      },
+      {
+        "threshold_id": "current_parent_edge_count",
+        "expected": 11,
+        "actual": 11,
+        "met": true
+      },
+      {
+        "threshold_id": "l12_fact_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "same_line_adjacent_parent_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "initial_closure_row_count",
+        "expected": 78,
+        "actual": 78,
+        "met": true
+      },
+      {
+        "threshold_id": "current_closure_row_count",
+        "expected": 78,
+        "actual": 78,
+        "met": true
+      },
+      {
+        "threshold_id": "derived_closure_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "self_total",
+        "expected": 12,
+        "actual": 12,
+        "met": true
+      },
+      {
+        "threshold_id": "ancestor_total",
+        "expected": 66,
+        "actual": 66,
+        "met": true
+      },
+      {
+        "threshold_id": "descendant_total",
+        "expected": 66,
+        "actual": 66,
+        "met": true
+      },
+      {
+        "threshold_id": "subtree_total",
+        "expected": 78,
+        "actual": 78,
+        "met": true
+      },
+      {
+        "threshold_id": "resolver_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "context_observation_count",
+        "expected": 12,
+        "actual": 12,
+        "met": true
+      },
+      {
+        "threshold_id": "context_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "target_relation_version_count",
+        "expected": 2,
+        "actual": 2,
+        "met": true
+      },
+      {
+        "threshold_id": "preserved_historical_relation_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "current_relation_version_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "historical_path_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "current_path_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "shared_model_table_set",
+        "expected": [
+          "node",
+          "nodeclosure",
+          "noderelation"
+        ],
+        "actual": [
+          "node",
+          "nodeclosure",
+          "noderelation"
+        ],
+        "met": true
+      },
+      {
+        "threshold_id": "level_specific_table_or_column_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "context_resolver_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "scope_resolver_count",
+        "expected": 4,
+        "actual": 4,
+        "met": true
+      },
+      {
+        "threshold_id": "levels_using_shared_context_path",
+        "expected": 12,
+        "actual": 12,
+        "met": true
+      },
+      {
+        "threshold_id": "levels_using_each_shared_scope_path",
+        "expected": 12,
+        "actual": 12,
+        "met": true
+      },
+      {
+        "threshold_id": "accepted_negative_probe_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_probe_error_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_probe_residual_fact_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "transaction_rollback_remaining_fact_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "signed_level_only_permission_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "signed_level_only_sovereignty_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "signed_level_only_sovereign_resource_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "higher_level_authority_comparison_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "dev_environment_ready",
+        "expected": true,
+        "actual": true,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_oracle_mutation_detection_miss_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "clean checkout of the recorded source SHA"
+    ],
+    "steps": [
+      "Check out deb3c5d716b6437c11952c9157a2210746703329.",
+      "Run npm run evidence:e02 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01.",
+      "Read vertical-independent-recount.json and independently verify its input hashes and raw rows."
+    ],
+    "expected_raw_observations": [
+      "required raw evidence missing count = 0",
+      "node count = 12, current parent-edge count = 11 and L12 fact count = 0",
+      "all 12 levels use one Node table, one NodeRelation table, one NodeClosure table and the same context/scope resolver functions",
+      "all 11 parent edges are same-line and connect each L1-L11 node to the immediately preceding level",
+      "current closure row count = 78; self total = 12; ancestor total = 66; descendant total = 66; subtree total = 78",
+      "independently derived closure and all per-level resolver result mismatch counts = 0",
+      "V-L6 relation version count = 2 with one preserved historical interval and one current interval",
+      "historical and current path reconstruction mismatch counts = 0",
+      "skip-level, second-parent, cross-line and L12 probes are all rejected and leave zero residual facts",
+      "permission, sovereignty and sovereign-resource changes caused solely by signed_level each = 0",
+      "negative oracle mutation detection miss count = 0"
+    ],
+    "cleanup": "The runner rolls back the complete E02 transaction and removes the disposable PostgreSQL container in a finally block."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
+    "rationale": "All twelve levels used the shared Node/NodeRelation/NodeClosure model and resolver path; all eleven edges were adjacent and same-line; the independently derived 78-row closure and all per-level resolver outputs matched; relation history remained append-only; four forbidden writes were rejected without residue; L12 and signed-level-only authority changes remained zero.",
+    "gaps": [
+      "No stable separately managed staging replay has been performed.",
+      "No authorized production observation has been performed.",
+      "All V-L0 through V-L11 nodes, realms and negative probes were synthetic and transaction-rolled-back.",
+      "The relation-version transition retained the same immediately preceding parent; it proves append-only interval history but not a production reparenting event.",
+      "No reviewer independent of the E02 topology implementation, fixture and oracle has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}

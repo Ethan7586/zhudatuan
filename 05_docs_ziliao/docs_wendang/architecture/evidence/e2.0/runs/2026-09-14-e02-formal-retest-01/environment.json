@@ -1,0 +1,33 @@
+{
+  "schema_version": "e02-environment-v1",
+  "captured_at": "2026-09-13T23:16:21.091Z",
+  "kind": "DEV",
+  "environment_id": "local-disposable-postgresql17-e02-ac6cba98ecce4c87",
+  "description": "A newly created PostgreSQL 17 Alpine container replayed the complete production migration chain and executed the locked E02 L0-L11 vertical topology, relation-version and negative-boundary matrix.",
+  "owner": "Ethan-controlled local Codex workspace",
+  "isolation": "Disposable Docker container zhudatuan-e02-ac6cba98ecce4c87; synthetic E02 nodes only; the topology transaction was rolled back and the container was removed after execution.",
+  "real_customer_data": false,
+  "production_impact": "None. No production service, database, DNS provider, payment provider, supplier or customer record was contacted.",
+  "differences_from_production": [
+    "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+    "Synthetic L0-L11 topology rather than customer traffic or production relationship history.",
+    "No stable staging environment identity and no production observation."
+  ],
+  "runtime": {
+    "node": "v22.22.3",
+    "os": "darwin 25.5.0",
+    "docker_server": "29.7.2",
+    "postgres": "PostgreSQL 17.11 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "docker_image": "postgres:17-alpine",
+    "docker_image_id": "sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+    "migration_count": 302,
+    "endpoint": "127.0.0.1:61204/zhudatuan_e02"
+  },
+  "source_control": {
+    "sha": "deb3c5d716b6437c11952c9157a2210746703329",
+    "branch": "codex/e2-acceptance-repair",
+    "tree_state": "CLEAN",
+    "status": ""
+  },
+  "configuration_digest": "sha256:4ed942882df9c19e572824045c2e48bc8918d3c48a2c704211d5175334851c5b"
+}

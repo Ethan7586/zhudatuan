@@ -1,0 +1,320 @@
+{
+  "schema_version": "e02-vertical-independent-recount-v1",
+  "oracle_id": "E2-ORACLE-E02-VERTICAL",
+  "executed_at": "2026-09-13T23:16:21.169Z",
+  "criteria_id": "E2-CRITERIA-E02-FORMAL-RETEST-20260914",
+  "run_directory": "/Users/Ethan/.codex/worktrees/e9b4/zdt-next/05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01",
+  "reads_test_program_pass": false,
+  "input_artifacts": [
+    {
+      "path": "vertical-input-manifest.json",
+      "sha256": "sha256:2d1bf3f081b5763344248dcc615e0e9f1169216891c96b56859ee7483b24e5a7",
+      "size_bytes": 6075
+    },
+    {
+      "path": "vertical-node-relations.json",
+      "sha256": "sha256:9f009938838edaf7204ed53cc86fd567f8e2e812b893e8ec8f5f9c9e297c1b38",
+      "size_bytes": 10040
+    },
+    {
+      "path": "vertical-context-matrix.json",
+      "sha256": "sha256:5a9c77f685bd6a1aba3395541d73a36a42d7d2ba3a26b8a1ef4b9a34203a6068",
+      "size_bytes": 14197
+    },
+    {
+      "path": "vertical-closure-matrix.json",
+      "sha256": "sha256:64a4666ffa50daaa3e423962ef6f340b3cde7bf219da16ce6a5a5be53ae0be34",
+      "size_bytes": 157949
+    },
+    {
+      "path": "vertical-relation-version-diff.json",
+      "sha256": "sha256:07a894296a44fe71e31a6f987bb5c19a5b2f59b5e8da111bc98ed79efaf979bd",
+      "size_bytes": 2910
+    },
+    {
+      "path": "vertical-negative-probes.json",
+      "sha256": "sha256:3b708fe9b425f04a83e77c41368f1867ee558673c28a451245afb0630fbfa9de",
+      "size_bytes": 1103
+    },
+    {
+      "path": "vertical-authority-counters.json",
+      "sha256": "sha256:7c1611a9fed381b7aada9160641adf60098de3b01adaf2d68cc41cb2e2d6d57c",
+      "size_bytes": 10819
+    },
+    {
+      "path": "environment.json",
+      "sha256": "sha256:89768ec85ddce554bae5ce8495fabb9e25287e6d55415dd5142e1d51bff8ccf3",
+      "size_bytes": 1819
+    }
+  ],
+  "missing_items": [],
+  "violations": [],
+  "thresholds": [
+    {
+      "threshold_id": "node_count",
+      "expected": 12,
+      "actual": 12,
+      "met": true
+    },
+    {
+      "threshold_id": "level_sequence",
+      "expected": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "actual": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "met": true
+    },
+    {
+      "threshold_id": "current_parent_edge_count",
+      "expected": 11,
+      "actual": 11,
+      "met": true
+    },
+    {
+      "threshold_id": "l12_fact_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "same_line_adjacent_parent_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "initial_closure_row_count",
+      "expected": 78,
+      "actual": 78,
+      "met": true
+    },
+    {
+      "threshold_id": "current_closure_row_count",
+      "expected": 78,
+      "actual": 78,
+      "met": true
+    },
+    {
+      "threshold_id": "derived_closure_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "self_total",
+      "expected": 12,
+      "actual": 12,
+      "met": true
+    },
+    {
+      "threshold_id": "ancestor_total",
+      "expected": 66,
+      "actual": 66,
+      "met": true
+    },
+    {
+      "threshold_id": "descendant_total",
+      "expected": 66,
+      "actual": 66,
+      "met": true
+    },
+    {
+      "threshold_id": "subtree_total",
+      "expected": 78,
+      "actual": 78,
+      "met": true
+    },
+    {
+      "threshold_id": "resolver_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "context_observation_count",
+      "expected": 12,
+      "actual": 12,
+      "met": true
+    },
+    {
+      "threshold_id": "context_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "target_relation_version_count",
+      "expected": 2,
+      "actual": 2,
+      "met": true
+    },
+    {
+      "threshold_id": "preserved_historical_relation_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "current_relation_version_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "historical_path_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "current_path_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "shared_model_table_set",
+      "expected": [
+        "node",
+        "nodeclosure",
+        "noderelation"
+      ],
+      "actual": [
+        "node",
+        "nodeclosure",
+        "noderelation"
+      ],
+      "met": true
+    },
+    {
+      "threshold_id": "level_specific_table_or_column_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "context_resolver_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "scope_resolver_count",
+      "expected": 4,
+      "actual": 4,
+      "met": true
+    },
+    {
+      "threshold_id": "levels_using_shared_context_path",
+      "expected": 12,
+      "actual": 12,
+      "met": true
+    },
+    {
+      "threshold_id": "levels_using_each_shared_scope_path",
+      "expected": 12,
+      "actual": 12,
+      "met": true
+    },
+    {
+      "threshold_id": "accepted_negative_probe_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_probe_error_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_probe_residual_fact_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "transaction_rollback_remaining_fact_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "signed_level_only_permission_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "signed_level_only_sovereignty_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "signed_level_only_sovereign_resource_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "higher_level_authority_comparison_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "dev_environment_ready",
+      "expected": true,
+      "actual": true,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_oracle_mutation_detection_miss_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    }
+  ],
+  "mutation_probes": [
+    {
+      "probe_id": "drop-one-closure-row",
+      "detected": true
+    },
+    {
+      "probe_id": "drop-historical-relation-version",
+      "detected": true
+    },
+    {
+      "probe_id": "accept-skip-level-probe",
+      "detected": true
+    }
+  ],
+  "claim_outcome": "MET",
+  "environment_assurance": "DEV VERIFIED"
+}

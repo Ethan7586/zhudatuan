@@ -317,14 +317,18 @@
       "executor_role": "Vertical topology and relation-version test operator",
       "reviewer_role": "Reviewer independent of the hierarchy implementation and E02 test code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E02 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay at deb3c5d716b6437c11952c9157a2210746703329 independently reconciled one complete 12-node L0-L11 chain, all 11 adjacent same-line parent edges, the expected 78-row closure and every per-level self/ancestor/descendant/subtree result. The V-L6 relation gained an append-only second version while preserving version 1 and both effective-time paths; skip-level, second-parent, cross-line and L12 writes were rejected without residue; signed-level-only permission, sovereignty and sovereign-resource changes were zero; all three oracle mutations were detected.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/E2.0-E02-证据.json",
         "review_evidence_ref": null,
         "gaps": [
-          "E2.0 evidence record and independent chain/closure recomputation"
+          "No stable separately managed staging replay has been performed.",
+          "No authorized production observation has been performed.",
+          "All V-L0 through V-L11 nodes, realms and negative probes were synthetic and transaction-rolled-back.",
+          "The relation-version transition retained the same immediately preceding parent; it proves append-only interval history but not a production reparenting event.",
+          "No reviewer independent of the E02 topology implementation, fixture and oracle has recomputed and signed the evidence."
         ]
       }
     },
