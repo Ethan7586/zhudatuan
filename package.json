@@ -125,6 +125,8 @@
     "audit:prod": "npm audit --omit=dev"
   },
   "devDependencies": {
+    "@alicloud/cdn20180510": "9.2.0",
+    "@alicloud/openapi-client": "0.4.15",
     "@axe-core/playwright": "4.13.0",
     "@electric-sql/pglite": "0.4.3",
     "@eslint/js": "10.0.1",

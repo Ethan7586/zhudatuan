@@ -29,6 +29,18 @@ scripts/deploy-now.sh [target] [commit] [node]
 - `commit` 留空：使用 GitHub `zdt-next` 的精确 HEAD。
 - `node` 留空：使用 `hbbtzn-l1`。
 
+H6 阿里云 CDN 使用同一个 GitHub `Deploy` 工作流，登记目标为 `h6-cdn`。它不重新构建
+Storefront 制品，只在确认阿里云 CDN、HTTPS、直连源站和预切流探测均正常后，把 H6 的
+Cloudflare DNS 从 Tunnel 回滚点切换到阿里云 CDN CNAME。状态、通道建立意图和回滚统一通过：
+
+```bash
+npm run release -- channel --target h6-cdn --node hbbtzn-l1 --action status
+npm run release -- channel --target h6-cdn --node hbbtzn-l1 --action establish
+npm run release -- channel --target h6-cdn --node hbbtzn-l1 --action rollback
+```
+
+建立通道不得执行 `--action deploy`；首次切流仍须等待新的“部署 H6”口令。
+
 ## 唯一执行链
 
 ```text
@@ -40,6 +52,9 @@ scripts/deploy-now.sh [target] [commit] [node]
   -> 原子切换 current
   -> 重启目标服务
 ```
+
+`h6-cdn` 是边缘路由目标，其唯一执行链为：精确 Git SHA → GitHub `Deploy` 单 Job →
+直连源站与 CDN CNAME 探测 → Cloudflare DNS 原子切换。它不改运行制品指针、不重启业务服务。
 
 部署不依赖 `.github/workflows/quality.yml`。Affected Delivery 仅可被人工单独调用，不能成为 Deploy 的前置任务。
 

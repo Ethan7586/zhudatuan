@@ -16,6 +16,7 @@ on:
         required: true
         type: choice
         options:
+          - h6-cdn
           - catalog-media
           - storefront
           - auth-web
@@ -96,6 +97,11 @@ jobs:
             echo "checked out commit does not match head_sha" >&2
             exit 1
           fi
+          if [ "$RELEASE_TARGET" = "h6-cdn" ]; then
+            printf 'sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
+            printf 'Direct edge version: `%s`\n' "$sha" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           base="$(git rev-parse HEAD^)"
           mkdir -p .direct-release
           node 04_tools/release-engine/cli.mjs plan \
@@ -109,7 +115,8 @@ jobs:
           printf 'sha=%s\nplan_path=%s\n' "$sha" "$plan_path" >> "$GITHUB_OUTPUT"
           printf 'Direct version: `%s`\n' "$sha" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Configure Aliyun transport
+      - name: Configure Aliyun runtime transport
+        if: env.RELEASE_TARGET != 'h6-cdn'
         env:
           RELEASE_SSH_KEY: ${{ secrets.ZDT_RELEASE_SSH_KEY }}
         run: |
@@ -119,6 +126,7 @@ jobs:
           ssh-keyscan -H 123.57.232.253 >> "$HOME/.ssh/known_hosts"
 
       - name: Build, transfer and switch production
+        if: env.RELEASE_TARGET != 'h6-cdn'
         env:
           PLAN_PATH: ${{ steps.release.outputs.plan_path }}
         run: |
@@ -134,3 +142,19 @@ jobs:
             --direct \
             --format json | tee .direct-release/deploy-envelope.json
           node -e "const r=require('./.direct-release/deploy-envelope.json');const x=r.result;if(!r.ok||x.finalStatus!=='success')process.exit(1);console.log('Direct deployment: '+x.sourceSha+' '+x.finalStatus);" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Switch H6 Alibaba Cloud CDN route
+        if: env.RELEASE_TARGET == 'h6-cdn'
+        env:
+          ALIYUN_CDN_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_CDN_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          node 04_tools/release-engine/cli.mjs channel \
+            --target "$RELEASE_TARGET" \
+            --node "$RELEASE_NODE" \
+            --action deploy \
+            --source-sha "$RELEASE_SHA" \
+            --format json | tee .direct-release/channel-envelope.json
+          node -e "const r=require('./.direct-release/channel-envelope.json');const x=r.result;if(!r.ok||x.finalStatus!=='success')process.exit(1);console.log('H6 edge route: '+x.sourceSha+' '+x.after.route);" >> "$GITHUB_STEP_SUMMARY"

@@ -23,6 +23,15 @@ export function validateAdapter(adapter) {
   invariant(adapter.nodes && typeof adapter.nodes === 'object', 'ADAPTER_NODES_INVALID', 'Adapter nodes are required');
   invariant(Array.isArray(adapter.productionAcceptance?.domains) && adapter.productionAcceptance.domains.length === 8, 'ADAPTER_PRODUCTION_DOMAINS_INVALID', 'Adapter requires exactly 8 retained production acceptance domains');
   invariant(new Set(adapter.productionAcceptance.domains).size === 8, 'ADAPTER_PRODUCTION_DOMAINS_DUPLICATE', 'Production acceptance domains must be unique');
+  for (const [channelId, channel] of Object.entries(adapter.channels ?? {})) {
+    invariant(safeIdentifier(channelId), 'ADAPTER_CHANNEL_ID_INVALID', `Channel id is unsafe: ${channelId}`);
+    invariant(channel?.id === channelId, 'ADAPTER_CHANNEL_ID_MISMATCH', `Channel ${channelId} must repeat its id`);
+    invariant(channel.kind === 'edge', 'ADAPTER_CHANNEL_KIND_INVALID', `Channel ${channelId} has invalid kind`);
+    invariant(typeof channel.manifest === 'string' && channel.manifest.length > 0,
+      'ADAPTER_CHANNEL_MANIFEST_INVALID', `Channel ${channelId} needs a manifest`);
+    invariant(typeof channel.providerModule === 'string' && channel.providerModule.length > 0,
+      'ADAPTER_CHANNEL_PROVIDER_INVALID', `Channel ${channelId} needs a provider module`);
+  }
   validateCommands(adapter.buildPreflight, adapter.project, 'buildPreflight');
   for (const [resolverId, resolver] of Object.entries(adapter.impactResolvers ?? {})) {
     invariant(typeof resolver?.module === 'string' && resolver.module.length > 0, 'ADAPTER_IMPACT_RESOLVER_INVALID', `Impact resolver ${resolverId} needs a module`);
@@ -73,6 +82,9 @@ export function validateAdapter(adapter) {
           'ADAPTER_HOST_SERVICE_MISMATCH', `${nodeKey}/${targetId} must use its host service`);
       }
     }
+  }
+  for (const [channelId, channel] of Object.entries(adapter.channels ?? {})) {
+    invariant(Boolean(adapter.nodes[channel.node]), 'ADAPTER_CHANNEL_NODE_INVALID', `Channel ${channelId} references unknown node ${channel.node}`);
   }
   return adapter;
 }

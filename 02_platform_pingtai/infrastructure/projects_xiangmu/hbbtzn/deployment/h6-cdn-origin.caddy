@@ -1,0 +1,24 @@
+# H6 Alibaba Cloud CDN origin. This isolated listener does not share the
+# multi-project public Caddy process.
+{
+	admin off
+	auto_https off
+}
+
+:4480 {
+	@h6Origin host h6-origin.hbbtzn.com
+	handle @h6Origin {
+		reverse_proxy https://127.0.0.1:4430 {
+			header_up Host h6.hbbtzn.com
+			header_up CF-Connecting-IP {http.request.header.Ali-Cdn-Real-Ip}
+			transport http {
+				tls_server_name h6.hbbtzn.com
+				tls_insecure_skip_verify
+			}
+		}
+	}
+
+	handle {
+		respond `{"code":"H6_CDN_ORIGIN_HOST_MISMATCH"}` 421
+	}
+}

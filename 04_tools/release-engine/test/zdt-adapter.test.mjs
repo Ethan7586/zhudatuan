@@ -42,7 +42,10 @@ test('Console retains optional public acceptance metadata while Deploy uses exac
   assert.match(deployWorkflow, /head_sha:[\s\S]*?required: true/);
   assert.match(deployWorkflow, /release_target:[\s\S]*?required: true[\s\S]*?type: choice/);
   assert.match(deployWorkflow, /\^\[0-9a-f\]\{40\}\$/);
-  assert.equal((deployWorkflow.match(/--target "\$RELEASE_TARGET"/g) ?? []).length, 2);
+  assert.equal((deployWorkflow.match(/--target "\$RELEASE_TARGET"/g) ?? []).length, 3);
+  assert.match(deployWorkflow, /- h6-cdn/);
+  assert.match(deployWorkflow, /cli\.mjs channel[\s\S]*?--action deploy/);
+  assert.match(deployWorkflow, /ALIYUN_CDN_ACCESS_KEY_ID:[\s\S]*?CLOUDFLARE_API_TOKEN:/);
   assert.doesNotMatch(deployWorkflow, /affected|target_args|inputs\.head_sha \|\||inputs\.release_target \|\|/);
   assert.doesNotMatch(deployWorkflow, /Affected Delivery|external_baseline|approve-production/);
   assert.equal((deployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
@@ -52,6 +55,7 @@ test('direct deployment refuses incomplete inputs and never creates a temporary 
   assert.match(deployNow, /if \[ "\$#" -ne 3 \]/);
   assert.match(deployNow, /gh workflow view deploy\.yml --ref zdt-next/);
   assert.match(deployNow, /gh workflow run deploy\.yml --ref zdt-next -f head_sha="\$SHA" -f release_node="\$NODE" -f release_target="\$TARGET"/);
+  assert.match(deployNow, /c\.channels\?\.\[target\]\?\.node===node/);
   assert.doesNotMatch(deployNow, /git push|DEPLOY_REF|affected/);
 });
 

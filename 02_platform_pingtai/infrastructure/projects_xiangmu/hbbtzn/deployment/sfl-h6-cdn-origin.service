@@ -1,0 +1,40 @@
+[Unit]
+Description=SFL H6 Alibaba Cloud CDN origin
+Wants=network-online.target sfl-api-gateway@hbbtzn-l1.service
+After=network-online.target sfl-api-gateway@hbbtzn-l1.service
+ConditionPathExists=/opt/sfl/nodes/hbbtzn-l1/runtime/h6-cdn-origin.Caddyfile
+
+[Service]
+Type=simple
+User=zhudatuan
+Group=zhudatuan
+Environment=XDG_DATA_HOME=/opt/sfl/nodes/hbbtzn-l1/runtime/h6-cdn-origin-data
+Environment=XDG_CONFIG_HOME=/opt/sfl/nodes/hbbtzn-l1/runtime/h6-cdn-origin-config
+ExecStartPre=/usr/bin/caddy validate --config /opt/sfl/nodes/hbbtzn-l1/runtime/h6-cdn-origin.Caddyfile --adapter caddyfile
+ExecStart=/usr/bin/caddy run --config /opt/sfl/nodes/hbbtzn-l1/runtime/h6-cdn-origin.Caddyfile --adapter caddyfile
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=30
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+RestrictNamespaces=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/opt/sfl/nodes/hbbtzn-l1/runtime/h6-cdn-origin-data /opt/sfl/nodes/hbbtzn-l1/runtime/h6-cdn-origin-config
+
+[Install]
+WantedBy=multi-user.target
