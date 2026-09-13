@@ -1,0 +1,76 @@
+{
+  "checks": {
+    "activation_target_is_only_s_b": true,
+    "canary_sequence_is_a_b_a": true,
+    "candidate_b_eligible_for_all_three_nodes": true,
+    "four_flow_history_unchanged": true,
+    "no_node_specific_source_or_build": true,
+    "no_simultaneous_upgrade_required": true,
+    "one_shared_candidate_b_identity": true,
+    "rollback_target_is_only_s_b": true,
+    "s_a_and_s_c_unchanged": true,
+    "s_b_healthy_after_rollback": true
+  },
+  "cleanup": {
+    "removed_containers": [
+      "zdt-e06-c1986383697c-s-a",
+      "zdt-e06-c1986383697c-s-b",
+      "zdt-e06-c1986383697c-s-c"
+    ],
+    "removed_staging_root": true,
+    "status": "completed"
+  },
+  "completed_at": "2026-09-13T08:53:47.999Z",
+  "conclusion": "E06 passes: one shared candidate artifact was activated and rolled back only on S-B; S-A/S-C, all four-flow history digests, configuration and data remained unchanged, and S-B returned healthy on A.",
+  "environment": {
+    "formal_domain_changes": 0,
+    "payment_provider_calls": 0,
+    "production_data_writes": 0,
+    "production_deployment": false,
+    "sovereign_nodes": [
+      "S-A control",
+      "S-B canary",
+      "S-C control"
+    ],
+    "type": "disposable Docker staging"
+  },
+  "evidence": {
+    "sovereign-artifact-manifest.json": "e06-sovereign-single-node-rollout/sovereign-artifact-manifest.json",
+    "sovereign-canary-activation-receipt.json": "e06-sovereign-single-node-rollout/sovereign-canary-activation-receipt.json",
+    "sovereign-four-flow-history-digest.json": "e06-sovereign-single-node-rollout/sovereign-four-flow-history-digest.json",
+    "sovereign-nontarget-diff.json": "e06-sovereign-single-node-rollout/sovereign-nontarget-diff.json",
+    "sovereign-pointer-timeline.json": "e06-sovereign-single-node-rollout/sovereign-pointer-timeline.json",
+    "sovereign-single-node-rollback-receipt.json": "e06-sovereign-single-node-rollout/sovereign-single-node-rollback-receipt.json"
+  },
+  "executed_at": "2026-09-13T08:53:30.591Z",
+  "experiment": "E06",
+  "failure_reasons": [],
+  "observed": {
+    "activationTargets": [
+      "s-b"
+    ],
+    "allNodesHealthyDuringCanary": true,
+    "artifactBIdentityCount": 1,
+    "canarySequence": [
+      "A",
+      "B",
+      "A"
+    ],
+    "controlChangeCount": 0,
+    "eligibleNodes": [
+      "s-a",
+      "s-b",
+      "s-c"
+    ],
+    "historyChangeCount": 0,
+    "nodeSpecificSourceCount": 0,
+    "rollbackHealthy": true,
+    "rollbackRelease": "A",
+    "rollbackTargets": [
+      "s-b"
+    ]
+  },
+  "replay_command": "npm run release -- accept-e06 --from ed02bf2710babf062e7a7ae6c610151cc688495c --to dff9082b5061590ae3ad143d663061a91c236145",
+  "result": "PASS",
+  "schema": "sfl.e06.sovereign-single-node-rollout-acceptance.v1"
+}

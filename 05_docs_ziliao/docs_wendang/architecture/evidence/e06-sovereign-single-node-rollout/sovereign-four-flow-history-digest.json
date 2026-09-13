@@ -1,0 +1,252 @@
+{
+  "experiment": "E06",
+  "flows": [
+    "order",
+    "product",
+    "cash",
+    "finance"
+  ],
+  "history_recalculation_or_overwrite_count": 0,
+  "nodes": {
+    "s-a": {
+      "after_activation": {
+        "combined_digest": "sha256:3d28bd9a69b2d22f3f0587523641202752944ac6d4ad57f88591d08b172d0f04",
+        "container_id": "6caaf9ac59607ffa777132f5a314f0c1dbbfd239e1e927b40bad7b24e1cecdec",
+        "container_started_at": "2026-09-13T08:53:31.925816012Z",
+        "flows": {
+          "cash": {
+            "count": 1,
+            "digest": "sha256:f9d311e14b6019df56fe2f1fe165b007ff1fdc3e4bc6a0df2064999538ef154a"
+          },
+          "finance": {
+            "count": 1,
+            "digest": "sha256:3955c7ae9da9c87f30cd10a0c5863705e600f3dfce48e8cbb906daa1b3271eef"
+          },
+          "order": {
+            "count": 1,
+            "digest": "sha256:7dfa0eeb9fee853de5d6743d7f2ee8b348cf9a56ff786e5b1599c99ab4b986b1"
+          },
+          "product": {
+            "count": 1,
+            "digest": "sha256:fdd9b4018b04c385c570e5d6f979f83adf4faacf7077d596a6b05326fbd3b9de"
+          }
+        },
+        "node_id": "s-a",
+        "release": "A"
+      },
+      "after_rollback": {
+        "combined_digest": "sha256:3d28bd9a69b2d22f3f0587523641202752944ac6d4ad57f88591d08b172d0f04",
+        "container_id": "6caaf9ac59607ffa777132f5a314f0c1dbbfd239e1e927b40bad7b24e1cecdec",
+        "container_started_at": "2026-09-13T08:53:31.925816012Z",
+        "flows": {
+          "cash": {
+            "count": 1,
+            "digest": "sha256:f9d311e14b6019df56fe2f1fe165b007ff1fdc3e4bc6a0df2064999538ef154a"
+          },
+          "finance": {
+            "count": 1,
+            "digest": "sha256:3955c7ae9da9c87f30cd10a0c5863705e600f3dfce48e8cbb906daa1b3271eef"
+          },
+          "order": {
+            "count": 1,
+            "digest": "sha256:7dfa0eeb9fee853de5d6743d7f2ee8b348cf9a56ff786e5b1599c99ab4b986b1"
+          },
+          "product": {
+            "count": 1,
+            "digest": "sha256:fdd9b4018b04c385c570e5d6f979f83adf4faacf7077d596a6b05326fbd3b9de"
+          }
+        },
+        "node_id": "s-a",
+        "release": "A"
+      },
+      "baseline": {
+        "combined_digest": "sha256:3d28bd9a69b2d22f3f0587523641202752944ac6d4ad57f88591d08b172d0f04",
+        "container_id": "6caaf9ac59607ffa777132f5a314f0c1dbbfd239e1e927b40bad7b24e1cecdec",
+        "container_started_at": "2026-09-13T08:53:31.925816012Z",
+        "flows": {
+          "cash": {
+            "count": 1,
+            "digest": "sha256:f9d311e14b6019df56fe2f1fe165b007ff1fdc3e4bc6a0df2064999538ef154a"
+          },
+          "finance": {
+            "count": 1,
+            "digest": "sha256:3955c7ae9da9c87f30cd10a0c5863705e600f3dfce48e8cbb906daa1b3271eef"
+          },
+          "order": {
+            "count": 1,
+            "digest": "sha256:7dfa0eeb9fee853de5d6743d7f2ee8b348cf9a56ff786e5b1599c99ab4b986b1"
+          },
+          "product": {
+            "count": 1,
+            "digest": "sha256:fdd9b4018b04c385c570e5d6f979f83adf4faacf7077d596a6b05326fbd3b9de"
+          }
+        },
+        "node_id": "s-a",
+        "release": "A"
+      },
+      "changes": [],
+      "unchanged": true
+    },
+    "s-b": {
+      "after_activation": {
+        "combined_digest": "sha256:88c447c362a16fa7db9399f5be2feed7d347f47a73101ebe48ac521ae769978d",
+        "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+        "container_started_at": "2026-09-13T08:53:39.140450792Z",
+        "flows": {
+          "cash": {
+            "count": 1,
+            "digest": "sha256:713e33570b8f64c1ba584151c330041e8552ba7f88142e52d8d15ed1a21014ac"
+          },
+          "finance": {
+            "count": 1,
+            "digest": "sha256:2df7cb1574f515aa0bed75c83470dd15b21e8147e23e61d23fccd8067b756326"
+          },
+          "order": {
+            "count": 1,
+            "digest": "sha256:9f98ddb386c2d2981e1068e64693e038faa359a0dc657b38132dcbab096b06cd"
+          },
+          "product": {
+            "count": 1,
+            "digest": "sha256:25e198087718c38f1630fda6fc167133bc9c59cca54aca989e0c2b5f5534ec05"
+          }
+        },
+        "node_id": "s-b",
+        "release": "B"
+      },
+      "after_rollback": {
+        "combined_digest": "sha256:88c447c362a16fa7db9399f5be2feed7d347f47a73101ebe48ac521ae769978d",
+        "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+        "container_started_at": "2026-09-13T08:53:46.500855004Z",
+        "flows": {
+          "cash": {
+            "count": 1,
+            "digest": "sha256:713e33570b8f64c1ba584151c330041e8552ba7f88142e52d8d15ed1a21014ac"
+          },
+          "finance": {
+            "count": 1,
+            "digest": "sha256:2df7cb1574f515aa0bed75c83470dd15b21e8147e23e61d23fccd8067b756326"
+          },
+          "order": {
+            "count": 1,
+            "digest": "sha256:9f98ddb386c2d2981e1068e64693e038faa359a0dc657b38132dcbab096b06cd"
+          },
+          "product": {
+            "count": 1,
+            "digest": "sha256:25e198087718c38f1630fda6fc167133bc9c59cca54aca989e0c2b5f5534ec05"
+          }
+        },
+        "node_id": "s-b",
+        "release": "A"
+      },
+      "baseline": {
+        "combined_digest": "sha256:88c447c362a16fa7db9399f5be2feed7d347f47a73101ebe48ac521ae769978d",
+        "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+        "container_started_at": "2026-09-13T08:53:31.924976345Z",
+        "flows": {
+          "cash": {
+            "count": 1,
+            "digest": "sha256:713e33570b8f64c1ba584151c330041e8552ba7f88142e52d8d15ed1a21014ac"
+          },
+          "finance": {
+            "count": 1,
+            "digest": "sha256:2df7cb1574f515aa0bed75c83470dd15b21e8147e23e61d23fccd8067b756326"
+          },
+          "order": {
+            "count": 1,
+            "digest": "sha256:9f98ddb386c2d2981e1068e64693e038faa359a0dc657b38132dcbab096b06cd"
+          },
+          "product": {
+            "count": 1,
+            "digest": "sha256:25e198087718c38f1630fda6fc167133bc9c59cca54aca989e0c2b5f5534ec05"
+          }
+        },
+        "node_id": "s-b",
+        "release": "A"
+      },
+      "changes": [],
+      "unchanged": true
+    },
+    "s-c": {
+      "after_activation": {
+        "combined_digest": "sha256:189067222b1e70d2064ae0e3fd9b97995baa46aa19cb00dff3ac3e207f6a941c",
+        "container_id": "e3d73dd608163743b0e198f22d9900800ea93b2288b923dbb1de3eeb5abb4ea3",
+        "container_started_at": "2026-09-13T08:53:31.927569262Z",
+        "flows": {
+          "cash": {
+            "count": 1,
+            "digest": "sha256:0c8c45409ddc00e4b36506074f5fe74cc4c61208fd9d9929632a96acf9622b6e"
+          },
+          "finance": {
+            "count": 1,
+            "digest": "sha256:ced60e4ceefb15932f662ce9088d1bd5322b5fb9416c0275216f57940b0b94ba"
+          },
+          "order": {
+            "count": 1,
+            "digest": "sha256:cf643fe932c91479c89ca91ea4610f2262b591922e70109ee615c6fa98b5c019"
+          },
+          "product": {
+            "count": 1,
+            "digest": "sha256:24fcf5b664dd091296ce6ad31a86c21f4615af56b3be5021a22e79560e633651"
+          }
+        },
+        "node_id": "s-c",
+        "release": "A"
+      },
+      "after_rollback": {
+        "combined_digest": "sha256:189067222b1e70d2064ae0e3fd9b97995baa46aa19cb00dff3ac3e207f6a941c",
+        "container_id": "e3d73dd608163743b0e198f22d9900800ea93b2288b923dbb1de3eeb5abb4ea3",
+        "container_started_at": "2026-09-13T08:53:31.927569262Z",
+        "flows": {
+          "cash": {
+            "count": 1,
+            "digest": "sha256:0c8c45409ddc00e4b36506074f5fe74cc4c61208fd9d9929632a96acf9622b6e"
+          },
+          "finance": {
+            "count": 1,
+            "digest": "sha256:ced60e4ceefb15932f662ce9088d1bd5322b5fb9416c0275216f57940b0b94ba"
+          },
+          "order": {
+            "count": 1,
+            "digest": "sha256:cf643fe932c91479c89ca91ea4610f2262b591922e70109ee615c6fa98b5c019"
+          },
+          "product": {
+            "count": 1,
+            "digest": "sha256:24fcf5b664dd091296ce6ad31a86c21f4615af56b3be5021a22e79560e633651"
+          }
+        },
+        "node_id": "s-c",
+        "release": "A"
+      },
+      "baseline": {
+        "combined_digest": "sha256:189067222b1e70d2064ae0e3fd9b97995baa46aa19cb00dff3ac3e207f6a941c",
+        "container_id": "e3d73dd608163743b0e198f22d9900800ea93b2288b923dbb1de3eeb5abb4ea3",
+        "container_started_at": "2026-09-13T08:53:31.927569262Z",
+        "flows": {
+          "cash": {
+            "count": 1,
+            "digest": "sha256:0c8c45409ddc00e4b36506074f5fe74cc4c61208fd9d9929632a96acf9622b6e"
+          },
+          "finance": {
+            "count": 1,
+            "digest": "sha256:ced60e4ceefb15932f662ce9088d1bd5322b5fb9416c0275216f57940b0b94ba"
+          },
+          "order": {
+            "count": 1,
+            "digest": "sha256:cf643fe932c91479c89ca91ea4610f2262b591922e70109ee615c6fa98b5c019"
+          },
+          "product": {
+            "count": 1,
+            "digest": "sha256:24fcf5b664dd091296ce6ad31a86c21f4615af56b3be5021a22e79560e633651"
+          }
+        },
+        "node_id": "s-c",
+        "release": "A"
+      },
+      "changes": [],
+      "unchanged": true
+    }
+  },
+  "query_mode": "live HTTP query against each isolated staging process",
+  "schema": "sfl.e06.sovereign-four-flow-history-digest.v1",
+  "total_change_count": 0
+}

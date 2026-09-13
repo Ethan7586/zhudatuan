@@ -1,0 +1,34 @@
+{
+  "compared_fields": [
+    "release pointers",
+    "process",
+    "health",
+    "configuration digest",
+    "data digest"
+  ],
+  "experiment": "E06",
+  "nodes": {
+    "s-a": {
+      "activation_changes": [],
+      "after_activation_digest": "sha256:916857f6bb360b1d75393633dfa9a46cc279cbcc6383a3c00a077c558a6a310c",
+      "after_rollback_digest": "sha256:916857f6bb360b1d75393633dfa9a46cc279cbcc6383a3c00a077c558a6a310c",
+      "baseline_digest": "sha256:916857f6bb360b1d75393633dfa9a46cc279cbcc6383a3c00a077c558a6a310c",
+      "rollback_changes": [],
+      "unchanged": true
+    },
+    "s-c": {
+      "activation_changes": [],
+      "after_activation_digest": "sha256:1647b061386982c7910cc9c88571081e8bab5b28980128a5eb482a9eb0469b41",
+      "after_rollback_digest": "sha256:1647b061386982c7910cc9c88571081e8bab5b28980128a5eb482a9eb0469b41",
+      "baseline_digest": "sha256:1647b061386982c7910cc9c88571081e8bab5b28980128a5eb482a9eb0469b41",
+      "rollback_changes": [],
+      "unchanged": true
+    }
+  },
+  "non_target_nodes": [
+    "s-a",
+    "s-c"
+  ],
+  "schema": "sfl.e06.sovereign-nontarget-diff.v1",
+  "total_change_count": 0
+}

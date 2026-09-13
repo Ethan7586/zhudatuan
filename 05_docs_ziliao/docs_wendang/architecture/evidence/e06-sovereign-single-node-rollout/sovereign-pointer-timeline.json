@@ -1,0 +1,433 @@
+{
+  "events": [
+    {
+      "phase": "before_canary_activation",
+      "state": {
+        "nodes": {
+          "s-a": {
+            "config_digest": "sha256:90da11ed9bc17bf89998e3351c4faa8ca62997cc9a6afa2857149fc07513b9e0",
+            "data_digest": "sha256:42190588b1d2ff96d18447e68f2e98d7ce2004cd800e79de86bda0a388c5f605",
+            "health": {
+              "archive_digest": "sha256:4e38e0b48654e97d71e8d7808749c3fe17ea3be71a9a28e2e776f6015aaa3e01",
+              "container_id": "6caaf9ac59607ffa777132f5a314f0c1dbbfd239e1e927b40bad7b24e1cecdec",
+              "container_started_at": "2026-09-13T08:53:31.925816012Z",
+              "manifest_digest": "sha256:842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+              "node_id": "s-a",
+              "pid": 1,
+              "release": "A",
+              "source_sha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+              "started_at": "2026-09-13T08:53:32.246Z",
+              "status": "ready",
+              "tree_digest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+            },
+            "pointers": {
+              "candidate": {
+                "path": "/staging/e06/nodes/s-a/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "current": {
+                "path": "/staging/e06/nodes/s-a/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "previous": {
+                "path": null,
+                "release": null
+              },
+              "previousRuntime": {
+                "path": null,
+                "release": null
+              },
+              "runtime": {
+                "path": null,
+                "release": null
+              }
+            },
+            "process": {
+              "container_id": "6caaf9ac59607ffa777132f5a314f0c1dbbfd239e1e927b40bad7b24e1cecdec",
+              "kind": "docker-isolated-node-process",
+              "main_pid": "3786",
+              "started_at": "2026-09-13T08:53:32.246Z"
+            }
+          },
+          "s-b": {
+            "config_digest": "sha256:491aa52ec50d9a83f3aa67b041e565e85ec92351b1b42b8849611040f1a16b18",
+            "data_digest": "sha256:606f7a0a3122a7bff4ae37f435bf6d5dc43f04d0564c96dec14db29a7b3aa88c",
+            "health": {
+              "archive_digest": "sha256:4e38e0b48654e97d71e8d7808749c3fe17ea3be71a9a28e2e776f6015aaa3e01",
+              "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+              "container_started_at": "2026-09-13T08:53:31.924976345Z",
+              "manifest_digest": "sha256:842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+              "node_id": "s-b",
+              "pid": 1,
+              "release": "A",
+              "source_sha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+              "started_at": "2026-09-13T08:53:32.255Z",
+              "status": "ready",
+              "tree_digest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+            },
+            "pointers": {
+              "candidate": {
+                "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+                "release": "B"
+              },
+              "current": {
+                "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "previous": {
+                "path": null,
+                "release": null
+              },
+              "previousRuntime": {
+                "path": null,
+                "release": null
+              },
+              "runtime": {
+                "path": null,
+                "release": null
+              }
+            },
+            "process": {
+              "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+              "kind": "docker-isolated-node-process",
+              "main_pid": "3785",
+              "started_at": "2026-09-13T08:53:32.255Z"
+            }
+          },
+          "s-c": {
+            "config_digest": "sha256:aafa80f91736ed529d22caac0605b71724aa79361610cfe912a582963e8610ab",
+            "data_digest": "sha256:e42535740f364b63a7e51f04277583c6afb65e03c60799a915e173ce73a2f08a",
+            "health": {
+              "archive_digest": "sha256:4e38e0b48654e97d71e8d7808749c3fe17ea3be71a9a28e2e776f6015aaa3e01",
+              "container_id": "e3d73dd608163743b0e198f22d9900800ea93b2288b923dbb1de3eeb5abb4ea3",
+              "container_started_at": "2026-09-13T08:53:31.927569262Z",
+              "manifest_digest": "sha256:842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+              "node_id": "s-c",
+              "pid": 1,
+              "release": "A",
+              "source_sha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+              "started_at": "2026-09-13T08:53:32.432Z",
+              "status": "ready",
+              "tree_digest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+            },
+            "pointers": {
+              "candidate": {
+                "path": "/staging/e06/nodes/s-c/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "current": {
+                "path": "/staging/e06/nodes/s-c/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "previous": {
+                "path": null,
+                "release": null
+              },
+              "previousRuntime": {
+                "path": null,
+                "release": null
+              },
+              "runtime": {
+                "path": null,
+                "release": null
+              }
+            },
+            "process": {
+              "container_id": "e3d73dd608163743b0e198f22d9900800ea93b2288b923dbb1de3eeb5abb4ea3",
+              "kind": "docker-isolated-node-process",
+              "main_pid": "3806",
+              "started_at": "2026-09-13T08:53:32.432Z"
+            }
+          }
+        }
+      }
+    },
+    {
+      "phase": "after_canary_activation",
+      "state": {
+        "nodes": {
+          "s-a": {
+            "config_digest": "sha256:90da11ed9bc17bf89998e3351c4faa8ca62997cc9a6afa2857149fc07513b9e0",
+            "data_digest": "sha256:42190588b1d2ff96d18447e68f2e98d7ce2004cd800e79de86bda0a388c5f605",
+            "health": {
+              "archive_digest": "sha256:4e38e0b48654e97d71e8d7808749c3fe17ea3be71a9a28e2e776f6015aaa3e01",
+              "container_id": "6caaf9ac59607ffa777132f5a314f0c1dbbfd239e1e927b40bad7b24e1cecdec",
+              "container_started_at": "2026-09-13T08:53:31.925816012Z",
+              "manifest_digest": "sha256:842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+              "node_id": "s-a",
+              "pid": 1,
+              "release": "A",
+              "source_sha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+              "started_at": "2026-09-13T08:53:32.246Z",
+              "status": "ready",
+              "tree_digest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+            },
+            "pointers": {
+              "candidate": {
+                "path": "/staging/e06/nodes/s-a/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "current": {
+                "path": "/staging/e06/nodes/s-a/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "previous": {
+                "path": null,
+                "release": null
+              },
+              "previousRuntime": {
+                "path": null,
+                "release": null
+              },
+              "runtime": {
+                "path": null,
+                "release": null
+              }
+            },
+            "process": {
+              "container_id": "6caaf9ac59607ffa777132f5a314f0c1dbbfd239e1e927b40bad7b24e1cecdec",
+              "kind": "docker-isolated-node-process",
+              "main_pid": "3786",
+              "started_at": "2026-09-13T08:53:32.246Z"
+            }
+          },
+          "s-b": {
+            "config_digest": "sha256:491aa52ec50d9a83f3aa67b041e565e85ec92351b1b42b8849611040f1a16b18",
+            "data_digest": "sha256:606f7a0a3122a7bff4ae37f435bf6d5dc43f04d0564c96dec14db29a7b3aa88c",
+            "health": {
+              "archive_digest": "sha256:71d415fe9edeaad7045f9cf1b87ce7aebc26d298609ee6f0f8e0917eaca31245",
+              "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+              "container_started_at": "2026-09-13T08:53:39.140450792Z",
+              "manifest_digest": "sha256:aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+              "node_id": "s-b",
+              "pid": 1,
+              "release": "B",
+              "source_sha": "dff9082b5061590ae3ad143d663061a91c236145",
+              "started_at": "2026-09-13T08:53:39.236Z",
+              "status": "ready",
+              "tree_digest": "sha256:5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee"
+            },
+            "pointers": {
+              "candidate": {
+                "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+                "release": "B"
+              },
+              "current": {
+                "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+                "release": "B"
+              },
+              "previous": {
+                "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "previousRuntime": {
+                "path": null,
+                "release": null
+              },
+              "runtime": {
+                "path": null,
+                "release": null
+              }
+            },
+            "process": {
+              "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+              "kind": "docker-isolated-node-process",
+              "main_pid": "4245",
+              "started_at": "2026-09-13T08:53:39.236Z"
+            }
+          },
+          "s-c": {
+            "config_digest": "sha256:aafa80f91736ed529d22caac0605b71724aa79361610cfe912a582963e8610ab",
+            "data_digest": "sha256:e42535740f364b63a7e51f04277583c6afb65e03c60799a915e173ce73a2f08a",
+            "health": {
+              "archive_digest": "sha256:4e38e0b48654e97d71e8d7808749c3fe17ea3be71a9a28e2e776f6015aaa3e01",
+              "container_id": "e3d73dd608163743b0e198f22d9900800ea93b2288b923dbb1de3eeb5abb4ea3",
+              "container_started_at": "2026-09-13T08:53:31.927569262Z",
+              "manifest_digest": "sha256:842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+              "node_id": "s-c",
+              "pid": 1,
+              "release": "A",
+              "source_sha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+              "started_at": "2026-09-13T08:53:32.432Z",
+              "status": "ready",
+              "tree_digest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+            },
+            "pointers": {
+              "candidate": {
+                "path": "/staging/e06/nodes/s-c/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "current": {
+                "path": "/staging/e06/nodes/s-c/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "previous": {
+                "path": null,
+                "release": null
+              },
+              "previousRuntime": {
+                "path": null,
+                "release": null
+              },
+              "runtime": {
+                "path": null,
+                "release": null
+              }
+            },
+            "process": {
+              "container_id": "e3d73dd608163743b0e198f22d9900800ea93b2288b923dbb1de3eeb5abb4ea3",
+              "kind": "docker-isolated-node-process",
+              "main_pid": "3806",
+              "started_at": "2026-09-13T08:53:32.432Z"
+            }
+          }
+        }
+      }
+    },
+    {
+      "phase": "after_single_node_rollback",
+      "state": {
+        "nodes": {
+          "s-a": {
+            "config_digest": "sha256:90da11ed9bc17bf89998e3351c4faa8ca62997cc9a6afa2857149fc07513b9e0",
+            "data_digest": "sha256:42190588b1d2ff96d18447e68f2e98d7ce2004cd800e79de86bda0a388c5f605",
+            "health": {
+              "archive_digest": "sha256:4e38e0b48654e97d71e8d7808749c3fe17ea3be71a9a28e2e776f6015aaa3e01",
+              "container_id": "6caaf9ac59607ffa777132f5a314f0c1dbbfd239e1e927b40bad7b24e1cecdec",
+              "container_started_at": "2026-09-13T08:53:31.925816012Z",
+              "manifest_digest": "sha256:842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+              "node_id": "s-a",
+              "pid": 1,
+              "release": "A",
+              "source_sha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+              "started_at": "2026-09-13T08:53:32.246Z",
+              "status": "ready",
+              "tree_digest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+            },
+            "pointers": {
+              "candidate": {
+                "path": "/staging/e06/nodes/s-a/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "current": {
+                "path": "/staging/e06/nodes/s-a/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "previous": {
+                "path": null,
+                "release": null
+              },
+              "previousRuntime": {
+                "path": null,
+                "release": null
+              },
+              "runtime": {
+                "path": null,
+                "release": null
+              }
+            },
+            "process": {
+              "container_id": "6caaf9ac59607ffa777132f5a314f0c1dbbfd239e1e927b40bad7b24e1cecdec",
+              "kind": "docker-isolated-node-process",
+              "main_pid": "3786",
+              "started_at": "2026-09-13T08:53:32.246Z"
+            }
+          },
+          "s-b": {
+            "config_digest": "sha256:491aa52ec50d9a83f3aa67b041e565e85ec92351b1b42b8849611040f1a16b18",
+            "data_digest": "sha256:606f7a0a3122a7bff4ae37f435bf6d5dc43f04d0564c96dec14db29a7b3aa88c",
+            "health": {
+              "archive_digest": "sha256:4e38e0b48654e97d71e8d7808749c3fe17ea3be71a9a28e2e776f6015aaa3e01",
+              "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+              "container_started_at": "2026-09-13T08:53:46.500855004Z",
+              "manifest_digest": "sha256:842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+              "node_id": "s-b",
+              "pid": 1,
+              "release": "A",
+              "source_sha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+              "started_at": "2026-09-13T08:53:46.631Z",
+              "status": "ready",
+              "tree_digest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+            },
+            "pointers": {
+              "candidate": {
+                "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+                "release": "B"
+              },
+              "current": {
+                "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "previous": {
+                "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+                "release": "B"
+              },
+              "previousRuntime": {
+                "path": null,
+                "release": null
+              },
+              "runtime": {
+                "path": null,
+                "release": null
+              }
+            },
+            "process": {
+              "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+              "kind": "docker-isolated-node-process",
+              "main_pid": "4576",
+              "started_at": "2026-09-13T08:53:46.631Z"
+            }
+          },
+          "s-c": {
+            "config_digest": "sha256:aafa80f91736ed529d22caac0605b71724aa79361610cfe912a582963e8610ab",
+            "data_digest": "sha256:e42535740f364b63a7e51f04277583c6afb65e03c60799a915e173ce73a2f08a",
+            "health": {
+              "archive_digest": "sha256:4e38e0b48654e97d71e8d7808749c3fe17ea3be71a9a28e2e776f6015aaa3e01",
+              "container_id": "e3d73dd608163743b0e198f22d9900800ea93b2288b923dbb1de3eeb5abb4ea3",
+              "container_started_at": "2026-09-13T08:53:31.927569262Z",
+              "manifest_digest": "sha256:842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+              "node_id": "s-c",
+              "pid": 1,
+              "release": "A",
+              "source_sha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+              "started_at": "2026-09-13T08:53:32.432Z",
+              "status": "ready",
+              "tree_digest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+            },
+            "pointers": {
+              "candidate": {
+                "path": "/staging/e06/nodes/s-c/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "current": {
+                "path": "/staging/e06/nodes/s-c/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+                "release": "A"
+              },
+              "previous": {
+                "path": null,
+                "release": null
+              },
+              "previousRuntime": {
+                "path": null,
+                "release": null
+              },
+              "runtime": {
+                "path": null,
+                "release": null
+              }
+            },
+            "process": {
+              "container_id": "e3d73dd608163743b0e198f22d9900800ea93b2288b923dbb1de3eeb5abb4ea3",
+              "kind": "docker-isolated-node-process",
+              "main_pid": "3806",
+              "started_at": "2026-09-13T08:53:32.432Z"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "experiment": "E06",
+  "schema": "sfl.e06.sovereign-pointer-timeline.v1",
+  "sequence": "S-B A→B→A; S-A and S-C remain A"
+}

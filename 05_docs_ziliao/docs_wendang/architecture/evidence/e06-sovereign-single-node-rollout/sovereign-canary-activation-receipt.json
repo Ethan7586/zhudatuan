@@ -1,0 +1,272 @@
+{
+  "agent_receipt": {
+    "action": "activate",
+    "ok": true,
+    "result": {
+      "alreadyCurrent": false,
+      "current": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+      "cutoverMs": 5671,
+      "mode": "activated",
+      "previous": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+      "protectedProcesses": {
+        "after": {
+          "systemd:sfl-e06@s-a.service": "3786",
+          "systemd:sfl-e06@s-c.service": "3806"
+        },
+        "before": {
+          "systemd:sfl-e06@s-a.service": "3786",
+          "systemd:sfl-e06@s-c.service": "3806"
+        }
+      },
+      "readiness": {
+        "attempts": 1,
+        "checks": [
+          {
+            "argv": [
+              "/Users/Ethan/.nvm/versions/node/v22.22.3/bin/node",
+              "/staging/e06/runtime/health-check.mjs",
+              "zdt-e06-c1986383697c-s-b",
+              "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b"
+            ],
+            "durationMs": 165
+          }
+        ],
+        "durationMs": 322,
+        "intervalMs": 100,
+        "lastError": null,
+        "processState": {
+          "activeState": "active",
+          "kind": "systemd",
+          "name": "sfl-e06@s-b.service",
+          "pid": "4245",
+          "result": "success",
+          "subState": "running"
+        },
+        "status": "ready",
+        "timeoutMs": 10000
+      },
+      "receipt": {
+        "artifact": {
+          "archiveBytes": 1107,
+          "archiveSha256": "sha256:71d415fe9edeaad7045f9cf1b87ce7aebc26d298609ee6f0f8e0917eaca31245",
+          "manifestDigest": "sha256:aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+          "sourceSha": "dff9082b5061590ae3ad143d663061a91c236145",
+          "treeDigest": "sha256:5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee"
+        },
+        "automaticCleanup": {
+          "mode": "existing-lifecycle",
+          "status": "not-configured",
+          "units": []
+        },
+        "caddySemantic": {
+          "after": {
+            "config": null,
+            "digest": null,
+            "status": "not-configured"
+          },
+          "before": {
+            "config": null,
+            "digest": null,
+            "status": "not-configured"
+          },
+          "unchanged": true
+        },
+        "capacity": {
+          "artifactBytes": 1107,
+          "freeBytes": 37257596928,
+          "minimumFreeBytes": 1,
+          "status": "passed"
+        },
+        "completedAt": "2026-09-13T08:53:39.867Z",
+        "databaseMigration": null,
+        "databaseRecovery": null,
+        "finalStatus": "success",
+        "node": "s-b",
+        "nonTargetProcesses": {
+          "after": {
+            "systemd:sfl-e06@s-a.service": "3786",
+            "systemd:sfl-e06@s-c.service": "3806"
+          },
+          "before": {
+            "systemd:sfl-e06@s-a.service": "3786",
+            "systemd:sfl-e06@s-c.service": "3806"
+          },
+          "unchanged": true
+        },
+        "pointers": {
+          "after": {
+            "candidate": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+            "current": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+            "previous": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+            "previous-runtime": null,
+            "rollback": null,
+            "runtime": null
+          },
+          "before": {
+            "candidate": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+            "current": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+            "previous": null,
+            "previous-runtime": null,
+            "rollback": null,
+            "runtime": null
+          }
+        },
+        "project": "zdt-next-e06-staging",
+        "ready": {
+          "attempts": 1,
+          "checks": [
+            {
+              "argv": [
+                "/Users/Ethan/.nvm/versions/node/v22.22.3/bin/node",
+                "/staging/e06/runtime/health-check.mjs",
+                "zdt-e06-c1986383697c-s-b",
+                "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b"
+              ],
+              "durationMs": 165
+            }
+          ],
+          "durationMs": 322,
+          "intervalMs": 100,
+          "lastError": null,
+          "processState": {
+            "activeState": "active",
+            "kind": "systemd",
+            "name": "sfl-e06@s-b.service",
+            "pid": "4245",
+            "result": "success",
+            "subState": "running"
+          },
+          "status": "ready",
+          "timeoutMs": 10000
+        },
+        "rollbackPoint": {
+          "caddyBackup": null,
+          "caddySemantic": {
+            "config": null,
+            "digest": null,
+            "status": "not-configured"
+          },
+          "createdAt": "2026-09-13T08:53:33.986Z",
+          "directory": "/staging/e06/nodes/s-b/targets/sovereign-runtime/rollback-points/zdt-next-e06-staging/1789289613986-s-b-sovereign-runtime-dff9082b5061",
+          "id": "1789289613986-s-b-sovereign-runtime-dff9082b5061",
+          "pointers": {
+            "candidate": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+            "current": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+            "previous": null,
+            "previous-runtime": null,
+            "rollback": null,
+            "runtime": null
+          }
+        },
+        "schema": "ai.delivery.receipt.v1",
+        "sourceSha": "dff9082b5061590ae3ad143d663061a91c236145",
+        "target": "sovereign-runtime",
+        "targetProcess": {
+          "after": "4245",
+          "before": "3785"
+        },
+        "version": "dff9082b5061590ae3ad143d663061a91c236145-5391140ca511"
+      },
+      "restart": {
+        "commandCount": 1,
+        "commands": [
+          [
+            "systemctl",
+            "--job-mode=ignore-dependencies",
+            "restart",
+            "sfl-e06@s-b.service"
+          ]
+        ],
+        "kind": "systemd",
+        "target": "sfl-e06@s-b.service"
+      },
+      "runtime": null,
+      "service": {
+        "jobMode": "ignore-dependencies",
+        "kind": "systemd",
+        "name": "sfl-e06@s-b.service"
+      },
+      "targetProcess": {
+        "after": "4245",
+        "before": "3785"
+      },
+      "timings": {
+        "candidate": 37,
+        "cutover": 1,
+        "health": 322,
+        "isolation": 127,
+        "restart": 5221,
+        "snapshot": 147,
+        "total": 5916
+      }
+    }
+  },
+  "artifact_identity": {
+    "archive_bytes": 1107,
+    "archive_digest": "sha256:71d415fe9edeaad7045f9cf1b87ce7aebc26d298609ee6f0f8e0917eaca31245",
+    "artifact_id": "zdt-next-e06-staging-sovereign-runtime-5391140ca511",
+    "build_count": 1,
+    "manifest_digest": "sha256:aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+    "source_sha": "dff9082b5061590ae3ad143d663061a91c236145",
+    "tree_digest": "sha256:5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee"
+  },
+  "controls_healthy_on_a": true,
+  "expected_release": "B",
+  "experiment": "E06",
+  "observed_after": {
+    "config_digest": "sha256:491aa52ec50d9a83f3aa67b041e565e85ec92351b1b42b8849611040f1a16b18",
+    "data_digest": "sha256:606f7a0a3122a7bff4ae37f435bf6d5dc43f04d0564c96dec14db29a7b3aa88c",
+    "health": {
+      "archive_digest": "sha256:71d415fe9edeaad7045f9cf1b87ce7aebc26d298609ee6f0f8e0917eaca31245",
+      "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+      "container_started_at": "2026-09-13T08:53:39.140450792Z",
+      "manifest_digest": "sha256:aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+      "node_id": "s-b",
+      "pid": 1,
+      "release": "B",
+      "source_sha": "dff9082b5061590ae3ad143d663061a91c236145",
+      "started_at": "2026-09-13T08:53:39.236Z",
+      "status": "ready",
+      "tree_digest": "sha256:5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee"
+    },
+    "pointers": {
+      "candidate": {
+        "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+        "release": "B"
+      },
+      "current": {
+        "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+        "release": "B"
+      },
+      "previous": {
+        "path": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+        "release": "A"
+      },
+      "previousRuntime": {
+        "path": null,
+        "release": null
+      },
+      "runtime": {
+        "path": null,
+        "release": null
+      }
+    },
+    "process": {
+      "container_id": "ef1fda7846e0288f960956b508ac20389bfcd301e2780ac17cdd10162bbef3da",
+      "kind": "docker-isolated-node-process",
+      "main_pid": "4245",
+      "started_at": "2026-09-13T08:53:39.236Z"
+    }
+  },
+  "schema": "sfl.e06.sovereign-canary-activation-receipt.v1",
+  "source_sha": "dff9082b5061590ae3ad143d663061a91c236145",
+  "target_manifest": {
+    "excluded_nodes": [
+      "s-a",
+      "s-c"
+    ],
+    "selected_nodes": [
+      "s-b"
+    ]
+  }
+}

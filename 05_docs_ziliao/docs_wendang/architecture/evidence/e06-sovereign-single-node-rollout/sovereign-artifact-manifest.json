@@ -1,0 +1,206 @@
+{
+  "artifacts": {
+    "A": {
+      "archive_bytes": 1136,
+      "archive_digest": "sha256:4e38e0b48654e97d71e8d7808749c3fe17ea3be71a9a28e2e776f6015aaa3e01",
+      "artifact_id": "zdt-next-e06-staging-sovereign-runtime-573a98f4d0c5",
+      "build_count": 1,
+      "manifest_digest": "sha256:842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+      "source_sha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+      "tree_digest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+    },
+    "B": {
+      "archive_bytes": 1107,
+      "archive_digest": "sha256:71d415fe9edeaad7045f9cf1b87ce7aebc26d298609ee6f0f8e0917eaca31245",
+      "artifact_id": "zdt-next-e06-staging-sovereign-runtime-5391140ca511",
+      "build_count": 1,
+      "manifest_digest": "sha256:aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+      "source_sha": "dff9082b5061590ae3ad143d663061a91c236145",
+      "tree_digest": "sha256:5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee"
+    }
+  },
+  "build_contract": {
+    "build_count_per_artifact": 1,
+    "builder_source_sha": "dff9082b5061590ae3ad143d663061a91c236145",
+    "candidate_b_artifact_identity_count": 1,
+    "eligible_nodes": [
+      "s-a",
+      "s-b",
+      "s-c"
+    ],
+    "node_specific_source_count": 0
+  },
+  "candidate_stage": {
+    "action": "stage",
+    "ok": true,
+    "result": {
+      "artifactBytes": 1107,
+      "cacheStatus": "miss",
+      "candidate": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+      "dependencyLayer": null,
+      "release": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/dff9082b5061590ae3ad143d663061a91c236145-5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee-aba831167a6130a2dc9fc05b3aa2d253b80f0ef89ac650e43ec0f7a061ba2a6b",
+      "reusedBytes": 0,
+      "sourceSha": "dff9082b5061590ae3ad143d663061a91c236145",
+      "timings": {
+        "candidateChecks": 36,
+        "cleanup": 0,
+        "materialize": 14,
+        "pointer": 0,
+        "total": 53,
+        "validation": 3
+      },
+      "treeDigest": "sha256:5391140ca5113885db97f5213a4dafc3a177f5e77d484d3cb2b9c14fcf8995ee",
+      "uploadedBytes": 1107
+    }
+  },
+  "experiment": "E06",
+  "initialization": {
+    "s-a": {
+      "baseline": {
+        "action": "baseline",
+        "ok": true,
+        "result": {
+          "current": "/staging/e06/nodes/s-a/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+          "imported": true,
+          "protectedProcesses": {
+            "after": {
+              "systemd:sfl-e06@s-c.service": "error: no such object: zdt-e06-c1986383697c-s-c\n0"
+            },
+            "before": {
+              "systemd:sfl-e06@s-c.service": "error: no such object: zdt-e06-c1986383697c-s-c\n0"
+            }
+          },
+          "sourceSha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+          "treeDigest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+        }
+      },
+      "stage": {
+        "action": "stage",
+        "ok": true,
+        "result": {
+          "artifactBytes": 1136,
+          "cacheStatus": "miss",
+          "candidate": "/staging/e06/nodes/s-a/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+          "dependencyLayer": null,
+          "release": "/staging/e06/nodes/s-a/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+          "reusedBytes": 0,
+          "sourceSha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+          "timings": {
+            "candidateChecks": 32,
+            "cleanup": 1,
+            "materialize": 15,
+            "pointer": 0,
+            "total": 52,
+            "validation": 3
+          },
+          "treeDigest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe",
+          "uploadedBytes": 1136
+        }
+      }
+    },
+    "s-b": {
+      "baseline": {
+        "action": "baseline",
+        "ok": true,
+        "result": {
+          "current": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+          "imported": true,
+          "protectedProcesses": {
+            "after": {
+              "systemd:sfl-e06@s-a.service": "error: no such object: zdt-e06-c1986383697c-s-a\n0",
+              "systemd:sfl-e06@s-c.service": "error: no such object: zdt-e06-c1986383697c-s-c\n0"
+            },
+            "before": {
+              "systemd:sfl-e06@s-a.service": "error: no such object: zdt-e06-c1986383697c-s-a\n0",
+              "systemd:sfl-e06@s-c.service": "error: no such object: zdt-e06-c1986383697c-s-c\n0"
+            }
+          },
+          "sourceSha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+          "treeDigest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+        }
+      },
+      "stage": {
+        "action": "stage",
+        "ok": true,
+        "result": {
+          "artifactBytes": 1136,
+          "cacheStatus": "miss",
+          "candidate": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+          "dependencyLayer": null,
+          "release": "/staging/e06/nodes/s-b/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+          "reusedBytes": 0,
+          "sourceSha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+          "timings": {
+            "candidateChecks": 32,
+            "cleanup": 0,
+            "materialize": 14,
+            "pointer": 1,
+            "total": 50,
+            "validation": 2
+          },
+          "treeDigest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe",
+          "uploadedBytes": 1136
+        }
+      }
+    },
+    "s-c": {
+      "baseline": {
+        "action": "baseline",
+        "ok": true,
+        "result": {
+          "current": "/staging/e06/nodes/s-c/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+          "imported": true,
+          "protectedProcesses": {
+            "after": {
+              "systemd:sfl-e06@s-a.service": "error: no such object: zdt-e06-c1986383697c-s-a\n0"
+            },
+            "before": {
+              "systemd:sfl-e06@s-a.service": "error: no such object: zdt-e06-c1986383697c-s-a\n0"
+            }
+          },
+          "sourceSha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+          "treeDigest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe"
+        }
+      },
+      "stage": {
+        "action": "stage",
+        "ok": true,
+        "result": {
+          "artifactBytes": 1136,
+          "cacheStatus": "miss",
+          "candidate": "/staging/e06/nodes/s-c/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+          "dependencyLayer": null,
+          "release": "/staging/e06/nodes/s-c/targets/sovereign-runtime/releases/ed02bf2710babf062e7a7ae6c610151cc688495c-573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe-842aaabea41ff1e7fd7bf19972265337f51394e642311d93b694de7cd77edd5f",
+          "reusedBytes": 0,
+          "sourceSha": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+          "timings": {
+            "candidateChecks": 31,
+            "cleanup": 0,
+            "materialize": 13,
+            "pointer": 0,
+            "total": 47,
+            "validation": 2
+          },
+          "treeDigest": "sha256:573a98f4d0c51a456dda7e5d127c874e7f1138ca5f5022d66a392989dde7ccbe",
+          "uploadedBytes": 1136
+        }
+      }
+    }
+  },
+  "schema": "sfl.e06.sovereign-artifact-manifest.v1",
+  "shared_code_line": {
+    "from": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+    "merge_base": "ed02bf2710babf062e7a7ae6c610151cc688495c",
+    "to": "dff9082b5061590ae3ad143d663061a91c236145"
+  },
+  "staging": {
+    "image_id": "sha256:8fb447e0fe22149dc6a60c9cca79374545a28031f71f44c018c2db68acd522c6",
+    "image_reference": "zhudatuan-commerce:local-b9c",
+    "kind": "disposable-docker-process-staging",
+    "network": "none",
+    "production_hosts_contacted": 0,
+    "production_pointers_changed": 0,
+    "real_customer_records": 0,
+    "real_payment_calls": 0
+  }
+}
