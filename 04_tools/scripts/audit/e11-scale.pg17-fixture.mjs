@@ -193,8 +193,9 @@ async function environmentEvidence(input) {
 
 async function verifyCriteriaSources(criteriaValue) {
   for (const source of [...criteriaValue.authoritative_basis, ...criteriaValue.implementation_basis]) {
-    const path = join(repositoryRoot, source.path.split('#')[0]);
-    const actual = `sha256:${sha256(await readFile(path))}`;
+    const repositorySourcePath = source.path.split('#')[0];
+    const bytes = source.git_commit ? await capture('git', ['show', `${source.git_commit}:${repositorySourcePath}`]) : await readFile(join(repositoryRoot, repositorySourcePath));
+    const actual = `sha256:${sha256(bytes)}`;
     if (actual !== source.sha256) throw new Error(`E11_BASIS_DIGEST_MISMATCH:${source.path}`);
   }
 }
