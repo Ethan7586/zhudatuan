@@ -51,12 +51,12 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
                   商品目录{workspace !== 'catalog' || coreTotal === undefined ? null : <strong>{formatCount(coreTotal)}</strong>}
                 </button>
                 <button type="button" aria-current={workspace === 'selection' ? 'page' : undefined} onClick={() => onWorkspace('selection')}>选品中心</button>
-                <button type="button" aria-current={workspace === 'free' ? 'page' : undefined} onClick={() => onWorkspace('free')}>自由商品</button>
+                <button type="button" aria-current={workspace === 'free' ? 'page' : undefined} onClick={() => onWorkspace('free')}>自有商品</button>
               </nav></>
             )}
             <small>{partnerWorkspace ? '维护商品资料与平台采用状态' : workspace === 'selection'
               ? '从供应链与品牌货盘快速挑选商品' : workspace === 'free'
-                ? '不受现有货盘限制，自由创建或导入商品' : '点击商品查看资料、供应关系与上下架记录'}</small>
+                ? '创建或导入当前商城自主经营的商品' : '点击商品查看资料、供应关系与上下架记录'}</small>
           </div>
         </div>
         {workspace !== 'catalog' ? null : <div className="productheroactions" role="group" aria-label={partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>

@@ -80,10 +80,10 @@ describe('Product governance workspace', () => {
     const user = userEvent.setup();
     renderProductRoute(mallContext, '/products?workspace=free');
 
-    expect(await screen.findByRole('heading', { name: '自由创建你的商品' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: '自由商品' }).getAttribute('aria-current')).toBe('page');
+    expect(await screen.findByRole('heading', { name: '创建自有商品' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '自有商品' }).getAttribute('aria-current')).toBe('page');
     expect(screen.getByText('创建完成后进入商品目录，仍由商品目录统一审核和上下架。')).toBeTruthy();
-    await user.click(screen.getByRole('button', { name: /新建自由商品/ }));
+    await user.click(screen.getByRole('button', { name: /新建自有商品/ }));
     expect(await screen.findByRole('dialog', { name: '新建商品' })).toBeTruthy();
   });
 
