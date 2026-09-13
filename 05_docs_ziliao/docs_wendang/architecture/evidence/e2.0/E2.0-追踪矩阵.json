@@ -417,14 +417,18 @@
       "executor_role": "Cross-surface authorization truth-table operator",
       "reviewer_role": "Security reviewer independent of authorization implementation and E03 test code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E03 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay at 7f09a12644bdfd0868aec7d4bc63f37277f3f2c4 independently reconciled all 32 five-factor rows across page, API, task and service for three node/Membership samples and two Operations: all 24 all-true cases allowed, all 744 other cases denied for the first unmet factor, cross-surface inconsistency and denied business/Outbox/task/Provider effects were zero, and all three oracle mutations were detected.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/E2.0-E03-证据.json",
         "review_evidence_ref": null,
         "gaps": [
-          "E2.0 32-row four-surface evidence record and independent side-effect recomputation"
+          "No stable separately managed staging replay has been performed.",
+          "No authorized production observation has been performed.",
+          "Principal, Membership and NodeContext inputs were synthetic resolver-backed fixtures; public Session and Membership ingress was not exercised.",
+          "Page, API, task and service were isolated loopback HTTP probes and the trusted Provider was deterministic and in-process.",
+          "No reviewer independent of the E03 authorization implementation, fixture and oracle has recomputed and signed the evidence."
         ]
       }
     },

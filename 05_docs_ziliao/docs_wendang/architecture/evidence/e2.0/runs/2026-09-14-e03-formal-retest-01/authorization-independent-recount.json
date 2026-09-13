@@ -1,0 +1,259 @@
+{
+  "schema_version": "e03-independent-recount-v1",
+  "oracle_id": "E2-ORACLE-E03-TRUTH-TABLE",
+  "executed_at": "2026-09-13T22:41:49.508Z",
+  "criteria_id": "E2-CRITERIA-E03-FORMAL-RETEST-20260914",
+  "reads_test_program_pass": false,
+  "input_artifacts": [
+    {
+      "path": "authorization-contexts.json",
+      "sha256": "sha256:f5ba1c68dfed7ec80a199869c1ac321a451f2646a9ece9d33c44d984363751be",
+      "size_bytes": 3349
+    },
+    {
+      "path": "truth-table-expected.json",
+      "sha256": "sha256:1ab4677ca8182139b9c4c45969c7eb2efbd0b4f09fb11e5026deb162774ba6ab",
+      "size_bytes": 11447
+    },
+    {
+      "path": "truth-table-observed.json",
+      "sha256": "sha256:cb9ea9008be74eac414427576921dcf9e23b3b8fadecc187fc40aa1bd2ce783b",
+      "size_bytes": 885184
+    },
+    {
+      "path": "authorization-decisions.jsonl",
+      "sha256": "sha256:202507c42197515f8df4bc686947a4dae43c031a9f79daa8c3e1cd7ccdbb4c04",
+      "size_bytes": 258408
+    },
+    {
+      "path": "side-effect-diffs.json",
+      "sha256": "sha256:594c74e0b4631fc2791b12c42149326bd39dfe56a7bf7168ffe6b2afbf386724",
+      "size_bytes": 1059712
+    },
+    {
+      "path": "provider-call-log.json",
+      "sha256": "sha256:a310d253eaf5a532aff8d1a1735151073c8b0d78f5d02997e5237954823f8f9e",
+      "size_bytes": 2661
+    },
+    {
+      "path": "environment.json",
+      "sha256": "sha256:f81e42c0138dbe49b5901ba55592e9ecbb19add81462fcf51dc5435fe3110f13",
+      "size_bytes": 2179
+    }
+  ],
+  "metrics": {
+    "expected_truth_table_row_count": 32,
+    "expected_artifact_mismatch_count": 0,
+    "observed_truth_table_row_count": 32,
+    "surface_row_count_mismatch_count": 0,
+    "node_membership_context_count": 3,
+    "operation_count": 2,
+    "context_mismatch_count": 0,
+    "raw_case_decision_count": 768,
+    "observed_allow_count": 24,
+    "observed_deny_count": 744,
+    "expected_observed_mismatch_count": 0,
+    "cross_surface_inconsistency_count": 0,
+    "denial_reason_mismatch_count": 0,
+    "missing_or_duplicate_correlation_count": 0,
+    "decision_audit_count": 768,
+    "decision_audit_allowed_count": 24,
+    "decision_audit_denied_count": 744,
+    "decision_audit_mismatch_count": 0,
+    "denied_business_write_count": 0,
+    "denied_outbox_append_count": 0,
+    "denied_task_enqueue_count": 0,
+    "denied_provider_call_count": 0,
+    "positive_surface_behavior_mismatch_count": 0,
+    "global_database_snapshot_mismatch_count": 0,
+    "environment_mismatch_count": 0,
+    "required_raw_evidence_missing_count": 0,
+    "negative_oracle_probe_miss_count": 0
+  },
+  "thresholds": [
+    {
+      "threshold_id": "required_raw_evidence_missing_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "expected_truth_table_row_count",
+      "expected": 32,
+      "actual": 32,
+      "met": true
+    },
+    {
+      "threshold_id": "expected_artifact_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "observed_truth_table_row_count",
+      "expected": 32,
+      "actual": 32,
+      "met": true
+    },
+    {
+      "threshold_id": "surface_row_count_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "node_membership_context_count",
+      "expected": 3,
+      "actual": 3,
+      "met": true
+    },
+    {
+      "threshold_id": "operation_count",
+      "expected": 2,
+      "actual": 2,
+      "met": true
+    },
+    {
+      "threshold_id": "context_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "raw_case_decision_count",
+      "expected": 768,
+      "actual": 768,
+      "met": true
+    },
+    {
+      "threshold_id": "observed_allow_count",
+      "expected": 24,
+      "actual": 24,
+      "met": true
+    },
+    {
+      "threshold_id": "observed_deny_count",
+      "expected": 744,
+      "actual": 744,
+      "met": true
+    },
+    {
+      "threshold_id": "expected_observed_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "cross_surface_inconsistency_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "denial_reason_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "missing_or_duplicate_correlation_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "decision_audit_count",
+      "expected": 768,
+      "actual": 768,
+      "met": true
+    },
+    {
+      "threshold_id": "decision_audit_allowed_count",
+      "expected": 24,
+      "actual": 24,
+      "met": true
+    },
+    {
+      "threshold_id": "decision_audit_denied_count",
+      "expected": 744,
+      "actual": 744,
+      "met": true
+    },
+    {
+      "threshold_id": "decision_audit_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "denied_business_write_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "denied_outbox_append_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "denied_task_enqueue_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "denied_provider_call_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "positive_surface_behavior_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "global_database_snapshot_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "environment_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_oracle_probe_miss_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    }
+  ],
+  "missing_items": [],
+  "contradictions": [],
+  "negative_probes": [
+    {
+      "probe_id": "false-allow",
+      "mutation": "Flip one denied surface response to allowed.",
+      "detected": true
+    },
+    {
+      "probe_id": "wrong-denial-reason",
+      "mutation": "Replace one denied response reason with a non-authoritative later-factor reason.",
+      "detected": true
+    },
+    {
+      "probe_id": "denied-provider-effect",
+      "mutation": "Inject one Provider-call delta into a denied service case.",
+      "detected": true
+    }
+  ],
+  "claim_outcome": "MET",
+  "environment_assurance": "DEV VERIFIED",
+  "review_assurance": "NOT REVIEWED"
+}

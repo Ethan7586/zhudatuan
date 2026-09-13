@@ -1,0 +1,62 @@
+{
+  "schema_version": "e03-provider-call-log-v1",
+  "captured_at": "2026-09-13T22:41:49.322Z",
+  "provider": "e03-deterministic-trusted-provider",
+  "real_external_provider_contacted": false,
+  "calls": [
+    {
+      "correlation_id": "e03:1daaf663:tt-31:service:hosted-operating-mall:read",
+      "sample_id": "hosted-operating-mall",
+      "operation_kind": "read",
+      "operation": "member.profile.read",
+      "provider": "e03-deterministic-trusted-provider",
+      "receipt_id": "provider-receipt:e03:1daaf663:tt-31:service:hosted-operating-mall:read",
+      "called_at": "2026-09-13T22:41:49.275Z"
+    },
+    {
+      "correlation_id": "e03:1daaf663:tt-31:service:hosted-operating-mall:write",
+      "sample_id": "hosted-operating-mall",
+      "operation_kind": "write",
+      "operation": "member.addresses.manage",
+      "provider": "e03-deterministic-trusted-provider",
+      "receipt_id": "provider-receipt:e03:1daaf663:tt-31:service:hosted-operating-mall:write",
+      "called_at": "2026-09-13T22:41:49.282Z"
+    },
+    {
+      "correlation_id": "e03:1daaf663:tt-31:service:sovereign-operating-mall:read",
+      "sample_id": "sovereign-operating-mall",
+      "operation_kind": "read",
+      "operation": "member.profile.read",
+      "provider": "e03-deterministic-trusted-provider",
+      "receipt_id": "provider-receipt:e03:1daaf663:tt-31:service:sovereign-operating-mall:read",
+      "called_at": "2026-09-13T22:41:49.289Z"
+    },
+    {
+      "correlation_id": "e03:1daaf663:tt-31:service:sovereign-operating-mall:write",
+      "sample_id": "sovereign-operating-mall",
+      "operation_kind": "write",
+      "operation": "member.addresses.manage",
+      "provider": "e03-deterministic-trusted-provider",
+      "receipt_id": "provider-receipt:e03:1daaf663:tt-31:service:sovereign-operating-mall:write",
+      "called_at": "2026-09-13T22:41:49.296Z"
+    },
+    {
+      "correlation_id": "e03:1daaf663:tt-31:service:hosted-consumer:read",
+      "sample_id": "hosted-consumer",
+      "operation_kind": "read",
+      "operation": "member.profile.read",
+      "provider": "e03-deterministic-trusted-provider",
+      "receipt_id": "provider-receipt:e03:1daaf663:tt-31:service:hosted-consumer:read",
+      "called_at": "2026-09-13T22:41:49.302Z"
+    },
+    {
+      "correlation_id": "e03:1daaf663:tt-31:service:hosted-consumer:write",
+      "sample_id": "hosted-consumer",
+      "operation_kind": "write",
+      "operation": "member.addresses.manage",
+      "provider": "e03-deterministic-trusted-provider",
+      "receipt_id": "provider-receipt:e03:1daaf663:tt-31:service:hosted-consumer:write",
+      "called_at": "2026-09-13T22:41:49.308Z"
+    }
+  ]
+}
