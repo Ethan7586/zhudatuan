@@ -1,0 +1,519 @@
+# 全代码库系统审计｜执行计划
+
+## 1. 计划结论
+
+本次审计不能在单个长会话中完成。固定基线包含 4,238 个文件、3,073 个人工源码文件、322,808 行人工源码、357 个人工数据库迁移和 640 个测试文件。按微观深审协议，初始预计需要约 186–344 个单一目的审计单元；架构阶段完成后再依据真实模块边界修正数量。
+
+每个审计单元必须在一个独立会话内完成一个模块或一条完整链路，提交仅报告检查点并停止。不得为了减少检查点而混合多个大模块。
+
+## 2. 固定边界
+
+| 项目 | 固定值 |
+| --- | --- |
+| 基线 | 5a1ce71eebbefaa826368a9e1dc17730f9363bc4 |
+| 审计分支 | codex/full-codebase-audit-20260913 |
+| worktree | /Users/Ethan/.codex/worktrees/full-codebase-audit-20260913/zdt-next |
+| 审计分支合并目标 | 无 |
+| 允许写入 | 05_docs_ziliao/docs_wendang/architecture/full-codebase-audit-20260913 下的审计报告、记录、证据索引和覆盖清单 |
+| 禁止写入 | 生产/测试源码、配置、工作流、数据库迁移、依赖、锁文件、生成清单和任何线上资源 |
+| Git | 不变基、不推送、不合并、不删除远程分支、不改变主线 |
+| 运行 | 只读观察；不启动、停止、重启或故障注入生产服务 |
+
+origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次审计。任何后续修复从修复时最新主线建立独立小分支。
+
+## 3. 当前阶段边界
+
+本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
+
+当前仍是第一阶段，只完成：
+
+1. CP-00 固定基线。
+2. 4,238 文件覆盖总账。
+3. 微观深审记录规范。
+4. 全仓审计执行计划。
+5. 既有基线和覆盖清单的证据标签语义。
+
+当前阶段不得开始批量阅读架构模块、业务模块或迁移实现。提交本计划后立即停止。
+
+## 4. 审计单元定义
+
+一个审计单元 AU 必须满足：
+
+- 只有一个模块、一条端到端业务链或一个明确平台职责。
+- 开始前列出允许读取范围、允许写入报告、禁止范围、验收条件、预计时间和超时停止条件。
+- 有明确上游入口和下游终点。
+- 可以独立形成结论、验证、复核和回滚建议。
+- 结束时更新覆盖总账、记录 UNKNOWN、提交一个仅报告检查点并停止。
+
+### 4.1 大小限制
+
+- 默认每个 AU 审 5–20 个人工文件或不超过约 2,000 行关键实现。
+- 大文件按逻辑区域拆分；文件未全部覆盖前保持“暂未审阅”。
+- 大模块按 API 链、命令链、查询链、Worker 链或数据对象拆分。
+- 数据库迁移可按同一数据所有者和连续演进目的成批，但每个迁移必须有独立记录。
+- 预计超过 90 分钟的 AU 在开始前拆分。
+
+### 4.2 时间盒
+
+| 环节 | 默认时间 |
+| --- | ---: |
+| 工作区与证据预检 | 5–10 分钟 |
+| 入口和调用链追踪 | 10–15 分钟 |
+| 文件/符号/函数微观审阅 | 25–40 分钟 |
+| 定向验证和反事实检查 | 10–15 分钟 |
+| 记录、自检、覆盖对账和提交 | 10–15 分钟 |
+| 单 AU 硬上限 | 90 分钟 |
+
+连续 10 分钟没有文件记录、证据、调用链或验证结果等可观察进展时，停止扩展范围并报告当前状态。
+
+## 5. 每个审计单元的强制流程
+
+1. 确认分支、HEAD、基线 merge-base 和干净工作区。
+2. 确认本 AU 的唯一目的、入口、终点和允许文件。
+3. 从 10-coverage-manifest.csv 提取本 AU 待审文件，不重扫全仓。
+4. 枚举入口、动态注册、构建、包导出、脚本和运行配置。
+5. 建立本 AU 的证据登记表并编号。
+6. 对人工文件完整阅读；大文件先登记逻辑区间。
+7. 建立导出符号清单，追踪直接、间接、动态和外部消费者。
+8. 对关键函数、异步函数、数据库函数和部署函数建立微观记录。
+9. 对条件分支、状态机、权限、并发、重试、超时、失败和恢复建表。
+10. 对适用的 API、事件、数据库、配置、测试、CSS、Shell 或 Worker 专项逐项审阅。
+11. 仅运行项目已有且与结论直接相关的定向验证。
+12. 为每个重要结论加证据标签和证据编号。
+13. 执行模块反向自检。
+14. 完成 5% 或 15% 的入口重追踪抽检；P0/P1/G3/GX 进入 100% 独立复核队列。
+15. 更新 01–12 汇总报告中适用部分和 10-coverage-manifest.csv。
+16. 重新对账文件数、状态数和代码行。
+17. 列出 staged 文件，确认全部位于审计目录。
+18. git diff --cached --check。
+19. 按 docs(audit): complete <模块名称> review 提交。
+20. 报告结果并停止。
+
+## 6. 证据取得顺序
+
+每个 AU 优先按以下顺序取证：
+
+1. 当前基线入口和注册代码。
+2. 构建、包导出、路由、Worker、systemd、工作流和迁移执行配置。
+3. 直接与间接调用链。
+4. 数据库对象、契约、事件和配置消费者。
+5. 定向测试及反事实可信度。
+6. 生产只读状态或日志，仅在当前结论确实需要且不改变状态时。
+7. Git 历史，用于解释难以理解的设计。
+8. 文档，用于比对、冲突和历史责任。
+
+不得从文档结论反向选择性搜索代码。任何删除或“无使用”结论都要至少两类独立证据。
+
+## 7. 审计目录与记录拓扑
+
+顶层汇总制品保持原约定：
+
+| 文件 | 内容 |
+| --- | --- |
+| 00-baseline.md | 固定基线、范围和初始库存 |
+| 00-audit-plan.md | 阶段、顺序、检查点和完成闸门 |
+| 00-review-record-schema.md | 文件、符号、函数及专项记录规范 |
+| 01-architecture.md | 宏观真实架构与边界 |
+| 02-runtime-map.md | 页面、API、服务、Worker、数据和部署关系 |
+| 03-module-inventory.md | 模块职责、入口、依赖、所有权和覆盖 |
+| 04-findings.md | F 编号问题 |
+| 05-dead-code-candidates.md | DC 编号 G0–GX 候选 |
+| 06-security-and-permissions.md | 身份、会话、权限和凭据边界 |
+| 07-data-and-migrations.md | 数据所有权、事务、迁移和数据库矩阵 |
+| 08-tests-and-quality.md | 测试用例可信度与质量缺口 |
+| 09-release-and-operations.md | GitHub、阿里云、制品、Shell 和恢复 |
+| 10-coverage-manifest.csv | 全仓文件唯一总账 |
+| 11-remediation-roadmap.md | 后续独立小批次治理顺序 |
+| 12-final-summary.md | 最终结果、未知项和完成闸门 |
+
+每个 AU 在 records/AU-编号-模块名 下建立所需记录：
+
+- evidence.csv
+- files.csv
+- exports.csv
+- functions.csv
+- branches-and-states.md
+- apis.csv
+- events-and-jobs.csv
+- invariants.csv
+- configuration.csv
+- tests.csv
+- communications.csv
+- fmea.csv
+- history.md
+- review-sample.csv
+- summary.md
+
+不适用的记录文件不创建；summary.md 必须解释为何不适用。汇总报告只引用记录，不复制全部微观明细。
+
+## 8. 阶段顺序
+
+### 阶段 0：基线与方法
+
+状态：当前阶段。
+
+- CP-00：基线、初始入口库存和覆盖总账，已完成。
+- CP-00A：微观记录规范、证据标签和执行计划。
+
+验收：分支固定；覆盖清单与 4,238 基线文件逐项一致；计划覆盖补充协议全部专项。
+
+### 阶段 1：宏观真实架构
+
+架构阶段先于任何垃圾代码判断，拆成独立 AU：
+
+1. 仓库入口与 package/export/build 发现机制。
+2. Console、Auth、Storefront、Miniapp 页面与运行入口总图。
+3. Canonical Commerce、Compatibility API、Ready/Main/Jobs/Migration 进程入口总图。
+4. release target、systemd、Cloudflared、Caddy、静态制品和节点部署总图。
+5. PostgreSQL、Redis、对象存储、Secrets/KMS、队列和共享数据总图。
+6. API、事件、共享数据库和同步调用的初始通信矩阵。
+7. 数据所有权和发布所有权初始矩阵。
+8. 正常路径与故障传播骨架。
+
+每个 AU 只完成一张可复核图及对应证据，不在同一会话深审业务实现。
+
+阶段输出：01-architecture.md、02-runtime-map.md、03-module-inventory.md 的可验证初版。只有阶段 1 完成，才能进入模块深审。
+
+### 阶段 2：契约、基础设施包与共享内核
+
+按依赖方向逐个 AU 审阅：
+
+1. config。
+2. contract definitions 与 contractgen。
+3. contract runtime 输出生成链。
+4. sdk 与 API client。
+5. kernel。
+6. authz。
+7. smart-wing-authz。
+8. api-contract。
+9. telemetry。
+10. interaction。
+11. design 与 design-system。
+12. testing package。
+13. Commerce foundation/application/interface/persistence/cache/infrastructure。
+14. Commerce bootstrap、entry、module catalog 和 runtime composition。
+
+每个 package 或明确子边界独立提交。生成输出不逐行评风格，但要验证生成器、权威输入、漂移检查和消费者。
+
+### 阶段 3：身份、会话、成员与权限链
+
+按真实调用链拆分：
+
+1. Auth Web 启动与登录表单。
+2. Identity API 路由与会话创建。
+3. Ticket exchange、Cookie 与跨域。
+4. Session 读取、刷新、退出和多标签页。
+5. Membership、Scope 与节点上下文。
+6. Role、Capability、Access Version 和前后端缓存。
+7. Owner、管理员、成员及转让/邀请。
+8. Step-Up 与高风险操作。
+9. 数据库角色、Execute、RLS 与身份执行上下文。
+10. Identity notification jobs。
+11. 身份链 FMEA 和登录故障矩阵。
+
+涉及 identity、access、capability、member、organization、verification 和 qualification 的结论按模块分别形成检查点，不混成一次提交。
+
+### 阶段 4：Commerce 业务模块
+
+35 个模块目录全部进入独立模块审计，默认顺序依据调用依赖调整：
+
+1. runtime。
+2. identity。
+3. access。
+4. capability。
+5. organization。
+6. member。
+7. mall。
+8. provisioning。
+9. partner。
+10. qualification。
+11. verification。
+12. catalog。
+13. inventory。
+14. pricing。
+15. channel。
+16. extension。
+17. purchase。
+18. cart。
+19. checkout_jiesuan。
+20. order_dingdan。
+21. payment_zhifu。
+22. fulfillment。
+23. voucher。
+24. benefit。
+25. finance。
+26. referral。
+27. reporting。
+28. support。
+29. notification。
+30. audit。
+31. risk。
+32. observability。
+33. experience。
+34. marketing。
+35. webbusiness。
+
+基线目录实际为 35 个，上表逐项覆盖全部目录。架构阶段仍需确认每个目录的代码边界是否与运行、数据和发布边界一致，但不得为了减少审计单元而提前合并。
+
+每个模块至少完成职责、入口、依赖、数据所有权、API/事件、进程、发布单元、测试、不变量、状态机、失败/并发/恢复和文件微观记录。
+
+### 阶段 5：供应商、渠道和支付扩展
+
+extensions 下每个实际 workspace 单独建档：
+
+- providers：book、cake、core、directcharge、flower、foodvoucher、jdfresh、jdproduct、meal、movie、private、tmallmarket。
+- vendors：cakeuncle、core、jd、tmall、wanlian、wenxuan。
+- payment：wechat。
+
+重点审外部调用、超时、重试、幂等、签名、回调、金额、状态映射、日志、凭据引用和兼容职责。不得把“当前没有测试调用”直接判为无外部消费者。
+
+### 阶段 6：前端页面、状态、CSS 与可访问性
+
+Console：
+
+- app/providers、runtime config、session loader、scope shell、module registry 和错误恢复各为基础 AU。
+- 15 个已注册 Console 模块逐模块审，不把所有 feature 混在一个检查点。
+- importing、member、notification、profile 等未在顶层 registry 直接出现的目录，先追踪间接路由和消费者，再决定归属。
+
+Auth：
+
+- 启动、身份节点配置、用户/管理员界面、表单、Cookie 回调和错误态。
+
+Storefront：
+
+- vinext App Router、worker 同源 API、设备路由、H5、desktop、数据获取、缓存、CSS 和静态资源。
+
+Miniapp：
+
+- 先确认真实构建/发布/外部项目入口；证据不足时保持 UNKNOWN。
+
+真实视觉对照只在 CSS、页面挂载、响应式或可访问性结论需要时执行，不为纯逻辑审计截图。
+
+### 阶段 7：异步任务、事件和 Worker
+
+1. runtime.job、JobRunner、Scheduler、Lease、Inbox/Outbox 和 dead letter 基础链。
+2. app/jobs.ts 的 33 个注册逐个映射生产者与消费者。
+3. identity-notification-jobs。
+4. catalog-jobs。
+5. payment-jobs。
+6. FullJobs/JobsMain 等聚合或兼容入口。
+7. 每个领域 Job 与外部副作用。
+8. 消息版本、新旧进程、积压、告警和人工重放。
+
+每条关键异步链完成全部崩溃点推演；不在生产制造故障。
+
+### 阶段 8：数据库、迁移与数据所有权
+
+1. 先建立 Canonical 和 Compatibility schema/object/owner/role 总图。
+2. 300 个 Canonical 迁移按数据所有者和连续目的分批。
+3. 57 个 Compatibility 迁移单独审，不与 Canonical 混批。
+4. 每个迁移有独立记录；权限、RLS、SECURITY DEFINER、Owner 或执行身份变化标高风险。
+5. 核对 current.sql、history.json、ledger、release migration executor 与 systemd migration 的一致性。
+6. 建立表、函数、RLS、角色、服务账户和迁移身份六个矩阵。
+7. 只运行与当前迁移结论有关的定向 fixture；全量重放保留到最终收口且最多一次。
+
+任何权限删除建议一律 GX，不进入普通清理。
+
+### 阶段 9：发布、运行与供应链
+
+独立 AU：
+
+1. deploy.yml。
+2. deploy-oss.yml。
+3. quality.yml。
+4. scripts/deploy-now.sh。
+5. release engine plan。
+6. build/package。
+7. install/deploy/remote agent。
+8. activate-console-static.sh。
+9. systemd production units。
+10. staging units。
+11. Caddy、Cloudflared 和节点运行配置。
+12. OSS/SSH transport 和不可变制品。
+13. current/previous 指针、并发锁和回滚。
+14. package manifests、lockfile、许可证、隐式/重复依赖。
+15. 发布 FMEA。
+
+生产核验只读，严格区分仓库声明、候选状态和线上现状。
+
+### 阶段 10：测试可信度
+
+测试与生产模块同步审阅；本阶段再做全局收口：
+
+- 536 个 test 文件、40 个 spec 文件、64 个 SQL 测试全部关联到生产职责。
+- 关键测试按用例建立记录和反事实问题。
+- 核对 Vitest、Node test、Playwright、PostgreSQL fixture、component、journey、security、performance、recovery 和 release-engine 边界。
+- 检查错误 workspace 名、假阳性、mock、全局污染、Timer/env 恢复、执行顺序和生产注册证明。
+- 未有对应测试的生产分支明确登记，不自动补测试。
+
+### 阶段 11：文档、AI 指令与历史
+
+- AGENTS.md、README、DEPLOYMENT、SOURCE-MANIFEST、LAW、CLAUDE、AI-DELIVERY。
+- 当前架构、运维、权限、迁移、验收、事故、Prompt 和代码强制注释。
+- 自动读取、权威声明、运行支持、冲突、过期、阻塞和回滚责任。
+- 视觉 version-upgrades、Storybook preview 和设计参考的归档/外部依赖责任。
+
+文档零运行引用不构成删除依据。
+
+### 阶段 12：垃圾代码候选
+
+只有前述架构、运行、模块、数据、发布、外部消费者和历史证据完成后才开始。
+
+1. 汇总所有疑似闲置文件和符号。
+2. 逐项应用 G0–GX 标准。
+3. G3 必须有两类独立证据、可观察行为不变证明、验证和恢复方法。
+4. G3、GX 进入 100% 独立复核。
+5. 本分支只记录，不删除。
+
+### 阶段 13：独立复核、抽检和最终收口
+
+- 普通模块 5%、高风险模块 15% 入口重追踪。
+- P0、P1、G3、GX 100% 独立复核。
+- 独立复核在不同会话中先重新追踪入口，再查看原结论；不得复述。
+- 若无法安排真正独立的第二审阅者，相关项保持“需要独立复核”，不得关闭。
+- 执行一次最终全量验证；失败只记录。
+- 对账全部文件、行数、API、Worker、迁移、配置和权限矩阵。
+- 所有未知项明确标 UNKNOWN。
+- 完成 11-remediation-roadmap.md 和 12-final-summary.md 后停止。
+
+## 9. 模块检查点验收
+
+一个模块只有同时满足以下条件才可关闭：
+
+1. 模块范围和文件集合与覆盖总账一致。
+2. 所有人工文件完成 29 项 FILE 记录。
+3. 全部导出符号登记。
+4. 关键函数和方法完成 30 项记录。
+5. 大文件所有逻辑区域已读。
+6. 入口、动态注册、构建和运行进程已追踪。
+7. API、事件、数据、配置、权限和测试已关联。
+8. 正常、失败、并发和恢复已分析。
+9. 重要状态机和不变量已建表。
+10. 重要结论有证据标签和编号。
+11. UNKNOWN 与 CONFLICT 未被伪装为事实。
+12. 抽检达到比例且无未处理系统性遗漏。
+13. P0/P1/G3/GX 已进入独立复核队列。
+14. 覆盖清单和汇总报告已更新。
+15. staged diff 只有该模块审计文档。
+
+缺任一项，模块状态只能是“进行中”或“需要专项专家复核”。
+
+## 10. P0 停止协议
+
+发现疑似 P0 时：
+
+1. 只完成最小只读复核，确认不是单一文本或错误闸门造成的假象。
+2. 记录当前行为、入口、影响范围、证据、未知项和不改变状态的复现方式。
+3. 不继续读取其他模块，不修复、不缓解、不部署。
+4. 不等待常规检查点收口，立即向 Ethan 报告。
+5. 未获授权前停止。
+
+如果 P0 证据仍不足，标 HYPOTHESIS 或 UNKNOWN，不夸大为事故。
+
+## 11. 测试与运行纪律
+
+- 先使用根 package.json 或 workspace package.json 已声明入口。
+- 每个 AU 只运行与结论直接相关的最小测试。
+- 不用测试通过替代生产入口证明。
+- 不用测试失败直接证明生产缺陷。
+- 不因失败扩展成修复任务。
+- 数据库全量重放和完整 production build 在最终收口最多各一次。
+- 线上服务只允许状态、日志、指针、哈希和只读查询，不改变状态。
+- UI 只有在视觉、CSS、路由挂载或可访问性结论需要时打开真实页面。
+
+## 12. 覆盖与进度计算
+
+每个检查点报告：
+
+- 基线文件总数 4,238。
+- 各覆盖状态文件数。
+- 人工源码已深入审阅文件数和物理行数。
+- 人工配置已深入/结构审阅数。
+- 生成、第三方、构建、归档的已验证来源数。
+- 当前模块总文件、已审文件、已审行数。
+- API、Worker、迁移、配置、权限和测试记录完成数。
+- UNKNOWN、CONFLICT、P0–NIT、G0–GX 数量。
+- 抽检分母、样本数和结果。
+
+覆盖率不得只按文件数。至少同时报告：
+
+1. 文件覆盖率。
+2. 人工源码物理行覆盖率。
+3. 运行入口覆盖率。
+4. API 覆盖率。
+5. 迁移覆盖率。
+6. 配置覆盖率。
+7. 权限能力覆盖率。
+
+## 13. 会话续接模板
+
+每个新会话提示必须包含：
+
+- 固定基线 SHA。
+- 审计分支和 worktree。
+- 上一个检查点中文名称与 SHA。
+- 本次唯一 AU 编号和目的。
+- 允许读取文件/目录。
+- 允许写入的审计记录。
+- 禁止修改范围。
+- 入口与验收判据。
+- 预计时间和 90 分钟停止条件。
+- P0 停止规则。
+- 不推送、不合并、不部署。
+
+新会话先读 00-baseline.md、00-audit-plan.md、00-review-record-schema.md、上一个 AU summary 和覆盖清单中的本模块行，不从头重扫。
+
+## 14. 补充协议覆盖矩阵
+
+| 补充协议主题 | 本计划承载位置 |
+| --- | --- |
+| 证据类型 | 记录规范第 3–4 节 |
+| 逐文件 | FILE 29 字段；records/files.csv |
+| 逐导出 | SYM 12 字段；records/exports.csv |
+| 逐函数 | FN 30 字段；records/functions.csv |
+| 条件与状态机 | branches-and-states.md |
+| TypeScript/JavaScript | FILE/FN 附加检查 |
+| React/CSS/可访问性 | 阶段 6 与记录规范第 9 节 |
+| Node/API | records/apis.csv；阶段 1、3、4 |
+| 业务不变量 | records/invariants.csv |
+| PostgreSQL/Supabase/迁移 | 阶段 8 与六个矩阵 |
+| 异步/队列/Worker | 阶段 7 与 events-and-jobs.csv |
+| 身份/会话/权限 | 阶段 3 与 06-security-and-permissions.md |
+| GitHub/供应链 | 阶段 9 |
+| Shell/部署 | 阶段 9，逐行审 |
+| 配置/环境变量 | records/configuration.csv 与全局 CFG 矩阵 |
+| 测试用例 | records/tests.csv 与阶段 10 |
+| 文档/契约/AI | 阶段 11 |
+| 跨模块通信 | communications.csv、01/02 架构图 |
+| FMEA | fmea.csv 及各关键链路 |
+| Git 历史 | history.md |
+| 反向自检 | 每个 AU 第 13 步 |
+| 抽检 | review-sample.csv、阶段 13 |
+| 完成条件 | 记录规范第 24 节与阶段 13 |
+
+## 15. 初始工作量估算
+
+| 范围 | 预计 AU |
+| --- | ---: |
+| 宏观架构与运行图 | 6–10 |
+| 共享包、生成链和 Commerce foundation | 18–32 |
+| 身份、会话与权限链 | 12–24 |
+| Commerce 业务模块 | 40–75 |
+| 供应商、支付扩展 | 19–30 |
+| 前端页面、状态、CSS、可访问性 | 25–45 |
+| 异步任务、事件和 Worker | 12–24 |
+| 357 个迁移与数据库矩阵 | 20–40 |
+| 发布、运维与供应链 | 14–24 |
+| 测试、文档、垃圾候选和最终复核 | 20–40 |
+| 初始合计 | 186–344 |
+
+该估算偏保守，且部分 AU 会同时完成模块代码、对应测试和迁移记录；架构阶段结束后按真实边界去重。不得为了追求较小 AU 数量降低微观深度。
+
+## 16. 下一审计单元
+
+本检查点完成后停止。下一会话建议只执行：
+
+- AU-001：仓库入口与自动发现机制。
+- 目的：从 package exports、build entry、路由发现、Worker、systemd、GitHub 和脚本注册中建立“哪些文件能进入运行”的第一张证据图。
+- 输出：records/AU-001-repository-entry-discovery，以及 01-architecture.md、02-runtime-map.md 和 03-module-inventory.md 的对应初始段落。
+- 禁止：深入评审任一业务模块、定级垃圾代码、运行全量测试或修改源码。

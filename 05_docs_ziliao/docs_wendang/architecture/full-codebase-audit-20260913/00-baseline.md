@@ -1,6 +1,10 @@
 # 全代码库系统审计｜00 基线
 
-## 1. 基线身份
+## 0. 证据标签适用方式
+
+本报告按补充协议回补证据标签。标题上的标签适用于该标题下全部直接陈述，直到下一个同级或更低级标题；若其中某条使用另一标签，以该条标签为准。范围决定和审计方法属于本次治理约束，不作为技术结论分类。
+
+## 1. 基线身份 [FACT]
 
 | 项目 | 记录 |
 | --- | --- |
@@ -16,7 +20,7 @@
 
 本次基线在执行 git fetch origin --prune 后解析。审计分支直接建立在上述远程 SHA 上；后续 origin/zdt-next 的变化不会改变本次审计基线，审计期间禁止变基。
 
-## 2. 建分支前状态与隔离
+## 2. 建分支前状态与隔离 [FACT]
 
 - 共享目录 /Users/Ethan/Desktop/zdt-next 当时位于 rescue/zdt-internal-salvage-2026-09-10，存在未跟踪文档、infrastructure、pnpm-lock.yaml 和 pnpm-workspace.yaml。该目录未被用于建分支，未暂存、未修改、未清理其中任何内容。
 - 已有主线 worktree /Users/Ethan/.codex/worktrees/6ec2/zdt-next 无未提交文件；其本地 zdt-next 相对 origin/zdt-next 为 ahead 1、behind 217，因此没有移动或重置本地主线。
@@ -25,7 +29,7 @@
 - origin 下共有 40 条远程引用，其中 1 条是指向 origin/zdt-next 的符号引用，实际远程分支为 39 条。此次只创建本地分支，未增加远程分支。
 - 审计分支固定后，共享仓库的 origin/zdt-next 引用又前进 2 个提交至 a1080036ef0dcd667416dfe758b5ff2320c78392；merge-base 仍是本次基线 5a1ce71eebbefaa826368a9e1dc17730f9363bc4。本审计按规则不吸收这两个后续提交。
 
-## 3. 统计口径
+## 3. 统计口径 [FACT]
 
 所有统计都只针对基线 SHAs 5a1ce71eebbefaa826368a9e1dc17730f9363bc4 中由 git ls-files 返回的 4,238 个受控文件，不包含审计分支新写入的报告。
 
@@ -45,7 +49,7 @@
 
 人工源码与人工结构化配置合计 3,238 个文件、400,887 物理行。这是本次代码健康审计的主要人工审阅池，不代表当前已完成审阅。
 
-### 3.1 主要文件类型
+### 3.1 主要文件类型 [FACT]
 
 | 扩展名或类型 | 文件数 |
 | --- | ---: |
@@ -68,7 +72,7 @@
 
 其余类型包括 JSONC、TOML、Caddy、systemd timer、微信小程序资源、PDF、XLSX、Mermaid 和 Canvas 文档。
 
-## 4. 语言、框架、运行时与包管理
+## 4. 语言、框架、运行时与包管理 [FACT]
 
 | 层 | 基线事实 |
 | --- | --- |
@@ -87,7 +91,7 @@
 
 根工作区声明 43 个实际 workspace package：3 个 Web 应用、2 个服务、12 个共享包、19 个供应商/支付扩展包和 7 个内部工具包。miniapp 目录没有 package.json，不属于 npm workspace。
 
-## 5. 顶层代码与制品布局
+## 5. 顶层代码与制品布局 [FACT]
 
 | 路径 | 受控文件数 | 当前基线角色 |
 | --- | ---: | --- |
@@ -104,7 +108,7 @@
 
 ## 6. 应用与前端入口
 
-### 6.1 Console
+### 6.1 Console [FACT]
 
 - 路径：01_core_hexin/apps/console。
 - 浏览器入口：src/main.tsx。
@@ -114,7 +118,7 @@
 - 构建入口：npm run build:console → @shop/console 的 vite build。
 - 发布目标：console 静态制品。
 
-### 6.2 Auth Web
+### 6.2 Auth Web [FACT]
 
 - 路径：01_core_hexin/apps/auth-web。
 - 浏览器入口：src/main.tsx；先解析内建身份节点或加载同源运行时节点配置，再渲染 App。
@@ -122,7 +126,7 @@
 - 构建入口：npm run build:auth → @smart-wing/auth-web 的 vite build。
 - 发布目标：auth-web 静态制品。
 
-### 6.3 Storefront
+### 6.3 Storefront [FACT]
 
 - 路径：01_core_hexin/apps/storefront-web。
 - 页面入口：app/layout.tsx、app/page.tsx、app/[device]/page.tsx、app/h5/page.tsx 以及 desktop-1920 页面。
@@ -130,17 +134,18 @@
 - worker/index.ts 先调用 commerce-api 的 routePublicRequest，命中 API 时直接返回；否则交给 vinext/server/app-router-entry。
 - 同一 fetch 入口通过 resolveEnv 同时适配 Cloudflare 注入环境和 Node process.env。
 - 构建入口：npm run build:storefront → vinext build，随后运行 legacy CSS 与 H5 性能检查。
-- 当前 release 配置把 Storefront 发布为阿里云 systemd 上的 vinext Node 服务；Cloudflare Worker 的独立部署配置未在受控文件中发现，Cloudflare 运行状态待专项核验。
+- [FACT] 当前 release 配置把 Storefront 发布为阿里云 systemd 上的 vinext Node 服务。
+- [UNKNOWN] Cloudflare Worker 的独立部署配置未在受控文件中发现；它是否由外部仓库、平台配置或历史流程部署，待专项核验。
 
 ### 6.4 Miniapp
 
-- 路径：01_core_hexin/apps/miniapp/miniprogram。
-- 当前只有 app.js、生成配置/领域文件、样式和品牌资源共 9 个文件。
-- 基线中未发现 app.json、页面目录或微信开发者工具项目配置；不能据此认定已废弃，运行职责标记为“未验证”。
+- [FACT] 路径为 01_core_hexin/apps/miniapp/miniprogram。
+- [FACT] 当前只有 app.js、生成配置/领域文件、样式和品牌资源共 9 个文件。
+- [UNKNOWN] 基线中未发现 app.json、页面目录或微信开发者工具项目配置；外部加载、构建和发布职责尚未验证，不能据此认定已废弃。
 
 ## 7. API、服务与后台任务入口
 
-### 7.1 Canonical Commerce
+### 7.1 Canonical Commerce [FACT]
 
 - 路径：01_core_hexin/services/commerce。
 - 共有 1,107 个文件，其中 1,096 个源码类文件，源码物理行约 65,026 行（包含生成文件和测试）。
@@ -149,21 +154,22 @@
 - release engine 的 service-targets.mjs 把 10 个独立发布服务映射到精确 Main/Ready Main。
 - 当前契约定义 operations.yml 声明 345 个 operation id；events.yml 声明 67 个 event id。是否全部真实注册、是否仍对外承诺，留给架构与契约阶段核验。
 
-commerce/src/modules 下有 34 个业务或平台模块目录：
+commerce/src/modules 下有 35 个业务或平台模块目录：
 
 access、audit、benefit、capability、cart、catalog、channel、checkout_jiesuan、experience、extension、finance、fulfillment、identity、inventory、mall、marketing、member、notification、observability、order_dingdan、organization、partner、payment_zhifu、pricing、provisioning、purchase、qualification、referral、reporting、risk、runtime、support、verification、voucher、webbusiness。
 
 其中模块根还包含 DomainPolicy.test.ts、ModuleCatalog.test.ts 和 RuntimeModule.ts，不属于上述任一目录。
 
-### 7.2 Compatibility Commerce API
+### 7.2 Compatibility Commerce API [FACT]
 
 - 路径：01_core_hexin/services/commerce-api。
 - publicRouter、storefrontRouter、authenticatedRouter、adminRouter 和 simulationRouter 由 src/api/router.ts 组织。
 - publicRouter 被 Storefront worker 直接导入。
 - adminServer.ts 是 Express 入口，监听默认 127.0.0.1:3001，含 health、AI 与静态 Console 处理；根 package 只提供 build:compat-admin-reference 构建它。
-- 它未出现在 zdt-next.release.json 的独立发布目标中；实际生产责任待运行图阶段复核。
+- [FACT] 它未出现在 zdt-next.release.json 的独立发布目标中。
+- [UNKNOWN] 它是否经 Storefront 同源制品或仓库外机制承担其他生产责任，待运行图阶段复核。
 
-### 7.3 发布目标
+### 7.3 发布目标 [FACT]
 
 02_platform_pingtai/infrastructure/release/zdt-next.release.json 声明 15 个发布目标：
 
@@ -187,14 +193,15 @@ access、audit、benefit、capability、cart、catalog、channel、checkout_jies
 
 ### 7.4 Jobs、队列和定时入口
 
-- app/jobs.ts 当前有 33 个 registerJob 声明，覆盖 channel、experience、transaction、payment、fulfillment、benefit、finance、notification、projection、export、risk、maintenance 和 import 等队列。
-- JobsMain.ts 启动 RuntimeScheduler；JobRunner 使用数据库行锁、租约、心跳、重试和 runtime.deadletter。
-- RuntimeEventPublisher 把事件投递到 PostgreSQL runtime.job；仓库还存在 InboxStore/Outbox 机制。
-- 当前依赖中没有识别出独立消息代理客户端；已发现的异步任务主干是 PostgreSQL 队列表。Redis 主要作为 Cache 接口实现，语义仍待模块审阅。
-- 独立发布 worker 为 identity-notification-jobs、catalog-jobs 和 payment-jobs；仓库还保留 FullJobsMain、JobsMain、PaymentJobsMain、IdentityNotificationJobsMain 等聚合或兼容入口，是否在线需通过 systemd 与发布记录二次核对。
-- 两个 timer 文件分别为 zhudatuan-release-policy.timer 和 smart-wing-postgres-backup.timer。前者位于当前 zhudatuan production systemd 目录，后者位于 storefront-compatibility。
+- [FACT] app/jobs.ts 当前有 33 个 registerJob 声明，覆盖 channel、experience、transaction、payment、fulfillment、benefit、finance、notification、projection、export、risk、maintenance 和 import 等队列。
+- [FACT] JobsMain.ts 启动 RuntimeScheduler；JobRunner 使用数据库行锁、租约、心跳、重试和 runtime.deadletter。
+- [FACT] RuntimeEventPublisher 把事件投递到 PostgreSQL runtime.job；仓库还存在 InboxStore/Outbox 机制。
+- [INFERENCE] 当前 package 依赖与已追踪队列实现未显示独立消息代理客户端，已发现的异步任务主干是 PostgreSQL 队列表；仓库外运行依赖仍待环境矩阵确认。Redis 主要作为 Cache 接口实现，完整语义待模块审阅。
+- [FACT] release manifest 的独立 jobs target 为 identity-notification-jobs、catalog-jobs 和 payment-jobs；仓库还保留 FullJobsMain、JobsMain、PaymentJobsMain、IdentityNotificationJobsMain 等聚合或兼容入口。
+- [UNKNOWN] 上述聚合或兼容入口是否在线，需通过 systemd、发布记录和生产只读状态复核。
+- [FACT] 两个 timer 文件分别为 zhudatuan-release-policy.timer 和 smart-wing-postgres-backup.timer。前者位于当前 zhudatuan production systemd 目录，后者位于 storefront-compatibility。
 
-### 7.5 脚本与工具入口
+### 7.5 脚本与工具入口 [FACT]
 
 - 04_tools/scripts：133 个文件；以审计、检查、生成、发布、provisioning 和证据脚本为主。
 - 04_tools/release-engine：36 个文件；提供 plan、build、package、install、deploy 与远端 agent。
@@ -202,7 +209,7 @@ access、audit、benefit、capability、cart、catalog、channel、checkout_jies
 - scripts/deploy-now.sh：调用 GitHub CLI 触发 deploy.yml，并等待 workflow 结果。
 - 上述区域合计包含 161 个 .mjs、87 个 .ts、3 个 .sh 和 1 个 .mts 文件；“存在脚本文件”不等于“已确认被生产调用”。
 
-## 8. 数据、迁移、缓存、队列和对象存储
+## 8. 数据、迁移、缓存、队列和对象存储 [FACT]
 
 | 能力 | 代码事实 | 当前验证状态 |
 | --- | --- | --- |
@@ -220,7 +227,7 @@ access、audit、benefit、capability、cart、catalog、channel、checkout_jies
 
 ## 9. GitHub、阿里云、制品与运行单元
 
-### 9.1 GitHub 入口
+### 9.1 GitHub 入口 [FACT]
 
 | 工作流 | 触发 | 主要作用 |
 | --- | --- | --- |
@@ -230,7 +237,7 @@ access、audit、benefit、capability、cart、catalog、channel、checkout_jies
 
 deploy.yml 明确使用 root@123.57.232.253，默认节点 hbbtzn-l1，可选 zhudatuan-l0。未执行任何 workflow，也未连接或修改线上资源。
 
-### 9.2 制品关系
+### 9.2 制品关系 [FACT]
 
 - release engine 的顺序为 plan → build → package → deploy。
 - frontend 目标打包构建目录；service 目标只打包目标 Main/Ready Main bundle；database-migration 打包执行器、Canonical migrations 和 contract history。
@@ -238,7 +245,7 @@ deploy.yml 明确使用 root@123.57.232.253，默认节点 hbbtzn-l1，可选 zh
 - hbbtzn-l1 的 identity、storefront 和 identity notification 为节点独立运行；purchase、web、support、catalog、payment 与 database migration 多数通过 hostedBy 指向 zhudatuan-l0 物理运行单元。
 - Console 另有武汉 OSS 不可变 tar.gz 通道；其 ECS 切换脚本为 04_tools/scripts/release/activate-console-static.sh。
 
-### 9.3 systemd 声明库存
+### 9.3 systemd 声明库存 [FACT]
 
 - zhudatuan production systemd 目录：33 个 unit/timer 文件。
 - zhudatuan staging 目录：9 个 service 文件。
@@ -247,11 +254,11 @@ deploy.yml 明确使用 root@123.57.232.253，默认节点 hbbtzn-l1，可选 zh
 
 已确认的生产模板/服务族包括 SFL Storefront、Identity API、Identity Notification Jobs、API Gateway、Cloudflared、Catalog API/Jobs/Object Store、Web API、Purchase API、Payment Webhook/Jobs、Mall Provisioning、Secret Store，以及共享 Internal Runtime、Object Store、Migration、Registration DB、Owner/Registration Bootstrap、Console Support 和 Release Policy。
 
-“仓库中存在 unit”与“线上当前启用 unit”严格区分。基线阶段没有读取生产 systemctl 状态、日志、current 指针或制品哈希。
+[UNKNOWN] 仓库中存在 unit 不能证明线上当前启用。基线阶段没有读取生产 systemctl 状态、日志、current 指针或制品哈希。
 
 ## 10. 自动生成、第三方、构建产物与归档
 
-### 10.1 自动生成文件
+### 10.1 自动生成文件 [FACT]
 
 覆盖清单当前标记 69 个自动生成文件，主要来源如下：
 
@@ -272,12 +279,13 @@ deploy.yml 明确使用 root@123.57.232.253，默认节点 hbbtzn-l1，可选 zh
 
 ### 10.2 第三方代码
 
-- node_modules 未被跟踪，第三方 npm 代码不在逐文件清单中；依赖版本由 46 个 package.json（含根和 2 个视觉归档 package）及 package-lock.json 管理。
-- 当前未识别出独立受控的 vendor/third_party 源码目录。extensions/vendors 是本项目业务供应商适配器，不按第三方代码排除。
-- THIRD_PARTY_NOTICES.md 当前至少列出 qrcode-generator 和 Lucide；完整许可证与锁文件一致性留给供应链专项。
-- 历史 Storybook preview 中含打包后的第三方代码，但整棵 version-upgrades 已按归档处理。
+- [FACT] node_modules 未被跟踪，第三方 npm 代码不在逐文件清单中；依赖版本由 46 个 package.json（含根和 2 个视觉归档 package）及 package-lock.json 管理。
+- [FACT] 当前受控路径中没有 vendor/third_party 目录。extensions/vendors 是项目 workspace 业务适配器，不按目录名作为第三方代码排除。
+- [FACT] THIRD_PARTY_NOTICES.md 当前至少列出 qrcode-generator 和 Lucide。
+- [UNKNOWN] 完整许可证与 lockfile 的一致性尚未核验。
+- [INFERENCE] 历史 Storybook preview 中包含打包依赖，当前按视觉历史归档处理；其许可与外部恢复责任仍需专项核验。
 
-### 10.3 构建产物
+### 10.3 构建产物 [FACT]
 
 当前运行树中受控的明确 dist 产物只有 Console 设计参考 kaidian 的 3 个文件：
 
@@ -287,11 +295,11 @@ deploy.yml 明确使用 root@123.57.232.253，默认节点 hbbtzn-l1，可选 zh
 
 它们仍位于 public 下，后续必须核对生产暴露策略和视觉参考入口，不能仅因是 dist 就删除。
 
-### 10.4 归档
+### 10.4 归档 [INFERENCE]
 
 05_docs_ziliao/VI_shijue/version-upgrades 下 507 个文件统一标记为“归档文件”，包括历史源代码、Storybook preview、截图和说明。它们不作为当前 ZHU-VI-1.5 运行实现逐行审阅，但仍需在删除候选评审中证明历史恢复、视觉对照和许可责任。
 
-## 11. 测试类型与正式入口
+## 11. 测试类型与正式入口 [FACT]
 
 排除视觉历史归档后，共识别 640 个测试文件：
 
@@ -320,15 +328,15 @@ deploy.yml 明确使用 root@123.57.232.253，默认节点 hbbtzn-l1，可选 zh
 
 以下仅是已经有直接文本或注册证据的“漂移区域”，不是本阶段定级后的缺陷：
 
-1. README.md 仍称当前契约为 217 个 operations；实际 definitions/operations.yml 在本基线声明 345 个 operation id。
-2. README.md 引用 06_history_lishi/main_jiuzhuxian；该路径不在本基线受控树中。
-3. DEPLOYMENT.md 仍以“正式 main 工程”和 releaseEligible=false 为前提；当前 GitHub deploy.yml 与 zdt-next.release.json 已定义 zdt-next 到阿里云 production 的直接发布链。
-4. SOURCE-MANIFEST.md 和 artifacts.json 保留 Canonical/Compatibility 双轨与 releaseEligible=false 描述；当前 release manifest 已把 Storefront、Auth、Console、十个 Commerce 服务和数据库迁移纳入可部署 target。两者的权威关系待发布专项判断。
-5. playwright.config.ts 注册 @shop/auth、@shop/store、@shop/supplier、@shop/storefront 五个 Web server 名称中的四个；它们都不在当前 package.json workspace name 集合中。仅 @shop/console 存在。测试尚未执行，不能先写成运行失败事实。
-6. hbbtzn deployment YAML 同时写有 deploymentState: shared-kernel-candidate-not-cut-over 和 compatibility.status: shared-business-runtimes-production-active；release manifest 又给出 hbbtzn-l1 production deployment。需要线上只读证据区分“目标态、兼容态与当前态”。
-7. Storefront 存在 Cloudflare Worker 兼容入口，但仓库未发现 wrangler 配置；当前 release target 与 systemd 明确走阿里云 vinext Node。Cloudflare Worker 是否只作为构建抽象、历史入口或另库部署，尚未确认。
-8. miniapp 目录缺少常见页面与项目注册文件，但生成器仍写入其中。其产品状态和运行入口未知。
-9. quality.yml 的 on 声明当前只有 workflow_dispatch，但内部条件仍处理 push 和 pull_request 上下文。是否有外部复用或有意手动化，待 GitHub Actions 专项复核。
+1. [CONFLICT] README.md 称当前契约为 217 个 operations；definitions/operations.yml 在本基线声明 345 个 operation id。
+2. [STALE] README.md 引用 06_history_lishi/main_jiuzhuxian；该路径不在本基线受控树中。它是否仍存在于外部归档尚未核验。
+3. [CONFLICT] DEPLOYMENT.md 仍以“正式 main 工程”和 releaseEligible=false 为前提；当前 GitHub deploy.yml 与 zdt-next.release.json 已定义 zdt-next 到阿里云 production 的直接发布链。
+4. [CONFLICT] SOURCE-MANIFEST.md 和 artifacts.json 保留 Canonical/Compatibility 双轨与 releaseEligible=false 描述；当前 release manifest 已把 Storefront、Auth、Console、十个 Commerce 服务和数据库迁移纳入可部署 target。两者的权威关系待发布专项判断。
+5. [CONFLICT] playwright.config.ts 注册的 @shop/auth、@shop/store、@shop/supplier、@shop/storefront 不在当前 package.json workspace name 集合中，仅 @shop/console 存在。测试尚未执行，不能先写成运行失败事实。
+6. [CONFLICT] hbbtzn deployment YAML 同时写有 deploymentState: shared-kernel-candidate-not-cut-over 和 compatibility.status: shared-business-runtimes-production-active；release manifest 又给出 hbbtzn-l1 production deployment。需要线上只读证据区分目标态、兼容态与当前态。
+7. [UNKNOWN] Storefront 存在 Cloudflare Worker 兼容入口，但仓库未发现 wrangler 配置；当前 release target 与 systemd 明确走阿里云 vinext Node。Cloudflare Worker 是否只作为构建抽象、历史入口或另库部署，尚未确认。
+8. [UNKNOWN] miniapp 目录缺少常见页面与项目注册文件，但生成器仍写入其中。其产品状态和运行入口未知。
+9. [CONFLICT] quality.yml 的 on 声明当前只有 workflow_dispatch，但内部条件仍处理 push 和 pull_request 上下文。是否有外部复用或有意手动化，待 GitHub Actions 专项复核。
 
 这些区域会分别进入架构、测试、发布和文档漂移专项；在复核前不进入垃圾代码 G3 清单。
 
