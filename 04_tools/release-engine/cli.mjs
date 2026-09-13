@@ -2,6 +2,7 @@
 import { resolve } from 'node:path';
 
 import { loadAdapter } from './src/adapter.mjs';
+import { e06SovereignCommand } from './src/e06-sovereign.mjs';
 import { asDeliveryError } from './src/errors.mjs';
 import { baselineCommand, buildCommand, deployCommand, installCommand, packageCommand, planCommand, rollbackCommand, seedCommand, statusCommand, verifyCommand } from './src/engine.mjs';
 import { layerCommand } from './src/layer.mjs';
@@ -19,6 +20,7 @@ const commands = Object.freeze({
   seed: seedCommand,
   status: statusCommand,
   layer: layerCommand,
+  'accept-e06': e06SovereignCommand,
 });
 
 try {
@@ -86,5 +88,5 @@ function printResult(result, format) {
 }
 
 function printHelp() {
-  process.stdout.write(`统一 AI 发布引擎\n\n用法：\n  node 04_tools/release-engine/cli.mjs <plan|install|build|package|deploy|verify|rollback|status|seed|baseline|layer> [选项]\n\n关键选项：\n  --adapter <path>             项目适配器\n  --from <git-ref>             差异起点\n  --to <git-ref>               差异终点\n  --node <node-key>            目标节点，可重复\n  --plan <plan.json>           构建所用计划\n  --build <build.json>         打包所用构建证据\n  --package <package.json>     部署所用制品集合\n  --environment <candidate|production>\n  --approve-production <project:sha>\n  --mode <agent-candidate|agent|runtime-candidate|verify>\n  --approve-install <project:install:sha>\n  --target <target-id>         计划、部署、状态、回滚、初始登记或依赖层目标\n  --source-sha <sha>           安装、初始登记或基线导入对应的提交\n  --approve-seed <project:seed-layout:sha>\n  --approve-baseline <project:baseline:sha>\n  --source-node-modules <path> 依赖层来源\n  --destination <path>         依赖层安装根目录\n  --dry-run                    只展示部署意图\n  --format <human|json>\n`);
+  process.stdout.write(`统一 AI 发布引擎\n\n用法：\n  node 04_tools/release-engine/cli.mjs <plan|install|build|package|deploy|verify|rollback|status|seed|baseline|layer|accept-e06> [选项]\n\n关键选项：\n  --adapter <path>             项目适配器\n  --from <git-ref>             差异起点；accept-e06 的制品 A\n  --to <git-ref>               差异终点；accept-e06 的制品 B\n  --node <node-key>            目标节点，可重复\n  --plan <plan.json>           构建所用计划\n  --build <build.json>         打包所用构建证据\n  --package <package.json>     部署所用制品集合\n  --environment <candidate|production>\n  --approve-production <project:sha>\n  --mode <agent-candidate|agent|runtime-candidate|verify>\n  --approve-install <project:install:sha>\n  --target <target-id>         计划、部署、状态、回滚、初始登记或依赖层目标\n  --source-sha <sha>           安装、初始登记或基线导入对应的提交\n  --approve-seed <project:seed-layout:sha>\n  --approve-baseline <project:baseline:sha>\n  --source-node-modules <path> 依赖层来源\n  --destination <path>         依赖层安装根目录\n  --output <path>              accept-e06 的六份 staging 证据目录\n  --summary <path>             accept-e06 的总验收回执\n  --image <image>              accept-e06 使用的本地 Docker 镜像\n  --dry-run                    只展示部署意图\n  --format <human|json>\n`);
 }

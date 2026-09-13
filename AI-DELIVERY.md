@@ -63,3 +63,15 @@ node 04_tools/release-engine/cli.mjs deploy --package <package.json> --node <nod
 ```
 
 直达模式不运行 tests、typecheck、build preflight、candidate checks、production approval、remote preflight、health checks 或 external baseline。
+
+## E06 一次性 staging 验收
+
+E06 的三个 Sovereign 验收节点只通过统一发布入口建立和操作：
+
+```bash
+npm run release -- accept-e06 --from <artifact-A-ref> --to <artifact-B-ref>
+```
+
+该命令只创建三个一次性 Docker staging 节点，使用正式制品清单和发布代理语义对 S-B 执行
+`A→B→A`，采集指针、进程、健康、配置、数据与四流历史证据后销毁节点。它不触发 GitHub
+Deploy，不连接生产主机，不修改生产指针、正式域名或生产数据，也不调用支付渠道。
