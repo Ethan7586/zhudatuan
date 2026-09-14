@@ -2470,3 +2470,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | business consumers | benefit、verification、qualification、voucher、notification、channel、risk、reporting等读写操作复用 | [FACT][E-AU-234-003] |
 
 [FACT][E-AU-234-004] 2 文件、116 行完成深审；测试仅覆盖keyset两条返回路径，见F-0219/P2。
+
+## 240. AU-235 NodeServer ingress test boundary 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| socket ingress | NodeServer将Node请求转为Fetch Request、绑定取消和体积限制并写回HTTP响应 | [FACT][E-AU-235-001] |
+| node and peer boundary | 非health请求解析Host node context；仅loopback连接采纳单IP x-real-ip | [FACT][E-AU-235-002] |
+| production/fixture | 八个API入口均loopback监听；fixture覆盖node ingress/health与peer address，但未覆盖其余故障边界 | [FACT][E-AU-235-003] |
+
+[FACT][E-AU-235-004] NodeServer源码已在AU-003深审，本批新增1测试文件、145行深审；缺口见F-0220/P2。

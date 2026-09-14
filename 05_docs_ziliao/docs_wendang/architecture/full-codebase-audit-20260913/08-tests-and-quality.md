@@ -764,3 +764,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Pagination fixture只覆盖Date sort的lookahead与terminal page；共同输入校验、query parse和result position分支没有direct fixture。
 - 见F-0219/P2。审计工作树未运行Vitest。
+
+## 235. AU-235 NodeServer ingress test boundary 深审
+
+- 现有fixture覆盖node ingress与trusted peer address；没有端到端体积、取消、错误映射或response header/cookie写回fixture。
+- 见F-0220/P2。审计工作树未运行Vitest。

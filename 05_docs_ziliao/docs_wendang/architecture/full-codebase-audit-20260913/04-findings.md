@@ -4102,6 +4102,20 @@
 | 验证/回滚 | 断言稳定error code、冻结page和分页body/cursor；回滚为revert提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0220｜NodeServer ingress fixture 未覆盖请求体、取消、错误和响应写回边界
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation NodeServer；P2；高 |
+| 类型 | 测试覆盖缺口、HTTP ingress/egress失败边界 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/interface/NodeServer.ts:23-108`；`.../NodeServer.test.ts:11-145` |
+| 当前/预期 | 实现限制body为2MiB、把request/response close映射为abort、将body过大→413、节点Host错误→421、其余→500，并写回headers/set-cookie。预期每个可观察边界有端到端fixture。 |
+| 直接证据 | 测试仅覆盖node context一次解析、未知Host 421、health不解析node与trustedPeerAddress；未发送oversize body、断开客户端、handler exception/listen failure或header/set-cookie response。 |
+| 调用链/影响 | Caddy loopback reverse proxy → NodeServer → HttpApp → 全部API入口。转换或响应边界回归可能在高负载、断连、异常或cookie/header响应时造成错误状态/资源处理异常；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立受控local socket/handler fixture批，覆盖2MiB阈值、request abort、413/421/500 body、set-cookie重复header与close/ready error；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言status、稳定JSON code、handler是否调用、AbortSignal reason与response headers；回滚为revert提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
