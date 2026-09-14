@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-088 已完成。AU-088 完成 WebBusiness Order 读取运行入口审阅。覆盖总账按当前文件级清单重算：深入审阅1,006文件/84,636行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,842文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-089 已完成。AU-089 完成 WebBusiness Benefit 账户/账本读取运行入口审阅。覆盖总账按当前文件级清单重算：深入审阅1,007文件/84,672行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,841文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -963,3 +963,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 WebBusiness Order 聚合 read、角色/组织范围过滤、payment/finance/fulfillment projection 与数据库 grant/RLS。
 
 执行结果：owner/supplier/store/组织 closure 的 order 主表范围、过滤枚举和 keyset 均已追踪。新增 F-0161/P2：Web role 后续获得 payment/finance 表 select，但相应 RLS policy 不存在；这些 lateral projection 对该 role 默认拒绝，故订单返回中的 payment/finance facts 很可能恒为空，而现有测试只断言 SQL 文本。未发现 P0；Vitest 未运行。
+
+## 91. AU-089 连续审计点
+
+审阅 WebBusiness Benefit account/ledger read、session-bound SECURITY DEFINER projection、web role grant 与完整 Benefit 对照。
+
+执行结果：Web account/ledger 均将 membership+session 交给只授予 web role 的受控函数；函数再次校验 live session/principal/member/scope，才跨 Finance 读取余额或 posted ledger。查询只访问必要 benefit tables并 keyset。未发现 P0–P3 新问题；Vitest 未运行。

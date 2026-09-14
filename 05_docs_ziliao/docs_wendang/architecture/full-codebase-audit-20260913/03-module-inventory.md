@@ -982,3 +982,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 聚合 SQL/filter static oracle | [FACT][E-AU-088-003] |
 
 [FACT][E-AU-088-004] 2 文件、217 行 WebBusiness Order operation 与测试完成深审；主订单/line/aftersale 的 web RLS 已存在，但 payment/finance select grant 没有对应 web RLS policy，相关 projection 记录 F-0161/P2。
+
+## 94. AU-089 WebBusiness Benefit 账户/账本读取模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| account read | available/reserved/active lots 读取 | [FACT][E-AU-089-001] |
+| ledger read | posted finance entry 的 benefit projection | [FACT][E-AU-089-002] |
+| database boundary | session-bound security definer function 与最小 grant | [FACT][E-AU-089-003] |
+
+[FACT][E-AU-089-004] 1 文件、36 行 WebBusiness Benefit operation 完成深审；web role 不直读 Finance，余额/账本均经按 session 重证的 narrow function 投影。

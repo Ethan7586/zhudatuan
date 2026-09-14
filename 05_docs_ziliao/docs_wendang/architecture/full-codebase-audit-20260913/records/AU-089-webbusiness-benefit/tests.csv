@@ -1,0 +1,3 @@
+"测试/验证","范围","结论","执行"
+"WebBenefit 专用测试","session/account/ledger operation 行为","未找到专用 Web handler 测试。","未执行：无对应测试文件；未安装依赖。"
+"migration/role boundary 复核","function session validation 与 grant","已逐段人工审阅；未连接数据库重放。","只读静态复核。"
