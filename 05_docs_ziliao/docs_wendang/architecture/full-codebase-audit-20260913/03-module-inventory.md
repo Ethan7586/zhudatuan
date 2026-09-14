@@ -2125,3 +2125,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | business target guard test | 检验错误membership target不能到达business或simulation handler | [FACT][E-AU-197-002] |
 
 [FACT][E-AU-197-003] 2 文件、100 行完成深审；这两组是routing selection行为测试，不代替每个下游handler/RPC行为的独立审计。
+
+## 203. AU-198 WeChat routing-boundary test 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| retired auth paths | WeChat auth session/bind/register在top-level auth retirement gate处返回404 | [FACT][E-AU-198-001] |
+| payment boundaries | notification保留public POST入口，prepay必须先经过user authentication | [FACT][E-AU-198-002] |
+
+[FACT][E-AU-198-003] 1 文件、35 行完成深审；验证真实router边界，不覆盖下游Wechat payment handler行为。

@@ -579,3 +579,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct mocked-router tests覆盖顶层storefront/admin分流、auth固定404及business/simulation错误target不进入handler。
 - 下游真实handler/RPC行为不由这些routing tests替代，已在各模块单元单独评估。无P0–P3新问题；审计工作树未运行Vitest。
+
+## 198. AU-198 WeChat routing-boundary test 深审
+
+- Direct router test覆盖retired WeChat auth 404、public callback的POST method boundary与anonymous prepay认证拒绝。
+- Handler内部回调RPC、prepay write和provider错误仍需各自route fixture，已记录F-0190/F-0191。无P0–P3新问题；审计工作树未运行Vitest。

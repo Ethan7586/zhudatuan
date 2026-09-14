@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-197 已完成。AU-197 完成 Commerce API target-routing test audit。覆盖总账按当前文件级清单重算：深入审阅1,675文件/119,368行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,179文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-198 已完成。AU-198 完成 Commerce API WeChat routing-boundary test audit。覆盖总账按当前文件级清单重算：深入审阅1,676文件/119,403行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,178文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1617,3 +1617,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Commerce API router target-routing 与business target-guard tests。
 
 执行结果：top-level router test验证storefront/admin不会跨dispatch，`/auth/*`在resolve session之前保持固定404；business router tests验证admin/storefront的业务及simulation路径在错误target返回null。测试以mocked routers核对选择顺序，真实handler路径已在AU-168及各子模块审阅；无P0–P3新问题。
+
+## 200. AU-198 连续审计点
+
+审阅 Commerce API WeChat routing-boundary test。
+
+执行结果：test以真实`routeApi`确认退休WeChat auth paths保持404、payment notification在public router可达且method受限、prepay在anonymous请求时先被认证边界拒绝。该test不替代notification/支付handler内部RPC验证（已分别记录F-0190/F-0191）；无P0–P3新问题。
