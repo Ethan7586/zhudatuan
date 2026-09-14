@@ -228,3 +228,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - F-0096治理会改变既有connection可接受目的地，必须先盘点真实provider区域/测试端点与代理需求；不能在发布时直接收窄造成全vendor断连。
 - F-0097治理属于共享Transport容量和错误分类，需分别验证读取、幂等写入、非幂等写入、circuit和进程内存；不能与provider业务修改混批。
 - 本AU未构建OCI、读取secret/线上连接、调用vendor、推送、合并或部署。
+
+## 26. AU-023 Cakeuncle Vendor发布与运维边界
+
+- `@shop/vendorcakeuncle`没有独立镜像、进程、端口或release target；被Cake、Flower、Foodvoucher、Meal四个Provider包编入Commerce OCI。
+- Cake/Flower/Meal的发布能力与README只读边界一致；Foodvoucher manifest/factory把禁用写入和Webhook带入同一制品，治理前必须只读盘点enabled installation和真实协议（F-0100）。
+- 专用Webhook未导出，不能因“已有实现”直接注册；其payload未签特征会改变状态权威边界。DC-0028必须独RV-0017后才可讨论去留。
+- 本AU未构建OCI、访问Cakeuncle/secret/线上配置、激活provider、推送、合并或部署。

@@ -154,3 +154,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - [P1-CANDIDATE][E-AU-022-004/005] baseUrl只验证HTTPS，未与Manifest/批准origin绑定，也未排除userinfo、私网、回环和链路本地目的地；有权operator可把认证证明和业务正文发往任意HTTPS来源，见F-0096/RV-0014。
 - HMAC/RSA规范化材料覆盖method、path、timestamp、nonce和body；redirect被拒绝，降低跨origin自动转发风险。未发现私钥明文输出。
 - 本AU没有读取真实vendor secret、connection配置、provider流量或线上权限记录。
+
+## 20. AU-023 Cakeuncle协议安全边界
+
+- Client只把`channel_no`、秒级timestamp和摘要写入请求，channelKey不离开进程；签名比较使用恒时函数。网络目的地仍继承F-0096的可配置origin风险。
+- Cakeuncle官方式签名只覆盖channel与timestamp，不覆盖payload。专用Webhook因此明确标记`authoritative:false`且未导出/注册；该GX边界必须保留到专项复核。
+- [P1-CANDIDATE][E-AU-023-005/007] Foodvoucher生产使用另一套header-HMAC verifier并暴露写ports，与包内已知协议/禁用决定不一致，见F-0100/RV-0016。
+- 本AU使用现有测试向量与合成JSON，没有读取、打印、修改或轮换真实channelKey/webhook secret。

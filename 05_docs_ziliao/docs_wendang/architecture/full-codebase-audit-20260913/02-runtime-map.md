@@ -764,3 +764,11 @@ sequenceDiagram
 - 请求链：Provider port→VendorClient rate acquire→Semaphore→CircuitBreaker→retry→HMAC/RSA authenticate→可配置HTTPS origin；redirect为error。
 - 响应链：分阶段connection/response timer→整块`response.text()`→HTTP错误映射→JSON.parse→递归JSON值检查。当前没有body字节或嵌套深度上限（F-0097）。
 - 目的地链没有Manifest/host/IP绑定（F-0096）；线上egress、DNS、secret ACL和connection值未验证。
+
+## 28. AU-023｜Cakeuncle运行链
+
+`RuntimeExtensionLoader → {Cake,Flower,Foodvoucher,Meal}Provider.create → createCakeuncleClient(connection) → Cakeuncle request body(channel_no,timestamp,sign) → configured HTTPS endpoint → 2MiB response reader → business code/mapper`
+
+- Cake/Flower/Meal仅发布读取ports并分别校验root category或store endpoint；Foodvoucher factory另经Provider Core `createPorts`发布写入及Webhook，和Cakeuncle包声明边界冲突（F-0100）。
+- 专用`CakeuncleWebhookVerifier`、event ID派生与success回执没有生产注册；当前只在包内测试运行。
+- 所有运行状态为connection实例内存中的rate/concurrency/circuit；数据写入由Commerce领域与Channel数据库拥有。

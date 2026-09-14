@@ -1,0 +1,8 @@
+"test_id","area","method","result","meaning"
+"TC-AU-023-001","正式测试","npm test -- --reporter=dot","阻塞/127","vitest不存在，源码未加载"
+"TC-AU-023-002","类型检查","npm run typecheck","阻塞/127","tsc不存在，源码未加载"
+"TC-AU-023-003","深度反事实","构造1k/5k/10k/20k层JSON并同构递归校验","复现","5k层起RangeError，均远低于2MiB"
+"TC-AU-023-004","Webhook变更正文","现有Webhook.test静态核对","已编码事实","同签名改status仍verify=true，normalize为非authoritative"
+"TC-AU-023-005","生产Webhook接线","全仓符号/Provider factory追踪","冲突","专用verifier未导出；Foodvoucher使用通用header-HMAC verifier"
+"TC-AU-023-006","公共API","index与全仓引用矩阵","完成","禁用代码与零caller公共export已区分"
+"TC-AU-023-007","构建","npm run build","未执行","等同typecheck且当前缺tsc"

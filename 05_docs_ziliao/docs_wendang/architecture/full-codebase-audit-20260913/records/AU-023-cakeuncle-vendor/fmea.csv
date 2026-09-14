@@ -1,0 +1,7 @@
+"fmea_id","failure","trigger","local_effect","propagation","rating"
+"FM-AU-023-001","深层响应递归溢出","合法小体积深JSON","RangeError投影为VENDOR_TRANSPORT_FAILED","读调用重试并计入circuit","P2/F-0099"
+"FM-AU-023-002","Foodvoucher不支持写能力被调用","Registry按manifest/ports公开能力","通用Client发送未闭合协议请求","发行/退款/核销失败或结果不确定","P1候选/F-0100"
+"FM-AU-023-003","真实无签名回调进入通用header-HMAC verifier","Foodvoucher Webhook启用","合法供应商通知被拒","状态不更新/人工恢复","P1候选/F-0100"
+"FM-AU-023-004","专用payload未签Webhook误接生产","未来直接导出/注册","改正文仍通过签名","错误状态进入下游","GX/DC-0028"
+"FM-AU-023-005","超2MiB响应","声明或流式正文过大","稳定VENDOR_RESPONSE_TOO_LARGE","不重试并保护进程","已控制"
+"FM-AU-023-006","非幂等写Transport失败","5xx/timeout","转换CAKEUNCLE_WRITE_OUTCOME_UNKNOWN","不盲重试","已控制"

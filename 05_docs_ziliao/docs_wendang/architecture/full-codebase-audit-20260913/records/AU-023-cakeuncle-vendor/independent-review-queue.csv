@@ -1,0 +1,3 @@
+"review_id","target","current_rating","must_retrace","required_evidence","do_not_assume","status"
+"RV-0016","F-0100","P1候选","Foodvoucher manifest→factory→Provider Registry→真实scope caller→Cakeuncle endpoint/callback协议","独立核Provider capability映射、线上只读enabled状态、正式供应商协议、端点与回调；合成端到端调用","不得把README单独当事实；不得因代码存在就推定线上启用","待复核"
+"RV-0017","DC-0028","GX","Webhook/H5/Card signer→barrel/动态引用→provider factory/route/release","独立复核全部静态/动态/config引用、历史兼容、唯一协议规格和恢复路径","不得删除、导出或注册；不得把零引用等同无责任","待复核"

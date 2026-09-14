@@ -200,3 +200,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 正式`test`与`typecheck`各执行一次，均因审计工作树缺`vitest`/`tsc`在源码加载前退出127；未安装依赖、未执行build，不记为实现失败或通过。
 - 静态调用链和受控探针支持F-0096/F-0097，但线上配置、出口和资源限制仍需RV-0014/RV-0015独立复核。
 - 详见`records/AU-022-vendor-core/tests.csv`、`validation-results.md`和`independent-review-queue.csv`。
+
+## 22. AU-023 Cakeuncle Vendor质量
+
+- 14个Vitest用例覆盖secret缺失、签名向量、基础Client、2MiB声明限额、非幂等不重试、business error/circuit和被禁用Webhook。
+- 正式test/typecheck因缺vitest/tsc在源码加载前127退出；没有安装依赖或执行build。
+- 合成深层JSON探针在30,004字节/5,000层起复现RangeError，证明字节限额不能替代结构预算（F-0099）。
+- 套件不命中Foodvoucher生产factory/ports与公共export，也不覆盖深度、chunked限额、超时/取消矩阵，见F-0102。详见`records/AU-023-cakeuncle-vendor/`。

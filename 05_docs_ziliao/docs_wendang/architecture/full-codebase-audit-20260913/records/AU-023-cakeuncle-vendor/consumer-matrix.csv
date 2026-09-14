@@ -1,0 +1,7 @@
+"consumer","entry","used_capability","runtime","data_owner","boundary"
+"Cake provider","CakeProvider.create","Client/physical endpoints/numeric parsing","Commerce OCI","Catalog","只读Catalog/Price/Inventory；endpoint闭合"
+"Flower provider","FlowerProvider.create","Client/physical endpoints/numeric parsing","Commerce OCI","Catalog","只读Catalog/Price/Inventory；endpoint闭合"
+"Meal provider","MealProvider.create","Client/meal brand endpoints","Commerce OCI","Catalog","只读Catalog/Price；store scope闭合"
+"Foodvoucher provider","FoodvoucherProvider.create","Client + generic createPorts","Commerce OCI","Voucher/provider operation","F-0100：公开写入/Webhook与包禁用声明冲突"
+"Contract tests","providers.spec.ts","physical/meal constants","CI test process","无","只验证配置contract"
+"Package tests","tests/*.test.ts","Auth/Client/Signer/disabled Webhook","Vitest","无","F-0102"

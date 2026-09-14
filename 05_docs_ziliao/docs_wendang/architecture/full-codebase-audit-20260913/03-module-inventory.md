@@ -418,3 +418,16 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 4个Client行为 | Vitest | F-0098；当前缺工具未执行 |
 
 [FACT][E-AU-022-001] 11/11文件、365/365行均已深入审阅；无独立进程、数据库或发布target。
+
+## 29. AU-023 Cakeuncle Vendor 模块清单
+
+| 子模块 | 职责 | 真实入口/调用者 | 当前边界 |
+| --- | --- | --- | --- |
+| Auth/Signer | channel凭据、API/H5/Card签名与比对 | Client；部分只被测试 | 禁用协议见DC-0028；别名见DC-0029 |
+| Client | Cakeuncle JSON/form请求、超时、重试、响应限长 | Cake/Flower/Foodvoucher/Meal | F-0099；继承F-0096 |
+| Endpoints/Physical | 固定path、金额和整数解析 | Cake/Flower/Meal mappers | 部分零caller常量为G1 |
+| Webhook | 签名、时间窗、normalize、event ID | 仅Webhook.test | 未导出/未注册；GX |
+| README/public barrel | 声明启用与禁用能力、公共API | 开发/安装与4个provider包 | Foodvoucher冲突F-0100 |
+| tests | 14个用例覆盖Auth/Client/Signer/Webhook | Vitest | F-0102；当前工具缺失 |
+
+[FACT][E-AU-023-001] 16/16文件、662/662行均已深入审阅；无独立进程、数据库或发布target。

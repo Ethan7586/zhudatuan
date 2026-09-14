@@ -746,3 +746,12 @@ flowchart LR
 [CONFLICT][E-AU-022-005/006] 配置边界只把base URL限制为HTTPS，没有把首跳origin绑定到provider Manifest或批准host；认证证明和业务正文因此跟随可配置origin，形成F-0096/P1候选。
 
 [CONFLICT][E-AU-022-007] 通用Client没有响应字节/深度上限，四个vendor家族共享整块`response.text()`和递归JSON检查；Cakeuncle专用限长不能向上推断，形成F-0097/P1候选。
+
+## 29. AU-023 Cakeuncle Vendor真实边界
+
+`Cake/Flower/Foodvoucher/Meal ProviderFactory → CakeuncleClient → Vendor Core Rate/Concurrency/Circuit → HTTPS Cakeuncle endpoint`。包无独立进程、表或发布单元，随Commerce OCI装载。
+
+- Client拥有Cakeuncle正文认证、JSON/form编码、双阶段deadline、非幂等写入不重试和2MiB响应限额；connection/network信任继承Vendor Core F-0096。
+- Cake、Flower、Meal在provider wrapper中进一步锁定endpoint与catalog scope；Foodvoucher直接复用通用PortFactory，越过本包README声明的只读/禁用边界，形成F-0100。
+- 专用Webhook实现明确知道签名不覆盖payload，输出`authoritative:false`且没有barrel/生产入口；它是GX证据资产，不是可直接启用能力。
+- 响应递归JSON验证无深度预算，2MiB以内仍可触发栈溢出并错误计入Transport/circuit，见F-0099。

@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 2、G1 21、G2 2、G3 0、GX 2。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 2、G1 24、G2 2、G3 0、GX 3。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -378,3 +378,32 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 新增DC-0027/G1；没有G2、G3或GX新增项。
 - 当前累计G0 2、G1 23、G2 2、G3 0、GX 2。未修改或删除任何实现。
+
+## DC-0028｜Cakeuncle被禁用的Webhook与H5/Card签名协议族
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `vendors/cakeuncle/Webhook.ts`、`Signer.ts`中的H5/Card签名及对应测试 |
+| 疑似原因 | [FACT][E-AU-023-008/009] Webhook未从barrel导出且只被测试引用；H5/Card签名无仓内生产caller |
+| 保留证据 | README记录payload未签、unsigned callback、HTTP endpoint及加密契约不完整等禁用原因；代码和测试保存唯一协议向量与风险事实 |
+| 当前问题 | Foodvoucher生产factory另行暴露通用写入/Webhook，形成F-0100；删除这里会消灭核对冲突所需证据，直接启用则可能接受被改payload |
+| 可否独立删除 | 禁止；没有排除仓外兼容、供应商协议、回滚和唯一业务契约责任 |
+| 二次复核 | 是，RV-0017；GX必须重新检查调用链和运行入口 |
+
+## DC-0029｜Cakeuncle零仓内caller的公共别名与endpoint常量
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `CakeuncleRatePolicy`、`CakeuncleCircuitPolicy`、`CakeuncleSigner`、`CAKEUNCLE_VOUCHER_ENDPOINTS`、`CAKEUNCLE_MEAL_COMMON_ENDPOINTS` |
+| 疑似原因 | [FACT][E-AU-023-009] 固定仓库无生产或测试caller（定义/导出除外） |
+| 保留证据 | 全部仍由package公共barrel导出；供应商扩展、仓外consumer、兼容与未来启用能力未排除 |
+| 当前问题 | 转发与未消费常量增加公共表面积，但不是无责任证明 |
+| 可否删除 | 否；不满足无公共API、正式下线、等价替代和第二次复核条件 |
+| 二次复核 | G1不强制；拟删除时需逐符号复核仓外制品和版本兼容 |
+
+## 23. AU-023 Cakeuncle Vendor候选复核
+
+- 新增DC-0028/GX与DC-0029/G1；没有G2或G3新增项。
+- 当前累计G0 2、G1 24、G2 2、G3 0、GX 3。未修改、删除、导出或注册任何候选实现。

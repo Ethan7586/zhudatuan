@@ -120,3 +120,10 @@
 - Client仅对读请求、带business idempotency key的写入或明确幂等operation执行重试；无key的非幂等写入只尝试一次。该边界可降低重复写入，应保留。
 - F-0097可能使远端已处理、本地尚未解析的写入进入不确定状态；具体恢复取决于各vendor查询能力和幂等键，不能统一推断为重复业务数据。
 - 本AU未连接数据库、执行迁移、调用vendor或修改connection。
+
+## 18. AU-023 Cakeuncle数据边界
+
+- 包不拥有表或迁移；Cake/Flower/Meal返回源目录/价格/库存记录，由Commerce catalog投影拥有。connection与secret引用由Channel/Extension层拥有。
+- 非幂等调用发生可重试Transport错误时被转换为`CAKEUNCLE_WRITE_OUTCOME_UNKNOWN`且不重试，这是防止重复远端写入的有效边界。
+- F-0100显示Foodvoucher写ports被发布，但其协议与数据状态契约未闭合；未核实线上installation前，不推断实际发行、退款或核销数据已错误。
+- 本AU未执行SQL、迁移、远端写入、Webhook重放或数据修复。

@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-022 结束时累计：P0 0、P1 候选 13、P2 46、P3 38、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-023 结束时累计：P0 0、P1 候选 14、P2 47、P3 40、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2409,3 +2409,102 @@
 
 - [UNKNOWN] 线上connection的实际baseUrl、secretRef授权边界、节点出口策略和当前制品版本；需RV-0014核对。
 - [UNKNOWN] Commerce运行单元内存/栈限制及真实vendor最大响应分布；需RV-0015核对。
+
+## F-0099｜Cakeuncle限长响应仍可由深层JSON击穿递归校验
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Cakeuncle Vendor Client |
+| 类型 | 外部输入边界、错误分类、可用性 |
+| 严重级别 | P2 |
+| 置信度 | 高：实现与合成反事实均复核 |
+| 文件和精确位置 | `01_core_hexin/extensions/vendors/cakeuncle/Client.ts:118-140,169-188,221-229` |
+| 当前行为 | [FACT][E-AU-023-003/004] 正文限制2MiB，但JSON.parse后用互相递归的`isJsonObject/isJsonValue`遍历，无深度/节点预算。5,000层、30,004字节的合法JSON触发RangeError；catch把它映射为retryable `VENDOR_TRANSPORT_FAILED`，读调用会重试并计入circuit |
+| 预期行为 | 容量预算应同时限制字节、嵌套深度和节点数量；结构过深应稳定拒绝且不伪装成瞬态网络故障 |
+| 直接证据 | E-AU-023-003/004、TC-AU-023-003 |
+| 调用链或运行入口 | 4个Cakeuncle provider→Client.send→readLimited→JSON.parse→isJsonObject→asVendorFailure→retry/circuit |
+| 用户影响 | 异常provider响应可让一次读取重复失败并打开该connection断路器，暂时阻断正常catalog/price/stock调用 |
+| 数据影响 | 当前消费者主要是读取；Foodvoucher写链另见F-0100。未证明持久化数据损坏 |
+| 安全影响 | 已认证外部依赖可触发有界请求失败；RangeError被catch，没有证据证明进程崩溃 |
+| 根因 | 2MiB字节限额被当成完整结构复杂度限额，递归校验没有独立预算 |
+| 建议方向 | 后续单一Client批次增加迭代式校验或深度/节点预算，并稳定映射为不可重试响应错误 |
+| 预计修改范围 | Cakeuncle Client与定向测试；不与通用Vendor Core F-0097混改 |
+| 验证方式 | 字节×深度×节点矩阵、读重试/circuit计数、正常最大provider响应和内存受限探针 |
+| 回滚方式 | 回退单一Cakeuncle Client提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0100｜Foodvoucher生产端重新暴露Cakeuncle明确禁用的写入与Webhook能力
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Cakeuncle Vendor / Foodvoucher Provider边界 |
+| 类型 | 能力契约、协议错配、运行入口 |
+| 严重级别 | **P1 候选**；未完成RV-0016前不作最终P1 |
+| 置信度 | 高：包声明、barrel、provider manifest/factory和通用ports均直接可证；线上启用状态及供应商最新协议未知 |
+| 文件和精确位置 | `01_core_hexin/extensions/vendors/cakeuncle/README.md:14-27`；`index.ts:1-7`；`Webhook.ts:6-51`；`extensions/providers/foodvoucher/manifest.ts:4-19`；`Provider.ts:6-16`；`extensions/providers/core/src/PortFactory.ts:20-53,72-97` |
+| 当前行为 | [CONFLICT][E-AU-023-005/006/007] Cakeuncle包声明Foodvoucher仅Catalog/Price，Card issuance与Webhook因HTTP、unsigned callback和加密契约不完整而禁用，专用Webhook也未导出；但生产Foodvoucher manifest宣称Issue/Bind/Verify/Void/Extend/Refund/Statement/Webhook，factory用通用createPorts注册order/cancel/refund/statement/verification及header-HMAC Webhook |
+| 预期行为 | 生产manifest、ports、传输协议和包级禁用边界必须闭合；未经验证的远端写入与回调不得被Registry宣称可用 |
+| 直接证据 | E-AU-023-005–007、TC-AU-023-005 |
+| 调用链或运行入口 | RuntimeExtensionLoader→FoodvoucherProvider.create→CakeuncleClient+createPorts→Registry scope→业务写入/Channel webhook |
+| 用户影响 | [INFERENCE] 若installation启用，卡券发行、作废、退款、核销或通知可能系统性失败；错误暴露的能力也会误导上游调度 |
+| 数据影响 | 非幂等写入失败会返回outcome unknown；真实远端是否受理取决于未核协议，不能写成重复发行或资金损失事实 |
+| 安全影响 | 通用header-HMAC与已知Cakeuncle body签名/unsigned callback模型不一致；专用实现又证明payload未受签名保护 |
+| 根因 | 通用Provider能力模板绕过了vendor-specific发布决策，manifest与transport成熟度没有单一事实源 |
+| 建议方向 | 后续Foodvoucher专项先只读核实线上启用和正式协议，再收敛manifest/ports；不要直接启用专用Webhook或补写入实现 |
+| 预计修改范围 | Foodvoucher manifest/factory/operations、Cakeuncle协议适配、Registry契约测试；可能需分多个小批次 |
+| 验证方式 | 独立复核capability→scope→caller全链，使用合成/供应商沙箱验证每个operation和callback；线上只读确认enabled状态 |
+| 回滚方式 | 保留当前manifest签名与installation快照；治理批次按单能力回退 |
+| 是否需要独立复核 | 是，RV-0016 |
+
+为什么不是P0：没有证据显示Foodvoucher线上已启用或正在造成重大发行、资金、数据或安全事故；当前只证明固定代码的能力契约冲突。
+
+## F-0101｜Cakeuncle包未声明直接使用的Contract类型依赖
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Cakeuncle Vendor package |
+| 类型 | 依赖边界、隔离构建 |
+| 严重级别 | P3 |
+| 置信度 | 高：package与源码import直接核对 |
+| 文件和精确位置 | `01_core_hexin/extensions/vendors/cakeuncle/package.json:7-10`；`Client.ts:2`；`Webhook.ts:2` |
+| 当前行为 | 源码直接import `@shop/contract`类型，package只声明`@shop/vendorcore`；当前工作区可依赖提升或传递依赖解析 |
+| 预期行为 | 每个workspace声明自身直接源码依赖，使隔离类型检查和依赖图可复现 |
+| 直接证据 | E-AU-023-008/010 |
+| 调用链或运行入口 | workspace typecheck/build→TS module resolution |
+| 用户影响 | 独立安装、缓存布局或依赖收紧时可能出现类型解析失败；当前正式typecheck因工具缺失未验证 |
+| 数据影响 | 无直接数据影响 |
+| 安全影响 | 无直接安全影响 |
+| 根因 | type-only依赖在hoisted workspace中可见，未进入包清单 |
+| 建议方向 | 后续依赖清单小批次显式声明并验证锁文件；审计不修改依赖/锁文件 |
+| 预计修改范围 | package.json、lockfile和隔离typecheck |
+| 验证方式 | clean isolated workspace typecheck与根workspace影响检查 |
+| 回滚方式 | 回退单一依赖声明提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0102｜Cakeuncle测试没有覆盖生产能力接线与深度故障
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Cakeuncle Vendor tests |
+| 类型 | 测试可信度、契约缺口 |
+| 严重级别 | P3 |
+| 置信度 | 高：4个测试文件及直接生产消费者已核对 |
+| 文件和精确位置 | `01_core_hexin/extensions/vendors/cakeuncle/tests/Auth.test.ts:1-8`；`Client.test.ts:1-77`；`Signer.test.ts:1-24`；`Webhook.test.ts:1-39` |
+| 当前行为 | 14个用例覆盖签名向量、基础Client和被禁用Webhook，但不验证公共barrel、Foodvoucher真实ports、深度/节点限额、chunked超限、双阶段超时/取消和读取重试次数 |
+| 预期行为 | 测试应命中真实发布能力，并让F-0099/F-0100类边界破坏稳定失败 |
+| 直接证据 | E-AU-023-006/009/010、TC-AU-023-001–006 |
+| 调用链或运行入口 | npm test→package tests；生产Foodvoucher factory与Runtime registry不在套件内 |
+| 用户影响 | 不安全或不可用能力可在包内测试保持绿色时进入Commerce制品 |
+| 数据影响 | 测试本身不写数据；间接遗漏远端写入不确定状态 |
+| 安全影响 | payload未签名与生产header-HMAC协议冲突没有端到端门禁 |
+| 根因 | 单元测试按文件能力编写，没有以发布manifest/ports为验证对象 |
+| 建议方向 | 后续测试批次增加跨包契约和容量反事实；不在审计分支修复 |
+| 预计修改范围 | Cakeuncle与Foodvoucher tests、provider contract suite |
+| 验证方式 | 破坏export/capability/signature/depth任一不变量时测试失败；正式workspace入口执行 |
+| 回滚方式 | 回退单一测试提交 |
+| 是否需要独立复核 | 否；F-0100本身需要 |
+
+## 23. AU-023 新增未定级事项
+
+- [UNKNOWN] Foodvoucher线上enabled installation、真实Cakeuncle协议版本、base URL与callback来源；需RV-0016核对。
+- [UNKNOWN] 被禁用Webhook/H5/Card签名是否仍承担仓外兼容或供应商对接证据；需RV-0017核对。
