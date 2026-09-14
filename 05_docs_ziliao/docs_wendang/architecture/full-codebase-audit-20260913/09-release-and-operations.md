@@ -268,3 +268,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - health只验证配置的通用health endpoint，不能证明Catalog、Order、tracking或Return契约配对；F-0116需要完整合成履约canary。
 - 若线上已有Book订单，修复批次应先只读盘点accepted/processing fulfillment与tracking deadletter，再从最新主线单独实施；审计分支不修复。
 - 本AU未build、访问线上、下单、推送、合并或部署。
+
+## 32. AU-029 Directcharge Provider发布与运维边界
+
+- Directcharge是required provider，随Commerce OCI发布；实际运行取决于enabled installation、签名manifest、Wanlian connection和health。
+- 通用health不能证明核心Fulfillment使用的Order/Logistics能力可达；F-0119需要从任务入口执行合成直充与查询canary。
+- 修复前需先只读盘点线上installation与失败fulfillment，不在审计分支调整capability、激活provider或调用万联。
+- 本AU未build、访问线上、直充、推送、合并或部署。

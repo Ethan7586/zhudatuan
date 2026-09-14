@@ -1,0 +1,7 @@
+"test_id","area","method","result"
+"TC-AU-029-001","正式测试","npm test -- --reporter=dot","阻塞/127，vitest缺失"
+"TC-AU-029-002","类型检查","npm run typecheck","阻塞/127，tsc缺失"
+"TC-AU-029-003","履约反事实","manifest/factory×FulfillmentJobs×Registry","Order与Logistics均在capability检查失败"
+"TC-AU-029-004","capability-port矩阵","八能力×六业务ports/Webhook×Registry","业务词汇没有唯一映射，任意已声明能力可配现有port"
+"TC-AU-029-005","业务ports","Catalog/Order/Tracking/Refund/Statement/Verification/Webhook","未执行；无包级用例"
+"TC-AU-029-006","构建","npm run build","未执行；等同typecheck"

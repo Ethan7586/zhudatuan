@@ -238,3 +238,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 包内唯一13行测试只检查required provider ID、definition ID和manifest签名；不调用factory或任何业务port。
 - 没有capability-port矩阵、Order→tracking、Catalog canonical字段、非幂等写入、Wenxuan认证/响应或Webhook集成测试，见F-0118。
 - test/typecheck因缺vitest/tsc退出127；未build。详见`records/AU-028-book-provider/`。
+
+## 28. AU-029 Directcharge Provider质量
+
+- 包内唯一13行测试只检查required provider ID、definition ID和manifest签名；不调用factory或任何业务port。
+- 没有Order/Logistics可达性、capability-port矩阵、直充/查询/退款/验券、Wanlian RSA协议或Webhook集成测试，见F-0121。
+- test/typecheck因缺vitest/tsc退出127；未build。详见`records/AU-029-directcharge-provider/`。

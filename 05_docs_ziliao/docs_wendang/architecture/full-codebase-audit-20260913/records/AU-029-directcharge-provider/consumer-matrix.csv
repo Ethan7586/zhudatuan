@@ -1,0 +1,7 @@
+"consumer","capability","port","result"
+"Channel catalog job","Catalog","catalog","可达"
+"Channel statement job","Statement","statement","可达"
+"Channel webhook resolver","Webhook","webhook","可达；共享F-0094"
+"Fulfillment submit job","Order","order","不可达/F-0119"
+"Fulfillment tracking job","Logistics","tracking","不可达/F-0119"
+"固定仓库","Issue/DirectCharge/Query/Refund/Verify","order/tracking/refund/verification","无权威配对/F-0120"

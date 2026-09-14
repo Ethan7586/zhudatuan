@@ -796,3 +796,11 @@ flowchart LR
 - Order提交可达且成功后固定排入tracking；当前tracking caller使用`Logistics`，manifest只声明`Shipment`，发布能力词汇与消费词汇断裂（F-0116）。
 - manifest的Return/Refund同时解锁单一refund port，Registry只分别检查字符串和port存在，不保证语义配对（F-0117）。
 - Catalog使用通用canonical mapper；全部网络/认证/重试继承Vendor Core与Wenxuan薄适配，F-0096/F-0097共享风险继续适用。
+
+## 35. AU-029 Directcharge Provider真实边界
+
+`Channel/Fulfillment jobs → ExtensionRegistry → DirectchargeProvider → Wanlian VendorClient → configured endpoint`。Provider发布Catalog、Order、Tracking、Refund、Statement、Verification和Webhook。
+
+- manifest使用Issue/DirectCharge/Query等领域词汇，核心Fulfillment固定使用Order/Logistics，导致实际提交和查询在capability检查处不可达（F-0119）。
+- Registry没有权威capability-port映射，Issue/DirectCharge/Query/Verify可与任一现有port组合，边界语义依赖caller自律（F-0120）。
+- RSA认证、网络预算与回调去重继承Vendor/Provider Core；F-0094/F-0096/F-0097继续适用。

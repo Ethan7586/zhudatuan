@@ -815,3 +815,11 @@ sequenceDiagram
 - Channel的Catalog/Price/Inventory/Statement与Webhook均有固定caller；Fulfillment的Order也可达。
 - Order返回后Fulfillment写accepted并排入tracking；tracking以`Logistics/tracking`进入，Book只有`Shipment` capability，Registry在调用Wenxuan前拒绝（F-0116）。
 - Cancel/Return/Refund没有固定caller；Return和Refund都可与唯一refund port组合，见F-0117。
+
+## 34. AU-029 Directcharge运行关系
+
+`enabled Directcharge installation → createPorts → Wanlian VendorClient → operation endpoint → Channel/Fulfillment persistence`。
+
+- Channel Catalog、Statement与Webhook有固定caller；核心Fulfillment提交/查询固定请求Order/Logistics。
+- Directcharge manifest没有Order/Logistics，虽然factory发布order/tracking，Registry仍在端口调用前拒绝，见F-0119。
+- Refund/Verification有port但无固定caller；Issue/DirectCharge/Query/Verify与ports的语义配对未在代码中定义，见F-0120。

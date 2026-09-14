@@ -1,0 +1,6 @@
+"id","invariant","status","finding"
+"INV-AU-029-001","核心履约caller可到达直充提交和查询ports","不成立","F-0119"
+"INV-AU-029-002","每个capability对应唯一稳定port语义","不成立","F-0120"
+"INV-AU-029-003","Catalog canonical记录具备三个关键字段","成立","DirectchargeMapper"
+"INV-AU-029-004","非幂等写入不由VendorClient自动重试","成立","PortFactory/VendorClient"
+"INV-AU-029-005","required provider业务ports有行为测试","不成立","F-0121"

@@ -1,0 +1,5 @@
+"id","failure","trigger","effect","rating"
+"FM-AU-029-001","直充提交被拒绝","Fulfillment为directcharge执行submit","Registry拒绝缺失Order capability，不调用万联","P1候选/F-0119"
+"FM-AU-029-002","直充查询被拒绝","Fulfillment tracking执行","Registry拒绝缺失Logistics capability","P1候选/F-0119"
+"FM-AU-029-003","能力配对歧义","新caller以Issue/DirectCharge/Query/Verify请求任意现有port","通过Registry后可能执行错误operation","P2/F-0120"
+"FM-AU-029-004","测试假阳性","operation/mapper/webhook/履约配对失效","身份签名测试仍通过","P3/F-0121"

@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-028 结束时累计：P0 0、P1 候选 16、P2 55、P3 46、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-029 结束时累计：P0 0、P1 候选 17、P2 56、P3 47、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2779,3 +2779,50 @@
 
 - [UNKNOWN] 线上Book是否enabled、是否已有外部订单或失败tracking job；审计未访问线上，因此F-0116保持P1候选而非P0。
 - [UNKNOWN] Wenxuan真实鉴权、请求/响应和Webhook协议是否由外部canonical gateway转换；固定仓库只有通用HMAC/JSON实现。
+
+## F-0119｜Directcharge核心履约caller无法到达order与tracking ports
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Directcharge/Fulfillment；能力契约、业务可达性 |
+| 严重级别/置信度 | P1候选；高 |
+| 文件和位置 | `extensions/providers/directcharge/manifest.ts:12`；`Provider.ts:6`；`fulfillment/FulfillmentJobs.ts:37-67`；`ExtensionRegistry.ts:76-82` |
+| 当前/预期行为 | [FACT][E-AU-029-003/004/005] factory发布order/tracking，但manifest没有Fulfillment固定请求的Order/Logistics，只有Issue/DirectCharge/Query；Registry先检查capability，核心任务在调用万联前失败。required直充provider应有可达提交和结果查询入口 |
+| 调用链 | fulfillment submit/track→Registry require(Order或Logistics, order或tracking)→EXTENSION_CAPABILITY_MISSING |
+| 用户影响 | 直充/卡券履约无法通过现有核心任务发起或查询，订单可能持续失败 |
+| 数据/安全影响 | 外部调用前失败，未证明产生供应商侧重复写；本地失败/重试状态影响待线上核验 |
+| 根因/建议范围 | 领域capability词汇与统一Fulfillment caller不一致；后续全provider契约批次统一，不在单包增加旁路 |
+| 验证/回滚 | 合成Directcharge fulfillment必须进入order并可由tracking查询；回退单一契约提交 |
+| 独立复核 | 是，RV-0022 |
+
+## F-0120｜Directcharge capability与port没有唯一语义映射
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Directcharge Provider；capability-port契约 |
+| 严重级别/置信度 | P2；高 |
+| 文件和位置 | `manifest.ts:12`；`Provider.ts:6`；`providers/core/src/PortFactory.ts:20-33`；`ExtensionRegistry.ts:76-82` |
+| 当前/预期行为 | [FACT][E-AU-029-005/006] Issue/DirectCharge/Query/Verify等能力与order/tracking/verification ports无权威配对；任一已声明能力都可和任一现有port通过Registry。配对应唯一并由契约验证 |
+| 用户/数据/安全影响 | 新caller可能以错误能力调用直充、查询、退款或验券operation；当前固定caller尚未形成这些组合 |
+| 根因/建议范围 | Registry分别校验capability和port；后续建立全局映射与契约测试 |
+| 验证/回滚 | capability×port穷举矩阵；非法组合失败；回退单一契约提交 |
+| 独立复核 | 否；升级P1时需要 |
+
+## F-0121｜Directcharge测试不执行任何业务port
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Directcharge tests；测试缺口 |
+| 严重级别/置信度 | P3；高 |
+| 文件和位置 | `extensions/providers/directcharge/tests/Provider.test.ts:1-13` |
+| 当前/预期行为 | 唯一用例只核required ID、definition ID和签名；应覆盖factory、capability矩阵、直充提交/查询、退款、验券、Catalog和Webhook |
+| 证据/调用链 | E-AU-029-007、TC-AU-029-001–005；npm test→Vitest（当前缺工具） |
+| 影响 | F-0119/F-0120及万联operation/响应漂移可在包级测试绿色时存在 |
+| 建议/范围 | 先补核心履约能力矩阵，再加入万联协议fixture；不混生产修复 |
+| 验证/回滚 | 修改能力词汇、operation或canonical key时测试失败；回退测试提交 |
+| 独立复核 | 否 |
+
+## 29. AU-029 新增未定级事项
+
+- [UNKNOWN] 线上Directcharge是否enabled、现有履约失败和万联调用记录；未访问线上，因此F-0119保持P1候选而非P0。
+- [UNKNOWN] Issue与DirectCharge的产品语义应合并还是分别对应卡券发放/话费直充；需Ethan或真实协议定稿。

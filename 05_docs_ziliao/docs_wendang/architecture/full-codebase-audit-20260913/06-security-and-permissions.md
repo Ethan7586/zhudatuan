@@ -195,3 +195,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - Order、Cancel、Refund是非幂等外部写入；通用PortFactory不会自动重试，但授权是否允许具体业务动作完全依赖上游caller和统一permission。
 - Webhook secret复用Wenxuan connection的`secret`字段并继承F-0094 event ID边界；本AU未读取secret或回调载荷。
 - F-0116是履约可达性问题，不是已证实权限绕过；线上installation未知。
+
+## 26. AU-029 Directcharge权限边界
+
+- manifest以`channel.directcharge.operate`覆盖Catalog、直充、查询、退款、对账、验券和Webhook；包内不细分读写权限。
+- order/refund/verification是非幂等外部写入且共享Client不自动重试；F-0119在外部调用前失败，不是已证实权限绕过。
+- RSA privateKey和webhookSecret由Loader注入；本AU未读取、打印或修改真实凭据。
+- capability词汇能否授权正确port存在F-0120语义缺口。

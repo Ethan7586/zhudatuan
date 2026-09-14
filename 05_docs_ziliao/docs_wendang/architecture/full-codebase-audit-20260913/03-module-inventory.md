@@ -492,3 +492,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | provider身份和签名 | Vitest | F-0118 |
 
 [FACT][E-AU-028-001] 9文件79行深入审阅；随Commerce OCI发布，无独立表、进程或制品。
+
+## 35. AU-029 Directcharge Provider 模块清单
+
+| 子模块 | 职责 | 上游/入口 | 当前边界 |
+| --- | --- | --- | --- |
+| DirectchargeProvider/manifest | 发布万联直充相关ports/capabilities | Runtime loader/Registry | F-0119/F-0120 |
+| DirectchargeMapper | canonical Catalog关键字段 | PortFactory | 通用映射 |
+| Wanlian adapter | RSA与VendorClient | DirectchargeProvider | 共享F-0096/F-0097 |
+| Webhook/ErrorMap | 通用回调与错误兼容导出 | Channel/公共barrel | DC-0026/DC-0037 |
+| tests | provider身份和签名 | Vitest | F-0121 |
+
+[FACT][E-AU-029-001] 9文件79行深入审阅；随Commerce OCI发布，无独立表、进程或制品。
