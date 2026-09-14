@@ -1,0 +1,7 @@
+id,files,location,kind,observation
+E-AU-251-001,src/bootstrap/ConsoleSupportRuntime.ts,50-106,startup assembly,Secret-backed pool metrics compatibility access risk audit and KMS are assembled before return; compatibility failure closes pool.
+E-AU-251-002,src/bootstrap/ConsoleSupportRuntime.ts,80-98,container boundary,Configure binds node registry handler/authorizer pool metrics telemetry risk audit and KMS tokens.
+E-AU-251-003,src/bootstrap/ConsoleSupportRuntime.ts,110-153,compatibility query,Query separately projects schema contract support relation/function and selected-access facts for console roles.
+E-AU-251-004,src/bootstrap/ConsoleSupportRuntime.ts,155-159,missing predicate,Final rejection tests schema and support but omits state.contract.
+E-AU-251-005,src/bootstrap/ConsoleSupportRuntime.test.ts,9-38,test evidence,Fixture keeps contract true asserts SQL marker literals and never executes a contract-false state or runtime factory.
+E-AU-251-006,src/entry/ConsoleSupportMain.ts,24,production consumer,Console support process creates this runtime before bootstrap and listener startup.

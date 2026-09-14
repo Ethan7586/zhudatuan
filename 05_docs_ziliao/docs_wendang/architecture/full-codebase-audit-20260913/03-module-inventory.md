@@ -2632,3 +2632,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | bindings and consumers | 各node API runtime写入，health/realm context读取 | [FACT][E-AU-250-002..004] |
 
 [FACT][E-AU-250-005] 1 文件、5 行完成深审；无P0–P3新问题。
+
+## 256. AU-251 Console support runtime 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| support API assembly | 建立metrics/pool并配置access、risk、audit、KMS与扩展 | [FACT][E-AU-251-001,002] |
+| support compatibility | 检查专用roles、schema/support marker、relations/functions及selected access | [FACT][E-AU-251-003] |
+| contract enforcement | contract被查询但最终断言遗漏，见F-0229/P1待独立复核 | [FACT][E-AU-251-004] |
+
+[FACT][E-AU-251-007] 2 文件、211 行完成深审；生命周期fixture缺口见F-0230/P2。
