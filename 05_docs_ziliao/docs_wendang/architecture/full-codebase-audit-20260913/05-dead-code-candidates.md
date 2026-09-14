@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 36。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 37。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1462,3 +1462,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是：target DB head、runtime readiness、前后端 operation 兼容和恢复流程。 |
 
 - console contract ledger 封板归 GX-0036。累计 G0 60、G1 83、G2 5、G3 0、GX 36；未删除任何文件。
+
+## GX-0037｜Platform Owner Console 只读 operation 授权
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821074000_grant_platform_owner_operations.sql` |
+| 疑似原因 | 文件批量移除 deny 并授予 12 项 Owner permission，容易被误判为无约束的特权扩张。 |
+| 保留证据 | [FACT][E-AU-481] 固定清单仅包含 read gates；迁移以实际 membership_operations 断言各对应 operation；AccessPipeline 在任何 handler 前按 capability 拦截。 |
+| 运行结论 | 这是解决 Owner Console 可用性断链的精确授权，写权限与资源范围仍单独控制。 |
+| 数据/契约责任 | 保存 Owner 对控制台只读板块的已发布能力边界。 |
+| 可否删除 | 禁止 |
+| 二次复核 | 是：role assignment、allow/deny 优先、12项 operation scope 和 Console 发布单元。 |
+
+- platform Owner Console read grant 归 GX-0037。累计 G0 60、G1 83、G2 5、G3 0、GX 37；未删除任何文件。
