@@ -1,0 +1,6 @@
+"证据编号","文件","位置","结论"
+"E-AU-107-001","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/WechatOperations.ts","18-63","wrapper dispatch、JSSDK/authorize/exchange scene 约束与 realm resolution。"
+"E-AU-107-002","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/WechatOperations.ts","64-110","provider/application/realm subject identity、union、revoked/account confirmation/session 分支与 transaction。"
+"E-AU-107-003","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/WechatOperations.ts","112-160","active membership target 校验、session/ticket 或 grant issuance。"
+"E-AU-107-004","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/WechatOperations.ts","162-176","authenticated current realm account bind、idempotency 和 audit。"
+"E-AU-107-005","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/WechatOperations.test.ts","1-259","JSSDK、identity lock、account confirmation、rollback 和 cross-realm behavior oracle。"

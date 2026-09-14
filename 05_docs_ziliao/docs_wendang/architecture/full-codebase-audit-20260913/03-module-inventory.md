@@ -1183,3 +1183,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | validation/masking | invite/storefront error translation 与 mobile mask | [FACT][E-AU-106-003] |
 
 [FACT][E-AU-106-004] 1 文件、73 行 Identity runtime context 完成深审；密钥职责与 registration context 边界明确，未见从请求注入 ticket signer 或 identity hash key 的路径。
+
+## 112. AU-107 Identity WeChat session 与公开入口清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| public session actions | jsapi JSSDK/authorize 与 miniapp/jsapi exchange 场景限制 | [FACT][E-AU-107-001] |
+| federated identity | realm/application/provider/subject unique identity、union transfer 与 revoked 拒绝 | [FACT][E-AU-107-002] |
+| session/grant | active membership/target 校验、session/ticket 或短期 registration/account confirmation grant | [FACT][E-AU-107-003] |
+| authenticated bind | current account、binding token、idempotency/audit 事务 | [FACT][E-AU-107-004] |
+| tests | JSSDK、row lock、account confirmation、rollback 与 cross-realm return target oracle | [FACT][E-AU-107-005] |
+
+[FACT][E-AU-107-006] 2 文件、436 行 Identity WeChat HTTP wrapper 完成深审；federated identity 不能直接跨 account 创建 session，ticket 只在 realm/target 匹配后签发。
