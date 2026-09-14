@@ -1,7 +1,7 @@
 import { ResourceState, type ResourceCondition } from '@shop/design';
 import { type FormEvent, type KeyboardEvent, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import type { SupportCase, SupportMessage } from './SupportSchema';
+import type { SupportCase, SupportMessage, SupportMessageVisibility } from './SupportSchema';
 import {
   shortIdentifier,
   supportAuthorInitial,
@@ -29,7 +29,7 @@ interface SupportConversationProps {
   readonly nextCursor?: string;
   readonly onNext: (cursor: string) => void;
   readonly onRetry: () => void;
-  readonly onSend: (message: string) => Promise<void>;
+  readonly onSend: (message: string, visibility: SupportMessageVisibility) => Promise<void>;
   readonly selectedCase?: SupportCase;
   readonly sendError?: string;
   readonly sending: boolean;
@@ -154,12 +154,13 @@ function NewConversationMark() {
 
 function MessageBubble({ message, showDate }: Readonly<{ message: SupportMessage; showDate: boolean }>) {
   const agent = message.authorType.toLowerCase() === 'agent';
+  const internal = message.visibility === 'internal';
   return (
     <>{showDate ? <div className="supportmessagedate" role="separator">{day(message.createdAt)}</div> : null}
-      <article className="supportmessage" data-author={agent ? 'agent' : 'customer'}>
-        <span className="supportmessageavatar" aria-hidden="true">{supportAuthorInitial(message.authorType)}</span>
+      <article className="supportmessage" data-author={agent ? 'agent' : 'customer'} data-visibility={message.visibility}>
+        <span className="supportmessageavatar" aria-hidden="true">{internal ? '内' : supportAuthorInitial(message.authorType)}</span>
         <div>
-          <header><strong>{supportAuthorLabel(message.authorType)}</strong>
+          <header><strong>{internal ? `内部备注 · ${supportAuthorLabel(message.authorType)}` : supportAuthorLabel(message.authorType)}</strong>
             <time dateTime={message.createdAt}>{supportTime(message.createdAt)}</time></header>
           <p>{message.body}</p>
         </div>
@@ -177,14 +178,17 @@ function SupportComposer({ canSend, sending, sendError, unavailableReason, onSen
   sending: boolean;
   sendError?: string;
   unavailableReason: string;
-  onSend: (message: string) => Promise<void>;
+  onSend: (message: string, visibility: SupportMessageVisibility) => Promise<void>;
 }>) {
   const [draft, setDraft] = useState('');
+  const [visibility, setVisibility] = useState<SupportMessageVisibility>('public');
+  const publicMode = useRef<HTMLButtonElement>(null);
+  const internalMode = useRef<HTMLButtonElement>(null);
   const submit = async (event?: FormEvent) => {
     event?.preventDefault();
     if (!canSend || sending || draft.trim().length === 0) return;
     try {
-      await onSend(draft);
+      await onSend(draft, visibility);
       setDraft('');
     } catch {
       // Mutation state renders the safe user-facing failure below.
@@ -195,25 +199,42 @@ function SupportComposer({ canSend, sending, sendError, unavailableReason, onSen
     event.preventDefault();
     void submit();
   };
+  const modeKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    const next = event.key === 'ArrowRight' || event.key === 'ArrowDown' || event.key === 'End' ? 'internal'
+      : event.key === 'ArrowLeft' || event.key === 'ArrowUp' || event.key === 'Home' ? 'public' : undefined;
+    if (next === undefined) return;
+    event.preventDefault();
+    setVisibility(next);
+    (next === 'internal' ? internalMode : publicMode).current?.focus();
+  };
+  const internal = visibility === 'internal';
   return (
-    <form className="supportcomposer" onSubmit={(event) => { void submit(event); }}>
+    <form className="supportcomposer" data-visibility={visibility} onSubmit={(event) => { void submit(event); }}>
       <div className="supportcomposermodes" role="tablist" aria-label="消息类型">
-        <button type="button" role="tab" aria-selected="true">回复消费者</button>
-        <button type="button" role="tab" aria-selected="false" disabled title="下一批接入">内部备注</button>
+        <button ref={publicMode} id="support-message-mode-public" type="button" role="tab" aria-selected={!internal}
+          aria-controls="support-message-editor" tabIndex={internal ? -1 : 0} onKeyDown={modeKeyDown}
+          onClick={() => setVisibility('public')}>回复发起人</button>
+        <button ref={internalMode} id="support-message-mode-internal" type="button" role="tab" aria-selected={internal}
+          aria-controls="support-message-editor" tabIndex={internal ? 0 : -1} onKeyDown={modeKeyDown}
+          onClick={() => setVisibility('internal')}>内部备注</button>
         <button type="button" role="tab" aria-selected="false" disabled title="下一批接入">协同供应商</button>
       </div>
-      <div className="supportcomposerbox">
+      <div className="supportcomposerbox" id="support-message-editor" role="tabpanel"
+        aria-labelledby={internal ? 'support-message-mode-internal' : 'support-message-mode-public'}>
         <textarea value={draft} maxLength={4000} rows={4} disabled={!canSend || sending}
           onChange={(event) => setDraft(event.target.value)} onKeyDown={keyDown}
-          placeholder={canSend ? '请输入回复内容…' : unavailableReason} aria-label="回复内容" />
+          placeholder={canSend ? internal ? '输入仅工作人员可见的内部备注…' : '请输入回复内容…' : unavailableReason}
+          aria-label={internal ? '内部备注内容' : '回复内容'} />
         <div className="supportcomposeractions">
           <div className="supportcomposerattachments" aria-label="尚未接入的消息附件">
             <button type="button" disabled title="下一批接入" aria-label="添加附件（下一批接入）">⌕</button>
             <button type="button" disabled title="下一批接入" aria-label="添加图片（下一批接入）">▧</button>
             <button type="button" disabled title="下一批接入" aria-label="添加文件（下一批接入）">▤</button>
           </div>
-          <span role="status" aria-live="polite">{sending ? '发送中…' : sendError ?? (!canSend ? unavailableReason : `${draft.length}/4000`)}</span>
-          <button type="submit" disabled={!canSend || sending || draft.trim().length === 0}>{sending ? '发送中' : '发送回复'}</button>
+          <span role="status" aria-live="polite">{sending ? internal ? '添加中…' : '发送中…' : sendError ?? (!canSend ? unavailableReason : `${draft.length}/4000`)}</span>
+          <button type="submit" disabled={!canSend || sending || draft.trim().length === 0}>
+            {sending ? internal ? '添加中' : '发送中' : internal ? '添加备注' : '发送回复'}
+          </button>
         </div>
       </div>
     </form>

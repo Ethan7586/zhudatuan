@@ -53,16 +53,23 @@ describe('support message command', () => {
       caseVersion: 12,
       caseState: 'waiting',
       message: '  您好，退款已经提交。  ',
+      visibility: 'public',
     });
 
     expect(value).toMatchObject({ id: 'message:one', author_type: 'agent' });
     expect(new URL(requests[0]!.url).pathname).toBe('/api/v1/support/cases/case%3Aone/messages');
-    expect(bodies).toEqual([{ message: '您好，退款已经提交。' }]);
+    expect(bodies).toEqual([{ message: '您好，退款已经提交。', visibility: 'public' }]);
     expect(requests[0]?.headers.get('x-scope-hint')).toBe('tenant:one');
     expect(requests[0]?.headers.get('x-access-version')).toBe('7');
     expect(requests[0]?.headers.get('x-csrf-token')).toBe('csrf-token-for-support');
     expect(requests[0]?.headers.get('if-match')).toBe('"12"');
     expect(requests[0]?.headers.get('idempotency-key')).toMatch(/^[0-9a-f-]{36}$/);
+  });
+
+  it('marks an internal note explicitly on the wire', async () => {
+    await sendSupportMessage(context, { ...draft, message: ' 仅供工作人员查看 ', visibility: 'internal' });
+
+    expect(bodies).toEqual([{ message: '仅供工作人员查看', visibility: 'internal' }]);
   });
 
   it('reports availability from CSRF, permission, capability and case state', () => {
@@ -108,7 +115,7 @@ const context: ConsoleContext = {
   scopes: [tenantScope],
 };
 
-const draft = { caseId: 'case:one', caseVersion: 12, caseState: 'open', message: '收到' } as const;
+const draft = { caseId: 'case:one', caseVersion: 12, caseState: 'open', message: '收到', visibility: 'public' } as const;
 
 function withSession(overrides: Partial<ConsoleContext['session']>): ConsoleContext {
   return { ...context, session: { ...context.session, ...overrides } };

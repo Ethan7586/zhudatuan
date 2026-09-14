@@ -6,6 +6,7 @@ import type { TicketPriority } from '../02_domain_yewu/model/Ticket';
 
 export interface EncryptedMessage { readonly id: string; readonly ciphertext: string; readonly fingerprint: string; readonly keyVersion: string }
 export interface SlaPolicy { readonly response: number; readonly resolution: number }
+export type MessageVisibility = 'public' | 'internal';
 
 export interface SupportPort {
   member(membership: string): Promise<string>;
@@ -15,7 +16,7 @@ export interface SupportPort {
   rules(scope: string): Promise<readonly AssignmentRule[]>;
   sla(scope: string, priority: TicketPriority): Promise<SlaPolicy | null>;
   message(ticket: string, conversation: string, scope: string, author: 'member' | 'agent', actor: string,
-    message: EncryptedMessage): Promise<QueryResult<QueryResultRow>>;
+    visibility: MessageVisibility, message: EncryptedMessage): Promise<QueryResult<QueryResultRow>>;
   history(ticket: string, scope: string, kind: string, actor: string, evidence: Readonly<Record<string, unknown>>): Promise<void>;
   enqueue(kind: 'supportsla' | 'supportscan', scope: string, payload: Readonly<Record<string, unknown>>, availableAt?: string,
     stableId?: string): Promise<void>;

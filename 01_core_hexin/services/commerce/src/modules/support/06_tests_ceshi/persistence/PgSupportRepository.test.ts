@@ -21,7 +21,7 @@ describe('PgSupportRepository', () => {
       .mockResolvedValueOnce({ rows: [] });
     const repository = new PgSupportRepository({ query } as unknown as OperationDatabase, {} as never);
 
-    await repository.message('case:one', 'conversation:one', 'mall:one', 'agent', 'actor:one', {
+    await repository.message('case:one', 'conversation:one', 'mall:one', 'agent', 'actor:one', 'public', {
       id: 'message:one', ciphertext: 'ciphertext', fingerprint: 'a'.repeat(64), keyVersion: 'v1',
     });
 
@@ -30,5 +30,18 @@ describe('PgSupportRepository', () => {
     expect(outboxSql).toContain("'conversation',$2::text");
     expect(outboxSql).toContain("'message',$5::text");
     expect(outboxSql).toContain("'authorType',$6::text");
+  });
+
+  it('stores internal notes without creating a requester notification', async () => {
+    const query = vi.fn().mockResolvedValueOnce({ rows: [{ id: 'message:note', author_type: 'agent', author_id: 'actor:one',
+      created_at: '2026-09-14T14:31:00.000Z' }] });
+    const repository = new PgSupportRepository({ query } as unknown as OperationDatabase, {} as never);
+
+    await repository.message('case:one', 'conversation:one', 'mall:one', 'agent', 'actor:one', 'internal', {
+      id: 'message:note', ciphertext: 'ciphertext', fingerprint: 'b'.repeat(64), keyVersion: 'v1',
+    });
+
+    expect(query).toHaveBeenCalledOnce();
+    expect(query).toHaveBeenCalledWith(expect.stringContaining('visibility'), expect.arrayContaining(['internal']));
   });
 });

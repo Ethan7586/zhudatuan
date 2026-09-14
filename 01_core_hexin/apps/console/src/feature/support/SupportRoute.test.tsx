@@ -20,7 +20,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('./SupportQuery', () => ({
   readCases: mocks.readCases,
   readMessages: mocks.readMessages,
-  supportCaseKey: (_context: unknown, cursor?: string) => ['support-cases', cursor ?? null],
+  supportCaseKey: (_context: unknown, view: string, cursor?: string) => ['support-cases', view, cursor ?? null],
   supportMessageKey: (_context: unknown, caseId: string, cursor?: string) => ['support-messages', caseId, cursor ?? null],
 }));
 
@@ -55,6 +55,7 @@ const messages = [
     author: 'member:10086',
     body: '兑换时提示兑换码无效，请帮我查一下。',
     createdAt: '2026-08-30T09:10:00.000Z',
+    visibility: 'public',
   },
   {
     id: 'message:agent-1',
@@ -62,6 +63,7 @@ const messages = [
     author: 'agent:wing-07',
     body: '已经收到，我正在核对该订单。',
     createdAt: '2026-08-30T09:12:00.000Z',
+    visibility: 'public',
   },
 ] as const satisfies readonly SupportMessage[];
 
@@ -90,7 +92,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
-  mocks.readCases.mockResolvedValue({ items: [supportCase], count: 1 });
+  mocks.readCases.mockResolvedValue({ items: [supportCase], count: 1, views: { handling: 1, created: 2, all: 3 } });
   mocks.readMessages.mockResolvedValue({ items: messages, count: messages.length });
   mocks.canCreateSupportCase.mockReturnValue(true);
   mocks.canSendSupportMessage.mockReturnValue(true);
@@ -136,7 +138,23 @@ describe('Support Chat VI route', () => {
       caseVersion: supportCase.version,
       caseState: supportCase.state,
       message: '  已为您重新激活兑换码。  ',
+      visibility: 'public',
     });
+  });
+
+  it('sends an internal note without presenting it as a requester reply', async () => {
+    const user = userEvent.setup();
+    renderRoute(`/scopes/enterprise/enterprise%3A1/support/${encodeURIComponent(supportCase.id)}`);
+    await screen.findByText(messages[0].body);
+
+    await user.click(screen.getByRole('tab', { name: '内部备注' }));
+    await user.type(screen.getByRole('textbox', { name: '内部备注内容' }), '请财务核对退款流水');
+    await user.click(screen.getByRole('button', { name: '添加备注' }));
+
+    await waitFor(() => expect(mocks.sendSupportMessage).toHaveBeenCalledTimes(1));
+    expect(mocks.sendSupportMessage).toHaveBeenCalledWith(context, expect.objectContaining({
+      caseId: supportCase.id, message: '请财务核对退款流水', visibility: 'internal',
+    }));
   });
 
   it('keeps a failed draft and allows a deliberate retry without duplicate submissions', async () => {
@@ -179,6 +197,19 @@ describe('Support Chat VI route', () => {
     expect(screen.getByText('从左侧队列打开工单，查看完整沟通记录与处理信息。')).toBeTruthy();
     expect(screen.getByText('尚未选择工单')).toBeTruthy();
     expect(mocks.readMessages).not.toHaveBeenCalled();
+  });
+
+  it('switches between handling, created and all queues through the address-backed view', async () => {
+    const user = userEvent.setup();
+    renderRoute('/scopes/enterprise/enterprise%3A1/support');
+    await screen.findByRole('heading', { name: '选择一条工单开始处理' });
+
+    expect((await screen.findByRole('button', { name: /待我处理 1/ })).getAttribute('aria-current')).toBe('page');
+    await user.click(screen.getByRole('button', { name: /我发起的 2/ }));
+
+    await waitFor(() => expect(mocks.readCases).toHaveBeenCalledWith(context, 'created', undefined, expect.any(AbortSignal)));
+    expect(screen.getByRole('button', { name: /我发起的 2/ }).getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('link', { name: new RegExp(supportCase.subject) }).getAttribute('href')).toContain('?view=created');
   });
 
   it('opens a quiet in-workbench composer and creates a real case without leaving the service center', async () => {
@@ -244,7 +275,7 @@ describe('Support Chat VI route', () => {
     await waitFor(() => expect(mocks.readCases.mock.calls.length).toBeGreaterThan(1));
   });
 
-  it('uses the service-center copy and keeps future task and operation entries inert', async () => {
+  it('uses the service-center copy and keeps only future task and operation entries inert', async () => {
     renderRoute(`/scopes/enterprise/enterprise%3A1/support/${encodeURIComponent(supportCase.id)}`);
     await screen.findByText(messages[0].body);
 
@@ -252,7 +283,7 @@ describe('Support Chat VI route', () => {
     expect(screen.getByText('消费者与管理员共用一个工作台')).toBeTruthy();
     expect(screen.getAllByText('管理员').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole('button', { name: /待我审批/ }).hasAttribute('disabled')).toBe(true);
-    expect(screen.getByRole('tab', { name: '内部备注' }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('tab', { name: '内部备注' }).hasAttribute('disabled')).toBe(false);
     expect(screen.getByRole('tab', { name: '协同供应商' }).hasAttribute('disabled')).toBe(true);
     expect(screen.getByRole('button', { name: '转交' }).hasAttribute('disabled')).toBe(true);
     expect(screen.getByRole('button', { name: '升级至平台支持' }).hasAttribute('disabled')).toBe(true);

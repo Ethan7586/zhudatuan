@@ -9,10 +9,20 @@ export const SupportCaseSchema = z.object({
   version: DatabaseIntegerSchema, subject: z.string().min(1), member_id: z.string().nullable().optional(),
   order_id: z.string().nullable(), channel: z.string().min(1),
 }).passthrough();
-export const SupportCasePageSchema = pageEnvelope(SupportCaseSchema);
+const SupportCaseViewsSchema = z.object({
+  handling: DatabaseIntegerSchema,
+  created: DatabaseIntegerSchema,
+  all: DatabaseIntegerSchema,
+});
+export const SupportCasePageSchema = pageEnvelope(SupportCaseSchema).extend({
+  views: SupportCaseViewsSchema.default({ handling: 0, created: 0, all: 0 }),
+});
 export const SupportMessageSchema = z.object({
   id: z.string().min(1), authorType: z.string().min(1), author: z.string().nullable(), body: z.string(), createdAt: z.string().min(1),
+  visibility: z.enum(['public', 'internal']).default('public'),
 }).passthrough();
 export const SupportMessagePageSchema = pageEnvelope(SupportMessageSchema).extend({ attachments: z.array(z.unknown()).optional() });
+export type SupportCaseView = 'handling' | 'created' | 'all';
+export type SupportMessageVisibility = 'public' | 'internal';
 export type SupportCase = z.infer<typeof SupportCaseSchema>;
 export type SupportMessage = z.infer<typeof SupportMessageSchema>;
