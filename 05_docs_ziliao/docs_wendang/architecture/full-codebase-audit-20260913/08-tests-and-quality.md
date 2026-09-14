@@ -451,3 +451,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Handler tests直接覆盖 production禁用demo、phone/username credential、origin/redirect、membership multi-entrance fail-closed、initial-password reset和logout。
 - Password、demo、test-only limiter tests覆盖PBKDF2/normalization、membership role binding、IPv4/IPv6 allowlist/expiry及bypass仍拒绝错误密码；审计工作树未运行Vitest。
+
+## 172. AU-172 Core read-cache client 深审
+
+- Direct tests覆盖无端点禁用、fresh envelope/token不在URL、网络故障unavailable，以及包含projection metadata的PUT写入。
+- 未覆盖恶意sidecar响应或端点DNS变化；client只接私有loopback HTTP或HTTPS，sidecar本体留在其服务审阅。审计工作树未运行Vitest。

@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-172-001,src/api/coreReadCache.ts,25-55,read boundary,Only configured endpoint/token and valid versioned key can call cache; read uses bearer header 60ms timeout and malformed/non-OK responses are unavailable.
+E-AU-172-002,src/api/coreReadCache.ts,57-75,write boundary,Write has 250ms timeout returns boolean and callers may ignore it; no cache write blocks a catalog response.
+E-AU-172-003,src/api/coreReadCache.ts,77-104,endpoint/contract,HTTP is permitted only for loopback; HTTPS otherwise; cache envelope requires schema version projection hash metadata and data.
+E-AU-172-004,src/api/publicCatalogRoutes.ts,70-115,consumer,Fresh/stale shared data becomes a catalog projection and stale refreshes asynchronously; unavailable/miss calls source query.
+E-AU-172-005,infrastructure/storefront-compatibility/aliyun/DEPLOY-阿里云.md;ecosystem.core-cache.config.cjs,11;4-9,optional runtime,Sidecar is loopback optional process and absent Tair configuration leaves primary site source-backed.

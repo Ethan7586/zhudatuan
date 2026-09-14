@@ -1857,3 +1857,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | release route | full compatibility router rejects `/api/v1/auth/*`，Storefront only mounts health/catalog/payment | [FACT][E-AU-171-004] |
 
 [FACT][E-AU-171-005] 8 文件、1,447 行完成深审；这些handler存在客户端、测试和兼容编译关系，但没有当前正式运行路由注册。
+
+## 177. AU-172 Core read-cache client 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| read client | versioned projection fetch、schema/metadata validation、60ms failure fallback | [FACT][E-AU-172-001] |
+| write client | private PUT、bounded timeout、best-effort result | [FACT][E-AU-172-002] |
+| consumer | public catalog fresh/stale/shared tier，stale触发异步source refresh | [FACT][E-AU-172-003] |
+| runtime | optional loopback Tair sidecar；未配置时不启动且主站直接回源 | [FACT][E-AU-172-004] |
+
+[FACT][E-AU-172-005] 2 文件、158 行完成深审；sidecar服务实现与其部署单元留在独立服务审阅，不把它推定为永久可用。
