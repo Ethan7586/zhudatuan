@@ -1657,3 +1657,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | port reservation/return 与 manifest | [FACT][E-AU-151-004]；F-0181/P2 导入/HTTP直接覆盖缺口 |
 
 [FACT][E-AU-151-005] 13 文件、643 行完成深审；Inventory 核心运行链可定位，余下 legacy/root export 待覆盖闭合。
+
+## 157. AU-152 Inventory compatibility 与覆盖闭合清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| root/legacy exports | root module/operation/port、domain and job old paths 转发 canonical layer | [FACT][E-AU-152-001]；G0 |
+| live consumers | main app uses root module；jobs catalog uses legacy job exports | [FACT][E-AU-152-002]；G0 |
+
+[FACT][E-AU-152-003] 7 文件、18 行完成深审；Inventory 20/20 文件均取得审阅状态，兼容入口保留不删。

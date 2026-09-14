@@ -366,3 +366,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - `InventoryPort.test` 覆盖 reservation lock、mall-scoped movement、commit/release idempotency 和 return restock；manifest 覆盖 operation/job declaration。
 - Inventory import operation/persistence/worker、StockImport 和 availability action 无 direct behavior fixture，见 F-0181/P2。
+
+## 152. AU-152 Inventory compatibility 与覆盖闭合
+
+- 兼容导出无独立业务分支；legacy job paths 由主 jobs catalog 直接消费。
+- Inventory 20/20 文件均取得审阅状态，不将转发路径误判为删除候选。

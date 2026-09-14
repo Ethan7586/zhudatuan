@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-151 已完成。AU-151 完成 Inventory 的库存事实、预留、导入与 Worker 运行链审阅。覆盖总账按当前文件级清单重算：深入审阅1,462文件/106,846行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,392文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-152 已完成。AU-152 完成 Inventory 兼容导出与文件级覆盖闭合。覆盖总账按当前文件级清单重算：深入审阅1,469文件/106,864行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,385文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1341,3 +1341,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 InventoryPort、availability/import HTTP、stock import persistence、import/sync workers、module/manifest 与现有测试，并从 Commerce main/jobs catalog 反查运行链。
 
 执行结果：库存预留按排序锁 stock row 并计算 active reservation/safety；commit/release 和 return restock 都以 mall/ref 唯一 movement 实现幂等。导入从已扫描 CSV 创建 job，经 500 行 stage/savepoint/continuation/report 收口；inventorysync 对退货在 job scope 事务内恢复库存。新增 F-0181/P2：现有测试未直接覆盖 InventoryImportOperations、PgInventoryImport、StockImport 或 availability action 的完整行为/事务路径。无 P0。
+
+## 154. AU-152 连续审计点
+
+审阅 Inventory 七个 root/legacy compatibility export，反查 Commerce main/jobs consumers。
+
+执行结果：七项均为单向转发；root module 保持主 app 的 stable import，legacy job paths 被主 jobs catalog 实际使用，public index 保持 InventoryPort/manifest。全部归类 G0。Inventory 20/20 基线文件均取得审阅状态；未发现 P0–P3 新问题。
