@@ -99,3 +99,10 @@
 - `ClientErrorBuffer`只拥有进程内Map，按fingerprint聚合并按retention裁剪；服务重启后不可恢复。历史资料把它描述为可清理缓冲，本AU没有足够证据把非持久化定为缺陷。
 - Operation audit由Commerce审计sink/数据库拥有；Telemetry Redactor只负责写前投影。F-0065意味着敏感字符串可能进入持久化审计，但本AU未读取线上表或证明已有真实记录。
 - Telemetry包没有迁移、事务或数据库连接；本AU未执行SQL、迁移或数据修复。
+
+## 15. AU-020 微信支付数据所有权
+
+- `@shop/wechatpayment`不连接数据库、不拥有表或迁移；它只产生经签名核验的provider observation/evidence。
+- 支付意图、退款、provider event、job和outbox由Commerce payment/runtime数据库contract拥有。Webhook在本地scope、金额、currency、payer/application hash和intent/refund证据匹配后才接受事件，并按`consumer + event_id`去重。
+- 退款申请使用稳定`outRefundNo`；provider响应不确定时转查询而非重复申请，降低重复资金写入风险。F-0092可能延迟查询恢复，但未证明重复扣款或账务写错。
+- 本AU未连接数据库、运行迁移、重放通知或修改支付数据。

@@ -207,3 +207,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - L1 gateway先服务`/identity-runtime.json`再fallback静态文件；L0版本库Caddy没有专门runtime route，静态fallback返回HTML，客户端按content-type退回build registry。
 - 共享制品canonical/OG固定L0（F-0089）；runtime同时决定敏感API目的地（F-0083），后续治理须分别验证制品和runtime回滚。
 - 本AU未build、读取live runtime、切换指针、推送、合并、部署或改变线上资源。
+
+## 23. AU-020 微信支付发布与运维边界
+
+- `@shop/wechatpayment`没有独立镜像、systemd unit、端口或release target；随Commerce OCI编译，影响Purchase API、Payment Webhook API和Payment Jobs三个运行单元。
+- 三个runtime都在构造Gateway前读取payment secret并校验Node Manifest绑定，但F-0091的密钥语义错误仍会越过启动配置检查。后续治理需验证三个进程ready和首个合成签名/验签，不得读取真实私钥内容。
+- F-0092属于共享Transport错误分类，修复时应分别验证read重试、write不盲重试和circuit计数；不能把支付业务修改混入同一批。
+- 本AU未构建OCI、访问微信/secret store/线上进程、推送、合并或部署。

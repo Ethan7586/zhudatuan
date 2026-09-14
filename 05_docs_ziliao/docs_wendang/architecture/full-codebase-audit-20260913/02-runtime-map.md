@@ -726,3 +726,27 @@ flowchart LR
 - Operator：invite/challenge/register/login/reset → node API → membership选择/ticket exchange → exact admin redirect。
 - runtime可替换全局registry而不重绘页面（F-0084），reject可覆盖build页面（F-0085），目的地绑定缺口见F-0083。
 - 同一`auth-web/dist`进入L0/L1 target；L1服务identity-runtime，L0旧Caddy对该路径静态fallback为HTML。
+
+## 25. AU-020｜微信支付运行链
+
+~~~mermaid
+sequenceDiagram
+  participant P as Purchase API / Payment Jobs
+  participant G as WechatGateway
+  participant W as @shop/wechatpayment
+  participant X as WeChat Pay APIv3
+  participant H as Payment Webhook API
+  participant D as payment/runtime DB contracts
+  P->>G: prepay/query/close/refund
+  G->>W: scoped callback + stable reference
+  W->>X: RSA-signed request
+  X-->>W: signed success/error/204
+  X->>H: signed encrypted notification
+  H->>G: exact raw body + signature headers
+  G->>W: verify + decrypt + minimize
+  G->>D: compare local evidence + deduplicate
+~~~
+
+- 三个runtime启动时从secret store读取application/payment配置，并以Node Manifest校验secret binding、callback API host和data scope；适配包本身不读取环境或数据库。
+- 同步出站Transport总deadline来自Executor；响应头前超时会映射为retryable ProtocolError，但响应正文阶段超时/断流以原始异常传播，见F-0092。
+- webhook失败在进入数据库状态转换前返回；合法重复通知由数据库provider event consumer去重。线上secret、provider事件与运行版本仍未验证。

@@ -379,3 +379,17 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | styles/assets | shell、PWA/OG | main/HTML/legacy | F-0089/DC-0025 |
 
 [FACT][E-AU-019-001] 58/58文件、6,807/6,807行覆盖；49个人工文本/代码文件深入审阅，9个品牌资源结构性审阅。
+
+## 26. AU-020 微信支付适配器模块清单
+
+| 子模块 | 职责 | 真实入口/调用者 | 当前边界 |
+| --- | --- | --- | --- |
+| Config | 商户/平台密钥、callback和scope配置 | 三个runtime、WechatGateway | F-0091 |
+| Crypto/Signature | 请求签名、响应/通知验签、AES-GCM、摘要 | Transport/Notification/Gateway | 密钥导入延迟失败F-0091 |
+| Transport | API origin、deadline、限长、验签、错误映射 | Client/Close | 正文流错误逃逸F-0092 |
+| Client/Close | prepay/query/refund/close | WechatGateway | callback override F-0093 |
+| Models | provider JSON到内部模型 | Client/Notification | authoritative时间由Gateway再校验 |
+| Notification | 通知分类、验签、解密、最小证据 | Payment Webhook | 与DB本地意图核对闭合 |
+| tests | 28个密码学和协议行为 | Vitest | 环境缺工具；异常流缺口 |
+
+[FACT][E-AU-020-001] 18/18文件、1,873/1,873行均已深入审阅。模块不拥有数据库或独立进程，随Commerce OCI制品发布。

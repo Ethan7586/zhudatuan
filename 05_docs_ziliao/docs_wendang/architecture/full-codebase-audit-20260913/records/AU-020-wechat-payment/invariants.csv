@@ -1,0 +1,10 @@
+"编号","不变量","入口/实现","结果","关联"
+"INV-AU-020-001","支付状态不能由前端成功回调决定","WechatGateway query/webhook→本地intent核对→runtime accept","成立","G0高质量设计"
+"INV-AU-020-002","微信成功、错误和204响应必须验签","Transport.send→verifyWechatPaySignedBody","成立","E-AU-020-004"
+"INV-AU-020-003","通知必须先验签再解密和改变状态","Notification→WechatGateway→PaymentWebhook DB contract","成立","E-AU-020-005"
+"INV-AU-020-004","回调必须属于当前节点API host和data scope","runtime assert*Configuration→resolveWechatPayNotifyUrl","生产入口成立；公共Client可绕过","F-0093"
+"INV-AU-020-005","不确定退款申请不得直接重复写入","WechatGateway.refund catch→queryWechatPayRefund","成立","E-AU-020-006"
+"INV-AU-020-006","基础设施超时必须保持可重试分类","Transport→WechatGateway Executor","正文流阶段不成立","F-0092"
+"INV-AU-020-007","无效支付密钥应在启动配置阶段失败","loadWechatPayConfig→WebCrypto使用点","不成立","F-0091"
+"INV-AU-020-008","provider authoritative time进入领域前必须严格RFC3339验证","WechatGateway→providerOccurredAt","成立","生产caller缓解模型parser宽松"
+

@@ -179,3 +179,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 15个测试文件覆盖registry、entry、canonical helper、action协调和部分Operator行为；fetch均为mock，不能证明真实CORS、cookie、事务或redirect。
 - `main.test.ts`只比较源码字符串；Consumer页无直接测试，Operator仅2例；runtime状态机、intent保留、reset主体绑定和畸形2xx缺行为测试，见F-0090。
 - 九处`safeParse`结果丢弃继续构成F-0007；现有mock成功payload合法，因此破坏Schema不会让测试失败。
+
+## 19. AU-020 微信支付质量
+
+- 包有28个Vitest用例，覆盖请求签名、provider响应验签、无签名拒绝、支付/退款模型、通知验签解密、重放、KeyID轮换、金额/身份匹配和UTF-8截断。
+- 正式test/typecheck在固定工作树分别因缺`vitest`/`tsc`以127退出；没有安装依赖或执行build。
+- 现有测试没有畸形PEM DER、响应头后body超时/断流、64KiB响应、fatal UTF-8、caller callback override和畸形provider时间反事实。合成WebCrypto与本地流探针已复现F-0091/F-0092，但不替代正式套件。
+- 详见`records/AU-020-wechat-payment/tests.csv`与`validation-results.md`。

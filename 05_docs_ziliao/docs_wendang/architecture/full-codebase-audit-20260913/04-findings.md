@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-016 结束时累计：P0 0、P1 候选 9、P2 37、P3 28、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-020 结束时累计：P0 0、P1 候选 10、P2 46、P3 36、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2205,3 +2205,76 @@
 
 - [UNKNOWN] live `identity-runtime.json`、当前线上Auth bundle与CORS接收方；本AU未访问线上。
 - [UNKNOWN] Ethan现行批准的是LoginPage还是Consumer/Operator双页，继续保留F-0005分歧。
+
+## F-0091｜支付密钥只校验PEM外壳，畸形DER延迟到首笔请求才失败
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 微信支付配置/密码学 |
+| 类型 | 配置正确性、可用性、错误契约 |
+| 严重级别 | P2 |
+| 置信度 | 高：源码与合成WebCrypto反事实均直接证明 |
+| 文件和精确位置 | `01_core_hexin/extensions/payment/wechat/src/Config.ts:45-63,94-100,125-130`；`Crypto.ts:49-63` |
+| 当前行为 | [FACT][E-AU-020-007] `loadWechatPayConfig`仅用BEGIN/END和base64字符正则接受PKCS8/SPKI；合成`AAAA`正文通过正则，但WebCrypto importKey均抛`DataError: Invalid keyData` |
+| 预期行为 | 启动读取secret时应证明密钥可由当前运行时导入，错误应保持稳定配置错误码 |
+| 直接证据 | E-AU-020-007、TC-AU-020-003/004 |
+| 调用链或运行入口 | 三个runtime load config成功→进程ready→首个prepay签名或provider响应/通知验签→原始DataError |
+| 用户影响 | 配置或轮换错误不能在启动门禁被发现，支付创建、查询、退款或回调可能在真实流量到达后才失败 |
+| 数据影响 | 未证明资金状态写错；失败主要阻断支付状态推进并造成延迟 |
+| 安全影响 | 没有证明私钥泄露或伪造；失效模式为拒绝服务和诊断失真 |
+| 根因 | 配置层只检查文本容器，密钥语义导入留到每次操作 |
+| 建议方向 | 后续独立批次在配置装配/启动阶段预导入或执行不泄密的可用性验证，并统一错误码；不在审计分支实施 |
+| 预计修改范围 | Config/Crypto、三个runtime启动测试、密钥轮换测试 |
+| 验证方式 | 合法PKCS8/SPKI可启动；外壳合法但DER畸形在ready前以配置错误失败；真实签名/验签回归通过 |
+| 回滚方式 | 回退单一密钥预检提交并恢复原secret版本 |
+| 是否需要独立复核 | 否 |
+
+## F-0092｜响应头之后的正文超时和断流绕过支付Transport重试分类
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 微信支付Transport / Executor |
+| 类型 | 超时、重试、断路器、错误传播 |
+| 严重级别 | P2 |
+| 置信度 | 高：catch边界和本地响应流探针直接证明 |
+| 文件和精确位置 | `01_core_hexin/extensions/payment/wechat/src/Transport.ts:64-94,97-131`；`services/commerce/.../WechatGateway.ts:107-111` |
+| 当前行为 | [FACT][E-AU-020-008] fetch取得响应头前的错误会转换为retryable `WechatPayProtocolError`；之后`readBoundedBody`的`reader.read()`在超时/断流时抛原始异常。Gateway只把retryable ProtocolError计入重试/断路器 |
+| 预期行为 | 同一请求deadline覆盖完整响应消费，所有网络/超时阶段应映射为一致、可审计的基础设施错误 |
+| 直接证据 | E-AU-020-008、TC-AU-020-005 |
+| 调用链或运行入口 | Purchase/Jobs→WechatGateway.execute→Transport.send→headers成功→body stall→raw TimeoutError→Executor不可重试且不计circuit failure |
+| 用户影响 | 短暂网络或provider流中断会过早失败；查询类失去设计中的安全重试，支付/退款状态恢复延后 |
+| 数据影响 | 没有证明重复写；退款写仍不会被盲重试，但其查询恢复可被中断 |
+| 安全影响 | 无直接授权或签名绕过；异常发生在验签前，结果不会被信任 |
+| 根因 | try/catch只包围fetch promise，没有包围响应体读取与验签前传输阶段 |
+| 建议方向 | 后续独立Transport批次统一映射body read的abort/network错误，同时保留too-large/encoding等既有ProtocolError |
+| 预计修改范围 | Transport和定向stream/deadline测试；Gateway无需改变业务语义 |
+| 验证方式 | headers前、headers后、外部取消、deadline、断流结果矩阵；read模式重试，write模式不盲重试，断路器计数一致 |
+| 回滚方式 | 回退单一Transport错误映射提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0093｜公共支付Client允许未验证的单次回调地址覆盖安全配置
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 微信支付Client API |
+| 类型 | 契约边界、配置一致性 |
+| 严重级别 | P3 |
+| 置信度 | 高：序列化路径与全部仓内生产caller已核对 |
+| 文件和精确位置 | `01_core_hexin/extensions/payment/wechat/src/Client.ts:6-14,26-33,40-48,68-75,91-126`；`Config.ts:137-143`；`WechatGateway.ts:23-33,67-75` |
+| 当前行为 | [FACT][E-AU-020-009] prepay/refund输入可提供`notifyUrl`，validation不检查它，正文直接优先使用该值。当前生产Gateway始终传`resolveWechatPayNotifyUrl`结果，三个runtime再绑定Manifest host/scope |
+| 预期行为 | 包的公共请求API不应提供绕过自身callback配置不变量的路径，或必须对override执行同一验证 |
+| 直接证据 | E-AU-020-003/009、TC-AU-020-006 |
+| 调用链或运行入口 | 任意直接Client caller→input.notifyUrl→微信请求notify_url；当前生产链由Gateway约束 |
+| 用户影响 | 当前仓内生产路径无已证实影响；未来或仓外直接caller可能把通知送往错误地址而导致状态停滞 |
+| 数据影响 | 可能造成通知未进入本地状态机；没有证明已发生数据错误 |
+| 安全影响 | 微信通知正文为签名加密载荷，未证明明文凭据泄露；错误目的地仍是配置边界破坏 |
+| 根因 | 配置URL验证是私有函数，Client把caller override视为已可信 |
+| 建议方向 | 后续单一API契约批次移除override或复用相同验证；先确认是否有仓外消费者 |
+| 预计修改范围 | Client/Config导出边界和测试；生产Gateway调用可简化但不应同批扩项 |
+| 验证方式 | 非HTTPS、私网、错误path、query/hash和非Manifest callback反事实；生产scoped callback保持不变 |
+| 回滚方式 | 回退单一Client契约提交 |
+| 是否需要独立复核 | 否 |
+
+## 20. AU-020 新增未定级事项
+
+- [UNKNOWN] 线上支付secret是否包含可导入密钥、平台轮换状态、真实provider超时分布和当前运行制品版本；本AU未访问线上。

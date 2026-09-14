@@ -698,3 +698,22 @@ flowchart LR
 [CONFLICT][E-AU-019-003/005/006] build registry负责快渲染，runtime registry可在渲染后替换服务使用的全局节点；runtime目的地又未绑定受信Manifest。由此形成凭据目的地P1候选F-0083和双版本状态F-0084。
 
 [CONFLICT][E-AU-019-008] 当前双页面入口与owner-approved的LoginPage旧链并存。旧链列GX-0002，不得由审计自行删除、修复或恢复。
+
+## 18. AU-020 增量：微信支付 APIv3 适配器
+
+[FACT][E-AU-020-002/003] `@shop/wechatpayment` 是三个Commerce专用runtime共享的私有适配器，不是独立服务或数据所有者。节点Manifest把payment secret ref、callback host和data scope绑定到当前运行单元；Purchase API负责预支付，Payment Jobs负责主动查询/关闭/退款，Payment Webhook API负责签名通知。
+
+~~~mermaid
+flowchart LR
+  Purchase[Purchase API] --> Gateway[WechatGateway]
+  Jobs[Payment Jobs] --> Gateway
+  Webhook[Payment Webhook API] --> Gateway
+  Gateway --> Adapter[@shop/wechatpayment]
+  Adapter --> Wechat[WeChat Pay APIv3]
+  Wechat --> Webhook
+  Gateway --> PaymentDB[(payment/runtime DB contracts)]
+~~~
+
+[FACT][E-AU-020-004/005/006] 出站请求和所有provider响应均签名验证；入站通知验签、解密、商户/应用/金额/引用核对后才进入数据库去重与状态机。退款用稳定退款号并在写响应不确定时转查询，是当前最强的异步资金恢复边界。
+
+[CONFLICT][E-AU-020-007/008/009] 密钥只做PEM外壳预检，正文流错误逃逸统一ProtocolError，公共Client callback override又绕过配置URL验证，形成F-0091–F-0093。当前生产runtime与Gateway缓解callback问题，但不能修复密钥和Transport错误分类。
