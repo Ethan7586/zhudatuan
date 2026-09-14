@@ -1,0 +1,4 @@
+"测试","范围","结论","执行"
+"ReconciliationRepair.test.ts","preview/submit/decide/reverse wrapper 参数与拒绝输入","mock 契约 oracle；数据库过程留 AU-071","未执行：固定审计 worktree 无 vitest 可执行文件"
+"GetReconciliationRepair.test.ts","scope receipt read 与错误 receipt","mock 契约 oracle","未执行：固定审计 worktree 无 vitest 可执行文件"
+"ResolveDifference","retry/resolve/approveitem/approve/job 交接","未找到模块专用行为测试；F-0156","未执行"

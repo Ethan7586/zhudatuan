@@ -3213,6 +3213,18 @@
 | 验证/回滚 | 隔离 PostgreSQL 验证完整工作流；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
 | 独立复核 | 否 |
 
+## F-0156｜对账差异处置命令缺少行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | finance / reconciliation；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/finance/03_application_yingyong/command/ResolveDifference.ts:9-52` |
+| 当前/预期 | retry、resolve、approveitem 与 approve 直接改变 reconciliation/item 状态，并写入 reconciliation/settlement job；未找到调用 `resolveDifferenceOperations` 的模块专用测试。预期以隔离 PostgreSQL 覆盖 scope、状态转换、不同处理/批准人、未清差异拒绝、重复 retry/job 幂等、并发与 job 失败恢复。 |
+| 影响 | 对账差异处置和结算排队的回归可能仅在运营处置时暴露，导致无法重试、错误批准或遗漏结算任务。未见已发生线上事故。 |
+| 根因 | repair workflow 有独立 wrapper/integration 测试，但 legacy reconciliation manage command 没有相同的行为 oracle。 |
+| 验证/回滚 | 从最新主线的独立小分支以隔离 PostgreSQL 构造 difference/balanced/resolved item，核对 reconciliation、runtime.job 和 version；回滚为撤回测试或实现小批次。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

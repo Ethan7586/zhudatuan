@@ -1,0 +1,6 @@
+"编号","位置","证据","结论"
+"E-AU-070-001","ResolveDifference.ts:5-52","manage 注册；retry 更新 reconciliation 并 upsert reconciliation job；resolve/approveitem 状态与不同 actor；approve 要求无未处理 item 并 insert settlement job","差异处置到结算 job 的应用入口和状态方向明确"
+"E-AU-070-002","ReconciliationRepair.ts:12-96","preview/submit/decide/reverse 只调受管函数；idempotency、version、preview hash/request hash 与 versioned receipt","应用层不接受客户端会计分录，修复契约交给数据库权威过程"
+"E-AU-070-003","ReconciliationRepair.ts:99-147;GetReconciliationRepair.ts:5-35","strict body、路径/版本/hash 校验；repair read 以 authenticated scope 调用并返回 ETag","输入和读取契约有明确拒绝边界"
+"E-AU-070-004","ReconciliationRepair.test.ts:7-97;GetReconciliationRepair.test.ts:7-20","mock 验证受控过程调用参数、非法字段/decision 拒绝、scope read 与 receipt schema","repair wrapper 有契约测试；并非数据库工作流验证"
+"E-AU-070-005","ResolveDifference.ts:9-52；finance tests 检索结果","未见该 command 的模块专用测试；现有 repair tests 不调用 resolveDifferenceOperations","F-0156/P2"

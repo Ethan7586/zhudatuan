@@ -798,3 +798,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | PGlite 篡改拒绝、late exclusion、最终 journal | [FACT][E-AU-069-005] |
 
 [FACT][E-AU-069-006] 3 文件、859 行 Finance settlement close 人工源码和测试完成深审；对账/账期/提现/发票等职责仍保持独立审计单元。
+
+## 76. AU-070 Finance 对账差异处置与修复应用入口模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| difference manage | retry、resolve、approveitem、approve 与 job 交接 | F-0156 |
+| repair commands | preview/submit/decide/reverse 的受控数据库过程接口 | [FACT][E-AU-070-002~003] |
+| repair read/tests | scope receipt 与 wrapper 契约 | [FACT][E-AU-070-003~004] |
+
+[FACT][E-AU-070-006] 5 文件、419 行 Finance reconciliation application 人工源码和测试完成深审；SECURITY DEFINER repair workflow/迁移与 PostgreSQL 集成测试保留 AU-071。
