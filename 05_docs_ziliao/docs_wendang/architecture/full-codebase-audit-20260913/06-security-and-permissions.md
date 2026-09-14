@@ -118,3 +118,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - [FACT] 探针只使用合成值，没有读取凭据、线上日志或审计数据。当前证据不能证明正在泄漏，因此不是P0。
 - [P2][E-AU-013-008] ClientErrorBuffer复制Authz的异常Scope containment；当前read Operation无正式发布target且scope由服务端取得，是缓解项，不是正确性替代。
 - 本AU未新增任何安全约束、权限守卫或日志规则，也未改变线上状态。
+
+## 15. AU-017 权限状态的前端表达边界
+
+- [FACT][E-AU-017-007] Console共享QueryState将ApiError 401与403都映射为`denied`；design ResourceState已具备独立`unauthenticated`状态，只有该状态会渲染重新登录动作。ScopeShell提供的`onRelogin`因此在feature query 401链上不可达（F-0078）。
+- [FACT][E-AU-017-006] AccessDenied本身不执行授权，只表达服务端结果；其11组视觉类没有CSS实现（F-0077）。这会弱化状态表达，但没有证据表明可绕过服务端权限。
+- [FACT] forbidden分支故意不显示调用者动作；ScopeShell的scope selector仍在外层shell可见。`onSwitchScope`公共action当前未被组件消费，列入公共面复核，不据此改变权限设计。
+- 本AU没有读取凭据、线上会话或权限数据，没有新增、收窄或移除任何权限规则。

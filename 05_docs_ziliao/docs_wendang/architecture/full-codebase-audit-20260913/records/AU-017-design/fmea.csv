@@ -1,0 +1,7 @@
+"编号","链路","故障模式","影响","等级","关联"
+"FM-AU-017-001","tokens.json→generator→tokens.css→components.css→Console","生成器遗漏消费token","控件/布局/语义样式声明失效","P2","F-0076"
+"FM-AU-017-002","403→ResourceState→AccessDenied","组件类无样式","权限边界失去预期视觉层级","P2","F-0077"
+"FM-AU-017-003","API 401→Console QueryState→ResourceState","401折叠为denied","用户看不到重新登录恢复动作","P2","F-0078"
+"FM-AU-017-004","Storybook preview→stories","不装载生产组件CSS且不执行story测试","视觉/a11y回归形成假阴性","P3","F-0079"
+"FM-AU-017-005","token brand→Brand/SVG","同一canonical包身份冲突","页面/设计交付可展示旧品牌","P3","F-0080"
+"FM-AU-017-006","mobile platform spec→generator/runtime","多数规则未接线","维护者误判跨端标准已生效","P3","F-0081"

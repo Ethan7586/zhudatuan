@@ -185,3 +185,11 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - 旧包无进程/target；Storefront依赖边可能进入workspace影响计算，但没有export进入源码或bundle的固定证据。
 - 正式token构建与check只处理canonical `packages/design`，不会更新或验证旧包生成CSS。
 - 本AU未build Storefront、打开页面、生成token、修改资产、推送、合并或部署。
+
+## 20. AU-017 Canonical Design 发布边界
+
+- `@shop/design`没有独立镜像、服务或部署步骤；Console静态入口直接打包4个CSS subpath和生产消费组件，因此其样式/组件变化随Console制品发布。
+- `build-web-tokens.mjs`生成canonical `tokens.css`/`Token.ts`；当前check通过但不检查消费者变量闭合，80个未定义token可随合法生成物进入Console（F-0076）。
+- `build-miniapp-theme.mjs`从canonical token复制部分样式和两个SVG进入miniapp；check通过，但不读取`mobile-platforms.json`，不能证明六档/平板规则已发布（F-0081）。
+- Storybook不是正式发布或质量链单元；其样式入口与生产不同，不能作为发布验收证据（F-0079）。
+- 本AU未构建制品、修改生成物、推送、合并、部署或改变任何线上资源。

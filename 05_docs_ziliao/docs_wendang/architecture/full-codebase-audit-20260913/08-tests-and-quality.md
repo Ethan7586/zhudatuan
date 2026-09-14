@@ -154,3 +154,12 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 2个JSON可解析，4个SVG通过XML结构校验，size class区间闭合；这些不证明真实视觉或页面使用。
 - 正式canonical web-token check通过，但只读写`packages/design`，不会发现旧包tokens.css漂移，形成F-0075。
 - 未执行页面截图/视觉对照；DC-0020不能升级G3。
+
+## 16. AU-017 Canonical Design 测试可信度
+
+- 包内10个test文件覆盖Bootstrap、Brand、QueryState、AccessDenied、Dialog、primitives、ResourceState、RouteFallback和Workspace foundation/shell；多数直接调用真实组件/函数。
+- [CONFLICT][E-AU-017-006] AccessDenied测试标题宣称dark surface，却只检查class和DOM内容；全仓零对应CSS，因此对真实视觉形成假阳性（F-0077）。
+- [CONFLICT][E-AU-017-008] Storybook preview未导入`components.css`；4个story文件虽含Dialog play和a11y error配置，根正式质量链没有story interaction/a11y runner（F-0079）。
+- 当前web-token check只证明生成物等于生成器输出，不检查80个consumer变量是否定义；生成闸门无法发现F-0076。
+- 正式`test`、`test:component`、`typecheck`各执行一次，均因缺`vitest`/`tsc`在源码加载前退出127；未安装依赖，不记为实现失败或通过。
+- JSON/XML结构和miniapp theme drift check通过；未执行Storybook build、浏览器computed-style或页面截图。完整8条验证记录见`records/AU-017-design/tests.csv`。

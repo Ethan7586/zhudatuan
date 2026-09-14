@@ -334,3 +334,20 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Brand SVG | mark/lockup/code/pattern | 零运行消费者 | 3个字节相同、code不同 | 需视觉复核，不能删除 |
 
 [FACT][E-AU-016-002/003] 8文件均纳入：7个人工文件深审，1个CSS生成物核对来源。没有真实页面消费者，不等于已满足G3。
+
+## 23. AU-017 Canonical Design 模块清单
+
+| 字段 | 结论 |
+| --- | --- |
+| 模块 | `@shop/design` |
+| 职责 | Console共享组件、资源状态、CSS/token、品牌资产、Storybook与跨端设计数据 |
+| 对外入口 | 根export、`./access-denied`、5个CSS subpath、2个JSON、brand wildcard |
+| 上游调用者 | Console main/页面/ScopeShell/Cockpit、Storybook、web/miniapp生成器 |
+| 下游依赖 | React、React Aria、TanStack Table；token JSON与SVG资产 |
+| 数据所有权 | 无业务表；拥有canonical设计token、组件契约和品牌/平台设计数据 |
+| 运行进程 | 无独立进程；编入Console与miniapp静态制品 |
+| 发布单元 | Console bundle、miniapp资源；Storybook仅开发入口 |
+| 测试范围 | 10个test文件、4个stories；正式test/component/typecheck入口存在 |
+| 当前边界问题 | 80个token缺定义、AccessDenied无样式、401语义折叠、Storybook/品牌/平台规格漂移 |
+
+[FACT][E-AU-017-001/002] 67/67文件、4,653/4,653行已覆盖；65个人工文件深入审阅，2个生成物核对来源和消费者。公共但无生产消费者的符号与平台规则仅列G1，不推断删除。

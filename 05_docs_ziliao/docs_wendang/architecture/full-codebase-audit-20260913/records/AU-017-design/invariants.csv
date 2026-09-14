@@ -1,0 +1,8 @@
+"编号","不变量","状态","证据","关联"
+"INV-AU-017-001","生产CSS引用的token必须有定义或fallback","破坏","80个use-without-definition","F-0076"
+"INV-AU-017-002","AccessDenied视觉契约必须有真实样式且测试可观察","破坏","11组类零CSS；测试只查class","F-0077"
+"INV-AU-017-003","401必须保留重新认证路径并区别于403","破坏","Console将401/403都映射denied","F-0078"
+"INV-AU-017-004","Storybook应装载生产样式并进入可执行质量入口","破坏","preview漏components；无story test入口","F-0079"
+"INV-AU-017-005","canonical token、组件文案与资产品牌身份一致","破坏","主打团token对智慧翼组件/资产","F-0080"
+"INV-AU-017-006","声明为平台标准的数据应有明确生成/运行消费者","部分破坏","mobile-platforms大部分字段零消费者","F-0081/DC-0022"
+"INV-AU-017-007","G2/G3不得由零仓内引用直接推断","保持","公共exports/规格/仓外UNKNOWN均保留G1","DC-0021/DC-0022"

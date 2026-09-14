@@ -1,0 +1,3 @@
+"编号","对象","无入口证据","保留/未知","等级","结论"
+"DC-0021","canonical design无生产消费者公开面：AppBoundary、Bootstrap、Brand、Divider、Icon/IconButton、QueryState、RecordTable、RouteFallback、Status、Table、Theme、WorkspaceShell、WorkspaceMetrics等","固定仓库生产源码无import/调用；仅包内测试、Story或零调用","根public exports、package subpaths、Story/测试规格、仓外消费和迁移计划未知","G1","疑似闲置公共面；不得删除，需按符号逐项二次入口与视觉/构建复核"
+"DC-0022","mobile-platforms.json中wechatMiniProgram、sizeClasses、overflowRules、tabletPrinciple/tabletRules字段","固定仓库生成器与运行代码零字段消费；miniapp生成器不读取该文件","文件部分字段被web生成器读取；内容保存唯一跨端设计规格；未来平台实现和文档责任未知","G1","未接线规格，不是已证实垃圾；不得删除"

@@ -243,6 +243,7 @@
 | 回滚方式 | 回退单行测试提交 |
 | 是否需要独立复核 | 否 |
 
+
 ## 3. AU-002 新增未定级事项
 
 - [UNKNOWN][E-AU-002-016] Storefront `app/[device]/page.tsx` 会接住未知单段路径，组件在 hydration 后显示“该展示入口不存在”，但未验证真实 HTTP status；不登记为缺陷事实。
@@ -1837,3 +1838,147 @@
 
 - [UNKNOWN] 仓外构建或设计工具是否按`@smart-wing/design-system`包名消费exports。
 - [UNKNOWN] 移除Storefront依赖及旧包后的完整build和真实页面视觉是否完全不变。
+
+## F-0076｜Canonical 组件样式引用80个未生成的CSS令牌
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/design` token生成链与Console样式 |
+| 类型 | 生成契约、生产UI样式 |
+| 严重级别 | P2 |
+| 置信度 | 高：变量定义/使用集合已复算；浏览器视觉范围未实测 |
+| 文件和精确位置 | `packages/design/src/tokens.css:6-107`；`foundation.css:1-197`；`controls.css:1-235`；`data-display.css:1-145`；`feedback.css:1-97`；`vi-1-2-foundation.css:1-331`；`04_tools/scripts/build-web-tokens.mjs:81-194`；Console `src/main.tsx:3-6` |
+| 当前行为 | [FACT][E-AU-017-005] 14个CSS文件使用的`--sw-*`与全部仓内CSS定义做差，得到80个无定义变量；生成器只输出旧的有限映射。无fallback的`var()`使所在声明失效 |
+| 预期行为 | canonical token输出必须覆盖所有生产组件使用的变量，或每处有明确fallback；check应验证消费闭合而非仅字节一致 |
+| 直接证据 | E-AU-017-004/005、INV-AU-017-001、FM-AU-017-001 |
+| 调用链或运行入口 | tokens.json → build-web-tokens → tokens.css + components.css → Console main → Button/Surface/Workspace组件 |
+| 用户影响 | 控件触控高度、边框、padding、字号、Surface背景/深度及工作台布局/语义色可能退回浏览器默认或局部失效 |
+| 数据影响 | 无业务数据写入影响 |
+| 安全影响 | 可降低权限/状态提示的视觉清晰度；未证明授权绕过 |
+| 根因 | 组件CSS已扩展到VI1.2完整token词汇，生成器仍只映射早期子集；现有check只比对生成器自身输出 |
+| 建议方向 | 后续独立token闭合批次先建立consumer→definition反事实闸门，再扩展生成映射；不在审计分支修复 |
+| 预计修改范围 | token生成器、生成物、CSS闭合测试；视觉值变更另批 |
+| 验证方式 | 变量差集为0；design test/typecheck；Console定向build和关键控件computed-style/视觉对照 |
+| 回滚方式 | 回退单一token生成提交并重生受控产物 |
+| 是否需要独立复核 | 否；若升级P1则需要 |
+
+## F-0077｜AccessDenied 的视觉类没有任何CSS实现，测试却把类名当作暗色表面
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/design` AccessDenied |
+| 类型 | 权限状态UI、测试假阳性 |
+| 严重级别 | P2 |
+| 置信度 | 高：全仓CSS零选择器定义；未打开真实页面 |
+| 文件和精确位置 | `packages/design/src/AccessDenied.tsx:35-105`；`AccessDenied.component.test.tsx:10-20`；`components.css:1-5` |
+| 当前行为 | [FACT][E-AU-017-006] 组件输出`swaccessdenied*`共11组类，但全仓CSS无任何匹配定义。测试名宣称dark surface，却只检查`swaccessdeniedforbidden`类存在和无按钮 |
+| 预期行为 | 权限边界应有可见、可访问且与普通内容明确区分的受测样式；视觉断言必须验证真实样式入口或浏览器结果 |
+| 直接证据 | E-AU-017-006、INV-AU-017-002、FM-AU-017-002 |
+| 调用链或运行入口 | Console RouteError/ResourceState → ContextualAccessDenied → 未定义CSS类 |
+| 用户影响 | 403/401状态可能呈现为无层级的默认文本，弱化错误原因和恢复提示 |
+| 数据影响 | 无 |
+| 安全影响 | 不改变服务端授权裁决；只影响边界表达 |
+| 根因 | AccessDenied实现与样式资产未同时进入canonical CSS入口；测试只验证DOM形状 |
+| 建议方向 | 独立权限状态视觉批次补齐真实样式与浏览器级断言；不顺手改变授权规则 |
+| 预计修改范围 | AccessDenied CSS入口、组件视觉测试/Story |
+| 验证方式 | 生产CSS存在全部必要选择器；403与401页面computed style和键盘/读屏对照 |
+| 回滚方式 | 回退单一视觉提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0078｜Console 把API 401折叠成denied，导致重新登录恢复分支不可达
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Console QueryState ↔ `@shop/design` ResourceState/AccessDenied |
+| 类型 | 前后端错误契约、会话恢复 |
+| 严重级别 | P2 |
+| 置信度 | 高：共享QueryState由多个生产路由调用，状态映射和渲染分支直接可证 |
+| 文件和精确位置 | Console `src/shared/api/QueryState.ts:13-42`；design `ResourceState.tsx:42-44`；`AccessDenied.tsx:45-67,95-103`；Console `ScopeShell.tsx:190-199,252` |
+| 当前行为 | [FACT][E-AU-017-007] `errorCondition`把401和403都返回`denied`；ResourceState仅`unauthenticated`分支渲染重新登录，`denied`进入无动作forbidden分支。ScopeShell虽提供onRelogin，仍不会被消费 |
+| 预期行为 | 认证失效与授权拒绝应保持不同状态；401必须提供确定的重新认证路径，403保持权限拒绝语义 |
+| 直接证据 | E-AU-017-007、INV-AU-017-003、FM-AU-017-003 |
+| 调用链或运行入口 | feature query ApiError(401) → Console queryCondition → denied → ResourceState → forbidden AccessDenied |
+| 用户影响 | 会话过期时页面显示“没有权限”且无重新登录按钮，用户需猜测刷新/重新进入 |
+| 数据影响 | 无直接数据影响 |
+| 安全影响 | 不扩大权限；会混淆认证与授权审计语义 |
+| 根因 | Console状态适配器合并HTTP 401/403，而design状态联合已明确区分两者 |
+| 建议方向 | 后续独立状态契约批次修正映射并补401/403端阵；不修改权限本身 |
+| 预计修改范围 | Console QueryState与直接测试，必要时路由恢复测试 |
+| 验证方式 | 401→unauthenticated+relogin；403→denied且无越权动作；所有消费路由定向测试 |
+| 回滚方式 | 回退单一状态映射提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0079｜Storybook 未装载生产组件样式，也没有正式Story执行入口
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/design` Storybook/质量入口 |
+| 类型 | 测试可信度、视觉回归 |
+| 严重级别 | P3 |
+| 置信度 | 高：preview/import图与根script已核对 |
+| 文件和精确位置 | `.storybook/preview.ts:1-18`；`package.json:10-16`；`Dialog.stories.tsx:1-42`；根`package.json:54,123` |
+| 当前行为 | [FACT][E-AU-017-008] preview只导入tokens/base/workspace，未导入components；Dialog play与a11y error配置存在，但根正式质量链仅运行Vitest component，不运行Story interaction/a11y |
+| 预期行为 | Storybook应与生产装载同一组件CSS，并有明确可执行的交互/a11y入口 |
+| 直接证据 | E-AU-017-008、INV-AU-017-004、FM-AU-017-004 |
+| 调用链或运行入口 | Storybook preview → stories；根quality链无story runner |
+| 用户影响 | Story画面和a11y结果不能可靠代表Console生产组件，视觉回归可能假阴性 |
+| 数据影响 | 无 |
+| 安全影响 | 无 |
+| 根因 | Storybook开发入口与生产样式入口、正式测试入口分别演进 |
+| 建议方向 | 独立Design QA批次统一style import并决定正式story runner；不与token修复混批 |
+| 预计修改范围 | preview、package scripts/质量入口、Story测试 |
+| 验证方式 | Story构建/interaction/a11y真实执行；生产/Story computed style对照 |
+| 回滚方式 | 回退单一QA接线提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0080｜Canonical token品牌身份与公开Brand组件/资产相互冲突
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/design` 品牌资产 |
+| 类型 | 设计契约、内容漂移 |
+| 严重级别 | P3 |
+| 置信度 | 高：JSON、组件和SVG文本直接冲突；当前Brand无生产调用 |
+| 文件和精确位置 | `tokens.json:3-18`；`Brand.tsx:3-18`；`brand/brand-lockup-horizontal.svg:1-18`；`brand-mark.svg:1-19`；`wing-code-symbol.svg:1-20`；`wing-pattern.svg:1-12` |
+| 当前行为 | [FACT][E-AU-017-009] token声明主打团/ZHUDATUAN/翼码，公开Brand alt/copy和四个canonical SVG仍声明智慧翼/Smart Wing；Storybook同时展示两套名称 |
+| 预期行为 | canonical包中的品牌元数据、组件可访问名称、可见资产与Ethan确认的正式VI一致 |
+| 直接证据 | E-AU-017-009、INV-AU-017-005、FM-AU-017-005 |
+| 调用链或运行入口 | public Brand/brand subpath → Storybook/未来消费者；miniapp生成器复制mark/wingcode |
+| 用户影响 | 新消费者或设计交付可能展示旧品牌名称；当前固定生产Console无Brand import证据 |
+| 数据影响 | 无 |
+| 安全影响 | 无 |
+| 根因 | token改名/版本升级未与品牌组件和SVG内容原子收口 |
+| 建议方向 | 由Ethan定稿后单独品牌资产批次处理组件、SVG、alt和跨端复制；必须视觉复核 |
+| 预计修改范围 | Brand、4 SVG、Story与miniapp生成输出 |
+| 验证方式 | 文本/资产一致性、生成check、关键页面/Story视觉和可访问名称 |
+| 回滚方式 | 回退单一品牌提交和受控生成物 |
+| 是否需要独立复核 | 否 |
+
+## F-0081｜移动平台设计标准的大部分字段没有生成或运行消费者
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/design` mobile platform contract |
+| 类型 | 规格到运行接线、文档漂移 |
+| 严重级别 | P3 |
+| 置信度 | 高：字段级全仓反查；是否为未来规格未知 |
+| 文件和精确位置 | `mobile-platforms.json:1-223`；`04_tools/scripts/build-web-tokens.mjs:35-37,63-66,174-190`；`build-miniapp-theme.mjs:1-46` |
+| 当前行为 | [FACT][E-AU-017-010] web生成器只读取iOS/Android wing-code与触控尺寸；miniapp生成器不读取该文件；wechat、六档size class、overflow/tablet规则没有固定仓库消费者 |
+| 预期行为 | 标为平台标准的可执行规则应进入生成/运行/验证链，或明确标为未实施设计规格 |
+| 直接证据 | E-AU-017-010、INV-AU-017-006、FM-AU-017-006 |
+| 调用链或运行入口 | mobile-platforms → web generator（部分）；其余字段无下游 |
+| 用户影响 | 维护者可能误以为小程序和平板规则已生效；真实适配状态无法从该文件推断 |
+| 数据影响 | 无 |
+| 安全影响 | 无 |
+| 根因 | 设计数据扩展快于生成器和运行适配接线 |
+| 建议方向 | 后续跨端专项先标记implemented/planned，再逐规则建立消费者；不得直接删除唯一规格 |
+| 预计修改范围 | 平台数据schema、生成器/miniapp适配与验证；需拆批 |
+| 验证方式 | 每字段consumer矩阵、设备档位/resize定向测试和生成漂移检查 |
+| 回滚方式 | 回退每个独立平台接线提交 |
+| 是否需要独立复核 | 否；若DC-0022升级G3则需要 |
+
+## 17. AU-017 新增未定级事项
+
+- [UNKNOWN] 固定基线Console真实页面的computed style损失范围；本AU没有打开页面或截图。
+- [UNKNOWN] 仓外消费者是否使用DC-0021中的公共export。
+- [UNKNOWN] `mobile-platforms.json`未接线字段是待实现正式规格、纯设计说明还是已退役约束。

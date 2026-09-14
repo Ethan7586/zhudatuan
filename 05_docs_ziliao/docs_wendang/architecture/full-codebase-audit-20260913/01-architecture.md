@@ -662,3 +662,23 @@ flowchart LR
 [FACT][E-AU-013-002/003] Telemetry是随消费者编译的共享内核，不是独立服务。Node链进入多个Commerce运行进程，timeline进入三个前端；Browser/Miniapp adapter当前仓内无生产caller。
 
 [CONFLICT][E-AU-013-004/005/006/007] 同一Redactor横跨stdout和Operation审计但无法覆盖多类字符串credential/PII（F-0065）；两个client-error契约没有正式生产入口（F-0066）；允许Promise的writer拒绝未被传播（F-0067）。完整证据见`records/AU-013-telemetry/`。
+
+## 15. AU-017 增量：Canonical Design System
+
+[FACT][E-AU-017-002/003] `@shop/design` 是随 Console 编译发布的共享前端层，不是独立运行单元。Console 入口装载其 token/base/components/workspace 四个 CSS 入口，生产页面和动态 AccessDenied provider 消费共享组件；Storybook和两个生成器属于开发/制品入口。
+
+~~~mermaid
+flowchart LR
+  Token[tokens.json] --> WebGen[build-web-tokens]
+  Token --> MiniGen[build-miniapp-theme]
+  Platform[mobile-platforms.json] --> WebGen
+  WebGen --> CSS[tokens.css + Token.ts]
+  CSS --> Console[Console bundle]
+  Components[React components + component CSS] --> Console
+  Components --> Storybook[Storybook]
+  MiniGen --> Miniapp[miniapp tokens + SVG]
+~~~
+
+[CONFLICT][E-AU-017-005] 单源关系只保证生成文件与生成器字节一致，不保证生成变量覆盖消费者：生产样式仍有80个无定义token（F-0076）。[CONFLICT][E-AU-017-006/007] 权限状态跨 Console QueryState 和设计组件传播时，401被折叠为403语义，且AccessDenied视觉类无实现（F-0077/F-0078）。
+
+[FACT][E-AU-017-009/010] canonical包同时承载品牌资产和跨端平台规格；当前品牌身份与token冲突，平台规则大部分没有运行消费者。公共export与唯一规格仍阻止任何激进删除结论。

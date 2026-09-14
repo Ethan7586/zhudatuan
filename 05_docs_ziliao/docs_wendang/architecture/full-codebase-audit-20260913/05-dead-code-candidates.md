@@ -262,3 +262,29 @@ AU-005 首次建立候选总账。零静态引用、零正式target或测试只�
 | 二次复核 | 升级G3前必须从Storefront build、仓外包消费和真实页面视觉重新追踪 |
 
 上述G0、G1、G2和GX项均不满足“无公共/事件契约、无数据责任、存在等价替代、删除不改变可观察行为、已完成第二次复核”等条件。AU-016未对任何文件提出删除、归档或移动建议。
+
+## DC-0021｜Canonical Design 无生产消费者的公共组件与工具面
+
+| 字段 | 记录 |
+| --- | --- |
+| 等级 | G1 |
+| 对象 | AppBoundary、Bootstrap、Brand、Divider、Icon/IconButton、design QueryState、RecordTable、RouteFallback、Status、Table、Theme、WorkspaceShell、WorkspaceMetrics等公开符号/文件 |
+| 疑似原因 | [FACT][E-AU-017-012] 固定仓库生产源码无import/调用；仅包内test、Story或零调用。Console使用自己的QueryState、shell和指标实现 |
+| 保留证据 | 全部从public root导出，部分有Story/测试或brand subpath；仓外消费者、迁移计划、唯一交互/视觉契约未排除 |
+| 当前问题 | 同包存在真实活跃组件，不能按文件夹整体推断；Brand另有F-0080，Status类名与现有CSS不一致但当前零生产调用 |
+| 可否独立删除 | 否；静态/动态仓外消费、公共兼容、Story/测试规格、构建与视觉回归、等价替代和二次复核未满足 |
+| 二次复核 | G1不强制；任何升级必须按单符号重新追入口，不能把本组一次性升级G3 |
+
+## DC-0022｜`mobile-platforms.json` 未接线的平台规则字段
+
+| 字段 | 记录 |
+| --- | --- |
+| 等级 | G1 |
+| 对象 | `wechatMiniProgram`、`sizeClasses`、`overflowRules`、`tabletPrinciple`、`tabletRules` |
+| 疑似原因 | [FACT][E-AU-017-010] 固定仓库运行代码与生成器零字段消费；miniapp生成器不读取该文件 |
+| 保留证据 | 同文件iOS/Android字段有web生成职责；未接线字段保存唯一跨端VI规则，未来平台实现、设计文档责任和Ethan取舍未知 |
+| 当前问题 | F-0081说明规格与运行脱节，不等于规格无价值或正式下线 |
+| 可否独立删除 | 否；无等价来源、无正式下线、无视觉/设备验证、无恢复设计和二次复核 |
+| 二次复核 | 若未来升级G2/G3，必须由跨端专项同时核对miniapp、平板和视觉基线 |
+
+AU-017没有G2/G3新增项；零生产引用只进入G1。没有删除、归档或移动任何文件。

@@ -690,3 +690,14 @@ adapter.send
 | 未来Browser/Miniapp | 平台adapter | sendBeacon/writer | 仓内零生产caller | G1 DC-0017，不能删除 |
 
 [FACT][E-AU-013-003/005/006] Telemetry不拥有独立进程或发布单元；它随调用者编译。唯一完整装载ObservabilityModule的ApiMain属于当前发布检查禁止路径，不能把源码模块存在写成线上可用。
+
+## 22. AU-017｜设计系统运行关系
+
+- 页面入口：Console `main.tsx` → `@shop/design/tokens.css`、`base.css`、`components.css`、`workspace.css`。
+- 组件入口：Console路由/对话框/工作台 → 根export；ScopeShell/Cockpit → 动态 `@shop/design/access-denied`。
+- 状态链：TanStack query → Console `queryCondition` → `ResourceCondition` → `ResourceState` → AccessDenied/Error/旧内容。
+- 生成链：`tokens.json` + `mobile-platforms.json` → web token生成器 → Console CSS；`tokens.json` + 两个canonical SVG → miniapp theme生成器 → miniapp资源。
+- 发布单元：无独立服务；组件和CSS进入Console静态制品，miniapp输出进入miniapp包。
+- 失败传播：缺失CSS变量使浏览器丢弃对应声明但不会中止bundle；401错误被映射为denied后丢失重新登录分支；Storybook没有进入正式story执行链。
+
+详细矩阵见 `records/AU-017-design/consumer-matrix.csv`。
