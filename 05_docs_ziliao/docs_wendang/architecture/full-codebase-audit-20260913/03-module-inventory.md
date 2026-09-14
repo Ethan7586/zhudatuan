@@ -1447,3 +1447,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | selected operator | 只组合 import read/create 与 listing publication actions | [FACT][E-AU-131-004] |
 
 [FACT][E-AU-131-005] 5 文件、548 行 Catalog listing/publication chain 完成深审；已见操作级行为测试引用，但该测试文件仍待专项深审。
+
+## 137. AU-132 Catalog 导入包、持久化与来源投影清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| upload/confirm | scope-hash lock、对象一致性、ready→running transition 与 runtime job 投递 | [FACT][E-AU-132-001] |
+| package parser | bytes/hash/schema/source/validation/row normalization 上限 | [FACT][E-AU-132-002] |
+| Pg import | 500 行 staging/validation、savepoint import、continuation/report lifecycle | [FACT][E-AU-132-003] |
+| Cake source projection | provider source 至 catalog/pricing/inventory/media-job 的受限投影 | [FACT][E-AU-132-004] |
+
+[FACT][E-AU-132-005] 5 文件、823 行 Catalog import/source projection chain 完成深审；对象扫描和 SHA 验证位于进入数据库分片前。
