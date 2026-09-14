@@ -69,9 +69,10 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256 "\$expected_policy_sha256"/);
   assert.match(preparedDeployWorkflow, /zdt-next\.remote-policy\.json/);
   assert.match(preparedDeployWorkflow, /d\.hostedBy&&d\.hostedBy!==process\.env\.RELEASE_NODE/);
-  assert.equal((preparedDeployWorkflow.match(/uses: actions\/checkout@v6/g) ?? []).length, 2);
+  assert.equal((preparedDeployWorkflow.match(/uses: actions\/checkout@v6/g) ?? []).length, 1);
   assert.match(preparedDeployWorkflow, /id: checkout_control[\s\S]*?continue-on-error: true/);
   assert.match(preparedDeployWorkflow, /if: steps\.checkout_control\.outcome == 'failure'/);
+  assert.match(preparedDeployWorkflow, /git -c protocol\.version=1 fetch[\s\S]*?--depth=1[\s\S]*?origin "\$CONTROL_SHA"/);
   assert.match(preparedDeployWorkflow, /test "\$\(git rev-parse HEAD\)" = "\$CONTROL_SHA"/);
   assert.match(preparedKnownHosts, /^123\.57\.232\.253 ssh-ed25519 AAAA[0-9A-Za-z+/]+={0,2}$/m);
   assert.match(prepareWorkflow, /--prepare/);
@@ -96,9 +97,10 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.ok(prepareWorkflow.indexOf('SHOP_BUILD_AT=') < prepareWorkflow.indexOf('run_cold_prepare cold-a'));
   assert.match(prepareWorkflow, /ubuntu-24\.04/);
   assert.match(prepareWorkflow, /NPM_VERSION: 10\.9\.4/);
-  assert.equal((prepareWorkflow.match(/uses: actions\/checkout@v6/g) ?? []).length, 2);
+  assert.equal((prepareWorkflow.match(/uses: actions\/checkout@v6/g) ?? []).length, 1);
   assert.match(prepareWorkflow, /id: checkout_source[\s\S]*?continue-on-error: true/);
   assert.match(prepareWorkflow, /if: steps\.checkout_source\.outcome == 'failure'/);
+  assert.match(prepareWorkflow, /git -c protocol\.version=1 fetch[\s\S]*?--depth=2[\s\S]*?origin "\$RELEASE_SHA"/);
   assert.match(prepareWorkflow, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"/);
   for (const workflow of [prepareWorkflow, preparedDeployWorkflow]) {
     assert.match(workflow, /GIT_CONFIG_KEY_0: http\.version/);

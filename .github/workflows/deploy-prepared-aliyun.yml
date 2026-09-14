@@ -109,19 +109,31 @@ jobs:
         shell: bash
         run: sleep 5
 
-      - name: Retry exact release control plane checkout
+      - name: Retry exact release control plane checkout with compatibility protocol
         if: steps.checkout_control.outcome == 'failure'
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.sha }}
-          fetch-depth: 1
-          sparse-checkout-cone-mode: false
-          sparse-checkout: |
-            package.json
-            04_tools/release-engine
-            02_platform_pingtai/infrastructure/release/zdt-next.release.json
-            02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json
-            02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if git -c protocol.version=1 fetch \
+              --no-tags --prune --no-recurse-submodules --depth=1 \
+              origin "$CONTROL_SHA"; then
+              git sparse-checkout init --no-cone
+              git sparse-checkout set --no-cone \
+                package.json \
+                04_tools/release-engine \
+                02_platform_pingtai/infrastructure/release/zdt-next.release.json \
+                02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json \
+                02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts
+              git checkout --force --detach "$CONTROL_SHA"
+              git clean -ffdx
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              sleep "$((attempt * 10))"
+            fi
+          done
+          exit 1
 
       - name: Verify exact control-plane checkout
         shell: bash
