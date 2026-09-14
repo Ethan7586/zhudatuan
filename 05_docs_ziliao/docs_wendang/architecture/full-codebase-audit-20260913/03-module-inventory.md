@@ -104,6 +104,12 @@ AU-002 已结构性核对全部 manifest、静态/动态可达性以及路由装
 | --- | --- | --- | --- | --- | --- |
 | 风险评估、策略回放/激活、案件审核与目录阻断 | risk API；RISK_GATE；riskscan job | 上游为 API 风险门；下游为 catalog、runtime outbox/job、PostgreSQL risk schema | `risk.policy/policyversion/replay/signal/decision/case/listentry` | Commerce API + risk Worker | 事务锁、创建者分离、回放门槛与 catalog 任务已闭合；策略终态重建语义未验证 |
 
+### AU-054｜Experience 页面配置与发布边界（2026-09-14）
+
+| 模块职责 | 对外入口 | 上游/下游 | 数据所有权 | 运行/发布单元 | 当前边界结论 |
+| --- | --- | --- | --- | --- | --- |
+| 运营页面 application/version、公开页面投影与 CDN 内容发布 | Experience HTTP operations、`experience.published` outbox、`experiencepublish` job、public read | 上游为 Console/Identity operator/mall provisioning；下游为 catalog binding、PostgreSQL、对象存储、cache | `experience.application/version/release/binding/publication` | Commerce API + experience queue Worker | publish 先 scheduled、Worker 以不可变对象/事务锁激活，公开读仅取 active/valid；主发布链缺行为测试（F-0144，P2） |
+
 ## 5. Workspace 库存
 
 [FACT][E-AU-001-002][E-AU-001-003] 43 个 workspace 分组如下：

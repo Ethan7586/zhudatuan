@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-045 已完成。AU-045 复核了 Console 资格策略入口、资格服务的读/预览/管理操作、数据模型与 checkout 实际消费者。覆盖总账按当前文件级清单重算：深入审阅739文件/62,087行、结构性审阅782文件/118,188行、自动生成70文件/172,651行、暂未审阅2,137文件。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-054 已完成。AU-054 完成 Experience application/version/publish、公开读取、对象投影与 Worker 激活链审阅。覆盖总账按当前文件级清单重算：深入审阅801文件/66,226行、结构性审阅788文件/117,892行、自动生成70文件/172,651行、暂未审阅2,069文件。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -759,3 +759,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 observability 平台模块、客户端错误 create/read、脱敏和 telemetry buffer 依赖。
 
 执行结果：模块为刻意的 process-lived 客户端错误入口；成员组织 scope、operator scope filter、双层脱敏和不写 audit body 已确认。未发现 P0–P3 新问题；未运行 Vitest 或改变运行状态。
+
+## 56. AU-054 连续审计点
+
+审阅 Experience application/version/publish、公开读取、对象投影、Worker 激活、Identity 受限操作变体及其迁移/RLS 边界。
+
+执行结果：922 行模块文件纳入审阅。V2 配置、版本条件、scheduled→active 投影、内容寻址对象验证、inbox 行锁与 application advisory lock 均有实现入口；新增 F-0144/P2（主发布事务/Worker 没有模块专用行为测试）。未发现 P0，未运行 Vitest 或改变运行状态。

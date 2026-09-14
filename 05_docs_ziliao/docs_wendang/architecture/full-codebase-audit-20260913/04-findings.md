@@ -3064,6 +3064,18 @@
 | 验证/回滚 | 隔离数据库构造 dispatch，在 KMS decrypt 模拟失败后运行两次 processor，核对 dispatch 仍 sending、第二个 runtime job completed；修复必须在最新主线独立小分支完成，回滚为撤回该修复提交。 |
 | 独立复核 | 已完成（AU-050）；从 runtime 领取函数、迁移、身份监控与测试缺口独立复追，结论一致。 |
 
+## F-0144｜Experience 主发布链没有模块专用行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | experience；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/experience/03_application_yingyong/ExperienceOperations.ts:105-199`；`.../05_interface_jieru/job/ExperienceJobs.ts:21-101`；现有测试仅为 `.../06_tests_ceshi/{adapter/CdnPublisher,application/ExperienceOperatorOperations,module.manifest}.test.ts` |
+| 当前/预期 | `save → validate → publish → outbox/inbox → CDN → release/publication active` 是公开页面生效的主业务链，但未见其模块专用行为测试；已有测试只验证内容寻址对象、Identity 受限应用更新和 manifest 清单。预期是至少以真实 PostgreSQL 或等价事务夹具覆盖成功、版本冲突、对象失败重试与 inbox 幂等激活。 |
+| 影响 | 对 publish 事务、状态切换、事件负载、Worker 锁与失败恢复的改动可能只在运行时暴露；页面配置可能无法发布或错误切换，现阶段无自动化回归闸门。未见已发生线上故障。 |
+| 根因 | 主 Commerce 运行模块与 Identity selected-module 变体分别实现相同 operation 名称，测试集中于后者及对象适配器，未形成主发布链集成 oracle。 |
+| 验证/回滚 | 在隔离 PostgreSQL/对象存储构造 application/binding：覆盖 stale expectedVersion、invalid version、对象写入失败后的 job retry、重复 inbox 与最终单一 active publication；修复必须从最新主线独立小分支进行，回滚为撤回该测试/实现小批次。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
