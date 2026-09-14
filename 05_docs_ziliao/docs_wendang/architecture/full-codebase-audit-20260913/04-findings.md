@@ -4445,3 +4445,24 @@
 | 预计修改范围 | 售后服务路由/RPC 参数、对应数据库授权包装器、迁移/发布配置和定向售后集成测试；具体范围取决于独立复核的实际数据库来源。 |
 | 验证/回滚 | 在隔离数据库应用目标迁移序列，以 service-role 调用 Storefront 售后提交并验证 201、售后/订单/审计原子事实；回滚为撤回独立修复提交。 |
 | 独立复核 | 建议；必须先取证实际部署数据库与 ledger，不能将任一配置文件单独视为线上事实。 |
+
+## F-0239｜退款与财务对账 RPC 同样脱离 canonical 迁移契约
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Compatibility Admin 退款/财务对账 / Supabase 发布契约 |
+| 类型 | API 契约、迁移与运行单元边界 |
+| 严重级别 | **P2** |
+| 置信度 | 高（静态调用和权限演进）；线上实际数据库来源未验证 |
+| 文件和精确位置 | `commerce-api/src/api/orderRoutes.ts:165-185`；`commerce-api/src/api/supabase.ts:8-27`；`database/supabase/migrations/20260820120000_after_sale_refund_approval.sql:460-463`；`database/supabase/migrations/20260820128000_wechat_refund_closure.sql:1228-1232,1404-1416` |
+| 当前行为 | 管理员退款仍调用 `api_execute_internal_refund`，财务对账仍调用 `api_finance_reconciliation`；调用使用 service-role key。canonical 迁移先撤权/删除旧退款 RPC，随后撤权/删除旧对账 RPC，只授权 `api_finance_reconciliation_authorized` 等新契约；固定基线没有发现 Commerce API 调用替代包装器。 |
+| 预期行为 | 实际运行服务应只调用已应用数据库迁移序列中仍获授权的退款与对账契约，并向其提供所需成员身份/授权证据。 |
+| 直接证据 | 两个 `callRpc` 调用、service-role header、两段后续 `revoke`/`drop` 和新授权函数定义/授予。F-0238 已记录同一服务的数据库来源控制面分歧。 |
+| 调用链/运行入口 | 管理后台退款/对账请求 → `orderRoutes` → service-role REST RPC → 旧内部退款/对账函数；canonical 后续 migration runner → 删除旧函数。 |
+| 用户影响 | 若运行服务指向 canonical 已迁移数据库，管理员退款和财务对账将因函数不存在或无执行权失败；若继续使用 compatibility 数据库，服务与正式迁移控制面继续分裂。实际线上组合未验证。 |
+| 数据/安全影响 | 未见静态证据表明会产生部分退款写入；主要风险是运营退款不可用、对账不可用和授权审计事实未进入新包装器。 |
+| 根因 | 旧内部退款/对账 RPC 被授权闭环替代后，服务路由未同步；发布数据库来源未收敛为单一事实。 |
+| 建议方向 | 与 F-0238 合并进行只读部署/ledger 复核后，从当时最新主线建立单一用途修复分支，统一数据库来源并把路由切至实际目标授权 RPC，补充真实 service-role 契约测试；不得在审计分支修复。 |
+| 预计修改范围 | Admin 路由、退款/对账 RPC 参数与授权证据、迁移/发布配置、定向退款与对账集成测试。 |
+| 验证/回滚 | 隔离数据库应用目标迁移，以最小管理员身份调用退款和对账，验证成功、幂等回放及审计事实；回滚为撤回独立修复提交。 |
+| 独立复核 | 建议；先确认实际部署数据库、migration ledger、函数定义和 grant。 |
