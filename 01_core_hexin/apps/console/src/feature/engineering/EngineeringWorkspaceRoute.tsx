@@ -8,8 +8,8 @@ import { RuntimeStatusContent } from './RuntimeStatusRoute';
 
 const views = [
   {
-    id: 'engineering', suffix: 'system/engineering', eyebrow: 'SYSTEM GOVERNANCE · ENGINEERING',
-    title: '工程与架构中心', description: '统一查看系统架构、技术能力、发布基础设施与演进记录',
+    id: 'engineering', suffix: 'system/engineering', eyebrow: 'SYSTEM GOVERNANCE · ERA 2.0',
+    title: 'ERA 2.0 工程与架构中心', description: '统一查看工程就绪保障、系统架构、技术能力、发布基础设施与演进记录',
     Content: EngineeringOverviewContent,
   },
   {

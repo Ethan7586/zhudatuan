@@ -29,6 +29,15 @@ describe('Engineering and architecture center', () => {
     expect(within(l2).queryByText('Storefront / Console')).toBeNull();
   });
 
+  it('presents ERA 2.0 with its exact assurance boundary', () => {
+    renderPage('system/engineering');
+    expect(screen.getByRole('heading', { name: 'ERA 2.0 工程与架构中心' })).toBeTruthy();
+    expect(screen.getByText('ERA 2.0 · Engineering Readiness & Assurance')).toBeTruthy();
+    expect(screen.getByText('12/12 MET · DEV VERIFIED')).toBeTruthy();
+    expect(screen.getByText(/12\/12 MET · DEV VERIFIED · NOT REVIEWED/)).toBeTruthy();
+    expect(screen.getByText(/不参与发布与部署门禁/)).toBeTruthy();
+  });
+
   it('routes the four center tabs within the current scope', () => {
     renderPage('system/engineering');
     const tabs = screen.getByRole('navigation', { name: '工程与架构中心页面' });

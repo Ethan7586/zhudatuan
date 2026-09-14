@@ -1,4 +1,4 @@
-import { MetricGrid, StatusPill } from './EngineeringFrame';
+import { HonestNotice, MetricGrid, StatusPill } from './EngineeringFrame';
 
 const layers = [
   { id: 'L0', title: '核心基础设施', items: ['计算与存储', '网络与安全', '云平台基础组件'] },
@@ -20,8 +20,12 @@ export function EngineeringOverviewContent() {
       { label: '架构层级', value: 'L0 / L1 / L2', detail: '三层职责与依赖边界' },
       { label: '部署基础设施', value: '1.3 正式版', detail: '预构建不可变制品', tone: 'ready' },
       { label: '运行目标', value: '15 类', detail: 'L0 / L1 公共运行目标' },
-      { label: '治理方式', value: '只读说明', detail: '不参与生产请求', tone: 'waiting' },
+      { label: '工程保障体系', value: 'ERA 2.0', detail: '12/12 MET · DEV VERIFIED', tone: 'ready' },
     ]} />
+
+    <HonestNotice title="ERA 2.0 · Engineering Readiness & Assurance">
+      当前证据评级为 12/12 MET · DEV VERIFIED · NOT REVIEWED；本区域只读展示，不代表生产观测或外部认证，不参与发布与部署门禁。
+    </HonestNotice>
 
     <div className="engineeringtwocolumn">
       <article className="engineeringpanel engineeringarchitecture">
