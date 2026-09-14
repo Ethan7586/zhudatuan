@@ -1374,3 +1374,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Installation/Manifest tests | 状态机、签名 hash 与 manifest policy 的模型级规格 | [FACT][E-AU-124-003] |
 
 [FACT][E-AU-124-004] 4 文件、88 行 Extension 公共契约和领域模型测试完成深审；测试未覆盖 command/transaction/loader finalize 行为，沿用 F-0171/P2。
+
+## 130. AU-125 Extension 兼容入口与覆盖收口
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| legacy application/domain/infrastructure/interface paths | 11 个无逻辑转发，保持旧 import 到中文分层实现的兼容 | [FACT][E-AU-125-001]；G0 |
+| coverage | Extension 35/35 文件均有明确覆盖状态 | [FACT][E-AU-125-002] |
+
+[FACT][E-AU-125-003] 11 文件、11 行 Extension 兼容层完成深审；无独立运行逻辑，不以零引用认定可删除。

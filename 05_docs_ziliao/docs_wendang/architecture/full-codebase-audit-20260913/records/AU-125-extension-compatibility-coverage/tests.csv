@@ -1,0 +1,2 @@
+verification,scope,result,reason
+Targeted behavior test,Compatibility re-exports,Not applicable,No independent behavior exists beyond the already audited targets.
