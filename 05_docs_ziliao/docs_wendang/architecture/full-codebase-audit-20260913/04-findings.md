@@ -4829,3 +4829,21 @@
 | 建议方向 | 从最新主线建立独立供应链治理批次：逐依赖核对实际 license/SBOM、直接/传递用途、notice 与法务批准；只将已批准 expression/exception 以可审计方式纳入 policy，或替换不合规依赖。不得用盲目放宽 allow-list 使门变绿。 |
 | 验证/回滚 | 在干净 lockfile 上运行 check；对已批准 OR/AND/别名、被拒 copyleft 与 missing metadata 各加入反事实 fixture，确认 approved pass、unapproved fail。回滚为撤回单一 policy/dependency/notice 批次。 |
 | 是否需要独立复核 | 否；涉及实际法务接受时需法律/依赖所有者确认。 |
+
+## F-0260｜hbbtzn L1 catalog API 环境模板与制品拓扑不一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | hbbtzn L1 node runtime / catalog API deployment |
+| 类型 | 运行配置漂移、发布/启动边界 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/config/node-runtime/hbbtzn-l1/catalog-api.env.example:4-18`；`.../projects_xiangmu/hbbtzn/deployment/aliyun.yml:64-67`；`.../release/zdt-next.remote-policy.json:53,60-75`。 |
+| 当前/预期 | template 指向 hbbtzn-l1 database/manifest/runtime/pointer；hbbtzn deployment 的 catalog responsibility 却是 `sfl-catalog-api@zhudatuan-l0.service`，remote policy 只为 zhudatuan-l0 定义 `catalog-api` target，hbbtzn-l1 target 集没有该制品。预期为 runtime template、artifact pointer、systemd instance 与实际 service ownership 选择同一节点，或明确 L1→L0 delegation。 |
+| 直接证据 | [FACT][E-AU-550-001] template 使用 `/opt/sfl/nodes/hbbtzn-l1/...` 和 `hbbtzn/nodes/l1/database/catalog-api`；[FACT][E-AU-550-002] hbbtzn deployment 将 catalog API/JOBS 指向 zhudatuan-l0 services；[FACT][E-AU-550-003] remote policy 的 hbbtzn-l1 deployments 未含 catalog-api，而 L0 的 target 会 restart `sfl-catalog-api@zhudatuan-l0.service`。 |
+| 调用链或运行入口 | hbbtzn L1 runtime env → generic `sfl-catalog-api@.service`；hbbtzn deployment/release policy → L0 catalog target/systemd。 |
+| 用户/数据/安全影响 | 当前 hbbtzn project 标记 `releaseEligible:false`，没有线上事故证据；若后续直接按模板启用 L1，可能出现制品缺失/错误 runtime refs 或 catalog route 对错节点，导致商品管理 API 不可用或跨 node 配置混用。 |
+| 根因 | L1 per-node template 保留了 catalog API ownership假设，但正式 deployment/release control-plane 已将该职责集中到 L0，未记录 delegation/退役关系。 |
+| 建议方向 | 从最新主线建立独立 deployment-contract 批次，先确定 catalog 是否应当 L1 本地运行或 L0 共用；只保留对应的 env template、target、systemd/route，并加入 topology consistency gate。不得仅改文件名或删除模板。 |
+| 验证/回滚 | 在隔离 host/fixture 检查 L1 activation：candidate artifact、runtime file、systemd ConditionPath、DB ref、route origin 应全部指向同一选择；验证 L0 delegation 时请求不得携带 L1 database role。回滚为撤回单一 topology 对齐提交。 |
+| 是否需要独立复核 | 否；激活 hbbtzn 前需部署所有者复核。 |
