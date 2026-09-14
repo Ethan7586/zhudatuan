@@ -483,6 +483,17 @@
 | 验证 | 独立复核入口后以false fixture确认；最小修复仅补predicate/fixture。 |
 | 独立复核 | 是；AU-256确认生产入口无替代gate，结论一致。 |
 
+## F-0233｜多项 commerce runtime 未将已查询的 contract marker 纳入启动拒绝条件
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce bootstrap；P1；高；待按运行单元独立复核 |
+| 直接证据 | 已人工核对MallProvisioning、ConsoleSupport、PaymentJobs、PaymentWebhook、Purchase、WebBusiness、CatalogJobs、CatalogOperator：均定义并SQL投影`contract`，其最终predicate没有`!state.contract`。 |
+| 调用链/影响 | 各API/Jobs entry → create/runtime compatibility → bootstrap/listen或QueueJob；contract checksum drift可能不阻止对应进程启动，线上状态未验证。 |
+| 边界 | 该条只覆盖已人工核对的8个文件；IdentityRegistration/RuntimeCompatibility待其对应专项结论，不以模式推定。 |
+| 建议/验证 | 在最新主线拆成单一运行单元小批；每批补predicate和contract-false fixture，逐个验证/revert。 |
+| 独立复核 | 是；P1，已完成的AU-249/252/254/256/258可作为部分独立证据，其余仍待复核。 |
+
 ## F-0014｜Catalog API Ready 未探测已启动的 HTTP 进程
 
 | 字段 | 记录 |
