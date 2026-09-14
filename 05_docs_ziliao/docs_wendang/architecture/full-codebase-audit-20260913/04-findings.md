@@ -407,11 +407,11 @@
 | 验证/回滚 | 断言成功node和稳定错误码，并检查不合法文件无法到达数据库检查；回滚为revert提交。 |
 | 独立复核 | 否；P2。 |
 
-## F-0227｜Mall provisioning API 接受runtime contract marker缺失或漂移
+## F-0227｜已否决：Mall provisioning runtime contract 非阻断
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | commerce / bootstrap MallProvisioningApiRuntime；P1；高；双轮确认 |
+| 模块/级别 | commerce / bootstrap MallProvisioningApiRuntime；NIT/已否决；高 |
 | 类型 | 正确性、启动兼容性门禁 |
 | 位置 | `01_core_hexin/services/commerce/src/bootstrap/MallProvisioningApiRuntime.ts:121-189`；`.../MallProvisioningApiRuntime.test.ts:10-47` |
 | 当前/预期 | compatibility query计算`contract`（目标runtime schema版本与checksum），但最终拒绝条件未包含`!state.contract`。预期任一contract marker缺失或checksum不匹配时启动失败。 |
@@ -435,11 +435,11 @@
 | 验证/回滚 | 断言secret读取、pool end、container token及extensions停止顺序；回滚为revert提交。 |
 | 独立复核 | 否；P2。 |
 
-## F-0229｜Console support API 接受runtime contract marker缺失或漂移
+## F-0229｜已否决：Console support runtime contract 非阻断
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | commerce / bootstrap ConsoleSupportRuntime；P1；高；双轮确认 |
+| 模块/级别 | commerce / bootstrap ConsoleSupportRuntime；NIT/已否决；高 |
 | 类型 | 正确性、启动兼容性门禁 |
 | 位置 | `01_core_hexin/services/commerce/src/bootstrap/ConsoleSupportRuntime.ts:110-159`；`.../ConsoleSupportRuntime.test.ts:9-38` |
 | 当前/预期 | SQL计算精确runtime contract marker为`contract`，但最终reject predicate未读取该字段。预期marker缺失或checksum不匹配时Console support API拒绝启动。 |
@@ -463,36 +463,34 @@
 | 验证/回滚 | 断言创建/关闭顺序、token值和metrics实例；回滚为revert提交。 |
 | 独立复核 | 否；P2。 |
 
-## F-0231｜Payment Jobs 接受runtime contract marker缺失或漂移
+## F-0231｜已否决：Payment Jobs runtime contract 非阻断
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | commerce / PaymentJobsRuntime；P1；高；双轮确认 |
+| 模块/级别 | commerce / PaymentJobsRuntime；NIT/已否决；高 |
 | 位置/证据 | `PaymentJobsRuntime.ts:97-160`投影`contract`但predicate未读取；测试只使用true。 |
 | 影响 | Payment Jobs启动后可能在contract drift下处理支付查询/退款；线上状态未验证。 |
 | 建议/验证 | 独立复核后在最新主线最小补`!state.contract`与false fixture；fake pool断言拒绝，可revert。 |
 | 独立复核 | 是；AU-254确认入口无替代gate，结论一致。 |
 
-## F-0232｜Payment Webhook API 接受runtime contract marker缺失或漂移
+## F-0232｜已否决：Payment Webhook runtime contract 非阻断
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | commerce / PaymentWebhookApiRuntime；P1；高；双轮确认 |
+| 模块/级别 | commerce / PaymentWebhookApiRuntime；NIT/已否决；高 |
 | 位置/证据 | `PaymentWebhookApiRuntime.ts:133-190`计算`contract`但predicate遗漏；fixture只用true。 |
 | 影响 | webhook API可在contract drift下接收支付回调；线上状态未验证。 |
 | 验证 | 独立复核入口后以false fixture确认；最小修复仅补predicate/fixture。 |
 | 独立复核 | 是；AU-256确认生产入口无替代gate，结论一致。 |
 
-## F-0233｜多项 commerce runtime 未将已查询的 contract marker 纳入启动拒绝条件
+## F-0233｜已否决：runtime contract marker 不属于启动阻断条件
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | commerce bootstrap；P1；高；待按运行单元独立复核 |
-| 直接证据 | 已人工核对MallProvisioning、ConsoleSupport、PaymentJobs、PaymentWebhook、Purchase、WebBusiness、CatalogJobs、CatalogOperator：均定义并SQL投影`contract`，其最终predicate没有`!state.contract`。 |
-| 调用链/影响 | 各API/Jobs entry → create/runtime compatibility → bootstrap/listen或QueueJob；contract checksum drift可能不阻止对应进程启动，线上状态未验证。 |
-| 边界 | 该条只覆盖已人工核对的8个文件；IdentityRegistration/RuntimeCompatibility待其对应专项结论，不以模式推定。 |
-| 建议/验证 | 在最新主线拆成单一运行单元小批；每批补predicate和contract-false fixture，逐个验证/revert。 |
-| 独立复核 | 是；P1，已完成的AU-249/252/254/256/258可作为部分独立证据，其余仍待复核。 |
+| 模块/级别 | commerce bootstrap；NIT/已否决；高 |
+| 直接证据 | `RuntimeCompatibility.ts:27-66`把contract作为状态输出，但`healthy`刻意不依赖它；`RuntimeCompatibility.test.ts:25-49`直接断言contract false时healthy仍为true，测试名称明确为“不赋予runtime阻断权”。 |
+| 结论 | 各专用runtime的同样模式与共享契约一致，不能作为P1缺陷或修复依据。此前AU-248至AU-262的P1初判以本证据撤回，保留记录作为审计更正链。 |
+| 后续 | 不建议修改predicate；仅在业务方另行改变“legacy contract”政策时重新评估。 |
 
 ## F-0014｜Catalog API Ready 未探测已启动的 HTTP 进程
 
