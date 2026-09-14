@@ -4,6 +4,21 @@
 
 本文件只收录已经形成最小证据链的问题。AU-042 结束时累计：P0 0、P1 候选 19、P2 60、P3 57、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
+## F-0147｜Checkout 报价创建关键事实链缺少专用行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | checkout / Commerce 与 Purchase API 报价创建 |
+| 类型 | 高价值事务、签名与运行时边界的测试缺口 |
+| 严重级别 | **P2** |
+| 置信度 | 高（测试文件集合、正式入口与实现链均直接核验） |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/modules/checkout_jiesuan/05_interface_jieru/http/CheckoutOperations.ts:14-61`；`.../modules/purchase/PurchaseOperations.ts:41-72,224-255`；`.../modules/checkout_jiesuan/06_tests_ceshi/` |
+| 当前/预期 | 现有 oracle 覆盖 manifest、地址默认、跨 Mall 历史与单一 stale-version 不变量，但没有直接执行两个 quote handler 的签名、quote/session/evidence/outbox 原子写入、幂等重放、expectedVersion、15 分钟失效与 Purchase voucher 禁用链。预期为这些可观察契约至少有隔离的 handler/integration 行为验证。 |
+| 影响 | 后续变更可能让报价与会话/事件失去原子性、签名/失效语义漂移或让 Purchase 运行时越过其 tender 边界，而现有模块测试未必报警。当前线上是否发生此类故障未验证。 |
+| 根因 | 结算事实链复用通用报价模型，却只留下对内部适配器和全局 policy 的局部 mock oracle，未为两个真实运行入口建立端到端契约。 |
+| 验证/回滚 | 后续独立测试批次使用隔离 PostgreSQL，分别覆盖完整与 Purchase handler 的成功、同幂等键重放、版本冲突、过期、签名篡改、写入失败回滚及 voucher 输入；修复必须从当时最新主线独立分支进行，回滚为撤回该测试/实现批次。 |
+| 独立复核 | 否 |
+
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
 | 字段 | 记录 |

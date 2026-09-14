@@ -662,3 +662,16 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | package/配置 | 依赖边界与脚本 | [FACT][E-AU-001-007] |
 
 [FACT][E-AU-039-001] 9文件79行人工关键文件/全部深度审阅；与 providerLoader + directcharge/jobs/consumer 映射已核验。
+
+## 64. AU-058 Checkout 结算报价模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Quote model/policy/reader | 购物车事实、资格、价格、库存、营销与 tender 的可签名报价 | F-0139/F-0140；F-0147 |
+| Checkout HTTP/persistence | quote/session/evidence/outbox 写入、地址加密与默认地址并发约束 | F-0147 |
+| Signer/ports | 稳定 HMAC quote 签名、确认/过期 session 与完整 Commerce 适配器 | F-0147 |
+| Purchase selected module | session-scoped quote context、benefit-only + WeChat tender、禁用 voucher | [FACT][E-AU-058-001~003] |
+| 数据迁移/RLS | cart、checkout session/evidence、address default 与 purchase role 列/RLS 限制 | [FACT][E-AU-058-003~005] |
+| tests | 地址/跨 Mall/manifest/全局版本不变量；缺 handler/integration 契约 | F-0147 |
+
+[FACT][E-AU-058-007] 17 文件、955 行 checkout 人工源码完成深审；购买 runtime 与迁移/RLS 交界完成结构性追踪。
