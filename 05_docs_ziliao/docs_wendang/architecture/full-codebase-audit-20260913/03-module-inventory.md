@@ -2460,3 +2460,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | producers/egress | OperationController和ErrorMapper生产契约；HttpApp→NodeServer序列化响应 | [FACT][E-AU-233-003] |
 
 [FACT][E-AU-233-004] 1 文件、10 行完成深审；无P0–P3新问题。
+
+## 239. AU-234 Validation/pagination shared boundary 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| input normalization | 对请求body、文本/secret/整数及limit进行共享验证与规范化 | [FACT][E-AU-234-001] |
+| cursor page | 解码query cursor，执行limit+1 lookahead并输出canonical nextCursor | [FACT][E-AU-234-002] |
+| business consumers | benefit、verification、qualification、voucher、notification、channel、risk、reporting等读写操作复用 | [FACT][E-AU-234-003] |
+
+[FACT][E-AU-234-004] 2 文件、116 行完成深审；测试仅覆盖keyset两条返回路径，见F-0219/P2。

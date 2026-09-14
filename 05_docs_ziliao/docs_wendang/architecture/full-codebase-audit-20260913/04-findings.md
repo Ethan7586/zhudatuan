@@ -4088,6 +4088,20 @@
 | 验证/回滚 | 断言稳定错误码`CURSOR_INVALID`/`CURSOR_POSITION_INVALID`及decode正常值；回滚为revert该测试提交。 |
 | 独立复核 | 否；P3。 |
 
+## F-0219｜共享输入验证与分页解析只有部分 keyset 返回路径测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation Validation；P2；高 |
+| 类型 | 测试覆盖缺口、公共请求输入与分页边界 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/interface/Validation.ts:7-87`；`.../Pagination.test.ts:8-25` |
+| 当前/预期 | 实现统一校验object body、文本/secret/整数、limit/cursor和keyset的lookahead/nextCursor。预期每个公共输入分支、query重复值处理和cursor position错误有direct fixture。 |
+| 直接证据 | 唯一foundation fixture仅断言Date sort时有lookahead cursor和无lookahead时无cursor；未直接调用bodyRecord、各field helper、limit、queryPage、cursor，也未覆盖number sort、invalid result position或repeated query value。 |
+| 调用链/影响 | HTTP OperationController → OperationRequest → Validation → 多个benefit/verification/qualification/voucher/notification/channel/risk/reporting操作。公共验证回归可能跨多个写入或列表API产生接受/拒绝差异、分页错误或运行时异常；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试批，覆盖body类型、trim/empty/max、secret保留空白、integer安全范围、limit默认/上下界/repeated value、cursor解码和keyset string/number/invalid position；回滚为撤回该测试批。 |
+| 验证/回滚 | 断言稳定error code、冻结page和分页body/cursor；回滚为revert提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

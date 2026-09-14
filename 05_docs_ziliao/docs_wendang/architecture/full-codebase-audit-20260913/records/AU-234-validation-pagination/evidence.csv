@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-234-001,src/foundation/interface/Validation.ts,7-43,input validation,Body text secret integer and limit helpers enforce common input normalization and stable validation errors.
+E-AU-234-002,src/foundation/interface/Validation.ts,45-87,pagination,queryPage uses cursor plus limit+1 lookahead and keysetRows emits canonical nextCursor only when another page exists.
+E-AU-234-003,src/modules/benefit/03_application_yingyong/BenefitOperations.ts;src/modules/verification/03_application_yingyong/VerificationOperations.ts;src/modules/voucher/03_application_yingyong/VoucherOperations.ts;src/modules/notification/03_application_yingyong/NotificationReadOperations.ts,5-95;6-90;5-16;5-29,production consumers,Multiple write and list operation domains import the shared validation boundary.
+E-AU-234-004,src/foundation/interface/Pagination.test.ts,8-25,test evidence,Only keyset lookahead and terminal page tests exist; no direct calls cover field limit cursor or invalid position helpers.

@@ -759,3 +759,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - HttpApp与NodeServer fixture均断言204运行输出；错误/操作结果生产者属于既有审计单元。
 - 无P0–P3新问题。
+
+## 234. AU-234 Validation/pagination shared boundary 深审
+
+- Pagination fixture只覆盖Date sort的lookahead与terminal page；共同输入校验、query parse和result position分支没有direct fixture。
+- 见F-0219/P2。审计工作树未运行Vitest。
