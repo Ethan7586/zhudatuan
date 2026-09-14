@@ -8,8 +8,8 @@
   --support-blue-soft: #eaf3ff;
   --support-purple: #6846e8;
   --support-purple-soft: #efe9ff;
-  --support-danger: #f04438;
-  --support-danger-soft: #ffebeb;
+  --support-danger: #5c4b2a;
+  --support-danger-soft: #fff9ed;
   --support-success: #17a66a;
   --support-success-soft: #e5f7ed;
   --support-warning: #f28a16;
@@ -52,6 +52,13 @@
 .supportworkspacerefresh:hover:not(:disabled) { background: #f1f5fa; color: var(--support-blue); }
 .supportworkspacerefresh:focus-visible { outline: 2px solid rgb(15 111 255 / 18%); outline-offset: 1px; }
 .supportworkspacerefresh:disabled { cursor: wait; opacity: .58; }
+
+@media (min-width: 48.01rem) {
+  .consolelayout[data-sidebar='expanded'] .supportpage { grid-template-rows: 52px 52px minmax(0, 1fr); }
+  .consolelayout[data-sidebar='expanded'] .supportworkspaceheader > div:first-child { display: none; }
+  .consolelayout[data-sidebar='expanded'] .supportworkspacestatus { display: flex; width: 100%; align-items: center; justify-content: flex-end; gap: 12px; }
+  .consolelayout[data-sidebar='expanded'] .supportworkspacerefresh { min-height: 32px; border-left: 1px solid var(--support-border); border-radius: 0; padding-left: 12px; }
+}
 
 .supporttasktabs {
   display: flex;
@@ -132,12 +139,12 @@
 .supportcontextempty strong { color: var(--support-ink); font-size: 14px; }
 .supportlocalempty span,
 .supportcontextempty p { margin: 0; font-size: 12px; line-height: 1.5; }
-.supportcaseviewport > .supportqueueerror { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; margin: 0; border: 0; border-top: 1px solid #f2dfdd; border-radius: 0; background: #fffdfd; padding: 14px; box-shadow: none; }
-.supportqueueerroricon { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #ffeded; color: #d84c43; font-size: 13px; font-weight: 800; }
+.supportcaseviewport > .supportqueueerror { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; margin: 0; border: 0; border-top: 1px solid #e9dfc9; border-radius: 0; background: #fffdf8; padding: 14px; box-shadow: none; }
+.supportqueueerroricon { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #f7eed8; color: #98762e; font-size: 13px; font-weight: 800; }
 .supportqueueerror > div { min-width: 0; }
-.supportqueueerror strong { display: block; color: #4a3030; font-size: 13px; line-height: 1.4; }
-.supportqueueerror p { margin: 3px 0 0; color: #806464; font-size: 11px; line-height: 1.5; }
-.supportqueueerror small { display: block; overflow: hidden; margin-top: 6px; color: #a18383; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.supportqueueerror strong { display: block; color: #3f3522; font-size: 13px; line-height: 1.4; }
+.supportqueueerror p { margin: 3px 0 0; color: #746344; font-size: 11px; line-height: 1.5; }
+.supportqueueerror small { display: block; overflow: hidden; margin-top: 6px; color: #8f8067; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .supportcaseviewport > .supportqueueerror > button { grid-column: 2; justify-self: start; min-height: 30px; border: 1px solid #b9d3ff; border-radius: 6px; background: #fff; color: #1765d7; padding: 0 10px; font: inherit; font-size: 11px; font-weight: 700; }
 .supportmobileback { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border: 1px solid var(--support-border); border-radius: 6px; color: var(--support-blue); font-size: 22px; text-decoration: none; }
 
