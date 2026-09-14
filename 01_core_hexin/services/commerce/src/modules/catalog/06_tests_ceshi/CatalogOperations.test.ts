@@ -128,6 +128,9 @@ describe('catalog mall command boundaries', () => {
     expect(calls[0]?.text).toContain("'marketSales30d'");
     expect(calls[0]?.text).toContain("'clickThroughRateBps'");
     expect(calls[0]?.text).toContain("'selected',selected.id is not null");
+    expect(calls[0]?.text).toContain('with selection_page as materialized');
+    expect(calls[0]!.text.indexOf('limit $9')).toBeLessThan(calls[0]!.text.indexOf('left join lateral'));
+    expect(calls[0]?.text).toContain('from selection_page candidate');
     expect(calls[0]?.values).toEqual(['mall:hongtai', '候选', '', '', '', '', null, null, 51]);
     expect(result).toMatchObject({ status: 200, body: { count: 1, items: [{ id: 'source:1' }] } });
   });

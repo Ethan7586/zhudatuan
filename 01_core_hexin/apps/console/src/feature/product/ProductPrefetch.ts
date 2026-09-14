@@ -8,6 +8,18 @@ export function prefetchProducts(queryClient: QueryClient, context: ConsoleConte
   if (!context.session.capabilities.includes('catalog.listings.read')) return undefined;
   const preview = context.scope.kind === 'platform' && context.scope.id === 'platform:preview';
   const filter: ProductQuery = { q: '', category: '', supplier: '', mall: '', status: '', limit: 50, preview };
+  return prefetchProductPage(queryClient, context, filter);
+}
+
+export function prefetchProductSelection(queryClient: QueryClient, context: ConsoleContext): Promise<void> | undefined {
+  if (!context.session.capabilities.includes('catalog.listings.read')) return undefined;
+  const filter: ProductQuery = {
+    q: '', category: '', supplier: '', mall: '', status: '', limit: 20, preview: false, view: 'selection-center',
+  };
+  return prefetchProductPage(queryClient, context, filter);
+}
+
+function prefetchProductPage(queryClient: QueryClient, context: ConsoleContext, filter: ProductQuery): Promise<void> | undefined {
   const queryKey = productKey(context, filter);
   if (queryClient.getQueryData(queryKey) !== undefined || queryClient.getQueryState(queryKey)?.fetchStatus === 'fetching') return undefined;
   return queryClient.prefetchQuery({

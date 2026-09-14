@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { WorkspacePanelSkeleton } from '@shop/design';
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { Outlet, useLoaderData, useLocation, useMatches, useNavigate, useNavigation } from 'react-router';
 import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNavigation';
@@ -27,6 +28,11 @@ const LazyAccessDeniedActionsProvider = lazy(async () => {
   return { default: AccessDeniedActionsProvider };
 });
 
+const LazyEngineeringWorkspace = lazy(async () => {
+  const { Component } = await import('../feature/engineering/EngineeringWorkspaceRoute');
+  return { default: Component };
+});
+
 export function ScopeShell() {
   const context = useLoaderData<ConsoleContext>();
   const location = useLocation();
@@ -50,8 +56,6 @@ export function ScopeShell() {
   const brandSubtitle = context.scope.kind === 'mall' ? '商城运营后台' : '经营与权限管理';
   const activeRoute = profileRoute ? 'profile' : activeModule?.id;
   const navigationItems = selectConsoleNavigationItems(consoleModules, context.scope.kind, context.session.capabilities);
-  const navigationModuleIds = navigationItems.map(({ moduleId }) => moduleId);
-  const navigationModuleKey = navigationModuleIds.join('|');
   const mainNavigationItems = navigationItems.filter(({ placement }) => placement === 'main');
   const bottomNavigationItems = navigationItems.filter(({ placement }) => placement === 'bottom');
   const logout = async () => {
@@ -82,7 +86,7 @@ export function ScopeShell() {
       const heading = document.querySelector<HTMLElement>('.workspacebody h1');
       if (heading === null) return false;
       heading.setAttribute('tabindex', '-1');
-      heading.focus();
+      heading.focus({ preventScroll: true });
       return true;
     };
     const frame = requestAnimationFrame(() => {
@@ -111,8 +115,11 @@ export function ScopeShell() {
   }, [context, queryClient]);
   const prepareProducts = useCallback(() => {
     if (!context.session.capabilities.includes('catalog.listings.read')) return Promise.resolve();
-    return import('../feature/product/ProductPrefetch').then(({ prefetchProducts }) =>
-      prefetchProducts(queryClient, context));
+    return Promise.all([
+      import('../feature/product/ProductCatalogRoute'),
+      import('../feature/product/ProductPrefetch').then(({ prefetchProducts }) =>
+        prefetchProducts(queryClient, context)),
+    ]).then(() => undefined);
   }, [context, queryClient]);
   const prepareApplications = useCallback(() => {
     if (!context.session.capabilities.includes('experience.applications.read')) return Promise.resolve();
@@ -159,55 +166,6 @@ export function ScopeShell() {
     if (moduleId === 'support') void prepareSupport();
   }, [prepareApplications, prepareFinance, prepareMembers, prepareOrders, prepareProducts, prepareSupplyChain, prepareSupport]);
 
-  useEffect(() => {
-    const productAvailable = context.session.capabilities.includes('catalog.listings.read');
-    const supplyChainAvailable = context.session.capabilities.includes('catalog.listings.read');
-    const memberAvailable = context.scope.kind === 'mall' && context.session.capabilities.includes('member.members.read');
-    const supportAvailable = context.session.capabilities.includes('support.cases.read');
-    const applicationAvailable = context.session.capabilities.includes('experience.applications.read');
-    const orderAvailable = context.session.capabilities.includes('order.orders.read');
-    const financeAvailable = context.session.capabilities.includes('finance.overview.read')
-      || context.session.capabilities.includes('finance.reconciliations.read');
-    if (!productAvailable && !supplyChainAvailable && !memberAvailable && !supportAvailable
-      && !applicationAvailable && !orderAvailable && !financeAvailable) return undefined;
-    const prepare = async () => {
-      await Promise.all([
-        ...navigationModuleIds
-          .filter((moduleId) => moduleId !== activeModule?.id)
-          .map((moduleId) => preloadConsoleModule(moduleId, 'idle')?.catch(() => undefined)),
-        activeModule?.id !== 'products' && productAvailable
-          ? preloadConsoleModule('products', 'idle')?.catch(() => undefined).then(() => prepareProducts())
-          : undefined,
-        activeModule?.id !== 'supply-chain' && supplyChainAvailable
-          ? preloadConsoleModule('supply-chain', 'idle')?.catch(() => undefined).then(() => prepareSupplyChain())
-          : undefined,
-        activeModule?.id !== 'support' && supportAvailable
-          ? preloadConsoleModule('support', 'idle')?.catch(() => undefined).then(() => prepareSupport())
-          : undefined,
-        activeModule?.id !== 'applications' && applicationAvailable
-          ? preloadConsoleModule('applications', 'idle')?.catch(() => undefined).then(() => prepareApplications())
-          : undefined,
-        activeModule?.id !== 'orders' && orderAvailable
-          ? preloadConsoleModule('orders', 'idle')?.catch(() => undefined).then(() => prepareOrders())
-          : undefined,
-        activeModule?.id !== 'finance' && financeAvailable
-          ? preloadConsoleModule('finance', 'idle')?.catch(() => undefined).then(() => prepareFinance())
-          : undefined,
-      ]);
-      if (activeModule?.id !== 'products' && activeModule?.id !== 'access' && memberAvailable) {
-        await preloadConsoleModule('access', 'idle')?.catch(() => undefined);
-        prepareMembers();
-      }
-    };
-    if (typeof window.requestIdleCallback === 'function') {
-      const idle = window.requestIdleCallback(() => { void prepare(); }, { timeout: 1_000 });
-      return () => window.cancelIdleCallback(idle);
-    }
-    const timer = window.setTimeout(() => { void prepare(); }, 200);
-    return () => window.clearTimeout(timer);
-  }, [activeModule?.id, context.scope.id, context.scope.kind, context.session.capabilities,
-    context.session.membership, navigationModuleKey, prepareApplications, prepareFinance, prepareMembers, prepareOrders,
-    prepareProducts, prepareSupplyChain, prepareSupport]);
   const selectScope = (value: string) => {
     const next = context.scopes.find((scope) => `${scope.kind}:${scope.id}` === value);
     if (next !== undefined) navigateAfterCancel(`${scopePath(next, currentSuffix || 'cockpit')}${location.search}`);
@@ -237,7 +195,7 @@ export function ScopeShell() {
 
   return (
     <ConsoleContextProvider value={context}>
-      <div className="consolelayout" data-visual-theme="admin-web-v1" data-route={activeRoute}
+      <div className="consolelayout" data-visual-theme="admin-web-v1" data-visual-geometry="straight" data-route={activeRoute}
         data-sidebar={collapsed ? 'collapsed' : 'expanded'} data-mobile-nav={mobileOpen ? 'open' : 'closed'}>
         <Suspense fallback={<aside className={`consolesidebar${collapsed ? ' iscollapsed' : ''}`} aria-hidden="true" />}>
           <LazySidebar active={activeRoute} collapsed={collapsed} mainItems={mainNavigationItems} bottomItems={bottomNavigationItems}
@@ -276,20 +234,25 @@ export function ScopeShell() {
               </>}
             </div>
             <div className="scopestatus">
-              {navigation.state === 'idle' ? null : <span role="status">正在切换…</span>}
+              <span className="scopenavigationstatus" role="status" aria-live="polite"
+                data-visible={navigation.state === 'idle' ? 'false' : 'true'}>
+                {navigation.state === 'idle' ? '' : '正在切换内容…'}
+              </span>
               <span>{controlContext ? '状态评估于' : '数据更新于'} {formatRailTime(context.session.syncedAt)}</span>
             </div>
           </div>
           <main className="workspacebody" aria-busy={navigation.state !== 'idle'}>
             {activeModule?.id === 'cockpit' ? <Outlet /> : (
               <Suspense fallback={<WorkspaceRouteLoading moduleId={activeModule?.id} />}>
-                <LazyAccessDeniedActionsProvider actions={accessDeniedActions}><Outlet /></LazyAccessDeniedActionsProvider>
+                <LazyAccessDeniedActionsProvider actions={accessDeniedActions}>
+                  {activeModule?.id === 'engineering' ? <LazyEngineeringWorkspace /> : <Outlet />}
+                </LazyAccessDeniedActionsProvider>
               </Suspense>
             )}
           </main>
           <footer className="consolefooter">
             <span data-testid="console-build-info" title={buildInfo.detailLabel}>{buildInfo.footerLabel} · © 2026 {brandName}运营系统 · 节点: {context.scope.id === 'platform:preview' ? 'LOCAL-PREVIEW' : 'BJ-01-PROD'}</span>
-            <span className="consolefooterstatus"><i aria-hidden="true" />服务运行正常</span>
+            <span className="consolefooterstatus"><i aria-hidden="true" />控制台页面已加载</span>
             <code>AI 调用需服务端授权</code>
           </footer>
         </div>
@@ -300,6 +263,8 @@ export function ScopeShell() {
 
 export function WorkspaceRouteLoading({ moduleId }: Readonly<{ moduleId: string | undefined }>) {
   const supplyChain = moduleId === 'supply-chain';
+  if (moduleId === 'engineering') return <WorkspacePanelSkeleton className="engineeringrouteskeleton"
+    label="正在准备工程中心内容…" />;
   return <section className="workspacerouteloading" role="status" aria-live="polite">
     <span className="workspacerouteloadingicon" aria-hidden="true" />
     <strong>{supplyChain ? '正在打开供应链管理…' : '正在打开工作台…'}</strong>

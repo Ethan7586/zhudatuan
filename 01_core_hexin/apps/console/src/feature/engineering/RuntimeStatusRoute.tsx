@@ -1,4 +1,4 @@
-import { EngineeringFrame, HonestNotice, MetricGrid, StatusPill } from './EngineeringFrame';
+import { HonestNotice, MetricGrid, StatusPill } from './EngineeringFrame';
 
 const targets = [
   ['Storefront', 'L1', '商城运行入口'],
@@ -8,9 +8,8 @@ const targets = [
   ['Workers', 'L1', '异步任务与后台作业'],
 ] as const;
 
-export function Component() {
-  return <EngineeringFrame eyebrow="SYSTEM GOVERNANCE · OBSERVABILITY"
-    title="系统运行状态" description="统一观察 L0、L1 与 L2 的服务健康、性能和依赖关系">
+export function RuntimeStatusContent() {
+  return <>
     <MetricGrid metrics={[
       { label: '实时数据', value: '待接入', detail: '尚未连接集中遥测', tone: 'waiting' },
       { label: '观察范围', value: 'L0 / L1 / L2', detail: '节点、服务与业务入口' },
@@ -44,5 +43,5 @@ export function Component() {
         <tbody>{targets.map(([name, layer, duty]) => <tr key={name}><td><strong>{name}</strong></td><td>{layer}</td><td>{duty}</td>
           <td><StatusPill tone="waiting">待接入</StatusPill></td><td>—</td><td>—</td></tr>)}</tbody></table></div>
     </article>
-  </EngineeringFrame>;
+  </>;
 }

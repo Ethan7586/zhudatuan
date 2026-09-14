@@ -1,0 +1,68 @@
+/* UIX-PERF straight-edge language. Semantic circles may opt out explicitly. */
+[data-visual-geometry='straight'] {
+  --sw-radius-sm: 0;
+  --sw-radius-md: 0;
+  --sw-radius-lg: 0;
+  --sw-radius-xl: 0;
+  --sw-straight-shadow-rest: 0 2px 5px rgb(7 24 47 / 6%);
+  --sw-straight-shadow-hover: 0 8px 22px rgb(19 58 127 / 11%);
+}
+
+[data-visual-geometry='straight'] :where(
+  section,
+  article,
+  nav,
+  aside,
+  header,
+  footer,
+  dialog,
+  fieldset,
+  button,
+  input:not([type='radio']):not([type='checkbox']),
+  select,
+  textarea,
+  [role='dialog'],
+  [role='alert'],
+  [role='status'],
+  [class*='card'],
+  [class*='panel'],
+  [class*='workspace']
+):not([data-visual-geometry='round']) {
+  border-radius: 0 !important;
+}
+
+[data-visual-geometry='straight'] :where(
+  nav,
+  button,
+  [class*='card'],
+  [class*='panel'],
+  [class*='workspace']
+):not([data-visual-geometry='round'])::before,
+[data-visual-geometry='straight'] :where(
+  nav,
+  button,
+  [class*='card'],
+  [class*='panel'],
+  [class*='workspace']
+):not([data-visual-geometry='round'])::after {
+  border-radius: 0 !important;
+}
+
+[data-visual-geometry='straight'] .swsurface {
+  box-shadow: var(--sw-straight-shadow-rest);
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+[data-visual-geometry='straight'] .swsurface:hover,
+[data-visual-geometry='straight'] .swsurface:focus-within {
+  border-color: color-mix(in srgb, var(--sw-brand) 28%, var(--sw-border));
+  box-shadow: var(--sw-straight-shadow-hover);
+}
+
+[data-visual-geometry='straight'] :where(button, nav a) {
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-visual-geometry='straight'] :where(.swsurface, button, nav a) { transition: none; }
+}

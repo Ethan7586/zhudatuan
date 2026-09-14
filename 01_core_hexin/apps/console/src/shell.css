@@ -60,6 +60,15 @@
 .scopedivider { color: #d7dee8; font-style: normal; }
 .scopestatus { margin-left: auto; justify-content: flex-end; }
 .scopestatus i { color: #c8d1de; font-style: normal; }
+.scopenavigationstatus {
+  display: inline-block;
+  width: 7.5rem;
+  color: #52627d;
+  opacity: 1;
+  text-align: right;
+  transition: opacity 120ms ease;
+}
+.scopenavigationstatus[data-visible='false'] { opacity: 0; }
 
 .workspacebody {
   width: min(100%, 100rem);
@@ -87,6 +96,12 @@
   border-top-color: #246bfd;
   border-radius: 50%;
   animation: workspacerouteloadingspin .8s linear infinite;
+}
+
+.engineeringrouteskeleton {
+  width: min(100%, 1560px);
+  margin: 0 auto;
+  padding: 28px clamp(18px, 2.4vw, 36px) 48px;
 }
 
 .workspacerouteloading strong { font-size: 15px; }

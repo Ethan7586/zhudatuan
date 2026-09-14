@@ -119,7 +119,19 @@ describe('ScopeShell route handles', () => {
     expect(await screen.findByText('创建、复制、进入和管理集团旗下商城，并跟踪开店与发布进度。')).toBeTruthy();
     expect((await screen.findByRole('button', { name: '商城管理' })).getAttribute('aria-current')).toBe('page');
     expect(container.querySelector('.consolelayout')?.getAttribute('data-route')).toBe('applications');
+    expect(container.querySelector('.consolelayout')?.getAttribute('data-visual-geometry')).toBe('straight');
     await waitFor(() => expect(document.title).toBe('商城管理 · 鸿泰集团'));
+  });
+
+  it('keeps the engineering workspace mounted across its internal routes', async () => {
+    const user = userEvent.setup();
+    renderShell('/scopes/enterprise/enterprise%3A1/system/engineering');
+
+    const brand = await screen.findByAltText('MORVIA · zhudatuan 主打团');
+    await user.click(screen.getByRole('link', { name: '发布与版本' }));
+
+    expect(await screen.findByRole('heading', { name: '发布与版本' })).toBeTruthy();
+    expect(screen.getByAltText('MORVIA · zhudatuan 主打团')).toBe(brand);
   });
 
   it('uses distributed platform preferredScopeKind from registry navigation when opening the module', async () => {
@@ -154,7 +166,9 @@ describe('ScopeShell route handles', () => {
     const source = readFileSync('src/shell/ScopeShell.tsx', 'utf8');
     expect(source).toContain('useMatches()');
     expect(source).toContain("cancelQueries({ queryKey: ['console'], type: 'active' })");
-    expect(source).toContain("preloadConsoleModule(moduleId, 'idle')");
+    expect(source).not.toContain("preloadConsoleModule(moduleId, 'idle')");
+    expect(source).not.toContain('requestIdleCallback');
+    expect(source).toContain('onNavigateIntent={prepareRoute}');
     expect(source).not.toMatch(/professionalRouteFromPath|workstationFromPath|new Set\(|ApplicationScope/);
   });
 });
@@ -181,6 +195,10 @@ function renderShell(initialEntry: string, loadedContext: ConsoleContext = conte
       { path: 'applications', Component: FixturePage, handle: handleForPath('applications') },
       { path: 'platforms', Component: FixturePage, handle: handleForPath('platforms') },
       { path: 'referral/settings', Component: FixturePage, handle: handleForPath('referral/settings') },
+      { path: 'system/engineering', Component: FixturePage, handle: handleForPath('system/engineering') },
+      { path: 'system/status', Component: FixturePage, handle: handleForPath('system/status') },
+      { path: 'system/releases', Component: FixturePage, handle: handleForPath('system/releases') },
+      { path: 'system/incidents', Component: FixturePage, handle: handleForPath('system/incidents') },
       { path: 'settings/profile', Component: FixturePage },
       { path: '*', Component: UnknownPage },
     ],
