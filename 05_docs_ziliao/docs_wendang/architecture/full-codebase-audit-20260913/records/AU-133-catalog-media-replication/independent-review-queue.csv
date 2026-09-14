@@ -1,2 +1,2 @@
 finding,scope,required_recheck,status
-F-0173,Catalog source projection to CatalogJobsRuntime media worker,Provider trust boundary raw fetch egress redirect and response-size constraints,pending
+F-0173,Catalog source projection to CatalogJobsRuntime media worker,Provider trust boundary raw fetch egress redirect and response-size constraints,confirmed in AU-134

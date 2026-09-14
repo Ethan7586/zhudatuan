@@ -272,3 +272,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - media replication、product registration、OSS adapter 和 Worker 均有局部测试文件；本 AU 已确认 Worker 测试覆盖 fallback、incomplete registration 与 payload 基础合法性。
 - 未见 http/private address、redirect、oversize response 或流式读取边界反事实；结合 source URL 直接 raw fetch 形成 F-0173/P1，待独立复核。
 - 本 AU 未运行 Vitest。
+
+## 134. AU-134 Catalog 媒体 URL 边界独立复核
+
+- 两项测试分别固定 HTTPS provider 示例和基本 fallback/incomplete 反事实，均不构造 http、loopback/private IP、redirect、超大/流式 body。
+- 独立调用链重查与 F-0173 一致，P1 保持、双轮确认；本 AU 未运行 Vitest。

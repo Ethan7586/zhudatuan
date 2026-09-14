@@ -1468,3 +1468,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | media Worker | source URL 下载、registration、primary verified replica→coverUrl | [FACT][E-AU-133-003]；F-0173/P1 |
 
 [FACT][E-AU-133-004] 9 文件、539 行 Catalog media replication chain 完成深审；媒体 target 可选/required 语义明确，但 source download 输入边界待独立复核。
+
+## 139. AU-134 Catalog 媒体 URL 边界独立复核
+
+| 复核范围 | 独立证据 | 结论 |
+| --- | --- | --- |
+| provider source → projection | ChannelSyncJob 直接接受 extension payload，projection 仅要求 imagePaths 为非空 strings | untrusted URL 语义未在此链收窄 |
+| job runtime → fetch | dedicated CatalogJobsRuntime 默认构造 raw-fetch processor | 无代码级 egress/redirect/response-size boundary |
+| tests | media worker/source projection tests 只断言 HTTPS 示例与基本失败 | hostile URL/size 反事实缺失 |
+
+[FACT][E-AU-134-001] F-0173 双轮复核结论一致：保持 P1、高置信度；无 P0 事故运行证据。

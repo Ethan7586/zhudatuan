@@ -3450,7 +3450,7 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | catalog / media replication Worker；P1；高；待独立复核 |
+| 模块/级别 | catalog / media replication Worker；P1；高；双轮确认 |
 | 类型 | SSRF、资源耗尽、外部输入边界 |
 | 位置 | `01_core_hexin/services/commerce/src/modules/catalog/03_application_yingyong/CatalogSourceProjection.ts:97-101,149-184`；`05_interface_jieru/job/CatalogMediaReplicationJob.ts:46-65,81-93` |
 | 当前/预期 | Cake source projection 将 provider `imagePaths` 原样写入 `catalogmediareplication` job；Worker 只检查每个 source URL 为非空字符串，以原生 `fetch(sourceUrl)` 顺序访问，随后无字节上限地 `arrayBuffer()`。预期只允许明确的 HTTPS/host allowlist 与安全解析后的公网地址，限制/流式读取 response，拒绝重定向到非允许地址。 |
@@ -3458,7 +3458,7 @@
 | 调用链/影响 | provider Cake catalog source → CatalogSourceProjection → runtime.job `catalogmediareplication` → CatalogMediaReplicationProcessor.download → process network fetch → OSS replication/coverUrl。若上游 provider 或其返回字段遭篡改，Worker 可对其可达网络发起请求，或为大响应分配内存；实际网络可达性和线上 source 数据尚未验证。 |
 | 根因 | Provider media URL 被当作已可信的资源标识，进入通用 worker 前没有网络 egress 与体积边界。 |
 | 验证/回滚 | 先独立复核 job runtime 的 egress/DNS/redirect policy 与 provider payload trust boundary；从最新主线建立单一修复分支，用 injectable URL policy/streamed fetch 测试覆盖 http、localhost/private IP、redirect、oversize 与允许 CDN。回滚为撤回该单一输入边界批次。 |
-| 独立复核 | 是；AU-134 必须从 provider source 到 dedicated CatalogJobsRuntime 重新检查，结论不一致时保留较保守级别。 |
+| 独立复核 | 是；AU-134 已从 ChannelSyncJob→CatalogSourceProjection→runtime.job→CatalogJobsRuntime→Worker 和两项局部测试独立重查，仍无 URL/egress/redirect/body-size 边界；P1 保持。 |
 
 ## 30. AU-030 新增未定级事项
 
