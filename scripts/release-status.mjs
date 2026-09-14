@@ -26,10 +26,12 @@ if (localCommit && !inMainline) {
 }
 
 const workflowRuns = ghRuns('deploy-prepared-aliyun.yml');
+const recognizedDeliveryVersions = ['1.3.5', '1.3.2'];
 const prepareRuns = ghRuns('prepare-artifact-aliyun.yml').filter(({ displayTitle }) =>
-  displayTitle === `Prepare 1.3.2 ${sourceSha} ${target}` || displayTitle === `Prepare 1.3.2 ${sourceSha} ${target} [github]`);
-const sealTitle = `Deploy 1.3.2 validate-candidate ${sourceSha} ${physicalNode} ${target}`;
-const sealRuns = workflowRuns.filter(({ displayTitle }) => displayTitle === sealTitle);
+  recognizedDeliveryVersions.some((version) =>
+    displayTitle === `Prepare ${version} ${sourceSha} ${target}` || displayTitle === `Prepare ${version} ${sourceSha} ${target} [github]`));
+const sealRuns = workflowRuns.filter(({ displayTitle }) => recognizedDeliveryVersions.some((version) =>
+  displayTitle === `Deploy ${version} validate-candidate ${sourceSha} ${physicalNode} ${target}`));
 const automaticSeal = automaticClosureSeal();
 if (automaticSeal) sealRuns.unshift(automaticSeal);
 const result = {

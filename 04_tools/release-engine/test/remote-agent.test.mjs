@@ -225,7 +225,7 @@ test('prepared validation accepts only the legacy readable-mode widening of a fr
   assert.equal(rejected.code, 'CURRENT_RELEASE_TREE_MISMATCH');
 });
 
-test('1.3.2 deploy consumes only a sealed candidate and never downloads during cutover', async () => {
+test('1.3.5 deploy consumes only a sealed candidate and never downloads during cutover', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', '8'.repeat(40));
   await invokeOss(fixture, baseline, await artifactPayload(baseline));
@@ -253,7 +253,7 @@ test('1.3.2 deploy consumes only a sealed candidate and never downloads during c
   assert.equal(deployed.result.activation.receipt.finalStatus, 'success');
 });
 
-test('1.3.2 deploy rejects a sealed candidate when production changed after validation', async () => {
+test('1.3.5 deploy rejects a sealed candidate when production changed after validation', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', 'a'.repeat(40));
   await invokeOss(fixture, baseline, await artifactPayload(baseline));
@@ -275,7 +275,7 @@ test('1.3.2 deploy rejects a sealed candidate when production changed after vali
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
 });
 
-test('1.3.2 deploy rejects a seal bound to a different artifact identity', async () => {
+test('1.3.5 deploy rejects a seal bound to a different artifact identity', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', '1'.repeat(40));
   await invokeOss(fixture, baseline, await artifactPayload(baseline));
@@ -358,7 +358,7 @@ test('legacy baseline registration rejects a source or artifact that does not ma
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), release);
 });
 
-test('1.3.2 deploy requires candidate revalidation after Agent policy changes', async () => {
+test('1.3.5 deploy requires candidate revalidation after Agent policy changes', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', 'd'.repeat(40));
   await invokeOss(fixture, baseline, await artifactPayload(baseline));

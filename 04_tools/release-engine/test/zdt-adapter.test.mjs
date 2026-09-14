@@ -34,7 +34,7 @@ test('production acceptance is fixed to the eight retained domains', () => {
   assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
 });
 
-test('legacy 1.2 recovery remains visibly separate from normal 1.3.2 deployment', () => {
+test('legacy 1.2 recovery remains visibly separate from normal 1.3.5 deployment', () => {
   for (const workflow of [deployWorkflow, deployOssWorkflow]) {
     assert.doesNotMatch(workflow, /legacy_1_2_ack|LEGACY_1_2_ACK/);
     assert.match(workflow, /npm ci/);
@@ -44,7 +44,7 @@ test('legacy 1.2 recovery remains visibly separate from normal 1.3.2 deployment'
   assert.match(deployOssWorkflow, /commerce-api\|identity-api\|workers/);
 });
 
-test('Console retains optional public acceptance metadata while Prepare and Deploy 1.3.2 remain exact single-target channels', () => {
+test('Console retains optional public acceptance metadata while Prepare and Deploy 1.3.5 remain exact single-target channels', () => {
   assert.deepEqual(adapter.nodes['zhudatuan-l0'].deployments.console.publicAcceptance, {
     url: 'https://console.fufu.wang/',
     allowedStatuses: [200],
@@ -129,7 +129,7 @@ test('legacy direct recovery retains the isolated H6 CDN channel', () => {
   assert.equal((deployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
 });
 
-test('normal scripts expose only the 1.3.2 prepare and atomic-deploy sequence', () => {
+test('normal scripts expose only the 1.3.5 prepare and atomic-deploy sequence', () => {
   assert.match(deployNow, /exec "\$script_dir\/deploy-prepared\.sh" "\$@"/);
   assert.doesNotMatch(deployNow, /legacy|deploy\.yml|npm ci|build|git push/);
   assert.match(deployPrepared, /gh workflow run deploy-prepared-aliyun\.yml --ref zdt-next/);
@@ -141,7 +141,7 @@ test('normal scripts expose only the 1.3.2 prepare and atomic-deploy sequence', 
   assert.doesNotMatch(prepareRelease, /operation=deploy|legacy|git push/);
 });
 
-test('1.3.2 accepts only source commits in the exact zdt-next history', () => {
+test('1.3.5 accepts only source commits in the exact zdt-next history', () => {
   for (const workflow of [prepareWorkflow, preparedDeployWorkflow]) {
     assert.match(workflow, /CONTROL_SHA: \$\{\{ github\.sha \}\}/);
     assert.match(workflow, /CONTROL_REF: \$\{\{ github\.ref \}\}/);
@@ -236,7 +236,7 @@ test('every restartable fast target has a one-time legacy seed and production ro
   }
 });
 
-test('node operations is a reproducible single-service 1.3.2 target hosted once by L0', () => {
+test('node operations is a reproducible single-service 1.3.5 target hosted once by L0', () => {
   const target = adapter.targets['node-operations'];
   assert.deepEqual(target.build.map((command) => command.argv), [
     ['node', '04_tools/release-engine/adapters/zdt-next/build-node-operations.mjs'],
@@ -465,7 +465,7 @@ test('first activation is limited to pointer-only content and migration evidence
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
 });
 
-test('1.3.2 binds the artifact and control-plane provenance in one production action', () => {
+test('1.3.5 binds the artifact and control-plane provenance in one production action', () => {
   assert.match(preparedDeployWorkflow, /ref: \$\{\{ github\.sha \}\}/);
   assert.match(preparedDeployWorkflow, /--source-sha "\$RELEASE_SHA"/);
   assert.match(preparedDeployWorkflow, /--control-sha "\$CONTROL_SHA"/);
@@ -473,7 +473,7 @@ test('1.3.2 binds the artifact and control-plane provenance in one production ac
   assert.match(preparedDeployWorkflow, /--github-run-attempt "\$GITHUB_RUN_ATTEMPT"/);
   assert.match(preparedDeployWorkflow, /--expected-remote-agent-sha256/);
   assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256/);
-  assert.match(preparedDeployWorkflow, /^name: Deploy 1\.3\.2 - Aliyun Prepared Artifact/m);
+  assert.match(preparedDeployWorkflow, /^name: Deploy 1\.3\.5 - Aliyun Prepared Artifact/m);
   assert.match(preparedDeployWorkflow, /GH_TOKEN: \$\{\{ github\.token \}\}/);
   assert.match(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3'/);
   assert.match(releaseEngine, /candidateOnly \? \{[\s\S]*?artifactUrl:[\s\S]*?manifestUrl:[\s\S]*?\} : \{\}/);

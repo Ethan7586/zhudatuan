@@ -65,3 +65,8 @@ test('the system dispatcher exposes read-only status through the latest control 
   assert.match(dispatcher, /status\) bash scripts\/release-status\.sh/);
   assert.match(dispatcher, /deploy-source\) bash scripts\/deploy-source\.sh/);
 });
+
+test('1.3.5 status keeps recognizing already sealed 1.3.2 candidates', async () => {
+  const status = await readFile(join(projectRoot, 'scripts/release-status.mjs'), 'utf8');
+  assert.match(status, /recognizedDeliveryVersions = \['1\.3\.5', '1\.3\.2'\]/);
+});
