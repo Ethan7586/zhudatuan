@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-184 已完成。AU-184 完成 Commerce API qualification governance 审阅。覆盖总账按当前文件级清单重算：深入审阅1,651文件/116,862行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,203文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-185 已完成。AU-185 完成 Commerce API order/after-sale writes 审阅。覆盖总账按当前文件级清单重算：深入审阅1,653文件/117,159行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,201文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1539,3 +1539,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Commerce API qualification governance、preview/review/history/rollback/simulation/employee事实变更 routes。
 
 执行结果：governance按caller capability裁剪requests/employee facts；review和employee write绑定current actor/evidence，rollback额外要求fresh step-up/idempotency且复用config persistence；simulation只以current mall scope读取；tags时间窗和数量均有输入约束。direct tests覆盖redaction、approval step-up/actor、employee tags/step-up和simulation scope。无P0–P3新问题。
+
+## 187. AU-185 连续审计点
+
+审阅 Commerce API order/after-sale/shipping/internal-payment/refund/reconciliation compatibility routes。
+
+执行结果：订单/售后/发货/退款都从server RPC取得resource scope，支付/下单需要phone assurance，所有写操作使用idempotency/request hash/actor evidence；订单创建原子地清理对应cart。router在调用售后create前选择POST，因此handler本身没有method check未形成外部绕过。现有test只覆盖phone assurance和create-order cart close；其余关键写入没有direct fixture，形成F-0194/P2；无P0/P1新问题。

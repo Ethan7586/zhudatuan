@@ -1997,3 +1997,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | employee fact write | manage permission、fresh step-up、version/tags/attributes and actor-evidence RPC | [FACT][E-AU-184-004] |
 
 [FACT][E-AU-184-005] 2 文件、299 行完成深审；full compatibility admin router注册该链，当前正式Worker没有装载完整authenticated router。
+
+## 190. AU-185 Order/after-sale writes 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| after-sale/order read | order.read/order.create、current user or admin scope、server after-sale/order RPC | [FACT][E-AU-185-001] |
+| shipping/refund | resource scope→permission、idempotency/request hash/actor evidence | [FACT][E-AU-185-002] |
+| create order/payment | phone assurance、recipient PII encrypt、authorized atomic create-clear-cart/charge RPC | [FACT][E-AU-185-003] |
+| reconciliation | finance permission与scoped reconciliation RPC | [FACT][E-AU-185-004] |
+
+[FACT][E-AU-185-005] 2 文件、297 行完成深审；compat storefront/admin routing controls method dispatch before after-sale/order create handler calls.

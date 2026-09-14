@@ -3738,6 +3738,20 @@
 | 验证/回滚 | fixture覆盖GET/PUT/DELETE、invalid input、permission和exact RPC body；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0194｜Order/after-sale 多条关键写入路径没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / order-after-sale-payment；P2；高 |
+| 类型 | 测试覆盖缺口、订单状态/资金/售后写入正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/orderRoutes.ts:11-187`；现有`orderRoutes.test.ts` |
+| 当前/预期 | 实现处理after-sale、ship、internal pay、refund和finance reconciliation；全部依赖server scope/RPC，写入附idempotency/hash/evidence。现有tests仅断言phone assurance和create-order cart closure。预期每条写入的成功、拒绝、scope、idempotency和RPC body均有direct fixture。 |
+| 直接证据 | `orderRoutes.test.ts`只导入`handleCreateOrder`、`handleInternalPayment`；没有after-sale/ship/refund/reconciliation调用，internal payment也只覆盖未验证phone。 |
+| 调用链/影响 | authenticated storefront/admin route → order routes → order/after-sale/account/finance RPC。写入状态、资金扣退、resource scope或审计evidence回归无法在当前suite直接捕获。 |
+| 建议方向 | 从修复时最新`zdt-next`拆成订单、售后、发货退款三个独立test批；回滚为撤回对应测试提交。 |
+| 验证/回滚 | 每批以mock RPC/assert body验证permission/scope/idempotency/success/conflict；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

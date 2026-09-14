@@ -515,3 +515,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖治理页面redaction、approval fresh step-up与server reviewer actor、employee tags/step-up和simulation current mall scope。
 - History/rollback/preview各分支仍缺direct fixture；其handler依赖已覆盖的parse/persist helpers，数据库审批原子语义留给RPC专项审计。审计工作树未运行Vitest。
+
+## 185. AU-185 Order/after-sale writes 深审
+
+- Direct tests只覆盖phone assurance阻断在create order/internal payment之前、以及create-order成功的cart closure。
+- 未直接覆盖after-sale、order list/ship、internal-payment success/validation、refund和finance reconciliation；见F-0194/P2。审计工作树未运行Vitest。

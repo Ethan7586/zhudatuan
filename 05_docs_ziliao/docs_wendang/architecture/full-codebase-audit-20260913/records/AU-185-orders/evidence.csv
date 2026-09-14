@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-185-001,src/api/orderRoutes.ts,11-57,after-sale/order read,Permissions and server scope determine after-sale/order visibility and create authorization.
+E-AU-185-002,src/api/orderRoutes.ts,59-81;153-178,ship/refund,Resource scope is server-resolved and write RPC carries idempotency request hash/current actor evidence where applicable.
+E-AU-185-003,src/api/orderRoutes.ts,83-151,create/pay,Phone assurance precedes PII encrypt and authorized create-clear-cart/payment RPCs.
+E-AU-185-004,src/api/routes/storefrontRouter.ts,34-38,method dispatch,Only POST routes to after-sale/order create; other methods enter read handlers which enforce GET.
+E-AU-185-005,src/api/orderRoutes.test.ts,1-110,tests,Only phone block and create-order cart closure paths are directly tested.
