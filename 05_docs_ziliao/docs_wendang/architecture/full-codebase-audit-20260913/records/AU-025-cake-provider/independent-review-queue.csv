@@ -1,2 +1,2 @@
 "review_id","target","status","reason"
-"RV-0019","DC-0031","GX","待独立复核；重新核对OrderRequest的导出、动态入口、协议责任和恢复方法"
+"RV-0019","DC-0031","GX","已复核；CakeProvider manifest仅三只读port，manifest/factory未导出Order；OrderRequest/Webhook为测试/兼容别名且无生产调用；未与Order/fulfillment入口对齐，禁止删除，需保留为迁移兼容/接口保留"

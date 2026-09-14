@@ -1,2 +1,2 @@
 "review_id","target","status","reason"
-"RV-0020","DC-0034","GX","待独立复核；重新核对OrderDraft导出、动态入口、七品牌协议责任、幂等/重查前置和恢复方法"
+"RV-0020","DC-0034","GX","已复核；MealProvider manifest/factory仅Catalog+Price；order/tracking逻辑存在于OrderDraft未对外导出；未发现OrderDraft在运行链路注册/调用，保留为高风险边界能力，不可直接删除"
