@@ -1,0 +1,6 @@
+"编号","类型","位置","观察","证明","未知\n"
+"E-AU-041-001","范围复核","ProviderLoader.create/local分支","确认 private installation 走 local 端口注入路径","ProviderLoader.ts 41-46\n",""
+"E-AU-041-002","能力闭合","extensions/providers/private/manifest.ts","manifest 声明与 local 端口名未一一一致","manifest.ts 12 与 PgPrivateProvider.ts 9-42\n",""
+"E-AU-041-003","调用链一致性","FulfillmentJobs.track","履约跟踪要求 Logistics+tracking，触发 extension capability+port 校验","FulfillmentJobs.ts 66-67 与 ExtensionRegistry.ts 75-79\n",""
+"E-AU-041-004","复核结论","Channel extension registry\n","F-0127 风险由能力未闭合导致，不会被 local loader 机制自动消解","ExtensionRegistry.require 与 ProviderPort 名称约束\n",""
+"E-AU-041-005","测试缺口","private provider test\n","private provider 测试未覆盖 capability×registry×caller 矩阵","private/tests/Provider.test.ts 全量\n",""
