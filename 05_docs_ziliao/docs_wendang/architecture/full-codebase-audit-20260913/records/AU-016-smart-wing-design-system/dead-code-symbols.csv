@@ -1,0 +1,2 @@
+"编号","对象","无入口证据","保留/未知","等级","结论"
+"DC-0020","@smart-wing/design-system全部8文件","零源码/CSS/脚本/runtime消费者；Storefront仅声明依赖；canonical替代面存在","公共workspace exports、lock依赖、wing-code差异、仓外消费和视觉回归未排除","G2","高度疑似遗留；不得删除，先二次入口/视觉/构建复核"

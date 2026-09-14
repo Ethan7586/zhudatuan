@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-015 结束时累计：P0 0、P1 候选 9、P2 37、P3 26、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-016 结束时累计：P0 0、P1 候选 9、P2 37、P3 28、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -1786,3 +1786,54 @@
 
 - [UNKNOWN] 仓外消费者是否依赖callback异常、可变snapshot或dispose后read行为。
 - [UNKNOWN] 21个包内测试在锁定依赖安装后的真实结果；本AU未安装依赖。
+
+## F-0074｜Storefront 保留一个没有实际源码消费者的旧设计包依赖
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@smart-wing/design-system` / Storefront workspace |
+| 类型 | 依赖图、架构漂移 |
+| 严重级别 | P3 |
+| 置信度 | 高：固定仓库全引用检索只有package/lock边，没有源码、CSS、脚本或配置消费 |
+| 文件和精确位置 | `packages/design-system/package.json:1-12`；Storefront `package.json:21`；根`package-lock.json:253,927-928,4141-4142` |
+| 当前行为 | [FACT][E-AU-016-003/004] Storefront声明依赖旧设计包，安装/Workspace图保留边；其生产代码不import任何旧export，Console和正式token脚本使用canonical `@shop/design` |
+| 预期行为 | workspace依赖应对应真实构建/源码职责；已迁移依赖应有明确兼容消费者或退役证据 |
+| 直接证据 | E-AU-016-003、E-AU-016-004、INV-AU-016-002、FM-AU-016-001 |
+| 调用链或运行入口 | package dependency graph → workspace/lock/release impact；没有进入Storefront bundle的代码链 |
+| 用户影响 | 维护者和影响分析可能误判旧包仍是Storefront视觉来源，扩大构建/发布或迁移判断范围 |
+| 数据影响 | 无 |
+| 安全影响 | 无 |
+| 根因 | 向canonical design迁移后依赖声明未同步收口 |
+| 建议方向 | 未来独立依赖治理批次先做构建/页面视觉和仓外消费复核，再只移除依赖边；不得顺带删除旧包 |
+| 预计修改范围 | Storefront package与lock；旧包归档/删除另批 |
+| 验证方式 | Storefront定向build、关键页面视觉对照、workspace/release影响图复算 |
+| 回滚方式 | 恢复package/lock单一提交 |
+| 是否需要独立复核 | 否；旧包删除仍需另行复核 |
+
+## F-0075｜旧 tokens.css 的生成声明已脱离真实生成器和正式漂移检查
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@smart-wing/design-system` token生成链 |
+| 类型 | 生成物来源、文档漂移 |
+| 严重级别 | P3 |
+| 置信度 | 高：生成器输入/输出常量与正式check已执行；旧文件没有当前写入点 |
+| 文件和精确位置 | `packages/design-system/src/tokens.css:1-4`；`04_tools/scripts/build-web-tokens.mjs:11-36,208-241`；canonical `packages/design/src/tokens.json:1-12` |
+| 当前行为 | [FACT][E-AU-016-005/006] 旧CSS声称由该脚本从旧JSON生成并可用`npm run build:web-tokens`重生；当前脚本只读写`packages/design`。正式check返回0但不检查旧CSS。旧token仍为1.0智慧翼/会员码，canonical已为1.2主打团/翼码，变量79对82 |
+| 预期行为 | 标记GENERATED的文件必须能由所列脚本从所列源重生，并被正式check覆盖；否则应明确归档/冻结状态 |
+| 直接证据 | E-AU-016-005、E-AU-016-006、INV-AU-016-001、FM-AU-016-002 |
+| 调用链或运行入口 | 维护者执行build:web-tokens → 只更新canonical输出；旧CSS保持不变且check仍通过 |
+| 用户影响 | 维护者可能误以为旧视觉文件已由当前单源和CI保护 |
+| 数据影响 | 无业务数据；视觉token内容漂移 |
+| 安全影响 | 无 |
+| 根因 | 生成器迁移到canonical目录后旧生成头未改成归档/历史说明，也未接退役检查 |
+| 建议方向 | 在独立视觉治理批次由Ethan确认旧包去向；保留则恢复可复现生成，退役则先验证消费者后归档。不能直接手改生成CSS |
+| 预计修改范围 | 生成来源/检查或旧包归档说明；不与视觉值改版混批 |
+| 验证方式 | 旧输出可字节重生且反事实改源使check失败，或确认退役后构建/页面无差异 |
+| 回滚方式 | 回退单一生成链/归档提交 |
+| 是否需要独立复核 | 否（P3）；DC-0020若升级G3必须独立复核 |
+
+## 16. AU-016 新增未定级事项
+
+- [UNKNOWN] 仓外构建或设计工具是否按`@smart-wing/design-system`包名消费exports。
+- [UNKNOWN] 移除Storefront依赖及旧包后的完整build和真实页面视觉是否完全不变。

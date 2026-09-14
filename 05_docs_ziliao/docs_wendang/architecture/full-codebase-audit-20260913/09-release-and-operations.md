@@ -179,3 +179,9 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - `@shop/interaction`无独立制品、进程、端口或数据表；随Auth、Console和Storefront前端bundle发布。
 - 所有核心导出均有生产消费者，变更影响至少三个前端，后续修复必须按Queue、Action、Feedback、Cache分成单一小批次。
 - 本AU未build、打开页面、推送、合并或部署。
+
+## 19. AU-016 旧设计包发布边界
+
+- 旧包无进程/target；Storefront依赖边可能进入workspace影响计算，但没有export进入源码或bundle的固定证据。
+- 正式token构建与check只处理canonical `packages/design`，不会更新或验证旧包生成CSS。
+- 本AU未build Storefront、打开页面、生成token、修改资产、推送、合并或部署。

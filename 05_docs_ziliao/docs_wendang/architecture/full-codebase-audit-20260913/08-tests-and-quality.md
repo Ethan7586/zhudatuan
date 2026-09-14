@@ -147,3 +147,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 对快速连击、跨key并发、late response、cancel、失败重试、storage malformed、timer dispose的覆盖质量较高，值得保留。
 - 缺口集中在观察callback抛错、同key不同Result类型、输入message外部mutation、dispose后read和React StrictMode/lazy失败；合成探针形成F-0070–F-0073。
 - 正式test/typecheck因缺vitest/tsc退出127且未加载源码；未安装依赖。
+
+## 15. AU-016 旧设计包验证边界
+
+- package没有test、typecheck或build script；两个workspace命令均Missing script。
+- 2个JSON可解析，4个SVG通过XML结构校验，size class区间闭合；这些不证明真实视觉或页面使用。
+- 正式canonical web-token check通过，但只读写`packages/design`，不会发现旧包tokens.css漂移，形成F-0075。
+- 未执行页面截图/视觉对照；DC-0020不能升级G3。

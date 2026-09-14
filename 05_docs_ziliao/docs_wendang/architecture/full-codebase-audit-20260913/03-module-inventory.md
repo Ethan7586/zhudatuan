@@ -322,3 +322,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | React adapter | lazyNamed、两个hooks、StrictMode延迟dispose | Auth/Storefront | 无直接测试 | 测试缺口 |
 
 [FACT][E-AU-015-002/003] 14文件、971行全部深入审阅；所有核心运行导出都有固定仓库生产消费者，无删除候选。
+
+## 22. AU-016 Smart Wing Design System 模块清单
+
+| 子模块 | 职责 | 固定仓库入口 | canonical关系 | 当前问题 |
+| --- | --- | --- | --- | --- |
+| Package exports | tokens/mobile/brand subpaths | Storefront仅dependency边；零import | `@shop/design`有同类exports | F-0074；DC-0020/G2 |
+| Tokens JSON | 1.0智慧翼/会员码视觉值 | 零运行消费者 | canonical 1.2主打团/翼码 | 漂移且无现行生成链 |
+| Tokens CSS | 79个CSS变量 | 零运行消费者 | canonical 82个变量且正式check覆盖 | F-0075；历史生成物 |
+| Mobile standards | iOS/Android/微信与六档size class | 零运行消费者 | canonical文件已有变化 | 结构闭合但运行脱节 |
+| Brand SVG | mark/lockup/code/pattern | 零运行消费者 | 3个字节相同、code不同 | 需视觉复核，不能删除 |
+
+[FACT][E-AU-016-002/003] 8文件均纳入：7个人工文件深审，1个CSS生成物核对来源。没有真实页面消费者，不等于已满足G3。

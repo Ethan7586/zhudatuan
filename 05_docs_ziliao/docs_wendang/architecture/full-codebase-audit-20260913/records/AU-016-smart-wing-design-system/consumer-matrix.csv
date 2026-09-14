@@ -1,0 +1,5 @@
+"编号","消费者/入口","关系","运行状态","失败传播","结论"
+"CONS-AU-016-001","Storefront package.json/package-lock","dependency edge","无源码import","影响workspace/安装图","F-0074"
+"CONS-AU-016-002","build-web-tokens.mjs","不消费旧包，只处理canonical design","正式check通过","旧漂移不失败","F-0075"
+"CONS-AU-016-003","Console main","只import @shop/design/tokens.css","正式前端","旧包变化无影响","canonical consumer"
+"CONS-AU-016-004","仓外消费者","UNKNOWN","未验证","未知","阻止G3"
