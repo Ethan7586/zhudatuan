@@ -15,8 +15,15 @@ test('sealed-source deployment is explicit, consumes one closure manifest and ne
   assert.deepEqual(Object.keys(workflow.on), ['workflow_dispatch']);
   assert.ok(workflow.on.workflow_dispatch.inputs.head_sha.required);
   assert.match(workflow.jobs.resolve.steps[0].run, /automatic-artifact-closure-\$SOURCE_SHA/);
+  assert.match(workflow.jobs.resolve.steps[0].run, /gh run list --repo "\$GITHUB_REPOSITORY"/);
+  assert.match(workflow.jobs.resolve.steps[0].run, /gh run download "\$run_id" --repo "\$GITHUB_REPOSITORY"/);
   assert.doesNotMatch(workflowSource, /npm ci|prepare-artifact-aliyun|\bbuild\b|operation: validate-candidate/);
   assert.equal((workflowSource.match(/operation: deploy/g) ?? []).length, 3);
+});
+
+test('a delivery-only source closes successfully without restarting production targets', () => {
+  assert.doesNotMatch(workflow.jobs.resolve.steps[0].run, /Automatic closure contains no deployable target/);
+  assert.match(workflow.jobs.resolve.steps[0].run, /deployment completed as a no-op/);
 });
 
 test('deployment waves stop forward progress after a failed earlier wave', () => {

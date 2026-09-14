@@ -42,13 +42,13 @@ jobs:
           set -euo pipefail
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'head_sha must be one full lowercase Git SHA' >&2; exit 64; }
           runs="$RUNNER_TEMP/automatic-closure-runs.json"
-          gh run list --workflow auto-prepare-artifacts.yml --branch zdt-next --event push --limit 100 \
+          gh run list --repo "$GITHUB_REPOSITORY" --workflow auto-prepare-artifacts.yml --branch zdt-next --event push --limit 100 \
             --json databaseId,headSha,status,conclusion,url,createdAt > "$runs"
           run_id="$(node -e "const r=require(process.argv[1]);const s=process.env.SOURCE_SHA;const x=r.find(v=>v.headSha===s&&v.status==='completed'&&v.conclusion==='success');if(x)process.stdout.write(String(x.databaseId))" "$runs")"
           [ -n "$run_id" ] || { echo "No successful automatic closure exists for $SOURCE_SHA" >&2; exit 1; }
           closure_dir="$RUNNER_TEMP/automatic-closure-$run_id"
           mkdir -p "$closure_dir"
-          gh run download "$run_id" --name "automatic-artifact-closure-$SOURCE_SHA" --dir "$closure_dir"
+          gh run download "$run_id" --repo "$GITHUB_REPOSITORY" --name "automatic-artifact-closure-$SOURCE_SHA" --dir "$closure_dir"
           CLOSURE="$closure_dir/closure.json" GITHUB_OUTPUT="$GITHUB_OUTPUT" node <<'NODE'
           const fs = require('node:fs');
           const closure = JSON.parse(fs.readFileSync(process.env.CLOSURE, 'utf8'));
@@ -69,7 +69,9 @@ jobs:
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${JSON.stringify({ include: entries })}\n`);
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `has_${name}=${entries.length > 0}\n`);
           }
-          if (count === 0) throw new Error('Automatic closure contains no deployable target');
+          if (count === 0) {
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `No production target changed in source ${process.env.SOURCE_SHA}; deployment completed as a no-op.\n`);
+          }
           NODE
 
   migrations:
