@@ -356,3 +356,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Risk 的现有 unit tests 证明 engine hard limit/rollout/case transition 与 evaluator 的 selected decision；manifest test 证明 operation/job/event 声明。
 - PostgreSQL repository、RiskCheckAdapter、HTTP route、riskscan policy replay/catalog deny consumer 没有直接行为 fixture，见 F-0180/P2。
+
+## 150. AU-150 Risk compatibility 与覆盖闭合
+
+- 兼容导出没有独立业务分支；`interface/job/RiskReplayJob.ts` 仍由主 jobs catalog 使用。
+- Risk 36/36 文件已取得审阅状态；不将兼容转发误判为删除候选。

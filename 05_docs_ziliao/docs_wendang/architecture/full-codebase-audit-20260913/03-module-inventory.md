@@ -1637,3 +1637,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | API/public/tests | 3 项 HTTP operation 与 public risk gate | [FACT][E-AU-149-004]；F-0180/P2 组合测试缺口 |
 
 [FACT][E-AU-149-005] 22 文件、810 行完成深审；Risk 主运行链可定位，legacy compatibility re-export 留待覆盖闭合单元。
+
+## 155. AU-150 Risk compatibility 与覆盖闭合清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| legacy exports | English-layer application/domain/infrastructure/interface paths转发 canonical Risk实现 | [FACT][E-AU-150-001]；G0 |
+| live consumer | legacy `interface/job/RiskReplayJob.ts` 被主 jobs catalog 实际导入 | [FACT][E-AU-150-002]；G0 |
+
+[FACT][E-AU-150-003] 14 文件、14 行完成深审；Risk 36/36 文件均取得审阅状态，兼容路径保留不删。

@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-149 已完成。AU-149 完成 Risk 的策略、评估、HTTP 与 Worker 运行链审阅。覆盖总账按当前文件级清单重算：深入审阅1,435文件/106,189行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,419文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-150 已完成。AU-150 完成 Risk 兼容导出与文件级覆盖闭合。覆盖总账按当前文件级清单重算：深入审阅1,449文件/106,203行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,405文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1329,3 +1329,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Risk policy/engine/evaluator、PostgreSQL repository/API adapter、HTTP route、`riskscan` replay/catalog consumer、manifest/public exports 与三项 unit test，并反查 Commerce main/jobs catalog。
 
 执行结果：Risk adapter 在 scoped API transaction 中收集 hierarchy/signals 并持久化 risk decision；candidate policy 先进入 replay，只有 replay passed 且非创建者才能 activate；deny catalog decision 由 `riskscan` worker 事务性调用 Catalog action。新增 F-0180/P2：现有测试只覆盖纯 engine 与 mocked evaluator/manifest，未直接覆盖 PgRiskRepository、RiskCheckAdapter、riskRoutes 或 RiskReplayJobProcessor 的事务/HTTP/回放/处置组合。无 P0。
+
+## 152. AU-150 连续审计点
+
+审阅 Risk 的 14 个 legacy English-layer compatibility export，并反查 public/main/jobs consumer。
+
+执行结果：14 项均为单向 re-export 至 AU-149 已审 canonical layer；其中 legacy job 路径仍由主 jobs catalog 实际导入，其他路径维持历史分层/公共兼容。全部归类 G0，Risk 36/36 基线文件均取得审阅状态；未发现 P0–P3 新问题。

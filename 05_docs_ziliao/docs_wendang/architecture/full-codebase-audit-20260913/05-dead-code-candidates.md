@@ -646,3 +646,8 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 八个 Provisioning legacy/root export 保持旧 import；public index 是稳定 port/domain surface，主应用与独立 provisioning API 均使用 canonical target。
 - 全部归类 G0：具有明确兼容/公共职责，不是删除候选。累计 G0 33、G1 38、G2 2、G3 0、GX 5；未删除任何文件。
+
+## 150. AU-150 Risk compatibility 复核
+
+- 14 个 legacy English-layer re-export 指向已审 canonical 风险实现；其中 `interface/job/RiskReplayJob.ts` 是主 jobs catalog 的实际运行 import。
+- 全部归类 G0：兼容或真实运行职责成立。累计 G0 47、G1 38、G2 2、G3 0、GX 5；未删除任何文件。
