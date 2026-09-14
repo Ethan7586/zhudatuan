@@ -1,0 +1,7 @@
+id,files,location,kind,observation
+E-AU-246-001,src/bootstrap/IdentityRegistrationApiRuntime.ts,66-134,startup assembly,Loads manifest/node definition and secret-backed database/session/identity inputs before creating the API pool and dependent adapters.
+E-AU-246-002,src/bootstrap/IdentityRegistrationApiRuntime.ts,109-116,fail-closed readiness,Compatibility and object-store probe precede return; any failure closes the created pool and rethrows.
+E-AU-246-003,src/bootstrap/IdentityRegistrationApiRuntime.ts,135-159,container boundary,configure binds authorizer audit secrets security keys KMS objects node facts and only binds WeChat identity when configured.
+E-AU-246-004,src/bootstrap/IdentityRegistrationApiRuntime.ts,162-236,registration boundary,Compatibility requires dedicated identity API role writable registration schema migration markers relations/functions then calls identity database and node-manifest assertions.
+E-AU-246-005,src/entry/IdentityRegistrationApiMain.ts,42-89,production entry,Entrypoint creates this runtime selects WeChat/full or core identity module then bootstraps routes and loopback listener; shutdown closes server then runtime.
+E-AU-246-006,src/bootstrap/IdentityRegistrationApiRuntime.test.ts,11-78,test evidence,Fixture tests node manifest origin/secret binding and compatibility states only; it never invokes createIdentityRegistrationApiRuntime.

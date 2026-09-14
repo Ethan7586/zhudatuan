@@ -819,3 +819,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Strict boundary fixture逐字段覆盖，但identity runtime专用的两项例外及其保留强制字段没有direct fixture。
 - 见F-0224/P2。审计工作树未运行Vitest。
+
+## 246. AU-246 Identity registration API runtime 深审
+
+- Direct fixture覆盖节点manifest的origin/secret binding及registration compatibility主要拒绝状态；entrypoint fixture以手工binding验证模块/路由构成。
+- 没有fixture执行runtime factory的secret读取、probe失败pool关闭、configure binding、close或WeChat enabled/disabled分支；见F-0225/P2。审计工作树未运行Vitest。

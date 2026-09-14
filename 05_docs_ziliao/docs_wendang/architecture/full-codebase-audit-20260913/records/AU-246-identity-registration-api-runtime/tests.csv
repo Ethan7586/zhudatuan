@@ -1,0 +1,4 @@
+file,coverage,execution
+src/bootstrap/IdentityRegistrationApiRuntime.test.ts,node manifest and compatibility accept/reject cases including migration-active retired-role exception,not run: audit worktree has no Vitest dependencies
+src/entry/IdentityRegistrationApiEntrypoint.test.ts,manual bootstrap route/module composition with fake bindings and dependency closure but not runtime factory execution,not run: audit worktree has no Vitest dependencies
+src/bootstrap/IdentityRegistrationApiRuntime.ts,runtime factory assembly cleanup container bindings and optional WeChat branch have no direct fixture,F-0225; not run: audit worktree has no Vitest dependencies

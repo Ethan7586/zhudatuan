@@ -2579,3 +2579,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | oracle/consumers | deployment.runtime_database_boundary是唯一读取事实；RuntimeCompatibility与identity runtime调用 | [FACT][E-AU-245-003] |
 
 [FACT][E-AU-245-004] 2 文件、124 行完成深审；严格路径完备，identity专用分支无direct fixture，见F-0224/P2。
+
+## 251. AU-246 Identity registration API runtime 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| startup assembly | 从节点manifest、identity定义和workload secret组装独立注册API运行时 | [FACT][E-AU-246-001] |
+| readiness boundary | 先验证兼容性、identity DB边界、节点数据库manifest和object-store，再允许启动 | [FACT][E-AU-246-002..004] |
+| dependency container | 向API模块注入authorizer、审计、密钥、KMS、objects和可选WeChat identity | [FACT][E-AU-246-003] |
+| process handoff | IdentityRegistrationApiMain选择core/full identity modules、bootstrap API并只监听loopback | [FACT][E-AU-246-005] |
+
+[FACT][E-AU-246-007] 2 文件、348 行完成深审；factory主流程没有direct fixture，见F-0225/P2。

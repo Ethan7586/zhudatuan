@@ -379,6 +379,20 @@
 | 验证/回滚 | 用当前fake pool断言两种assertion的accept/reject差异和稳定错误码；回滚为revert提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0225｜Identity registration API runtime factory 未经直接执行验证
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / bootstrap IdentityRegistrationApiRuntime；P2；高 |
+| 类型 | 测试覆盖缺口、独立身份API启动与资源释放 |
+| 位置 | `01_core_hexin/services/commerce/src/bootstrap/IdentityRegistrationApiRuntime.ts:66-159`；`.../IdentityRegistrationApiRuntime.test.ts:11-78` |
+| 当前/预期 | factory在启动期读取多个secret、创建pool/objects、执行兼容性与probe，并在失败时关闭pool；随后按feature绑定容器依赖。预期以受控fake实现直接覆盖factory成功、probe失败释放、可选WeChat和configure/close语义。 |
+| 直接证据 | 该fixture仅调用`assertIdentityRegistrationNodeManifest`和`assertIdentityRegistrationRuntimeCompatibility`；没有导入/调用`createIdentityRegistrationApiRuntime`。entrypoint fixture手工构造所有container binding，不能证明factory真实组装。 |
+| 调用链/影响 | systemd IdentityRegistrationApiMain → createIdentityRegistrationApiRuntime → bootstrapApi/listen。secret/probe/依赖装配或失败释放回归可能使独立身份API无法启动、漏关连接或错误暴露/遗漏身份能力；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立factory fixture批，以mockable secret/pool/object adapters或受控local endpoints覆盖成功绑定、WeChat开关、任一probe失败的pool end、close顺序和稳定错误码；不改变生产行为。 |
+| 验证/回滚 | 断言secret读取集合、object probe、compatibility顺序、pool end次数和container token；回滚为revert测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## F-0014｜Catalog API Ready 未探测已启动的 HTTP 进程
 
 | 字段 | 记录 |
