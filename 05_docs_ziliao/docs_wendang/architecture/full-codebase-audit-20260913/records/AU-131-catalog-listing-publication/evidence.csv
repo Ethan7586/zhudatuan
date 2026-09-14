@@ -1,0 +1,5 @@
+id,file,location,kind,observation
+E-AU-131-001,03_application_yingyong/CatalogOperations.ts,20-170,HTTP actions,Pool/product/listing actions use access and separate operator/storefront listing surfaces.
+E-AU-131-002,03_application_yingyong/CatalogListingManagement.ts,1-60,read model,Readiness classification derives listing management state from product SKU media price and stock data.
+E-AU-131-003,03_application_yingyong/CatalogListingPublication.ts,35-257,async lifecycle,Single/batch publication writes scope-bound listings or durable publication jobs and validates persisted progress.
+E-AU-131-004,03_application_yingyong/{CatalogReadOperations;CatalogOperatorOperations}.ts,1-32,selected module,Operator surface limits imports and publication operations to scoped actions.

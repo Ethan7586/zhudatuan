@@ -1436,3 +1436,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | catalog import Worker | import 状态推进、package reject/fault 和 jobs catalog registration | [FACT][E-AU-130-003] |
 
 [FACT][E-AU-130-004] 7 文件、160 行 Catalog entry/public port/import worker 完成深审；未见 job manifest 与 jobs catalog 不一致。
+
+## 136. AU-131 Catalog 商品池、listing 与发布任务链清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| catalog actions | pool/product/listing 读取与写入，以 actor/scope 分流 storefront/operator | [FACT][E-AU-131-001] |
+| listing classification | 以 product/SKU/media/price/stock 条件形成 published/needs-attention/review 状态 | [FACT][E-AU-131-002] |
+| publication lifecycle | expected-version single write、durable batch job、retryable failure 与 counter validation | [FACT][E-AU-131-003] |
+| selected operator | 只组合 import read/create 与 listing publication actions | [FACT][E-AU-131-004] |
+
+[FACT][E-AU-131-005] 5 文件、548 行 Catalog listing/publication chain 完成深审；已见操作级行为测试引用，但该测试文件仍待专项深审。
