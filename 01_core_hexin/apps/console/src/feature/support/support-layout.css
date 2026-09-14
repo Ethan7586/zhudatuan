@@ -4,27 +4,27 @@
 .consolelayout[data-route='support'] .workspacebody { width: 100%; max-width: none; margin: 0; padding: 0; }
 
 .supportpage {
-  --support-blue: #0f6fff;
-  --support-blue-soft: #eaf3ff;
-  --support-purple: #6846e8;
-  --support-purple-soft: #efe9ff;
-  --support-danger: #5c4b2a;
-  --support-danger-soft: #fff9ed;
-  --support-success: #17a66a;
-  --support-success-soft: #e5f7ed;
-  --support-warning: #f28a16;
-  --support-warning-soft: #fff0dd;
-  --support-ink: #13213a;
-  --support-copy: #33415d;
-  --support-muted: #7787a3;
-  --support-border: #e3e9f1;
-  --support-panel-shadow: 0 1px 3px rgb(31 55 88 / 4%), 0 8px 24px rgb(31 55 88 / 2%);
+  --support-blue: var(--sw-brand);
+  --support-blue-soft: var(--sw-brand-light);
+  --support-purple: var(--sw-brand-dark);
+  --support-purple-soft: var(--sw-brand-light);
+  --support-danger: var(--sw-danger-strong);
+  --support-danger-soft: var(--sw-danger-surface);
+  --support-success: var(--sw-success-strong);
+  --support-success-soft: var(--sw-success-surface);
+  --support-warning: var(--sw-warning-strong);
+  --support-warning-soft: var(--sw-warning-surface);
+  --support-ink: var(--sw-text);
+  --support-copy: var(--sw-text-secondary);
+  --support-muted: var(--sw-muted);
+  --support-border: var(--sw-border);
+  --support-panel-shadow: var(--sw-shadow-card);
   display: grid;
   height: 100dvh;
   min-width: 0;
   grid-template-rows: 78px 52px minmax(0, 1fr);
   overflow: hidden;
-  background: #f5f7fa;
+  background: var(--sw-background);
   color: var(--support-ink);
 }
 
@@ -54,7 +54,6 @@
 .supportworkspacerefresh:disabled { cursor: wait; opacity: .58; }
 
 @media (min-width: 48.01rem) {
-  .consolelayout[data-sidebar='expanded'] .supportpage { grid-template-rows: 52px 52px minmax(0, 1fr); }
   .consolelayout[data-sidebar='expanded'] .supportworkspaceheader > div:first-child { display: none; }
   .consolelayout[data-sidebar='expanded'] .supportworkspacestatus { display: flex; width: 100%; align-items: center; justify-content: flex-end; gap: 12px; }
   .consolelayout[data-sidebar='expanded'] .supportworkspacerefresh { min-height: 32px; border-left: 1px solid var(--support-border); border-radius: 0; padding-left: 12px; }
@@ -139,13 +138,13 @@
 .supportcontextempty strong { color: var(--support-ink); font-size: 14px; }
 .supportlocalempty span,
 .supportcontextempty p { margin: 0; font-size: 12px; line-height: 1.5; }
-.supportcaseviewport > .supportqueueerror { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; margin: 0; border: 0; border-top: 1px solid #e9dfc9; border-radius: 0; background: #fffdf8; padding: 14px; box-shadow: none; }
-.supportqueueerroricon { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #f7eed8; color: #98762e; font-size: 13px; font-weight: 800; }
+.supportcaseviewport > .supportqueueerror { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; margin: 0; border: 0; border-top: 1px solid color-mix(in srgb, var(--sw-danger) 28%, var(--sw-border)); border-radius: 0; background: var(--sw-danger-surface); padding: 14px; box-shadow: none; }
+.supportqueueerroricon { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--sw-danger) 12%, var(--sw-surface)); color: var(--sw-danger-strong); font-size: 13px; font-weight: 800; }
 .supportqueueerror > div { min-width: 0; }
-.supportqueueerror strong { display: block; color: #3f3522; font-size: 13px; line-height: 1.4; }
-.supportqueueerror p { margin: 3px 0 0; color: #746344; font-size: 11px; line-height: 1.5; }
-.supportqueueerror small { display: block; overflow: hidden; margin-top: 6px; color: #8f8067; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
-.supportcaseviewport > .supportqueueerror > button { grid-column: 2; justify-self: start; min-height: 30px; border: 1px solid #b9d3ff; border-radius: 6px; background: #fff; color: #1765d7; padding: 0 10px; font: inherit; font-size: 11px; font-weight: 700; }
+.supportqueueerror strong { display: block; color: var(--sw-danger-strong); font-size: 13px; line-height: 1.4; }
+.supportqueueerror p { margin: 3px 0 0; color: var(--sw-text-secondary); font-size: 11px; line-height: 1.5; }
+.supportqueueerror small { display: block; overflow: hidden; margin-top: 6px; color: var(--sw-muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.supportcaseviewport > .supportqueueerror > button { grid-column: 2; justify-self: start; min-height: 30px; border: 1px solid color-mix(in srgb, var(--sw-brand) 32%, var(--sw-border)); border-radius: 6px; background: var(--sw-surface); color: var(--sw-brand); padding: 0 10px; font: inherit; font-size: 11px; font-weight: 700; }
 .supportmobileback { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border: 1px solid var(--support-border); border-radius: 6px; color: var(--support-blue); font-size: 22px; text-decoration: none; }
 
 @media (max-width: 1500px) {
