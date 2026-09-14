@@ -275,7 +275,7 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
   const artifact = resolution.manifest.artifact;
   const runtimeManifest = resolution.manifest.runtimeManifest;
-  const remoteAction = candidateOnly ? 'validate-oss-candidate-v3' : 'deploy-oss-direct-v2';
+  const remoteAction = candidateOnly ? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3';
   const remoteIdentityArgs = [
     '--project',
     adapter.project,
@@ -313,10 +313,12 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
         remoteAction,
         ...remoteIdentityArgs,
       ],
-      input: `${JSON.stringify({
-        artifactUrl: downloadClient.signGet(artifact.object, 900),
-        manifestUrl: downloadClient.signGet(runtimeManifest.object, 900),
-      })}\n`,
+      ...(candidateOnly ? {
+        input: `${JSON.stringify({
+          artifactUrl: downloadClient.signGet(artifact.object, 900),
+          manifestUrl: downloadClient.signGet(runtimeManifest.object, 900),
+        })}\n`,
+      } : {}),
       timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
     },
     basicContext(adapter)

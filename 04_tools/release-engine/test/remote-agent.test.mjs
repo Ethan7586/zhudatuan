@@ -249,6 +249,22 @@ test('1.3.2 deploy rejects a sealed candidate when production changed after vali
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
 });
 
+test('1.3.2 deploy rejects a seal bound to a different artifact identity', async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'baseline', '1'.repeat(40));
+  await invokeOss(fixture, baseline, await artifactPayload(baseline));
+  const sealedCandidate = await createArtifact(fixture, 'sealed-identity', '2'.repeat(40));
+  const validated = await invokeOss(fixture, sealedCandidate, await artifactPayload(sealedCandidate), true, 'validate-oss-candidate-v3');
+  await invokeOss(fixture, sealedCandidate, {}, true, 'seal-validated-candidate-v3', {
+    expectedCurrent: validated.result.current.after,
+    expectedCurrentSourceSha: validated.result.current.sourceSha,
+  });
+  const differentArtifact = await createArtifact(fixture, 'different-identity', '3'.repeat(40));
+  const rejected = await captureAgentFailure(() => invokeOss(fixture, differentArtifact, {}, true, 'deploy-sealed-candidate-v3'));
+  assert.equal(rejected.code, 'CANDIDATE_SEAL_IDENTITY_MISMATCH');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), validated.result.current.after);
+});
+
 test('registers a proven legacy current baseline without changing release bytes, pointer, or process', async () => {
   const fixture = await createFixture();
   const sourceSha = '1'.repeat(40);
