@@ -1117,3 +1117,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | challenge realm mutation 与 cross-node intent oracle | [FACT][E-AU-100-005] |
 
 [FACT][E-AU-100-006] 4 文件、594 行 Identity session/ticket 链完成深审；session/login intent 的主要 scope/realm 约束闭合，过期 challenge 失败计数差异见 F-0163/P3。
+
+## 106. AU-101 Identity credential/password 与成员重置清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| member reset | exact owner、version/scope/reauth、全身份释放与历史保留 | [FACT][E-AU-101-001] |
+| password change | current password、assurance、owner rotation、other session revoke | [FACT][E-AU-101-002] |
+| password verify/reset | session-bound reauth；realm-bound OTP reset/transaction rollback | [FACT][E-AU-101-003] |
+| tests | root reset identity release/owner protection oracle | [FACT][E-AU-101-004] |
+
+[FACT][E-AU-101-005] 2 文件、369 行 Identity credential/reset 操作与测试完成深审；未见跨 scope reset、未锁 subject 释放或未撤销旧 session 的重置路径。
