@@ -1793,3 +1793,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | legacy paths | job re-export 有 jobs catalog live consumer（G0）；其余 one-line legacy/root exports 为 G1 | [FACT][E-AU-165-003]；DC-0047 |
 
 [FACT][E-AU-165-004] 23 文件、134 行完成深审；Support 46/46 基线文件均取得审阅状态。
+
+## 171. AU-166 Commerce root catalog 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| RuntimeModule | runtime operations 注册到 Commerce 根模块表 | [FACT][E-AU-166-001] |
+| DomainPolicy test | 高风险跨域领域不变量 regression specification | [FACT][E-AU-166-002] |
+| ModuleCatalog test | 全部 operation 模块归属、依赖和 HTTP contract uniqueness | [FACT][E-AU-166-003] |
+
+[FACT][E-AU-166-004] 3 文件、107 行完成深审；Commerce 根 modules 目录已无暂未审阅文件。

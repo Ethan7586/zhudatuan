@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source and test trace,Commerce root modules,Completed,Runtime registration and test assertions reviewed.
+Formal targeted test,DomainPolicy/ModuleCatalog,Not run,Audit worktree dependency baseline lacks Vitest; dependencies unchanged.

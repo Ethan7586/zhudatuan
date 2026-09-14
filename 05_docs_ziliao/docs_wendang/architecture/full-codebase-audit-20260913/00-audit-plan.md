@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-165 已完成。AU-165 完成 Support public surface、manifest 与 compatibility 审阅。覆盖总账按当前文件级清单重算：深入审阅1,581文件/109,423行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,273文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-166 已完成。AU-166 完成 Commerce 根 RuntimeModule、领域规则与模块目录测试审阅。覆盖总账按当前文件级清单重算：深入审阅1,584文件/109,530行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,270文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1425,3 +1425,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Support public capability/index/manifest test、canonical module 与所有剩余历史转发。
 
 执行结果：manifest 与 test 确认 18 项操作、3 项发布事件、route/job entry 和轻量 public surface；canonical module 经 Commerce app registry 载入。legacy `interface/job/SlaJob` 为 jobs catalog 的真实运行路径，G0；其余 17 个一行 historical paths 在仓内没有 static consumer，但尚未排除发布外和历史兼容责任，归为 DC-0047/G1。Support 46/46 基线文件均取得审阅状态。无 P0。
+
+## 168. AU-166 连续审计点
+
+审阅 Commerce 根 RuntimeModule、跨域 DomainPolicy 与 ModuleCatalog tests。
+
+执行结果：RuntimeModule 被 `COMMERCE_MODULES` 实际注册；DomainPolicy 覆盖 checkout/finance/inventory/order/voucher/risk/support/notification/password 的高风险不变量；ModuleCatalog 覆盖 30 business modules、operation ownership、dependency existence、HTTP method/path uniqueness。无 P0–P3 新问题。

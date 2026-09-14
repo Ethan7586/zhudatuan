@@ -431,3 +431,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Manifest test 断言 public surface 隔离、operation/event inventory 与 route/job declaration。
 - 历史转发没有独立业务分支；G0/G1 依据 caller/compatibility evidence 记录，不将无 direct test 误记为运行缺陷。
+
+## 166. AU-166 Commerce root test 深审
+
+- DomainPolicy 是跨 checkout、finance、inventory、order、risk、support、notification、identity 的精确领域不变量规格。
+- ModuleCatalog 断言 operation 归属、模块依赖与 method/path 唯一性；未运行正式 suite，审计 worktree 依赖基线没有 Vitest。
