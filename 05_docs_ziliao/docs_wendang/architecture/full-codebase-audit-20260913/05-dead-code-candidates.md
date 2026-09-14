@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 23。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 24。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1267,3 +1267,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 464. AU-464 支付 Webhook scope 复核
 
 - 双参数 resolver 已升级而非“无用”；资金回调演进迁移归 GX-0023。累计 G0 60、G1 83、G2 5、G3 0、GX 23；未删除任何文件。
+
+## GX-0024｜跨域 member audience 契约对齐
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821058000_align_member_operations.sql`。 |
+| 直接证据 | 对 17 个 cart/checkout/order/benefit/voucher/invoice/support/payment/catalog/pricing/inventory operation 设置 `audience='member'`，并断言精确数量与运行契约 checksum。 |
+| 运行边界 | 后续 `access.resource_scope` 明确用 capability audience 决定成员个人 scope；所列操作均由生产模块注册。 |
+| 可否删除 | 否；承担前后端/鉴权/路由三处共用的成员与运营受众契约责任。 |
+| 二次复核 | 是；须逐操作验证身份、scope、permission、前端调用方、错误码与 operator 边界。 |
+
+## 465. AU-465 成员操作受众复核
+
+- 17 个跨域业务入口的成员受众由当前 capability contract 决定；归 GX-0024。累计 G0 60、G1 83、G2 5、G3 0、GX 24；未删除任何文件。
