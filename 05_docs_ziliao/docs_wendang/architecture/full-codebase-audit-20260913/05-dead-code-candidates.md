@@ -1610,3 +1610,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1 不强制；升级 G2/G3 前须查外部质量门并做反事实命名违例检查。 |
 
 - production naming policy 归 DC-0070。累计 G0 60、G1 85、G2 5、G3 0、GX 40；未删除任何文件。
+
+## DC-0071｜Compatibility 旧用户订单读模型
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `02_platform_pingtai/database/storefront-compatibility/supabase/migrations/20260724101500_order_read_model.sql` 中的 `api_order_views` |
+| 疑似原因 | [FACT][E-AU-570-001] 固定基线内未发现应用调用；Commerce API 订单和管理读取已调用 later `api_order_views_scoped`。 |
+| 保留证据 | 函数仍授予 service_role，返回用户订单/payment allocation/item snapshot；Compatibility migration replay、仓外服务和直连报表均未排除。 |
+| 可否删除 | 否；文件本身有历史 migration 职责，函数未满足公共 API、外部调用、契约兼容、可观察行为和独立复核等 G3 条件。 |
+| 二次复核 | G1 不强制；任何 cleanup 前必须读取真实 DB dependency/privilege、仓外 consumers，并对比旧/新 response schema。 |
+
+- Compatibility 旧订单读模型归 DC-0071。累计 G0 60、G1 86、G2 5、G3 0、GX 40；未删除任何文件。
