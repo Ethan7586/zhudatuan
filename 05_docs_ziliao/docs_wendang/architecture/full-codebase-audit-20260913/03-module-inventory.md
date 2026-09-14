@@ -2402,3 +2402,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime consumer | Executor按runtime failure threshold/recovery构造并包裹retry执行链 | [FACT][E-AU-227-002] |
 
 [FACT][E-AU-227-003] 1 文件、1 行完成深审；唯一Commerce consumer明确，为G0 compatibility adapter。
+
+## 233. AU-228 Parallel contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| bounded parallel map | 校验并发度，以固定worker和共享cursor并发映射输入，并按输入索引写回结果 | [FACT][E-AU-228-001] |
+| voucher consumers | 券码签发与导入的KMS加密阶段均以16并发使用该原语 | [FACT][E-AU-228-002] |
+| failure contract | operation首次拒绝使调用方失败，但接口不传入AbortSignal，其他已启动operation可继续完成 | [FACT][E-AU-228-003] |
+
+[FACT][E-AU-228-004] 1 文件、13 行完成深审；缺少direct behavior fixture，见F-0217/P3。

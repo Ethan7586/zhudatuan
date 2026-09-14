@@ -4060,6 +4060,20 @@
 | 验证/回滚 | 断言解析records及每个稳定错误码；回滚为revert测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0217｜并行映射原语没有直接并发、顺序与失败契约测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation Parallel；P3；高 |
+| 类型 | 测试覆盖缺口、并发任务失败传播 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/performance/Parallel.ts:1-13` |
+| 当前/预期 | 实现拒绝非法并发度、固定最多`min(concurrency, values.length)`个worker、按索引保持结果顺序。任一operation拒绝即使调用方失败，但运行中的operation没有取消输入。预期这些行为由direct fixture固定。 |
+| 直接证据 | 未找到`mapParallel`的测试引用或performance fixture。生产仅在`VoucherJobProcessor.issue`与`PgVoucherImport.stage`的KMS加密阶段以并发度16调用。 |
+| 调用链/影响 | Voucher issue/import → mapParallel → KMS encrypt。实现回归可使加密任务串行化、超出上限、结果错位或在首次失败后继续不受调用方控制的在途KMS操作；未核验线上影响。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试批，覆盖非法/空输入、最大并发、输入顺序、同步/异步失败和失败后已启动operation的明确行为；若产品需取消语义，另立设计批而非把它隐式加入通用函数。 |
+| 验证/回滚 | 用controlled deferred operation断言峰值并发、结果顺序、拒绝传播和失败后的完成数；回滚为revert该独立批。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
