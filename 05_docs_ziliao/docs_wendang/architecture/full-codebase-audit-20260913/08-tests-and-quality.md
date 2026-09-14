@@ -376,3 +376,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 唯一 Partner test 只断言 manifest operations/public identity。
 - PartnerOperations 和 SupplierRelationshipPort 没有 direct behavior fixture，见 F-0182/P2。
+
+## 154. AU-154 Audit compatibility 与覆盖闭合
+
+- legacy export 无独立业务分支；manifest test 验证 public export isolation 与 audit HTTP/job declarations。
+- Audit 25/25 文件均取得审阅状态。

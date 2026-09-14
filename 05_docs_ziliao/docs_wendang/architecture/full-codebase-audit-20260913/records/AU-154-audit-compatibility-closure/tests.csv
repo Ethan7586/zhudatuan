@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source-level export and consumer review,Audit legacy/root/public paths with main/jobs consumers,Completed,All forwarding targets and runtime consumers traced.
+Targeted execution,Compatibility-only paths,Not run,No independent behavior beyond reviewed canonical targets.

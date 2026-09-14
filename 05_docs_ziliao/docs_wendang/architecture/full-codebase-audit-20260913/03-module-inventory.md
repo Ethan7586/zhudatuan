@@ -1676,3 +1676,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests/public | manifest/public surface only | [FACT][E-AU-153-003]；F-0182/P2 |
 
 [FACT][E-AU-153-004] 7 文件、193 行完成深审；Partner 7/7 基线文件均取得审阅状态。
+
+## 159. AU-154 Audit compatibility 与覆盖闭合清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| legacy exports | application/domain/infrastructure/interface old paths 转发 canonical Audit implementation | [FACT][E-AU-154-001]；G0 |
+| stable surface | root module、public index、manifest/manifest test | [FACT][E-AU-154-002]；真实 Commerce main/jobs consumer |
+
+[FACT][E-AU-154-003] 13 文件、67 行完成深审；Audit 25/25 文件均取得审阅状态。
