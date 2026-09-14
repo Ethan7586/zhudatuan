@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 20。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 21。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1222,3 +1222,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 461. AU-461 Membership 所有权迁移复核
 
 - identity、member 和 access 的当前调用链以 `access.membership` 为标准；核心授权迁移归 GX-0020。累计 G0 60、G1 83、G2 5、G3 0、GX 20；未删除任何文件。
+
+## GX-0021｜微信支付应用场景隔离
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821055000_isolate_wechat_payment_applications.sql`。 |
+| 直接证据 | 为 `payment.attempt` 增加 miniapp/jsapi 场景和 AppID SHA-256；未终态尝试必须同时拥有二者，并为 application+intent+时间建立索引。 |
+| 运行边界 | Payment create 写入 scene/application hash；Webhook 按观测应用核验；支付查询/退款任务读取同一尝试绑定。 |
+| 可否删除 | 否；承担资金渠道路由、应用隔离、回调归属和审计责任。 |
+| 二次复核 | 是；须验证 Miniapp/JSAPI 分流、Webhook AppID 不匹配、重试、历史终态、渠道凭据和回滚恢复。 |
+
+## 462. AU-462 微信支付应用隔离复核
+
+- 支付创建、Webhook 和异步任务均依赖 scene/AppID 哈希绑定；归 GX-0021。累计 G0 60、G1 83、G2 5、G3 0、GX 21；未删除任何文件。
