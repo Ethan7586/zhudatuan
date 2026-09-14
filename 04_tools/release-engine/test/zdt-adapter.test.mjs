@@ -137,6 +137,7 @@ test('1.3.2 accepts only source commits in the exact zdt-next history', () => {
 test('legacy baseline registration is isolated from build, deploy, restart and pointer switching', () => {
   assert.match(baselineRegistrationWorkflow, /^name: Register Legacy Production Baseline/m);
   assert.match(baselineRegistrationWorkflow, /register-current-baseline/);
+  assert.match(baselineRegistrationWorkflow, /options:[\s\S]*?- database-migration/);
   assert.match(baselineRegistrationWorkflow, /legacy_artifact_sha256:[\s\S]*?required: true/);
   assert.match(baselineRegistrationWorkflow, /legacy_run_id:[\s\S]*?required: true/);
   assert.match(baselineRegistrationWorkflow, /CONTROL_REF: \$\{\{ github\.ref \}\}/);

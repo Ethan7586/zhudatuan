@@ -205,7 +205,8 @@ export function assertLegacyDeploymentEvidence(metadata, log, expected) {
   const releaseId = `${expected.sourceSha.slice(0, 12)}-${expected.artifactSha256.slice(0, 16)}`;
   invariant(expected.expectedCurrent.endsWith(`/releases/${releaseId}`), 'CURRENT_BASELINE_EXPECTED_PATH_INVALID', 'Expected current path does not encode the exact legacy source and artifact');
   invariant(log.includes(`SOURCE_SHA=${expected.sourceSha}`), 'CURRENT_BASELINE_LEGACY_SOURCE_RECEIPT_MISSING', 'Legacy deployment log does not contain the exact source receipt');
-  invariant(log.includes(`CURRENT_${expected.target}=${expected.expectedCurrent}`), 'CURRENT_BASELINE_LEGACY_TARGET_RECEIPT_MISSING', 'Legacy deployment log does not contain the exact target pointer receipt');
+  const legacyReceiptTarget = expected.target === 'database-migration' ? 'DATABASE_MIGRATIONS' : expected.target;
+  invariant(log.includes(`CURRENT_${legacyReceiptTarget}=${expected.expectedCurrent}`), 'CURRENT_BASELINE_LEGACY_TARGET_RECEIPT_MISSING', 'Legacy deployment log does not contain the exact target pointer receipt');
   invariant(log.includes(`/${expected.artifactSha256}.tar.gz`), 'CURRENT_BASELINE_LEGACY_ARTIFACT_RECEIPT_MISSING', 'Legacy deployment log does not contain the exact artifact object');
   return {
     workflowPath: metadata.path,

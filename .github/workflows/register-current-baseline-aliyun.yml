@@ -29,6 +29,7 @@ on:
         required: true
         type: choice
         options:
+          - database-migration
           - catalog-media
           - storefront
           - auth-web
