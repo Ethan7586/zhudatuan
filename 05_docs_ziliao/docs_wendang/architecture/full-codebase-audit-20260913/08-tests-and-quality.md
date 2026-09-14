@@ -328,3 +328,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Voucher 兼容出口没有独立业务分支；根 wrapper 的默认 FinancePort 注入仍被真实 checkout/order/payment/verification consumer 使用。
 - 不将兼容转发误判为无用；全模块 47/47 文件已获得审阅状态。
+
+## 145. AU-145 Mall Provisioning、模板克隆与域名购买深审
+
+- CreateMall、HostedNodeProvisioningPort、template clone、domain policy/lifecycle、manifest 都有直接测试；CreateMall 覆盖 mall graph 顺序、stable IDs 与 conflict-before-write。
+- `provisioningOperations` 本身没有 direct invoke；entrypoint test 仅断言 routes，见 F-0178/P2。
+- 本 AU 未运行 Vitest；审计 worktree 依赖缺口保持未修复。

@@ -1581,3 +1581,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | public entry | 导出稳定 contract/policy/manifest，不泄露实现/worker | [FACT][E-AU-144-004]；G0 |
 
 [FACT][E-AU-144-005] 14 文件、50 行完成深审；Voucher 47/47 文件已获得审阅状态，兼容路径保留不删。
+
+## 150. AU-145 Mall Provisioning、模板克隆与域名购买清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| public DB ports | hosted-node 与 mall owner 的 canonical provisioning function boundary | [FACT][E-AU-145-001] |
+| mall application | plan/preflight/organization→catalog→experience→owner write chain | [FACT][E-AU-145-002] |
+| clone/domain policy | idempotent template clone 与 registrar-only domain purchase state/approval policy | [FACT][E-AU-145-003][E-AU-145-004] |
+| registration/tests | full/dedicated API modules；HTTP action test gap | [FACT][E-AU-145-005][E-AU-145-006]；F-0178/P2 |
+
+[FACT][E-AU-145-007] 18 文件、1,036 行完成深审；Provisioning transaction/data ownership 已可定位，HTTP composition 缺少行为规格。

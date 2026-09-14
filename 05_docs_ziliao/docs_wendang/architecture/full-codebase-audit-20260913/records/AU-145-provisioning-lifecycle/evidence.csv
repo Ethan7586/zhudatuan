@@ -1,0 +1,7 @@
+id,file,location,kind,observation
+E-AU-145-001,01_public_gongkai/HostedNodeProvisioningPort.ts;MallOwnerProvisioningPort.ts,1-98,public provisioning ports,Validates/forwards canonical request to security-controlled database functions and maps provisioned mall owner/read result.
+E-AU-145-002,03_application_yingyong/CreateMall.ts;ProvisioningOperations.ts,1-127,mall API chain,Derives stable identities, preflights conflicts, writes organization/catalog/experience/owner in sequence, and maps create/read HTTP results.
+E-AU-145-003,03_application_yingyong/CloneCompanyTemplate.ts;CompanyTemplateCloneWorkflow.ts,1-95,template clone,Maps idempotent clone request/results at a narrow internal database-function boundary.
+E-AU-145-004,02_domain_yewu/model/DomainPurchaseLifecycle.ts;policy/DomainPurchasePolicy.ts,1-150,domain purchase,Enforces registrar-only state transitions and canonical domain/quote/approval/funding/assurance checks.
+E-AU-145-005,05_interface_jieru/*.ts;module.manifest.ts,1-45,registration,Full app module and dedicated MallProvisioning selected module expose two declared provisioning actions.
+E-AU-145-006,06_tests_ceshi/**;MallProvisioningApiEntrypoint.test.ts,test coverage,Engine/port/policy/lifecycle tests exist; no test invokes provisioningOperations create/read action.

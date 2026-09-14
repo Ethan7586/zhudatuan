@@ -3516,6 +3516,20 @@
 | 验证/回滚 | 从最新主线建立独立测试批次，按上述最小 transaction/PGlite matrix 验证成功、并发/重复、failure/retry/replay；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2，后续 Voucher async 专项复查。 |
 
+## F-0178｜Mall Provisioning HTTP action 没有行为级测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | provisioning / mall create-read HTTP composition；P2；高 |
+| 类型 | 测试覆盖缺口、独立 API 权限/事务响应正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/provisioning/03_application_yingyong/ProvisioningOperations.ts:13-45`；`06_tests_ceshi/` |
+| 当前/预期 | create validates code/public slug, derives plan, preflights conflict, then writes mall graph; read returns 404 when port has no mall. Existing CreateMall tests cover application engine and route test covers operation registration. Expected is direct operation fixture for access context, invalid body, parent/code/slug conflict status, successful write response, read scope and absent result. |
+| 直接证据 | `provisioningOperations` 在 `*.test.ts` 中零 direct invoke；operation ids 只命中 manifest/entrypoint route assertions。 |
+| 调用链/影响 | MallProvisioningApiMain → MallProvisioningModule → provisioningOperations → CreateMall/MallOwnerProvisioningPort → organization/catalog/experience/access writes。API validation/status/access integration can regress without current local suite detection. |
+| 根因 | Tests focus on reusable engine, public ports and policy rather than ModuleOperations HTTP composition. |
+| 验证/回滚 | From latest mainline create a separate test-only branch with fake transaction/context covering the stated success/reject/read paths; rollback by reverting that test batch. |
+| 独立复核 | 否；P2，后续 Provisioning API 专项复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
