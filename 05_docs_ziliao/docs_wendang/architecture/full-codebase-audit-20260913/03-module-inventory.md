@@ -1734,3 +1734,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | public/test | public index、无 HTTP/job 的 manifest 与 resolver direct tests | [FACT][E-AU-159-003] |
 
 [FACT][E-AU-159-004] 5 文件、145 行完成深审；Mall 5/5 基线文件均取得审阅状态。
+
+## 165. AU-160 Verification core 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| challenge | random nonce hash、60 秒 session、trusted-device proof、one-time consume/attempt history | [FACT][E-AU-160-001] |
+| voucher bridge | verified voucher challenge 经 Voucher/Finance Port 兑换并写 outbox | [FACT][E-AU-160-002] |
+| public/module/test | module registration、capability/contract public surface；现有 test 仅 manifest | [FACT][E-AU-160-003]；F-0184/P2 |
+
+[FACT][E-AU-160-004] 6 文件、189 行完成深审；Verification 6/6 基线文件均取得审阅状态。

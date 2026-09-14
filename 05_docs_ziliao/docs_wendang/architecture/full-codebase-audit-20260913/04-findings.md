@@ -3598,6 +3598,19 @@
 | 建议方向 | 从修复时最新 `zdt-next` 独立建立 worker test batch；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2。 |
 
+## F-0184｜Verification 核心 challenge/device 行为没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | verification / challenge-device；P2；高 |
+| 类型 | 测试覆盖缺口、nonce 幂等与兑换边界正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/verification/03_application_yingyong/VerificationOperations.ts`，现有 `06_tests_ceshi/module.manifest.test.ts` |
+| 当前/预期 | 实现包含 nonce hash/expiry、trusted-device scope、原子 consume、attempt log、voucher redeem/outbox、device version update；现有测试只断言 manifest 操作列表。预期应有 operation-level 成功、过期、replay、错误 device/scope、voucher conflict 与 version conflict fixture。 |
+| 直接证据 | `verification/06_tests_ceshi` 只有 `module.manifest.test.ts`；未找到 `verificationOperations` 的 direct action 调用。 |
+| 调用链/影响 | Commerce app modules → VerificationModule → verificationOperations → verification nonce/session/device、Voucher/Finance Port、runtime.outbox。对重复使用或范围错误的回归只能在集成环境发现。 |
+| 建议方向 | 从修复时最新 `zdt-next` 独立建立 verification test batch；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

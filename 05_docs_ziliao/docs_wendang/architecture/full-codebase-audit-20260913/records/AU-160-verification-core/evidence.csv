@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-160-001,03_application_yingyong/VerificationOperations.ts,15-113,challenge/device,Issue stores a hash with 60-second expiry; verify atomically consumes once after trusted-device/scope checks and writes attempt history.
+E-AU-160-002,03_application_yingyong/VerificationOperations.ts,115-129,voucher bridge,Verified voucher redemption uses Voucher/Finance Port then emits voucher.redeemed outbox event.
+E-AU-160-003,05_interface_jieru/VerificationModule.ts;module.manifest.ts;index.ts;06_tests_ceshi/module.manifest.test.ts,1-4;1-25;1-4;1-21,entry/test,Commerce module registry loads VerificationModule; public contract is declared but only manifest test exists.

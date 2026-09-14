@@ -406,3 +406,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct unit tests 覆盖 mall-scope precedence、unique direct grant、ambiguous rejection、path non-inference 和 explicit job/event restore。
 - 未运行正式 suite：审计 worktree 依赖基线没有 Vitest；本批无源代码变更。
+
+## 160. AU-160 Verification core 深审
+
+- 唯一测试只验证 manifest capabilities/operation list；没有 direct action fixture。
+- nonce issue/consume/replay、trusted-device scope、voucher redeem/outbox 和 device version conflict 缺口见 F-0184/P2。

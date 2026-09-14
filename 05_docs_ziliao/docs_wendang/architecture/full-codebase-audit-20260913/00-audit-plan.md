@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-159 已完成。AU-159 完成 Mall context、公开入口与测试审阅。覆盖总账按当前文件级清单重算：深入审阅1,536文件/108,533行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,318文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-160 已完成。AU-160 完成 Verification challenge/device 操作与入口审阅。覆盖总账按当前文件级清单重算：深入审阅1,542文件/108,722行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,312文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1389,3 +1389,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 MallContext resolver、public index/manifest 与两项 direct test。
 
 执行结果：AccessPipeline 在 capability/permission/scope 判定后才投影 mall context；resolver 优先真实 mall scope，否则仅接受唯一 direct mall grant，拒绝从 Scope.path 推断或多 mall 模糊选择。tests 覆盖 immutable DTO、请求 preferred mall 不覆盖现有 mall scope、ambiguity rejection 与 job/event restore。无 P0–P3 新问题。
+
+## 162. AU-160 连续审计点
+
+审阅 Verification sessions/challenge/device 操作、module/manifest/index 与唯一 manifest test。
+
+执行结果：challenge 生成随机 32-byte nonce，只持久化 hash 并给 60 秒 expiry；verify 以 `consumed_at is null` 原子消费 nonce、记录 attempt，voucher redeem 再写 outbox。trusted device 查询以 scope/hash 约束；device write 以 scope/version 条件更新。新增 F-0184/P2：唯一 test 只验证 manifest，关键 nonce/replay/voucher/device 行为没有 direct test。无 P0。
