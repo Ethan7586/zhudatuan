@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-080 已完成。AU-080 完成 Finance 发票端口与运行模块装配审阅。覆盖总账按当前文件级清单重算：深入审阅978文件/83,128行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,870文件。F-0158/P1 已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-081 已完成。AU-081 完成 Pricing 运行入口、报价与策略链路审阅。覆盖总账按当前文件级清单重算：深入审阅988文件/83,299行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,860文件。F-0158/P1 已双轮确认；F-0159/P1 候选待 AU-082 独立复核；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -915,3 +915,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Finance InvoiceIssuer port、完整 FinanceModule、Identity selected module 及其入口调用链。
 
 执行结果：签发 typed port、完整 Commerce module 与 Identity restricted read module 的实际入口均已追踪。未发现 P0–P3 新问题；Vitest 未运行。
+
+## 83. AU-081 连续审计点
+
+审阅 Pricing 模块入口、HTTP operations、价格与报价持久化端口、Catalog/Checkout/Runtime 调用链、数据库约束和 manifest 测试。
+
+执行结果：主 Commerce registry、Catalog 写入、Checkout quote 保存和 cleanup job 均已追踪；公开 offers 读取、规则 create/publish 与 SDK 契约均已对照。新增 F-0159/P1 候选：已发布 pricing rule 在 Checkout QuoteReader 中仅写入 evidence，未参与任何价格/折扣计算；立即进入 AU-082 独立复核。未发现 P0；Vitest 未运行。

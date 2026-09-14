@@ -1,0 +1,6 @@
+"编号","位置","证据","结论"
+"E-AU-081-001","src/app/modules.ts:26,36-44；pricing/05_interface_jieru/PricingModule.ts:1-4","PricingModule 在全量 Commerce BUSINESS_MODULES 注册，依赖 catalog，并绑定 pricingOperations。","Pricing 三个 contract 是实际主应用 HTTP 入口。"
+"E-AU-081-002","pricing/03_application_yingyong/PricingOperations.ts:11-38；contract definitions/operations.yml:1131-1170","offers/read、rules/create、rules/publish 的 operation id、HTTP path、audience 与 SDK 声明闭合。","接口不是孤立文件；rule 管理可被 operator 正式调用。"
+"E-AU-081-003","pricing/05_interface_jieru/PricingPort.ts:23-59；catalog/CatalogProductImport.ts:61-63；CatalogSourceProjection.ts:75-81；checkout/CheckoutOperations.ts:18-42；runtime/RuntimeJobs.ts:16-25","Catalog 写价格，Checkout/Purchase 保存 quote，cleanup job 清除未引用过期 quote。","PricingPort 有真实写入/数据保留职责，G0。"
+"E-AU-081-004","checkout/.../QuoteReader.ts:50-81,158-181,223-225","已发布 rule 与 cart 数据并行读取，随后仅写入 evidence.pricing；报价行从 raw price 生成，折扣只由 promotion 计算。","F-0159/P1 候选：规则管理与报价结果断链。"
+"E-AU-081-005","database/migrations/20260821017000_create_catalog_pricing.sql:171-214；20260821039000_checkout_atomic_order.sql:3-7","pricebook/price/rule/quote 的唯一性、金额检查、RLS 和 quote 审计字段由迁移定义。","Pricing 数据对象与 quote 持久化字段一致。"

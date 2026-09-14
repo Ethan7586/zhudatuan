@@ -3250,6 +3250,20 @@
 | 验证/回滚 | AU-077 已独立重查 worker startup role、migration ledger/后续 grant 覆盖、job 调用链和 test skip，三者一致确认。修复必须从最新主线独立小分支改为受控函数生命周期并以 shopjob/PGlite 验证。回滚为撤回该独立修复批次。 |
 | 独立复核 | 是；AU-077 已完成，结论一致。 |
 
+## F-0159｜已发布 Pricing Rule 未参与报价金额计算
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | pricing / checkout；**P1 候选**；高 |
+| 类型 | 核心业务规则与报价结果断链 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/pricing/03_application_yingyong/PricingOperations.ts:23-36`；`01_core_hexin/services/commerce/src/modules/checkout_jiesuan/03_application_yingyong/queries_duqu/QuoteReader.ts:50-81,158-181,223-225` |
+| 当前/预期 | `pricing.rules.create/publish` 可将规则置为 published；QuoteReader 查询这些规则并把整行放进 `evidence.pricing`，但行价仍只取 `pricing.price.amount_minor`，`discountMinor` 只由 marketing campaign 分配，整个模块不存在 price rule 的 condition/effect 求值或金额写回。预期已发布的定价规则应按其公开的业务契约影响报价，或者相应管理接口不应承诺该能力。 |
+| 直接证据 | QuoteReader 的并行读取包含 `priceRules`，随后仅在第 74 行放入 evidence；第 60-64 行的 subtotal/payable 仅由 raw line price 与 promotion 计算；`rg` 覆盖 Commerce 源码的 `pricing.rule` 命中除该读取、写入/发布与声明外无任何规则求值实现。 |
+| 调用链/影响 | Operator `POST /api/v1/pricing/rules` → `PUT .../publication` → `pricing.rule`；Member/Checkout quote → QuoteReader 读取 published rule → quote amount 保持不变。运营人员发布加价/折扣规则后，会员结算金额不会随规则变化，可能形成商品定价与后台承诺不一致。 |
+| 根因 | 规则的持久化、发布和 evidence 快照先于实际规则解释器/价格调整算法落地，接口、权限与数据状态已可运行但业务效果未闭合。 |
+| 验证/回滚 | AU-082 必须独立复核 rule 创建→发布→报价的实际金额差异、`kind/condition/effect` 的所有消费者、运行模块入口及可能的外部解释器；不得在审计分支修复。若确认，后续从当时最新主线单独小分支实现或收窄契约，并用多规则/优先级/幂等报价行为测试验证；回滚为撤回该小批次。 |
+| 独立复核 | 是；待 AU-082。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

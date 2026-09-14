@@ -898,3 +898,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | selected module | Identity operator read subset | [FACT][E-AU-080-003] |
 
 [FACT][E-AU-080-004] 3 文件、33 行 Finance port/module 人工源码完成深审。
+
+## 86. AU-081 Pricing 运行入口、报价与策略模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| HTTP operations | offers 查询、pricing rule create/publish | [FACT][E-AU-081-001] |
+| pricing port | provider/catalog pricebook、quote 持久化与过期清理 | [FACT][E-AU-081-002] |
+| 运行调用链 | Catalog 导入/投影写价，Checkout/Purchase 保存 quote，Runtime cleanup | [FACT][E-AU-081-003] |
+| public/manifest | capability、operation、依赖与 HTTP 入口声明 | [FACT][E-AU-081-004] |
+| tests | 仅 manifest 静态声明 | F-0159/P1 候选的行为测试缺口 |
+
+[FACT][E-AU-081-005] 10 文件、171 行 Pricing 人工源码和测试完成深审；规则已被 QuoteReader 读取，却只进入 evidence，未被定价计算消费，记录为 F-0159/P1 候选并转 AU-082 独立复核。
