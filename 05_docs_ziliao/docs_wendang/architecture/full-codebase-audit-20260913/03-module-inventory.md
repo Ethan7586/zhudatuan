@@ -603,3 +603,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | package/配置 | 依赖、tsconfig 与脚本边界 | [FACT][E-AU-001-007] |
 
 [FACT][E-AU-038-001] 9文件45行人工关键文件/全部深度审阅；与 `book` provider 实例链路已核验映射。
+
+## 45. AU-039 Movie Provider 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| manifest | capability/permissions/eventSubscriptions 与 provider definition | F-0130/F-0131 |
+| Provider/Mapper | operations 与 provider port 映射（并行自 `@shop/providercore` 能力） | F-0130/F-0132 |
+| ErrorMap/Webhook | 错误码注入与 webhook 继承 | DC-0040 |
+| tests | factory 与签名约束最小验证 | F-0132 |
+| package/配置 | 依赖边界与脚本 | [FACT][E-AU-001-007] |
+
+[FACT][E-AU-039-001] 9文件79行人工关键文件/全部深度审阅；与 providerLoader + directcharge/jobs/consumer 映射已核验。
