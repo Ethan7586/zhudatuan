@@ -2490,3 +2490,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime consumer | HttpApp在顶层catch通过mapper产生稳定HTTP JSON body | [FACT][E-AU-236-003] |
 
 [FACT][E-AU-236-004] 2 文件、49 行完成深审；fixture只覆盖409和unknown 500，见F-0221/P2。
+
+## 242. AU-237 HttpApp gates fixture 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| declared observation | 仅contract声明gate的operation进入GateEngine观测 | [FACT][E-AU-237-001] |
+| non-blocking behavior | 无plugin或plugin错误均记录决策但不替代/改变业务handler结果 | [FACT][E-AU-237-002] |
+| catalog closure | fixture以OperationCatalog确认当前唯一gate declaration | [FACT][E-AU-237-003] |
+
+[FACT][E-AU-237-004] 1 测试文件、106 行完成深审；覆盖gate选择、正常、缺失及错误路径，无P0–P3新问题。

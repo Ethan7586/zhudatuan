@@ -774,3 +774,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 现有direct fixture只锁定409与unknown 500；DomainError、冒号、non-Error与其他status族未覆盖。
 - 见F-0221/P2。审计工作树未运行Vitest。
+
+## 237. AU-237 HttpApp gates fixture 深审
+
+- 覆盖declared gate、无声明旁路、无plugin与plugin failure的观测且不改变handler响应；与catalog当前唯一gate declaration闭合。
+- 无P0–P3新问题。审计工作树未运行Vitest。
