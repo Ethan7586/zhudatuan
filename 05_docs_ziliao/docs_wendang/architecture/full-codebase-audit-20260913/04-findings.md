@@ -3850,6 +3850,20 @@
 | 验证/回滚 | 断言两种缺失配置和transport throw产生稳定错误code/message，不泄露provider detail；回滚为revert测试提交。 |
 | 独立复核 | 否；P3。 |
 
+## F-0202｜测试资金模拟路由没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / payment simulation；P2；高 |
+| 类型 | 测试覆盖缺口、测试资金状态/权限/环境隔离正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/paymentSimulationRoutes.ts:12-117` |
+| 当前/预期 | routes在router和handler双重环境模式下才可调用；recharge/benefit/mixed payment均含permission、scope、idempotency/hash/evidence。未找到同层fixture。预期验证production 404、AUTH_MODE mismatch、target/permission/resource拒绝及每个成功RPC body。 |
+| 直接证据 | `src/api`未找到`paymentSimulationRoutes.test.ts`或`handleSimulation*`调用；现有`validation.test.ts`仅测试本地parser。 |
+| 调用链/影响 | API router → simulation router → simulation routes → test-only wallet/benefit/payment RPC。测试环境的资金状态、权限隔离或幂等参数回归无法被当前suite直接捕获；生产路径由two-layer 404 gate排除。 |
+| 建议方向 | 从修复时最新`zdt-next`建立simulation route test批；回滚为撤回测试提交。 |
+| 验证/回滚 | fixture覆盖环境/target/permission/scope/idempotency/input与四类success RPC body；回滚为revert测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

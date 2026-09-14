@@ -569,3 +569,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖每个导出parser的正常输入和主要拒绝分支：重复SKU、金额、类型/渠道、手机号与voucher对应关系。
 - Parser只做本地输入边界；数据库资源scope、余额和状态语义由调用route/RPC专项审计承接。无P0–P3新问题；审计工作树未运行Vitest。
+
+## 196. AU-196 Payment simulation 深审
+
+- 未找到payment simulation direct route fixture；local validation tests不能证明环境、target、permission、server order scope或write RPC参数。
+- Production由simulation router和handler双重gate返回404；测试资金完整行为缺口见F-0202/P2。审计工作树未运行Vitest。

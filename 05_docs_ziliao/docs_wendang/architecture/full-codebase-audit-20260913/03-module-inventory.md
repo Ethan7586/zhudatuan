@@ -2106,3 +2106,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | simulation | mock channel、充值/福利上限与voucher对应金额要求 | [FACT][E-AU-195-003] |
 
 [FACT][E-AU-195-004] 2 文件、314 行完成深审；order routes和payment simulation route使用这些helper，所有export均有direct normal/rejection fixtures。
+
+## 201. AU-196 Payment simulation 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| simulation gateway | 仅development/test路由进入，并与handler AUTH_MODE开关双重一致 | [FACT][E-AU-196-001] |
+| wallet/recharge | storefront target、本人scope、order.create、idempotency/hash/evidence | [FACT][E-AU-196-002] |
+| benefits/mixed payment | admin finance reconcile授权或storefront server order resource scope，均含幂等/actor证据 | [FACT][E-AU-196-003] |
+
+[FACT][E-AU-196-004] 1 文件、117 行完成深审；simulation router真实注册所有路径且生产明确404，direct route tests缺失见F-0202/P2。

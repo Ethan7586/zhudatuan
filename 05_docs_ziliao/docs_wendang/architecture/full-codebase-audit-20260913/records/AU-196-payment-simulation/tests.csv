@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/paymentSimulationRoutes.ts,no direct route fixture; validation.test.ts covers only local parser input,not run: audit worktree has no Vitest dependencies

@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-196-001,src/api/routes/simulationRouter.ts,8-25,runtime gate,Simulation paths are routed only in development/test and are target-gated before handler invocation.
+E-AU-196-002,src/api/paymentSimulationRoutes.ts,12-42,environment and wallet,Handler mode must match test/development before current-user wallet/recharge can proceed.
+E-AU-196-003,src/api/paymentSimulationRoutes.ts,34-85,writes,Recharge and benefit issue require distinct capability idempotency request hash and actor evidence.
+E-AU-196-004,src/api/paymentSimulationRoutes.ts,87-117,mixed payment,Order payment resolves server resource scope before scoped idempotent payment RPC.
+E-AU-196-005,src/api,tests,No direct payment simulation route fixture was found.
