@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-203 已完成。AU-203 完成 Commerce extension registry test audit。覆盖总账按当前文件级清单重算：深入审阅1,682文件/119,729行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,172文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-204 已完成。AU-204 完成 Commerce Catalog Operator API runtime audit。覆盖总账按当前文件级清单重算：深入审阅1,684文件/119,960行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,170文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1653,3 +1653,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Commerce ExtensionRegistry canary/activation test。
 
 执行结果：registry生产实现已在AU-041深审并支撑已有P1 capability失配结论。direct test证明不健康canary被discard后旧实例保留、健康candidate激活后原实例停止。签名、freeze/require、disable、healthAll和stop分支由其它运行/专项审计承接；无P0–P3新问题。
+
+## 206. AU-204 连续审计点
+
+审阅 Commerce Catalog Operator API runtime 与direct tests。
+
+执行结果：runtime加载固定L1 node manifest、限定console origin，读取workload secret建立api pool与object store，并在启动前核对database role/schema/contract/relations/functions/writes；entry/ready均实际消费。tests覆盖manifest origin/node context和database role mismatch；没有secrets/object probe/完整runtime close的direct fixture，形成F-0205/P2；无P0/P1新问题。

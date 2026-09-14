@@ -2181,3 +2181,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | activation | 健康candidate原子替换active instance，替换后停止previous provider | [FACT][E-AU-203-002] |
 
 [FACT][E-AU-203-003] 1 文件、24 行完成深审；ExtensionRegistry source已在AU-041审阅，既有F-0127/F-0128保持不变。
+
+## 209. AU-204 Catalog Operator API runtime 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| node/surface | 固定operating_mall L1 manifest、catalog feature和console/api surface、仅匹配console origin | [FACT][E-AU-204-001] |
+| startup dependencies | workload secret→API pool，object readiness probe，access pipeline、audit/risk/container bindings | [FACT][E-AU-204-002] |
+| compatibility | DB角色、可写、schema/contract、relation/function及catalog write privilege预检 | [FACT][E-AU-204-003] |
+
+[FACT][E-AU-204-004] 2 文件、231 行完成深审；CatalogOperator API和Ready entry直接消费此runtime，完整依赖/teardown测试缺口见F-0205/P2。

@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-204-001,src/bootstrap/CatalogOperatorApiRuntime.ts,63-95,node and dependencies,Loads required L1 manifest validates catalog surface then builds secret-backed pool and object-store probe.
+E-AU-204-002,src/bootstrap/CatalogOperatorApiRuntime.ts,97-143,access and lifecycle,Builds access pipeline/container bindings and closes extensions plus pool.
+E-AU-204-003,src/bootstrap/CatalogOperatorApiRuntime.ts,157-180,compatibility,Runtime query checks expected DB role writable schema contract relations function and write privileges.
+E-AU-204-004,src/bootstrap/CatalogOperatorApiRuntime.test.ts,11-44,tests,Tests node/origin context and role mismatch only.
+E-AU-204-005,src/entry/{CatalogOperatorApiMain,CatalogOperatorApiReadyMain}.ts,entry consumers,API and readiness entrypoints construct this runtime.

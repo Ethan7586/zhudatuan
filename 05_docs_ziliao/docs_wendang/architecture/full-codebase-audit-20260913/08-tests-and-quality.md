@@ -609,3 +609,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct test覆盖unhealthy canary discard保留旧实例、healthy candidate activation替换并停止旧实例。
 - Registry其余分支与provider capability契约由AU-041及已有F-0127/F-0128专项记录承接。无P0–P3新问题；审计工作树未运行Vitest。
+
+## 204. AU-204 Catalog Operator API runtime 深审
+
+- Direct tests覆盖L1 manifest/origin/NodeContext与DB role compatibility failure。
+- 不覆盖secret/object readiness、compatibility failure teardown、successful configure或close，见F-0205/P2。审计工作树未运行Vitest。

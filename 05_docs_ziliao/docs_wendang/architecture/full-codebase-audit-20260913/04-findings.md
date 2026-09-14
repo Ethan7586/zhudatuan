@@ -3892,6 +3892,20 @@
 | 验证/回滚 | 断言valid=true以及四类invalid=false/受控错误，不向日志写入key或signature；回滚为revert测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0205｜Catalog Operator API runtime 启动依赖和清理分支没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / Catalog Operator API runtime；P2；高 |
+| 类型 | 测试覆盖缺口、运行启动/资源清理正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/bootstrap/CatalogOperatorApiRuntime.ts:63-143`；现有`CatalogOperatorApiRuntime.test.ts` |
+| 当前/预期 | runtime读取secrets、建立pool/object store，失败时结束pool；成功时暴露close以停止extensions并结束pool。现有test只覆盖node manifest和compatibility query的一种role失配。预期secrets缺失、object readiness失败/pool end、successful configure和close均有direct fixture。 |
+| 直接证据 | test只导入`assertCatalogNodeManifest`、`bindCatalogOperatorNodeManifest`、`catalogOperatorRuntimeCompatibility`；没有`createCatalogOperatorApiRuntime`调用或secret/object/pool close mock。 |
+| 调用链/影响 | CatalogOperatorApiMain/ReadyMain → runtime → secret store/database/object store/access pipeline。依赖失效或启动失败后的连接泄漏/错误语义回归不能由当前suite直接捕获。 |
+| 建议方向 | 从修复时最新`zdt-next`拆为runtime dependency failure与successful-close两条test批；回滚为撤回测试提交。 |
+| 验证/回滚 | fixture验证required config、secret read、object probe、compatibility failure pool end、configure bindings和close stops/ends；回滚为revert测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
