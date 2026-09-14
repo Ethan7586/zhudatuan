@@ -1,0 +1,5 @@
+"编号","独立证据","位置","判定"
+"RV-AU-046-001","HTTP版本输入","foundation/interface/OperationController.ts:330-338","If-Match 会成为 expectedVersion；optional 只是不强制缺失拒绝"
+"RV-AU-046-002","幂等隔离","foundation/application/ExecutionKernel.ts:144-146;ModuleOperations.ts:137-163","expectedVersion 进入请求哈希，但不同 idempotency key 保持独立执行"
+"RV-AU-046-003","同类实现对照","modules/partner/03_application_yingyong/PartnerOperations.ts:26-30,70-74","optional expectedVersion 在同类管理写入中进入 SQL 条件，冲突返回 VERSION_CONFLICT"
+"RV-AU-046-004","资格写入反证","modules/qualification/03_application_yingyong/QualificationOperations.ts:30-44","未读取 expectedVersion，upsert 无 active_version 条件；F-0138 复核成立"

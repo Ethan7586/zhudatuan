@@ -3001,12 +3001,12 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | qualification；P1 候选；高 |
+| 模块/级别 | qualification；P1；高 |
 | 位置 | `01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts:330-338`；`01_core_hexin/services/commerce/src/modules/qualification/03_application_yingyong/QualificationOperations.ts:30-44` |
 | 当前/预期 | Controller 会把 `If-Match` 解析为 `expectedVersion`，但 `qualification.policies.manage` 从不读取它；SQL 仅按 policy id/scope 更新并递增 `active_version`。预期是当调用方携带版本条件时，写入应以该条件决定成功或版本冲突。 |
 | 影响 | 两个不同幂等键的管理员写入可以依次创建版本，后者无冲突提示地成为 checkout 的生效策略；资格/购买规则可能发生无意覆盖。 |
 | 验证/回滚 | 在隔离数据库并行提交不同 rule、相同 If-Match 的两个请求，验证第二个请求是否为冲突；修复必须独立分支，回滚为撤回该修复提交。 |
-| 独立复核 | 是 |
+| 独立复核 | 已完成（AU-046，一致） |
 
 ## F-0139｜资格决策预览未复用 checkout 资格规则
 
