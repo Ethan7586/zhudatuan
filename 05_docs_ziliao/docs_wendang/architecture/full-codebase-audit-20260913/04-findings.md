@@ -5009,3 +5009,21 @@
 | 建议方向 | 从当时最新主线建立独立 migration-ledger 批次：先重建完整 checksum 线性链和现网 row 值，再以不可变新 version 或严格前置+单行断言记录 contract；不得改写历史 migration。 |
 | 验证/回滚 | 在隔离 PostgreSQL 用正式 sorted runner 跑到 AU-636，断言当前 checksum 和 row count；应用新前向 migration 后验证期望 ledger 值与 operation registry。回滚为撤回单独 ledger 迁移。 |
 | 是否需要独立复核 | 否；若发现外部 readiness/release consumer，应升级为专项复核。 |
+
+## F-0270｜Qualification Profile 单一 member 主键与多 Mall Storefront 注册不兼容
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Storefront registration / qualification / checkout |
+| 类型 | 多租户数据所有权、资格决策正确性 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260821016000_create_qualification.sql:13-21`；`20260903105000_initialize_storefront_qualification.sql:20-32`；`01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RegistrationOperations.ts:288-325`；`modules/qualification/03_application_yingyong/QualificationOperations.ts:20-28`；`modules/checkout_jiesuan/03_application_yingyong/queries_duqu/QuoteReader.ts:84-100`。 |
+| 当前/预期 | `qualification.profile` 以 `member_id` 为 primary key，初始化 trigger 对该 key conflict 静默不写；同一 resolved member/account 可按不同 `organization_id` 创建多条 storefront membership。第二个 Mall 因而没有 `scope_id=第二 Mall` 的 profile，而资格 preview 和 quote 都 join `profile.member_id` 且 `profile.scope_id=current Mall`。预期是一个 member 在每个可注册 Mall 都有正确 scope-local qualification state，或系统在注册前明确、可验证地禁止跨 Mall membership。 |
+| 直接证据 | [FACT][E-AU-643-001] profile schema 的唯一键仅为 member ID；[FACT][E-AU-643-002] trigger `on conflict(member_id) do nothing`；[FACT][E-AU-643-003] existing-account registration 的 storefront membership lookup/creation键为 member + organization + client；[FACT][E-AU-643-004] qualification preview 与 QuoteReader 均要求 profile scope 等于操作 Mall。 |
+| 调用链或运行入口 | Storefront invitation/registration → `access.membership` insert → `initialize_storefront_qualification` trigger → `qualification.profile` → qualification decisions / checkout quote。 |
+| 用户/数据/安全影响 | 已在一个 Mall 建档的会员进入第二个 Mall 时，其新 Mall 的资格 profile 留空；资格预览可能返回空集合或无法给出 eligibility，结算上下文的 qualification version/city 数据缺失。未证明已造成生产订单错误或越权访问。 |
+| 根因 | qualification data model 将 member identity 设计为全局单行，同时 downstream policy/checkout 消费者把 profile 视为 Mall-scoped；provisioned Mall registration 引入多 Mall membership 后未一并迁移 key/ownership model。 |
+| 建议方向 | 从当时最新主线建立独立 qualification data-model 批次：先决定 profile 应为 `(member_id,scope_id)` 多行，或将 scope-independent字段与 Mall qualification state 拆表；添加历史 backfill和唯一性/foreign-key strategy。若产品确实禁止跨 Mall 注册，应在 invitation/registration DB and application boundary作 fail-closed enforce，并写明契约。不要仅把 trigger 改为 overwrite scope。 |
+| 验证/回滚 | 隔离数据库为同一 member 完成 Mall A/B registration，分别执行 qualification preview 和 quote，断言每 Mall profile/decision/context 正确且互不覆盖；覆盖已有 profile/多 tag/历史 rows迁移。回滚为撤回独立 schema/data migration 和 consumer adaptation。 |
+| 是否需要独立复核 | 是；复核者需重新检查 qualification profile/tag/policy/resource schema、所有 read/write consumer、可支持的跨 Mall membership产品语义及历史数据量。 |
