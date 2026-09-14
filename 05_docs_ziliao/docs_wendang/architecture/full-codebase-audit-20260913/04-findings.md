@@ -3130,6 +3130,18 @@
 | 验证/回滚 | 隔离 PostgreSQL 对无 cart、新 listing、既有 listing、quantity=0、converted cart 分别请求 batch；核对 HTTP body、cart/item 行、scope 与 RLS。修复必须从最新主线独立小分支进行，回滚为撤回修复提交。 |
 | 独立复核 | 否 |
 
+## F-0149｜支付回调、退款恢复与人工 recovery 缺少行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | payment；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/payment_zhifu/05_interface_jieru/http/PaymentWebhook.ts:16-75`；`.../PaymentOperations.ts:218-278`；现有 `.../06_tests_ceshi/{PaymentJobs,PaymentWebhookDatabaseBoundary,PaymentMallIdentity}.test.ts` |
+| 当前/预期 | 回调 target 核验、inbox 接受后 job 路由、退款完成的资金恢复以及 deadletter 的受控重放均为真实金融恢复路径；现有测试只对 Job 的 provider time/effect 做 mock 断言、对 webhook 做两条源码正则、对 mall SQL 做记录型 mock。预期至少以隔离 PostgreSQL 或等价事务 fixture 覆盖已验签重复通知、target 不匹配、退款成功后的 tender/payment/order/outbox、deadletter replay/retryrefund 与同幂等键重复请求。 |
+| 影响 | 对回调接收、恢复状态或资金结算的回归可能只能在运行时发现，可能造成支付状态长期未知、退款未完成或人工恢复无法执行。未见已发生线上事故。 |
+| 根因 | 核心 Job 的 provider evidence 断言已有覆盖，但 HTTP webhook 与 recovery command 被视作薄接线，未随其数据库副作用建立行为 oracle。 |
+| 验证/回滚 | 隔离 PostgreSQL 分别注入已验签 payment/refund receipt：核对一次 inbox/job、重复通知 no-op、target 错误拒绝、退款所有 tender 恢复/余额/订单/outbox，以及 deadletter replay/retryrefund 幂等；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

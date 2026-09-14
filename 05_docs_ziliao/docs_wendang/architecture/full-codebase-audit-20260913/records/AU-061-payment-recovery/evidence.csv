@@ -1,0 +1,7 @@
+"编号","位置","证据","结论"
+"E-AU-061-001","PaymentWebhook.ts:16-75;PaymentWebhookDatabaseBoundary.test.ts:5-11","已验证通知先按 provider reference/application hash 找 scope，再核金额、币种、payer hash、scene/application hash；仅 accepted inbox 创建 query/refund job","回调入口的签名后事实校验、去重与异步边界存在"
+"E-AU-061-002","PaymentJobs.ts:39-216,342-445;PaymentJobSupport.ts:26-61","query/close 后先写 provider observation 并校验金额；成功 effect/hash 与 capture effect/hash 均要求一致；过期、provider 已退款、晚到支付分别转订单释放、recovery 或自动退款","查询、超时和晚到副作用有状态机与可审计恢复边界"
+"E-AU-061-003","RefundPlanner.ts:39-112;RefundSettlement.ts:28-120;PaymentJobs.ts:221-340","退款计划锁 payment/tender 并扣除未失败退款腿；退款结算锁 refund/payment/intent，外部退款必须有封存 provider effect，随后恢复内部 tender、更新 payment/order/outbox","退款金额、provider 证据和资金结算在同一事务链闭合"
+"E-AU-061-004","PaymentDeadletter.ts:7-32;PaymentOperations.ts:218-278","deadletter 自 intent/refund 聚合反查 mall 并写 recoverycase/outbox；受控操作以 case 行锁、mall scope、request idempotency 进行 replay/requery/retryrefund/resolve","失败任务有可追踪、可控重放入口"
+"E-AU-061-005","PaymentJobs.ts:221-246;RefundPlanner.ts:45-112;RefundSettlement.ts:28-89","aftersale target 将 NULL amount 映射为整笔 payment 未退余额，随后按供应行额度写 allocation；该值和 OrderOperations 未验证 line 归属共同传播","确认并补强既有 F-0148/P2，未重复编号"
+"E-AU-061-006","PaymentJobs.test.ts:11-169;PaymentWebhookDatabaseBoundary.test.ts:5-11;PaymentMallIdentity.test.ts:44-70","现有 mock 只断言 provider timestamp/effect 与少量源码 regex；未构造 PaymentWebhook.handle 或 PaymentOperations.resolveRecovery 的真实事务返回、重复通知、完整退款恢复","F-0149/P2：关键恢复入口缺行为 oracle"

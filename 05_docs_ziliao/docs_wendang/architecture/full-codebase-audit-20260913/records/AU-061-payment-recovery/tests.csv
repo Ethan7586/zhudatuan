@@ -1,0 +1,5 @@
+"测试","范围","结论","执行"
+"PaymentJobs.test.ts","payment/refund provider occurred-at、effect sealing、已封存退款不重复调用 provider","有针对性 mock oracle；未覆盖 expire/late-payment/provider-refunded、退款结算或 recovery 操作","未执行：vitest command not found"
+"PaymentWebhookDatabaseBoundary.test.ts","webhook SQL 不对 protected payment rows 请求 write lock；job SQL 无 on conflict","仅源码正则断言，不执行签名后的 target 校验、inbox 接受、job routing 或重复通知","未执行：vitest command not found"
+"PaymentMallIdentity.test.ts","退款与 deadletter 的 mall SQL 归属；无 OrderRecord 直接 join","源码/记录型 mock 覆盖 mall 归属，不覆盖 recovery 操作的事务行为","未执行：vitest command not found"
+"Payment webhook/refund/recovery integration","真实 PostgreSQL/RLS、provider receipt、inbox/job、退款资金恢复、人工动作幂等","未在固定审计 worktree 验证","未验证"

@@ -698,3 +698,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | recovery、状态机、Mall、allocation 与 accounting time | [FACT][E-AU-060-006] |
 
 [FACT][E-AU-060-007] 27 文件、1,732 行 payment intent/capture 人工源码和测试完成深审；退款、webhook 和 job files 保留 AU-061。
+
+## 67. AU-061 Payment webhook、退款与恢复模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| webhook/inbox | 验签后按 payment/refund 事实定位、核验、接收 inbox 与投递 job | [FACT][E-AU-061-001] |
+| query/late-payment | provider 查询、关闭、过期、晚到付款、effect 封存与 recoverycase | [FACT][E-AU-061-002] |
+| refund/settlement | tender 退款计划、provider 退款、内部资金恢复、供应售后回放与 outbox | F-0148；[FACT][E-AU-061-003] |
+| deadletter/recovery | job 死信归属、管理员重放/查询/重试/结案 | [FACT][E-AU-061-004] |
+| tests | provider time/effect、mall identity 与静态数据库边界 | F-0149 |
+
+[FACT][E-AU-061-007] 9 文件、1,420 行 payment webhook/refund/recovery 人工源码和测试完成深审；Payment 模块所有人工代码已按 AU-060/061 分单元覆盖。
