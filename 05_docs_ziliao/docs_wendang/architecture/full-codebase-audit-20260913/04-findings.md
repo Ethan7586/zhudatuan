@@ -5145,3 +5145,25 @@
 | 验证方式 | 在隔离 PGlite/Postgres runner 运行新增 contract；确认每个拒绝分支不消费 intent，成功分支恰好消费一次且返回精确 source context。 |
 | 回滚方式 | 删除独立新增测试及其 runner 注册，不改变生产 schema或数据。 |
 | 是否需要独立复核 | 否。 |
+
+## F-0277｜Web 订单四流读取仅授予表权限，未建立运行 role 的 RLS 策略
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Web Business API / Order read model / Payment-Finance database boundary |
+| 类型 | 运行时正确性、行级权限契约与测试可信度 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql:3-4`；`01_core_hexin/services/commerce/src/modules/webbusiness/WebOrderOperations.ts:57-76`；`02_platform_pingtai/database/supabase/migrations/20260821021000_create_payment_voucher_benefit.sql:398`；`20260821022000_create_finance_channel.sql:278`；`20260828173000_zhudatuan_web_business_access.sql:232-251,485-497`；`WebOrderOperations.test.ts:10-45`。 |
+| 当前/预期 | 当前 migration 向 `zhudatuanwebapi` 授予 `payment`/`finance` schema `USAGE` 与当时所有 table 的 `SELECT`，但 migration 链中未向该 role 注册实际查询所需六张表的 SELECT RLS policy。payment/finance tables 已启用 RLS，故普通 no-bypassrls runtime role 的 lateral payment/finance subquery 将看不到 rows，订单仍可返回但 `payment_fact` 为 null、`finance_facts` 为空。预期应为：已授权订单在该 API role 下仅能读取与其 Mall/scope 绑定的六张所需事实，且无权读取其他 payment/finance relation。 |
+| 直接证据 | [FACT][E-AU-679-001] `WebOrderOperations` 直接读取 intent/payment/allocation/refund 及 journal/entry；[FACT][E-AU-679-002] AU-679 是该 role 唯一对应的两个 schema/table grant；[FACT][E-AU-679-003] payment/finance 初始 migration 对 schema 全表启用 RLS；[FACT][E-AU-679-004] 全 migration 集对上述六 relation 的 policy 检索仅命中 `zhudatuanpurchaseapi`、`zhudatuanpaymentwebhookapi`、`zhudatuanidentityapi` 或 `shopapp`，无 `zhudatuanwebapi`；[FACT][E-AU-679-005] WebOrderOperations test mock `PoolClient.query`，只断言 SQL 字符串/参数，未执行 DB role/RLS 行为。 |
+| 调用链或运行入口 | Console/Storefront authorized order request → Web Business API → `order.orders.read` → `WebOrderOperations` → payment/finance lateral subqueries；DB connection role 为 `zhudatuanwebapi` 的预期前提需独立复核。 |
+| 用户影响 | 订单详情/列表可能缺少支付状态、支付分配、退款或财务流水事实，造成运营判断和售后处理信息不完整；目前未读取生产响应，未确认线上受影响范围。 |
+| 数据影响 | 只读链路本身不改写订单或账务；错误的空事实可能触发人工误判或下游界面状态不一致。 |
+| 安全影响 | 当前 broad table grant 不是最小授权；在 RLS 存在时不应直接暴露 rows，但若未来新增 permissive policy、role attributes 或 wrapper role 漂移，所有已存在 payment/finance tables 会成为额外读取面。 |
+| 根因 | read model 从隔离 domain facts 扩展为四流聚合时，仅补了 schema/table ACL，未将 role-bound RLS policy、旧 boundary assertion及执行型 contract test作为同一变更闭环。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立独立、单一目的 ACL/RLS repair batch：先确认真实 Web API connection role和 scope predicate；再将授权收窄至六张表，并按 `orders` 已授权 Mall/scope 设计只读 RLS policy（或改为 security-definer、参数受限的 read function）；同步更新 boundary assertion并新增真实 role/RLS integration contract。不要改写历史 migration。 |
+| 预计修改范围 | 新前向 Supabase migration、最小 SQL contract/integration test，必要时 Web read adapter 改为受控函数；不修改订单数据。 |
+| 验证方式 | 隔离 PostgreSQL 用正式 migration runner 至基线，分别以 `zhudatuanwebapi`、无权限 role和高权限 role 运行真实 `order.orders.read` SQL：同 scope 四流应完整返回，错 scope/未授权 relation 必须无行或拒绝；运行现有 WebOrderOperations test 加新增 DB contract。 |
+| 回滚方式 | 撤回独立前向 ACL/RLS migration 或恢复上一个已验证的 narrow policy/grant 版本；不回写业务数据。 |
+| 是否需要独立复核 | 是；复核者必须独立读取 Web API 连接配置、PostgreSQL `pg_policies`/role attributes，以及一条真实 scope/跨 scope request 的结果。 |
