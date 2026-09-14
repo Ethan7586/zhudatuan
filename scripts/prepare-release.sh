@@ -2,7 +2,7 @@
 # Prepare and seal one immutable 1.3.2 Aliyun release candidate.
 # Usage:
 #   scripts/prepare-release.sh <target> <full-commit-sha> <physical-node>
-#   ZDT_PREPARE_RUNNER=github selects the GitHub-hosted build fallback.
+#   ZDT_PREPARE_RUNNER=aliyun|github overrides automatic build routing.
 
 set -euo pipefail
 export PATH=/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin
@@ -15,13 +15,14 @@ fi
 TARGET="$1"
 SHA="$2"
 NODE="$3"
-BUILD_RUNNER="${ZDT_PREPARE_RUNNER:-aliyun}"
+REQUESTED_BUILD_RUNNER="${ZDT_PREPARE_RUNNER:-auto}"
+BUILD_RUNNER=""
 WORKFLOW_PREPARE="prepare-artifact-aliyun.yml"
 WORKFLOW_DEPLOY="deploy-prepared-aliyun.yml"
 
-case "$BUILD_RUNNER" in
-  aliyun|github) ;;
-  *) echo "Prepare stopped: ZDT_PREPARE_RUNNER must be aliyun or github." >&2; exit 64 ;;
+case "$REQUESTED_BUILD_RUNNER" in
+  auto|aliyun|github) ;;
+  *) echo "Prepare stopped: ZDT_PREPARE_RUNNER must be auto, aliyun or github." >&2; exit 64 ;;
 esac
 
 if [[ ! "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
@@ -52,6 +53,33 @@ for workflow in "$WORKFLOW_PREPARE" "$WORKFLOW_DEPLOY"; do
     exit 1
   fi
 done
+
+select_build_runner() {
+  if [ "$REQUESTED_BUILD_RUNNER" != auto ]; then
+    printf '%s\n' "$REQUESTED_BUILD_RUNNER"
+    return
+  fi
+
+  local idle_slots queued_runs
+  idle_slots="$(gh api repos/{owner}/{repo}/actions/runners \
+    --jq '[.runners[] | select(.status == "online" and .busy == false and ([.labels[].name] | index("zdt-aliyun-build")))] | length' \
+    2>/dev/null || true)"
+  queued_runs="$(gh run list --workflow "$WORKFLOW_PREPARE" --status queued --limit 100 \
+    --json displayTitle \
+    --jq '[.[] | select((.displayTitle | endswith(" [github]")) | not)] | length' \
+    2>/dev/null || true)"
+
+  if [[ "$idle_slots" =~ ^[0-9]+$ && "$queued_runs" =~ ^[0-9]+$ ]] && (( idle_slots > queued_runs )); then
+    printf 'aliyun\n'
+  else
+    printf 'github\n'
+  fi
+}
+
+BUILD_RUNNER="$(select_build_runner)"
+if [ "$REQUESTED_BUILD_RUNNER" = auto ]; then
+  echo "Build route auto-selected: ${BUILD_RUNNER}."
+fi
 
 find_dispatched_run() {
   local workflow="$1"

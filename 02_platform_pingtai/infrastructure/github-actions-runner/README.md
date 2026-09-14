@@ -1,16 +1,16 @@
 # GitHub Actions Runner（1.3.2 阿里云版）
 
-Prepare 当前默认使用北京 ECS 上的两个原生 Linux Build Runner；GitHub 标准托管 `ubuntu-24.04` 作为显式备用。候选封板及生产切换仍由阿里云 Release Runner 执行。
+Prepare 的系统级入口自动选择构建位置：北京 ECS 上有空闲 Build 槽时优先阿里云；两个槽都忙或离线时，新任务直接使用 GitHub 标准托管 `ubuntu-24.04`。候选封板及生产切换仍由阿里云 Release Runner 执行。
 
 ## Build Runner 选择
 
-通过现有系统入口选择本次构建使用的 Runner，不改变后续默认值：
+通常不需要指定 Runner。需要固定某一次构建位置时可以显式覆盖：
 
 ```bash
 ZDT_PREPARE_RUNNER=github /Users/Ethan/.codex/bin/zdt-delivery prepare <target> <full-source-sha> <physical-node>
 ```
 
-省略 `ZDT_PREPARE_RUNNER` 时使用阿里云；GitHub 页面手工触发 Prepare 时也默认 `build_runner=aliyun`。需要备用线路时显式设置 `ZDT_PREPARE_RUNNER=github`。两种构建使用同一份工作流、Node 22.22.0、npm 10.9.4、双冷构建及运行证据，并写入现有 OSS 制品路径；GitHub 构建不配置生产 SSH。Build 失败后停止，不自动切换线路、封板或部署；Seal、候选验证、Release、Deploy 和生产 SSH 始终只走阿里云 Release Runner。
+省略 `ZDT_PREPARE_RUNNER` 时使用自动模式：系统在提交任务前读取两个阿里云 Build 槽及其等待队列，有可用容量就选阿里云，否则选 GitHub Hosted。下一次阿里云恢复空闲后会自然重新成为首选。GitHub 页面手工触发 Prepare 时仍默认 `build_runner=aliyun`；页面不能执行自动探测。两种构建使用同一份工作流、Node 22.22.0、npm 10.9.4、双冷构建及运行证据，并写入现有 OSS 制品路径；GitHub 构建不配置生产 SSH。选择只发生在提交前，任务开始或排队后不会中途迁移，也不会重复创建；Seal、候选验证、Release、Deploy 和生产 SSH 始终只走阿里云 Release Runner。
 
 ## 固定拓扑
 
