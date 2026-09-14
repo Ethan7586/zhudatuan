@@ -2,20 +2,23 @@ import { CACHE_CATALOG } from '@shop/config/runtime';
 import type { OperationActions, OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 import { operationLifecycle, requireAccess } from '../../../../foundation/application/ModuleOperations';
 import type { OperationRequest, OperationResult } from '../../../../foundation/application/OperationHandler';
-import { encodeCursor, queryPage } from '../../../../foundation/interface/Validation';
-import type { Cache } from '../../../../foundation/cache/Cache';
-import { VersionedKey } from '../../../../foundation/cache/VersionedKey';
 import { SingleFlight } from '../../../../foundation/application/SingleFlight';
+import { encodeCursor, queryPage } from '../../../../foundation/interface/Validation';
 import type { DatabasePool } from '../../../../foundation/persistence/Pool';
 import type { MetricRow, ReportDimension, ReportPeriod } from '../../02_domain_yewu/model/Metric';
 import type { ReportingFactory } from '../../01_public_gongkai/ReportingPort';
 
-export function getDashboardOperations(factory: ReportingFactory<OperationDatabase>, pool: DatabasePool, cache: Cache,
+export interface DashboardCache {
+  get<T>(key: string): Promise<T | null>;
+  put<T>(key: string, value: T, seconds: number): Promise<boolean>;
+}
+
+export function getDashboardOperations(factory: ReportingFactory<OperationDatabase>, pool: DatabasePool, cache: DashboardCache,
   projectionVersion: (scope: string) => Promise<number> = (scope) => reportingProjectionVersion(pool, scope)): OperationActions {
   return { 'reporting.dashboard.read': metricOperation(factory, pool, cache, null, projectionVersion) };
 }
 
-export function metricOperation(factory: ReportingFactory<OperationDatabase>, pool: DatabasePool, cache: Cache, dimension: ReportDimension | null,
+export function metricOperation(factory: ReportingFactory<OperationDatabase>, pool: DatabasePool, cache: DashboardCache, dimension: ReportDimension | null,
   projectionVersion: (scope: string) => Promise<number> = (scope) => reportingProjectionVersion(pool, scope)) {
   const active = new SingleFlight<OperationResult>();
   return operationLifecycle({
@@ -28,8 +31,7 @@ export function metricOperation(factory: ReportingFactory<OperationDatabase>, po
       const selectedDimension = supplier === null ? dimension : supplierSection(request) ?? dimension;
       const cacheable = application === null && supplier === null && page.sort === null;
       const version = cacheable ? await projectionVersion(access.scope.id) : 0;
-      const key = cacheable ? VersionedKey.create('reporting', { scope: access.scope.id,
-        metric: selectedDimension ?? 'dashboard', period: selectedPeriod, projectionversion: version }) : null;
+      const key = cacheable ? dashboardCacheKey(access.scope.id, selectedDimension ?? 'dashboard', selectedPeriod, version) : null;
       const cached = key ? await cache.get<OperationResult>(key) : null;
       return { access, page, selectedPeriod, application, supplier, selectedDimension, key, cached };
     },
@@ -50,6 +52,14 @@ export function metricOperation(factory: ReportingFactory<OperationDatabase>, po
     },
     finalize: async (_request, result) => result,
   });
+}
+
+function dashboardCacheKey(scope: string, metric: string, period: string, projectionVersion: number): string {
+  const values = [scope, metric, period, projectionVersion];
+  if (values.some((value) => String(value).length === 0 || String(value).length > 512)) {
+    throw new Error('CACHE_KEY_VALUE_INVALID');
+  }
+  return ['shop', 'v1', 'reporting', ...values.map((value) => Buffer.from(String(value)).toString('base64url'))].join(':');
 }
 
 async function reportingProjectionVersion(pool: DatabasePool, scope: string): Promise<number> {

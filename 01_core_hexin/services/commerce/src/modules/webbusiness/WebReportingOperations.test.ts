@@ -4,9 +4,9 @@ import { Container } from '../../bootstrap/Container';
 import type { ModuleContext } from '../../bootstrap/ModuleRegistry';
 import { AUDIT_SINK } from '../../foundation/application/AuditSink';
 import type { OperationRequest, OperationResult } from '../../foundation/application/OperationHandler';
-import { CACHE, type Cache } from '../../foundation/cache/Cache';
 import { VersionedKey } from '../../foundation/cache/VersionedKey';
 import { DATABASE_POOL, type DatabasePool } from '../../foundation/persistence/Pool';
+import type { DashboardCache } from '../reporting/03_application_yingyong/query/GetDashboard';
 import { webReportingOperations } from './WebReportingOperations';
 
 describe('web reporting dashboard read', () => {
@@ -20,7 +20,7 @@ describe('web reporting dashboard read', () => {
     });
     const cache = memoryCache(async <T>(key: string) => { cacheReads.push(key); return cached as T; });
 
-    await expect(webReportingOperations(context(pool, cache)).invoke(request())).resolves.toEqual(cached);
+    await expect(webReportingOperations(context(pool), cache).invoke(request())).resolves.toEqual(cached);
 
     expect(connections).toBe(0);
     expect(cacheReads).toHaveLength(1);
@@ -49,7 +49,7 @@ describe('web reporting dashboard read', () => {
       writes.push({ key, value, seconds }); return true;
     });
 
-    const response = await webReportingOperations(context(pool, cache)).invoke(request());
+    const response = await webReportingOperations(context(pool), cache).invoke(request());
 
     expect(response).toMatchObject({ status: 200, body: { count: 0, summary: { sales: { periodSalesCents: 12 } } } });
     const cockpit = queries.find(({ text }) => text.includes('select reporting.cockpit'));
@@ -78,7 +78,7 @@ describe('web reporting dashboard read', () => {
       query: async () => { throw new Error('WEB_REPORTING_MUST_NOT_READ_PROJECTION_OFFSET'); },
     });
 
-    const response = await webReportingOperations(context(pool, memoryCache(async () => null))).invoke(request());
+    const response = await webReportingOperations(context(pool), memoryCache(async () => null)).invoke(request());
 
     expect(response).toMatchObject({ status: 200, body: { count: 100, nextCursor: expect.any(String) } });
   });
@@ -153,10 +153,9 @@ function request(scope = 'mall:test'): OperationRequest {
   };
 }
 
-function context(pool: DatabasePool, cache?: Cache): ModuleContext {
+function context(pool: DatabasePool): ModuleContext {
   const container = new Container();
   container.bind(DATABASE_POOL, pool);
-  if (cache) container.bind(CACHE, cache);
   container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
   return { container } as unknown as ModuleContext;
 }
@@ -171,17 +170,12 @@ function databasePool(methods: Pick<DatabasePool, 'connect' | 'query'>): Databas
 }
 
 function memoryCache(
-  get: Cache['get'],
-  put: Cache['put'] = async () => true,
-): Cache {
+  get: DashboardCache['get'],
+  put: DashboardCache['put'] = async () => true,
+): DashboardCache {
   return {
-    start: async () => undefined,
-    onUnavailable: () => () => undefined,
     get,
     put,
-    remove: async () => true,
-    state: () => ({ available: true }),
-    close: async () => undefined,
   };
 }
 
