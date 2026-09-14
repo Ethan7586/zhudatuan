@@ -3190,6 +3190,18 @@
 | 验证/回滚 | 使用隔离 PostgreSQL 与 runtime.job 构造上述状态，核对 withdrawal、settlement、job 和 evidence；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
 | 独立复核 | 否 |
 
+## F-0154｜发票审批、红冲与读取边界缺少行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | finance / invoice；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/finance/03_application_yingyong/{command/RequestInvoice,query/GetInvoices}.ts`；现有 `.../06_tests_ceshi/command/RequestInvoice.test.ts` |
+| 当前/预期 | 发票 create/cancel/approve/reject/red 与 member/operator queries 都是实际申请和签发前的契约边界；现有测试只用 mock 断言 create 和受管过程拒绝。预期以隔离数据库验证组织/profile/settlement line、version、分离审批、stable job、red 前置条件、member/operator 隔离与 cursor。 |
+| 影响 | 发票审批、红冲或读取范围的回归可能仅在运营/用户请求时发现，可能导致请求卡状态、红冲失效或错误可见性。未见已发生线上事故。 |
+| 根因 | 命令将复杂性委托给数据库过程，但过程契约和应用层 job/read 交接没有共同的行为测试。 |
+| 验证/回滚 | 使用隔离 PostgreSQL 构造 profile/settlement/request/document，覆盖上述成功与拒绝路径；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

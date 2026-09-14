@@ -767,3 +767,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | referral uncertain recovery mock | F-0153 |
 
 [FACT][E-AU-066-005] 4 文件、148 行 Finance withdrawal 人工源码和测试完成深审。
+
+## 73. AU-067 Finance 发票申请、审批、红冲与查询模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| request commands | create/cancel/decide/red 与受管 invoice 过程 | [FACT][E-AU-067-001] |
+| reads | member/operator profile、request/document/line 查询 | [FACT][E-AU-067-002] |
+| tests | create mock 与过程拒绝 | F-0154 |
+
+[FACT][E-AU-067-004] 3 文件、186 行 Finance invoice request 人工源码和测试完成深审。
