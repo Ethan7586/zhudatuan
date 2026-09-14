@@ -4919,3 +4919,21 @@
 | 建议方向 | 从最新主线建立独立 security batch：按 relation 分类实现 scope owner RLS/projection，先覆盖高敏感 voucher/referral/channel 数据；对同 scope/跨 scope/无 app context 的实际 role fixture 加反事实数据库测试。不要改写本历史 migration。 |
 | 验证/回滚 | 隔离数据库以 identity role 设置不同 scope：仅本 scope row 可读，跨 scope/空 context 必须为空；核对每个 API read 的正确结果。回滚为撤回独立 policy/projection batch。 |
 | 是否需要独立复核 | 是；复核者需重新追踪 24 relation 的 owner scope 和所有 Identity API query。 |
+
+## F-0265｜Internal Mall 数据集与 fulfillment mall identity schema 不兼容
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 本地数据集 / fulfillment schema 演进 |
+| 类型 | 数据初始化可用性、schema 契约漂移 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260901221000_add_fulfillment_mall_identity.sql:3-8,88-93`；`04_tools/tools/seed/src/InternalMallSeedCommerce.ts:463-487`。 |
+| 当前/预期 | migration 将 `fulfillmentorder.mall_id/member_id/provider_scope_id` 与 `line/milestone/returnrecord.mall_id` 设为 NOT NULL；正式 Internal Mall dataset 仍用不含这些字段的四次 `insertRows`。预期为数据集在当前 schema 写入 order 的 mall/member/scope，并将 mall 带入所有子表。 |
+| 直接证据 | [FACT][E-AU-624-005] migration 在回填后无默认值地设六个字段 NOT NULL；[FACT][E-AU-624-006] 种子 fulfillment rows 仅传旧有 order/suborder/provider 等 16 列，line、milestone、return 亦无 `mall_id`；[FACT][E-AU-624-007] `InternalMallDataset` 与 `ImportInternalMallDataset` 都直接调用 `seedCommerce`，没有 schema-version 分支或后续补值步骤。 |
+| 调用链或运行入口 | `InternalMallDataset` / `ImportInternalMallDataset` → `seedCommerce` → `seedFulfillment` → `insertRows` → fulfillment 四张表。 |
+| 用户/数据/安全影响 | 本地/隔离环境初始化会在 fulfillment 阶段因 NOT NULL 约束停止，阻断该正式演示、验收或开发数据集的完整建立；未证明影响线上事务或已有生产数据。 |
+| 根因 | identity migration 与工具型 dataset writer 没有同批更新，且相邻 runtime writer 的 mall identity 测试不覆盖该工具入口。 |
+| 建议方向 | 从当时最新主线建立独立 seed compatibility 批次：以 order 的 mall/member/scope 填充 fulfillmentorder，并向三张 child 表携带 mall；不要改写历史 migration。为最新 schema 的全量 dataset/import 建立一条最小成功契约。 |
+| 验证/回滚 | 隔离 PostgreSQL 应用当前 migrations 后分别运行 normal dataset 与 import dataset，断言四表行数、mall/member/provider scope 与父订单一致；回滚为撤回独立 seed 提交。 |
+| 是否需要独立复核 | 是；复核者需在最新 schema 实跑两条正式 seed 入口，并核对是否另有后置 schema adapter。 |
