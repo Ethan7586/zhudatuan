@@ -611,6 +611,16 @@ describe('SFL node kernel', () => {
     expect(() => parseSflNodeTopology(invalid)).toThrow('SFL_NODE_RELATION_LEVEL_INVALID');
   });
 
+  it('allows a no-invitation L6 to attach directly to an active L0-L5 operating node', () => {
+    const directL6 = {
+      ...topologyFixture,
+      relations: topologyFixture.relations.map((entry) => entry.node_id === nodeId('l6')
+        ? { ...entry, parent_node_id: nodeId('l1'), original_parent_node_id: nodeId('l1') }
+        : entry),
+    };
+    expect(() => parseSflNodeTopology(directL6)).not.toThrow();
+  });
+
   it('caps the member line at L11 without creating an L12 model', () => {
     const invalid = {
       ...topologyFixture,

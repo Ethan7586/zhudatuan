@@ -1568,7 +1568,8 @@ function validateNodeRelationHistory(history: NodeRelationRecord[], relations: r
       && (candidate.superseded_at === null || relation.effective_at < candidate.superseded_at));
     if (parent === undefined) throw new Error(`SFL_NODE_RELATION_PARENT_INACTIVE:${relation.node_id}`);
     const parentLevel = signedLevelNumber(parent.signed_level);
-    if (parentLevel !== level - 1) {
+    if ((level >= 7 && parentLevel !== level - 1) || (level === 6 && (parentLevel < 0 || parentLevel > 5))
+      || (level >= 1 && level <= 5 && (parentLevel < 0 || parentLevel >= level))) {
       throw new Error(`SFL_NODE_RELATION_LEVEL_INVALID:${relation.node_id}`);
     }
   }
