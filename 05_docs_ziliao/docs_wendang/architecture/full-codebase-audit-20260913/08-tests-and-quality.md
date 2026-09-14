@@ -193,3 +193,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 唯一Webhook测试命中无生产caller的`src/Webhook.ts`，未覆盖生产`createPorts` HMAC、5分钟窗口、event ID绑定、normalize、2MiB HTTP边界或数据库去重，形成F-0095。
 - 合成HMAC和静态DB链已证明F-0094；仍需独立复核真实provider协议和下游幂等，不能用当前单测通过替代。
 - 详见`records/AU-021-provider-core/tests.csv`、`validation-results.md`和`independent-review-queue.csv`。
+
+## 21. AU-022 Vendor Core质量
+
+- 4个Vitest用例只覆盖operation声明、503读取重试、无幂等键写入不重试和circuit open；目的地、签名、双阶段超时、容量边界、取消和带幂等键写入均无测试，见F-0098。
+- 正式`test`与`typecheck`各执行一次，均因审计工作树缺`vitest`/`tsc`在源码加载前退出127；未安装依赖、未执行build，不记为实现失败或通过。
+- 静态调用链和受控探针支持F-0096/F-0097，但线上配置、出口和资源限制仍需RV-0014/RV-0015独立复核。
+- 详见`records/AU-022-vendor-core/tests.csv`、`validation-results.md`和`independent-review-queue.csv`。

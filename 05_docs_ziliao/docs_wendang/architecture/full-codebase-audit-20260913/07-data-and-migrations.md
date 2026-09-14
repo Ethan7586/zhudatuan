@@ -113,3 +113,10 @@
 - Job按inbox ID幂等，但不同event ID会产生不同inbox/job/outbox。F-0094证明相同签名正文改ID可越过唯一键；数据库当前没有同connection+raw hash或signature hash去重。
 - provideroperation按provider+external reference更新，能缓解部分重复状态覆盖；outbox仍按inbox ID独立产生，下游最终幂等尚未确认。
 - 本AU只读迁移和调用SQL，没有连接数据库、执行迁移、插入或重放事件。
+
+## 17. AU-022 Vendor Core数据边界
+
+- Vendor Core不拥有数据库表或迁移；connection配置由Channel模块持久化，业务商品/订单/履约数据仍由各领域contract拥有。
+- Client仅对读请求、带business idempotency key的写入或明确幂等operation执行重试；无key的非幂等写入只尝试一次。该边界可降低重复写入，应保留。
+- F-0097可能使远端已处理、本地尚未解析的写入进入不确定状态；具体恢复取决于各vendor查询能力和幂等键，不能统一推断为重复业务数据。
+- 本AU未连接数据库、执行迁移、调用vendor或修改connection。

@@ -1,0 +1,7 @@
+"消费者","入口","使用能力","进程/发布单元","数据所有权","失败传播"
+"Provider Core","createPorts→VendorClient.invoke","Catalog/Price/Stock/Order/Cancel/Tracking/Refund/Statement/Verify","Commerce API/jobs OCI","provider/channel DB","VendorFailure映射到ProviderError/job失败"
+"JD vendors","createJdAuth/RsaAuthenticator→VendorClient","JD商品/生鲜provider","Commerce OCI","不由Vendor Core拥有","F-0096/F-0097共享"
+"Tmall/Wenxuan vendors","HmacAuthenticator→VendorClient","天猫/文轩provider","Commerce OCI","同上","F-0096/F-0097共享"
+"Wanlian vendor","RsaAuthenticator→VendorClient","直充/电影provider","Commerce OCI","同上","F-0096/F-0097共享"
+"Cakeuncle client","复用Connection/Rate/Circuit/Error，不复用VendorClient","蛋糕/鲜花/餐饮/券","Commerce OCI","同上","有独立2MiB响应限长；仍共享F-0096连接校验"
+"Channel operator API","connections.create/update→InstallExtension","配置baseUrl/endpoints/secretRef","Commerce API","extension/channel DB","critical permission；目的地完整性见F-0096"

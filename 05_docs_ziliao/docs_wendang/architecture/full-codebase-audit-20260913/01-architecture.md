@@ -738,3 +738,11 @@ flowchart LR
 ~~~
 
 [CONFLICT][E-AU-021-005/006] 通用Webhook HMAC不覆盖数据库去重身份event ID，5分钟内改ID重放可产生独立inbox/job/outbox，形成F-0094/P1候选。测试命中的又是无生产caller的另一套Webhook包装器（F-0095/DC-0026）。
+
+## 20. AU-022 增量：Vendor Core
+
+[FACT][E-AU-022-002/003/004] Vendor Core是Provider与外部供应商之间的共享传输层。Channel operator配置connection，Loader注入secret，具体vendor选择HMAC/RSA/专用认证；每个connection拥有独立rate、bulkhead、circuit和有界重试状态。
+
+[CONFLICT][E-AU-022-005/006] 配置边界只把base URL限制为HTTPS，没有把首跳origin绑定到provider Manifest或批准host；认证证明和业务正文因此跟随可配置origin，形成F-0096/P1候选。
+
+[CONFLICT][E-AU-022-007] 通用Client没有响应字节/深度上限，四个vendor家族共享整块`response.text()`和递归JSON检查；Cakeuncle专用限长不能向上推断，形成F-0097/P1候选。

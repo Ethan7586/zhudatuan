@@ -361,3 +361,20 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 新增DC-0026/G1；没有G2、G3或GX新增项。
 - 当前累计G0 2、G1 22、G2 2、G3 0、GX 2。公共barrel和仓外consumer未排除前不得升级删除结论。
+
+## DC-0027｜HeaderAuthenticator公共认证器
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `extensions/vendors/core/src/Auth.ts`的`HeaderAuthenticator`及barrel导出 |
+| 疑似原因 | [FACT][E-AU-022-012] 固定仓库内只在Vendor Core与Provider Core测试中构造；真实vendor factory使用HMAC或RSA认证器 |
+| 保留证据 | `@shop/vendorcore`公共barrel仍导出该类型；仓外插件/测试工具、历史兼容和未来vendor协议未排除 |
+| 未排除项 | npm/workspace外部consumer、动态插件、回滚版本和简单header协议职责 |
+| 可否删除 | 否；不满足无公共API、无契约责任、正式下线和第二次复核条件 |
+| 二次复核 | G1不强制；拟删除时需重新核对包消费者与发布制品 |
+
+## 22. AU-022 Vendor Core候选复核
+
+- 新增DC-0027/G1；没有G2、G3或GX新增项。
+- 当前累计G0 2、G1 23、G2 2、G3 0、GX 2。未修改或删除任何实现。

@@ -147,3 +147,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - [P1-CANDIDATE][E-AU-021-005/006] 通用Webhook HMAC不覆盖`x-provider-event-id`，而该header决定数据库去重身份。持有一份合法请求即可在5分钟窗口内改ID重放，见F-0094/RV-0013。
 - 原始正文先验签后由KMS加密，审计只保存raw/signature hash；无效签名不持久化。未发现secret输出或Manifest验签绕过。
 - 本AU使用合成HMAC材料，没有读取任何真实provider secret、Webhook载荷或线上记录。
+
+## 19. AU-022 Vendor连接与认证边界
+
+- `channel.connection.manage`是critical权限；创建连接会先读取所选secretRef，再把secret派生为HMAC/RSA认证器。密钥不直接进入请求正文或日志，RSA私钥在构造阶段解析。
+- [P1-CANDIDATE][E-AU-022-004/005] baseUrl只验证HTTPS，未与Manifest/批准origin绑定，也未排除userinfo、私网、回环和链路本地目的地；有权operator可把认证证明和业务正文发往任意HTTPS来源，见F-0096/RV-0014。
+- HMAC/RSA规范化材料覆盖method、path、timestamp、nonce和body；redirect被拒绝，降低跨origin自动转发风险。未发现私钥明文输出。
+- 本AU没有读取真实vendor secret、connection配置、provider流量或线上权限记录。

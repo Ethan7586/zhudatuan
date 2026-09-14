@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-021 结束时累计：P0 0、P1 候选 11、P2 46、P3 37、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-022 结束时累计：P0 0、P1 候选 13、P2 46、P3 38、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2331,3 +2331,81 @@
 
 - [UNKNOWN] 线上启用provider及其真实Webhook网关是否用其它层绑定event ID；需RV-0013重新追踪。
 - [UNKNOWN] F-0094产生的重复outbox下游是否全部幂等；当前只证明消息重复可观察，不扩大为资金重复事实。
+
+## F-0096｜Vendor连接可把签名请求发送到任意HTTPS来源
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Vendor Core / Channel Connection |
+| 类型 | 信任边界、目的地绑定、凭据使用 |
+| 严重级别 | **P1 候选**；未完成RV-0014前不作最终P1 |
+| 置信度 | 高：配置写入、安装校验、运行装载和请求发送链均已核对；线上值、出口策略和secret ACL未知 |
+| 文件和精确位置 | `01_core_hexin/extensions/vendors/core/src/Connection.ts:12-21`；`src/Client.ts:68-93`；`services/commerce/src/modules/channel/03_application_yingyong/command/CreateConnection.ts:14-70`；`services/commerce/src/modules/extension/03_application_yingyong/command/InstallExtension.ts:24-70`；`packages/authz/src/PermissionCatalog.ts:48` |
+| 当前行为 | [FACT][E-AU-022-004/005] connection只要求baseUrl可解析且协议为HTTPS；未与provider Manifest或批准主机绑定，也未排除userinfo、回环、私网和链路本地地址。持有`channel.connection.manage`的critical operator可同时选择secretRef和任意HTTPS目的地，health与业务请求会向其发送认证证明及业务正文 |
+| 预期行为 | provider连接的网络目的地应与被安装provider的可信清单绑定；secret选择权不应隐式扩大为任意外发能力 |
+| 直接证据 | E-AU-022-003–006、TC-AU-022-002/003 |
+| 调用链或运行入口 | channel.connections.create/update→secrets.read→数据库connection→RuntimeExtensionLoader→VendorClient→new URL(path,baseUrl)→认证请求 |
+| 用户影响 | [INFERENCE] 被误配或滥用时可使商品、订单或履约调用发往错误服务，并造成渠道不可用 |
+| 数据影响 | 业务请求正文可能离开预期provider边界；未证明线上已发生 |
+| 安全影响 | HMAC签名或RSA签名证明、请求标识和业务载荷会发送到所配来源；私钥本身不会被发送 |
+| 根因 | 配置把HTTPS当成完整信任判据，Manifest没有声明/约束实际网络来源 |
+| 建议方向 | 后续独立设计批次按provider声明批准origin，并核对代理、区域端点和测试环境需求；不得在审计分支实施 |
+| 预计修改范围 | Manifest/connection contract、安装与更新命令、Runtime loader、迁移兼容和网络反事实测试 |
+| 验证方式 | 批准origin、错误host、userinfo、loopback/private/link-local、重定向、IPv6和既有连接迁移矩阵；确认真实provider端点兼容 |
+| 回滚方式 | 保留旧连接配置与兼容读取，按provider灰度；回退单一治理提交 |
+| 是否需要独立复核 | 是，RV-0014 |
+
+为什么不是P0：没有证据显示线上连接已被恶意或错误绑定，也没有正在发生的严重事故；critical权限、secret ACL和出口网络仍是待核实缓解项。
+
+## F-0097｜通用Vendor响应没有字节与JSON深度上限
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Vendor Core HTTP Client |
+| 类型 | 资源耗尽、外部输入边界 |
+| 严重级别 | **P1 候选**；未完成RV-0015前不作最终P1 |
+| 置信度 | 高：响应读取与递归校验实现已直接核对；线上内存限制和provider行为未知 |
+| 文件和精确位置 | `01_core_hexin/extensions/vendors/core/src/Client.ts:31-112,121-129`；`extensions/vendors/cakeuncle/src/Client.ts:95-140,160-188` |
+| 当前行为 | [FACT][E-AU-022-007/008] Client对响应直接执行无上限`response.text()`，随后JSON.parse并递归验证任意深度对象/数组；无Content-Length、流式字节或嵌套深度限制。独立Cakeuncle Client已有2MiB读取上限，不能保护通用Client |
+| 预期行为 | 外部响应在分配完整正文和递归遍历前应有共享字节上限，并对JSON深度/节点数量设置可预期边界 |
+| 直接证据 | E-AU-022-007–009、TC-AU-022-004/005 |
+| 调用链或运行入口 | Commerce provider operation→VendorClient.request→fetch→response.text→JSON.parse→assertJsonValue |
+| 用户影响 | [INFERENCE] 异常或受控provider响应可造成单次请求高内存、栈溢出或进程重启，影响共用Commerce运行单元 |
+| 数据影响 | 请求可能在远端已成功、本地解析前失败，造成不确定状态和重试恢复压力；未证明实际数据错误 |
+| 安全影响 | 属于已认证外部依赖可触发的可用性边界，不是无网络路径的本地输入 |
+| 根因 | deadline只限制时间，响应数据模型校验没有容量预算 |
+| 建议方向 | 后续共享Transport批次引入流式限额、深度/节点预算和稳定错误分类；按读/写重试语义分别验证 |
+| 预计修改范围 | Vendor Core Client、错误分类、各vendor契约测试；Cakeuncle是否统一另行决定 |
+| 验证方式 | 超Content-Length、chunked超限、深层对象/数组、无效UTF-8、读/写与幂等重试矩阵、内存受限进程探针 |
+| 回滚方式 | 回退单一Transport提交并恢复旧读取路径 |
+| 是否需要独立复核 | 是，RV-0015 |
+
+为什么不是P0：没有证据显示线上provider正在返回超大/超深响应，亦未证明当前运行进程发生OOM或严重事故。
+
+## F-0098｜Vendor Core测试未覆盖主要信任与恢复边界
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Vendor Core tests |
+| 类型 | 测试可信度、契约缺口 |
+| 严重级别 | P3 |
+| 置信度 | 高：全部11文件与正式脚本已核对 |
+| 文件和精确位置 | `01_core_hexin/extensions/vendors/core/src/Client.test.ts:17-53`；`package.json:6-12` |
+| 当前行为 | [FACT][E-AU-022-010] 4个用例只覆盖未声明operation、503读取重试、无幂等键写入不重试和circuit open；没有baseUrl、HMAC/RSA、双阶段超时、响应限额/深度、有幂等键写入和取消测试 |
+| 预期行为 | 生产信任边界、签名材料、恢复语义和外部输入容量必须有反事实测试，且破坏实现会稳定失败 |
+| 直接证据 | E-AU-022-010/011、TC-AU-022-006 |
+| 调用链或运行入口 | npm test→Vitest→Client.test；当前审计环境缺vitest，正式入口127退出 |
+| 用户影响 | F-0096/F-0097及签名、超时回归可能在现有测试绿色时进入共享Commerce制品 |
+| 数据影响 | 测试本身不写数据；间接遗漏不确定写入与重复调用风险 |
+| 安全影响 | 目的地和认证证明边界没有测试保护 |
+| 根因 | 测试集中在重试/circuit最小主路径，未把连接和外部输入视作端到端契约 |
+| 建议方向 | 后续测试批次先补反事实矩阵，再分别治理实现；审计不修改测试 |
+| 预计修改范围 | Vendor Core单测及Channel/Runtime装载集成测试 |
+| 验证方式 | 每个信任或恢复不变量均有破坏性断言；在正式workspace入口运行 |
+| 回滚方式 | 回退单一测试提交 |
+| 是否需要独立复核 | 否；F-0096/F-0097本身需要 |
+
+## 22. AU-022 新增未定级事项
+
+- [UNKNOWN] 线上connection的实际baseUrl、secretRef授权边界、节点出口策略和当前制品版本；需RV-0014核对。
+- [UNKNOWN] Commerce运行单元内存/栈限制及真实vendor最大响应分布；需RV-0015核对。

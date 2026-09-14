@@ -1,0 +1,8 @@
+"编号","失败模式","触发","传播","当前控制","等级/结论"
+"FM-AU-022-001","连接指向攻击者HTTPS origin","critical operator配置任意baseUrl","health/业务请求携认证签名和body发往该host","HTTPS、step-up/permission、redirect:error","P1候选/F-0096"
+"FM-AU-022-002","连接指向内部HTTPS服务","私网/回环/DNS解析baseUrl","Commerce网络发起带header/body请求","仅HTTPS；无IP/host绑定","P1候选/F-0096"
+"FM-AU-022-003","provider返回巨大body","异常/恶意外部响应","response.text整块分配→JSON parse/递归检查→内存或栈压力","response timeout；无大小/深度上限","P1候选/F-0097"
+"FM-AU-022-004","provider 503","读或幂等写","VendorFailure retryable→有界重试→circuit","maxAttempts/deadline/backoff","受控"
+"FM-AU-022-005","无幂等键写503","provider结果未知","只发一次并返回失败","attempts=1","受控；上层需恢复"
+"FM-AU-022-006","连接/响应超时","fetch或body阶段卡住","AbortController→VendorFailure分类","分阶段timer+总deadline","设计存在但测试不足F-0098"
+"FM-AU-022-007","测试绿遗漏边界","只运行4例Client.test","目的地/资源耗尽回归不失败","无对应反事实","P3/F-0098"

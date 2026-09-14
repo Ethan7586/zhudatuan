@@ -757,3 +757,10 @@ sequenceDiagram
 - 同步：Channel/Catalog/Fulfillment consumer指定`capability + port`→Registry双检查→Provider port→VendorClient限流、并发、断路器、deadline和条件重试→外部provider。
 - 异步：公网Channel webhook→服务端接收时间+header event ID→通用HMAC/normalize→KMS加密→`channel.accept_webhook`→channelwebhook job→provider operation/outbox。
 - [CONFLICT] HMAC签名材料只有`timestamp.body`，event ID却是唯一去重键；改ID重放绕过数据库replayed路径，见F-0094。
+
+## 27. AU-022｜Vendor Core同步传输链
+
+- 配置链：operator `channel.connections.create/update`→critical permission/step-up→secret store read→extension installation→RuntimeExtensionLoader→具体Authenticator+VendorClient。
+- 请求链：Provider port→VendorClient rate acquire→Semaphore→CircuitBreaker→retry→HMAC/RSA authenticate→可配置HTTPS origin；redirect为error。
+- 响应链：分阶段connection/response timer→整块`response.text()`→HTTP错误映射→JSON.parse→递归JSON值检查。当前没有body字节或嵌套深度上限（F-0097）。
+- 目的地链没有Manifest/host/IP绑定（F-0096）；线上egress、DNS、secret ACL和connection值未验证。

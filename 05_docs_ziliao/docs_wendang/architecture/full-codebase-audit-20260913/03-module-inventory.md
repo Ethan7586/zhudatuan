@@ -405,3 +405,16 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Webhook wrapper | verifier→sha256→ingress包装 | 单测和多包转发导出 | 无生产caller；F-0095/DC-0026 |
 
 [FACT][E-AU-021-001] 11/11文件、354/354行均已深入审阅。数据由extension/channel/runtime数据库拥有，包随Commerce OCI发布。
+
+## 28. AU-022 Vendor Core 模块清单
+
+| 子模块 | 职责 | 真实入口/调用者 | 当前边界 |
+| --- | --- | --- | --- |
+| Connection | 校验base URL、endpoint、secret和health operation | Loader、所有vendor clients | F-0096 |
+| Auth/Signer | Header、HMAC、RSA认证头 | JD/Tmall/Wanlian/Wenxuan | Header为G1；其余生产使用 |
+| Client | URL、请求、双deadline、重试、响应JSON | 4个vendor家族、7个providers | F-0096/F-0097 |
+| Rate/Circuit | connection级限流、并发、断路器 | 通用Client和Cakeuncle | 运行内存状态，不持久化 |
+| VendorError | 传输错误稳定投影 | 全部vendor/provider链 | 主干清晰 |
+| tests | 4个Client行为 | Vitest | F-0098；当前缺工具未执行 |
+
+[FACT][E-AU-022-001] 11/11文件、365/365行均已深入审阅；无独立进程、数据库或发布target。
