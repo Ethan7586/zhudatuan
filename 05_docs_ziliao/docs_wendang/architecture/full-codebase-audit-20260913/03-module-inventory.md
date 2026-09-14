@@ -1835,3 +1835,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | configuration/category/cache/mirror/image/proxy failure fixtures | [FACT][E-AU-169-004] |
 
 [FACT][E-AU-169-005] 4 文件、676 行完成深审；Wechat cryptographic parser/client tests留在 provider 专项单元。
+
+## 175. AU-170 Session/membership/assurance 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| session/token | host-only cookie 或 storefront-only miniapp bearer、HMAC/expiry、session ledger creation | [FACT][E-AU-170-001] |
+| membership auth | server RPC membership/authorization projection、target/version/member binding、server row scope derivation | [FACT][E-AU-170-002] |
+| assurance/credential | password hash verification 和 phone/payment assurance fail-closed | [FACT][E-AU-170-003] |
+| tests | host/key separation、tampering、miniapp isolation、resource scope、phone assurance | [FACT][E-AU-170-004] |
+
+[FACT][E-AU-170-005] 8 文件、715 行完成深审；会话撤销实际以 `api_resolve_session_membership_context` RPC session id回查承载。

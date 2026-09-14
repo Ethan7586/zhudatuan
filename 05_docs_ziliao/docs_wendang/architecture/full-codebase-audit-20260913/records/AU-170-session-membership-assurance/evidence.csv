@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-170-001,src/api/session.ts,1-228,session boundary,Host-specific cookies/keys strict attributes miniapp token restriction signature expiry validation and session ledger creation.
+E-AU-170-002,src/api/membershipContext.ts;src/api/auth.ts,45-174;1-36,authorization boundary,Every authorization resolves server membership RPC and rejects target/version/identity mismatch; resource scope parses database-shaped fields only.
+E-AU-170-003,src/api/credentialAuth.ts;src/api/identityAssurance.ts,1-15;1-26,identity assurance,Credential verification delegates strong hash verification and payment eligibility fails closed without phone assurance.
+E-AU-170-004,src/api/{session,membershipContext,identityAssurance}.test.ts,1-98;1-42;1-96,tests,Direct fixtures cover host/key separation tampering miniapp scope derivation and assurance outcomes.

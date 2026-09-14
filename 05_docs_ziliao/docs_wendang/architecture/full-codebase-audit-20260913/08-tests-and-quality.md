@@ -441,3 +441,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Catalog tests 直接覆盖 production configuration、mall slug sanitation、page bound/cache tier、ETag/mirror、taxonomy query、signed proxy/CDN 和上游失败。
 - Wechat notification cryptographic tests不属于本批，留在支付 provider 单元；本批未将其缺席误记为 coverage gap。
+
+## 170. AU-170 Session/membership/assurance 深审
+
+- Session tests 直接验证 host-only cookie、不同 admin key、篡改/legacy payload 拒绝和 miniapp bearer 不能进入 admin host。
+- Membership scope test 拒绝 request-shaped scope；assurance test 覆盖缺失/账号级拒绝与手机验证通过。

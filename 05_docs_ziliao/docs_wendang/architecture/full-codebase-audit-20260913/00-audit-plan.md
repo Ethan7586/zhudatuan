@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-169 已完成。AU-169 完成 Storefront public catalog/media/payment notification 审阅。覆盖总账按当前文件级清单重算：深入审阅1,600文件/110,762行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,254文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-170 已完成。AU-170 完成 Commerce API session/membership/assurance 审阅。覆盖总账按当前文件级清单重算：深入审阅1,608文件/111,477行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,246文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1449,3 +1449,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Storefront 实际挂载的 public catalog、image proxy、Wechat payment notification 与 catalog tests。
 
 执行结果：public catalog 只读，production 强制有效 mall slug、分页最多200、memory/shared stale cache、mirror hash/ETag；公共图片限 HTTPS Amazon host 或 canonical CDN，HMAC 签名后才代理且限5MB/content type；Wechat callback 只接受 POST、64KB 上限、验签/解密后交给 idempotent RPC。tests 覆盖 catalog configuration/cache/taxonomy/ETag/image proxy/cdn/failure。无 P0–P3 新问题。
+
+## 172. AU-170 连续审计点
+
+审阅 Commerce API signed session、miniapp token、membership runtime、authorization wrapper、credential 与 phone assurance。
+
+执行结果：host-only admin/storefront cookie 分隔签名密钥与 target；miniapp bearer 强制 storefront channel/key。受保护路径不信任客户端 permission/scope，每次用 session id回查 RPC membership context，并核对 member/membership/target/authzVersion。phone assurance 缺失或未验证均拒绝 payment-eligible行为。session/assurance tests覆盖 host separation、tamper、legacy payload、miniapp target、scope row 与 fail-closed。无 P0–P3 新问题。
