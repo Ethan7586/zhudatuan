@@ -95,6 +95,17 @@ describe('canonical storefront production API', () => {
     expect(requestPaths(fetcher).filter((path) => path === '/api/v1/members/me')).toHaveLength(1);
   });
 
+  it('keeps the verified member shell when the optional profile read is denied', async () => {
+    const fetcher = apiFetch({ profileStatus: 403 });
+    vi.stubGlobal('fetch', fetcher);
+    const { productionApi } = await import('./productionApi');
+
+    await expect(productionApi.getSession()).resolves.toMatchObject({
+      authenticated: true,
+      actor: { userId: 'membership:one', displayName: '138****0000' },
+    });
+  });
+
   it('binds password login to the current storefront application', async () => {
     vi.stubEnv('NEXT_PUBLIC_STOREFRONT_APPLICATION', 'zdt-l1-verify');
     const fetcher = apiFetch();
@@ -360,7 +371,7 @@ describe('canonical storefront production API', () => {
   });
 });
 
-function apiFetch(options: { personalMinor?: number; paymentState?: string; profile?: Record<string, unknown> } = {}) {
+function apiFetch(options: { personalMinor?: number; paymentState?: string; profile?: Record<string, unknown>; profileStatus?: number } = {}) {
   return vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
     const path = new URL(String(input)).pathname;
     const method = init?.method ?? 'GET';
@@ -369,7 +380,9 @@ function apiFetch(options: { personalMinor?: number; paymentState?: string; prof
     }, 201);
     if (path === '/api/v1/identity/tickets/exchange' && method === 'POST') return json({ session: 'session:one' });
     if (path === '/api/v1/identity/session') return json(SESSION);
-    if (path === '/api/v1/members/me') return json(options.profile ?? PROFILE);
+    if (path === '/api/v1/members/me') return options.profileStatus
+      ? json({ code: 'PROFILE_UNAVAILABLE', message: 'PROFILE_UNAVAILABLE' }, options.profileStatus)
+      : json(options.profile ?? PROFILE);
     if (path === '/api/v1/benefits/accounts') return json(ACCOUNTS);
     if (path === '/api/v1/benefits/ledgers') return json({ items: [] });
     if (path === '/api/v1/orders' && method === 'GET') return json({ items: [] });

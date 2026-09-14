@@ -66,7 +66,18 @@ async function sessionBootstrap(): Promise<ApiBootstrap> {
   const client = canonicalClient();
   const session = mapCanonicalSession(await canonicalCall(() => client.identity.sessionRead({}, anonymousContext())));
   rememberCanonicalSession(session);
-  const profile = await canonicalCall(() => client.member.profileRead({}, sessionContext()));
+  let profile: unknown;
+  try {
+    profile = await canonicalCall(() => client.member.profileRead({}, sessionContext()));
+  } catch {
+    // The identity session is already authoritative. A delayed or denied
+    // profile read must not erase the member shell and show the user as a guest.
+    profile = {
+      id: session.membership,
+      employee_no: session.membership,
+      display_name: session.phoneMasked ?? session.membership,
+    };
+  }
   return mapCanonicalBootstrap(session, profile, resolveStorefrontPresentationIdentity());
 }
 
