@@ -1685,3 +1685,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | stable surface | root module、public index、manifest/manifest test | [FACT][E-AU-154-002]；真实 Commerce main/jobs consumer |
 
 [FACT][E-AU-154-003] 13 文件、67 行完成深审；Audit 25/25 文件均取得审阅状态。
+
+## 160. AU-155 Reporting 读取、导出 HTTP 与双 API 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| metric/dashboard | scope/supplier/report-period keyset metrics、projection-version cache、cockpit summary | [FACT][E-AU-155-001] |
+| export HTTP | filter-bounded export enqueue、completed clean object authorization | [FACT][E-AU-155-002] |
+| module/test | full reporting route 与 identity-only read module；cursor/document/manifest tests | [FACT][E-AU-155-003] |
+
+[FACT][E-AU-155-004] 17 文件、741 行完成深审；projection/export worker、projection domain 与 legacy compatibility 留待后续单元。

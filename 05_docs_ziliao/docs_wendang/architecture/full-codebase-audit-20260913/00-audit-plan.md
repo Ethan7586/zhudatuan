@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-154 已完成。AU-154 完成 Audit 兼容导出与文件级覆盖闭合。覆盖总账按当前文件级清单重算：深入审阅1,489文件/107,124行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,365文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-155 已完成。AU-155 完成 Reporting 的读取、缓存、导出 HTTP 与双 API 装配审阅。覆盖总账按当前文件级清单重算：深入审阅1,506文件/107,865行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,348文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1359,3 +1359,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Audit 的 root/legacy compatibility exports、public index、manifest/manifest test，并反查 Commerce main/jobs 和既审 archive/runtime chain。
 
 执行结果：十项 legacy path 均为单向转发至既审 canonical Audit 层；root module、manifest 和 public index 保持稳定边界，auditarchive 仍由主 jobs catalog 使用。Audit 25/25 基线文件均取得审阅状态；未发现 P0–P3 新问题。
+
+## 157. AU-155 连续审计点
+
+审阅 Reporting metric/dashboard/export HTTP、repository public adapter、full/identity selected module、manifest 和已有 read/export tests。
+
+执行结果：full API 组装 cache-versioned dashboard、指标查询、export create/read；completed clean export 只通过 ObjectStore 生成 300 秒授权下载。identity selected module 仅暴露七项 operator metric reads。现有测试覆盖 timestamp cursor、XLSX/CSV formula neutralization、order export filter SQL 与 manifest；projection/export worker 未纳入本批。未发现 P0–P3 新问题。

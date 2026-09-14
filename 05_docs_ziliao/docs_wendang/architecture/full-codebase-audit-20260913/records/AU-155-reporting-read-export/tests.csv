@@ -1,0 +1,4 @@
+verification,scope,result,reason
+Source-level runtime trace,Reporting read/export HTTP repository module and selected identity route,Completed,Canonical paths and direct tests reviewed.
+Existing test review,ReportingReadOperations ExportDocument manifest tests,Completed,Covers cursor/document/filter SQL/declaration behavior; no execution in audit worktree.
+Targeted formal test,Reporting suite,Not run,Audit worktree dependency baseline lacks vitest; dependencies unchanged.

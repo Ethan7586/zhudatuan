@@ -381,3 +381,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - legacy export 无独立业务分支；manifest test 验证 public export isolation 与 audit HTTP/job declarations。
 - Audit 25/25 文件均取得审阅状态。
+
+## 155. AU-155 Reporting read/export HTTP 深审
+
+- Reporting read test 覆盖 PostgreSQL timestamp cursor；ExportDocument test 覆盖 XLSX、CSV formula neutralization、order export filter/scope SQL 和任务列表。
+- 本批未将 projection/export Worker 行为纳入结论，保留下一独立单元。
