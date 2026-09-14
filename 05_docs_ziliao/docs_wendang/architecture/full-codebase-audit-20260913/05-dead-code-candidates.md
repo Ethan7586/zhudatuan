@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 29。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 30。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1357,3 +1357,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是：应在隔离数据库抽样核对历史政策选取、invite scope 和恢复路径。 |
 
 - invitation 条款/政策绑定与授权生命周期归 GX-0029。累计 G0 60、G1 83、G2 5、G3 0、GX 29；未删除任何文件。
+
+## GX-0030｜Invitation resource scope resolver 演进
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821066000_resolve_invitation_scope.sql` |
+| 疑似原因 | 该文件是历史版本的 function replacement，之后又被多次覆盖。 |
+| 保留证据 | [FACT][E-AU-473] 它首次为 invitation create/revoke 建立组织 scope 归属，并将跨域 resource-scope resolver 收敛为 unknown 时显式失败、仅 shopapp 可执行的边界；后续三参/四参 resolver 均从此演进。 |
+| 运行结论 | 后续覆盖是演进，不是删除依据；错误改写会改变 handler 授权范围。 |
+| 数据/契约责任 | 确立 invitation 的组织归属和 operation→resource 数据所有权投影。 |
+| 可否删除 | 禁止 |
+| 二次复核 | 是：以真实数据库 current definition、grant 和跨组织反事实调用复核。 |
+
+- invitation scope resolver 演进归 GX-0030。累计 G0 60、G1 83、G2 5、G3 0、GX 30；未删除任何文件。
