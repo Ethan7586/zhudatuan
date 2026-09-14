@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 38。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 39。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1492,3 +1492,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是：role permission、RLS/allocator scope、卡密字段和审计输出。 |
 
 - platform Owner card-library read grant 归 GX-0038。累计 G0 60、G1 83、G2 5、G3 0、GX 38；未删除任何文件。
+
+## GX-0039｜Platform Owner Cockpit catalog/inventory read 授权
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821076000_grant_platform_cockpit_reads.sql` |
+| 疑似原因 | 仅两项 permission 的 deny→allow 变更，表面像 UI 可见性修复。 |
+| 保留证据 | [FACT][E-AU-483] Cockpit 是 Console 默认入口；迁移断言实际 membership 能调用 catalog.listings.read/inventory.availability.read，且权限清单明确仅 read。 |
+| 运行结论 | 这是默认运营看板的 API 访问边界，不授予任何目录或库存写操作。 |
+| 数据/契约责任 | 规定平台 Owner 可读取商品和可用库存的控制台 capability。 |
+| 可否删除 | 禁止 |
+| 二次复核 | 是：role permission、RLS/scope、UI capability 隐藏与审计。 |
+
+- platform Cockpit read grant 归 GX-0039。累计 G0 60、G1 83、G2 5、G3 0、GX 39；未删除任何文件。
