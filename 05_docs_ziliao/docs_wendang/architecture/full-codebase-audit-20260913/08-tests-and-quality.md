@@ -545,3 +545,7 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖catalog permission、overview target、product status coarse permission和overview返回server employee profile。
 - Product status没有resource scope/idempotency/input或active/inactive成功RPC fixture；见F-0198/P2。审计工作树未运行Vitest。
+
+## 191. AU-191 Storefront home composition 深审
+
+- 未找到`homeRoutes` direct fixture；组合层的success及任一child failure传播不被独立验证，已归入F-0195/P2。审计工作树未运行Vitest。

@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-191-001,src/api/homeRoutes.ts,12-24,composition,GET home snapshot concurrently invokes bootstrap accounts orders and ledgers using the same authorization and returns first failure.
+E-AU-191-002,src/api/routes/storefrontRouter.ts,20-23,runtime registration,The formal storefront router registers /api/v1/home for storefront memberships.
+E-AU-191-003,src/api/homeRoutes.ts,1-26,tests,No homeRoutes direct test file or handler call was found; tracked by F-0195.

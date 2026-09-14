@@ -2058,3 +2058,11 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | product status | coarse publish permission→server product scope→idempotency/hash/evidence写入 | [FACT][E-AU-190-003] |
 
 [FACT][E-AU-190-004] 2 文件、156 行完成深审；compat admin router注册products、overview和product status路径，当前正式Worker未装载完整authenticated admin router。
+
+## 196. AU-191 Storefront home composition 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| home snapshot | GET下并发组合bootstrap/accounts/orders/ledgers，并将首个子handler失败返回调用方 | [FACT][E-AU-191-001] |
+
+[FACT][E-AU-191-002] 1 文件、26 行完成深审；正式Storefront router注册`/api/v1/home`，直接测试缺口已记录F-0195/P2。

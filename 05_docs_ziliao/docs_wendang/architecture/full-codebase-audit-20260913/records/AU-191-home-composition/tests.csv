@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/homeRoutes.ts,no direct fixture for composed success or child failure propagation,not run: audit worktree has no Vitest dependencies
