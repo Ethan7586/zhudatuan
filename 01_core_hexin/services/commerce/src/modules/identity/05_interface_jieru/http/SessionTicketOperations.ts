@@ -6,7 +6,7 @@ import { requireAccessNodeContext, requireGovernanceContext } from '../../../../
 import { PasswordPolicy } from '../../02_domain_yewu/policies_guize/PasswordPolicy';
 import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransaction';
 import { publishIdentityEvent, tokenHash } from '../../04_adapters_shixian/persistence_cunchu/IdentityPersistence';
-import { authMembershipTarget, authTarget, requestCookie, sessionCookies } from './IdentitySecurity';
+import { authMembershipTarget, authTarget, requestCookie, SESSION_MAX_AGE_SECONDS, sessionCookies } from './IdentitySecurity';
 import { memberPort } from '../../../member';
 import { canonicalIdentitySubject, canonicalMobile } from '../../02_domain_yewu/models_moxing/IdentitySubject';
 import {
@@ -157,7 +157,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           await database.query(
             `insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,user_agent,device_label,
               assurance_level,realm_id,account_id,auth_target,expires_at,last_seen_at,created_at)
-          values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
+          values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,clock_timestamp()+interval '30 days',clock_timestamp(),clock_timestamp())`,
             [
               id,
               found.principal_id,
@@ -214,11 +214,11 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
             : await tickets.consume(database, { ...directExchange, ...callback }, token, realm.realmId);
           const directExpiresIn = direct === undefined
             ? undefined
-            : Math.max(1, Math.min(43_200, Math.floor((direct.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
-          return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id,
+            : Math.max(1, Math.min(SESSION_MAX_AGE_SECONDS, Math.floor((direct.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
+          return { status: 201, body: { session: id, csrf, expiresIn: SESSION_MAX_AGE_SECONDS, membership: membership.id,
             target, callback, active_context: activeContext,
             ...(direct === undefined ? {} : { exchange: { returnTarget: direct.returnTarget, expiresIn: directExpiresIn } }) },
-          headers: sessionCookies(token, csrf, 43_200) };
+          headers: sessionCookies(token, csrf, SESSION_MAX_AGE_SECONDS) };
         },
       }),
       'identity.loginintents.create': async (request, database) => {
@@ -276,7 +276,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         if (!currentToken) reject(401, 'AUTHENTICATION_REQUIRED');
         const realm = await resolveRealmNode(database, request.input.headers.host);
         const exchanged = await tickets.consume(database, request.input.body, currentToken, realm.realmId);
-        const expiresIn = Math.max(1, Math.min(43_200, Math.floor((exchanged.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
+        const expiresIn = Math.max(1, Math.min(SESSION_MAX_AGE_SECONDS, Math.floor((exchanged.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
         return {
           status: 200,
           body: { returnTarget: exchanged.returnTarget, expiresIn },

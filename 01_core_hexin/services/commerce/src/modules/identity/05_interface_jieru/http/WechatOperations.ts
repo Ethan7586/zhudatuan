@@ -12,7 +12,7 @@ import type { WechatScene } from '@shop/config/server';
 import type { IdentityRealmContext } from '@shop/config/server';
 import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransaction';
 import type { PgAuthTicket } from '../../04_adapters_shixian/persistence_cunchu/PgAuthTicket';
-import { authMembershipTarget, authTarget, sessionCookies } from './IdentitySecurity';
+import { authMembershipTarget, authTarget, SESSION_MAX_AGE_SECONDS, sessionCookies } from './IdentitySecurity';
 import { currentRealmAccount, resolveRealmContext, resolveRealmNode, type RealmNodeContext } from '../../03_application_yingyong/services_fuwu/RealmAccount';
 
 export class WechatOperations implements OperationUsecase {
@@ -131,7 +131,7 @@ export class WechatOperations implements OperationUsecase {
     const session = `session:${randomUUID()}`;
     await database.query(`insert into identity.session(id,principal_id,membership_id,token_hash,credential_version,access_version,client,ip_hash,
       user_agent,device_label,assurance_level,realm_id,account_id,auth_target,expires_at,last_seen_at,created_at)
-      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,1,$11,$12,$13,clock_timestamp()+interval '12 hours',clock_timestamp(),clock_timestamp())`,
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,1,$11,$12,$13,clock_timestamp()+interval '30 days',clock_timestamp(),clock_timestamp())`,
     [session, principal, membershipid, tokenHash(token), active.credential_version, active.access_version, active.client,
       createHmac('sha256', this.sessionKey).update(request.input.headers['x-peer-address'] ?? 'unknown').digest('hex'),
       String(request.input.headers['user-agent'] ?? 'unknown').slice(0, 512), String(request.input.headers['x-device-id'] ?? 'wechat').slice(0, 128),
@@ -144,10 +144,10 @@ export class WechatOperations implements OperationUsecase {
       if (authMembershipTarget(returnTarget) !== authTarget(active.client)) throw new Error('AUTH_RETURN_TARGET_INVALID');
       const csrf = randomBytes(32).toString('base64url');
       const callback = await this.tickets.issue(database, session, accountRealm, account, realm.target, authorization);
-      return { status: 201, body: { session, csrf, expiresIn: 43_200, membership: membershipid, callback },
-        headers: sessionCookies(token, csrf, 43_200) };
+      return { status: 201, body: { session, csrf, expiresIn: SESSION_MAX_AGE_SECONDS, membership: membershipid, callback },
+        headers: sessionCookies(token, csrf, SESSION_MAX_AGE_SECONDS) };
     }
-    return { status: 201, body: { token, session, expiresIn: 43_200, membership: membershipid } };
+    return { status: 201, body: { token, session, expiresIn: SESSION_MAX_AGE_SECONDS, membership: membershipid } };
   }
 
   private async createGrant(database: import('../../../../foundation/application/ModuleOperations').OperationDatabase, identity: string,

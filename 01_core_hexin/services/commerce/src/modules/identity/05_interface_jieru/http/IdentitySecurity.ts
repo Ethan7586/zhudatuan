@@ -1,6 +1,8 @@
 import type { AuthTarget } from '@shop/config/server';
 import { reject, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
 
+export const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
+
 export function sessionCookies(token: string, csrf: string, maxAge: number): Readonly<Record<string, string>> {
   const expiry = maxAge === 0 ? '; Expires=Thu, 01 Jan 1970 00:00:00 GMT' : '';
   return Object.freeze({
