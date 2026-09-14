@@ -249,7 +249,7 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
   const artifact = resolution.manifest.artifact;
   const runtimeManifest = resolution.manifest.runtimeManifest;
-  const remoteAction = candidateOnly ? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3';
+  const remoteAction = candidateOnly ? 'validate-oss-candidate-v3' : 'deploy-oss-direct-v2';
   const remoteIdentityArgs = [
     '--project',
     adapter.project,
@@ -287,14 +287,10 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
         remoteAction,
         ...remoteIdentityArgs,
       ],
-      ...(candidateOnly
-        ? {
-            input: `${JSON.stringify({
-              artifactUrl: downloadClient.signGet(artifact.object, 900),
-              manifestUrl: downloadClient.signGet(runtimeManifest.object, 900),
-            })}\n`,
-          }
-        : {}),
+      input: `${JSON.stringify({
+        artifactUrl: downloadClient.signGet(artifact.object, 900),
+        manifestUrl: downloadClient.signGet(runtimeManifest.object, 900),
+      })}\n`,
       timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
     },
     basicContext(adapter)
@@ -366,7 +362,7 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
       downloadedBytes: remoteResult.downloadedBytes ?? 0,
       reusedBytes: remoteResult.reusedBytes ?? 0,
     },
-    ...(candidateOnly ? { candidateEvidence: remoteResult.current, candidateSeal, lineage } : { receipt: remoteResult.activation.receipt, candidateSeal: remoteResult.seal }),
+    ...(candidateOnly ? { candidateEvidence: remoteResult.current, candidateSeal, lineage } : { receipt: remoteResult.activation.receipt }),
     completedAt: new Date().toISOString(),
   };
 }

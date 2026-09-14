@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dispatch the official 1.3.2 Aliyun sealed-artifact deployment channel.
+# Dispatch the official 1.3.2 Aliyun prepared-artifact deployment channel.
 # Usage:
 #   scripts/deploy-prepared.sh <target> <full-commit-sha> <node>
 
@@ -41,7 +41,7 @@ if ! gh workflow view deploy-prepared-aliyun.yml --ref zdt-next --yaml >/dev/nul
   exit 1
 fi
 
-echo "Aliyun sealed-artifact deploy: ${SHA} -> ${NODE}/${TARGET}"
+echo "Aliyun prepared-artifact deploy: ${SHA} -> ${NODE}/${TARGET}"
 gh workflow run deploy-prepared-aliyun.yml --ref zdt-next \
   -f head_sha="$SHA" \
   -f release_node="$NODE" \

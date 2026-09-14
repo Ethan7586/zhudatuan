@@ -164,6 +164,20 @@ test('prepared v2 actions reject Agent or policy drift before download and cutov
   );
 });
 
+test('prepared v2 deploy verifies and activates in one locked action without a candidate seal', async () => {
+  const fixture = await createFixture();
+  const artifact = await createArtifact(fixture, 'atomic-prepared', '2'.repeat(40));
+  const deployed = await invokeOss(fixture, artifact, await artifactPayload(artifact), true, 'deploy-oss-direct-v2');
+  assert.equal(deployed.result.schema, 'ai.delivery.oss-direct.v1');
+  assert.equal(deployed.result.activation.mode, 'direct-activated');
+  assert.equal(deployed.result.activation.receipt.finalStatus, 'success');
+  assert.equal(deployed.result.activation.receipt.sourceSha, artifact.sourceSha);
+  await assert.rejects(
+    () => lstat(join(fixture.pointerRoot, 'candidate-seal.json')),
+    (error) => error.code === 'ENOENT'
+  );
+});
+
 test('prepared candidate validation downloads and checks the release without moving current', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', '3'.repeat(40));

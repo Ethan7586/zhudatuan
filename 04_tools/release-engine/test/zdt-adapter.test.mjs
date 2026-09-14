@@ -109,7 +109,7 @@ test('legacy direct recovery retains the isolated H6 CDN channel', () => {
   assert.equal((deployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
 });
 
-test('normal scripts expose only the 1.3.2 prepare-seal and sealed-deploy sequence', () => {
+test('normal scripts expose only the 1.3.2 prepare and atomic-deploy sequence', () => {
   assert.match(deployNow, /exec "\$script_dir\/deploy-prepared\.sh" "\$@"/);
   assert.doesNotMatch(deployNow, /legacy|deploy\.yml|npm ci|build|git push/);
   assert.match(deployPrepared, /gh workflow run deploy-prepared-aliyun\.yml --ref zdt-next/);
@@ -404,7 +404,7 @@ test('first activation is limited to pointer-only content and migration evidence
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
 });
 
-test('1.3.2 binds artifact, source lineage and control-plane provenance before production switch', () => {
+test('1.3.2 binds the artifact and control-plane provenance in one production action', () => {
   assert.match(preparedDeployWorkflow, /ref: \$\{\{ github\.sha \}\}/);
   assert.match(preparedDeployWorkflow, /--source-sha "\$RELEASE_SHA"/);
   assert.match(preparedDeployWorkflow, /--control-sha "\$CONTROL_SHA"/);
@@ -412,15 +412,15 @@ test('1.3.2 binds artifact, source lineage and control-plane provenance before p
   assert.match(preparedDeployWorkflow, /--github-run-attempt "\$GITHUB_RUN_ATTEMPT"/);
   assert.match(preparedDeployWorkflow, /--expected-remote-agent-sha256/);
   assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256/);
-  assert.match(preparedDeployWorkflow, /^name: Deploy 1\.3\.2 - Aliyun Sealed Artifact/m);
+  assert.match(preparedDeployWorkflow, /^name: Deploy 1\.3\.2 - Aliyun Prepared Artifact/m);
   assert.match(preparedDeployWorkflow, /GH_TOKEN: \$\{\{ github\.token \}\}/);
-  assert.match(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3'/);
-  assert.doesNotMatch(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v2' : 'deploy-oss-direct-v2'/);
+  assert.match(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v3' : 'deploy-oss-direct-v2'/);
   assert.match(releaseEngine, /seal-validated-candidate-v3/);
   assert.match(releaseEngine, /PREPARED_SOURCE_DOES_NOT_CONTAIN_CURRENT/);
-  assert.match(releaseEngine, /input: `\$\{JSON\.stringify\([\s\S]*?artifactUrl:[\s\S]*?: \{\}\),/);
+  assert.match(releaseEngine, /input: `\$\{JSON\.stringify\([\s\S]*?artifactUrl:[\s\S]*?manifestUrl:/);
   assert.match(preparedDeployWorkflow, /--node "\$RELEASE_NODE"/);
   assert.match(preparedDeployWorkflow, /validate-candidate/);
+  assert.match(preparedDeployWorkflow, /default: deploy/);
   assert.match(preparedDeployWorkflow, /jobs:\n  prepared:/);
   assert.doesNotMatch(preparedDeployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent|npm ci|release -- build|release -- package/);
 });
