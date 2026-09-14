@@ -5045,3 +5045,21 @@
 | 建议方向 | 从当时最新主线建立一个单一目的 repair batch：先确认产品仍承诺确认收货；若承诺，向权威 Purchase API 增加 receive 的 selected module/operation/route 与真实授权测试；若已下线，则前向停用 runtime operation、capability 与 entitlement，并处理客户端契约。不要修改历史 migration。 |
 | 验证/回滚 | 隔离环境通过实际部署的 Purchase API 以合法 member 调用该 path，断言仅本人 shipped order 成功、重复幂等、他人/未发货/version conflict 均拒绝；退役路径则断言 catalog 与客户端不再暴露。回滚为撤回独立入口或目录变更。 |
 | 是否需要独立复核 | 否；实施前需要产品/API owner确认 operation 是否仍是对外承诺。 |
+
+## F-0272｜Store governance scope 规范化缺少数据库级拒绝契约
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Governance scope / Store scope |
+| 类型 | 数据库权限契约、测试可信度 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260905011000_expand_governance_store_scope.sql:25-81`；`20260902132000_canonical_governance_context.sql:24-128`；`20260902134000_senior_administrator_role.sql:42-125`；`01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.test.ts:79-84`。 |
+| 当前/预期 | migration 为 `canonical_governance_scope` 增加 Store branch：输入 Store ID 会返回该 Store 的 ID 与其 Mall 的最近 Tenant（或 Mall）组织。仓内没有调用该 SQL function 的 PostgreSQL contract；现有 PgAccessResolvers unit test 注入已解析的 governance row。预期应保存 active/inactive、正确/错误 actor-membership、Store/Mall/tenant 边界及 scope-kind 的真实 DB 允许/拒绝契约。 |
+| 直接证据 | [FACT][E-AU-651-001] Store branch 读取 `partner.store` 并只要求 Mall active；[FACT][E-AU-651-002] function 以 SECURITY DEFINER 运行、由 `resolve_governance` lateral 调用；[FACT][E-AU-651-003] 对 database test 目录的 `canonical_governance_scope`/Store scope normalization 检索未命中，PgAccessResolvers test 则直接构造 resolver 返回行而不执行 SQL function。 |
+| 调用链或运行入口 | Console/API access context → `access.resolve_governance` → `access.canonical_governance_scope` Store candidate → 后续 scope/capability authorization。 |
+| 用户/数据/安全影响 | 当前没有发现越权或合法请求失败证据；但未来改动 Store、closure、active-state 或 SECURITY DEFINER ACL 时，现有 unit fixture 无法发现数据库特有的跨 Tenant 映射、空结果或错误 normalization，可能使治理请求错误拒绝或指向错误组织。 |
+| 根因 | Store scope 被追加到既有 canonical resolver，发布 migration 的断言只检查 function text 包含 `partner.store`，没有验证行为矩阵。 |
+| 建议方向 | 从当时最新主线建立独立 DB contract-test 批次：最小 fixture 覆盖 active Store→Tenant、无 Tenant ancestor→Mall、inactive Store/Mall、actor/membership mismatch、错误 scope kind与跨 Tenant Store；同时断言 resolver 只规范化而不绕过授权。不要改写历史 migration。 |
+| 验证/回滚 | 在隔离 PostgreSQL 以实际 runtime role 调用 `resolve_governance` 和后续权限读取，逐例断言 scope 字段及 allow/deny；回滚为撤回独立 SQL contract test。 |
+| 是否需要独立复核 | 否；Store 跨 Mall/Tenant 的期望业务语义需要权限所有者确认。 |
