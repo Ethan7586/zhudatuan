@@ -199,6 +199,32 @@ test('prepared candidate validation downloads and checks the release without mov
   assert.equal(sealed.result.expectedCurrent, current);
 });
 
+test('prepared validation accepts only the legacy readable-mode widening of a frontend current release', async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'legacy-readable-baseline', '4'.repeat(40));
+  await invokeOss(fixture, baseline, await artifactPayload(baseline));
+  const current = await readlink(join(fixture.pointerRoot, 'current'));
+  const manifestPath = join(current, 'AI_DELIVERY_ARTIFACT.json');
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  manifest.entries = manifest.entries.map((entry) => entry.type === 'file' ? { ...entry, mode: 0o600 } : entry);
+  manifest.treeDigest = digest(manifest.entries);
+  delete manifest.manifestDigest;
+  manifest.manifestDigest = digest(manifest);
+  await chmod(manifestPath, 0o644);
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  await chmod(manifestPath, 0o444);
+
+  const candidate = await createArtifact(fixture, 'candidate', '5'.repeat(40));
+  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v3');
+  assert.equal(validated.result.current.sourceSha, baseline.sourceSha);
+
+  await chmod(join(current, 'app.txt'), 0o666);
+  const nextCandidate = await createArtifact(fixture, 'next-candidate', '6'.repeat(40));
+  const nextPayload = await artifactPayload(nextCandidate);
+  const rejected = await captureAgentFailure(() => invokeOss(fixture, nextCandidate, nextPayload, true, 'validate-oss-candidate-v3'));
+  assert.equal(rejected.code, 'CURRENT_RELEASE_TREE_MISMATCH');
+});
+
 test('1.3.2 deploy consumes only a sealed candidate and never downloads during cutover', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', '8'.repeat(40));

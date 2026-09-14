@@ -606,12 +606,11 @@ async function releaseSourceSha(context, release) {
     delete unsigned.manifestDigest;
     assert(claimedDigest === digest(unsigned), 'CURRENT_RELEASE_MANIFEST_DIGEST_MISMATCH', { release: directory });
     const evidence = await treeEvidence(directory, new Set(['AI_DELIVERY_ARTIFACT.json']));
-    assert(evidence.treeDigest === manifest.treeDigest, 'CURRENT_RELEASE_TREE_MISMATCH', { release: directory });
     if (manifest.engineVersion === 2) {
       assertManifestEntries(manifest);
-      assertTreeMatchesManifest(evidence, manifest);
+      assertCurrentTreeMatchesManifest(evidence, manifest, directory);
       await verifyCriticalFiles(directory, manifest.criticalFiles ?? []);
-    }
+    } else assert(evidence.treeDigest === manifest.treeDigest, 'CURRENT_RELEASE_TREE_MISMATCH', { release: directory });
     return manifest.sourceSha;
   }
   const baseline = await readJson(baselineEvidencePath(context, directory));
@@ -1791,6 +1790,35 @@ function assertTreeMatchesManifest(evidence, manifest) {
   assert(evidence.treeDigest === manifest.treeDigest, 'ARTIFACT_TREE_HASH_MISMATCH', evidence);
   assert(evidence.fileCount === manifest.fileCount && evidence.entryCount === manifest.entryCount && evidence.totalBytes === manifest.totalBytes, 'ARTIFACT_TREE_SIZE_MISMATCH', evidence);
   assert(stableJson(evidence.entries) === stableJson(manifest.entries), 'ARTIFACT_FILE_LIST_MISMATCH');
+}
+
+function assertCurrentTreeMatchesManifest(evidence, manifest, release) {
+  if (evidence.treeDigest === manifest.treeDigest) {
+    assertTreeMatchesManifest(evidence, manifest);
+    return;
+  }
+  assert(
+    manifest.targetKind === 'frontend' && legacyReadableModesMatch(evidence, manifest),
+    'CURRENT_RELEASE_TREE_MISMATCH',
+    { release }
+  );
+}
+
+function legacyReadableModesMatch(evidence, manifest) {
+  if (evidence.fileCount !== manifest.fileCount || evidence.entryCount !== manifest.entryCount || evidence.totalBytes !== manifest.totalBytes) return false;
+  if (evidence.entries.length !== manifest.entries.length) return false;
+  return manifest.entries.every((expected, index) => {
+    const actual = evidence.entries[index];
+    const expectedWithoutMode = { ...expected };
+    const actualWithoutMode = { ...actual };
+    delete expectedWithoutMode.mode;
+    delete actualWithoutMode.mode;
+    if (stableJson(expectedWithoutMode) !== stableJson(actualWithoutMode)) return false;
+    if (actual.mode === expected.mode) return true;
+    if (expected.type === 'directory') return expected.mode === 0o700 && actual.mode === 0o755;
+    if (expected.type === 'file') return [0o600, 0o700].includes(expected.mode) && actual.mode === 0o644;
+    return false;
+  });
 }
 
 function assertArtifactPath(path) {
