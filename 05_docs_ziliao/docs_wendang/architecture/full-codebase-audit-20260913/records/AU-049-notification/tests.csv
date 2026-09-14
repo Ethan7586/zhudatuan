@@ -1,0 +1,4 @@
+"测试/验证","范围","结果","能证明","不能证明"
+"DispatchNotification.test.ts","身份 challenge 的 sent/ambiguous/失败路径","未启动：vitest command not found","源码中已有 mock 设计意图","一般 notification dispatch 的恢复"
+"NotificationJob.test.ts","notification job payload 分派","未启动：vitest command not found","源码中已有 payload 校验设计意图","JobRunner+PostgreSQL 状态机"
+"手工控制流重追踪","claim → 前置 KMS 异常 → JobRunner retry → claim 空结果","完成","F-0143 静态状态链","真实 KMS 故障频率、线上存量/影响数"

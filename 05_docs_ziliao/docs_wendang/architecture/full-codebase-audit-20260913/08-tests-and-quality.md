@@ -32,6 +32,11 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 6. Redis startup失败与运行中断线后的恢复状态机测试。
 7. current PostgreSQL/Object/KMS backup restore演练证据；若存在仓库外流程，需只读接入证据而不是复制描述。
 
+## AU-049 通知模块测试缺口
+
+- 身份 challenge 用例覆盖其独立的 ambiguous/fail 状态机，未覆盖普通 `notification.dispatch` 在 claim 后、外部 send 前发生 KMS/template 异常的恢复。
+- 本次定向 `@shop/commerce` Vitest 命令在加载源码前以 127 退出（`vitest: command not found`）；未安装依赖，结果不当作通过或实现失败。
+
 详细执行结果和不证明项见 `records/AU-005-shared-state-infrastructure-map/tests.csv`。
 
 ## 5. AU-006 配置内核测试可信度

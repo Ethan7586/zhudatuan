@@ -729,3 +729,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Support Console、工单/消息事务、附件扫描和 SLA 作业。
 
 执行结果：新增 F-0142/P2（消息发送 expectedVersion 契约与实现不一致）；未发现 P0，未运行正式测试或改变运行状态。
+
+## 51. AU-049 连续审计点
+
+审阅 Notification Console 只读入口、模块/Job 注册、事件入队、偏好/端点、渠道适配器及失败重试。
+
+执行结果：新增 F-0143/P1 候选：generic dispatch 领取后、外发前的 KMS/模板异常会保留 `sending`；JobRunner 重试时领取为空并将 runtime job 完成，通知无恢复入口。已保存完整静态证据，按 P1 纪律进入 AU-050 独立复核；未见 P0，定向 Vitest 因缺命令未启动，未安装依赖或改变运行状态。

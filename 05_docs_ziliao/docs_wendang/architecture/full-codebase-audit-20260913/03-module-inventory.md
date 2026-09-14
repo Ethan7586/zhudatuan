@@ -86,6 +86,12 @@ AU-002 已结构性核对全部 manifest、静态/动态可达性以及路由装
 
 注册表只证明模块被组装，不证明职责单一、依赖方向正确、数据归属清晰或每个 target 都需要整个模块集合。上述问题仍为 UNKNOWN。
 
+### AU-049｜Notification 派发与偏好边界（2026-09-14）
+
+| 模块职责 | 对外入口 | 上游/下游 | 数据所有权 | 运行/发布单元 | 当前边界结论 |
+| --- | --- | --- | --- | --- |
+| 通知模板、公告、成员偏好、端点与事件投递 | Console 模板/公告读页；notification HTTP 操作；notification/identitynotification Jobs | 上游为业务 outbox/inbox 事件；下游为 KMS、SMS、邮件、微信和站内渠道 | `notification.template/preference/endpoint/dispatch/attempt/announcement` | Commerce API + notification Worker；由 Job catalog 注册 | 正常队列、偏好与回执链明确；generic dispatch 与 runtime.job 的恢复状态机未闭合（F-0143，P1 候选，AU-050 独立复核） |
+
 ## 5. Workspace 库存
 
 [FACT][E-AU-001-002][E-AU-001-003] 43 个 workspace 分组如下：
