@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-083 已完成。AU-083 完成 WebBusiness Pricing 读取运行入口审阅。覆盖总账按当前文件级清单重算：深入审阅996文件/83,631行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,852文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-084 已完成。AU-084 完成 WebBusiness Catalog 读取与公开目录入口审阅。覆盖总账按当前文件级清单重算：深入审阅1,000文件/84,089行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,848文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -933,3 +933,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅独立部署的 WebBusiness API 中 Pricing selected module、scope resolver、公开 operation 集、composition manifest 与现有入口测试。
 
 执行结果：WebBusinessApiMain 将 `WebPricingModule` 与唯一 `pricing.offers.read` 注册到独立 API；storefront actor 的该请求只能由 session-bound mall scope 解析。其价格查询与完整 Commerce Pricing operation 逐句重复，且同样只返回原始 pricebook price，因而不会绕过或抵消 F-0159/P1。公开入口测试锁定路由白名单与无 checkout/payment 写入口。未发现 P0 或新增 P1–P3；Vitest 未运行。
+
+## 86. AU-084 连续审计点
+
+审阅 WebBusiness Catalog selected read、公开无会话商品目录适配器及各自测试。
+
+执行结果：授权 catalog read 依据 scope kind 分为 supplier/source listing、store/组织闭包 listing、storefront published-only listing，并用 keyset 分页；公开目录只接管固定 GET 路径，绑定配置/host 的 application slug，调用数据库 public projection，明确 `purchasable=false`。未发现 P0–P3 新问题；Vitest 未运行。

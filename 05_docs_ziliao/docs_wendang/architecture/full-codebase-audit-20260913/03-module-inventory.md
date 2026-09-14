@@ -932,3 +932,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | entry/manifest/test | 独立 API 启动、路由白名单与 composition 说明 | [FACT][E-AU-083-004] |
 
 [FACT][E-AU-083-005] 8 文件、332 行 WebBusiness Pricing 专项源码/测试完成深审；它是只读部署单元且只允许一个 Pricing operation。查询与完整 Pricing read 重复，当前语义一致；F-0159 的未生效规则仍覆盖此只读显示面。
+
+## 89. AU-084 WebBusiness Catalog 与公开目录模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| authorized catalog read | supplier、storefront 和组织层级 listing 读取 | [FACT][E-AU-084-001] |
+| public adapter | 无 session 的固定公开产品 GET 路由 | [FACT][E-AU-084-002] |
+| tests | SQL page/summary、host binding 与购买锁定 | [FACT][E-AU-084-003] |
+
+[FACT][E-AU-084-004] 4 文件、458 行 WebBusiness Catalog 读取和公开 HTTP adapter 完成深审；对外公开面不复用授权 read，只有数据库 public projection 可以提供商品，且响应始终禁止购买。

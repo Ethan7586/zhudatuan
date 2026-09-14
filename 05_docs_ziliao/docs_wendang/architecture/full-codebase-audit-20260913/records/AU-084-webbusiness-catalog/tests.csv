@@ -1,0 +1,3 @@
+"测试","范围","结论","执行"
+"WebCatalogOperations.test.ts","scope query/page/summary/supply network","mock database 验证 SQL/参数与返回 shape；不验证真实 RLS/数据。","未执行：固定审计 worktree 无 vitest 可执行文件；未安装依赖。"
+"PublicCatalogHttpHandler.test.ts","public host binding、跨 node、购买锁定、canonical delegation","覆盖 adapter 可观察 HTTP 响应；未重放 public_storefront_catalog 函数。","未执行：固定审计 worktree 无 vitest 可执行文件；未安装依赖。"
