@@ -5423,3 +5423,24 @@
 | 验证方式 | 在完整基线 migration head，以真实 Identity API role测试 OTP success、missing OTP、`phoneVerification=checkout`、operator invite和Owner Storefront；断言每个路径的HTTP code/业务码、事务原子性、challenge状态和未产生越权membership。 |
 | 回滚方式 | 回退独立入口/trigger contract版本；对已失败请求不需要数据回滚，对未来引入的 deferred proof须保持可撤销/过期。 |
 | 是否需要独立复核 | 是；复核者必须独立阅读 mobile/checkout 产品流程、actual client payload、trigger replacement链和完整 transaction error mapper。 |
+## F-0290｜Mall Owner provisioning function 未绑定 Mall 输入关系与当前会话授权
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Mall Provisioning / L1 Owner / database authorization boundary |
+| 类型 | 身份与权限、数据完整性、特权写入契约 |
+| 严重级别 | **P2** |
+| 置信度 | 高（function body、grant、adapter和当前 CreateMall caller为直接证据；生产 provisioning role/session未验证） |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260906010000_add_l1_owner_role_and_named_scope.sql:46-92`；`01_core_hexin/services/commerce/src/modules/provisioning/01_public_gongkai/MallOwnerProvisioningPort.ts:21-70`；`03_application_yingyong/CreateMall.ts:73-100`。 |
+| 当前/预期 | 当前 `access.provision_mall_owner` 只验证 source operator membership与principal匹配；它不验证 `p_organization`/`p_scope`/`p_mall` 相等或合法关联、不验证目标是 active Mall/parent hierarchy，也不读取 current session actor/scope。随后直接插入 operator membership、L1 role、三类 scopegrant与 mallowner。正常 CreateMall确实传相同 `plan.mall` 三值。预期是特权 DB function自行拒绝不一致/未授权 Mall输入，而非依赖所有 current/future callers永远正确传值。 |
+| 直接证据 | [FACT][E-AU-713-001] function 59-65唯一输入校验是 source operator/profile/principal；67-88按各自独立参数写 role/membership/role assignment/scope grants/mallowner；[FACT][E-AU-713-002] function为 `security definer`，provisioning runtime声明其 execute依赖；[FACT][E-AU-713-003] adapter 59-66原样传入六个参数；[FACT][E-AU-713-004] CreateMall 93-100为正常路径固定 `organization=scope=mall=plan.mall`，因此未证明当前调用已越权但也不能替代数据库校验。 |
+| 调用链或运行入口 | Mall provisioning command → CreateMall creates organization/pool/application → MallOwnerProvisioningPort → `access.provision_mall_owner` → access membership/role/scopegrant/mallowner writes。 |
+| 用户影响 | 错误接线、后续调用者缺陷或获得 Provisioning API DB调用能力者可将一个合法 source operator写成任意目标组织/范围/Mall的 owner，或写入内部不一致的 owner关系；当前未发现生产实例。 |
+| 数据影响 | 可污染 membership、role assignments、scope grants和 mallowner topology；后续 scope/owner resolvers可能得到错误治理结果。 |
+| 安全影响 | security-definer write boundary未对目标资源/调用者做 defense-in-depth，造成潜在 owner elevation与跨 Mall治理越权。 |
+| 根因 | 函数把 application preflight/plan正确性当作授权事实，未把目标 Mall identity、组织关系和 session capability纳入数据库 contract。 |
+| 建议方向 | 从当时最新 `zdt-next` 新建单一 Mall-owner provisioning authorization batch：定义可发起 owner provisioning的 authenticated capability，函数内验证 active Mall、`organization=scope=mall`、parent/tenant relationship、source actor和session scope，再执行写入；必要时收窄 direct function execute。不得修改本审计分支或历史 migration。 |
+| 预计修改范围 | 前向 Supabase function/grant migration、Provisioning API session-context adapter、最小 role/transaction contract；不批量重写 existing mallowner。 |
+| 验证方式 | 隔离 PostgreSQL以 provisioning role执行相同 Mall成功、不同 organization/scope/mall、inactive/non-Mall、foreign actor/source及无 session均拒绝；断言失败 transaction没有 membership/role/scopegrant/mallowner残留，并验证 CreateMall正常preflight/rollback。 |
+| 回滚方式 | 回退独立 function/grant version；对已发现的不一致 owner关系逐条审查并用单独数据修复流程处理，禁止批量删除。 |
+| 是否需要独立复核 | 是；复核者必须独立检查 production function owner/BYPASSRLS、API connection/session context、Mall provisioning入口和现有 `mallowner` 数据关系。 |
