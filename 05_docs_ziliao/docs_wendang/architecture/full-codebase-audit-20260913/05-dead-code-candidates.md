@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 33。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 34。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1417,3 +1417,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是：current RLS、表级 grant、actor-less 请求和专用角色 policy 联合测试。 |
 
 - decision audit RLS 修复归 GX-0033。累计 G0 60、G1 83、G2 5、G3 0、GX 33；未删除任何文件。
+
+## GX-0034｜Platform Owner 门店管理权限授予
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821071000_grant_store_administration.sql` |
+| 疑似原因 | 文件仅给现有角色补两项既有 permission，可能被误判为重复授权。 |
+| 保留证据 | [FACT][E-AU-478] store operation 以 partner.read/manage 为 capability permission；AccessPipeline 根据 rolepermission 决定可调用操作，PartnerOperations 继续以 scope_allowed 限制资源。 |
+| 运行结论 | 该映射补齐平台 Owner 的已发布门店职责，后续精确 owner-role 演进不是删除依据。 |
+| 数据/契约责任 | 承担平台级门店管理操作的特权授权边界。 |
+| 可否删除 | 禁止 |
+| 二次复核 | 是：owner 权限全集、deny 覆盖、scope SQL 与审计记录。 |
+
+- platform Owner 门店授权归 GX-0034。累计 G0 60、G1 83、G2 5、G3 0、GX 34；未删除任何文件。
