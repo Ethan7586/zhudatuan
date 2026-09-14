@@ -3559,6 +3559,19 @@
 | 建议方向 | 从修复时最新 `zdt-next` 建立独立测试批次，使用 PGlite/fake transaction 覆盖上述路径；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2。 |
 
+## F-0181｜Inventory 导入与 HTTP 组合没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | inventory / import、HTTP、worker；P2；高 |
+| 类型 | 测试覆盖缺口、库存事实与异步恢复正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/inventory/{03_application_yingyong,04_adapters_shixian,05_interface_jieru}/**` |
+| 当前/预期 | 现有 InventoryPort test 覆盖 reservation lock/mall fact/commit-release/return sync；未直接调用 availability/import operation、PgInventoryImport、StockImport 或 ImportProcessor。预期覆盖 import object validation、scope/availability cursor、committed quantity 拒绝、per-row savepoint、continuation、report projection 与 return retry。 |
+| 直接证据 | 所列 factory/processor/import function 在 `*.test.ts` 中零 direct invoke；仅 InventoryPort 与 InventorySyncJobProcessor 被测试实例化。 |
+| 调用链/影响 | InventoryModule → inventoryOperations；jobs catalog → InventoryImportProcessor/PgInventoryImport 和 InventorySyncJobProcessor。导入或 API/worker 组合回归可能造成库存事实、report 或恢复行为未被当前套件发现。 |
+| 建议方向 | 从修复时最新 `zdt-next` 单独建立测试批次，以 fake transaction/PGlite 覆盖上述路径；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

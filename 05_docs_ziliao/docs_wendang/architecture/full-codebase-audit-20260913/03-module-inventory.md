@@ -1646,3 +1646,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | live consumer | legacy `interface/job/RiskReplayJob.ts` 被主 jobs catalog 实际导入 | [FACT][E-AU-150-002]；G0 |
 
 [FACT][E-AU-150-003] 14 文件、14 行完成深审；Risk 36/36 文件均取得审阅状态，兼容路径保留不删。
+
+## 156. AU-151 Inventory 库存、导入与异步链清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| stock/reservation | observe、catalog package stock、reserve/commit/release、aftersale restock | [FACT][E-AU-151-001]；stock lock 与 mall-scoped movement |
+| HTTP/import | availability keyset 读取、upload/read report、stock row validation/import | [FACT][E-AU-151-002]；read report 通过 projectImport 授权投影 |
+| workers | inventoryimport staging/savepoint/continuation 与 inventorysync return restock | [FACT][E-AU-151-003]；主 jobs catalog 实际注册 |
+| tests | port reservation/return 与 manifest | [FACT][E-AU-151-004]；F-0181/P2 导入/HTTP直接覆盖缺口 |
+
+[FACT][E-AU-151-005] 13 文件、643 行完成深审；Inventory 核心运行链可定位，余下 legacy/root export 待覆盖闭合。

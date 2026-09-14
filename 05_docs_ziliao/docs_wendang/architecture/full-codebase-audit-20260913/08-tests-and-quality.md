@@ -361,3 +361,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 兼容导出没有独立业务分支；`interface/job/RiskReplayJob.ts` 仍由主 jobs catalog 使用。
 - Risk 36/36 文件已取得审阅状态；不将兼容转发误判为删除候选。
+
+## 151. AU-151 Inventory 库存与导入深审
+
+- `InventoryPort.test` 覆盖 reservation lock、mall-scoped movement、commit/release idempotency 和 return restock；manifest 覆盖 operation/job declaration。
+- Inventory import operation/persistence/worker、StockImport 和 availability action 无 direct behavior fixture，见 F-0181/P2。
