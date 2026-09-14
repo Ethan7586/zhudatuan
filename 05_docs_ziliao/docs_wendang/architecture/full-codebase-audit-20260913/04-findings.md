@@ -3752,6 +3752,20 @@
 | 验证/回滚 | 每批以mock RPC/assert body验证permission/scope/idempotency/success/conflict；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0195｜账户余额、流水与首页组合没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / storefront account-bootstrap；P2；高 |
+| 类型 | 测试覆盖缺口、账户财务可见性与首页聚合正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/accountRoutes.ts:73-94`；`homeRoutes.ts:12-24`；现有`accountRoutes.test.ts` |
+| 当前/预期 | 账户和流水只允许`order.read`并传current membership/user scope；home并发组合四个handler且失败即透传。现有test仅覆盖bootstrap使用数据库profile和profile缺失403。预期余额/流水permission、scope、numeric mapping、home success与任一子handler失败均有direct fixture。 |
+| 直接证据 | `accountRoutes.test.ts`只导入并调用`handleBootstrap`；未导入`handleAccounts`或`handleAccountLedgers`，且未找到`handleHomeSnapshot` direct test。 |
+| 调用链/影响 | Storefront worker → storefront router → account/home routes → account/ledger/profile RPC。权限、scope、余额映射或home失败传播回归不能由当前suite直接发现。 |
+| 建议方向 | 从修复时最新`zdt-next`拆成account/ledger route tests与home composition tests两个独立小批；回滚为撤回对应测试提交。 |
+| 验证/回滚 | fixture断言拒绝、exact RPC scope、balance mapping、home组合与失败传播；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

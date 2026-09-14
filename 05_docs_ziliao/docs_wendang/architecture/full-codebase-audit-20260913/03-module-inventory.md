@@ -2008,3 +2008,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | reconciliation | finance permission与scoped reconciliation RPC | [FACT][E-AU-185-004] |
 
 [FACT][E-AU-185-005] 2 文件、297 行完成深审；compat storefront/admin routing controls method dispatch before after-sale/order create handler calls.
+
+## 191. AU-186 Storefront account/bootstrap 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| bootstrap | `catalog.read`、mall scope、member profile与assurance并发读出当前前端身份/商城上下文 | [FACT][E-AU-186-001] |
+| accounts / ledgers | `order.read`、server current membership/user scope读取余额与流水 | [FACT][E-AU-186-002] |
+| home snapshot | 并发组合bootstrap/accounts/orders/ledgers，返回首个错误或统一快照 | [FACT][E-AU-186-003] |
+
+[FACT][E-AU-186-004] 2 文件、172 行完成深审；正式Storefront router装载bootstrap、accounts、account-ledgers和home路径。

@@ -520,3 +520,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests只覆盖phone assurance阻断在create order/internal payment之前、以及create-order成功的cart closure。
 - 未直接覆盖after-sale、order list/ship、internal-payment success/validation、refund和finance reconciliation；见F-0194/P2。审计工作树未运行Vitest。
+
+## 186. AU-186 Storefront account/bootstrap 深审
+
+- Direct tests覆盖bootstrap采用当前database member profile而非demo资料、profile缺失闭合拒绝。
+- accounts、account-ledgers和home snapshot没有direct fixture；不足以捕获order.read、current scope、余额mapping或并发失败传播回归，见F-0195/P2。审计工作树未运行Vitest。
