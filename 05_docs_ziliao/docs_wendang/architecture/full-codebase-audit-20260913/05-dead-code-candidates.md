@@ -1333,12 +1333,12 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 字段 | 记录 |
 | --- | --- |
 | 分类 | GX：高风险，禁止删除，需专项设计 |
-| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821062000_publish_error_contract.sql` |
+| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821062000_publish_error_contract.sql`、`20260821063000_finalize_error_contract.sql` |
 | 疑似原因 | 文件名提及 error contract，但正文仅更新 `runtime.schemaversion` checksum，容易被误判为冗余账本写入。 |
-| 保留证据 | [FACT][E-AU-469] 它验证 `20260821032000_assert_target_head.sql` 的固定 checksum；该 target-head 断言 schema、operation/event、capability、RLS、grant、遗留对象与 reconciliation evidence。失败会显式中止迁移。 |
+| 保留证据 | [FACT][E-AU-469-470] 两个顺序版本均验证 `20260821032000_assert_target_head.sql` 的固定 checksum；该 target-head 断言 schema、operation/event、capability、RLS、grant、遗留对象与 reconciliation evidence。失败会显式中止迁移。 |
 | 运行结论 | 这是数据库发布完整性门禁的历史步骤，不是客户端错误码实现，也不是可安全重建的构建产物。 |
 | 数据/契约责任 | 维持迁移版本链与已发布目标数据库形态之间的可验证关系；删除或改写可能使错误 schema head 被错误接受。 |
 | 可否删除 | 禁止 |
 | 二次复核 | 是：须在隔离数据库核对迁移执行器、version checksum 与恢复流程。 |
 
-- migration ledger 与 target-head 断言共同构成发布封板；归 GX-0028。累计 G0 60、G1 83、G2 5、G3 0、GX 28；未删除任何文件。
+- migration ledger 与 target-head 断言共同构成发布封板；AU-469/470 归 GX-0028。累计 G0 60、G1 83、G2 5、G3 0、GX 28；未删除任何文件。
