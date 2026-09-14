@@ -1123,6 +1123,10 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 根 `.dockerignore` 是 Docker root context 自动消费的凭据/产物排除契约，保护阿里云 Dockerfile 的 builder 输入；无正式 workflow build 入口的静态证据不等于可删除，归 G0。
 
+## 492. AU-492 编辑器格式约定复核
+
+- 根 `.editorconfig` 是兼容编辑器自动消费的文本格式、Markdown 硬换行与 YAML 缩进契约；仓内无显式 formatter 消费不构成删除证据，归 G0。
+
 ## GX-0013｜渠道外部对象 scope 映射切换
 
 | 字段 | 记录 |
