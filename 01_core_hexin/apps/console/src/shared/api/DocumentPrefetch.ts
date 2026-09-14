@@ -13,9 +13,49 @@ interface SessionCandidate {
   readonly scopes?: readonly ScopeCandidate[];
 }
 
-interface Tracked<T> {
-  settled: boolean;
-  promise: Promise<T | undefined>;
+export interface DocumentPrefetch<T> {
+  readonly settled: boolean;
+  readonly promise: Promise<T | undefined>;
+}
+
+const DOCUMENT_PREFETCH_TIMEOUT = Symbol('DOCUMENT_PREFETCH_TIMEOUT');
+
+export async function consumeDocumentPrefetch<T>(
+  slot: DocumentPrefetch<T> | undefined,
+  signal: AbortSignal,
+  options: Readonly<{ handoffMs?: number }> = {},
+): Promise<T | undefined> {
+  if (slot === undefined) return undefined;
+  if (signal.aborted) {
+    window.__consoleAbortDocumentPrefetch?.();
+    throw signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
+  }
+  let rejectAbort: (cause: unknown) => void = () => undefined;
+  const aborted = new Promise<never>((_resolve, reject) => { rejectAbort = reject; });
+  const abort = () => {
+    window.__consoleAbortDocumentPrefetch?.();
+    rejectAbort(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
+  };
+  let timer: number | undefined;
+  signal.addEventListener('abort', abort, { once: true });
+  try {
+    if (slot.settled || options.handoffMs === undefined) return await Promise.race([slot.promise, aborted]);
+    const value = await Promise.race([
+      slot.promise,
+      aborted,
+      new Promise<typeof DOCUMENT_PREFETCH_TIMEOUT>((resolve) => {
+        timer = window.setTimeout(() => resolve(DOCUMENT_PREFETCH_TIMEOUT), options.handoffMs);
+      }),
+    ]);
+    if (value === DOCUMENT_PREFETCH_TIMEOUT) {
+      window.__consoleAbortDocumentPrefetch?.();
+      return undefined;
+    }
+    return value;
+  } finally {
+    if (timer !== undefined) window.clearTimeout(timer);
+    signal.removeEventListener('abort', abort);
+  }
 }
 
 const consoleKinds = Object.freeze(['platform', 'distributor', 'tenant', 'enterprise', 'mall']);
@@ -29,7 +69,7 @@ export function startDocumentPrefetch(
     controllers.clear();
   };
 
-  const readJson = <T>(path: string, extraHeaders: Readonly<Record<string, string>> = {}): Tracked<T> => {
+  const readJson = <T>(path: string, extraHeaders: Readonly<Record<string, string>> = {}): DocumentPrefetch<T> => {
     const controller = new AbortController();
     controllers.add(controller);
     const timeout = window.setTimeout(() => controller.abort(), 1_500);
@@ -293,8 +333,8 @@ function preloadDirectSettingsRoute(): void {
   void loading?.catch(() => undefined);
 }
 
-function tracked<T>(promise: Promise<T | undefined>): Tracked<T> {
-  const slot: Tracked<T> = { settled: false, promise: Promise.resolve(undefined) };
+function tracked<T>(promise: Promise<T | undefined>): DocumentPrefetch<T> {
+  const slot: { settled: boolean; promise: Promise<T | undefined> } = { settled: false, promise: Promise.resolve(undefined) };
   slot.promise = Promise.resolve(promise).catch(() => undefined).finally(() => { slot.settled = true; });
   return slot;
 }

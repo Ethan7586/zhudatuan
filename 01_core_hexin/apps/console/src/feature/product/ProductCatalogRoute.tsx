@@ -15,6 +15,8 @@ import { canCreateCatalogImport } from './ProductImportCommand';
 import { ProductImportDialog } from './ProductImportDialog';
 import { ProductPagination } from './ProductPagination';
 import { prefetchProductSelection } from './ProductPrefetch';
+import { changeProductPageSize, goToNextProductPage, goToPreviousProductPage, switchProductWorkspace,
+  type ProductWorkspace } from './ProductWorkspaceNavigation';
 import { canManageListing, canReadPublicationTask, publishReadyListings, readPublicationTask,
   readyPublicationUnavailableReason, retryPublicationFailures, setListingPublication,
   type ListingPublicationAction } from './ProductPublicationCommand';
@@ -218,20 +220,14 @@ export function ProductCatalogRoute() {
     void navigate(scopePath(context.scope, `imports/catalog/${encodeURIComponent(jobId)}`));
   };
 
-  const prepareWorkspace = (workspace: 'catalog' | 'selection' | 'free') => {
+  const prepareWorkspace = (workspace: ProductWorkspace) => {
     if (workspace !== 'selection') return;
     void import('./ProductSelectionRoute');
     void prefetchProductSelection(queryClient, context);
   };
 
-  const changeWorkspace = (workspace: 'catalog' | 'selection' | 'free') => {
-    const next = new URLSearchParams();
-    if (workspace === 'selection') next.set('workspace', 'selection');
-    if (workspace === 'free') next.set('workspace', 'free');
-    cursorTrail.current = new Map([[1, undefined]]);
-    setSelected(new Set());
-    setSearch(next);
-  };
+  const changeWorkspace = (workspace: ProductWorkspace) =>
+    switchProductWorkspace(workspace, cursorTrail, () => setSelected(new Set()), setSearch);
 
   const apply = (value: ProductFilter) => {
     const next = new URLSearchParams();
@@ -263,34 +259,10 @@ export function ProductCatalogRoute() {
     next.delete('selected');
     setSearch(next);
   };
-  const nextPage = () => {
-    if (query.data?.nextCursor === undefined) return;
-    const cursor = query.data.nextCursor;
-    cursorTrail.current.set(page + 1, cursor);
-    changeSearch((next) => {
-      next.set('cursor', cursor);
-      next.set('page', String(page + 1));
-    });
-  };
-  const previousPage = () => {
-    if (page <= 1) return;
-    const target = page - 1;
-    const cursor = cursorTrail.current.get(target);
-    changeSearch((next) => {
-      if (target === 1) next.delete('cursor');
-      else if (cursor !== undefined) next.set('cursor', cursor);
-      next.set('page', String(target));
-    });
-  };
-  const changeLimit = (nextLimit: number) => {
-    cursorTrail.current = new Map([[1, undefined]]);
-    changeSearch((next) => {
-      next.delete('cursor');
-      next.delete('page');
-      if (nextLimit === defaultPageSize) next.delete('limit');
-      else next.set('limit', String(nextLimit));
-    });
-  };
+  const nextPage = () => goToNextProductPage(query.data?.nextCursor, page, cursorTrail, changeSearch);
+  const previousPage = () => goToPreviousProductPage(page, cursorTrail, changeSearch);
+  const changeLimit = (nextLimit: number) =>
+    changeProductPageSize(nextLimit, defaultPageSize, cursorTrail, changeSearch);
   const toggleRow = (id: string) =>
     setSelected((current) => {
       const next = new Set(current);

@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs, ShouldRevalidateFunctionArgs } from 'react-rou
 import { redirect, redirectDocument } from 'react-router';
 import { selectConsoleNavigationItems } from '../entity/navigation/ConsoleNavigation';
 import type { ConsoleContext, ConsoleProfile, ConsoleScope, ConsoleSession } from '../entity/session/ConsoleSession';
+import { consumeDocumentPrefetch, type DocumentPrefetch } from '../shared/api/DocumentPrefetch';
 import { scopePath } from '../shared/url/ScopePath';
 import { consoleModules } from './ConsoleModuleRegistry';
 
@@ -18,11 +19,6 @@ declare global {
     __consoleQualificationPrefetch?: DocumentPrefetch<ConsoleQualificationPrefetch>;
     __consoleNotificationPrefetch?: DocumentPrefetch<ConsoleNotificationPrefetch>;
   }
-}
-
-interface DocumentPrefetch<T> {
-  readonly settled: boolean;
-  readonly promise: Promise<T | undefined>;
 }
 
 interface ConsoleScopePrefetch {
@@ -178,7 +174,7 @@ async function readSession(signal: AbortSignal): Promise<ConsoleSession> {
   try {
     const prefetch = window.__consoleSessionPrefetch;
     delete window.__consoleSessionPrefetch;
-    const prefetched = await consumeDocumentPrefetch(prefetch, signal);
+  const prefetched = await consumeDocumentPrefetch(prefetch, signal, { handoffMs: DOCUMENT_PREFETCH_HANDOFF_MS });
     const parsed = prefetched === undefined ? undefined : parseSession(prefetched.value);
     const session = parsed ?? await readSessionFromSdk(signal);
     if (session.target !== 'console') throw new Response('WRONG_CLIENT_ENTRANCE', { status: 403 });
@@ -234,46 +230,12 @@ async function takeScopePrefetch(
 ): Promise<ConsoleScopePrefetch | undefined> {
   const slot = window.__consoleScopePrefetch;
   delete window.__consoleScopePrefetch;
-  const value = await consumeDocumentPrefetch(slot, signal);
+  const value = await consumeDocumentPrefetch(slot, signal, { handoffMs: DOCUMENT_PREFETCH_HANDOFF_MS });
   if (value === undefined || value.accessVersion !== session.accessVersion || value.roots.length !== roots.length) return undefined;
   const expected = new Set(roots.map((scope) => `${scope.kind}:${scope.id}`));
   return value.roots.every((scope) => expected.has(`${scope.kind}:${scope.id}`)) ? value : undefined;
 }
 
-async function consumeDocumentPrefetch<T>(slot: DocumentPrefetch<T> | undefined, signal: AbortSignal): Promise<T | undefined> {
-  if (slot === undefined) return undefined;
-  if (signal.aborted) {
-    window.__consoleAbortDocumentPrefetch?.();
-    throw signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
-  }
-  let rejectAbort: (cause: unknown) => void = () => undefined;
-  const aborted = new Promise<never>((_resolve, reject) => { rejectAbort = reject; });
-  const abort = () => {
-    window.__consoleAbortDocumentPrefetch?.();
-    rejectAbort(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
-  };
-  let timer: number | undefined;
-  signal.addEventListener('abort', abort, { once: true });
-  try {
-    const value = slot.settled
-      ? await Promise.race([slot.promise, aborted])
-      : await Promise.race([
-        slot.promise,
-        aborted,
-        new Promise<typeof DOCUMENT_PREFETCH_TIMEOUT>((resolve) => {
-          timer = window.setTimeout(() => resolve(DOCUMENT_PREFETCH_TIMEOUT), DOCUMENT_PREFETCH_HANDOFF_MS);
-        }),
-      ]);
-    if (value === DOCUMENT_PREFETCH_TIMEOUT) {
-      window.__consoleAbortDocumentPrefetch?.();
-      return undefined;
-    }
-    return value;
-  } finally {
-    if (timer !== undefined) window.clearTimeout(timer);
-    signal.removeEventListener('abort', abort);
-  }
-}
 
 let consoleClientPromise: Promise<typeof import('../shared/api/Client')> | undefined;
 

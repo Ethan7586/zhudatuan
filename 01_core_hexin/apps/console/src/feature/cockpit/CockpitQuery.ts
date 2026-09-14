@@ -1,10 +1,10 @@
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+import { consumeDocumentPrefetch } from '../../shared/api/DocumentPrefetch';
 import { CockpitSchema } from './CockpitSchema';
 
 export const cockpitPeriods = ['realtime', 'yesterday', '7days', '30days'] as const;
 export type CockpitPeriod = (typeof cockpitPeriods)[number];
 const DOCUMENT_PREFETCH_HANDOFF_MS = 180;
-const DOCUMENT_PREFETCH_TIMEOUT = Symbol('DOCUMENT_PREFETCH_TIMEOUT');
 
 export const cockpitKey = (context: ConsoleContext, period: CockpitPeriod, supplier?: string) => Object.freeze([
   'console', context.scope.kind, context.scope.id, context.session.accessVersion, 'reporting.dashboard.read', period, supplier ?? 'all',
@@ -13,7 +13,8 @@ export const cockpitKey = (context: ConsoleContext, period: CockpitPeriod, suppl
 export async function readCockpit(context: ConsoleContext, period: CockpitPeriod, signal: AbortSignal, supplier?: string) {
   const prefetch = typeof window === 'undefined' ? undefined : window.__consoleCockpitPrefetch;
   if (typeof window !== 'undefined') delete window.__consoleCockpitPrefetch;
-  const prefetched = supplier === undefined ? await consumeDocumentPrefetch(prefetch, signal) : undefined;
+  const prefetched = supplier === undefined
+    ? await consumeDocumentPrefetch(prefetch, signal, { handoffMs: DOCUMENT_PREFETCH_HANDOFF_MS }) : undefined;
   const matches = prefetched?.scopeKind === context.scope.kind
     && prefetched.scopeId === context.scope.id
     && prefetched.accessVersion === context.session.accessVersion
@@ -36,42 +37,4 @@ async function readCockpitFromSdk(context: ConsoleContext, period: CockpitPeriod
     { query: { period, limit: 100, ...(supplier === undefined ? {} : { supplierid: supplier }) } },
     consoleRequest(context.scope, signal, context.session.accessVersion),
   );
-}
-
-async function consumeDocumentPrefetch(
-  slot: Window['__consoleCockpitPrefetch'],
-  signal: AbortSignal,
-) {
-  if (slot === undefined) return undefined;
-  if (signal.aborted) {
-    window.__consoleAbortDocumentPrefetch?.();
-    throw signal.reason ?? new DOMException('The operation was aborted.', 'AbortError');
-  }
-  let rejectAbort: (cause: unknown) => void = () => undefined;
-  const aborted = new Promise<never>((_resolve, reject) => { rejectAbort = reject; });
-  const abort = () => {
-    window.__consoleAbortDocumentPrefetch?.();
-    rejectAbort(signal.reason ?? new DOMException('The operation was aborted.', 'AbortError'));
-  };
-  let timer: number | undefined;
-  signal.addEventListener('abort', abort, { once: true });
-  try {
-    const value = slot.settled
-      ? await Promise.race([slot.promise, aborted])
-      : await Promise.race([
-        slot.promise,
-        aborted,
-        new Promise<typeof DOCUMENT_PREFETCH_TIMEOUT>((resolve) => {
-          timer = window.setTimeout(() => resolve(DOCUMENT_PREFETCH_TIMEOUT), DOCUMENT_PREFETCH_HANDOFF_MS);
-        }),
-      ]);
-    if (value === DOCUMENT_PREFETCH_TIMEOUT) {
-      window.__consoleAbortDocumentPrefetch?.();
-      return undefined;
-    }
-    return value;
-  } finally {
-    if (timer !== undefined) window.clearTimeout(timer);
-    signal.removeEventListener('abort', abort);
-  }
 }

@@ -36,13 +36,6 @@ async function loadProductionConfig(hostname: string): Promise<ConsoleAppConfig>
     headers: { accept: 'application/json' },
     redirect: 'error',
   });
-  const fallbackResponsePromise = fetch('/console-build.json', {
-    cache: 'no-store',
-    credentials: 'same-origin',
-    headers: { accept: 'application/json' },
-    redirect: 'error',
-  });
-  void fallbackResponsePromise.catch(() => undefined);
   const nodeResponse = await nodeResponsePromise;
   const contentType = nodeResponse.headers.get('content-type')?.toLowerCase() ?? '';
   if (nodeResponse.ok && contentType.includes('json')) {
@@ -52,7 +45,12 @@ async function loadProductionConfig(hostname: string): Promise<ConsoleAppConfig>
   if (!nodeResponse.ok && nodeResponse.status !== 404) {
     throw new Error(`CONSOLE_NODE_RUNTIME_CONFIG_HTTP_${nodeResponse.status}`);
   }
-  const response = await fallbackResponsePromise;
+  const response = await fetch('/console-build.json', {
+    cache: 'no-store',
+    credentials: 'same-origin',
+    headers: { accept: 'application/json' },
+    redirect: 'error',
+  });
   if (!response.ok) throw new Error(`CONSOLE_RUNTIME_CONFIG_HTTP_${response.status}`);
   const artifact = await parseSflConsoleArtifact(await response.json());
   return install(resolveConsoleAppConfig(artifact, hostname));
