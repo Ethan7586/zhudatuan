@@ -2028,3 +2028,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | 建档/导入 | username/password/profile验证、PBKDF2 hash、逐行创建与不含password的导入错误记录 | [FACT][E-AU-187-003] |
 
 [FACT][E-AU-187-004] 2 文件、340 行完成深审；compat admin router注册该全链，当前正式Worker未装载完整authenticated admin router。
+
+## 193. AU-188 Permission admin 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| command center | `member.read`+`role.read`和独立PII授权的权限全景读取 | [FACT][E-AU-188-001] |
+| access mutation | role/scope grant、self-change禁令、scope/roles/denies校验去重、RPC执行grant ceiling | [FACT][E-AU-188-002] |
+| status mutation | self禁令、suspend/active与offboard的独立permission、actor evidence | [FACT][E-AU-188-003] |
+
+[FACT][E-AU-188-004] 2 文件、262 行完成深审；compat admin router注册access-control和membership access/status路径，当前正式Worker未装载完整authenticated admin router。

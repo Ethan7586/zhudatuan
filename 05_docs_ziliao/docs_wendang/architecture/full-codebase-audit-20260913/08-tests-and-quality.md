@@ -530,3 +530,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖列表读取权限与PII/history/import-errors裁剪、invite fresh step-up拒绝、建档密码只传hash、无效导入错误不回显password。
 - 缺少invite成功/停用、profile update、valid/partial import、1MB与500行边界的direct fixture；见F-0196/P2。审计工作树未运行Vitest。
+
+## 188. AU-188 Permission admin 深审
+
+- Direct tests覆盖读取双权限和PII裁剪、access自改禁令/fresh step-up/去重及商业层级scope、status自改禁令和offboard独立permission。
+- 没有membership status成功RPC fixture或active/suspended路径覆盖；见F-0197/P2。审计工作树未运行Vitest。

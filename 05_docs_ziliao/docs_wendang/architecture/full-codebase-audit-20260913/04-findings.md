@@ -3780,6 +3780,20 @@
 | 验证/回滚 | fixture断言method/permission/step-up/input、exact RPC scope/evidence、password hash/脱敏、有效/部分失败导入与大小边界；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0197｜会员状态成功变更没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / permission admin membership status；P2；高 |
+| 类型 | 测试覆盖缺口、成员停用/恢复生命周期正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/permissionAdminRoutes.ts:52-75`；现有`permissionAdminRoutes.test.ts` |
+| 当前/预期 | status handler禁止自改，根据`offboarded`或其他status选择独立permission，向带actor scope/evidence的RPC写入。现有tests覆盖self禁止与缺offboard permission拒绝。预期active/suspended/offboarded成功、method/input、disable permission和exact RPC body均有direct fixture。 |
+| 直接证据 | test中只有`handleMembershipStatus`的self-status和offboard-denied调用；未见mock RPC成功、`suspended`/`active`或`memberDisable` success断言。 |
+| 调用链/影响 | authenticated admin compatibility router → membership status route → `api_update_membership_status` RPC。成员状态、审计evidence或授权映射回归不能由当前suite直接捕获。 |
+| 建议方向 | 从修复时最新`zdt-next`建立独立membership status route test批；回滚为撤回测试提交。 |
+| 验证/回滚 | fixture覆盖self/permission/input/active-suspended-offboarded与exact RPC scope/evidence；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
