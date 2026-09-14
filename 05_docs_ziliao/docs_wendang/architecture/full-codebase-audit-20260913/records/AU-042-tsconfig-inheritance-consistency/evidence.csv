@@ -1,0 +1,5 @@
+"编号","类型","位置","观察","证明","影响范围"
+"E-AU-042-001","继承完整性","services/commerce-api/tsconfig.json; packages/api-contract/tsconfig.json; packages/smart-wing-authz/tsconfig.json; apps/auth-web/tsconfig.json; apps/storefront-web/tsconfig.json","5 个关键模块 tsconfig 无 extends 声明（未接 root tsconfig）","路径级枚举；逐文件核对 JSON 字段","P3（治理项，未见直接运行故障）"
+"E-AU-042-002","策略一致性","services/commerce-api/tsconfig.json vs tsconfig.json","缺少根 tsconfig 的数项严格型策略","对比 `--showConfig` 入口文件与 `services/commerce-api/tsconfig.json` 的 compilerOptions","P3（编译约束漂移，当前未见故障）"
+"E-AU-042-003","可解析性","05_docs_ziliao/VI_shijue/version-upgrades/ZHU-VI-1.2/source/packages/design/tsconfig.json; .../ZHU-VI-1.3/...","`extends: ../../tsconfig.json` 指向不存在基文件","node 路径解析实测返回不存在，目标文件为空路径","P3（归档范围）"
+"E-AU-042-004","运行引用路径","版本升级目录 tsconfig 与 package/scripts 引用","未发现生产 `package.json`、build/test 脚本引用该归档路径","rg 全仓脚本引用核验","N/A（归档，不形成运行入口）"

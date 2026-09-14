@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-042 结束时累计：P0 0、P1 候选 19、P2 60、P3 55、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-042 结束时累计：P0 0、P1 候选 19、P2 60、P3 57、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -3036,4 +3036,5 @@
 
 ## 42. AU-042 新增未定级事项
 
-- [UNKNOWN] 无新增问题条目；本批次仅核验 `tsconfig` 配置继承一致性，不涉及运行契约。
+- [P3] `services/commerce-api`、`api-contract`、`smart-wing-authz`、`auth-web`、`storefront-web` 为“无 extends”配置，继承策略与根基线不同；本批次仅形成治理项，不影响当前可复现运行路径结论。[UNKNOWN] 未见直接生产事故。
+- [P3] 归档目录 `05_docs_ziliao/VI_shijue/version-upgrades/ZHU-VI-1.2|1.3/source/packages/design/tsconfig.json` 指向缺失 `extends` 基文件；当前仅落在归档区，未见 build/test 入口引用。
