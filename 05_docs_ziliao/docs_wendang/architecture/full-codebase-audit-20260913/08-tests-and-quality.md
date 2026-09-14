@@ -476,3 +476,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct test覆盖payment-status vocabulary、owned order detail和storefront payment-status route一致性。
 - 没有prepay成功/reuse、phone/scope/idempotency拒绝、provider create/error、record failure或provider reconciliation direct fixture。见F-0190/P2；审计工作树未运行Vitest。
+
+## 177. AU-177 WeChat Provider core 深审
+
+- Client fixture生成临时RSA key，直接断言JSAPI request签名、已签名prepay/query response、无签名拒绝和已签名provider 503的retry分类。
+- config loader、crypto resource decrypt、transaction edge-state和signature verifier本体仍有其专项测试/源码单元；本批不把未读文件算入coverage。审计工作树未运行Vitest。

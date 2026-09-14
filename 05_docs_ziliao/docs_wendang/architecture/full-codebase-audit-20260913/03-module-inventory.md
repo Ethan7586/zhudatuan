@@ -1912,3 +1912,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | failure | provider/config errors stable client code，provider raw code仅safe normalized写入RPC | [FACT][E-AU-176-004] |
 
 [FACT][E-AU-176-005] 2 文件、373 行完成深审；route source存在但当前Storefront Worker不加载完整authenticated storefront router。
+
+## 182. AU-177 WeChat Pay Provider core 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| provider client | canonical request signing、signed/bounded response、prepay/query parse | [FACT][E-AU-177-001] |
+| configuration | key material/merchant identifiers/fixed approved notify endpoint | [FACT][E-AU-177-002] |
+| crypto | RSA signing/verify、AES-GCM provider resource decrypt、nonce/hash/payment parameter | [FACT][E-AU-177-003] |
+| models | transaction schema/state/currency/success invariants和bounded description | [FACT][E-AU-177-004] |
+
+[FACT][E-AU-177-005] 5 文件、682 行完成深审；provider response verification function保持在独立signature审计单元，不把import视为已完成其源码审阅。

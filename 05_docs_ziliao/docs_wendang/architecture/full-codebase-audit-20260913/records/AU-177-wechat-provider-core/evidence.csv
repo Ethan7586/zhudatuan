@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-177-001,src/api/wechatPayClient.ts,24-178,provider boundary,Client validates input constructs canonical signed requests to fixed origin caps response at 64KB verifies signed body before parse and rejects identity mismatch.
+E-AU-177-002,src/api/wechatPayConfig.ts,24-111,configuration boundary,Loader validates merchant/key formats 32-byte APIv3 key and exactly approved public HTTPS notify URL.
+E-AU-177-003,src/api/wechatPayCrypto.ts,1-122,crypto boundary,RSA SHA-256 request/miniapp signing and verification plus AES-GCM resource decrypt use parsed PEM/base64 inputs and bounded nonce/time helpers.
+E-AU-177-004,src/api/wechatPayModels.ts,1-151,protocol boundary,Transaction parser restricts trade states CNY amounts successful transaction required fields and safe provider description/out-trade formats.
+E-AU-177-005,src/api/wechatPayClient.test.ts,1-120,direct tests,Temporary real keys exercise signed request signed success unsigned rejection signed query and retryable signed error.
