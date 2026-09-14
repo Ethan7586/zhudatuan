@@ -4757,3 +4757,21 @@
 | 建议方向 | 在独立测试维护批次先明确 five DB role 是否同一物理 DB、harness reset 机制与 cleanup 权限；若无全局 reset，在 finally 以唯一 suffix 清理 job/outbox、payment/fulfillment/order/cart、catalog、identity/access、organization 的依赖图。 |
 | 验证/回滚 | 隔离 test DB 连续跑两次并按 suffix 断言 0 残留；模拟中途失败仍 cleanup；回滚为撤回纯测试 teardown 提交。 |
 | 是否需要独立复核 | 否（P3）；需先确认外部 harness reset 责任。 |
+
+## F-0256｜Repository RLS 契约测试以空结果集作为隔离通过条件
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce repository / risk policy RLS test credibility |
+| 类型 | 测试可信度、数据访问隔离回归保护 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/tests/repository/Repository.test.ts:56-60`。 |
+| 当前/预期 | 以 `policies.rows.every(({ scope_id }) => scope_id === 'rls-scope-a')` 断言 RLS；JavaScript 对空数组的 `every` 返回 true，测试没有 seed/断言一条本 scope policy。预期为先建立至少两个跨 scope 的可见 fixture，断言本 scope 存在且另一 scope 不可见。 |
+| 直接证据 | [FACT][E-AU-536-001] 查询只读 `risk.policy`，没有本文件 fixture insert；[FACT][E-AU-536-002] `every` 是唯一内容断言，未检查 rows 长度；[FACT][E-AU-536-003] endpoint 缺失时该 suite 才 fail-closed，但 endpoint 存在时此场景可在 0 rows 情况下通过。 |
+| 调用链或运行入口 | PostgreSQL integration endpoint → `set local role shopapp`/`app.scope_id` → `risk.policy` → `Repository.test.ts` RLS regression assertion。 |
+| 用户/数据/安全影响 | 不会直接改变生产访问控制；但 RLS policy、GUC 或 migration 回归时，空表/错误 fixture 状态可掩盖隔离测试失效，使跨 scope 数据泄露风险少一道回归检测。未验证生产 RLS 是否有缺陷或 test DB 是否实际为空。 |
+| 根因 | test 将“所有返回行符合 scope”当作“RLS 隔离成立”，却未把非空的同 scope 数据与不可见的异 scope 数据作为前置事实。 |
+| 建议方向 | 从最新主线建立独立测试维护分支，在隔离数据库显式插入/清理两个 scope 的 `risk.policy` 记录，断言本 scope 精确可见、另一 scope 不可见且结果非空；先确认该表的写权限和规范 fixture builder。 |
+| 验证/回滚 | 先在可控 PostgreSQL 中将 RLS 临时放宽或改错，确认新断言失败；恢复 policy 后通过。回滚为撤回单一测试 fixture/assertion 提交。 |
+| 是否需要独立复核 | 否；修复后须用故意失效的 RLS 反事实验证。 |
