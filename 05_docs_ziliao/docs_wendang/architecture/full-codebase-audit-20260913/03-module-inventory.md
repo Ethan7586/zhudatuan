@@ -878,3 +878,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | PGlite migration/controlled boundaries；job cases skip | [FACT][E-AU-078-004~005] |
 
 [FACT][E-AU-078-006] 2 文件、1,783 行 Finance invoice integrity migration 和集成测试完成深审；F-0158/P1 的修复必须衔接此既有协议。
+
+## 84. AU-079 Finance 审计账与冻结资金读取模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| audit read | finance/invoice 审计 record scope/keyset read | [FACT][E-AU-079-001] |
+| holds read | scope-authorized hold/account read | [FACT][E-AU-079-002] |
+| tests | audit query route smoke | [FACT][E-AU-079-003] |
+
+[FACT][E-AU-079-004] 2 文件、74 行 Finance audit/query 测试完成深审；FinanceLifecycleOperations 已在 AU-065 深审，本批只追加 holds read 复核。
