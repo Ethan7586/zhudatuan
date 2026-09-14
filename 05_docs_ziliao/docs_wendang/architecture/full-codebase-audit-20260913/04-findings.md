@@ -4424,3 +4424,24 @@
 | 预计修改范围 | `memberOperationsRoutes`、受信 target scope lookup/契约、`api_update_member_profile` 与定向授权测试。 |
 | 验证/回滚 | 构造同租户同企业、不同商城的 mall-scoped 管理员和目标；断言 API/RPC 不改写目标，且同范围更新仍成功。回滚为 revert 独立修复提交。 |
 | 独立复核 | **是（P2）**；复核必须重新检查 API 授权 scope 与数据库目标约束，不能只复述本报告。 |
+
+## F-0238｜售后提交 RPC 与数据库迁移/发布来源脱节
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Compatibility Storefront 售后 / Supabase 发布契约 |
+| 类型 | API 契约、迁移与运行单元边界 |
+| 严重级别 | **P2** |
+| 置信度 | 高（静态调用和权限演进）；线上实际数据库来源未验证 |
+| 文件和精确位置 | `commerce-api/src/api/routes/storefrontRouter.ts:31-37`；`commerce-api/src/api/orderRoutes.ts:20-45`；`commerce-api/src/api/supabase.ts:8-27`；`database/supabase/migrations/20260820120000_after_sale_refund_approval.sql:311-314,469-473`；`infrastructure/release/zdt-next.remote-policy.json:57`；`config/owner-approved-ui.json:28-32` |
+| 当前行为 | Storefront 的 `POST /api/v1/after-sales` 调用 `api_create_after_sale`，且 `callRpc` 始终携带 service-role key。canonical 后续迁移撤销旧函数对 service_role 的执行权，只授权 `api_create_after_sale_authorized`；固定基线未找到该授权包装器的 Commerce API 调用。正式迁移政策指定 canonical `database/supabase/migrations`，但业主批准 UI 清单要求 compatibility 迁移，兼容制品清单又标记为不可发布。 |
+| 预期行为 | 已发布服务、实际迁移序列与被授权 RPC 必须形成唯一、可验证的组合；售后提交不能依赖已撤权 RPC，也不能因数据库源选择不明而获得不确定行为。 |
+| 直接证据 | 路由和 handler 的直接调用；`callRpc` 的 service-role Authorization header；旧函数在 canonical 迁移中 `revoke ... from service_role`，新 wrapper 获唯一 grant；三个发布/批准配置的数据库来源声明。 |
+| 调用链/运行入口 | Storefront 请求 → `routeStorefrontRequest` → `handleCreateAfterSale` → service-role REST RPC → `api_create_after_sale`；canonical migration runner → `database/supabase/migrations`。 |
+| 用户影响 | 若当前 Storefront API 使用 canonical 已迁移数据库，提交售后会因无执行权限失败；若继续使用 compatibility 数据库，则实际服务数据库与正式迁移控制面不一致。实际线上组合尚未只读核验。 |
+| 数据/安全影响 | 未见静态证据表明会产生部分写入；主要风险是售后申请不可用、迁移事实漂移和后续回滚无法可靠判定。 |
+| 根因 | 旧 RPC 被安全包装替代后，调用方未同步到新契约；同一服务的数据库来源在发布控制资料中未收敛为单一事实。 |
+| 建议方向 | 先进行只读独立复核，确定生产服务使用的数据库、已应用 migration ledger 与目标 RPC grant；确认后从当时最新主线建立单一用途分支，同步唯一的服务调用和迁移来源声明，不在审计分支处理。 |
+| 预计修改范围 | 售后服务路由/RPC 参数、对应数据库授权包装器、迁移/发布配置和定向售后集成测试；具体范围取决于独立复核的实际数据库来源。 |
+| 验证/回滚 | 在隔离数据库应用目标迁移序列，以 service-role 调用 Storefront 售后提交并验证 201、售后/订单/审计原子事实；回滚为撤回独立修复提交。 |
+| 独立复核 | 建议；必须先取证实际部署数据库与 ledger，不能将任一配置文件单独视为线上事实。 |
