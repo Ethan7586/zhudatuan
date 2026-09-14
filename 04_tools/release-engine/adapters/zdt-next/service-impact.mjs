@@ -1,10 +1,11 @@
-import { build } from 'esbuild';
+import { createRequire } from 'node:module';
 import { relative, resolve } from 'node:path';
 
 import { serviceEntryDirectory, serviceTargets } from './service-targets.mjs';
 import { workspaceResolver } from './workspace-resolver.mjs';
 
 export async function resolveImpact({ adapter, changes }) {
+  const { build } = createRequire(resolve(adapter.projectRoot, 'package.json'))('esbuild');
   const entryPoints = Object.fromEntries(Object.entries(serviceTargets).flatMap(([target, names]) =>
     names.map((name) => [`${target}--${name}`, resolve(adapter.projectRoot, serviceEntryDirectory, `${name}.ts`)])));
   const result = await build({
