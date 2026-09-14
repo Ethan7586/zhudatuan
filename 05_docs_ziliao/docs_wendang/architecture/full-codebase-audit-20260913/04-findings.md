@@ -4723,3 +4723,20 @@
 | 建议方向 | 仅在未来测试维护小批次中拆分场景，保留同等真实 DB roles/fixture 和跨 Realm evidence；不在审计分支改动。 |
 | 验证/回滚 | 分拆后分别运行各 case，确认每一 case 的并发数量、断言与 cleanup 不变；回滚为撤回纯测试重组织提交。 |
 | 是否需要独立复核 | 否（NIT）。 |
+
+## F-0254｜Password login stability 测试不清理随机身份 fixture
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Identity PostgreSQL integration test data hygiene |
+| 类型 | 测试可维护性、测试数据库数据生命周期 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/tests/repository/PasswordLoginStability.test.ts:36-46,102-135`。 |
+| 当前/预期 | beforeAll 以随机 suffix 插入 principal、account、credential、member、membership、role/scope grants；test 还创建 session/authticket。afterAll 只结束 pools，没有删除任何 fixture。预期为单文件 finally cleanup，或明确由权威 test harness 在每次运行后重置 database。 |
+| 直接证据 | [FACT][E-AU-533-001] `seedIdentity` 有多张表 insert；[FACT][E-AU-533-002] afterAll 仅 `end()` 两个 pool；[FACT][E-AU-533-003] suffix 每次随机，无法依赖同键 upsert 回收。 |
+| 用户/数据/安全影响 | 仅在配置的 test DB 运行时累积测试身份/会话/票据，可能导致数据膨胀、查询干扰或后续测试不稳定。没有生产连接、生产数据污染或凭据泄露证据。 |
+| 根因 | 稳定性 test 将 fixture 持久写入 shared DB，却没有与 seed 对称的 teardown。 |
+| 建议方向 | 从最新主线建立独立测试维护分支，先确认全局 harness 是否重置 DB；若否，使用唯一 tag 在 finally 删除依赖顺序正确的 session/ticket/membership/credential/account/principal 事实，并验证失败中途同样清理。 |
+| 验证/回滚 | 隔离 test DB 连续跑两次，按 tag 核对运行后 0 条 fixture；模拟 assertion 失败仍执行 cleanup；回滚为撤回纯测试 cleanup 提交。 |
+| 是否需要独立复核 | 否（P3）；需先确认外部 harness reset 责任。 |
