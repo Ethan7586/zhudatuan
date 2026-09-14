@@ -5317,3 +5317,24 @@
 | 验证方式 | 基线 migration runner建立至少两个 Mall、supplier/offer/route/order fixture；以 `zhudatuanpurchaseapi` 执行 QuoteReader/PlaceOrder SQL，验证自己的 Mall/order allow、另一 Mall的 select/insert/update必须无行或拒绝；同时验证 payment/refund/finance job roles未丢失必要路径。 |
 | 回滚方式 | 独立前向 policy/grant migration回退到上一个 verified narrow版本；不删除四流事实，已写错误数据另建逐笔修复计划。 |
 | 是否需要独立复核 | 是；复核者需独立检查 `pg_class.relrowsecurity`、`pg_policies`、Purchase connection role/inheritance及跨 Mall PostgreSQL execution结果。 |
+## F-0285｜公司模板克隆以请求身份驱动，未绑定运行会话授权
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | SFL company template clone / Provisioning / Web API database boundary |
+| 类型 | 身份与权限、租户/Realm 边界、特权数据写入契约 |
+| 严重级别 | **P2** |
+| 置信度 | 高（function body、grant、application adapter、SQL contract与PG17 execution为直接证据；生产 session/role部署细节未验证） |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260912200000_create_sfl_company_template_clone.sql:88-220,227-359`；`01_core_hexin/services/commerce/src/modules/provisioning/03_application_yingyong/CloneCompanyTemplate.ts:4-12,58-93`；`CompanyTemplateCloneWorkflow.ts:8-18`；`sfl_company_template_clone_contract.sql:27-46,207-309`；`04_tools/scripts/check/sfl-company-template-clone.pg17-fixture.mjs:44-45`。 |
+| 当前/预期 | 当前 `security definer` function 接受 request 中的 `source_realm_id`、`source_membership_id` 与 `requested_by`，并验证它们能连接到同一 active source operator membership/account；但未读取或校验当前 connection 的 actor、membership、scope、capability 或 workload。`CloneCompanyTemplate` 同样直接序列化该输入，function则直接授予 `zhudatuanwebapi` execute。预期是调用者不能仅凭已知的有效 source identifiers 冒充源 operator；数据库/API 边界应将请求身份与已认证运行上下文绑定并 fail closed。 |
+| 直接证据 | [FACT][E-AU-702-001] migration 99-105 从 JSON取全部 source identity字段，185-220只把它们互相 join验证；函数唯一读取的 session setting是测试注入 `sfl.company_template_clone_interrupt`（129），未出现 actor/membership/scope authorization check；[FACT][E-AU-702-002] 358-359 revoke public后向 `zhudatuanwebapi` grant execute；[FACT][E-AU-702-003] adapter 60-69逐字转发 application input，workflow 16-17只委托；[FACT][E-AU-702-004] SQL contract以默认 fixture身份反复传入 source operator identifiers，覆盖成功/replay/rollback但未 `set role zhudatuanwebapi`、未设置/篡改 session identity或断言 mismatch deny；[FACT][E-AU-702-005] `npm run check:sfl-company-template-clone` 在 2026-09-15通过，证明拓扑与事务契约，不证明真实 API role/session authorization matrix。 |
+| 调用链或运行入口 | 潜在 Web/API provisioning request → `CompanyTemplateCloneWorkflow` → `CloneCompanyTemplate` → `organization.clone_company_template(jsonb)` → enterprise/Mall/Realm/node/account/membership/scope/pool/application/pending-binding/outbox writes。固定基线未发现该 workflow 的注册 route/operation consumer；function的 direct Web API execute grant仍构成可调用数据库边界。 |
+| 用户影响 | 错误接线、连接池 session丢失或获得 Web API DB调用能力的调用者，可能以任一已知有效 source operator membership/principal创建新的独立 company/Mall/Realm拓扑及其 target membership；当前无已发生越权克隆证据。 |
+| 数据影响 | 会生成新的 organization、identity、access、catalog/experience 和 pending binding记录；设计上不复制业务订单、支付、财务、履约、库存、会话或凭据，且不执行基础设施动作。 |
+| 安全影响 | 高权限 definer write surface把身份主张留给可控 JSON参数，缺少数据库层的 session principal/capability binding；可形成 source operator impersonation和未授权租户拓扑创建。 |
+| 根因 | 克隆 SQL已实现 source 数据一致性和事务边界，但把“请求中说自己是谁”当成了授权事实；应用 adapter没有从认证 context派生不可伪造字段，验收也未将 real runtime role/session denial作为契约。 |
+| 建议方向 | 从当时最新 `zdt-next` 新建单一 SFL clone-authorization batch：先定义允许发起 clone的 operator capability和可信 API context；再由受认证 request派生 source realm/member/principal，SQL对 current session/受控 capability进行 fail-closed match，或收紧为仅受控 command function可调用。补 same actor allow、different actor/member/source deny、empty session deny、idempotent replay和rollback的真实 role contract；不要修改本审计分支或历史 migration。 |
+| 预计修改范围 | 一项前向 Supabase authorization migration、Provisioning command/API context adapter、最小 PostgreSQL role/session integration contract；不改变克隆业务拓扑模板、不批量处理既有 clones。 |
+| 验证方式 | 隔离 PostgreSQL按正式 connection role设置 session actor/membership/scope；用授权 source operator得到一次 clone，用不同 actor、不同 membership、跨 Realm source、无 session和无 execute role分别验证拒绝；确认成功路径仍保持0基础设施动作、无业务历史复制、replay和注入rollback。 |
+| 回滚方式 | 回退独立的 function/grant/policy前向版本至上一个已验证的受控边界；不要删除已有 clone或pending binding，异常创建记录另建逐项处置计划。 |
+| 是否需要独立复核 | 是；复核者须独立核对生产 connection-pool role/session setter、function owner/BYPASSRLS、API route/operation registration及真正调用者，并亲自执行 mismatch matrix。 |

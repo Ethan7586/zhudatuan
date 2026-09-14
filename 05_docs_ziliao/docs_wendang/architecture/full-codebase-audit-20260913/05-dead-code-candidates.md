@@ -1663,3 +1663,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1不强制；升级G2/G3前必须核验 production consumer/`pg_depend`/privileges 和真实 Storefront login response。 |
 
 - Storefront Member-Node projection 调用缺口归 DC-0074。累计 G0 60、G1 89、G2 5、G3 0、GX 40；未删除任何文件。
+
+## DC-0075｜公司模板克隆特权边界
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `organization.clone_company_template(jsonb)`，由 `20260912200000_create_sfl_company_template_clone.sql` 创建；Provisioning `CloneCompanyTemplate`/`CompanyTemplateCloneWorkflow`。 |
+| 不能按闲置处理的证据 | function向 `zhudatuanwebapi` 授予直接 execute，创建 enterprise/Mall/Realm/node/account/membership/scope/pool/application/pending binding与 outbox；PG17 contract和fixture证明其完整事务职责。固定基线虽无注册 route/operation consumer，但仓外 caller、direct DB invocation、发布制品和未来 provisioning entry均未排除。 |
+| 高风险原因 | security-definer身份/权限边界尚存在 F-0285；任何删除、权限缩减或“未使用”结论都可能破坏 company provisioning、identity topology或幂等回执。 |
+| 可否删除 | 否；仅在独立 authorization/design review先确定实际调用者、session context、capability、production dependencies和完整恢复路径后，才可讨论替换/下线。 |
+| 二次复核 | 是；专项复核实际 Web API role、connection session setter、production function dependencies/privileges、external provisioning caller和clone data recovery procedure。 |
+
+- 公司模板克隆特权边界归 DC-0075。累计 G0 60、G1 89、G2 5、G3 0、GX 41；未删除任何文件。
