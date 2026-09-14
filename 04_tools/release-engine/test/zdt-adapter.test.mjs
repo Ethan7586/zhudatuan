@@ -190,6 +190,19 @@ test('L1 identity API owns its runtime, pointer, and rollback independently from
   assert.equal(remote.restart.name, l1.service);
 });
 
+test('L1 web API owns its runtime, pointer, and rollback independently from L0', () => {
+  const l0 = adapter.nodes['zhudatuan-l0'].deployments['web-api'];
+  const l1 = adapter.nodes['hbbtzn-l1'].deployments['web-api'];
+  const remote = policy.nodes['hbbtzn-l1'].deployments['web-api'];
+  assert.equal(l1.hostedBy, undefined);
+  assert.equal(l1.pointerRoot, '/opt/sfl/nodes/hbbtzn-l1/targets/web-api');
+  assert.equal(l1.service, 'sfl-web-api@hbbtzn-l1.service');
+  assert.notEqual(l1.pointerRoot, l0.pointerRoot);
+  assert.notEqual(l1.service, l0.service);
+  assert.equal(remote.pointerRoot, l1.pointerRoot);
+  assert.equal(remote.restart.name, l1.service);
+});
+
 test('every restartable fast target has a one-time legacy seed and production rollback baseline', () => {
   for (const [nodeKey, node] of Object.entries(policy.nodes)) {
     assert.match(node.legacyRoot, /^\/opt\//, `${nodeKey} legacy root`);
