@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-114 已完成。AU-114 完成 Channel connection/sync run 读取查询链审阅。覆盖总账按当前文件级清单重算：深入审阅1,120文件/94,150行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,728文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-115 已完成。AU-115 完成 Channel provider-operation 端口与履约/退款调用链审阅。覆盖总账按当前文件级清单重算：深入审阅1,121文件/94,192行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,727文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1119,3 +1119,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Channel connection 与 sync run 的两个 API read implementation，以及 sovereign identity runtime 的 selected-module 装配。
 
 执行结果：两条 read 都按 access scope 查询，connection 用 id keyset 并只输出 has_secret，sync run 通过 connection scope join 和 started_at/id keyset 隔离；identity runtime 只注册这三项 Channel operator read operation。新增 F-0168/P3：同一 connection/sync run 查询在 ChannelRoutes 和 ChannelReadOperations 各维护一份等价 SQL/投影，当前输出相同但未来变更可造成两个已部署 API runtime 漂移。未发现 P0–P2 新问题；Vitest 未运行。
+
+## 117. AU-115 连续审计点
+
+审阅 Channel provider-operation 公共端口，以及 fulfillment order、WeChat refund 对该端口的 record/update/replay 调用。
+
+执行结果：fulfillment 在 provider submit 后同一 transaction 写 operation、状态和 tracking job；payment refund 在 provider attempt 前写 processing，随后按权威观察更新 terminal/unknown 状态。operation 表以 provider/kind/idempotency 唯一键和 request hash 防止同 key 不同请求覆盖。新增 F-0169/P2：`record` 的冲突 SQL 以 request hash 不匹配拒绝 update，但方法不检查结果；调用者会继续，把不匹配的请求静默视为已记录，无法显示并处理幂等冲突。未发现 P0/P1 新问题；Vitest 未运行。

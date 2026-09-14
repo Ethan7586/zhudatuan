@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-115-001","01_core_hexin/services/commerce/src/modules/channel/01_public_gongkai/ChannelOperationPort.ts","3-42","provider operation record/replay/update；hash conflict 返回零行未被检查。"
+"E-AU-115-002","01_core_hexin/services/commerce/src/modules/fulfillment/05_interface_jieru/jobs_renwu/FulfillmentJobs.ts","29-63,113-116","provider Order submit 后 operation/tracking transaction 与 replay caller。"
+"E-AU-115-003","01_core_hexin/services/commerce/src/modules/payment_zhifu/05_interface_jieru/jobs_renwu/PaymentJobs.ts","260-304,425-438","refund provider attempt/observation 对 operation 的 record/update。"
+"E-AU-115-004","02_platform_pingtai/database/supabase/migrations/20260821022000_create_finance_channel.sql","233-250","provideroperation 唯一键、state/request hash 表约束。"

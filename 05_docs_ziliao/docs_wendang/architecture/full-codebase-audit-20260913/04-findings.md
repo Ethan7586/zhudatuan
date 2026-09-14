@@ -3390,6 +3390,20 @@
 | 验证/回滚 | 从最新主线建立独立小分支，先用同一数据库 fixture 对两运行单元逐字段/分页反事实比较，再抽取最小共享 action 或保留双实现并加入契约同构测试。回滚为撤回该单一治理批次。 |
 | 独立复核 | 否；P3，后续 Channel read/entrypoint 专项可复查。 |
 
+## F-0169｜Channel provider-operation 的请求哈希冲突被静默吞掉
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | channel / provider operation；P2；高 |
+| 类型 | 幂等冲突、状态可观测性与正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/channel/01_public_gongkai/ChannelOperationPort.ts:17-23`；调用者 `fulfillment/.../FulfillmentJobs.ts:54-57`、`payment_zhifu/.../PaymentJobs.ts:276-279` |
+| 当前/预期 | `record` 以 `(provider,kind,idempotency_key)` 唯一键写入；已存在但 request_hash 不同，`on conflict ... do update ... where request_hash=excluded.request_hash` 返回零行。方法声明 `Promise<void>` 且忽略该结果，调用者继续提交 fulfillment/refund 业务状态。预期 hash 不匹配须显式抛出稳定幂等冲突，或由调用端判定和记录该反事实。 |
+| 直接证据 | SQL 第18-21行仅在 hash 相等时更新；无 `returning`、行数检查或异常。Fulfillment submit 在该调用后继续 enqueue tracking 并 commit；Payment refund attempt 在调用后继续 provider 调用和后续状态迁移。 |
+| 调用链/影响 | fulfillment job → provider Order submit → provideroperation record → tracking；payment refund job → providerattempt → provideroperation record/update → provider observation。相同 idempotency key 的不同请求可能产生实际外部效果或内部状态变化，却保持旧 operation 记录且没有冲突信号。 |
+| 根因 | 把 SQL 条件冲突当作不抛错的幂等成功，但没有区分同 hash 的安全重放和不同 hash 的语义冲突。 |
+| 验证/回滚 | 从最新主线建立独立小分支，以相同 provider/kind/key、不同 request hash 的 fixture 断言 record 拒绝；再分别覆盖 fulfillment 与 refund 调用端不会提交后续 side effect。回滚为撤回该单一端口契约/测试批次。 |
+| 独立复核 | 否；P2，后续 Channel operation/fulfillment-payment 专项可复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

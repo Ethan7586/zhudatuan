@@ -1270,3 +1270,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime boundary | selected module 只注册白名单 operation，避免与同一 runtime 的完整 ChannelModule 冲突 | [FACT][E-AU-114-003] |
 
 [FACT][E-AU-114-004] 3 文件、94 行 Channel read 链完成深审；两个运行单元的 connection/sync query 目前等价，但实现重复见 F-0168/P3。
+
+## 120. AU-115 Channel provider-operation 端口清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| public operation port | provider/kind/idempotency/request hash 的 record、replay reference 与状态更新 | [FACT][E-AU-115-001]；F-0169/P2 |
+| fulfillment caller | provider order submit 后的 operation/tracking 事务记录；operation replay 取内部 fulfillment reference | [FACT][E-AU-115-002] |
+| payment caller | refund attempt/observation/authority 链更新 operation 状态 | [FACT][E-AU-115-003] |
+
+[FACT][E-AU-115-004] 1 文件、42 行 Channel public operation port 完成深审；跨模块写入使用相同 idempotency key，但 hash conflict 未被调用端观测，见 F-0169/P2。
