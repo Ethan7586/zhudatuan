@@ -2317,3 +2317,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | one-time replay | 验证同key第二次返回固定credential replay 409，且业务action只执行一次 | [FACT][E-AU-218-002] |
 
 [FACT][E-AU-218-003] 1 文件、75 行完成深审；覆盖access ownership preview proof，不覆盖identity step-up action proof，后者缺口见F-0212/P3。
+
+## 224. AU-219 Query message contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| query identity | 只为查询提供泛型stable `type` discriminant；无payload、执行或存储职责 | [FACT][E-AU-219-001] |
+| dispatch consumer | QueryBus直接以该契约约束handler registration和execute输入，API/Jobs bootstrap创建bus | [FACT][E-AU-219-002] |
+
+[FACT][E-AU-219-003] 1 文件、3 行完成深审；真实消费成立，为G0；bus行为测试缺口沿用F-0208。

@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-219-001,src/foundation/application/Query.ts,1-3,message contract,Generic Query restricts a query to an immutable string type discriminant.
+E-AU-219-002,src/foundation/application/QueryBus.ts,1-19,direct consumer,QueryBus imports Query and uses it for handler map registration and execute input typing.
+E-AU-219-003,src/bootstrap/ApiBootstrap.ts;src/bootstrap/JobsBootstrap.ts,1-2;1-2,runtime consumer,API and Jobs bootstraps construct QueryBus which compiles against this public contract.

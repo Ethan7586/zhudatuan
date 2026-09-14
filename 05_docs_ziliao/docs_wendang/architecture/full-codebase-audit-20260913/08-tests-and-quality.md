@@ -684,3 +684,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct fixture确认`access.ownership.transfers.preview`的proof不进入audit或idempotency replay，且第二次请求不重执行业务action。
 - accept/cancel preview共用同一projection规则；step-up action proof使用不同分支且无direct fixture，见F-0212/P3。审计工作树未运行Vitest。
+
+## 219. AU-219 Query message contract 深审
+
+- Query仅为QueryBus泛型输入提供type discriminant；本身没有可执行分支。
+- QueryBus direct fixture仍缺，已由F-0208记录；无P0–P3新问题。
