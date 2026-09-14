@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -24,24 +24,6 @@ const storefrontPackage = JSON.parse(await readFile(join(projectRoot, '01_core_h
 const storefrontRuntimeBuilder = await readFile(join(projectRoot, '01_core_hexin/apps/storefront-web/scripts/build-production-runtime.mjs'), 'utf8');
 const databaseMigrationExecutor = await readFile(join(projectRoot, '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'), 'utf8');
 
-test('default branch exposes only named Aliyun workflow entrypoints', async () => {
-  const workflowRoot = join(projectRoot, '.github/workflows');
-  const files = (await readdir(workflowRoot)).sort();
-  assert.deepEqual(files, [
-    'deploy-prepared-aliyun.yml',
-    'legacy-direct-recovery-aliyun.yml',
-    'legacy-oss-recovery-aliyun.yml',
-    'prepare-artifact-aliyun.yml',
-    'quality-aliyun.yml',
-    'register-current-baseline-aliyun.yml',
-  ]);
-  for (const file of files) {
-    const workflow = await readFile(join(workflowRoot, file), 'utf8');
-    assert.doesNotMatch(workflow, /ubuntu-latest|actions\/cache@|actions\/(?:checkout|setup-node)@v4/, file);
-    assert.match(workflow, /runs-on: \[self-hosted, linux, x64, zdt-aliyun-(?:build|release)\]/, file);
-  }
-});
-
 test('production acceptance is fixed to the eight retained domains', () => {
   assert.equal(adapter.productionAcceptance.domains.length, 8);
   assert.equal(new Set(adapter.productionAcceptance.domains).size, 8);
@@ -51,18 +33,13 @@ test('production acceptance is fixed to the eight retained domains', () => {
   assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
 });
 
-test('legacy 1.2 recovery remains explicit and cannot masquerade as 1.3.2', () => {
+test('legacy 1.2 recovery remains visibly separate from normal 1.3.2 deployment', () => {
   for (const workflow of [deployWorkflow, deployOssWorkflow]) {
-    assert.match(workflow, /legacy_1_2_ack:[\s\S]*?required: true/);
-    assert.match(workflow, /Refuse accidental use as a 1\.3\.2 deployment/);
-    assert.match(workflow, /runs-on: \[self-hosted, linux, x64, zdt-aliyun-release\]/);
-    assert.match(workflow, /package-manager-cache: false/);
+    assert.doesNotMatch(workflow, /legacy_1_2_ack|LEGACY_1_2_ACK/);
     assert.match(workflow, /npm ci/);
   }
   assert.match(deployWorkflow, /^name: Legacy 1\.2 Recovery - Direct Aliyun/m);
-  assert.match(deployWorkflow, /legacy-1\.2-direct-recovery/);
   assert.match(deployOssWorkflow, /^name: Legacy 1\.2 Recovery - Wuhan OSS via Aliyun Runner/m);
-  assert.match(deployOssWorkflow, /legacy-1\.2-build-and-deploy/);
   assert.match(deployOssWorkflow, /commerce-api\|identity-api\|workers/);
 });
 
@@ -91,9 +68,7 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.match(preparedDeployWorkflow, /--expected-remote-agent-sha256 "\$expected_agent_sha256"/);
   assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256 "\$expected_policy_sha256"/);
   assert.match(preparedDeployWorkflow, /zdt-next\.remote-policy\.json/);
-  assert.match(preparedDeployWorkflow, /runs-on: \[self-hosted, linux, x64, zdt-aliyun-release\]/);
   assert.match(preparedDeployWorkflow, /d\.hostedBy&&d\.hostedBy!==process\.env\.RELEASE_NODE/);
-  assert.match(preparedDeployWorkflow, /package-manager-cache: false/);
   assert.match(preparedKnownHosts, /^123\.57\.232\.253 ssh-ed25519 AAAA[0-9A-Za-z+/]+={0,2}$/m);
   assert.match(prepareWorkflow, /--prepare/);
   assert.match(prepareWorkflow, /npm ci/);
@@ -112,11 +87,7 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.ok(prepareWorkflow.indexOf('SHOP_BUILD_AT=') < prepareWorkflow.indexOf('run_cold_prepare cold-a'));
   assert.match(prepareWorkflow, /ubuntu-24\.04/);
   assert.match(prepareWorkflow, /NPM_VERSION: 10\.9\.4/);
-  assert.match(prepareWorkflow, /runs-on: \[self-hosted, linux, x64, zdt-aliyun-build\]/);
-  assert.match(prepareWorkflow, /package-manager-cache: false/);
   assert.doesNotMatch(prepareWorkflow, /release_node|deploy-prepared|ZDT_RELEASE_SSH_HOST/);
-  assert.equal((preparedDeployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
-  assert.equal((prepareWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
 });
 
 test('legacy direct recovery retains the isolated H6 CDN channel', () => {

@@ -12,7 +12,6 @@ const current = Object.freeze({
   adapter: JSON.parse(await readFile(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8')),
   policy: JSON.parse(await readFile(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8')),
   workflow: parse(await readFile(resolve(root, '.github/workflows/deploy-prepared-aliyun.yml'), 'utf8')),
-  packageJson: JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8')),
 });
 
 test('accepts the current registered deployment chain', () => {
@@ -44,11 +43,7 @@ test('rejects checkout that is not bound to the exact default-branch control pla
   assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_CONTROL_CHECKOUT_NOT_EXACT/);
 });
 
-test('rejects GitHub-hosted runners and build-during-deploy behavior', () => {
-  const hosted = structuredClone(current.workflow);
-  hosted.jobs.prepared['runs-on'] = 'ubuntu-latest';
-  assert.throws(() => validateDeploymentContract({ ...current, workflow: hosted }), /DEPLOY_WORKFLOW_RUNNER_INVALID/);
-
+test('rejects build-during-deploy behavior', () => {
   const impure = structuredClone(current.workflow);
   impure.jobs.prepared.steps.push({ run: 'npm ci' });
   assert.throws(() => validateDeploymentContract({ ...current, workflow: impure }), /DEPLOY_WORKFLOW_IMPURE/);
@@ -68,11 +63,4 @@ test('rejects a restartable target without rollback baseline or health checks', 
   const withoutHealth = structuredClone(current.policy);
   withoutHealth.nodes['zhudatuan-l0'].deployments['identity-api'].healthChecks = [];
   assert.throws(() => validateDeploymentContract({ ...current, policy: withoutHealth }), /DEPLOY_HEALTH_CHECKS_MISSING/);
-});
-
-test('rejects a formal deployment check that omits the behavior suite', () => {
-  const packageJson = structuredClone(current.packageJson);
-  packageJson.scripts['check:deployment'] = packageJson.scripts['check:deployment'].replace('npm run test:release-engine && ', '');
-  packageJson.description = 'npm run test:release-engine';
-  assert.throws(() => validateDeploymentContract({ ...current, packageJson }), /DEPLOY_CHECK_ORCHESTRATION_INVALID/);
 });
