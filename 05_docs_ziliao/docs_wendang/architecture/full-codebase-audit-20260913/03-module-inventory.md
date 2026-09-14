@@ -1013,3 +1013,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | manifest 静态契约 | [FACT][E-AU-091-004] |
 
 [FACT][E-AU-091-005] 8 文件、92 行 Organization 层级读取与 WebBusiness selected module 完成深审；未见重复查询实现或未经 scope 授权的层级读取。
+
+## 97. AU-092 WebBusiness 公开目录数据库投影清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| guest catalog function | 已发布 application/release/listing 的商品、价、库存投影 | [FACT][E-AU-092-001] |
+| privilege boundary | SECURITY DEFINER、固定 search path、仅 web API role 可执行 | [FACT][E-AU-092-002] |
+| HTTP binding | host/default application 绑定与 query 参数转发 | [FACT][E-AU-092-003] |
+| pagination | handler safe-integer 与 PostgreSQL integer 参数范围不一致 | F-0162/P2 |
+
+[FACT][E-AU-092-004] 新增 1 个迁移文件、119 行完成深审；关联的 WebBusiness handler/test 已在 AU-084 深审。本批次确认公开读角色/发布边界，新增 F-0162/P2。

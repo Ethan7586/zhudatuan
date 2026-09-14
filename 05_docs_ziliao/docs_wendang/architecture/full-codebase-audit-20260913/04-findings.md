@@ -3292,6 +3292,20 @@
 | 验证/回滚 | 后续从受控数据库以实际 `zhudatuanwebapi`、owner/supplier/store/mall scope 执行该 operation，确认 payment/finance/fulfillment 子投影及拒绝边界；修复须从最新主线独立小分支在最小数据范围内增加受控 read contract 或调整 projection，并用 role/RLS 集成测试验证。回滚为撤回该单一批次。 |
 | 独立复核 | 否；P2，待 payment/finance web read policy 专项复核。 |
 
+## F-0162｜公开目录 cursor 的 HTTP 参数上限宽于数据库函数 integer 类型
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | webbusiness / public catalog；P2；高 |
+| 类型 | 输入边界、错误传播、API 可用性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/webbusiness/PublicCatalogHttpHandler.ts:55,98-100`；`02_platform_pingtai/database/supabase/migrations/20260903111000_publish_canonical_guest_catalog.sql:6-10,87-88`；`PublicCatalogHttpHandler.test.ts:6-82` |
+| 当前/预期 | handler 接受任意不超过 JavaScript `Number.MAX_SAFE_INTEGER` 的 cursor；其后将数值传入 SQL 函数的 `p_offset integer`。PostgreSQL integer 最大为 2,147,483,647，较大的 safe integer 不能绑定为该参数并会使 query rejection 逃离 handler。预期 API 应在数据库调用前把不能表示为参数类型的 cursor 判为 `PAGINATION_INVALID`，或函数契约改用可承载的类型。 |
+| 直接证据 | handler 的 `integer(..., Number.MAX_SAFE_INTEGER)` 在第55行决定接纳范围；函数签名第9行是 `integer`，第88行直接用 p_offset；handler 第59-62行没有 query rejection 处理。现有测试只验证默认 cursor、host 绑定和跨 mall 拒绝，没有参数类型上界反事实。 |
+| 调用链/影响 | public GET → PublicCatalogHttpHandler → zhudatuanwebapi → catalog.public_storefront_catalog。任何公开客户端可提交该范围内的过大 cursor，使预期的客户端输入错误变为运行时数据库错误/5xx；未验证线上是否已有该请求。 |
+| 根因 | TypeScript 入口以 JavaScript 数值安全范围作为数据库 integer 输入范围，未将跨边界类型约束提升到接口验证。 |
+| 验证/回滚 | 从最新主线建立单一修复分支，补 `2147483647/2147483648` 两个 HTTP 反事实并确认后者稳定返回 400、无 query；若改函数类型则同步测试和 query 计划。回滚为撤回该单一变更。 |
+| 独立复核 | 否；P2，后续 public API 输入边界专项可复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

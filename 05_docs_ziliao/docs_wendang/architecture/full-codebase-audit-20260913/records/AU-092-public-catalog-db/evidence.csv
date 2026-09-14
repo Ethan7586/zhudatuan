@@ -1,0 +1,4 @@
+"证据编号","文件","位置","结论"
+"E-AU-092-001","02_platform_pingtai/database/supabase/migrations/20260903111000_publish_canonical_guest_catalog.sql","31-88","只返回 active application/release、published listing、有效价格及层级内库存；limit 被约束为1-100。"
+"E-AU-092-002","02_platform_pingtai/database/supabase/migrations/20260903111000_publish_canonical_guest_catalog.sql","25-29,91-117","函数固定 search path、SECURITY DEFINER；撤销其他角色并只授予 zhudatuanwebapi execute，迁移断言该授权。"
+"E-AU-092-003","01_core_hexin/services/commerce/src/modules/webbusiness/PublicCatalogHttpHandler.ts","39-68,98-100","host/default application 固定公开目录范围；cursor JavaScript 上界宽于函数 integer 类型，见 F-0162。"
