@@ -116,6 +116,12 @@ AU-002 已结构性核对全部 manifest、静态/动态可达性以及路由装
 | --- | --- | --- | --- | --- | --- |
 | 活动读取、预算预留/提交/释放 | `marketing.campaigns.read`；MarketingPort | 上游为 Console、checkout、order、payment；下游为 PostgreSQL campaign/redemption | `marketing.campaign/redemption` | Commerce API + order/payment Workers | 预留条件更新、付款提交、超时/关闭释放与 job role/RLS 已闭合；预算状态机缺行为测试（F-0145，P2） |
 
+### AU-056｜Referral 推荐佣金与提现边界（2026-09-14）
+
+| 模块职责 | 对外入口 | 上游/下游 | 数据所有权 | 运行/发布单元 | 当前边界结论 |
+| --- | --- | --- | --- | --- | --- |
+| 推荐绑定、佣金、反冲、结算与提现 claim | Referral HTTP operations；`referral` job | 上游为 member、order/payment outbox；下游为 catalog、runtime inbox/job、Finance journal/withdrawal | `referral.setting/product/member/binding/commission/*movement/withdrawalclaim` | Commerce API + finance queue Worker | 事件事实锁、稳定佣金 id、skip-locked 结算与提现会员锁闭合；真实 DB/RLS/Finance 端到端未验证 |
+
 ## 5. Workspace 库存
 
 [FACT][E-AU-001-002][E-AU-001-003] 43 个 workspace 分组如下：
