@@ -37,19 +37,29 @@ jobs:
         shell: bash
         run: |
           node --input-type=module <<'NODE'
-          import { appendFileSync } from 'node:fs';
+          import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
           import { loadAdapter } from './04_tools/release-engine/src/adapter.mjs';
-          import { automaticPreparationMatrix } from './04_tools/release-engine/src/automatic-preparation.mjs';
+          import { automaticClosureManifest } from './04_tools/release-engine/src/automatic-preparation.mjs';
           import { createPlan } from './04_tools/release-engine/src/planner.mjs';
 
           const adapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
           const before = /^[0]+$/.test(process.env.BEFORE_SHA ?? '') ? `${process.env.SOURCE_SHA}^` : process.env.BEFORE_SHA;
           const plan = await createPlan(adapter, { from: before, to: process.env.SOURCE_SHA });
-          const entries = automaticPreparationMatrix(adapter, plan.deploymentOrder);
+          const closure = automaticClosureManifest(adapter, { sourceSha: plan.to.sha, beforeSha: plan.from.sha, targets: plan.deploymentOrder });
+          const entries = closure.preparations;
+          mkdirSync('.automatic-artifact-closure', { recursive: true });
+          writeFileSync('.automatic-artifact-closure/closure.json', `${JSON.stringify(closure, null, 2)}\n`);
           appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify({ include: entries })}\n`);
           appendFileSync(process.env.GITHUB_OUTPUT, `has_targets=${entries.length > 0}\n`);
           console.log(entries.length === 0 ? 'No runtime artifact was affected.' : `Affected targets: ${entries.map(({ target }) => target).join(', ')}`);
           NODE
+      - name: Preserve exact closure manifest
+        uses: actions/upload-artifact@v6
+        with:
+          name: automatic-artifact-closure-${{ github.sha }}
+          path: .automatic-artifact-closure/closure.json
+          if-no-files-found: error
+          retention-days: 90
 
   close:
     name: Prepare and seal ${{ matrix.target }}

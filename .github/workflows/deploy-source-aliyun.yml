@@ -1,0 +1,118 @@
+name: Deploy Sealed Source 1.3.2 - Aliyun
+run-name: Deploy sealed source ${{ inputs.head_sha }}
+
+# This explicit deployment consumes the successful post-merge closure manifest. It never
+# prepares artifacts, builds code, edits configuration, or discovers a new deployment scope.
+on:
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: Exact zdt-next source SHA whose automatic closure completed successfully
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: zdt-next-deploy-source-${{ inputs.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Read successful sealed-source manifest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      migrations: ${{ steps.closure.outputs.migrations }}
+      runtimes: ${{ steps.closure.outputs.runtimes }}
+      frontends: ${{ steps.closure.outputs.frontends }}
+      has_migrations: ${{ steps.closure.outputs.has_migrations }}
+      has_runtimes: ${{ steps.closure.outputs.has_runtimes }}
+      has_frontends: ${{ steps.closure.outputs.has_frontends }}
+    steps:
+      - name: Resolve exact successful automatic closure
+        id: closure
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ inputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo 'head_sha must be one full lowercase Git SHA' >&2; exit 64; }
+          runs="$RUNNER_TEMP/automatic-closure-runs.json"
+          gh run list --workflow auto-prepare-artifacts.yml --branch zdt-next --event push --limit 100 \
+            --json databaseId,headSha,status,conclusion,url,createdAt > "$runs"
+          run_id="$(node -e "const r=require(process.argv[1]);const s=process.env.SOURCE_SHA;const x=r.find(v=>v.headSha===s&&v.status==='completed'&&v.conclusion==='success');if(x)process.stdout.write(String(x.databaseId))" "$runs")"
+          [ -n "$run_id" ] || { echo "No successful automatic closure exists for $SOURCE_SHA" >&2; exit 1; }
+          closure_dir="$RUNNER_TEMP/automatic-closure-$run_id"
+          mkdir -p "$closure_dir"
+          gh run download "$run_id" --name "automatic-artifact-closure-$SOURCE_SHA" --dir "$closure_dir"
+          CLOSURE="$closure_dir/closure.json" GITHUB_OUTPUT="$GITHUB_OUTPUT" node <<'NODE'
+          const fs = require('node:fs');
+          const closure = JSON.parse(fs.readFileSync(process.env.CLOSURE, 'utf8'));
+          if (closure.schemaVersion !== 'zdt-automatic-artifact-closure/v1' || closure.sourceSha !== process.env.SOURCE_SHA) {
+            throw new Error('Automatic closure identity does not match the deployment request');
+          }
+          const names = ['migrations', 'runtimes', 'frontends'];
+          let count = 0;
+          for (const name of names) {
+            const entries = closure.waves?.[name];
+            if (!Array.isArray(entries)) throw new Error(`Automatic closure wave is missing: ${name}`);
+            for (const entry of entries) {
+              if (!/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(entry.target ?? '') || !/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(entry.node ?? '')) {
+                throw new Error(`Automatic closure contains an invalid ${name} placement`);
+              }
+            }
+            count += entries.length;
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${JSON.stringify({ include: entries })}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `has_${name}=${entries.length > 0}\n`);
+          }
+          if (count === 0) throw new Error('Automatic closure contains no deployable target');
+          NODE
+
+  migrations:
+    name: Deploy migration ${{ matrix.target }} → ${{ matrix.node }}
+    needs: resolve
+    if: needs.resolve.outputs.has_migrations == 'true'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.resolve.outputs.migrations) }}
+    uses: ./.github/workflows/deploy-prepared-aliyun.yml
+    with:
+      head_sha: ${{ inputs.head_sha }}
+      release_target: ${{ matrix.target }}
+      release_node: ${{ matrix.node }}
+      operation: deploy
+    secrets: inherit
+
+  runtimes:
+    name: Deploy runtime ${{ matrix.target }} → ${{ matrix.node }}
+    needs: [resolve, migrations]
+    if: ${{ always() && needs.resolve.outputs.has_runtimes == 'true' && (needs.migrations.result == 'success' || needs.migrations.result == 'skipped') }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.resolve.outputs.runtimes) }}
+    uses: ./.github/workflows/deploy-prepared-aliyun.yml
+    with:
+      head_sha: ${{ inputs.head_sha }}
+      release_target: ${{ matrix.target }}
+      release_node: ${{ matrix.node }}
+      operation: deploy
+    secrets: inherit
+
+  frontends:
+    name: Deploy frontend ${{ matrix.target }} → ${{ matrix.node }}
+    needs: [resolve, migrations, runtimes]
+    if: ${{ always() && needs.resolve.outputs.has_frontends == 'true' && (needs.migrations.result == 'success' || needs.migrations.result == 'skipped') && (needs.runtimes.result == 'success' || needs.runtimes.result == 'skipped') }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.resolve.outputs.frontends) }}
+    uses: ./.github/workflows/deploy-prepared-aliyun.yml
+    with:
+      head_sha: ${{ inputs.head_sha }}
+      release_target: ${{ matrix.target }}
+      release_node: ${{ matrix.node }}
+      operation: deploy
+    secrets: inherit

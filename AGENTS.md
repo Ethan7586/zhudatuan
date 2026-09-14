@@ -10,9 +10,10 @@
 
 ## 部署口令（部署纯洁性契约 1.3.2 阿里云版）
 
-- 任何任务准备报告“可以部署”前，先运行 `/Users/Ethan/.codex/bin/zdt-delivery status <target> <full-source-sha> <physical-node>`；这是只读状态提示，不得用于阻止提交或合并。
+- 明确单目标任务准备报告“可以部署”前，先运行 `/Users/Ethan/.codex/bin/zdt-delivery status <target> <full-source-sha> <physical-node>`；这是只读状态提示，不得用于阻止提交或合并。普通版本部署由自动封板清单提供完整状态。
 - 交付状态固定区分“已提交、已入主线、已封板、可部署”。存在主线冲突时在开发任务中报告冲突文件，不得留到部署任务解决。
-- “部署”使用 `scripts/deploy-now.sh <target> <full-source-sha> <physical-node>`；GitHub 只调度，阿里云 Runner 执行。
+- 普通功能完成后的“部署”使用 `/Users/Ethan/.codex/bin/zdt-delivery deploy-source <full-source-sha>`，只消费该版本自动封板时记录的受影响目标；GitHub 只调度，阿里云 Runner 执行。
+- 明确要求只部署一个物理落点时，使用 `/Users/Ethan/.codex/bin/zdt-delivery deploy <target> <full-source-sha> <physical-node>`。
 - 部署只消费已经封板的不可变 OSS 制品，机械步骤只有：核对身份、原子切换、重启目标、健康检查、失败回滚。
 - 精确 SHA、真实物理目标、有效封板缺一项就停止并报告缺失项，不在部署现场开发或构建。
 - 制品准备使用 `scripts/prepare-release.sh`，通道建设另开任务；两者完成后都停止，等待新的“部署”。

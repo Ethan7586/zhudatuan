@@ -43,8 +43,8 @@ Git 传输若连续 20 秒低于 1 KiB/s 会快速失败并交给现有重试，
 
 1. 交付状态使用 `/Users/Ethan/.codex/bin/zdt-delivery status <target> <sha> <physical-node>` 只读查询；它统一显示“已提交、已入主线、已封板、可部署”，并在未入主线时列出可复现的冲突文件。状态查询不触发工作流、不构建、不封板、不部署，也不是代码门禁。
 2. 默认分支 `zdt-next` 当前使用文件名带 `-aliyun` 的工作流入口；新分支从默认分支创建后自动继承。
-3. 正式部署只允许 `scripts/deploy-now.sh <target> <sha> <physical-node>`，它调用已经封板的 1.3.2 制品。
-4. 制品准备与候选封板只允许 `scripts/prepare-release.sh <target> <sha> <physical-node>`，完成后必须停止，不得自动切生产。
+3. 普通功能的正式部署使用 `/Users/Ethan/.codex/bin/zdt-delivery deploy-source <sha>`，它只读取该 SHA 自动封板时保存的目标清单，并按“迁移 → 运行服务 → 前端”三批调用现有原子部署。
+4. 明确的单目标部署仍使用 `scripts/deploy-now.sh <target> <sha> <physical-node>`；手动制品准备使用 `scripts/prepare-release.sh <target> <sha> <physical-node>`。自动封板和手动准备都不得自动切生产。
 5. `legacy-*-recovery-aliyun.yml` 只用于明确恢复；普通部署入口不会调用它们。
 6. 所有入口固定从 `zdt-next` 触发。历史分支中的旧工作流仅是 Git 历史，不是可执行入口。
 7. 当前工作流不上传 GitHub Actions 依赖缓存。自托管 Runner 的本地 npm 缓存自然复用，避免生产切换后因缓存上传卡住队列；这是一项可调整配置，不是门禁。

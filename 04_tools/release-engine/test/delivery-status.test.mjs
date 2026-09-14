@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { evaluateDeliveryStatus, parseMergeTreeConflictFiles } from '../src/delivery-status.mjs';
+import { automaticClosureIncludes, evaluateDeliveryStatus, parseMergeTreeConflictFiles } from '../src/delivery-status.mjs';
 
 const success = Object.freeze({ databaseId: 3, status: 'completed', conclusion: 'success', url: 'https://example.test/3' });
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -47,9 +47,21 @@ test('parses only conflicted paths from git merge-tree output', () => {
   assert.deepEqual(parseMergeTreeConflictFiles(output), ['ProductCatalogRoute.tsx', 'ProductQuery.ts']);
 });
 
+test('matches only the exact physical placement in an automatic closure', () => {
+  const closure = {
+    schemaVersion: 'zdt-automatic-artifact-closure/v1',
+    sourceSha: 'a'.repeat(40),
+    waves: { migrations: [], runtimes: [{ target: 'support-api', node: 'zhudatuan-l0' }], frontends: [] },
+  };
+  assert.equal(automaticClosureIncludes(closure, { sourceSha: 'a'.repeat(40), target: 'support-api', node: 'zhudatuan-l0' }), true);
+  assert.equal(automaticClosureIncludes(closure, { sourceSha: 'a'.repeat(40), target: 'support-api', node: 'hbbtzn-l1' }), false);
+  assert.equal(automaticClosureIncludes(closure, { sourceSha: 'b'.repeat(40), target: 'support-api', node: 'zhudatuan-l0' }), false);
+});
+
 test('the system dispatcher exposes read-only status through the latest control plane', async () => {
   const dispatcher = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'utf8');
-  assert.match(dispatcher, /status\|prepare\|deploy/);
+  assert.match(dispatcher, /deploy-source/);
   assert.match(dispatcher, /git -C "\$REPOSITORY_ROOT" fetch origin zdt-next --quiet/);
   assert.match(dispatcher, /status\) bash scripts\/release-status\.sh/);
+  assert.match(dispatcher, /deploy-source\) bash scripts\/deploy-source\.sh/);
 });
