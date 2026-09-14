@@ -468,3 +468,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | provider身份和签名 | Vitest | F-0111 |
 
 [FACT][E-AU-026-001] 10文件548行深入审阅；随Commerce OCI发布，无独立表、进程或制品。
+
+## 33. AU-027 Meal Provider 模块清单
+
+| 子模块 | 职责 | 上游/入口 | 当前边界 |
+| --- | --- | --- | --- |
+| MealProvider/manifest | 发布Catalog/Price及health | Runtime loader/Registry | F-0112 |
+| BrandCatalog | 从endpoint键解析七品牌门店scope | MealProvider | F-0114/DC-0035 |
+| MealMapper | 七品牌菜单、价格与record error映射 | Catalog/Price ports | F-0115 |
+| OrderDraft/Webhook | 禁用写入/回调协议资产 | 仅测试或无caller | DC-0034/DC-0026 |
+| package/tests | 依赖、构建与KFC样例 | npm/Vitest | F-0114/F-0115 |
+
+[FACT][E-AU-027-001] 12文件507行深入审阅；随Commerce OCI发布，无独立表、进程或制品。

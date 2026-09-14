@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-026 结束时累计：P0 0、P1 候选 15、P2 52、P3 43、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-027 结束时累计：P0 0、P1 候选 15、P2 54、P3 45、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2672,3 +2672,63 @@
 
 - [UNKNOWN] 线上Flower是否enabled、目录页数、实际market_price关系及同步失败记录；审计未访问线上。
 - [UNKNOWN] Flower图片URL是否仍可能使用HTTP；代码未做Cake已有的已知域名HTTPS归一化，但固定基线没有真实Flower响应证明，暂不定级。
+
+## F-0112｜Meal多scope安装只健康检查首个门店
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Meal Provider；健康门禁、发布边界 |
+| 严重级别/置信度 | P2；高 |
+| 文件和位置 | `extensions/providers/meal/BrandCatalog.ts:18-35`；`Provider.ts:18-27,37-49`；`bootstrap/ExtensionRegistry.ts:26-44` |
+| 当前/预期行为 | [FACT][E-AU-027-003/004] installation可含多个scope，但唯一probe只接收`scopes[0]`，只invoke且不映射其响应；整体health应覆盖所有发布scope或明确拆分健康状态 |
+| 调用链 | Loader→MealProvider.create→mealProbe(scopes[0])→Registry register/stage health |
+| 用户/数据/安全影响 | 后续品牌/门店不可用或响应畸形时provider仍可激活，目录/价格任务运行期失败；无直接安全影响 |
+| 根因/建议范围 | provider级健康状态与多scope配置聚合不一致；后续单独定义全scope/抽样/分scope健康策略 |
+| 验证/回滚 | 首scope正常、第二scope网络失败/畸形、scope顺序变化矩阵；回退单一health提交 |
+| 独立复核 | 否 |
+
+## F-0113｜Meal Price按500键批次重复拉取整店菜单
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Meal Price；通信放大、deadline |
+| 严重级别/置信度 | P2；高 |
+| 文件和位置 | `extensions/providers/meal/Provider.ts:65-86`；`catalog/CatalogSourcePort.ts:28-31`；`channel/ChannelSyncJob.ts:89-110` |
+| 当前/预期行为 | [FACT][E-AU-027-005/006] 每批Price对命中的scope下载并映射整份菜单，Channel每批最多500 external IDs；同scope大于500个映射商品时重复整店调用。应复用同步周期快照或提供增量/点查 |
+| 调用链 | Channel price run→500-key batch→Meal price→scope menu→全菜单index→请求项 |
+| 用户/数据/安全影响 | 大菜单/多批同步下放大外部请求与CPU，易超deadline或限流并延迟价格；无已证数据损坏 |
+| 根因/建议范围 | 按键Price契约适配整菜单API但没有跨批快照所有权 |
+| 验证/回滚 | 499/500/501键、单/多scope调用数与快照一致性；回退单一优化提交 |
+| 独立复核 | 否 |
+
+## F-0114｜Meal package未声明直接vendorcore依赖
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Meal package；依赖边界 |
+| 严重级别/置信度 | P3；高 |
+| 文件和位置 | `extensions/providers/meal/BrandCatalog.ts:2`；`Provider.ts:5`；`package.json:9` |
+| 当前/预期行为 | [FACT][E-AU-027-007] 两个源码文件直接type import `@shop/vendorcore`，dependencies只有contract/providercore/vendorcakeuncle；直接依赖应由本包声明 |
+| 影响 | 当前工作区提升可能掩盖问题；隔离安装、包图或release impact可能不完整；无运行数据/安全影响 |
+| 建议/范围 | 后续单一依赖清单批次补直接声明并验证lock/impact；审计分支不修改 |
+| 验证/回滚 | 隔离workspace typecheck与依赖图；回退单一依赖提交及锁文件变化 |
+| 独立复核 | 否 |
+
+## F-0115｜Meal测试仅覆盖KFC单scope正常路径
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Meal tests；测试缺口 |
+| 严重级别/置信度 | P3；高 |
+| 文件和位置 | `extensions/providers/meal/tests/Ports.test.ts:16-58`；`Provider.test.ts:7-15` |
+| 当前/预期行为 | 只执行KFC单scope菜单/价格与一个OrderDraft样例；应覆盖其余六品牌、多scope health、错误记录、ID编码、价格批次和所有订单字段反事实 |
+| 证据/调用链 | E-AU-027-008、TC-AU-027-001–006；npm test→Vitest（当前缺工具） |
+| 影响 | F-0112/F-0113和多数品牌映射可在测试绿色时退化；无直接数据/安全写入 |
+| 建议/范围 | 先补多scope和七品牌契约fixture，再分批覆盖调用预算；不混实现修改 |
+| 验证/回滚 | 每个品牌字段破坏、第二scope失败、501键调用预算时测试失败；回退测试提交 |
+| 独立复核 | 否 |
+
+## 27. AU-027 新增未定级事项
+
+- [UNKNOWN] 线上Meal是否enabled、配置了多少品牌门店、单店映射商品量和供应商限流；审计未访问线上。
+- [UNKNOWN] 七品牌供应商字段是否仍与固定Mapper一致；除KFC外没有当前fixture或实际响应证据。

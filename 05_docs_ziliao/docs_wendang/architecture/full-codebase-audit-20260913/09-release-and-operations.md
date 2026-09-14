@@ -254,3 +254,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - Flower是required provider，随Commerce OCI发布；实际运行取决于enabled installation、签名manifest、connection和health门禁。
 - health只读取分类并验证root树，不能发现商品短页、全扫规模、价格不变量或Mapper字段问题；需要业务canary才能验证F-0108–F-0110。
 - 本AU未build、访问线上、激活provider、推送、合并或部署。
+
+## 30. AU-027 Meal Provider发布与运维边界
+
+- Meal是required provider，随Commerce OCI发布；一个installation可携带多个品牌/门店scope，实际启用取决于签名manifest、connection和health。
+- 当前health只探首scope且不映射响应，不能作为全部门店业务canary；治理F-0112时需明确是全量、抽样还是拆分installation，避免一次健康失败扩大停用范围。
+- Order/Webhook仍是禁用协议资产，不属于本发布面。
+- 本AU未build、访问线上、激活provider、推送、合并或部署。

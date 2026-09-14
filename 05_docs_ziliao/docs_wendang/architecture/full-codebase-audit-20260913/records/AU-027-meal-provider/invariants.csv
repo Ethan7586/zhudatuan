@@ -1,0 +1,8 @@
+"id","invariant","status","finding"
+"INV-AU-027-001","manifest与发布ports闭合","成立","Catalog/Price"
+"INV-AU-027-002","安装中所有配置scope纳入健康门禁","不成立","F-0112"
+"INV-AU-027-003","同一同步周期避免重复整店菜单扫描","不成立","F-0113"
+"INV-AU-027-004","源码直接依赖在package清单声明","不成立","F-0114"
+"INV-AU-027-005","坏商品显式记录且不污染好商品","成立","Mapper record errors"
+"INV-AU-027-006","七品牌和多scope关键分支有测试","不成立","F-0115"
+"INV-AU-027-007","未完成Order/Webhook不进入生产","成立","DC-0034/DC-0026"

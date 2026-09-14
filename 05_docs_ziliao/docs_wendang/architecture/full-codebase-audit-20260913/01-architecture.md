@@ -780,3 +780,11 @@ flowchart LR
 - Catalog和Price/Stock共享同一全目录读取模型；非末页短页不失败关闭（F-0108），非空按键批次反复重扫全目录（F-0109）。
 - Flower直接把非零market price发布为compareMinor；下游Catalog明确要求compareMinor不得低于售价，模块间价格不变量没有在适配边界闭合（F-0110）。
 - Provider不拥有数据库、独立进程或发布单元；运行状态在Cakeuncle/Vendor连接实例，业务数据由Channel/Catalog/Pricing/Inventory拥有。
+
+## 33. AU-027 Meal Provider真实边界
+
+`Channel Catalog/Price → MealProvider → CakeuncleClient → 七品牌门店菜单`。一个installation可配置多个品牌/门店scope，Catalog按scope cursor推进，Price按请求key命中的scope读取菜单。
+
+- Provider整体只有一个health状态，但probe只绑定排序后首scope且不校验菜单数据；多scope发布边界与健康边界不一致（F-0112）。
+- Price的canonical按键接口在适配层转成整店菜单读取，同一scope超过500 key会跨Channel批次重复拉取（F-0113）。
+- OrderDraft与Webhook均未进入barrel/runtime；前者保存七品牌非幂等协议，属于GX而非删除候选。

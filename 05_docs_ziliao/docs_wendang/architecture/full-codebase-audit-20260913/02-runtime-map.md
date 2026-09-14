@@ -798,3 +798,12 @@ sequenceDiagram
 - Price与Stock对每个非空500-key批次重新执行categories和全部商品分页，见F-0109。
 - Catalog记录中的非零market price原样成为compareMinor；低于售价时在CatalogProductImport失败，见F-0110。
 - health只验证分类树，不触发商品映射、分页或价格不变量；线上installation和供应商响应未验证。
+
+## 32. AU-027 Meal运行关系
+
+`enabled installation → mealCatalogScopes(connection.endpoints) → MealProvider → Catalog/Price ports → Cakeuncle menu endpoint → MealMapper → Channel/Catalog/Pricing`。
+
+- Catalog每次读取一个品牌门店scope，坏商品形成record error并继续；scope结束后cursor进入下一门店。
+- 启动/周期health只invoke `scopes[0]`，不读取`data`或执行Mapper，其余门店故障只能在业务run暴露（F-0112）。
+- Price按最多500个external IDs执行；每个命中scope下载整份菜单并索引请求项，同一大scope跨批重复（F-0113）。
+- OrderDraft只被测试直接导入；无Order/Webhook生产port。

@@ -181,3 +181,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - 连接secret、安装scope和manifest验签继承RuntimeExtensionLoader/Provider Core；本包不读取环境变量或持久化凭据。
 - F-0108–F-0111是完整性、通信成本和测试问题，不构成已证实身份绕过或敏感信息泄露。
 - 本AU未读取secret、权限assignment、数据库身份或线上installation。
+
+## 24. AU-027 Meal权限边界
+
+- manifest只声明`channel.meal.operate`与Catalog/Price；Provider没有Order/Webhook生产port。
+- OrderDraft收集手机号和门店等履约字段，但当前仅测试直引且不导出；DC-0034必须保留禁用边界，不能因代码存在而启用。
+- 连接channel secret和scope由Loader/Provider Core注入；本包不读取环境或输出凭据。
+- 本AU未读取secret值、手机号、订单、数据库身份或线上installation。

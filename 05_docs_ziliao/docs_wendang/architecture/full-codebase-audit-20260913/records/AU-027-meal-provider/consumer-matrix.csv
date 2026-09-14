@@ -1,0 +1,6 @@
+"consumer","capability","behavior","boundary"
+"ExtensionRegistry","health","以单个provider health决定register/stage","F-0112只探首scope"
+"Channel catalog job","Catalog","每cursor处理一个品牌门店scope","坏商品显式errors"
+"Channel price job","Price","每最多500 keys调用一次","F-0113整店菜单"
+"CakeuncleClient","menu invocation","按品牌endpoint与store_code请求","共享Vendor风险继承AU-023"
+"Package tests","KFC/identity/OrderDraft","mock正常单scope","F-0115"

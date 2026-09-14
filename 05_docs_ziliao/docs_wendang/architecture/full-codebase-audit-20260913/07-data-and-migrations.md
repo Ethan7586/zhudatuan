@@ -146,3 +146,10 @@
 - Flower包不拥有表或迁移，只产生Catalog/Price/Stock观测；持久数据由Channel、Catalog、Pricing和Inventory模块拥有。
 - F-0108可能漏源商品，F-0109可能延迟价格库存，F-0110会让不满足下游价格约束的目录记录失败；固定基线没有证明已覆盖或删除既有记录。
 - 本AU未执行SQL、迁移、同步或供应商调用。
+
+## 22. AU-027 Meal数据边界
+
+- Meal包没有表或迁移；Catalog菜单记录进入Channel/Catalog，Price进入Pricing，持久数据由对应Commerce模块拥有。
+- Mapper对坏商品返回显式record error，Channel在同一事务写好记录并累计rejected；F-0112/F-0113主要造成运行期失败、延迟或旧价格，不直接删除既有数据。
+- OrderDraft不在运行入口，当前没有本地订单写入责任。
+- 本AU未执行SQL、迁移、同步或供应商调用。
