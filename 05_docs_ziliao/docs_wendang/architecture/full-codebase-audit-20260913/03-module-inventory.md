@@ -2421,3 +2421,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime consumer | Executor以external requestsPerSecond构造实例，并在其他外部调用控制器之前acquire | [FACT][E-AU-229-002] |
 
 [FACT][E-AU-229-003] 1 文件、1 行完成深审；唯一Commerce consumer明确，为G0 compatibility adapter。
+
+## 235. AU-230 Semaphore contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| concurrency boundary | 复用kernel信号量隔离Commerce内部并发工作 | [FACT][E-AU-230-001] |
+| runtime consumers | JobRunner、OutboxRelay、MigrationRunner与RegistrationMigrationRunner均以`use`限制并发任务 | [FACT][E-AU-230-002] |
+
+[FACT][E-AU-230-003] 1 文件、1 行完成深审；多个真实消费者明确，为G0 compatibility adapter。
