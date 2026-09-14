@@ -1139,6 +1139,10 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 根 `.gitignore` 被 localinfra、开发脚本和支付证书边界实际依赖，保护 local env、TLS/data、secrets 与构建产物；归 G0，不构成删除候选。
 
+## 496. AU-496 历史检索排除复核
+
+- 根 `.ignore` 被 ripgrep 自动消费，预防可选 `06_history_lishi/` 旧主线污染日常检索；目录当前缺席不构成删除证据，归 G0。
+
 ## GX-0013｜渠道外部对象 scope 映射切换
 
 | 字段 | 记录 |
