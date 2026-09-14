@@ -27,7 +27,7 @@ for service in "${SERVICES[@]}"; do
   systemctl cat "$service" >/dev/null
   drop_in="/etc/systemd/system/${service}.d"
   install -d -m 0755 "$drop_in"
-  printf '%s\n' '[Service]' 'UMask=0077' 'Slice=zdt-build.slice' 'CPUWeight=100' \
+  printf '%s\n' '[Service]' 'UMask=0077' 'Slice=zdt-build.slice' 'SupplementaryGroups=zdt-builders' 'CPUWeight=100' \
     'TasksMax=2048' > "$drop_in/30-build-capacity.conf"
 done
 chmod 0700 /opt/actions-runner-build /opt/actions-runner-build/_work \
