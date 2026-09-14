@@ -1173,3 +1173,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | financial action proof | operation allowlist、canonical request hash、expected version 与 issued proof binding | [FACT][E-AU-105-004] |
 
 [FACT][E-AU-105-005] 1 文件、293 行 Identity mobile/WeChat/step-up 操作完成深审；未见 caller-selected step-up destination、跨 realm account 修改或未绑定 canonical request 的金融 proof。
+
+## 111. AU-106 Identity realm operation context 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| runtime context | DI pool/audit/KMS/keys、password/step-up/ticket signer、node notification scope | [FACT][E-AU-106-001] |
+| registration reference | invite/storefront mutual exclusion 与 slug 格式 | [FACT][E-AU-106-002] |
+| validation/masking | invite/storefront error translation 与 mobile mask | [FACT][E-AU-106-003] |
+
+[FACT][E-AU-106-004] 1 文件、73 行 Identity runtime context 完成深审；密钥职责与 registration context 边界明确，未见从请求注入 ticket signer 或 identity hash key 的路径。
