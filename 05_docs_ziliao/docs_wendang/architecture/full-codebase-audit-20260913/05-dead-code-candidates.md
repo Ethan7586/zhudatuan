@@ -906,12 +906,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 | 字段 | 记录 |
 | --- | --- |
-| 分类/对象 | G1；`api_claim_payment_outbox`、`api_start_payment_effects`、`api_finish_payment_outbox`。 |
-| 疑似原因 | 固定基线中，这三个精确 RPC 名称仅见迁移与数据库契约测试；Commerce `PaymentJobs` 使用另一套 `payment`/`runtime.outbox` 直接数据库模型。 |
-| 保留证据 | service-role 公共接口；其租约、死信、聚合版本阻塞、payload 事实复核、inbox 去重和效果扇出均有专门数据库契约测试。仓外作业、生产服务角色调用、已部署 Supabase 调度器和历史 outbox 均未核验。 |
+| 分类/对象 | G1；`api_claim_payment_outbox`、`api_start_payment_effects`、`api_finish_payment_outbox`、`api_claim_payment_event_effects` 与 `api_execute_payment_event_effect`。 |
+| 疑似原因 | 固定基线中，这五个精确 RPC 名称仅见迁移与数据库契约测试；Commerce `PaymentJobs` 使用另一套 `payment`/`runtime.outbox` 直接数据库模型。 |
+| 保留证据 | service-role 公共接口；其租约、死信、聚合版本阻塞、payload 事实复核、inbox 去重以及会计/履约/通知效果均有专门数据库契约测试。仓外作业、生产服务角色调用、已部署 Supabase 调度器和历史 outbox/effect 积压均未核验。 |
 | 可否删除 | 否；未满足公共 API、外部消费者、数据/迁移兼容、正式下线、运行行为、验证恢复及第二次复核条件。 |
 | 二次复核 | G1不强制；治理前应先核验生产 RPC 调用日志、service-role 作业配置、outbox 积压和故障恢复演练。 |
 
 ## 408. AU-408 支付域出站中继复核
 
 - 中继的单租约、证据验证、去重、指数重试与死信顺序控制设计完整；但 canonical RPC 的仓内运行消费者尚未发现，归 DC-0063/G1。累计 G0 60、G1 79、G2 4、G3 0、GX 5；未删除任何文件。
+
+## 409. AU-409 支付效果执行器复核
+
+- 会计、履约和通知效果由订单锁、有效租约、不可变身份、幂等唯一键、死信阻塞及退款超越逻辑保护；其 canonical service-role 消费者与中继共同归 DC-0063/G1。累计 G0 60、G1 79、G2 4、G3 0、GX 5；未删除任何文件。
