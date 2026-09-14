@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-218-001,src/foundation/application/OwnerActionCredentialPersistence.test.ts,8-66,direct replay fixture,Real ModuleOperations first returns ownership preview proof while persisted idempotency response and audit fact exclude the secret.
+E-AU-218-002,src/foundation/application/OwnerActionCredentialPersistence.test.ts,56-67,single execution,Second identical request returns fixed 409 and action execution count remains one.
+E-AU-218-003,src/foundation/application/ModuleOperations.ts,247-260,projection mapping,Ownership preview uses credential replay projection while identity.stepup.complete with actionProof uses a separate ACTION_PROOF_ONE_TIME_RESPONSE branch.
+E-AU-218-004,src/foundation/application/OwnerActionCredentialPersistence.test.ts,8-75,coverage boundary,Fixture operation is access.ownership.transfers.preview and does not construct identity.stepup.complete/actionProof.

@@ -3990,6 +3990,20 @@
 | 验证/回滚 | 断言idempotency key、outbox、response与throw semantics；回滚为revert测试提交。 |
 | 独立复核 | 否；P3。 |
 
+## F-0212｜Step-up action proof 的一次性回放没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / identity step-up / ModuleOperations；P3；高 |
+| 类型 | 测试覆盖缺口、一次性业务授权凭据 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/application/ModuleOperations.ts:255-258`；`.../OwnerActionCredentialPersistence.test.ts:8-75` |
+| 当前/预期 | 当`identity.stepup.complete`成功结果含`actionProof.proof`时，replay projection应持久化固定`ACTION_PROOF_ONE_TIME_RESPONSE`而不是proof。预期该分支经真实ModuleOperations有direct fixture。 |
+| 直接证据 | OwnerActionCredentialPersistence只请求`access.ownership.transfers.preview`并断言`IDENTITY_CREDENTIAL_RESPONSE_ONE_TIME`；仓内未找到`ACTION_PROOF_ONE_TIME_RESPONSE`或`identity.stepup.complete`结合`actionProof`的direct ModuleOperations assertion。 |
+| 调用链/影响 | Identity step-up complete → ModuleOperations idempotency replay → owner/high-risk action proof consumer。回归可能使proof可从replay读取或错误地改变repeat行为；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试批次，构造带`actionProof.proof`的stepup completion，经真实ModuleOperations断言首次可见、persisted response无proof、second request固定409且action单次执行；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言replay JSON/audit中不含proof，message为`ACTION_PROOF_ONE_TIME_RESPONSE`；回滚为revert测试提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

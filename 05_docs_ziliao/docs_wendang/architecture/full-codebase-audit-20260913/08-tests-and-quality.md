@@ -673,9 +673,14 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 ## 216. AU-216 Identity credential replay 深审
 
 - Direct fixture通过真实ModuleOperations确认敏感session/ticket/cookie和invitation code不会写入可重放response，第二次请求不再执行业务action。
-- `identity.stepup.complete` action-proof分支由独立OwnerActionCredentialPersistence fixture承接；无P0–P3新问题。审计工作树未运行Vitest。
+- AU-218确认OwnerActionCredentialPersistence覆盖ownership preview proof而非`identity.stepup.complete` action-proof；后者缺direct fixture，见F-0212/P3。审计工作树未运行Vitest。
 
 ## 217. AU-217 Job contract 深审
 
 - Job是type-only执行契约；QueueJob/JobRunner和各runtime的行为由其各自审计与测试承接。
 - 无P0–P3新问题。
+
+## 218. AU-218 Ownership credential persistence 深审
+
+- Direct fixture确认`access.ownership.transfers.preview`的proof不进入audit或idempotency replay，且第二次请求不重执行业务action。
+- accept/cancel preview共用同一projection规则；step-up action proof使用不同分支且无direct fixture，见F-0212/P3。审计工作树未运行Vitest。

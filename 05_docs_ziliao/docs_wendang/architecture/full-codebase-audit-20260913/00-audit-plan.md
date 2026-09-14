@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-217 已完成。AU-217 完成 Commerce Job contract audit。覆盖总账按当前文件级清单重算：深入审阅1,699文件/121,309行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,155文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-218 已完成。AU-218 完成 Commerce ownership credential replay test audit，并纠正AU-216对action-proof覆盖的误记。覆盖总账按当前文件级清单重算：深入审阅1,700文件/121,384行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,154文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1730,10 +1730,16 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 
 审阅 Commerce identity credential replay direct test。
 
-执行结果：fixture经真实ModuleOperations idempotency路径连续调用，验证sessions.create和tickets.exchange首次响应含敏感session/csrf/ticket/cookie后，持久化回放固定为不含secret的409；invitations.create的one-time code亦同。重放不会再执行业务action。Action proof的一次性回放由OwnerActionCredentialPersistence测试承接；无P0–P3新问题。
+执行结果：fixture经真实ModuleOperations idempotency路径连续调用，验证sessions.create和tickets.exchange首次响应含敏感session/csrf/ticket/cookie后，持久化回放固定为不含secret的409；invitations.create的one-time code亦同。重放不会再执行业务action。后续AU-218确认OwnerActionCredentialPersistence覆盖的是ownership preview proof，非`identity.stepup.complete` action-proof；后者没有direct fixture，见F-0212/P3；无P0–P2新问题。
 
 ## 219. AU-217 连续审计点
 
 审阅 Commerce Job message contract。
 
 执行结果：Job/JobContext定义stable job ID、attempt和abort signal，以及异步execute形状；QueueJob、JobRegistry、Commerce/Catalog/Payment/IdentityNotification runtimes和多个entry直接消费。该类型不定义领取、重试或业务逻辑，相关行为由已审JobRunner/QueueJob承接；无P0–P3新问题。
+
+## 220. AU-218 连续审计点
+
+审阅 Commerce ownership action credential persistence direct test，并复核one-time replay分支映射。
+
+执行结果：fixture经真实ModuleOperations验证`access.ownership.transfers.preview`首次返回proof后，audit与idempotency replay都不含secret、第二次返回固定409且不重执行业务action。实现同样保护accept/cancel preview；`identity.stepup.complete`返回`actionProof.proof`时走不同的`ACTION_PROOF_ONE_TIME_RESPONSE`分支，仓内未找到direct fixture，形成F-0212/P3。无P0–P2新问题。

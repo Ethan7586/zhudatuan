@@ -2298,7 +2298,7 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | credential replay persistence | 验证sessions.create/tickets.exchange的首次凭据响应不会进入idempotency replay JSON | [FACT][E-AU-216-001] |
 | invitation replay persistence | 验证管理员邀请one-time code同样被固定409替代且action只执行一次 | [FACT][E-AU-216-002] |
 
-[FACT][E-AU-216-003] 1 文件、124 行完成深审；真实ModuleOperations调用链覆盖credential/invitation关键one-time replay，action-proof分支由OwnerActionCredentialPersistence承接。
+[FACT][E-AU-216-003] 1 文件、124 行完成深审；真实ModuleOperations调用链覆盖credential/invitation关键one-time replay；AU-218确认step-up action-proof并非该fixture范围，缺口见F-0212。
 
 ## 222. AU-217 Job contract 清单
 
@@ -2308,3 +2308,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | job execution | 定义泛型input到void异步处理形状，不承担claim、retry或业务执行 | [FACT][E-AU-217-002] |
 
 [FACT][E-AU-217-003] 1 文件、10 行完成深审；QueueJob、JobRegistry、各Jobs runtime及entry均直接消费，为G0类型职责。
+
+## 223. AU-218 Ownership credential persistence test 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| ownership preview proof | 验证ownership transfer preview的proof在首次响应可见但不进入audit或可重放idempotency response | [FACT][E-AU-218-001] |
+| one-time replay | 验证同key第二次返回固定credential replay 409，且业务action只执行一次 | [FACT][E-AU-218-002] |
+
+[FACT][E-AU-218-003] 1 文件、75 行完成深审；覆盖access ownership preview proof，不覆盖identity step-up action proof，后者缺口见F-0212/P3。
