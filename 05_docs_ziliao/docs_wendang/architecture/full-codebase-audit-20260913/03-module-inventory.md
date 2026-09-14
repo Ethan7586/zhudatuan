@@ -2412,3 +2412,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | failure contract | operation首次拒绝使调用方失败，但接口不传入AbortSignal，其他已启动operation可继续完成 | [FACT][E-AU-228-003] |
 
 [FACT][E-AU-228-004] 1 文件、13 行完成深审；缺少direct behavior fixture，见F-0217/P3。
+
+## 234. AU-229 RateLimiter contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| rate boundary | 复用kernel令牌速率限制原语，隔离Commerce对外调用吞吐 | [FACT][E-AU-229-001] |
+| runtime consumer | Executor以external requestsPerSecond构造实例，并在其他外部调用控制器之前acquire | [FACT][E-AU-229-002] |
+
+[FACT][E-AU-229-003] 1 文件、1 行完成深审；唯一Commerce consumer明确，为G0 compatibility adapter。

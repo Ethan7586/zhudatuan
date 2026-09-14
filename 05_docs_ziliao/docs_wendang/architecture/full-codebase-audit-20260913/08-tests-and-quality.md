@@ -734,3 +734,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 未找到mapParallel direct fixture；现有券码模块测试不能固定通用并发、顺序和失败后在途operation语义。
 - 见F-0217/P3。审计工作树未运行Vitest。
+
+## 229. AU-229 RateLimiter contract 深审
+
+- RateLimiter为内核转发；实际令牌行为由已审kernel及Executor调用链承接。
+- 无P0–P3新问题。
