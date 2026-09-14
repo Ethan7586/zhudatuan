@@ -1,0 +1,8 @@
+"测试类型","验证命令/路径","测试对象","结果","备注"
+"测试复核","01_core_hexin/apps/console/src/feature/access/AccessRoute.test.tsx","settings/members/settings/profile 路由与基本挂载状态","未执行（人工阅读）","测试文件覆盖路由层入口、切换分支与 fallback 逻辑；因缺测试工具未运行"
+"测试复核","01_core_hexin/apps/console/src/feature/access/MemberAccessWorkspace.test.tsx;01_core_hexin/apps/console/src/feature/access/OwnerTransferPanel.test.tsx","成员访问与转移面板展示行为","未执行（人工阅读）","测试文件包含空态、错误态与提交态分支；因缺测试工具未运行"
+"测试复核","01_core_hexin/apps/console/src/feature/access/AccessQuery.ts","分页查询链核验","未执行（人工阅读）","确认查询函数可传 cursor；调用方未完整消费 nextCursor。建议后续补分页冒烟测试"
+"测试复核","01_core_hexin/services/commerce/src/modules/access/03_application_yingyong/AccessReadOperations.ts","服务端分页契约核验","未执行（人工阅读）","确认 `queryPage/nextCursor/keysetResult` 输出结构；因缺测试工具未运行"
+"测试复核","01_core_hexin/apps/console/src/feature/access/manifest.test.ts + 05-interface tests","manifest 与端口注册闭环验证","未执行（人工阅读）","测试文件存在 console manifest、service manifest 与 port 注册映射核验；因缺测试工具未运行"
+"测试复核","01_core_hexin/services/commerce/src/modules/access/06_tests_ceshi/AccessReadOperations.test.ts","读取测试边界验证","未执行（人工阅读）","测试文件包含分页上下文与关键查询字段断言；因缺测试工具未运行"
+"测试复核","01_core_hexin/services/commerce/src/modules/access/06_tests_ceshi/module.manifest.test.ts","模块 manifest 一致性","未执行（人工阅读）","测试文件包含服务模块导出与注册约束；因缺测试工具未运行"

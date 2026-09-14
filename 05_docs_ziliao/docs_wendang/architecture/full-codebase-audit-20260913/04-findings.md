@@ -3053,3 +3053,7 @@
 ## 43. AU-043 新增未定级事项
 
 - [P3] Console 个人信息页存在 `access.center.read` 分页 cursor 未消费风险（F-0137）；建议补充分页冒烟与修复验证后再定级。未发现 P0 级证据。
+
+## 44. AU-044 新增未定级事项
+
+- [P3] `AccessQuery` 本身支持 cursor，但 `settings/profile`、`settings/access` 和 `settings/members` 的 access 补充数据未形成连续取页：前两者固定首屏，成员页仅推进 member cursor。对应既有 `F-0137`；本批次未新增独立问题。未发现 P0 级证据。

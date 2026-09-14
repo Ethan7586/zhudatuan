@@ -41,7 +41,7 @@
 | vouchers | `vouchers` | feature/voucher/manifest.ts | 仅结构性审阅 |
 | finance | `finance` | feature/finance/manifest.ts | 仅结构性审阅 |
 | storefront-members | `storefront-members` | feature/storefront-member/manifest.ts | 仅结构性审阅 |
-| access | `settings/members` | feature/access/manifest.ts | 仅结构性审阅 |
+| access | `settings/members` | feature/access/manifest.ts | 已深入审阅 |
 | profile | `settings/profile` | route/ConsoleRouter.tsx（lazy） | 已深入审阅 |
 | qualification | `settings/qualification` | feature/qualification/manifest.ts | 仅结构性审阅 |
 | reports | `reports` | feature/report/manifest.ts | 仅结构性审阅 |
