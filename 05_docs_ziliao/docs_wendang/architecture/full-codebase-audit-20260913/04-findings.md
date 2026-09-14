@@ -19,6 +19,21 @@
 | 验证/回滚 | 后续独立测试批次使用隔离 PostgreSQL，分别覆盖完整与 Purchase handler 的成功、同幂等键重放、版本冲突、过期、签名篡改、写入失败回滚及 voucher 输入；修复必须从当时最新主线独立分支进行，回滚为撤回该测试/实现批次。 |
 | 独立复核 | 否 |
 
+## F-0148｜售后指定明细未绑定目标订单，缺省退款金额不具行级语义
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | order aftersales / payment refund / supplier fulfillment |
+| 类型 | 数据归属与退款正确性 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/services_fuwu/OrderOperations.ts:79-98`；`.../modules/payment_zhifu/05_interface_jieru/jobs_renwu/PaymentJobs.ts:221-246`；`.../modules/payment_zhifu/03_application_yingyong/services_fuwu/RefundPlanner.ts:45-112` |
+| 当前/预期 | `body.line` 只由单列 FK 接受，申请 SQL 不要求该 line 属于 path order；line 级申请省略 `amountMinor` 时，退款 worker 使用订单整笔已收未退余额而非 line payable。跨订单 line 会留下空 route/supplier facts；多行订单的缺省金额会在 supplier allocation 超过行额度而失败。预期为 line 必须属于目标订单，且 line 级缺省退款应从该 line 的可退余额推导或被明确拒绝。 |
+| 影响 | 已批准申请可能进入 paymentrefund 重试/死信，订单售后状态停在 processing；异常输入还会将售后记录关联到不属于订单的 line。未核验线上是否已发生。 |
+| 根因 | 售后写入从 order 行锁后以常量 `select` 插入，line 相关子查询只决定 snapshot，未成为行归属前置条件；退款创建以 payment 余额为默认值。 |
+| 验证/回滚 | 后续独立修复分支在隔离 PostgreSQL 覆盖：同订单 line、另一订单 line、未知 line、null line、单/多行订单省略/给定 amount、审批、refund job、supplier allocation 和 deadletter。回滚为撤回该独立修复提交。 |
+| 独立复核 | 否 |
+
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
 | 字段 | 记录 |

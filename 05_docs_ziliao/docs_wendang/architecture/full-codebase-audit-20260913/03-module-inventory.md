@@ -675,3 +675,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 地址/跨 Mall/manifest/全局版本不变量；缺 handler/integration 契约 | F-0147 |
 
 [FACT][E-AU-058-007] 17 文件、955 行 checkout 人工源码完成深审；购买 runtime 与迁移/RLS 交界完成结构性追踪。
+
+## 65. AU-059 Order 订单模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| PlaceOrder/ports | 报价重验、资源预留、订单/行/子单/支付计划与 outbox | [FACT][E-AU-059-001~002] |
+| HTTP read/aftersale | 查询、提醒、导出、售后申请/审核 | F-0148 |
+| receipt/expiry | 履约收货门槛、稳定 event、付款过期释放 | [FACT][E-AU-059-003~004] |
+| Purchase selected module | Purchase API 的唯一 order create 操作 | [FACT][E-AU-059-001] |
+| tests | 收货和部分售后 mock oracle；缺创建/退款完整链 | F-0148 |
+
+[FACT][E-AU-059-007] 16 文件、1,139 行 order 人工源码完成深审。
