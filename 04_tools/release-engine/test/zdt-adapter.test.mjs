@@ -98,6 +98,7 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.ok(prepareWorkflow.indexOf('SHOP_BUILD_AT=') < prepareWorkflow.indexOf('run_cold_prepare cold-a'));
   assert.match(prepareWorkflow, /ubuntu-24\.04/);
   assert.match(prepareWorkflow, /NPM_VERSION: 10\.9\.4/);
+  assert.match(prepareWorkflow, /export PATH="\$node_bin:\$PATH"/);
   assert.doesNotMatch(prepareWorkflow, /uses: actions\//);
   assert.match(prepareWorkflow, /checkout_exact "\$control_root" "\$CONTROL_SHA"/);
   assert.match(prepareWorkflow, /checkout_exact "\$workspace" "\$RELEASE_SHA"/);

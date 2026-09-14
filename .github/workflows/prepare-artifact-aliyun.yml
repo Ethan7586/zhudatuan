@@ -177,9 +177,10 @@ jobs:
             mkdir -p "$node_bin"
             tar -xJf "$archive" --strip-components=1 -C "${node_bin%/bin}"
           fi
+          export PATH="$node_bin:$PATH"
           printf '%s\n' "$node_bin" >> "$GITHUB_PATH"
           test "$($node_bin/node --version)" = "v${NODE_VERSION}"
-          test "$($node_bin/npm --version)" = "$NPM_VERSION"
+          test "$(npm --version)" = "$NPM_VERSION"
 
       - name: Fix and verify build environment
         shell: bash
