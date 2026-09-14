@@ -700,3 +700,8 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 171. AU-171 Compatibility public auth 候选复核
 
 - AU-171/AU-175/AU-192：DC-0048/G1覆盖全部compatibility auth handler；缺当前正式路由注册，但保留客户端、文档、测试、公共API与兼容部署未知项；未作删除动作。累计 G0 60、G1 66、G2 2、G3 0、GX 5；未删除任何文件。
+
+## 221. AU-221 Domain primitives 候选复核
+
+- `foundation/domain/Specification.ts`复核后仍为DC-0011/G1：无仓内caller但有`@shop/kernel`及Commerce foundation两层公开兼容责任，未核验外部消费者；不得删除。
+- Aggregate、DomainEvent、Entity、Policy、ValueObject与DomainError分别存在静态消费者或领域错误运行职责，归G0。累计候选数量不变；未删除任何文件。

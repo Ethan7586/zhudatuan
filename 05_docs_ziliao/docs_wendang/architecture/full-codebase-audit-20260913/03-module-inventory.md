@@ -2336,3 +2336,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime consumers | experience/read-job、reporting projection/read和webbusiness reporting实际以它隔离缓存键 | [FACT][E-AU-220-003] |
 
 [FACT][E-AU-220-004] 1 文件、17 行完成深审；体验路径direct test存在，跨catalog/输入边界覆盖缺口见F-0213/P3。
+
+## 226. AU-221 Domain primitives 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| kernel domain adapters | Aggregate、Entity、ValueObject、DomainEvent、Policy将Commerce domain code固定接到`@shop/kernel`的公共抽象 | [FACT][E-AU-221-001] |
+| domain error | 以code/details表达领域失败，供业务policy与AccessPipeline抛出、由HTTP ErrorMapper投影 | [FACT][E-AU-221-002] |
+| specification compatibility | And/Or/Specification仅保留公开转发；没有仓内caller，沿用DC-0011/G1 | [FACT][E-AU-221-003] |
+
+[FACT][E-AU-221-004] 7 文件、12 行完成深审；六项运行/兼容职责成立，Specification仅保守G1，不作删除结论。

@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-221-001,src/foundation/domain/{Aggregate,Entity,ValueObject,DomainEvent,Policy}.ts,1,compatibility adapters,Each is a one-line @shop/kernel re-export with direct Commerce domain/application consumers.
+E-AU-221-002,src/foundation/domain/DomainError.ts,1-6,error contract,DomainError preserves code and immutable details for domain policies AccessPipeline and ErrorMapper.
+E-AU-221-003,src/foundation/domain/Specification.ts,1,compatibility candidate,No in-repository caller found; AU-009 already records public re-export uncertainty as DC-0011/G1.
+E-AU-221-004,src/modules/inventory/02_domain_yewu/model/Reservation.ts;src/modules/order_dingdan/02_domain_yewu/models_moxing/Order.ts;src/foundation/interface/ErrorMapper.ts,1-24;1-20;1-10,direct consumers,Inventory/order models and HTTP error mapping use the foundation primitives in production paths.
