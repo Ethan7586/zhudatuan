@@ -3166,6 +3166,18 @@
 | 验证/回滚 | 使用隔离对象存储/KMS/issuer 与 PostgreSQL：覆盖 hash 不符、CSV 行错、匹配/差异、invoice upload/DB 失败、重复 issue、withdrawal/reconciliation/invoice deadletter 后 retry；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
 | 独立复核 | 否 |
 
+## F-0152｜财务周期关闭与 backfill 签核缺少行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | finance；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/finance/FinanceLifecycleOperations.ts:75-147`；现有 `.../06_tests_ceshi/module.manifest.test.ts` |
+| 当前/预期 | period 请求/批准/拒绝涉及 journal hash、四眼签核、period 状态、statement final 和 outbox；backfill 决策涉及 source/target hash/count/minor 与签核分离。现有测试仅断言 operation 名称。预期以隔离 PostgreSQL 覆盖申请、同人批准、hash 变化、statement 缺失、重复/并发批准、拒绝恢复及 backfill mismatch/outbox。 |
+| 影响 | 会计期间关闭或数据回填审批的回归可能仅在运行中暴露，造成 period 卡 closing、statement 未 final 或错误回填签核。未见已发生线上事故。 |
+| 根因 | 生命周期 SQL 汇聚在 operation factory，未随高风险状态转换建立集成测试所有权。 |
+| 验证/回滚 | 使用隔离 PostgreSQL 构造 period/journal/statement/backfill，验证上述成功/失败路径与完整事务回滚；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-064 已完成。AU-064 完成 Finance 结算、对账、提现、发票与财务死信边界审阅。覆盖总账按当前文件级清单重算：深入审阅927文件/76,239行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,921文件。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-065 已完成。AU-065 完成 Finance 周期关闭、backfill 与 lifecycle API 边界审阅。覆盖总账按当前文件级清单重算：深入审阅930文件/76,520行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,918文件。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -825,3 +825,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Finance 对账、结算、提现、发票与 deadletter job。
 
 执行结果：对账 hash/CSV/差异、结算 frozen basis、payout idempotency、发票状态与 deadletter 收口均已追踪。新增 F-0151/P2：对账、发票、财务 deadletter 没有真实行为/失败恢复测试。未发现 P0/P1；Vitest 仍因固定审计 worktree 缺少可执行文件未运行。
+
+## 67. AU-065 连续审计点
+
+审阅 Finance period close、backfill 签核、lifecycle reads 与 HTTP 注册。
+
+执行结果：周期的 source hash、不同请求/批准人、statement final/outbox，以及 backfill source/target 完整性条件均已追踪。新增 F-0152/P2：period/backfill 缺专用行为、并发及回滚测试。未发现 P0/P1；Vitest 仍因固定审计 worktree 缺少可执行文件未运行。

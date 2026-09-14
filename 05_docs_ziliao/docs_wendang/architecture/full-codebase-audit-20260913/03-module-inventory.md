@@ -745,3 +745,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | settlement PGlite 与 payout mock；其余 job 缺口 | F-0151 |
 
 [FACT][E-AU-064-006] 11 文件、988 行 Finance operations 人工源码和测试完成深审；Finance command/API/read/配置/迁移仍按独立单元继续。
+
+## 71. AU-065 Finance 周期关闭、backfill 与 lifecycle 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| lifecycle reads | reconciliation/settlement/withdrawal/hold/period/backfill 读取 | [FACT][E-AU-065-001] |
+| period close | hash 固定、四眼批准、statement final 与 outbox | [FACT][E-AU-065-002] |
+| backfill | 签核人与准备人分离、source/target 完整性 | [FACT][E-AU-065-003] |
+| tests | manifest operation 形状 | F-0152 |
+
+[FACT][E-AU-065-005] 3 文件、281 行 Finance lifecycle/API 人工源码和测试完成深审；Finance 专项命令/查询继续后续单元。
