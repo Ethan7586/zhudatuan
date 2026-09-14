@@ -1,0 +1,6 @@
+"证据编号","文件","位置","结论"
+"E-AU-099-001","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/FullIdentityOperations.ts","13-29","完整/注册 core operation 均经统一 WeChat wrapper 装配。"
+"E-AU-099-002","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/IdentityModule.ts","1-8","完整 IdentityModule、principal 及 notification/retention 公开端口。"
+"E-AU-099-003","01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/IdentityRegistrationModule.ts","1-16；entry/IdentityRegistrationApiMain.ts:63-64","WeChat enabled 与 core-only selected module 由运行时开关选择。"
+"E-AU-099-004","01_core_hexin/services/commerce/src/modules/identity/{index.ts,module.manifest.ts}","全部","public exports 和 capability/operation/event/http manifest 声明。"
+"E-AU-099-005","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/module.manifest.test.ts","全部","模块稳定声明静态 oracle。"

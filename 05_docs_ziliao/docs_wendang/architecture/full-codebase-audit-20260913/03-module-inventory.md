@@ -1093,3 +1093,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | OAuth URL、场景端点、cache 和 callback 反事实 oracle | [FACT][E-AU-098-005] |
 
 [FACT][E-AU-098-006] 3 文件、283 行 Identity 外部 WeChat 适配器与测试完成深审；未见由请求提供的 callback/return target 或跨场景 token 混用。
+
+## 104. AU-099 Identity 模块装配与 FullIdentity operation 入口清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| full wrapper | core operations + WeChat gateway/KMS/audit/keys/ticket 装配 | [FACT][E-AU-099-001] |
+| full business module | 完整 Commerce Identity module 与 principal/public ports | [FACT][E-AU-099-002] |
+| registration modules | WeChat enabled selected module 与 core-only selected module | [FACT][E-AU-099-003] |
+| manifest/public | capabilities、operations/events、public entry 和 HTTP declarations | [FACT][E-AU-099-004] |
+| tests | stable manifest operation composition oracle | [FACT][E-AU-099-005] |
+
+[FACT][E-AU-099-006] 6 文件、144 行 Identity 装配与模块声明完成深审；注册 API 的 runtime 分支已由入口选择，未见 core operation 通过 WeChat-disabled 运行单元暴露。
