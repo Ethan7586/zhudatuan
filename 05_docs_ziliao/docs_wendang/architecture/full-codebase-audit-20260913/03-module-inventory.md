@@ -1986,3 +1986,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | target/permission/scope/redaction/draft/publish/high-risk approval | [FACT][E-AU-183-004] |
 
 [FACT][E-AU-183-005] 2 文件、400 行完成深审；governance/review/history/rollback routes留在下一独立链路审阅。
+
+## 189. AU-184 Qualification governance 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| governance/read | request/employee read capability redaction | [FACT][E-AU-184-001] |
+| review/history/rollback | admin permission、review actor evidence、historical snapshot→step-up/idempotent persistence | [FACT][E-AU-184-002] |
+| simulation | qualified admin、current mall scoped employee/SKU result | [FACT][E-AU-184-003] |
+| employee fact write | manage permission、fresh step-up、version/tags/attributes and actor-evidence RPC | [FACT][E-AU-184-004] |
+
+[FACT][E-AU-184-005] 2 文件、299 行完成深审；full compatibility admin router注册该链，当前正式Worker没有装载完整authenticated router。

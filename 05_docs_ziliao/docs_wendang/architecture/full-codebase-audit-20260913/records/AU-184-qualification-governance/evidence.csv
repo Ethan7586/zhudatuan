@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-184-001,src/api/qualificationGovernanceRoutes.ts,19-35,governance read,Capabilities determine whether server returns change requests and employee facts.
+E-AU-184-002,src/api/qualificationGovernanceRoutes.ts,37-110,approval/history/rollback,Review uses current reviewer identity; history is kind-read-authorized; rollback requires fresh step-up idempotency and snapshot-based persistence.
+E-AU-184-003,src/api/qualificationGovernanceRoutes.ts,112-136,simulation,Only admin employee qualification readers/managers call scoped employee/SKU simulation with bounded quantity.
+E-AU-184-004,src/api/qualificationGovernanceRoutes.ts,138-195,employee fact write,Fresh step-up and validated version/status/tags/attributes precede actor-evidenced update RPC.
+E-AU-184-005,src/api/qualificationGovernanceRoutes.test.ts,1-104,tests,Direct fixtures cover redaction review step-up actor tags and simulator scope.

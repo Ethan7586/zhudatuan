@@ -510,3 +510,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct test覆盖admin target、read/manage permission、mall scope、selector redaction、idempotency、draft save、fresh step-up publish和critical approval queue。
 - RPC/database side的version conflict、审批原子状态和治理子routes留待qualification governance/RPC专项审计；审计工作树未运行Vitest。
+
+## 184. AU-184 Qualification governance 深审
+
+- Direct tests覆盖治理页面redaction、approval fresh step-up与server reviewer actor、employee tags/step-up和simulation current mall scope。
+- History/rollback/preview各分支仍缺direct fixture；其handler依赖已覆盖的parse/persist helpers，数据库审批原子语义留给RPC专项审计。审计工作树未运行Vitest。
