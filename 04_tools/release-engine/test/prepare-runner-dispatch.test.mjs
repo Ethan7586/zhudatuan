@@ -33,8 +33,8 @@ if (args[0] === 'run' && args[1] === 'list') {
   else {
     const prepare = args.includes('prepare-artifact-aliyun.yml');
     const title = prepare
-      ? 'Prepare 1.3.2 ${sha} console' + (process.env.EXPECTED_BUILD_RUNNER === 'github' ? ' [github]' : '')
-      : 'Deploy 1.3.2 validate-candidate ${sha} hbbtzn-l1 console';
+      ? 'Prepare 1.3.5 ${sha} console' + (process.env.EXPECTED_BUILD_RUNNER === 'github' ? ' [github]' : '')
+      : 'Deploy 1.3.5 validate-candidate ${sha} hbbtzn-l1 console';
     if (!args[args.indexOf('--jq') + 1].includes(title)) process.exit(91);
     console.log(prepare ? '201' : '202');
   }

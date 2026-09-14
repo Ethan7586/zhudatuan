@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prepare and seal one immutable 1.3.2 Aliyun release candidate.
+# Prepare and seal one immutable 1.3.5 Aliyun release candidate.
 # Usage:
 #   scripts/prepare-release.sh <target> <full-commit-sha> <physical-node>
 #   ZDT_PREPARE_RUNNER=aliyun|github overrides automatic build routing.
@@ -106,7 +106,7 @@ gh workflow run "$WORKFLOW_PREPARE" --ref zdt-next \
   -f release_target="$TARGET" \
   -f build_runner="$BUILD_RUNNER" \
   -f release_node="$NODE"
-prepare_title="Prepare 1.3.2 ${SHA} ${TARGET}"
+prepare_title="Prepare 1.3.5 ${SHA} ${TARGET}"
 if [ "$BUILD_RUNNER" = github ]; then prepare_title+=" [github]"; fi
 prepare_run_id="$(find_dispatched_run "$WORKFLOW_PREPARE" "$prepare_title" "$last_prepare_id")" || {
   echo "Prepare was dispatched but its run id was not found." >&2
@@ -122,7 +122,7 @@ gh workflow run "$WORKFLOW_DEPLOY" --ref zdt-next \
   -f release_node="$NODE" \
   -f release_target="$TARGET" \
   -f operation=validate-candidate
-seal_title="Deploy 1.3.2 validate-candidate ${SHA} ${NODE} ${TARGET}"
+seal_title="Deploy 1.3.5 validate-candidate ${SHA} ${NODE} ${TARGET}"
 seal_run_id="$(find_dispatched_run "$WORKFLOW_DEPLOY" "$seal_title" "$last_seal_id")" || {
   echo "Candidate validation was dispatched but its run id was not found." >&2
   exit 1

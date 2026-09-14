@@ -2,7 +2,7 @@ name: Legacy 1.2 Recovery - Wuhan OSS via Aliyun Runner
 run-name: LEGACY 1.2 build+deploy ${{ inputs.release_target }} ${{ inputs.head_sha || github.sha }}
 
 # Legacy recovery path only. This workflow builds during deployment and includes
-# aggregate targets, so it is never a 1.3.2 deployment entrypoint.
+# aggregate targets, so it is never a 1.3.5 deployment entrypoint.
 
 on:
   workflow_dispatch:

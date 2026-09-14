@@ -1,5 +1,5 @@
-name: Prepare Artifact 1.3.2 - Aliyun / GitHub
-run-name: Prepare 1.3.2 ${{ inputs.head_sha }} ${{ inputs.release_target }}${{ inputs.build_runner == 'github' && ' [github]' || '' }}
+name: Prepare Artifact 1.3.5 - Aliyun / GitHub
+run-name: Prepare 1.3.5 ${{ inputs.head_sha }} ${{ inputs.release_target }}${{ inputs.build_runner == 'github' && ' [github]' || '' }}
 
 # Aliyun build runners are the default; GitHub standard runners are an explicit fallback. Two
 # isolated empty release state roots must independently produce cold cache misses
