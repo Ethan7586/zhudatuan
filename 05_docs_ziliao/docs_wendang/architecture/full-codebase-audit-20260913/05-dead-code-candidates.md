@@ -1135,6 +1135,10 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - `.github/CODEOWNERS` 对自身与两个实际订单域路径定义 GitHub PR 责任映射；远端强制状态未验证，但不构成删除证据，归 G0。
 
+## 495. AU-495 本地状态与凭据排除复核
+
+- 根 `.gitignore` 被 localinfra、开发脚本和支付证书边界实际依赖，保护 local env、TLS/data、secrets 与构建产物；归 G0，不构成删除候选。
+
 ## GX-0013｜渠道外部对象 scope 映射切换
 
 | 字段 | 记录 |
