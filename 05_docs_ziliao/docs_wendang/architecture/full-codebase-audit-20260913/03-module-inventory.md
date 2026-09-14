@@ -1364,3 +1364,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | public/manifest/compat | public export、entrypoint/event 清单与旧路径转发 | [FACT][E-AU-123-003] |
 
 [FACT][E-AU-123-004] 9 文件、99 行 Extension read/module boundary 完成深审；未见无 scope 的 installations list 路径。
+
+## 129. AU-124 Extension 公共 repository 契约与领域测试清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| ExtensionLoader | loader/candidate/repository/health/state-sink 的唯一跨模块 type contract | [FACT][E-AU-124-001] |
+| ExtensionRepositoryFactory | 注入 database 后构造既审 PgExtensionRepository | [FACT][E-AU-124-002] |
+| Installation/Manifest tests | 状态机、签名 hash 与 manifest policy 的模型级规格 | [FACT][E-AU-124-003] |
+
+[FACT][E-AU-124-004] 4 文件、88 行 Extension 公共契约和领域模型测试完成深审；测试未覆盖 command/transaction/loader finalize 行为，沿用 F-0171/P2。
