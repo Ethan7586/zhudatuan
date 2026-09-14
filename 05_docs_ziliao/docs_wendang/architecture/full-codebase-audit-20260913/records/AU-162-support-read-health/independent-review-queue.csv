@@ -1,2 +1,2 @@
 finding,review_scope,first_review_evidence,independent_reviewer_status,required_recheck
-F-0186,Support attachment metadata authorization,GetConversations.ts lines 29-31 versus message predicate lines 21-24,pending,Rebuild caller-to-SQL chain and verify whether object metadata/content is externally observable for unauthorized case id.
+F-0186,Support attachment metadata authorization,GetConversations.ts lines 29-31 versus message predicate lines 21-24,confirmed AU-163,Independent review rebuilt public HTTP caller-to-response chain and confirmed unconditional attachment metadata response.

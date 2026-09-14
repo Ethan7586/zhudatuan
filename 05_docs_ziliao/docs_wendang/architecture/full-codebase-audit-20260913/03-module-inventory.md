@@ -1765,3 +1765,11 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime health/test | console DB role/schema/operation gate；message pagination/direct decrypt fixture | [FACT][E-AU-162-003] |
 
 [FACT][E-AU-162-004] 4 文件、183 行完成深审；Attachment query 的 authorization predicate 与 message query 不一致，已保留精确 SQL 证据。
+
+## 168. AU-163 Support attachment 独立复核
+
+| 复核面 | 结果 |
+| --- | --- |
+| HTTP 契约与 SDK | operator audience GET 绑定，Console Support feature 真实调用 | [FACT][E-AU-163-001] |
+| 入口/route/response | ConsoleSupportMain allowlist → SupportRoutes → message read response unconditional `attachments` | [FACT][E-AU-163-002] |
+| 权限结论 | attachment SQL 无 member/scope predicate；两轮一致，F-0186/P1 确认 | [FACT][E-AU-163-003] |

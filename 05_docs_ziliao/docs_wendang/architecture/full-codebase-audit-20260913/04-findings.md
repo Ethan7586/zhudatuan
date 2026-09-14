@@ -3638,7 +3638,7 @@
 | 根因 | 一个 operation 内两条关联查询的 authorization predicate 不一致，第二条未从已经授权的 ticket/conversation context 取数。 |
 | 建议方向 | 从修复时最新 `zdt-next` 建立独立最小修复批：复用同一授权 predicate，并加入跨 member/scope negative test；回滚为撤回该批。 |
 | 验证/回滚 | 定向 PGlite/integration fixture：未授权 case 必须同时返回零 message 和零 attachment；授权 member/ancestor 保持原结果。回滚为 revert 独立修复提交。 |
-| 独立复核 | 是；`records/AU-162-support-read-health/independent-review-queue.csv`。 |
+| 独立复核 | 是，AU-163 已完成且结论一致；`records/AU-163-support-attachment-independent-review/summary.md`。 |
 
 ## 30. AU-030 新增未定级事项
 
