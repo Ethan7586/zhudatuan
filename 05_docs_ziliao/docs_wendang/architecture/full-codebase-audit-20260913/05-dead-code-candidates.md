@@ -1676,3 +1676,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是；专项复核实际 Web API role、connection session setter、production function dependencies/privileges、external provisioning caller和clone data recovery procedure。 |
 
 - 公司模板克隆特权边界归 DC-0075。累计 G0 60、G1 89、G2 5、G3 0、GX 41；未删除任何文件。
+
+## DC-0076｜Identity Catalog Command ACL 的仓内调用缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `20260907010000_enable_identity_catalog_commands.sql` 对 `zhudatuanidentityapi` 的 Catalog table grants/RLS policies。 |
+| 疑似原因 | [FACT][E-AU-714-001] 固定基线的 Identity operation catalog、module、route、worker及非测试 source未发现 Catalog import/listing caller；Catalog operator API独立拥有对应路由。 |
+| 保留证据 | migration定义 scope-protected grant/policy，可能服务仓外 Identity API、direct DB caller、历史 registration runner或兼容运行契约。 |
+| 可否删除 | 否；未满足外部调用、数据库 privilege、历史 migration、可观察行为和独立复核等G3条件。 |
+| 二次复核 | G1不强制；拟收窄前必须核验 production `pg_class`/`pg_policies`/role inheritance、connection SQL trace、仓外 callers和 replay requirement。 |
+
+- Identity Catalog command ACL 调用缺口归 DC-0076。累计 G0 60、G1 90、G2 5、G3 0、GX 41；未删除任何文件。
