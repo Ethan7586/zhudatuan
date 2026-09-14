@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 65、G2 2、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 67、G2 2、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -705,3 +705,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - `foundation/domain/Specification.ts`复核后仍为DC-0011/G1：无仓内caller但有`@shop/kernel`及Commerce foundation两层公开兼容责任，未核验外部消费者；不得删除。
 - Aggregate、DomainEvent、Entity、Policy、ValueObject与DomainError分别存在静态消费者或领域错误运行职责，归G0。累计候选数量不变；未删除任何文件。
+
+## DC-0049｜旧 Supabase 用户订单读模型
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类/对象 | G1；`02_platform_pingtai/database/supabase/migrations/20260724101500_order_read_model.sql` 中的 `api_order_views` |
+| 疑似原因 | 固定基线未找到仓内调用旧函数；Commerce API 的订单和后台概览已调用后续 `api_order_views_scoped`。 |
+| 保留证据 | 旧函数仍获 `service_role` 执行权限，且迁移重放、外部服务、历史制品或直接数据库调用均未排除。 |
+| 可否删除 | 否；未满足公共 API、部署/运维调用、历史兼容、可观察行为及独立复核等G3条件。 |
+| 二次复核 | G1不强制；拟删除前需复核数据库实际依赖、外部消费者与替代读模型的响应契约。 |
+
+## 331. AU-331 Supabase 订单读模型复核
+
+- 旧用户范围读模型归 DC-0049/G1；后续 scoped 读模型已在当前 API 路由使用，但外部 `service_role` 消费者未被排除。累计 G0 60、G1 67、G2 2、G3 0、GX 5；未删除任何文件。
