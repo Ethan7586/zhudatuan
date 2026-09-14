@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 21。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 22。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1237,3 +1237,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 462. AU-462 微信支付应用隔离复核
 
 - 支付创建、Webhook 和异步任务均依赖 scene/AppID 哈希绑定；归 GX-0021。累计 G0 60、G1 83、G2 5、G3 0、GX 21；未删除任何文件。
+
+## GX-0022｜成员个人数据 scope 授权函数
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821056000_authorize_member_data_scope.sql`。 |
+| 直接证据 | 重定义 `access.scope_allowed`：允许当前授权 scope/其下级，或活跃 membership 的 member_id、organization_id/其下级；注释明确禁止祖先与兄弟范围。 |
+| 运行边界 | member profile/address/import 读写和大量 RLS policy 经该函数判定；函数依 `access.membership` 的活跃状态。 |
+| 可否删除 | 否；承担个人数据、组织层级、行级权限与会话授权责任。 |
+| 二次复核 | 是；须验证本人、组织、下级、祖先、兄弟、失效 membership、无 session context 及所有关键 RLS consumer。 |
+
+## 463. AU-463 成员数据范围授权复核
+
+- 成员本人和组织子树的范围判断由当前 `scope_allowed` 实施；归 GX-0022。累计 G0 60、G1 83、G2 5、G3 0、GX 22；未删除任何文件。
