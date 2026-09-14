@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 19。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 20。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1207,3 +1207,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 460. AU-460 成员与券导入完善复核
 
 - 成员与券导入均有实际 API/Worker 入口；敏感暂存与历史状态迁移归 GX-0019。累计 G0 60、G1 83、G2 5、G3 0、GX 19；未删除任何文件。
+
+## GX-0020｜Membership 从 member 到 access 的所有权迁移
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821054000_move_membership_owner.sql`。 |
+| 直接证据 | `alter table member.membership set schema access`，并断言 `access.membership` 存在、`member.membership` 不再存在。 |
+| 运行边界 | Identity session/federated identity、凭据操作、成员查询及权限逻辑均直接引用 `access.membership`。 |
+| 可否删除 | 否；承担身份、会话、角色、授权范围与历史 migration ledger 责任。 |
+| 二次复核 | 是；须验证角色/会话/联合身份/注册、RLS/grant、所有 SQL consumer、备份恢复和部署 ledger。 |
+
+## 461. AU-461 Membership 所有权迁移复核
+
+- identity、member 和 access 的当前调用链以 `access.membership` 为标准；核心授权迁移归 GX-0020。累计 G0 60、G1 83、G2 5、G3 0、GX 20；未删除任何文件。
