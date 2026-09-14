@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0292｜本地基础设施验证持续写入对象但不清理
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | localinfra / 本地 object-store 验证 |
+| 类型 | 本地资源保留、可维护性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（正式入口与写入/完成/read 链均为直接代码证据） |
+| 文件和精确位置 | `package.json:23`；`04_tools/tools/localinfra/src/Verify.ts:22-39`。 |
+| 当前/预期 | `local:verify-services` 创建 UUID 路径的 upload、写入 bytes、完成对象并回读；成功后直接退出，没有删除、TTL、mark-and-sweep 或输出可清理 reference。预期是验证产生的临时对象可在同次运行清理，或使用明确的本地生命周期前缀/保留策略。 |
+| 直接证据 | [FACT][E-AU-719-001] root script直接执行 `Verify.ts`；[FACT][E-AU-719-002] 23-38创建随机路径、完成对象且只读回；文件剩余逻辑仅输出成功并定义 HTTP helper，无 cleanup 调用。 |
+| 调用链或运行入口 | `npm run local:verify-services` → `Launch.mjs` → `Verify.ts` → local object service upload/part/completion/object read。 |
+| 用户影响 | 长期反复本地验证会在开发者 object directory 留下无业务价值的对象，增加磁盘/排查噪声；未验证实际累积量。 |
+| 数据影响 | 仅本地开发 object store；不涉及生产数据。 |
+| 安全影响 | 无直接安全影响。 |
+| 根因 | 验证把 roundtrip 成功作为终点，未把测试 artifact 生命周期纳入命令契约。 |
+| 建议方向 | 后续独立 localinfra 小批次选择已完成对象的受控删除，或为 `verification/` 前缀定义仅限本地的可验证 TTL/清扫；不要将清扫逻辑复用到业务对象。 |
+| 预计修改范围 | `Verify.ts`、必要的 localobjects deletion/retention contract 与定向测试。 |
+| 验证方式 | 临时本地 object store中重复运行验证，断言成功/失败两条路径均不遗留 UUID artifact，且正常业务对象不受影响。 |
+| 回滚方式 | 回退独立 localinfra 改动；现有 local verification objects 可按新的受控筛选规则删除，不得批量触碰业务前缀。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0276｜Disabled Realm 重供给删除 target 被历史身份引用外键阻断
 
 | 字段 | 记录 |
