@@ -525,3 +525,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖bootstrap采用当前database member profile而非demo资料、profile缺失闭合拒绝。
 - accounts、account-ledgers和home snapshot没有direct fixture；不足以捕获order.read、current scope、余额mapping或并发失败传播回归，见F-0195/P2。审计工作树未运行Vitest。
+
+## 187. AU-187 Member operations 深审
+
+- Direct tests覆盖列表读取权限与PII/history/import-errors裁剪、invite fresh step-up拒绝、建档密码只传hash、无效导入错误不回显password。
+- 缺少invite成功/停用、profile update、valid/partial import、1MB与500行边界的direct fixture；见F-0196/P2。审计工作树未运行Vitest。

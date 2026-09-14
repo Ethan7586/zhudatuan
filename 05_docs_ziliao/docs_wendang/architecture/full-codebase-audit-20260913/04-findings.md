@@ -3766,6 +3766,20 @@
 | 验证/回滚 | fixture断言拒绝、exact RPC scope、balance mapping、home组合与失败传播；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0196｜成员运营高风险写入分支没有完整直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / member operations；P2；高 |
+| 类型 | 测试覆盖缺口、成员生命周期/批量导入正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/memberOperationsRoutes.ts:25-138`；现有`memberOperationsRoutes.test.ts` |
+| 当前/预期 | 邀请、停用、建档、资料更新和导入均由capability、fresh step-up、server scope及actor evidence约束；建档/导入对password执行hash/脱敏。现有tests只覆盖读侧PII开关、create invite的step-up拒绝、建档password脱敏及无效导入行回执脱敏。预期每种写入的成功/拒绝/input、RPC body、导入行数/大小和部分失败返回均有direct fixture。 |
+| 直接证据 | test仅导入`handleMemberOperations`、`handleCreateMemberInvite`、`handleAdminCreateMember`、`handleMemberImport`；未导入`handleDisableMemberInvite`或`handleUpdateMemberProfile`，且没有invite success/valid import/size boundary调用。 |
+| 调用链/影响 | authenticated admin compatibility router → member operations routes → member/invite/import RPC。邀请状态、成员资料、导入计数与错误回执回归不能被当前suite直接捕获。 |
+| 建议方向 | 从修复时最新`zdt-next`按invite-profile与member-import分成两个独立test批；回滚为撤回对应测试提交。 |
+| 验证/回滚 | fixture断言method/permission/step-up/input、exact RPC scope/evidence、password hash/脱敏、有效/部分失败导入与大小边界；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

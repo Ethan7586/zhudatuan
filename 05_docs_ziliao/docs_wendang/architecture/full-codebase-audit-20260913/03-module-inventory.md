@@ -2018,3 +2018,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | home snapshot | 并发组合bootstrap/accounts/orders/ledgers，返回首个错误或统一快照 | [FACT][E-AU-186-003] |
 
 [FACT][E-AU-186-004] 2 文件、172 行完成深审；正式Storefront router装载bootstrap、accounts、account-ledgers和home路径。
+
+## 192. AU-187 Member operations 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| 运营中心 | `member.read`基础读取，PII/history/import errors按独立permissions决定RPC字段 | [FACT][E-AU-187-001] |
+| 邀请/会员资料 | invite/update capability、15分钟fresh step-up、scope与actor evidence | [FACT][E-AU-187-002] |
+| 建档/导入 | username/password/profile验证、PBKDF2 hash、逐行创建与不含password的导入错误记录 | [FACT][E-AU-187-003] |
+
+[FACT][E-AU-187-004] 2 文件、340 行完成深审；compat admin router注册该全链，当前正式Worker未装载完整authenticated admin router。
