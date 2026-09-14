@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 import { queryCondition, safeQueryError } from '../../shared/api/QueryState';
@@ -6,7 +7,7 @@ import type { DataColumn } from '../../shared/ui/DataTable';
 import { formatDate } from '../../shared/ui/Format';
 import { PagedResource } from '../../shared/ui/PagedResource';
 import { pageCursor } from '../../shared/url/PageCursor';
-import { notificationKey, notificationViews, readNotificationRecords } from './NotificationQuery';
+import { NOTIFICATION_STALE_TIME_MS, notificationKey, notificationViews, readNotificationRecords } from './NotificationQuery';
 import type { NotificationRecord, NotificationView } from './NotificationSchema';
 
 const columns: readonly DataColumn<NotificationRecord>[] = [
@@ -19,14 +20,27 @@ const columns: readonly DataColumn<NotificationRecord>[] = [
 ];
 
 export function Component() {
-  const context = useConsoleContext(); const [search, setSearch] = useSearchParams();
+  const context = useConsoleContext(); const queryClient = useQueryClient(); const [search, setSearch] = useSearchParams();
   const selected = search.get('view'); const view: NotificationView = notificationViews.includes(selected as NotificationView)
     ? selected as NotificationView : 'templates'; const cursor = search.get('cursor') ?? undefined;
   const query = useQuery({ queryKey: notificationKey(context, view, cursor),
-    queryFn: ({ signal }) => readNotificationRecords(context, view, cursor, signal) });
+    queryFn: ({ signal }) => readNotificationRecords(context, view, cursor, signal),
+    staleTime: NOTIFICATION_STALE_TIME_MS, retry: false, refetchOnWindowFocus: false });
   const data = query.data; const error = safeQueryError(query.error);
   const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
     hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });
+  useEffect(() => {
+    if (query.data === undefined || query.isFetching) return undefined;
+    const adjacent: NotificationView = view === 'templates' ? 'announcements' : 'templates';
+    const timer = window.setTimeout(() => {
+      void queryClient.prefetchQuery({
+        queryKey: notificationKey(context, adjacent),
+        queryFn: ({ signal }) => readNotificationRecords(context, adjacent, undefined, signal),
+        staleTime: NOTIFICATION_STALE_TIME_MS,
+      });
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [context, query.data, query.isFetching, queryClient, view]);
   const select = (next: NotificationView) => { const params = new URLSearchParams(); params.set('view', next); setSearch(params); };
   return <PagedResource title="通知管理" eyebrow="SMART WING NOTIFICATION" description="模板和公告按 URL 选择独立读模型，不在浏览器合并发送状态。"
     condition={state} {...(error === undefined ? {} : { error })} rows={data?.items ?? []} columns={columns} rowKey={(row) => row.id}

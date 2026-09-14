@@ -6,7 +6,7 @@ import type { DataColumn } from '../../shared/ui/DataTable';
 import { formatDate } from '../../shared/ui/Format';
 import { PagedResource } from '../../shared/ui/PagedResource';
 import { pageCursor } from '../../shared/url/PageCursor';
-import { qualificationKey, readQualifications } from './QualificationQuery';
+import { QUALIFICATION_STALE_TIME_MS, qualificationKey, readQualifications } from './QualificationQuery';
 import type { QualificationPolicy } from './QualificationSchema';
 
 const columns: readonly DataColumn<QualificationPolicy>[] = [
@@ -20,7 +20,8 @@ const columns: readonly DataColumn<QualificationPolicy>[] = [
 
 export function Component() {
   const context = useConsoleContext(); const [search, setSearch] = useSearchParams(); const cursor = search.get('cursor') ?? undefined;
-  const query = useQuery({ queryKey: qualificationKey(context, cursor), queryFn: ({ signal }) => readQualifications(context, cursor, signal) });
+  const query = useQuery({ queryKey: qualificationKey(context, cursor), queryFn: ({ signal }) => readQualifications(context, cursor, signal),
+    staleTime: QUALIFICATION_STALE_TIME_MS, retry: false, refetchOnWindowFocus: false });
   const data = query.data; const error = safeQueryError(query.error);
   const state = queryCondition({ pending: query.isPending, fetching: query.isFetching, error: query.error,
     hasData: data !== undefined, empty: data?.items.length === 0, stale: query.isStale });

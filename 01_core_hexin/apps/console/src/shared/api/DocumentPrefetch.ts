@@ -225,16 +225,71 @@ export function startDocumentPrefetch(
       value,
     };
   }));
-  preloadDirectManagementRoute();
+  const governance = session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)) return undefined;
+    const match = location.pathname.match(/^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/([^/]+)\/settings\/(qualification|notification)\/?$/);
+    let direct: Readonly<{ kind: 'platform' | 'distributor' | 'tenant' | 'enterprise' | 'mall'; id: string }> | undefined;
+    try {
+      const candidate = match?.[1] === undefined ? undefined : { kind: match[1], id: decodeURIComponent(match[2]!) };
+      direct = isConsoleScope(candidate) ? candidate : undefined;
+    } catch { direct = undefined; }
+    if (direct === undefined) return undefined;
+    const route = match?.[3];
+    const search = new URLSearchParams(location.search);
+    const cursor = search.get('cursor') ?? undefined;
+    const selectedView = search.get('view');
+    const view = selectedView === 'announcements' ? 'announcements' as const : 'templates' as const;
+    const headers = {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    };
+    const parameters = new URLSearchParams({ limit: '50' });
+    if (cursor !== undefined) parameters.set('cursor', cursor);
+    return {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      route,
+      cursor,
+      view,
+      value: route === 'qualification'
+        ? readJson<unknown>(`/api/v1/qualifications?${parameters.toString()}`, headers).promise
+        : readJson<unknown>(`/api/v1/notifications/${view}?${parameters.toString()}`, headers).promise,
+    };
+  });
+  window.__consoleQualificationPrefetch = tracked(governance.then(async (candidate) => {
+    if (candidate === undefined || candidate.route !== 'qualification') return undefined;
+    const value = await candidate.value;
+    return value === undefined ? undefined : {
+      scopeKind: candidate.scopeKind,
+      scopeId: candidate.scopeId,
+      accessVersion: candidate.accessVersion,
+      ...(candidate.cursor === undefined ? {} : { cursor: candidate.cursor }),
+      value,
+    };
+  }));
+  window.__consoleNotificationPrefetch = tracked(governance.then(async (candidate) => {
+    if (candidate === undefined || candidate.route !== 'notification') return undefined;
+    const value = await candidate.value;
+    return value === undefined ? undefined : {
+      scopeKind: candidate.scopeKind,
+      scopeId: candidate.scopeId,
+      accessVersion: candidate.accessVersion,
+      view: candidate.view,
+      ...(candidate.cursor === undefined ? {} : { cursor: candidate.cursor }),
+      value,
+    };
+  }));
+  preloadDirectSettingsRoute();
 }
 
-function preloadDirectManagementRoute(): void {
-  const route = location.pathname.match(/\/settings\/(members|access)\/?$/)?.[1];
-  const loading = route === 'members'
-    ? import('../../feature/member/MemberRoute')
-    : route === 'access'
-      ? import('../../feature/access/AccessRoute')
-      : undefined;
+function preloadDirectSettingsRoute(): void {
+  const route = location.pathname.match(/\/settings\/(members|access|qualification|notification)\/?$/)?.[1];
+  const loading = route === 'members' ? import('../../feature/member/MemberRoute')
+    : route === 'access' ? import('../../feature/access/AccessRoute')
+      : route === 'qualification' ? import('../../feature/qualification/QualificationRoute')
+        : route === 'notification' ? import('../../feature/notification/NotificationRoute')
+          : undefined;
   void loading?.catch(() => undefined);
 }
 

@@ -64,6 +64,12 @@ describe('ScopeShell route handles', () => {
     expect(screen.queryByText('正在打开工作台…')).toBeNull();
   });
 
+  it('keeps the governance shell stable while qualification and notification data load', () => {
+    render(<WorkspaceRouteLoading moduleId="qualification" />);
+    expect(screen.getByRole('status', { name: '正在准备资格与通知数据…' })).toBeTruthy();
+    expect(document.querySelector('.qualificationrouteskeleton')).toBeTruthy();
+  });
+
   it('derives every entry and representative child/detail/technical owner from the deepest handle', () => {
     for (const module of consoleModules) {
       const entry = module.routes.find(({ kind }) => kind === 'entry');

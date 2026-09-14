@@ -66,6 +66,15 @@ describe('console bootstrap document', () => {
     expect(prefetch).toContain("import('../../feature/access/AccessRoute')");
   });
 
+  it('starts the exact qualification or notification read alongside scope hydration', () => {
+    expect(prefetch).toContain('window.__consoleQualificationPrefetch = tracked(');
+    expect(prefetch).toContain('window.__consoleNotificationPrefetch = tracked(');
+    expect(prefetch).toContain('`/api/v1/qualifications?${parameters.toString()}`');
+    expect(prefetch).toContain('`/api/v1/notifications/${view}?${parameters.toString()}`');
+    expect(prefetch).toContain("import('../../feature/qualification/QualificationRoute')");
+    expect(prefetch).toContain("import('../../feature/notification/NotificationRoute')");
+  });
+
   it('makes every document prefetch observable and immediately abortable by navigation', () => {
     expect(prefetch).toContain('const slot: Tracked<T> = { settled: false');
     expect(prefetch).toContain('window.__consoleAbortDocumentPrefetch = () =>');
