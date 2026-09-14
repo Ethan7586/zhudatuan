@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-079 已完成。AU-079 完成 Finance 审计账与冻结资金读取审阅。覆盖总账按当前文件级清单重算：深入审阅975文件/83,095行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,873文件。F-0158/P1 已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-080 已完成。AU-080 完成 Finance 发票端口与运行模块装配审阅。覆盖总账按当前文件级清单重算：深入审阅978文件/83,128行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,870文件。F-0158/P1 已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -909,3 +909,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Finance audit record 与 hold read 的 scope/closure/keyset 边界及已有 query smoke。
 
 执行结果：audit finance/invoice filter、hold account join、scope_allowed/closure 和 keyset 读取均已追踪；现有测试仅作 query routing smoke。未发现 P0–P3 新问题；Vitest 未运行。
+
+## 82. AU-080 连续审计点
+
+审阅 Finance InvoiceIssuer port、完整 FinanceModule、Identity selected module 及其入口调用链。
+
+执行结果：签发 typed port、完整 Commerce module 与 Identity restricted read module 的实际入口均已追踪。未发现 P0–P3 新问题；Vitest 未运行。

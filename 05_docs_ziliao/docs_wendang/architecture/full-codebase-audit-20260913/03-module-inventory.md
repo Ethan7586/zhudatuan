@@ -888,3 +888,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | audit query route smoke | [FACT][E-AU-079-003] |
 
 [FACT][E-AU-079-004] 2 文件、74 行 Finance audit/query 测试完成深审；FinanceLifecycleOperations 已在 AU-065 深审，本批只追加 holds read 复核。
+
+## 85. AU-080 Finance 发票端口与运行模块装配模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| invoice port | job/gateway 的 typed input/receipt | [FACT][E-AU-080-001] |
+| full module | Commerce FinanceRoutes 装配 | [FACT][E-AU-080-002] |
+| selected module | Identity operator read subset | [FACT][E-AU-080-003] |
+
+[FACT][E-AU-080-004] 3 文件、33 行 Finance port/module 人工源码完成深审。

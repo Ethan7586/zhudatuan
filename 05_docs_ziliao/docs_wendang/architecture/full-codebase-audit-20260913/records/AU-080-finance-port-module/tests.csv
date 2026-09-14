@@ -1,0 +1,2 @@
+"测试","范围","结论","执行"
+"IdentityRegistrationApiEntrypoint.test.ts","Identity selected module registration","已有入口集成测试；本批未运行","未执行：固定审计 worktree 无 vitest 可执行文件"
