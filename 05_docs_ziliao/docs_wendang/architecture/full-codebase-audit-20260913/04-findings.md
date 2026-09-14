@@ -5251,3 +5251,25 @@
 | 验证方式 | 隔离环境模拟缺失/错 owner/错环境/不健康 resource reference，断言不能转 sovereign；受控 provisioner 生成全部验证 receipt 后才允许 activation；验证 upgrade/rollback、不产生未消费的 active bindings和真实 entry/callback routing。 |
 | 回滚方式 | 新批次先保持 existing hosted state；已错误升级的 node通过现有 privileged `rollback_sovereign_upgrade` 和经核验的部署恢复流程逐个处理，禁止批量回滚。 |
 | 是否需要独立复核 | 是；复核者必须独立查看外部 Provisioning、阿里云/DNS/edge/支付资源的真实 preflight 与 receipt，并确认不存在仓外 active-binding consumer。 |
+
+## F-0282｜供应网络汇总以调用参数绕过数据库 scope/RLS 边界
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Catalog supplier network / Console-Web API / pricing-inventory-partner database boundary |
+| 类型 | 身份与权限、数据可见性、数据库运行契约 |
+| 严重级别 | **P2** |
+| 置信度 | 高（仓内调用、会话 context、function body、grant 与测试直接证据；生产 role attributes 未验证） |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql:171-244`；`01_core_hexin/services/commerce/src/modules/catalog/03_application_yingyong/CatalogOperations.ts:98-115`；`01_core_hexin/services/commerce/src/modules/webbusiness/WebCatalogOperations.ts:20-37`；`01_core_hexin/services/commerce/src/foundation/infrastructure/DatabaseContext.ts:10-14`；`SupplierNetworkMigration.test.ts:41-49,69-76`。 |
+| 当前/预期 | 当前 `console_supply_network(p_scope)` 是 `security definer`、`row_security=off`，接受两个 runtime role execute；其 supplier、agreement、pricing、inventory、reservation 与 source listing 汇总只以 `p_scope` 比对。调用 action 的确从认证 `access.scope.id` 传值，且 API transaction 会设置 `app.scope_id`，但函数没有用 `access.scope_allowed(p_scope)` 或 `current_setting('app.scope_id')` 将参数绑定到当前授权会话。预期为数据库读边界同时拒绝越权/错 scope，不能仅依赖特定 application action 永远正确传入 scope。 |
+| 直接证据 | [FACT][E-AU-692-001] Console `SupplyChainPrefetch` 只以 `catalog.listings.read` capability 请求 `view=supply-network`，两套 Catalog action均调用 function并传 `access.scope.id`；[FACT][E-AU-692-002] API context 设定 `app.scope_id`，普通 relation通过 `access.scope_allowed` 作为 RLS predicate；[FACT][E-AU-692-003] function lines 171-175 设为 definer/RLS-off，193/197/207/210/212/213/221 均只由 `p_scope` 限制；[FACT][E-AU-692-004] lines 242-244 只向 identity/web API role grant execute；[FACT][E-AU-692-005] migration test fixture 把 `access.scope_allowed` 固定为 `true`，仅以默认 session 调同一 Mall happy path，未执行 runtime role/RLS/deny matrix。 |
+| 调用链或运行入口 | Console supply-chain panel → `GET catalog.listings.read?view=supply-network` → Catalog/Web Catalog action → API DB transaction context → `catalog.console_supply_network(access.scope.id)` → partner agreement、price、stock/reservation/source aggregation。 |
+| 用户影响 | 一旦任一调用方、scope resolver、连接 role 或后续 function consumer传入错误 scope，控制台可得到其他 scope 的供应方名称、协议编号/能力、价格区间、可售库存、库存价值和同步时间；当前未证明已有越权请求或生产泄露。 |
+| 数据影响 | 本函数只读，不直接改写商品、协议、价格或库存；错误数据可见性会影响采购、运营和库存决策。 |
+| 安全影响 | `row_security=off` 令 PostgreSQL 不再作为 defense-in-depth 层；两个有 execute 权限的 service role 能以任意参数读取函数覆盖的 scope facts，取决于应用层不发生 scope propagation 错误。 |
+| 根因 | 跨 schema 汇总为简化 RLS 采用 security-definer/RLS-off，但没有把 session authorization 校验、最小 function contract 与真实 role execution test作为同一边界的一部分。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立独立 supplier-network read-boundary batch：先确认该 projection 是否应只对 console/operator开放；然后在函数开头以当前 session scope/`access.scope_allowed(p_scope)` fail closed，或以无 definer 的 narrow view/RLS query替代。将 execute 收窄到实际运行 role，并增加正式 migration runner 下的 same-scope allow、cross-scope deny、no-capability/no-role deny 和 direct invocation contract；不要改写此历史 migration。 |
+| 预计修改范围 | 新前向 Supabase migration、最小 ACL/RLS/function contract test；必要时 Catalog action 仅做明确 capability gate。不得混入商品、协议、价格或库存数据修改。 |
+| 验证方式 | 隔离 PostgreSQL 按基线 migrations，以 `zhudatuanidentityapi`、`zhudatuanwebapi`、无 execute role和相同/不同 `app.scope_id` 分别执行 function：仅授权 scope应得到 projection，越权/空 scope必须拒绝或空结果；核对不扩大 relation table grants。 |
+| 回滚方式 | 回退独立前向 function/policy/grant migration至上一个受控版本；不删除供应方、协议、商品或库存记录。 |
+| 是否需要独立复核 | 是；复核者必须独立检查 connection pool 的实际 role/session context、function owner/BYPASSRLS 与 production `pg_policies`，并重跑跨 scope contract。 |
