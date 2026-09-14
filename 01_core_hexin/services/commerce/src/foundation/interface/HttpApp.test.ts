@@ -89,6 +89,50 @@ describe('HttpApp contract handshake', () => {
     expect(await response.json()).toMatchObject({ accepted: true });
   });
 
+  it('accepts the preflight-free login envelope only for the canonical session operation', async () => {
+    let observedBody: unknown;
+    let observedHeaders: Readonly<Record<string, string>> | undefined;
+    const app = new HttpApp(routes(async (request) => {
+      observedBody = request.body;
+      observedHeaders = request.headers;
+      return { status: 200, body: { accepted: true } };
+    }), ['https://accounts.hbbtzn.com']);
+    const response = await app.handle(new Request('https://api.hbbtzn.com/api/v1/identity/sessions', {
+      method: 'POST',
+      headers: {
+        'content-type': 'text/plain;charset=UTF-8',
+        cookie: 'shop_session=stale-session; shop_csrf=stale-csrf',
+        origin: 'https://accounts.hbbtzn.com',
+      },
+      body: JSON.stringify({
+        provider: 'password',
+        subject: 'operator',
+        password: 'private-password',
+        _transport: { idempotencyKey: 'request:login:one', clientVersion: '1.0.0', deviceId: 'device:browser:one' },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(observedBody).toEqual({ provider: 'password', subject: 'operator', password: 'private-password' });
+    expect(observedHeaders).toMatchObject({
+      'idempotency-key': 'request:login:one', 'x-client-version': '1.0.0', 'x-device-id': 'device:browser:one',
+    });
+    expect(observedHeaders).not.toHaveProperty('_transport');
+  });
+
+  it('rejects the preflight-free envelope on every other operation', async () => {
+    const challengeRoutes = {
+      match: () => ({ operation: 'identity.challenges.create', parameters: {}, handler: async () => ({ status: 200, body: {} }) }),
+    } as unknown as RouteRegistry;
+    const response = await new HttpApp(challengeRoutes, ['https://accounts.hbbtzn.com'])
+      .handle(new Request('https://api.hbbtzn.com/api/v1/identity/challenges', {
+        method: 'POST', headers: { 'content-type': 'text/plain', origin: 'https://accounts.hbbtzn.com' }, body: '{}',
+      }));
+
+    expect(response.status).toBe(415);
+    expect(await response.json()).toMatchObject({ code: 'CONTENT_TYPE_UNSUPPORTED' });
+  });
+
   it('clears stale identity cookies without redirecting or retrying server-side', async () => {
     const response = await new HttpApp(routes(), ['https://accounts.zhudatuan.com']).handle(new Request('https://api.zhudatuan.com/api/v1/identity/sessions', {
       method: 'POST',
@@ -172,6 +216,7 @@ describe('HttpApp contract handshake', () => {
     expect(response.status).toBe(204);
     expect(response.headers.get('access-control-allow-headers')).toContain('x-access-version');
     expect(response.headers.get('access-control-allow-headers')).toContain('x-device-id');
+    expect(response.headers.get('access-control-max-age')).toBe('7200');
   });
 
   it('ends a request when its total deadline is exhausted', async () => {

@@ -11,7 +11,7 @@ class MemoryReporting implements ReportingPort {
   paid: Readonly<{ order: string; amount: number }> | null = null;
 
   metrics(_query: MetricQuery): Promise<readonly MetricRow[]> { return Promise.resolve([]); }
-  cockpit(): Promise<CockpitSummary> { return Promise.reject(new Error('UNUSED')); }
+  dashboard(): Promise<Readonly<{ rows: readonly MetricRow[]; summary: CockpitSummary }>> { return Promise.reject(new Error('UNUSED')); }
   exports(): Promise<readonly ExportJob[]> { return Promise.resolve([]); }
   export(_id: string, _scope: string): Promise<ExportJob | null> { return Promise.resolve(null); }
   createExport(): Promise<ExportJob> { return Promise.reject(new Error('UNUSED')); }

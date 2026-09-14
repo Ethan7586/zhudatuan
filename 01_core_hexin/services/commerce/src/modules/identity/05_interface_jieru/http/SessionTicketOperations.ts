@@ -41,6 +41,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           const loginIntent = body.loginIntent === undefined ? undefined : secretField(body, 'loginIntent', 128);
           if (loginIntent !== undefined && !/^[A-Za-z0-9_-]{64}$/.test(loginIntent)) throw new Error('LOGIN_INTENT_INVALID');
           const authorization = AuthTransaction.start(body.authorization);
+          const directExchange = directExchangeSecret(body.exchange);
           const provider = body.provider === undefined ? 'password' : textField(body, 'provider', 32);
           if (provider !== 'password' && provider !== 'phone_otp') throw new Error('CREDENTIAL_PROVIDER_INVALID');
           const normalizedSubject = provider === 'phone_otp'
@@ -50,12 +51,11 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           const passwordMobile = provider === 'password' && /^\+[1-9][0-9]{7,14}$/.test(normalizedSubject)
             ? normalizedSubject
             : undefined;
-          const mobileLookup = passwordMobile === undefined
-            ? undefined
-            : await kms.encrypt('identity/mobile', passwordMobile, { purpose: 'password_login' });
           const mobileTokens = passwordMobile === undefined
             ? undefined
-            : [subject, mobileLookup!.fingerprint, createHash('sha256').update(passwordMobile).digest('hex')];
+            : kms.encrypt('identity/mobile', passwordMobile, { purpose: 'password_login' })
+                .then((mobileLookup) => [subject, mobileLookup.fingerprint,
+                  createHash('sha256').update(passwordMobile).digest('hex')]);
           return {
             body,
             provider,
@@ -64,22 +64,26 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
             requestedTarget,
             application,
             loginIntent,
+            directExchange,
             subject,
             mobileTokens,
           };
         },
-        execute: async (request, database, { body, provider, authorization, host, requestedTarget, application, loginIntent, subject, mobileTokens }) => {
-          const realm = await resolveRealmContext(database, host, requestedTarget, application);
+        execute: async (request, database, { body, provider, authorization, host, requestedTarget, application, loginIntent, directExchange, subject, mobileTokens }) => {
+          const [realm, resolvedMobileTokens] = await Promise.all([
+            resolveRealmContext(database, host, requestedTarget, application),
+            mobileTokens,
+          ]);
           let found: Readonly<{ account_id: string; realm_id: string; principal_id: string; credential_version: number }> | undefined;
           let challengeAccount: SmsLoginPrincipal | undefined;
           let loginChallenge: string | undefined;
           let loginCode: string | undefined;
           if (provider === 'password') {
             const credentialFound = await resolvePasswordLoginCredential(database,
-              mobileTokens === undefined
+              resolvedMobileTokens === undefined
                 ? { realmId: realm.realmId, subjectHash: subject, membershipClient: realm.membershipClient,
                     membershipOrganizationId: realm.membershipOrganizationId }
-                : { realmId: realm.realmId, subjectHash: subject, mobileTokens,
+                : { realmId: realm.realmId, subjectHash: subject, mobileTokens: resolvedMobileTokens,
                     membershipClient: realm.membershipClient,
                     membershipOrganizationId: realm.membershipOrganizationId });
             if (!(await passwords.verify(secretField(body, 'password', 128), credentialFound?.secret_hash ?? null))) {
@@ -205,8 +209,16 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           const csrf = randomBytes(32).toString('base64url');
           const target = authMembershipTarget(realm.target);
           const callback = await tickets.issue(database, id, found.realm_id, found.account_id, realm.target, authorization);
+          const direct = directExchange === undefined
+            ? undefined
+            : await tickets.consume(database, { ...directExchange, ...callback }, token, realm.realmId);
+          const directExpiresIn = direct === undefined
+            ? undefined
+            : Math.max(1, Math.min(43_200, Math.floor((direct.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
           return { status: 201, body: { session: id, csrf, expiresIn: 43_200, membership: membership.id,
-            target, callback, active_context: activeContext }, headers: sessionCookies(token, csrf, 43_200) };
+            target, callback, active_context: activeContext,
+            ...(direct === undefined ? {} : { exchange: { returnTarget: direct.returnTarget, expiresIn: directExpiresIn } }) },
+          headers: sessionCookies(token, csrf, 43_200) };
         },
       }),
       'identity.loginintents.create': async (request, database) => {
@@ -276,19 +288,16 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         const permissions = [...new Set(access.membership.grants.flatMap((grant) => grant.permissions).filter((permission) => !access.membership.denies.includes(permission)))].sort();
         const scopes = [...new Map(access.membership.grants.map((grant) => [grant.scope.id, grant.scope] as const)).values()];
         const csrf = requestCookie(request.input.headers.cookie, 'shop_csrf');
-        const realmAccount = await currentRealmAccount(database, access.membership.id, access.actor.id);
+        const realmAccount = access.actor.account !== undefined && access.actor.realm !== undefined
+          ? { accountId: access.actor.account, realmId: access.actor.realm }
+          : await currentRealmAccount(database, access.membership.id, access.actor.id);
         const entryRealmId = access.actor.nodeContext?.manifest.realm_ref.ref ?? realmAccount.realmId;
-        const [activeContext, credential, member, accountState] = await Promise.all([
-          resolveActiveMembershipContext(database, entryRealmId, realmAccount.accountId, access.membership.id),
-          database.query<{ rotated_at: Date | null }>(
-            `select rotated_at from identity.credential
-          where account_id=$1 and realm_id=$2 and provider='password' and status='active' order by created_at desc limit 1`,
-            [realmAccount.accountId, realmAccount.realmId]
-          ),
-          memberPort.securityProfile(database, access.actor.id),
-          database.query<{ mobile_masked: string | null }>(`select mobile_masked from identity.account where id=$1 and realm_id=$2`,
-            [realmAccount.accountId, realmAccount.realmId]),
+        const [activeContext, security] = await Promise.all([
+          resolveActiveMembershipContext(database, entryRealmId, realmAccount.accountId, access.membership.id,
+            { resolverKnownAvailable: true }),
+          memberPort.sessionSecurityProjection(database, realmAccount.accountId, realmAccount.realmId, access.actor.id),
         ]);
+        if (security === null) reject(403, 'REALM_ACCOUNT_INACTIVE');
         return {
           status: 200,
           body: {
@@ -308,11 +317,11 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
               exactOwner: governance.isExactOwner,
               organization: governance.organizationId,
             },
-            ...(member.displayName === null ? {} : {
-              profile: { display_name: member.displayName, employee_no: null },
+            ...(security.displayName === null ? {} : {
+              profile: { display_name: security.displayName, employee_no: null },
             }),
-            security: { hasLocalCredential: credential.rows.length > 0, phoneMasked: accountState.rows[0]?.mobile_masked ?? null,
-              passwordChangedAt: credential.rows[0]?.rotated_at?.toISOString() ?? null },
+            security: { hasLocalCredential: security.hasLocalCredential, phoneMasked: security.phoneMasked,
+              passwordChangedAt: security.passwordChangedAt?.toISOString() ?? null },
             syncedAt: new Date().toISOString(),
             ...(csrf === undefined ? {} : { csrf }),
           },
@@ -373,4 +382,14 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         return session === access.actor.session ? { ...response, headers: sessionCookies('', '', 0) } : response;
       },
   };
+}
+
+function directExchangeSecret(value: unknown): Readonly<{ nonce: string; verifier: string }> | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) throw new Error('AUTH_EXCHANGE_INVALID');
+  const exchange = value as Readonly<Record<string, unknown>>;
+  return Object.freeze({
+    nonce: secretField(exchange, 'nonce', 128),
+    verifier: secretField(exchange, 'verifier', 128),
+  });
 }

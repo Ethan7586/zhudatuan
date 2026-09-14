@@ -21,6 +21,7 @@ export interface MembershipResolver {
 export interface MembershipSnapshot {
   readonly access: MembershipAccess;
   readonly evaluatedAt: Date;
+  readonly capabilities?: readonly string[];
 }
 
 export interface AccessVersionResolver {
@@ -61,10 +62,17 @@ export class AccessPipeline {
       }
       const consumptionContext = requireMembershipConsumptionContext(actor);
       const resolvedMembership = await this.memberships.resolve(actor.membership, consumptionContext);
-      const membership = isMembershipSnapshot(resolvedMembership) ? resolvedMembership.access : resolvedMembership;
+      let snapshot: MembershipSnapshot | undefined;
+      let membership: MembershipAccess;
+      if (isMembershipSnapshot(resolvedMembership)) {
+        snapshot = resolvedMembership;
+        membership = resolvedMembership.access;
+      } else {
+        membership = resolvedMembership;
+      }
       if (membership.id !== actor.membership) throw new DomainError('MEMBERSHIP_INACTIVE', { reason: 'MEMBERSHIP_CONTEXT_MISMATCH' });
-      const accessVersion = await this.versions.resolve(membership.id, consumptionContext);
-      const now = isMembershipSnapshot(resolvedMembership) ? resolvedMembership.evaluatedAt : this.clock.now();
+      const accessVersion = snapshot?.access.accessVersion ?? await this.versions.resolve(membership.id, consumptionContext);
+      const now = snapshot?.evaluatedAt ?? this.clock.now();
       if (!Number.isFinite(now.getTime())) throw new DomainError('PERMISSION_DENIED', { reason: 'AUTHORIZATION_TIME_INVALID' });
       const permissionFailure = precheck(membership, permission, { expectedAccessVersion: actor.accessVersion, now });
       if (permissionFailure !== null) throw new DomainError(mapReason(permissionFailure));
@@ -76,7 +84,7 @@ export class AccessPipeline {
       if ('reason' in scopeDecision) throw new DomainError(mapReason(scopeDecision.reason));
       const governance = await this.governance?.resolve(actor, membership, scope);
       const mallContext = this.mallContexts.resolve(scope, membership, scopeHint);
-      const capabilities = await this.capabilities.resolve(membership.id, consumptionContext);
+      const capabilities = snapshot?.capabilities ?? await this.capabilities.resolve(membership.id, consumptionContext);
       if (!capabilities.includes(operation)) {
         throw new DomainError('CAPABILITY_DENIED', { operation });
       }

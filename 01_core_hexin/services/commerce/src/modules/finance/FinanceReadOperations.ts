@@ -88,37 +88,7 @@ export function financeOperatorReadActions(): OperationActions {
         order by reconciliation.id limit $3`,
         [access.scope.id, page.id, page.fetch, q, period, provider, scope, state, difference, kind]
       );
-      const facetResult = await database.query<{ facets: unknown }>(
-        `with allowed as(
-          select reconciliation.* from finance.reconciliation reconciliation
-          where access.scope_allowed(reconciliation.scope_id) and reconciliation.scope_id in(
-            select descendant_id from organization.unitclosure where ancestor_id=$1)
-        ), periods as(select coalesce(jsonb_agg(jsonb_build_object('value',value,'label',replace(value,'/',' 至 '),'count',count)
-            order by value desc),'[]'::jsonb) value from(select period value,least(count(*),2147483647)::integer count
-              from allowed group by period) grouped),
-        channels as(select coalesce(jsonb_agg(jsonb_build_object('value',value,'label',value,'count',count)
-            order by value),'[]'::jsonb) value from(select provider value,least(count(*),2147483647)::integer count
-              from allowed group by provider) grouped),
-        malls as(select coalesce(jsonb_agg(jsonb_build_object('value',value,'label',label,'count',count)
-            order by label),'[]'::jsonb) value from(select allowed.scope_id value,max(organization.name) label,
-              least(count(*),2147483647)::integer count from allowed join organization.organization organization
-              on organization.id=allowed.scope_id group by allowed.scope_id) grouped),
-        statuses as(select coalesce(jsonb_agg(jsonb_build_object('value',value,'label',value,'count',count)
-            order by value),'[]'::jsonb) value from(select state value,least(count(*),2147483647)::integer count
-              from allowed group by state) grouped),
-        differences as(select coalesce(jsonb_agg(jsonb_build_object('value',value,'label',value,'count',count)
-            order by value),'[]'::jsonb) value from(select coalesce(item.reason_code,'none') value,
-              least(count(distinct allowed.id),2147483647)::integer count from allowed
-              left join finance.reconciliationitem item on item.reconciliation_id=allowed.id
-                and item.state<>'matched' group by coalesce(item.reason_code,'none')) grouped)
-        select jsonb_build_object('periods',periods.value,'channels',channels.value,'malls',malls.value,
-          'statuses',statuses.value,'differenceTypes',differences.value) facets
-        from periods cross join channels cross join malls cross join statuses cross join differences`,
-        [access.scope.id]
-      );
-      const response = keysetResult(result, page, 'id');
-      return { ...response, body: { ...(response.body as Readonly<Record<string, unknown>>),
-        facets: facetResult.rows[0]?.facets ?? { periods: [], channels: [], malls: [], statuses: [], differenceTypes: [] } } };
+      return keysetResult(result, page, 'id');
     },
     'finance.settlements.read': async (request, database) => {
       const access = requireAccess(request);
