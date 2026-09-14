@@ -4345,3 +4345,19 @@
 ## 44. AU-044 新增未定级事项
 
 - [P3] `AccessQuery` 本身支持 cursor，但 `settings/profile`、`settings/access` 和 `settings/members` 的 access 补充数据未形成连续取页：前两者固定首屏，成员页仅推进 member cursor。对应既有 `F-0137`；本批次未新增独立问题。未发现 P0 级证据。
+
+## F-0234｜Compatibility 用户名注册限流与项目既定身份规则冲突
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Compatibility 注册 / 身份 |
+| 类型 | 可用性、身份流程治理 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `commerce-api/src/api/registrationRoutes.ts:94-110`；`storefront-compatibility/.../20260812250000_username_password_registration.sql:1-78` |
+| 当前行为 | 路由先调用 `api_username_registration_allowed`，migration 按 IP hash 记录一小时窗口，十次以上返回 429/阻断。测试明确固定该行为。 |
+| 预期行为 | 项目既定规则要求不保留登录/注册失败限流、锁定或冷却。 |
+| 直接证据 | AU-291 源码、迁移和 `registrationRoutes.test.ts:121-160`。 |
+| 用户影响 | 合法用户可因同 IP 既往尝试被拒绝注册一小时。 |
+| 建议方向 | 后续从最新主线建立单一用途修复分支，同时移除 API 与数据库两层限流及对应测试，再做真实注册验证。 |
+| 验证与回滚 | 以受控注册请求验证不返回 429；回滚为独立提交恢复原双层规则。 |
