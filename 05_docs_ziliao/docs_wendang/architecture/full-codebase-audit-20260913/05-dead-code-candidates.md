@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 10。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 11。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1072,3 +1072,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 442. AU-442 legacy 对象退役复核
 
 - 不可逆旧对象退役与后续 fail-closed target-head 断言构成同一切换边界，归 GX-0010。累计 G0 60、G1 83、G2 5、G3 0、GX 10；未删除任何文件。
+
+## GX-0011｜权益旧流水到财务总账的迁移
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821042000_benefit_lifecycle.sql`。 |
+| 直接证据 | 迁移将 `benefit.entry` 的正负金额逐条调用 `finance.post` 投影为带 scope 的复式总账，随后 `drop table benefit.entry`；同时回填 lot 与 lotmovement。 |
+| 运行边界 | 当前权益 API 从 `benefit.balance`（财务 entry/journal 投影）、lot 和 lotmovement 读取，`benefitgrant`/`benefitexpiry` Worker 继续写同一模型；迁移 ledger 与断言要求旧表不存在。 |
+| 可否删除 | 否；承担财务迁移、历史数据、不可逆退役、恢复和审计责任。 |
+| 二次复核 | 是；必须独立核验每 scope/币种的金额与笔数对账、journal 幂等键、备份可恢复性、目标 schema ledger、部署窗口与回滚演练。 |
+
+## 452. AU-452 权益生命周期复核
+
+- 权益批次、预算、lot、财务总账及异步发放/到期处理构成完整运行链；旧流水退役归 GX-0011。累计 G0 60、G1 83、G2 5、G3 0、GX 11；未删除任何文件。
