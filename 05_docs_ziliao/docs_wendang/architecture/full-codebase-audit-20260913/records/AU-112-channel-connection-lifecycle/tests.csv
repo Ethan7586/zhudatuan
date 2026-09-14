@@ -1,0 +1,4 @@
+"检查","证据","结论"
+"现有测试目录","modules/channel/06_tests_ceshi/ 仅有 module.manifest.test.ts","仅声明性测试，见 F-0167/P2。"
+"定向测试","未运行","工作区未安装 Vitest；审计纪律禁止安装或修复。"
+"运行入口复核","channelRoutes + app/jobs registerJobs","确认 command、queue 和 Worker 实际注册。"

@@ -1,0 +1,2 @@
+"复核编号","关联问题","级别","复核范围","必须重做的证据","禁止捷径","状态"
+"RV-0024","F-0166","P2","Channel sync cancel → JobRunner claim/retry → ChannelJobProcessor run/finish/completeEmpty → runtime.job/outbox","独立重走 cancel 与 Worker 各自 transaction 的交错；核对实际 JobRunner retry/claim 是否可使已取消 job 再次运行；构造在 provider 返回前 cancel 的反事实","不得仅以 source state 名称推定终态；不得改变线上任务或运行服务","待复核"

@@ -1,0 +1,6 @@
+"证据编号","文件","位置","结论"
+"E-AU-112-001","01_core_hexin/services/commerce/src/modules/channel/03_application_yingyong/command/CreateConnection.ts;EnableConnection.ts","14-70;11-57","manifest/secret preparation、extension installation、connection 状态机/版本转移。"
+"E-AU-112-002","01_core_hexin/services/commerce/src/modules/channel/03_application_yingyong/command/RunSync.ts;04_adapters_shixian/persistence/PgChannelRepository.ts","10-37;5-14","enabled gate、sync run 创建/cancel 与 runtime job enqueue。"
+"E-AU-112-003","01_core_hexin/services/commerce/src/modules/channel/02_domain_yewu/model/Connection.ts;SyncRun.ts","1-30;1-19","connection transition、sync hash/progress 域不变量。"
+"E-AU-112-004","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/job/ChannelSyncJob.ts","28-207","四类 worker 注册契约、provider 调用、transaction 投影、finish/outbox/续页；cancel 覆盖竞态见 F-0166。"
+"E-AU-112-005","01_core_hexin/services/commerce/src/app/jobs.ts;modules/channel/05_interface_jieru/http/ChannelRoutes.ts","110-140;23-35","runtime processor 与 HTTP operations 实际注册。"

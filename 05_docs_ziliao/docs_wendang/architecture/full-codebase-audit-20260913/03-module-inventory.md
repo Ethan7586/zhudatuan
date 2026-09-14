@@ -1237,3 +1237,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | manifest test | HTTP/job/event static inventory | [FACT][E-AU-111-004] |
 
 [FACT][E-AU-111-005] 3 文件、270 行 Channel 管理 HTTP entry 完成深审；Capability quota 写入没有 Channel 内部重复实现。
+
+## 117. AU-112 Channel connection 生命周期与同步 Worker 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| connection command | provider manifest/secret 校验、draft/update/test/enable/disable 状态转移 | [FACT][E-AU-112-001] |
+| sync command/repository | enabled connection gate、sync run/hash、四类 runtime job 投递与 cancel | [FACT][E-AU-112-002] |
+| domain model | connection transition 与同步输入/进度不变量 | [FACT][E-AU-112-003] |
+| sync worker | Catalog/Price/Stock/Statement provider 调用、投影/finance/outbox/续页 | [FACT][E-AU-112-004]；cancel 与 finish 竞态见 F-0166/P2 |
+| tests | 仅 manifest 静态 operation/job/event inventory | [FACT][E-AU-112-005]；行为测试缺口见 F-0167/P2 |
+
+[FACT][E-AU-112-006] 8 文件、442 行 Channel connection 生命周期完成深审；创建与同步入口均绑定当前 scope，Worker 由 commerce job registry 注册。取消状态未参与最终回写条件，构成 F-0166/P2。

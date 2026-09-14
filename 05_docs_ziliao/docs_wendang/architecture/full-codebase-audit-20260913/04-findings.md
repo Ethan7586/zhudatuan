@@ -3348,6 +3348,34 @@
 | 验证/回滚 | 从最新主线建立独立测试批次，最小覆盖四眼 approve、同一 batch retry、pending/active revoke、expiry 有/无 reservation、reserve-consume-refund 守恒；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2，后续 Benefit 数据/Worker 专项可复查。 |
 
+## F-0166｜已取消的 Channel 同步可被在途 Worker 回写为运行或完成
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | channel / 同步任务状态；P2；高 |
+| 类型 | 异步取消竞态、状态正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/channel/03_application_yingyong/command/RunSync.ts:26-31`；`05_interface_jieru/job/ChannelSyncJob.ts:42-51,162-176,183-189` |
+| 当前/预期 | cancel 将 queued/running run 更新为 cancelled；已在途 Worker 的 run() 已先将同一记录标为 running，随后 catalog/price/stock/statement 完成时 finish 不检查当前状态，直接写 running/completed；无 key 时 completeEmpty 也无条件写 completed。预期取消须成为终态：Worker 在外部调用与每次持久化前确认仍可运行，finish/completeEmpty 只在 state='running' 时更新，或明确规定 cancel 不能取消在途执行。 |
+| 直接证据 | cancel SQL 的 `run.state in('queued','running')` 在 `RunSync.ts:28-30`；Worker runnable SQL 同样允许 queued/running 并把它设为 running（`ChannelSyncJob.ts:42-45`）。两条事务之间可执行 cancel；finish 的 `where id=$1`（第164-166行）和 completeEmpty 的 `where id=$1`（第183行）均没有 `state='running'` 条件。 |
+| 调用链/影响 | Console/API `channel.syncruns.cancel` → channel.syncrun cancelled；并发 runtime job `catalogsync/pricesync/inventorysync/statementsync` → provider pull → catalog/pricing/inventory/finance 写入 → finish/outbox。用户已取消的同步仍可改变投影、创建 reconciliation、重投分页 job 或发 completed event。 |
+| 根因 | 取消命令与 Worker 完成路径使用独立 transaction，最终状态更新没有将 cancelled 作为终态比较。 |
+| 验证/回滚 | 从最新主线建立独立小分支，以受控 provider 在 run() 后、finish 前执行 cancel；断言 run 保持 cancelled、无 completed outbox/续页 job，并决定是否允许中断已开始的 provider 调用。回滚为撤回该单一状态条件与测试批次。 |
+| 独立复核 | 是；P2 异步状态机，需按实际 JobRunner retry/claim 行为重新检查调用链。 |
+
+## F-0167｜Channel connection 与同步 Worker 仅有 manifest 静态测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | channel / connection 与同步；P2；高 |
+| 类型 | 测试覆盖缺口、异步集成正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/channel/03_application_yingyong/command/{CreateConnection,EnableConnection,RunSync}.ts`；`05_interface_jieru/job/ChannelSyncJob.ts`；`06_tests_ceshi/module.manifest.test.ts` |
+| 当前/预期 | connection create/test/enable/disable、sync start/cancel 及四类 Worker 会写 connection、extension、runtime job/outbox、catalog/pricing/inventory/finance；模块测试只断言 manifest 的 operation/job/event 字符串。预期至少有 transaction/integration 覆盖状态转移、enabled gate、cancel 与 Worker finish 竞态、续页、statement reconciliation 和 provider 失败重试。 |
+| 直接证据 | `rg` 在 Channel 测试目录只找到 `module.manifest.test.ts`；该文件逐项比较 manifest string，未导入 CreateConnection、EnableConnection、RunSync 或 ChannelJobProcessor。 |
+| 调用链/影响 | Channel HTTP operation → ModuleOperations transaction → runtime.job → ChannelJobProcessor → provider extension 与下游投影/finance。状态、幂等和队列回归不能由当前测试直接捕获。 |
+| 根因 | 模块以声明完整性测试替代命令和 Worker 行为测试。 |
+| 验证/回滚 | 从最新主线建立独立测试批次，以最小 PGlite/transaction fixture 覆盖 create→test→enable、disabled/non-enabled 拒绝、cancel race、分页续跑与 statement outbox；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2，后续 Channel Worker 专项可复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
