@@ -2518,3 +2518,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | route registration evidence | fixture注册finance全部operation并在authorizer前中断，直接捕获参数 | [FACT][E-AU-239-002] |
 
 [FACT][E-AU-239-003] 1 测试文件、40 行完成深审；两条policy operation闭合，无P0–P3新问题。
+
+## 245. AU-240 WeChat controller authentication fixture 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| authenticated route mode | authenticated WeChat session借用identity.session.read当前会话policy | [FACT][E-AU-240-001] |
+| anonymous route mode | anonymous WeChat login不进入authorizer，并以null access进入handler | [FACT][E-AU-240-002] |
+
+[FACT][E-AU-240-003] 1 测试文件、68 行完成深审；两条auth mode都由注册route direct fixture验证，无P0–P3新问题。

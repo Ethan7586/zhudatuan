@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-240-001,src/foundation/interface/OperationController.wechat.test.ts,11-23,authenticated mode,Authenticated request authorizes identity.session.read and handler receives current principal access.
+E-AU-240-002,src/foundation/interface/OperationController.wechat.test.ts,25-35,anonymous mode,Anonymous request does not invoke authorizer and handler receives null access.
+E-AU-240-003,src/foundation/interface/OperationController.ts,315-327,generated source contract,Generated operationAccess has matching authenticatedWechatMode branch for identity.wechat.session.
