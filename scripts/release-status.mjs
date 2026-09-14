@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { evaluateDeliveryStatus, parseMergeTreeConflictFiles } from '../04_tools/release-engine/src/delivery-status.mjs';
+import { automaticClosureIncludes, evaluateDeliveryStatus, parseMergeTreeConflictFiles } from '../04_tools/release-engine/src/delivery-status.mjs';
 
 const [target, sourceSha, physicalNode, outputMode] = process.argv.slice(2);
 if (!target || !sourceSha || !physicalNode || !/^[0-9a-f]{40}$/.test(sourceSha)
@@ -29,6 +30,8 @@ const prepareRuns = ghRuns('prepare-artifact-aliyun.yml').filter(({ displayTitle
   displayTitle === `Prepare 1.3.2 ${sourceSha} ${target}` || displayTitle === `Prepare 1.3.2 ${sourceSha} ${target} [github]`);
 const sealTitle = `Deploy 1.3.2 validate-candidate ${sourceSha} ${physicalNode} ${target}`;
 const sealRuns = workflowRuns.filter(({ displayTitle }) => displayTitle === sealTitle);
+const automaticSeal = automaticClosureSeal();
+if (automaticSeal) sealRuns.unshift(automaticSeal);
 const result = {
   target,
   sourceSha,
@@ -44,6 +47,28 @@ function ghRuns(workflow) {
     '--limit', '100', '--json', 'databaseId,displayTitle,status,conclusion,url,createdAt']);
   if (listed.status !== 0) return [];
   try { return JSON.parse(listed.stdout); } catch { return []; }
+}
+
+function automaticClosureSeal() {
+  const listed = command('gh', ['run', 'list', '--workflow', 'auto-prepare-artifacts.yml', '--branch', 'zdt-next', '--event', 'push',
+    '--limit', '100', '--json', 'databaseId,headSha,status,conclusion,url,createdAt']);
+  if (listed.status !== 0) return undefined;
+  let runs;
+  try { runs = JSON.parse(listed.stdout).filter((run) => run.headSha === sourceSha && run.status === 'completed'); } catch { return undefined; }
+  for (const run of runs) {
+    const directory = mkdtempSync(join(tmpdir(), 'zdt-automatic-closure-status-'));
+    try {
+      const downloaded = command('gh', ['run', 'download', String(run.databaseId), '--name', `automatic-artifact-closure-${sourceSha}`, '--dir', directory]);
+      if (downloaded.status !== 0) continue;
+      const closure = JSON.parse(readFileSync(join(directory, 'closure.json'), 'utf8'));
+      if (automaticClosureIncludes(closure, { sourceSha, target, node: physicalNode })) return run;
+    } catch {
+      continue;
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }
+  return undefined;
 }
 
 function command(executable, arguments_) {

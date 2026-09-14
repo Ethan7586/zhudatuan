@@ -40,6 +40,13 @@ export function parseMergeTreeConflictFiles(output) {
   return Object.freeze(candidates.filter((line) => line !== '' && !/^[0-9a-f]{40}$/.test(line)));
 }
 
+export function automaticClosureIncludes(closure, { sourceSha, target, node }) {
+  if (closure?.schemaVersion !== 'zdt-automatic-artifact-closure/v1' || closure.sourceSha !== sourceSha) return false;
+  return ['migrations', 'runtimes', 'frontends']
+    .flatMap((wave) => Array.isArray(closure.waves?.[wave]) ? closure.waves[wave] : [])
+    .some((entry) => entry?.target === target && entry?.node === node);
+}
+
 function firstSuccessful(runs = []) {
   return runs.find((run) => run?.status === 'completed' && run.conclusion === 'success');
 }

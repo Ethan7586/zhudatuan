@@ -20,3 +20,21 @@ export function automaticPreparationMatrix(adapter, targets) {
   }
   return entries;
 }
+
+export function automaticClosureManifest(adapter, { sourceSha, beforeSha, targets }) {
+  const preparations = automaticPreparationMatrix(adapter, targets);
+  const waves = { migrations: [], runtimes: [], frontends: [] };
+  for (const preparation of preparations) {
+    const kind = adapter.targets[preparation.target].kind;
+    const wave = kind === 'migration' ? waves.migrations : kind === 'frontend' ? waves.frontends : waves.runtimes;
+    for (const node of JSON.parse(preparation.seal_nodes_json)) wave.push({ target: preparation.target, node });
+  }
+  return Object.freeze({
+    schemaVersion: 'zdt-automatic-artifact-closure/v1',
+    sourceSha,
+    beforeSha,
+    targets: [...new Set(targets)],
+    preparations,
+    waves,
+  });
+}

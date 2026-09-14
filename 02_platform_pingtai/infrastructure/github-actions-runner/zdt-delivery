@@ -3,15 +3,19 @@
 # remain separate: every operation runs through the latest origin/zdt-next.
 set -euo pipefail
 
-if [ "$#" -ne 4 ] || { [ "$1" != "status" ] && [ "$1" != "prepare" ] && [ "$1" != "deploy" ]; }; then
-  echo "Usage: zdt-delivery <status|prepare|deploy> <target> <full-source-sha> <physical-node>" >&2
+if { [ "$#" -eq 2 ] && [ "$1" = "deploy-source" ]; }; then
+  OPERATION="$1"
+  SOURCE_SHA="$2"
+elif [ "$#" -eq 4 ] && { [ "$1" = "status" ] || [ "$1" = "prepare" ] || [ "$1" = "deploy" ]; }; then
+  OPERATION="$1"
+  TARGET="$2"
+  SOURCE_SHA="$3"
+  PHYSICAL_NODE="$4"
+else
+  echo "Usage: zdt-delivery deploy-source <full-source-sha>" >&2
+  echo "   or: zdt-delivery <status|prepare|deploy> <target> <full-source-sha> <physical-node>" >&2
   exit 64
 fi
-
-OPERATION="$1"
-TARGET="$2"
-SOURCE_SHA="$3"
-PHYSICAL_NODE="$4"
 REPOSITORY_ROOT="${ZDT_GIT_ANCHOR:-/Users/Ethan/Desktop/zdt-next}"
 
 if ! git -C "$REPOSITORY_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
@@ -41,4 +45,5 @@ case "$OPERATION" in
   status) bash scripts/release-status.sh "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ;;
   prepare) bash scripts/prepare-release.sh "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ;;
   deploy) bash scripts/deploy-now.sh "$TARGET" "$SOURCE_SHA" "$PHYSICAL_NODE" ;;
+  deploy-source) bash scripts/deploy-source.sh "$SOURCE_SHA" ;;
 esac
