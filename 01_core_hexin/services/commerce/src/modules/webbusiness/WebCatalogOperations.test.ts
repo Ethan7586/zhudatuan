@@ -93,6 +93,8 @@ describe('web catalog management read', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]?.text).toContain("source.scope_id=$1 and source.status='mapped'");
     expect(calls[0]?.text).toContain("'kind','selection-center-v1'");
+    expect(calls[0]?.text).toContain("product:zdt:supplier:trial:");
+    expect(calls[0]?.text).toContain('sample.market_sales_30d');
     expect(calls[0]?.text).not.toContain('join catalog.category');
     expect(calls[0]?.text).toContain('with selection_page as materialized');
     expect(calls[0]!.text.indexOf('limit $9')).toBeLessThan(calls[0]!.text.indexOf('left join lateral'));

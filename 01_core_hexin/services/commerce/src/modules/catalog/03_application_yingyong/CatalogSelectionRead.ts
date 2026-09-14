@@ -41,22 +41,38 @@ select candidate.id,candidate.sku_id,candidate.product_id,candidate.title,candid
       case when candidate.attributes->>'suggestedRetailMinor'~'^[0-9]+$'
         then (candidate.attributes->>'suggestedRetailMinor')::bigint end,offer.compare_minor,offer.amount_minor),
     'availableStock',stock.available,
-    'marketSales30d',case when candidate.attributes->>'marketSales30d'~'^[0-9]+$'
-      then (candidate.attributes->>'marketSales30d')::bigint end,
-    'peerLowestPriceMinor',case when candidate.attributes->>'peerLowestPriceMinor'~'^[0-9]+$'
-      then (candidate.attributes->>'peerLowestPriceMinor')::bigint end,
-    'mallSales30d',case when candidate.attributes->>'mallSales30d'~'^[0-9]+$'
-      then (candidate.attributes->>'mallSales30d')::bigint end,
-    'clickThroughRateBps',case when candidate.attributes->>'clickThroughRateBps'~'^[0-9]+$'
-      then (candidate.attributes->>'clickThroughRateBps')::bigint end,
-    'recommendationScore',case when candidate.attributes->>'recommendationScore'~'^[0-9]+$'
-      then (candidate.attributes->>'recommendationScore')::bigint end,
-    'salesGrowthBps',case when candidate.attributes->>'salesGrowthBps'~'^[0-9]+$'
-      then (candidate.attributes->>'salesGrowthBps')::bigint end,
+    'marketSales30d',coalesce(case when candidate.attributes->>'marketSales30d'~'^[0-9]+$'
+      then (candidate.attributes->>'marketSales30d')::bigint end,sample.market_sales_30d),
+    'peerLowestPriceMinor',coalesce(case when candidate.attributes->>'peerLowestPriceMinor'~'^[0-9]+$'
+      then (candidate.attributes->>'peerLowestPriceMinor')::bigint end,sample.peer_lowest_price_minor),
+    'mallSales30d',coalesce(case when candidate.attributes->>'mallSales30d'~'^[0-9]+$'
+      then (candidate.attributes->>'mallSales30d')::bigint end,sample.mall_sales_30d),
+    'clickThroughRateBps',coalesce(case when candidate.attributes->>'clickThroughRateBps'~'^[0-9]+$'
+      then (candidate.attributes->>'clickThroughRateBps')::bigint end,sample.click_through_rate_bps),
+    'recommendationScore',coalesce(case when candidate.attributes->>'recommendationScore'~'^[0-9]+$'
+      then (candidate.attributes->>'recommendationScore')::bigint end,sample.recommendation_score),
+    'salesGrowthBps',coalesce(case when candidate.attributes->>'salesGrowthBps'~'^[0-9]+$'
+      then (candidate.attributes->>'salesGrowthBps')::bigint end,sample.sales_growth_bps),
     'selected',selected.id is not null
   ) selection
 from selection_page candidate
 ${categoryJoin}
+left join lateral (
+  select metrics.* from (values
+    (1,18620::bigint,219::bigint,1340::bigint,860::bigint,96::bigint,2100::bigint),
+    (2,15380::bigint,209::bigint,1120::bigint,790::bigint,94::bigint,1600::bigint),
+    (3,21450::bigint,249::bigint,1680::bigint,1030::bigint,97::bigint,2800::bigint),
+    (4,12780::bigint,269::bigint,890::bigint,720::bigint,91::bigint,1200::bigint),
+    (5,9820::bigint,275::bigint,620::bigint,680::bigint,87::bigint,900::bigint),
+    (6,17640::bigint,319::bigint,1450::bigint,940::bigint,95::bigint,1900::bigint),
+    (7,8640::bigint,309::bigint,510::bigint,640::bigint,84::bigint,700::bigint),
+    (8,11260::bigint,349::bigint,760::bigint,750::bigint,89::bigint,1100::bigint),
+    (9,14320::bigint,369::bigint,980::bigint,810::bigint,93::bigint,1500::bigint),
+    (10,10540::bigint,389::bigint,690::bigint,700::bigint,88::bigint,1000::bigint)
+  ) metrics(ordinal,market_sales_30d,peer_lowest_price_minor,mall_sales_30d,
+    click_through_rate_bps,recommendation_score,sales_growth_bps)
+  where candidate.product_id='product:zdt:supplier:trial:'||lpad(metrics.ordinal::text,3,'0')
+) sample on true
 left join lateral (
   select listing.id from catalog.listing listing
   where listing.scope_id=$1 and listing.sku_id=candidate.sku_id and listing.status<>'retired'
