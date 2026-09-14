@@ -191,21 +191,30 @@ async function offboardAdministrator(request: OperationRequest, database: Operat
   }
   const membership = textField(bodyRecord(request), 'membership');
   const expectedVersion = requireExpectedVersion(request);
-  const target = (await database.query<{
+  const target = (await database.query<ManagementTargetRow & {
     id: string;
     access_version: string | number;
     target_is_owner: boolean;
     governance_level: 'owner' | 'senior_administrator' | 'administrator' | 'member';
-  }>(`select target.id,target.access_version,
+  }>(`select target.id,target.access_version,access.scope_object(target.organization_id) target_membership_scope,
+      target.id target_membership_id,target.client target_client,target.status target_status,
+      target.realm_id target_realm_id,actor.realm_id actor_realm_id,
+      exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
+        and realm_target.surface='admin' and realm_target.membership_client='operator') target_realm_binding,
+      exists(select 1 from identity.realmtarget realm_target where realm_target.realm_id=target.realm_id
+        and realm_target.surface='admin' and realm_target.membership_client='operator'
+        and realm_target.membership_organization_id=target.organization_id) target_organization_binding,
       exists(select 1 from access.platformowner owner where owner.singleton=true and owner.state='active'
         and owner.membership_id=target.id) target_is_owner,target_governance.governance_level
     from access.membership target
+    join access.membership actor on actor.id=$4 and actor.status='active' and actor.client='operator'
     join member.profile profile on profile.id=target.member_id
     cross join lateral access.resolve_authoritative_governance(
       target.id,profile.principal_id,$2,$3) target_governance
     where target.id=$1 and target.client='operator' and target.status='active'
-    for update of target`, [membership, access.scope.kind, access.scope.id])).rows[0];
+    for update of target`, [membership, access.scope.kind, access.scope.id, access.membership.id])).rows[0];
   if (target === undefined) throw new Error('ADMINISTRATOR_NOT_ACTIVE');
+  requireManagementTarget(target, access.scope);
   if (target.target_is_owner) throw new Error('OWNER_ROLE_LEVEL_IMMUTABLE');
   if (actorLevel === 'senior_administrator' && target.governance_level !== 'administrator') {
     throw new Error('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
