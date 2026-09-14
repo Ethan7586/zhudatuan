@@ -5082,20 +5082,20 @@
 | 验证/回滚 | 隔离数据库以 Identity API role 执行 import/listing read/write，收敛后均应拒绝；以 Catalog Operator role 运行真实 import/listing command应仍成功。回滚为恢复独立 ACL migration，前提是确认合法 consumer。 |
 | 是否需要独立复核 | 否；ACL回收前需要 Identity/Catalog owner确认所有仓外 worker、SQL console和生产 grants。 |
 
-## F-0274｜L1 专用 Auth return target 已入库但应用层拒绝解析
+## F-0274｜L1 专用 Auth return target 已入库但应用层拒绝解析（已关闭：前向迁移已规范化）
 
 | 字段 | 记录 |
 | --- | --- |
 | 模块 | Identity auth ticket / L0-L1 realm boundary |
 | 类型 | 数据库约束与 API 契约漂移、登录回跳可用性 |
-| 严重级别 | **P2** |
+| 严重级别 | **已关闭（原 P2；基线代码/迁移链已消除）** |
 | 置信度 | 高 |
 | 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260907113000_separate_l0_l1_auth_return_targets.sql:21-35`；`01_core_hexin/packages/config/src/ClientEnvironment.ts:5`；`services/commerce/src/modules/identity/05_interface_jieru/http/IdentitySecurity.ts:20-27`；`RegistrationOperations.ts:140-143,195-200`；`WechatOperations.ts:57-62,143-146`；`RealmAccount.ts:50-115`。 |
-| 当前/预期 | migration 将 `console-hbbtzn` 和 `storefront-hbbtzn` 写入 `identity.authticket.target` check constraint，以区分 L0/L1 回跳目标；全局 `AuthTarget` union 和 `authTarget()` 仅接受 console/storefront/store/supplier。Registration 和 WeChat JSAPI 先解析请求 target，之后要求其与 realm/application resolved target 精确相同。预期为所有数据库允许且 realm 可返回的 target 都能被同一 API contract解析、验证、签发和交换，或从 DB contract 移除未承诺 target。 |
-| 直接证据 | [FACT][E-AU-660-001] migration constraint 包含两个 `*-hbbtzn` value；[FACT][E-AU-660-002] `authTarget()` allowlist不含二者且直接抛 `AUTH_RETURN_TARGET_INVALID`；[FACT][E-AU-660-003] Registration/Wechat 都在 realm resolution/issue ticket前调用 parser并执行 exact target equality；[FACT][E-AU-660-004] config test fixture含两个 special return target URL，但当前 config type仍排除它们。 |
-| 调用链或运行入口 | Password registration/login 或 WeChat JSAPI → `authTarget(body.target)` → `resolveRealmContext`/`resolveRealmApplication` → realm target equality → `PgAuthTicket.issue` → `identity.authticket.target`。 |
-| 用户/数据/安全影响 | 需要 L1 专用回跳的认证请求会在 parser 或 exact-target comparison 前失败，无法签发 ticket；因拒绝而非 fallback，未发现跨 L0/L1 回跳或会话泄露证据。若数据库已配置这些 target，L1 登录/注册可用性受阻。 |
-| 根因 | 数据库 check constraint、环境 fixture与应用 AuthTarget schema/HTTP parser 分开演进，迁移 assertion只检查 constraint text，不验证 application contract成功 roundtrip。 |
-| 建议方向 | 从当时最新主线建立独立 auth-target alignment 批次：先确定 L1 special target 的公开名称、membership mapping和 return origin，再同步扩展 shared AuthTarget schema、parser、realm config validation、ticket signer和正/反向 tests；若不再需要独立 target，则以独立前向 migration收窄 DB constraint及环境 fixture。不要只放宽数据库或只加 parser。 |
-| 验证/回滚 | 隔离环境为 L0/L1 realm分别验证 password、registration和WeChat JSAPI issue/exchange：相同 realm/target成功，交叉 realm/target拒绝，signed return origin精确；回滚为撤回独立 alignment commit或前向约束收窄。 |
-| 是否需要独立复核 | 否；实施前需要身份/前端 owner确认 L1 real host及回跳产品语义。 |
+| 当前/预期 | 原 migration 曾临时将 `console-hbbtzn` 和 `storefront-hbbtzn` 写入 `identity.authticket.target`。后续 `20260908011000_canonicalize_sfl_identity_targets.sql:25-55` 已把 L1 Realm 的 session、ticket 和 target 转换为 `console`/`storefront`，并将数据库 check 收窄为应用 `AuthTarget` union 的四个值；当前契约与终态 schema 一致。 |
+| 直接证据 | [FACT][E-AU-660-001] 原约束包含两个 legacy value；[FACT][E-AU-666-001] 后续 migration 的 source guard 要求它们存在、同步转换三个数据面并重建约束；[FACT][E-AU-666-002] terminal assertion 禁止任何 legacy value 残留；[FACT][E-AU-666-003] auth web tests 亦拒绝 legacy input。 |
+| 调用链或运行入口 | Password registration/login 或 WeChat JSAPI → `authTarget(body.target)` → `resolveRealmContext`/`resolveRealmApplication` → `PgAuthTicket.issue` → `(realm_id,target)` Realm return origin。 |
+| 用户/数据/安全影响 | 代码基线中已无该 parser/schema 不匹配；同名 target 的 L0/L1 return origin 由 Realm-bound data 查询隔离。未读取生产 migration ledger，故不能断言任一线上数据库已完成规范化。 |
+| 根因 | 初始审阅截取了迁移链中间状态；后续前向 migration 明确完成了 API target 名称与 Realm return-origin 模型的对齐。 |
+| 建议方向 | 不创建修复批次。仅在发布/运行核查时读取受控环境的 `runtime.schemaversion` 与 Realm target 数据，确认已达到 `20260908011000` 或更高的连续迁移状态。 |
+| 验证/回滚 | 隔离环境为 L0/L1 Realm 分别验证通用 `console`/`storefront` target 的 issue/exchange 与各自 signed return origin；运行状态异常时按既定 migration recovery 流程处理，不回滚为 legacy target 名称。 |
+| 是否需要独立复核 | 否；仅需运行状态核查。 |
