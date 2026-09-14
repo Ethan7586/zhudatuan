@@ -1,0 +1,5 @@
+"测试类型","验证命令/路径","测试对象","结果","备注"
+"单元测试","01_core_hexin/apps/console/src/feature/profile/ProfileModel.test.ts","角色分组/权限分组基础行为","通过（静态阅读）","白盒断言：治理角色与业务角色分离、去重、显示标签映射"
+"组件测试","01_core_hexin/apps/console/src/feature/profile/ProfileRoute.test.tsx","profile 页面渲染、空态、CSS 响应快照断言","通过（静态阅读）","覆盖 4 个行为分支；使用 MSW 固定 access 响应"
+"集成证据","01_core_hexin/apps/console/src/feature/profile/ProfileRoute.tsx + ConsoleRouter.tsx","路由挂载与入口可达性","通过（静态阅读）","通过控制台 lazy route 与 `settings/profile` 绑定可证明入口存在"
+"目标验证","01_core_hexin/apps/console/src/feature/access/AccessQuery.ts + services/commerce/.../AccessReadOperations.ts","分页一致性核验","未执行","仅文档化确认；建议后续引入分页冒烟测试（cursor 回灌）"

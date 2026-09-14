@@ -2986,6 +2986,17 @@
 | 验证/回滚 | 扩展测试为字段级错误码、`createWenxuanClient` 工厂输出与至少一条 `book` 操作（如 `catalog/order`/`statement`）的端到端映射验证；回滚减小测试提交。 |
 | 独立复核 | 否 |
 
+## F-0137｜Console 个人信息页分页未消费 `nextCursor`
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Console profile；P3；高 |
+| 位置 | `01_core_hexin/apps/console/src/feature/access/AccessQuery.ts:11-16`；`01_core_hexin/services/commerce/src/modules/access/03_application_yingyong/AccessReadOperations.ts:19,61,132-133`；`01_core_hexin/apps/console/src/feature/profile/ProfileRoute.tsx:30-37` |
+| 当前/预期 | 前端每次固定读取 `access.center.read` 的第一页（`limit:500`），未消费返回的 `nextCursor`；`membership` 通过会话会员 ID 在第一页命中后才可展示，分页越界将导致“未找到当前会员身份”与降级文案。 |
+| 影响 | 成员规模大于 500 且目标身份不在第一页时，个人信息页会显示身份缺失，但不一定阻断核心会话行为。 |
+| 验证/回滚 | 建议新增分页冒烟测试与 `cursor` 回灌复测；修复方向为 page 递进读取或改造专用身份精确查找接口。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
@@ -3038,3 +3049,7 @@
 
 - [P3] `services/commerce-api`、`api-contract`、`smart-wing-authz`、`auth-web`、`storefront-web` 为“无 extends”配置，继承策略与根基线不同；本批次仅形成治理项，不影响当前可复现运行路径结论。[UNKNOWN] 未见直接生产事故。
 - [P3] 归档目录 `05_docs_ziliao/VI_shijue/version-upgrades/ZHU-VI-1.2|1.3/source/packages/design/tsconfig.json` 指向缺失 `extends` 基文件；当前仅落在归档区，未见 build/test 入口引用。
+
+## 43. AU-043 新增未定级事项
+
+- [P3] Console 个人信息页存在 `access.center.read` 分页 cursor 未消费风险（F-0137）；建议补充分页冒烟与修复验证后再定级。未发现 P0 级证据。
