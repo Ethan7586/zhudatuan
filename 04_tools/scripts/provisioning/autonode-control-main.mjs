@@ -1,5 +1,4 @@
-import { access, mkdir } from 'node:fs/promises';
-import { createRequire } from 'node:module';
+import { mkdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 import { createAutoNodeControlServer } from './autonode-control-server.mjs';
@@ -11,16 +10,12 @@ const port = number(process.env.AUTONODE_CONTROL_PORT ?? '4370', 'AUTONODE_CONTR
 const taskStateRoot = resolve(process.env.AUTONODE_TASK_STATE_ROOT ?? '/var/lib/sfl-autonode-control');
 const activationStateRoot = resolve(process.env.AUTONODE_ACTIVATION_STATE_ROOT ?? join(taskStateRoot, 'activation'));
 const providerStateRoot = resolve(process.env.AUTONODE_PROVIDER_STATE_ROOT ?? join(taskStateRoot, 'provider'));
-const sourceRoot = resolve(process.env.AUTONODE_SOURCE_ROOT ?? '/opt/sfl/nodes/hbbtzn-l1/current');
 
 await mkdir(taskStateRoot, { recursive: true });
 await mkdir(activationStateRoot, { recursive: true });
 await mkdir(providerStateRoot, { recursive: true });
-await access(join(sourceRoot, '04_tools/scripts/provisioning/autonode-activate.mjs'));
-createRequire(join(sourceRoot, 'package.json')).resolve('tsx');
 
 const executor = new AutoNodeActivationCliExecutor({
-  sourceRoot,
   stateRoot: activationStateRoot,
   providerStateRoot,
 });

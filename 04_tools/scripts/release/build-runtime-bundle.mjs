@@ -46,6 +46,14 @@ if (releaseTarget === 'node-operations') {
     '04_tools/scripts/release/sfl-autonode-control.service',
     join(outputRoot, 'systemd/sfl-autonode-control.service'),
   );
+  await run('node_modules/.bin/esbuild', [
+    '04_tools/scripts/provisioning/autonode-activate.mjs',
+    '--bundle',
+    '--platform=node',
+    '--format=esm',
+    '--target=node22',
+    `--outfile=${join(outputRoot, 'runtime/autonode-activate-runtime.mjs')}`,
+  ]);
 } else if (releaseTarget === 'database-migrations') {
   await run('node', ['04_tools/release-engine/adapters/zdt-next/build-database-migration.mjs']);
   await copy(

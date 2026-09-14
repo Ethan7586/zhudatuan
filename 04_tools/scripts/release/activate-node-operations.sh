@@ -36,6 +36,8 @@ for file in autonode-operate.mjs autonode-operations-engine.mjs autonode-operati
   test -s "$staging_dir/runtime/$file"
   /usr/bin/node --check "$staging_dir/runtime/$file"
 done
+test -s "$staging_dir/runtime/autonode-activate-runtime.mjs"
+/usr/bin/node --check "$staging_dir/runtime/autonode-activate-runtime.mjs"
 test -s "$staging_dir/systemd/sfl-autonode-control.service"
 
 if [ ! -d "$release_dir" ]; then mv "$staging_dir" "$release_dir"; fi

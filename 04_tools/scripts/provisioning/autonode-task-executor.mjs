@@ -1,19 +1,20 @@
 import { spawn } from 'node:child_process';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const MAX_OUTPUT_BYTES = 4 * 1024 * 1024;
 
 export class AutoNodeActivationCliExecutor {
   constructor({
-    sourceRoot,
     stateRoot,
     providerStateRoot,
+    activationCli = fileURLToPath(new URL('./autonode-activate-runtime.mjs', import.meta.url)),
     runner = runCommand,
   }) {
-    this.sourceRoot = resolve(requiredText(sourceRoot, 'sourceRoot'));
     this.stateRoot = resolve(requiredText(stateRoot, 'stateRoot'));
     this.providerStateRoot = resolve(requiredText(providerStateRoot, 'providerStateRoot'));
+    this.activationCli = resolve(requiredText(activationCli, 'activationCli'));
     this.runner = runner;
   }
 
@@ -32,15 +33,14 @@ export class AutoNodeActivationCliExecutor {
     await writeFile(requestFile, `${JSON.stringify(request, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
     try {
       const args = [
-        '--import', 'tsx',
-        '04_tools/scripts/provisioning/autonode-activate.mjs',
+        this.activationCli,
         command,
         '--state-root', this.stateRoot,
         '--provider-state-root', this.providerStateRoot,
         '--request', requestFile,
         ...(approvedPlanDigest === undefined ? [] : ['--approved-plan-digest', approvedPlanDigest]),
       ];
-      const output = await this.runner(process.execPath, args, { cwd: this.sourceRoot });
+      const output = await this.runner(process.execPath, args, { cwd: dirname(this.activationCli) });
       try {
         return JSON.parse(output);
       } catch {
