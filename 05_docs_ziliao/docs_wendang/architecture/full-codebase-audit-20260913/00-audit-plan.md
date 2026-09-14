@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-138 已完成。AU-138 完成 Catalog 风险决策、SKU 查询与迁移测试审阅。覆盖总账按当前文件级清单重算：深入审阅1,297文件/99,985行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,556文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-139 已完成。AU-139 完成 Catalog 测试夹具与兼容入口审阅，Catalog 目录文件级覆盖闭合。覆盖总账按当前文件级清单重算：深入审阅1,307文件/100,205行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,546文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1263,3 +1263,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Catalog 风险拒绝 command、SKU public port/Pg 查询，以及 reverse-lookup、supplier-network 和 manifest 三项测试。
 
 执行结果：Risk Worker 将 `riskscan` 的 deny decision 置于 transaction 内调用 Catalog action；该 action 只撤销仍 published 的 scope-bound listing，并以 risk decision id 写幂等 outbox。SKU 仅在 product owner 或 source-listing 证明 scope 时按 id/code 解析，主 jobs catalog 只将其注入 InventoryImportProcessor。两项 PGlite fixture 测试分别覆盖 catalog reverse lookup 索引和供应网络数据事实，manifest 覆盖声明 inventory。未发现 P0–P3 新问题；按既有 npm test 入口定向执行因 audit worktree 缺少 `vitest` 退出 127，运行结论未验证。
+
+## 141. AU-139 连续审计点
+
+审阅 Catalog 剩余的两项测试 fixture 与八个 root/legacy compatibility entrypoint，并反查其 import/fixture consumer。
+
+执行结果：两项 JSON 均为明确标注 mock/simulated 的测试 package，只由已审媒体注册、package parser 和 Pg import 测试读取。其余八项全为单向 re-export；legacy `interface/job/CatalogImportJob.ts` 仍被主 jobs catalog 实际导入，其他 public/root export 维持旧 import 与公共 contract 稳定性，归类 G0。Catalog 目录 70/70 基线文件现均有文件级审阅状态；未发现 P0–P3 新问题；无适用新增行为测试。

@@ -631,3 +631,8 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 新增DC-0045/G1；该三项转发符号未见仓内生产/测试直接使用，需先核实外部兼容路径。
 - 累计G0 2、G1 38、G2 2、G3 0、GX 5；未删除任何文件。
+
+## 139. AU-139 Catalog compatibility 复核
+
+- `modules/catalog/{CatalogModule,CatalogOperations,CatalogProvisioningPort,CatalogReadOperations,CatalogSourcePort,IdentityOperatorCatalogModule,index}.ts` 与 `interface/job/CatalogImportJob.ts` 均为已审实现的转发入口，且后者有主 jobs catalog 直接 runtime import。
+- 全部归类 G0：现有公共/兼容职责成立；不因文件自身无业务分支或局部零 caller 形成删除候选。累计 G0 10、G1 38、G2 2、G3 0、GX 5；未删除任何文件。

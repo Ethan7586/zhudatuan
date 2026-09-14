@@ -1518,3 +1518,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | migration/manifest tests | 验证 reverse lookup indexes、供应网络业务事实和 Catalog 声明清单 | [FACT][E-AU-138-005][E-AU-138-006][E-AU-138-007] |
 
 [FACT][E-AU-138-008] 6 文件、239 行 Catalog 风险、SKU 与迁移测试完成深审；定向 Vitest 因审计 worktree 缺失依赖未验证，未将失败误写为代码缺陷。
+
+## 144. AU-139 Catalog fixture 与兼容入口清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| test fixtures | 提供明确模拟的 package/media 输入给已审 fixture tests | [FACT][E-AU-139-001][E-AU-139-002] |
+| root/legacy exports | 保持 public contract、旧路径 import 与 import worker startup path | [FACT][E-AU-139-003][E-AU-139-004]；G0 |
+
+[FACT][E-AU-139-005] 10 文件、220 行完成深审；Catalog 70/70 文件已完成文件级覆盖，不将 compatibility export 的零本地逻辑误判为删除候选。

@@ -294,3 +294,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - `CatalogReadPerformanceMigration` 用 PGlite 真实执行 reverse-lookup migration 并核对三个索引；`SupplierNetworkMigration` 执行供应网络与 analytics migration 后核对供货方、价格、库存、结算与 reporting facts；`module.manifest` 核对 HTTP/job/event inventory。
 - `ApplyRiskDecision` 与 `PgCatalogSku` 未见同名直接行为 fixture；本批次已从 Risk Worker 和 InventoryImportProcessor 的真实调用侧确认其职责，未把这一事实替代为运行验证。
 - 已以项目正式 `npm test` 入口定向执行三项测试；审计 worktree 中 `vitest` 缺失，命令退出 127，因此测试执行状态为未验证，未修复或安装依赖。
+
+## 139. AU-139 Catalog fixture 与兼容入口深审
+
+- `catalog-cake-media.mock.json` 与 `catalog-package-v1.mock.json` 都清晰标示 `isMock`/`simulated`，并被既审 CatalogProductMediaRegistration、CatalogPackage、PgCatalogImport fixture 直接加载；它们不构成生产货盘或运行配置。
+- 兼容入口不增加可执行分支；其中 legacy `interface/job/CatalogImportJob.ts` 仍受主 jobs catalog 导入，不能因自身仅一行转发而删除。
