@@ -699,3 +699,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 领域基础转发没有独立业务分支；其运行语义由已审`@shop/kernel`与各领域模型/policy fixture承接。
 - Specification保持DC-0011/G1兼容候选；无P0–P3新问题。
+
+## 222. AU-222 HealthProbe 深审
+
+- 未找到HealthProbe direct fixture；现有HTTP server/route tests不能证明release smoke检查语义。
+- HealthProbe把live/startup/ready任一有效status视为任意probe成功，可能产生错误通过，见F-0214/P2。审计工作树未运行Vitest。

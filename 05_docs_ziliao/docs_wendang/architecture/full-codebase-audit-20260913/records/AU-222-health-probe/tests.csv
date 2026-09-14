@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/http/HealthProbe.ts,no direct HealthProbe fixture found; strict expected-status behavior missing; F-0214,not run: audit worktree has no Vitest dependencies
+src/foundation/interface/HttpApp.test.ts;src/foundation/interface/NodeServer.test.ts,health route/server behavior only; does not prove release smoke acceptance semantics,not run: audit worktree has no Vitest dependencies

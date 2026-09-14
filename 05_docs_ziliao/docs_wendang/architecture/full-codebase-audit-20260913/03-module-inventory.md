@@ -2346,3 +2346,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | specification compatibility | And/Or/Specification仅保留公开转发；没有仓内caller，沿用DC-0011/G1 | [FACT][E-AU-221-003] |
 
 [FACT][E-AU-221-004] 7 文件、12 行完成深审；六项运行/兼容职责成立，Specification仅保守G1，不作删除结论。
+
+## 227. AU-222 HealthProbe 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| release smoke request | 对live/startup/ready HTTP endpoint发送JSON accept、release verification header与redirect error请求 | [FACT][E-AU-222-001] |
+| probe acceptance | 拒绝非2xx或不含已知status的JSON，但当前未绑定请求probe到期望status | [FACT][E-AU-222-002] |
+
+[FACT][E-AU-222-003] 1 文件、16 行完成深审；SmokeMain是唯一直接消费者，验证误通过缺陷见F-0214/P2。

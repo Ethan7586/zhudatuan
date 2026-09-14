@@ -4018,6 +4018,20 @@
 | 验证/回滚 | 断言全catalog键唯一且输入边界稳定抛错；回滚为revert测试提交。 |
 | 独立复核 | 否；P3。 |
 
+## F-0214｜Release HealthProbe 未验证请求探针与返回状态一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / release smoke HealthProbe；P2；高 |
+| 类型 | 发布验证正确性、运行状态误通过 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/http/HealthProbe.ts:7-16`；`.../entry/SmokeMain.ts:4-9` |
+| 当前/预期 | SmokeMain顺序请求`/health/live`、`/health/startup`、`/health/ready`；HealthProbe仅确认response `status`属于live/started/ready任一值。预期每个probe严格对应live→live、startup→started、ready→ready。 |
+| 直接证据 | 代码的集合校验为`['live','started','ready'].includes(body.status)`，未引用`probe`决定期望status；例如live endpoint意外接到ready handler并返回200 `{status:'ready'}`会通过。仓内未找到HealthProbe direct test或`SMOKE_PROBE_INVALID`断言。 |
+| 调用链/影响 | release smoke → SmokeMain → HealthProbe → production candidate `/health/*`。路由错配、错误的ready/live handler或代理映射可能让发布冒烟误判成功；未核验线上是否发生。 |
+| 建议方向 | 从修复时最新`zdt-next`建立最小修复/测试批，显式映射probe→期望status并覆盖正确、2xx错误status、非2xx、无JSON状态与redirect拒绝；回滚为revert该独立批。 |
+| 验证/回滚 | 以fake fetch断言每个请求只接受其预期status；回滚为revert提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
