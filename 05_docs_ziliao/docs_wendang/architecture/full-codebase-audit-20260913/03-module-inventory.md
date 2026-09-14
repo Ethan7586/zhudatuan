@@ -858,3 +858,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | manifest 静态契约 | [FACT][E-AU-075-003] |
 
 [FACT][E-AU-075-004] 4 文件、140 行 Finance public/manifest 人工源码和测试完成深审。
+
+## 82. AU-076 Finance 发票适配器与签发任务模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| invoice gateway | 外部 invoice HTTP/PDF adapter | [FACT][E-AU-076-001] |
+| invoice job | 解密、provider 调用、对象存储、签发状态/outbox | F-0158/P1 候选 |
+| runtime boundary | jobs pool/shopjob 与 processor 注册 | [FACT][E-AU-076-003~004] |
+
+[FACT][E-AU-076-006] 2 文件、124 行 Finance invoice adapter/job 人工源码完成首审；P1 候选必须在 AU-077 重新追踪实际 runtime/权限/调用链。

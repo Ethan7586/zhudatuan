@@ -3237,6 +3237,19 @@
 | 验证/回滚 | 从最新主线独立小分支以隔离数据库对两个 ModuleOperations 执行相同 request，比较 draft/final/balanced/账户行/cursor 结果；确定目标契约后小批次收敛一侧或拆分 operation。回滚为撤回该单一批次。 |
 | 独立复核 | 是；P2 跨运行单元契约差异需重新追踪 module registry 和实际 API host。 |
 
+## F-0158｜发票签发 worker 与受控数据库写边界断裂
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | finance / invoice jobs；P1 候选；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/finance/05_interface_jieru/job/InvoiceJob.ts:18-73`；`02_platform_pingtai/database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql:990-1043`；`src/bootstrap/CommerceRuntime.ts:70-81` |
+| 当前/预期 | worker 以 `shopjob` 运行，却直接 update `invoice.request`、insert `invoice.document` 与 `invoice.statusevent`；迁移撤销该角色对上述表的 direct write，并仅授予 `invoice.claim_issue/register_issue_artifact/finalize_issue/release_issue_claim/fail_issue`。预期 worker 用这些受控函数完成 claim、冻结快照、artifact、finalize/fail 生命周期。 |
+| 直接证据 | current job SQL 与 migration 的 `revoke`/assert 直接冲突；`InvoiceIssueIntegrity.test.ts` 把完整 job 行为标为 `it.skip`/“未实现”；jobs runtime 的 expected role 是 `shopjob`。 |
+| 影响 | 已批准发票可能在 worker 执行时因权限拒绝而无法签发；即使临时存在越权角色，缺少 claim/snapshot/artifact lifecycle 会使并发、provider 后失败、红票与 outbox 冲突无法按既定契约收口。 |
+| 根因 | 发票完整性迁移引入了受控数据库函数和最小权限边界，但 `InvoiceJobProcessor` 未同步迁移到该协议。 |
+| 验证/回滚 | AU-077 必须独立重查 worker startup role、migration ledger/后续 grant 覆盖、job 调用链和 test skip；若确认，修复必须从最新主线独立小分支改为受控函数生命周期并以 shopjob/PGlite 验证。回滚为撤回该独立修复批次。 |
+| 独立复核 | 是；P1 候选，待 AU-077。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
