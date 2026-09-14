@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-029 结束时累计：P0 0、P1 候选 17、P2 56、P3 47、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-030 结束时累计：P0 0、P1 候选 18、P2 57、P3 48、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2826,3 +2826,41 @@
 
 - [UNKNOWN] 线上Directcharge是否enabled、现有履约失败和万联调用记录；未访问线上，因此F-0119保持P1候选而非P0。
 - [UNKNOWN] Issue与DirectCharge的产品语义应合并还是分别对应卡券发放/话费直充；需Ethan或真实协议定稿。
+
+## F-0122｜Jdfresh库存与订单后物流链因capability不一致不可达
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Jdfresh/Channel/Fulfillment；P1候选，高置信 |
+| 位置 | `jdfresh/manifest.ts:12`；`Provider.ts:6`；`ChannelSyncJob.ts:113-126`；`FulfillmentJobs.ts:37-67` |
+| 当前/预期 | [FACT][E-AU-030-002–005] factory有stock/tracking，manifest用GeoStock/Delivery；caller用Inventory/Logistics，Registry在port前拒绝。库存与已提交订单物流应可达 |
+| 影响 | 库存同步失败；JD生鲜Order成功后tracking失败，履约状态停滞。线上是否enabled未知 |
+| 根因/方向 | 全局能力词汇未统一；后续独立契约批次治理，不加单包旁路 |
+| 验证/回滚 | 合成inventory及Order→tracking全链；回退单一契约提交 |
+| 独立复核 | RV-0023 |
+
+## F-0123｜Jdfresh TimeSlot与领域能力没有唯一port映射
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Jdfresh契约；P2，高置信 |
+| 位置 | `manifest.ts:12`；`Provider.ts:6`；`ExtensionRegistry.ts:76-82` |
+| 当前/预期 | TimeSlot无专用port；GeoStock/Delivery只能由caller自行配stock/tracking，且任意现有port都可配。应有权威映射 |
+| 影响 | 新caller可能错误调用或无法调用时段/区域库存能力；当前无TimeSlot caller |
+| 验证/回滚 | capability×port穷举；回退契约提交 |
+| 独立复核 | 否 |
+
+## F-0124｜Jdfresh测试不执行任何业务port
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Jdfresh tests；P3，高置信 |
+| 位置 | `jdfresh/tests/Provider.test.ts:1-13` |
+| 当前/预期 | 只核ID和签名；应覆盖factory、库存、订单、物流、时段、退款、对账、Webhook和能力矩阵 |
+| 影响 | F-0122/F-0123及operation/响应漂移不被包测试发现 |
+| 验证/回滚 | 破坏能力词汇或operation时测试失败；回退测试提交 |
+| 独立复核 | 否 |
+
+## 30. AU-030 新增未定级事项
+
+- [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

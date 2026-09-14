@@ -1,0 +1,8 @@
+"consumer","capability","port","result"
+"Channel catalog","Catalog","catalog","可达"
+"Channel inventory","Inventory","stock","不可达/F-0122"
+"Channel statement","Statement","statement","可达"
+"Channel webhook","Webhook","webhook","可达"
+"Fulfillment submit","Order","order","可达"
+"Fulfillment tracking","Logistics","tracking","不可达/F-0122"
+"固定仓库","GeoStock/TimeSlot/Delivery","stock/tracking/无专用port","F-0123"

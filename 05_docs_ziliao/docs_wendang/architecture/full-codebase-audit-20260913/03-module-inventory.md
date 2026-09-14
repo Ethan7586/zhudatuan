@@ -504,3 +504,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | provider身份和签名 | Vitest | F-0121 |
 
 [FACT][E-AU-029-001] 9文件79行深入审阅；随Commerce OCI发布，无独立表、进程或制品。
+
+## 36. AU-030 Jdfresh Provider 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Provider/manifest | JD生鲜Catalog/库存/订单/物流/退款/对账 | F-0122/F-0123 |
+| Mapper/Vendor | canonical字段与JD共享传输 | 继承F-0096/F-0097 |
+| Webhook/ErrorMap | 回调与兼容导出 | DC-0026/DC-0038 |
+| tests | provider身份/签名 | F-0124 |
+
+[FACT][E-AU-030-001] 9文件79行深入审阅；无独立表、进程或制品。

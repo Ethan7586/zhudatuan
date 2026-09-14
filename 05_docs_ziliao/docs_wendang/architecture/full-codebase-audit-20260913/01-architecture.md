@@ -804,3 +804,7 @@ flowchart LR
 - manifest使用Issue/DirectCharge/Query等领域词汇，核心Fulfillment固定使用Order/Logistics，导致实际提交和查询在capability检查处不可达（F-0119）。
 - Registry没有权威capability-port映射，Issue/DirectCharge/Query/Verify可与任一现有port组合，边界语义依赖caller自律（F-0120）。
 - RSA认证、网络预算与回调去重继承Vendor/Provider Core；F-0094/F-0096/F-0097继续适用。
+
+## 36. AU-030 Jdfresh Provider真实边界
+
+`Channel/Fulfillment → Registry → JdfreshProvider → JD VendorClient`。Order可达，但Inventory与Logistics caller分别和GeoStock、Delivery能力词汇断裂（F-0122）；TimeSlot无专用port且能力配对不唯一（F-0123）。

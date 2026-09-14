@@ -1,0 +1,5 @@
+"id","failure","trigger","effect","rating"
+"FM-AU-030-001","库存同步被拒绝","inventorysync运行","Registry拒绝Inventory","P1候选/F-0122"
+"FM-AU-030-002","物流查询被拒绝","JD生鲜Order成功后tracking运行","Registry拒绝Logistics，履约停滞","P1候选/F-0122"
+"FM-AU-030-003","TimeSlot虚能力","caller请求TimeSlot与任意port","无专用port，语义依赖caller","P2/F-0123"
+"FM-AU-030-004","测试假阳性","业务配对或operation失效","身份签名测试仍通过","P3/F-0124"

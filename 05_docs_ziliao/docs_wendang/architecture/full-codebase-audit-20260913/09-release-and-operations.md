@@ -275,3 +275,8 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - 通用health不能证明核心Fulfillment使用的Order/Logistics能力可达；F-0119需要从任务入口执行合成直充与查询canary。
 - 修复前需先只读盘点线上installation与失败fulfillment，不在审计分支调整capability、激活provider或调用万联。
 - 本AU未build、访问线上、直充、推送、合并或部署。
+
+## 33. AU-030 Jdfresh发布与运维边界
+
+- Jdfresh是required provider，随Commerce OCI发布；health不能证明Inventory/Logistics能力可达。
+- F-0122需库存和Order→tracking合成canary；本AU未build、访问线上、调用JD、推送、合并或部署。

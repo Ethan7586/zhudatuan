@@ -166,3 +166,8 @@
 - Directcharge包没有表或迁移；Catalog/Statement由Channel及对应Commerce模块落库，Fulfillment拥有订单状态，验券/退款的本地数据责任未形成固定caller。
 - F-0119在调用万联前拒绝，直接影响是履约失败而非供应商侧半完成；线上重试和失败记录尚未核验。
 - 本AU未执行SQL、迁移、同步、直充、退款或供应商调用。
+
+## 25. AU-030 Jdfresh数据边界
+
+- 包无表/迁移；库存由Inventory、订单/里程碑由Fulfillment持有。
+- F-0122使库存调用前失败；Order可成功后物流查询失败，可能长期无milestone/completed。未访问线上或数据库。

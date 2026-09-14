@@ -202,3 +202,8 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - order/refund/verification是非幂等外部写入且共享Client不自动重试；F-0119在外部调用前失败，不是已证实权限绕过。
 - RSA privateKey和webhookSecret由Loader注入；本AU未读取、打印或修改真实凭据。
 - capability词汇能否授权正确port存在F-0120语义缺口。
+
+## 27. AU-030 Jdfresh权限边界
+
+- `channel.jdfresh.operate`覆盖全部读写ports；Order/Refund为非幂等且共享Client不自动重试。
+- F-0122是可达性而非已证权限绕过；JD RSA凭据与Webhook secret未被本AU读取或修改。

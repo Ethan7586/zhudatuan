@@ -823,3 +823,7 @@ sequenceDiagram
 - Channel Catalog、Statement与Webhook有固定caller；核心Fulfillment提交/查询固定请求Order/Logistics。
 - Directcharge manifest没有Order/Logistics，虽然factory发布order/tracking，Registry仍在端口调用前拒绝，见F-0119。
 - Refund/Verification有port但无固定caller；Issue/DirectCharge/Query/Verify与ports的语义配对未在代码中定义，见F-0120。
+
+## 35. AU-030 Jdfresh运行关系
+
+`Jdfresh installation → createPorts → JD VendorClient → Channel/Fulfillment`。Catalog/Order/Statement/Webhook可达；Inventory/stock与Logistics/tracking因manifest缺相应capability被拒绝（F-0122），TimeSlot无专用port（F-0123）。

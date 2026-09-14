@@ -1,0 +1,7 @@
+"test_id","area","method","result"
+"TC-AU-030-001","正式测试","npm test -- --reporter=dot","127/vitest缺失"
+"TC-AU-030-002","类型检查","npm run typecheck","127/tsc缺失"
+"TC-AU-030-003","库存反事实","manifest×Channel×Registry","Inventory capability缺失"
+"TC-AU-030-004","物流反事实","manifest×Fulfillment×Registry","Logistics capability缺失"
+"TC-AU-030-005","能力矩阵","capabilities×ports","TimeSlot无port且配对不唯一"
+"TC-AU-030-006","构建","npm run build","未执行；等同typecheck"
