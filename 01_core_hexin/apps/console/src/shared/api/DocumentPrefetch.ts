@@ -167,6 +167,75 @@ export function startDocumentPrefetch(
       value: cases,
     });
   }));
+  const management = session.promise.then((value) => {
+    if (value === undefined || !Number.isInteger(value?.accessVersion)) return undefined;
+    const match = location.pathname.match(/^\/scopes\/(platform|distributor|tenant|enterprise|mall)\/([^/]+)\/settings\/(members|access)\/?$/);
+    let direct: Readonly<{ kind: 'platform' | 'distributor' | 'tenant' | 'enterprise' | 'mall'; id: string }> | undefined;
+    try {
+      const candidate = match?.[1] === undefined ? undefined : { kind: match[1], id: decodeURIComponent(match[2]!) };
+      direct = isConsoleScope(candidate) ? candidate : undefined;
+    } catch { direct = undefined; }
+    if (direct === undefined) return undefined;
+    const route = match?.[3];
+    const requestedCursor = new URLSearchParams(location.search).get('cursor') ?? undefined;
+    const memberCursor = route === 'members' ? requestedCursor : undefined;
+    const accessCursor = route === 'access' ? requestedCursor : undefined;
+    const capabilities = Array.isArray(value.capabilities) ? value.capabilities : [];
+    const headers = {
+      'x-scope-hint': direct.id,
+      'x-access-version': String(value.accessVersion),
+    };
+    const memberParameters = new URLSearchParams({ limit: '20' });
+    if (memberCursor !== undefined) memberParameters.set('cursor', memberCursor);
+    const accessParameters = new URLSearchParams({ limit: '500' });
+    if (accessCursor !== undefined) accessParameters.set('cursor', accessCursor);
+    return {
+      scopeKind: direct.kind,
+      scopeId: direct.id,
+      accessVersion: value.accessVersion!,
+      memberCursor,
+      accessCursor,
+      members: route === 'members' || capabilities.includes('member.members.read')
+        ? readJson<unknown>(`/api/v1/members?${memberParameters.toString()}`, headers).promise
+        : Promise.resolve(undefined),
+      access: route === 'access' || capabilities.includes('access.center.read')
+        ? readJson<unknown>(`/api/v1/access/center?${accessParameters.toString()}`, headers).promise
+        : Promise.resolve(undefined),
+    };
+  });
+  window.__consoleMemberPrefetch = tracked(management.then(async (candidate) => {
+    if (candidate === undefined) return undefined;
+    const value = await candidate.members;
+    return value === undefined ? undefined : {
+      scopeKind: candidate.scopeKind,
+      scopeId: candidate.scopeId,
+      accessVersion: candidate.accessVersion,
+      ...(candidate.memberCursor === undefined ? {} : { cursor: candidate.memberCursor }),
+      value,
+    };
+  }));
+  window.__consoleAccessPrefetch = tracked(management.then(async (candidate) => {
+    if (candidate === undefined) return undefined;
+    const value = await candidate.access;
+    return value === undefined ? undefined : {
+      scopeKind: candidate.scopeKind,
+      scopeId: candidate.scopeId,
+      accessVersion: candidate.accessVersion,
+      ...(candidate.accessCursor === undefined ? {} : { cursor: candidate.accessCursor }),
+      value,
+    };
+  }));
+  preloadDirectManagementRoute();
+}
+
+function preloadDirectManagementRoute(): void {
+  const route = location.pathname.match(/\/settings\/(members|access)\/?$/)?.[1];
+  const loading = route === 'members'
+    ? import('../../feature/member/MemberRoute')
+    : route === 'access'
+      ? import('../../feature/access/AccessRoute')
+      : undefined;
+  void loading?.catch(() => undefined);
 }
 
 function tracked<T>(promise: Promise<T | undefined>): Tracked<T> {

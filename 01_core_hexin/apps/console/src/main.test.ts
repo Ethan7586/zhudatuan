@@ -57,6 +57,15 @@ describe('console bootstrap document', () => {
     expect(prefetch).toContain("value.capabilities.includes('support.cases.read')");
   });
 
+  it('starts the direct member and access reads alongside scope hydration', () => {
+    expect(prefetch).toContain('window.__consoleMemberPrefetch = tracked(');
+    expect(prefetch).toContain('window.__consoleAccessPrefetch = tracked(');
+    expect(prefetch).toContain('`/api/v1/members?${memberParameters.toString()}`');
+    expect(prefetch).toContain('`/api/v1/access/center?${accessParameters.toString()}`');
+    expect(prefetch).toContain("import('../../feature/member/MemberRoute')");
+    expect(prefetch).toContain("import('../../feature/access/AccessRoute')");
+  });
+
   it('makes every document prefetch observable and immediately abortable by navigation', () => {
     expect(prefetch).toContain('const slot: Tracked<T> = { settled: false');
     expect(prefetch).toContain('window.__consoleAbortDocumentPrefetch = () =>');

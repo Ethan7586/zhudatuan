@@ -265,6 +265,8 @@ export function WorkspaceRouteLoading({ moduleId }: Readonly<{ moduleId: string 
   const supplyChain = moduleId === 'supply-chain';
   if (moduleId === 'engineering') return <WorkspacePanelSkeleton className="engineeringrouteskeleton"
     label="正在准备工程中心内容…" />;
+  if (moduleId === 'access') return <WorkspacePanelSkeleton className="memberaccessrouteskeleton"
+    label="正在准备成员与权限数据…" cards={6} />;
   return <section className="workspacerouteloading" role="status" aria-live="polite">
     <span className="workspacerouteloadingicon" aria-hidden="true" />
     <strong>{supplyChain ? '正在打开供应链管理…' : '正在打开工作台…'}</strong>

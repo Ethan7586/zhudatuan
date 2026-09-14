@@ -13,6 +13,8 @@ declare global {
     __consoleCockpitPrefetch?: DocumentPrefetch<ConsoleCockpitPrefetch>;
     __consoleProductPrefetch?: DocumentPrefetch<ConsoleProductPrefetch>;
     __consoleSupportPrefetch?: DocumentPrefetch<ConsoleSupportPrefetch>;
+    __consoleMemberPrefetch?: DocumentPrefetch<ConsoleMemberPrefetch>;
+    __consoleAccessPrefetch?: DocumentPrefetch<ConsoleAccessPrefetch>;
   }
 }
 
@@ -58,6 +60,22 @@ interface ConsoleSupportPrefetch {
   readonly scopeKind: ConsoleScope['kind'];
   readonly scopeId: string;
   readonly accessVersion: number;
+  readonly value: unknown;
+}
+
+interface ConsoleMemberPrefetch {
+  readonly scopeKind: ConsoleScope['kind'];
+  readonly scopeId: string;
+  readonly accessVersion: number;
+  readonly cursor?: string;
+  readonly value: unknown;
+}
+
+interface ConsoleAccessPrefetch {
+  readonly scopeKind: ConsoleScope['kind'];
+  readonly scopeId: string;
+  readonly accessVersion: number;
+  readonly cursor?: string;
   readonly value: unknown;
 }
 

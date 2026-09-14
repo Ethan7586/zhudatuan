@@ -57,6 +57,13 @@ describe('ScopeShell route handles', () => {
     expect(screen.getByText('正在准备供货伙伴、商品和库存数据')).toBeTruthy();
   });
 
+  it('keeps the management shell stable while member and access data load', () => {
+    render(<WorkspaceRouteLoading moduleId="access" />);
+    expect(screen.getByRole('status', { name: '正在准备成员与权限数据…' })).toBeTruthy();
+    expect(document.querySelector('.memberaccessrouteskeleton')).toBeTruthy();
+    expect(screen.queryByText('正在打开工作台…')).toBeNull();
+  });
+
   it('derives every entry and representative child/detail/technical owner from the deepest handle', () => {
     for (const module of consoleModules) {
       const entry = module.routes.find(({ kind }) => kind === 'entry');
