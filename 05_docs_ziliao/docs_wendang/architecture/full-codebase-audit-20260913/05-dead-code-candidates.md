@@ -1649,3 +1649,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1 不强制；拟删除前必须核验供应商部署、外部适配器、解密/审计边界和真实 DB function/privilege。 |
 
 - Compatibility 供应商履约 PII RPC 归 DC-0073。累计 G0 60、G1 88、G2 5、G3 0、GX 40；未删除任何文件。
+
+## DC-0074｜Storefront Member-Node Projection 的仓内调用缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `identity.resolve_storefront_member_node(text,text)`，由 `20260912182000` 创建、`20260912183000` 修复 |
+| 疑似原因 | [FACT][E-AU-700-002] 固定基线的非测试 Commerce/apps/packages/tools/quality source无该 function静态调用。 |
+| 保留证据 | 该 function是 `zhudatuanidentityapi` execute-only security-definer boundary，迁移 assertion明确禁止该 API role 对 registration/node/relation 获得 table privilege；v2保留无 registration 的默认 consumer/L6 semantics。 |
+| 未排除项 | 仓外 Identity API、direct DB caller、发布制品、未来 route、生产 function dependency/privilege和产品对默认 L6 的要求。 |
+| 可否删除 | 否；未满足公共 API、外部调用、兼容责任、可观察行为及独立复核等 G3 条件。 |
+| 二次复核 | G1不强制；升级G2/G3前必须核验 production consumer/`pg_depend`/privileges 和真实 Storefront login response。 |
+
+- Storefront Member-Node projection 调用缺口归 DC-0074。累计 G0 60、G1 89、G2 5、G3 0、GX 40；未删除任何文件。
