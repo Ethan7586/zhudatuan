@@ -1923,3 +1923,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | models | transaction schema/state/currency/success invariants和bounded description | [FACT][E-AU-177-004] |
 
 [FACT][E-AU-177-005] 5 文件、682 行完成深审；provider response verification function保持在独立signature审计单元，不把import视为已完成其源码审阅。
+
+## 183. AU-178 WeChat signature/test support 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| signature verifier | header presence、platform key id、clock window、nonce、RSA body verify | [FACT][E-AU-178-001] |
+| test support | ephemeral RSA PEM、signed provider headers、AES-GCM encrypted notification fixture | [FACT][E-AU-178-002] |
+| consumers | provider client及notification parser都在body parse/decrypt前调用verify | [FACT][E-AU-178-003] |
+
+[FACT][E-AU-178-004] 2 文件、138 行完成深审；test support没有生产secret或运行入口。

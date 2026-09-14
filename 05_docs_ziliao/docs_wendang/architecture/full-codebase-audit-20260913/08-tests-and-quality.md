@@ -481,3 +481,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Client fixture生成临时RSA key，直接断言JSAPI request签名、已签名prepay/query response、无签名拒绝和已签名provider 503的retry分类。
 - config loader、crypto resource decrypt、transaction edge-state和signature verifier本体仍有其专项测试/源码单元；本批不把未读文件算入coverage。审计工作树未运行Vitest。
+
+## 178. AU-178 WeChat signature/test support 深审
+
+- Client及notification fixtures用临时生成的RSA pair和签名headers间接执行signature verifier；通知suite另覆盖fresh/stale/missing签名。
+- Verifier没有独立test file，但两条consumer test路径以真实签名材料覆盖其关键accept/reject边界。审计工作树未运行Vitest。

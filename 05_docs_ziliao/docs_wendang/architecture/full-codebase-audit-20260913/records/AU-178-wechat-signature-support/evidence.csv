@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-178-001,src/api/wechatPaySignature.ts,12-55,signature boundary,Required provider headers key id clock tolerance nonce and RSA signature are all validated before body acceptance.
+E-AU-178-002,src/api/wechatPayTestSupport.ts,8-83,test fixture,Temporary RSA keypairs and AES-GCM notification resource fixtures are generated in runtime tests and do not embed production credentials.
+E-AU-178-003,src/api/{wechatPayClient,wechatPayNotification}.ts,80;43,consumer,Provider client verifies before JSON parse and notification verifies before resource decrypt/transaction parse.

@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/wechatPayClient.test.ts;wechatPayNotification.test.ts,signed provider and notification acceptance unsigned/stale/missing rejection through real temporary RSA fixtures,not run: audit worktree has no Vitest dependencies
