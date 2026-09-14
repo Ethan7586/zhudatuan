@@ -6,10 +6,24 @@
 
 - 构建 Runner：标签 `self-hosted, linux, x64, zdt-aliyun-build`，只执行质量检查与 Prepare。
 - 发布 Runner：标签 `self-hosted, linux, x64, zdt-aliyun-release`，只执行候选封板、基线登记和生产切换。
-- 备用 Runner：平时禁用；只有现役 Runner 故障时人工启用，不能与现役发布 Runner 同时消费 `zdt-aliyun-release`。
+- 发布冷备用：同样位于 staging ECS，只备份发布角色；完成注册后保持停止且禁用。通过 `switch-release-runner.sh standby` 切换时会先停止主发布 Runner，避免两个发布进程同时消费 `zdt-aliyun-release`。
 - 同一物理目标由 GitHub concurrency 和远端目标锁共同串行化；增加 Runner 数量不能绕过目标锁。
 
 两个现役 Runner 均以系统服务常驻。Runner 注册令牌只在安装时短暂使用，不写入仓库、工作流、日志或长期配置。访问 GitHub 的特殊线路由 ECS 本机网络层管理；阿里云 OSS、ECS 内网和生产业务流量保持直连。
+
+第三批固定为“2 个现役 + 1 个冷备用”：
+
+- `aliyun-staging-zdt-build`：常驻构建，目录 `/opt/actions-runner-build`。
+- `aliyun-staging-zdt-release`：常驻发布，目录 `/opt/actions-runner-release`。
+- `aliyun-staging-zdt-release-standby`：只备份发布，目录 `/opt/actions-runner-release-standby`，正常状态必须为 offline。
+
+只读查看 GitHub 登记状态：
+
+```text
+bash 02_platform_pingtai/infrastructure/github-actions-runner/runner-fleet-status.sh
+```
+
+首次安装冷备用需要一次 GitHub 临时注册令牌；安装脚本固定校验 staging 实例 ID、Runner 压缩包摘要，安装完成后立即停止并禁用服务。切换命令只允许 `primary` 或 `standby` 二选一，不触碰 253 生产服务、OSS 制品或生产指针。
 
 ## 默认规则
 
