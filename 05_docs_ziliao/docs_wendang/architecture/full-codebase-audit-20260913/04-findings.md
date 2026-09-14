@@ -3178,6 +3178,18 @@
 | 验证/回滚 | 使用隔离 PostgreSQL 构造 period/journal/statement/backfill，验证上述成功/失败路径与完整事务回滚；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
 | 独立复核 | 否 |
 
+## F-0153｜提现申请与审批关键边界缺少行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | finance；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/finance/03_application_yingyong/command/RequestWithdrawal.ts:16-66`；现有 `.../06_tests_ceshi/command/RequestWithdrawal.test.ts` |
+| 当前/预期 | 创建依赖 settlement 可支付余额和 version，审批依赖四眼、version 和 stable job，恢复按 source kind 处理 uncertain/failed；现有测试只覆盖 referral uncertain 的一条恢复分支。预期以隔离 PostgreSQL 覆盖余额耗尽、并发申请、同人审批、版本冲突、批准/拒绝入队、partner/referral 的 failed/uncertain 恢复与 deadletter 交互。 |
+| 影响 | 提现余额、审批和失败恢复回归可能在支付资金流程中才暴露，造成重复申请、无法恢复或错误状态转换。未见已发生线上事故。 |
+| 根因 | 测试所有权集中于最特殊的 referral recovery 分支，主申请与决策状态机未有行为 oracle。 |
+| 验证/回滚 | 使用隔离 PostgreSQL 与 runtime.job 构造上述状态，核对 withdrawal、settlement、job 和 evidence；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

@@ -756,3 +756,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | manifest operation 形状 | F-0152 |
 
 [FACT][E-AU-065-005] 3 文件、281 行 Finance lifecycle/API 人工源码和测试完成深审；Finance 专项命令/查询继续后续单元。
+
+## 72. AU-066 Finance 提现申请、审批与恢复模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| create | settlement payable 余额上的 withdrawal 创建 | [FACT][E-AU-066-001] |
+| decide | 四眼批准/拒绝与 stable job 入队 | [FACT][E-AU-066-002] |
+| recover | deadletter uncertain/failed 的 source-aware 恢复 | [FACT][E-AU-066-003] |
+| tests | referral uncertain recovery mock | F-0153 |
+
+[FACT][E-AU-066-005] 4 文件、148 行 Finance withdrawal 人工源码和测试完成深审。

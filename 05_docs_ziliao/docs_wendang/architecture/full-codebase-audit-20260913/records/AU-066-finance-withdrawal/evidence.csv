@@ -1,0 +1,5 @@
+"编号","位置","证据","结论"
+"E-AU-066-001","RequestWithdrawal.ts:16-31","create 以 settlement payable、scope/version、已申请总额和 amount 校验条件 insert submitted withdrawal","提现申请有余额和乐观并发边界"
+"E-AU-066-002","RequestWithdrawal.ts:33-48;PgFinanceRepository.ts:9-17","decide 要求 submitted、requested_by<>actor、version；approved 用稳定 job:withdrawal:<id> 入队","审批有四眼与稳定 job 边界"
+"E-AU-066-003","RequestWithdrawal.ts:50-66;FinanceDeadletter.ts:10-17;PgFinanceRepository.ts:9-17","deadletter processing→uncertain；recover 仅 uncertain/failed，referral uncertain→processing，replay 只重开 failed runtime job","provider 不确定结果有受控恢复路径"
+"E-AU-066-004","RequestWithdrawal.test.ts:7-42；未见 create/decide 专用 test","仅覆盖 referral uncertain recovery 的 SQL 形状与 enqueue 参数；未覆盖余额/并发/四眼/失败/非referral路径","F-0153/P2"
