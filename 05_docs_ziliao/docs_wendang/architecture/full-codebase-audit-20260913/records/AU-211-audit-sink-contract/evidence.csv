@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-211-001,src/foundation/application/AuditSink.ts,4-17,application contract,Audit database and record/access write inputs require the caller transaction plus scope actor resource and trace facts.
+E-AU-211-002,src/foundation/application/AuditSink.ts,19,DI token,AUDIT_SINK is the only public container token for module audit consumers.
+E-AU-211-003,src/bootstrap/CommerceRuntime.ts,44-47;142-147,runtime binding,CommerceRuntime constructs RecordAudit over PgAuditRepository and binds it to AUDIT_SINK.
+E-AU-211-004,src/modules/audit/03_application_yingyong/command/RecordAudit.ts;src/modules/audit/04_adapters_shixian/persistence/PgAuditRepository.ts,1-29;1-52,reviewed implementation,Existing AU-051/AU-108 evidence covers redaction hash-chain serialization and transaction-persisted append behavior.

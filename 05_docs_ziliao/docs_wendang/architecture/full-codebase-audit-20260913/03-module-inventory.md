@@ -2243,3 +2243,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | idempotency/audit | command transaction内锁定key/hash，写完成后持久化replay；identity/observability敏感输入、输出、hash、trace单独投影/脱敏 | [FACT][E-AU-210-003] |
 
 [FACT][E-AU-210-004] 2 文件、585 行完成深审；公共层被所有Commerce module operation注册运行消费，direct fixture覆盖关键审计、读生命周期与写重放，剩余错误分支测试缺口见F-0209/P3。
+
+## 216. AU-211 AuditSink contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| audit transaction port | 限定record/access都接收当前操作的数据库事务，并传递scope、actor、resource、trace与已处理payload | [FACT][E-AU-211-001] |
+| DI token | `AUDIT_SINK`让module code只依赖应用契约，CommerceRuntime将其绑定为RecordAudit | [FACT][E-AU-211-002] |
+
+[FACT][E-AU-211-003] 1 文件、21 行完成深审；唯一实现、redaction、hash chain和persistence已由AU-051/AU-108审阅，接口本身无独立运行分支。

@@ -644,3 +644,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct test覆盖identity/observability审计敏感字段、prepare→transaction→finalize顺序、write replay、public idempotency actor及expectedVersion hash绑定。
 - 未覆盖catalog/action mismatch、deadline/abort、lifecycle discard和write short-circuit禁止，见F-0209/P3。审计工作树未运行Vitest。
+
+## 211. AU-211 AuditSink contract 深审
+
+- AuditSink是应用层接口，运行行为由已审RecordAudit、AuditRecord/AccessRecord与PgAuditRepository实现；接口不单独产生可执行分支。
+- RecordAudit绑定和领域模型fixture由既有AU-051/AU-108承接；无P0–P3新问题。

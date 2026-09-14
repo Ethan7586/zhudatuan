@@ -1,0 +1,3 @@
+file,coverage,execution
+src/modules/audit/06_tests_ceshi/model/AuditRecord.test.ts,canonical hash and audit record invariants retained from AU-051,not run: audit worktree has no Vitest dependencies
+src/foundation/application/AuditSink.ts,type-only contract with no independent executable branch,not executable standalone
