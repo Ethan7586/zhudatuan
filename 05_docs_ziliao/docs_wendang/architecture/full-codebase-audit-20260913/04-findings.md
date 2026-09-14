@@ -3920,6 +3920,20 @@
 | 验证/回滚 | 断言factory IDs唯一、预期ID能解析、unknown ID稳定抛错；回滚为revert测试提交。 |
 | 独立复核 | 否；P3。 |
 
+## F-0207｜CommandBus 注册与分派不变量没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation CommandBus；P3；高 |
+| 类型 | 测试覆盖缺口、命令分派启动正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/application/CommandBus.ts:1-23` |
+| 当前/预期 | bus拒绝freeze后注册和重复type，缺handler返回rejected promise，其他命令转交匹配handler。预期这些不变量各有direct fixture。 |
+| 直接证据 | 未找到`CommandBus.test.ts`或针对`COMMAND_BUS_FROZEN`、`COMMAND_HANDLER_DUPLICATE`、`COMMAND_HANDLER_MISSING`的断言。 |
+| 调用链/影响 | API/Jobs bootstrap → module registration → CommandBus freeze → HTTP/job command handler。注册或分派回归会在启动/请求时暴露且不易定位。 |
+| 建议方向 | 从修复时最新`zdt-next`建立CommandBus unit test批；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言registration/execute、duplicate、missing及freeze语义；回滚为revert测试提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

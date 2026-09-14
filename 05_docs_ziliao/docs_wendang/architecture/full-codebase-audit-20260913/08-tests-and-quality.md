@@ -619,3 +619,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 未找到factory catalog或unknown provider ID的direct fixture。
 - Factory mapping错误可能在ProviderLoader启动时才暴露，见F-0206/P3。审计工作树未运行Vitest。
+
+## 206. AU-206 CommandBus 深审
+
+- 未找到CommandBus direct fixture；注册、重复、冻结、缺handler与dispatch行为仅由下游间接消费。
+- 见F-0207/P3。审计工作树未运行Vitest。

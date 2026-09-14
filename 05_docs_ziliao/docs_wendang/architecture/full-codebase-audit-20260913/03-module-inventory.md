@@ -2200,3 +2200,11 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime lookup | ProviderLoader按provider ID取得factory，不存在时fail-fast | [FACT][E-AU-205-002] |
 
 [FACT][E-AU-205-003] 1 文件、32 行完成深审；不直接启用provider，实际configuration/installation由ProviderLoader与database记录决定。
+
+## 211. AU-206 CommandBus 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| command dispatch | type→single handler、duplicate/missing fail-fast、freeze后拒绝新增注册 | [FACT][E-AU-206-001] |
+
+[FACT][E-AU-206-002] 1 文件、23 行完成深审；ApiBootstrap/JobsBootstrap创建并freeze，未发现direct fixture，见F-0207/P3。
