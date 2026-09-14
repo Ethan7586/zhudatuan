@@ -1342,3 +1342,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | coverage | Channel 64/64 文件均有明确覆盖状态 | [FACT][E-AU-121-003] |
 
 [FACT][E-AU-121-004] 24 文件、29 行 Channel 兼容层及 capability 完成深审；不以零逻辑转发认定可删除。
+
+## 127. AU-122 Extension 安装与启停生命周期清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| manifest/contract | signed manifest parse/hash、identity/version、host exact contract | [FACT][E-AU-122-001] |
+| install/reconfigure | registered manifest、secret/configuration、disabled/versioned repository write | [FACT][E-AU-122-002] |
+| test/enable/disable | health candidate、atomic replacement、commit 后 loader activate/disable | [FACT][E-AU-122-003] |
+| repository | installation lock/activation/history/outbox/health/scheduling persistence | [FACT][E-AU-122-004] |
+| tests | policy/manifest only；F-0171/P2 | [FACT][E-AU-122-005] |
+
+[FACT][E-AU-122-006] 8 文件、340 行 Extension lifecycle 完成深审；安装状态和运行 loader 的 commit/finalize 分界清晰。

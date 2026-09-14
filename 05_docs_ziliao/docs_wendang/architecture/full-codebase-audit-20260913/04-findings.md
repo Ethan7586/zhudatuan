@@ -3418,6 +3418,20 @@
 | 验证/回滚 | 从最新主线建立独立测试批次，用 fake loader/repository + transaction spy 或 PGlite 覆盖全部状态分支和 rollback/discard；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2，后续 Extension Worker 专项可复查。 |
 
+## F-0171｜Extension 安装与启停生命周期没有行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | extension / installation lifecycle；P2；高 |
+| 类型 | 测试覆盖缺口、事务与运行时状态正确性 |
+| 位置 | `modules/extension/03_application_yingyong/command/{InstallExtension,EnableExtension,DisableExtension}.ts`；`04_adapters_shixian/persistence/PgExtensionRepository.ts`；`06_tests_ceshi/` |
+| 当前/预期 | install/reconfigure/test/enable/disable 控制签名 manifest、secret/configuration、DB transition/history/outbox、延后 loader activation/discard/disable，但测试只有 ContractPolicy 两个断言和 manifest 静态清单。预期最少覆盖签名/host mismatch、secret/config invalid、disabled reconfigure version conflict、stale candidate、active replacement、execute rollback 后 discard、commit 后 activate/disable。 |
+| 直接证据 | 测试目录除 `module.manifest.test.ts` 外只有 `policy/ContractPolicy.test.ts`；后者只实例化 ContractPolicy，未导入 InstallExtension、EnableExtension、DisableExtension 或 PgExtensionRepository。 |
+| 调用链/影响 | Channel connection create/update/test/enable/disable → Extension lifecycle → extension.installation/history/health/runtime outbox → ExtensionRegistry loader。回归可能造成 configuration、数据库状态或进程内 registry 不一致而不被模块测试捕获。 |
+| 根因 | command/adapter 实现未配套 transaction 和 loader lifecycle fixture。 |
+| 验证/回滚 | 从最新主线建立独立测试批次，以 fake loader/repository 或 PGlite 覆盖上述状态和 finalize/discard 边界；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2，后续 Extension lifecycle 专项可复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
