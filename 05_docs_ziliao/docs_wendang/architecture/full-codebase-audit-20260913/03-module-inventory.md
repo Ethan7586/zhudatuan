@@ -560,6 +560,8 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 
 [FACT][E-AU-034-001] 9文件79行深入审阅；无独立表、进程或制品。
 
+后续复核：AU-040补充确认 `F-0130/F-0131` 在 `ProviderLoader` 与 `directcharge/jobs/consumer` 上的当前运行一致性，无新增问题。
+
 ## 41. AU-035 Tmall Vendor Adapter 模块清单
 
 | 子模块 | 职责 | 当前边界 |
