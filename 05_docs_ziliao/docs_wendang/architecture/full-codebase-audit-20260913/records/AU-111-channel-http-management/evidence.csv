@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-111-001","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/http/ChannelRoutes.ts","23-114","module actions、distributor 与 binding 的 closure scope。"
+"E-AU-111-002","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/http/ChannelRoutes.ts","115-124","CapabilityPort quota write。"
+"E-AU-111-003","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/http/ChannelRoutes.ts","125-169","provider replay queue dispatch 与 input helpers。"
+"E-AU-111-004","01_core_hexin/services/commerce/src/modules/channel/module.manifest.ts;06_tests_ceshi/module.manifest.test.ts","1-42;1-59","operation/event/job static inventory。"

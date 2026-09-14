@@ -1226,3 +1226,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | manifest/tests | capability operation/public entry 静态声明 | [FACT][E-AU-110-003] |
 
 [FACT][E-AU-110-004] 7 文件、105 行 Capability 模块完成深审；未见跨 scope entitlement 更新或绕过 expected version 的更新条件。
+
+## 116. AU-111 Channel HTTP 管理与 Capability quota 调用清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| distributor/binding | organization closure visibility、tenant binding state | [FACT][E-AU-111-001] |
+| quota | Channel → CapabilityPort scope/version write | [FACT][E-AU-111-002] |
+| provider replay | failed/unknown filtering 与 job type dispatch | [FACT][E-AU-111-003] |
+| manifest test | HTTP/job/event static inventory | [FACT][E-AU-111-004] |
+
+[FACT][E-AU-111-005] 3 文件、270 行 Channel 管理 HTTP entry 完成深审；Capability quota 写入没有 Channel 内部重复实现。
