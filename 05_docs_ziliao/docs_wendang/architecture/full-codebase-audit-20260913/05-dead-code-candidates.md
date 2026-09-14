@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 12。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 13。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1102,3 +1102,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 453. AU-453 财务生命周期复核
 
 - 财务账本、对账、结算、提现和发票链路均有当前 API/Worker 入口；高风险数据与资金边界归 GX-0012。累计 G0 60、G1 83、G2 5、G3 0、GX 12；未删除任何文件。
+
+## GX-0013｜渠道外部对象 scope 映射切换
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821045000_channel_scope_mapping.sql`。 |
+| 直接证据 | 迁移从 `catalog.sourcelisting` 回填 `channel.externalobject.scope_id`；任何未能关联的旧记录会抛出 `EXTERNAL_MAPPING_SCOPE_BACKFILL_REQUIRED`，随后将列设为非空，并将三张表的唯一性改为包含 scope。 |
+| 运行边界 | Channel sync 写入 `(provider,scope_id,objecttype,externalid,sourceversion)`；Catalog source projection 与查询均显式携带 scope；`channel.externalobject` RLS 依 `access.scope_allowed(scope_id)` 授权。 |
+| 可否删除 | 否；承担租户隔离、外部对象幂等键、历史回填、Webhook/渠道同步正确路由和恢复责任。 |
+| 二次复核 | 是；必须独立验证回填缺口为零、相同 external id 跨 scope 的并存行为、RLS、渠道重放、冲突键、备份恢复和部署 ledger。 |
+
+## 454. AU-454 渠道 scope 映射复核
+
+- 外部对象和源记录以 scope 为事实所有权，未关联历史记录 fail-closed；归 GX-0013。累计 G0 60、G1 83、G2 5、G3 0、GX 13；未删除任何文件。
