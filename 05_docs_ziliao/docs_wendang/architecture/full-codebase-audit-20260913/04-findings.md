@@ -4635,3 +4635,39 @@
 | 建议方向 | 从当时最新主线另建单一修复分支，在隔离数据库证明需要 fail-closed 后，将 `contract` 加入条件及测试；与 F-0247 可作为同一模式的范围勘查输入，但不要在审计分支修复。 |
 | 验证/回滚 | 隔离 PostgreSQL 保持 target head、purchase marker/roles 为健康，仅改坏 contract checksum；断言 runtime 创建失败、无 listen/写入；回滚为撤回单一 gate/test 提交。 |
 | 是否需要独立复核 | 否（P2）；若验证发现生产环境有 contract drift，应升级专项复核。 |
+
+## F-0249｜Web Business API 将兼容性失败降级为警告后仍开始监听
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce Web Business API startup/数据库安全边界 |
+| 类型 | 正确性、可用性与权限启动门 |
+| 严重级别 | **P1** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/bootstrap/WebBusinessApiRuntime.ts:92-95`；`.../entry/WebBusinessApiMain.ts:20-36`；`.../WebBusinessApiRuntime.test.ts:17-59`。 |
+| 当前/预期 | runtime 对 `assertWebBusinessRuntimeCompatibility` 的任意 reject 使用 `.catch` 写出 warning，随后创建 handlers；entry 无额外健康门，继续 `bootstrapApi` 并 `listen`。预期为 dedicated role、recovery、schema/contract、表/函数、授权或 payment/finance 禁写边界不健康时在监听前 fail-closed。 |
+| 直接证据 | [FACT][E-AU-506-001] 兼容性调用的 catch 只执行 `console.warn('WEB_BUSINESS_RUNTIME_COMPATIBILITY_WARNING', cause)`；[FACT][E-AU-506-002] 同一函数之后继续构建 runtime；[FACT][E-AU-506-003] deployed entry 无条件基于返回的 runtime 调用 `listen`。 |
+| 调用链或运行入口 | `WebBusinessApiMain` → `createWebBusinessApiRuntime` → compatibility warning catch → `bootstrapApi` → `PublicCatalogHttpHandler` → `listen`。 |
+| 用户/数据/安全影响 | 配置、迁移或 DB grant 漂移时，API 可在不满足其声明安全前置条件的状态下暴露服务；可能表现为错误响应、不可预期写入或受限边界偏离。未验证生产存在不健康实例、实际越权、数据错误或日志告警可见性。 |
+| 根因 | 将启动兼容性断言视作非阻塞 observability warning，但没有独立的 fail-closed gate。 |
+| 建议方向 | 从当时最新主线建立单一修复分支；先以隔离数据库和真实 entry 验证是否有外部 supervisor gate，若无则使 incompatibility 阻止 runtime 返回/listen，并保留结构化运维诊断。 |
+| 验证/回滚 | 隔离数据库分别破坏 role、表/函数、forbidden grant、recovery 或 marker，断言进程在 listen 前退出；回滚为撤回单一 startup-gate 改动。 |
+| 是否需要独立复核 | **是**；P1 已加入 `records/AU-506-web-business-api-runtime-test/independent-review-queue.csv`，复核必须重新走 runtime→entry→外部健康门。 |
+
+## F-0250｜Web Business API 查询运行契约却未以失败结果阻止启动
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce Web Business API runtime contract compatibility |
+| 类型 | 正确性、运行时契约兼容性 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/bootstrap/WebBusinessApiRuntime.ts:158-231`；`.../WebBusinessApiRuntime.test.ts:17-59`。 |
+| 当前/预期 | helper 查询 `runtime.schemaversion` 的 contract version/checksum，但 reject 条件未包含 `!state.contract`。预期为 contract checksum 失配时 helper 拒绝，并由经过 F-0249 修正后的启动门阻止监听。 |
+| 直接证据 | [FACT][E-AU-506-004] SQL 生成 `contract` 字段；[FACT][E-AU-506-005] 条件串只检查 schema、web_business、relations、functions 与权限字段；测试没有 contract=false case。 |
+| 调用链或运行入口 | `WebBusinessApiMain` → `createWebBusinessApiRuntime` → `assertWebBusinessRuntimeCompatibility`。 |
+| 用户/数据/安全影响 | 单独看会允许 contract drift 通过 helper；当前又受 F-0249 的 warning catch 放大。无生产 drift 或实际请求影响证据。 |
+| 根因 | Boolean health aggregation 与 query 字段失配，negative regression 缺失。 |
+| 建议方向 | 作为 F-0249 修复前的范围核对项，在独立小批次纳入 `contract` 条件和 contract=false reject regression；不在审计分支修改。 |
+| 验证/回滚 | 隔离数据库仅破坏 contract checksum，验证 helper 与真实 startup 都在 listen 前失败；回滚为撤回该单一条件/测试变化。 |
+| 是否需要独立复核 | 否（P2）；纳入 F-0249 独立复核时一并重走。 |
