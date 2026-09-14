@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dispatch the official 1.3.5 Aliyun prepared-artifact deployment channel.
+# Dispatch the official 1.4 Aliyun prepared-artifact deployment channel.
 # Usage:
 #   scripts/deploy-prepared.sh <target> <full-commit-sha> <node>
 
@@ -37,7 +37,7 @@ if [ "$ZDT_NEXT_MERGE_BASE" != "$SHA" ]; then
   exit 64
 fi
 if ! gh workflow view deploy-prepared-aliyun.yml --ref zdt-next --yaml >/dev/null 2>&1; then
-  echo "Deploy stopped: the zdt-next 1.3.5 Aliyun channel does not exist." >&2
+  echo "Deploy stopped: the zdt-next 1.4 Aliyun channel does not exist." >&2
   exit 1
 fi
 
@@ -48,7 +48,7 @@ gh workflow run deploy-prepared-aliyun.yml --ref zdt-next \
   -f release_target="$TARGET" \
   -f operation=deploy
 
-TITLE="Deploy 1.3.5 deploy ${SHA} ${NODE} ${TARGET}"
+TITLE="Deploy 1.4 deploy ${SHA} ${NODE} ${TARGET}"
 RUN_ID=""
 for _ in {1..20}; do
   RUN_ID="$(gh run list --workflow deploy-prepared-aliyun.yml --event workflow_dispatch --limit 20 \

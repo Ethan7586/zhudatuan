@@ -1,7 +1,7 @@
 name: Legacy 1.2 Recovery - Direct Aliyun
 run-name: LEGACY direct recovery ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
 
-# Explicit recovery path only. Normal deployment uses the 1.3.5 prepared-artifact
+# Explicit recovery path only. Normal deployment uses the 1.4 prepared-artifact
 # workflows. This path builds during deployment and must never be called implicitly.
 on:
   workflow_dispatch:
