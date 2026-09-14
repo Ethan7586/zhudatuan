@@ -4811,3 +4811,21 @@
 | 建议方向 | 从最新主线建立独立配置质量批次：定义完整 schema（required keys、safe integer、合理上下限及 timeout ordering），加缺键/错型/负数/跨字段反事实 tests，并保持 `--check` 的纯校验行为。 |
 | 验证/回滚 | 对每类必需字段删除、设为字符串/负数/非法顺序，确认 generator 拒绝；合法 catalog 仍生成相同投影。回滚为撤回该单一 schema/test 改动。 |
 | 是否需要独立复核 | 否。 |
+
+## F-0259｜正式供应链许可证门在当前 lockfile 上失败
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 供应链质量门 / license policy |
+| 类型 | 质量门可执行性、依赖合规治理 |
+| 严重级别 | **P2** |
+| 置信度 | 高（正式 script 已定向执行） |
+| 文件和精确位置 | `02_platform_pingtai/config/licenses.yml:3-27`；`04_tools/scripts/check/supplychain.mjs:8-27`；root `package.json:94,123`。 |
+| 当前/预期 | `npm run check:supplychain` 当前退出 1：`big-integer` Unlicense、`buffers`/`pause-stream` 缺 license、`chainsaw`/`traverse` MIT/X11、`jszip` MIT OR GPL-3.0-or-later、`pako` MIT AND Zlib；该 command 是 `quality:canonical-hard-cut` 的早期 gate。预期为正式质量门能针对经过法务确认的 lockfile 产生可执行、可解释的结论。 |
+| 直接证据 | [FACT][E-AU-548-001] 2026-09-15 在固定审计分支执行正式 script，退出 1并报告 7 license finding、0 secret finding；[FACT][E-AU-548-002] parser 只接受 exact allow 或所有 AND/OR 分支均 allow，随后仍匹配 denied regexp；[FACT][E-AU-548-003] quality hard-cut 串联该 command。 |
+| 调用链或运行入口 | package-lock → check:supplychain → quality:canonical-hard-cut / 可能的 release quality workflow。 |
+| 用户/数据/安全影响 | 不直接改变线上功能、数据或权限；完整 canonical quality gate 在 supply-chain 阶段中断，依赖许可/notice 风险无法得到可通过的自动结论。是否有生产发布绕过/强制该 gate未验证。 |
+| 根因 | 当前 allow/deny expression policy 与 lockfile 的 license 表达形式未对齐；部分缺失 metadata 也无审查/例外工作流。 |
+| 建议方向 | 从最新主线建立独立供应链治理批次：逐依赖核对实际 license/SBOM、直接/传递用途、notice 与法务批准；只将已批准 expression/exception 以可审计方式纳入 policy，或替换不合规依赖。不得用盲目放宽 allow-list 使门变绿。 |
+| 验证/回滚 | 在干净 lockfile 上运行 check；对已批准 OR/AND/别名、被拒 copyleft 与 missing metadata 各加入反事实 fixture，确认 approved pass、unapproved fail。回滚为撤回单一 policy/dependency/notice 批次。 |
+| 是否需要独立复核 | 否；涉及实际法务接受时需法律/依赖所有者确认。 |
