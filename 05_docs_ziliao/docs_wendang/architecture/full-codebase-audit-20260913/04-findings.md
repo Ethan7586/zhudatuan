@@ -4794,6 +4794,29 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0276｜Disabled Realm 重供给删除 target 被历史身份引用外键阻断
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Autonomous node Identity Realm recovery |
+| 类型 | 数据完整性、恢复/回滚路径 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260909062000_provision_autonode_identity_realm.sql:155-178`；`20260909063000_reprovision_disabled_autonode_identity_realm.sql:66-112`；`20260907122000_bind_sessions_tickets_to_realm_accounts.sql:48-49,66-71`；`20260908012000_create_sfl_login_intents.sql:42-44`。 |
+| 当前行为 | disable 仅把 Realm、entry、nodeprovisioning status 置为 disabled。随后的 reconfiguration 对同一 Realm 先删除全部 `identity.realmtarget`，再按新 fact 插入。session 的 `(realm_id,auth_target)`、ticket 的 `(realm_id,target)`、login intent 的 `(target_realm_id,target_target)` 均为默认 non-cascade foreign key。 |
+| 预期行为 | disabled Realm 应能在明确的会话/票据/intent 处置策略下重供给，或在尝试前以业务错误明确报告仍被引用；不得在不可恢复的 FK 失败后才暴露恢复失败。 |
+| 直接证据 | [FACT][E-AU-673-001] reconfiguration lines 77-78 无条件 delete target/entry；[FACT][E-AU-673-002] 三组 foreign key 未声明 `ON DELETE CASCADE`/`SET NULL`；[FACT][E-AU-673-003] disable function未处理 identity.session、identity.authticket 或 identity.loginintent。 |
+| 调用链或运行入口 | Provisioning API → `identity.disable_node_realm` → disabled ledger/Realm → Provisioning API → `identity.provision_node_realm(updated fact)` → delete realmtarget。 |
+| 用户影响 | 需要修正 node entry/target 配置时，已禁用节点可能无法恢复上线，需人工数据库干预或等待/清理历史身份记录。 |
+| 数据影响 | 恢复事务因 FK 失败回滚；不应部分删除，但会留下 disabled Realm 和旧 fact，阻塞后续供给。 |
+| 安全影响 | 未发现越权；但临时为恢复而手动删除身份引用会增加误删会话审计/认证历史的风险。 |
+| 根因 | Realm reconfiguration 视 entry/target 为可替换 projection，却没有把它们对 session/ticket/login intent 的历史引用纳入 disable/recovery 生命周期。 |
+| 建议方向 | 从最新主线建立独立恢复设计批次：选择保留 stable target 行并更新允许字段，或在 disable 时用明确审计策略撤销/过期所有关联 session、ticket、intent 后再重供给；保持历史记录和 FK 合法性，不以盲目 cascade 删除替代。 |
+| 预计修改范围 | autonomous Realm provision/disable function、必要的 session/ticket/intent lifecycle contract tests，可能涉及前向 schema migration。 |
+| 验证方式 | 隔离数据库创建 Realm-bound session、ticket、intent 后 disable；验证更新 fact 的 reprovision 有定义结果，成功时引用保持合法/被审计性撤销，失败时返回领域错误且不产生部分写入。 |
+| 回滚方式 | 回滚独立前向恢复逻辑或保留旧 target 行；不回滚/重写历史 AU-673 migration。 |
+| 是否需要独立复核 | 是：需 Identity、Provisioning 与数据保留 owner 共同确认 session/ticket/intent 的处置语义。 |
+
 ## F-0258｜容量目录生成器未完整校验运行字段
 
 | 字段 | 记录 |
