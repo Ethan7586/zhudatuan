@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 59、G1 48、G2 2、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 65、G2 2、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -671,3 +671,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - root Identity/read 入口分别被 IdentityRegistrationApiMain 直接导入；root index 被 finance/order 直接导入；legacy job 路径被 jobs catalog 注册，五项为 G0。
 - 其余十项归 DC-0046/G1。累计 G0 59、G1 48、G2 2、G3 0、GX 5；未删除任何文件。
+
+## DC-0047｜Support historical 一行转发层
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类/对象 | G1；`modules/support/{ConsoleSupportHealth,SupportModule,application/**,domain/**,infrastructure/persistence/PgSupportRepository,interface/http/SupportRoutes}.ts`，共 17 个一行转发文件 |
+| 疑似原因 | 仓内静态检索没有 direct import 这些 historical paths；均只 re-export 已深审 canonical 实现。 |
+| 保留证据 | package 外 consumer、动态加载与历史 import 兼容责任未排除。 |
+| 可否删除 | 否；未满足公共 API、动态引用和兼容责任的排除条件。 |
+| 二次复核 | G1不强制；升级前需独立检查发布包 consumer。 |
+
+## 165. AU-165 Support compatibility 复核
+
+- legacy `interface/job/SlaJob.ts` 由 jobs catalog 直接运行，归 G0。
+- 其余 17 项归 DC-0047/G1。累计 G0 60、G1 65、G2 2、G3 0、GX 5；未删除任何文件。

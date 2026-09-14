@@ -1783,3 +1783,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | ticket transition | closure-scoped lock、state transition/version update、history | [FACT][E-AU-164-003]；F-0187/P2 |
 
 [FACT][E-AU-164-004] 5 文件、191 行完成深审；状态转移失败路径的 history 顺序已独立记录。
+
+## 170. AU-165 Support public/compatibility 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| public contract | capability、typed domain/Port public index、18 operation/3 event manifest 与 surface test | [FACT][E-AU-165-001] |
+| canonical module | Commerce app registry 使用 canonical SupportModule → SupportRoutes | [FACT][E-AU-165-002] |
+| legacy paths | job re-export 有 jobs catalog live consumer（G0）；其余 one-line legacy/root exports 为 G1 | [FACT][E-AU-165-003]；DC-0047 |
+
+[FACT][E-AU-165-004] 23 文件、134 行完成深审；Support 46/46 基线文件均取得审阅状态。

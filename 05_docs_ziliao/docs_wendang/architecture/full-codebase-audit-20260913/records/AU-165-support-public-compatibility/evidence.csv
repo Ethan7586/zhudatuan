@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-165-001,01_public_gongkai/SupportCapabilities.ts;index.ts;module.manifest.ts;06_tests_ceshi/module.manifest.test.ts,1-6;1-9;1-38;1-59,public contract,Public types/capabilities and manifest contract are isolated from interface/adapters and asserted by test.
+E-AU-165-002,05_interface_jieru/SupportModule.ts;src/app/modules.ts,1-4;31-40,canonical module,Commerce registry imports canonical SupportModule and route implementation.
+E-AU-165-003,interface/job/SlaJob.ts;src/app/jobs.ts,1;40;106;162,live compatibility,Legacy job re-export is the main jobs catalog import; it has active runtime responsibility.
+E-AU-165-004,root/application/domain/infrastructure/interface historical exports,1,compatibility,Seventeen remaining paths only re-export canonical implementation and have no in-repository static consumer.

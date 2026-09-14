@@ -426,3 +426,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 本批没有 assignment、SLA 或 ticket close/reopen direct tests。
 - transition 的 stale-version history 顺序缺陷见 F-0187/P2；需用失败和成功 fixture 固化契约。
+
+## 165. AU-165 Support public/compatibility 深审
+
+- Manifest test 断言 public surface 隔离、operation/event inventory 与 route/job declaration。
+- 历史转发没有独立业务分支；G0/G1 依据 caller/compatibility evidence 记录，不将无 direct test 误记为运行缺陷。

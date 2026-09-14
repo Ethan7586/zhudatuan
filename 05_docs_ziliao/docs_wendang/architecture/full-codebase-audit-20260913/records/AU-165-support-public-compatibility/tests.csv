@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source and manifest test trace,Support public/module/compatibility paths,Completed,Public entry, app/jobs callers and manifest isolation test reviewed.
+Formal targeted test,Support manifest test,Not run,Audit worktree dependency baseline lacks Vitest; dependencies unchanged.
