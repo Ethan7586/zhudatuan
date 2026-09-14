@@ -1,5 +1,5 @@
 name: Automatic Artifact Closure
-run-name: Seal affected artifacts for ${{ github.sha }}
+run-name: Seal affected artifacts for ${{ inputs.head_sha || github.sha }}
 
 # This post-merge workflow never deploys. It prepares affected immutable artifacts and seals
 # candidates after zdt-next has already accepted the source commit.
@@ -7,6 +7,12 @@ on:
   push:
     branches:
       - zdt-next
+  workflow_dispatch:
+    inputs:
+      head_sha:
+        description: Historical zdt-next lineage merge to re-evaluate with the latest control plane
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -19,6 +25,7 @@ jobs:
     outputs:
       matrix: ${{ steps.matrix.outputs.matrix }}
       has_targets: ${{ steps.matrix.outputs.has_targets }}
+      source_sha: ${{ steps.matrix.outputs.source_sha }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -33,30 +40,47 @@ jobs:
         id: matrix
         env:
           BEFORE_SHA: ${{ github.event.before }}
-          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_SHA: ${{ inputs.head_sha || github.sha }}
         shell: bash
         run: |
           node --input-type=module <<'NODE'
           import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
           import { loadAdapter } from './04_tools/release-engine/src/adapter.mjs';
-          import { automaticClosureManifest } from './04_tools/release-engine/src/automatic-preparation.mjs';
+          import { automaticClosureManifest, automaticClosureSelection } from './04_tools/release-engine/src/automatic-preparation.mjs';
           import { createPlan } from './04_tools/release-engine/src/planner.mjs';
+          import { commitMetadata } from './04_tools/release-engine/src/git.mjs';
 
           const adapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
-          const before = /^[0]+$/.test(process.env.BEFORE_SHA ?? '') ? `${process.env.SOURCE_SHA}^` : process.env.BEFORE_SHA;
+          const commit = await commitMetadata(adapter.projectRoot, process.env.SOURCE_SHA);
+          const eventBefore = process.env.BEFORE_SHA ?? '';
+          const before = eventBefore !== '' && !/^[0]+$/.test(eventBefore) ? eventBefore : commit.parents[0];
+          if (!before) throw new Error('Automatic closure source has no first parent');
           const plan = await createPlan(adapter, { from: before, to: process.env.SOURCE_SHA });
-          const closure = automaticClosureManifest(adapter, { sourceSha: plan.to.sha, beforeSha: plan.from.sha, targets: plan.deploymentOrder });
+          const selection = automaticClosureSelection(adapter, {
+            plannedTargets: plan.deploymentOrder,
+            changeCount: plan.changes.length,
+            beforeSha: plan.from.sha,
+            commit,
+          });
+          const closure = automaticClosureManifest(adapter, {
+            sourceSha: plan.to.sha,
+            beforeSha: plan.from.sha,
+            targets: selection.targets,
+            sealNodesByTarget: selection.sealNodesByTarget,
+            reconciliation: selection.reconciliation,
+          });
           const entries = closure.preparations;
           mkdirSync('.automatic-artifact-closure', { recursive: true });
           writeFileSync('.automatic-artifact-closure/closure.json', `${JSON.stringify(closure, null, 2)}\n`);
           appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify({ include: entries })}\n`);
           appendFileSync(process.env.GITHUB_OUTPUT, `has_targets=${entries.length > 0}\n`);
+          appendFileSync(process.env.GITHUB_OUTPUT, `source_sha=${closure.sourceSha}\n`);
           console.log(entries.length === 0 ? 'No runtime artifact was affected.' : `Affected targets: ${entries.map(({ target }) => target).join(', ')}`);
           NODE
       - name: Preserve exact closure manifest
         uses: actions/upload-artifact@v6
         with:
-          name: automatic-artifact-closure-${{ github.sha }}
+          name: automatic-artifact-closure-${{ steps.matrix.outputs.source_sha }}
           path: .automatic-artifact-closure/closure.json
           if-no-files-found: error
           retention-days: 90
@@ -70,7 +94,7 @@ jobs:
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     uses: ./.github/workflows/auto-prepare-one-target.yml
     with:
-      head_sha: ${{ github.sha }}
+      head_sha: ${{ needs.plan.outputs.source_sha }}
       release_target: ${{ matrix.target }}
       prepare_node: ${{ matrix.prepare_node }}
       seal_nodes_json: ${{ matrix.seal_nodes_json }}
