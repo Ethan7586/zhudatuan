@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-095-001","01_core_hexin/services/commerce/src/modules/identity/02_domain_yewu/models_moxing/AuthTransaction.ts","3-34","认证 token 格式、长度、state/nonce hash 与 PKCE verifier challenge 推导。"
+"E-AU-095-002","01_core_hexin/services/commerce/src/modules/identity/02_domain_yewu/models_moxing/IdentitySubject.ts","1-31","手机号 E.164、中国号码兼容和非手机号 subject 规范化。"
+"E-AU-095-003","01_core_hexin/services/commerce/src/modules/identity/02_domain_yewu/policies_guize/PasswordPolicy.ts","1-38","共享 password policy、固定 scrypt 参数、随机 salt 与 constant-work missing-user verify。"
+"E-AU-095-004","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/{AuthTransaction.test.ts,IdentitySubject.test.ts}","全部","PKCE/return-target 与号码归一化测试为静态行为 oracle。"

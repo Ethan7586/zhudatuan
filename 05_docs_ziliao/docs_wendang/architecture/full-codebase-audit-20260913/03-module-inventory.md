@@ -1047,3 +1047,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | notification 状态和 worker 窄写边界静态 oracle | [FACT][E-AU-094-005] |
 
 [FACT][E-AU-094-006] 7 文件、196 行 Identity 公开端口与关联测试完成深审；未见未声明的跨模块直写或第二套 notification 状态机。
+
+## 100. AU-095 Identity 领域状态与密码策略清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| auth transaction | state/nonce/ticket/PKCE token 归约、hash 与 challenge | [FACT][E-AU-095-001] |
+| identity subject | 手机 E.164 与 username 规范化、兼容变体 | [FACT][E-AU-095-002] |
+| password policy | shared policy + scrypt KDF/verify | [FACT][E-AU-095-003] |
+| tests | PKCE/auth ticket 和手机号 canonicalization 静态 oracle | [FACT][E-AU-095-004] |
+
+[FACT][E-AU-095-005] 5 文件、151 行 Identity 领域状态与密码策略完成深审；认证交易的 PKCE challenge 在 ticket consume 时与 state/nonce/session 一并比较。

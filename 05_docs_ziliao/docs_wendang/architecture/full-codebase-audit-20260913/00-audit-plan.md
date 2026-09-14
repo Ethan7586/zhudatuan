@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-094 已完成。AU-094 完成 Identity 公开端口、通知投递状态与保留任务边界审阅。覆盖总账按当前文件级清单重算：深入审阅1,029文件/85,381行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,819文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-095 已完成。AU-095 完成 Identity 授权交易、身份主体归一化与密码策略审阅。覆盖总账按当前文件级清单重算：深入审阅1,034文件/85,532行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,814文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -999,3 +999,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Identity capabilities、跨模块 notification/principal/retention/Wechat ports 及其 notification job、runtime retention、member import 运行消费者与状态测试。
 
 执行结果：通知投递仅在未消费/未过期 challenge 上读取密文；beginAttempt 将遗留 sending 固化为 ambiguous，状态终结操作仅允许从 sending 迁移，并将失败/未知投递写为 identity owner deadletter。保留任务只调用受控 purge 函数；member import 仅依赖窄 principal 接口。Wechat 为容器 token 契约，已有 runtime/registration 注入者。未发现 P0–P3 新问题；Vitest 未运行。
+
+## 97. AU-095 连续审计点
+
+审阅 Identity 授权 state/nonce/PKCE 交易、手机号/身份主体归一化、scrypt 密码策略与关联单元测试。
+
+执行结果：AuthTransaction 对 state/nonce/ticket/PKCE token 作格式和长度约束，持久层后续以所有 hash/challenge 一并消费 ticket。手机号归一为 E.164，中国本地号与 +86 形式合并，保留非手机号 username 的小写规范形式。密码使用固定参数 scrypt、随机 salt 和恒定工作量的空用户验证；policy 复用共享契约。未发现 P0–P3 新问题；Vitest 未运行。
