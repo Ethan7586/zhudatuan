@@ -5099,3 +5099,26 @@
 | 建议方向 | 不创建修复批次。仅在发布/运行核查时读取受控环境的 `runtime.schemaversion` 与 Realm target 数据，确认已达到 `20260908011000` 或更高的连续迁移状态。 |
 | 验证/回滚 | 隔离环境为 L0/L1 Realm 分别验证通用 `console`/`storefront` target 的 issue/exchange 与各自 signed return origin；运行状态异常时按既定 migration recovery 流程处理，不回滚为 legacy target 名称。 |
 | 是否需要独立复核 | 否；仅需运行状态核查。 |
+
+## F-0275｜跨 Realm login intent 的数据库安全契约未被执行测试锁定
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Identity cross-Realm login intent |
+| 类型 | 测试可信度、认证状态机数据库契约缺口 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql:20-140`；`01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/LoginIntentOperations.test.ts:8-68`。 |
+| 当前行为 | migration 以 `identity.issue_login_intent`/`identity.consume_login_intent` 实现 source/target Realm、account、session、target、TTL和一次性消费约束。现有 TypeScript test mock 数据库返回，只断言 handler 所传 SQL 参数及 URL；对 Supabase SQL tests 检索不到这两个函数的执行调用。 |
+| 预期行为 | 认证交接的关键 DB 状态机应以隔离数据库 contract test 覆盖成功路径及 source session revoked、target Realm/target/application/account/session mismatch、过期、重复消费和未授权 role 的拒绝。 |
+| 直接证据 | [FACT][E-AU-667-001] migration lines 80-133 定义 state machine 和其安全条件；[FACT][E-AU-667-002] `LoginIntentOperations.test.ts:10-16` 以 mocked issued row 驱动 handler，未执行 SQL function；[FACT][E-AU-667-003] 对 `02_platform_pingtai/database/supabase/tests/**/*.sql` 检索 `issue_login_intent`/`consume_login_intent` 无命中。 |
+| 调用链或运行入口 | 已认证 Identity API request → `identity.loginintents.create` → `identity.issue_login_intent` → target accounts host 登录 → target session creation → `identity.consume_login_intent`。 |
+| 用户影响 | 回归可能令跨节点登录无故失败、意图可被错误消费或过期处理失效；现有 unit test 未能揭示 database-level 回归。 |
+| 数据影响 | login intent/session 记录可能留下不符合预期的 consumed/target binding；未发现现有数据事故。 |
+| 安全影响 | source/target session、Realm 和一次性消费是跨域认证边界；缺少 DB-level 回归保护提高未来 schema/function 调整导致越域或重放缺陷的风险，当前未证明已有绕过。 |
+| 根因 | migration assertion验证对象和 privilege 存在，但没有配套的函数行为 contract；handler test 用 mock 替代数据库状态机。 |
+| 建议方向 | 从当时最新主线建立独立测试批次，仅新增最小 Supabase contract fixture/test 覆盖上述 accepted/rejected matrix；不修改生产 migration。 |
+| 预计修改范围 | Supabase test bootstrap/contract SQL，必要时仅补充 test runner registration。 |
+| 验证方式 | 在隔离 PGlite/Postgres runner 运行新增 contract；确认每个拒绝分支不消费 intent，成功分支恰好消费一次且返回精确 source context。 |
+| 回滚方式 | 删除独立新增测试及其 runner 注册，不改变生产 schema或数据。 |
+| 是否需要独立复核 | 否。 |
