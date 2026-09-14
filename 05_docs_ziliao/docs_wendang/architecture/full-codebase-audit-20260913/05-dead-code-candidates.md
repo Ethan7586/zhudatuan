@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 84、G2 5、G3 0、GX 40。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 85、G2 5、G3 0、GX 40。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1596,3 +1596,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1 不强制；升级 G2/G3 前必须检查外部 CI 与实际 quality gate。 |
 
 - Administrator segment TypeScript project 归 DC-0069。累计 G0 60、G1 84、G2 5、G3 0、GX 40；未删除任何文件。
+
+## DC-0070｜未接线的生产命名政策
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `02_platform_pingtai/config/naming.yml` |
+| 疑似原因 | [FACT][E-AU-549-001] production regex/exception 值在固定基线中除配置清单外无 script、workflow、release 或 package consumer。 |
+| 保留证据 | 仍表达文件/目录命名及 framework exception 的潜在治理契约；外部 delivery policy/人工审查未核验。 |
+| 未排除项 | 仓外 CI、delivery agent、LAW 启用标准、历史兼容与人工质量门。 |
+| 可否删除 | 否；未满足外部调用、治理责任和等价替代条件。 |
+| 二次复核 | G1 不强制；升级 G2/G3 前须查外部质量门并做反事实命名违例检查。 |
+
+- production naming policy 归 DC-0070。累计 G0 60、G1 85、G2 5、G3 0、GX 40；未删除任何文件。
