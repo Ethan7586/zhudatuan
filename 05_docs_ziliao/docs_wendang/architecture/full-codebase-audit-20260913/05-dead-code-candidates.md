@@ -1111,6 +1111,10 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - `20260828092000_finance_security_boundaries.sql` 继续属于 GX-0012：它绑定高风险动作凭证、账本/事件保留、RLS 与受控写权限，不能删除或单独重放。F-0243 记录了当前 action proof 消费/版本锁定未接入命令链的 P1 候选；此事实不构成删除依据。
 
+## 489. AU-489 财务会计完整性复核
+
+- `20260828093000_finance_accounting_integrity.sql` 是 GX-0012 的账本/期间/结算收口；当前 FinancePort 与 Worker 依赖其规则矩阵和受控函数。F-0244 是受限 bootstrap 的规则漂移，不是删除依据；不得据此删除账本迁移、函数或 test-only 过程。
+
 ## GX-0013｜渠道外部对象 scope 映射切换
 
 | 字段 | 记录 |

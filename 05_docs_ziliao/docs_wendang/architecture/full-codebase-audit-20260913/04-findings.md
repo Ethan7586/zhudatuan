@@ -4545,3 +4545,21 @@
 | 建议方向 | 在独立修复分支先确定所有受 `requiresFinancialActionProof` 约束的命令，再让每条命令的同一 transaction 在 mutation 前消费 proof 并执行版本断言；不得只加强前端或格式校验。 |
 | 验证/回滚 | 隔离数据库覆盖有效、伪造、过期、重复、跨 session/resource/request、权限撤销和版本冲突；确认失败不写业务状态/事件。回滚为撤回单一修复提交并保留可读审计记录。 |
 | 是否需要独立复核 | 是；P1 候选必须重追 API、handler、transaction、DB grant/RLS、迁移 ledger 与 service-role 调用者。 |
+
+## F-0244｜专用沙箱福利初始化引用未登记的会计事件
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Finance accounting rule matrix / zdt 沙箱福利 bootstrap |
+| 类型 | 正确性、初始化可用性、财务契约漂移 |
+| 严重级别 | **P2** |
+| 置信度 | 高（固定基线的调用、规则矩阵和拒绝条件直接核验）；目标数据库实际 ledger、执行历史和该沙箱通道是否仍启用未验证。 |
+| 文件和精确位置 | `database/supabase/migrations/20260828093000_finance_accounting_integrity.sql:76-112,728-790`；`database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql:397-466`。 |
+| 当前/预期 | 专用 `sandbox_member_welfare_bootstrap` 在写福利账户/lot 前后调用 `finance.post(..., 'benefit.sandbox.grant', ...)`；账务函数仅从 `finance.accountingeventrule` 查匹配事件，找不到时抛 `FINANCE_ACCOUNTING_EVENT_UNSUPPORTED`。当前基线没有该 event type 的规则。预期为启用的 bootstrap 事件在同一会计规则权威中登记，或不再调用受规则约束的 posting。 |
+| 直接证据 | [FACT][E-AU-489-001] 规则 seed 只列 payment、benefit、voucher、settlement、withdrawal、distribution 和 journal event；[FACT][E-AU-489-002] `finance.post` 在 ruleversion 为 null 时中止；[FACT][E-AU-489-003] 后序 sandbox welfare 函数有唯一精确调用，仓内无对应 rule insert。 |
+| 调用链或运行入口 | 受 `zhudatuansandboxbootstrap` session user、sentinel 及显式 owner confirmation 保护的 sandbox welfare bootstrap → `finance.ensure_account`/福利事实写入 → `finance.post` → rule lookup failure → 事务回滚。 |
+| 用户/数据/安全影响 | 该一次性测试福利初始化会失败，阻塞对应沙箱购买 E2E 前置条件；由于函数事务中止，静态证据不支持部分福利/账本写入结论。未见常规用户资金路径或权限绕过证据。 |
+| 根因 | 后续专用 bootstrap 新增 event name 时，没有同步扩展会计事件矩阵。 |
+| 建议方向 | 先确认该 test-only bootstrap 是否仍为正式运营/验收依赖；若保留，在独立小批次中以审计认可的借贷账户角色和规则登记该事件，并做重复/失败/账平测试。 |
+| 验证/回滚 | 隔离数据库以受限 bootstrap identity 执行一次与重放，核对 journal/entry、福利 lot、审计、outbox 和失败原子性；回滚为撤回规则与 bootstrap 的同一目的变更。 |
+| 是否需要独立复核 | 否（P2）；若该通道承担生产验收或资金发放，再升级专项复核。 |
