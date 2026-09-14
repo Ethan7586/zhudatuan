@@ -938,12 +938,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 | 字段 | 记录 |
 | --- | --- |
-| 分类/对象 | G1；`api_claim_wechat_payment_queries`、`lock_wechat_payment_query`、`api_fail_wechat_payment_query`。 |
-| 疑似原因 | 固定基线没有找到三个精确 RPC 的应用或 Worker 调用；Commerce 恢复队列使用另一套 `access.purchase_enqueue_payment_query`。 |
-| 保留证据 | service-role 公共接口；查询/关单任务具备订单—支付—尝试锁顺序、租约、退避、十二次死信和审计。后续查询结果入口与数据库契约测试保留其兼容及恢复职责。 |
+| 分类/对象 | G1；`api_claim_wechat_payment_queries`、`lock_wechat_payment_query`、`api_fail_wechat_payment_query`、`api_record_wechat_payment_query_result`、`api_record_wechat_payment_close_accepted`。 |
+| 疑似原因 | 固定基线没有找到五个精确 RPC 的应用或 Worker 调用；Commerce API 调用旧 `api_apply_wechat_payment_query`，恢复队列使用另一套 `access.purchase_enqueue_payment_query`。 |
+| 保留证据 | service-role 公共接口；查询/关单任务具备订单—支付—尝试锁顺序、租约、退避、十二次死信和审计，结果确认与观察落账在同一有效租约下完成。后续数据库契约测试保留其兼容及恢复职责。 |
 | 可否删除 | 否；生产支付查询作业、Supabase service-role 消费者、待处理尝试和运营恢复流程尚未核验。 |
 | 二次复核 | G1不强制；治理前核验运行作业、调用日志、死信量与微信对账恢复路径。 |
 
 ## 411. AU-411 微信支付查询队列复核
 
 - 查询/关单任务控制完整，但仓内 canonical 消费者未发现，归 DC-0065/G1。累计 G0 60、G1 81、G2 4、G3 0、GX 5；未删除任何文件。
+
+## 413. AU-413 微信支付查询结果复核
+
+- 结果确认与关单接受逻辑建立在同一租约/观察边界上，但仓内实际调用仍指向另一旧入口，归 DC-0065/G1。累计 G0 60、G1 81、G2 4、G3 0、GX 5；未删除任何文件。
