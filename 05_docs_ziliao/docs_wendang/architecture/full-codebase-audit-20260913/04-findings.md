@@ -4354,10 +4354,10 @@
 | 类型 | 可用性、身份流程治理 |
 | 严重级别 | **P2** |
 | 置信度 | 高 |
-| 文件和精确位置 | `commerce-api/src/api/registrationRoutes.ts:94-110`；`storefront-compatibility/.../20260812250000_username_password_registration.sql:1-78` |
-| 当前行为 | 路由先调用 `api_username_registration_allowed`，migration 按 IP hash 记录一小时窗口，十次以上返回 429/阻断。测试明确固定该行为。 |
+| 文件和精确位置 | `commerce-api/src/api/registrationRoutes.ts:16-41,94-110`；`storefront-compatibility/.../20260812250000_username_password_registration.sql:1-78`；`storefront-compatibility/.../20260815123000_wechat_registration_aliyun_sms.sql:38-91` |
+| 当前行为 | 用户名注册路由先调用 `api_username_registration_allowed`，migration 按 IP hash 记录一小时窗口，十次以上返回 429/阻断；短信注册和账户安全挑战再按手机号十五分钟五次、IP 一小时二十次返回 429，错误验证码也会增加最多五次的尝试计数。测试明确固定用户名限流及短信 challenge 创建路径。 |
 | 预期行为 | 项目既定规则要求不保留登录/注册失败限流、锁定或冷却。 |
-| 直接证据 | AU-291 源码、迁移和 `registrationRoutes.test.ts:121-160`。 |
-| 用户影响 | 合法用户可因同 IP 既往尝试被拒绝注册一小时。 |
-| 建议方向 | 后续从最新主线建立单一用途修复分支，同时移除 API 与数据库两层限流及对应测试，再做真实注册验证。 |
-| 验证与回滚 | 以受控注册请求验证不返回 429；回滚为独立提交恢复原双层规则。 |
+| 直接证据 | AU-291 的源码、迁移和 `registrationRoutes.test.ts:121-160`；AU-292/AU-293 的手机挑战与账户安全迁移；AU-304 的发送状态迁移、`registrationRoutes.test.ts:20-34` 和 `otpDelivery.ts:13-29`。 |
+| 用户影响 | 合法用户可因同 IP 既往尝试被拒绝注册一小时，或因已有手机号验证码发送、错误码尝试记录被暂时阻断。 |
+| 建议方向 | 后续从修复时最新主线建立单一用途修复分支，同时移除 API 与数据库两层注册/验证码限流及对应测试，再做真实注册、短信发送和账户安全验证。 |
+| 验证与回滚 | 以受控注册、验证码发送和错误验证码请求验证不返回 429 或因累计次数锁定；回滚为独立提交恢复原规则。 |
