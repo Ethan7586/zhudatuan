@@ -1689,3 +1689,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1不强制；拟收窄前必须核验 production `pg_class`/`pg_policies`/role inheritance、connection SQL trace、仓外 callers和 replay requirement。 |
 
 - Identity Catalog command ACL 调用缺口归 DC-0076。累计 G0 60、G1 90、G2 5、G3 0、GX 41；未删除任何文件。
+
+## DC-0077｜Console Support 专用运行面仓内调用缺口
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `console-support.env.example`、`zhudatuan-console-support.service`、`ConsoleSupportMain` 的专用 loopback 4324 运行面。 |
+| 疑似原因 | [FACT][E-AU-717-001] release target、service 和 health check仍保留该进程；[FACT][E-AU-717-002] 固定基线 Caddy未将任何公开路由代理到4324；[FACT][E-AU-717-003] Console runtime以 `apiBaseUrl` 调用 canonical `api.fufu.wang`，完整 ApiMain含 SupportModule，未发现其它仓内 client/local caller。 |
+| 保留证据 | systemd/release seed/health contract、可能的仓外 localhost consumer、回滚或运维用途均未排除。 |
+| 可否删除 | 否；不满足外部调用、发布/运维责任、可观察行为和独立复核等G3条件。 |
+| 二次复核 | G1不强制；任何退役前在生产节点只读核验 service state/listeners/local access log、release history、Caddy active config与运维文档。 |
+
+- Console Support 运行面调用缺口归 DC-0077。累计 G0 60、G1 91、G2 5、G3 0、GX 41；未删除任何文件。
