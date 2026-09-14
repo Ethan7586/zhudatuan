@@ -2450,7 +2450,7 @@
 "02_platform_pingtai/README.md","平台底座","文档","已深入审阅","2026-09-15","AU-542 platform root README","平台 database/infrastructure/config 目录的人工导航","低","G0：准确的一级平台责任区导航；无运行入口","否"
 "02_platform_pingtai/config/LAW.md","平台配置","文档","已深入审阅","2026-09-15","AU-543 platform config LAW","配置人工治理读取者；根 LAW.md","中","G0：有效的局部权威转发，不新增独立最高规则","否"
 "02_platform_pingtai/config/artifacts.json","平台配置","结构化配置/数据","已结构性审阅","2026-09-13","CP-00 建档；CP-00A 证据语义","运行、契约或治理读取者","未评级","[FACT] CP-00 已完成入口或清单级核对；未深入实现","按后续定级需要"
-"02_platform_pingtai/config/authorities.yml","平台配置","结构化配置/数据","暂未审阅","","CP-00 建档；CP-00A 证据语义","运行、契约或治理读取者","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
+"02_platform_pingtai/config/authorities.yml","平台配置/需求权威","结构化配置/数据","已深入审阅","2026-09-15","AU-544 requirement authorities","requirementgen Authority loader；requirements audit；受管 Excel 工作簿","高","G0：repository-contained SHA-256 locked requirement authority，hash 已重算一致","否"
 "02_platform_pingtai/config/bundles.yml","平台配置","结构化配置/数据","暂未审阅","","CP-00 建档；CP-00A 证据语义","运行、契约或治理读取者","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "02_platform_pingtai/config/cache.yml","平台配置","结构化配置/数据","暂未审阅","","CP-00 建档；CP-00A 证据语义","运行、契约或治理读取者","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "02_platform_pingtai/config/capacity.yml","平台配置","结构化配置/数据","暂未审阅","","CP-00 建档；CP-00A 证据语义","运行、契约或治理读取者","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
