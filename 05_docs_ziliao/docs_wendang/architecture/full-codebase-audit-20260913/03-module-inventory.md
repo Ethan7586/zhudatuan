@@ -1755,3 +1755,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | test/domain port | DTO transition constraints、repository Port 和 send precondition/conflict test | [FACT][E-AU-161-004]；F-0185/P2 |
 
 [FACT][E-AU-161-005] 8 文件、252 行完成链路深审；其中 SendMessage 已由前批深审，本批新增 7 个首次深审文件。
+
+## 167. AU-162 Support read/health 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| case/history read | member 或 organization closure 的 case/history/keyset reads | [FACT][E-AU-162-001] |
+| message read | authorized message query、clean attachment metadata、KMS decrypt/finalize cursor formatting | [FACT][E-AU-162-002]；F-0186/P1 pending independent review |
+| runtime health/test | console DB role/schema/operation gate；message pagination/direct decrypt fixture | [FACT][E-AU-162-003] |
+
+[FACT][E-AU-162-004] 4 文件、183 行完成深审；Attachment query 的 authorization predicate 与 message query 不一致，已保留精确 SQL 证据。

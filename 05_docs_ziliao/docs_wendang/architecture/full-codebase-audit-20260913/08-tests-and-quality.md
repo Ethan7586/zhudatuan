@@ -416,3 +416,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 现有 direct test 只验证 send prepare 的 expected-version 和 locked lookup conflict。
 - case create、successful message side effects、scope/KMS error 与 SLA/assignment/outbox 没有 fixture，见 F-0185/P2。
+
+## 162. AU-162 Support read/health 深审
+
+- PGlite test 验证 message pagination、排序和 KMS finalize，但只使用授权 member fixture。
+- 未覆盖未授权 case 的 attachment metadata；该查询缺少同等 authorization predicate，见 F-0186/P1，待独立复核。

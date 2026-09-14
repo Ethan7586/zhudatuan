@@ -3624,6 +3624,22 @@
 | 建议方向 | 从修复时最新 `zdt-next` 独立建立 support write test batch；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2。 |
 
+## F-0186｜Support message read 的附件元数据查询绕过调用者授权条件
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | support / message read；P1；高；待独立复核 |
+| 类型 | 身份与权限、潜在跨 scope 附件元数据披露 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/support/03_application_yingyong/query/GetConversations.ts:29-31` |
+| 当前/预期 | message 主查询以 `conversation.member_id=$3 or organization.unitclosure` 限定调用者；随后 attachment 查询只使用 `ticket.id=$1 and evidence.state='clean'`。预期附件查询必须与同一工单的 message query 使用等价 member/scope predicate，或先以已授权 ticket context 驱动查询。 |
+| 直接证据 | 同一 lifecycle 的第一条 query 参数为 `[caseid, access.scope.id, member,...]`；第二条 attachment query 的过滤只有 case id、clean state，未传 access scope/member。 |
+| 调用链/影响 | ConsoleSupportMain → SupportRoutes → `support.messages.read`。知道任意 case id 的已认证调用者可取得 clean attachment 的 id/object_ref/hash/kind/size/created_at 元数据；对象内容是否还能被单独下载尚未验证，故未定为 P0。 |
+| 数据/安全影响 | 跨成员或跨组织 support evidence 元数据可能泄露；`object_ref` 还可能扩大后续对象访问面。 |
+| 根因 | 一个 operation 内两条关联查询的 authorization predicate 不一致，第二条未从已经授权的 ticket/conversation context 取数。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立独立最小修复批：复用同一授权 predicate，并加入跨 member/scope negative test；回滚为撤回该批。 |
+| 验证/回滚 | 定向 PGlite/integration fixture：未授权 case 必须同时返回零 message 和零 attachment；授权 member/ancestor 保持原结果。回滚为 revert 独立修复提交。 |
+| 独立复核 | 是；`records/AU-162-support-read-health/independent-review-queue.csv`。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
