@@ -1,0 +1,5 @@
+"编号","独立复核路径","证据","结论"
+"RV-AU-077-001","migration chronology","仅早期 migration 授予 invoice requestline/requestprofile 直接写；20260828094000 撤销所有关键 invoice direct writes；检索不到后续 regrant","shopjob direct write 不会被后续迁移恢复"
+"RV-AU-077-002","runtime/assembly","CommerceRuntime jobs pool expectedRole=shopjob；app/jobs 绑定 invoice: InvoiceJobProcessor","受影响代码是实际 jobs 运行入口"
+"RV-AU-077-003","migration assertion/function grants","INVOICE_DIRECT_WRITE_BOUNDARY_OPEN 与 INVOICE_CONTROLLED_WRITE_BOUNDARY_INVALID 断言；shopjob 只获 claim/register/release/finalize/fail execute","迁移明确声明 direct SQL 违反生产边界"
+"RV-AU-077-004","test intent","InvoiceIssueIntegrity 中完整 worker lifecycle 测试均为 it.skip/未实现","现有测试不能抵消运行时直接写冲突"

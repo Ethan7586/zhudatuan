@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-076 已完成。AU-076 完成 Finance 发票适配器与签发任务复审。覆盖总账按当前文件级清单重算：深入审阅971文件/81,238行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,877文件。InvoiceJob 已在 AU-064 深审，本批追加 migration/runtime 边界复核；F-0158/P1 候选进入 AU-077 独立复核。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-077 已完成。AU-077 完成 F-0158 的独立复核并确认为 P1。覆盖总账不变：深入审阅971文件/81,238行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,877文件；待发票完整性迁移单独深审。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -891,3 +891,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Finance InvoiceGateway、InvoiceJobProcessor、jobs role/注册、迁移写边界与 integrity 测试。
 
 执行结果：InvoiceJobProcessor 仍直接写发票核心表，但 canonical jobs role `shopjob` 已被迁移撤销相应写权且要求 claim/register/finalize 受控函数；完整签发测试明确 skip/未实现。新增 F-0158/P1 候选，立即进入 AU-077 独立复核。未发现 P0；未运行 Vitest 或改变运行状态。
+
+## 79. AU-077 连续审计点
+
+独立重查 F-0158 的迁移 grant/revoke chronology、jobs role、processor 绑定、受控函数权限和测试状态。
+
+执行结果：未见 20260828094000 后重新授予 shopjob invoice 核心表写权；runtime 仍以 shopjob 运行 direct-SQL InvoiceJobProcessor；迁移断言明确禁止该边界。F-0158 确认为 P1。未发现 P0；未运行测试或改变运行状态。
