@@ -634,3 +634,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - TransactionRunner无独立分支；其唯一语义为忠实转交UnitOfWork并保留query/command transaction context。
 - ModuleOperations通过不同workload pool消费它；无P0–P3新问题。
+
+## 209. AU-209 UnitOfWork contract 深审
+
+- ExecutionKernel direct test覆盖branded write transaction在execute后立即失效。
+- PgUnitOfWork的锁、retry与rollback已在基础设施专项审阅；UnitOfWork契约本身无额外运行分支。无P0–P3新问题。

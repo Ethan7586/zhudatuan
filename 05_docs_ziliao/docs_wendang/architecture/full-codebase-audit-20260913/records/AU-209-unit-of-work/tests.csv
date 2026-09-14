@@ -1,0 +1,2 @@
+file,coverage,execution
+src/foundation/application/ExecutionKernel.test.ts,write-context active-to-inactive lifecycle,PgUnitOfWork test coverage retained from earlier infrastructure review; not run: audit worktree has no Vitest dependencies

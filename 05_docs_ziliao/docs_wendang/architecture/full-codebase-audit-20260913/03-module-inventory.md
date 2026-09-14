@@ -2224,3 +2224,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | transaction delegation | 将明确TransactionContext和operation传给UnitOfWork；ModuleOperations以不同pool workload构造query/command runner | [FACT][E-AU-208-001] |
 
 [FACT][E-AU-208-002] 1 文件、9 行完成深审；实际ModuleOperations消费者证明其有读写事务语义职责，不是删除候选。
+
+## 214. AU-209 UnitOfWork contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| transaction context | 明确tenant/membership/scope/actor/trace/workload与serialization keys | [FACT][E-AU-209-001] |
+| write context lifecycle | brand + active WeakSet，只允许active write transaction context通过断言 | [FACT][E-AU-209-002] |
+
+[FACT][E-AU-209-003] 1 文件、62 行完成深审；ExecutionKernel验证write context关闭后失效，PgUnitOfWork实际执行数据库事务。
