@@ -828,3 +828,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | posted-only、decimal wire amount、watermark | [FACT][E-AU-072-002] |
 
 [FACT][E-AU-072-003] 2 文件、104 行 Finance overview 人工源码和测试完成深审。
+
+## 79. AU-073 Finance 账单与多运行模块读取模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| full finance read | entries/statement read、statement export | [FACT][E-AU-073-001] |
+| selected operator read | operator selected module 的 finance statement/entry 读取 | [FACT][E-AU-073-002] |
+| routing test | 完整 Finance operation catalog | [FACT][E-AU-073-003] |
+
+[FACT][E-AU-073-004] 4 文件、346 行 Finance read variants 人工源码和测试完成深审；`finance.statements.read` 双实现差异记录为 F-0157。

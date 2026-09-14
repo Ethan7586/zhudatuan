@@ -3225,6 +3225,18 @@
 | 验证/回滚 | 从最新主线的独立小分支以隔离 PostgreSQL 构造 difference/balanced/resolved item，核对 reconciliation、runtime.job 和 version；回滚为撤回测试或实现小批次。 |
 | 独立复核 | 否 |
 
+## F-0157｜财务报表读取在两个运行模块中语义不一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | finance / read boundary；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/finance/03_application_yingyong/query/GetBills.ts:18-24`；`.../FinanceReadOperations.ts:19-42`；`.../FinanceRoutes.ts:22-38`；`.../IdentityOperatorFinanceModule.ts:1-6` |
+| 当前/预期 | 完整 Finance module 的 `finance.statements.read` 返回 scope 闭包内 `draft`/`final` statement；Identity selected Finance module 对同一 operation id 额外要求 `calculation_version=2 and balanced`，并加入 account projection。预期同 operation id 的跨运行单元契约明确统一，或在合同/operation 中明确分离。 |
+| 影响 | 调用者因命中不同运行单元而得到不同 state 集合和响应形状，可能展示未平衡草稿、遗漏 account 明细或导致客户端兼容回归。未见已发生线上事故。 |
+| 根因 | 为完整 Commerce 与 selected operator module 保留了两套直接 SQL 实现，但未维护等价性测试或显式契约分叉。 |
+| 验证/回滚 | 从最新主线独立小分支以隔离数据库对两个 ModuleOperations 执行相同 request，比较 draft/final/balanced/账户行/cursor 结果；确定目标契约后小批次收敛一侧或拆分 operation。回滚为撤回该单一批次。 |
+| 独立复核 | 是；P2 跨运行单元契约差异需重新追踪 module registry 和实际 API host。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

@@ -1,0 +1,3 @@
+"测试","范围","结论","执行"
+"FinanceRoutes.test.ts","Finance full module operation catalog/wiring","确认注册，不比较 GetBills 与 FinanceReadOperations 的语义","未执行：固定审计 worktree 无 vitest 可执行文件"
+"finance statements/entries read","跨运行单元同 operation 的投影、draft 可见性和 cursor","未找到行为等价性测试；F-0157","未执行"
