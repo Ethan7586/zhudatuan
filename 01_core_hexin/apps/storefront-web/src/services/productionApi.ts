@@ -72,6 +72,7 @@ async function sessionBootstrap(): Promise<ApiBootstrap> {
   } catch {
     // The identity session is already authoritative. A delayed or denied
     // profile read must not erase the member shell and show the user as a guest.
+    // Only identity-verified claims are used here; no profile field is invented.
     profile = {
       id: session.membership,
       employee_no: session.membership,
