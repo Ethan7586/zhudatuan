@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-074-001","02_domain_yewu/model/{Account,Entry,Hold,Invoice,Journal,Payout,Period,Reconciliation,Settlement}.ts","类型状态与字段覆盖账、分录、冻结、发票、提现、账期、对账、结算","领域模型是无副作用的契约 shape"
+"E-AU-074-002","PostingPolicy.ts:6-11;SettlementPolicy.ts:4-24","借贷安全整数平衡；申请/批准分离、正金额、费率上限、invoice basis、fee/net safe split","关键会计与结算领域不变量位于明确 policy"
+"E-AU-074-003","FinancePolicy.test.ts:6-31","政策成功和主要拒绝边界均有直接领域测试","纯领域策略有可读的低成本 oracle"

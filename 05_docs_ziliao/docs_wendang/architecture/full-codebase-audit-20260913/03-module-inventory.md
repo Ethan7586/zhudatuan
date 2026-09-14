@@ -838,3 +838,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | routing test | 完整 Finance operation catalog | [FACT][E-AU-073-003] |
 
 [FACT][E-AU-073-004] 4 文件、346 行 Finance read variants 人工源码和测试完成深审；`finance.statements.read` 双实现差异记录为 F-0157。
+
+## 80. AU-074 Finance 领域模型与策略模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| domain shapes | account/entry/hold/invoice/journal/payout/period/reconciliation/settlement 契约 | [FACT][E-AU-074-001] |
+| policies | posting balance、settlement separation/split | [FACT][E-AU-074-002] |
+| tests | 纯领域成功和拒绝边界 | [FACT][E-AU-074-003] |
+
+[FACT][E-AU-074-004] 12 文件、207 行 Finance domain model/policy 人工源码和测试完成深审；ConfigFieldPolicy 已在 AU-068 审阅，不重复计数。

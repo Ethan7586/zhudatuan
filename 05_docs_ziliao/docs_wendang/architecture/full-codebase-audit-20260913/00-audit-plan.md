@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-073 已完成。AU-073 完成 Finance 账单与多运行模块读取契约审阅。覆盖总账按当前文件级清单重算：深入审阅957文件/80,969行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,891文件。`FinanceRoutes.ts`已在 AU-065 深审，本批只追加调用链复核，不重复计数。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-074 已完成。AU-074 完成 Finance 领域模型与策略审阅。覆盖总账按当前文件级清单重算：深入审阅967文件/81,114行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,881文件。PostingPolicy/SettlementPolicy 已在 AU-063/AU-064 深审，本批只追加领域关系复核，不重复计数。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -873,3 +873,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Finance entries/statement/export 读取、完整 Finance 与 Identity selected Finance 模块的同 operation 实现及路由注册测试。
 
 执行结果：entries posted-only 边界已追踪；新增 F-0157/P2：同一 `finance.statements.read` 在两个运行模块中的 state/projection 条件不一致，且无等价性行为测试。未发现 P0/P1；Vitest 仍因固定审计 worktree 缺少可执行文件未运行。
+
+## 76. AU-074 连续审计点
+
+审阅 Finance 领域 model、PostingPolicy、SettlementPolicy 及领域测试。
+
+执行结果：领域 shape、借贷平衡、结算四眼、金额/费率/invoice basis 和确定性 split 均已追踪；测试覆盖主要策略边界。未发现 P0–P3 新问题；Vitest 仍因固定审计 worktree 缺少可执行文件未运行。
