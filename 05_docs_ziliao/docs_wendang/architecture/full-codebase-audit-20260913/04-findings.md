@@ -5027,3 +5027,21 @@
 | 建议方向 | 从当时最新主线建立独立 qualification data-model 批次：先决定 profile 应为 `(member_id,scope_id)` 多行，或将 scope-independent字段与 Mall qualification state 拆表；添加历史 backfill和唯一性/foreign-key strategy。若产品确实禁止跨 Mall 注册，应在 invitation/registration DB and application boundary作 fail-closed enforce，并写明契约。不要仅把 trigger 改为 overwrite scope。 |
 | 验证/回滚 | 隔离数据库为同一 member 完成 Mall A/B registration，分别执行 qualification preview 和 quote，断言每 Mall profile/decision/context 正确且互不覆盖；覆盖已有 profile/多 tag/历史 rows迁移。回滚为撤回独立 schema/data migration 和 consumer adaptation。 |
 | 是否需要独立复核 | 是；复核者需重新检查 qualification profile/tag/policy/resource schema、所有 read/write consumer、可支持的跨 Mall membership产品语义及历史数据量。 |
+
+## F-0271｜确认收货 operation 已发布但未装配到实际 API
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Runtime catalog / Purchase API / order receipt |
+| 类型 | API 契约、运行入口与模块装配断链 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260905010000_publish_runtime_catalog_alignment.sql:24-45`；`01_core_hexin/services/commerce/src/modules/order_dingdan/03_application_yingyong/commands_xieru/ConfirmOrderReceipt.ts:20-57`；`modules/purchase/PurchaseModules.ts:9-21`；`modules/purchase/PurchaseOperations.ts:39-44`；`entry/PurchaseApiMain.ts:10-17`；`entry/PurchaseApiEntrypoint.test.ts:22-40,58-70`；`foundation/interface/OperationController.ts:295-305`。 |
+| 当前/预期 | migration 将 `order.orders.receive` 发布为 `POST /api/v1/orders/{orderid}/receive`，附加 member audience、`order.read` permission 与 enabled entitlement；其 handler 和 order module均存在。但实际 Purchase API operation array 只含 quote、create order、create/read payment，selected order module 只加载 `order.orders.create`，因此 bootstrap 不注册 receive route。预期是公开 catalog 的 operation 被一个部署运行单元以相同 method/path 注册，或目录和 capability 被正式退役。 |
+| 直接证据 | [FACT][E-AU-650-001] migration 写入 `runtime.operation`/`capability.operation`/entitlement；[FACT][E-AU-650-002] receipt handler 的 operation key 是 `order.orders.receive`，并只允许当前 scope member 对自己的 shipped order 更新；[FACT][E-AU-650-003] Purchase API Main 的 allowlist 来自 `PURCHASE_OPERATION_IDS`，其中不含 receive，且 `PurchaseOrderModule` 仅选择 create；[FACT][E-AU-650-004] route contract 将 allowlist 精确断言为四项、只断言 create order/payment read 路由；OperationController 仅为 passed selected operation IDs 注册 route。对非测试 source 的该 operation-id 使用检索没有发现其他 entrypoint 装配。 |
+| 调用链或运行入口 | catalog/capability publication → 应承诺 `POST /api/v1/orders/{orderid}/receive` → Purchase API `bootstrapApi(operationIds)` → `PurchaseOrderModule` selected operations；当前在最后两步缺失 receive。 |
+| 用户/数据/安全影响 | 用户或集成方按 published catalog 调用确认收货时会没有本仓 Node API route；订单保持 shipped/active，后续 completed 事件不会发布。未发现越权写入、数据损坏或已发生线上失败回执。 |
+| 根因 | runtime catalog migration 与最小化 Purchase API surface 发生独立演进；入口测试固定了排除后的 allowlist，却未对数据库 operation registry 与实际 deployment route 建立闭环断言。 |
+| 建议方向 | 从当时最新主线建立一个单一目的 repair batch：先确认产品仍承诺确认收货；若承诺，向权威 Purchase API 增加 receive 的 selected module/operation/route 与真实授权测试；若已下线，则前向停用 runtime operation、capability 与 entitlement，并处理客户端契约。不要修改历史 migration。 |
+| 验证/回滚 | 隔离环境通过实际部署的 Purchase API 以合法 member 调用该 path，断言仅本人 shipped order 成功、重复幂等、他人/未发货/version conflict 均拒绝；退役路径则断言 catalog 与客户端不再暴露。回滚为撤回独立入口或目录变更。 |
+| 是否需要独立复核 | 否；实施前需要产品/API owner确认 operation 是否仍是对外承诺。 |
