@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-242-001,src/foundation/infrastructure/MigrationExecutionPlan.ts,1-10,compatibility transform,Only owner-transfer migration replaces exactly one session_hash add-column statement with if-not-exists form.
+E-AU-242-002,src/foundation/infrastructure/MigrationExecutionPlan.ts,6-8,drift guard,Unexpected occurrence count causes MIGRATION_TRANSFORM_DRIFT before SQL execution.
+E-AU-242-003,src/foundation/infrastructure/MigrationRunner.ts,59-67,runtime consumer,Runner applies genericMigrationSql to every pending migration source before client.query and ledger insert.
+E-AU-242-004,src/foundation/infrastructure/MigrationExecutionPlan.test.ts,9-25,test evidence,Fixtures verify exact transform unrelated migration identity and drift failure.

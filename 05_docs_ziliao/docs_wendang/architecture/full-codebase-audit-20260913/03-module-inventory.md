@@ -2537,3 +2537,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime surface | runtime health dependency把当前snapshot作为databaseQueries返回 | [FACT][E-AU-241-003] |
 
 [FACT][E-AU-241-004] 1 文件、32 行完成深审；没有direct aggregation fixture，见F-0222/P3。
+
+## 247. AU-242 Migration execution plan 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| immutable migration compatibility | 对唯一历史owner-transfer migration的session_hash列语句改写为if-not-exists | [FACT][E-AU-242-001] |
+| drift guard | 文件不匹配或出现非唯一目标语句即阻止执行 | [FACT][E-AU-242-002] |
+| runner handoff | MigrationRunner在把每个未应用SQL交给数据库前执行plan | [FACT][E-AU-242-003] |
+
+[FACT][E-AU-242-004] 2 文件、35 行完成深审；转换、旁路和漂移故障均有direct fixture，无P0–P3新问题。

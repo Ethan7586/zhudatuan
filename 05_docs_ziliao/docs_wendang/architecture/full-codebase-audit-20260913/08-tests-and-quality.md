@@ -799,3 +799,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - PoolSet及runtime health实际消费metrics；没有direct fixture锁定聚合、排序、失败和frozen snapshot。
 - 见F-0222/P3。审计工作树未运行Vitest。
+
+## 242. AU-242 Migration execution plan 深审
+
+- Direct fixture覆盖目标历史迁移的精确幂等化、无关SQL旁路和源文本drift阻断；Runner调用点明确。
+- 无P0–P3新问题。审计工作树未运行Vitest。
