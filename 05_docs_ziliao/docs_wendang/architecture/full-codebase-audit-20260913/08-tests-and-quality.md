@@ -466,3 +466,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Order/registration route tests以真实 `encryptJson` 调用进入上层mock RPC，但不解密或断言cipher envelope；`supabase.ts`与`crypto.ts`没有同层测试。
 - 应直接覆盖AES-GCM round-trip、IV随机性、篡改/错误key拒绝、非法key与RPC 204/non-OK 2KB截断。见F-0189/P2；审计工作树未运行Vitest。
+
+## 175. AU-175 WeChat/registration/step-up compatibility auth 深审
+
+- WeChat test覆盖provider code公开结果、不回传session_key、new/existing membership与atomic register-bind；registration test覆盖OTP/debug/production禁用、输入/limiter/邀请结果；step-up test覆盖错误密码、成功新cookie和limiter。
+- WeChat bind direct handler和OTP provider failure/retry没有本批direct fixture；当前auth namespace也没有正式router registration。审计工作树未运行Vitest。

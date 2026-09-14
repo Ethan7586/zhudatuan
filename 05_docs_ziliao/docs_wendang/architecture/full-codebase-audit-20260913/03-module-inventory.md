@@ -1890,3 +1890,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | consumers | registration/order/address/security-center write and address read | [FACT][E-AU-174-004] |
 
 [FACT][E-AU-174-005] 2 文件、104 行完成深审；没有同层adapter test，route tests仅间接触发部分encrypt path。
+
+## 180. AU-175 WeChat/registration/step-up compatibility auth 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| WeChat session | provider code exchange、identity resolve/enroll、membership runtime、miniapp token | [FACT][E-AU-175-001] |
+| WeChat bind/register | binding challenge、credential/limiter、atomic registration-bind、token issue | [FACT][E-AU-175-002] |
+| registration | SMS challenge hash/expiry、phone or username invite registration、PII/credential hash | [FACT][E-AU-175-003] |
+| step-up | current credential verification、limiter/audit、session revoke/reissue with step-up timestamp | [FACT][E-AU-175-004] |
+
+[FACT][E-AU-175-005] 6 文件、864 行完成深审；三条链都有direct handler tests，但当前full router对auth namespace返回404，真实正式挂载仍未证明。

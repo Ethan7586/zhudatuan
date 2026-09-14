@@ -1,0 +1,4 @@
+file,coverage,execution
+src/api/wechatAuthRoutes.test.ts,provider error mapping session-key non-disclosure new/existing membership atomic registration-bind,not run: audit worktree has no Vitest dependencies
+src/api/registrationRoutes.test.ts,OTP/debug/prod boundary password input limiter invitation and registration results,not run: audit worktree has no Vitest dependencies
+src/api/stepUpRoutes.test.ts,wrong credential audit successful session reissue limiter stop,not run: audit worktree has no Vitest dependencies
