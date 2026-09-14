@@ -4794,6 +4794,28 @@
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
 
+## F-0293｜Internal Mall 导入模式缺少目标数据库与本机边界
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | test data / Internal Mall dataset import |
+| 类型 | 数据安全、写入目标约束 |
+| 严重级别 | **P2** |
+| 置信度 | 高（导入 parser、连接 guard、写入入口和使用文档均为直接证据；实际误导入未验证） |
+| 文件和精确位置 | `04_tools/tools/seed/src/InternalMallDatabase.ts:19-47,92-106`；`ImportInternalMallDataset.ts:11-34`；`05_docs_ziliao/docs_wendang/testdata/InternalMallDataset.md:41-55,71-86`。 |
+| 当前/预期 | 常规 dataset mode强制 local host、`zhudatuan_internal_` DB 名与非 ITHT 订单为空；import mode只要求 `--database`，允许任意 `--host`/port，`assertImportDatabase`仅验证连接后的库名等于请求参数、schema 存在且已有 migration。随后同一 transaction 写入 core、commerce、reporting synthetic records。预期是 import mode也只允许受命名/环境/host/credential保护的明确测试目标，并在写入前拒绝已有非数据集业务数据。 |
+| 直接证据 | [FACT][E-AU-720-001] parser 19-20为 import 传入 `localOnly=false`，36-45因此跳过 prefix/localhost checks；[FACT][E-AU-720-002] import guard 105-106不检查 host、database prefix或 foreign rows；[FACT][E-AU-720-003] import 27-30调用三个 writer；[FACT][E-AU-720-004] 文档所有示例均是专用 `zhudatuan_internal_hongtai_...` 测试库。 |
+| 调用链或运行入口 | `npm run dataset:import:test -- --database … [--host …]` → `ImportInternalMallDataset` → `parseImportOptions`/`connectInternalDatabase`/`assertImportDatabase` → core/commerce/reporting writes。 |
+| 用户影响 | 拥有可写 PostgreSQL 凭据的操作者若填错目标参数，可能向正常环境写入大量 synthetic organization/member/product/order/payment/reporting 行；实际连接权限与历史发生情况未验证。 |
+| 数据影响 | 写入数量大、跨多个业务 schema；外层 transaction 可回滚运行时失败，但成功 commit 后只能走受控 cleanup/数据修复，不能当作普通临时文件删除。 |
+| 安全影响 | 不是外部未授权访问；是受信任运维/开发凭据下缺少目标环境 defense-in-depth。 |
+| 根因 | import 用途绕过 local-only guard，但未以独立 allowlist、sentinel、专用 role或 foreign-data preflight替代。 |
+| 建议方向 | 从当时最新主线建立单一 dataset-import guard 批次：明确允许的 test DB identity/host/role/sentinel，保留显式受控的非本机测试用途；在 transaction 前拒绝非 ITHT data。不得修改历史 dataset 或在审计分支执行 cleanup。 |
+| 预计修改范围 | `InternalMallDatabase` import parser/assertion、命令文档和针对 local/approved remote/production-like target 的单元或隔离 PostgreSQL contract。 |
+| 验证方式 | 隔离 PostgreSQL覆盖 local专用库成功、approved remote test target成功、普通库名/host、production-like schema、非 ITHT rows、缺 sentinel、错误 role均拒绝；断言所有拒绝路径零写入。 |
+| 回滚方式 | 回退独立 import guard 提交；若发现历史误导入，先按 `itht:` 范围、外键依赖和真实业务引用制定专项数据修复。 |
+| 是否需要独立复核 | 否。 |
+
 ## F-0292｜本地基础设施验证持续写入对象但不清理
 
 | 字段 | 记录 |
