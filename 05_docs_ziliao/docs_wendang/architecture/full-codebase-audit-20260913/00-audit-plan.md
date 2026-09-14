@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-135 已完成。AU-135 完成 Catalog publication Worker 与行为测试审阅。覆盖总账按当前文件级清单重算：深入审阅1,285文件/98,640行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,568文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-136 已完成。AU-136 完成 Catalog 媒体复制、OSS 与持久化测试审阅。覆盖总账按当前文件级清单重算：深入审阅1,288文件/99,308行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,565文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1245,3 +1245,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Catalog publication Worker 逐 listing 发布、durable progress checkpoint、冲突回滚及行为测试。
 
 执行结果：Worker 冻结或旧式查得 target list 后，以 `for update`、listing readiness/pool 条件和 upsert poolitem 逐项发布；每项在独立 transaction 内先推进 guard-protected runtime job progress，冲突则回滚 listing。checkpoint 仅允许 counters 单调增加且 failures 与 failed 数一致。三项测试覆盖 published/skipped/failed、断点恢复及 progress conflict rollback。未发现 P0–P3 新问题；Vitest 未运行。
+
+## 138. AU-136 连续审计点
+
+审阅 Catalog OSS adapter、media replication coordinator 和 product media PGlite persistence 的三项完整测试。
+
+执行结果：OSS 测试验证 put/head、缺失对象归一化、认证/网络错误不吞没、每 target 独立 credential；replication 测试验证 content-address key、required/optional target、hash mismatch、重试和 public URL；PGlite 测试验证 replica 证据、binding/unbinding、失败恢复、多 target、stable position、导入 fixture 和 migration ledger。未发现 P0–P3 新问题；F-0173 的 hostile source URL/redirect/size 反事实仍未覆盖；Vitest 未运行。

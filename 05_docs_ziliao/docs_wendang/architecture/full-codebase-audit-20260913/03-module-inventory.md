@@ -1488,3 +1488,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 完成、恢复与 progress conflict rollback | [FACT][E-AU-135-003] |
 
 [FACT][E-AU-135-004] 2 文件、361 行 Catalog publication Worker 和行为测试完成深审；Worker 不将 listing 更新提交在未同步 durable progress 的 transaction 之外。
+
+## 141. AU-136 Catalog 媒体复制测试清单
+
+| 测试层 | 覆盖行为 | 当前边界 |
+| --- | --- | --- |
+| OSS adapter | put/head、missing 归一化、认证/网络错误、target credential | [FACT][E-AU-136-001] |
+| replication coordinator | content addressing、target complete/incomplete、hash/optional/retry/public URL | [FACT][E-AU-136-002] |
+| PGlite persistence | replication evidence、binding lifecycle、recovery、多 target、fixture/migration ledger | [FACT][E-AU-136-003] |
+
+[FACT][E-AU-136-004] 3 文件、668 行媒体测试完成深审；媒体存储/持久化行为测试充足，source URL trust boundary 不在这些 fixture 覆盖内，沿用 F-0173/P1。

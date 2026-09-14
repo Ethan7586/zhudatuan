@@ -277,3 +277,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 两项测试分别固定 HTTPS provider 示例和基本 fallback/incomplete 反事实，均不构造 http、loopback/private IP、redirect、超大/流式 body。
 - 独立调用链重查与 F-0173 一致，P1 保持、双轮确认；本 AU 未运行 Vitest。
+
+## 136. AU-136 Catalog 媒体复制测试深审
+
+- 三项测试合计覆盖 OSS adapter、replication coordinator 和 PGlite persistence：required/optional replica、hash mismatch、failure recovery、解绑、重试、多 target 与迁移 ledger 均有行为断言。
+- 这些测试把 provider URL 作为已下载 bytes 或 HTTPS 示例，未覆盖 Worker URL allowlist、redirect 或 response-size；F-0173/P1 不因存储层测试充分而降级。
+- 本 AU 未运行 Vitest。
