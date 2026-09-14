@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-155 已完成。AU-155 完成 Reporting 的读取、缓存、导出 HTTP 与双 API 装配审阅。覆盖总账按当前文件级清单重算：深入审阅1,506文件/107,865行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,348文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-156 已完成。AU-156 完成 Reporting projection/export Worker 审阅；其中 3 个实现文件已由 AU-047 深审，本批新增 2 个首次深审文件。覆盖总账按当前文件级清单重算：深入审阅1,508文件/107,955行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,346文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1365,3 +1365,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Reporting metric/dashboard/export HTTP、repository public adapter、full/identity selected module、manifest 和已有 read/export tests。
 
 执行结果：full API 组装 cache-versioned dashboard、指标查询、export create/read；completed clean export 只通过 ObjectStore 生成 300 秒授权下载。identity selected module 仅暴露七项 operator metric reads。现有测试覆盖 timestamp cursor、XLSX/CSV formula neutralization、order export filter SQL 与 manifest；projection/export worker 未纳入本批。未发现 P0–P3 新问题。
+
+## 158. AU-156 连续审计点
+
+审阅 Reporting 的 ProjectionEvent、projection/export worker 及 projection test。
+
+执行结果：projection job 在 transaction 内 claim inbox、投影事件、complete event，再只清理旧 projection-version cache；export job 每 1,000 行推进 cursor、CSV/XLSX 写入、inspect clean/hash/size/contentType 后完成，异常 abort object 并依 attempts 标记失败/终态。新增 F-0183/P2：没有 ExportJobRunner 或 ProjectionJobProcessor 的直接 process/retry/cache/integrity 行为测试。无 P0。

@@ -3585,6 +3585,19 @@
 | 建议方向 | 从修复时最新 `zdt-next` 建立独立测试批次；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2。 |
 
+## F-0183｜Reporting projection/export Worker 没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | reporting / async worker；P2；高 |
+| 类型 | 测试覆盖缺口、投影幂等/缓存/导出恢复正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/reporting/05_interface_jieru/job/{ProjectionJob,ExportJobRunner}.ts` |
+| 当前/预期 | 实现包含 inbox claim→transaction projection→versioned cache invalidation，以及 export pagination→object scan/integrity→complete/fail。现有 test 只调用 `ProjectEvent` 内存仓储与 export document helpers。预期应直接覆盖两个 processor 的 success/replay/abort/retry/integrity/cache paths。 |
+| 直接证据 | `*.test.ts` 没有 `new ExportJobRunner`、`new ProjectionJobProcessor` 或其 `process` 调用。 |
+| 调用链/影响 | jobs catalog → projection/export JobProcessor → reporting fact/export/object/cache。异常恢复、重复 delivery、object abort 或 stale cache 回归无法被当前 suite 直接发现。 |
+| 建议方向 | 从修复时最新 `zdt-next` 独立建立 worker test batch；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

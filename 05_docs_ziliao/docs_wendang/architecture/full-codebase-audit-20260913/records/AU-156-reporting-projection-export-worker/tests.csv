@@ -1,0 +1,4 @@
+verification,scope,result,reason
+Source-level worker trace,Projection and export processor plus jobs registration,Completed,Transaction/cache/object/retry paths reviewed.
+Existing test review,ProjectEvent and ExportDocument tests,Completed,Domain/helper behavior only; F-0183 records processor gap.
+Targeted formal test,Reporting worker suite,Not run,Audit worktree dependency baseline lacks vitest; dependencies unchanged.

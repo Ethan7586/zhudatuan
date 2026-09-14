@@ -386,3 +386,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Reporting read test 覆盖 PostgreSQL timestamp cursor；ExportDocument test 覆盖 XLSX、CSV formula neutralization、order export filter/scope SQL 和任务列表。
 - 本批未将 projection/export Worker 行为纳入结论，保留下一独立单元。
+
+## 156. AU-156 Reporting projection/export Worker 深审
+
+- ProjectEvent test 覆盖 paid-event hierarchy/partner metric 与未知事件 fail-closed；ExportDocument test 仅覆盖 document helper。
+- 两个 JobProcessor 无 direct process/retry/abort/integrity/cache fixture，见 F-0183/P2。

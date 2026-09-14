@@ -1695,3 +1695,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | module/test | full reporting route 与 identity-only read module；cursor/document/manifest tests | [FACT][E-AU-155-003] |
 
 [FACT][E-AU-155-004] 17 文件、741 行完成深审；projection/export worker、projection domain 与 legacy compatibility 留待后续单元。
+
+## 161. AU-156 Reporting projection 与 export Worker 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| projection | inbox claim、version-1 event mapping、facts/order state、event completion/cache invalidation | [FACT][E-AU-156-001] |
+| export runner | cursor pagination、CSV/XLSX write、object integrity/scan、failure state | [FACT][E-AU-156-002] |
+| test | ProjectEvent in-memory mapping/closed failure | [FACT][E-AU-156-003]；F-0183/P2 |
+
+[FACT][E-AU-156-004] 5 文件、363 行完成深审；Worker process/retry fixture 缺口已独立记录。
