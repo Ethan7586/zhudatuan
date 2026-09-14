@@ -1602,3 +1602,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | consumers | 主应用和独立 Mall Provisioning API 使用 canonical registration | [FACT][E-AU-146-003]；G0 |
 
 [FACT][E-AU-146-004] 9 文件、29 行完成深审；Provisioning 27/27 文件均已取得审阅状态，兼容路径保留不删。
+
+## 152. AU-147 Member 运营读取、自定义资料与双入口清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| operator/storefront read | 治理树成员目录、商城消费者/详情/邀请关系/订单、邀请与导入状态读取 | [FACT][E-AU-147-001]；scope 与 keyset 在 action 层确定 |
+| storefront custom profile | 商城自定义字段/标签定义、成员值与系统标签聚合 | [FACT][E-AU-147-002]；仅 mall scope，字段/值均按 organization_id 隔离 |
+| full member composition | profile、地址写入、导入/open/upgrade/read/custom 的完整 Commerce module 组装 | [FACT][E-AU-147-003]；地址明文先经 KMS envelope |
+| identity API selected module | 仅 operator read 与 storefront profile action 进入身份注册 API | [FACT][E-AU-147-004]；不暴露 hosted/open/upgrade/address/import 写入 |
+| tests | PGlite 资料/读取事实与 entrypoint 路由装配 | [FACT][E-AU-147-005]；本 worktree 未能执行 Vitest |
+
+[FACT][E-AU-147-006] 9 文件、1,056 行完成深审；Member 读写边界和双 API 运行入口可定位，尚余 public port、开通/主权升级和导入异步链待后续 AU。

@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-146 已完成。AU-146 完成 Provisioning 兼容入口与文件级覆盖闭合。覆盖总账按当前文件级清单重算：深入审阅1,394文件/103,600行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,459文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-147 已完成。AU-147 完成 Member 的运营读取、自定义资料与双运行入口审阅。覆盖总账按当前文件级清单重算：深入审阅1,403文件/104,656行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,451文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1311,3 +1311,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Provisioning root/legacy exports、public index 和 main/dedicated API consumer。
 
 执行结果：八项旧路径均为单向转发，public index 只暴露 port/domain/manifest；app modules 与独立 provisioning API 均使用 canonical interfaces。全部归类 G0。Provisioning 27/27 文件已完成文件级覆盖；未发现 P0–P3 新问题；无适用新增测试。
+
+## 149. AU-147 连续审计点
+
+审阅 Member 的 operator/storefront 读取、自定义资料配置/赋值、地址/profile composition、full/identity-selected module、manifest 及相关 PGlite/entrypoint 测试，并从 Commerce main 与 Identity Registration API 反查双入口。
+
+执行结果：Commerce main 注册 full MemberModule；Identity Registration API 注册仅含 operator-read 和 storefront custom-profile 的 selected member module。读取严格区分治理树、mall scope 与 storefront membership；自定义标签/字段按商城隔离并验证字段类型，地址写入在 KMS envelope 后委托 checkout address port。现有 PGlite 测试覆盖治理/商城边界、脱敏、keyset、custom-field 七种类型和 entrypoint route/operation 装配；本次定向 Vitest 因 audit worktree 缺少 `vitest` 退出 127，运行结论未验证。未发现 P0–P3 新问题。

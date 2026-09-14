@@ -339,3 +339,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 兼容文件不包含独立运行分支；public index 的 export isolation 已由 manifest test 覆盖。
 - 不将旧分层转发当作删除依据；Provisioning 27/27 文件已获得审阅状态。
+
+## 147. AU-147 Member 运营读取与自定义资料深审
+
+- `MemberReadOperations.test` 的 PGlite fixture 覆盖治理子树、operator/storefront 分离、商城范围、masked output、membership-bound identity、搜索、keyset、详情/邀请关系/订单和非 mall scope 拒绝；`MemberCustomProfileOperations.test` 覆盖七类字段、系统标签与跨商城隔离。
+- `IdentityRegistrationApiEntrypoint.test` 和 manifest test 证明 selected-module 的 route/operation 装配与 public surface，但不能替代生产 HTTP/数据库执行。
+- 按正式 Commerce `npm test` 入口定向运行 4 个相关文件，因 audit worktree 缺少 `vitest` 以退出码 127 终止；未安装依赖，所有本 AU 测试执行结论标为未验证。
