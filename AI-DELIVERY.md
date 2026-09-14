@@ -1,6 +1,6 @@
-# AI 发布通道（1.2 兜底与正式 1.3）
+# AI 发布通道（1.2 兜底、正式 1.3 与 1.3.1 封板协议）
 
-1.3 已完成通道建设并作为正式可用的并行生产通道运行：GitHub `Prepare Artifact` 生成制品，GitHub `Prepared Deploy` 验证或部署已经存在的制品。现有 1.2 `Deploy`、`Deploy via Wuhan OSS` 和 `scripts/deploy-now.sh` 保持原样，继续承接尚未自然迁移的运行目标以及 `h6-cdn` 等 L2/边缘能力。1.3 两条工作流一次都只接受一个 target；不支持空目标、affected 或多目标扇出；工作流必须从 `zdt-next` 触发，source SHA 必须属于该次精确 `zdt-next` 控制提交的历史。
+1.3 已完成通道建设并作为正式可用的并行生产通道运行：GitHub `Prepare Artifact` 生成制品，GitHub `Deploy 1.3.1 - Sealed Candidate` 验证或部署已经存在的制品。1.3.1 在 1.3 上增加候选封板：候选验证必须证明当前生产 source SHA 是候选 source SHA 的 Git 祖先，并把精确制品、候选目录、当前生产指针、当前生产 source SHA、Agent 和策略摘要写入封板记录；正式部署只能消费该记录，不能临时下载候选。现有 1.2 `Deploy` 和 `scripts/deploy-now.sh` 继续承接尚未自然迁移的运行目标以及 `h6-cdn` 等 L2/边缘能力；旧武汉 OSS 组合通道明确标记为 `Legacy 1.2`，缺少恢复用途确认时在 checkout 和构建前停止。1.3/1.3.1 两条工作流一次都只接受一个 target；不支持空目标、affected 或多目标扇出；工作流必须从 `zdt-next` 触发，source SHA 必须属于该次精确 `zdt-next` 控制提交的历史。
 
 ## 当前状态与迁移边界
 
@@ -13,11 +13,11 @@
 
 生产覆盖率是后续迁移进度，不是 1.3 通道成立的门禁。不得为了追求覆盖率连续扰动生产；以后哪个目标本来就需要发布，就通过 1.3 完成该部署位的第一次自然迁移。未迁移目标继续使用 1.2，数据库迁移和多服务组合目标最后处理。
 
-全面替代 1.2 需要最终覆盖全部 L0/L1 生产部署位；退役整个 1.2 还需要为 `h6-cdn` 等 L2/边缘能力完成独立安置。两项条件都满足并获得 Ethan 的独立清理授权前，1.2 必须继续保留。
+全面替代 1.2 需要最终覆盖全部 L0/L1 生产部署位；退役整个 1.2 还需要为 `h6-cdn` 等 L2/边缘能力完成独立安置。两项条件都满足并获得 Ethan 的独立清理授权前，1.2 必须继续保留。保留不等于混用：`Legacy 1.2` 会安装依赖、构建并包含组合目标，不能被称为或用作 1.3.1。
 
 ## 用户入口与授权
 
-Ethan 每次在独立任务中输入“部署”才是该次 1.3 生产授权。AI 只部署已存在的精确制品，不得在 Prepared Deploy 中修代码、安装依赖、测试、构建、打包、发布制品、推送分支或建设通道。目标或完整 40 位 source SHA 不明确时只询问缺失项。
+Ethan 每次在独立任务中输入“部署”才是该次 1.3.1 生产授权。AI 只部署已经验证并封板的精确候选，不得在 Deploy 1.3.1 中修代码、安装依赖、测试、构建、打包、发布制品、下载缺失候选、推送分支、修改 Caddy 或建设通道。目标或完整 40 位 source SHA 不明确时只询问缺失项；封板不存在、生产基线无法识别或封板后 current 变化时立即停止。
 
 通道建设、Prepare 和 Deploy 是三个不同动作。建设完成后必须停止；Prepare 完成后也不得顺带 Deploy。生产切流仍须 Ethan 在独立任务中明确输入“部署”。
 
@@ -37,7 +37,7 @@ scripts/deploy-now.sh [target] [full-source-sha] [node]
 
 参数留空时使用 GitHub `zdt-next` 的精确 HEAD 和 `hbbtzn-l1`；目标必须已由上下文明确，不能借空参数扩大到全部受影响目标。
 
-独立授权后的 1.3 生产触发入口是：
+独立授权后的 1.3.1 生产触发入口是：
 
 ```bash
 scripts/deploy-prepared.sh <target> <full-source-sha> <node>
@@ -145,16 +145,18 @@ release-manifest-<release-manifest-file-sha256>.json
 
 1.3 不删除任何 OSS 制品。生命周期清理在建立“读取全部节点 current/previous 指针并生成保护集”的独立回收器之前保持关闭；未来至少保留每个节点当前版和回滚版，建议普通制品至少保留 90 天。当前或回滚所需对象不得由日期规则直接删除。
 
-## Prepared Deploy（1.3 纯部署通道）
+## Deploy 1.3.1（封板候选纯部署通道）
 
-`.github/workflows/deploy-prepared.yml` 必须输入一个完整 source SHA、一个 node 和一个 target。默认操作是 `validate-candidate`，只解析、下载、校验并设置候选，不移动 current。`deploy` 只由 Ethan 的“部署”口令触发，不再接收脚本可自动生成的第二授权字符串。工作流只稀疏读取当前发布控制面，不 checkout 业务源版本，不执行 `npm ci`、测试、类型检查、构建、打包或上传。
+`.github/workflows/deploy-prepared.yml` 必须输入一个完整 source SHA、一个 node 和一个 target。默认操作是 `validate-candidate`，只解析、下载、校验并设置候选，不移动 current；随后读取当前运行制品的 source SHA，由 GitHub 比较证明当前生产版本是候选版本的祖先，再由远端 Agent 在目标锁内复核 current 未变化并写入封板记录。`deploy` 只由 Ethan 的“部署”口令触发，不再接收脚本可自动生成的第二授权字符串。工作流只稀疏读取当前发布控制面，不 checkout 业务源版本，不执行 `npm ci`、测试、类型检查、构建、打包或上传，也不会向 ECS 发送制品下载地址。
 
 ```text
-OSS 前缀查询 → 唯一 release manifest
+候选阶段：OSS 前缀查询 → 唯一 release manifest
   → project/target/node/source SHA/manifest/SHA-256/长度校验
-  → ECS 通过同地域 OSS 内网 Endpoint 下载
-  → 远端再次校验 manifest 与 SHA-256
-  → 候选检查 → previous 回滚点 → 原子 current 切换
+  → ECS 下载并验证候选 → current 保持不变
+  → 当前生产 source SHA 血缘核对 → 写入不可替代的候选封板记录
+
+部署阶段：读取 OSS manifest 身份 → 核对本机候选与封板
+  → 核对 current 仍等于封板基线 → previous 回滚点 → 原子 current 切换
   → 仅重启目标服务 → 最长 30 秒健康检查
   → 成功回执；失败自动恢复旧指针并复验旧版本
 ```
@@ -170,19 +172,23 @@ npm run release -- deploy-prepared --source-sha <source-sha> --node <node> --tar
   --expected-remote-agent-sha256 <sha256> --expected-remote-policy-sha256 <sha256>
 ```
 
-Prepared Deploy 只接受仓库固定的 ECS Ed25519 主机键（指纹 `SHA256:k5H7lupovyWgtjZJWrB4nmeLc0T1CpBN5FR/Xd3qmW8`），禁止运行时 `ssh-keyscan`。当前控制面从精确 checkout 计算 Agent 与 policy 摘要并调用 v2 远端动作；新 Agent 在下载、加锁和切换前自校验，旧 Agent 因不认识 v2 动作直接拒绝，动作完成后的回执再逐值复核。只有格式正确但值不同同样停止。OSS 中制品不存在、对象下载失败、摘要/清单不符或 project/target/node/source SHA 不符时，远端切换不会开始。同一精确制品可重复部署；ECS 已有不可变版本时跳过下载并执行健康复核。相同制品也可部署到清单声明的其他节点，不重新构建。
+Deploy 1.3.1 只接受仓库固定的 ECS Ed25519 主机键（指纹 `SHA256:k5H7lupovyWgtjZJWrB4nmeLc0T1CpBN5FR/Xd3qmW8`），禁止运行时 `ssh-keyscan`。当前控制面从精确 checkout 计算 Agent 与 policy 摘要并调用 v3 远端动作；新 Agent 在候选验证、封板和切换前自校验，旧 Agent 因不认识 v3 动作直接拒绝，动作完成后的回执再逐值复核。只有格式正确但值不同同样停止。OSS 中制品不存在、对象下载失败、摘要/清单不符或 project/target/node/source SHA 不符时，候选不能封板；封板不存在、候选身份不同、Agent/策略变化或 current 不再等于封板基线时，部署不能开始。若 current 不是发布系统可识别的不可变制品，必须在独立迁移任务中先建立基线，不能在部署现场猜测。相同制品也可在清单声明的其他节点分别验证和封板，不重新构建。
+
+## 后端单目标边界
+
+1.3.1 不接受旧 `commerce-api` 或 `workers` 组合目标。后端只允许 `identity-api`、`mall-provisioning-api`、`support-api`、`purchase-api`、`web-api`、`catalog-api`、`payment-webhook-api`、`identity-notification-jobs`、`catalog-jobs`、`payment-jobs` 和 `database-migration` 等单一运行目标。每个目标拥有自己的指针、运行服务、健康检查和回滚点；共享同一 source SHA 不等于组合切换。网关/Caddy 不属于这些制品，缺路由时停止并转入独立基础设施任务。
 
 预签名下载 URL 只经 stdin 交给远端 Agent，不进入命令参数、回执或审计日志。凭据只来自现有 GitHub Secrets；仓库、制品和回执不保存凭据。
 
 ## 计时与回执
 
-Prepare 单独报告两次冷构建摘要、确定性比较和 `plan/tests/typecheck/build/materialize/package/publication/total`；Prepared Deploy 单独报告 `artifactLookup/download/candidate/cutover/restart/health/remoteTotal/total`。生产回执把业务制品 `sourceSha` 与控制面 `controlPlane.sourceSha` 分开，并记录 GitHub run id/attempt、远端 Agent 文件 SHA-256 和远端 policy SHA-256。签名 URL、OSS 凭据和 SSH 密钥不得进入回执。不得把 Prepare 时间算进 Deploy，也不得为缩短数字删除摘要校验、候选检查、健康检查或回滚。
+Prepare 单独报告两次冷构建摘要、确定性比较和 `plan/tests/typecheck/build/materialize/package/publication/total`；候选验证单独报告下载、校验、血缘和封板；Deploy 1.3.1 单独报告 `artifactLookup/candidate/cutover/restart/health/remoteTotal/total`，其中下载必须为零。生产回执把业务制品 `sourceSha` 与控制面 `controlPlane.sourceSha` 分开，并记录 GitHub run id/attempt、远端 Agent 文件 SHA-256 和远端 policy SHA-256。签名 URL、OSS 凭据和 SSH 密钥不得进入回执。不得把 Prepare 或候选验证时间算进 Deploy，也不得为缩短数字删除摘要校验、封板核对、健康检查或回滚。
 
 ## 兼容与启用顺序
 
 Storefront 的 1.3 路径继续使用既有自包含生产运行包和现有 systemd 单元，不恢复 `node_modules` 依赖层。1.3 复用现有候选目录、current/previous 指针、健康检查、回滚回执和单目标锁；只为远端 Agent 增加 OSS 下载动作。
 
-1.3 首次生产启用序列已经由 Storefront 和 Console 完成：保留 1.2 → 核对 OSS/凭据/Endpoint → 安装并验证新版远端 Agent → Prepare 单一目标 → 运行 `validate-candidate` → Ethan 在独立任务中明确“部署” → 原子切换生产。后续目标仍按同一顺序自然迁移，任一前置步骤失败都停止该目标的 1.3 操作并继续使用 1.2。
+1.3 首次生产启用序列已经由 Storefront 和 Console 完成。升级到 1.3.1 后的序列是：保留 1.2 → 核对 OSS/凭据/Endpoint → 安装并验证支持 v3 的远端 Agent → Prepare 单一目标 → 运行 `validate-candidate` 并取得血缘证明与封板 → 停止 → Ethan 在独立任务中明确“部署” → 仅消费封板并原子切换生产。后续目标仍按同一顺序自然迁移，任一前置步骤失败都停止该目标的 1.3.1 操作并继续使用明确标记的 1.2 恢复通道。
 
 任何数量的 1.3 生产部署成功都不自动退役 1.2。只有全部 L0/L1 生产部署位完成迁移、L2/边缘能力完成独立安置，并且后续清理任务获得 Ethan 明确授权后，才允许删除旧工作流或改变 `scripts/deploy-now.sh`。
 

@@ -145,6 +145,33 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
   const artifact = resolution.manifest.artifact;
   const runtimeManifest = resolution.manifest.runtimeManifest;
+  const remoteAction = candidateOnly ? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3';
+  const remoteIdentityArgs = [
+    '--project',
+    adapter.project,
+    '--node',
+    resolvedDeployment.executionNode,
+    '--target',
+    target,
+    '--source-sha',
+    sourceSha,
+    '--sha256',
+    artifact.sha256.slice(7),
+    '--tree-digest',
+    artifact.treeDigest,
+    '--manifest-digest',
+    runtimeManifest.manifestDigest,
+    '--control-sha',
+    controlSha,
+    '--github-run-id',
+    githubRunId,
+    '--github-run-attempt',
+    githubRunAttempt,
+    '--expected-remote-agent-sha256',
+    expectedRemoteAgentSha256,
+    '--expected-remote-policy-sha256',
+    expectedRemotePolicySha256,
+  ];
   const remoteStarted = performance.now();
   const remote = await runCommand(
     {
@@ -153,43 +180,47 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
         'ssh',
         host,
         remoteAgent,
-        candidateOnly ? 'validate-oss-candidate-v2' : 'deploy-oss-direct-v2',
-        '--project',
-        adapter.project,
-        '--node',
-        resolvedDeployment.executionNode,
-        '--target',
-        target,
-        '--source-sha',
-        sourceSha,
-        '--sha256',
-        artifact.sha256.slice(7),
-        '--tree-digest',
-        artifact.treeDigest,
-        '--manifest-digest',
-        runtimeManifest.manifestDigest,
-        '--control-sha',
-        controlSha,
-        '--github-run-id',
-        githubRunId,
-        '--github-run-attempt',
-        githubRunAttempt,
-        '--expected-remote-agent-sha256',
-        expectedRemoteAgentSha256,
-        '--expected-remote-policy-sha256',
-        expectedRemotePolicySha256,
+        remoteAction,
+        ...remoteIdentityArgs,
       ],
-      input: `${JSON.stringify({
-        artifactUrl: downloadClient.signGet(artifact.object, 900),
-        manifestUrl: downloadClient.signGet(runtimeManifest.object, 900),
-      })}\n`,
+      ...(candidateOnly
+        ? {
+            input: `${JSON.stringify({
+              artifactUrl: downloadClient.signGet(artifact.object, 900),
+              manifestUrl: downloadClient.signGet(runtimeManifest.object, 900),
+            })}\n`,
+          }
+        : {}),
       timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
     },
     basicContext(adapter)
   );
   const remoteResult = parseCommandJson(remote)?.result;
+  let lineage = null;
+  let candidateSeal = null;
   if (candidateOnly) {
     invariant(remoteResult?.schema === 'ai.delivery.oss-candidate.v1' && remoteResult.current?.unchanged === true, 'PREPARED_CANDIDATE_EVIDENCE_MISSING', 'Remote prepared candidate validation did not prove current remained unchanged');
+    lineage = await verifyPreparedSourceLineage(adapter, options, remoteResult.current, sourceSha);
+    const sealed = await runCommand(
+      {
+        name: `seal-prepared:${resolvedDeployment.executionNode}:${target}`,
+        argv: [
+          'ssh',
+          host,
+          remoteAgent,
+          'seal-validated-candidate-v3',
+          ...remoteIdentityArgs,
+          '--expected-current',
+          remoteResult.current.after ?? 'none',
+          '--expected-current-source-sha',
+          remoteResult.current.sourceSha ?? 'none',
+        ],
+        timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+      },
+      basicContext(adapter)
+    );
+    candidateSeal = parseCommandJson(sealed)?.result;
+    invariant(candidateSeal?.schema === 'ai.delivery.candidate-seal.v1', 'PREPARED_CANDIDATE_SEAL_MISSING', 'Remote candidate seal was not recorded');
   } else {
     invariant(Boolean(remoteResult?.activation?.receipt), 'PREPARED_DEPLOY_RECEIPT_MISSING', 'Remote prepared deploy did not return an activation receipt');
   }
@@ -231,9 +262,39 @@ async function preparedArtifactCommand(adapter, options, candidateOnly) {
       downloadedBytes: remoteResult.downloadedBytes ?? 0,
       reusedBytes: remoteResult.reusedBytes ?? 0,
     },
-    ...(candidateOnly ? { candidateEvidence: remoteResult.current } : { receipt: remoteResult.activation.receipt }),
+    ...(candidateOnly ? { candidateEvidence: remoteResult.current, candidateSeal, lineage } : { receipt: remoteResult.activation.receipt, candidateSeal: remoteResult.seal }),
     completedAt: new Date().toISOString(),
   };
+}
+
+async function verifyPreparedSourceLineage(adapter, options, current, candidateSourceSha) {
+  const repository = required(options.repository ?? process.env.GITHUB_REPOSITORY, 'PREPARED_REPOSITORY_REQUIRED');
+  if (!current?.after) return assertPreparedSourceLineage(current, candidateSourceSha, null);
+  invariant(/^[a-f0-9]{40}$/.test(current.sourceSha ?? ''), 'PREPARED_CURRENT_SOURCE_UNAVAILABLE', 'Current production release has no verifiable source SHA');
+  const comparison = await runCommand(
+    {
+      name: 'verify-prepared-source-lineage',
+      argv: ['gh', 'api', `repos/${repository}/compare/${current.sourceSha}...${candidateSourceSha}`, '--jq', '.merge_base_commit.sha'],
+      timeoutMs: 60_000,
+    },
+    basicContext(adapter)
+  );
+  return assertPreparedSourceLineage(current, candidateSourceSha, comparison.output.trim());
+}
+
+export function assertPreparedSourceLineage(current, candidateSourceSha, mergeBaseSha) {
+  invariant(/^[a-f0-9]{40}$/.test(candidateSourceSha), 'PREPARED_DEPLOY_SOURCE_SHA_INVALID', 'Candidate source SHA is invalid');
+  if (!current?.after) {
+    invariant(current?.sourceSha == null, 'PREPARED_CURRENT_SOURCE_UNEXPECTED', 'Missing current pointer reported a source SHA');
+    return { status: 'first-activation', currentSourceSha: null, candidateSourceSha };
+  }
+  invariant(/^[a-f0-9]{40}$/.test(current.sourceSha ?? ''), 'PREPARED_CURRENT_SOURCE_UNAVAILABLE', 'Current production release has no verifiable source SHA');
+  invariant(mergeBaseSha === current.sourceSha, 'PREPARED_SOURCE_DOES_NOT_CONTAIN_CURRENT', 'Candidate source does not contain the current production source', {
+    currentSourceSha: current.sourceSha,
+    candidateSourceSha,
+    mergeBaseSha,
+  });
+  return { status: 'verified', currentSourceSha: current.sourceSha, candidateSourceSha, mergeBaseSha };
 }
 
 export function assertPreparedControlPlane(controlPlane, expected) {

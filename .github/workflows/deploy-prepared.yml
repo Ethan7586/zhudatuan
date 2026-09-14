@@ -1,9 +1,9 @@
-name: Prepared Deploy
-run-name: Prepared Deploy ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
+name: Deploy 1.3.1 - Sealed Candidate
+run-name: Deploy 1.3.1 ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
 
-# Official 1.3 prepared-release channel. Candidate validation is the default and cannot
-# move the production current pointer. The deployment command dispatches operation=deploy;
-# no generated approval string is accepted, and the unchanged 1.2 Deploy remains available.
+# Official 1.3.1 channel. Candidate validation proves source lineage and seals the
+# exact production baseline without moving current. Deploy consumes that seal only:
+# it cannot download a missing candidate or silently replace a newer production version.
 on:
   workflow_dispatch:
     inputs:
@@ -106,7 +106,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$CONTROL_REF" != "refs/heads/zdt-next" ]; then
-            echo "Prepared Deploy must run from refs/heads/zdt-next" >&2
+            echo "Deploy 1.3.1 must run from refs/heads/zdt-next" >&2
             exit 64
           fi
           merge_base="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${RELEASE_SHA}...${CONTROL_SHA}" --jq '.merge_base_commit.sha')"
@@ -146,6 +146,7 @@ jobs:
 
       - name: Resolve, verify and process prepared artifact
         env:
+          GH_TOKEN: ${{ github.token }}
           ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
           ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
           ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}

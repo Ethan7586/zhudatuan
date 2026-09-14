@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-import { assertPreparedControlPlane, deployPreparedCommand, validatePreparedCommand } from '../src/engine.mjs';
+import { assertPreparedControlPlane, assertPreparedSourceLineage, deployPreparedCommand, validatePreparedCommand } from '../src/engine.mjs';
 
 const releaseEngineRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -83,4 +83,24 @@ test('prepared control-plane evidence must match the expected Agent and policy e
     () => assertPreparedControlPlane({ ...evidence, remotePolicySha256: `sha256:${'f'.repeat(64)}` }, expected),
     (error) => error.code === 'PREPARED_DEPLOY_REMOTE_PROVENANCE_MISMATCH'
   );
+});
+
+test('prepared candidate source must contain the exact current production source', () => {
+  const currentSourceSha = 'a'.repeat(40);
+  const candidateSourceSha = 'b'.repeat(40);
+  assert.deepEqual(assertPreparedSourceLineage({ after: '/release/a', sourceSha: currentSourceSha }, candidateSourceSha, currentSourceSha), {
+    status: 'verified',
+    currentSourceSha,
+    candidateSourceSha,
+    mergeBaseSha: currentSourceSha,
+  });
+  assert.throws(
+    () => assertPreparedSourceLineage({ after: '/release/a', sourceSha: currentSourceSha }, candidateSourceSha, 'c'.repeat(40)),
+    (error) => error.code === 'PREPARED_SOURCE_DOES_NOT_CONTAIN_CURRENT'
+  );
+  assert.throws(
+    () => assertPreparedSourceLineage({ after: '/legacy/current', sourceSha: null }, candidateSourceSha, null),
+    (error) => error.code === 'PREPARED_CURRENT_SOURCE_UNAVAILABLE'
+  );
+  assert.equal(assertPreparedSourceLineage({ after: null, sourceSha: null }, candidateSourceSha, null).status, 'first-activation');
 });

@@ -170,12 +170,86 @@ test('prepared candidate validation downloads and checks the release without mov
   await invokeOss(fixture, baseline, await artifactPayload(baseline));
   const current = await readlink(join(fixture.pointerRoot, 'current'));
   const candidate = await createArtifact(fixture, 'candidate-only', '2'.repeat(40));
-  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v2');
+  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v3');
   assert.equal(validated.result.schema, 'ai.delivery.oss-candidate.v1');
   assert.equal(validated.result.current.unchanged, true);
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
   assert.match(await readlink(join(fixture.pointerRoot, 'candidate')), new RegExp(candidate.sourceSha));
   assert.equal(validated.result.controlPlane.sourceSha, 'f'.repeat(40));
+  assert.equal(validated.result.current.sourceSha, baseline.sourceSha);
+  const sealed = await invokeOss(fixture, candidate, {}, true, 'seal-validated-candidate-v3', {
+    expectedCurrent: current,
+    expectedCurrentSourceSha: baseline.sourceSha,
+  });
+  assert.equal(sealed.result.schema, 'ai.delivery.candidate-seal.v1');
+  assert.equal(sealed.result.expectedCurrent, current);
+});
+
+test('1.3.1 deploy consumes only a sealed candidate and never downloads during cutover', async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'baseline', '8'.repeat(40));
+  await invokeOss(fixture, baseline, await artifactPayload(baseline));
+  const candidate = await createArtifact(fixture, 'sealed-candidate', '9'.repeat(40));
+  const missingSeal = await captureAgentFailure(() =>
+    invokeOss(fixture, candidate, { artifactUrl: 'http://127.0.0.1:1/not-used', manifestUrl: 'http://127.0.0.1:1/not-used' }, true, 'deploy-sealed-candidate-v3')
+  );
+  assert.equal(missingSeal.code, 'CANDIDATE_SEAL_MISSING');
+
+  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v3');
+  await invokeOss(fixture, candidate, {}, true, 'seal-validated-candidate-v3', {
+    expectedCurrent: validated.result.current.after,
+    expectedCurrentSourceSha: validated.result.current.sourceSha,
+  });
+  const deployed = await invokeOss(
+    fixture,
+    candidate,
+    { artifactUrl: 'http://127.0.0.1:1/not-used', manifestUrl: 'http://127.0.0.1:1/not-used' },
+    true,
+    'deploy-sealed-candidate-v3'
+  );
+  assert.equal(deployed.result.schema, 'ai.delivery.oss-sealed-deploy.v1');
+  assert.equal(deployed.result.downloadedBytes, 0);
+  assert.equal(deployed.result.activation.mode, 'sealed-activated');
+  assert.equal(deployed.result.activation.receipt.finalStatus, 'success');
+});
+
+test('1.3.1 deploy rejects a sealed candidate when production changed after validation', async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'baseline', 'a'.repeat(40));
+  await invokeOss(fixture, baseline, await artifactPayload(baseline));
+  const candidate = await createArtifact(fixture, 'sealed-before-drift', 'b'.repeat(40));
+  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v3');
+  await invokeOss(fixture, candidate, {}, true, 'seal-validated-candidate-v3', {
+    expectedCurrent: validated.result.current.after,
+    expectedCurrentSourceSha: validated.result.current.sourceSha,
+  });
+
+  const drift = await createArtifact(fixture, 'new-production', 'c'.repeat(40));
+  await invokeOss(fixture, drift, await artifactPayload(drift));
+  await invoke(fixture, 'reuse', candidate);
+  const current = await readlink(join(fixture.pointerRoot, 'current'));
+  const rejected = await captureAgentFailure(() =>
+    invokeOss(fixture, candidate, {}, true, 'deploy-sealed-candidate-v3')
+  );
+  assert.equal(rejected.code, 'CANDIDATE_SEAL_CURRENT_CHANGED');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
+});
+
+test('1.3.1 deploy requires candidate revalidation after Agent policy changes', async () => {
+  const fixture = await createFixture();
+  const baseline = await createArtifact(fixture, 'baseline', 'd'.repeat(40));
+  await invokeOss(fixture, baseline, await artifactPayload(baseline));
+  const candidate = await createArtifact(fixture, 'sealed-before-policy-change', 'e'.repeat(40));
+  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v3');
+  await invokeOss(fixture, candidate, {}, true, 'seal-validated-candidate-v3', {
+    expectedCurrent: validated.result.current.after,
+    expectedCurrentSourceSha: validated.result.current.sourceSha,
+  });
+  fixture.policy.readiness.intervalMs = 21;
+  await writePolicy(fixture);
+  const rejected = await captureAgentFailure(() => invokeOss(fixture, candidate, {}, true, 'deploy-sealed-candidate-v3'));
+  assert.equal(rejected.code, 'CANDIDATE_SEAL_CONTROL_PLANE_CHANGED');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), validated.result.current.after);
 });
 
 test('server locks are scoped by project, node and target without a production-wide lock', async () => {
@@ -1126,7 +1200,7 @@ async function artifactPayload(artifact) {
   };
 }
 
-async function invokeOss(fixture, artifact, payload, includeControlPlane = true, action = 'deploy-oss-direct-v2', expectedOverrides = {}) {
+async function invokeOss(fixture, artifact, payload, includeControlPlane = true, action = 'deploy-oss-direct', expectedOverrides = {}) {
   const args = [
     agent,
     action,
@@ -1147,7 +1221,7 @@ async function invokeOss(fixture, artifact, payload, includeControlPlane = true,
   ];
   if (includeControlPlane) {
     args.push('--control-sha', 'f'.repeat(40), '--github-run-id', '123456', '--github-run-attempt', '2');
-    if (action.endsWith('-v2')) {
+    if (action.endsWith('-v2') || action.endsWith('-v3')) {
       args.push(
         '--expected-remote-agent-sha256',
         expectedOverrides.remoteAgentSha256 ?? `sha256:${await hashFile(agent)}`,
@@ -1155,6 +1229,14 @@ async function invokeOss(fixture, artifact, payload, includeControlPlane = true,
         expectedOverrides.remotePolicySha256 ?? `sha256:${await hashFile(join(fixture.policyRoot, 'fixture.json'))}`
       );
     }
+  }
+  if (action === 'seal-validated-candidate-v3') {
+    args.push(
+      '--expected-current',
+      expectedOverrides.expectedCurrent ?? 'none',
+      '--expected-current-source-sha',
+      expectedOverrides.expectedCurrentSourceSha ?? 'none'
+    );
   }
   return new Promise((resolveInvoke, rejectInvoke) => {
     const child = spawn(process.execPath, args, {
