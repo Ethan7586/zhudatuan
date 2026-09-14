@@ -3822,6 +3822,20 @@
 | 验证/回滚 | fixture覆盖session缺失、OTP成功/失败/限流、password/phone hash与cipher、single/current session cookie和RPC状态映射；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0200｜OTP 投递与交付记录没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / OTP delivery；P2；高 |
+| 类型 | 测试覆盖缺口、验证码送达状态和失败传播正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/otpDelivery.ts:12-35`；现有`otpDelivery.test.ts` |
+| 当前/预期 | adapter调用SMS provider，并在成功/失败时写`api_record_phone_challenge_delivery`；失败记录自身失败被吞掉以保留provider error。现有test仅断言30秒重发常量。预期直接覆盖debug/aliyun结果、record成功/失败、provider failure及原error code传播。 |
+| 直接证据 | `otpDelivery.test.ts`只导入`OTP_RESEND_AFTER_SECONDS`；未导入`deliverOtp`或`otpDeliveryAvailable`，未mock send/provider或delivery RPC。 |
+| 调用链/影响 | registration route / security compatibility route → OTP delivery → SMS provider + challenge delivery RPC。验证码用户体验、失败回执与后续challenge审计回归不能由当前suite直接捕获。 |
+| 建议方向 | 从修复时最新`zdt-next`建立OTP delivery adapter test批；回滚为撤回测试提交。 |
+| 验证/回滚 | fixture覆盖provider success/throw、delivery record success/fail、error code不被覆盖及availability；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

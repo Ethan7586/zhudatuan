@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-193-001,src/api/otpDelivery.ts,12-14,availability,Availability delegates to the configured SMS provider adapter.
+E-AU-193-002,src/api/otpDelivery.ts,16-26,delivery lifecycle,Successful send records provider message ID; failure records error code without masking the provider error if recording fails.
+E-AU-193-003,src/api/registrationRoutes.ts,6-40,consumer,Registration OTP uses availability delivery and maps provider failures to API response.
+E-AU-193-004,src/api/securityCenterRoutes.ts,40-67,consumer,Security OTP uses the same adapter but currently belongs to unregistered compatibility auth routes.
+E-AU-193-005,src/api/otpDelivery.test.ts,1-9,tests,The sole test checks resend constant only.

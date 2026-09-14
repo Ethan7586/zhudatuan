@@ -2076,3 +2076,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | session revoke | 单session/其他session撤销与当前cookie清除 | [FACT][E-AU-192-003] |
 
 [FACT][E-AU-192-004] 2 文件、282 行完成深审；当前真实API入口明确拒绝`/api/v1/auth/*`，这些export只保留compatibility/历史契约，见DC-0048/G1。
+
+## 198. AU-193 OTP delivery 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| availability | 委托SMS provider判断debug/aliyun是否为有效运行配置 | [FACT][E-AU-193-001] |
+| delivery record | provider成功/失败均写challenge delivery审计；record失败不覆盖原send错误 | [FACT][E-AU-193-002] |
+| consumers | registration和security OTP共用该adapter，后者当前仅保留compatibility handler | [FACT][E-AU-193-003] |
+
+[FACT][E-AU-193-004] 2 文件、44 行完成深审；resend常量有direct test，发送/记录行为没有direct fixture，见F-0200/P2。

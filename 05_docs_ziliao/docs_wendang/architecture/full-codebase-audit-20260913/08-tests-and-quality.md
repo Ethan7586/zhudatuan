@@ -554,3 +554,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖current-password change、生产SMS未配置闭合、phone-change匿名拒绝和撤销其他session。
 - security center、password reset、phone-change成功/失败和single-session revoke没有direct fixture；这些当前未注册的compatibility handlers一旦重新承诺会有回归盲区，见F-0199/P2。审计工作树未运行Vitest。
+
+## 193. AU-193 OTP delivery 深审
+
+- Existing test仅验证`OTP_RESEND_AFTER_SECONDS`为30秒。
+- 没有direct fixture覆盖provider send、delivery record、record failure或provider error映射；见F-0200/P2。审计工作树未运行Vitest。
