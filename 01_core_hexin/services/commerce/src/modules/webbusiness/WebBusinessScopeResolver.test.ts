@@ -6,6 +6,9 @@ import { WebBusinessScopeResolver } from './WebBusinessScopeResolver';
 
 const actor: Actor = {
   id: 'principal:member',
+  realm: 'realm:test',
+  membershipClient: 'operator',
+  governanceOrganization: 'organization:test',
   session: 'session:member',
   membership: 'membership:member',
   credentialVersion: 1,
@@ -50,8 +53,16 @@ describe('WebBusinessScopeResolver', () => {
   it('retains the requested console scope for shared member-audience business reads', async () => {
     const mall: Scope = { kind: 'mall', id: 'mall:one', path: [] };
     const pool = { query: async (sql: string, values?: readonly unknown[]) => {
-      expect(sql).toContain('access.resolve_scope');
-      expect(values).toEqual([actor.membership, 'catalog.listings.read', null, 'mall:one']);
+      expect(sql).toContain('access.resolve_session_scope');
+      expect(values).toEqual([
+        actor.membership,
+        actor.realm,
+        actor.membershipClient,
+        actor.governanceOrganization,
+        'catalog.listings.read',
+        null,
+        'mall:one',
+      ]);
       return result([{ scope: mall }]);
     } } as unknown as DatabasePool;
     await expect(new WebBusinessScopeResolver(pool).resolve(

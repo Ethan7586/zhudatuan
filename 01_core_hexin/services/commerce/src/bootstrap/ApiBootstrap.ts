@@ -43,7 +43,16 @@ export function singleNodeManifestRegistry(manifest: NodeManifest): NodeManifest
 }
 
 export function runtimeNodeManifestRegistry(manifest: NodeManifest): NodeManifestRegistry {
-  return manifest.signed_level === 'L0' ? SERVER_NODE_MANIFEST_REGISTRY : singleNodeManifestRegistry(manifest);
+  if (manifest.signed_level === 'L0') return SERVER_NODE_MANIFEST_REGISTRY;
+  return Object.freeze({
+    ...SERVER_NODE_MANIFEST_REGISTRY,
+    registry_version: `runtime:${manifest.manifest_id}:${manifest.manifest_version}`,
+    generated_at: manifest.generated_at,
+    manifests: Object.freeze([
+      ...SERVER_NODE_MANIFEST_REGISTRY.manifests.filter((candidate) => candidate.node_id !== manifest.node_id),
+      manifest,
+    ]),
+  });
 }
 
 export interface ApiBootstrapOptions {

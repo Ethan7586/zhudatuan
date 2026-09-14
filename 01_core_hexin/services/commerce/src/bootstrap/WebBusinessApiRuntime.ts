@@ -246,8 +246,9 @@ export function assertWebBusinessNodeManifest(
   const storefrontApplications = new Set(manifest.domain_bindings
     .filter((binding) => binding.surface_ref === 'surface:storefront')
     .map((binding) => binding.application_ref));
-  if (storefrontApplications.size !== 1
-    || !manifest.applications.some((application) => storefrontApplications.has(application.ref))) {
+  const declaredApplications = new Set(manifest.applications.map((application) => application.ref));
+  if (storefrontApplications.size === 0
+    || [...storefrontApplications].some((application) => !declaredApplications.has(application))) {
     throw new Error('WEB_BUSINESS_NODE_APPLICATION_INVALID');
   }
   const boundOrigins = new Set(nodeManifestOrigins(manifest));
