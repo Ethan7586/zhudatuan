@@ -1139,3 +1139,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | operator invitation governance/scope/revoke static oracle | [FACT][E-AU-102-004] |
 
 [FACT][E-AU-102-005] 2 文件、819 行 Identity invitation 与后台成员管理完成深审；operator invitation 边界由大量静态用例覆盖，后台 username canonicalization 缺口见 F-0164/P2。
+
+## 108. AU-103 Identity 注册、挑战与邀请兑换清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| registration challenge | purpose、规范化 destination、registration hash、realm/account 绑定与通知 job | [FACT][E-AU-103-001] |
+| member registration | invite/storefront 选择、advisory lock、terms、identity/account/member/membership 创建或复用 | [FACT][E-AU-103-002] |
+| hosted storefront registration | hosted node idempotency boundary、consumer realm/account 与 membership 绑定 | [FACT][E-AU-103-003] |
+| authenticated registration | session/assurance/cookies/ticket/login intent 与 WeChat bind 的事务闭合 | [FACT][E-AU-103-004] |
+| tests | registration purpose、realm、duplicate、rollback、storefront/checkout、operator invitation 的查询行为 oracle | [FACT][E-AU-103-005] |
+
+[FACT][E-AU-103-006] 2 文件、1,969 行 Identity 注册与挑战链完成深审；邀请和公开 storefront 注册都由 registration hash、条款、realm 和 identity mutation 共同约束，checkout 延迟电话校验为显式产品分支；未见新 P0–P3。

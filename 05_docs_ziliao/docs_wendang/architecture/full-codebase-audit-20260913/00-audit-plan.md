@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-102 已完成。AU-102 完成 Identity invitation 与后台成员管理操作审阅。覆盖总账按当前文件级清单重算：深入审阅1,060文件/88,530行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,788文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-103 已完成。AU-103 完成 Identity 注册、挑战与邀请兑换链路审阅。覆盖总账按当前文件级清单重算：深入审阅1,062文件/90,499行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,786文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1047,3 +1047,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Identity invitation read/create/revoke、storefront registration 信息与后台成员 create/update/status 管理链路。
 
 执行结果：operator invitation 绑定租户、唯一 mall storefront、手机号、single use role、有效 policy/terms，并要求 console capability 与 owner/senior-administrator governance；revoke 使用 scope/target/runtime/version 条件。成员 status/update 重新解 authoritative governance、撤销 session，离职同步失效角色/grant/邀请。新增 F-0164/P2：后台成员 create 对 username 仅 trim 后直接 hash，未应用登录侧 lowercase canonicalization，含大写 username 会被创建但无法由正常 password 登录定位。未发现 P0/P1 新问题；Vitest 未运行。
+
+## 105. AU-103 连续审计点
+
+审阅 Identity registration challenge 与 member create：邀请码/公开 storefront 路径、challenge 绑定、realm/account 选择、hosted member node、membership、session/ticket、WeChat 绑定和事务回滚。
+
+执行结果：challenge 将 registration purpose、规范化手机号、realm 与 invite/storefront hash 同时绑定；注册先经 realm 内 subject advisory lock，再按 invite 或已发布 storefront 确定组织、条款和目标。新身份创建 hosted node、identity/account/credential/profile/membership；既有统一手机号只新建独立 membership。final WeChat bind、outbox、session/ticket/login intent 位于同一 identity mutation 边界，失败会回滚先前业务写入。checkout 延迟电话校验是已显式实现且有行为测试锁定的产品路径，session assurance 为 1。未发现 P0–P3 新问题；Vitest 未运行。
