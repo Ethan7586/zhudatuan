@@ -1128,3 +1128,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | root reset identity release/owner protection oracle | [FACT][E-AU-101-004] |
 
 [FACT][E-AU-101-005] 2 文件、369 行 Identity credential/reset 操作与测试完成深审；未见跨 scope reset、未锁 subject 释放或未撤销旧 session 的重置路径。
+
+## 107. AU-102 Identity invitation 与后台成员管理清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| invitation reads | hashed invite 与 storefront terms/registration 投影 | [FACT][E-AU-102-001] |
+| invitation create/revoke | scope、capability/governance、role/policy、destination/版本约束 | [FACT][E-AU-102-002] |
+| member manage | employee account/create、authoritative governance update/status、session revoke | [FACT][E-AU-102-003]；F-0164/P2 |
+| tests | operator invitation governance/scope/revoke static oracle | [FACT][E-AU-102-004] |
+
+[FACT][E-AU-102-005] 2 文件、819 行 Identity invitation 与后台成员管理完成深审；operator invitation 边界由大量静态用例覆盖，后台 username canonicalization 缺口见 F-0164/P2。

@@ -3320,6 +3320,20 @@
 | 验证/回滚 | 从最新主线独立小分支补已过期 challenge 的错误 code 反事实，确认请求保持 `CHALLENGE_INVALID` 且 attempts 不变；若产品确认必须计数，则将其标为显式审计契约并更新测试。回滚为撤回该单一批次。 |
 | 独立复核 | 否；P3，后续 Identity challenge 专项可复查。 |
 
+## F-0164｜后台创建的含大写用户名无法被正常 password 登录查找
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | identity / member management；P2；高 |
+| 类型 | 身份主体契约不一致、登录正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/MembershipInvitationOperations.ts:186-210`；`SessionTicketOperations.ts:46-58,77-84`；`IdentitySubject.ts:17-22` |
+| 当前/预期 | 后台 `identity.members.manage` create 将 `username.trim()` 直接送入 `digest(username)`，并将该 hash 写入 password credential；password 登录先经 `canonicalIdentitySubject`，会对非手机号 username trim/lowercase 后再 hash。输入 `Alice` 会写入 digest(Alice)，登录时查 digest(alice)，账号存在却无法定位。预期所有 credential subject 写入应使用与登录一致的 canonical identity subject。 |
+| 直接证据 | create 分支第188、201、208-210行未调用 canonicalIdentitySubject；登录准备第46-49行调用它；函数第17-22行固定 lowercase。当前 invitation 测试覆盖 operator invitation/revoke，但未构造 members.manage create 后的 password login 反事实。 |
+| 调用链/影响 | Console 后台成员创建 → password credential subject_hash；随后 Identity session create/provider=password → canonical subject lookup → credential not found → CREDENTIAL_INVALID。大小写用户名在后台界面可被创建，但用户无法使用同样拼写的用户名登录。 |
+| 根因 | 两条创建入口使用不同的 subject canonicalization：注册路径已用 canonicalMobile，而后台 employee create 保留手工 trim/hash。 |
+| 验证/回滚 | 从最新主线独立小分支，以含大写 username 创建后分别用原始/小写登录验证；将写入统一到 canonicalIdentitySubject 并补大小写/空白反事实。回滚为撤回该单一修复批次。 |
+| 独立复核 | 否；P2，待 Identity registration/credential 写入全链复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
