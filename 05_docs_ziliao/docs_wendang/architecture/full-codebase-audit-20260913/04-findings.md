@@ -4689,3 +4689,21 @@
 | 建议方向 | 从最新主线建立独立小批次，先定义可识别 cancellation reason 与 lease/reclaim 语义；加入真实 runner integration 测试分别覆盖 graceful stop、deadline、业务可重试和 terminal failure，避免仅吞掉 abort。 |
 | 验证/回滚 | 隔离 DB claim job 后在 processor 内触发 stop，断言不耗尽 attempts、不错误 deadletter、lease 后可 reclaim；再覆盖 deadline/业务失败仍退避；回滚为撤回该单一 shutdown handling change。 |
 | 是否需要独立复核 | 否（P2）；若运行日志显示重启期间 deadletter，则升级专项复核。 |
+
+## F-0252｜财务对账在歧义候选中按内部 ID 任意选择匹配项
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Finance reconciliation matching → approval/settlement |
+| 类型 | 财务正确性、数据完整性、异步结算前置条件 |
+| 严重级别 | **P1 候选**；须完成独立复核后定级。 |
+| 置信度 | 高（固定基线 match SQL 与同文件 skipped fail-closed scenario 直接矛盾）；生产候选唯一约束/ingestion 数据/settlement guard 未验证。 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/modules/finance/03_application_yingyong/command/ReconcileStatement.ts:57-83`；`.../tests/repository/FinanceReconciliation.test.ts:352-369`。 |
+| 当前/预期 | candidate CTE 可为同一 statement line 产生多条 internal fact；`distinct on(line_id) order by line_id,priority,internal_id` 静默选内部 ID 排序第一条，再按金额将其标为 matched/difference。测试中明示的多对一 provider reference 场景预期生成 `MANY_TO_ONE_UNSUPPORTED` 且不任意选择，但该 test 是 `it.skip`。预期为歧义时 fail-closed，写出明确 difference/evidence，直到有确定性匹配规则。 |
+| 直接证据 | [FACT][E-AU-526-001] match SQL 的 distinct-on 排序以 `internal_id` 作为候选决胜；[FACT][E-AU-526-002] skipped scenario 构造 ambiguous provider references 并断言不选任一 internal fact；[FACT][E-AU-526-003] current source 未含 MANY_TO_ONE_UNSUPPORTED 或多候选拒绝分支。 |
+| 调用链或运行入口 | provider statement → `ReconcileStatement.execute` → `match` → `finance.reconciliationitem` state → reconciliation approve → settlement job。 |
+| 用户/数据/安全影响 | 若 provider reference 对应多个可匹配的 payment/refund/journal 事实，系统可能错误标记一条为匹配，导致对账余额、人工审批依据及后续结算建立在错误对应关系上。未验证生产存在重复 reference、实际审批/结算已发生或 DB constraint/下游 guard 阻断。 |
+| 根因 | 为选择单候选使用 deterministic sort，替代了业务所需的 ambiguity detection/explicit resolution 模型；原本计划的测试仍被跳过。 |
+| 建议方向 | 从最新主线建立独立修复分支前，先在隔离 PostgreSQL 重现并核对 provider external-reference 唯一性、RLS、operator resolution 与 settlement guard；若无其它安全门，改为多候选时生成不可审批 difference 并启用该回归测试。 |
+| 验证/回滚 | 注入同一 external reference 的多条 eligible internal facts，确认不产生 arbitrary matched item、无法 approve/settle且有明确审计 evidence；覆盖唯一候选仍可平衡；回滚为撤回单一 matching/test 小批次。 |
+| 是否需要独立复核 | **是**；已加入 `records/AU-526-finance-reconciliation-pglite-test/independent-review-queue.csv`，必须重新追踪 candidate SQL 到 settlement。 |

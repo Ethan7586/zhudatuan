@@ -1,0 +1,2 @@
+finding,scope,required_recheck,status
+F-0252,Finance reconciliation candidate selection to approval/settlement chain,Independently reproduce one statement reference with multiple eligible internal facts on isolated PostgreSQL; trace candidate SQL/RLS/constraints then operator approve and settlement eligibility; prove an alternate gate prevents arbitrary selection or preserve the P1 conclusion,pending
