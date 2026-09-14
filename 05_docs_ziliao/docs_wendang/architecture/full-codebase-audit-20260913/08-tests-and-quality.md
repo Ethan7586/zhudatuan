@@ -654,3 +654,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 未找到BatchImportProcessor direct fixture；子模块测试只覆盖各自端口/operation/manifest，不能证明公共状态推进、对象失败分类、abort及report完成行为。
 - 三个生产Jobs catalog entry直接运行该路径，见F-0210/P2。审计工作树未运行Vitest。
+
+## 213. AU-213 Command message contract 深审
+
+- Command仅为CommandBus泛型输入提供type discriminant；本身没有可执行分支。
+- CommandBus direct fixture仍缺，已由F-0207记录；无P0–P3新问题。

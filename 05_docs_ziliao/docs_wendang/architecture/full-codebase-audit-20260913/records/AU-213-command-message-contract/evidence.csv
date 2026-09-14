@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-213-001,src/foundation/application/Command.ts,1-3,message contract,Generic Command restricts a command to an immutable string type discriminant.
+E-AU-213-002,src/foundation/application/CommandBus.ts,1-19,direct consumer,CommandBus imports Command and uses it for handler map registration and execute input typing.
+E-AU-213-003,src/bootstrap/ApiBootstrap.ts;src/bootstrap/JobsBootstrap.ts,1-2;1-2,runtime consumer,API and Jobs bootstraps construct CommandBus which compiles against this public contract.

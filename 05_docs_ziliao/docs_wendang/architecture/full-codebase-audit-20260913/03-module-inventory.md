@@ -2262,3 +2262,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | error classification | 格式/对象不可恢复错误reject，其他错误fault并重新抛给JobRunner retry | [FACT][E-AU-212-003] |
 
 [FACT][E-AU-212-004] 1 文件、63 行完成深审；member/inventory/voucher processors和Jobs catalog实际消费，catalog import另有独立实现；缺少公共状态机direct fixture见F-0210/P2。
+
+## 218. AU-213 Command message contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| command identity | 只为命令提供泛型stable `type` discriminant；无payload、执行或存储职责 | [FACT][E-AU-213-001] |
+| dispatch consumer | CommandBus直接以该契约约束handler registration和execute输入，API/Jobs bootstrap创建bus | [FACT][E-AU-213-002] |
+
+[FACT][E-AU-213-003] 1 文件、3 行完成深审；真实消费成立，为G0；bus行为测试缺口沿用F-0207。
