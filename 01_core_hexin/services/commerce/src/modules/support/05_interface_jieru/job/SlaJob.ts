@@ -44,8 +44,9 @@ export class SupportJobProcessor implements JobProcessor {
           select $1,coalesce(max(sequence),0)+1,'sla.escalated','system',$2::jsonb,clock_timestamp(),$3
           from support.history where ticket_id=$1`, [ticket, JSON.stringify({ reason, escalation: escalation.id }), escalation.scope_id]);
         if (escalation.member_id) await client.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
-          occurred_at,available_at) values($1,'support.sla.escalated',1,'ticket',$2,$3,
-          jsonb_build_object('ticket',$2,'member',$4,'reason',$5,'escalation',$6),$1,clock_timestamp(),clock_timestamp())`,
+          occurred_at,available_at) values($1::text,'support.sla.escalated',1,'ticket',$2::text,$3::text,
+          jsonb_build_object('ticket',$2::text,'member',$4::text,'reason',$5::text,'escalation',$6::text),
+          $1::text,clock_timestamp(),clock_timestamp())`,
         [`event:${randomUUID()}`, ticket, escalation.scope_id, escalation.member_id, reason, escalation.id]);
       }
       await client.query('commit');

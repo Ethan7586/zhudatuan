@@ -25,8 +25,9 @@ export function assignTicketOperations(ports: SupportPortFactory): OperationActi
         textField(body, 'reason'), target.scope_id]);
       await database.query("update support.ticket set assigned_agent_id=$2,state='assigned',updated_at=clock_timestamp(),version=version+1 where id=$1", [ticket, agent]);
       if (target.member_id) await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,
-        payload,trace_id,occurred_at,available_at) values($1,'support.ticket.assigned',1,'ticket',$2,$3,
-        jsonb_build_object('ticket',$2,'conversation',$4,'agent',$5,'member',$6),$7,clock_timestamp(),clock_timestamp())`,
+        payload,trace_id,occurred_at,available_at) values($1::text,'support.ticket.assigned',1,'ticket',$2::text,$3::text,
+        jsonb_build_object('ticket',$2::text,'conversation',$4::text,'agent',$5::text,'member',$6::text),
+        $7::text,clock_timestamp(),clock_timestamp())`,
       [`event:${crypto.randomUUID()}`, ticket, target.scope_id, target.conversation_id, agent, target.member_id, access.trace]);
       await ports(database).history(ticket, target.scope_id, 'assigned', access.actor.id, { agent, reason: body.reason }); return rowResult(result);
     },

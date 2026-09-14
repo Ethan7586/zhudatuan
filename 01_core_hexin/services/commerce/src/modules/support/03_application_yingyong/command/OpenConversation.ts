@@ -45,8 +45,9 @@ export function openConversationOperations(kms: KmsClient, ports: SupportPortFac
       if (selected) await database.query(`insert into support.assignment(id,ticket_id,agent_id,reason,assigned_at,scope_id)
         values($1,$2,$3,'policy',clock_timestamp(),$4)`, [`assignment:${randomUUID()}`, ticket, selected.id, access.scope.id]);
       if (selected) await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,
-        trace_id,occurred_at,available_at) values($1,'support.ticket.assigned',1,'ticket',$2,$3,
-        jsonb_build_object('ticket',$2,'conversation',$4,'agent',$5,'member',$6),$7,clock_timestamp(),clock_timestamp())`,
+        trace_id,occurred_at,available_at) values($1::text,'support.ticket.assigned',1,'ticket',$2::text,$3::text,
+        jsonb_build_object('ticket',$2::text,'conversation',$4::text,'agent',$5::text,'member',$6::text),
+        $7::text,clock_timestamp(),clock_timestamp())`,
       [`event:${randomUUID()}`, ticket, access.scope.id, conversation, selected.id, member, access.trace]);
       const created = result.rows[0] as Readonly<Record<string, unknown>>;
       await Promise.all([

@@ -60,9 +60,10 @@ export class PgSupportRepository implements SupportPort {
     if (!appended) throw new Error('SUPPORT_MESSAGE_APPEND_FAILED');
     new Message(appended.id, conversation, appended.author_type, appended.author_id, message.fingerprint, appended.created_at);
     await this.database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
-      occurred_at,available_at) select $1,'support.message.sent',1,'conversation',$2,$3,
-      jsonb_build_object('ticket',$4,'conversation',$2,'message',$5,'authorType',$6,'member',target.member_id),$1,
-      clock_timestamp(),clock_timestamp() from support.conversation target where target.id=$2 and target.member_id is not null`,
+      occurred_at,available_at) select $1::text,'support.message.sent',1,'conversation',$2::text,$3::text,
+      jsonb_build_object('ticket',$4::text,'conversation',$2::text,'message',$5::text,'authorType',$6::text,
+      'member',target.member_id),$1::text,clock_timestamp(),clock_timestamp() from support.conversation target
+      where target.id=$2::text and target.member_id is not null`,
     [`event:${randomUUID()}`, conversation, scope, ticket, message.id, author]);
     return result;
   }
