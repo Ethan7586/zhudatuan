@@ -1,0 +1,3 @@
+id,files,location,kind,observation
+E-AU-258-001,src/entry/PurchaseApiMain.ts,11,entry,Purchase runtime creation has no alternate compatibility gate.
+E-AU-258-002,src/bootstrap/PurchaseApiRuntime.ts,180;315-324,gate,contract projected but omitted from predicate.
