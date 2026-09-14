@@ -98,6 +98,12 @@ AU-002 已结构性核对全部 manifest、静态/动态可达性以及路由装
 | --- | --- | --- | --- | --- | --- |
 | command/access 审计哈希链、脱敏、读取与冷热归档 | `audit.records.read`；AUDIT_SINK；auditarchive job | 上游为多个 API runtime；下游为 PostgreSQL audit schema、KMS、对象存储 | `audit.record/accessrecord/archiveref/retention` | Commerce API runtimes + maintenance Worker | 链写入、不可变触发器和先存后删归档闭合；归档端到端未在本地运行验证 |
 
+### AU-052｜Risk 判定与复核边界（2026-09-14）
+
+| 模块职责 | 对外入口 | 上游/下游 | 数据所有权 | 运行/发布单元 | 当前边界结论 |
+| --- | --- | --- | --- | --- | --- |
+| 风险评估、策略回放/激活、案件审核与目录阻断 | risk API；RISK_GATE；riskscan job | 上游为 API 风险门；下游为 catalog、runtime outbox/job、PostgreSQL risk schema | `risk.policy/policyversion/replay/signal/decision/case/listentry` | Commerce API + risk Worker | 事务锁、创建者分离、回放门槛与 catalog 任务已闭合；策略终态重建语义未验证 |
+
 ## 5. Workspace 库存
 
 [FACT][E-AU-001-002][E-AU-001-003] 43 个 workspace 分组如下：

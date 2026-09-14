@@ -1,0 +1,7 @@
+"编号","位置","证据","结论"
+"E-AU-052-001","app/modules.ts:30,41;modules/risk/05_interface_jieru/RiskModule.ts","risk 已注册为 Commerce module","HTTP/read 操作入口真实组装"
+"E-AU-052-002","modules/risk/04_adapters_shixian/RiskCheckAdapter.ts:10-28;03_application_yingyong/command/EvaluateRisk.ts:10-39","API context、scope hierarchy、policy/signal/list/velocity 共同参与评价","风险判定非仅前端或静态规则"
+"E-AU-052-003","modules/risk/04_adapters_shixian/persistence/PgRiskRepository.ts:87-128","candidate/replay/riskscan 在策略保存事务中创建；activate 要求 passed 且创建者不同","策略发布有回放与职责分离边界"
+"E-AU-052-004","ReviewRiskCase.ts:8-20;PgRiskRepository.ts:138-159;foundation/application/ModuleOperations.ts:99-114","case select for update 与 review 写入在同一 transactional operation","案件状态转换无已证实竞态"
+"E-AU-052-005","modules/risk/05_interface_jieru/job/RiskReplayJob.ts:18-63;app/jobs.ts:100,156","riskscan 已注册，replay/catalog deny 在 job transaction 处理","异步入口与消费者成对存在"
+"E-AU-052-006","modules/risk/06_tests_ceshi/{policy/RiskEngine,command/EvaluateRisk}.test.ts","覆盖硬限制、stable bucket、reviewer separation、基础评价","无 policy lifecycle 或真实 DB/job 端到端覆盖"

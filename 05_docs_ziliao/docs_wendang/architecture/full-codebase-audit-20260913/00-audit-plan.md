@@ -747,3 +747,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 audit 记录写入、scope hash chain、脱敏、read operation、archive bootstrap/worker/对象恢复及真实运行时绑定。
 
 执行结果：438 行 audit 模块文件完成关键逻辑审阅；归档 bootstrap、受控不可变删除、对象验证与续排链均存在，Console 经 access 历史间接消费。未发现 P0–P3 新问题；正式 Vitest 未启动（缺命令），未安装依赖或改变运行状态。
+
+## 54. AU-052 连续审计点
+
+审阅 risk 的 API 判定、策略 candidate/replay/activate、case review、catalog deny 作业与迁移边界。
+
+执行结果：824 行风险模块文件纳入审阅。API context、scope hierarchy、事务案件锁、独立策略创建者、回放门槛和 riskscan 消费链均已确认；未发现 P0–P3 新问题。generic job 崩溃恢复沿用 F-0143，不重复计数；正式 Vitest 未启动且未改变运行状态。
