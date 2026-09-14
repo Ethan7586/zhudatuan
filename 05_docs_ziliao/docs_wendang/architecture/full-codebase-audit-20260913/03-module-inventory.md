@@ -1216,3 +1216,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | policy/manifest 静态 oracle；F-0165/P2 | [FACT][E-AU-109-004] |
 
 [FACT][E-AU-109-005] 19 文件、949 行 Benefit 模块完成深审；业务状态机无行为测试见 F-0165/P2。
+
+## 115. AU-110 Capability entitlement 目录与管理清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| HTTP operations | authenticated scope read/manage、keyset/version | [FACT][E-AU-110-001] |
+| public port | Channel 配额 entitlement 写入复用 | [FACT][E-AU-110-002] |
+| manifest/tests | capability operation/public entry 静态声明 | [FACT][E-AU-110-003] |
+
+[FACT][E-AU-110-004] 7 文件、105 行 Capability 模块完成深审；未见跨 scope entitlement 更新或绕过 expected version 的更新条件。

@@ -1,0 +1,4 @@
+"证据编号","文件","位置","结论"
+"E-AU-110-001","01_core_hexin/services/commerce/src/modules/capability/03_application_yingyong/CapabilityOperations.ts","1-32","scope-bound read/manage 和 version condition。"
+"E-AU-110-002","01_core_hexin/services/commerce/src/modules/capability/01_public_gongkai/ports_jiekou/CapabilityPort.ts","1-23","Channel 配额 entitlement 写入 port。"
+"E-AU-110-003","01_core_hexin/services/commerce/src/modules/capability/index.ts;module.manifest.ts;06_tests_ceshi/module.manifest.test.ts","1-4;1-19;1-18","public/manifest operation declaration oracle。"
