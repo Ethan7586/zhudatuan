@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       build_runner:
-        description: Build runner (Aliyun default; GitHub hosted fallback)
+        description: Build runner (GitHub hosted default; Aliyun fallback)
         required: false
         default: github
         type: choice
