@@ -12,6 +12,7 @@ const policy = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/
 const deployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy.yml'), 'utf8');
 const deployOssWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy-oss.yml'), 'utf8');
 const preparedDeployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy-prepared.yml'), 'utf8');
+const baselineRegistrationWorkflow = await readFile(join(projectRoot, '.github/workflows/register-current-baseline.yml'), 'utf8');
 const prepareWorkflow = await readFile(join(projectRoot, '.github/workflows/prepare-artifact.yml'), 'utf8');
 const releaseEngine = await readFile(join(projectRoot, '04_tools/release-engine/src/engine.mjs'), 'utf8');
 const deployNow = await readFile(join(projectRoot, 'scripts/deploy-now.sh'), 'utf8');
@@ -126,6 +127,21 @@ test('1.3.1 accepts only source commits in the exact zdt-next history', () => {
   }
   assert.match(deployPrepared, /compare\/\$\{SHA\}\.\.\.zdt-next/);
   assert.match(deployPrepared, /\[ "\$ZDT_NEXT_MERGE_BASE" != "\$SHA" \]/);
+});
+
+test('legacy baseline registration is isolated from build, deploy, restart and pointer switching', () => {
+  assert.match(baselineRegistrationWorkflow, /^name: Register Legacy Production Baseline/m);
+  assert.match(baselineRegistrationWorkflow, /register-current-baseline/);
+  assert.match(baselineRegistrationWorkflow, /legacy_artifact_sha256:[\s\S]*?required: true/);
+  assert.match(baselineRegistrationWorkflow, /legacy_run_id:[\s\S]*?required: true/);
+  assert.match(baselineRegistrationWorkflow, /CONTROL_REF: \$\{\{ github\.ref \}\}/);
+  assert.match(baselineRegistrationWorkflow, /refs\/heads\/zdt-next/);
+  assert.match(baselineRegistrationWorkflow, /--expected-remote-agent-sha256 "\$expected_agent_sha256"/);
+  assert.match(baselineRegistrationWorkflow, /--expected-remote-policy-sha256 "\$expected_policy_sha256"/);
+  assert.equal((baselineRegistrationWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
+  assert.doesNotMatch(baselineRegistrationWorkflow, /npm ci|release -- (?:build|package|publish|deploy)|deploy-prepared|validate-prepared|ALIYUN_OSS|ssh-keyscan/);
+  assert.match(releaseEngine, /register-current-baseline-v3/);
+  assert.match(releaseEngine, /CURRENT_BASELINE_SOURCE_NOT_ON_MAINLINE/);
 });
 
 test('build and remote adapters agree on every pointer and process', () => {
