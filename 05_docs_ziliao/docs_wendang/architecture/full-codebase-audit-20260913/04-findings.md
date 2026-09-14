@@ -5229,3 +5229,25 @@
 | 验证方式 | 按正式 migration runner 建立隔离 DB，断言每个 deny case不留下 membership/role/grant，allow case恰好生成 invitation 声明的关系并仅限 tenant+self scope。 |
 | 回滚方式 | 删除独立测试和 fixture；不修改生产 schema或业务数据。 |
 | 是否需要独立复核 | 否。 |
+
+## F-0281｜Sovereign upgrade 将未验证的资源引用直接激活为自治运行事实
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | SFL sovereign upgrade / Web Member API / deployment-resource boundary |
+| 类型 | 架构边界、配置真实性、发布与运营安全 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql:177-198,200-417`；`01_core_hexin/services/commerce/src/modules/member/03_application_yingyong/SovereignUpgradeOperation.ts:7-35`；`MemberOperations.ts:31-32`；`WebMemberOperations.ts:22-23`。 |
+| 当前/预期 | 当前 Web member operation将调用者提供的五个 domain host及 edge/tunnel/gateway/runtime/data/secret/payment/callback refs直接传入 security-definer function。function只做非空、trim、host format/distinct和数据库 context/idempotency检查，随后写 candidate binding/resource/manifest并在同一事务改为 active、将 node升级为 sovereign、将 Realm host置空。预期为 sovereign state 只在受控 provisioner 已验证每项资源存在、归属、可达性、环境匹配和可回滚后激活，或至少保持为 pending/awaiting-verification。 |
+| 直接证据 | [FACT][E-AU-691-001] SovereignUpgradeOperation直接暴露为 `member.sovereignty.upgrade` Web/Member operation；[FACT][E-AU-691-002] migration lines 235-244 仅校验 JSON/host格式，300-387 将请求 refs写入 binding/manifest并设置所有状态 active；[FACT][E-AU-691-003] lines 369-380 同事务更改 node sovereignty 和 Realm host；[FACT][E-AU-691-004] 全仓 non-test source 对 `organization.domainbindingset`、`noderesourcebindingset`、`nodemanifestversion`和 sovereignty-upgraded event检索无外部 provisioner/receipt/verification consumer命中。 |
+| 调用链或运行入口 | Web/Storefront request → `member.sovereignty.upgrade` → SovereignUpgradeOperation → MemberPort → `organization.upgrade_hosted_mall_to_sovereign` → node/Realm/binding/manifest/outbox state。 |
+| 用户影响 | 用户可得到“升级成功”的 201/active state，但关联域名、edge、payment callback或运行身份若不存在/归属错误，后续访问和支付回调可能不可用或导向错误环境；生产影响范围未验证。 |
+| 数据影响 | 写入 active sovereign topology、binding和manifest事实，随后需要 privileged rollback function才能恢复 hosted host relationship；不涉及本审计中发现的直接业务数据删除。 |
+| 安全影响 | 未验证的 host/resource reference被标记为 active，可能把恶意或错误的回调/域名/secret binding reference纳入受信任配置面。当前未证明外部系统已消费或存在攻击利用。 |
+| 根因 | domain/resource bindings被建模为 DB references，但资源验证、部署 receipt和激活授权不在同一可审计事务或仓内运行消费者中；state machine把“写入引用”当作“资源就绪”。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立独立 sovereign-upgrade activation batch：分离 request/pending 与 activation；仅受控 Provisioning API 可写 resource receipts，校验每项 ref 的 owner/environment/health/rollback metadata 后才激活 node/Realm/bindings；Web action只提交请求或受限审批。保留现有 rollback 路径，不改写历史 migration。 |
+| 预计修改范围 | 新前向 migration、Provisioning API command/receipt model、runtime operation capability调整、最小 integration contract及 release/operations documentation。 |
+| 验证方式 | 隔离环境模拟缺失/错 owner/错环境/不健康 resource reference，断言不能转 sovereign；受控 provisioner 生成全部验证 receipt 后才允许 activation；验证 upgrade/rollback、不产生未消费的 active bindings和真实 entry/callback routing。 |
+| 回滚方式 | 新批次先保持 existing hosted state；已错误升级的 node通过现有 privileged `rollback_sovereign_upgrade` 和经核验的部署恢复流程逐个处理，禁止批量回滚。 |
+| 是否需要独立复核 | 是；复核者必须独立查看外部 Provisioning、阿里云/DNS/edge/支付资源的真实 preflight 与 receipt，并确认不存在仓外 active-binding consumer。 |
