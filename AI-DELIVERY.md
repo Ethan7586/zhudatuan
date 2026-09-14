@@ -1,6 +1,6 @@
 # AI 发布通道（正式 1.3.2 阿里云版）
 
-1.3.2 是仓库唯一默认发布协议：GitHub 只负责调度，阿里云原生 Runner 执行构建与发布；`Prepare Artifact 1.3.2 - Aliyun` 生成不可变 OSS 制品并封板，`Deploy 1.3.2 - Aliyun Sealed Artifact` 只消费已封板制品。候选验证必须证明当前生产 source SHA 是候选 source SHA 的 Git 祖先，并把精确制品、候选目录、当前生产指针、Agent 和策略摘要写入封板记录；正式部署不能临时下载候选、安装依赖或构建。两条正常入口一次只接受一个物理 target，固定从 `zdt-next` 触发，source SHA 必须属于精确 `zdt-next` 历史。
+1.3.2 是仓库唯一默认发布协议：GitHub 只负责调度，阿里云原生 Runner 默认执行构建与发布，GitHub 托管 Runner 仅作为显式构建备用；`Prepare Artifact 1.3.2 - Aliyun` 生成不可变 OSS 制品并封板，`Deploy 1.3.2 - Aliyun Sealed Artifact` 只消费已封板制品。候选验证必须证明当前生产 source SHA 是候选 source SHA 的 Git 祖先，并把精确制品、候选目录、当前生产指针、Agent 和策略摘要写入封板记录；正式部署不能临时下载候选、安装依赖或构建。两条正常入口一次只接受一个物理 target，固定从 `zdt-next` 触发，source SHA 必须属于精确 `zdt-next` 历史。
 
 默认分支当前使用文件名带 `-aliyun` 的工作流，新分支从 `zdt-next` 创建后自然继承 1.3.2；历史分支中的旧 YAML 只是历史快照，不是可执行入口。旧 GitHub workflow ID 已删除。1.2 仅以两个名称明确的恢复入口保留，不再要求重复确认字符串；普通“部署”仍进入 1.3.2。
 

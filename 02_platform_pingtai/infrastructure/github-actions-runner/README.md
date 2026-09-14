@@ -1,16 +1,16 @@
 # GitHub Actions Runner（1.3.2 阿里云版）
 
-Prepare 当前默认使用 GitHub 标准托管 `ubuntu-24.04`；可显式选择北京 ECS 上的原生 Linux Build Runner。候选封板及生产切换仍由阿里云 Release Runner 执行。
+Prepare 当前默认使用北京 ECS 上的两个原生 Linux Build Runner；GitHub 标准托管 `ubuntu-24.04` 作为显式备用。候选封板及生产切换仍由阿里云 Release Runner 执行。
 
 ## Build Runner 选择
 
 通过现有系统入口选择本次构建使用的 Runner，不改变后续默认值：
 
 ```bash
-ZDT_PREPARE_RUNNER=aliyun /Users/Ethan/.codex/bin/zdt-delivery prepare <target> <full-source-sha> <physical-node>
+ZDT_PREPARE_RUNNER=github /Users/Ethan/.codex/bin/zdt-delivery prepare <target> <full-source-sha> <physical-node>
 ```
 
-省略 `ZDT_PREPARE_RUNNER` 时使用 GitHub；GitHub 页面手工触发 Prepare 时也默认 `build_runner=github`。两种构建使用同一份工作流、Node 22.22.0、npm 10.9.4、双冷构建及运行证据，并写入现有 OSS 制品路径；GitHub 构建不配置生产 SSH。Build 失败后停止，不自动切换线路、封板或部署；Seal、候选验证、Release、Deploy 和生产 SSH 始终只走阿里云 Release Runner。
+省略 `ZDT_PREPARE_RUNNER` 时使用阿里云；GitHub 页面手工触发 Prepare 时也默认 `build_runner=aliyun`。需要备用线路时显式设置 `ZDT_PREPARE_RUNNER=github`。两种构建使用同一份工作流、Node 22.22.0、npm 10.9.4、双冷构建及运行证据，并写入现有 OSS 制品路径；GitHub 构建不配置生产 SSH。Build 失败后停止，不自动切换线路、封板或部署；Seal、候选验证、Release、Deploy 和生产 SSH 始终只走阿里云 Release Runner。
 
 ## 固定拓扑
 
