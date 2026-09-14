@@ -1944,3 +1944,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | authentic/tamper/stale/mismatched transaction parser fixture | [FACT][E-AU-179-004] |
 
 [FACT][E-AU-179-005] 3 文件、300 行完成深审；public router实际注册payment notification callback，但route adapter没有direct test。
+
+## 185. AU-180 Address book 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| read | `order.create` permission、PII key、user-scoped address RPC、row cipher decrypt | [FACT][E-AU-180-001] |
+| upsert | bounded address parse、AES-GCM recipient envelope、user-scoped upsert RPC | [FACT][E-AU-180-002] |
+| delete | DELETE only、permission与user-scoped delete RPC | [FACT][E-AU-180-003] |
+
+[FACT][E-AU-180-004] 1 文件、61 行完成深审；source由compat storefront router注册，但当前Storefront Worker不装载full authenticated router。

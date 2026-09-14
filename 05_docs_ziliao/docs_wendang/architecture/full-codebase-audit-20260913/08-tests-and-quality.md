@@ -491,3 +491,7 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Parser test直接覆盖真实加密通知的验签/decrypt/summary最小化、body tamper、stale notification和attempt amount mismatch。
 - `wechatPaymentNotificationRoute.ts`没有direct handler fixture；应覆盖method/size/config/protocol/RPC success/RPC exception及provider expected `{code:'SUCCESS'}` response。见F-0191/P2；审计工作树未运行Vitest。
+
+## 180. AU-180 Address book 深审
+
+- `addressRoutes.ts`没有同层test；应直接覆盖permission、PII-key missing、GET decrypt、PUT input/cipher/RPC、DELETE found/not-found及cross-user scope body。见F-0192/P2；审计工作树未运行Vitest。

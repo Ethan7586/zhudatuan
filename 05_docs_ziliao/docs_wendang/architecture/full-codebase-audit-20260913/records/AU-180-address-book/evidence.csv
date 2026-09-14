@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-180-001,src/api/addressRoutes.ts,11-24,PII read,Permission and PII key are required; server authorization scope includes current user before address RPC rows are decrypted.
+E-AU-180-002,src/api/addressRoutes.ts,25-37,PII write,Address fields are bounded validated and only full recipient details are AES-GCM encrypted before upsert RPC.
+E-AU-180-003,src/api/addressRoutes.ts,38-61,delete/input,DELETE requires same permission and user scope; parser rejects malformed values and phone format violations.
+E-AU-180-004,src/api/routes/storefrontRouter.ts,2;32;42,route,Compatibility storefront router registers list/upsert/delete handlers.

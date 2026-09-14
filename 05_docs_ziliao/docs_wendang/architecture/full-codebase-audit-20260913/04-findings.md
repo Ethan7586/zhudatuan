@@ -3710,6 +3710,20 @@
 | 验证/回滚 | 临时RSA通知fixture验证合法/invalid/stale/config/RPC failure和exact success response；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0192｜Address book PII read/write/delete 没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / address book；P2；高 |
+| 类型 | 测试覆盖缺口、PII加解密与用户scope正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/addressRoutes.ts:11-61` |
+| 当前/预期 | 处理器校验order.create/PII key，GET以当前user scope读取并decrypt，PUT校验地址后加密入库，DELETE同样传scope。没有route test。预期使用真实AES-GCM key与RPC fixture覆盖permission/key、每种method、cipher/parse与跨user scope。 |
+| 直接证据 | `src/api` 未找到`addressRoutes.test.ts`或`handleAddresses`/`handleDeleteAddress`测试调用。 |
+| 调用链/影响 | authenticated storefront route → address routes → delivery address RPC/PII ciphertext。字段或scope回归可能使个人地址无法读取、写入未加密或误读其他用户数据，且现有suite不能直接发现。 |
+| 建议方向 | 从修复时最新`zdt-next`建立独立address route test批；回滚为撤回该测试提交。 |
+| 验证/回滚 | direct fixture断言RPC参数包含当前user scope和cipher envelope，GET decrypt round-trip，跨scope/invalid input拒绝；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
