@@ -3076,6 +3076,18 @@
 | 验证/回滚 | 在隔离 PostgreSQL/对象存储构造 application/binding：覆盖 stale expectedVersion、invalid version、对象写入失败后的 job retry、重复 inbox 与最终单一 active publication；修复必须从最新主线独立小分支进行，回滚为撤回该测试/实现小批次。 |
 | 独立复核 | 否 |
 
+## F-0145｜Marketing 预算预留与释放主链没有行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | marketing / order / payment；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/marketing/05_interface_jieru/MarketingPort.ts:12-36`；现有测试仅 `.../modules/marketing/06_tests_ceshi/module.manifest.test.ts` |
+| 当前/预期 | 条件预算抢占、redemption 去重、付款提交以及订单超时/支付关闭释放构成实际折扣资金状态机，但模块没有对应测试；唯一测试只断言 manifest。预期是用真实 PostgreSQL/RLS 或等价事务 fixture 覆盖预留、重复、并发、提交、释放和二次释放。 |
+| 影响 | 预算竞争、退款/超时回收或状态迁移变化可能在订单运行时才暴露，导致活动预算被错误占用或订单无法完成。未见已发生线上事故。 |
+| 根因 | Marketing 的写入能力被建模为跨模块 Port，测试所有权未随 Port 的关键状态机建立。 |
+| 验证/回滚 | 隔离数据库以 `zhudataanpurchaseapi` 与 `shopjob` 分别运行：同一预算并发 reserve、同 order retry、commit 后 release、reserved release 后再次 release；核对 spent/redemption/RLS 结果。修复必须从最新主线独立小分支进行，回滚为撤回该测试/实现小批次。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
