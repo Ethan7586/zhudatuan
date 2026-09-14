@@ -3306,6 +3306,20 @@
 | 验证/回滚 | 从最新主线建立单一修复分支，补 `2147483647/2147483648` 两个 HTTP 反事实并确认后者稳定返回 400、无 query；若改函数类型则同步测试和 query 计划。回滚为撤回该单一变更。 |
 | 独立复核 | 否；P2，后续 public API 输入边界专项可复查。 |
 
+## F-0163｜Identity 已过期 challenge 的失败请求仍会递增 attempts
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | identity / challenge；P3；高 |
+| 类型 | 过期状态处理、失败路径副作用 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/IdentitySecurity.ts:34-53` |
+| 当前/预期 | 第一条条件消费 SQL 要求 `expires_at>clock_timestamp()`；若它未返回行，第二条失败记数 SQL 只要求未消费和其余身份/realm 条件，未再要求未过期。因此已过期但未消费的 challenge 每次带错 code 请求仍会更新 `attempts`。预期过期 challenge 应作为不可变的历史记录被拒绝，或明确将该写入设计为审计行为并以测试锁定。 |
+| 直接证据 | 两条 update 的 where 条件直接对比：第35行包含 expiry，第45-53行没有 expiry；现有 PGlite 测试只覆盖 realm 不匹配时不写和同 realm 错码递增，未覆盖 expiry 反事实。 |
+| 调用链/影响 | password reset、phone change、step-up 与 registration 的 consumeChallenge 调用 → 过期 challenge 失败路径。攻击或陈旧客户端可不断改变过期行 attempts；不会完成认证/重置，也未见权限或数据泄露证据。 |
+| 根因 | 主消费与失败审计更新使用了两套条件，过期约束没有同步到第二条更新。 |
+| 验证/回滚 | 从最新主线独立小分支补已过期 challenge 的错误 code 反事实，确认请求保持 `CHALLENGE_INVALID` 且 attempts 不变；若产品确认必须计数，则将其标为显式审计契约并更新测试。回滚为撤回该单一批次。 |
+| 独立复核 | 否；P3，后续 Identity challenge 专项可复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

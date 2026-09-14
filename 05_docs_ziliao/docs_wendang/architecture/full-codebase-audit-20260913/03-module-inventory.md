@@ -1105,3 +1105,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | stable manifest operation composition oracle | [FACT][E-AU-099-005] |
 
 [FACT][E-AU-099-006] 6 文件、144 行 Identity 装配与模块声明完成深审；注册 API 的 runtime 分支已由入口选择，未见 core operation 通过 WeChat-disabled 运行单元暴露。
+
+## 105. AU-100 Identity HTTP 会话票据与安全辅助链路清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| security helpers | cookie、target、challenge 条件消费 | [FACT][E-AU-100-001]；F-0163/P3 |
+| session creation | password/SMS 登录、realm membership、session/assurance/ticket/outbox | [FACT][E-AU-100-002] |
+| ticket/session management | current cookie exchange、session read/logout/list/revoke | [FACT][E-AU-100-003] |
+| login intent | 认证 source node → database target realm/host intent | [FACT][E-AU-100-004] |
+| tests | challenge realm mutation 与 cross-node intent oracle | [FACT][E-AU-100-005] |
+
+[FACT][E-AU-100-006] 4 文件、594 行 Identity session/ticket 链完成深审；session/login intent 的主要 scope/realm 约束闭合，过期 challenge 失败计数差异见 F-0163/P3。
