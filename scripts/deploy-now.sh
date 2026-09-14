@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Canonical 1.3.5 Aliyun deployment entrypoint.
+# Canonical 1.4 Aliyun deployment entrypoint.
 # Usage:
 #   scripts/deploy-now.sh <target> <full-commit-sha> <node>
 

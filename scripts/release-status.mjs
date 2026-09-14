@@ -26,7 +26,7 @@ if (localCommit && !inMainline) {
 }
 
 const workflowRuns = ghRuns('deploy-prepared-aliyun.yml');
-const recognizedDeliveryVersions = ['1.3.5', '1.3.2'];
+const recognizedDeliveryVersions = ['1.4', '1.3.5', '1.3.2'];
 const prepareRuns = ghRuns('prepare-artifact-aliyun.yml').filter(({ displayTitle }) =>
   recognizedDeliveryVersions.some((version) =>
     displayTitle === `Prepare ${version} ${sourceSha} ${target}` || displayTitle === `Prepare ${version} ${sourceSha} ${target} [github]`));
