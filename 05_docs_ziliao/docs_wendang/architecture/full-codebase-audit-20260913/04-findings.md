@@ -4707,3 +4707,19 @@
 | 建议方向 | 从最新主线建立独立修复分支前，先在隔离 PostgreSQL 重现并核对 provider external-reference 唯一性、RLS、operator resolution 与 settlement guard；若无其它安全门，改为多候选时生成不可审批 difference 并启用该回归测试。 |
 | 验证/回滚 | 注入同一 external reference 的多条 eligible internal facts，确认不产生 arbitrary matched item、无法 approve/settle且有明确审计 evidence；覆盖唯一候选仍可平衡；回滚为撤回单一 matching/test 小批次。 |
 | 是否需要独立复核 | **是**；已加入 `records/AU-526-finance-reconciliation-pglite-test/independent-review-queue.csv`，必须重新追踪 candidate SQL 到 settlement。 |
+
+## F-0253｜身份并发回归将六类独立竞态压入单一超大测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Identity L0/L1 PostgreSQL concurrency test maintainability |
+| 类型 | NIT：测试可维护性/失败定位 |
+| 严重级别 | **NIT** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/tests/repository/IdentityConcurrency.test.ts:82-382`（单一 `it`，文件 662 行）。 |
+| 当前/预期 | 一个环境条件的 DB test 连续执行 bulk registration/login、cross-realm、idempotency、challenge、invite 和 ticket 竞争；前段失败会遮蔽后段。预期是保留共享 fixture/真实并发强度的同时，按独立竞态拆分可定位 case。 |
+| 直接证据 | [FACT][E-AU-529-001] 文件只有一个 300+ 行 `it` 包含六类语义不同的 Promise.all races 和各自 SQL evidence。 |
+| 用户/数据/安全影响 | 不改变生产行为；测试失败诊断、局部重跑和后续并发规格维护成本上升。 |
+| 建议方向 | 仅在未来测试维护小批次中拆分场景，保留同等真实 DB roles/fixture 和跨 Realm evidence；不在审计分支改动。 |
+| 验证/回滚 | 分拆后分别运行各 case，确认每一 case 的并发数量、断言与 cleanup 不变；回滚为撤回纯测试重组织提交。 |
+| 是否需要独立复核 | 否（NIT）。 |
