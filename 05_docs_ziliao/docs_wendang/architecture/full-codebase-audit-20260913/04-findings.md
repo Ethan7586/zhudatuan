@@ -4370,10 +4370,10 @@
 | 类型 | 可用性、身份流程治理 |
 | 严重级别 | **P2** |
 | 置信度 | 高 |
-| 文件和精确位置 | `storefront-compatibility/.../20260724113000_after_sales_and_ledgers.sql:190-267`；`commerce-api/src/api/publicRoutes.ts:76-110`；`commerce-api/src/api/wechatAuthRoutes.ts:84-94`；`commerce-api/src/api/stepUpRoutes.ts:11-29` |
-| 当前行为 | `login_attempts` 按 IP hash 计数；第 5 次失败在 15 分钟窗口内设置 `blocked_until`，所有共用 `api_login_allowed` 的登录、微信绑定和二次验证请求在此期间返回 429。 |
+| 文件和精确位置 | `database/supabase/migrations/20260817190000_login_attempt_limit_ten.sql:5-49`；`commerce-api/src/api/publicRoutes.ts:76-110`；`commerce-api/src/api/wechatAuthRoutes.ts:84-94`；`commerce-api/src/api/stepUpRoutes.ts:11-29` |
+| 当前行为 | `login_attempts` 按 IP hash 计数；第 10 次失败在 15 分钟窗口内设置 `blocked_until`，所有共用 `api_login_allowed` 的登录、微信绑定、二次验证和初始密码变更请求在此期间返回 429。 |
 | 预期行为 | 项目既定规则要求不保留登录失败锁定、限流或冷却。 |
-| 直接证据 | AU-305 调用链与 `loginRateLimitBypass.test.ts:91-111`，后者明确断言非白名单地址被 limiter storage 阻断时返回 `LOGIN_RATE_LIMITED` 429。 |
+| 直接证据 | AU-305 调用链与 `loginRateLimitBypass.test.ts:91-111`，以及 AU-386 的当前函数定义；前者明确断言非白名单地址被 limiter storage 阻断时返回 `LOGIN_RATE_LIMITED` 429。 |
 | 调用链/运行入口 | Console/公开登录与微信绑定、二次验证路由 → `api_login_allowed` / `api_record_login_failure` → `login_attempts`。 |
 | 用户影响 | 同一出口网络中的合法用户可因其他人连续输错密码而在 15 分钟内无法登录、绑定或完成二次验证。 |
 | 数据/安全影响 | 仅记录哈希化 IP 和失败次数；主要影响是可用性，未见本批次证据表明已造成线上事故。 |
