@@ -1147,6 +1147,10 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - `.prettierignore` 被正式 format/check:format 入口自动消费，保护迁移、生成 Miniapp/token、锁文件与 byte-preserved 交接物，归 G0。
 
+## 498. AU-498 Prettier 主配置复核
+
+- `.prettierrc.json` 被正式 format/check:format 入口自动解析，并与 EditorConfig/Git LF 边界一致；归 G0，无删除候选。
+
 ## GX-0013｜渠道外部对象 scope 映射切换
 
 | 字段 | 记录 |
