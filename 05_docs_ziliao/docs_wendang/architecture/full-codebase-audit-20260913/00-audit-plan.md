@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-244 已完成。AU-244 完成 Commerce registration migration Runner audit。覆盖总账按当前文件级清单重算：深入审阅1,737文件/122,864行、结构性审阅802文件/117,994行、自动生成70文件/172,651行、暂未审阅1,118文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-245 已完成。AU-245 完成 Commerce live database boundary audit。覆盖总账按当前文件级清单重算：深入审阅1,739文件/122,988行、结构性审阅802文件/117,994行、自动生成70文件/172,651行、暂未审阅1,116文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1899,3 +1899,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Commerce RegistrationMigrationRunner。
 
 执行结果：Runner锁定独立registration数据库、验证history/ledger/target，并对owner fixture、省略/变换迁移、secret backfill及两类受控已存在runtime marker执行专门恢复路径。对新migration仍先执行SQL、后INSERT ledger，扩展既有F-0013/P2到registration runner；没有Runner级direct fixture覆盖数据库边界、SQL/ledger故障窗口或deferred repair状态，形成F-0223/P2；无P0/P1新问题。
+
+## 247. AU-245 连续审计点
+
+审阅 Commerce live database boundary。
+
+执行结果：LiveDatabaseBoundary从deployment oracle验证运行role、registration database、单Owner、migration/runtime/boundary role、retired membership和各database owner；RuntimeCompatibility/jobs与identity runtime实际调用。严格主边界fixture逐字段fail-closed，但Identity runtime的`businessRoles:false/retiredRoles:false`分支没有direct fixture，形成F-0224/P2；无P0/P1新问题。

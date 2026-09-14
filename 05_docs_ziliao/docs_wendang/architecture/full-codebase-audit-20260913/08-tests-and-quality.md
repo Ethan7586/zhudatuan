@@ -814,3 +814,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 未找到Runner direct fixture；Plan fixture不能证明独立数据库、锁、ledger recovery、secret backfill和target执行语义。
 - SQL/ledger非原子窗口扩展既有F-0013/P2；direct-test缺口见F-0223/P2。审计工作树未运行Vitest。
+
+## 245. AU-245 Live database boundary 深审
+
+- Strict boundary fixture逐字段覆盖，但identity runtime专用的两项例外及其保留强制字段没有direct fixture。
+- 见F-0224/P2。审计工作树未运行Vitest。

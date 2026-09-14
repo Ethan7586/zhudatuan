@@ -365,6 +365,20 @@
 | 验证/回滚 | 断言每个稳定错误码、lock/unlock与release、执行SQL/ledger顺序及失败后重跑语义；回滚为revert测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0224｜Identity runtime 的数据库边界例外没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / bootstrap LiveDatabaseBoundary；P2；高 |
+| 类型 | 测试覆盖缺口、身份运行时数据库边界 |
+| 位置 | `01_core_hexin/services/commerce/src/bootstrap/LiveDatabaseBoundary.ts:35-65`；`.../LiveDatabaseBoundary.test.ts:20-49` |
+| 当前/预期 | identity API/job调用identity专用assertion，刻意不要求business/retired role digest，但仍要求运行role、registration DB、单Owner、migration/runtime/boundary role、retired memberships和各owner一致。预期该宽松例外及其保留不变量有direct fixture。 |
+| 直接证据 | fixture只调用`assertLiveDatabaseBoundary`；未导入/调用`assertIdentityRuntimeDatabaseBoundary`，也未验证identity runtime接受business/retired false而拒绝其余任一关键字段drift。 |
+| 调用链/影响 | IdentityRegistrationApiRuntime/IdentityNotificationJobsRuntime → assertIdentityRuntimeDatabaseBoundary → deployment runtime oracle。分支回归可能使identity runtime错误启动/拒绝，或错误放宽非identity数据库边界；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试批，覆盖identity API/job role的acceptance、business/retired digest例外、每个仍强制的字段拒绝及strict path不变；回滚为撤回测试提交。 |
+| 验证/回滚 | 用当前fake pool断言两种assertion的accept/reject差异和稳定错误码；回滚为revert提交。 |
+| 独立复核 | 否；P2。 |
+
 ## F-0014｜Catalog API Ready 未探测已启动的 HTTP 进程
 
 | 字段 | 记录 |

@@ -2569,3 +2569,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | secret backfill | 特定backfill前以8并发KMS加密旧明文并事务写入新stage表 | [FACT][E-AU-244-004] |
 
 [FACT][E-AU-244-005] 1 文件、302 行完成深审；扩展F-0013/P2并新增F-0223/P2 direct-test缺口。
+
+## 250. AU-245 Live database boundary 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| strict runtime boundary | jobs/general compatibility同时要求business和retired role digest及全部owner/runtime事实 | [FACT][E-AU-245-001] |
+| identity runtime boundary | identity API/job只跳过与其无所有权关系的business/retired digest，其余不变量仍严格 | [FACT][E-AU-245-002] |
+| oracle/consumers | deployment.runtime_database_boundary是唯一读取事实；RuntimeCompatibility与identity runtime调用 | [FACT][E-AU-245-003] |
+
+[FACT][E-AU-245-004] 2 文件、124 行完成深审；严格路径完备，identity专用分支无direct fixture，见F-0224/P2。
