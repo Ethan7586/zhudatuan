@@ -5167,3 +5167,23 @@
 | 验证方式 | 隔离 PostgreSQL 用正式 migration runner 至基线，分别以 `zhudatuanwebapi`、无权限 role和高权限 role 运行真实 `order.orders.read` SQL：同 scope 四流应完整返回，错 scope/未授权 relation 必须无行或拒绝；运行现有 WebOrderOperations test 加新增 DB contract。 |
 | 回滚方式 | 撤回独立前向 ACL/RLS migration 或恢复上一个已验证的 narrow policy/grant 版本；不回写业务数据。 |
 | 是否需要独立复核 | 是；复核者必须独立读取 Web API 连接配置、PostgreSQL `pg_policies`/role attributes，以及一条真实 scope/跨 scope request 的结果。 |
+
+## F-0278｜Web 订单路由子事实读取未建立运行 role 的 RLS 策略
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Web Business API / Order route and fulfillment read model / database boundary |
+| 类型 | 运行时正确性、行级权限契约与最小权限 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql:3-4`；`01_core_hexin/services/commerce/src/modules/webbusiness/WebOrderOperations.ts:39-56,82-104`；`02_platform_pingtai/database/supabase/migrations/20260821019000_create_cart_checkout_order.sql:88-123,137`；`20260821020000_create_fulfillment_verification.sql:23-34,88`；`20260828173000_zhudatuan_web_business_access.sql:329-368`。 |
+| 当前/预期 | 当前 migration 向 `zhudatuanwebapi` 授予 ordering/inventory/fulfillment 三个 schema 的当时所有 tables `SELECT`。实际 order query 读取 `ordering.suborder/reviewaction`、`fulfillment.line/milestone`，而既有该 role 的 RLS policy 仅覆盖 orderrecord、line、aftersale、reservation 和 fulfillmentorder。上述 schemas 已启用 RLS；预期为授权 scope 下的订单可读所需子事实、跨 scope 与无关 relation 仍不可读。 |
+| 直接证据 | [FACT][E-AU-680-001] query 的 economic legs、fulfillment lines/milestones、operation review branches分别引用四张未被旧 Web RLS policy 覆盖的 relation；[FACT][E-AU-680-002] initial migrations 对 ordering 与 fulfillment schemas 全表启用 RLS；[FACT][E-AU-680-003] 全 migration 集对四 relation 的 policy 检索只命中 purchase role 或无匹配，未命中 `zhudatuanwebapi`；[FACT][E-AU-680-004] AU-680 使用 all-tables grant 而非所需 relation 的 narrow grant。 |
+| 调用链或运行入口 | Console/Storefront authorized order request → Web Business API → `order.orders.read` → WebOrderOperations nested route/fulfillment/operation subqueries。 |
+| 用户/数据/安全影响 | 已授权订单响应可能缺少经济履约腿、履约商品/里程碑和售后审核动作，影响运营和售后判断；当前无生产请求回执。表级授权又为未来 RLS/role 漂移扩大了 schema 内读取面。 |
+| 根因 | 订单读模型补充子 relation 后，ACL 通过一次 all-tables grant 扩张，而每个新 relation 的 RLS policy与可执行 DB contract没有同步增加。 |
+| 建议方向 | 与 F-0277 合并为一个独立、单一目的的 Web order read ACL/RLS repair batch：确认连接 role和 scope 语义后，仅授予实际 relation，分别建立以 parent order/fulfillment scope 为约束的 SELECT RLS policy，或改为受控 read function；补 role/RLS matrix test。不得改写历史 migration。 |
+| 预计修改范围 | 新前向 migration、SQL integration contract，必要时受控 read function；不改订单业务数据。 |
+| 验证方式 | 隔离数据库以 `zhudatuanwebapi` 执行完整 Web order query：同 scope 的 nested legs/lines/milestones/reviews 应可见，跨 scope 与未授权 relation 必须拒绝或无行；以 no-role 对照执行，并检查只保留必要 table grant。 |
+| 回滚方式 | 撤回独立前向 narrow ACL/RLS migration；不回滚或删除订单数据。 |
+| 是否需要独立复核 | 是；复核者需独立检查最终 policy catalog、connection role 与跨 scope response。 |
