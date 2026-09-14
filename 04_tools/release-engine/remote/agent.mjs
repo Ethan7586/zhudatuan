@@ -1964,6 +1964,7 @@ function validatePolicy(policy, project) {
         assert(migration.recovery?.mode === 'forward-only' && typeof migration.recovery.snapshot === 'string', 'POLICY_DATABASE_MIGRATION_RECOVERY_INVALID', { node, target });
       }
       if (deployment.allowBaselineImport !== undefined) assert(typeof deployment.allowBaselineImport === 'boolean', 'POLICY_BASELINE_IMPORT_INVALID', { node, target });
+      if (deployment.baselineStrategy !== undefined) assert(deployment.baselineStrategy === 'register-current', 'POLICY_BASELINE_STRATEGY_INVALID', { node, target });
       for (const input of deployment.seedInputs ?? []) {
         assert(safeRelative(input.source) && safeRelative(input.destination), 'POLICY_SEED_PATH_INVALID', { node, target, input });
       }

@@ -228,10 +228,34 @@ test('every restartable fast target has a one-time legacy seed and production ro
     assert.match(node.legacyRoot, /^\/opt\//, `${nodeKey} legacy root`);
     for (const [target, deployment] of Object.entries(node.deployments)) {
       if (target === 'core' || deployment.restart.kind === 'none') continue;
-      assert.ok(Array.isArray(deployment.seedInputs) && deployment.seedInputs.length > 0, `${nodeKey}/${target} seed inputs`);
+      const canEstablishBaseline = (Array.isArray(deployment.seedInputs) && deployment.seedInputs.length > 0)
+        || deployment.baselineStrategy === 'register-current';
+      assert.ok(canEstablishBaseline, `${nodeKey}/${target} baseline strategy`);
       assert.notEqual(deployment.allowFirstActivation, true, `${nodeKey}/${target} cannot skip a rollback baseline`);
     }
   }
+});
+
+test('node operations is a reproducible single-service 1.3.2 target hosted once by L0', () => {
+  const target = adapter.targets['node-operations'];
+  assert.deepEqual(target.build.map((command) => command.argv), [
+    ['node', '04_tools/release-engine/adapters/zdt-next/build-node-operations.mjs'],
+  ]);
+  assert.ok(target.criticalFiles.includes('runtime/autonode-control-main.mjs'));
+  assert.ok(target.criticalFiles.includes('runtime/autonode-activate-runtime.mjs'));
+  assert.match(prepareWorkflow, /options:[\s\S]*?- node-operations/);
+  assert.match(preparedDeployWorkflow, /options:[\s\S]*?- node-operations/);
+  assert.match(baselineRegistrationWorkflow, /options:[\s\S]*?- node-operations/);
+
+  const l0 = adapter.nodes['zhudatuan-l0'].deployments['node-operations'];
+  const l1 = adapter.nodes['hbbtzn-l1'].deployments['node-operations'];
+  const remote = policy.nodes['zhudatuan-l0'].deployments['node-operations'];
+  assert.equal(l0.pointerRoot, '/opt/sfl/control/node-operations');
+  assert.equal(l0.service, 'sfl-autonode-control.service');
+  assert.equal(l1.hostedBy, 'zhudatuan-l0');
+  assert.equal(remote.baselineStrategy, 'register-current');
+  assert.equal(remote.restart.name, l0.service);
+  assert.ok(remote.healthChecks.some((check) => check.argv.includes('http://127.0.0.1:4370/health/ready')));
 });
 
 test('every systemd target owns exactly one dependency-isolated restart unit', () => {

@@ -331,6 +331,40 @@
       "workspace": "@shop/commerce",
       "after": ["database-migration"]
     },
+    "node-operations": {
+      "id": "node-operations",
+      "kind": "service",
+      "tests": [
+        {"name":"node-operations-tests","argv":["node","--test","04_tools/scripts/provisioning/autonode-operations.test.mjs","04_tools/scripts/provisioning/autonode-task-engine.test.mjs"],"timeoutMs":120000}
+      ],
+      "typecheck": [],
+      "build": [
+        {"name":"node-operations-runtime-build","argv":["node","04_tools/release-engine/adapters/zdt-next/build-node-operations.mjs"],"timeoutMs":120000}
+      ],
+      "artifactInputs": [
+        {"source":"04_tools/scripts/provisioning/autonode-operate.mjs","destination":"runtime/autonode-operate.mjs"},
+        {"source":"04_tools/scripts/provisioning/autonode-operations-engine.mjs","destination":"runtime/autonode-operations-engine.mjs"},
+        {"source":"04_tools/scripts/provisioning/autonode-operations-provider.mjs","destination":"runtime/autonode-operations-provider.mjs"},
+        {"source":"04_tools/scripts/provisioning/autonode-control-main.mjs","destination":"runtime/autonode-control-main.mjs"},
+        {"source":"04_tools/scripts/provisioning/autonode-control-server.mjs","destination":"runtime/autonode-control-server.mjs"},
+        {"source":"04_tools/scripts/provisioning/autonode-task-engine.mjs","destination":"runtime/autonode-task-engine.mjs"},
+        {"source":"04_tools/scripts/provisioning/autonode-task-executor.mjs","destination":"runtime/autonode-task-executor.mjs"},
+        {"source":"04_tools/release-engine/dist/node-operations/autonode-activate-runtime.mjs","destination":"runtime/autonode-activate-runtime.mjs"},
+        {"source":"04_tools/scripts/release/sfl-autonode-control.service","destination":"systemd/sfl-autonode-control.service"}
+      ],
+      "criticalFiles": [
+        "runtime/autonode-operate.mjs",
+        "runtime/autonode-operations-engine.mjs",
+        "runtime/autonode-operations-provider.mjs",
+        "runtime/autonode-control-main.mjs",
+        "runtime/autonode-control-server.mjs",
+        "runtime/autonode-task-engine.mjs",
+        "runtime/autonode-task-executor.mjs",
+        "runtime/autonode-activate-runtime.mjs",
+        "systemd/sfl-autonode-control.service"
+      ],
+      "estimateSeconds": 120
+    },
     "database-migration": {
       "id": "database-migration",
       "kind": "migration",
@@ -353,6 +387,24 @@
     }
   },
   "rules": [
+    {
+      "id": "node-operations",
+      "targets": ["node-operations"],
+      "include": [
+        "04_tools/scripts/provisioning/autonode-operate.mjs",
+        "04_tools/scripts/provisioning/autonode-operations-engine.mjs",
+        "04_tools/scripts/provisioning/autonode-operations-provider.mjs",
+        "04_tools/scripts/provisioning/autonode-control-main.mjs",
+        "04_tools/scripts/provisioning/autonode-control-server.mjs",
+        "04_tools/scripts/provisioning/autonode-task-engine.mjs",
+        "04_tools/scripts/provisioning/autonode-task-executor.mjs",
+        "04_tools/scripts/provisioning/autonode-activate.mjs",
+        "04_tools/scripts/provisioning/autonode-production-provider.mjs",
+        "04_tools/scripts/release/sfl-autonode-control.service",
+        "04_tools/release-engine/adapters/zdt-next/build-node-operations.mjs"
+      ],
+      "reason": "single AutoNode operations control-plane runtime"
+    },
     {
       "id": "identity-sovereignty-control-plane",
       "validationOnly": true,
@@ -622,6 +674,7 @@
         "catalog-jobs": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/catalog-jobs","service":"sfl-catalog-jobs@zhudatuan-l0.service"},
         "payment-webhook-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/payment-webhook-api","service":"sfl-payment-webhook-api@zhudatuan-l0.service"},
         "payment-jobs": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/payment-jobs","service":"sfl-payment-jobs@zhudatuan-l0.service"},
+        "node-operations": {"pointerRoot":"/opt/sfl/control/node-operations","service":"sfl-autonode-control.service"},
         "database-migration": {"pointerRoot":"/opt/ai-delivery/database-migrations/zdt-next","service":"none","restart":"none"}
       }
     },
@@ -645,6 +698,7 @@
         "catalog-jobs": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/catalog-jobs","service":"sfl-catalog-jobs@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
         "payment-webhook-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/payment-webhook-api","service":"sfl-payment-webhook-api@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
         "payment-jobs": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/payment-jobs","service":"sfl-payment-jobs@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
+        "node-operations": {"pointerRoot":"/opt/sfl/control/node-operations","service":"sfl-autonode-control.service","hostedBy":"zhudatuan-l0"},
         "database-migration": {"pointerRoot":"/opt/ai-delivery/database-migrations/zdt-next","service":"none","restart":"none","hostedBy":"zhudatuan-l0"}
       }
     }

@@ -38,6 +38,7 @@ on:
           - catalog-jobs
           - payment-webhook-api
           - payment-jobs
+          - node-operations
           - database-migration
       release_node:
         description: Physical node eligible for the prepared artifact

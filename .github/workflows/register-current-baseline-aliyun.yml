@@ -44,6 +44,7 @@ on:
           - catalog-jobs
           - payment-webhook-api
           - payment-jobs
+          - node-operations
       release_node:
         description: Exact sovereign node that owns the physical target
         required: true
