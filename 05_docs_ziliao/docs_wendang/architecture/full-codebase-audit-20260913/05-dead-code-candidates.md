@@ -1159,6 +1159,10 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - `commerce-api/.env.example` 是无实际凭据的本地/部署安全配置模板，覆盖 session、PII、注册、SMS、微信和支付；归 G0，不构成删除候选。
 
+## 501. AU-501 Compatibility API Vitest 配置复核
+
+- `commerce-api/vitest.config.ts` 是 package test 入口的 Node/API-test collection 边界；归 G0，兼容 Admin 的测试覆盖另待模块证据确认。
+
 ## GX-0013｜渠道外部对象 scope 映射切换
 
 | 字段 | 记录 |
