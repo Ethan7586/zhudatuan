@@ -1426,3 +1426,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | coverage | Notification 63/63 文件均有明确覆盖状态 | [FACT][E-AU-129-003] |
 
 [FACT][E-AU-129-004] 28 文件、51 行 Notification compatibility/public entry 完成深审；不以仓内零引用作为删除依据。
+
+## 135. AU-130 Catalog 入口、公共端口与导入 Worker 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Catalog modules/manifest | 完整 catalog 与 selected operator API 的 operation/dependency 边界 | [FACT][E-AU-130-001] |
+| source/provisioning ports | source listing upsert、SKU keyset 与 mall private pool/binding 写入 | [FACT][E-AU-130-002] |
+| catalog import Worker | import 状态推进、package reject/fault 和 jobs catalog registration | [FACT][E-AU-130-003] |
+
+[FACT][E-AU-130-004] 7 文件、160 行 Catalog entry/public port/import worker 完成深审；未见 job manifest 与 jobs catalog 不一致。

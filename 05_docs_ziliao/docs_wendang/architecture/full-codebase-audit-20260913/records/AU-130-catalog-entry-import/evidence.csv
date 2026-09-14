@@ -1,0 +1,4 @@
+id,file,location,kind,observation
+E-AU-130-001,05_interface_jieru/{CatalogModule;IdentityOperatorCatalogModule}.ts;module.manifest.ts,1-33,module boundary,Full and selected module surfaces match the catalog manifest operation/job inventory.
+E-AU-130-002,01_public_gongkai/{CatalogSourcePort;CatalogProvisioningPort}.ts,1-35,public port,Source listing mapping and mall pool/binding writes are exposed as public cross-module operations.
+E-AU-130-003,05_interface_jieru/job/CatalogImportJob.ts;app/jobs.ts,1-51;103/159,worker registration,Worker enforces scope/state and is registered as catalogimport with import queue bounds.

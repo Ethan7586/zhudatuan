@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-129 已完成。AU-129 完成 Notification 旧英文兼容入口与 public index 覆盖收口。覆盖总账按当前文件级清单重算：深入审阅1,255文件/96,014行、结构性审阅809文件/118,719行、自动生成70文件/172,651行、暂未审阅1,594文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-130 已完成。AU-130 完成 Catalog 入口、来源/开通公共端口与导入 Worker 审阅。覆盖总账按当前文件级清单重算：深入审阅1,262文件/96,174行、结构性审阅809文件/118,719行、自动生成70文件/172,651行、暂未审阅1,587文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1209,3 +1209,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Notification root/application/domain/infrastructure/interface 旧英文兼容入口及 public `index.ts`，逐文件核对导出目标。
 
 执行结果：27 个旧路径均为一行 `export *`，只导向已深审的中文分层实现；public index 仅导出 capability、public type、domain type 和 manifest，不导出 adapter/command。旧路径仍可能服务外部或遗留 import，归类 G0。Notification 63/63 文件已获得明确覆盖状态；未发现 P0–P3 新问题；无适用行为测试。
+
+## 132. AU-130 连续审计点
+
+审阅 Catalog 完整/selected module、公共 capability/source/provisioning port、manifest 与 catalogimport Worker 的实际注册链。
+
+执行结果：完整 CatalogModule 依赖 partner，selected CatalogOperatorModule 不带跨模块依赖；manifest 声明 13 项 HTTP operation 和 catalogimport job。source port 以 provider/scope/external 唯一键更新 source listing，provisioning port 为新 mall 原子建立 private pool 与 selected binding。catalogimport Worker 根据 uploaded/validating/ready/running/reporting 状态推进，包格式错误 reject，其他错误 fault 后交给 QueueJob 重试；主 jobs catalog 已注册 import queue、4 并发、120 秒 timeout、180 秒 lease。未发现 P0–P3 新问题；Vitest 未运行。
