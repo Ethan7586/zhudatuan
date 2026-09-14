@@ -280,3 +280,9 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 
 - Jdfresh是required provider，随Commerce OCI发布；health不能证明Inventory/Logistics能力可达。
 - F-0122需库存和Order→tracking合成canary；本AU未build、访问线上、调用JD、推送、合并或部署。
+
+## 34. AU-031 Jdproduct发布与运维边界
+
+- Jdproduct是required provider，随Commerce OCI发布；实际启用取决于数据库`installation`与签名manifest、connection可达、健康门禁与启动签名验证。
+- provider health与现有canary未覆盖Return能力端口，因此`manifest`层能力承诺与运行可达性仍有语义悬空（F-0125）；F-0126为质量缺口，不能等同生产就绪。
+- 本AU未构建制品、访问线上installation/run、激活/停用provider、推送、合并或部署。

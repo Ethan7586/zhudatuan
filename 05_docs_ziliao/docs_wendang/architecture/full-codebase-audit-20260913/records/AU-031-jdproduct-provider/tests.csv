@@ -1,0 +1,7 @@
+"test_id","area","method","result"
+"TC-AU-031-001","正式测试","npm test -- --reporter=dot","阻塞/127，vitest缺失"
+"TC-AU-031-002","类型检查","npm run typecheck","阻塞/127，tsc缺失"
+"TC-AU-031-003","履约反事实","manifest×ChannelSyncJob×Registry","Inventory/Logistics与caller语义已对齐"
+"TC-AU-031-004","能力语义反查","manifest×Provider×Registry×ExtensionRegistry","Return在capability声明但无return port"
+"TC-AU-031-005","业务ports","Catalog/Order/Tracking/Statement/Cancel/Refund/Return/Webhook","未执行；未验证Return与真实operation"
+"TC-AU-031-006","构建","npm run build","未执行；等同typecheck"

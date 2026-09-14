@@ -249,3 +249,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 唯一13行测试只核ID/签名；库存、Order→tracking、TimeSlot和能力矩阵无测试（F-0124）。
 - test/typecheck因缺vitest/tsc退出127；详见`records/AU-030-jdfresh-provider/`。
+
+## 30. AU-031 Jdproduct Provider质量
+
+- 测试与其他provider一致：唯一13行测试仅核required provider ID与签名；未实例化factory，不覆盖`catalog/price/stock/order/tracking/refund/statement`或Return语义矩阵（F-0126）。
+- 生产入口与映射层仅在手工探针与provider反查中确认；`manifest`与`operations`口径不一致不在测试里验证（F-0125）。
+- test/typecheck因缺vitest/tsc退出127；未执行build。详见`records/AU-031-jdproduct-provider/`。

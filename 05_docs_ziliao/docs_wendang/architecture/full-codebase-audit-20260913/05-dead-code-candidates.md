@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 2、G1 31、G2 2、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 2、G1 32、G2 2、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -539,3 +539,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 新增DC-0038/G1；JdfreshWebhook由DC-0026覆盖。
 - 累计G0 2、G1 31、G2 2、G3 0、GX 5；未删除文件。
+
+## DC-0039｜Jdproduct ErrorMap公共导出
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类/对象 | G1；`01_core_hexin/extensions/providers/jdproduct/ErrorMap.ts`的`mapJdproductError` |
+| 证据 | 固定仓库检索零caller，但package barrel公共导出，仓外兼容/替代消费者未排除 |
+| 可否删除 | 否；不满足无公共API、正式下线、行为不变和二次复核条件 |
+| 二次复核 | G1不强制；升级到G2/G3前必须按符号逐一核对仓外消费者与兼容路径 |
+
+## 31. AU-031 Jdproduct候选复核
+
+- 新增DC-0039/G1；`mapJdproductError`无固定仓内调用，`manifest/Return`与operations口径不一致仍需单独修复候选而非删除。
+- 累计G0 2、G1 32、G2 2、G3 0、GX 5；未删除任何文件。

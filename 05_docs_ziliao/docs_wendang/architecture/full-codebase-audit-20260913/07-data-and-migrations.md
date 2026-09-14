@@ -171,3 +171,9 @@
 
 - 包无表/迁移；库存由Inventory、订单/里程碑由Fulfillment持有。
 - F-0122使库存调用前失败；Order可成功后物流查询失败，可能长期无milestone/completed。未访问线上或数据库。
+
+## 26. AU-031 Jdproduct数据边界
+
+- Jdproduct没有数据库表和迁移；Catalog源数据进入Channel/Catalog，库存与价格由Channel/Pricing保留，订单与履约由Fulfillment持有。
+- F-0125为能力-port闭合问题，不触及仓内迁移/schema；Return语义仍为调用层空洞。是否存在Return固定caller及其对历史订单状态的影响未核验，记录为UNKNOWN。
+- 本AU未执行SQL、迁移、同步、下单或供应商调用。

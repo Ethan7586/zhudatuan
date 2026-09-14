@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-030 结束时累计：P0 0、P1 候选 18、P2 57、P3 48、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-031 结束时累计：P0 0、P1 候选 18、P2 58、P3 49、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2861,6 +2861,33 @@
 | 验证/回滚 | 破坏能力词汇或operation时测试失败；回退测试提交 |
 | 独立复核 | 否 |
 
+## F-0125｜Jdproduct Return能力未闭合
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Jdproduct Provider；P2，高置信 |
+| 位置 | `extensions/providers/jdproduct/manifest.ts:12`；`Provider.ts:6` |
+| 当前/预期 | manifest声明`Return`能力，但`operations`中没有`return` port。能力与port应可唯一闭合，至少要有可达端口或明确废弃说明。 |
+| 影响 | 当前不会直接证明线上退货流程可执行或可安全禁用；但`manifest`层面能力承诺与实现不一致。 |
+| 根因/方向 | 能力词汇保留与port实现未同步；后续provider统一契约复核再治理，不建议单包硬编码旁路 |
+| 验证/回滚 | 在provider级别做capability×port反事实，发现任何`Return`路径引用时应先补齐映射；回退单一契约提交 |
+| 独立复核 | 否 |
+
+## F-0126｜Jdproduct测试未覆盖业务ports
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Jdproduct tests；P3，高置信 |
+| 位置 | `extensions/providers/jdproduct/tests/Provider.test.ts:1-13` |
+| 当前/预期 | 只核`required ID`与manifest签名；未实例化factory、不测试`catalog/price/stock/order/tracking`和错误映射。 |
+| 影响 | capability/port变更或供应商适配漂移可被包测试遗漏，进入生产后只触发运行时故障 |
+| 验证/回滚 | package级用例应包含factory、capability与port矩阵、至少一条业务port行为；回退单一测试提交 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
+
+## 31. AU-031 新增未定级事项
+
+- [UNKNOWN] Jdproduct线上是否enabled、是否有Return固定caller、以及Return语义是否由外部流程承接；未核验线上installation与实际订单/退单链路。

@@ -207,3 +207,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 
 - `channel.jdfresh.operate`覆盖全部读写ports；Order/Refund为非幂等且共享Client不自动重试。
 - F-0122是可达性而非已证权限绕过；JD RSA凭据与Webhook secret未被本AU读取或修改。
+
+## 28. AU-031 Jdproduct权限与凭据边界
+
+- `channel.jdproduct.operate`声明含Catalog/Price/Inventory/Order/Cancel/Return/Logistics/Refund/Statement/Webhook 及`Webhook`；Provider实现却未实现Return入口端口，当前是语义未闭合而非已证凭据漏洞。
+- F-0125属于能力词汇与port映射不一致：未读取任何真实凭据、未触碰订单状态授权。
+- `mapJdproductError`仅在本包声明、未见仓内调用；`index.ts`对导出对象公开，仅表明兼容边界，不代表可删除。
+- Webhook和secret使用链与Jdfresh/Jdproduct共用Provider Core/vender连接，`manifest`层与实现层一致性不足应作为治理前置检查；本AU未调用真实凭据和线上安装。

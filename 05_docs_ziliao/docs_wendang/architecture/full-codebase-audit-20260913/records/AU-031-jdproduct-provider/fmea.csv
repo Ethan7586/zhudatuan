@@ -1,0 +1,4 @@
+"id","failure","trigger","effect","rating"
+"FM-AU-031-001","能力未闭合：Return无专用port","manifest声明Return但operations未含return","新caller若启用Return会在能力语义上无权威映射，可能回退到任意现有调用策略","P2/F-0125"
+"FM-AU-031-002","测试假阳性","包测试只验签名","真实provider operation、capability-port映射或返回转换错误不会被包测试阻断","P3/F-0126"
+"FM-AU-031-003","潜在回归边界未验证","未验证catalog/price/order/tracking与JD供应商交互","生产异常可能在调用时才显现","P2/F-0125/F-0126"
