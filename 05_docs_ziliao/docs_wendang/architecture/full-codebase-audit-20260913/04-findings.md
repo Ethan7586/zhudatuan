@@ -4599,3 +4599,21 @@
 | 建议方向 | 从最新主线建立独立配置/文档小批次，先确定 full 是否仍允许，然后为 full/identity/payment 拆分可验证模板并由 localinfra 生成路径覆盖。 |
 | 验证/回滚 | 隔离环境分别加载每个模板，断言允许档案可通过环境校验、禁止键 fail-fast、token 不打印；回滚为撤回单一模板变更。 |
 | 是否需要独立复核 | 否（P3）。 |
+
+## F-0247｜身份通知 Worker 查询运行契约却未以失败结果阻止启动
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce identity notification Worker startup/数据库兼容性门 |
+| 类型 | 正确性、运行时契约兼容性 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/bootstrap/IdentityNotificationJobsRuntime.ts:108-133`；`.../IdentityNotificationJobsRuntime.test.ts:64-91`；`.../entry/IdentityNotificationJobsMain.ts:4-10`；`.../entry/IdentityNotificationJobsReadyMain.ts:4-5`。 |
+| 当前/预期 | compatibility query 计算 `contract`（指定 `CONTRACT_SCHEMA_HEAD` 与 `RUNTIME_CONTRACT_CHECKSUM`），但错误门只检查 schema、registration、表和 identity，未检查 `state.contract`；测试把 `contract: false` 固化为 resolves。预期为 contract 失配在任何 queue claim 或通知投递前拒绝启动。 |
+| 直接证据 | [FACT][E-AU-504-001] `exists(... version=$2 and checksum=$3) contract` 的查询结果没有加入拒绝条件；[FACT][E-AU-504-002] 测试明确断言 `pool({ ...healthy, contract: false })` resolves。 |
+| 调用链或运行入口 | `IdentityNotificationJobsOnlyMain` → `runIdentityNotificationJobs` → `createIdentityNotificationJobsRuntime` → compatibility gate → `QueueJob('identitynotification')`；就绪入口也直接创建同一 runtime。 |
+| 用户/数据/安全影响 | 在数据库 migration head 正确、但 runtime contract checksum 不一致时，身份挑战通知 Worker 仍可能开始认领和派发任务，造成部署版本与数据库契约不一致下的行为不可预测。没有生产不匹配、实际误投递、数据损失或越权证据。 |
+| 根因 | gate 已获取 contract 状态，但布尔聚合条件及回归测试没有将它当作启动前置条件。 |
+| 建议方向 | 从当时最新主线另建单一修复分支，先以隔离数据库证明 gate 必须 fail-closed，再将 `contract` 纳入条件并把测试改为 reject；不在审计分支修改。 |
+| 验证/回滚 | 隔离 PostgreSQL 保留 target schema head、故意使用错误 contract checksum，断言 runtime 创建失败且无 claim/投递；回滚为撤回该单一 gate/test 提交。 |
+| 是否需要独立复核 | 否（P2）；若该 Worker 已承担生产身份验证码投递，建议在修复前补运行环境复核。 |
