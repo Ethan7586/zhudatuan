@@ -3976,6 +3976,20 @@
 | 验证/回滚 | 断言state顺序、每个port调用、report object及permanent/transient分类；回滚为revert测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0211｜ExecutionKernel 特殊写入分支没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation ExecutionKernel；P3；高 |
+| 类型 | 测试覆盖缺口、transactional write durability |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/application/ExecutionKernel.ts:39-58,75-130,158-166`；`.../ExecutionKernel.test.ts:15-85` |
+| 当前/预期 | 现有fixture验证并发、replay、rollback、retry、key及write context；实现还支持provider无显式idempotency key的fallback、OperationRejection作为可持久化业务结果及checkpoint row-count丢失拒绝。预期每个特殊语义有direct assertion。 |
+| 直接证据 | 未找到`providerBusinessKey`、`EXECUTION_CHECKPOINT_LOST`或OperationRejection→completed result的ExecutionKernel direct assertion。PaymentOperationSupport和IdentityPersistence直接调用claim/complete helper。 |
+| 调用链/影响 | ModuleOperations → ExecutionKernel → idempotency/outbox/audit；PaymentOperationSupport/IdentityPersistence也复用helper。特殊分支回归会在provider callback或业务拒绝时暴露，当前线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试批次，覆盖request-id/hash fallback、OperationRejection持久化/replay及checkpoint 0-row拒绝；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言idempotency key、outbox、response与throw semantics；回滚为revert测试提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

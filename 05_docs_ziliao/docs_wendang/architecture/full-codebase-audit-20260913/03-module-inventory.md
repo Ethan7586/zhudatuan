@@ -2271,3 +2271,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | dispatch consumer | CommandBus直接以该契约约束handler registration和execute输入，API/Jobs bootstrap创建bus | [FACT][E-AU-213-002] |
 
 [FACT][E-AU-213-003] 1 文件、3 行完成深审；真实消费成立，为G0；bus行为测试缺口沿用F-0207。
+
+## 219. AU-214 ExecutionKernel 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| critical write claim | 以scope/actor/node/realm/membership隔离key，锁定idempotency记录并生成stable business number | [FACT][E-AU-214-001] |
+| completion checkpoint | 同一事务写operation completed outbox与idempotency completed response，避免未标记的write result越过OperationHandler | [FACT][E-AU-214-002] |
+| write context | 将当前request映射为active branded write transaction，事务结束即清理/关闭 | [FACT][E-AU-214-003] |
+
+[FACT][E-AU-214-004] 2 文件、391 行完成深审；ModuleOperations是主要消费者，payment/identity特殊路径直接复用claim/complete helper；direct concurrency/rollback fixture存在，剩余分支缺口见F-0211/P3。

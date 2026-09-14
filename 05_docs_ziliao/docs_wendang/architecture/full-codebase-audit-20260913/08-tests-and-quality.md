@@ -659,3 +659,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Command仅为CommandBus泛型输入提供type discriminant；本身没有可执行分支。
 - CommandBus direct fixture仍缺，已由F-0207记录；无P0–P3新问题。
+
+## 214. AU-214 ExecutionKernel 深审
+
+- Direct in-memory transaction fixture覆盖并发同key单次写入及replay、hash冲突、失败rollback/retry、key和transition拒绝、write context生命周期。
+- 未直接覆盖provider fallback key、OperationRejection完成持久化和checkpoint丢失，见F-0211/P3。审计工作树未运行Vitest。
