@@ -1,0 +1,5 @@
+"复核项目","第一轮结论","独立复核结果","分歧"
+"dispatch 领取条件","仅 queued/failed 可领取","迁移/Repository 一致","无"
+"runtime job 重试","异常后退避","JobRunner 与 claim_job 一致","无"
+"恢复入口","未知，待查","无 generic dispatch recovery；identity monitor 不适用","无"
+"严重级别","P1 候选","P1 高置信度；无线上事故故非 P0","无"

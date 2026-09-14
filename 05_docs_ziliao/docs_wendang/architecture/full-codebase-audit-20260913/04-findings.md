@@ -3056,13 +3056,13 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | notification；**P1 候选**；高（AU-050 前不作最终 P1） |
+| 模块/级别 | notification；**P1**；高 |
 | 位置 | `01_core_hexin/services/commerce/src/modules/notification/03_application_yingyong/command/DispatchNotification.ts:45-56`；`.../04_adapters_shixian/persistence/PgNotificationRepository.ts:139-160`；`.../foundation/application/JobRunner.ts:82-103,109-133` |
 | 当前/预期 | dispatch 在 `claim` 时立即从 queued/failed 改为 sending；KMS 解密和模板组装发生在调用 `deliveries.send` 的 try/catch 之前。若前置步骤抛错，只有 runtime.job 退避；下次 claim 排除 sending，处理器返回成功，job 成为 completed。预期为任何可重试的前置失败都能使 dispatch 可重领，或具有明确的租约/恢复过程。 |
 | 影响 | KMS 短暂不可用、密文不可读或模板数据异常时，用户可能永远收不到支付、履约、财务、支持等事件通知；记录只显示 sending，且没有 attempt/死信可直接提示运营。实际发生率与线上存量未验证。 |
 | 根因 | runtime.job 的租约和重试状态机与 notification.dispatch 的独立 `sending` 状态机未关联；后者无 lease、超时恢复或前置异常补偿。 |
 | 验证/回滚 | 隔离数据库构造 dispatch，在 KMS decrypt 模拟失败后运行两次 processor，核对 dispatch 仍 sending、第二个 runtime job completed；修复必须在最新主线独立小分支完成，回滚为撤回该修复提交。 |
-| 独立复核 | 是，AU-050；须重新检查所有 dispatch recovery/cleanup/迁移入口，不能复述本结论。 |
+| 独立复核 | 已完成（AU-050）；从 runtime 领取函数、迁移、身份监控与测试缺口独立复追，结论一致。 |
 
 ## 30. AU-030 新增未定级事项
 
