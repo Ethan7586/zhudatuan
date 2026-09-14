@@ -101,7 +101,8 @@
 .supportnewcasemeta span { border-radius: 5px; background: #f0f3f7; padding: 3px 7px; }
 .supportnewcasemeta em { margin-left: auto; font-style: normal; }
 .supportnewcaseactions { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 9px; border-top: 1px solid var(--support-border); padding-top: 16px; }
-.supportnewcaseactions > span { color: var(--support-danger); font-size: 11px; }
+.supportnewcaseactions > span { min-height: 28px; color: #7b8798; font-size: 11px; line-height: 1.45; }
+.supportnewcaseactions > span[data-tone='attention'] { display: inline-flex; align-items: center; width: max-content; max-width: 100%; border: 1px solid #e7dcc4; border-radius: 7px; background: linear-gradient(90deg, #fffbf2, #fffdf8); box-shadow: inset 3px 0 0 #be913b; color: #5c4b2a; padding: 5px 9px 5px 11px; }
 .supportnewcaseactions > button { min-height: 36px; border: 1px solid #d4dce8; border-radius: 7px; background: #fff; color: #53617a; padding: 0 14px; font: inherit; font-size: 12px; font-weight: 700; }
 .supportnewcaseactions > button[type='submit'] { min-width: 132px; border-color: var(--support-blue); background: var(--support-blue); color: #fff; }
 .supportnewcaseactions > button:disabled { border-color: #dce3ec; background: #e7ebf1; color: #9aa6b8; cursor: not-allowed; }

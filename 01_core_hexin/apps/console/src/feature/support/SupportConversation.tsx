@@ -134,7 +134,9 @@ function SupportCaseComposer({ canCreate, creating, error, unavailableReason, on
           onChange={(event) => setMessage(event.target.value)} placeholder="补充问题经过、关联信息和期望处理结果…" /></label>
         <div className="supportnewcasemeta"><span>应用内</span><span>普通优先级</span><em>{message.length}/4000</em></div>
         <div className="supportnewcaseactions">
-          <span role="status" aria-live="polite">{creating ? '正在创建…' : error ?? (!canCreate ? unavailableReason : '')}</span>
+          <span role="status" aria-live="polite" data-tone={error === undefined ? 'quiet' : 'attention'}>
+            {creating ? '正在创建…' : error ?? (!canCreate ? unavailableReason : '')}
+          </span>
           <button type="button" onClick={onCancel} disabled={creating}>取消</button>
           <button type="submit" disabled={!ready}>{creating ? '创建中' : '创建并进入会话'}</button>
         </div>
