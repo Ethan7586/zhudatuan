@@ -323,3 +323,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - VoucherPort、PgVoucherImport、VoucherImportProcessor、VoucherJobProcessor 和 VoucherDeadletter 没有直接测试；唯一 VoucherPort 跨模块实例使用空 selection，不能触及其写入路径。
 - 导入加密/分片、issue/status/expiry chunk/continuation、finance/outbox/deadletter 的状态与恢复边界因此无回归规格，见 F-0177/P2。
 - 本 AU 未运行 Vitest；不安装审计 worktree 依赖。
+
+## 144. AU-144 Voucher 兼容入口与覆盖闭合
+
+- Voucher 兼容出口没有独立业务分支；根 wrapper 的默认 FinancePort 注入仍被真实 checkout/order/payment/verification consumer 使用。
+- 不将兼容转发误判为无用；全模块 47/47 文件已获得审阅状态。

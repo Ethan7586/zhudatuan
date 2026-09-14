@@ -636,3 +636,8 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - `modules/catalog/{CatalogModule,CatalogOperations,CatalogProvisioningPort,CatalogReadOperations,CatalogSourcePort,IdentityOperatorCatalogModule,index}.ts` 与 `interface/job/CatalogImportJob.ts` 均为已审实现的转发入口，且后者有主 jobs catalog 直接 runtime import。
 - 全部归类 G0：现有公共/兼容职责成立；不因文件自身无业务分支或局部零 caller 形成删除候选。累计 G0 10、G1 38、G2 2、G3 0、GX 5；未删除任何文件。
+
+## 144. AU-144 Voucher compatibility 复核
+
+- 13 个 Voucher re-export 保留旧分层 import；根 `VoucherPort.ts` 还提供默认 FinancePort 组装，且由 Checkout、Order、Payment、Verification 与测试直接或经 public entry 消费。
+- 全部归类 G0：具有明确兼容/运行职责，不是删除候选。累计 G0 24、G1 38、G2 2、G3 0、GX 5；未删除任何文件。

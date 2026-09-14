@@ -1571,3 +1571,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | deadletter/tests | failed terminal recovery；direct behavior test gap | [FACT][E-AU-143-005][E-AU-143-007]；F-0177/P2 |
 
 [FACT][E-AU-143-008] 5 文件、534 行完成深审；Voucher 生产 job链清晰，测试缺口保持独立记录。
+
+## 149. AU-144 Voucher 兼容入口与覆盖闭合清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| legacy wrapper | 保持 FinancePort 默认注入的老路径 VoucherPort caller | [FACT][E-AU-144-001][E-AU-144-003]；G0 |
+| compatibility exports | old root/application/domain/infrastructure/interface imports 指向已审 canonical target | [FACT][E-AU-144-002]；G0 |
+| public entry | 导出稳定 contract/policy/manifest，不泄露实现/worker | [FACT][E-AU-144-004]；G0 |
+
+[FACT][E-AU-144-005] 14 文件、50 行完成深审；Voucher 47/47 文件已获得审阅状态，兼容路径保留不删。
