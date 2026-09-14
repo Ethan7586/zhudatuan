@@ -1155,6 +1155,10 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - `01_core_hexin/README.md` 的 apps/services/packages/extensions 一级导航与实际目录一致；归 G0，不作为运行权威或删除依据。
 
+## 500. AU-500 Compatibility API 环境模板复核
+
+- `commerce-api/.env.example` 是无实际凭据的本地/部署安全配置模板，覆盖 session、PII、注册、SMS、微信和支付；归 G0，不构成删除候选。
+
 ## GX-0013｜渠道外部对象 scope 映射切换
 
 | 字段 | 记录 |

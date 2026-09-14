@@ -1248,7 +1248,7 @@
 "01_core_hexin/packages/testing/src/browser/index.ts","共享包/testing","TypeScript源码","已深入审阅","2026-09-14","AU-014；CP-14 Testing基础设施","browser subpath","G1 DC-0019","[FACT] 六个browser export对账","否"
 "01_core_hexin/packages/testing/src/index.ts","共享包/testing","TypeScript源码","已深入审阅","2026-09-14","AU-014；CP-14 Testing基础设施","Commerce Repository.test","G1 DC-0018","[FACT] 七个root export中只有DatabaseHarness有包外caller","否"
 "01_core_hexin/packages/testing/tsconfig.json","共享包/testing","结构化配置/数据","已深入审阅","2026-09-14","AU-014；CP-14 Testing基础设施","package typecheck","未发现独立问题","[FACT] JSX/DOM/include边界全文件审阅","否"
-"01_core_hexin/services/commerce-api/.env.example","服务/commerce-api","example","暂未审阅","","CP-00 建档；CP-00A 证据语义","Storefront worker或compat adminServer","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
+"01_core_hexin/services/commerce-api/.env.example","服务/commerce-api","example","已深入审阅","2026-09-15","AU-500 Compatibility API 环境模板","session/PII/identity/SMS/Wechat/pay/cache、compat Admin","高","G0：无实际凭据的配置模板；生产注入/外部连通性未验证","否"
 "01_core_hexin/services/commerce-api/package.json","服务/commerce-api","依赖清单","已结构性审阅","2026-09-13","AU-001；CP-01 仓库入口与自动发现机制","Storefront worker或compat adminServer","未评级（结构）","[FACT] AU-001 已核对入口、注册、构建、发布或运行关系；未深入实现","按后续模块定级需要"
 "01_core_hexin/services/commerce-api/src/adminServer.ts","服务/commerce-api","TypeScript源码","已结构性审阅","2026-09-13","AU-001；CP-01 仓库入口与自动发现机制","Storefront worker或compat adminServer","未评级（结构）","[FACT] AU-001 已核对入口、注册、构建、发布或运行关系；未深入实现","按后续模块定级需要"
 "01_core_hexin/services/commerce-api/src/api/accountRoutes.test.ts","服务/commerce-api","测试源码","已深入审阅","2026-09-14","CP-00 建档；CP-00A 证据语义；AU-186 accounts","Storefront worker或compat adminServer","未评级","[FACT][E-AU-186] Commerce API storefront account/bootstrap deep review","否"
