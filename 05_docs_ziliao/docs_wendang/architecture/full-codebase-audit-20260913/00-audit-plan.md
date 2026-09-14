@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-062 已完成。AU-062 完成 Fulfillment 履约、发货、tracking、退货和供应售后回放边界审阅。覆盖总账按当前文件级清单重算：深入审阅908文件/74,371行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,940文件。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-063 已完成。AU-063 完成 Finance 事件记账、外部 tender、取消反转与供应商售后会计边界审阅。覆盖总账按当前文件级清单重算：深入审阅916文件/75,251行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,932文件。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -813,3 +813,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Fulfillment 创建、供应商提交、tracking、人工 shipment、return receive/inspect 与供应售后回放。
 
 执行结果：payment→fulfillment→provider/tracking→order received 的运行链已闭合；既有 F-0127 的 Logistics caller 关系复核不变。新增 F-0150/P2：provider submit 的失败或未知 state 仍被写成 accepted 并转 tracking，失去 submit retry。未发现 P0/P1；Vitest 仍因固定审计 worktree 缺少可执行文件未运行。
+
+## 65. AU-063 连续审计点
+
+审阅 Finance event inbox→journal、订单外部 tender 计提、支付/退款/晚到支付记账、取消反转与供应商售后会计回放。
+
+执行结果：不可变 outbox 事实重查、inbox 行锁、journal 数据库幂等、取消精确反转和供应商售后固定会计时间均已追踪；未发现 P0–P3 新问题。定向 Vitest 仍因固定审计 worktree 缺少可执行文件未运行。

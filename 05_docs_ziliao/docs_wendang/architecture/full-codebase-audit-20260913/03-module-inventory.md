@@ -722,3 +722,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | mall identity 与 manifest | F-0150 |
 
 [FACT][E-AU-062-007] 13 文件、418 行 fulfillment 链完成逐文件审阅；其中 FulfillmentJobs 138 行已由 AU-041 深审并在本单元复核，新增覆盖 12 文件、280 行。
+
+## 69. AU-063 Finance 事件记账与供应商会计模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| inbox/journal | 消费不可变 event、重查业务事实、生成唯一双分录 journal | [FACT][E-AU-063-001~002] |
+| cancellation | 取消订单只反转外部 tender 的既有 accrual | [FACT][E-AU-063-003] |
+| supplier facts | 供应商 sale/cost 与 aftersale reversal | [FACT][E-AU-063-004] |
+| tests | event/reversal/供应商会计 mock oracle | [FACT][E-AU-063-005] |
+
+[FACT][E-AU-063-006] 8 文件、880 行 Finance ledger 人工源码和测试完成深审；结算、对账、提现、发票、读写 API 与 jobs 留 AU-064。

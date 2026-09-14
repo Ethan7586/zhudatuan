@@ -1,0 +1,5 @@
+"测试","范围","结论","执行"
+"PostJournal.test.ts","mixed tender、inbox replay、错误 tender、late capture、scope mismatch","关键事件事实和 journal 参数有 mock oracle","未执行：vitest command not found"
+"ReverseCancelledOrder.test.ts","外部 tender 精确反转、内部 no-op、缺 journal fail closed","取消反转的主要边界有 mock oracle","未执行：vitest command not found"
+"SupplierLegFinance.test.ts","供应商售后重复回放的 reference/会计时间","测试 mock 未模拟数据库 unique，但 production finance.post 的唯一约束/内容核对已由迁移复查","未执行：vitest command not found"
+"Finance ledger integration","真实 PostgreSQL/RLS、inbox/outbox、finance.post/reverse、statement 聚合","未在固定审计 worktree 验证","未验证"
