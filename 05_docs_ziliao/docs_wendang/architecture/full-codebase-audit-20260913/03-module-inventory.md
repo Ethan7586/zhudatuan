@@ -687,3 +687,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 收货和部分售后 mock oracle；缺创建/退款完整链 | F-0148 |
 
 [FACT][E-AU-059-007] 16 文件、1,139 行 order 人工源码完成深审。
+
+## 66. AU-060 Payment 意图与捕获核心模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| intent/prepay/read | 意图计划、provider 参数、未知恢复和 member/mall 读取 | [FACT][E-AU-060-001~002,005] |
+| capture/allocation | tender 消费、库存/营销提交、支付/履约/outbox 与经济分摊 | [FACT][E-AU-060-003] |
+| Wechat adapter/time | scene/application hash、通知/查询协议与 provider 会计时刻 | [FACT][E-AU-060-004] |
+| tests | recovery、状态机、Mall、allocation 与 accounting time | [FACT][E-AU-060-006] |
+
+[FACT][E-AU-060-007] 27 文件、1,732 行 payment intent/capture 人工源码和测试完成深审；退款、webhook 和 job files 保留 AU-061。

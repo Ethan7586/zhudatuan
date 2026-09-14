@@ -1,0 +1,5 @@
+"测试","范围","结论","执行"
+"ExternalPaymentIntentOperations.test.ts","provider timeout/reject、provider 后本地失败、active attempt、KMS 失败","关键恢复分支有 mock oracle","未执行：vitest command not found"
+"PaymentLifecycle/ReadPaymentIntent tests","provider 状态决策、unknown/expiry、member+mall read scope","领域和读取边界有 oracle","未执行：vitest command not found"
+"PaymentMallIdentity/PaymentAllocation/SettlementProviderTime","Mall 写入、经济分摊、provider occurred-at","资金与会计时间边界有 oracle","未执行：vitest command not found"
+"Payment capture integration","实际 PostgreSQL RLS、支付 provider、库存/营销/履约/Finance 原子链","未在固定审计 worktree 验证","未验证"
