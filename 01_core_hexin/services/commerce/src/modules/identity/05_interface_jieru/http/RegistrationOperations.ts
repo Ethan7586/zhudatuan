@@ -513,7 +513,7 @@ export function registrationOperations(runtime: RealmOperationContext): Operatio
           return {
             status: 201,
             body: { ...responseBody, authentication: { session, csrf, expiresIn: SESSION_MAX_AGE_SECONDS, membership: registeredMembership, target: 'storefront', callback } },
-            headers: sessionCookies(token, csrf, SESSION_MAX_AGE_SECONDS),
+            headers: sessionCookies(token, csrf, SESSION_MAX_AGE_SECONDS, 'storefront'),
           };
         }),
       }),

@@ -165,7 +165,7 @@ export function credentialOperations(runtime: RealmOperationContext): OperationA
             [access.actor.id, access.actor.session, hash]
           );
           const ownerResult = ownerRotation.rows[0]?.result;
-          if (ownerResult) return { status: 200, body: ownerResult, headers: sessionCookies('', '', 0) };
+          if (ownerResult) return { status: 200, body: ownerResult, headers: sessionCookies('', '', 0, access.actor.target) };
           await database.query('update identity.credential set secret_hash=$2,rotated_at=clock_timestamp() where id=$1', [found.id, hash]);
           const result = await database.query(`update identity.account set credential_version=credential_version+1,
             updated_at=clock_timestamp(),version=version+1 where id=$1 and realm_id=$2 returning credential_version,version`,

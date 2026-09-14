@@ -93,7 +93,7 @@ export function mobileWechatOperations(runtime: RealmOperationContext): Operatio
                 destinationHash, envelope.fingerprint, maskMobile(mobile), sessionDigest(access.actor.session), sessionDigest(access.actor.session)]);
             const result = changed.rows[0]?.profile;
             if (!result) throw new Error('MEMBER_PROFILE_NOT_FOUND');
-            return { status: 200, body: result, headers: { ...sessionCookies('', '', 0), etag: `\"${String(result.version)}\"` } };
+            return { status: 200, body: result, headers: { ...sessionCookies('', '', 0, access.actor.target), etag: `\"${String(result.version)}\"` } };
           }
           const credential = await database.query<{ id: string }>(`select id from identity.credential
             where account_id=$1 and realm_id=$2 and provider='password' and status='active' for update`, [account.accountId, account.realmId]);
@@ -116,7 +116,7 @@ export function mobileWechatOperations(runtime: RealmOperationContext): Operatio
             where session.revoked_at is null and exists(select 1 from access.membership membership
               where membership.id=session.membership_id and membership.account_id=$1 and membership.realm_id=$2)`,
           [account.accountId, account.realmId]);
-          return { status: 200, body: result, headers: { ...sessionCookies('', '', 0), etag: `\"${String(result.version)}\"` } };
+          return { status: 200, body: result, headers: { ...sessionCookies('', '', 0, access.actor.target), etag: `\"${String(result.version)}\"` } };
         },
       }),
       'identity.stepup.start': operationLifecycle({

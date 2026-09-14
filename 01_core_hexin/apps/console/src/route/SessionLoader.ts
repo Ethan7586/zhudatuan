@@ -178,7 +178,10 @@ async function readSession(signal: AbortSignal): Promise<ConsoleSession> {
   const prefetched = await consumeDocumentPrefetch(prefetch, signal, { handoffMs: DOCUMENT_PREFETCH_HANDOFF_MS });
     const parsed = prefetched === undefined ? undefined : parseSession(prefetched.value);
     const session = parsed ?? await readSessionFromSdk(signal);
-    if (session.target !== 'console') throw new Response('WRONG_CLIENT_ENTRANCE', { status: 403 });
+    if (session.target !== 'console') {
+      const { appConfig } = await import('../shared/config/AppConfig');
+      throw redirectDocument(appConfig.identityEntryUrl);
+    }
     return session;
   } catch (cause) {
     if (signal.aborted) throw signal.reason ?? cause;

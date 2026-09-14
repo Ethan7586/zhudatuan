@@ -6,7 +6,8 @@ import { requireAccessNodeContext, requireGovernanceContext } from '../../../../
 import { PasswordPolicy } from '../../02_domain_yewu/policies_guize/PasswordPolicy';
 import { AuthTransaction } from '../../02_domain_yewu/models_moxing/AuthTransaction';
 import { publishIdentityEvent, tokenHash } from '../../04_adapters_shixian/persistence_cunchu/IdentityPersistence';
-import { authMembershipTarget, authTarget, requestCookie, SESSION_MAX_AGE_SECONDS, sessionCookies } from './IdentitySecurity';
+import { authMembershipTarget, authTarget, SESSION_MAX_AGE_SECONDS, sessionCookies } from './IdentitySecurity';
+import { requestCsrfCookie, requestSessionCookieCandidates } from '../../../../foundation/security/AuthSessionCookies';
 import { memberPort } from '../../../member';
 import { canonicalIdentitySubject, canonicalMobile } from '../../02_domain_yewu/models_moxing/IdentitySubject';
 import {
@@ -218,7 +219,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
           return { status: 201, body: { session: id, csrf, expiresIn: SESSION_MAX_AGE_SECONDS, membership: membership.id,
             target, callback, active_context: activeContext,
             ...(direct === undefined ? {} : { exchange: { returnTarget: direct.returnTarget, expiresIn: directExpiresIn } }) },
-          headers: sessionCookies(token, csrf, SESSION_MAX_AGE_SECONDS) };
+          headers: sessionCookies(token, csrf, SESSION_MAX_AGE_SECONDS, target) };
         },
       }),
       'identity.loginintents.create': async (request, database) => {
@@ -272,10 +273,10 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         };
       },
       'identity.tickets.exchange': async (request, database) => {
-        const currentToken = requestCookie(request.input.headers.cookie, 'shop_session');
-        if (!currentToken) reject(401, 'AUTHENTICATION_REQUIRED');
+        const currentTokens = requestSessionCookieCandidates(request.input.headers.cookie);
+        if (currentTokens.length === 0) reject(401, 'AUTHENTICATION_REQUIRED');
         const realm = await resolveRealmNode(database, request.input.headers.host);
-        const exchanged = await tickets.consume(database, request.input.body, currentToken, realm.realmId);
+        const exchanged = await tickets.consume(database, request.input.body, currentTokens, realm.realmId);
         const expiresIn = Math.max(1, Math.min(SESSION_MAX_AGE_SECONDS, Math.floor((exchanged.sessionExpiresAt.getTime() - Date.now()) / 1_000)));
         return {
           status: 200,
@@ -287,7 +288,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         const governance = requireGovernanceContext(access);
         const permissions = [...new Set(access.membership.grants.flatMap((grant) => grant.permissions).filter((permission) => !access.membership.denies.includes(permission)))].sort();
         const scopes = [...new Map(access.membership.grants.map((grant) => [grant.scope.id, grant.scope] as const)).values()];
-        const csrf = requestCookie(request.input.headers.cookie, 'shop_csrf');
+        const csrf = requestCsrfCookie(request.input.headers, access.actor.target);
         const realmAccount = access.actor.account !== undefined && access.actor.realm !== undefined
           ? { accountId: access.actor.account, realmId: access.actor.realm }
           : await currentRealmAccount(database, access.membership.id, access.actor.id);
@@ -338,7 +339,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         return {
           status: 200,
           body: { target: access.actor.session, revoked: sessions.length, sessions },
-          headers: sessionCookies('', '', 0),
+          headers: sessionCookies('', '', 0, access.actor.target),
         };
       },
       'identity.sessions.read': async (request, database) => {
@@ -379,7 +380,7 @@ export function sessionTicketOperations(runtime: RealmOperationContext): Operati
         const sessions = result.rows.map(({ id }) => id);
         if (sessions.length > 0) await publishIdentityEvent(database, 'identity.session.revoked', session, access.membership.id, request.input.idempotency!, { sessions, reason: 'security_center' });
         const response = { status: 200, body: { target: session, revoked: sessions.length, sessions } } as const;
-        return session === access.actor.session ? { ...response, headers: sessionCookies('', '', 0) } : response;
+        return session === access.actor.session ? { ...response, headers: sessionCookies('', '', 0, access.actor.target) } : response;
       },
   };
 }

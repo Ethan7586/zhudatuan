@@ -33,7 +33,8 @@ describe('PgAuthTicket exchange', () => {
     const database = {
       query: async (text: string, values: readonly unknown[] = []) => {
         queries.push({ text, values });
-        const accepted = values[4] === hash(currentSessionToken) && values[5] === 'realm:l0' && !consumed;
+        const accepted = Array.isArray(values[4]) && values[4].includes(hash(currentSessionToken))
+          && values[5] === 'realm:l0' && !consumed;
         if (accepted) {
           consumed = true;
           successfulConsumes += 1;
@@ -64,9 +65,9 @@ describe('PgAuthTicket exchange', () => {
     expect(queries).toHaveLength(4);
     expect(successfulConsumes).toBe(1);
     const accepted = queries[2]!;
-    expect(accepted.values[4]).toBe(hash(currentSessionToken));
+    expect(accepted.values[4]).toEqual([hash(currentSessionToken)]);
     expect(accepted.values).toHaveLength(6);
-    expect(accepted.text).toContain('session.token_hash=$5');
+    expect(accepted.text).toContain('session.token_hash=any($5::text[])');
     expect(accepted.text).not.toContain('ticket.realm_id=$6');
     expect(accepted.text).toContain('target.return_origin');
     expect(accepted.text).toContain('for update of ticket');

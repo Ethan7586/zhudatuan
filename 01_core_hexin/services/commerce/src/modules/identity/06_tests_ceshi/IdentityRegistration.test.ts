@@ -805,8 +805,8 @@ describe('canonical member registration security boundary', () => {
         },
       },
       headers: {
-        'set-cookie': expect.stringContaining('shop_session='),
-        'x-set-cookie': expect.stringContaining('shop_csrf='),
+        'set-cookie': expect.stringContaining('shop_storefront_session='),
+        'x-set-cookie': expect.stringContaining('shop_storefront_csrf='),
       },
     });
     expect(harness.queries.some(({ text }) => text.includes('insert into identity.principal'))).toBe(false);

@@ -14,6 +14,7 @@ import {
 } from './AccessContext';
 import type { ScopeResolver } from './ScopeResolver';
 import { sessionNodeContext, type RuntimeSessionResolver } from './SessionResolver';
+import { requestSessionCookie } from './AuthSessionCookies';
 
 interface SessionRow {
   readonly actor_id: string;
@@ -53,7 +54,7 @@ export class PgSessionResolver implements RuntimeSessionResolver {
   constructor(private readonly pool: DatabasePool) {}
 
   async resolve(headers: Readonly<Record<string, string>>): Promise<NodeContextActor> {
-    const token = bearer(headers.authorization) ?? cookie(headers.cookie, 'shop_session');
+    const token = bearer(headers.authorization) ?? requestSessionCookie(headers);
     if (!token) throw new Error('AUTHENTICATION_REQUIRED');
     const nodeContext = sessionNodeContext(headers);
     const parameters = [createHash('sha256').update(token).digest('hex'), nodeContext.host];
@@ -171,12 +172,4 @@ export class PgCapabilityResolver implements CapabilityResolver {
 function bearer(value: string | undefined): string | null {
   const match = /^Bearer ([A-Za-z0-9._~-]{32,2048})$/.exec(value ?? '');
   return match?.[1] ?? null;
-}
-
-function cookie(value: string | undefined, name: string): string | null {
-  for (const part of value?.split(';') ?? []) {
-    const separator = part.indexOf('=');
-    if (separator > 0 && part.slice(0, separator).trim() === name) return decodeURIComponent(part.slice(separator + 1).trim());
-  }
-  return null;
 }

@@ -145,7 +145,7 @@ export class WechatOperations implements OperationUsecase {
       const csrf = randomBytes(32).toString('base64url');
       const callback = await this.tickets.issue(database, session, accountRealm, account, realm.target, authorization);
       return { status: 201, body: { session, csrf, expiresIn: SESSION_MAX_AGE_SECONDS, membership: membershipid, callback },
-        headers: sessionCookies(token, csrf, SESSION_MAX_AGE_SECONDS) };
+        headers: sessionCookies(token, csrf, SESSION_MAX_AGE_SECONDS, realm.target) };
     }
     return { status: 201, body: { token, session, expiresIn: SESSION_MAX_AGE_SECONDS, membership: membershipid } };
   }

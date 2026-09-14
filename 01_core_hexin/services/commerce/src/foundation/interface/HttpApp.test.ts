@@ -120,6 +120,34 @@ describe('HttpApp contract handshake', () => {
     expect(observedHeaders).not.toHaveProperty('_transport');
   });
 
+  it('validates only the console CSRF pair when storefront cookies also exist', async () => {
+    const resolver: NodeContextResolver = {
+      registry: SERVER_NODE_MANIFEST_REGISTRY,
+      resolve: (host) => resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, host),
+    };
+    const accessRoutes = {
+      match: () => ({
+        operation: 'access.roles.manage',
+        parameters: {},
+        handler: async () => ({ status: 200, body: { accepted: true } }),
+      }),
+    } as unknown as RouteRegistry;
+    const request = (csrf: string) => new Request('https://api.hbbtzn.com/api/v1/access/roles/role:one', {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+        origin: 'https://console.hbbtzn.com',
+        cookie: 'shop_console_session=console-session; shop_console_csrf=console-csrf; shop_storefront_session=storefront-session; shop_storefront_csrf=storefront-csrf',
+        'x-csrf-token': csrf,
+      },
+      body: '{}',
+    });
+    const app = new HttpApp(accessRoutes, ['https://console.hbbtzn.com'], undefined, undefined, undefined, undefined, resolver);
+
+    await expect(app.handle(request('console-csrf'))).resolves.toMatchObject({ status: 200 });
+    await expect(app.handle(request('storefront-csrf'))).resolves.toMatchObject({ status: 403 });
+  });
+
   it('rejects the preflight-free envelope on every other operation', async () => {
     const challengeRoutes = {
       match: () => ({ operation: 'identity.challenges.create', parameters: {}, handler: async () => ({ status: 200, body: {} }) }),
