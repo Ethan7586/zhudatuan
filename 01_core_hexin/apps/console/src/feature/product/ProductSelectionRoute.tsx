@@ -22,6 +22,7 @@ export function ProductSelectionRoute() {
   const context = useConsoleContext();
   const queryClient = useQueryClient();
   const [search, setSearch] = useSearchParams();
+  const pendingWorkspace = search.get('workspace') === 'pending';
   const limitValue = Number(search.get('limit') ?? defaultPageSize);
   const limit = pageSizes.has(limitValue) ? limitValue : defaultPageSize;
   const pageValue = Number(search.get('page') ?? 1);
@@ -29,6 +30,7 @@ export function ProductSelectionRoute() {
   const filter: ProductQuery = {
     q: search.get('q') ?? '', category: '', supplier: '', mall: '', status: '', limit,
     preview: false, view: 'selection-center',
+    ...(pendingWorkspace ? { selection: 'available' as const } : {}),
     ...(search.get('cursor') === null ? {} : { cursor: search.get('cursor')! }),
   };
   const query = useQuery({
@@ -60,13 +62,13 @@ export function ProductSelectionRoute() {
   const changeWorkspace = (workspace: ProductWorkspace) =>
     switchProductWorkspace(workspace, cursorTrail, () => setSelected(new Set()), setSearch);
   const prepareWorkspace = (workspace: ProductWorkspace) => {
-    if (workspace === 'selection') return;
+    if (workspace === 'selection' || workspace === 'pending') return;
     void import('./ProductCatalogRoute');
     void prefetchProducts(queryClient, context);
   };
   const applyQuery = (value: string) => {
     const next = new URLSearchParams();
-    next.set('workspace', 'selection');
+    next.set('workspace', pendingWorkspace ? 'pending' : 'selection');
     if (value !== '') next.set('q', value);
     if (limit !== defaultPageSize) next.set('limit', String(limit));
     cursorTrail.current = new Map([[1, undefined]]);
@@ -105,7 +107,7 @@ export function ProductSelectionRoute() {
   const canPrevious = page === 2 || (page > 2 && cursorTrail.current.has(page - 1));
 
   if (condition === 'denied') {
-    return <ResourceState condition="denied" resourceLabel="选品中心"
+    return <ResourceState condition="denied" resourceLabel={pendingWorkspace ? '待选商品' : '选品中心'}
       {...(error === undefined ? {} : { error })} retry={() => { void query.refetch(); }}><span /></ResourceState>;
   }
 
@@ -118,7 +120,7 @@ export function ProductSelectionRoute() {
         {...(query.data === undefined ? {} : { page: query.data })}
         previewEnabled={false}
         partnerWorkspace={false}
-        workspace="selection"
+        workspace={pendingWorkspace ? 'pending' : 'selection'}
         onWorkspace={changeWorkspace}
         onWorkspaceIntent={prepareWorkspace}
         status=""

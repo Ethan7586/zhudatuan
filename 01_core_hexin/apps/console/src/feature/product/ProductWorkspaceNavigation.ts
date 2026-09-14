@@ -1,4 +1,4 @@
-export type ProductWorkspace = 'catalog' | 'selection' | 'free';
+export type ProductWorkspace = 'catalog' | 'selection' | 'pending' | 'free';
 
 type CursorTrail = { current: Map<number, string | undefined> };
 type ChangeSearch = (update: (next: URLSearchParams) => void) => void;
@@ -11,6 +11,7 @@ export function switchProductWorkspace(
 ): void {
   const next = new URLSearchParams();
   if (workspace === 'selection') next.set('workspace', 'selection');
+  if (workspace === 'pending') next.set('workspace', 'pending');
   if (workspace === 'free') next.set('workspace', 'free');
   resetProductCursorTrail(cursorTrail);
   resetSelection();

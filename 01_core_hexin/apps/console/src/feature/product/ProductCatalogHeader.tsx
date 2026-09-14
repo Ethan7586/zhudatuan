@@ -1,13 +1,14 @@
 import type { CatalogPublicationFailure, CatalogPublicationTask, ListingPage } from './ProductSchema';
 import { ProductIcon } from './ProductIcon';
+import type { ProductWorkspace } from './ProductWorkspaceNavigation';
 
 interface ProductCatalogHeaderProps {
   readonly page?: ListingPage;
   readonly previewEnabled: boolean;
   readonly partnerWorkspace: boolean;
-  readonly workspace: 'catalog' | 'selection' | 'free';
-  readonly onWorkspace: (workspace: 'catalog' | 'selection' | 'free') => void;
-  readonly onWorkspaceIntent?: (workspace: 'catalog' | 'selection' | 'free') => void;
+  readonly workspace: ProductWorkspace;
+  readonly onWorkspace: (workspace: ProductWorkspace) => void;
+  readonly onWorkspaceIntent?: (workspace: ProductWorkspace) => void;
   readonly status: string;
   readonly onStatus: (status: string) => void;
   readonly exportReady: boolean;
@@ -59,17 +60,21 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
                 <button type="button" aria-current={workspace === 'selection' ? 'page' : undefined}
                   onPointerEnter={() => onWorkspaceIntent?.('selection')} onFocus={() => onWorkspaceIntent?.('selection')}
                   onPointerDown={() => onWorkspaceIntent?.('selection')} onClick={() => onWorkspace('selection')}>选品中心</button>
+                <button type="button" aria-current={workspace === 'pending' ? 'page' : undefined}
+                  onPointerEnter={() => onWorkspaceIntent?.('pending')} onFocus={() => onWorkspaceIntent?.('pending')}
+                  onPointerDown={() => onWorkspaceIntent?.('pending')} onClick={() => onWorkspace('pending')}>待选商品</button>
                 <button type="button" aria-current={workspace === 'free' ? 'page' : undefined}
                   onPointerEnter={() => onWorkspaceIntent?.('free')} onFocus={() => onWorkspaceIntent?.('free')}
                   onPointerDown={() => onWorkspaceIntent?.('free')} onClick={() => onWorkspace('free')}>自有商品</button>
               </nav></>
             )}
             <small>{partnerWorkspace ? '维护商品资料与平台采用状态' : workspace === 'selection'
-              ? '从供应链与品牌货盘快速挑选商品' : workspace === 'free'
+              ? '从供应链与品牌货盘快速挑选商品' : workspace === 'pending'
+                ? '集中查看尚未选入商品目录的候选商品' : workspace === 'free'
                 ? '创建或导入当前商城自主经营的商品' : '点击商品查看资料、供应关系与上下架记录'}</small>
           </div>
         </div>
-        {workspace === 'selection' ? null : <div className="productheroactions" role="group" aria-label={workspace === 'free' ? '自有商品操作' : partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>
+        {workspace === 'selection' || workspace === 'pending' ? null : <div className="productheroactions" role="group" aria-label={workspace === 'free' ? '自有商品操作' : partnerWorkspace ? '供货工作台操作' : '商品管理操作'}>
           <button className="productaction" type="button" disabled={!writeEnabled} onClick={onImport}
             title={writeEnabled ? workspace === 'free' ? '批量导入自有商品' : '批量导入本企业商品' : '当前范围没有商品导入权限'}>
             <ProductIcon name="upload" />批量导入
@@ -113,7 +118,7 @@ export function ProductCatalogHeader({ page, previewEnabled, partnerWorkspace, w
           )}
         </section>
       ) : null}
-      {workspace !== 'selection' ? <nav className="producttabs" aria-label="按商品状态筛选">
+      {workspace !== 'selection' && workspace !== 'pending' ? <nav className="producttabs" aria-label="按商品状态筛选">
         {tabs.map((tab) => {
           const count = tab.key === '' ? coreTotal : preview?.facets.statuses.find((facet) => facet.value === tab.key)?.count
             ?? page?.status_counts?.[tab.key];

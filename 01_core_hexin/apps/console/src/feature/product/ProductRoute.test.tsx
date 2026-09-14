@@ -91,6 +91,16 @@ describe('Product governance workspace', () => {
     expect(await screen.findByRole('heading', { name: '找到值得卖的商品' })).toBeTruthy();
   });
 
+  it('opens pending products as an available-only selection workspace', async () => {
+    renderProductRoute(mallContext, '/products?workspace=pending');
+
+    expect(await screen.findByRole('heading', { name: '找到值得卖的商品' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '待选商品' }).getAttribute('aria-current')).toBe('page');
+    expect(screen.queryByRole('button', { name: '批量导入' })).toBeNull();
+    expect(requests[0]?.searchParams.get('view')).toBe('selection-center');
+    expect(requests[0]?.searchParams.get('selection')).toBe('available');
+  });
+
   it('prefetches the selection first page from workspace navigation intent', async () => {
     const user = userEvent.setup();
     renderProductRoute(mallContext, '/products');

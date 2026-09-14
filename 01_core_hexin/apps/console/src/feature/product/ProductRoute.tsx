@@ -16,7 +16,7 @@ const loadProductSelectionRoute = async () => {
 const ProductCatalogRoute = lazy(loadProductCatalogRoute);
 const ProductSelectionRoute = lazy(loadProductSelectionRoute);
 
-if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('workspace') === 'selection') {
+if (typeof window !== 'undefined' && ['selection', 'pending'].includes(new URLSearchParams(window.location.search).get('workspace') ?? '')) {
   void loadProductSelectionRoute().catch(() => undefined);
 }
 
@@ -24,7 +24,7 @@ export function Component() {
   const context = useConsoleContext();
   const [search] = useSearchParams();
   const partnerWorkspace = context.scope.kind === 'supplier' || context.scope.kind === 'brand';
-  const selectionWorkspace = !partnerWorkspace && search.get('workspace') === 'selection';
+  const selectionWorkspace = !partnerWorkspace && ['selection', 'pending'].includes(search.get('workspace') ?? '');
 
   return (
     <Suspense fallback={<WorkspacePanelSkeleton

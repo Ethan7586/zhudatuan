@@ -14,6 +14,18 @@ describe('product workspace navigation', () => {
     expect(setSearch).toHaveBeenCalledWith(new URLSearchParams('workspace=selection'));
   });
 
+  it('preserves the pending-products workspace in the canonical navigation helper', () => {
+    const cursorTrail = { current: new Map<number, string | undefined>([[2, 'cursor:2']]) };
+    const resetSelection = vi.fn();
+    const setSearch = vi.fn();
+
+    switchProductWorkspace('pending', cursorTrail, resetSelection, setSearch);
+
+    expect(cursorTrail.current).toEqual(new Map([[1, undefined]]));
+    expect(resetSelection).toHaveBeenCalledOnce();
+    expect(setSearch).toHaveBeenCalledWith(new URLSearchParams('workspace=pending'));
+  });
+
   it('uses the cursor trail consistently in both directions and when page size changes', () => {
     const cursorTrail = { current: new Map<number, string | undefined>([[1, undefined], [2, 'cursor:2']]) };
     const updates: URLSearchParams[] = [];

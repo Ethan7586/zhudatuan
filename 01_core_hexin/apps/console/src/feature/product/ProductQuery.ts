@@ -17,6 +17,7 @@ export interface ProductQuery {
   readonly limit?: number;
   readonly preview?: boolean;
   readonly view?: 'supply-network' | 'selection-center';
+  readonly selection?: 'available' | 'selected';
 }
 
 export const productKey = (context: ConsoleContext, filter: ProductQuery) =>
@@ -35,6 +36,7 @@ export const productKey = (context: ConsoleContext, filter: ProductQuery) =>
     filter.limit ?? 50,
     filter.preview ?? false,
     filter.view ?? '',
+    filter.selection ?? '',
   ] as const);
 
 export async function readProducts(context: ConsoleContext, filter: ProductQuery, signal: AbortSignal) {
@@ -51,6 +53,7 @@ export async function readProducts(context: ConsoleContext, filter: ProductQuery
         ...(filter.status !== undefined && filter.status !== '' ? { status: filter.status } : {}),
         ...(filter.cursor === undefined ? {} : { cursor: filter.cursor }),
         ...(filter.view === undefined ? {} : { view: filter.view }),
+        ...(filter.selection === undefined ? {} : { selection: filter.selection }),
       },
     },
     consoleRequest(context.scope, signal, context.session.accessVersion)
@@ -79,7 +82,8 @@ async function takeDocumentProductPrefetch(
     && query.cursor === filter.cursor
     && query.limit === (filter.limit ?? 50)
     && query.preview === (filter.preview ?? false)
-    && query.view === filter.view;
+    && query.view === filter.view
+    && query.selection === filter.selection;
   if (!matches) return undefined;
   const parsed = ListingPageSchema.safeParse(value.value);
   return parsed.success ? parsed.data : undefined;

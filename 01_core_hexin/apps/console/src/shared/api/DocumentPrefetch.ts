@@ -150,23 +150,27 @@ export function startDocumentPrefetch(
     } catch { direct = undefined; }
     if (direct === undefined) return undefined;
     const supplyNetwork = match?.[3] === 'supply-chain';
+    const workspace = new URLSearchParams(location.search).get('workspace');
+    const selectionCenter = !supplyNetwork && (workspace === 'selection' || workspace === 'pending');
     const requestedLimit = Number(new URLSearchParams(location.search).get('limit') ?? 50);
-    const limit = supplyNetwork ? 1 : [20, 50, 100].includes(requestedLimit) ? requestedLimit : 50;
+    const limit = supplyNetwork ? 1 : selectionCenter ? [20, 50, 100].includes(requestedLimit) ? requestedLimit : 20
+      : [20, 50, 100].includes(requestedLimit) ? requestedLimit : 50;
     const search = new URLSearchParams(location.search);
     const preview = supplyNetwork || (direct.kind === 'platform' && direct.id === 'platform:preview');
     const query: Readonly<{
       q: string; category: string; supplier: string; mall: string; status: string;
-      cursor?: string; limit: number; preview: boolean; view?: 'supply-network';
+      cursor?: string; limit: number; preview: boolean; view?: 'supply-network' | 'selection-center'; selection?: 'available';
     }> = {
       q: supplyNetwork ? '' : search.get('q') ?? '',
-      category: supplyNetwork ? '' : search.get('category') ?? '',
-      supplier: supplyNetwork ? '' : preview ? (search.get('supplier') ?? '') : '',
-      mall: supplyNetwork ? '' : preview ? (search.get('mall') ?? '') : '',
-      status: supplyNetwork ? '' : search.get('status') ?? '',
+      category: supplyNetwork || selectionCenter ? '' : search.get('category') ?? '',
+      supplier: supplyNetwork || selectionCenter ? '' : preview ? (search.get('supplier') ?? '') : '',
+      mall: supplyNetwork || selectionCenter ? '' : preview ? (search.get('mall') ?? '') : '',
+      status: supplyNetwork || selectionCenter ? '' : search.get('status') ?? '',
       ...(!supplyNetwork && search.get('cursor') !== null ? { cursor: search.get('cursor')! } : {}),
       limit,
-      preview,
-      ...(supplyNetwork ? { view: 'supply-network' as const } : {}),
+      preview: selectionCenter ? false : preview,
+      ...(supplyNetwork ? { view: 'supply-network' as const } : selectionCenter ? { view: 'selection-center' as const } : {}),
+      ...(workspace === 'pending' ? { selection: 'available' as const } : {}),
     };
     const parameters = new URLSearchParams({ limit: String(limit) });
     if (query.q !== '') parameters.set('q', query.q);
@@ -176,6 +180,7 @@ export function startDocumentPrefetch(
     if (query.status !== '') parameters.set('status', query.status);
     if (query.cursor !== undefined) parameters.set('cursor', query.cursor);
     if (query.view !== undefined) parameters.set('view', query.view);
+    if (query.selection !== undefined) parameters.set('selection', query.selection);
     return readJson<unknown>(`/api/v1/catalog/listings?${parameters.toString()}`, {
       'x-scope-hint': direct.id,
       'x-access-version': String(value.accessVersion),

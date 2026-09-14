@@ -12,7 +12,6 @@ import { ProductColumnSettings } from './ProductColumnSettings';
 import { ProductDrawer } from './ProductDrawer';
 import { ProductFilterForm } from './ProductFilter';
 import { canCreateCatalogImport } from './ProductImportCommand';
-import { ProductImportDialog } from './ProductImportDialog';
 import { ProductPagination } from './ProductPagination';
 import { prefetchProductSelection } from './ProductPrefetch';
 import { changeProductPageSize, goToNextProductPage, goToPreviousProductPage, switchProductWorkspace,
@@ -94,7 +93,6 @@ export function ProductCatalogRoute() {
   const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set());
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [batchOpen, setBatchOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
   const [publicationReference, setPublicationReference] = useState(() =>
     readPublicationTaskHint(context) ?? 'catalogpublication:latest');
   const [publicationDiscoveryPending, setPublicationDiscoveryPending] = useState(() =>
@@ -215,15 +213,10 @@ export function ProductCatalogRoute() {
       ? `失败项重试创建失败：${retryPublication.error.message}` : '失败项重试创建失败' }
       : publicationQuery.error !== null && !publicationDiscoveryPending
         ? { tone: 'error' as const, message: '发布任务状态读取失败，请刷新页面后重试。' } : undefined;
-  const openImportResult = (jobId: string) => {
-    setImportOpen(false);
-    void navigate(scopePath(context.scope, `imports/catalog/${encodeURIComponent(jobId)}`));
-  };
-
   const prepareWorkspace = (workspace: ProductWorkspace) => {
-    if (workspace !== 'selection') return;
+    if (workspace !== 'selection' && workspace !== 'pending') return;
     void import('./ProductSelectionRoute');
-    void prefetchProductSelection(queryClient, context);
+    if (workspace === 'selection') void prefetchProductSelection(queryClient, context);
   };
 
   const changeWorkspace = (workspace: ProductWorkspace) =>
@@ -313,7 +306,7 @@ export function ProductCatalogRoute() {
         releasePending={readyPublication.isPending || retryPublication.isPending || publicationActive}
         {...(publicationTask === undefined ? {} : { publicationTask })}
         {...(releaseFeedback === undefined ? {} : { releaseFeedback })}
-        onImport={() => setImportOpen(true)}
+        onImport={() => { void navigate(`${scopePath(context.scope, 'products/owned/new')}?mode=batch`); }}
         onCreate={() => { void navigate(scopePath(context.scope, 'products/owned/new')); }}
         onRelease={() => readyPublication.mutate()}
         onRetry={() => publicationTask === undefined ? undefined : retryPublication.mutate(publicationTask)}
@@ -385,7 +378,6 @@ export function ProductCatalogRoute() {
       </div>
       <ProductColumnSettings open={columnsOpen} visible={visibleColumns} onChange={toggleColumn} onClose={() => setColumnsOpen(false)} />
       <ProductBatchPreview open={batchOpen} rows={selectedRows} onClose={() => setBatchOpen(false)} />
-      <ProductImportDialog context={context} open={importOpen} onClose={() => setImportOpen(false)} onCreated={openImportResult} />
     </section>
   );
 }
