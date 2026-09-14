@@ -1,0 +1,2 @@
+file,coverage,execution
+src/foundation/infrastructure/RegistrationMigrationPlan.test.ts,omitted transformed drift original legacy/reconciled ledger and target marker behavior,not run: audit worktree has no Vitest dependencies

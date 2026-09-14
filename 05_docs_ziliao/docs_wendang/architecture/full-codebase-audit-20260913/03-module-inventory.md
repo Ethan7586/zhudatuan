@@ -2547,3 +2547,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runner handoff | MigrationRunner在把每个未应用SQL交给数据库前执行plan | [FACT][E-AU-242-003] |
 
 [FACT][E-AU-242-004] 2 文件、35 行完成深审；转换、旁路和漂移故障均有direct fixture，无P0–P3新问题。
+
+## 248. AU-243 Registration migration plan 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| execution classification | 将migration分类为original、omitted或transformed，并产生可核验ledger metadata | [FACT][E-AU-243-001] |
+| history compatibility | 严格接受受控legacy generic及reconciled ledger，不接受普通空账本或drift | [FACT][E-AU-243-002] |
+| target integrity | 从最后一个migration提取唯一runtime schemaversion marker作为执行目标 | [FACT][E-AU-243-003] |
+| runner boundary | RegistrationMigrationRunner在独立数据库/advisory lock下应用执行计划并复核ledger/target | [FACT][E-AU-243-004] |
+
+[FACT][E-AU-243-005] 2 文件、340 行完成深审；每个分类和主要拒绝路径都有direct fixture，无P0–P3新问题。
