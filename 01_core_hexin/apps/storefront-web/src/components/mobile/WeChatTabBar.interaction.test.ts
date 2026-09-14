@@ -25,4 +25,10 @@ describe('cart tab warm-up', () => {
     expect(controls.preload).toHaveBeenCalledWith('cart');
     expect(controls.prepareCart).toHaveBeenCalledTimes(1);
   });
+
+  it('switches a non-cart tab immediately while data is refreshing', () => {
+    const { getByRole } = render(React.createElement(WeChatTabBar));
+    fireEvent.click(getByRole('button', { name: /我的/ }));
+    expect(controls.setMpPage).toHaveBeenCalledWith('profile');
+  });
 });

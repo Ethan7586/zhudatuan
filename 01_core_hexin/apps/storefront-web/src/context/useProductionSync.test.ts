@@ -21,18 +21,30 @@ describe('production synchronization recovery', () => {
     })).toMatchObject({ mallName: '宏泰甄选', logoText: '宏泰甄选', id: 'mall:one' });
   });
 
-  it('publishes the first catalog page before loading the remaining pages', async () => {
+  it('loads extra catalog pages only when the caller explicitly requests them', async () => {
     const published: string[][] = [];
     const waits: string[] = [];
     const result = await loadProgressiveCatalog(async ({ cursor } = {}) => cursor === undefined
       ? { items: [apiProduct('one')], pagination: { nextCursor: 'next' } }
       : { items: [apiProduct('two')], pagination: { nextCursor: null } },
     (items) => published.push(items.map((item) => item.id)),
-    async () => { waits.push('idle'); });
+    async () => { waits.push('idle'); },
+    2);
 
     expect(published).toEqual([['one'], ['one', 'two']]);
     expect(waits).toEqual(['idle']);
     expect(result.map((item) => item.id)).toEqual(['one', 'two']);
+  });
+
+  it('keeps the cold-start catalog to its first page', async () => {
+    const published: string[][] = [];
+    const result = await loadProgressiveCatalog(async ({ cursor } = {}) => cursor === undefined
+      ? { items: [apiProduct('one')], pagination: { nextCursor: 'next' } }
+      : { items: [apiProduct('two')], pagination: { nextCursor: null } },
+    (items) => published.push(items.map((item) => item.id)));
+
+    expect(published).toEqual([['one']]);
+    expect(result.map((item) => item.id)).toEqual(['one']);
   });
 });
 

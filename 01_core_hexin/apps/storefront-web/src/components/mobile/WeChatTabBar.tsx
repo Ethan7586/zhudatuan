@@ -24,7 +24,9 @@ export const WeChatTabBar: React.FC = () => {
       setMpPage(page);
       return;
     }
-    React.startTransition(() => setMpPage(page));
+    // Navigation is an immediate user action. Do not let catalog reconciliation
+    // deprioritize it and leave the mobile surface apparently unclickable.
+    setMpPage(page);
   };
 
   return (

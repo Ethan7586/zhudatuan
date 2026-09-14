@@ -34,11 +34,12 @@ export async function loadProgressiveCatalog(
   loadPage: CatalogPageLoader,
   publish: CatalogPagePublisher,
   continueWhenIdle: CatalogContinuation = waitForCatalogIdle,
+  maximumPages = 1,
 ): Promise<ApiProduct[]> {
   const items = new Map<string, ApiProduct>();
   let cursor: string | undefined;
 
-  for (let pageCount = 0; pageCount < 60; pageCount += 1) {
+  for (let pageCount = 0; pageCount < maximumPages; pageCount += 1) {
     const page = await loadPage({
       ...(cursor ? { cursor } : {}),
       limit: 100,
