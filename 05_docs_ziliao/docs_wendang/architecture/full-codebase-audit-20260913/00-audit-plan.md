@@ -723,3 +723,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Console 报表入口、reporting HTTP/read 链、projection/export job、持久化和对象完成条件。
 
 执行结果：新增 F-0141/P2（XLSX 导出累计全部行、无资源上界）；投影事务与对象校验闭环已记录。未发现 P0；正式测试因缺包级 vitest 未执行，未安装依赖或改变运行状态。
+
+## 50. AU-048 连续审计点
+
+审阅 Support Console、工单/消息事务、附件扫描和 SLA 作业。
+
+执行结果：新增 F-0142/P2（消息发送 expectedVersion 契约与实现不一致）；未发现 P0，未运行正式测试或改变运行状态。

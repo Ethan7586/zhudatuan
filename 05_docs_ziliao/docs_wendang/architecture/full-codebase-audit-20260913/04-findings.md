@@ -3041,6 +3041,17 @@
 | 验证/回滚 | 用隔离对象存储和超过内存预算的 order/metric fixture 验证任务状态、重试和对象清理；修复必须独立分支。 |
 | 独立复核 | 否 |
 
+## F-0142｜Support 消息发送的版本条件契约不一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | support；P2；高 |
+| 位置 | `modules/support/.../SendMessage.ts:13-31`；`packages/sdk/src/operations/support.ts:116-121` |
+| 当前/预期 | SDK 公开 optional expectedVersion，服务端却强制缺失即失败。预期为契约与实现统一。 |
+| 影响 | 非 Console 调用方会收到意外的 `EXPECTED_VERSION_REQUIRED`，兼容调用链可能失败。 |
+| 验证/回滚 | 在隔离测试中分别带/不带 If-Match 调用；修复必须独立分支。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
