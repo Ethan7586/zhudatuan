@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-090-001","WebRiskCheckAdapter.ts:26-98","只读 transaction、context、hierarchy policy、signals/block/velocity 与 maximum severity evaluation。","Web API 使用 canonical risk logic，不产生风险领域写。"
+"E-AU-090-002","migration 20260828173000:280-310；WebBusinessApiRuntime.ts:99-149","risk policy/version/signal/list 的 web RLS 和 RISK_GATE runtime binding 均明确。","权限与运行入口闭合。"
+"E-AU-090-003","WebRiskCheckAdapter.test.ts:5-99","测试断言 deny、无 insert/update/delete/outbox、read error propagate、velocity current attempt。","主要安全行为有专用 oracle；未运行。"

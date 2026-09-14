@@ -1,0 +1,2 @@
+"测试","范围","结论","执行"
+"WebRiskCheckAdapter.test.ts","deny、read failure、velocity、无 risk 写入","mock DB 证明控制流和 query intent；不重放真实 RLS/Policy Engine 全量配置。","未执行：固定审计 worktree 无 vitest 可执行文件；未安装依赖。"

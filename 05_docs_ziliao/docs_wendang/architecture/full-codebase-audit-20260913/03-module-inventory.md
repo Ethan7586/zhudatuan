@@ -992,3 +992,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | database boundary | session-bound security definer function 与最小 grant | [FACT][E-AU-089-003] |
 
 [FACT][E-AU-089-004] 1 文件、36 行 WebBusiness Benefit operation 完成深审；web role 不直读 Finance，余额/账本均经按 session 重证的 narrow function 投影。
+
+## 95. AU-090 WebBusiness 风险门禁适配器清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| risk evaluation | policy rollout/baseline、signals、block、velocity、最大风险结论 | [FACT][E-AU-090-001] |
+| database boundary | read-only transaction、API context、risk RLS | [FACT][E-AU-090-002] |
+| tests | deny、read failure、velocity current attempt | [FACT][E-AU-090-003] |
+
+[FACT][E-AU-090-004] 2 文件、209 行 WebBusiness RiskGate 与测试完成深审；风险评估不具 risk mutation/outbox 权限，最终 access decision 仍由上层 decision sink 记录。
