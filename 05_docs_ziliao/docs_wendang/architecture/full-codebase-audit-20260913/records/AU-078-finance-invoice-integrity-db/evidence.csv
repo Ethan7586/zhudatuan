@@ -1,0 +1,6 @@
+"编号","位置","证据","结论"
+"E-AU-078-001","20260828094000_finance_invoice_issue_integrity.sql:57-418","snapshot/hash、request/profile/line/status/document immutable guards、action proof 边界","发票事实与审批输入可由数据库重算和封存"
+"E-AU-078-002","migration:419-695","original/red create、cancel/decide、API four-eyes/version/scope、fail lifecycle","API 侧受控状态转换和原红票对应关系明确"
+"E-AU-078-003","migration:696-990","claim scope/snapshot/90s lease、artifact orphan、finalize document/outbox/status/red、release/fail","job 侧受控函数已提供完整设计目标"
+"E-AU-078-004","migration:990-1050;InvoiceIssueIntegrity.test.ts:311-540","direct write revoke/assert 和可运行 PGlite coverage","数据库安全边界与部分控制路径有实际 oracle"
+"E-AU-078-005","InvoiceIssueIntegrity.test.ts:57-310,413-483","关键 InvoiceJob end-to-end 断言标为 it.skip/未实现","F-0158 根因不是数据库协议缺失，而是 worker 未接入该协议"

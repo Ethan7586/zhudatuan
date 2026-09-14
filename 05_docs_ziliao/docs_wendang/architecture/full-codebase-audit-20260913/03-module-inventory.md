@@ -868,3 +868,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime boundary | jobs pool/shopjob 与 processor 注册 | [FACT][E-AU-076-003~004] |
 
 [FACT][E-AU-076-006] 2 文件、124 行 Finance invoice adapter/job 人工源码完成首审；P1 候选必须在 AU-077 重新追踪实际 runtime/权限/调用链。
+
+## 83. AU-078 Finance 发票完整性数据库模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| API lifecycle | frozen original/red request、approve/cancel、snapshot/action proof | [FACT][E-AU-078-001~002] |
+| job lifecycle | claim、artifact、finalize/release/fail、outbox | [FACT][E-AU-078-003] |
+| tests | PGlite migration/controlled boundaries；job cases skip | [FACT][E-AU-078-004~005] |
+
+[FACT][E-AU-078-006] 2 文件、1,783 行 Finance invoice integrity migration 和集成测试完成深审；F-0158/P1 的修复必须衔接此既有协议。
