@@ -1,0 +1,5 @@
+"测试类型","正式入口/文件","结果","说明"
+"Console单元测试","01_core_hexin/apps/console package.json:test","未执行","固定审计工作树缺少包级 vitest；未安装依赖"
+"Commerce单元测试","01_core_hexin/services/commerce package.json:test","未执行","固定审计工作树缺少包级 vitest；qualification/06_tests_ceshi 仅有 README，未发现模块操作测试"
+"类型检查","两处 package.json:typecheck","未执行","固定审计工作树缺少包级 tsc；未安装依赖"
+"checkout 关联测试","QuoteReader.mall.test.ts","未执行（人工阅读）","测试 fixture 证明 checkout 会消费 policy 的 rule/resources/subjects/limits，但未能运行"

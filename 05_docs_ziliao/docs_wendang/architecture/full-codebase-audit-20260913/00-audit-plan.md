@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-044 已完成。AU-044 复核了 Console Settings Members 与 Access 服务链，均以入口-查询-服务闭环形式提交。覆盖总账按固定基线文件逐项计数：深入审阅703文件/53,533行、结构性审阅793文件/124,256行、自动生成70文件/172,651行、暂未审阅2179文件。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-045 已完成。AU-045 复核了 Console 资格策略入口、资格服务的读/预览/管理操作、数据模型与 checkout 实际消费者。覆盖总账按当前文件级清单重算：深入审阅739文件/62,087行、结构性审阅782文件/118,188行、自动生成70文件/172,651行、暂未审阅2,137文件。按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -705,3 +705,9 @@ CP-41后自动选择Vendor公共配置（`extensions/vendors/*/tsconfig.json`）
 AU-002/CP-02 与 CP-19 的基础入口图后，补充 `settings/members` 与 `services/commerce` 的 access 链路深审。
 
 执行结果：AU-044完成32个关键源文件/测试文件的深入审阅；确认 `settings/members` 与 `settings/profile` 共享 `AccessQuery` 查询契约，并复核到服务端 `AccessReadOperations.queryPage` 的 keyset 返回与 `nextCursor`。二次收窄既有 F-0137（P3）：查询函数支持 cursor，但 profile、权限中心和成员页的 access 补充数据未形成 `access.center.read` 的连续取页闭环；大规模成员场景下可能出现身份/角色补充信息不完整。正式test/typecheck因缺vitest/tsc在源码加载前阻塞；未安装依赖、连接数据库/线上、修复、删除、推送、合并或部署。
+
+## 47. AU-045 连续审计点
+
+AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 → SDK/契约 → Commerce runtime → 策略版本数据 → checkout QuoteReader。
+
+执行结果：深入审阅14个核心手写源文件/迁移和跨模块消费者；新增 F-0138/P1 候选（策略管理未消费条件版本）、F-0139/P2（预览与结算规则不一致）和 F-0140/P2（公开管理 API 无法表达 checkout 的完整策略）。正式 test/typecheck 因固定审计工作树缺包级 vitest/tsc 未执行；未安装依赖、连接数据库/线上、修复、删除、推送、合并或部署。

@@ -2997,6 +2997,39 @@
 | 验证/回滚 | 建议新增分页冒烟测试与 `cursor` 回灌复测；修复方向为 page 递进读取或改造专用身份精确查找接口。 |
 | 独立复核 | 否 |
 
+## F-0138｜资格策略管理不消费条件版本
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | qualification；P1 候选；高 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts:330-338`；`01_core_hexin/services/commerce/src/modules/qualification/03_application_yingyong/QualificationOperations.ts:30-44` |
+| 当前/预期 | Controller 会把 `If-Match` 解析为 `expectedVersion`，但 `qualification.policies.manage` 从不读取它；SQL 仅按 policy id/scope 更新并递增 `active_version`。预期是当调用方携带版本条件时，写入应以该条件决定成功或版本冲突。 |
+| 影响 | 两个不同幂等键的管理员写入可以依次创建版本，后者无冲突提示地成为 checkout 的生效策略；资格/购买规则可能发生无意覆盖。 |
+| 验证/回滚 | 在隔离数据库并行提交不同 rule、相同 If-Match 的两个请求，验证第二个请求是否为冲突；修复必须独立分支，回滚为撤回该修复提交。 |
+| 独立复核 | 是 |
+
+## F-0139｜资格决策预览未复用 checkout 资格规则
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | qualification / checkout；P2；高 |
+| 位置 | `QualificationOperations.ts:20-28`；`checkout_jiesuan/.../QuoteReader.ts:251-266` |
+| 当前/预期 | preview 仅检查 profile 状态与 resource 排除；checkout 另执行 deny/allowed、城市、标签与购买限额。预期是预览与实际报价使用同一资格判定语义或明确不可比较。 |
+| 影响 | 运营或调用方可能获得 eligible 的预览，实际结算却拒绝同一商品，导致操作与用户可见结果不一致。 |
+| 验证/回滚 | 用城市、requiredTags、allowed=false、购买限额四组 fixture 分别比较 preview 与 QuoteReader；修复需独立分支。 |
+| 独立复核 | 否 |
+
+## F-0140｜公开策略管理 API 无法表达 checkout 使用的完整策略
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | qualification / checkout；P2；高 |
+| 位置 | `20260821016000_create_qualification.sql:3-94`；`QualificationOperations.ts:30-44`；`QuoteReader.ts:184-200` |
+| 当前/预期 | 资源、主体和购买限额保存在独立版本子表；manage API 只写 policy/policyversion 且立即发布，开放请求 schema 未定义子表数据。预期是完整策略 API 能原子表达这些字段，或该接口不对外承诺完整策略管理。 |
+| 影响 | 通过公开 API 无法创建资源范围、主体标签或购买上限策略；空 resource 会被 checkout 解释为适用于所有商品，可能扩大策略作用范围。 |
+| 验证/回滚 | 在隔离数据库调用 manage 后读取四张资格表并执行 QuoteReader；修复需独立分支。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
