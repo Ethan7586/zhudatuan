@@ -5273,3 +5273,25 @@
 | 验证方式 | 隔离 PostgreSQL 按基线 migrations，以 `zhudatuanidentityapi`、`zhudatuanwebapi`、无 execute role和相同/不同 `app.scope_id` 分别执行 function：仅授权 scope应得到 projection，越权/空 scope必须拒绝或空结果；核对不扩大 relation table grants。 |
 | 回滚方式 | 回退独立前向 function/policy/grant migration至上一个受控版本；不删除供应方、协议、商品或库存记录。 |
 | 是否需要独立复核 | 是；复核者必须独立检查 connection pool 的实际 role/session context、function owner/BYPASSRLS 与 production `pg_policies`，并重跑跨 scope contract。 |
+
+## F-0283｜供应商报表的“净成交额”与退款率跨期且入口间口径不一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Supplier analytics / Reporting-Web API / Console cockpit |
+| 类型 | 正确性、财务/运营指标契约、时间窗口 |
+| 严重级别 | **P2** |
+| 置信度 | 高（SQL 聚合、UI 标签、调用入口和现有测试均为直接证据；最终业务会计口径需 Owner 确认） |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql:26-107,150-231`；`01_core_hexin/apps/console/src/feature/cockpit/CockpitMetrics.tsx:8-17`；`01_core_hexin/services/commerce/src/modules/reporting/03_application_yingyong/query/GetDashboard.ts:20-45`；`SupplierNetworkMigration.test.ts:51-65`。 |
+| 当前/预期 | 当前 cockpit 的 `current_totals` 与 `previous_totals` 直接加 `ordering.line.total_minor`，`periodSalesCents` 和 `netSalesRatio` 据此返回；Console 将其显示为“净成交额”或“供应成交额”。但 completed refunds 无 period 条件：`completed_refunds` 汇总所有历史 completed aftersale，`refundedCents`/`refundRate` 亦用全历史 totals。并且 `supplier_metric_rows('sales')` 则从请求 period 内订单总额减去这些订单关联的所有 completed aftersale。预期为一个明确、可复算的订单发生期或退款完成期口径，并让 dashboard、supplier metric 与 UI 标签在同一 scope/period 下返回一致净额、退款额及环比。 |
+| 直接证据 | [FACT][E-AU-693-001] cockpit `supplied_lines` 不限退款状态，current/previous totals lines 165-173只按订单 `created_at` 限期；[FACT][E-AU-693-002] completed_refunds lines 160-164、after-sales detail lines 177-180及 `refundRate` lines 224-228均无退款完成时间条件；[FACT][E-AU-693-003] supplier metric sales lines 52-64在已按订单期限制的 `supplied_lines` 上扣所有 completed refund；[FACT][E-AU-693-004] Console lines 8-14将 `periodSalesCents` 直接标作“净成交额/供应成交额”；[FACT][E-AU-693-005] migration test只构造无退款 happy path，未覆盖跨期 completed aftersale 或两个 projection 对同一事实的对照。 |
+| 调用链或运行入口 | Console cockpit → `reporting.dashboard.read` → `GetDashboard` → `PgReportingRepository.cockpit` → `reporting.cockpit(scope,supplier,period)`；运营 reports → `reporting.*.read?supplierid=...` → `reporting.supplier_metric_rows(scope,supplier,dimension,period)`。 |
+| 用户影响 | 供应商、运营人员可能看到标为“净成交额”的未扣退款订单额，同时看到跨历史退款率；跨期退款可令 dashboard 环比、退款率和 supplier sales report 对同一期间相互矛盾，影响履约/结算判断。当前未读取生产指标，未量化范围。 |
+| 数据影响 | 查询投影不写订单、退款或结算；风险在于错误经营事实被展示、缓存和用于人工决策。 |
+| 安全影响 | 未发现直接授权绕过；函数的 database scope 边界另见 F-0282。 |
+| 根因 | supplier cockpit 与 metric projection 独立实现订单/退款聚合，退款没有统一的 event-time/window definition，UI 标签假定了净额而 SQL 保留了 gross/current 与 all-time refund 的混合语义。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立独立 reporting-metric semantics batch：先由财务/运营明确订单发生期与退款完成期、部分退款/多 aftersale 和 refunded order 的归属；再抽出共享 supplier totals/refund window，或采用 versioned reporting fact。同步修正 UI 文案/字段、缓存 projection version，并补跨期、部分退款、多行订单、supplier ownership变更及 dashboard-vs-metric 对账 contract；不要在 audit branch 改历史 migration。 |
+| 预计修改范围 | 新前向 reporting SQL/function 或 projection、最小 Reporting/Console contract tests，可能的 API schema/UI copy；不改订单、退款或结算历史数据。 |
+| 验证方式 | 隔离 PostgreSQL 建立相同 supplier 的 current/previous orders、current/late refunds、partial refund和multiple aftersale fixture；逐一断言两个 API response 的净额/退款/环比符合经确认口径，并验证 cache key/version在退款事件后失效。 |
+| 回滚方式 | 将独立前向 projection/function版本回退到上一已验证 version；保留原始订单和aftersale事实，禁止用报表修复回写交易数据。 |
+| 是否需要独立复核 | 是；复核者须独立确认业务会计口径、实际 refund completion timestamp/source 和 production reporting cache invalidation，再以同一 fixture 重算两个入口。 |
