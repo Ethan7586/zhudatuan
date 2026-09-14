@@ -127,6 +127,8 @@ describe('catalog mall command boundaries', () => {
     expect(calls[0]?.text).toContain("'kind','selection-center-v1'");
     expect(calls[0]?.text).toContain("'marketSales30d'");
     expect(calls[0]?.text).toContain("'clickThroughRateBps'");
+    expect(calls[0]?.text).toContain("product:zdt:supplier:trial:");
+    expect(calls[0]?.text).toContain('sample.market_sales_30d');
     expect(calls[0]?.text).toContain("'selected',selected.id is not null");
     expect(calls[0]?.text).toContain('with selection_page as materialized');
     expect(calls[0]!.text.indexOf('limit $9')).toBeLessThan(calls[0]!.text.indexOf('left join lateral'));
