@@ -1024,3 +1024,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | pagination | handler safe-integer 与 PostgreSQL integer 参数范围不一致 | F-0162/P2 |
 
 [FACT][E-AU-092-004] 新增 1 个迁移文件、119 行完成深审；关联的 WebBusiness handler/test 已在 AU-084 深审。本批次确认公开读角色/发布边界，新增 F-0162/P2。
+
+## 98. AU-093 Organization provisioning port 与商城创建链路清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| mall conflict/create | advisory lock、合法 parent/code、organization/closure/sourcebinding 写入 | [FACT][E-AU-093-001] |
+| CreateMall orchestration | organization → catalog pool → experience application/binding → owner | [FACT][E-AU-093-002] |
+| shared OrganizationPort | identity kind 读取；channel distributor 创建、改名和停用 | [FACT][E-AU-093-003] |
+| public compatibility | 仅转发 interface port 的公开导出 | [FACT][E-AU-093-004] |
+
+[FACT][E-AU-093-005] 新增 4 个 Organization 文件、93 行完成深审；CreateMall/ProvisioningOperations 与其测试为既有 AU-003 深审证据，本批次仅交叉核对调用链，无重复计数。

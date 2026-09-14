@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-093-001","01_core_hexin/services/commerce/src/modules/organization/05_interface_jieru/MallOrganizationProvisioningPort.ts","17-45","事务 advisory lock 后校验 parent/source code，再创建 organization、closure、sourcebinding。"
+"E-AU-093-002","01_core_hexin/services/commerce/src/modules/provisioning/03_application_yingyong/CreateMall.ts","48-122","稳定 ID plan；execute 按组织、货池、体验 application、owner 次序编排。"
+"E-AU-093-003","01_core_hexin/services/commerce/src/modules/organization/05_interface_jieru/OrganizationPort.ts","3-35","Identity 消费 kind；Channel 消费 distributor 创建、改名、停用。"
+"E-AU-093-004","01_core_hexin/services/commerce/src/modules/organization/{MallOrganizationProvisioningPort.ts,OrganizationPort.ts}","全部","仅兼容公开转发，无第二实现。"
