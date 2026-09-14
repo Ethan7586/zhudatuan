@@ -4361,3 +4361,24 @@
 | 用户影响 | 合法用户可因同 IP 既往尝试被拒绝注册一小时，或因已有手机号验证码发送、错误码尝试记录被暂时阻断。 |
 | 建议方向 | 后续从修复时最新主线建立单一用途修复分支，同时移除 API 与数据库两层注册/验证码限流及对应测试，再做真实注册、短信发送和账户安全验证。 |
 | 验证与回滚 | 以受控注册、验证码发送和错误验证码请求验证不返回 429 或因累计次数锁定；回滚为独立提交恢复原规则。 |
+
+## F-0235｜Compatibility 登录失败锁定与项目既定身份规则冲突
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Compatibility 登录 / 二次验证 / 微信绑定 |
+| 类型 | 可用性、身份流程治理 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `storefront-compatibility/.../20260724113000_after_sales_and_ledgers.sql:190-267`；`commerce-api/src/api/publicRoutes.ts:76-110`；`commerce-api/src/api/wechatAuthRoutes.ts:84-94`；`commerce-api/src/api/stepUpRoutes.ts:11-29` |
+| 当前行为 | `login_attempts` 按 IP hash 计数；第 5 次失败在 15 分钟窗口内设置 `blocked_until`，所有共用 `api_login_allowed` 的登录、微信绑定和二次验证请求在此期间返回 429。 |
+| 预期行为 | 项目既定规则要求不保留登录失败锁定、限流或冷却。 |
+| 直接证据 | AU-305 调用链与 `loginRateLimitBypass.test.ts:91-111`，后者明确断言非白名单地址被 limiter storage 阻断时返回 `LOGIN_RATE_LIMITED` 429。 |
+| 调用链/运行入口 | Console/公开登录与微信绑定、二次验证路由 → `api_login_allowed` / `api_record_login_failure` → `login_attempts`。 |
+| 用户影响 | 同一出口网络中的合法用户可因其他人连续输错密码而在 15 分钟内无法登录、绑定或完成二次验证。 |
+| 数据/安全影响 | 仅记录哈希化 IP 和失败次数；主要影响是可用性，未见本批次证据表明已造成线上事故。 |
+| 根因 | 共享的 IP 失败累计器被设计为身份尝试门禁，并被多个入口复用。 |
+| 建议方向 | 待第二轮独立复核后，从修复时最新 `zdt-next` 建立单一用途修复分支，移除该累计阻断及入口 429 分支，并同步调整测试。 |
+| 预计修改范围 | Compatibility 数据库登录尝试 RPC、其直接路由调用方和定向测试；不得在审计分支修复。 |
+| 验证/回滚 | 受控连续失败请求不再触发 `blocked_until` 或 429；回滚为 revert 独立修复提交。 |
+| 独立复核 | **是（P2）**；需重新检查所有 `api_login_allowed` 与 `api_record_login_failure` 调用入口。 |
