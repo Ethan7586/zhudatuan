@@ -2384,3 +2384,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime consumers | HttpApp、HttpClient、JobRunner和Executor以它传递请求、外部依赖和job deadline | [FACT][E-AU-225-002] |
 
 [FACT][E-AU-225-003] 1 文件、1 行完成深审；真实运行消费者成立，为G0 compatibility adapter。
+
+## 231. AU-226 Bulkhead contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| concurrency bulkhead | 将Commerce external calls接到kernel的并发/队列隔离原语 | [FACT][E-AU-226-001] |
+| runtime consumer | Executor由runtime limits构造该bulkhead，HttpClient经Executor运行 | [FACT][E-AU-226-002] |
+
+[FACT][E-AU-226-003] 1 文件、1 行完成深审；唯一Commerce consumer明确，为G0 compatibility adapter。

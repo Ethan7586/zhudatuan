@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-226-001,src/foundation/performance/Bulkhead.ts,1,compatibility adapter,Bulkhead is a direct @shop/kernel re-export.
+E-AU-226-002,src/foundation/performance/Executor.ts,1-25,runtime consumer,Executor constructs Bulkhead from external maximumConcurrency and maximumQueue runtime limits.
+E-AU-226-003,src/foundation/http/HttpClient.ts,1-17,transitive consumer,HttpClient delegates all calls to Executor and therefore its bulkhead scheduling boundary.

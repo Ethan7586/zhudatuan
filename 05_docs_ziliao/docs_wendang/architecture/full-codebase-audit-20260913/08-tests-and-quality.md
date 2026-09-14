@@ -719,3 +719,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Deadline为内核转发；HTTP deadline error mapping已有HttpApp direct fixture，其他行为由已审kernel/consumer承接。
 - 无P0–P3新问题。
+
+## 226. AU-226 Bulkhead contract 深审
+
+- Bulkhead是内核转发；外部调用的排队/并发行为由Executor与kernel审计承接。
+- 无P0–P3新问题。
