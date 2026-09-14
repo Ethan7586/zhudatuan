@@ -1,0 +1,5 @@
+file,coverage,execution
+src/api/publicRoutes.test.ts,health method/demo production credential phone and username origin redirect logout multi-entrance password-reset and limiter behavior,not run: audit worktree has no Vitest dependencies
+src/api/registrationSecurity.test.ts,PBKDF2 password policy identifier normalization,not run: audit worktree has no Vitest dependencies
+src/api/demoAuth.test.ts,test-only account visibility target role and database membership role bindings,not run: audit worktree has no Vitest dependencies
+src/api/loginRateLimitBypass.test.ts,trusted header normalized exact IP time-bound bypass and limiter behavior,not run: audit worktree has no Vitest dependencies

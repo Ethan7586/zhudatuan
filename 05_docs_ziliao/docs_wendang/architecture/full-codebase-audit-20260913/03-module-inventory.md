@@ -1846,3 +1846,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | host/key separation、tampering、miniapp isolation、resource scope、phone assurance | [FACT][E-AU-170-004] |
 
 [FACT][E-AU-170-005] 8 文件、715 行完成深审；会话撤销实际以 `api_resolve_session_membership_context` RPC session id回查承载。
+
+## 176. AU-171 Compatibility public auth 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| compatibility handlers | health、credential login/discovery、initial change、logout、redirect/origin validation | [FACT][E-AU-171-001] |
+| credential primitives | PBKDF2 hash/verify、identifier normalize、OTP/hashing helpers | [FACT][E-AU-171-002] |
+| test identity/limiter | test-only database-backed demo membership及精确/有期IP bypass | [FACT][E-AU-171-003] |
+| release route | full compatibility router rejects `/api/v1/auth/*`，Storefront only mounts health/catalog/payment | [FACT][E-AU-171-004] |
+
+[FACT][E-AU-171-005] 8 文件、1,447 行完成深审；这些handler存在客户端、测试和兼容编译关系，但没有当前正式运行路由注册。

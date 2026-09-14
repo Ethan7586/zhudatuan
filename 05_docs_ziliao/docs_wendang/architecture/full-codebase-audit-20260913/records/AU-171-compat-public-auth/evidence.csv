@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-171-001,src/api/publicRoutes.ts,37-335,handler boundary,Credential paths enforce request origin bind one membership fail closed rate-limit through RPC and issue/revoke tracked host sessions.
+E-AU-171-002,src/api/registrationSecurity.ts,1-82,credential primitive,PBKDF2 SHA-256 with unique salt accepts only bounded valid stored records; identifiers and OTP helper inputs are normalized.
+E-AU-171-003,src/api/{demoAuth,loginRateLimitBypass}.ts,1-129;1-100,test boundary,Demo accounts require test/development mode and database membership resolution; bypass is exact normalized IP test/test only and expiry-bounded.
+E-AU-171-004,src/api/router.ts;src/api/routes/publicRouter.ts;apps/storefront-web/worker/index.ts,14-25;9-22;53-56,runtime route,Full router returns auth namespace 404 and actual Storefront worker only mounts public router with health/catalog/payment paths.
+E-AU-171-005,apps/auth-web/src/services/auth.ts,22;390-425,compatibility consumer,Legacy Auth Web source still constructs login/discovery/initial-change requests to this namespace.
