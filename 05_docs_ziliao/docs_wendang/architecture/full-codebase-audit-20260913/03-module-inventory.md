@@ -2612,3 +2612,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | contract enforcement | 查询runtime contract但最终断言遗漏该字段，见F-0227/P1待独立复核 | [FACT][E-AU-248-005] |
 
 [FACT][E-AU-248-007] 2 文件、269 行完成深审；F-0227/P1待独立复核，factory fixture缺口见F-0228/P2。
+
+## 254. AU-249 Mall provisioning contract 独立复核
+
+| 复核面 | 独立证据 | 结论 |
+| --- | --- | --- |
+| 生产入口 | runtime创建后直接bootstrap/listen，无第二个contract gate | [FACT][E-AU-249-001] |
+| query/result | `contract`由精确版本/checksum查询投影至state | [FACT][E-AU-249-002] |
+| predicate/fixture | predicate缺失`contract`且fixture未覆盖false | [FACT][E-AU-249-003,004] |
+
+[FACT][E-AU-249-005] F-0227/P1双轮确认；不改生产代码。

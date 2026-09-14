@@ -411,7 +411,7 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | commerce / bootstrap MallProvisioningApiRuntime；P1；高；待独立复核 |
+| 模块/级别 | commerce / bootstrap MallProvisioningApiRuntime；P1；高；双轮确认 |
 | 类型 | 正确性、启动兼容性门禁 |
 | 位置 | `01_core_hexin/services/commerce/src/bootstrap/MallProvisioningApiRuntime.ts:121-189`；`.../MallProvisioningApiRuntime.test.ts:10-47` |
 | 当前/预期 | compatibility query计算`contract`（目标runtime schema版本与checksum），但最终拒绝条件未包含`!state.contract`。预期任一contract marker缺失或checksum不匹配时启动失败。 |
@@ -419,7 +419,7 @@
 | 调用链/影响 | MallProvisioningApiMain → createMallProvisioningApiRuntime → assertMallProvisioningRuntimeCompatibility → bootstrap API/listen。contract drift后仍可启动并提供开通操作，可能在调用侧/数据库契约不一致时产生业务失败或错误写入；当前线上状态未验证。 |
 | 建议方向 | 在独立修复分支先做第二轮调用链复核；确认后以最小补丁将`!state.contract`纳入predicate，并加入contract false direct fixture，不混入权限或迁移变更。 |
 | 验证/回滚 | fake pool以`contract:false`应抛稳定错误；运行既有开通API定向测试。回滚为revert代码/测试小提交；不触及数据库。 |
-| 独立复核 | 是；P1，AU-249必须重新从query、predicate、生产入口三处核验。 |
+| 独立复核 | 是；AU-249已从query、predicate、生产入口三处复核，结论一致。 |
 
 ## F-0228｜Mall provisioning runtime factory 未经直接执行验证
 

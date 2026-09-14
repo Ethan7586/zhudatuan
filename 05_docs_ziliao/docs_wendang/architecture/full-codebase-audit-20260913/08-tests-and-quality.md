@@ -834,3 +834,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Fixture检查SQL中contract marker文本，但未以`contract:false`执行最终断言；该缺口直接暴露F-0227/P1。
 - Factory成功、compatibility失败pool释放、configure和close行为无direct fixture；见F-0228/P2。审计工作树未运行Vitest。
+
+## 249. AU-249 Mall provisioning contract 独立复核
+
+- 复核直接确认fixture只使用`contract:true`，生产入口和factory不存在替代contract gate。
+- F-0227/P1双轮一致；审计工作树未运行Vitest。

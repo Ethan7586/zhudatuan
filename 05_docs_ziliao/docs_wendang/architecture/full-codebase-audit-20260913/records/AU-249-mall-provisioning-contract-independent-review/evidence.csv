@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-249-001,src/entry/MallProvisioningApiMain.ts,13-29,production entry,Entrypoint creates runtime then immediately passes it to bootstrapApi/listen; it supplies no separate runtime-contract check.
+E-AU-249-002,src/bootstrap/MallProvisioningApiRuntime.ts,119-131,query/result,CompatibilityRow declares contract and SQL projects exact runtime schema version/checksum as contract.
+E-AU-249-003,src/bootstrap/MallProvisioningApiRuntime.ts,200-205,predicate,Reject condition evaluates all neighboring safety fields but has no state.contract term.
+E-AU-249-004,src/bootstrap/MallProvisioningApiRuntime.test.ts,10-48,fixture gap,Fixture initialises contract true and exercises four other false cases but not contract false.
+E-AU-249-005,src/bootstrap/MallProvisioningApiRuntime.ts,72-77,gate handoff,Factory only invokes assertion before returning the runtime; failure closes pool but omitted contract cannot produce failure.
