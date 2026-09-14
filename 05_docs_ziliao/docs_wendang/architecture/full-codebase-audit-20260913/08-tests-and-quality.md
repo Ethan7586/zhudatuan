@@ -345,3 +345,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - `MemberReadOperations.test` 的 PGlite fixture 覆盖治理子树、operator/storefront 分离、商城范围、masked output、membership-bound identity、搜索、keyset、详情/邀请关系/订单和非 mall scope 拒绝；`MemberCustomProfileOperations.test` 覆盖七类字段、系统标签与跨商城隔离。
 - `IdentityRegistrationApiEntrypoint.test` 和 manifest test 证明 selected-module 的 route/operation 装配与 public surface，但不能替代生产 HTTP/数据库执行。
 - 按正式 Commerce `npm test` 入口定向运行 4 个相关文件，因 audit worktree 缺少 `vitest` 以退出码 127 终止；未安装依赖，所有本 AU 测试执行结论标为未验证。
+
+## 148. AU-148 Member public port 与导入异步链深审
+
+- `MemberPort.test` 直接以 fake database 断言 registration policy/invitation 条件、mobile mask、hosted node registration、Hosted mall open 与 sovereign upgrade 的 database-function 输入和 authority/result context；未覆盖真实 SQL function 或 HTTP action。
+- `MemberImportOperations`、`PgMemberImport`、`MemberImportProcessor` 和 `MemberProfileImport` 在 `*.test.ts` 中没有 direct behavior fixture；staging、savepoint、cursor continuation、report completion/reject/fault 没有本模块回归规格。
+- 本 AU 不重复运行已证实会在加载前因缺少 `vitest` 失败的同一工作区命令。F-0179 的 action 覆盖由 source-level composition 可直接复现，但尚未有 response projection regression test。

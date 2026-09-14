@@ -1614,3 +1614,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | PGlite 资料/读取事实与 entrypoint 路由装配 | [FACT][E-AU-147-005]；本 worktree 未能执行 Vitest |
 
 [FACT][E-AU-147-006] 9 文件、1,056 行完成深审；Member 读写边界和双 API 运行入口可定位，尚余 public port、开通/主权升级和导入异步链待后续 AU。
+
+## 153. AU-148 Member public port、开通/升级与导入异步链清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| public port/invite | storefront registration、profile、invitation、member-node registration、hosted/sovereign database-function port | [FACT][E-AU-148-001]；邀请条件与 host authority 由 SQL/parsed contract 共同限制 |
+| open/upgrade HTTP | 从 access node context 注入 authority，再调用 public port | [FACT][E-AU-148-002]；body 仅携带业务资源 intent |
+| member import | upload job 创建、staging、500 行 worker/savepoint、continuation/report/failed state | [FACT][E-AU-148-003][E-AU-148-004]；主 jobs catalog 实际注册 consumer |
+| import read composition | 同名 action 在 spread 后被 MemberReadOperations 覆盖 | [FACT][E-AU-148-005]；F-0179/P2，report download 投影未执行 |
+| public/tests | stable capabilities/public index 与 MemberPort fake-db tests | [FACT][E-AU-148-006]；导入 worker 没有直接行为 fixture |
+
+[FACT][E-AU-148-007] 10 文件、723 行完成深审；Member 19/19 基线文件均已取得审阅状态，导入读取投影缺陷单独留档。

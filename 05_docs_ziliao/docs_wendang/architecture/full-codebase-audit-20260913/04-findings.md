@@ -3530,6 +3530,21 @@
 | 验证/回滚 | From latest mainline create a separate test-only branch with fake transaction/context covering the stated success/reject/read paths; rollback by reverting that test batch. |
 | 独立复核 | 否；P2，后续 Provisioning API 专项复查。 |
 
+## F-0179｜Member 导入报告读取被同名 action 覆盖，未投影授权下载
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | member / import report read；P2；高 |
+| 类型 | 正确性、API 响应契约与对象访问投影 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/member/03_application_yingyong/MemberOperations.ts:19-22`；`MemberImportOperations.ts:24-33`；`MemberReadOperations.ts:247-256`；`IdentityOperatorMemberModule.ts:15-21` |
+| 当前/预期 | `MemberImportOperations` 为 `member.imports.read` 定义 `finalize: projectImport(result, objects)`，其职责是移除内部 `report_object_ref/report_sha256/report_size` 并给已完成报告生成短时授权下载。完整 MemberModule 先 spread import actions、再 spread read actions；后者同名 key 覆盖前者。Identity selected module 也只装配 read action。因此两个实际 API 都返回未投影行，预期的 `report.download` 不会生成。 |
+| 直接证据 | JavaScript object spread 为后项覆盖同名 key；两处 module composition 的最后同名项均为 `memberOperatorReadActions()`。`projectImport` 仅由被覆盖的 action 调用，仓内无另一调用。 |
+| 调用链/影响 | Commerce main/IdentityRegistrationApiMain → MemberModule/IdentityOperatorMemberModule → ModuleOperations → `member.imports.read`。完成导入的 operator 无法获得设计中的授权 report download；响应还携带内部 object reference metadata。 |
+| 根因 | import read 与 operator read 为相同 operation 建立了重复实现，模块装配无 duplicate-action guard。 |
+| 建议方向 | 从修复时最新 `zdt-next` 单独建立小分支，将 read 的 scope/query 固化为唯一实现，并保留 `projectImport` finalize；补充 completed report、无 report、跨 scope、selected/full module 两种装配的行为测试。 |
+| 验证/回滚 | 以 fake ObjectStore/transaction fixture 断言 output 只含 `report.download` 且 authorization TTL 为 300，断言 raw reference 不在响应；回滚为撤回该独立修复批次。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
