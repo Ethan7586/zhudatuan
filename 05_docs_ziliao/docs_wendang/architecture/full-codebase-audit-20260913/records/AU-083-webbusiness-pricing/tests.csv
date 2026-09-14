@@ -1,0 +1,3 @@
+"测试","范围","结论","执行"
+"WebBusinessScopeResolver.test.ts","storefront pricing offers 的 session-bound mall scope","mock pool 验证 resolver SQL 和返回 kind；不验证真实 access function/RLS。","未执行：固定审计 worktree 无 vitest 可执行文件；未安装依赖。"
+"module.manifest.test.ts 与 WebBusinessApiEntrypoint.test.ts","selected module/operation白名单、路由排除","覆盖 composition/route 静态契约；不覆盖价格记录、规则或真实 runtime。","未执行：固定审计 worktree 无 vitest 可执行文件；未安装依赖。"

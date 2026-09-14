@@ -921,3 +921,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | 产品映射 | 需求将商城加价/价格规则映射到 pricing rule operation | 当前实现不能实现对应已承诺能力 |
 
 [FACT][E-AU-082-004] F-0159 经与 AU-081 分离的消费者全集、报价演算和 contract/test 路径复查，结论一致，确认为 P1。
+
+## 88. AU-083 WebBusiness Pricing 读取运行模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| selected module | WebBusiness 只暴露 `pricing.offers.read` | [FACT][E-AU-083-001] |
+| scope resolver | storefront session 映射为 mall scope | [FACT][E-AU-083-002] |
+| Pricing read | 有效 pricebook/price 的 sku 查询 | [FACT][E-AU-083-003] |
+| entry/manifest/test | 独立 API 启动、路由白名单与 composition 说明 | [FACT][E-AU-083-004] |
+
+[FACT][E-AU-083-005] 8 文件、332 行 WebBusiness Pricing 专项源码/测试完成深审；它是只读部署单元且只允许一个 Pricing operation。查询与完整 Pricing read 重复，当前语义一致；F-0159 的未生效规则仍覆盖此只读显示面。

@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-082 已完成。AU-082 完成 F-0159 Pricing rule→报价金额路径独立复核。覆盖总账按当前文件级清单重算：深入审阅988文件/83,299行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,860文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-083 已完成。AU-083 完成 WebBusiness Pricing 读取运行入口审阅。覆盖总账按当前文件级清单重算：深入审阅996文件/83,631行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,852文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -927,3 +927,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 独立复查 F-0159 的代码消费者全集、contract/openapi、Checkout 报价金额演算、已有行为测试和需求映射。
 
 执行结果：`pricing.rule` 在 Commerce 源码的唯一读取是 QuoteReader；所有 `kind/condition/effect` 原样进入 evidence，不存在规则解释器或金额调整消费者；`PricingRulesCreateRequest` 又是无字段约束的开放对象，Pricing 测试只验证 manifest。需求映射明确将加价模板/商城规则对接这两个 operation。F-0159 确认为 P1。未发现 P0；未运行测试或改变运行状态。
+
+## 85. AU-083 连续审计点
+
+审阅独立部署的 WebBusiness API 中 Pricing selected module、scope resolver、公开 operation 集、composition manifest 与现有入口测试。
+
+执行结果：WebBusinessApiMain 将 `WebPricingModule` 与唯一 `pricing.offers.read` 注册到独立 API；storefront actor 的该请求只能由 session-bound mall scope 解析。其价格查询与完整 Commerce Pricing operation 逐句重复，且同样只返回原始 pricebook price，因而不会绕过或抵消 F-0159/P1。公开入口测试锁定路由白名单与无 checkout/payment 写入口。未发现 P0 或新增 P1–P3；Vitest 未运行。

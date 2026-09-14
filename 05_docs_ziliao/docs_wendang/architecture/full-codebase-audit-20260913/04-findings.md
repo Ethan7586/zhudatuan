@@ -3256,10 +3256,10 @@
 | --- | --- |
 | 模块/级别 | pricing / checkout；**P1**；高 |
 | 类型 | 核心业务规则与报价结果断链 |
-| 位置 | `01_core_hexin/services/commerce/src/modules/pricing/03_application_yingyong/PricingOperations.ts:23-36`；`01_core_hexin/services/commerce/src/modules/checkout_jiesuan/03_application_yingyong/queries_duqu/QuoteReader.ts:50-81,158-181,223-225` |
+| 位置 | `01_core_hexin/services/commerce/src/modules/pricing/03_application_yingyong/PricingOperations.ts:23-36`；`01_core_hexin/services/commerce/src/modules/checkout_jiesuan/03_application_yingyong/queries_duqu/QuoteReader.ts:50-81,158-181,223-225`；`01_core_hexin/services/commerce/src/modules/webbusiness/WebPricingOperations.ts:10-20` |
 | 当前/预期 | `pricing.rules.create/publish` 可将规则置为 published；QuoteReader 查询这些规则并把整行放进 `evidence.pricing`，但行价仍只取 `pricing.price.amount_minor`，`discountMinor` 只由 marketing campaign 分配，整个模块不存在 price rule 的 condition/effect 求值或金额写回。预期已发布的定价规则应按其公开的业务契约影响报价，或者相应管理接口不应承诺该能力。 |
 | 直接证据 | QuoteReader 的并行读取包含 `priceRules`，随后仅在第 74 行放入 evidence；第 60-64 行的 subtotal/payable 仅由 raw line price 与 promotion 计算；`rg` 覆盖 Commerce 源码的 `pricing.rule` 命中除该读取、写入/发布与声明外无任何规则求值实现。 |
-| 调用链/影响 | Operator `POST /api/v1/pricing/rules` → `PUT .../publication` → `pricing.rule`；Member/Checkout quote → QuoteReader 读取 published rule → quote amount 保持不变。运营人员发布加价/折扣规则后，会员结算金额不会随规则变化，可能形成商品定价与后台承诺不一致。 |
+| 调用链/影响 | Operator `POST /api/v1/pricing/rules` → `PUT .../publication` → `pricing.rule`；Member/Checkout quote → QuoteReader 读取 published rule → quote amount 保持不变；独立 WebBusiness API 的 `pricing.offers.read` 也只显示原始 pricebook price。运营人员发布加价/折扣规则后，会员展示及结算金额都不会随规则变化，可能形成商品定价与后台承诺不一致。 |
 | 根因 | 规则的持久化、发布和 evidence 快照先于实际规则解释器/价格调整算法落地，接口、权限与数据状态已可运行但业务效果未闭合。 |
 | 验证/回滚 | AU-082 已独立复查 rule 创建→发布→QuoteReader 金额演算、`kind/condition/effect` 的全仓消费者、runtime registry、openapi 和行为测试；结论一致。后续必须从当时最新主线单独小分支实现规则解释/金额调整或正式收窄管理契约，并用多规则、优先级、幂等报价和失败回滚测试验证；回滚为撤回该小批次。 |
 | 独立复核 | 是；AU-082 已完成，结论一致。 |
