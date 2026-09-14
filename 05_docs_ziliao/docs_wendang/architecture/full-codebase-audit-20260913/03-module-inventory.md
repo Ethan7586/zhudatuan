@@ -1383,3 +1383,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | coverage | Extension 35/35 文件均有明确覆盖状态 | [FACT][E-AU-125-002] |
 
 [FACT][E-AU-125-003] 11 文件、11 行 Extension 兼容层完成深审；无独立运行逻辑，不以零引用认定可删除。
+
+## 131. AU-126 Notification 入口与身份队列运行单元清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Notification/Identity selected modules | 全量八项 HTTP operation 与 sovereign identity 两项 read 的独立装配 | [FACT][E-AU-126-001] |
+| identity notification runtime | manifest/secret/database boundary 验证后创建仅 identitynotification 的 QueueJob 和 SMS delivery registry | [FACT][E-AU-126-002] |
+| job/backlog tests | challenge payload whitelist、backlog 告警/恢复与 manifest inventory | [FACT][E-AU-126-003] |
+
+[FACT][E-AU-126-004] 8 文件、386 行 Notification 入口、identity 专用运行单元和测试完成深审；generic processor/monitor 已由 AU-049/AU-050 深审并作为本链既有证据。

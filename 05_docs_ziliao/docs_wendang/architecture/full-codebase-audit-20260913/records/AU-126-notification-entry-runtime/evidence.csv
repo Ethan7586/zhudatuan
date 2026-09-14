@@ -1,0 +1,5 @@
+id,file,location,kind,observation
+E-AU-126-001,modules/notification/05_interface_jieru/{NotificationModule;IdentityOperatorNotificationModule}.ts;03_application_yingyong/NotificationReadOperations.ts;module.manifest.ts,1-62,module boundary,Full HTTP module and identity selected module expose distinct operation surfaces; manifest declares the HTTP and job inventory.
+E-AU-126-002,bootstrap/IdentityNotificationJobsRuntime.ts,31-136,dedicated runtime,Validates runtime bindings then constructs identity-only QueueJob backed by identity job credentials and configured SMS delivery.
+E-AU-126-003,modules/notification/06_tests_ceshi/{NotificationJob;IdentityNotificationBacklogMonitor;module.manifest}.test.ts,1-76,test specification,Tests challenge payload restriction backlog alert/recovery behavior and manifest declarations.
+E-AU-126-004,app/jobs.ts;modules/notification/05_interface_jieru/job/{NotificationJob;IdentityNotificationBacklogMonitor}.ts,registration/call chain,existing evidence,Generic notification processor is registered in the primary jobs catalog; AU-049/AU-050 already deeply reviewed its processor and monitor logic.
