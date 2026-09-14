@@ -2430,3 +2430,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime consumers | JobRunner、OutboxRelay、MigrationRunner与RegistrationMigrationRunner均以`use`限制并发任务 | [FACT][E-AU-230-002] |
 
 [FACT][E-AU-230-003] 1 文件、1 行完成深审；多个真实消费者明确，为G0 compatibility adapter。
+
+## 236. AU-231 CursorCodec contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| canonical codec | 将sort/id编码为versioned base64url JSON，并以同值重编码拒绝非规范表示 | [FACT][E-AU-231-001] |
+| validation bridge | Validation持有唯一codec实例，向查询层暴露decode/encode与keyset分页 | [FACT][E-AU-231-002] |
+| production consumers | risk、reporting、support、audit查询均生成该nextCursor契约 | [FACT][E-AU-231-003] |
+
+[FACT][E-AU-231-004] 2 文件、51 行完成深审；direct test遗漏其标题声明的non-canonical case及position边界，见F-0218/P3。

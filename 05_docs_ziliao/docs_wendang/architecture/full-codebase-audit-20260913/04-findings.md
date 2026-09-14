@@ -4074,6 +4074,20 @@
 | 验证/回滚 | 用controlled deferred operation断言峰值并发、结果顺序、拒绝传播和失败后的完成数；回滚为revert该独立批。 |
 | 独立复核 | 否；P3。 |
 
+## F-0218｜CursorCodec 测试未覆盖其声明的非规范游标与位置边界
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation CursorCodec；P3；高 |
+| 类型 | 测试可信度、分页契约边界 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/interface/CursorCodec.ts:8-31`；`.../CursorCodec.test.ts:13-18` |
+| 当前/预期 | 实现拒绝非版本1、非字符串、空值、超过512字符和不等于canonical re-encode的cursor。预期测试标题中声明的non-canonical场景与这些输入边界有具体断言。 |
+| 直接证据 | 第二个test标题写有`non-canonical cursors`，正文只断言`plain`与version 2；未构造padding/等价JSON等non-canonical值，也未调用encode/decode验证空值、非字符串或长度边界。 |
+| 调用链/影响 | Validation → risk/reporting/support/audit keyset query → API nextCursor。游标拒绝或规范化回归可能让分页请求出现错误分类、接受歧义位置或只在真实客户端cursor输入时暴露；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试批，构造带padding或字段顺序变化的可解码非canonical cursor，并覆盖empty/oversize/non-string sort/id和freeze后的不可变结果；不改变已声明的游标协议。 |
+| 验证/回滚 | 断言稳定错误码`CURSOR_INVALID`/`CURSOR_POSITION_INVALID`及decode正常值；回滚为revert该测试提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

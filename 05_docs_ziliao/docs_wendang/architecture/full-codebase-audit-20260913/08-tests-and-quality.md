@@ -744,3 +744,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Semaphore为内核转发；实际并发行为由已审kernel和其四个Commerce消费者承接。
 - 无P0–P3新问题。
+
+## 231. AU-231 CursorCodec contract 深审
+
+- 现有fixture覆盖canonical round-trip、malformed与unsupported version；不覆盖标题所称non-canonical值或position边界。
+- 见F-0218/P3。审计工作树未运行Vitest。
