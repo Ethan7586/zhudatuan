@@ -1291,3 +1291,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 仅 manifest 声明测试 | [FACT][E-AU-116-004]；F-0170/P2 |
 
 [FACT][E-AU-116-005] 4 文件、97 行 extension-health/Channel state boundary 完成深审；故障降级和人工恢复意图由运行手册与实际状态机一致证明。
+
+## 122. AU-117 Channel 公共源类型契约清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Catalog/Price/Stock/Statement type exports | 将 `@shop/contract` 的 provider source 类型稳定再导出 | [FACT][E-AU-117-001] |
+| runtime consumer | ChannelSyncJob 直接调用 catalog/pricing/inventory/finance ports，而非 type aliases | [FACT][E-AU-117-002] |
+| 删除候选 | 无仓内 import 不等于可删；这些是 Channel public API/潜在 SDK 编译契约 | G0 |
+
+[FACT][E-AU-117-003] 4 文件、4 行 Channel 公共类型契约完成深审；无运行副作用，但保留公共接口责任。

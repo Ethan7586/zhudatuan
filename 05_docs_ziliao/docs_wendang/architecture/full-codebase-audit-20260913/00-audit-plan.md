@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-116 已完成。AU-116 完成 Extension health 与 Channel 降级状态回写链审阅。覆盖总账按当前文件级清单重算：深入审阅1,125文件/94,289行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,723文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-117 已完成。AU-117 完成 Channel Catalog/Price/Stock/Statement 公共源类型契约审阅。覆盖总账按当前文件级清单重算：深入审阅1,129文件/94,293行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,719文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1131,3 +1131,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 extensionhealth scan/probe、version-bound health evidence、Extension 安装状态与 Channel connection 降级回写。
 
 执行结果：scan 只投递 testing/enabled/degraded installation；probe 先 stage provider、记录指标，再在 transaction 内以 installation version 锁定 health record。enabled 的不健康 probe 会同时 transition extension 与 connection 为 degraded，并保留 registry instance；恢复明确要求 operator test/enable 原子替换，符合 runbook，不是自动恢复遗漏。新增 F-0170/P2：health job、stage/transition/degrade/scan/recovery 分支没有行为测试，现有 Extension/Channel 测试只有 manifest 声明。未发现 P0/P1 新问题；Vitest 未运行。
+
+## 119. AU-117 连续审计点
+
+审阅 Channel 对 Catalog、Price、Stock、Statement 的四项公共源类型契约与实际消费者。
+
+执行结果：四文件均仅从 `@shop/contract` 再导出 type；ChannelModule/index 将其作为稳定公共 API 传出。ChannelSyncJob 的实际运行写入直接使用 catalog/pricing/inventory/finance 的公开端口，并不通过这些 type alias。未检到仓内直接 import consumer，但公共导出可能是外部 SDK/扩展的编译契约，归类 G0，不作为删除候选。未发现 P0–P3 新问题；无适用行为测试。

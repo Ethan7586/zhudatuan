@@ -1,0 +1,4 @@
+"证据编号","文件","位置","结论"
+"E-AU-117-001","01_core_hexin/services/commerce/src/modules/channel/01_public_gongkai/{CatalogSource,PriceSource,StockSource,StatementSource}.ts","1","四项均为 @shop/contract type-only re-export。"
+"E-AU-117-002","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/job/ChannelSyncJob.ts","8-11,70-127,145-160","同步 Worker 实际调用下游公开端口而非这些类型别名。"
+"E-AU-117-003","01_core_hexin/services/commerce/src/modules/channel/{index.ts,05_interface_jieru/ChannelModule.ts}","5-12;5-11","type re-export 位于 Channel public API。"
