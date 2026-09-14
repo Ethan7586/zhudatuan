@@ -3362,18 +3362,18 @@
 | 验证/回滚 | 从最新主线建立独立小分支，以受控 provider 在 run() 后、finish 前执行 cancel；断言 run 保持 cancelled、无 completed outbox/续页 job，并决定是否允许中断已开始的 provider 调用。回滚为撤回该单一状态条件与测试批次。 |
 | 独立复核 | 是；P2 异步状态机，需按实际 JobRunner retry/claim 行为重新检查调用链。 |
 
-## F-0167｜Channel connection 与同步 Worker 仅有 manifest 静态测试
+## F-0167｜Channel connection、同步与 Webhook Worker 仅有 manifest 静态测试
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | channel / connection 与同步；P2；高 |
+| 模块/级别 | channel / connection、同步与 Webhook；P2；高 |
 | 类型 | 测试覆盖缺口、异步集成正确性 |
-| 位置 | `01_core_hexin/services/commerce/src/modules/channel/03_application_yingyong/command/{CreateConnection,EnableConnection,RunSync}.ts`；`05_interface_jieru/job/ChannelSyncJob.ts`；`06_tests_ceshi/module.manifest.test.ts` |
-| 当前/预期 | connection create/test/enable/disable、sync start/cancel 及四类 Worker 会写 connection、extension、runtime job/outbox、catalog/pricing/inventory/finance；模块测试只断言 manifest 的 operation/job/event 字符串。预期至少有 transaction/integration 覆盖状态转移、enabled gate、cancel 与 Worker finish 竞态、续页、statement reconciliation 和 provider 失败重试。 |
-| 直接证据 | `rg` 在 Channel 测试目录只找到 `module.manifest.test.ts`；该文件逐项比较 manifest string，未导入 CreateConnection、EnableConnection、RunSync 或 ChannelJobProcessor。 |
-| 调用链/影响 | Channel HTTP operation → ModuleOperations transaction → runtime.job → ChannelJobProcessor → provider extension 与下游投影/finance。状态、幂等和队列回归不能由当前测试直接捕获。 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/channel/03_application_yingyong/command/{CreateConnection,EnableConnection,RunSync,ApplyWebhook}.ts`；`05_interface_jieru/job/{ChannelSyncJob,ChannelWebhookJob}.ts`；`06_tests_ceshi/module.manifest.test.ts` |
+| 当前/预期 | connection create/test/enable/disable、sync start/cancel、Webhook accept 及五类 Worker 会写 connection、extension、runtime job/outbox、catalog/pricing/inventory/finance/provider operation；模块测试只断言 manifest 的 operation/job/event 字符串。预期至少有 transaction/integration 覆盖状态转移、enabled gate、cancel 与 Worker finish 竞态、续页、statement reconciliation、Webhook 重放/验签/claim 和 provider 失败重试。 |
+| 直接证据 | `rg` 在 Channel 测试目录只找到 `module.manifest.test.ts`；该文件逐项比较 manifest string，未导入 CreateConnection、EnableConnection、RunSync、ApplyWebhook、ChannelSyncJobProcessor 或 ChannelWebhookJobProcessor。 |
+| 调用链/影响 | Channel HTTP operation/Webhook → ModuleOperations 或 ApplyWebhook transaction → runtime.job → ChannelSyncJobProcessor/ChannelWebhookJobProcessor → provider extension、下游投影/finance/provider operation。状态、幂等和队列回归不能由当前测试直接捕获。 |
 | 根因 | 模块以声明完整性测试替代命令和 Worker 行为测试。 |
-| 验证/回滚 | 从最新主线建立独立测试批次，以最小 PGlite/transaction fixture 覆盖 create→test→enable、disabled/non-enabled 拒绝、cancel race、分页续跑与 statement outbox；回滚为撤回该测试批次。 |
+| 验证/回滚 | 从最新主线建立独立测试批次，以最小 PGlite/transaction fixture 覆盖 create→test→enable、disabled/non-enabled 拒绝、cancel race、分页续跑、statement outbox，以及 Webhook 验签/重放、inbox job 原子性和 claim；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2，后续 Channel Worker 专项可复查。 |
 
 ## 30. AU-030 新增未定级事项

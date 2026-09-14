@@ -1249,3 +1249,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 仅 manifest 静态 operation/job/event inventory | [FACT][E-AU-112-005]；行为测试缺口见 F-0167/P2 |
 
 [FACT][E-AU-112-006] 8 文件、442 行 Channel connection 生命周期完成深审；创建与同步入口均绑定当前 scope，Worker 由 commerce job registry 注册。取消状态未参与最终回写条件，构成 F-0166/P2。
+
+## 118. AU-113 Channel Webhook 接收与异步处理清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| ingress/resolver | connection scope 解析、extension Webhook port 验签与规范化 | [FACT][E-AU-113-001] |
+| accept function | inbox 唯一键、KMS 原文元数据、原子 job 投递、RLS/grant | [FACT][E-AU-113-002]；既有 F-0094/P1 候选 |
+| worker | row claim、provider operation 状态、tracking job、outbox、applied/ignored | [FACT][E-AU-113-003] |
+| tests | Channel 目录仅有 manifest 静态目录 | [FACT][E-AU-113-004]；F-0167/P2 |
+
+[FACT][E-AU-113-005] 7 文件、254 行 Channel Webhook 完成深审；验签、inbox/job 原子入库和 Worker 处理入口已由真实路由/数据库函数/job registry 交叉验证。F-0094 保持既有 P1 候选，未见新 P0。

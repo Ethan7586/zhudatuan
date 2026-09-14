@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-112 已完成。AU-112 完成 Channel connection 创建、启停与同步任务链审阅。覆盖总账按当前文件级清单重算：深入审阅1,110文件/93,802行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,738文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-113 已完成。AU-113 完成 Channel Webhook 接收、入库与异步处理链审阅。覆盖总账按当前文件级清单重算：深入审阅1,117文件/94,056行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,731文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1107,3 +1107,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Channel connection 的 create/update/test/enable/disable、sync start/cancel、队列投递与四类同步 Worker 的完整运行链。
 
 执行结果：create 先校验 secret/manifest/extension，再同一 command transaction 插入 connection；test/enable/disable 以行锁、状态机和版本条件转移，enable finalize 在 commit 后 activate extension。sync start 仅接受 enabled connection，并按 kind 投递独立 job；Worker 注册到 catalog/price/inventory/statement 四类 runner，写入各自投影、outbox 和续页 job。新增 F-0166/P2：cancel 可在 Worker 执行后发生，但 finish/completeEmpty 无 cancelled 条件地回写 running/completed，取消状态会被覆盖且可能继续产生同步副作用。新增 F-0167/P2：该状态机和 Worker 没有行为测试，现有测试只验证 manifest 静态清单。未发现 P0/P1 新问题；Vitest 未运行。
+
+## 115. AU-113 连续审计点
+
+审阅 Channel provider Webhook 的 HTTP 入口、provider resolver/验签、KMS 原文保存、数据库 accept function、runtime job 和异步状态投影。
+
+执行结果：入口先从 enabled/degraded connection 取 provider/scope，再经 extension Webhook port 验签和规范化；同一 transaction 以 channel.accept_webhook 原子写 inbox 与唯一 job，并写审计记录。Worker 行锁 claim，按 external reference 更新 provider operation，必要时投递 tracking job，写 channel/refund outbox 后标记 applied/ignored。复核既有 F-0094/P1 候选：通用 verifier 的签名材料未绑定用于 inbox 唯一键的 event ID；本审计未看到线上启用/下游实际影响，因此不升级且无新增 P0/P1。模块仍无行为测试，F-0167/P2 扩展覆盖该 ingress/Worker；Vitest 未运行。
