@@ -639,3 +639,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - ExecutionKernel direct test覆盖branded write transaction在execute后立即失效。
 - PgUnitOfWork的锁、retry与rollback已在基础设施专项审阅；UnitOfWork契约本身无额外运行分支。无P0–P3新问题。
+
+## 210. AU-210 ModuleOperations 深审
+
+- Direct test覆盖identity/observability审计敏感字段、prepare→transaction→finalize顺序、write replay、public idempotency actor及expectedVersion hash绑定。
+- 未覆盖catalog/action mismatch、deadline/abort、lifecycle discard和write short-circuit禁止，见F-0209/P3。审计工作树未运行Vitest。

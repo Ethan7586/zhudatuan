@@ -3948,6 +3948,20 @@
 | 验证/回滚 | 断言registration/execute、duplicate、missing及freeze语义；回滚为revert测试提交。 |
 | 独立复核 | 否；P3。 |
 
+## F-0209｜ModuleOperations 边界拒绝与生命周期异常没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation ModuleOperations；P3；高 |
+| 类型 | 测试覆盖缺口、公共操作调度边界 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/application/ModuleOperations.ts:83-120`；`.../ModuleOperations.test.ts:1-313` |
+| 当前/预期 | 实现拒绝deadline/abort、module catalog不匹配、缺action和write short-circuit；lifecycle异常时调用discard。预期这些入口及异常清理契约有direct fixture。 |
+| 直接证据 | 同目录fixture覆盖审计脱敏、read prepare/finalize和write idempotency replay，但未找到针对`DEADLINE_EXCEEDED`、`MODULE_OPERATION_CATALOG_MISMATCH`、`MODULE_OPERATION_OWNER_MISMATCH`、`OPERATION_ACTION_MISSING`、`WRITE_SHORT_CIRCUIT_FORBIDDEN`或`discard`的断言。 |
+| 调用链/影响 | API/Jobs bootstrap → 各module ModuleOperations → read/write action。公共层边界回归会使错误操作进入错误workload或使预处理资源在异常时未清理，通常在请求或任务执行时才暴露。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试小批次，覆盖catalog/owner/action拒绝、abort/deadline、write short-circuit与execute/finalize失败后的discard；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言各拒绝码、没有连接/写入副作用及discard接收原始cause；回滚为revert测试提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

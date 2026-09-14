@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-210-001,src/foundation/application/ModuleOperations.ts,83-119,dispatch,Constructor compares owned catalog actions and invoke rejects expired/aborted requests wrong module and missing action before selecting execution path.
+E-AU-210-002,src/foundation/application/ModuleOperations.ts,102-119,lifecycle,Prepare occurs before runner selection; GET-only shortCircuit is enforced and failures call lifecycle discard.
+E-AU-210-003,src/foundation/application/ModuleOperations.ts,137-169,idempotency,Command workload inserts and locks scope actor key hash then writes audit and completed replay response in one transaction callback.
+E-AU-210-004,src/foundation/application/ModuleOperations.ts,172-272,audit boundary,Identity and observability audit body/hash/trace handling projects allowed scalar input and redacts credential outputs.
+E-AU-210-005,src/foundation/application/ModuleOperations.test.ts,9-313,direct tests,Tests cover sensitive audit facts lifecycle ordering completed replay stable public actor and expectedVersion-bound request hash.

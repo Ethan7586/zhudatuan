@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/application/ModuleOperations.test.ts,audit redaction lifecycle ordering idempotency replay public actor and expectedVersion request-hash binding,not run: audit worktree has no Vitest dependencies
+src/foundation/application/ModuleOperations.ts,static deep review of catalog ownership query/command selection lifecycle idempotency and audit boundary,not executable standalone

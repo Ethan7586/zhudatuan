@@ -2233,3 +2233,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | write context lifecycle | brand + active WeakSet，只允许active write transaction context通过断言 | [FACT][E-AU-209-002] |
 
 [FACT][E-AU-209-003] 1 文件、62 行完成深审；ExecutionKernel验证write context关闭后失效，PgUnitOfWork实际执行数据库事务。
+
+## 215. AU-210 ModuleOperations 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| operation dispatch | 以OperationCatalog验证module ownership与action完整性，按GET/transactional/其他write选择读写执行链 | [FACT][E-AU-210-001] |
+| lifecycle | 在连接前prepare、读/写完成后finalize、异常时discard；写操作不允许short-circuit | [FACT][E-AU-210-002] |
+| idempotency/audit | command transaction内锁定key/hash，写完成后持久化replay；identity/observability敏感输入、输出、hash、trace单独投影/脱敏 | [FACT][E-AU-210-003] |
+
+[FACT][E-AU-210-004] 2 文件、585 行完成深审；公共层被所有Commerce module operation注册运行消费，direct fixture覆盖关键审计、读生命周期与写重放，剩余错误分支测试缺口见F-0209/P3。
