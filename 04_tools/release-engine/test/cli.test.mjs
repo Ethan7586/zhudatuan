@@ -136,4 +136,13 @@ test('legacy baseline evidence requires one successful exact workflow receipt', 
     () => assertLegacyDeploymentEvidence(metadata, log.replace(artifactSha256, '3'.repeat(64)), expected),
     (error) => error.code === 'CURRENT_BASELINE_LEGACY_ARTIFACT_RECEIPT_MISSING'
   );
+
+  const databaseTarget = 'database-migration';
+  const databaseCurrent = `/opt/ai-delivery/database-migrations/zdt-next/releases/${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`;
+  const databaseLog = `SOURCE_SHA=${sourceSha}\nCURRENT_DATABASE_MIGRATIONS=${databaseCurrent}\nzdt-next/database-migrations/${sourceSha}/${artifactSha256}.tar.gz\n`;
+  assert.equal(assertLegacyDeploymentEvidence(metadata, databaseLog, {
+    ...expected,
+    target: databaseTarget,
+    expectedCurrent: databaseCurrent,
+  }).current, databaseCurrent);
 });
