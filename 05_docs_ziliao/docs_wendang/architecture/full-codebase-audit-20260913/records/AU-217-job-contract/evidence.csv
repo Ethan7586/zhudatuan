@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-217-001,src/foundation/application/Job.ts,1-5,context contract,JobContext carries stable job id retry attempt and AbortSignal.
+E-AU-217-002,src/foundation/application/Job.ts,7-10,execution contract,Generic Job exposes id and asynchronous execute with input/context only.
+E-AU-217-003,src/foundation/infrastructure/QueueJob.ts;src/bootstrap/JobRegistry.ts;src/app/jobs.ts,6-15;1-8;169-173,direct consumers,QueueJob implements Job while registries and job catalog expose and construct Job<void> instances.
+E-AU-217-004,src/entry/CatalogJobsMain.ts;src/bootstrap/CatalogJobsRuntime.ts;src/bootstrap/PaymentJobsRuntime.ts,1-23;76-215;38-91,runtime consumers,Entries and dedicated runtimes execute typed jobs with runtime contexts.

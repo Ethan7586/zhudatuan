@@ -2299,3 +2299,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | invitation replay persistence | 验证管理员邀请one-time code同样被固定409替代且action只执行一次 | [FACT][E-AU-216-002] |
 
 [FACT][E-AU-216-003] 1 文件、124 行完成深审；真实ModuleOperations调用链覆盖credential/invitation关键one-time replay，action-proof分支由OwnerActionCredentialPersistence承接。
+
+## 222. AU-217 Job contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| job context | 为每次运行提供job ID、attempt与cooperative abort signal | [FACT][E-AU-217-001] |
+| job execution | 定义泛型input到void异步处理形状，不承担claim、retry或业务执行 | [FACT][E-AU-217-002] |
+
+[FACT][E-AU-217-003] 1 文件、10 行完成深审；QueueJob、JobRegistry、各Jobs runtime及entry均直接消费，为G0类型职责。

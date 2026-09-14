@@ -674,3 +674,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct fixture通过真实ModuleOperations确认敏感session/ticket/cookie和invitation code不会写入可重放response，第二次请求不再执行业务action。
 - `identity.stepup.complete` action-proof分支由独立OwnerActionCredentialPersistence fixture承接；无P0–P3新问题。审计工作树未运行Vitest。
+
+## 217. AU-217 Job contract 深审
+
+- Job是type-only执行契约；QueueJob/JobRunner和各runtime的行为由其各自审计与测试承接。
+- 无P0–P3新问题。
