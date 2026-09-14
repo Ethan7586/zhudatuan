@@ -6811,6 +6811,9 @@
           "code": {
             "$ref": "#/components/schemas/JsonValue"
           },
+          "createdAt": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
           "details": {
             "$ref": "#/components/schemas/JsonValue"
           },
@@ -6824,6 +6827,9 @@
             "$ref": "#/components/schemas/JsonValue"
           },
           "name": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "nodeTask": {
             "$ref": "#/components/schemas/JsonValue"
           },
           "organizationId": {
@@ -6874,6 +6880,156 @@
       "ProvisioningMallsReadResponse": {
         "additionalProperties": {
           "$ref": "#/components/schemas/JsonValue"
+        },
+        "type": "object"
+      },
+      "ProvisioningNodetasksReadRequest": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/JsonValue"
+        },
+        "type": "object"
+      },
+      "ProvisioningNodetasksReadResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "activation_status": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "code": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "details": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "events": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "finished_at": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "last_error": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "message": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "node_id": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "phase": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "plan_digest": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "retryable": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "schema_version": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "started_at": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "task_id": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "waiting_external": {
+            "$ref": "#/components/schemas/JsonValue"
+          }
+        },
+        "type": "object"
+      },
+      "ProvisioningNodetasksRetryRequest": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/JsonValue"
+        },
+        "type": "object"
+      },
+      "ProvisioningNodetasksRetryResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "activation_status": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "code": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "details": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "events": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "finished_at": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "last_error": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "message": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "node_id": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "phase": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "plan_digest": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "retryable": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "schema_version": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "started_at": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "task_id": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "waiting_external": {
+            "$ref": "#/components/schemas/JsonValue"
+          }
         },
         "type": "object"
       },
@@ -45656,7 +45812,7 @@
           "operating_mall",
           "consumer"
         ],
-        "x-operation-hash": "3c7e376c29349c3580fde1d72ee395043d346bfa538afbe8edb5d88e83d796f3",
+        "x-operation-hash": "a8dd335d610029294d3cd84aeaa793cc446824e9775ccd8cc49c9c464cb3fe00",
         "x-permission": "organization.layer.manage",
         "x-request-schema": "ProvisioningMallsCreateRequest",
         "x-requirements": [
@@ -45849,6 +46005,353 @@
           "console"
         ],
         "x-write-path": "none"
+      }
+    },
+    "/api/v1/provisioning/node-tasks/{taskid}": {
+      "get": {
+        "operationId": "provisioning.nodetasks.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProvisioningNodetasksReadResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "provisioning.nodetasks.read",
+        "tags": [
+          "provisioning"
+        ],
+        "x-assurance-level": 1,
+        "x-audience": "operator",
+        "x-availability": "runtime",
+        "x-business-number": "none",
+        "x-capability": "organization.layer.read",
+        "x-error-union": [
+          "CONTRACT_REQUEST_INVALID",
+          "CONTRACT_RESPONSE_INVALID",
+          "IDEMPOTENCY_KEY_REQUIRED",
+          "IDEMPOTENCY_KEY_REUSED",
+          "STATE_INVALID",
+          "SCOPE_DENIED",
+          "VERSION_CONFLICT"
+        ],
+        "x-execution": "sync",
+        "x-expected-version": "none",
+        "x-idempotency": "none",
+        "x-idempotency-scope": "none",
+        "x-idempotent": true,
+        "x-maker-checker": false,
+        "x-node-profiles-allowed": [
+          "operating_mall",
+          "consumer"
+        ],
+        "x-operation-hash": "be1ed5a863345b1f23424e8856ed6b03ec742804737972c5a2a3f75c78653022",
+        "x-permission": "organization.layer.read",
+        "x-request-schema": "ProvisioningNodetasksReadRequest",
+        "x-requirements": [
+          "MVP06",
+          "MVP15"
+        ],
+        "x-response-mode": "json",
+        "x-response-schema": "ProvisioningNodetasksReadResponse",
+        "x-risk": "low",
+        "x-schema-fidelity": "named",
+        "x-scope-kinds": [
+          "platform",
+          "distributor",
+          "tenant",
+          "enterprise",
+          "mall",
+          "department"
+        ],
+        "x-scope-resolver-ref": "access.resolve_scope.v1",
+        "x-sensitive-fields": [],
+        "x-state-machine": "none",
+        "x-stepup": false,
+        "x-targets": [
+          "console"
+        ],
+        "x-write-path": "none"
+      }
+    },
+    "/api/v1/provisioning/node-tasks/{taskid}/retry": {
+      "post": {
+        "operationId": "provisioning.nodetasks.retry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "taskid",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProvisioningNodetasksRetryRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProvisioningNodetasksRetryResponse"
+                }
+              }
+            },
+            "description": "Success"
+          },
+          "204": {
+            "description": "Success without content"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Error Contract"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "provisioning.nodetasks.retry",
+        "tags": [
+          "provisioning"
+        ],
+        "x-assurance-level": 2,
+        "x-audience": "operator",
+        "x-availability": "runtime",
+        "x-business-number": "SFL-PROVISIONING-{sha256:16}",
+        "x-capability": "organization.layer.manage",
+        "x-error-union": [
+          "CONTRACT_REQUEST_INVALID",
+          "CONTRACT_RESPONSE_INVALID",
+          "IDEMPOTENCY_KEY_REQUIRED",
+          "IDEMPOTENCY_KEY_REUSED",
+          "STATE_INVALID",
+          "SCOPE_DENIED",
+          "VERSION_CONFLICT"
+        ],
+        "x-execution": "sync",
+        "x-expected-version": "optional",
+        "x-idempotency": "required",
+        "x-idempotency-scope": "operation+realm+node+membership+business-key",
+        "x-idempotent": false,
+        "x-maker-checker": false,
+        "x-node-profiles-allowed": [
+          "operating_mall",
+          "consumer"
+        ],
+        "x-operation-hash": "9c1877b592a4cf1f63f1383ce66b84e10b8f0313f96e0987ab37ed582108cdcc",
+        "x-permission": "organization.layer.manage",
+        "x-request-schema": "ProvisioningNodetasksRetryRequest",
+        "x-requirements": [
+          "MVP06",
+          "MVP15"
+        ],
+        "x-response-mode": "json",
+        "x-response-schema": "ProvisioningNodetasksRetryResponse",
+        "x-risk": "critical",
+        "x-schema-fidelity": "named",
+        "x-scope-kinds": [
+          "platform"
+        ],
+        "x-scope-resolver-ref": "access.resolve_scope.v1",
+        "x-sensitive-fields": [],
+        "x-state-machine": "provisioning.nodetasks.retry.execution.v1",
+        "x-stepup": true,
+        "x-targets": [
+          "console"
+        ],
+        "x-write-path": "transactional"
       }
     },
     "/api/v1/qualifications": {

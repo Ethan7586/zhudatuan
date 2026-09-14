@@ -2,7 +2,7 @@ import { Button, Dialog } from '@shop/design';
 import { useState, type FormEvent } from 'react';
 import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
 import { MallMobileEnrollment } from '../application/MallMobileEnrollment';
-import type { CreatedMall, MallCreateDraft } from '../application/MallCreateCommand';
+import type { AutoNodeTaskReceipt, CreatedMall, MallCreateDraft } from '../application/MallCreateCommand';
 
 export type PlatformCreatePhase = 'form' | 'starting' | 'verification' | 'verifying' | 'creating' | 'success';
 
@@ -22,10 +22,14 @@ export function PlatformCreateDialog({
   challengeExpiresAt,
   error,
   result,
+  nodeTask,
+  nodeTaskError,
+  taskRetrying,
   mobileEnrollment,
   onSubmit,
   onVerify,
   onRelogin,
+  onRetryNodeTask,
   onClose,
 }: Readonly<{
   open: boolean;
@@ -39,10 +43,14 @@ export function PlatformCreateDialog({
   challengeExpiresAt: string | undefined;
   error: string | undefined;
   result: CreatedMall | undefined;
+  nodeTask: AutoNodeTaskReceipt | undefined;
+  nodeTaskError: string | undefined;
+  taskRetrying: boolean;
   mobileEnrollment: boolean;
   onSubmit: (draft: MallCreateDraft) => void;
   onVerify: (code: string) => void;
   onRelogin: () => void;
+  onRetryNodeTask: () => void;
   onClose: () => void;
 }>) {
   const [stage, setStage] = useState(0);
@@ -57,14 +65,15 @@ export function PlatformCreateDialog({
   return <Dialog
     open={open}
     title={phase === 'success' ? '下级平台创建完成' : phase === 'verification' || phase === 'verifying' ? '验证后创建平台' : '创建下级平台'}
-    eyebrow="分布式平台 · 第二批"
+    eyebrow="分布式平台 · 节点生产"
     dismissable={!busy}
     onClose={onClose}
   >
     {mobileEnrollment
       ? <MallMobileEnrollment context={context} onRelogin={onRelogin} />
       : phase === 'success' && result !== undefined
-        ? <PlatformCreateSuccess result={result} targetLevel={targetLevel} onClose={onClose} />
+        ? <PlatformCreateSuccess result={result} targetLevel={targetLevel} task={nodeTask ?? result.nodeTask}
+            taskError={nodeTaskError} retrying={taskRetrying} onRetry={onRetryNodeTask} onClose={onClose} />
         : phase === 'verification' || phase === 'verifying'
           ? <PlatformVerification
               code={verificationCode}
@@ -177,7 +186,7 @@ function PlatformInheritanceStage({ sourceLevel, targetLevel }: Readonly<{ sourc
       <div><dt>视觉体系</dt><dd>继承当前 ZHU-VI</dd></div>
       <div><dt>运行方式</dt><dd>共享内核，独立业务数据</dd></div>
     </dl>
-    <p className="platformcreatenext">第三批可将该平台升级为拥有独立 API、身份域、NodeManifest 和发布指针的运行节点。</p>
+    <p className="platformcreatenext">商城核心创建后将立即进入独立节点生产队列；外部资源未就绪时会保留任务并明确显示等待项。</p>
   </section>;
 }
 
@@ -187,7 +196,7 @@ function PlatformReviewStage({ draft, sourceLevel, targetLevel }: Readonly<{
   targetLevel: string | undefined;
 }>) {
   return <section className="platformcreatestage" aria-labelledby="platformreviewtitle">
-    <header><span>STEP 03</span><div><h3 id="platformreviewtitle">核对创建内容</h3><p>确认后一次提交；失败不会留下半个商城。</p></div></header>
+    <header><span>STEP 03</span><div><h3 id="platformreviewtitle">核对创建内容</h3><p>商城核心原子提交；节点生产由同一任务持续衔接。</p></div></header>
     <section className="platformcreatereviewhero">
       <div><small>即将创建</small><h3>{draft.name || '未填写平台名称'}</h3><p>{draft.code || '—'} · {sourceLevel} → {targetLevel ?? '—'}</p></div>
       <span>标准托管平台</span>
@@ -230,14 +239,18 @@ function PlatformVerification({ code, expiresAt, busy, error, onCode, onVerify, 
   </form>;
 }
 
-function PlatformCreateSuccess({ result, targetLevel, onClose }: Readonly<{
+function PlatformCreateSuccess({ result, targetLevel, task, taskError, retrying, onRetry, onClose }: Readonly<{
   result: CreatedMall;
   targetLevel: string | undefined;
+  task: AutoNodeTaskReceipt;
+  taskError: string | undefined;
+  retrying: boolean;
+  onRetry: () => void;
   onClose: () => void;
 }>) {
   return <section className="platformcreate platformcreatesuccess">
     <div className="platformcreatesuccessmark" aria-hidden="true">✓</div>
-    <header><span>创建成功</span><h3>{result.name}</h3><p>平台核心已经建立，目录正在刷新。</p></header>
+    <header><span>平台核心已建立</span><h3>{result.name}</h3><p>{nodeTaskHeadline(task)}</p></header>
     <dl className="platformcreatefacts">
       <div><dt>目标层级</dt><dd>{targetLevel ?? '—'}</dd></div>
       <div><dt>平台代码</dt><dd>{result.code}</dd></div>
@@ -246,8 +259,46 @@ function PlatformCreateSuccess({ result, targetLevel, onClose }: Readonly<{
       <div><dt>商品池</dt><dd>{result.poolId}</dd></div>
       <div><dt>发布状态</dt><dd>草稿</dd></div>
     </dl>
-    <footer className="platformcreatefooter"><span /><nav><Button tone="primary" onPress={onClose}>完成并查看</Button></nav></footer>
+    <section className="platformcreatetask" aria-live="polite">
+      <header><div><small>独立节点生产</small><strong>{nodeTaskStatus(task.status)}</strong></div><b>{task.progress}%</b></header>
+      <div className="platformcreatetaskbar" role="progressbar" aria-label="独立节点生产进度"
+        aria-valuemin={0} aria-valuemax={100} aria-valuenow={task.progress}><i style={{ width: `${task.progress}%` }} /></div>
+      <p>{task.events.at(-1)?.message ?? '正在读取节点生产进度'}</p>
+      {task.waiting_external.length === 0 ? null : <ul>{task.waiting_external.map((item) => <li key={item}>{waitingLabel(item)}</li>)}</ul>}
+      {task.last_error === null ? null : <p className="platformcreatealert" role="alert">{task.last_error.message}</p>}
+      {taskError === undefined ? null : <p className="platformcreatealert" role="alert">进度读取失败：{taskError}</p>}
+    </section>
+    <footer className="platformcreatefooter"><span>{task.node_id}</span><nav>
+      {task.status === 'WAITING_EXTERNAL' || task.status === 'FAILED_RETRYABLE'
+        ? <Button onPress={onRetry} isDisabled={retrying}>{retrying ? '重新提交中' : '重试节点生产'}</Button> : null}
+      <Button tone="primary" onPress={onClose}>完成并查看</Button>
+    </nav></footer>
   </section>;
+}
+
+function nodeTaskStatus(status: AutoNodeTaskReceipt['status']): string {
+  return {
+    QUEUED: '已进入队列',
+    RUNNING: '正在生产',
+    WAITING_EXTERNAL: '等待外部资源',
+    FAILED_RETRYABLE: '生产暂停，可重试',
+    SUCCEEDED: '独立节点已激活',
+  }[status];
+}
+
+function nodeTaskHeadline(task: AutoNodeTaskReceipt): string {
+  if (task.status === 'SUCCEEDED') return '独立 API、身份域、NodeManifest 和发布指针均已激活。';
+  if (task.status === 'WAITING_EXTERNAL') return '商城数据已完成，节点任务已安全保留，补齐外部资源后可继续。';
+  if (task.status === 'FAILED_RETRYABLE') return '商城数据已完成，节点生产暂时停止，可从当前任务继续重试。';
+  return '商城数据已完成，独立节点正在后台生产，无需停留等待。';
+}
+
+function waitingLabel(value: string): string {
+  const labels: Readonly<Record<string, string>> = {
+    'runtime-profile': '等待节点运行配置',
+    'immutable-release': '等待不可变运行制品',
+  };
+  return labels[value] ?? value;
 }
 
 function submit(event: FormEvent<HTMLFormElement>, stage: number, valid: boolean, onSubmit: () => void) {

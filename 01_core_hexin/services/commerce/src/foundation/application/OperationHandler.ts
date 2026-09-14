@@ -33,6 +33,8 @@ export const HANDLED_OPERATION_IDS = Object.freeze([
   'organization.layers.read',
   'provisioning.malls.create',
   'provisioning.malls.read',
+  'provisioning.nodetasks.read',
+  'provisioning.nodetasks.retry',
   'access.center.read',
   'access.roles.manage',
   'access.scopes.manage',

@@ -33,9 +33,10 @@ import { RiskCheckAdapter } from '../modules/risk';
 import type { Container } from './Container';
 import { bindServerNodeManifestRegistry } from './ApiBootstrap';
 import { ExtensionRegistry } from './ExtensionRegistry';
+import { AUTONODE_CONTROL_CLIENT, AutoNodeControlClient } from '../modules/provisioning/04_adapters_shixian/AutoNodeControlClient';
 
-export const MALL_PROVISIONING_SCHEMA_VERSION = '20260903105000' as const;
-export const MALL_PROVISIONING_SCHEMA_CHECKSUM = '382abadcefe08c037c15d34d56af7f85236368b199f382cfa71ac63f2bef77cf' as const;
+export const MALL_PROVISIONING_SCHEMA_VERSION = '20260914090000' as const;
+export const MALL_PROVISIONING_SCHEMA_CHECKSUM = '241214fa70737025d993740f79c59bca7867d6f4540da0041c863b0d45916594' as const;
 
 interface CompatibilityRow {
   readonly current_user: string;
@@ -108,6 +109,9 @@ export async function createMallProvisioningApiRuntime(
       container.bind(RISK_GATE, risk);
       container.bind(DECISION_SINK, decisions);
       container.bind(AUDIT_SINK, audit);
+      container.bind(AUTONODE_CONTROL_CLIENT, new AutoNodeControlClient(
+        required(environment.SERVICE_VERSION, 'SERVICE_VERSION_MISSING'),
+      ));
     },
     async close() {
       await extensions.stop();

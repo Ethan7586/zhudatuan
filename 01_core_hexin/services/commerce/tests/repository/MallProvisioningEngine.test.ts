@@ -14,6 +14,7 @@ import { commerceTelemetry } from '../../src/foundation/telemetry/Telemetry';
 import { MallProvisioningModule } from '../../src/modules/provisioning/MallProvisioningModule';
 import { MALL_PROVISIONING_OPERATION_IDS } from '../../src/modules/provisioning/ProvisioningOperations';
 import { CreateMall, type CreatedMall, type MallProvisioningPlan } from '../../src/modules/provisioning/application/CreateMall';
+import { AUTONODE_CONTROL_CLIENT } from '../../src/modules/provisioning/04_adapters_shixian/AutoNodeControlClient';
 
 const runtimeConnection = process.env.SHOP_TEST_DATABASE_URL;
 const adminConnection = process.env.SHOP_TEST_ADMIN_DATABASE_URL;
@@ -44,6 +45,11 @@ describe.runIf(endpointAvailable)('L0 owner creates an L1 Mall Core through form
         container.bind(OPERATION_AUTHORIZER, { authorize: async () => ownerAccess(fixture) });
         container.bind(DATABASE_POOL, pool);
         container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
+        container.bind(AUTONODE_CONTROL_CLIENT, {
+          submitMall: async (mall) => taskReceipt(mall.mallId),
+          read: async (taskId) => taskReceipt(taskId.replace(/^task:/, '')),
+          retry: async (taskId) => taskReceipt(taskId.replace(/^task:/, '')),
+        });
       },
     });
     app = bootstrapped.app;
@@ -326,7 +332,7 @@ async function createL1MallFixture(app: Awaited<ReturnType<typeof bootstrapApi>>
     headers: { authorization: 'Bearer test', 'x-contract-version': '1.0.0' },
   }));
   expect(ready.status).toBe(200);
-  expect(await ready.json()).toEqual(created);
+  expect(created).toMatchObject(await ready.json() as object);
   const plan = new CreateMall().plan({
     scope: fixture.root,
     parent: fixture.l0,
@@ -337,6 +343,27 @@ async function createL1MallFixture(app: Awaited<ReturnType<typeof bootstrapApi>>
     actorMembership: fixture.l0Membership,
   });
   return { created, plan, idempotencyKey };
+}
+
+function taskReceipt(mallId: string) {
+  return {
+    schema_version: 'sfl.autonode-control-task-receipt.v1' as const,
+    task_id: `task:${mallId}`,
+    action: 'ACTIVATE' as const,
+    node_id: `node:${mallId}:l1`,
+    status: 'QUEUED' as const,
+    phase: 'QUEUED',
+    progress: 0,
+    plan_digest: null,
+    activation_status: null,
+    waiting_external: [],
+    last_error: null,
+    events: [{ phase: 'QUEUED', message: '平台创建任务已进入执行队列', occurred_at: '2026-09-14T03:00:00.000Z' }],
+    created_at: '2026-09-14T03:00:00.000Z',
+    updated_at: '2026-09-14T03:00:00.000Z',
+    started_at: null,
+    finished_at: null,
+  };
 }
 
 async function createMallRequest(app: Awaited<ReturnType<typeof bootstrapApi>>['app'], body: Readonly<Record<string, unknown>>,

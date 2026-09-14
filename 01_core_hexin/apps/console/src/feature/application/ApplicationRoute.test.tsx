@@ -40,7 +40,15 @@ const server = setupServer(
     }, ...applicationItems];
     return HttpResponse.json({
       mallId: 'mall:zhenxuan', enterpriseId: body.enterpriseId, applicationId: 'application:zhenxuan', poolId: 'pool:zhenxuan',
-      code: body.code, publicSlug: 'h6', name: body.name, state: 'ready', publicationState: 'draft',
+      code: body.code, publicSlug: 'h6', name: body.name, createdAt: '2026-09-14T03:00:00.000Z',
+      state: 'ready', publicationState: 'draft', nodeTask: {
+        schema_version: 'sfl.autonode-control-task-receipt.v1', task_id: 'task:mall:new', action: 'ACTIVATE',
+        node_id: 'node:h6:l1', status: 'QUEUED', phase: 'QUEUED', progress: 0, plan_digest: null,
+        activation_status: null, waiting_external: [], last_error: null,
+        events: [{ phase: 'QUEUED', message: '平台创建任务已进入执行队列', occurred_at: '2026-09-14T03:00:00.000Z' }],
+        created_at: '2026-09-14T03:00:00.000Z', updated_at: '2026-09-14T03:00:00.000Z',
+        started_at: null, finished_at: null,
+      },
     }, { status: 201 });
   }),
   http.all('*/api/v1/experiences/**', ({ request }) => {

@@ -21,7 +21,10 @@ import {
   mallMobileEnrollmentRequired,
   mallProvisioningScope,
   newMallCreateAttempt,
+  readMallNodeTask,
+  retryMallNodeTask,
   startMallCreateStepup,
+  type AutoNodeTaskReceipt,
   type CreatedMall,
   type MallCreateAttempt,
   type MallCreateDraft,
@@ -50,6 +53,8 @@ export function Component() {
   const [createResult, setCreateResult] = useState<CreatedMall>();
   const [stepupCompleted, setStepupCompleted] = useState(false);
   const [mobileEnrollment, setMobileEnrollment] = useState(false);
+  const [taskRetrying, setTaskRetrying] = useState(false);
+  const [taskRetryError, setTaskRetryError] = useState<string>();
   const manifest = appConfig.nodeManifest;
   const provisioningScope = mallProvisioningScope(context);
   const enterpriseScopes = mallEnterpriseScopes(context);
@@ -60,6 +65,13 @@ export function Component() {
     queryKey: applicationKey(context),
     queryFn: ({ signal }) => readApplications(context, undefined, signal),
     staleTime: 60_000,
+  });
+  const nodeTaskQuery = useQuery({
+    queryKey: ['distributed-platform', 'node-task', createResult?.nodeTask.task_id],
+    queryFn: ({ signal }) => readMallNodeTask(context, provisioningScope!, createResult!.nodeTask.task_id, signal),
+    enabled: createResult !== undefined && provisioningScope !== undefined,
+    initialData: createResult?.nodeTask,
+    refetchInterval: ({ state }) => state.data !== undefined && terminalNodeTask(state.data) ? false : 1_500,
   });
   const applications = useMemo(
     () => (query.data?.items ?? []).filter((application) => application.mall_id !== null && application.mall_id !== undefined),
@@ -121,6 +133,8 @@ export function Component() {
     setCreateResult(undefined);
     setStepupCompleted(false);
     setMobileEnrollment(false);
+    setTaskRetrying(false);
+    setTaskRetryError(undefined);
   };
   const requestStepup = async (attempt: MallCreateAttempt) => {
     if (provisioningScope === undefined) {
@@ -199,6 +213,19 @@ export function Component() {
     } catch (cause) {
       setCreateError(mallCreationError(cause));
       setCreatePhase('verification');
+    }
+  };
+  const retryNodeTask = async () => {
+    if (createResult === undefined || provisioningScope === undefined) return;
+    setTaskRetrying(true);
+    setTaskRetryError(undefined);
+    try {
+      const task = await retryMallNodeTask(context, provisioningScope, createResult.nodeTask.task_id);
+      queryClient.setQueryData(['distributed-platform', 'node-task', task.task_id], task);
+    } catch (cause) {
+      setTaskRetryError(safeQueryError(cause instanceof Error ? cause : new Error('NODE_TASK_RETRY_FAILED')));
+    } finally {
+      setTaskRetrying(false);
     }
   };
 
@@ -294,14 +321,22 @@ export function Component() {
         challengeExpiresAt={createChallenge?.expires_at}
         error={createError}
         result={createResult}
+        nodeTask={nodeTaskQuery.data}
+        nodeTaskError={taskRetryError ?? safeQueryError(nodeTaskQuery.error)}
+        taskRetrying={taskRetrying}
         mobileEnrollment={mobileEnrollment}
         onSubmit={(draft) => { void beginPlatformCreate(draft); }}
         onVerify={(code) => { void verifyAndCreate(code); }}
         onRelogin={() => window.location.assign(appConfig.identityEntryUrl)}
+        onRetryNodeTask={() => { void retryNodeTask(); }}
         onClose={closePlatformCreate}
       /> : null}
     </section>
   );
+}
+
+function terminalNodeTask(task: AutoNodeTaskReceipt): boolean {
+  return task.status === 'SUCCEEDED' || task.status === 'WAITING_EXTERNAL' || task.status === 'FAILED_RETRYABLE';
 }
 
 function PlatformMetric({ hint, label, value }: Readonly<{ hint: string; label: string; value: string }>) {

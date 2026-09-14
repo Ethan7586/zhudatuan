@@ -48,10 +48,14 @@ const server = setupServer(
       code: 'HUAZHONG',
       publicSlug: 'h6',
       name: '华中甄选平台',
+      createdAt: '2026-09-14T03:00:00.000Z',
       state: 'ready',
       publicationState: 'draft',
+      nodeTask: taskReceipt('QUEUED', 0),
     }, { status: 201 });
   }),
+  http.get('*/api/v1/provisioning/node-tasks/:taskid', () => HttpResponse.json(taskReceipt('SUCCEEDED', 100))),
+  http.post('*/api/v1/provisioning/node-tasks/:taskid/retry', () => HttpResponse.json(taskReceipt('QUEUED', 0), { status: 202 })),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -117,7 +121,7 @@ describe('Distributed platform workspace', () => {
     await user.click(screen.getByRole('button', { name: '下一步' }));
     await user.click(screen.getByRole('button', { name: '确认创建' }));
 
-    expect(await screen.findByText('平台核心已经建立，目录正在刷新。')).toBeTruthy();
+    expect(await screen.findByText('独立节点已激活')).toBeTruthy();
     expect(screen.getByText('h6.hbbtzn.com')).toBeTruthy();
     expect(createdBody).toEqual({
       enterpriseId: 'mall:benefits',
@@ -149,3 +153,25 @@ const context: ConsoleContext = {
   scope,
   scopes: [scope],
 };
+
+function taskReceipt(status: 'QUEUED' | 'SUCCEEDED', progress: number) {
+  return {
+    schema_version: 'sfl.autonode-control-task-receipt.v1',
+    task_id: 'task:mall:huazhong',
+    action: 'ACTIVATE',
+    node_id: 'node:h6:l1',
+    status,
+    phase: status === 'SUCCEEDED' ? 'ACTIVE' : 'QUEUED',
+    progress,
+    plan_digest: status === 'SUCCEEDED' ? 'sha256:plan' : null,
+    activation_status: status === 'SUCCEEDED' ? 'ACTIVE' : null,
+    waiting_external: [],
+    last_error: null,
+    events: [{ phase: status === 'SUCCEEDED' ? 'ACTIVE' : 'QUEUED', message: status === 'SUCCEEDED'
+      ? '独立平台已经完成首次激活' : '平台创建任务已进入执行队列', occurred_at: '2026-09-14T03:00:00.000Z' }],
+    created_at: '2026-09-14T03:00:00.000Z',
+    updated_at: '2026-09-14T03:00:00.000Z',
+    started_at: status === 'SUCCEEDED' ? '2026-09-14T03:00:00.000Z' : null,
+    finished_at: status === 'SUCCEEDED' ? '2026-09-14T03:01:00.000Z' : null,
+  };
+}

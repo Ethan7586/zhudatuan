@@ -13,10 +13,13 @@ import { MallProvisioningModule } from '../modules/provisioning/05_interface_jie
 import { MALL_PROVISIONING_OPERATION_IDS } from '../modules/provisioning/03_application_yingyong/ProvisioningOperations';
 import { MallProvisioningRuntimeModule } from '../modules/runtime/MallProvisioningRuntimeModule';
 import { MALL_PROVISIONING_RUNTIME_OPERATION_IDS } from '../modules/runtime/MallProvisioningRuntimeOperations';
+import { AUTONODE_CONTROL_CLIENT } from '../modules/provisioning/04_adapters_shixian/AutoNodeControlClient';
 
 const APPROVED_MALL_PROVISIONING_OPERATIONS = [
   'provisioning.malls.create',
   'provisioning.malls.read',
+  'provisioning.nodetasks.read',
+  'provisioning.nodetasks.retry',
 ] as const satisfies readonly OperationId[];
 
 describe('mall provisioning API entrypoint', () => {
@@ -44,6 +47,11 @@ describe('mall provisioning API entrypoint', () => {
         container.bind(OPERATION_AUTHORIZER, { authorize: async () => { throw new Error('AUTHORIZATION_NOT_CALLED'); } });
         container.bind(DATABASE_POOL, pool);
         container.bind(AUDIT_SINK, { record: async () => undefined, access: async () => undefined });
+        container.bind(AUTONODE_CONTROL_CLIENT, {
+          submitMall: async () => { throw new Error('NOT_CALLED'); },
+          read: async () => { throw new Error('NOT_CALLED'); },
+          retry: async () => { throw new Error('NOT_CALLED'); },
+        });
       },
     });
     expect(bootstrapped.routes.catalog().map(({ operation }) => operation)).toEqual(operationIds);
@@ -51,6 +59,10 @@ describe('mall provisioning API entrypoint', () => {
       .toBe('provisioning.malls.create');
     expect(bootstrapped.routes.match('GET', '/api/v1/provisioning/malls/mall:one')?.operation)
       .toBe('provisioning.malls.read');
+    expect(bootstrapped.routes.match('GET', '/api/v1/provisioning/node-tasks/task:one')?.operation)
+      .toBe('provisioning.nodetasks.read');
+    expect(bootstrapped.routes.match('POST', '/api/v1/provisioning/node-tasks/task:one/retry')?.operation)
+      .toBe('provisioning.nodetasks.retry');
     for (const [method, path] of [
       ['GET', '/api/v1/provisioning/malls'],
       ['PATCH', '/api/v1/provisioning/malls/mall:one'],

@@ -7,18 +7,43 @@ import {
   createFetchIdentityStepupComplete,
   createFetchIdentityStepupStart,
 } from '@shop/sdk/identity';
-import { createFetchProvisioningMallsCreate } from '@shop/sdk/provisioning';
+import {
+  createFetchProvisioningMallsCreate,
+  createFetchProvisioningNodetasksRead,
+  createFetchProvisioningNodetasksRetry,
+} from '@shop/sdk/provisioning';
 import { z } from 'zod';
 import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
 import { consoleCommand } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
 
 const mallsCreate = createFetchProvisioningMallsCreate(appConfig.apiBaseUrl);
+const nodeTasksRead = createFetchProvisioningNodetasksRead(appConfig.apiBaseUrl);
+const nodeTasksRetry = createFetchProvisioningNodetasksRetry(appConfig.apiBaseUrl);
 const passwordVerify = createFetchIdentityPasswordVerify(appConfig.apiBaseUrl);
 const mobileChallenge = createFetchIdentityMobileChallenge(appConfig.apiBaseUrl);
 const mobileManage = createFetchIdentityMobileManage(appConfig.apiBaseUrl);
 const stepupStart = createFetchIdentityStepupStart(appConfig.apiBaseUrl);
 const stepupComplete = createFetchIdentityStepupComplete(appConfig.apiBaseUrl);
+
+const AutoNodeTaskReceiptSchema = z.object({
+  schema_version: z.literal('sfl.autonode-control-task-receipt.v1'),
+  task_id: z.string().min(1),
+  action: z.literal('ACTIVATE'),
+  node_id: z.string().min(1),
+  status: z.enum(['QUEUED', 'RUNNING', 'WAITING_EXTERNAL', 'FAILED_RETRYABLE', 'SUCCEEDED']),
+  phase: z.string().min(1),
+  progress: z.number().min(0).max(100),
+  plan_digest: z.string().nullable(),
+  activation_status: z.string().nullable(),
+  waiting_external: z.array(z.string()),
+  last_error: z.object({ message: z.string() }).passthrough().nullable(),
+  events: z.array(z.object({ phase: z.string(), message: z.string(), occurred_at: z.string() })),
+  created_at: z.string().min(1),
+  updated_at: z.string().min(1),
+  started_at: z.string().nullable(),
+  finished_at: z.string().nullable(),
+});
 
 const CreatedMallSchema = z.object({
   mallId: z.string().min(1),
@@ -28,8 +53,10 @@ const CreatedMallSchema = z.object({
   code: z.string().min(1),
   publicSlug: z.string().min(1),
   name: z.string().min(1),
+  createdAt: z.string().min(1),
   state: z.literal('ready'),
   publicationState: z.literal('draft'),
+  nodeTask: AutoNodeTaskReceiptSchema,
 });
 
 const StepupChallengeSchema = z.object({
@@ -70,6 +97,7 @@ export interface MallCreateAttempt extends MallCreateDraft {
 }
 
 export type CreatedMall = z.infer<typeof CreatedMallSchema>;
+export type AutoNodeTaskReceipt = z.infer<typeof AutoNodeTaskReceiptSchema>;
 export type MallStepupChallenge = z.infer<typeof StepupChallengeSchema>;
 export type MallMobileChallenge = z.infer<typeof MobileChallengeSchema>;
 
@@ -195,6 +223,34 @@ export async function createMall(
     ...(signal === undefined ? {} : { signal }),
   }));
   return CreatedMallSchema.parse(value);
+}
+
+export async function readMallNodeTask(
+  context: ConsoleContext,
+  scope: ConsoleScope,
+  taskId: string,
+  signal?: AbortSignal,
+): Promise<AutoNodeTaskReceipt> {
+  const value = await nodeTasksRead({ path: { taskid: taskId } }, consoleCommand(scope, {
+    accessVersion: context.session.accessVersion,
+    ...(signal === undefined ? {} : { signal }),
+  }));
+  return AutoNodeTaskReceiptSchema.parse(value);
+}
+
+export async function retryMallNodeTask(
+  context: ConsoleContext,
+  scope: ConsoleScope,
+  taskId: string,
+  signal?: AbortSignal,
+): Promise<AutoNodeTaskReceipt> {
+  const value = await nodeTasksRetry({ path: { taskid: taskId } }, consoleCommand(scope, {
+    accessVersion: context.session.accessVersion,
+    idempotencyKey: createIdempotencyKey(),
+    ...(context.session.csrf === undefined ? {} : { csrfToken: context.session.csrf }),
+    ...(signal === undefined ? {} : { signal }),
+  }));
+  return AutoNodeTaskReceiptSchema.parse(value);
 }
 
 export function isMallStepupRequired(error: unknown): boolean {

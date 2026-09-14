@@ -838,6 +838,67 @@
   text-align: left;
 }
 
+.platformcreatetask {
+  display: grid;
+  width: 100%;
+  gap: var(--sw-space-1);
+  padding: var(--sw-space-2);
+  border: 1px solid var(--sw-border);
+  border-radius: var(--sw-radius-lg);
+  background: var(--sw-surface-subtle);
+  text-align: left;
+}
+
+.platformcreatetask > header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sw-space-1);
+}
+
+.platformcreatetask > header div {
+  display: grid;
+  gap: var(--sw-space-0-5);
+}
+
+.platformcreatetask > header small,
+.platformcreatetask > p,
+.platformcreatetask li {
+  color: var(--sw-text-secondary);
+}
+
+.platformcreatetask > header b {
+  color: var(--sw-brand);
+  font-size: var(--sw-font-size-h3);
+}
+
+.platformcreatetaskbar {
+  overflow: hidden;
+  height: 8px;
+  border-radius: var(--sw-radius-full);
+  background: var(--sw-border);
+}
+
+.platformcreatetaskbar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--sw-brand);
+  transition: width 180ms ease;
+}
+
+.platformcreatetask > p,
+.platformcreatetask ul {
+  margin: 0;
+}
+
+.platformcreatetask ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sw-space-0-5) var(--sw-space-1-5);
+  padding-left: var(--sw-space-2);
+}
+
 @media (max-width: 1100px) {
   .distributedplatformmetrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));

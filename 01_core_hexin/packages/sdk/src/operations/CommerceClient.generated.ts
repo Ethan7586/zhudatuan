@@ -101,6 +101,8 @@ export const SDK_OPERATION_IDS = /* @__PURE__ */ Object.freeze([
   "organization.layers.read",
   "provisioning.malls.create",
   "provisioning.malls.read",
+  "provisioning.nodetasks.read",
+  "provisioning.nodetasks.retry",
   "access.center.read",
   "access.roles.manage",
   "access.scopes.manage",

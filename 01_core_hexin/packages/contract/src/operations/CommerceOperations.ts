@@ -2137,7 +2137,7 @@ const definitions = [
     "writePath": "transactional",
     "stateMachine": "provisioning.malls.create.execution.v1",
     "businessNumber": "SFL-PROVISIONING-{sha256:16}",
-    "operationHash": "3c7e376c29349c3580fde1d72ee395043d346bfa538afbe8edb5d88e83d796f3",
+    "operationHash": "a8dd335d610029294d3cd84aeaa793cc446824e9775ccd8cc49c9c464cb3fe00",
     "requirements": [
       "MVP06",
       "MVP15"
@@ -2204,6 +2204,133 @@ const definitions = [
     "stateMachine": "none",
     "businessNumber": "none",
     "operationHash": "58c477ac4f912e99498362b33937f3a3d7030c0f464a40f53891c0cf5f12d18b",
+    "requirements": [
+      "MVP06",
+      "MVP15"
+    ]
+  },
+  {
+    "id": "provisioning.nodetasks.read",
+    "method": "GET",
+    "path": "/api/v1/provisioning/node-tasks/{taskid}",
+    "module": "provisioning",
+    "audience": "operator",
+    "permission": "organization.layer.read",
+    "idempotent": true,
+    "idempotency": "none",
+    "expectedVersion": "none",
+    "execution": "sync",
+    "availability": "runtime",
+    "summary": "provisioning.nodetasks.read",
+    "risk": "low",
+    "stepup": false,
+    "scopeKinds": [
+      "platform",
+      "distributor",
+      "tenant",
+      "enterprise",
+      "mall",
+      "department"
+    ],
+    "schema": "named",
+    "title": "provisioning.nodetasks.read",
+    "targets": [
+      "console"
+    ],
+    "node_profiles_allowed": [
+      "operating_mall",
+      "consumer"
+    ],
+    "requestSchema": "ProvisioningNodetasksReadRequest",
+    "responseSchema": "ProvisioningNodetasksReadResponse",
+    "errorUnion": [
+      "CONTRACT_REQUEST_INVALID",
+      "CONTRACT_RESPONSE_INVALID",
+      "IDEMPOTENCY_KEY_REQUIRED",
+      "IDEMPOTENCY_KEY_REUSED",
+      "STATE_INVALID",
+      "SCOPE_DENIED",
+      "VERSION_CONFLICT"
+    ],
+    "capability": "organization.layer.read",
+    "scope_resolver_ref": "access.resolve_scope.v1",
+    "idempotencyScope": "none",
+    "assuranceLevel": 1,
+    "makerChecker": false,
+    "sensitiveFields": [],
+    "csrfPolicy": "none",
+    "originPolicy": "same-node",
+    "targetPolicy": "resolved-node",
+    "responseMode": "json",
+    "cachePolicy": "private",
+    "rateClass": "low",
+    "timeout": 10000,
+    "sdk": "01_core_hexin/packages/sdk/src/operations/provisioning.ts",
+    "writePath": "none",
+    "stateMachine": "none",
+    "businessNumber": "none",
+    "operationHash": "be1ed5a863345b1f23424e8856ed6b03ec742804737972c5a2a3f75c78653022",
+    "requirements": [
+      "MVP06",
+      "MVP15"
+    ]
+  },
+  {
+    "id": "provisioning.nodetasks.retry",
+    "method": "POST",
+    "path": "/api/v1/provisioning/node-tasks/{taskid}/retry",
+    "module": "provisioning",
+    "audience": "operator",
+    "permission": "organization.layer.manage",
+    "idempotent": false,
+    "idempotency": "required",
+    "expectedVersion": "optional",
+    "execution": "sync",
+    "availability": "runtime",
+    "summary": "provisioning.nodetasks.retry",
+    "risk": "critical",
+    "stepup": true,
+    "scopeKinds": [
+      "platform"
+    ],
+    "schema": "named",
+    "title": "provisioning.nodetasks.retry",
+    "targets": [
+      "console"
+    ],
+    "node_profiles_allowed": [
+      "operating_mall",
+      "consumer"
+    ],
+    "requestSchema": "ProvisioningNodetasksRetryRequest",
+    "responseSchema": "ProvisioningNodetasksRetryResponse",
+    "errorUnion": [
+      "CONTRACT_REQUEST_INVALID",
+      "CONTRACT_RESPONSE_INVALID",
+      "IDEMPOTENCY_KEY_REQUIRED",
+      "IDEMPOTENCY_KEY_REUSED",
+      "STATE_INVALID",
+      "SCOPE_DENIED",
+      "VERSION_CONFLICT"
+    ],
+    "capability": "organization.layer.manage",
+    "scope_resolver_ref": "access.resolve_scope.v1",
+    "idempotencyScope": "operation+realm+node+membership+business-key",
+    "assuranceLevel": 2,
+    "makerChecker": false,
+    "sensitiveFields": [],
+    "csrfPolicy": "session",
+    "originPolicy": "same-node",
+    "targetPolicy": "resolved-node",
+    "responseMode": "json",
+    "cachePolicy": "none",
+    "rateClass": "critical",
+    "timeout": 10000,
+    "sdk": "01_core_hexin/packages/sdk/src/operations/provisioning.ts",
+    "writePath": "transactional",
+    "stateMachine": "provisioning.nodetasks.retry.execution.v1",
+    "businessNumber": "SFL-PROVISIONING-{sha256:16}",
+    "operationHash": "9c1877b592a4cf1f63f1383ce66b84e10b8f0313f96e0987ab37ed582108cdcc",
     "requirements": [
       "MVP06",
       "MVP15"
