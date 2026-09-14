@@ -463,6 +463,16 @@
 | 验证/回滚 | 断言创建/关闭顺序、token值和metrics实例；回滚为revert提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0231｜Payment Jobs 接受runtime contract marker缺失或漂移
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / PaymentJobsRuntime；P1；高；待独立复核 |
+| 位置/证据 | `PaymentJobsRuntime.ts:97-160`投影`contract`但predicate未读取；测试只使用true。 |
+| 影响 | Payment Jobs启动后可能在contract drift下处理支付查询/退款；线上状态未验证。 |
+| 建议/验证 | 独立复核后在最新主线最小补`!state.contract`与false fixture；fake pool断言拒绝，可revert。 |
+| 独立复核 | 是；P1。 |
+
 ## F-0014｜Catalog API Ready 未探测已启动的 HTTP 进程
 
 | 字段 | 记录 |

@@ -1947,3 +1947,7 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 对 Commerce ConsoleSupportRuntime contract gate 独立复核。
 
 执行结果：生产入口无替代gate；contract在query/result中存在但predicate仍遗漏，fixture没有false例。F-0229/P1双轮结论一致确认；无P0问题。
+
+## 255. AU-253 连续审计点
+
+支付Jobs runtime限定支付查询/退款队列并校验manifest、callback与最小权限；其contract query未进入predicate，F-0231/P1待独立复核；无P0。
