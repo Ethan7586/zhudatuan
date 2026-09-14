@@ -10,7 +10,7 @@ on:
       build_runner:
         description: Build runner (Aliyun default; GitHub hosted fallback)
         required: false
-        default: aliyun
+        default: github
         type: choice
         options:
           - aliyun

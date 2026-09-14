@@ -29,7 +29,7 @@ if (args[0] === 'run' && args[1] === 'list') {
   else {
     const prepare = args.includes('prepare-artifact-aliyun.yml');
     const title = prepare
-      ? 'Prepare 1.3.2 ${sha} console' + (process.env.ZDT_PREPARE_RUNNER === 'github' ? ' [github]' : '')
+      ? 'Prepare 1.3.2 ${sha} console' + (process.env.ZDT_PREPARE_RUNNER !== 'aliyun' ? ' [github]' : '')
       : 'Deploy 1.3.2 validate-candidate ${sha} hbbtzn-l1 console';
     if (!args[args.indexOf('--jq') + 1].includes(title)) process.exit(91);
     console.log(prepare ? '201' : '202');
@@ -49,15 +49,13 @@ if (args[0] === 'run' && args[1] === 'watch' && args[2] === '201' && process.env
   return { result, calls };
 }
 
-test('Prepare defaults to Aliyun and permits only the standard GitHub build fallback', () => {
+test('Prepare defaults to GitHub and preserves the explicit Aliyun fallback', () => {
   const input = workflow.on.workflow_dispatch.inputs.build_runner;
-  assert.equal(input.default, 'aliyun');
+  assert.equal(input.default, 'github');
   assert.deepEqual(input.options, ['aliyun', 'github']);
   const expression = workflow.jobs.prepare['runs-on'].slice(3, -2);
   const select = new Function('inputs', 'fromJSON', `return (${expression});`);
-  for (const value of [undefined, 'aliyun']) {
-    assert.deepEqual(select({ build_runner: value }, JSON.parse), ['self-hosted', 'linux', 'x64', 'zdt-aliyun-build']);
-  }
+  assert.deepEqual(select({ build_runner: 'aliyun' }, JSON.parse), ['self-hosted', 'linux', 'x64', 'zdt-aliyun-build']);
   assert.deepEqual(select({ build_runner: 'github' }, JSON.parse), ['ubuntu-24.04']);
   for (const step of workflow.jobs.prepare.steps) {
     assert.doesNotMatch(JSON.stringify(step), /secrets\.ZDT_RELEASE_SSH|operation=deploy|deploy-prepared/);
@@ -70,7 +68,7 @@ test('both build routes retain the exact source and seal only on the existing Al
     assert.equal(result.status, 0, result.stderr);
     const runs = calls.filter((args) => args[0] === 'workflow' && args[1] === 'run');
     assert.deepEqual(runs, [
-      ['workflow', 'run', 'prepare-artifact-aliyun.yml', '--ref', 'zdt-next', '-f', `head_sha=${sha}`, '-f', 'release_target=console', '-f', `build_runner=${runner ?? 'aliyun'}`],
+      ['workflow', 'run', 'prepare-artifact-aliyun.yml', '--ref', 'zdt-next', '-f', `head_sha=${sha}`, '-f', 'release_target=console', '-f', `build_runner=${runner ?? 'github'}`],
       ['workflow', 'run', 'deploy-prepared-aliyun.yml', '--ref', 'zdt-next', '-f', `head_sha=${sha}`, '-f', 'release_node=hbbtzn-l1', '-f', 'release_target=console', '-f', 'operation=validate-candidate'],
     ]);
   }

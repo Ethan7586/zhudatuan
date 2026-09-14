@@ -2,7 +2,7 @@
 # Prepare and seal one immutable 1.3.2 Aliyun release candidate.
 # Usage:
 #   scripts/prepare-release.sh <target> <full-commit-sha> <physical-node>
-#   ZDT_PREPARE_RUNNER=github selects the standard GitHub-hosted build fallback.
+#   ZDT_PREPARE_RUNNER=aliyun selects the self-hosted Aliyun build fallback.
 
 set -euo pipefail
 export PATH=/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin
@@ -15,7 +15,7 @@ fi
 TARGET="$1"
 SHA="$2"
 NODE="$3"
-BUILD_RUNNER="${ZDT_PREPARE_RUNNER:-aliyun}"
+BUILD_RUNNER="${ZDT_PREPARE_RUNNER:-github}"
 WORKFLOW_PREPARE="prepare-artifact-aliyun.yml"
 WORKFLOW_DEPLOY="deploy-prepared-aliyun.yml"
 
