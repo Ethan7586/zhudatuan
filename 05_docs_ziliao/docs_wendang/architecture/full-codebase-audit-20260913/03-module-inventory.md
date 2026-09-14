@@ -848,3 +848,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 纯领域成功和拒绝边界 | [FACT][E-AU-074-003] |
 
 [FACT][E-AU-074-004] 12 文件、207 行 Finance domain model/policy 人工源码和测试完成深审；ConfigFieldPolicy 已在 AU-068 审阅，不重复计数。
+
+## 81. AU-075 Finance 公共能力与模块装配模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| public/manifest | capability、operation/event、dependency、http/job 声明 | [FACT][E-AU-075-001] |
+| registrations | 完整 Commerce 与 Identity selected Finance 运行模块 | [FACT][E-AU-075-002] |
+| tests | manifest 静态契约 | [FACT][E-AU-075-003] |
+
+[FACT][E-AU-075-004] 4 文件、140 行 Finance public/manifest 人工源码和测试完成深审。

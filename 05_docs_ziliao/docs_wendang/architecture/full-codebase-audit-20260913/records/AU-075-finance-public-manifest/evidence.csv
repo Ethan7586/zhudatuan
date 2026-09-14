@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-075-001","FinanceCapabilities.ts:1-6;module.manifest.ts:4-59","read/manage capability、reporting 依赖、operation/event/http/job manifest","Finance 的公开能力和运行声明可追踪"
+"E-AU-075-002","index.ts:1-29;app/modules.ts:14,40;IdentityRegistrationApiMain.ts:24,68","完整 Commerce 加载 FinanceModule；Identity API 加载 selected Finance module","两个运行模块入口是刻意注册而非死代码"
+"E-AU-075-003","module.manifest.test.ts:1-57","manifest identity、依赖、层、entrypoint、operation list 均被直接断言","模块声明有直接契约测试"
