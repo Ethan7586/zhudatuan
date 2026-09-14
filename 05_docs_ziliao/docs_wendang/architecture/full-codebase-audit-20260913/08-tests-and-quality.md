@@ -471,3 +471,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - WeChat test覆盖provider code公开结果、不回传session_key、new/existing membership与atomic register-bind；registration test覆盖OTP/debug/production禁用、输入/limiter/邀请结果；step-up test覆盖错误密码、成功新cookie和limiter。
 - WeChat bind direct handler和OTP provider failure/retry没有本批direct fixture；当前auth namespace也没有正式router registration。审计工作树未运行Vitest。
+
+## 176. AU-176 WeChat prepay/status 深审
+
+- Direct test覆盖payment-status vocabulary、owned order detail和storefront payment-status route一致性。
+- 没有prepay成功/reuse、phone/scope/idempotency拒绝、provider create/error、record failure或provider reconciliation direct fixture。见F-0190/P2；审计工作树未运行Vitest。

@@ -3682,6 +3682,20 @@
 | 验证/回滚 | 定向test：round-trip、same input differing IV、bit-flip/invalid schema/wrong key reject；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0190｜WeChat prepay 关键写入与 Provider 失败路径没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / WeChat payment prepay；P2；高 |
+| 类型 | 测试覆盖缺口、支付幂等与失败补偿正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/wechatPaymentRoutes.ts:60-139`；现有`wechatPaymentRoutes.test.ts` |
+| 当前/预期 | 实现先验证phone/scope/idempotency，创建prepay attempt，随后创建或复用provider prepay；异常时best-effort记录失败。现有test只覆盖状态映射、order read和status read route。预期直接覆盖attempt状态、provider成功/reuse、record result、provider/config failure与`api_mark_wechat_prepay_failed`。 |
+| 直接证据 | `wechatPaymentRoutes.test.ts`只导入`handleOrderByNumber`和`handleWechatPaymentStatus`，不调用`handleWechatPrepay`。 |
+| 调用链/影响 | authenticated storefront route → prepay → attempt RPC → WeChat provider → result/failure RPC。幂等复用、provider异常和失败记录回归不能由现有测试直接发现。 |
+| 建议方向 | 从修复时最新`zdt-next`建立独立payment prepay test批；回滚为撤回该测试提交。 |
+| 验证/回滚 | mock provider/RPC验证create/reuse/failure顺序和body，覆盖scope/assurance/idempotency拒绝；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

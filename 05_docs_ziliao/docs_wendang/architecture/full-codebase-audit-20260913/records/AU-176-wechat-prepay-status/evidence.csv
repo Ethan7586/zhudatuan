@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-176-001,src/api/wechatPaymentRoutes.ts,34-58,order read,Order lookup passes server authorization scope plus membership and maps storage payment status to client vocabulary.
+E-AU-176-002,src/api/wechatPaymentRoutes.ts,60-139,prepay state,Phone assurance idempotency config and server order scope precede attempt creation; valid existing prepay may be reused otherwise provider result is recorded.
+E-AU-176-003,src/api/wechatPaymentRoutes.ts,141-191,status reconcile,Database remains authority and provider transaction query/apply is optional; exceptions return deferred status without changing database read.
+E-AU-176-004,src/api/wechatPaymentRoutes.ts,248-268,error boundary,Configuration/protocol errors map to stable client errors and stored provider code is normalized/bounded.

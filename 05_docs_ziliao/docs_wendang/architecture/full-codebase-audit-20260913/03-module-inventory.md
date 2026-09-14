@@ -1901,3 +1901,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | step-up | current credential verification、limiter/audit、session revoke/reissue with step-up timestamp | [FACT][E-AU-175-004] |
 
 [FACT][E-AU-175-005] 6 文件、864 行完成深审；三条链都有direct handler tests，但当前full router对auth namespace返回404，真实正式挂载仍未证明。
+
+## 181. AU-176 WeChat prepay/status 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| order lookup | server-scoped order-by-number read与payment vocabulary mapping | [FACT][E-AU-176-001] |
+| prepay | assurance/idempotency/config/scope→attempt→provider/reusable prepay→miniapp parameters | [FACT][E-AU-176-002] |
+| status/reconcile | database status、必要时provider query、query apply与deferred fallback | [FACT][E-AU-176-003] |
+| failure | provider/config errors stable client code，provider raw code仅safe normalized写入RPC | [FACT][E-AU-176-004] |
+
+[FACT][E-AU-176-005] 2 文件、373 行完成深审；route source存在但当前Storefront Worker不加载完整authenticated storefront router。
