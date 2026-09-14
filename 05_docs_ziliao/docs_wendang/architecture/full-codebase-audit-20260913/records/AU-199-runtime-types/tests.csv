@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/types.ts,compile-time contract consumed across router handlers and tests,no standalone runtime fixture applies; audit worktree did not run typecheck or Vitest

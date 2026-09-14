@@ -2134,3 +2134,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | payment boundaries | notification保留public POST入口，prepay必须先经过user authentication | [FACT][E-AU-198-002] |
 
 [FACT][E-AU-198-003] 1 文件、35 行完成深审；验证真实router边界，不覆盖下游Wechat payment handler行为。
+
+## 204. AU-199 Runtime types 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| WorkerEnv | 声明数据库、cache、SMS、身份/PII/session、miniapp、WeChat Pay等运行变量 | [FACT][E-AU-199-001] |
+| AuthorizationContext | 单一resolved membership、其roles/permissions与step-up投影，不允许跨membership混合授权 | [FACT][E-AU-199-002] |
+| RequestContext | 将request ID与可为空的已解析授权上下文一起传递 | [FACT][E-AU-199-003] |
+
+[FACT][E-AU-199-004] 1 文件、90 行完成深审；types被router、所有API handler及fixture直接消费，没有独立运行入口。

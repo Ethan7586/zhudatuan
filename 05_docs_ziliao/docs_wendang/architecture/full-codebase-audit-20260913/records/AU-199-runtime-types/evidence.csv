@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-199-001,src/api/types.ts,3-64,environment contract,WorkerEnv declares database cache SMS identity PII session miniapp and WeChat Pay runtime inputs.
+E-AU-199-002,src/api/types.ts,66-86,authorization contract,AuthorizationContext represents one resolved membership with its own role permission and step-up projection.
+E-AU-199-003,src/api/types.ts,88-90,request contract,RequestContext combines request ID with nullable resolved authorization.
+E-AU-199-004,src/api,consumer,Router handlers helpers and tests import the shared types throughout the API surface.
