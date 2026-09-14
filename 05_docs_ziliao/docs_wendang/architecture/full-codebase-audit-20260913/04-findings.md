@@ -3264,6 +3264,20 @@
 | 验证/回滚 | AU-082 已独立复查 rule 创建→发布→QuoteReader 金额演算、`kind/condition/effect` 的全仓消费者、runtime registry、openapi 和行为测试；结论一致。后续必须从当时最新主线单独小分支实现规则解释/金额调整或正式收窄管理契约，并用多规则、优先级、幂等报价和失败回滚测试验证；回滚为撤回该小批次。 |
 | 独立复核 | 是；AU-082 已完成，结论一致。 |
 
+## F-0160｜库存 Availability 同一契约在完整与 WebBusiness API 的范围语义不一致
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | inventory / webbusiness；**P2**；高 |
+| 类型 | 跨运行单元 API 契约与数据范围差异 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/inventory/03_application_yingyong/InventoryOperations.ts:12-27`；`01_core_hexin/services/commerce/src/modules/webbusiness/WebInventoryOperations.ts:8-25`；`02_platform_pingtai/database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql:244,329-331` |
+| 当前/预期 | 两个入口都注册同一 `inventory.availability.read`（同 path/SDK contract）。完整 Commerce 取得 `access.mall_id`，缺失即拒绝，并按 `stock.scope_id=$mall` 查询；WebBusiness 按 `organization.unitclosure` 从 `access.scope.id` 查询 descendant stock。预期同一 operation 的范围投影应由明确、可验证的契约区分，或两个 runtime 对等。 |
+| 直接证据 | 两个 handler 的 SQL 与参数直接显示 mall-only vs hierarchy closure；Web runtime 的 role 仅获 stock/reservation select，RLS 使用 `access.web_scope_allowed`。没有 WebInventory 专用测试，现有 scope test 只断言 resolver SQL；未见跨 host/role 的等价性测试。 |
+| 影响 | 相同 SDK operation 在不同 API host/actor scope 下可返回不同库存集合：上层 console/组织操作可能看到下级库存，而完整 API 只返回明确 mall。调用方无法仅凭 operation contract 判断返回边界，后续迁移/聚合改动可能造成漏库存或意外扩大可见集合。当前线上请求分布未验证。 |
+| 根因 | WebBusiness 为部署单元复制了 availability query 并引入 closure scope，未将差异提升为独立 operation/版本化投影或以等价性测试锁定。 |
+| 验证/回滚 | 后续独立审阅应以同一 membership 在 complete/web host、mall/store/ancestor scope、SKU cursor 下比较结果和 RLS，确认设计后用新 operation 或一致实现收敛；修复必须从当时最新主线独立分支进行，回滚为撤回该批次。 |
+| 独立复核 | 否；P2，待 Inventory 完整模块与 scope-contract 专项交叉复核。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

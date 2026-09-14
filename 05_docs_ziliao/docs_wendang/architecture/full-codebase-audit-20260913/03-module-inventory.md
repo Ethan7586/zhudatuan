@@ -942,3 +942,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | SQL page/summary、host binding 与购买锁定 | [FACT][E-AU-084-003] |
 
 [FACT][E-AU-084-004] 4 文件、458 行 WebBusiness Catalog 读取和公开 HTTP adapter 完成深审；对外公开面不复用授权 read，只有数据库 public projection 可以提供商品，且响应始终禁止购买。
+
+## 90. AU-085 WebBusiness 库存读取模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| selected availability read | scope closure 内 stock/reservation available 计算与 keyset | F-0160/P2 |
+| full runtime comparison | 同 operation 的 mall-only availability read | [FACT][E-AU-085-002] |
+| web database boundary | `zhudatuanwebapi` select/RLS | [FACT][E-AU-085-003] |
+
+[FACT][E-AU-085-004] 1 文件、32 行 WebBusiness Inventory operation 完成深审；库存余额计算和 read-only role/RLS 已追踪，但与完整 API 的相同 contract scope 语义不同，记录 F-0160/P2。
