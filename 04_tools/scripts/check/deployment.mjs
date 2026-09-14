@@ -72,58 +72,41 @@ function validateDeployWorkflow(adapter, workflow) {
   assert(inputs?.head_sha?.required === true && inputs.head_sha.type === 'string', 'DEPLOY_WORKFLOW_SHA_INPUT_INVALID');
   assert(inputs?.release_target?.required === true && inputs.release_target.type === 'choice', 'DEPLOY_WORKFLOW_TARGET_INPUT_INVALID');
   assert(inputs?.release_node?.required === true && inputs.release_node.type === 'choice', 'DEPLOY_WORKFLOW_NODE_INPUT_INVALID');
+  assert(inputs?.operation?.required === true && inputs.operation.type === 'choice', 'DEPLOY_WORKFLOW_OPERATION_INPUT_INVALID');
 
-  assertSameSet(inputs.release_target.options, [...Object.keys(adapter.channels ?? {}), ...Object.keys(adapter.targets)], 'DEPLOY_WORKFLOW_TARGETS_MISMATCH');
+  assertSameSet(inputs.release_target.options, Object.keys(adapter.targets), 'DEPLOY_WORKFLOW_TARGETS_MISMATCH');
   assertSameSet(inputs.release_node.options, Object.keys(adapter.nodes), 'DEPLOY_WORKFLOW_NODES_MISMATCH');
+  assertSameSet(inputs.operation.options, ['validate-candidate', 'deploy'], 'DEPLOY_WORKFLOW_OPERATIONS_MISMATCH');
   assert(workflow.permissions?.contents === 'read', 'DEPLOY_WORKFLOW_PERMISSIONS_INVALID');
-  const expectedLock = `${adapter.project}-direct-` + '${{ inputs.release_node }}-${{ inputs.release_target }}';
+  const expectedLock = `${adapter.project}-prepared-` + '${{ inputs.release_node }}-${{ inputs.release_target }}';
   assert(workflow.concurrency?.group === expectedLock, 'DEPLOY_WORKFLOW_LOCK_SCOPE_INVALID');
   assert(workflow.concurrency?.['cancel-in-progress'] === false, 'DEPLOY_WORKFLOW_CANCELLATION_INVALID');
   assert(workflow.env?.RELEASE_SHA === '${{ inputs.head_sha }}', 'DEPLOY_WORKFLOW_SHA_BINDING_INVALID');
   assert(workflow.env?.RELEASE_NODE === '${{ inputs.release_node }}', 'DEPLOY_WORKFLOW_NODE_BINDING_INVALID');
   assert(workflow.env?.RELEASE_TARGET === '${{ inputs.release_target }}', 'DEPLOY_WORKFLOW_TARGET_BINDING_INVALID');
+  assert(workflow.env?.RELEASE_OPERATION === '${{ inputs.operation }}', 'DEPLOY_WORKFLOW_OPERATION_BINDING_INVALID');
+  assert(workflow.env?.CONTROL_SHA === '${{ github.sha }}', 'DEPLOY_WORKFLOW_CONTROL_SHA_BINDING_INVALID');
+  assert(workflow.env?.CONTROL_REF === '${{ github.ref }}', 'DEPLOY_WORKFLOW_CONTROL_REF_BINDING_INVALID');
 
-  const steps = workflow.jobs?.deploy?.steps;
+  const job = workflow.jobs?.prepared;
+  const steps = job?.steps;
   assert(Array.isArray(steps), 'DEPLOY_WORKFLOW_STEPS_MISSING');
+  assertSameSet(job['runs-on'], ['self-hosted', 'linux', 'x64', 'zdt-aliyun-release'], 'DEPLOY_WORKFLOW_RUNNER_INVALID');
   const checkout = steps.find((step) => typeof step.uses === 'string' && step.uses.startsWith('actions/checkout@'));
-  assert(checkout?.with?.ref === '${{ inputs.head_sha }}', 'DEPLOY_WORKFLOW_CHECKOUT_NOT_EXACT');
+  assert(checkout?.uses === 'actions/checkout@v6', 'DEPLOY_WORKFLOW_CHECKOUT_VERSION_INVALID');
+  assert(checkout?.with?.ref === '${{ github.sha }}', 'DEPLOY_WORKFLOW_CONTROL_CHECKOUT_NOT_EXACT');
 
   const shell = executableShell(steps);
-  assert(shell.includes('if [ "$sha" != "$RELEASE_SHA" ]; then'), 'DEPLOY_WORKFLOW_CHECKOUT_GUARD_MISSING');
-  for (const channel of Object.keys(adapter.channels ?? {})) {
-    assert(shell.includes(`if [ "$RELEASE_TARGET" = "${channel}" ]; then`), 'DEPLOY_WORKFLOW_CHANNEL_BRANCH_MISSING', channel);
-  }
+  assert(shell.includes('[ "$CONTROL_REF" != "refs/heads/zdt-next" ]'), 'DEPLOY_WORKFLOW_DEFAULT_BRANCH_GUARD_MISSING');
+  assert(shell.includes('compare/${RELEASE_SHA}...${CONTROL_SHA}'), 'DEPLOY_WORKFLOW_LINEAGE_GUARD_MISSING');
+  assert(shell.includes('d.hostedBy&&d.hostedBy!==process.env.RELEASE_NODE'), 'DEPLOY_WORKFLOW_PHYSICAL_OWNER_GUARD_MISSING');
+  assert(shell.includes('command=validate-prepared') && shell.includes('command=deploy-prepared'), 'DEPLOY_WORKFLOW_PREPARED_COMMANDS_MISSING');
+  assert(shell.includes('npm run --silent release -- "$command"'), 'DEPLOY_WORKFLOW_PREPARED_COMMAND_BINDING_MISSING');
+  assert(shell.includes('--source-sha "$RELEASE_SHA"'), 'DEPLOY_WORKFLOW_SOURCE_ARGUMENT_MISSING');
+  assert(shell.includes('--node "$RELEASE_NODE"') && shell.includes('--target "$RELEASE_TARGET"'), 'DEPLOY_WORKFLOW_TARGET_ARGUMENT_MISSING');
+  assert(!/npm ci|release -- (?:build|package|publish)|ssh-keyscan/.test(shell), 'DEPLOY_WORKFLOW_IMPURE');
 
-  const commands = releaseCommands(steps);
-  requireCommand(commands, 'plan', {
-    '--from': '$base',
-    '--to': '$sha',
-    '--node': '$RELEASE_NODE',
-    '--target': '$RELEASE_TARGET',
-    '--direct': true,
-    '--format': 'json',
-  });
-  requireCommand(commands, 'build', { '--plan': '$PLAN_PATH', '--format': 'json' });
-  requireCommand(commands, 'package', { '--build': '$build_path', '--format': 'json' });
-  requireCommand(commands, 'deploy', {
-    '--package': '$package_path',
-    '--node': '$RELEASE_NODE',
-    '--target': '$RELEASE_TARGET',
-    '--environment': 'production',
-    '--direct': true,
-    '--format': 'json',
-  });
-  if (Object.keys(adapter.channels ?? {}).length > 0) {
-    requireCommand(commands, 'channel', {
-      '--target': '$RELEASE_TARGET',
-      '--node': '$RELEASE_NODE',
-      '--action': 'deploy',
-      '--source-sha': '$RELEASE_SHA',
-      '--format': 'json',
-    });
-  }
-
-  return { commands: commands.length };
+  return { commands: 2 };
 }
 
 function validateRootCommands(packageJson) {
@@ -213,7 +196,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const summary = validateDeploymentContract({
     adapter: JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8')),
     policy: JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8')),
-    workflow: parse(readFileSync(resolve(root, '.github/workflows/deploy.yml'), 'utf8')),
+    workflow: parse(readFileSync(resolve(root, '.github/workflows/deploy-prepared-aliyun.yml'), 'utf8')),
     packageJson: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')),
   });
   console.log(`deployment contract: project=${summary.project} targets=${summary.targets} channels=${summary.channels} nodes=${summary.nodes} physical=${summary.physicalDeployments} commands=${summary.workflowCommands}`);

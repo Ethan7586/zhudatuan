@@ -117,7 +117,7 @@ test('legacy baseline evidence requires one successful exact workflow receipt', 
     head_sha: sourceSha,
     conclusion: 'success',
     event: 'workflow_dispatch',
-    path: '.github/workflows/deploy-oss.yml',
+    path: '.github/workflows/legacy-oss-recovery-aliyun.yml',
     run_attempt: 1,
   };
   const log = `SOURCE_SHA=${sourceSha}\nCURRENT_${target}=${expectedCurrent}\nzdt-next/commerce-api/${sourceSha}/${artifactSha256}.tar.gz\n`;

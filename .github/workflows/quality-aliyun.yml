@@ -1,4 +1,4 @@
-name: Affected Delivery
+name: Affected Delivery - Aliyun Runner
 
 on:
   workflow_dispatch:
@@ -48,14 +48,15 @@ jobs:
       head_sha: ${{ steps.plan.outputs.head_sha }}
       run_id: ${{ steps.plan.outputs.run_id }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ inputs.head_sha || github.event.pull_request.head.sha || github.sha }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
 
       - name: Install release plan dependency
         run: |
@@ -192,15 +193,15 @@ jobs:
       VITE_ZHUDIAN_SOLUTION_ORIGIN: https://labs.hbbtzn.com
       VITE_CLIENT_VERSION: 0.0.0-g${{ needs.plan.outputs.head_sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ needs.plan.outputs.head_sha }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+          package-manager-cache: false
 
       - name: Configure candidate-only SSH transport
         if: inputs.stage_candidate
@@ -231,12 +232,6 @@ jobs:
         with:
           name: release-plan-${{ github.run_id }}
           path: .ci-release
-
-      - name: Restore immutable artifact cache
-        uses: actions/cache@v4
-        with:
-          path: .ai-delivery/artifacts
-          key: delivery-artifacts-v4-${{ runner.os }}-${{ needs.plan.outputs.head_sha }}
 
       - name: Restore dependencies for affected targets
         if: needs.plan.outputs.dependency_install_required == 'true'
@@ -356,14 +351,14 @@ jobs:
     timeout-minutes: 20
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ needs.plan.outputs.head_sha }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+          package-manager-cache: false
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - uses: actions/download-artifact@v4
         with:

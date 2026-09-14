@@ -11,7 +11,7 @@ const root = resolve(import.meta.dirname, '../../..');
 const current = Object.freeze({
   adapter: JSON.parse(await readFile(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8')),
   policy: JSON.parse(await readFile(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8')),
-  workflow: parse(await readFile(resolve(root, '.github/workflows/deploy.yml'), 'utf8')),
+  workflow: parse(await readFile(resolve(root, '.github/workflows/deploy-prepared-aliyun.yml'), 'utf8')),
   packageJson: JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8')),
 });
 
@@ -29,20 +29,29 @@ test('rejects a missing target even when unrelated text retains its name', () =>
   assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_TARGETS_MISMATCH/);
 });
 
-test('rejects a commented deployment command even when unrelated text retains the command', () => {
+test('rejects a prepared deployment whose deploy command is only a comment', () => {
   const workflow = structuredClone(current.workflow);
-  const step = workflow.jobs.deploy.steps.find((entry) => entry.run?.includes('cli.mjs deploy'));
-  step.run = step.run.replace('node 04_tools/release-engine/cli.mjs deploy', '# node 04_tools/release-engine/cli.mjs deploy');
-  workflow.documentation = 'node 04_tools/release-engine/cli.mjs deploy --environment production --direct';
-  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_COMMAND_COUNT:deploy/);
+  const step = workflow.jobs.prepared.steps.find((entry) => entry.run?.includes('command=deploy-prepared'));
+  step.run = step.run.replace('command=deploy-prepared', '# command=deploy-prepared');
+  workflow.documentation = 'command=deploy-prepared';
+  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_PREPARED_COMMANDS_MISSING/);
 });
 
-test('rejects checkout that is not bound to the requested exact source', () => {
+test('rejects checkout that is not bound to the exact default-branch control plane', () => {
   const workflow = structuredClone(current.workflow);
-  const checkout = workflow.jobs.deploy.steps.find((entry) => entry.uses?.startsWith('actions/checkout@'));
+  const checkout = workflow.jobs.prepared.steps.find((entry) => entry.uses?.startsWith('actions/checkout@'));
   checkout.with.ref = 'zdt-next';
-  workflow.documentation = '${{ inputs.head_sha }}';
-  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_CHECKOUT_NOT_EXACT/);
+  assert.throws(() => validateDeploymentContract({ ...current, workflow }), /DEPLOY_WORKFLOW_CONTROL_CHECKOUT_NOT_EXACT/);
+});
+
+test('rejects GitHub-hosted runners and build-during-deploy behavior', () => {
+  const hosted = structuredClone(current.workflow);
+  hosted.jobs.prepared['runs-on'] = 'ubuntu-latest';
+  assert.throws(() => validateDeploymentContract({ ...current, workflow: hosted }), /DEPLOY_WORKFLOW_RUNNER_INVALID/);
+
+  const impure = structuredClone(current.workflow);
+  impure.jobs.prepared.steps.push({ run: 'npm ci' });
+  assert.throws(() => validateDeploymentContract({ ...current, workflow: impure }), /DEPLOY_WORKFLOW_IMPURE/);
 });
 
 test('rejects a manifest and remote pointer disagreement', () => {

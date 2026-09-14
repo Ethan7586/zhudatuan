@@ -123,7 +123,7 @@ test('direct explicit scope always builds the requested target without validatio
     to: currentSha.trim(),
     target: 'console',
     direct: true,
-    files: ['.github/workflows/deploy.yml'],
+    files: ['.github/workflows/legacy-direct-recovery-aliyun.yml'],
     nodes: ['hbbtzn-l1'],
   });
   assert.equal(plan.direct, true);
@@ -145,7 +145,7 @@ test('Prepare Artifact forces one exact target while retaining its validation an
     to: currentSha.trim(),
     target: 'storefront',
     prepare: true,
-    files: ['.github/workflows/prepare-artifact.yml'],
+    files: ['.github/workflows/prepare-artifact-aliyun.yml'],
   });
   assert.equal(plan.prepare, true);
   assert.equal(plan.direct, false);
@@ -297,7 +297,7 @@ test('shared Contract package expands through workspace consumers without a glob
 
 test('release tooling remains non-deploying and support keeps its physical host', async () => {
   const real = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
-  assert.deepEqual(classifyChanges(real, [change('.github/workflows/deploy.yml')]).targets, []);
+  assert.deepEqual(classifyChanges(real, [change('.github/workflows/deploy-prepared-aliyun.yml')]).targets, []);
   assert.deepEqual(classifyChanges(real, [change('scripts/deploy-now.sh')]).targets, []);
   const plan = await createPlan(real, { from: 'HEAD', to: 'HEAD', files: ['01_core_hexin/services/commerce/src/entry/ConsoleSupportMain.ts'], nodes: ['hbbtzn-l1'] });
   assert.deepEqual(plan.targets, ['support-api']);
