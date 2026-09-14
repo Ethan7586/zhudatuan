@@ -1824,3 +1824,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | route directors | target guards、public payment webhook、development/test simulation boundary | [FACT][E-AU-168-004] |
 
 [FACT][E-AU-168-005] 8 文件、535 行完成深审；Compatibility source closure 仍有 public Worker consumer，不能按独立部署缺失删除。
+
+## 174. AU-169 Storefront public catalog/media/notify 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| public catalog | configured mall read-only projection、bounded paging、memory/shared stale cache、ETag mirror | [FACT][E-AU-169-001] |
+| catalog media | canonical CDN direct URL 或 signed allowlisted image proxy，5MB/type bounds | [FACT][E-AU-169-002] |
+| payment callback | provider signature/decryption、size bound、RPC apply | [FACT][E-AU-169-003] |
+| tests | configuration/category/cache/mirror/image/proxy failure fixtures | [FACT][E-AU-169-004] |
+
+[FACT][E-AU-169-005] 4 文件、676 行完成深审；Wechat cryptographic parser/client tests留在 provider 专项单元。

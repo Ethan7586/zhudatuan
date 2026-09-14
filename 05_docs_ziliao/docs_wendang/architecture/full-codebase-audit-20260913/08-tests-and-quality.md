@@ -436,3 +436,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - DomainPolicy 是跨 checkout、finance、inventory、order、risk、support、notification、identity 的精确领域不变量规格。
 - ModuleCatalog 断言 operation 归属、模块依赖与 method/path 唯一性；未运行正式 suite，审计 worktree 依赖基线没有 Vitest。
+
+## 169. AU-169 Storefront public catalog/media 深审
+
+- Catalog tests 直接覆盖 production configuration、mall slug sanitation、page bound/cache tier、ETag/mirror、taxonomy query、signed proxy/CDN 和上游失败。
+- Wechat notification cryptographic tests不属于本批，留在支付 provider 单元；本批未将其缺席误记为 coverage gap。
