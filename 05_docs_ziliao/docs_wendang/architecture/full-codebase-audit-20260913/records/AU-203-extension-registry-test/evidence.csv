@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-203-001,src/bootstrap/ExtensionRegistry.test.ts,5-15,canary lifecycle,Unhealthy staged provider is discarded while existing active provider remains.
+E-AU-203-002,src/bootstrap/ExtensionRegistry.test.ts,16-21,activation,Healthy candidate activation replaces active provider and stops the previous instance.
+E-AU-203-003,src/bootstrap/ExtensionRegistry.ts,35-58,implementation counterpart,Registry stage activate discard semantics match the direct test path.

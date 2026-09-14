@@ -2172,3 +2172,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | signature check | public key、canonical manifest payload和base64 signature交由Node crypto verify | [FACT][E-AU-202-002] |
 
 [FACT][E-AU-202-003] 1 文件、22 行完成深审；CommerceRuntime构造、extension install和Channel HTTP为运行消费者，测试空白见F-0204/P2。
+
+## 208. AU-203 Extension registry canary test 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| canary failure | staged不健康实例被discard，现有active instance保持运行 | [FACT][E-AU-203-001] |
+| activation | 健康candidate原子替换active instance，替换后停止previous provider | [FACT][E-AU-203-002] |
+
+[FACT][E-AU-203-003] 1 文件、24 行完成深审；ExtensionRegistry source已在AU-041审阅，既有F-0127/F-0128保持不变。

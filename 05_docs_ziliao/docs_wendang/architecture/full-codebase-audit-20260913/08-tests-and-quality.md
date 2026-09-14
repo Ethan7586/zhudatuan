@@ -604,3 +604,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 未找到manifest signature verifier的直接密码学fixture。
 - 有效/篡改/错误key/base64行为未被该安全边界直接验证，见F-0204/P2。审计工作树未运行Vitest。
+
+## 203. AU-203 Extension registry canary test 深审
+
+- Direct test覆盖unhealthy canary discard保留旧实例、healthy candidate activation替换并停止旧实例。
+- Registry其余分支与provider capability契约由AU-041及已有F-0127/F-0128专项记录承接。无P0–P3新问题；审计工作树未运行Vitest。
