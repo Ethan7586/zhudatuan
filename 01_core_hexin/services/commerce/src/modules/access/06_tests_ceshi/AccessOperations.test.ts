@@ -213,7 +213,7 @@ describe('access scope management boundary', () => {
     expect(harness.queries.some((query) => /delete from (access|member|identity)\./.test(query))).toBe(false);
   });
 
-  it('does not offboard an administrator when the caller is not Owner', async () => {
+  it('does not offboard an administrator when the caller has no governance authority', async () => {
     const harness = operationHarness();
     const request = offboardAdministratorRequest();
 
@@ -222,6 +222,32 @@ describe('access scope management boundary', () => {
 
     expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(false);
   });
+
+  it('lets a senior administrator offboard an ordinary administrator only', async () => {
+    const harness = operationHarness({ targetGovernance: 'administrator' });
+
+    await expect(accessOperations(context(harness.pool)).invoke({
+      ...offboardAdministratorRequest(), access: seniorAdministratorAccess(),
+    })).resolves.toMatchObject({ status: 200, body: { action: 'offboard', status: 'offboarded' } });
+
+    expect(harness.queries.some((query) => query.includes('access.resolve_authoritative_governance'))).toBe(true);
+    expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(true);
+  });
+
+  it.each(['owner', 'senior_administrator'] as const)(
+    'prevents a senior administrator from offboarding a protected %s identity',
+    async (targetGovernance) => {
+      const harness = operationHarness({ targetGovernance, targetIsOwner: targetGovernance === 'owner' });
+
+      await expect(accessOperations(context(harness.pool)).invoke({
+        ...offboardAdministratorRequest(), access: seniorAdministratorAccess(),
+      })).rejects.toThrow(targetGovernance === 'owner'
+        ? 'OWNER_ROLE_LEVEL_IMMUTABLE'
+        : 'OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
+
+      expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(false);
+    }
+  );
 
   it('deletes a custom identity only after detaching its relations and preserves member rows', async () => {
     const harness = operationHarness();
@@ -439,6 +465,12 @@ function projectedOwnerAccess(scope: AccessContext['scope']): AccessContext {
     ownerMembershipId: 'membership:authoritative-owner' } };
 }
 
+function seniorAdministratorAccess(): AccessContext {
+  const access = ownerAccess(mallA);
+  return { ...access, governance: { ...access.governance!, governanceLevel: 'senior_administrator',
+    isExactOwner: false, ownerMembershipId: 'membership:owner' } };
+}
+
 function tenantManagerAccess(scope: AccessContext['scope']): AccessContext {
   return accessContext(scope, tenantA);
 }
@@ -463,7 +495,7 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
   assignedTargetMembershipScope?: unknown;
   targetClient?: string; targetStatus?: string; targetRealm?: string; actorRealm?: string;
   targetRealmBinding?: boolean; targetOrganizationBinding?: boolean; managementRole?: boolean;
-  seniorRole?: boolean; targetIsOwner?: boolean; revokedSeniorScope?: boolean;
+  seniorRole?: boolean; targetIsOwner?: boolean; targetGovernance?: 'owner' | 'senior_administrator' | 'administrator' | 'member'; revokedSeniorScope?: boolean;
   roleRows?: readonly Record<string, unknown>[] }> = {}): Readonly<{
   pool: DatabasePool;
   queries: readonly string[];
@@ -495,6 +527,7 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
       }
       if (text.startsWith('select target.id,target.access_version')) return result([{
         id: 'membership:target', access_version: 2, target_is_owner: options.targetIsOwner ?? false,
+        governance_level: options.targetGovernance ?? 'administrator',
       }]);
       if (text.includes('permission.code=any($2::text[])') && text.includes('from access.membershiprole assignment')) {
         return result([{ target_membership_id: 'membership:target', target_client: options.targetClient ?? 'operator',

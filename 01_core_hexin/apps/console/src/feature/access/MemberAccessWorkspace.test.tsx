@@ -213,6 +213,55 @@ describe('member directory pagination', () => {
     expect(screen.queryByRole('row', { name: '查看管理员 高级管理员 · 7586' })).toBeNull();
   });
 
+  it('lets a senior administrator remove an ordinary administrator without exposing peer-governance controls', async () => {
+    let offboarded = false;
+    const target = { ...member('target', '普通管理员 · 7586'), mobile: '19287247586' };
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json(offboarded
+        ? { items: [], count: 0 }
+        : { items: [target], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json({
+        items: offboarded ? [] : [accessMembership('membership:target', '普通管理员 · 7586', false)], count: offboarded ? 0 : 1,
+        roles: [{ id: 'role-senior-administrator-v1:tenant-zhudatuan', name: '高级管理员', status: 'active',
+          version: 1, permissions: ['member.members.read'], member_count: 1, governance: true,
+          governance_level: 'senior_administrator', editable: false, members: [], scopes: [] }],
+      })),
+      http.put('*/api/v1/access/roles/:roleid', () => {
+        offboarded = true;
+        return HttpResponse.json({ action: 'offboard', changed: true, membership: 'membership:target',
+          status: 'offboarded', access_version: 8 });
+      }),
+    );
+    const user = userEvent.setup();
+
+    renderWorkspace(seniorAdministratorContext());
+    await user.click(await screen.findByRole('row', { name: '查看管理员 普通管理员 · 7586' }));
+
+    expect(screen.getByRole('button', { name: '删除管理员' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '升级为高级管理员' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '降级为普通管理员' })).toBeNull();
+    await user.click(screen.getByRole('button', { name: '删除管理员' }));
+    await user.click(screen.getByRole('button', { name: '确认移除管理员' }));
+    expect(await screen.findByText('暂无管理员')).toBeTruthy();
+  });
+
+  it('does not let a senior administrator manage a peer senior administrator', async () => {
+    const target = { ...member('target', '高级管理员 · 7586'), mobile: '19287247586' };
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json({ items: [target], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json({
+        items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [],
+      })),
+    );
+    const user = userEvent.setup();
+
+    renderWorkspace(seniorAdministratorContext());
+    await user.click(await screen.findByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
+
+    expect(screen.queryByRole('button', { name: '删除管理员' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '降级为普通管理员' })).toBeNull();
+  });
+
   it('demotes a senior administrator from the detail panel and verifies the authoritative reread', async () => {
     let senior = true;
     let requestBody: unknown;
@@ -275,6 +324,12 @@ function ownerContext(extraScope?: ConsoleScope): ConsoleContext {
       scopes: extraScope === undefined ? context.session.scopes : [...context.session.scopes, extraScope],
     },
   };
+}
+
+function seniorAdministratorContext(): ConsoleContext {
+  const value = ownerContext();
+  return { ...value, session: { ...value.session, membership: 'membership:senior',
+    governance: { ...value.session.governance!, level: 'senior_administrator', exactOwner: false } } };
 }
 
 function accessMembership(id: string, displayName: string, managementRole: boolean) {
