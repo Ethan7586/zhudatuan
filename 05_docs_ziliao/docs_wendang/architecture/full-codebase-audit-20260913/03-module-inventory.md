@@ -1035,3 +1035,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | public compatibility | 仅转发 interface port 的公开导出 | [FACT][E-AU-093-004] |
 
 [FACT][E-AU-093-005] 新增 4 个 Organization 文件、93 行完成深审；CreateMall/ProvisioningOperations 与其测试为既有 AU-003 深审证据，本批次仅交叉核对调用链，无重复计数。
+
+## 99. AU-094 Identity 公开端口与异步边界清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| capabilities/public contracts | identity read/manage 与跨模块端口声明 | [FACT][E-AU-094-001] |
+| notification delivery | challenge 密文读取、attempt 状态迁移、deadletter | [FACT][E-AU-094-002] |
+| retention/import | runtime job purge 与 member import principal 窄接口 | [FACT][E-AU-094-003] |
+| Wechat token | runtime/registration 注入的第三方身份契约 | [FACT][E-AU-094-004] |
+| tests | notification 状态和 worker 窄写边界静态 oracle | [FACT][E-AU-094-005] |
+
+[FACT][E-AU-094-006] 7 文件、196 行 Identity 公开端口与关联测试完成深审；未见未声明的跨模块直写或第二套 notification 状态机。
