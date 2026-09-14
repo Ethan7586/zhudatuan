@@ -4973,3 +4973,21 @@
 | 建议方向 | 从当时最新主线建立独立 topology/permission repair 批次：先确认权威 owner-transfer API runtime，再同批移动 selected write module 或恢复最小旧 role execute；为每条 owner transfer route 加真实 role 的成功与 forbidden-role 反事实测试。不要改写历史 migration。 |
 | 验证/回滚 | 隔离环境分别以 shopapp 与 identity API role 调用每个 function，并通过实际 registered route 调用 create/accept/cancel；应仅有权威 route 成功。回滚为撤回独立 module/ACL repair。 |
 | 是否需要独立复核 | 是；复核者需重新核对运行 unit、reverse proxy route、module operation catalog 与生产 DB grants。 |
+
+## F-0268｜Senior Administrator 邀请的数据库授权矩阵缺少直接契约测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 身份邀请 / Senior Administrator governance |
+| 类型 | 数据库权限契约、测试可信度 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql:14-56,163-424`；`02_platform_pingtai/database/supabase/tests/zhudatuan_operator_invitation_registration_contract.sql`；`01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/IdentityInvitation.test.ts:153-174`。 |
+| 当前/预期 | 应用层 unit test 覆盖 Senior Administrator 在 full runtime 创建 operator invitation，但该 harness mock database query；现有 PostgreSQL contract SQL 不出现 `senior` 或 `zhudatuan_operator_invitation_allowed`。预期应在真实数据库 role、RLS 和 session context 下覆盖 Owner/Senior/ordinary/anonymous 的 create/read/revoke/consume allow 与 deny 矩阵。 |
+| 直接证据 | [FACT][E-AU-633-001] migration 的 permission predicate、trigger 与三条 identity API RLS policy 共同决定实际写入；[FACT][E-AU-633-003] `IdentityInvitation.test` 以 application harness 验证 full runtime senior path；[FACT][E-AU-633-005] 对现有 SQL contract 的 senior/predicate 检索无命中，未保存数据库层 senior 反事实契约。 |
+| 调用链或运行入口 | Console → `identity.invitations.create/revoke` → IdentityRegistrationApi → `member.invite` RLS/trigger → registration consume。 |
+| 用户/数据/安全影响 | 当前未取得越权或合法请求失败的运行证据；未来改动该 migration 覆盖的 predicate、policy 或 role grant 时，应用层 mock contract 无法发现 PostgreSQL 特有的 RLS、current_user、session variable 或 trigger 回归，可能造成错误拒绝或权限边界漂移。 |
+| 根因 | senior delegation 在后续 migration 中叠加到既有 invitation contract，application unit test 随之扩展，而原始数据库 contract 未同步扩展。 |
+| 建议方向 | 从当时最新主线建立独立 database-contract test 批次：用隔离数据库最小 fixture 分别验证 Owner 与 Senior 的允许路径、ordinary/stale grant/deny override/错 scope 的拒绝路径，以及匿名 registration consume 的不可提升边界；不改写历史 migration。 |
+| 验证/回滚 | 仅运行该 SQL contract 和对应 invitation integration path，断言允许/拒绝集合；回滚为撤回单独的测试 fixture/contract 提交。 |
+| 是否需要独立复核 | 否；测试 fixture 的真实 role/session 建模需权限所有者确认。 |
