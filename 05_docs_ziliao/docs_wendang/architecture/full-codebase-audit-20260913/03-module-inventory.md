@@ -549,6 +549,8 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 
 [FACT][E-AU-033-001] 9文件79行深入审阅；随 Commerce OCI 发布，无独立表、进程或制品。
 
+后续复核：AU-041确认`F-0127/F-0128/F-0129`与`ProviderLoader` local分支一致性，无新增缺陷。
+
 ## 40. AU-034 Tmallmarket Provider 模块清单
 
 | 子模块 | 职责 | 当前边界 |
