@@ -5187,3 +5187,25 @@
 | 验证方式 | 隔离数据库以 `zhudatuanwebapi` 执行完整 Web order query：同 scope 的 nested legs/lines/milestones/reviews 应可见，跨 scope 与未授权 relation 必须拒绝或无行；以 no-role 对照执行，并检查只保留必要 table grant。 |
 | 回滚方式 | 撤回独立前向 narrow ACL/RLS migration；不回滚或删除订单数据。 |
 | 是否需要独立复核 | 是；复核者需独立检查最终 policy catalog、connection role 与跨 scope response。 |
+
+## F-0279｜Purchase quote 的 Partner agreement 表权限未闭合至 RLS
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Purchase API / Checkout quote / Partner agreement boundary |
+| 类型 | 运行时正确性、行级权限契约与测试可信度 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260911163000_allow_purchase_partner_agreement_read.sql:3-4`；`01_core_hexin/services/commerce/src/modules/checkout_jiesuan/03_application_yingyong/queries_duqu/QuoteReader.ts:103-154`；`01_core_hexin/services/commerce/src/bootstrap/PurchaseApiRuntime.ts:170-213`；`02_platform_pingtai/database/supabase/migrations/20260821014000_create_organization_partner.sql:79-90,126`。 |
+| 当前/预期 | 当前 migration 将 `partner` schema usage 和 `partner.agreement` SELECT 授予 `zhudatuanpurchaseapi`，Purchase readiness 也只检查该 table grant。但 partner schema 全表启用 RLS，migration 链未为该 role 建立 agreement SELECT policy。预期为购买 quote 仅能读取当前 Mall 内有效、允许被当前 checkout context 使用的 agreement，同时不暴露其他协议。 |
+| 直接证据 | [FACT][E-AU-681-001] QuoteReader lines 150-153 以 product owner、cart Mall、active/effective window 查询 agreement，并把合同/能力事实映射进 quote line；[FACT][E-AU-681-002] create_organization_partner migration 对 `partner` 全表启用 RLS；[FACT][E-AU-681-003] 对全 migrations 的 agreement/purchase policy检索未命中 `zhudatuanpurchaseapi`，唯一该 role ACL 即 AU-681；[FACT][E-AU-681-004] PurchaseApiRuntime lines 212-213 与其 test 只验证 table/schema privilege，未做 role/RLS data query。 |
+| 调用链或运行入口 | Storefront checkout quote → Purchase API → QuoteReader.lines → `partner.agreement` lateral query → quote/PlaceOrder supply fact selection。 |
+| 用户影响 | 没有供应 route 的 owner product 依赖该 fallback agreement 时，quote 可能丢失 agreement facts 并被判为不可购买或合同信息不完整；未读取生产回执，影响范围未验证。 |
+| 数据影响 | 读取失败本身不写入数据；可能阻断订单前 quote 而不产生订单。 |
+| 安全影响 | 当前无 RLS policy 时 grant 不应披露 rows；若以后添加宽松 policy或 role wrapper漂移，缺乏明确 Mall predicate 的 ACL 设计会造成协议/合同元数据越域读取风险。 |
+| 根因 | migration/readiness 将“relation 存在和 table grant”当作可用性充分条件，没有把 RLS predicate与真实 quote execution纳入契约。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立独立 Purchase agreement read repair：确认 purchase session context变量和可见性语义后，为 agreement 建立最小 SELECT RLS policy或受控 security-definer lookup function；增加同 Mall allowed、跨 Mall deny、expired/terminated deny 的真实数据库 contract。不要改写历史 migration。 |
+| 预计修改范围 | 新前向 migration、最小 SQL integration contract，必要时 QuoteReader 改用受控函数；无数据回填。 |
+| 验证方式 | 隔离数据库以正式 `zhudatuanpurchaseapi` 和 checkout session context执行 QuoteReader SQL：当前 Mall active agreement 必须可见，异 Mall、expired、terminated agreement 必须不可见；运行 Purchase readiness 与新增契约。 |
+| 回滚方式 | 撤回单独的 forward policy/function migration；不删除或重写 agreement records。 |
+| 是否需要独立复核 | 是；复核者须独立确认数据库连接 role、session context 设置与最终 `pg_policies`。 |
