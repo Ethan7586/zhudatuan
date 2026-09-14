@@ -4901,3 +4901,21 @@
 | 建议方向 | 从最新主线创建独立、只新增 migration guard 的小批次：检查目标 database/role、明确 predecessor version+checksum、拒绝 future head/未知 legacy state，并定义 already-applied 的 idempotent 路径；不要重写历史 migration。 |
 | 验证/回滚 | 在隔离 PostgreSQL 使用精确 predecessor、未知 checksum、错误数据库和 future-head 四种 fixture：仅合法 predecessor 可继续，后三者必须在任何 DDL/DML 前失败；对合法路径验证 policy pointer/revision/ACL 不变性。回滚为撤回独立 guard migration。 |
 | 是否需要独立复核 | 否；执行前应由数据库与财务所有者复核实际 schema head 和 legacy policy 数据。 |
+
+## F-0264｜Identity API 的跨域读取 RLS 未限定 scope
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Identity operator API / referral、channel、voucher、catalog read boundary |
+| 类型 | 多租户数据隔离、数据库纵深防御 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql:46-61,77-95`。 |
+| 当前/预期 | `zhudatuanidentityapi` 获得 24 张业务表的 SELECT，循环为每张表创建 `using (true)` 的 RLS policy。预期为每张表按其真实 scope owner/关联链使用 `access.scope_allowed(...)`，或改为最小 security-definer read projection。 |
+| 直接证据 | [FACT][E-AU-615-001] 动态 policy SQL 字面量是 `using (true)`；[FACT][E-AU-615-002] migration assert 只计数 24 个 policy，不验证 scope predicate；[FACT][E-AU-615-003] AU-614 同一 identity API 的 finance 读取采用 scope_allowed/provenance RLS，说明仓内已有更窄模式。 |
+| 调用链或运行入口 | IdentityRegistrationApi → IdentityOperatorReferral/Channel/Voucher modules → `zhudatuanidentityapi` SELECT；应用 AccessPipeline 先做授权，但 DB role 对这 24 relation 的 raw SELECT 不再行级限制。 |
+| 用户/数据/安全影响 | 未证明已发生泄露。若任一现有/新增 identity API query 缺 scope predicate、被错误复用或 SQL 注入防护失效，数据库会返回跨 scope 的 referral、catalog、channel、extension 或 voucher 数据；应用层授权仍是现有第一道控制。 |
+| 根因 | 为批量建立跨模块 operator read access，使用统一 permissive RLS 模板，未为各 relation 建立 scope provenance。 |
+| 建议方向 | 从最新主线建立独立 security batch：按 relation 分类实现 scope owner RLS/projection，先覆盖高敏感 voucher/referral/channel 数据；对同 scope/跨 scope/无 app context 的实际 role fixture 加反事实数据库测试。不要改写本历史 migration。 |
+| 验证/回滚 | 隔离数据库以 identity role 设置不同 scope：仅本 scope row 可读，跨 scope/空 context 必须为空；核对每个 API read 的正确结果。回滚为撤回独立 policy/projection batch。 |
+| 是否需要独立复核 | 是；复核者需重新追踪 24 relation 的 owner scope 和所有 Identity API query。 |
