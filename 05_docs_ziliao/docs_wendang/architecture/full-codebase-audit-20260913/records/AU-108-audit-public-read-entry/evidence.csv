@@ -1,0 +1,4 @@
+"证据编号","文件","位置","结论"
+"E-AU-108-001","01_core_hexin/services/commerce/src/modules/audit/01_public_gongkai/AuditPort.ts","1-21","Audit append/read/archive/schedule 公开 repository contract。"
+"E-AU-108-002","01_core_hexin/services/commerce/src/modules/audit/03_application_yingyong/query/GetAuditRecords.ts","1-14","authenticated scope、keyset cursor 和 page response。"
+"E-AU-108-003","01_core_hexin/services/commerce/src/modules/audit/05_interface_jieru/AuditModule.ts","1-4","Audit HTTP module registration。"

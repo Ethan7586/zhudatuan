@@ -1,0 +1,2 @@
+"验证项","正式入口","执行状态","结果","备注"
+"Audit read/module Vitest","services/commerce package Vitest","未执行","未验证","审计工作树未安装 Vitest；相关 append/archive/redaction 测试已在 AU-051 人工审阅。"

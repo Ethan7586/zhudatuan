@@ -1195,3 +1195,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | JSSDK、row lock、account confirmation、rollback 与 cross-realm return target oracle | [FACT][E-AU-107-005] |
 
 [FACT][E-AU-107-006] 2 文件、436 行 Identity WeChat HTTP wrapper 完成深审；federated identity 不能直接跨 account 创建 session，ticket 只在 realm/target 匹配后签发。
+
+## 113. AU-108 Audit 公开端口、读取 query 与 HTTP module 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| AuditPort | append/read/archive/schedule 的跨模块 repository contract | [FACT][E-AU-108-001] |
+| audit.records.read | authenticated scope、keyset page/cursor projection | [FACT][E-AU-108-002] |
+| AuditModule | Commerce module → auditRoutes 唯一 HTTP 装配 | [FACT][E-AU-108-003] |
+
+[FACT][E-AU-108-004] 4 文件、53 行 Audit 未覆盖接口层完成深审；append/archive/脱敏的实现证据已在 AU-051，未重复审阅。

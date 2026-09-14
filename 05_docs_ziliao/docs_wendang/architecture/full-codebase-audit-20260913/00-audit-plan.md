@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-107 已完成。AU-107 完成 Identity WeChat session 与公开 HTTP 入口审阅。覆盖总账按当前文件级清单重算：深入审阅1,069文件/91,983行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,779文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-108 已完成。AU-108 完成 Audit 公开端口、读取 query 与 HTTP module 入口审阅。覆盖总账按当前文件级清单重算：深入审阅1,073文件/92,036行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,775文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1077,3 +1077,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 WeChat wrapper 的 JSSDK/authorize/exchange、federated identity、registration/account-confirmation grant、WeChat session/ticket 和已登录 bind。
 
 执行结果：公开 JSSDK 和 authorize 只允许 jsapi 场景；exchange 按 entry realm/目标 storefront 解析，identity subject 加密并将 provider/application/realm 组成唯一性边界。已绑定 identity 只在 membership/account/realm/target 仍匹配时创建 session；已登录但不同 account 只发十分钟 confirmation grant。revoked identity 和会话绑定失败由同一 transaction 回滚。已登录 bind 采用 actor 的 current realm account。未发现 P0–P3 新问题；Vitest 未运行。
+
+## 110. AU-108 连续审计点
+
+审阅 Audit 公开 repository contract、审计记录读取 cursor query 和 Commerce module HTTP 装配；append、archive、脱敏链此前已在 AU-051 审阅，不重复计入。
+
+执行结果：AuditPort 明确 previous/append/read/archive/schedule 的唯一跨模块契约。audit.records.read 强制 access scope，以 page fetch plus one 实现 keyset next cursor；HTTP module 只组合该 query operation，并从容器取得 repository/pool/audit sink。未发现 P0–P3 新问题；Vitest 未运行。
