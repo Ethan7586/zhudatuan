@@ -1,0 +1,13 @@
+name: Retired - legacy baseline registration
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  retired:
+    if: ${{ false }}
+    runs-on: [self-hosted, linux, x64, retired-workflow-never-runs]
+    steps:
+      - run: exit 0
