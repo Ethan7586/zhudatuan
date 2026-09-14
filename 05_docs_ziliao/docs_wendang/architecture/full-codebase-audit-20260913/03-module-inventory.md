@@ -2281,3 +2281,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | write context | 将当前request映射为active branded write transaction，事务结束即清理/关闭 | [FACT][E-AU-214-003] |
 
 [FACT][E-AU-214-004] 2 文件、391 行完成深审；ModuleOperations是主要消费者，payment/identity特殊路径直接复用claim/complete helper；direct concurrency/rollback fixture存在，剩余分支缺口见F-0211/P3。
+
+## 220. AU-215 Handler contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| generic handler | 定义request到Promise response的最小处理器协议，不承担dispatch或副作用 | [FACT][E-AU-215-001] |
+| consumers | CommandBus、QueryBus与生成的OperationHandler均以它维持统一处理器形状 | [FACT][E-AU-215-002] |
+
+[FACT][E-AU-215-003] 1 文件、3 行完成深审；实际泛型消费者存在，为G0；无独立运行分支。

@@ -664,3 +664,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct in-memory transaction fixture覆盖并发同key单次写入及replay、hash冲突、失败rollback/retry、key和transition拒绝、write context生命周期。
 - 未直接覆盖provider fallback key、OperationRejection完成持久化和checkpoint丢失，见F-0211/P3。审计工作树未运行Vitest。
+
+## 215. AU-215 Handler contract 深审
+
+- Handler为type-only泛型契约，没有独立可执行分支；其dispatch行为由CommandBus/QueryBus审计单元承接。
+- 无P0–P3新问题。
