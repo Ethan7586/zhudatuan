@@ -4793,3 +4793,21 @@
 | 建议方向 | 从最新主线建立独立质量配置小批次，先用 release/artifact 权威确认 store/supplier 是否仍是产品单元；若否删除废弃 keys，若是将真实产物及反事实超预算 test 加入 gate；不要只改数值。 |
 | 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
 | 是否需要独立复核 | 否。 |
+
+## F-0258｜容量目录生成器未完整校验运行字段
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 平台运行配置 / capacity catalog generator |
+| 类型 | 配置验证、运行时可靠性 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `04_tools/scripts/build-runtime-config.mjs:29-58`；输入 `02_platform_pingtai/config/capacity.yml:3-59`。 |
+| 当前/预期 | validator 仅要求 `model`/`provider`/`runtime.http` 为 object；external 只遍历已出现属性而不要求全部键；pool 只校验已出现 profile 的属性。预期为 schema 明确每个 required key、整数/范围与跨字段关系，然后才生成 Node/Miniapp runtime projection。 |
+| 直接证据 | [FACT][E-AU-547-001] model/provider/http 没有字段级验证；[FACT][E-AU-547-002] external `Object.entries` 在空/缺键 object 时不会失败；[FACT][E-AU-547-003] generator 随后直接 JSON stringify 并在非-check 模式写入 `RuntimeCatalog.generated.ts` 与 Miniapp `RuntimeLimits.js`。 |
+| 调用链或运行入口 | capacity YAML → build-runtime-config → generated RuntimeCatalog/Miniapp limits → NodeServer/API client/external executor/DB pool consumers。 |
+| 用户/数据/安全影响 | 当前固定基线值未显示异常；未来遗漏、字符串或不合理值可能在生成阶段漏过，进入启动/请求路径时导致 timeout、限流、并发或连接池行为异常。被 TypeScript/具体 consumer 拦截的程度依字段而异，未验证线上配置变更流程。 |
+| 根因 | generator 采用“对象存在 + 部分值遍历”的最小校验，而非 capacity catalog 的完整运行 schema。 |
+| 建议方向 | 从最新主线建立独立配置质量批次：定义完整 schema（required keys、safe integer、合理上下限及 timeout ordering），加缺键/错型/负数/跨字段反事实 tests，并保持 `--check` 的纯校验行为。 |
+| 验证/回滚 | 对每类必需字段删除、设为字符串/负数/非法顺序，确认 generator 拒绝；合法 catalog 仍生成相同投影。回滚为撤回该单一 schema/test 改动。 |
+| 是否需要独立复核 | 否。 |
