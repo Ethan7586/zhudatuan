@@ -4847,3 +4847,21 @@
 | 建议方向 | 从最新主线建立独立 deployment-contract 批次，先确定 catalog 是否应当 L1 本地运行或 L0 共用；只保留对应的 env template、target、systemd/route，并加入 topology consistency gate。不得仅改文件名或删除模板。 |
 | 验证/回滚 | 在隔离 host/fixture 检查 L1 activation：candidate artifact、runtime file、systemd ConditionPath、DB ref、route origin 应全部指向同一选择；验证 L0 delegation 时请求不得携带 L1 database role。回滚为撤回单一 topology 对齐提交。 |
 | 是否需要独立复核 | 否；激活 hbbtzn 前需部署所有者复核。 |
+
+## F-0261｜遥测 SLO 与脱敏政策多数没有运行消费者
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 可靠性配置 / telemetry SLO and redaction policy |
+| 类型 | 配置可信度、可观测性与敏感数据治理 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/config/telemetry.yml:4-20`；`03_quality_ceshi/tests/recovery/runbook.spec.ts:33-39`。 |
+| 当前/预期 | latency/availability/outbox SLO 和 redaction deny list 在固定基线内仅出现于 YAML；唯一仓内 code consumer只用正则检查 `rpoMinutes: 5` 和 `rtoMinutes: 30`。预期为每个承诺的 SLO/deny key有 alert/metric/redactor consumer，或明确降为参考文档而不宣称运行政策。 |
+| 直接证据 | [FACT][E-AU-563-001] key-level检索仅命中配置本身，rpo/rto另命中 recovery spec/backup YAML；[FACT][E-AU-563-002] recovery spec只对两项字面量断言；[FACT][E-AU-563-003] AU-013 已核验 `@shop/telemetry` Redactor 采用自身规则，未加载 YAML。 |
+| 调用链或运行入口 | telemetry.yml → recovery documentation/spec；独立 `@shop/telemetry` redactor/logging path，并无该 YAML加载边。 |
+| 用户/数据/安全影响 | 不会直接改动线上行为；性能/可用性目标可能没有自动告警或验证，配置列出的敏感字段也不会自动影响日志脱敏。F-0065 的实际 Redactor 漏脱敏风险不因本项而降级。 |
+| 根因 | 运维/治理 YAML 与执行型 telemetry/alert/redaction 实现未共享 schema或生成/加载路径，测试只保持两个恢复数字的文字同步。 |
+| 建议方向 | 从最新主线建立独立可靠性治理批次：逐项决定 SLO/deny key应被 runtime/alert使用还是移入文档；为执行项建立单一 typed source、loader/生成物与反事实测试，避免仅扩大文字 regex。 |
+| 验证/回滚 | 对每项 SLO/deny加入故意超阈/敏感字段样本，确认相应 metric alert/redaction行为；恢复/backup目标需在隔离演练中验证。回滚为撤回单一配置到执行链改动。 |
+| 是否需要独立复核 | 否；涉及实际 SLO/合规承诺需可靠性/安全所有者确认。 |
