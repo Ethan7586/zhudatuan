@@ -1,4 +1,5 @@
 "路径","所属模块","文件类型","审阅状态","审阅日期","审计检查点","主要入口或调用者","风险等级","结论","是否需要二次复核"
+"02_platform_pingtai/infrastructure/zhudatuan/aliyun/ecosystem.config.cjs","基础设施/zhudatuan","JavaScript源码","已深入审阅","2026-09-15","AU-716 Zhudatuan PM2 candidate","delivery.yml → release-engine/install-ai-delivery-agent → inactive candidate","中","G0：交付链安装的未激活 PM2 候选；不可按零运行删除","否"
 "05_docs_ziliao/VI_shijue/current/ZHU-VI-1.5/MORVIA-VISUAL-SYSTEM.md","视觉/current","文档","已结构性审阅","2026-09-15","AU-715 MORVIA visual asset bundle","视觉规范入口","低","G0：当前规范；运行集成以资产引用为准","否"
 "05_docs_ziliao/VI_shijue/current/ZHU-VI-1.5/MORVIA-VISUAL-SYSTEM.pdf","视觉/current","二进制/专用文档","自动生成","2026-09-15","AU-715 MORVIA visual asset bundle","render-guide.mjs","低","由本地 visual-system HTML 渲染","否"
 "05_docs_ziliao/VI_shijue/current/ZHU-VI-1.5/PRODUCT-ASSET-MAP.md","视觉/current","文档","已深入审阅","2026-09-15","AU-715 MORVIA visual asset bundle","品牌交付映射","中","G0；F-0291：三端共享声明缺可追踪运行消费者","否"
