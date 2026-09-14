@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-097 已完成。AU-097 完成 Identity 持久化、认证票据与 principal 适配器审阅。覆盖总账按当前文件级清单重算：深入审阅1,043文件/86,321行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,805文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-098 已完成。AU-098 完成 Identity WeChat 网关与 return-target 签名边界审阅。覆盖总账按当前文件级清单重算：深入审阅1,046文件/86,604行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,802文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1017,3 +1017,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Identity WeChat binding、savepoint/transaction/idempotency/outbox、AuthTicket issue/consume 与 member import principal 适配器。
 
 执行结果：WeChat binding 先锁定未消费未过期 grant 与 identity，检查同 app/account 冲突，再以 active membership 条件更新并消费 grant。业务子写入在 savepoint 内回滚，外层 transaction 负责 context/commit/rollback；事件写入 outbox。AuthTicket 同时绑定 state/nonce/PKCE/session/account/realm containment，且在行锁下单次消费。principal import 只调用受控数据库函数。未发现 P0–P3 新问题；Vitest 未运行。
+
+## 100. AU-098 连续审计点
+
+审阅 Identity WeChat OAuth/code exchange、JSSDK token/ticket cache、callback URL 配置与认证返回地址签名边界。
+
+执行结果：ReturnTargetSigner 仅签发无 credential/hash/query 的 HTTPS URL，签名有效期为一分钟。WeChat gateway 只接受精确的两场景应用配置，OAuth state/code/provider 响应有格式约束；callback 要求公开 HTTPS 固定路径，拒绝本地/私网/查询。JSSDK 签名移除 fragment，token/ticket 按官方账户缓存并合并并发请求。未发现 P0–P3 新问题；Vitest 未运行。

@@ -1081,3 +1081,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | PGlite savepoint 与 ticket binding/consume oracle | [FACT][E-AU-097-005] |
 
 [FACT][E-AU-097-006] 5 文件、277 行 Identity persistence 与票据适配器完成深审；未见外层 transaction 外的业务写入或可重复消费 ticket。
+
+## 103. AU-098 Identity WeChat gateway 与 return-target 签名清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| return target | HTTPS 无凭据/fragment/query地址的短期 HMAC 证明 | [FACT][E-AU-098-001] |
+| OAuth/code exchange | 场景专属 app/endpoint、state/code/response 格式 | [FACT][E-AU-098-002] |
+| JSSDK | access token/ticket cache、页面 URL 规范化与 SHA-1 签名 | [FACT][E-AU-098-003] |
+| configuration | 两场景完整性、固定 callback path、非私网 HTTPS | [FACT][E-AU-098-004] |
+| tests | OAuth URL、场景端点、cache 和 callback 反事实 oracle | [FACT][E-AU-098-005] |
+
+[FACT][E-AU-098-006] 3 文件、283 行 Identity 外部 WeChat 适配器与测试完成深审；未见由请求提供的 callback/return target 或跨场景 token 混用。
