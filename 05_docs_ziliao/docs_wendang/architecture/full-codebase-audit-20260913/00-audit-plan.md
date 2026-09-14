@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-142 已完成。AU-142 完成 Voucher HTTP operation、公共契约和状态策略审阅。覆盖总账按当前文件级清单重算：深入审阅1,348文件/101,951行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,505文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-143 已完成。AU-143 完成 Voucher 导入、发券、状态 Worker 与死信审阅。覆盖总账按当前文件级清单重算：深入审阅1,353文件/102,485行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,500文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1287,3 +1287,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Voucher 公开 contract、状态策略、19 项 HTTP operation/查询、full/identity module 装配、manifest 与现有 policy/manifest tests。
 
 执行结果：全模块以 member/finance 依赖装配写入和查询，identity selected module 仅暴露五项 read；写路径的 scope、row lock、version、allocation、审批分离、状态批次和 worker job 投递均可在实现定位，读取使用 scope predicate/keyset。新增 F-0176/P2：本模块没有 operation action/repository/transaction fixture，现有测试仅覆盖 policy 和 manifest；未发现 P0/P1，Vitest 未运行。
+
+## 145. AU-143 连续审计点
+
+审阅 Voucher public adapter、encrypted card import persistence/import worker、issue/expiry/status processor、deadletter 和主 jobs catalog 运行链。
+
+执行结果：VoucherPort 对 reserve/consume/refund/store verification 做锁定、状态事件、redemption/reversal 与财务事实；import 以 500 行加密分片、worker context、逐行 savepoint、continuation/report 收口；issue/status/expiry 以 lock/skip locked、chunk、policy、outbox/finance 运行，deadletter 使失败任务显式落终态并释放已占 allocation。新增 F-0177/P2：没有此 adapter/persistence/Worker/deadletter 的直接行为测试；未发现 P0/P1，Vitest 未运行。

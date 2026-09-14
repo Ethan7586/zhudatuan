@@ -1,0 +1,8 @@
+id,file,location,kind,observation
+E-AU-143-001,04_adapters_shixian/VoucherPort.ts,1-136,voucher boundary,Locks voucher/reservation rows, records state events/redemptions/reversals and posts finance facts for checkout/order/payment/store paths.
+E-AU-143-002,04_adapters_shixian/persistence/PgVoucherImport.ts,1-131,import persistence,Encrypts cards in 500-row shards, uses worker context/transactions/savepoints, persists failures and queues continuation before report completion.
+E-AU-143-003,05_interface_jieru/job/VoucherImportJob.ts,1-11,worker registration,Connects generic BatchImportProcessor to voucher import port/KMS/object storage.
+E-AU-143-004,05_interface_jieru/job/VoucherJobs.ts,1-206,async lifecycle,Issue/status/expiry processors use locks, chunks, continuations, policy checks, finance/outbox facts and per-item savepoints.
+E-AU-143-005,05_interface_jieru/job/VoucherDeadletter.ts,1-50,deadletter recovery,Marks failed issue/import/status state, releases allocated capacity when applicable, and writes matching failure outbox event.
+E-AU-143-006,src/app/jobs.ts:44-46;90-105;129-172,runtime entry,Main jobs catalog registers four voucher kinds and routes their processors/deadletter.
+E-AU-143-007,src/modules/**/**.test.ts,test inventory,No direct test instantiates VoucherPort/PgVoucherImport/VoucherJobProcessor/VoucherDeadletter; QuoteReader mall test passes an empty voucher selection.

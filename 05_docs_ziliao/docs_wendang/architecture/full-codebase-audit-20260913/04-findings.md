@@ -3502,6 +3502,20 @@
 | 验证/回滚 | 从最新主线建立独立测试批次，以最小 transaction fake/PGlite 为每类成功、scope 拒绝、version conflict、approval separation、job enqueue 和 keyset 反事实建断言；回滚为撤回测试批次。 |
 | 独立复核 | 否；P2，后续 Voucher HTTP 专项复查。 |
 
+## F-0177｜Voucher 导入与异步生命周期没有行为级测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | voucher / adapter、import、issue/status/expiry Worker、deadletter；P2；高 |
+| 类型 | 测试覆盖缺口、资金/库存式凭证状态与异步恢复正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/voucher/04_adapters_shixian/{VoucherPort,persistence/PgVoucherImport}.ts`；`05_interface_jieru/job/{VoucherImportJob,VoucherJobs,VoucherDeadletter}.ts` |
+| 当前/预期 | 代码实现 voucher reserve/consume/refund/redeem、encrypted import shard/continuation、issue/status/expiry chunk 与 failure deadletter。预期至少用 fake transaction/PGlite 覆盖 repeated reserve/consume/refund、金额/状态/finance idempotency、KMS/encrypted staging、invalid row/savepoint、cursor resume、issue accounting/outbox、status per-item recovery、expiry/void、deadletter capacity release。 |
+| 直接证据 | 测试检索没有 `VoucherJobProcessor`、`VoucherDeadletter`、`VoucherImportProcessor`、`PgVoucherImport` 或 VoucherPort method 的实例化/行为断言；唯一跨模块 VoucherPort 使用位于 `QuoteReader.mall.test.ts`，fixture 的 voucher selection 为空。 |
+| 调用链/影响 | Checkout/Order/Payment/Verification → VoucherPort；Voucher HTTP action → runtime.job → VoucherImportProcessor/VoucherJobProcessor → finance/outbox/deadletter。凭证余额、卡码导入、批量发放、状态迁移或失败补偿回归无法由当前模块测试直接检出。 |
+| 根因 | 现有测试停在 public/manifest/state policy，未对适配器和异步运行单元建立 transaction fixture。 |
+| 验证/回滚 | 从最新主线建立独立测试批次，按上述最小 transaction/PGlite matrix 验证成功、并发/重复、failure/retry/replay；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2，后续 Voucher async 专项复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

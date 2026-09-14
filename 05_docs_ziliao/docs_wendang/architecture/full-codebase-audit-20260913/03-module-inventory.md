@@ -1560,3 +1560,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | policy/manifest only；HTTP behavior gap | [FACT][E-AU-142-006]；F-0176/P2 |
 
 [FACT][E-AU-142-007] 12 文件、669 行完成深审；Voucher HTTP/data ownership 边界明确，但关键 write/read action 尚缺行为级规格。
+
+## 148. AU-143 Voucher 导入与异步生命周期清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| public adapter | reserve/release/consume/refund/redeem verification 与 finance/state event | [FACT][E-AU-143-001] |
+| import pipeline | encrypted staging、per-row savepoint、cursor continuation、report completion | [FACT][E-AU-143-002][E-AU-143-003] |
+| lifecycle workers | issue/expiry/status 的 locking/chunk/policy/finance/outbox | [FACT][E-AU-143-004][E-AU-143-006] |
+| deadletter/tests | failed terminal recovery；direct behavior test gap | [FACT][E-AU-143-005][E-AU-143-007]；F-0177/P2 |
+
+[FACT][E-AU-143-008] 5 文件、534 行完成深审；Voucher 生产 job链清晰，测试缺口保持独立记录。

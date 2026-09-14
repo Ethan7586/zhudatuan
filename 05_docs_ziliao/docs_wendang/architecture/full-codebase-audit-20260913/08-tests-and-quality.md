@@ -317,3 +317,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - Policy test 覆盖 representative allowed/forbidden transition；manifest test 覆盖 public export 隔离、dependencies、operations、events、jobs。
 - 19 项 Voucher action/查询未有直接 operation/repository/transaction fixture，见 F-0176/P2。
 - 本 AU 未运行 Vitest；审计 worktree 的依赖缺口已在 AU-138 留档。
+
+## 143. AU-143 Voucher 导入与异步生命周期深审
+
+- VoucherPort、PgVoucherImport、VoucherImportProcessor、VoucherJobProcessor 和 VoucherDeadletter 没有直接测试；唯一 VoucherPort 跨模块实例使用空 selection，不能触及其写入路径。
+- 导入加密/分片、issue/status/expiry chunk/continuation、finance/outbox/deadletter 的状态与恢复边界因此无回归规格，见 F-0177/P2。
+- 本 AU 未运行 Vitest；不安装审计 worktree 依赖。
