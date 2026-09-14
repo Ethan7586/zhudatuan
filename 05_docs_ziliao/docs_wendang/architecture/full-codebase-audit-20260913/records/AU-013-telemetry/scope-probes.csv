@@ -1,0 +1,6 @@
+"编号","输入","预期","实际","结论"
+"PROBE-AU-013-001","password/Cookie/Basic/card/ID合成字符串","敏感部分不可恢复","前四原样；ID大部分残留","F-0065"
+"PROBE-AU-013-002","cyclic object","受控失败或安全替换","RangeError","边界缺口"
+"PROBE-AU-013-003","拒绝型Promise writer","拒绝被传播/处理","metric+2 span end产生3次unhandledRejection","F-0067"
+"PROBE-AU-013-004","wrong platform/missing tenant/cross kind","全部拒绝","全部命中；explicit异tenant拒绝","补强F-0055"
+"PROBE-AU-013-005","timeline begin callback throw后record","begin原子失败或清理","record继续命中active","状态撕裂测试缺口"

@@ -285,3 +285,16 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Delivery matrix | 五项逐平台状态 | 文件路径 | 无代码消费者 | 无 | 无 | 正式checker不读 | F-0063；G2 DC-0014 |
 
 [FACT][E-AU-012-002] 本单元深入审阅11文件、758行；494行生产TS、31行测试、210行JSON和23行package/tsconfig均为人工维护，无生成、第三方或构建产物。
+
+## 19. AU-013 Telemetry 模块清单
+
+| 子模块 | 职责 | 对外入口 | 上游 | 下游/数据 | 进程/发布 | 测试 | 当前边界问题 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Adapter/Telemetry | 组合logger、metrics、tracer | `createTelemetry`与三平台adapter | Commerce与未来平台 | TelemetryWriter | 随消费者制品 | 间接 | async writer拒绝F-0067 |
+| Redactor/Logger | 统一脱敏与结构化日志 | `Redactor`、`SinkLogger` | Operation audit、各sink | stdout/audit sink | 多个正式Commerce进程 | 1例 | 字符串credential/PII缺口F-0065 |
+| Metrics/Tracer | count/duration/span | Telemetry成员 | Commerce运行时 | writer | 同上 | 无直接测试 | Promise失败和重复end缺口 |
+| Client errors | fingerprint、聚合、retention、Scope读取 | `ClientErrorBuffer` | ObservabilityModule | 进程内Map/writer | 当前正式target无注册 | 3例 | F-0055/F-0066；DC-0016 |
+| Interaction timeline | 前端阶段耗时 | `createInteractionTimeline` | Auth/Console/Storefront | callback/metrics | 三个前端制品 | 2例 | callback异常状态缺口 |
+| Platform adapters | Node/stdout、Beacon、miniapp writer | `nodeTelemetry/browserTelemetry/miniappTelemetry` | 各平台 | writer/sendBeacon | Node活跃，其余仓内零生产caller | 无 | DC-0017 |
+
+[FACT][E-AU-013-002] 本单元深入审阅18文件、473行；全部为人工维护，无生成、第三方或构建产物。

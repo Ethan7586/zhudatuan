@@ -160,3 +160,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - [CONFLICT][E-AU-012-005/006/007] 包内delivery matrix没有构建/发布消费者，四条微信证据路径不存在。根`check:delivery`实际验证`mvp.yml`与阿里云`delivery.yml`，不会检测矩阵漂移，形成F-0063。
 - 因为矩阵保存唯一的五项逐平台状态且仓外流程UNKNOWN，列DC-0014/G2而不是G3；本AU没有修改、移动或删除它。
 - 本AU未build候选、生成制品、读取线上发布、推送、合并或部署。
+
+## 16. AU-013 Telemetry 发布与运维边界
+
+- `@shop/telemetry`没有独立镜像、systemd unit、端口或release target；Node遥测随多个Commerce专用进程编译并写stdout，前端timeline随各自bundle发布。
+- 两个client-error Operation虽有runtime契约、SDK和模块实现，但只由被禁止的完整ApiMain装载；专用生产入口没有分配该模块，形成F-0066。
+- browser/miniapp adapters没有固定仓库生产caller，列G1而非删除候选；仓外平台消费者尚未排除。
+- 本AU未build、未读取线上日志/服务、未推送、未合并、未部署。

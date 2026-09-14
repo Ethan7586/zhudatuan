@@ -1,0 +1,6 @@
+"编号","上游","下游","方式","同步性","失败传播","发布状态","结论"
+"COM-AU-013-001","Commerce runtimes","nodeTelemetry/stdout","JSON line writer","同步当前实现","stdout异常同步抛出","多个正式进程","活跃"
+"COM-AU-013-002","ModuleOperations","Redactor→Operation audit store","函数调用/持久化","同步+数据库","redactor异常阻断审计","正式业务Operation","F-0065真实链"
+"COM-AU-013-003","Auth/Console/Storefront","InteractionTimeline","ESM函数调用","同步事件","callback异常回传","三个前端制品","活跃"
+"COM-AU-013-004","ClientError SDK/contract","ObservabilityModule/ClientErrorBuffer","HTTP Operation","同步请求；内部buffer","当前无正式专用入口","正式发布断链","F-0066"
+"COM-AU-013-005","browser adapter","navigator.sendBeacon","异步浏览器传输","fire-and-forget","false被忽略","仓内零生产caller","DC-0017"

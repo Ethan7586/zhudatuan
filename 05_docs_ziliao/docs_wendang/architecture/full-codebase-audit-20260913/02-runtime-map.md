@@ -678,3 +678,15 @@ adapter.send
 | delivery matrix | 无 | 无 | 无 | 不进入任何正式失败信号 |
 
 [CONFLICT][E-AU-012-005/007] `check:delivery`不经过delivery matrix，所以“正式delivery闸门通过”与矩阵内容正确没有因果关系。矩阵三项release-ready和四条不存在路径不会阻止质量流水线。
+
+## 21. AU-013：业务与前端到 Telemetry 的真实链
+
+| 上游 | Telemetry入口 | 输出/状态 | 运行单元 | 失败边界 |
+| --- | --- | --- | --- | --- |
+| Commerce Operation审计 | `Redactor` | audit sink/数据库 | 多个专用API进程 | 字符串credential/PII遗漏F-0065 |
+| Commerce logger/metrics/tracer | `nodeTelemetry` | JSON line stdout | 多个API/Jobs进程 | async writer拒绝F-0067；当前stdout同步 |
+| Auth/Console/Storefront交互 | `createInteractionTimeline` | callback与metric事件 | 三个前端制品 | callback异常会撕裂active状态 |
+| SDK client-error create/read | `ObservabilityModule` → `ClientErrorBuffer` | 进程内Map | 固定正式发布无target | 契约入口断链F-0066；Scope复制缺口F-0055 |
+| 未来Browser/Miniapp | 平台adapter | sendBeacon/writer | 仓内零生产caller | G1 DC-0017，不能删除 |
+
+[FACT][E-AU-013-003/005/006] Telemetry不拥有独立进程或发布单元；它随调用者编译。唯一完整装载ObservabilityModule的ApiMain属于当前发布检查禁止路径，不能把源码模块存在写成线上可用。

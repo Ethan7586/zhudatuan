@@ -642,3 +642,23 @@ flowchart LR
 [CONFLICT][E-AU-012-005/006/007] 多端矩阵与正式闸门形成平行事实源：矩阵没有代码消费者，四条微信实现证据不存在，正式checker也不读取它，形成F-0063。分类树则在DB会产生的`digital_mobile_accessory`路径上缺少L2父节点，但Storefront leaves校验仍接受，形成F-0064。
 
 [FACT][E-AU-012-004/009/011] permission目录86/86闭合，支付映射主干集中且无I/O，是值得保留的单点契约；运行目录和平台常量可变，补强F-0032。完整逐文件、导出、状态、FMEA与54.5%高风险逆向抽检见`records/AU-012-smart-wing-api-contract/`。
+
+## 14. AU-013 遥测架构增量
+
+~~~mermaid
+flowchart LR
+  Business[Commerce Operations] --> Audit[Operation Audit]
+  Audit --> Redactor[Redactor]
+  Runtime[API / Jobs] --> NodeTelemetry[nodeTelemetry]
+  NodeTelemetry --> Redactor
+  Redactor --> Stdout[JSON stdout]
+  Redactor --> AuditStore[(Audit Store)]
+  Frontends[Auth / Console / Storefront] --> Timeline[Interaction Timeline]
+  SDK[Generated SDK] -. clienterrors .-> Obs[ObservabilityModule]
+  Obs --> Buffer[Process-local ClientErrorBuffer]
+  Obs -. no formal production target .-> Gap[Release Gap]
+~~~
+
+[FACT][E-AU-013-002/003] Telemetry是随消费者编译的共享内核，不是独立服务。Node链进入多个Commerce运行进程，timeline进入三个前端；Browser/Miniapp adapter当前仓内无生产caller。
+
+[CONFLICT][E-AU-013-004/005/006/007] 同一Redactor横跨stdout和Operation审计但无法覆盖多类字符串credential/PII（F-0065）；两个client-error契约没有正式生产入口（F-0066）；允许Promise的writer拒绝未被传播（F-0067）。完整证据见`records/AU-013-telemetry/`。

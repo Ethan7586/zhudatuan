@@ -125,3 +125,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 根`test:unit`会经Storefront Vitest配置间接收录两个测试文件；本包没有test script。根`typecheck`不执行本包独立tsconfig，继续补强F-0060。
 - 测试没有覆盖taxonomy父链闭包、delivery evidence路径/正式闸门、运行时不可变性和支付状态全矩阵。源码探针分别发现F-0063、F-0064并补强F-0032。
 - 审计worktree未安装依赖，本包直接test/typecheck均Missing script；`check:delivery`因缺`yaml`在加载阶段退出。失败只记录，未安装依赖或修复。
+
+## 12. AU-013 Telemetry 测试可信度
+
+- 3个测试文件、6个直接用例全部加载真实实现：ClientErrorBuffer 3例、InteractionTimeline 2例、Redactor 1例。
+- 已覆盖错误聚合/retention/tenant拒绝、交互主干/取消、敏感键/Bearer/手机号/email；未覆盖异常Scope、Cookie/Basic/password label/card/ID、循环对象、async writer拒绝、callback异常和重复span end。
+- 合成反事实命中F-0065、F-0067并补强F-0055，说明现有测试会对主干回归失败，但不会发现这些边界。
+- 正式test/typecheck各执行一次，均因缺vitest/tsc退出127且未加载源码；未安装依赖，不记为通过或实现失败。

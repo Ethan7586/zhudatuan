@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-012 结束时累计：P0 0、P1 候选 8、P2 36、P3 19、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-013 结束时累计：P0 0、P1 候选 9、P2 37、P3 20、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -1321,15 +1321,15 @@
 | 类型 | 租户隔离、范围判定、边界输入 |
 | 严重级别 | P2 |
 | 置信度 | 高：三个纯Policy反事实命中；当前正常Pg路径通常生成canonical Scope，异常数据可达性未在线核验 |
-| 文件和精确位置 | `packages/authz/src/Scope.ts:3-15`、`Policy.ts:38-65`、`Policy.test.ts:14-46`；Commerce `PgAccessResolvers.ts:133-141`、`WebBusinessScopeResolver.ts:19-45`；`database/contracts/current.sql:1141-1165` |
-| 当前行为 | [FACT][E-AU-010-010] `contains`对任何`grant.kind==='platform'`立即true；非self/owner grant只有自身tenant存在时才比较tenant；exact ID分支不比较grant/resource kind。实际固定源码分别接受错误platform ID、缺tenant的跨租户enterprise ancestor，以及tenant grant与mall resource同ID |
+| 文件和精确位置 | `packages/authz/src/Scope.ts:3-15`、`Policy.ts:38-65`、`Policy.test.ts:14-46`；`packages/telemetry/src/ClientErrors.ts:81-98`；Commerce `PgAccessResolvers.ts:133-141`、`WebBusinessScopeResolver.ts:19-45`；`database/contracts/current.sql:1141-1165` |
+| 当前行为 | [FACT][E-AU-010-010][E-AU-013-008] Authz与ClientErrorBuffer各保存一套近似`contains`：对任何`grant.kind==='platform'`立即true；非self/owner grant只有自身tenant存在时才比较tenant；exact ID分支不比较grant/resource kind。两套反事实都分别接受错误platform ID、缺tenant的跨租户ancestor，以及跨kind同ID；显式其他tenant拒绝 |
 | 预期行为 | Scope边界接收到不完整或不规范投影时应拒绝；非平台层级两侧tenant必须完整相等，exact命中必须绑定kind+id，platform必须来自canonical root/ancestor |
-| 直接证据 | E-AU-010-007、E-AU-010-010、INV-AU-010-005/006/007、FM-AU-010-003、PROBE-AU-010-003..005 |
-| 调用链或运行入口 | access tables/organization closure → `access.scope_object` → Pg/Web ScopeResolver → AccessPipeline → checkScope/contains；或公开decide的仓外caller |
+| 直接证据 | E-AU-010-007、E-AU-010-010、E-AU-013-008、INV-AU-010-005/006/007、INV-AU-013-004、FM-AU-010-003、FM-AU-013-004、PROBE-AU-010-003..005、PROBE-AU-013-004 |
+| 调用链或运行入口 | access tables/organization closure → Pg/Web ScopeResolver → AccessPipeline → checkScope/contains；或client-error read → server-derived access.scope → ClientErrorBuffer.list/contains。后一Operation当前缺正式发布入口，是缓解项而非正确性证明 |
 | 用户影响 | [INFERENCE] 若数据库closure、scope function、新resolver或仓外caller产生异常Scope，可能把授权扩大到错误kind或tenant；正常canonical组织树路径降低风险，不等于内核已fail closed |
 | 数据影响 | Authz本身不写数据；错误allow后的handler可读写何种数据取决于Operation |
 | 安全影响 | 潜在跨租户/跨范围授权；没有证据证明固定线上数据当前异常，故不升级P1/P0 |
-| 根因 | `Scope`把tenant对全部kind声明为可选，Policy假定上游已经canonical；Pg JSON结果又没有完整runtime schema验证，测试只覆盖tenant双方存在的负例 |
+| 根因 | `Scope`把tenant对全部kind声明为可选，Policy假定上游已经canonical；同一规则又在Telemetry包复制而没有共享闭表。Pg JSON结果没有完整runtime schema验证，测试只覆盖tenant双方存在的负例 |
 | 建议方向 | 独立Scope语义批次先定稿11-kind闭表和canonical platform规则，再决定在resolver边界验证、Policy内拒绝或二者组合；不得直接新增规则而跳过产品确认 |
 | 预计修改范围 | Scope类型/decoder、Policy containment、Pg/Web resolver、11-kind负向测试，可能涉及数据异常核验；不一定需要迁移 |
 | 验证方式 | 11 kind × tenant missing/equal/different × exact/path/wrong-kind/wrong-platform性质矩阵；再用真实DB fixture证明canonical输出仍通过 |
@@ -1561,3 +1561,80 @@
 - [UNKNOWN] 仓外消费者是否依赖`platform.ts`的零仓内调用公共类型，以及`delivery-matrix.json`是否被仓外发布流程直接读取。
 - [UNKNOWN] 线上商品中`digital_mobile_accessory`的实际数量和用户导航可见影响；固定仓库只证明数据库会产生该路径且前端契约不闭合。
 - [UNKNOWN] 两个兼容包17个测试在安装锁定依赖后的真实通过/失败结果；本AU遵守边界未安装依赖。
+
+## F-0065｜Redactor 会把多类凭据与身份信息字符串原样写入遥测和审计
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/telemetry` / Commerce Operation审计 |
+| 类型 | 敏感信息脱敏缺口 |
+| 严重级别 | **P1 候选**；未完成 RV-0011 前不作最终P1 |
+| 置信度 | 高：合成值已通过真实Redactor和ClientErrorBuffer执行；线上实际内容未读取 |
+| 文件和精确位置 | `packages/telemetry/src/Redactor.ts:1-19`、`Logger.ts:7-21`、`Adapter.ts:12-36`、`ClientErrors.ts:39-58`；Commerce `foundation/application/ModuleOperations.ts:169-188`、`foundation/telemetry/Telemetry.ts:1-8` |
+| 当前行为 | [FACT][E-AU-013-004/005] 敏感对象键会整体替换，Bearer、手机号和email也会替换；但字符串中的`password=...`、Cookie、Basic认证串和卡号保持原样，身份证号码只被手机号模式替换中间11位，仍留下多数可识别字符。合成`password=AuditSecretA`通过实际ClientErrorBuffer writer后仍原样存在；循环对象使脱敏器抛RangeError |
+| 预期行为 | 进入日志、trace、指标标签、客户端错误和Operation审计的已识别凭据/PII，不应因为位于任意字符串值而绕过脱敏；失败应受控且不能回退为原文输出 |
+| 直接证据 | E-AU-013-004、E-AU-013-005、PROBE-AU-013-001/002、INV-AU-013-001、FM-AU-013-001 |
+| 调用链或运行入口 | 业务Operation request/audit result/reason → `appendOperationAudit` → `Redactor` → audit sink/数据库；Commerce logger/metrics/tracer → `nodeTelemetry` → `Redactor` → stdout |
+| 用户影响 | 具备日志或审计读取权的人员/系统可能看到本应隐藏的认证材料或身份信息 |
+| 数据影响 | Operation审计可持久化残留字符串；日志保留期和外部采集范围本AU未核验 |
+| 安全影响 | 凭据重放、会话暴露与个人信息泄漏风险；当前未证明真实秘密已写入，故不是P0 |
+| 根因 | 字段名规则较广，但任意字符串规则只覆盖Bearer、手机号、email和带特定标签的OTP；不同输入形态没有统一敏感值分类与完整测试矩阵 |
+| 建议方向 | 未来独立修复批次先以合成攻击样本确定契约，再扩展值模式/结构化输入并规定循环与异常处理；不得在审计分支修复，也不得读取真实凭据作为测试样本 |
+| 预计修改范围 | Redactor、直接测试，以及Operation audit和各sink的定向回归；不要求修改业务权限 |
+| 验证方式 | 合成credential/PII矩阵不得在输出中恢复；循环/异常值受控；真实Operation审计与stdout链使用测试sink端到端验证 |
+| 回滚方式 | 回退单一脱敏批次；保留旧行为对照和合成回归，不修改历史审计数据 |
+| 是否需要独立复核 | 是，RV-0011；P1强制从真实生产入口重新追到输出/持久化边界 |
+
+为什么不是P0：当前只证明正式代码路径可泄漏特定形态的合成值，没有读取线上日志、审计表或证明正在发生严重泄漏。若RV-0011发现持续真实泄漏，应立即按P0规则停止。
+
+## F-0066｜客户端错误Operation有正式契约和SDK，但不在固定生产发布入口中
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce Observability / `@shop/telemetry` |
+| 类型 | API契约与发布注册断链 |
+| 严重级别 | P2 |
+| 置信度 | 高：固定契约、模块注册、专用入口和部署禁止表已反向核对；仓外运行单元未知 |
+| 文件和精确位置 | `contract/definitions/operations.yml:3121-3150`、SDK `operations/observability.ts:8-41`、Commerce `modules/observability/ObservabilityModule.ts:1-4`、`app/modules.ts:44`、`entry/ApiMain.ts:5-10`、`04_tools/scripts/check/deployment.mjs:39-43` |
+| 当前行为 | [FACT][E-AU-013-006] create/read两项都声明`availability:runtime`并生成SDK；实现只随完整`COMMERCE_MODULES`装入`ApiMain`。当前正式发布只接受专用target，专用入口没有这两项；部署检查同时禁止`commerce-api`和`ApiMain.js` |
+| 预期行为 | 声明runtime可用并生成客户端的Operation，应至少有一个正式发布单元注册；否则契约应明确退役/不可用状态 |
+| 直接证据 | E-AU-013-006、INV-AU-013-002、FM-AU-013-002 |
+| 调用链或运行入口 | SDK → `/api/v1/telemetry/clienterrors` → 期望OperationController → ObservabilityModule；固定发布图在入口注册前断开 |
+| 用户影响 | 客户端可生成看似正式的方法，但部署后请求无法到达对应handler |
+| 数据影响 | 客户端错误不进入进程内buffer；buffer本身不持久化业务表 |
+| 安全影响 | 无直接权限扩大；create仍声明member、read声明operator且实现使用server-derived scope |
+| 根因 | 全量ApiMain拆成专用入口后，Observability能力没有被分配到新target，契约availability也未同步 |
+| 建议方向 | 单独由产品/运维确认能力是否保留；保留则分配明确发布单元，退役则按契约兼容流程处理，不能直接删模块或SDK |
+| 预计修改范围 | 发布target/entry或契约availability、SDK生成和定向测试；二选一，不与脱敏修复混批 |
+| 验证方式 | release target集合能解析两项Operation，或客户端/契约明确不可用；真实路由只读冒烟非404/502 |
+| 回滚方式 | 回退单一入口或契约提交；不迁移数据 |
+| 是否需要独立复核 | 否（P2）；仓外仍运行完整ApiMain时需修正发布结论 |
+
+## F-0067｜TelemetryWriter允许Promise，但三个sink会丢弃拒绝
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/telemetry` |
+| 类型 | 异步失败传播、可维护性 |
+| 严重级别 | P3 |
+| 置信度 | 高：拒绝writer反事实产生未处理rejection；当前生产writer同步 |
+| 文件和精确位置 | `packages/telemetry/src/Adapter.ts:3,18-36`、`ClientErrors.ts:31,58`、`Telemetry.ts:3-9` |
+| 当前行为 | [FACT][E-AU-013-007] writer类型是`void | Promise<void>`；metrics、span end和client-error record均以`void writer(...)`丢弃返回值。一个metric和同一span两次end的探针产生3次`unhandledRejection` |
+| 预期行为 | 公共契约若允许异步writer，其拒绝必须被await、返回或通过显式错误通道处理；否则类型应只允许同步writer |
+| 直接证据 | E-AU-013-007、PROBE-AU-013-003、INV-AU-013-003、FM-AU-013-003 |
+| 调用链或运行入口 | metrics.count/duration、span.end、ClientErrorBuffer.record → writer Promise rejection → host unhandled-rejection策略 |
+| 用户影响 | 使用异步平台adapter时可能产生噪声、丢遥测，严格宿主策略下可能影响进程稳定 |
+| 数据影响 | 遥测记录可能丢失；不直接改变业务事务 |
+| 安全影响 | 无直接影响 |
+| 根因 | sink API设计为同步，但writer类型后来允许异步，调用点未统一失败语义 |
+| 建议方向 | 独立API契约批次选择同步限制或显式异步/错误回调，并覆盖拒绝与重复end；不在审计分支实施 |
+| 预计修改范围 | writer/sink接口、adapters、定向测试和消费者typecheck |
+| 验证方式 | 拒绝writer无unhandled rejection且行为契约明确；同步stdout路径不回归 |
+| 回滚方式 | 回退单一接口批次 |
+| 是否需要独立复核 | 否 |
+
+## 13. AU-013 新增未定级事项
+
+- [UNKNOWN] 线上日志或Operation审计是否已包含F-0065形态的真实敏感值；未连接线上、未读取真实数据。
+- [UNKNOWN] 仓外是否直接消费browser/miniapp/tracer公共面，或继续部署完整ApiMain。
+- [UNKNOWN] telemetry六个直接测试在安装锁定依赖后的真实结果；本AU遵守边界未安装依赖。

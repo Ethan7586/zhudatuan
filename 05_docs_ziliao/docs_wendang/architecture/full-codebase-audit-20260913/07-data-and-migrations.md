@@ -93,3 +93,9 @@
 - [CONFLICT][E-AU-012-004/008] 数据库迁移明确创建`digital_mobile`并把手机配件映射为`digital_mobile_accessory`；JSON leaves保留该路径，但categories树漏掉L2父节点。不能通过删除叶子规避，因为它承担现有数据code兼容责任。
 - [FACT][E-AU-012-011] payment status mapper只做响应投影，不写订单或支付状态；事务、退款与对账仍由数据库函数拥有。
 - 本AU未连接数据库、统计线上商品、执行迁移或修改任何code映射。
+
+## 14. AU-013 遥测数据所有权
+
+- `ClientErrorBuffer`只拥有进程内Map，按fingerprint聚合并按retention裁剪；服务重启后不可恢复。历史资料把它描述为可清理缓冲，本AU没有足够证据把非持久化定为缺陷。
+- Operation audit由Commerce审计sink/数据库拥有；Telemetry Redactor只负责写前投影。F-0065意味着敏感字符串可能进入持久化审计，但本AU未读取线上表或证明已有真实记录。
+- Telemetry包没有迁移、事务或数据库连接；本AU未执行SQL、迁移或数据修复。

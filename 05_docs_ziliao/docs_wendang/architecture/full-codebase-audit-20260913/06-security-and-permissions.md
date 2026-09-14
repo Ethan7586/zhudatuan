@@ -111,3 +111,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - [P2][E-AU-012-009] `PERMISSIONS`值和`PERMISSION_CATALOG`对象可由同进程消费者改写，补强F-0032；固定仓库未发现生产mutation caller，故不升级P1。
 - Membership/ResourceScope/AuthorizationDecision只是兼容类型，不执行身份验证或数据库授权；真实边界仍在session resolver、server-derived Scope和Authz decide。不得把浏览器类型声明当成权限门禁。
 - 本AU未读取凭据、线上角色、商品或请求日志，没有新增/收窄权限规则。
+
+## 14. AU-013 遥测、审计与敏感数据边界
+
+- [P1-CANDIDATE][E-AU-013-004/005] Redactor对敏感对象键有效，但任意字符串中的password label、Cookie、Basic认证串和卡号可原样进入stdout或Operation审计；身份证只被局部替换，见F-0065/RV-0011。
+- [FACT] 探针只使用合成值，没有读取凭据、线上日志或审计数据。当前证据不能证明正在泄漏，因此不是P0。
+- [P2][E-AU-013-008] ClientErrorBuffer复制Authz的异常Scope containment；当前read Operation无正式发布target且scope由服务端取得，是缓解项，不是正确性替代。
+- 本AU未新增任何安全约束、权限守卫或日志规则，也未改变线上状态。
