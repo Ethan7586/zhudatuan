@@ -2216,3 +2216,11 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | query dispatch | type→single handler、duplicate/missing fail-fast、freeze后拒绝新增注册 | [FACT][E-AU-207-001] |
 
 [FACT][E-AU-207-002] 1 文件、23 行完成深审；ApiBootstrap/JobsBootstrap创建并freeze，未发现direct fixture，见F-0208/P3。
+
+## 213. AU-208 TransactionRunner 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| transaction delegation | 将明确TransactionContext和operation传给UnitOfWork；ModuleOperations以不同pool workload构造query/command runner | [FACT][E-AU-208-001] |
+
+[FACT][E-AU-208-002] 1 文件、9 行完成深审；实际ModuleOperations消费者证明其有读写事务语义职责，不是删除候选。

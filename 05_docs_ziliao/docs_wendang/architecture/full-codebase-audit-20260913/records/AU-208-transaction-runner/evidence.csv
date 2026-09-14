@@ -1,0 +1,3 @@
+id,files,location,kind,observation
+E-AU-208-001,src/foundation/application/TransactionRunner.ts,1-9,delegation,Runner faithfully executes the operation with supplied transaction context through UnitOfWork.
+E-AU-208-002,src/foundation/application/ModuleOperations.ts,77-88,consumer,ModuleOperations constructs separate query and command TransactionRunner instances from workload-specific pools.

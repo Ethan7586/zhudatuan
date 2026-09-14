@@ -629,3 +629,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 未找到QueryBus direct fixture；注册、重复、冻结、缺handler与dispatch行为仅由下游间接消费。
 - 见F-0208/P3。审计工作树未运行Vitest。
+
+## 208. AU-208 TransactionRunner 深审
+
+- TransactionRunner无独立分支；其唯一语义为忠实转交UnitOfWork并保留query/command transaction context。
+- ModuleOperations通过不同workload pool消费它；无P0–P3新问题。
