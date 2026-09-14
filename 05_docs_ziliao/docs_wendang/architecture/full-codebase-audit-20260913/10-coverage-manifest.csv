@@ -2446,7 +2446,7 @@
 "01_core_hexin/services/commerce/tsconfig.json","服务/commerce","结构化配置/数据","已深入审阅","2026-09-15","AU-538 commerce tsconfig","@shop/commerce typecheck；release control-plane quality gates；根 tsconfig 严格选项","中","G0：commerce src/tests/Vitest config 的正式 noEmit typecheck 项目","否"
 "01_core_hexin/services/commerce/vitest.config.ts","服务/commerce","TypeScript源码","已深入审阅","2026-09-15","AU-539 commerce Vitest default config","@shop/commerce test script；PGlite fixture tests 与 src unit tests","中","G0：PGlite 串行项目与其余源码并行项目的互斥测试入口","否"
 "01_core_hexin/services/commerce/vitest.contract.config.ts","服务/commerce","TypeScript源码","已深入审阅","2026-09-15","AU-540 commerce Vitest contract config","@shop/commerce test:contract；tests/http/Contract.test.ts；tests/event/Event.test.ts","中","G0：HTTP 与 runtime event contract 的独立 node 测试入口","否"
-"01_core_hexin/services/commerce/vitest.integration.config.ts","服务/commerce","TypeScript源码","暂未审阅","","CP-00 建档；CP-00A 证据语义","Commerce entry/bootstrap/module registry","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
+"01_core_hexin/services/commerce/vitest.integration.config.ts","服务/commerce","TypeScript源码","已深入审阅","2026-09-15","AU-541 commerce Vitest integration config","@shop/commerce test:integration；repository 与 job test trees","中","G0：repository persistence 与 job/import integration 的独立 node 测试入口","否"
 "02_platform_pingtai/README.md","仓库根治理与配置","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","仓库根工具链或人工流程","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "02_platform_pingtai/config/LAW.md","平台配置","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","运行、契约或治理读取者","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "02_platform_pingtai/config/artifacts.json","平台配置","结构化配置/数据","已结构性审阅","2026-09-13","CP-00 建档；CP-00A 证据语义","运行、契约或治理读取者","未评级","[FACT] CP-00 已完成入口或清单级核对；未深入实现","按后续定级需要"
