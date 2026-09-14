@@ -1549,3 +1549,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | shared SQL syntax 与 module identity；profile behavior gap | [FACT][E-AU-141-004]；F-0175/P2 |
 
 [FACT][E-AU-141-006] 14 文件、432 行完成深审；profile health 为部署可观测边界，但缺少独立行为规格。
+
+## 147. AU-142 Voucher HTTP 与状态策略清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| public/policy | voucher checkout/order/payment contract 和合法 state transition | [FACT][E-AU-142-001][E-AU-142-002] |
+| full HTTP module | cardpool/program/reserve/batch/status/binding/redemption 写入和投影读取 | [FACT][E-AU-142-003][E-AU-142-004] |
+| selected/operator registration | identity read-only subset 与 19-operation/four-job event manifest | [FACT][E-AU-142-005] |
+| tests | policy/manifest only；HTTP behavior gap | [FACT][E-AU-142-006]；F-0176/P2 |
+
+[FACT][E-AU-142-007] 12 文件、669 行完成深审；Voucher HTTP/data ownership 边界明确，但关键 write/read action 尚缺行为级规格。

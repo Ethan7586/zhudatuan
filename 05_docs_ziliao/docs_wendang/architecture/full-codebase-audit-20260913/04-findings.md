@@ -3488,6 +3488,20 @@
 | 验证/回滚 | 从最新主线建立独立测试批次，用 fake pool/context 覆盖四个 profile 的成功/失败/liveness/unknown request；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2，后续 Runtime profile 专项复查。 |
 
+## F-0176｜Voucher HTTP operation 没有行为级测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | voucher / HTTP operation；P2；高 |
+| 类型 | 测试覆盖缺口、权限/并发/异步写入正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/voucher/03_application_yingyong/{VoucherImportOperations,VoucherOperations,VoucherQueries,VoucherReadOperations}.ts`；`06_tests_ceshi/` |
+| 当前/预期 | 模块拥有 19 项 HTTP operation，涵盖 cardpool、program、reserve、issue/retry、status、binding、redemption 和历史读取。现有测试只断言 manifest inventory 和 VoucherPolicy transition。预期至少覆盖 scope predicate、expected version、pool/allocation capacity、reserve requester/decider separation、worker-job enqueue/retry、status/reversal state、import object lifecycle 与 keyset cursor。 |
+| 直接证据 | 对四个 operation factory、19 个 operation id 的 `*.test.ts` 检索没有 action invoke/transaction fixture 命中；唯一命中为 `module.manifest.test.ts` 的 operation string 和 `VoucherPolicy.test.ts` 的 domain transition。 |
+| 调用链/影响 | VoucherModule/IdentityOperatorVoucherModule → ModuleOperations → voucher table writes/queries → runtime voucherissue/voucherstatus/voucherimport jobs。权限、并发乐观锁、allocation 记账或 queued work 的回归可能不被本模块 suite 捕获。 |
+| 根因 | 测试投入于 manifest/public surface 与纯状态策略，没有为 HTTP composition 建立 fake database/PGlite fixture。 |
+| 验证/回滚 | 从最新主线建立独立测试批次，以最小 transaction fake/PGlite 为每类成功、scope 拒绝、version conflict、approval separation、job enqueue 和 keyset 反事实建断言；回滚为撤回测试批次。 |
+| 独立复核 | 否；P2，后续 Voucher HTTP 专项复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

@@ -311,3 +311,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - Shared `RuntimeOperations.test` 以 fake pool 验证 queue oldest-age SQL 的 FILTER 位置；manifest test 仅验证 variant module identity。
 - Purchase、Web Business、Identity Registration、Mall Provisioning 的 profile health operation 在测试中没有直接实例化或 invoke，见 F-0175/P2。
 - 本 AU 未重复执行缺失 Vitest 的命令；测试执行状态仍为未验证。
+
+## 142. AU-142 Voucher HTTP operation 与策略深审
+
+- Policy test 覆盖 representative allowed/forbidden transition；manifest test 覆盖 public export 隔离、dependencies、operations、events、jobs。
+- 19 项 Voucher action/查询未有直接 operation/repository/transaction fixture，见 F-0176/P2。
+- 本 AU 未运行 Vitest；审计 worktree 的依赖缺口已在 AU-138 留档。
