@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-119 已完成。AU-119 完成 Channel 外部对象映射模型审阅。覆盖总账按当前文件级清单重算：深入审阅1,135文件/94,308行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,713文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-120 已完成。AU-120 完成 Channel 兼容入口、模块装配与公开导出边界审阅。覆盖总账按当前文件级清单重算：深入审阅1,142文件/94,345行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,706文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1149,3 +1149,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Channel ExternalMapping 领域模型及其 price/stock 同步调用。
 
 执行结果：模型验证 provider/object/external/internal/version 六项非空，并提供 provider/object/external 组合 identity；ChannelSyncJob 在价格和库存 record 映射前实例化它，作为输入边界校验。实际 SKU 解析仍由 CatalogSourcePort 持久化映射负责，模型不重复写库。identity 当前无直接消费者，但构造器有真实运行验证职责，归类 G0。未发现 P0–P3 新问题；无独立模型测试。
+
+## 122. AU-120 连续审计点
+
+审阅 Channel root compatibility re-export、模块 public index、完整 ChannelModule 与 IdentityRegistration selected module 装配。
+
+执行结果：root 路径全为无逻辑转发；module index 划分 public capability/operation/types/manifest 与 interface exports。完整 ChannelModule 依赖 extension/catalog/inventory/fulfillment/finance，注册全量 channelRoutes；IdentityOperatorChannelModule 只选择三项 read operation 并依赖 identity。IdentityRegistration API entrypoint 测试证明其静态闭包不进入完整 ChannelModule/ChannelRoutes。兼容入口有公开/构建边界责任，归类 G0；未发现 P0–P3 新问题。

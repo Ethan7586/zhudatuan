@@ -1321,3 +1321,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | 删除候选 | identity getter 未见仓内直接消费者，但 constructor 是生产同步输入验证 | G0 |
 
 [FACT][E-AU-119-003] 2 文件、11 行 ExternalMapping 及兼容入口完成深审；没有独立持久化职责。
+
+## 125. AU-120 Channel 模块装配与兼容入口清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| root compatibility paths | 稳定导向实际 interface/application/public 文件 | [FACT][E-AU-120-001] |
+| ChannelModule | 全量 API module、跨模块依赖和 extension state sink composition | [FACT][E-AU-120-002] |
+| IdentityOperatorChannelModule | sovereign identity API 的三项 Channel read selected module | [FACT][E-AU-120-003] |
+| public index | capability/port/type/manifest 公共导出与 interface export 分层 | [FACT][E-AU-120-004] |
+
+[FACT][E-AU-120-005] 7 文件、37 行 Channel compatibility/module boundary 完成深审；完整 runtime 与 selected runtime 没有在同一 container 重复注册。

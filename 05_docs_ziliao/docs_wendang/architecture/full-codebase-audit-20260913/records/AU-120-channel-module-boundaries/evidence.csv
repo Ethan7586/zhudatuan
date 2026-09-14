@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-120-001","01_core_hexin/services/commerce/src/modules/channel/{ChannelModule,ChannelOperationPort,ChannelReadOperations,IdentityOperatorChannelModule}.ts","1","四项 root compatibility re-export。"
+"E-AU-120-002","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/ChannelModule.ts","1-14","full Channel module dependency、routes 与 extension state sink composition。"
+"E-AU-120-003","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/IdentityOperatorChannelModule.ts;src/entry/IdentityRegistrationApiMain.ts","1-6;54-72","selected three-read-operation module 的实际部署装配。"
+"E-AU-120-004","01_core_hexin/services/commerce/src/modules/channel/index.ts;src/entry/IdentityRegistrationApiEntrypoint.test.ts","1-13;150-180,270-292","public export 分层和全量 Channel static closure exclusion。"
