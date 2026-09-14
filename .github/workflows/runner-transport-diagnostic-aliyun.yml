@@ -1,0 +1,77 @@
+name: Temporary Aliyun Runner Transport Diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Compare staging GitHub transport routes
+    runs-on: [self-hosted, linux, x64, zdt-aliyun-release]
+    timeout-minutes: 8
+    steps:
+      - name: Inspect services and probe loopback routes
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -u
+          expected_instance='i-2zeewhay0farxq8lucrc'
+          metadata_token="$(curl -fsS --max-time 3 -X PUT \
+            -H 'X-aliyun-ecs-metadata-token-ttl-seconds: 60' \
+            http://100.100.100.200/latest/api/token)"
+          instance_id="$(curl -fsS --max-time 3 \
+            -H "X-aliyun-ecs-metadata-token: ${metadata_token}" \
+            http://100.100.100.200/latest/meta-data/instance-id)"
+          test "$instance_id" = "$expected_instance" || exit 64
+
+          echo 'Runner service transport environment:'
+          for service in \
+            actions.runner.Ethan7586-zhudatuan.aliyun-staging-zdt-build.service \
+            actions.runner.Ethan7586-zhudatuan.aliyun-staging-zdt-release.service \
+            actions.runner.Ethan7586-zhudatuan.aliyun-staging-zdt-release-standby.service; do
+            printf '%s: ' "$service"
+            systemctl show "$service" --property=Environment --value \
+              | tr ' ' '\n' \
+              | grep -E '^(HTTP_PROXY|HTTPS_PROXY|NO_PROXY|GIT_HTTP_LOW_SPEED_)=' \
+              | paste -sd, - || true
+          done
+
+          echo 'Loopback listeners:'
+          ss -lntp | grep -E ':(17897|17898|17899)\b' || true
+          echo 'Relevant services:'
+          systemctl list-units --type=service --all --no-legend \
+            | grep -Ei 'sing-box|xray|hysteria|clash|mihomo|v2ray|proxy|actions\.runner' \
+            | head -30 || true
+
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          for port in 17897 17898 17899; do
+            proxy="http://127.0.0.1:${port}"
+            echo "Probe route ${port}:"
+            if curl -fsSL --retry 2 --retry-all-errors --connect-timeout 5 --max-time 35 \
+              --proxy "$proxy" -o /dev/null \
+              https://codeload.github.com/actions/checkout/tar.gz/d23441a48e516b6c34aea4fa41551a30e30af803; then
+              echo '  codeload=success'
+            else
+              echo '  codeload=failure'
+            fi
+
+            probe_root="$(mktemp -d "${RUNNER_TEMP}/zdt-git-probe.${port}.XXXXXX")"
+            git -C "$probe_root" init -q
+            git -C "$probe_root" remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+            git -C "$probe_root" config http.https://github.com/.extraheader \
+              "AUTHORIZATION: basic ${auth_header}"
+            started="$(date +%s)"
+            if timeout 50 env HTTP_PROXY="$proxy" HTTPS_PROXY="$proxy" \
+              GIT_HTTP_LOW_SPEED_LIMIT=1024 GIT_HTTP_LOW_SPEED_TIME=20 \
+              git -C "$probe_root" -c http.version=HTTP/1.1 -c protocol.version=1 \
+              fetch -q --filter=blob:none --no-tags --depth=1 origin "$GITHUB_SHA"; then
+              elapsed="$(( $(date +%s) - started ))"
+              echo "  git=success elapsed=${elapsed}s"
+            else
+              elapsed="$(( $(date +%s) - started ))"
+              echo "  git=failure elapsed=${elapsed}s"
+            fi
+          done
