@@ -69,7 +69,7 @@ export class PgSupportRepository implements SupportPort {
 
   async history(ticket: string, scope: string, kind: string, actor: string, evidence: Readonly<Record<string, unknown>>): Promise<void> {
     await this.database.query(`insert into support.history(ticket_id,sequence,kind,actor_id,evidence,occurred_at,scope_id)
-      select $1,coalesce(max(sequence),0)+1,$3,$4,$5::jsonb,clock_timestamp(),$2 from support.history where ticket_id=$1`,
+      select $1::text,coalesce(max(sequence),0)+1,$3::text,$4::text,$5::jsonb,clock_timestamp(),$2::text from support.history where ticket_id=$1::text`,
     [ticket, scope, kind, actor, JSON.stringify(evidence)]);
   }
 
