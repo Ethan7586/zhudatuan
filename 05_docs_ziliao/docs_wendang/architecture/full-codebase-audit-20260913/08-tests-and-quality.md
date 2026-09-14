@@ -784,3 +784,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Fixture直接注册catalog route并在authorizer截取参数，覆盖publication task的scope授权和普通import的具体resource授权。
 - 无P0–P3新问题。审计工作树未运行Vitest。
+
+## 239. AU-239 Finance controller scope fixture 深审
+
+- 直接覆盖新policy的preview/manage在authorizer前使用selected scope，而不是未持久化的policy ID资源。
+- 无P0–P3新问题。审计工作树未运行Vitest。

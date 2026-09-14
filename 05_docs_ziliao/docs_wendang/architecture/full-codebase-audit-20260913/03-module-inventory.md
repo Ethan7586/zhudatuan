@@ -2509,3 +2509,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | normal import resource | catalogimport保持path import ID作为授权资源 | [FACT][E-AU-238-002] |
 
 [FACT][E-AU-238-003] 1 测试文件、50 行完成深审；fixture从注册route到authorizer参数直接固定两类边界，无P0–P3新问题。
+
+## 244. AU-239 Finance controller scope fixture 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| new policy exception | preview/manage在第一版policy尚无正式resource前使用selected scope授权 | [FACT][E-AU-239-001] |
+| route registration evidence | fixture注册finance全部operation并在authorizer前中断，直接捕获参数 | [FACT][E-AU-239-002] |
+
+[FACT][E-AU-239-003] 1 测试文件、40 行完成深审；两条policy operation闭合，无P0–P3新问题。
