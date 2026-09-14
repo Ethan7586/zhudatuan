@@ -15,6 +15,17 @@ export async function currentHead(projectRoot) {
   return resolveGitRef(projectRoot, 'HEAD');
 }
 
+export async function commitMetadata(projectRoot, reference) {
+  const output = await git(projectRoot, ['show', '-s', '--format=%H%x00%P%x00%B', `${reference}^{commit}`]);
+  const [sha, parents = '', message = ''] = output.split('\0');
+  invariant(/^[a-f0-9]{40}$/.test(sha), 'GIT_COMMIT_METADATA_INVALID', 'Commit metadata did not contain one full SHA');
+  return Object.freeze({
+    sha,
+    parents: Object.freeze(parents.trim().split(/\s+/).filter(Boolean)),
+    message: message.trimEnd(),
+  });
+}
+
 export async function changedFiles(projectRoot, fromRef, toRef, explicitFiles = []) {
   if (explicitFiles.length > 0) {
     return explicitFiles.map((path) => Object.freeze({ status: 'M', path: normalizeRepoPath(path), sourcePath: null }));

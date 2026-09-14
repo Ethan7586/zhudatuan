@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { automaticClosureManifest, automaticPreparationMatrix } from '../src/automatic-preparation.mjs';
+import { automaticClosureManifest, automaticClosureSelection, automaticPreparationMatrix } from '../src/automatic-preparation.mjs';
 
 test('automatic preparation builds each target once and seals only physical deployments', () => {
   const adapter = {
@@ -27,6 +27,58 @@ test('automatic preparation rejects a target without a physical deployment', () 
     () => automaticPreparationMatrix(adapter, ['support']),
     (error) => error.code === 'AUTO_PREPARE_PHYSICAL_NODE_MISSING'
   );
+});
+
+test('tree-identical production lineage merge selects only the named physical placement', () => {
+  const adapter = {
+    targets: { storefront: { kind: 'frontend' } },
+    nodes: {
+      'zhudatuan-l0': { key: 'zhudatuan-l0', realmId: 'realm:l0', deployments: { storefront: {} } },
+      'hbbtzn-l1': { key: 'hbbtzn-l1', realmId: 'realm:l1', deployments: { storefront: {} } },
+    },
+  };
+  const mainline = 'a'.repeat(40);
+  const production = 'b'.repeat(40);
+  const selection = automaticClosureSelection(adapter, {
+    plannedTargets: [],
+    changeCount: 0,
+    beforeSha: mainline,
+    commit: {
+      parents: [mainline, production],
+      message: 'merge(release): reconnect L1 storefront production lineage',
+    },
+  });
+
+  assert.deepEqual(selection, {
+    targets: ['storefront'],
+    sealNodesByTarget: { storefront: ['hbbtzn-l1'] },
+    reconciliation: {
+      mode: 'production-lineage',
+      target: 'storefront',
+      node: 'hbbtzn-l1',
+      previousProductionSourceSha: production,
+      evidence: 'strict-merge-subject',
+    },
+  });
+  assert.deepEqual(automaticPreparationMatrix(adapter, selection.targets, selection.sealNodesByTarget), [
+    { target: 'storefront', prepare_node: 'hbbtzn-l1', seal_nodes_json: '["hbbtzn-l1"]' },
+  ]);
+});
+
+test('ordinary tree-identical commits remain no-op and malformed lineage declarations fail closed', () => {
+  const adapter = {
+    targets: { storefront: { kind: 'frontend' } },
+    nodes: { 'hbbtzn-l1': { realmId: 'realm:l1', deployments: { storefront: {} } } },
+  };
+  const mainline = 'a'.repeat(40);
+  assert.deepEqual(automaticClosureSelection(adapter, {
+    plannedTargets: [], changeCount: 0, beforeSha: mainline,
+    commit: { parents: [mainline], message: 'docs: explain production lineage' },
+  }), { targets: [], sealNodesByTarget: {}, reconciliation: null });
+  assert.throws(() => automaticClosureSelection(adapter, {
+    plannedTargets: [], changeCount: 0, beforeSha: mainline,
+    commit: { parents: [mainline, 'b'.repeat(40)], message: 'merge(release): reconnect storefront production lineage' },
+  }), (error) => error.code === 'AUTO_RECONCILIATION_SUBJECT_INVALID');
 });
 
 test('automatic closure preserves target order and separates deployment waves', () => {
