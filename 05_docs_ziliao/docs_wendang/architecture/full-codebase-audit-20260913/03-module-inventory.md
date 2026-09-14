@@ -1151,3 +1151,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | registration purpose、realm、duplicate、rollback、storefront/checkout、operator invitation 的查询行为 oracle | [FACT][E-AU-103-005] |
 
 [FACT][E-AU-103-006] 2 文件、1,969 行 Identity 注册与挑战链完成深审；邀请和公开 storefront 注册都由 registration hash、条款、realm 和 identity mutation 共同约束，checkout 延迟电话校验为显式产品分支；未见新 P0–P3。
+
+## 109. AU-104 Identity operation dispatch 与公开目录清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| full operation assembly | session、registration、invitation、credential、mobile/WeChat actions 合并后按 owned list 投影 | [FACT][E-AU-104-001] |
+| registration operation assembly | core registration operation 集合与 WeChat wrapper 追加集合分离 | [FACT][E-AU-104-002] |
+| HTTP catalog | operation ID、method、path、partition 与 registration ownership 不变量 | [FACT][E-AU-104-003] |
+| integration-style tests | session realm/account、governance、proof、invitation、notification query oracle | [FACT][E-AU-104-004] |
+
+[FACT][E-AU-104-005] 3 文件、682 行 Identity dispatch 与目录/综合测试完成深审；每个 core operation 只能由一个 action group 提供，遗漏 action 在装配时 fail-fast。
