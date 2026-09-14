@@ -1508,3 +1508,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Pg import | stage-before-write、running facts、invalid-row isolation | [FACT][E-AU-137-003] |
 
 [FACT][E-AU-137-004] 3 文件、438 行 Catalog import/operation tests 完成深审；测试直接验证关键 write boundary，而非只检查 manifest string。
+
+## 143. AU-138 Catalog 风险、SKU 与迁移清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| risk decision action | 将 deny decision 转为 published listing 撤销和 outbox 事实 | [FACT][E-AU-138-001][E-AU-138-002] |
+| SKU read port | 在 owner/source-listing scope 证明下解析 SKU id/code | [FACT][E-AU-138-003][E-AU-138-004] |
+| migration/manifest tests | 验证 reverse lookup indexes、供应网络业务事实和 Catalog 声明清单 | [FACT][E-AU-138-005][E-AU-138-006][E-AU-138-007] |
+
+[FACT][E-AU-138-008] 6 文件、239 行 Catalog 风险、SKU 与迁移测试完成深审；定向 Vitest 因审计 worktree 缺失依赖未验证，未将失败误写为代码缺陷。

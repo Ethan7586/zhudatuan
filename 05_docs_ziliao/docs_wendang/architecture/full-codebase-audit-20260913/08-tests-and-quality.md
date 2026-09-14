@@ -288,3 +288,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - CatalogOperations、CatalogPackage、PgCatalogImport 三项测试直接覆盖 scope、去重/confirm、发布 progress、package row validation、stage-before-write、running facts 与 invalid row isolation。
 - 这些测试为 Catalog 核心导入/发布状态转换提供了真实行为规格；本 AU 未运行 Vitest。
+
+## 138. AU-138 Catalog 风险、SKU 与迁移测试深审
+
+- `CatalogReadPerformanceMigration` 用 PGlite 真实执行 reverse-lookup migration 并核对三个索引；`SupplierNetworkMigration` 执行供应网络与 analytics migration 后核对供货方、价格、库存、结算与 reporting facts；`module.manifest` 核对 HTTP/job/event inventory。
+- `ApplyRiskDecision` 与 `PgCatalogSku` 未见同名直接行为 fixture；本批次已从 Risk Worker 和 InventoryImportProcessor 的真实调用侧确认其职责，未把这一事实替代为运行验证。
+- 已以项目正式 `npm test` 入口定向执行三项测试；审计 worktree 中 `vitest` 缺失，命令退出 127，因此测试执行状态为未验证，未修复或安装依赖。
