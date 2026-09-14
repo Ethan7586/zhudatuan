@@ -4865,3 +4865,21 @@
 | 建议方向 | 从最新主线建立独立可靠性治理批次：逐项决定 SLO/deny key应被 runtime/alert使用还是移入文档；为执行项建立单一 typed source、loader/生成物与反事实测试，避免仅扩大文字 regex。 |
 | 验证/回滚 | 对每项 SLO/deny加入故意超阈/敏感字段样本，确认相应 metric alert/redaction行为；恢复/backup目标需在隔离演练中验证。回滚为撤回单一配置到执行链改动。 |
 | 是否需要独立复核 | 否；涉及实际 SLO/合规承诺需可靠性/安全所有者确认。 |
+
+## F-0262｜运行时契约迁移会无条件覆盖未知 checksum
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 数据库 migration ledger / 运行时契约 |
+| 类型 | 迁移完整性、配置漂移检测 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260829190000_reconcile_runtime_contract_head.sql:156-157,164-169`。 |
+| 当前/预期 | migration 直接把 version `20260821032000` 的 checksum 更新为目标值，未限定允许的旧值；随后 assert 仅检查更新后的值。预期为只接受明确已知 predecessor checksum，未知/缺失值 fail closed，并记录可审计的前后迁移关系。 |
+| 直接证据 | [FACT][E-AU-597-001] `update runtime.schemaversion set checksum='2f42…' where version='20260821032000'` 没有旧 checksum guard；[FACT][E-AU-597-002] 本文件最终断言只验证 target checksum；[FACT][E-AU-597-003] AU-593 的同类 repair 对旧 checksum 显式仅接受两个已知值后才更新，证明仓库已有 fail-closed 模式。 |
+| 调用链或运行入口 | migration runner → `runtime.schemaversion` → 各 API/Worker `RUNTIME_CONTRACT_CHECKSUM` startup compatibility；`Migrate` 亦将 `20260829190000` 作为 bootstrap preflight head。 |
+| 用户/数据/安全影响 | 未证明线上发生；若历史库已含未知或被错误写入的 contract checksum，运行此 migration 会抹去漂移证据并使后续 runtime compatibility 看到目标值，可能让不匹配的 operation/event/permission contract 在启动后才暴露。无直接数据损坏或凭据暴露证据。 |
+| 根因 | contract reconciliation 采用无条件“写成当前 head”而未沿用前后 migration 的 predecessor/checksum guard 纪律。 |
+| 建议方向 | 从最新主线新建独立 database migration 小批次：仅接受明确 predecessor 值，未知/缺失值拒绝；保留 idempotent replay 路径并增加 known-old、already-target、unknown-old 三类隔离 PostgreSQL 验证。不要改写审计分支历史 migration。 |
+| 验证/回滚 | 在隔离数据库分别植入目标、已知旧和未知 checksum：前两者按设计完成/重放，未知值必须事务失败且无写入；回滚为撤回单独 guard migration。 |
+| 是否需要独立复核 | 否；上线前应由数据库/发布所有者复核历史 database head 与迁移策略。 |
