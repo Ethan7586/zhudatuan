@@ -819,3 +819,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | integration test | PGlite 全迁移重放和状态机 oracle | [FACT][E-AU-071-004~005] |
 
 [FACT][E-AU-071-006] 2 文件、1,926 行 Finance reconciliation repair 数据库权威过程和集成测试完成深审。
+
+## 78. AU-072 Finance 财务概览读取模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| overview read | 闭包范围内 posted journal 的币种/会计科目聚合 | [FACT][E-AU-072-001] |
+| tests | posted-only、decimal wire amount、watermark | [FACT][E-AU-072-002] |
+
+[FACT][E-AU-072-003] 2 文件、104 行 Finance overview 人工源码和测试完成深审。
