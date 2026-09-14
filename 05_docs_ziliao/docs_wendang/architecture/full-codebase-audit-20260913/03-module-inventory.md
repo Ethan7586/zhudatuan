@@ -952,3 +952,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | web database boundary | `zhudatuanwebapi` select/RLS | [FACT][E-AU-085-003] |
 
 [FACT][E-AU-085-004] 1 文件、32 行 WebBusiness Inventory operation 完成深审；库存余额计算和 read-only role/RLS 已追踪，但与完整 API 的相同 contract scope 语义不同，记录 F-0160/P2。
+
+## 91. AU-086 WebBusiness Reporting dashboard 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| dashboard lifecycle | period/query/page/summary 与 projection-version cache key | [FACT][E-AU-086-001] |
+| cache fallback | 共享 CACHE 缺失时进程内 TTL/FIFO bounded cache | [FACT][E-AU-086-002] |
+| tests | hit/miss、cursor Date、fallback | [FACT][E-AU-086-003] |
+
+[FACT][E-AU-086-004] 2 文件、215 行 WebBusiness Reporting operation 和行为测试完成深审；读路径不直接访问 projection offset，且 cache key 按 scope/projection version 隔离。

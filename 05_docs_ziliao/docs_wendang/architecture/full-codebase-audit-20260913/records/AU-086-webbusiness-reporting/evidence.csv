@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-086-001","WebReportingOperations.ts:10-17；reporting/GetDashboard.ts:12-48","Web selected module 复用 canonical lifecycle；cache key 来自 scope/metric/period/projection version。","dashboard read 与完整 query 模型一致。"
+"E-AU-086-002","WebReportingOperations.ts:19-53","无 CACHE binding 时使用 bounded TTL in-process map，不持久化。","缓存回退不改变数据所有权或写入数据库。"
+"E-AU-086-003","WebReportingOperations.test.ts:12-107","mock 验证 cache hit 无连接、miss 查询/cockpit/put、cursor Date 规范化和 local cache 二次命中。","关键缓存和分页行为有专用 oracle；未运行。"
