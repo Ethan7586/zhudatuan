@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 34。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 35。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1432,3 +1432,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是：owner 权限全集、deny 覆盖、scope SQL 与审计记录。 |
 
 - platform Owner 门店授权归 GX-0034。累计 G0 60、G1 83、G2 5、G3 0、GX 34；未删除任何文件。
+
+## GX-0035｜Console member manage 与 password assurance 契约
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821072000_add_console_member_commands.sql` |
+| 疑似原因 | 文件增加两个 operation 与一项 role grant，可能被误判为纯后台命令目录。 |
+| 保留证据 | [FACT][E-AU-479] member-manage 会变更角色/范围/override/状态并撤销会话，password verify 建立当前 session 的时限 assurance；两者均由本迁移能力契约注册。 |
+| 运行结论 | 这是身份生命周期和敏感操作 step-up 的必要发布边界。 |
+| 数据/契约责任 | 约束高权限成员管理、会话失效和密码重新验证事实。 |
+| 可否删除 | 禁止 |
+| 二次复核 | 是：owner target、事务原子性、session revoke、assurance TTL/频率与日志。 |
+
+- console member command/assurance 归 GX-0035。累计 G0 60、G1 83、G2 5、G3 0、GX 35；未删除任何文件。
