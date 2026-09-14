@@ -1,0 +1,3 @@
+"测试","范围","结论","执行"
+"module.manifest.test.ts","operation/HTTP inventory","局部登记 oracle 存在","未执行：vitest command not found"
+"CartOperations integration","put create/update/delete；batch empty/new/existing；listing/application/RLS/version","未见模块专用行为测试","未验证"

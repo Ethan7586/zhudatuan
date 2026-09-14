@@ -777,3 +777,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Referral 设置、成员/绑定、订单事件、佣金结算、反冲、提现及 Finance 交界。
 
 执行结果：inbox/outbox 事实锁、稳定佣金 ID、settlement row lock、会员提现串行锁、反冲与 Finance journal 交界均已核对；模块自有 policy/operation/event/settlement 测试覆盖主要分支。未发现 P0–P3 新问题，未运行 Vitest 或改变运行状态。
+
+## 59. AU-057 连续审计点
+
+审阅 Cart current/read、single put、batch、下单转换、数据约束与 WebBusiness 入口。
+
+执行结果：single put 与 active-cart 唯一性/RLS 已闭合；新增 F-0146/P2：公开 batch 不能建立 cart 或插入新项目。未发现 P0，未运行 Vitest 或改变运行状态。

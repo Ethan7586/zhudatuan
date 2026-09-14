@@ -3088,6 +3088,18 @@
 | 验证/回滚 | 隔离数据库以 `zhudataanpurchaseapi` 与 `shopjob` 分别运行：同一预算并发 reserve、同 order retry、commit 后 release、reserved release 后再次 release；核对 spent/redemption/RLS 结果。修复必须从最新主线独立小分支进行，回滚为撤回该测试/实现小批次。 |
 | 独立复核 | 否 |
 
+## F-0146｜购物车批量接口不能创建或新增项目
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | cart；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/cart/03_application_yingyong/CartOperations.ts:49-69`；`01_core_hexin/packages/sdk/src/operations/cart.ts:47-52`；`.../modules/webbusiness/WebBusinessOperationIds.ts:31-35` |
+| 当前/预期 | batch 非零项目只更新既有 `cart.item`，不创建 active cart、不插入 item、不验证 listing；空购物车或新 listing 零更新。预期为该公开批量 API 能建立或更新输入项目，或明确拒绝不支持的输入。 |
+| 影响 | 用 batch 初始化/同步购物车的客户端会保持空购物车，后续报价和下单缺少项目。线上调用量未验证。 |
+| 根因 | batch 绕开 single put 的 application/listing/cart upsert 路径，只保留既有行 update/delete。 |
+| 验证/回滚 | 隔离 PostgreSQL 对无 cart、新 listing、既有 listing、quantity=0、converted cart 分别请求 batch；核对 HTTP body、cart/item 行、scope 与 RLS。修复必须从最新主线独立小分支进行，回滚为撤回修复提交。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

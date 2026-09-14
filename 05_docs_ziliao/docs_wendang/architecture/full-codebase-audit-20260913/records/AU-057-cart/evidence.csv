@@ -1,0 +1,6 @@
+"编号","位置","证据","结论"
+"E-AU-057-001","app/modules.ts:8,38;modules/cart/module.manifest.ts:7-18;modules/webbusiness/WebBusinessOperationIds.ts:31-35","Cart 三 operation 已注册，batch 也列入 WebBusiness API","batch 是真实可调用 API"
+"E-AU-057-002","modules/cart/03_application_yingyong/CartOperations.ts:11-48;20260821019000_create_cart_checkout_order.sql:3-22","single put 验证 application/listing，使用 active cart unique index 与 item upsert","单项写入边界存在"
+"E-AU-057-003","CartOperations.ts:49-69;packages/sdk/src/operations/cart.ts:47-52","batch 仅 update/delete 已存在 item，未 select/create cart、未 insert item、未检验 listing；SDK 对外发布","空/新项目 batch 无写入，形成 F-0146"
+"E-AU-057-004","20260902010000_restore_public_mall_role_contracts.sql:101-116;CartPort.ts:3-10","RLS 绑定 member/mall/application，CartPort 只完成 active→converted","成员隔离和重复转换有边界"
+"E-AU-057-005","modules/cart/06_tests_ceshi/module.manifest.test.ts","仅 operation inventory oracle","未见 cart 写入行为测试"

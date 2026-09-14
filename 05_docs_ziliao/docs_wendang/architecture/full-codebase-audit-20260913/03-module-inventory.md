@@ -122,6 +122,12 @@ AU-002 已结构性核对全部 manifest、静态/动态可达性以及路由装
 | --- | --- | --- | --- | --- | --- |
 | 推荐绑定、佣金、反冲、结算与提现 claim | Referral HTTP operations；`referral` job | 上游为 member、order/payment outbox；下游为 catalog、runtime inbox/job、Finance journal/withdrawal | `referral.setting/product/member/binding/commission/*movement/withdrawalclaim` | Commerce API + finance queue Worker | 事件事实锁、稳定佣金 id、skip-locked 结算与提现会员锁闭合；真实 DB/RLS/Finance 端到端未验证 |
 
+### AU-057｜Cart 购物车边界（2026-09-14）
+
+| 模块职责 | 对外入口 | 上游/下游 | 数据所有权 | 运行/发布单元 | 当前边界结论 |
+| --- | --- | --- | --- | --- | --- |
+| 当前购物车、项目更新与下单转换 | Cart member HTTP operations；CartPort | 上游为 Storefront/WebBusiness；下游为 Experience、Catalog、checkout/order | `cart.cart/item` | WebBusiness API + order transaction | put 使用 active cart/有效 listing；batch 仅改既有 item，无法初始化或新增项目（F-0146，P2） |
+
 ## 5. Workspace 库存
 
 [FACT][E-AU-001-002][E-AU-001-003] 43 个 workspace 分组如下：
