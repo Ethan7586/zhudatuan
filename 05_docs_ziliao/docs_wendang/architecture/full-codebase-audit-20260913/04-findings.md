@@ -3611,6 +3611,19 @@
 | 建议方向 | 从修复时最新 `zdt-next` 独立建立 verification test batch；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2。 |
 
+## F-0185｜Support case create/message 成功副作用没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | support / case-message write；P2；高 |
+| 类型 | 测试覆盖缺口、事务副作用和授权边界正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/support/03_application_yingyong/command/{OpenConversation,SendMessage}.ts`；现有 `06_tests_ceshi/command/SendMessage.test.ts` |
+| 当前/预期 | create 组合 order/benefit/SLA/assignment/outbox/job/history/message；send 组合 version-lock、encrypted append、state/history。现有 test 仅验证 send 缺 expected-version 和 SQL conflict。预期应直接覆盖 create 成功/授权拒绝/KMS failure/assignment/SLA jobs，以及 send 成功 member-agent state、scope 和 side-effect atomicity。 |
+| 直接证据 | Support test 仅一个 `SendMessage.test.ts` action fixture；没有 `openConversationOperations` 调用，也没有 send success fixture。 |
+| 调用链/影响 | ConsoleSupportMain → SupportRoutes → operations → KMS/PgSupportRepository/order/queue/outbox。工单创建或回复的部分写入、错误 scope、状态回归只能靠集成环境发现。 |
+| 建议方向 | 从修复时最新 `zdt-next` 独立建立 support write test batch；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

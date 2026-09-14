@@ -411,3 +411,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 唯一测试只验证 manifest capabilities/operation list；没有 direct action fixture。
 - nonce issue/consume/replay、trusted-device scope、voucher redeem/outbox 和 device version conflict 缺口见 F-0184/P2。
+
+## 161. AU-161 Support case/message 写入链深审
+
+- 现有 direct test 只验证 send prepare 的 expected-version 和 locked lookup conflict。
+- case create、successful message side effects、scope/KMS error 与 SLA/assignment/outbox 没有 fixture，见 F-0185/P2。

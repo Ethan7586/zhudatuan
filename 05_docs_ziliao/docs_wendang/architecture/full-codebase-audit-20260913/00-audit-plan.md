@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-160 已完成。AU-160 完成 Verification challenge/device 操作与入口审阅。覆盖总账按当前文件级清单重算：深入审阅1,542文件/108,722行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,312文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-161 已完成。AU-161 完成 Support case/message 写入链审阅。覆盖总账按当前文件级清单重算：深入审阅1,549文件/108,915行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,305文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1395,3 +1395,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Verification sessions/challenge/device 操作、module/manifest/index 与唯一 manifest test。
 
 执行结果：challenge 生成随机 32-byte nonce，只持久化 hash 并给 60 秒 expiry；verify 以 `consumed_at is null` 原子消费 nonce、记录 attempt，voucher redeem 再写 outbox。trusted device 查询以 scope/hash 约束；device write 以 scope/version 条件更新。新增 F-0184/P2：唯一 test 只验证 manifest，关键 nonce/replay/voucher/device 行为没有 direct test。无 P0。
+
+## 163. AU-161 连续审计点
+
+审阅 Console Support runtime entry、case create/message send route chain、domain DTO、SupportPort 与 existing message test。
+
+执行结果：专用进程仅注册 case/message read-write operation；route 将 KMS、PostgreSQL repository、order summary 注入 operationLifecycle。create 先校验 member/order/benefit/SLA，写 conversation/ticket/assignment/outbox、稳定 SLA jobs/history/可选 encrypted message；send 强制 expected version、lock ticket、按 member/agent 改状态并写 history。新增 F-0185/P2：direct test 只覆盖 send 的 expected-version/conflict 前半段，create/message successful side effects、scope和KMS failure没有 fixture。无 P0。

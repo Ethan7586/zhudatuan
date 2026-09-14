@@ -1744,3 +1744,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | public/module/test | module registration、capability/contract public surface；现有 test 仅 manifest | [FACT][E-AU-160-003]；F-0184/P2 |
 
 [FACT][E-AU-160-004] 6 文件、189 行完成深审；Verification 6/6 基线文件均取得审阅状态。
+
+## 166. AU-161 Support case/message 写入链清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| case create | member/order/benefit/SLA/assignment check，conversation/ticket/outbox/jobs/history/initial encrypted message | [FACT][E-AU-161-001] |
+| message write | expected-version ticket lock、KMS encrypted append、state/conversation/history update | [FACT][E-AU-161-002] |
+| route/runtime | Console Support entry 的 allowed operation set；SupportRoutes 将 KMS/repository/order adapter 注入 | [FACT][E-AU-161-003] |
+| test/domain port | DTO transition constraints、repository Port 和 send precondition/conflict test | [FACT][E-AU-161-004]；F-0185/P2 |
+
+[FACT][E-AU-161-005] 8 文件、252 行完成链路深审；其中 SendMessage 已由前批深审，本批新增 7 个首次深审文件。
