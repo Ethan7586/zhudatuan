@@ -90,18 +90,29 @@ function Verification({ code, expiresAt, busy, error, onCode, onVerify, onClose 
 }
 
 function Success({ result, onClose }: Readonly<{ result: CreatedMall; onClose: () => void }>) {
+  const accessEntry = result.nodeTask.result?.access_entries.find((entry) => entry.surface_ref === 'surface:storefront')
+    ?? result.nodeTask.result?.access_entries[0];
   return <section className="command">
-    <p className="notice" role="status">商城已创建，商城清单正在刷新。</p>
+    <p className="notice" role="status">商城核心已创建，独立节点任务状态为“{mallNodeTaskStatus(result.nodeTask.status)}”；
+      后续可在分布式平台继续查看同一任务。</p>
     <dl className="commercefacts">
       <div><dt>商城名称</dt><dd>{result.name}</dd></div>
       <div><dt>商城代码</dt><dd>{result.code}</dd></div>
       <div><dt>商城 ID</dt><dd>{result.mallId}</dd></div>
-      <div><dt>H5 地址</dt><dd>{result.publicSlug}.hbbtzn.com</dd></div>
+      <div><dt>节点 ID</dt><dd>{result.nodeTask.node_id}</dd></div>
+      <div><dt>任务 ID</dt><dd>{result.nodeTask.task_id}</dd></div>
+      <div><dt>访问入口</dt><dd>{accessEntry === undefined ? '控制器尚未返回' : <a href={accessEntry.url}
+        target="_blank" rel="noreferrer">{accessEntry.url}</a>}</dd></div>
       <div><dt>商品池</dt><dd>{result.poolId}</dd></div>
-      <div><dt>发布状态</dt><dd>草稿，等待店铺装修</dd></div>
+      <div><dt>发布状态</dt><dd>{result.publicationState === 'draft' ? '草稿，等待店铺装修' : result.publicationState}</dd></div>
     </dl>
     <footer><Button tone="primary" onPress={onClose}>完成</Button></footer>
   </section>;
+}
+
+function mallNodeTaskStatus(status: CreatedMall['nodeTask']['status']): string {
+  return { QUEUED: '排队中', RUNNING: '执行中', WAITING_EXTERNAL: '等待外部资源',
+    FAILED_RETRYABLE: '执行失败，可重试', SUCCEEDED: '已完成' }[status];
 }
 
 function dialogTitle(phase: MallCreatePhase): string {

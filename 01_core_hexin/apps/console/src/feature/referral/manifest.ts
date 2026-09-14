@@ -17,7 +17,12 @@ export const referralModule = {
       path: 'platforms',
       kind: 'entry',
       lazy: () => import('./DistributedPlatformRoute'),
-      operations: ['experience.applications.read', 'provisioning.malls.create'],
+      operations: [
+        'experience.applications.read',
+        'provisioning.malls.create',
+        'provisioning.nodetasks.read',
+        'provisioning.nodetasks.retry',
+      ],
       presentation: { title: '分布式平台', summary: '平台节点、商城应用、域名入口与收益关系统一管理' },
     },
     {

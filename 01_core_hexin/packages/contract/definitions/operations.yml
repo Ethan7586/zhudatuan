@@ -409,7 +409,7 @@ operations:
     permission: organization.layer.read
     idempotent: true
     schema: named
-    responseFields: ["action","activation_status","created_at","events","finished_at","last_error","node_id","phase","plan_digest","progress","schema_version","started_at","status","task_id","updated_at","waiting_external"]
+    responseFields: ["action","activation_status","created_at","events","finished_at","last_error","node_id","phase","plan_digest","platform","progress","result","schema_version","started_at","status","task_id","updated_at","waiting_external"]
     requirements:
       - MVP06
       - MVP15
@@ -424,7 +424,7 @@ operations:
     permission: organization.layer.manage
     idempotent: false
     schema: named
-    responseFields: ["action","activation_status","created_at","events","finished_at","last_error","node_id","phase","plan_digest","progress","schema_version","started_at","status","task_id","updated_at","waiting_external"]
+    responseFields: ["action","activation_status","created_at","events","finished_at","last_error","node_id","phase","plan_digest","platform","progress","result","schema_version","started_at","status","task_id","updated_at","waiting_external"]
     requirements:
       - MVP06
       - MVP15

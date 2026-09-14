@@ -8,6 +8,18 @@ export const AUTONODE_CONTROL_CLIENT = token<AutoNodeControlPort>('provisioning.
 
 export type AutoNodeTaskStatus = 'QUEUED' | 'RUNNING' | 'WAITING_EXTERNAL' | 'FAILED_RETRYABLE' | 'SUCCEEDED';
 
+export interface AutoNodeTaskPlatform {
+  readonly mall_id: string | null;
+  readonly application_id: string | null;
+  readonly name: string | null;
+  readonly public_slug: string | null;
+}
+
+export interface AutoNodeTaskResult {
+  readonly manifest_id: string | null;
+  readonly access_entries: readonly Readonly<{ surface_ref: string; url: string }>[];
+}
+
 export interface AutoNodeTaskReceipt {
   readonly schema_version: 'sfl.autonode-control-task-receipt.v1';
   readonly task_id: string;
@@ -20,6 +32,8 @@ export interface AutoNodeTaskReceipt {
   readonly activation_status: string | null;
   readonly waiting_external: readonly string[];
   readonly last_error: Readonly<{ message: string }> | null;
+  readonly platform: AutoNodeTaskPlatform;
+  readonly result: AutoNodeTaskResult | null;
   readonly events: readonly Readonly<{ phase: string; message: string; occurred_at: string }>[];
   readonly created_at: string;
   readonly updated_at: string;
@@ -188,5 +202,46 @@ function taskReceipt(value: unknown): AutoNodeTaskReceipt {
     || !Array.isArray(receipt.waiting_external) || !Array.isArray(receipt.events)) {
     throw new Error('AUTONODE_CONTROL_RESPONSE_INVALID');
   }
-  return Object.freeze(structuredClone(value)) as AutoNodeTaskReceipt;
+  return Object.freeze({
+    ...structuredClone(value),
+    platform: taskPlatform(receipt.task_id, receipt.platform),
+    result: taskResult(receipt.result),
+  }) as AutoNodeTaskReceipt;
+}
+
+function taskPlatform(taskId: string, value: AutoNodeTaskPlatform | undefined): AutoNodeTaskPlatform {
+  const inferredMall = taskId.startsWith('task:') ? taskId.slice('task:'.length) : null;
+  if (value === undefined) {
+    return Object.freeze({ mall_id: inferredMall, application_id: null, name: null, public_slug: null });
+  }
+  if (!record(value)) throw new Error('AUTONODE_CONTROL_RESPONSE_INVALID');
+  return Object.freeze({
+    mall_id: nullableText(value.mall_id),
+    application_id: nullableText(value.application_id),
+    name: nullableText(value.name),
+    public_slug: nullableText(value.public_slug),
+  });
+}
+
+function taskResult(value: AutoNodeTaskResult | null | undefined): AutoNodeTaskResult | null {
+  if (value === undefined || value === null) return null;
+  if (!record(value) || !Array.isArray(value.access_entries)) throw new Error('AUTONODE_CONTROL_RESPONSE_INVALID');
+  return Object.freeze({
+    manifest_id: nullableText(value.manifest_id),
+    access_entries: Object.freeze(value.access_entries.map((entry) => {
+      if (!record(entry) || typeof entry.surface_ref !== 'string' || typeof entry.url !== 'string'
+        || !entry.url.startsWith('https://')) throw new Error('AUTONODE_CONTROL_RESPONSE_INVALID');
+      return Object.freeze({ surface_ref: entry.surface_ref, url: entry.url });
+    })),
+  });
+}
+
+function nullableText(value: unknown): string | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== 'string' || value.trim() === '') throw new Error('AUTONODE_CONTROL_RESPONSE_INVALID');
+  return value.trim();
+}
+
+function record(value: unknown): value is Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
