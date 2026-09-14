@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 75、G2 3、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 76、G2 3、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -845,3 +845,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 394. AU-394 客户端错误回报复核
 
 - 全链归 DC-0058/G2；仓内没有登记上报者或消费者，静态证据不足以作删除结论。累计 G0 60、G1 75、G2 3、G3 0、GX 5；未删除任何文件。
+
+## DC-0059｜平台分销商创建与挂载 RPC
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类/对象 | G1；`api_platform_create_distributor`、`api_platform_attach_tenant_to_distributor`、`api_platform_distributors` 及初版 `distributor.*` 权限。 |
+| 疑似原因 | 固定基线未发现应用/Worker 调用；主合同运行权限为另一套 `channel.distributor.*` 命名。 |
+| 保留证据 | service-role 公共写入接口，含组织层级、租户单一 active 归属、幂等和审计；`distributors`/`distributor_tenants` 被后续 canonical scope 绑定和中心查询继续使用。 |
+| 可否删除 | 否；旧权限、仓外调用、历史挂载和组织层级兼容性均未排除。 |
+| 二次复核 | G1不强制；若整合到 channel 合同，先核验生产 service-role 消费者、权限迁移和租户归属回滚。 |
+
+## 396. AU-396 分销渠道基础复核
+
+- 核心数据与分销中心查询经 canonical scope 绑定继续承担运行职责，归 G0；未接线的平台写入/列表接口归 DC-0059/G1。累计 G0 60、G1 76、G2 3、G3 0、GX 5；未删除任何文件。
