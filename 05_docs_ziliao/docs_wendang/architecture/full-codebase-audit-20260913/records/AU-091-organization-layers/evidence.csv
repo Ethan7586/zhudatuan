@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-091-001","01_core_hexin/services/commerce/src/modules/organization/03_application_yingyong/OrganizationOperations.ts","12-27","operation 以 access.scope.id 限定 unitclosure ancestor，按 child.id keyset，limit 最大1000。"
+"E-AU-091-002","01_core_hexin/services/commerce/src/modules/organization/{01_public_gongkai/OrganizationCapabilities.ts,05_interface_jieru/OrganizationModule.ts,index.ts,module.manifest.ts}","公开/装配","capability、module、public entry、manifest 对单一 operation 声明一致。"
+"E-AU-091-003","01_core_hexin/services/commerce/src/modules/web_business/WebBusinessModules.ts","23-25","WebBusiness selected module 复用 organizationOperations，仅选择公开 organization.layers.read。"
+"E-AU-091-004","01_core_hexin/services/commerce/src/modules/organization/06_tests_ceshi/module.manifest.test.ts","全部","测试仅作 manifest/public declaration 静态契约。"

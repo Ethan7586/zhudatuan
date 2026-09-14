@@ -1002,3 +1002,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | deny、read failure、velocity current attempt | [FACT][E-AU-090-003] |
 
 [FACT][E-AU-090-004] 2 文件、209 行 WebBusiness RiskGate 与测试完成深审；风险评估不具 risk mutation/outbox 权限，最终 access decision 仍由上层 decision sink 记录。
+
+## 96. AU-091 Organization 层级读取与 WebBusiness 装配清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| layers read | 已授权 scope 内 unitclosure descendant 投影 | [FACT][E-AU-091-001] |
+| module/public | capability、manifest、interface module 与兼容 export | [FACT][E-AU-091-002] |
+| WebBusiness selected module | 仅公开 organization.layers.read，复用同一 operation | [FACT][E-AU-091-003] |
+| tests | manifest 静态契约 | [FACT][E-AU-091-004] |
+
+[FACT][E-AU-091-005] 8 文件、92 行 Organization 层级读取与 WebBusiness selected module 完成深审；未见重复查询实现或未经 scope 授权的层级读取。
