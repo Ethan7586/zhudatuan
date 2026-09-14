@@ -710,3 +710,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | provider time/effect、mall identity 与静态数据库边界 | F-0149 |
 
 [FACT][E-AU-061-007] 9 文件、1,420 行 payment webhook/refund/recovery 人工源码和测试完成深审；Payment 模块所有人工代码已按 AU-060/061 分单元覆盖。
+
+## 68. AU-062 Fulfillment 履约、tracking 与退货模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| create/submit | payment 成功按 suborder 创建 fulfillment/line，provider Order.submit | F-0150 |
+| tracking/events | provider Logistics 查询、milestone 去重、shipped/received 事件 | F-0127；[FACT][E-AU-062-002] |
+| shipment/returns | 人工 shipment、return 收货/质检与 inventorysync | [FACT][E-AU-062-005] |
+| supplier aftersale | 已退款售后写 supplier return fact/responsibility | [FACT][E-AU-062-005] |
+| tests | mall identity 与 manifest | F-0150 |
+
+[FACT][E-AU-062-007] 13 文件、418 行 fulfillment 链完成逐文件审阅；其中 FulfillmentJobs 138 行已由 AU-041 深审并在本单元复核，新增覆盖 12 文件、280 行。

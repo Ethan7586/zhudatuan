@@ -3142,6 +3142,18 @@
 | 验证/回滚 | 隔离 PostgreSQL 分别注入已验签 payment/refund receipt：核对一次 inbox/job、重复通知 no-op、target 错误拒绝、退款所有 tender 恢复/余额/订单/outbox，以及 deadletter replay/retryrefund 幂等；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
 | 独立复核 | 否 |
 
+## F-0150｜供应商提交失败仍被履约状态伪装为已受理
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | fulfillment / provider；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/fulfillment/05_interface_jieru/jobs_renwu/FulfillmentJobs.ts:47-58,138`；`01_core_hexin/packages/contract/src/provider/Ports.ts:29-31` |
+| 当前/预期 | Provider `RemoteOrderReceipt.state` 为开放 string。submit 后 fulfillment 无条件更新为 `accepted`、保存 external reference 并入 tracking；`success(receipt.state)` 只影响 channel operation 是 `succeeded` 还是 `processing`。预期仅 accepted/submitted/succeeded 能转 accepted，拒绝/失败/未知回执应保持可重试状态或进入明确恢复状态。 |
+| 影响 | 供应商拒单或返回未识别状态时，本地履约不再被 fulfillment worker 选中重提；tracking 可能没有可用外部单号或长期无进展，订单可能无法正常履约。当前启用供应商与线上回执状态未验证。 |
+| 根因 | submit 的 state 判断未参与 fulfillment 状态机，只服务于 channel operation 的记录标签。 |
+| 验证/回滚 | 隔离 PostgreSQL 注入 `failed`、`rejected`、未知和 `accepted` receipt：核对 fulfillment state、provider operation、job 重试与 tracking 行为；修复必须从最新主线独立小分支进行，回滚为撤回该修复提交。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
