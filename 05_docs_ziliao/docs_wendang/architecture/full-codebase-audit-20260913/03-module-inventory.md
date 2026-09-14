@@ -1280,3 +1280,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | payment caller | refund attempt/observation/authority 链更新 operation 状态 | [FACT][E-AU-115-003] |
 
 [FACT][E-AU-115-004] 1 文件、42 行 Channel public operation port 完成深审；跨模块写入使用相同 idempotency key，但 hash conflict 未被调用端观测，见 F-0169/P2。
+
+## 121. AU-116 Extension health 与 Channel 降级回写清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| health worker | scan、stage probe、metrics、version-bound health evidence、schedule | [FACT][E-AU-116-001] |
+| state boundary | ExtensionStateSink 将 enabled connection 降级；同一 transaction 与 extension transition 一致 | [FACT][E-AU-116-002] |
+| recovery | degraded 保持到显式 test/enable 替换，不自动 re-enable | [FACT][E-AU-116-003] |
+| tests | 仅 manifest 声明测试 | [FACT][E-AU-116-004]；F-0170/P2 |
+
+[FACT][E-AU-116-005] 4 文件、97 行 extension-health/Channel state boundary 完成深审；故障降级和人工恢复意图由运行手册与实际状态机一致证明。

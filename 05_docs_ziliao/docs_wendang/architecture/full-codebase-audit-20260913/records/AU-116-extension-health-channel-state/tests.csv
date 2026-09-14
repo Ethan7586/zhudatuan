@@ -1,0 +1,4 @@
+"检查","证据","结论"
+"Extension 测试","modules/extension/06_tests_ceshi/module.manifest.test.ts","仅 manifest/public export 断言，见 F-0170/P2。"
+"Channel 测试","modules/channel/06_tests_ceshi/module.manifest.test.ts","仅不导出 state sink 的 public-boundary 断言。"
+"定向测试","未运行","工作区未安装 Vitest；审计纪律禁止安装或修复。"

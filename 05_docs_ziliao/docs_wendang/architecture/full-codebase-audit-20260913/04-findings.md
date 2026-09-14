@@ -3404,6 +3404,20 @@
 | 验证/回滚 | 从最新主线建立独立小分支，以相同 provider/kind/key、不同 request hash 的 fixture 断言 record 拒绝；再分别覆盖 fulfillment 与 refund 调用端不会提交后续 side effect。回滚为撤回该单一端口契约/测试批次。 |
 | 独立复核 | 否；P2，后续 Channel operation/fulfillment-payment 专项可复查。 |
 
+## F-0170｜Extension health 降级与恢复状态机没有行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | extension/channel / health Worker；P2；高 |
+| 类型 | 测试覆盖缺口、异步状态机正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/extension/05_interface_jieru/job/ExtensionHealthJob.ts:11-63`；`modules/channel/04_adapters_shixian/persistence/PgExtensionStateSink.ts:4-9`；`modules/extension/06_tests_ceshi/` |
+| 当前/预期 | health Worker 控制 provider stage、installation transition、connection degraded、health evidence、registry activation/discard 和一分钟调度；模块测试仅验证 manifest/public export。预期至少以 transaction fixture 覆盖不健康 enabled 降级、candidate version stale、degraded 后显式 test/enable 恢复、stage exception discard、scan 续投和 job abort。 |
+| 直接证据 | `rg` 只在 Extension manifest test 找到 ExtensionHealthJobProcessor/HealthRecord 的间接提及；该测试不导入、实例化或模拟 Worker。Channel manifest 也只断言 `channelExtensionSink` 不进入 public entry。 |
+| 调用链/影响 | runtime job extensionhealth → ExtensionHealthJobProcessor → ExtensionRepository health/transition → PgExtensionStateSink → channel.connection；其结果决定 provider 是否能继续用于新连接与操作。Worker 状态回归目前无专门测试捕获。 |
+| 根因 | 运行控制面由 manifest 静态测试覆盖，未建立状态机 transaction fixture。 |
+| 验证/回滚 | 从最新主线建立独立测试批次，用 fake loader/repository + transaction spy 或 PGlite 覆盖全部状态分支和 rollback/discard；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2，后续 Extension Worker 专项可复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
