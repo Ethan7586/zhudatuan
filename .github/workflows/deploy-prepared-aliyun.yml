@@ -5,6 +5,24 @@ run-name: Deploy 1.3.2 ${{ inputs.operation }} ${{ inputs.head_sha }} ${{ inputs
 # production inside one locked remote action. Optional candidate validation remains diagnostic
 # and never becomes a prerequisite or cross-run gate for deployment.
 on:
+  workflow_call:
+    inputs:
+      head_sha:
+        description: Exact 40-character source commit already prepared in OSS
+        required: true
+        type: string
+      release_target:
+        description: One prepared runtime target
+        required: true
+        type: string
+      release_node:
+        description: One sovereign node
+        required: true
+        type: string
+      operation:
+        description: Validate a candidate or atomically deploy it
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       head_sha:

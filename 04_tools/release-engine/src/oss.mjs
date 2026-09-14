@@ -10,6 +10,9 @@ const DEFAULT_PREFIX = '';
 const SHA256_PATTERN = /^[a-f0-9]{64}$/;
 const SOURCE_SHA_PATTERN = /^[a-f0-9]{40}$/;
 const STOREFRONT_RUNTIME_NODE = 'v22.22.0';
+const ARTIFACT_RECIPE = 'r3-normalized-runtime-modes';
+const CURRENT_RELEASE_INDEX = `release-index-${ARTIFACT_RECIPE}.json`;
+const LEGACY_RELEASE_INDEX = 'release-index.json';
 
 export async function publishPreparedArtifact(adapter, options, dependencies = {}) {
   const started = performance.now();
@@ -67,6 +70,7 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
       npm: required(options.npmVersion ?? process.env.AI_DELIVERY_NPM_VERSION, 'PREPARE_NPM_VERSION_REQUIRED'),
       runnerImage: options.runnerImage ?? process.env.ImageOS ?? `${process.platform}-${process.arch}`,
       releaseEngine: 2,
+      artifactRecipe: ARTIFACT_RECIPE,
     },
     sourceEvidence: {
       repository: options.repository ?? process.env.GITHUB_REPOSITORY ?? adapter.project,
@@ -99,6 +103,7 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
     project: adapter.project,
     target,
     sourceSha,
+    artifactRecipe: ARTIFACT_RECIPE,
     artifactIdentity: artifact.archive.sha256,
     releaseManifest: {
       object: releaseManifestObject,
@@ -109,7 +114,7 @@ export async function publishPreparedArtifact(adapter, options, dependencies = {
   const releaseIndex = { ...releaseIndexUnsigned, indexDigest: digest(releaseIndexUnsigned) };
   const releaseIndexBody = Buffer.from(prettyStableJson(releaseIndex));
   const releaseIndexSha256 = sha256(releaseIndexBody);
-  const releaseIndexObject = `${objectRoot(adapter.project, target, sourceSha, options.prefix)}/release-index.json`;
+  const releaseIndexObject = `${objectRoot(adapter.project, target, sourceSha, options.prefix)}/${CURRENT_RELEASE_INDEX}`;
   const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
 
   const publicationStarted = performance.now();
@@ -169,15 +174,25 @@ export async function resolvePreparedArtifact(adapter, options, dependencies = {
   invariant(Boolean(adapter.nodes[node]?.deployments?.[target]), 'OSS_NODE_TARGET_MISMATCH', `Unknown deployment ${node}/${target}`);
   const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
   const root = `${objectRoot(adapter.project, target, sourceSha, options.prefix)}/`;
-  const releaseIndexObject = `${root}release-index.json`;
-  const releaseIndexBody = await client.getObject(releaseIndexObject, 'OSS_ARTIFACT_NOT_FOUND');
+  const currentReleaseIndexObject = `${root}${CURRENT_RELEASE_INDEX}`;
+  let releaseIndexObject = currentReleaseIndexObject;
+  let currentRecipe = true;
+  let releaseIndexBody;
+  try {
+    releaseIndexBody = await client.getObject(currentReleaseIndexObject, 'OSS_ARTIFACT_NOT_FOUND');
+  } catch (error) {
+    if (!(error instanceof DeliveryError) || error.code !== 'OSS_ARTIFACT_NOT_FOUND' || options.allowLegacy === false) throw error;
+    releaseIndexObject = `${root}${LEGACY_RELEASE_INDEX}`;
+    currentRecipe = false;
+    releaseIndexBody = await client.getObject(releaseIndexObject, 'OSS_ARTIFACT_NOT_FOUND');
+  }
   const releaseIndex = JSON.parse(releaseIndexBody.toString('utf8'));
-  validateReleaseIndex(releaseIndex, { adapter, target, sourceSha, root });
+  validateReleaseIndex(releaseIndex, { adapter, target, sourceSha, root, expectedRecipe: currentRecipe ? ARTIFACT_RECIPE : null });
   const releaseManifestObject = releaseIndex.releaseManifest.object;
   const releaseManifestBody = await client.getObject(releaseManifestObject);
   invariant(`sha256:${sha256(releaseManifestBody)}` === releaseIndex.releaseManifest.sha256, 'OSS_RELEASE_MANIFEST_HASH_MISMATCH', 'Release manifest content hash differs');
   const manifest = JSON.parse(releaseManifestBody.toString('utf8'));
-  validateReleaseManifest(manifest, { adapter, target, sourceSha, node, root });
+  validateReleaseManifest(manifest, { adapter, target, sourceSha, node, root, expectedRecipe: currentRecipe ? ARTIFACT_RECIPE : null });
   invariant(manifest.manifestDigest === releaseIndex.releaseManifest.manifestDigest, 'OSS_RELEASE_INDEX_MANIFEST_MISMATCH', 'Release index semantic digest differs from the manifest');
   invariant(manifest.artifact.sha256 === releaseIndex.artifactIdentity, 'OSS_RELEASE_INDEX_ARTIFACT_MISMATCH', 'Release index artifact identity differs from the manifest');
 
@@ -193,6 +208,7 @@ export async function resolvePreparedArtifact(adapter, options, dependencies = {
       treeDigest: manifest.artifact.treeDigest,
       manifestDigest: manifest.runtimeManifest.manifestDigest,
     },
+    strictModes: true,
   });
   const archiveHead = await client.headObject(manifest.artifact.object);
   invariant(archiveHead.exists, 'OSS_ARTIFACT_NOT_FOUND', 'Prepared artifact archive is missing');
@@ -216,7 +232,7 @@ export async function resolvePreparedArtifact(adapter, options, dependencies = {
 
 export async function inspectPreparedArtifact(adapter, options, dependencies = {}) {
   try {
-    const resolved = await resolvePreparedArtifact(adapter, options, dependencies);
+    const resolved = await resolvePreparedArtifact(adapter, { ...options, allowLegacy: false }, dependencies);
     return {
       schema: 'ai.delivery.prepared-inspection.v1', project: adapter.project,
       target: resolved.manifest.target, sourceSha: resolved.manifest.sourceSha,
@@ -399,11 +415,12 @@ async function verifyExisting(client, existing, object, expectedBody, expectedSh
   return { object, status: 'hit_remote', bytes: expectedBody.byteLength, sha256: `sha256:${expectedSha256}` };
 }
 
-function validateReleaseIndex(index, { adapter, target, sourceSha, root }) {
+function validateReleaseIndex(index, { adapter, target, sourceSha, root, expectedRecipe }) {
   invariant(index.schema === 'ai.delivery.oss-release-index.v1' && index.protocolVersion === 1, 'OSS_RELEASE_INDEX_SCHEMA_INVALID', 'Release index schema is unsupported');
   invariant(index.project === adapter.project, 'OSS_RELEASE_INDEX_PROJECT_MISMATCH', 'Release index project differs');
   invariant(index.target === target, 'OSS_RELEASE_INDEX_TARGET_MISMATCH', 'Release index target differs');
   invariant(index.sourceSha === sourceSha, 'OSS_RELEASE_INDEX_SOURCE_SHA_MISMATCH', 'Release index source SHA differs');
+  if (expectedRecipe !== null) invariant(index.artifactRecipe === expectedRecipe, 'OSS_ARTIFACT_RECIPE_MISMATCH', 'Release index artifact recipe differs');
   invariant(/^sha256:[a-f0-9]{64}$/.test(index.artifactIdentity), 'OSS_RELEASE_INDEX_ARTIFACT_INVALID', 'Release index artifact identity is invalid');
   invariant(
     typeof index.releaseManifest?.object === 'string' && new RegExp(`^${escapeRegExp(root)}[a-f0-9]{64}/release-manifest-[a-f0-9]{64}\\.json$`).test(index.releaseManifest.object),
@@ -420,11 +437,12 @@ function validateReleaseIndex(index, { adapter, target, sourceSha, root }) {
   invariant(claimed === digest(unsigned), 'OSS_RELEASE_INDEX_DIGEST_MISMATCH', 'Release index semantic digest differs');
 }
 
-function validateReleaseManifest(manifest, { adapter, target, sourceSha, node, root }) {
+function validateReleaseManifest(manifest, { adapter, target, sourceSha, node, root, expectedRecipe }) {
   invariant(manifest.schema === 'ai.delivery.oss-release.v1' && manifest.protocolVersion === 1, 'OSS_RELEASE_MANIFEST_SCHEMA_INVALID', 'Release manifest schema is unsupported');
   invariant(manifest.project === adapter.project, 'OSS_ARTIFACT_PROJECT_MISMATCH', 'Release manifest project differs');
   invariant(manifest.target === target, 'OSS_ARTIFACT_TARGET_MISMATCH', 'Release manifest target differs');
   invariant(manifest.sourceSha === sourceSha, 'OSS_ARTIFACT_SOURCE_SHA_MISMATCH', 'Release manifest source SHA differs');
+  if (expectedRecipe !== null) invariant(manifest.buildEnvironment?.artifactRecipe === expectedRecipe, 'OSS_ARTIFACT_RECIPE_MISMATCH', 'Release manifest artifact recipe differs');
   invariant(Array.isArray(manifest.eligibleNodes) && manifest.eligibleNodes.includes(node), 'OSS_ARTIFACT_NODE_MISMATCH', 'Release manifest does not support the requested node');
   for (const object of [manifest.artifact?.object, manifest.runtimeManifest?.object]) {
     invariant(typeof object === 'string' && object.startsWith(root), 'OSS_ARTIFACT_OBJECT_SCOPE_INVALID', 'Release object is outside its immutable prefix');
@@ -438,7 +456,7 @@ function validateReleaseManifest(manifest, { adapter, target, sourceSha, node, r
   invariant(claimed === digest(unsigned), 'OSS_RELEASE_MANIFEST_DIGEST_MISMATCH', 'Release manifest semantic digest differs');
 }
 
-function validateRuntimeManifest(manifest, { project, target, sourceSha, artifact }) {
+function validateRuntimeManifest(manifest, { project, target, sourceSha, artifact, strictModes = true }) {
   invariant(manifest.schema === 'ai.delivery.artifact.v1' && manifest.engineVersion === 2, 'OSS_RUNTIME_MANIFEST_SCHEMA_INVALID', 'Runtime manifest schema is unsupported');
   invariant(manifest.project === project, 'OSS_RUNTIME_PROJECT_MISMATCH', 'Runtime manifest project differs');
   invariant(manifest.target === target, 'OSS_RUNTIME_TARGET_MISMATCH', 'Runtime manifest target differs');
@@ -446,6 +464,13 @@ function validateRuntimeManifest(manifest, { project, target, sourceSha, artifac
   invariant(manifest.archive?.sha256 === artifact.archive.sha256, 'OSS_RUNTIME_ARCHIVE_MISMATCH', 'Runtime manifest archive digest differs');
   invariant(manifest.treeDigest === artifact.treeDigest, 'OSS_RUNTIME_TREE_MISMATCH', 'Runtime manifest tree digest differs');
   invariant(manifest.manifestDigest === artifact.manifestDigest, 'OSS_RUNTIME_MANIFEST_MISMATCH', 'Runtime manifest semantic digest differs');
+  invariant(Array.isArray(manifest.entries), 'OSS_RUNTIME_ENTRIES_INVALID', 'Runtime manifest entries are invalid');
+  if (strictModes) {
+    for (const entry of manifest.entries) {
+      if (entry.type === 'directory') invariant(entry.mode === 0o755, 'OSS_RUNTIME_MODE_INVALID', 'Runtime directories must use mode 0755', { path: entry.path, mode: entry.mode });
+      if (entry.type === 'file') invariant(entry.mode === 0o644 || entry.mode === 0o755, 'OSS_RUNTIME_MODE_INVALID', 'Runtime files must use mode 0644 or 0755', { path: entry.path, mode: entry.mode });
+    }
+  }
   const claimed = manifest.manifestDigest;
   const unsigned = { ...manifest };
   delete unsigned.manifestDigest;

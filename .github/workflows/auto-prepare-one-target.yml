@@ -1,0 +1,44 @@
+name: Automatic Prepare and Seal One Target
+
+on:
+  workflow_call:
+    inputs:
+      head_sha:
+        required: true
+        type: string
+      release_target:
+        required: true
+        type: string
+      prepare_node:
+        required: true
+        type: string
+      seal_nodes_json:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    uses: ./.github/workflows/prepare-artifact-aliyun.yml
+    with:
+      build_runner: aliyun
+      head_sha: ${{ inputs.head_sha }}
+      release_target: ${{ inputs.release_target }}
+      release_node: ${{ inputs.prepare_node }}
+    secrets: inherit
+
+  seal:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        release_node: ${{ fromJSON(inputs.seal_nodes_json) }}
+    uses: ./.github/workflows/deploy-prepared-aliyun.yml
+    with:
+      head_sha: ${{ inputs.head_sha }}
+      release_target: ${{ inputs.release_target }}
+      release_node: ${{ matrix.release_node }}
+      operation: validate-candidate
+    secrets: inherit
