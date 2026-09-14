@@ -5402,3 +5402,24 @@
 | 验证方式 | 隔离 PostgreSQL构造 active password、inactive password、active federated-only、revoked password与已registered成员；验证仅允许集合创建L6，异常集合明确报告且不会阻断其它允许对象；重复运行幂等、注入失败不留orphan Realm/node。 |
 | 回滚方式 | 对错误创建的单条 Realm/node/registration先审计实际登录/关系/业务引用，再走独立受控反向迁移；不可直接删除历史 identity topology。 |
 | 是否需要独立复核 | 是；复核者需独立查看 HBBTZN生产 membership/credential/registration分布、migration execution receipt、node/realm references和身份状态语义。 |
+## F-0289｜HTTP 的 checkout 延后手机验证与现行 registration trigger 契约漂移
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Identity Registration / Storefront L6 / database write trigger |
+| 类型 | 正确性、身份验证、前后端/数据库契约 |
+| 严重级别 | **P2** |
+| 置信度 | 高（HTTP branch、当前 trigger定义和历史 trigger语义均为直接证据；生产请求使用率未验证） |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/modules/identity/05_interface_jieru/http/RegistrationOperations.ts:178-185,212-215`；`02_platform_pingtai/database/supabase/migrations/20260904010000_allow_platform_owner_l6_registration.sql:78-198`；`20260911190000_bind_operator_registration_to_realm_console.sql:20-148`。 |
+| 当前/预期 | 当前 HTTP registration在 Storefront 且 request body `phoneVerification='checkout'` 时不调用 `consumeChallenge`，并设置 `app.registration_phone_verification=checkout`。0401的旧 trigger曾将该 setting作为 deferred phone proof；但现行 111900 create-or-replace trigger只以 `challenge.consumed_at>=transaction_timestamp()` 计算 registration_allowed，未读取该 setting。因此后续 membership/role/scope write会拒绝请求。预期是该公开输入模式要么在入口被明确拒绝并返回稳定业务错误，要么 current database trigger和完整验证流程支持它；不能静默跳过OTP后才在DB边界失败。 |
+| 直接证据 | [FACT][E-AU-709-001] HTTP 180定义 deferred branch，181-185跳过 challenge consume，212-215写两个 app settings；[FACT][E-AU-709-002] 0401 163-166以 `registration_phone_verification='checkout'` 允许 deferred proof；[FACT][E-AU-709-003] 111900 93-113只查询已消耗 registration challenge，112-118将 registration_allowed限定为 invite role与challenge成功，且function body无该 phone setting；[FACT][E-AU-709-004] L6 test覆盖 challenge accepted 正常路径，未覆盖 deferred branch对 current database trigger的行为。 |
+| 调用链或运行入口 | Storefront registration HTTP request → `RegistrationOperations` → transaction `app.registration_mall_id`/可选 phone setting → identity/account/membership/role/scope writes → `access.protect_zhudatuan_registration_access_write` current trigger。 |
+| 用户影响 | 请求带该可接受值的 Storefront注册用户可能在OTP被跳过后收到低层 registration boundary失败，而非完成注册或获得明确可恢复提示。 |
+| 数据影响 | trigger拒绝应使当前 transaction回滚，正常情况下不会留下部分 identity/membership写入；实际 transaction wrapper和错误映射仍待运行验证。 |
+| 安全影响 | 当前数据库 fail-closed，不构成OTP绕过；风险是API公开语义与数据库授权不一致，未来若误恢复豁免可能产生未审查的身份验证降级。 |
+| 根因 | 后续 operator Realm/console trigger replacement没有保留或显式废弃早期 L6 checkout-deferred phone-verification contract，HTTP entry仍保留旧开关。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立单一 registration-phone-verification contract batch：产品/安全Owner先决定是否允许 deferred checkout；若不允许，在 HTTP schema/handler先拒绝并移除无效 setting；若允许，设计可验证且不可绕过的 checkout proof/回执，再以最小前向 trigger/API test对齐。不要在审计分支或历史 migration中改写。 |
+| 预计修改范围 | Identity API request validation/registration flow、必要的前向 access trigger/receipt schema和定向 PostgreSQL+HTTP contract；不批量改变现有 credentials/memberships。 |
+| 验证方式 | 在完整基线 migration head，以真实 Identity API role测试 OTP success、missing OTP、`phoneVerification=checkout`、operator invite和Owner Storefront；断言每个路径的HTTP code/业务码、事务原子性、challenge状态和未产生越权membership。 |
+| 回滚方式 | 回退独立入口/trigger contract版本；对已失败请求不需要数据回滚，对未来引入的 deferred proof须保持可撤销/过期。 |
+| 是否需要独立复核 | 是；复核者必须独立阅读 mobile/checkout 产品流程、actual client payload、trigger replacement链和完整 transaction error mapper。 |
