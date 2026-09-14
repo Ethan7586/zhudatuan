@@ -1954,3 +1954,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | delete | DELETE only、permission与user-scoped delete RPC | [FACT][E-AU-180-003] |
 
 [FACT][E-AU-180-004] 1 文件、61 行完成深审；source由compat storefront router注册，但当前Storefront Worker不装载full authenticated router。
+
+## 186. AU-181 Cart 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| snapshot | server-qualified cart projection、server product cover URL policy | [FACT][E-AU-181-001] |
+| upsert | order.create、server scope、SKU/quantity/selected validation、qualified RPC | [FACT][E-AU-181-002] |
+| delete | DELETE only、permission、server scope、not-found mapping | [FACT][E-AU-181-003] |
+
+[FACT][E-AU-181-004] 2 文件、131 行完成深审；compat storefront router注册此链，当前Storefront Worker不加载其authenticated router。

@@ -3724,6 +3724,20 @@
 | 验证/回滚 | direct fixture断言RPC参数包含当前user scope和cipher envelope，GET decrypt round-trip，跨scope/invalid input拒绝；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0193｜Cart 写入与删除边界没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / cart；P2；高 |
+| 类型 | 测试覆盖缺口、购物车资格和成员scope写入正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/cartRoutes.ts:9-59`；现有`cartRoutes.test.ts` |
+| 当前/预期 | 实现把GET/PUT/DELETE绑定order.create、server membership/user scope，PUT限制SKU和1–99数量。现有test只断言GET snapshot/media URL。预期对PUT/delete和拒绝分支直接断言RPC参数与结果。 |
+| 直接证据 | `cartRoutes.test.ts`仅导入/调用`handleCart` GET；未调用PUT或`handleDeleteCartItem`。 |
+| 调用链/影响 | authenticated storefront route → cart handlers → qualified cart RPC。数量、资格、scope或删除状态回归不由当前测试直接发现。 |
+| 建议方向 | 从修复时最新`zdt-next`建立独立cart route test批；回滚为撤回该测试提交。 |
+| 验证/回滚 | fixture覆盖GET/PUT/DELETE、invalid input、permission和exact RPC body；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

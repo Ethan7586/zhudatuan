@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-181-001,src/api/cartRoutes.ts,9-27,snapshot,Permissioned server-qualified cart rows are rendered with cover URL through public media policy.
+E-AU-181-002,src/api/cartRoutes.ts,28-45,upsert,Validated SKU quantity selected values and server membership/user scope are sent to qualified cart upsert RPC.
+E-AU-181-003,src/api/cartRoutes.ts,47-59,delete/input,DELETE requires permission and scope; parser limits SKU to100 and quantity to 1–99.
+E-AU-181-004,src/api/cartRoutes.test.ts,1-72,tests,Only GET snapshot/media projection is directly exercised.

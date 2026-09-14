@@ -495,3 +495,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 ## 180. AU-180 Address book 深审
 
 - `addressRoutes.ts`没有同层test；应直接覆盖permission、PII-key missing、GET decrypt、PUT input/cipher/RPC、DELETE found/not-found及cross-user scope body。见F-0192/P2；审计工作树未运行Vitest。
+
+## 181. AU-181 Cart 深审
+
+- Direct test只覆盖GET qualified server snapshot与canonical media URL，不测试cart mutation。
+- 应补permission、PUT valid/invalid quantity、membership/user scope RPC、DELETE found/not-found及body-too-large。见F-0193/P2；审计工作树未运行Vitest。
