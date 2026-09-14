@@ -4581,3 +4581,21 @@
 | 建议方向 | 在独立文档/配置小批次中确认 localinfra 的权威生成来源，再补充 placeholder/说明并覆盖 fail-fast 与生成路径；不在审计分支修改。 |
 | 验证/回滚 | 隔离本地环境从模板生成变量，验证缺字段失败、补充安全 placeholder 后能到下一配置门槛且不打印 token；回滚为撤回单一模板/文档提交。 |
 | 是否需要独立复核 | 否（P3）。 |
+
+## F-0246｜Canonical Jobs 环境模板不满足任何有效运行档案
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce Jobs 配置/Worker bootstrap |
+| 类型 | 配置/文档完整性、后台任务可用性 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/.env.jobs.example:1-19`；`01_core_hexin/packages/config/src/JobsEnvironment.ts:1-110`。 |
+| 当前/预期 | 模板没有 `JOB_RUNTIME_PROFILE`、`SECRET_STORE_BEARER_TOKEN`、`KMS_BEARER_TOKEN`。jobsEnvironment 必须解析 profile；identity/payment profile 要求 bearer 且拒绝该模板携带的其它 profile-forbidden keys。预期为模板按一个明确 profile 完整给出 placeholder，或拆成明确的 profile-specific 示例。 |
+| 直接证据 | [FACT][E-AU-503-001] 模板的 19 行缺三个变量；[FACT][E-AU-503-002] JobsEnvironment 强制 runtime profile，并在专用 profile 中校验 bearer/配置键白名单。 |
+| 调用链或运行入口 | `JobsMain`/`PaymentJobsOnlyMain`/`IdentityNotificationJobsOnlyMain` → `jobsEnvironment` → profile validation → Commerce/专用 runtime bootstrap。 |
+| 用户/数据/安全影响 | 由模板启动的 Jobs 环境会在配置验证阶段失败，后台任务无法开始；未证明生产 node 使用该模板、任务积压、数据损坏或凭据暴露。 |
+| 根因 | 模板沿用旧的综合 Jobs 变量集合，未随 profile 隔离与 bearer 身份要求同步。 |
+| 建议方向 | 从最新主线建立独立配置/文档小批次，先确定 full 是否仍允许，然后为 full/identity/payment 拆分可验证模板并由 localinfra 生成路径覆盖。 |
+| 验证/回滚 | 隔离环境分别加载每个模板，断言允许档案可通过环境校验、禁止键 fail-fast、token 不打印；回滚为撤回单一模板变更。 |
+| 是否需要独立复核 | 否（P3）。 |
