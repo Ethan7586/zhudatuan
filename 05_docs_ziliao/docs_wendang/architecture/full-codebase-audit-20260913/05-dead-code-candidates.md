@@ -1363,15 +1363,15 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 字段 | 记录 |
 | --- | --- |
 | 分类 | GX：高风险，禁止删除，需专项设计 |
-| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821066000_resolve_invitation_scope.sql` |
+| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821066000_resolve_invitation_scope.sql`、`20260821079000_resolve_experience_version_scope.sql` |
 | 疑似原因 | 该文件是历史版本的 function replacement，之后又被多次覆盖。 |
-| 保留证据 | [FACT][E-AU-473] 它首次为 invitation create/revoke 建立组织 scope 归属，并将跨域 resource-scope resolver 收敛为 unknown 时显式失败、仅 shopapp 可执行的边界；后续三参/四参 resolver 均从此演进。 |
+| 保留证据 | [FACT][E-AU-473/485] invitation 分支建立组织 scope 归属，experience version 分支将 immutable version 反查至 owning application scope；两者均在 unknown 时显式失败、仅 shopapp 可执行，后续三参/四参 resolver 从此演进。 |
 | 运行结论 | 后续覆盖是演进，不是删除依据；错误改写会改变 handler 授权范围。 |
 | 数据/契约责任 | 确立 invitation 的组织归属和 operation→resource 数据所有权投影。 |
 | 可否删除 | 禁止 |
 | 二次复核 | 是：以真实数据库 current definition、grant 和跨组织反事实调用复核。 |
 
-- invitation scope resolver 演进归 GX-0030。累计 G0 60、G1 83、G2 5、G3 0、GX 30；未删除任何文件。
+- invitation/experience scope resolver 演进归 GX-0030。累计 G0 60、G1 83、G2 5、G3 0、GX 30；未删除任何文件。
 
 ## GX-0031｜Identity session 管理与撤销事件
 
