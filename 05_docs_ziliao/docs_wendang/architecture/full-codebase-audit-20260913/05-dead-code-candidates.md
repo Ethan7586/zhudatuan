@@ -1623,3 +1623,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1 不强制；任何 cleanup 前必须读取真实 DB dependency/privilege、仓外 consumers，并对比旧/新 response schema。 |
 
 - Compatibility 旧订单读模型归 DC-0071。累计 G0 60、G1 86、G2 5、G3 0、GX 40；未删除任何文件。
+
+## DC-0072｜Compatibility 受限测试目录导入 RPC
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `02_platform_pingtai/database/storefront-compatibility/supabase/migrations/20260725003000_test_catalog_import_rpc.sql` 中的 `api_import_test_catalog` |
+| 疑似原因 | 固定基线没有 Compatibility 应用、脚本或测试对该 RPC 的静态调用。 |
+| 保留证据 | 它是唯一把 `abo_` 测试项收敛为 is_test/零价/零库存数据的受限 service_role 操作；后续 fix migration、外部 test/load runner 和 Compatibility DB运行状态均未排除。 |
+| 可否删除 | 否；未满足外部调用、测试数据职责、历史 compatibility、可观察行为及独立复核等 G3 条件。 |
+| 二次复核 | G1 不强制；拟删除前必须检查实际 Compatibility DB function/privilege、test/load pipeline 和数据清理/隔离反事实。 |
+
+- Compatibility 测试目录导入 RPC 归 DC-0072。累计 G0 60、G1 87、G2 5、G3 0、GX 40；未删除任何文件。
