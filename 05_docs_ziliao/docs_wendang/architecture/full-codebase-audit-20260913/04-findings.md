@@ -5444,3 +5444,25 @@
 | 验证方式 | 隔离 PostgreSQL以 provisioning role执行相同 Mall成功、不同 organization/scope/mall、inactive/non-Mall、foreign actor/source及无 session均拒绝；断言失败 transaction没有 membership/role/scopegrant/mallowner残留，并验证 CreateMall正常preflight/rollback。 |
 | 回滚方式 | 回退独立 function/grant version；对已发现的不一致 owner关系逐条审查并用单独数据修复流程处理，禁止批量删除。 |
 | 是否需要独立复核 | 是；复核者必须独立检查 production function owner/BYPASSRLS、API connection/session context、Mall provisioning入口和现有 `mallowner` 数据关系。 |
+
+## F-0291｜MORVIA 产品资产映射未与 Console/Storefront 的可追踪接入对齐
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 视觉资产 / Auth、Console、Storefront 品牌交付 |
+| 类型 | 文档与运行集成漂移、可维护性 |
+| 严重级别 | **P3** |
+| 置信度 | 高（固定基线的资产映射、生成脚本、全仓运行源码 import 均直接检索；仓外发布复制未验证） |
+| 文件和精确位置 | `05_docs_ziliao/VI_shijue/current/ZHU-VI-1.5/PRODUCT-ASSET-MAP.md:3-17`；`01_core_hexin/apps/auth-web/src/screens/MorviaIdentityShell.tsx:2`；`IdentityAudienceSwitch.tsx:3`；`apps/auth-web/src/index.css:6`。 |
+| 当前/预期 | 资产映射声明 Storefront、Console、Auth 共用同一母版；但固定基线仅有 Auth Web 直接导入白色 lockup、M 标记和字体，未发现 Console/Storefront 对 `ZHU-VI-1.5` 的源码 import、复制任务或发布 manifest。预期是该共享声明有可追踪的构建/发布消费者，或明确标为人工设计交付而非运行时集成。 |
+| 直接证据 | [FACT][E-AU-715-001] 三个 Auth 源文件分别导入 SVG/字体；[FACT][E-AU-715-002] 对 `01_core_hexin`、`02_platform_pingtai`、`03_quality_ceshi`、`04_tools` 的资产包路径与 MORVIA asset 名称检索未得到 Console/Storefront 消费者；[FACT][E-AU-715-003] `PRODUCT-ASSET-MAP.md` 明确声称三端共用母版。 |
+| 调用链或运行入口 | Auth Web bundle → `MorviaIdentityShell`/`IdentityAudienceSwitch`/CSS → 当前视觉资产包；Console/Storefront 的对应链在仓内未建立。 |
+| 用户影响 | Console/Storefront 可在不触发代码审查或构建校验的情况下继续使用旧/不同品牌资产；当前生产显示是否已经漂移未验证。 |
+| 数据影响 | 无。 |
+| 安全影响 | 无直接安全影响。 |
+| 根因 | 视觉资产包以文档和人工交付为中心，没有为三端声明建立统一的源码消费、复制或制品清单契约。 |
+| 建议方向 | 后续单一品牌交付批次先确定三端是直接 import、受控复制还是仓外设计交付；为选定方式补最小可追踪 manifest/check，不在审计分支移动或删除资产。 |
+| 预计修改范围 | 一个视觉交付 manifest 或各产品明确的资源接入点与定向验证；具体取决于产品实际发布模式。 |
+| 验证方式 | 在独立分支检查 Auth、Console、Storefront 的实际构建输入和上线页面，断言选定资产版本/哈希一致；不以截图替代制品关系验证。 |
+| 回滚方式 | 回退独立交付契约改动；保留现有资产包与已发布版本。 |
+| 是否需要独立复核 | 否。 |
