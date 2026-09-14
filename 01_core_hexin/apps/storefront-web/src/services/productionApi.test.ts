@@ -102,7 +102,7 @@ describe('canonical storefront production API', () => {
 
     await expect(productionApi.getSession()).resolves.toMatchObject({
       authenticated: true,
-      actor: { userId: 'membership:one', displayName: '138****0000' },
+      actor: { userId: 'membership:one', displayName: '138****0000', phoneMasked: '138****0000' },
     });
   });
 
