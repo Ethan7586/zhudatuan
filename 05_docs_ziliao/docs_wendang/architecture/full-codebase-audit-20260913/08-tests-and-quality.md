@@ -456,3 +456,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖无端点禁用、fresh envelope/token不在URL、网络故障unavailable，以及包含projection metadata的PUT写入。
 - 未覆盖恶意sidecar响应或端点DNS变化；client只接私有loopback HTTP或HTTPS，sidecar本体留在其服务审阅。审计工作树未运行Vitest。
+
+## 173. AU-173 HTTP transport 深审
+
+- `http.test.ts` 直接覆盖JSON/错误/405 的 status、Allow、request-id与防护headers。
+- `errorResponse.ts` 及 `routerSupport.ts` 没有同层direct fixture；应补已知/未知error、32KB边界、错误声明长度与实际长度、server-only scope参数。见F-0188/P3；审计工作树未运行Vitest。

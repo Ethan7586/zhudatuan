@@ -1868,3 +1868,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime | optional loopback Tair sidecar；未配置时不启动且主站直接回源 | [FACT][E-AU-172-004] |
 
 [FACT][E-AU-172-005] 2 文件、158 行完成深审；sidecar服务实现与其部署单元留在独立服务审阅，不把它推定为永久可用。
+
+## 178. AU-173 HTTP transport 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| HTTP responses | JSON/error/method response、request-id、no-store和browser response headers | [FACT][E-AU-173-001] |
+| error mapping | known domain markers到稳定status/code；未知异常通用500 | [FACT][E-AU-173-002] |
+| request/scope helpers | 32KB declared/actual JSON body bound、server-RPC resource scope、authorization evidence | [FACT][E-AU-173-003] |
+| consumers | 29个compat API callsites共用body parser；full router是known-error mapper唯一捕获者 | [FACT][E-AU-173-004] |
+
+[FACT][E-AU-173-005] 4 文件、202 行完成深审；测试只直接覆盖HTTP响应，error mapper和body/scope helper没有独立行为fixture。

@@ -3654,6 +3654,20 @@
 | 验证/回滚 | 定向 fixture：stale version 不新增 history；success transition 恰增一条 history。回滚为 revert 独立修复提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0188｜Compatibility HTTP error/body/scope helper 没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / HTTP transport；P3；中 |
+| 类型 | 测试覆盖缺口、稳定错误契约与输入边界回归风险 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/{errorResponse,routerSupport}.ts` |
+| 当前/预期 | `errorResponse` 以业务错误标记映射稳定 HTTP status/code，`routerSupport` 承担32KB JSON size/parse和server-RPC resource scope。`http.test.ts`只测试response factory。预期对上述两文件直接覆盖known/unknown error、declared/actual size、invalid JSON及三个resource scope RPC参数。 |
+| 直接证据 | `src/api` 仅有`http.test.ts`导入transport helpers；未找到`knownApiError`、`readJsonBody`、`loadResourceScope`的direct fixture。生产`readJsonBody`有29处调用，`knownApiError`只由顶层router catch调用。 |
+| 调用链/影响 | compatibility full router → known error response；compat order/member/product routes → request body/resource scope。未来error mapping或size/scope helper回归不能由当前transport test直接发现。 |
+| 建议方向 | 从修复时最新`zdt-next`建立独立transport test批，只新增fixture；回滚为撤回该测试提交。 |
+| 验证/回滚 | 断言所有known/unknown error和四种body边界、每个RPC参数及null scope；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

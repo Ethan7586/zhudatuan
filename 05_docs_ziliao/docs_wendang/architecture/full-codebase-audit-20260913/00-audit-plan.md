@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-172 已完成。AU-172 完成 Commerce API core read-cache client 审阅。覆盖总账按当前文件级清单重算：深入审阅1,618文件/113,082行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,236文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-173 已完成。AU-173 完成 Commerce API HTTP transport 审阅。覆盖总账按当前文件级清单重算：深入审阅1,622文件/113,284行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,232文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1467,3 +1467,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Commerce API public catalog 与北京同地域私有 read-cache sidecar 的 client boundary。
 
 执行结果：client只接受私有loopback HTTP或HTTPS端点、正则约束的versioned key、Bearer header和60ms read/250ms write timeout；response envelope要求schema/version/hash/timestamp。cache不可用、无配置或写入失败均回落source且不改变公共响应；fresh/stale只由catalog调用，stale refresh为best-effort。无 P0–P3 新问题。
+
+## 175. AU-173 连续审计点
+
+审阅 Commerce API HTTP response/error mapping/body/scope transport helpers。
+
+执行结果：JSON响应统一no-store、request-id和browser safety headers；全路由顶层通过固定错误代码表归一化业务错误，未知错误仅返回通用500。所有兼容写操作共用32KB声明/实际字节双检 JSON parser；资源scope只可由security-definer RPC读取。routerSupport/errorResponse没有direct tests，形成F-0188/P3；无P0–P2新问题。
