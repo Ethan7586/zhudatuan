@@ -753,3 +753,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 risk 的 API 判定、策略 candidate/replay/activate、case review、catalog deny 作业与迁移边界。
 
 执行结果：824 行风险模块文件纳入审阅。API context、scope hierarchy、事务案件锁、独立策略创建者、回放门槛和 riskscan 消费链均已确认；未发现 P0–P3 新问题。generic job 崩溃恢复沿用 F-0143，不重复计数；正式 Vitest 未启动且未改变运行状态。
+
+## 55. AU-053 连续审计点
+
+审阅 observability 平台模块、客户端错误 create/read、脱敏和 telemetry buffer 依赖。
+
+执行结果：模块为刻意的 process-lived 客户端错误入口；成员组织 scope、operator scope filter、双层脱敏和不写 audit body 已确认。未发现 P0–P3 新问题；未运行 Vitest 或改变运行状态。
