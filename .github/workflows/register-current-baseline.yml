@@ -73,7 +73,7 @@ env:
 jobs:
   register:
     name: Prove and register ${{ inputs.release_node }}/${{ inputs.release_target }}
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, linux, x64, zdt-release]
     timeout-minutes: 5
     steps:
       - name: Validate migration request

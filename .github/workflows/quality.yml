@@ -39,7 +39,7 @@ env:
 jobs:
   plan:
     name: plan affected scope
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, zdt-build]
     timeout-minutes: 5
     outputs:
       deploy_required: ${{ steps.plan.outputs.deploy_required }}
@@ -183,7 +183,7 @@ jobs:
     name: affected tests, typecheck, build, package and candidate
     needs: plan
     if: needs.plan.outputs.deploy_required == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, zdt-build]
     timeout-minutes: 20
     env:
       ZDT_RELEASE_SSH_HOST: root@123.57.232.253
@@ -352,7 +352,7 @@ jobs:
     name: required validation without candidate
     needs: plan
     if: needs.plan.outputs.deploy_required != 'true' && needs.plan.outputs.validation_required == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, zdt-build]
     timeout-minutes: 20
     continue-on-error: true
     steps:
@@ -381,6 +381,6 @@ jobs:
     name: no deployable changes
     needs: plan
     if: needs.plan.outputs.deploy_required != 'true' && needs.plan.outputs.validation_required != 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, zdt-build]
     steps:
       - run: echo "Plan completed; no validation, artifact, candidate or restart required."
