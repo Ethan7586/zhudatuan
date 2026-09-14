@@ -334,3 +334,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - CreateMall、HostedNodeProvisioningPort、template clone、domain policy/lifecycle、manifest 都有直接测试；CreateMall 覆盖 mall graph 顺序、stable IDs 与 conflict-before-write。
 - `provisioningOperations` 本身没有 direct invoke；entrypoint test 仅断言 routes，见 F-0178/P2。
 - 本 AU 未运行 Vitest；审计 worktree 依赖缺口保持未修复。
+
+## 146. AU-146 Provisioning 兼容入口与覆盖闭合
+
+- 兼容文件不包含独立运行分支；public index 的 export isolation 已由 manifest test 覆盖。
+- 不将旧分层转发当作删除依据；Provisioning 27/27 文件已获得审阅状态。

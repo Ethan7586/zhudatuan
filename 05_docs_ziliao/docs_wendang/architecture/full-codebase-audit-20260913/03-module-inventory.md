@@ -1592,3 +1592,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | registration/tests | full/dedicated API modules；HTTP action test gap | [FACT][E-AU-145-005][E-AU-145-006]；F-0178/P2 |
 
 [FACT][E-AU-145-007] 18 文件、1,036 行完成深审；Provisioning transaction/data ownership 已可定位，HTTP composition 缺少行为规格。
+
+## 151. AU-146 Provisioning compatibility 与覆盖闭合清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| legacy/root exports | 保留旧分层 import 到已审 canonical implementation | [FACT][E-AU-146-001]；G0 |
+| public entry | stable port/domain/manifest surface，不导出 HTTP implementation | [FACT][E-AU-146-002]；G0 |
+| consumers | 主应用和独立 Mall Provisioning API 使用 canonical registration | [FACT][E-AU-146-003]；G0 |
+
+[FACT][E-AU-146-004] 9 文件、29 行完成深审；Provisioning 27/27 文件均已取得审阅状态，兼容路径保留不删。

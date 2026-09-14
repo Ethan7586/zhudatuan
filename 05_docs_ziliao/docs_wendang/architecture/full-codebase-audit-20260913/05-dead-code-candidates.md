@@ -641,3 +641,8 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 13 个 Voucher re-export 保留旧分层 import；根 `VoucherPort.ts` 还提供默认 FinancePort 组装，且由 Checkout、Order、Payment、Verification 与测试直接或经 public entry 消费。
 - 全部归类 G0：具有明确兼容/运行职责，不是删除候选。累计 G0 24、G1 38、G2 2、G3 0、GX 5；未删除任何文件。
+
+## 146. AU-146 Provisioning compatibility 复核
+
+- 八个 Provisioning legacy/root export 保持旧 import；public index 是稳定 port/domain surface，主应用与独立 provisioning API 均使用 canonical target。
+- 全部归类 G0：具有明确兼容/公共职责，不是删除候选。累计 G0 33、G1 38、G2 2、G3 0、GX 5；未删除任何文件。

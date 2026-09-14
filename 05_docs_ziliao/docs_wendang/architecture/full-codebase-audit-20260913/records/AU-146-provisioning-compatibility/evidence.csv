@@ -1,0 +1,4 @@
+id,file,location,kind,observation
+E-AU-146-001,HostedNodeProvisioningPort.ts;MallOwnerProvisioningPort.ts;MallProvisioningModule.ts;ProvisioningModule.ts;ProvisioningOperations.ts;application/CreateMall.ts;domain/**,1,compatibility exports,Each is a one-way legacy/root forwarding path to an already reviewed canonical layer.
+E-AU-146-002,index.ts,1-21,public entry,Exports only public ports/domain policy/lifecycle/manifest and keeps HTTP modules/actions out of public surface.
+E-AU-146-003,src/app/modules.ts;entry/MallProvisioningApiMain.ts;MallProvisioningApiEntrypoint.test.ts,imports,consumers,Canonical interface/application imports remain live in main app and dedicated provisioning API; tests assert public isolation.

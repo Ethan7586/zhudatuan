@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source-level export review,Nine Provisioning legacy/root/public files and direct consumers,Completed,All forwarding targets and consumers reviewed.
+Targeted execution,Compatibility exports,Not run,No independent behavior beyond reviewed canonical targets.
