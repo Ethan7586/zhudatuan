@@ -972,3 +972,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | mall lifecycle | node-context-bound hosted open / sovereign upgrade | [FACT][E-AU-087-003] |
 
 [FACT][E-AU-087-004] 1 文件、83 行 WebBusiness Member selected operation 完成深审；Web role 通过 narrow SECURITY DEFINER session-context function 获得最低 member projection，而非读取 identity/access authority 表。
+
+## 93. AU-088 WebBusiness Order 聚合读取模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| order main range | owner/supplier/store/organization closure 订单范围与 keyset/filter | [FACT][E-AU-088-001] |
+| aggregate projection | lines、legs、stock、fulfillment、payment、finance、aftersale、operation history | F-0161/P2 |
+| tests | 聚合 SQL/filter static oracle | [FACT][E-AU-088-003] |
+
+[FACT][E-AU-088-004] 2 文件、217 行 WebBusiness Order operation 与测试完成深审；主订单/line/aftersale 的 web RLS 已存在，但 payment/finance select grant 没有对应 web RLS policy，相关 projection 记录 F-0161/P2。

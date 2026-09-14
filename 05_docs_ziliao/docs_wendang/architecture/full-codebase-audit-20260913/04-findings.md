@@ -3278,6 +3278,20 @@
 | 验证/回滚 | 后续独立审阅应以同一 membership 在 complete/web host、mall/store/ancestor scope、SKU cursor 下比较结果和 RLS，确认设计后用新 operation 或一致实现收敛；修复必须从当时最新主线独立分支进行，回滚为撤回该批次。 |
 | 独立复核 | 否；P2，待 Inventory 完整模块与 scope-contract 专项交叉复核。 |
 
+## F-0161｜WebBusiness 订单 payment/finance 聚合投影缺少该运行角色的 RLS 可见性
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | webbusiness / order payment finance；**P2**；高 |
+| 类型 | 运行角色权限与聚合读模型断链 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/webbusiness/WebOrderOperations.ts:57-76,104-123`；`02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql:3-4`；`02_platform_pingtai/database/supabase/migrations/20260821021000_create_payment_voucher_benefit.sql:398`；`20260821022000_create_finance_channel.sql:278` |
+| 当前/预期 | Order read 对每笔订单 lateral 查询 payment intent/payment/allocation/refund 和 finance journal/entry，并将结果放进 `payment_fact`/`finance_facts`。后续迁移仅授予 `zhudatuanwebapi` payment/finance schema usage 和表 select；这些 RLS-enabled table 的 policy 检索未见该 role 的 select policy（现有 policy 仅为其他运行角色）。预期合法 Web order read 应能按订单/范围得到已声明的四流事实，或接口不应投影这些字段。 |
+| 直接证据 | payment 与 finance 创建迁移启用 RLS；web order role 的 grant 没有配套 policy；WebOrder query 的 `paymentfact`/`financefacts` 都依赖这些 table。PostgreSQL 对启用 RLS 且无适用 policy 的 role 默认拒绝行。现有 WebOrder test 只检查 SQL 片段/参数，未执行该 role 的真实数据库读取。 |
+| 影响 | WebBusiness order 页面可能仍返回主订单，却把 payment fact 置空、finance facts 置空，造成支付/退款/会计状态缺失或被误判。当前是否已有替代 read 或线上受影响请求未验证。 |
+| 根因 | 为四流 read 增加了 table grant，但未同步以 web order scope 定义 RLS policy，也未用 `zhudatuanwebapi` 真实角色重放该聚合。 |
+| 验证/回滚 | 后续从受控数据库以实际 `zhudatuanwebapi`、owner/supplier/store/mall scope 执行该 operation，确认 payment/finance/fulfillment 子投影及拒绝边界；修复须从最新主线独立小分支在最小数据范围内增加受控 read contract 或调整 projection，并用 role/RLS 集成测试验证。回滚为撤回该单一批次。 |
+| 独立复核 | 否；P2，待 payment/finance web read policy 专项复核。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
