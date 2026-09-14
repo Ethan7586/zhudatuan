@@ -724,3 +724,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Bulkhead是内核转发；外部调用的排队/并发行为由Executor与kernel审计承接。
 - 无P0–P3新问题。
+
+## 227. AU-227 CircuitBreaker contract 深审
+
+- CircuitBreaker为内核转发；实际熔断调用链由Executor与kernel审计承接。
+- 无P0–P3新问题。

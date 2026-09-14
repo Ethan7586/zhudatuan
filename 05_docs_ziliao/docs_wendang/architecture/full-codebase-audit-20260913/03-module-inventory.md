@@ -2393,3 +2393,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runtime consumer | Executor由runtime limits构造该bulkhead，HttpClient经Executor运行 | [FACT][E-AU-226-002] |
 
 [FACT][E-AU-226-003] 1 文件、1 行完成深审；唯一Commerce consumer明确，为G0 compatibility adapter。
+
+## 232. AU-227 CircuitBreaker contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| circuit boundary | 通过kernel熔断器和状态类型隔离持续失败的外部调用 | [FACT][E-AU-227-001] |
+| runtime consumer | Executor按runtime failure threshold/recovery构造并包裹retry执行链 | [FACT][E-AU-227-002] |
+
+[FACT][E-AU-227-003] 1 文件、1 行完成深审；唯一Commerce consumer明确，为G0 compatibility adapter。

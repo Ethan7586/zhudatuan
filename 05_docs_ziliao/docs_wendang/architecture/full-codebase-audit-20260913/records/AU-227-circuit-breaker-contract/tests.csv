@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/performance/CircuitBreaker.ts,thin kernel re-export with no independent executable branch,not executable standalone
+src/foundation/performance/Executor.ts,consumer execution chain pending its own audit unit,not run: audit worktree has no Vitest dependencies
