@@ -1416,3 +1416,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 仅 manifest/selected entrypoint 静态声明；F-0172/P2 | [FACT][E-AU-128-005] |
 
 [FACT][E-AU-128-006] 11 文件、306 行 Notification management/read chain 完成深审；未见未绑定 access scope 的该链写入或读取入口。
+
+## 134. AU-129 Notification 兼容入口与覆盖收口
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| legacy root/application/domain/infrastructure/interface paths | 27 个无逻辑转发，保持旧 import 到中文分层实现的兼容 | [FACT][E-AU-129-001]；G0 |
+| public index | 仅输出 public/domain contract 与 module manifest，不暴露 command/adapter | [FACT][E-AU-129-002] |
+| coverage | Notification 63/63 文件均有明确覆盖状态 | [FACT][E-AU-129-003] |
+
+[FACT][E-AU-129-004] 28 文件、51 行 Notification compatibility/public entry 完成深审；不以仓内零引用作为删除依据。
