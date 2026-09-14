@@ -1626,3 +1626,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | public/tests | stable capabilities/public index 与 MemberPort fake-db tests | [FACT][E-AU-148-006]；导入 worker 没有直接行为 fixture |
 
 [FACT][E-AU-148-007] 10 文件、723 行完成深审；Member 19/19 基线文件均已取得审阅状态，导入读取投影缺陷单独留档。
+
+## 154. AU-149 Risk 策略、评估与异步处置清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| evaluation | scoped policy/signal/velocity/block-list 评估并持久化 decision | [FACT][E-AU-149-001]；最高 severity 决定 outcome |
+| policy/case | candidate→replay→activate、独立 reviewer case transition | [FACT][E-AU-149-002]；activate 要求 replay passed |
+| persistence/worker | decision/case/outbox；`riskscan` 回放或 catalog deny 处置 | [FACT][E-AU-149-003]；主 jobs catalog 实际注册 |
+| API/public/tests | 3 项 HTTP operation 与 public risk gate | [FACT][E-AU-149-004]；F-0180/P2 组合测试缺口 |
+
+[FACT][E-AU-149-005] 22 文件、810 行完成深审；Risk 主运行链可定位，legacy compatibility re-export 留待覆盖闭合单元。

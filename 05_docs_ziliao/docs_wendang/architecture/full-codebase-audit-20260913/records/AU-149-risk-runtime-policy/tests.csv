@@ -1,0 +1,4 @@
+verification,scope,result,reason
+Source-level runtime trace,Risk API adapter/repository/routes/jobs and direct callers,Completed,Main module/jobs catalog and all critical action/worker paths reviewed.
+Existing test review,EvaluateRisk RiskEngine manifest tests,Completed,Tests validate domain/mock behavior only; F-0180 documents absent runtime-composition fixture.
+Targeted formal test,Risk suite,Not run,Audit worktree dependency baseline lacks vitest; dependency state remains unchanged.

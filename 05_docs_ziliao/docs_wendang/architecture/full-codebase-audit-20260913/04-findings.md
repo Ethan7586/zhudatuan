@@ -3545,6 +3545,20 @@
 | 验证/回滚 | 以 fake ObjectStore/transaction fixture 断言 output 只含 `report.download` 且 authorization TTL 为 300，断言 raw reference 不在响应；回滚为撤回该独立修复批次。 |
 | 独立复核 | 否；P2。 |
 
+## F-0180｜Risk 运行组合没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | risk / persistence、HTTP、Worker composition；P2；高 |
+| 类型 | 测试覆盖缺口、策略激活与异步处置正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/risk/{04_adapters_shixian,05_interface_jieru}/**`；`06_tests_ceshi/**` |
+| 当前/预期 | 现有三项测试只覆盖 mocked EvaluateRisk、纯 RiskEngine/RiskCase 与 manifest。预期覆盖 scoped API transaction、policy candidate/replay/activate guard、case review/outbox、riskscan replay threshold 与 catalog deny consumer 的成功/重放/失败路径。 |
+| 直接证据 | `*.test.ts` 中没有 `PgRiskRepository`、`RiskCheckAdapter`、`riskRoutes`、`RiskReplayJobProcessor` 实例或调用；仅 WebBusiness 的不同 adapter 有测试。 |
+| 调用链/影响 | RiskCheckAdapter → PgRiskRepository → risk decision/outbox/case；RiskModule → riskRoutes；jobs catalog → RiskReplayJobProcessor → replay/Catalog action。策略变更、拒绝处置或回放门槛回归无法由本模块测试直接发现。 |
+| 根因 | 测试停留于 domain/mocked evaluator，未建立 transaction fixture。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立独立测试批次，使用 PGlite/fake transaction 覆盖上述路径；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

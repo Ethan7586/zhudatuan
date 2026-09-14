@@ -351,3 +351,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - `MemberPort.test` 直接以 fake database 断言 registration policy/invitation 条件、mobile mask、hosted node registration、Hosted mall open 与 sovereign upgrade 的 database-function 输入和 authority/result context；未覆盖真实 SQL function 或 HTTP action。
 - `MemberImportOperations`、`PgMemberImport`、`MemberImportProcessor` 和 `MemberProfileImport` 在 `*.test.ts` 中没有 direct behavior fixture；staging、savepoint、cursor continuation、report completion/reject/fault 没有本模块回归规格。
 - 本 AU 不重复运行已证实会在加载前因缺少 `vitest` 失败的同一工作区命令。F-0179 的 action 覆盖由 source-level composition 可直接复现，但尚未有 response projection regression test。
+
+## 149. AU-149 Risk 策略与运行链深审
+
+- Risk 的现有 unit tests 证明 engine hard limit/rollout/case transition 与 evaluator 的 selected decision；manifest test 证明 operation/job/event 声明。
+- PostgreSQL repository、RiskCheckAdapter、HTTP route、riskscan policy replay/catalog deny consumer 没有直接行为 fixture，见 F-0180/P2。
