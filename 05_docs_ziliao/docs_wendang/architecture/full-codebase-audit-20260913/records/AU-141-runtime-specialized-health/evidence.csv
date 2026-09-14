@@ -1,0 +1,6 @@
+id,file,location,kind,observation
+E-AU-141-001,RuntimeOperations.ts,11-65,shared health,Handles live/startup/ready/dependency; dependency joins queue/cache/metrics/compatibility and writes audit access inside API DB context.
+E-AU-141-002,PurchaseRuntimeOperations.ts;WebBusinessRuntimeOperations.ts;IdentityRegistrationRuntimeOperations.ts;MallProvisioningRuntimeOperations.ts,1-52,profile health,Each profile limits operations to live/ready/startup and returns 503 when its bootstrap compatibility throws.
+E-AU-141-003,*RuntimeModule.ts;index.ts;module.manifest.ts,1-35,module registration,Selected runtime modules attach each profile operation set; manifest declares shared and profile HTTP entrypoints plus cleanup job.
+E-AU-141-004,RuntimeOperations.test.ts;module.manifest.test.ts,1-79,test coverage,Current local tests assert one shared aggregate SQL shape and manifest/module identity only.
+E-AU-141-005,src/bootstrap/*ApiRuntime.ts;src/entry/*ApiMain.ts,imports,runtime callers,Specialized bootstrap runtimes consume their matching runtime module/profile probe.

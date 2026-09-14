@@ -305,3 +305,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - `PurchaseOperations.test` 覆盖 internal capture、idempotency replay、AAL/actor/risk/tender 拒绝和 response allowlist；Policy、Benefit、禁用 payment/voucher 与 manifest 都有直接本地测试。
 - Quote create 和 order create composition 没有直接行为 fixture；API entrypoint 仅断言 route→operation 注册，见 F-0174/P2。
 - 因 AU-138 已证明审计 worktree 无 `vitest`，本 AU 未重复执行同一不可运行命令；所有测试执行结论仍为未验证。
+
+## 141. AU-141 Runtime 专用健康探针深审
+
+- Shared `RuntimeOperations.test` 以 fake pool 验证 queue oldest-age SQL 的 FILTER 位置；manifest test 仅验证 variant module identity。
+- Purchase、Web Business、Identity Registration、Mall Provisioning 的 profile health operation 在测试中没有直接实例化或 invoke，见 F-0175/P2。
+- 本 AU 未重复执行缺失 Vitest 的命令；测试执行状态仍为未验证。

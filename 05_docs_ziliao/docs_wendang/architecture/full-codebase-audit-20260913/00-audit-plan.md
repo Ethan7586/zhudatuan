@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-140 已完成。AU-140 完成 Purchase composition 与支付边界审阅。覆盖总账按当前文件级清单重算：深入审阅1,322文件/100,850行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,531文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-141 已完成。AU-141 完成 Runtime 专用健康探针与 API 装配审阅。覆盖总账按当前文件级清单重算：深入审阅1,336文件/101,282行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,517文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1275,3 +1275,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Purchase session/composition、quote/order/payment adapter、policy、manifest、public entry 及其 local behavior tests，并从独立 Purchase API runtime 与 access purchase function 反查入口。
 
 执行结果：Purchase API 只接受 storefront session，将 quote/order/payment 注册为三个 selected module；cart/order/payment 上下文与 recovery job 都由 session-bound `access.purchase_*` function 提供。benefit 需 membership/session/intent，voucher 与未配置 external payment 均明确拒绝；internal payment 以 locked payable intent、risk decision 和 tender arithmetic 进入 settlement。新增 F-0174/P2：没有行为 fixture 直接调用 quote create/order create composition，现有 route test 只验证注册；未发现 P0/P1，未重复执行已知缺失 Vitest 的命令。
+
+## 143. AU-141 连续审计点
+
+审阅 Runtime 共享 dependency health、Purchase/Web Business/Identity Registration/Mall Provisioning 专用 profile health、module/public entry/manifest 及局部测试，并反查 bootstrap/entry 装配。
+
+执行结果：shared API probe 对 queue/deadletter/cache/query metrics/compatibility 做并行读取并带 audit transaction；四个专用 profile 均只暴露 live/ready/startup，compatibility 异常归一为 503。selected modules 和 manifest 将 profile 装入对应独立 API。新增 F-0175/P2：现有测试仅覆盖共享 SQL 聚合语法及 manifest identity，未对四个专用 profile 的 ready/blocked/live/unknown-operation 行为建立 fixture；未发现 P0/P1，Vitest 未运行。

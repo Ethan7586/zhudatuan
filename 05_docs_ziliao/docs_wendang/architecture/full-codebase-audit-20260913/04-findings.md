@@ -3474,6 +3474,20 @@
 | 验证/回滚 | 从最新主线建立独立测试批次，以最小 transaction fake 或 PGlite 证明上述成功/拒绝/rollback 边界；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2，后续 Purchase quote/order 专项复查。 |
 
+## F-0175｜Runtime 专用健康探针没有行为级测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | runtime / specialized API health；P2；高 |
+| 类型 | 测试覆盖缺口、部署就绪性可观测 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/runtime/{PurchaseRuntimeOperations,WebBusinessRuntimeOperations,IdentityRegistrationRuntimeOperations,MallProvisioningRuntimeOperations}.ts`；`RuntimeOperations.test.ts` |
+| 当前/预期 | 四项专用 profile 对 live 返回 profile/node evidence，对 ready/startup 调 bootstrap compatibility，异常归一为 503。现有测试仅运行 shared dependency probe 并核对一段 SQL FILTER 语法；manifest test 只核对 module id。预期为每个 profile 验证 ready/startup 成功、compatibility failure 的 503、live evidence，以及 unknown operation reject。 |
+| 直接证据 | 专用 operation 函数名在 `*.test.ts` 中零命中；`RuntimeOperations.test.ts` 只导入 `runtimeOperations`，唯一断言为 `min(created_at) filter(where state='queued')`；manifest test 没有 invoke。 |
+| 调用链/影响 | 专用 `*ApiMain` → `*ApiRuntime` → selected Runtime module → profile health operation → bootstrap compatibility。profile health 改动可影响 process readiness/rollout 判定，当前 module tests 不会直接捕获状态码/evidence regression。 |
+| 根因 | Runtime test 最初为 shared dependency SQL 回归而建，未扩展到部署 profile variants。 |
+| 验证/回滚 | 从最新主线建立独立测试批次，用 fake pool/context 覆盖四个 profile 的成功/失败/liveness/unknown request；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2，后续 Runtime profile 专项复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

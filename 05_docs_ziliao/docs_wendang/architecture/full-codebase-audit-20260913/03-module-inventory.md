@@ -1538,3 +1538,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | local tests | payment/policy/gateway local behavior；quote/order composition gap | [FACT][E-AU-140-005][E-AU-140-006]；F-0174/P2 |
 
 [FACT][E-AU-140-007] 15 文件、645 行完成深审；Purchase 的真实部署入口和数据边界明确，但 quote/order composition 尚缺行为级规格。
+
+## 146. AU-141 Runtime 专用健康与 API 装配清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| shared runtime health | API compatibility、queue/cache/metrics snapshot 与 audit access | [FACT][E-AU-141-001] |
+| specialized profile health | Purchase/Web Business/Identity Registration/Mall Provisioning readiness compatibility | [FACT][E-AU-141-002] |
+| registration | profile selected module、public exports、platform manifest/cleanup job | [FACT][E-AU-141-003][E-AU-141-005] |
+| tests | shared SQL syntax 与 module identity；profile behavior gap | [FACT][E-AU-141-004]；F-0175/P2 |
+
+[FACT][E-AU-141-006] 14 文件、432 行完成深审；profile health 为部署可观测边界，但缺少独立行为规格。
