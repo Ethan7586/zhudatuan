@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-import { assertPreparedControlPlane, assertPreparedSourceLineage, deployPreparedCommand, validatePreparedCommand } from '../src/engine.mjs';
+import { assertLegacyDeploymentEvidence, assertPreparedControlPlane, assertPreparedSourceLineage, deployPreparedCommand, validatePreparedCommand } from '../src/engine.mjs';
 
 const releaseEngineRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -103,4 +103,37 @@ test('prepared candidate source must contain the exact current production source
     (error) => error.code === 'PREPARED_CURRENT_SOURCE_UNAVAILABLE'
   );
   assert.equal(assertPreparedSourceLineage({ after: null, sourceSha: null }, candidateSourceSha, null).status, 'first-activation');
+});
+
+test('legacy baseline evidence requires one successful exact workflow receipt', () => {
+  const sourceSha = '1'.repeat(40);
+  const artifactSha256 = '2'.repeat(64);
+  const legacyRunId = '34796885384';
+  const legacyRunAttempt = '1';
+  const target = 'support-api';
+  const expectedCurrent = `/opt/targets/support-api/releases/${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`;
+  const metadata = {
+    id: Number(legacyRunId),
+    head_sha: sourceSha,
+    conclusion: 'success',
+    event: 'workflow_dispatch',
+    path: '.github/workflows/deploy-oss.yml',
+    run_attempt: 1,
+  };
+  const log = `SOURCE_SHA=${sourceSha}\nCURRENT_${target}=${expectedCurrent}\nzdt-next/commerce-api/${sourceSha}/${artifactSha256}.tar.gz\n`;
+  const expected = { sourceSha, artifactSha256, legacyRunId, legacyRunAttempt, target, expectedCurrent };
+
+  assert.equal(assertLegacyDeploymentEvidence(metadata, log, expected).current, expectedCurrent);
+  assert.throws(
+    () => assertLegacyDeploymentEvidence({ ...metadata, conclusion: 'failure' }, log, expected),
+    (error) => error.code === 'CURRENT_BASELINE_LEGACY_RUN_UNTRUSTED'
+  );
+  assert.throws(
+    () => assertLegacyDeploymentEvidence(metadata, log.replace(`CURRENT_${target}=`, 'CURRENT_other='), expected),
+    (error) => error.code === 'CURRENT_BASELINE_LEGACY_TARGET_RECEIPT_MISSING'
+  );
+  assert.throws(
+    () => assertLegacyDeploymentEvidence(metadata, log.replace(artifactSha256, '3'.repeat(64)), expected),
+    (error) => error.code === 'CURRENT_BASELINE_LEGACY_ARTIFACT_RECEIPT_MISSING'
+  );
 });
