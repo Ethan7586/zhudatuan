@@ -25,5 +25,7 @@ describe('mini-program product feed', () => {
     const html = renderToStaticMarkup(React.createElement(MPProductFeed));
 
     expect(html).toContain('aria-label="加入购物车：主打团货盘"');
+    expect(html).not.toContain('rounded-');
+    expect(html).not.toContain('active:scale');
   });
 });

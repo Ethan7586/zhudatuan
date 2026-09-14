@@ -43,7 +43,7 @@ export const WeChatTabBar: React.FC = () => {
             }}
             onClick={() => selectTab(tab.id)}
             aria-current={isActive ? 'page' : undefined}
-            className={`relative flex h-full min-w-0 touch-manipulation cursor-pointer flex-col items-center justify-center rounded-lg py-1 transition-colors duration-100 active:bg-slate-50 ${isActive ? 'text-[var(--sw-brand)]' : 'text-gray-500 hover:text-gray-800'}`}
+            className={`relative flex h-full min-w-0 touch-manipulation cursor-pointer flex-col items-center justify-center border-t-2 py-1 transition-[color,background-color,border-color] duration-100 active:bg-slate-50 ${isActive ? 'border-[var(--sw-brand)] bg-blue-50/40 text-[var(--sw-brand)]' : 'border-transparent text-gray-500 hover:text-gray-800'}`}
           >
             <div key={tab.id === 'cart' ? cartCount : tab.id} className={`relative flex h-5 items-center justify-center ${tab.id === 'cart' ? 'animate-in zoom-in-95 duration-150 motion-reduce:animate-none' : ''}`}>
               <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
@@ -54,7 +54,7 @@ export const WeChatTabBar: React.FC = () => {
               )}
             </div>
             <span className={`mt-0.5 h-4 text-[10px] leading-4 tracking-tight ${isActive ? 'font-bold' : 'font-normal'}`}>{tab.label}</span>
-            <span aria-hidden="true" className={`mt-0.5 h-1 w-1 rounded-full ${isActive ? 'bg-[var(--sw-brand)]' : 'bg-transparent'}`} />
+            <span aria-hidden="true" className="mt-0.5 h-1 w-1 bg-transparent" />
           </button>
         );
       })}

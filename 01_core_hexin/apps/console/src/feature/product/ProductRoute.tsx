@@ -3,15 +3,22 @@ import { lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
 
-const ProductCatalogRoute = lazy(async () => {
+const loadProductCatalogRoute = async () => {
   const module = await import('./ProductCatalogRoute');
   return { default: module.ProductCatalogRoute };
-});
+};
 
-const ProductSelectionRoute = lazy(async () => {
+const loadProductSelectionRoute = async () => {
   const module = await import('./ProductSelectionRoute');
   return { default: module.ProductSelectionRoute };
-});
+};
+
+const ProductCatalogRoute = lazy(loadProductCatalogRoute);
+const ProductSelectionRoute = lazy(loadProductSelectionRoute);
+
+if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('workspace') === 'selection') {
+  void loadProductSelectionRoute().catch(() => undefined);
+}
 
 export function Component() {
   const context = useConsoleContext();

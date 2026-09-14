@@ -56,7 +56,7 @@ export function homeCampaignIndexForScroll(scrollLeft: number, viewportWidth: nu
 }
 
 export const MPHomePage: React.FC = () => {
-  const { user, currentMall, mpPage, sessionStatus, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
+  const { user, currentMall, mpPage, sessionStatus, catalogSyncStatus, setMpPage, addToCart, triggerPendingFeature, presentationProducts: MOCK_PRODUCTS } = useMall();
   const [activeBanner, setActiveBanner] = useState(0);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [authHref, setAuthHref] = useState<string | undefined>(undefined);
@@ -138,6 +138,7 @@ export const MPHomePage: React.FC = () => {
 
   const enterpriseExclusives = MOCK_PRODUCTS.filter((p) => p.isEnterpriseExclusive).slice(0, 4);
   const nearbyServices = MOCK_PRODUCTS.filter((p) => p.itemType === 'nearby_store').slice(0, 2);
+  const catalogPending = MOCK_PRODUCTS.length === 0 && (catalogSyncStatus === 'idle' || catalogSyncStatus === 'syncing');
 
   return (
     <div className="bg-[#F5F7FA] min-h-full flex flex-col font-sans text-gray-800">
@@ -159,10 +160,10 @@ export const MPHomePage: React.FC = () => {
             onChange={(e) => setSearchKeyword(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && setMpPage('category')}
             placeholder="搜索福利卡可兑商品、米面粮油、影音卡券..."
-            className="w-full bg-white text-gray-900 placeholder-gray-400 text-xs pl-8 pr-16 py-2 rounded-full focus:outline-none shadow-inner font-medium"
+            className="w-full border border-transparent bg-white text-gray-900 placeholder-gray-400 text-xs pl-8 pr-16 py-2 focus:border-blue-300 focus:outline-none shadow-inner font-medium transition-colors"
           />
           <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-          <button onClick={() => setMpPage('category')} className="absolute right-1 top-1/2 -translate-y-1/2 bg-[var(--sw-brand)] hover:bg-blue-700 text-white font-bold text-xs px-3 py-1 rounded-full cursor-pointer">
+          <button onClick={() => setMpPage('category')} className="absolute right-1 top-1/2 -translate-y-1/2 border border-blue-400 bg-[var(--sw-brand)] hover:border-blue-200 hover:bg-blue-700 hover:shadow-sm text-white font-bold text-xs px-3 py-1 cursor-pointer transition-[background-color,border-color,box-shadow]">
             搜索
           </button>
         </div>
@@ -173,7 +174,7 @@ export const MPHomePage: React.FC = () => {
         <section
           aria-label="首页福利活动"
           aria-roledescription="carousel"
-          className="relative h-[124px] overflow-hidden rounded-2xl bg-[var(--sw-brand-dark)] text-white shadow-sm"
+          className="relative h-[124px] overflow-hidden border border-blue-800 bg-[var(--sw-brand-dark)] text-white shadow-sm"
           data-home-campaign-carousel
         >
           <div
@@ -203,12 +204,12 @@ export const MPHomePage: React.FC = () => {
                   data-active={isActive ? 'true' : 'false'}
                   className={`relative h-full min-w-full snap-center snap-always overflow-hidden bg-gradient-to-br ${campaign.color} p-4`}
                 >
-                  <div aria-hidden="true" className="absolute -right-5 -top-8 h-28 w-28 rounded-full bg-white/10" />
-                  <div aria-hidden="true" className="absolute bottom-1 right-7 h-12 w-12 rounded-full bg-white/8" />
+                  <div aria-hidden="true" className="absolute -right-5 -top-8 h-28 w-28 rotate-12 bg-white/10" />
+                  <div aria-hidden="true" className="absolute bottom-1 right-7 h-12 w-12 -rotate-6 bg-white/8" />
                   <Icon aria-hidden="true" className="absolute right-5 top-5 h-12 w-12 text-white/18" strokeWidth={1.35} />
 
                   <div className="relative z-10 max-w-[78%]">
-                    <span className="inline-flex rounded-full border border-white/20 bg-white/14 px-2 py-0.5 text-[9px] font-bold text-amber-100">
+                    <span className="inline-flex border border-white/20 bg-white/14 px-2 py-0.5 text-[9px] font-bold text-amber-100">
                       {campaign.eyebrow}
                     </span>
                     <h2 className="mt-1 text-base font-black leading-tight tracking-tight">{campaign.title}</h2>
@@ -219,7 +220,7 @@ export const MPHomePage: React.FC = () => {
                     type="button"
                     tabIndex={isActive ? 0 : -1}
                     onClick={() => setMpPage('category')}
-                    className="absolute bottom-3 left-4 z-10 flex min-h-7 items-center gap-0.5 rounded-full bg-white px-3 text-[10px] font-bold text-[var(--sw-brand-dark)] shadow-xs active:scale-[0.98]"
+                    className="absolute bottom-3 left-4 z-10 flex min-h-7 items-center gap-0.5 border border-white bg-white px-3 text-[10px] font-bold text-[var(--sw-brand-dark)] shadow-xs transition-[border-color,box-shadow] hover:border-amber-100 hover:shadow-sm"
                   >
                     <span>{campaign.cta}</span>
                     <ChevronRight className="h-3 w-3" />
@@ -230,7 +231,7 @@ export const MPHomePage: React.FC = () => {
           </div>
 
           <span className="sr-only" aria-live="polite">第 {activeBanner + 1} 页，共 {HOME_CAMPAIGNS.length} 页</span>
-          <div className="absolute bottom-2.5 right-3 z-20 flex items-center gap-1 rounded-full bg-black/10 px-1.5" aria-label="选择活动页">
+          <div className="absolute bottom-2.5 right-3 z-20 flex items-center gap-1 border border-white/10 bg-black/10 px-1.5" aria-label="选择活动页">
             {HOME_CAMPAIGNS.map((campaign, index) => (
               <button
                 key={campaign.id}
@@ -238,12 +239,12 @@ export const MPHomePage: React.FC = () => {
                 aria-label={`切换到活动：${campaign.title}`}
                 aria-pressed={activeBanner === index}
                 onClick={() => scrollToCampaign(index, true)}
-                className="flex h-5 w-2.5 items-center justify-center rounded-full active:bg-white/10"
+                className="flex h-5 w-2.5 items-center justify-center active:bg-white/10"
               >
                 <span
                   aria-hidden="true"
                   style={{ transitionDuration: `${HOME_CAMPAIGN_TRANSITION_MS}ms` }}
-                  className={`h-1 rounded-full transition-[width,background-color,opacity] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
+                  className={`h-1 transition-[width,background-color,opacity] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
                     activeBanner === index ? 'w-3 bg-amber-100 opacity-100' : 'w-1 bg-white/50 opacity-80'
                   }`}
                 />
@@ -255,16 +256,17 @@ export const MPHomePage: React.FC = () => {
 
       {/* 金刚区：8大分类入口 (Meituan mobile architecture) */}
       <div className="px-3 mt-3">
-        <div className="bg-white rounded-2xl p-3 shadow-xs grid grid-cols-4 gap-3 text-center border border-gray-100">
-          {quickCategories.map((cat, idx) => {
+        <div className="bg-white p-3 shadow-xs grid grid-cols-4 gap-3 text-center border border-gray-100">
+          {quickCategories.map((cat) => {
             const Icon = cat.icon;
             return (
-              <div key={idx} onClick={() => setMpPage('category')} className="flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition-transform">
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-xs ${cat.color}`}>
+              <button type="button" key={cat.name} onClick={() => setMpPage('category')}
+                className="flex flex-col items-center gap-1.5 cursor-pointer border border-transparent py-1 transition-[background-color,border-color,box-shadow] hover:border-blue-100 hover:bg-blue-50/40 hover:shadow-xs">
+                <div className={`w-10 h-10 flex items-center justify-center shadow-xs ${cat.color}`}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className="text-[11px] font-bold text-gray-700 truncate w-full">{cat.name}</span>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -272,10 +274,10 @@ export const MPHomePage: React.FC = () => {
 
       {/* 企业专享补贴栏 */}
       <div className="px-3 mt-3">
-        <div className="bg-white rounded-2xl p-3 shadow-xs border border-gray-100">
+        <div className="bg-white p-3 shadow-xs border border-gray-100">
           <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
             <div className="flex items-center gap-1.5">
-              <span className="bg-[var(--sw-brand-dark)] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">企采协议</span>
+              <span className="bg-[var(--sw-brand-dark)] text-white text-[10px] font-bold px-1.5 py-0.5">企采协议</span>
               <h3 className="text-xs font-black text-gray-900">企业大客户内购补贴</h3>
             </div>
             <button onClick={() => setMpPage('category')} className="text-[10px] text-[var(--sw-brand)] font-bold flex items-center">
@@ -286,7 +288,7 @@ export const MPHomePage: React.FC = () => {
 
           <div className="grid min-h-[72px] grid-cols-2 gap-2">
             {enterpriseExclusives.map((p, index) => (
-              <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-gray-50/80 rounded-xl p-2 flex gap-2 border border-gray-100 cursor-pointer active:bg-blue-50/50 transition-colors">
+              <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-gray-50/80 p-2 flex gap-2 border border-gray-100 cursor-pointer hover:border-blue-200 active:bg-blue-50/50 transition-[background-color,border-color,box-shadow] hover:shadow-xs">
                 <img
                   src={storefrontImageUrl(p.imageUrl, 112)}
                   srcSet={`${storefrontImageUrl(p.imageUrl, 112)} 2x, ${storefrontImageUrl(p.imageUrl, 168)} 3x`}
@@ -296,38 +298,40 @@ export const MPHomePage: React.FC = () => {
                   loading={index === 0 ? 'eager' : 'lazy'}
                   fetchPriority={index === 0 ? 'high' : 'auto'}
                   decoding="async"
-                  className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
+                  className="w-14 h-14 object-cover flex-shrink-0"
                 />
                 <div className="overflow-hidden flex flex-col justify-between flex-1">
                   <div className="text-[11px] font-bold text-gray-800 truncate">{p.title}</div>
                   <div>
-                    <span className="text-[9px] text-[var(--sw-brand)] bg-blue-50 font-bold px-1 py-0.2 rounded">省¥{p.enterpriseSubsidyAmount}</span>
+                    <span className="text-[9px] text-[var(--sw-brand)] bg-blue-50 font-bold px-1 py-0.2">省¥{p.enterpriseSubsidyAmount}</span>
                     <div className="text-xs font-black text-[#E5484D] font-mono mt-0.5">¥{p.price}</div>
                   </div>
                 </div>
               </div>
             ))}
+            {catalogPending ? [0, 1].map((item) => <div key={item} aria-hidden="true"
+              className="h-[72px] animate-pulse border border-gray-100 bg-gray-50/80" />) : null}
           </div>
         </div>
       </div>
 
       {/* 美团风格：附近门店凭码核销 */}
       <div className="px-3 mt-3">
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50/60 rounded-2xl p-3 border border-blue-100">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50/60 p-3 border border-blue-100 shadow-xs">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-1.5">
               <Store className="w-4 h-4 text-[var(--sw-brand)]" />
               <h3 className="text-xs font-black text-gray-900">附近门店凭码即刻核销</h3>
-              <span className="text-[9px] bg-blue-100 text-[var(--sw-brand)] font-bold px-1.5 py-0.2 rounded-full">免运费 · 到店出示二维码</span>
+              <span className="text-[9px] bg-blue-100 text-[var(--sw-brand)] font-bold px-1.5 py-0.2">免运费 · 到店出示二维码</span>
             </div>
             <button onClick={() => triggerPendingFeature('微信小程序 LBS 位置定位', '定位附近的加盟美发、烘焙甜品、健身房核销门店。')} className="text-[10px] text-gray-500 hover:text-blue-600 flex items-center">
               定位: 北京朝阳 &gt;
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div className="min-h-[68px] space-y-2">
             {nearbyServices.map((p) => (
-              <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-white rounded-xl p-2.5 flex items-center justify-between gap-2 shadow-xs border border-gray-100 cursor-pointer">
+              <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-white p-2.5 flex items-center justify-between gap-2 shadow-xs border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-[border-color,box-shadow] cursor-pointer">
                 <div className="flex items-center gap-2.5 overflow-hidden">
                   <img
                     src={storefrontImageUrl(p.imageUrl, 96)}
@@ -337,7 +341,7 @@ export const MPHomePage: React.FC = () => {
                     height={48}
                     loading="lazy"
                     decoding="async"
-                    className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                    className="w-12 h-12 object-cover flex-shrink-0"
                   />
                   <div className="overflow-hidden">
                     <div className="text-xs font-bold text-gray-900 truncate">{p.title}</div>
@@ -356,13 +360,14 @@ export const MPHomePage: React.FC = () => {
                       e.stopPropagation();
                       addToCart(p, 1);
                     }}
-                    className="mt-1 bg-[var(--sw-brand)] text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs cursor-pointer"
+                    className="mt-1 border border-blue-500 bg-[var(--sw-brand)] text-white text-[10px] font-bold px-2 py-0.5 shadow-xs hover:border-blue-300 hover:shadow-sm transition-[border-color,box-shadow] cursor-pointer"
                   >
                     兑换卡券
                   </button>
                 </div>
               </div>
             ))}
+            {catalogPending ? <div aria-hidden="true" className="h-[68px] animate-pulse border border-blue-100 bg-white/70" /> : null}
           </div>
         </div>
       </div>

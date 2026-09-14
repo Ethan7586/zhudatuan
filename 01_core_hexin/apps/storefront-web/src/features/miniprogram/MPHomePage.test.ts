@@ -62,6 +62,8 @@ describe('mini-program home page', () => {
     expect(html.match(/snap-center snap-always overflow-hidden/g)).toHaveLength(4);
     expect(html).toContain('scroll-smooth');
     expect(html).toContain('h-[124px]');
+    expect(html).not.toContain('rounded-');
+    expect(html).not.toContain('active:scale');
   });
 
   it('settles manual movement on the nearest campaign page', () => {
