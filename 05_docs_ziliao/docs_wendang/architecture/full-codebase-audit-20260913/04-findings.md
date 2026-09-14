@@ -4563,3 +4563,21 @@
 | 建议方向 | 先确认该 test-only bootstrap 是否仍为正式运营/验收依赖；若保留，在独立小批次中以审计认可的借贷账户角色和规则登记该事件，并做重复/失败/账平测试。 |
 | 验证/回滚 | 隔离数据库以受限 bootstrap identity 执行一次与重放，核对 journal/entry、福利 lot、审计、outbox 和失败原子性；回滚为撤回规则与 bootstrap 的同一目的变更。 |
 | 是否需要独立复核 | 否（P2）；若该通道承担生产验收或资金发放，再升级专项复核。 |
+
+## F-0245｜Canonical API 环境模板遗漏 Secret Store bearer token
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce API 本地配置与 Secret Store bootstrap |
+| 类型 | 配置/文档完整性、开发可用性 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/.env.example:1-22`；`01_core_hexin/services/commerce/src/entry/ApiMain.ts:7-10`；`.../bootstrap/CommerceRuntime.ts:62-76`。 |
+| 当前/预期 | 模板提供 `SECRET_STORE_ENDPOINT` 与各 secret reference，却未提供 `SECRET_STORE_BEARER_TOKEN`。API 入口总是调用 `createRuntime(environment,'api')`，后者无条件要求该 bearer token。预期为 API workload 模板说明/提供该必填注入位，或明确指向生成它的权威 localinfra 流程。 |
+| 直接证据 | [FACT][E-AU-502-001] 模板 41 行无 `SECRET_STORE_BEARER_TOKEN`；[FACT][E-AU-502-002] CommerceRuntime 在实例化 WorkloadSecretStore 时以 `SECRET_STORE_BEARER_TOKEN_MISSING` fail-fast。 |
+| 调用链或运行入口 | `npm run dev:api` → `ApiMain` → `apiEnvironment` → `createRuntime(...,'api')` → WorkloadSecretStore。 |
+| 用户/数据/安全影响 | 从该模板直接建立的本地 API 环境无法启动；没有生产 secret 注入失败、数据写入或凭据泄露证据。 |
+| 根因 | 模板只列 secret ref 与 endpoint，没有同步列出 Secret Store 访问身份。 |
+| 建议方向 | 在独立文档/配置小批次中确认 localinfra 的权威生成来源，再补充 placeholder/说明并覆盖 fail-fast 与生成路径；不在审计分支修改。 |
+| 验证/回滚 | 隔离本地环境从模板生成变量，验证缺字段失败、补充安全 placeholder 后能到下一配置门槛且不打印 token；回滚为撤回单一模板/文档提交。 |
+| 是否需要独立复核 | 否（P3）。 |
