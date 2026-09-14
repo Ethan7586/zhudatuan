@@ -4484,3 +4484,22 @@
 | 建议方向 | 独立小批次选择唯一方案：消费并校验候选 runtime，或删除未消费的 runtime 子投影；先核验仓外 service-role 消费者。 |
 | 验证/回滚 | 对单/多入口登录测量 RPC 数与会话身份一致性；回滚为 revert 独立提交。 |
 | 独立复核 | 否；若改动公共候选响应，需兼容性复核。 |
+
+## F-0241｜券资金写入 RPC 未在数据库边界校验动作权限
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Supabase 券运营 / 备券、审批、发行、状态变更、核销、冲正与对账 |
+| 类型 | 身份与权限、资金正确性 |
+| 严重级别 | **P1 候选**；需独立复核当前数据库迁移 ledger 与 service-role 调用者后定级。 |
+| 置信度 | 高（固定基线 SQL 定义和权限表直接核验）；线上是否有调用者未验证。 |
+| 文件和精确位置 | `database/supabase/migrations/20260820110000_voucher_operations_foundation.sql:14-58,710-1263`。 |
+| 当前行为 | 迁移定义了 `voucher.reserve.create`、`voucher.reserve.approve`、`voucher.issue`、`voucher.status.manage`、`voucher.redeem`、`voucher.redemption.reverse`、`voucher.reconcile` 并分配给不同角色；七个对应的 `*_authorized` 写入 RPC 仅验证 membership 与 operator 匹配、同一经营范围、输入和幂等，不调用权限判定或授权证据校验。 |
+| 预期行为 | 每个高风险写入动作应在数据库边界核验其对应 permission，且需要时校验会话授权证据；不能仅因调用者拥有任一 admin membership 和同一 scope 而放行。 |
+| 直接证据 | 权限/角色映射位于 14–58 行；全文没有 `api_membership_has_permission` 或 `api_authorization_evidence_matches` 调用。各写入函数的共同 guard 是 `api_voucher_membership_actor_matches` 与 `api_voucher_membership_scope_allows`。 |
+| 调用链或运行入口 | service-role → `api_create_voucher_reserve_authorized` / `api_decide_voucher_reserve_authorized` / `api_issue_voucher_batch_authorized` / `api_change_voucher_status_authorized` / `api_redeem_voucher_authorized` / `api_reverse_voucher_redemption_authorized` / `api_reconcile_voucher_void_hold_authorized`。固定基线未找到仓内 HTTP/Worker 调用者。 |
+| 用户/数据/安全影响 | 若任意 service-role 调用路径可被低权限同范围 admin 到达，其可越过职责隔离申请、批准、发行、核销、冲正或完成对账，改变券余额和不可变审计链；当前线上可达性与历史影响未验证。 |
+| 根因 | 将「授权」命名为函数后只实现身份和范围 guard，未将先前定义的动作权限接入写入条件。 |
+| 建议方向 | 先独立复核实际迁移 ledger、service-role 网络边界与调用者；若链路启用，从当时最新主线建立单一修复分支，为每个动作接入对应 permission/授权证据检查并补充拒绝性集成测试。 |
+| 验证/回滚 | 隔离数据库中为每个角色测试允许动作及相同 scope 但缺少目标 permission 的拒绝路径，验证余额、状态事件、审计和幂等；回滚为撤回独立修复提交。 |
+| 独立复核 | 是；P1 候选必须重新追踪数据库 grant、调用者和所有动作权限。 |
