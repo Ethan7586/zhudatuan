@@ -153,3 +153,10 @@
 - Mapper对坏商品返回显式record error，Channel在同一事务写好记录并累计rejected；F-0112/F-0113主要造成运行期失败、延迟或旧价格，不直接删除既有数据。
 - OrderDraft不在运行入口，当前没有本地订单写入责任。
 - 本AU未执行SQL、迁移、同步或供应商调用。
+
+## 23. AU-028 Book数据边界
+
+- Book包没有表或迁移；Catalog/Price/Inventory/Statement由Channel及对应Commerce模块落库，Fulfillment拥有订单与里程碑状态。
+- F-0116发生在外部订单可能已提交、本地已写accepted之后；tracking在读取供应商前失败，本地可能长期没有milestone/completed状态。
+- Return/Refund当前无固定caller，未证明已产生退款或逆向单数据。
+- 本AU未执行SQL、迁移、同步、下单或供应商调用。

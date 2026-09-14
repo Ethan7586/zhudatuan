@@ -807,3 +807,11 @@ sequenceDiagram
 - 启动/周期health只invoke `scopes[0]`，不读取`data`或执行Mapper，其余门店故障只能在业务run暴露（F-0112）。
 - Price按最多500个external IDs执行；每个命中scope下载整份菜单并索引请求项，同一大scope跨批重复（F-0113）。
 - OrderDraft只被测试直接导入；无Order/Webhook生产port。
+
+## 33. AU-028 Book运行关系
+
+`enabled Book installation → BookProvider/createPorts → Wenxuan VendorClient → operation endpoint → Channel/Fulfillment persistence`。
+
+- Channel的Catalog/Price/Inventory/Statement与Webhook均有固定caller；Fulfillment的Order也可达。
+- Order返回后Fulfillment写accepted并排入tracking；tracking以`Logistics/tracking`进入，Book只有`Shipment` capability，Registry在调用Wenxuan前拒绝（F-0116）。
+- Cancel/Return/Refund没有固定caller；Return和Refund都可与唯一refund port组合，见F-0117。

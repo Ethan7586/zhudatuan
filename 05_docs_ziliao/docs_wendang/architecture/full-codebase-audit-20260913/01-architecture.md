@@ -788,3 +788,11 @@ flowchart LR
 - Provider整体只有一个health状态，但probe只绑定排序后首scope且不校验菜单数据；多scope发布边界与健康边界不一致（F-0112）。
 - Price的canonical按键接口在适配层转成整店菜单读取，同一scope超过500 key会跨Channel批次重复拉取（F-0113）。
 - OrderDraft与Webhook均未进入barrel/runtime；前者保存七品牌非幂等协议，属于GX而非删除候选。
+
+## 34. AU-028 Book Provider真实边界
+
+`Channel/Fulfillment jobs → ExtensionRegistry → BookProvider → Wenxuan VendorClient → configured endpoint`。Book无独立进程或数据表，九个ports随Commerce OCI发布。
+
+- Order提交可达且成功后固定排入tracking；当前tracking caller使用`Logistics`，manifest只声明`Shipment`，发布能力词汇与消费词汇断裂（F-0116）。
+- manifest的Return/Refund同时解锁单一refund port，Registry只分别检查字符串和port存在，不保证语义配对（F-0117）。
+- Catalog使用通用canonical mapper；全部网络/认证/重试继承Vendor Core与Wenxuan薄适配，F-0096/F-0097共享风险继续适用。

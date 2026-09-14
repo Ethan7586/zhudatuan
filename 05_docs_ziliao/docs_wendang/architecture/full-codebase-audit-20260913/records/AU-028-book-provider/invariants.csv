@@ -1,0 +1,6 @@
+"id","invariant","status","finding"
+"INV-AU-028-001","已提交外部订单的后续tracking capability可达","不成立","F-0116"
+"INV-AU-028-002","每个capability对应唯一且稳定的port语义","不成立","F-0117"
+"INV-AU-028-003","Catalog canonical记录具备三个关键字段","成立","BookMapper"
+"INV-AU-028-004","非幂等写入不由VendorClient自动重试","成立","PortFactory/VendorClient"
+"INV-AU-028-005","required provider业务ports有行为测试","不成立","F-0118"

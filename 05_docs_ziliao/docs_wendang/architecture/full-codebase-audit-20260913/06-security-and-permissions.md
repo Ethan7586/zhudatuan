@@ -188,3 +188,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - OrderDraft收集手机号和门店等履约字段，但当前仅测试直引且不导出；DC-0034必须保留禁用边界，不能因代码存在而启用。
 - 连接channel secret和scope由Loader/Provider Core注入；本包不读取环境或输出凭据。
 - 本AU未读取secret值、手机号、订单、数据库身份或线上installation。
+
+## 25. AU-028 Book权限边界
+
+- manifest以`channel.book.operate`同时覆盖九个ports；包内不再细分Catalog、下单、退款或Webhook权限。
+- Order、Cancel、Refund是非幂等外部写入；通用PortFactory不会自动重试，但授权是否允许具体业务动作完全依赖上游caller和统一permission。
+- Webhook secret复用Wenxuan connection的`secret`字段并继承F-0094 event ID边界；本AU未读取secret或回调载荷。
+- F-0116是履约可达性问题，不是已证实权限绕过；线上installation未知。

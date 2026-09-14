@@ -261,3 +261,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - 当前health只探首scope且不映射响应，不能作为全部门店业务canary；治理F-0112时需明确是全量、抽样还是拆分installation，避免一次健康失败扩大停用范围。
 - Order/Webhook仍是禁用协议资产，不属于本发布面。
 - 本AU未build、访问线上、激活provider、推送、合并或部署。
+
+## 31. AU-028 Book Provider发布与运维边界
+
+- Book是required provider，随Commerce OCI发布；实际运行取决于enabled installation、签名manifest、Wenxuan connection和health。
+- health只验证配置的通用health endpoint，不能证明Catalog、Order、tracking或Return契约配对；F-0116需要完整合成履约canary。
+- 若线上已有Book订单，修复批次应先只读盘点accepted/processing fulfillment与tracking deadletter，再从最新主线单独实施；审计分支不修复。
+- 本AU未build、访问线上、下单、推送、合并或部署。

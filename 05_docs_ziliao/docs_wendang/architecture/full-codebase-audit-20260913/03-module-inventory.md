@@ -480,3 +480,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | package/tests | 依赖、构建与KFC样例 | npm/Vitest | F-0114/F-0115 |
 
 [FACT][E-AU-027-001] 12文件507行深入审阅；随Commerce OCI发布，无独立表、进程或制品。
+
+## 34. AU-028 Book Provider 模块清单
+
+| 子模块 | 职责 | 上游/入口 | 当前边界 |
+| --- | --- | --- | --- |
+| BookProvider/manifest | 发布九ports与十capabilities | Runtime loader/Registry | F-0116/F-0117 |
+| BookMapper | canonical Catalog关键字段 | PortFactory | 通用映射 |
+| Wenxuan adapter | HMAC与VendorClient | BookProvider | 共享F-0096/F-0097 |
+| Webhook/ErrorMap | 通用回调与错误兼容导出 | Channel/公共barrel | DC-0026/DC-0036 |
+| tests | provider身份和签名 | Vitest | F-0118 |
+
+[FACT][E-AU-028-001] 9文件79行深入审阅；随Commerce OCI发布，无独立表、进程或制品。

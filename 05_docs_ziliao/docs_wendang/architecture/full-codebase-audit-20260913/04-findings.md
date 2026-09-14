@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-027 结束时累计：P0 0、P1 候选 15、P2 54、P3 45、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-028 结束时累计：P0 0、P1 候选 16、P2 55、P3 46、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2732,3 +2732,50 @@
 
 - [UNKNOWN] 线上Meal是否enabled、配置了多少品牌门店、单店映射商品量和供应商限流；审计未访问线上。
 - [UNKNOWN] 七品牌供应商字段是否仍与固定Mapper一致；除KFC外没有当前fixture或实际响应证据。
+
+## F-0116｜Book订单提交后tracking因capability词汇不一致被拒绝
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Book/Fulfillment；能力契约、履约正确性 |
+| 严重级别/置信度 | P1候选；高 |
+| 文件和位置 | `extensions/providers/book/manifest.ts:12`；`Provider.ts:6`；`fulfillment/FulfillmentJobs.ts:37-67`；`bootstrap/ExtensionRegistry.ts:76-82` |
+| 当前/预期行为 | [FACT][E-AU-028-003/004/005] Book声明Order和Shipment并发布order/tracking；Order成功后固定排入tracking，但caller请求Logistics。Registry先检查capability，Book不含Logistics，故不会调用tracking port。已提交外部订单应有可达的状态追踪闭环 |
+| 调用链 | fulfillment job→Book Order/order→accepted+enqueue tracking→Logistics/tracking→EXTENSION_CAPABILITY_MISSING |
+| 用户影响 | Book订单可能已在供应商侧成立，但本地持续无法跟踪发货/送达，订单收货闭环和后续事件停滞 |
+| 数据/安全影响 | 本地停留accepted/processing并反复失败；未证明数据丢失或安全绕过 |
+| 根因/建议范围 | manifest capability词汇与唯一Fulfillment caller不一致；后续独立契约批次统一规范词汇并覆盖所有provider |
+| 验证/回滚 | Book合成order receipt后运行tracking job，必须进入tracking port并可完成里程碑；回退单一契约提交 |
+| 独立复核 | 是，RV-0021；需重新核对动态caller、manifest与运行入口 |
+
+## F-0117｜Book Return与Refund可解锁同一refund port
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Book Provider；capability-port契约 |
+| 严重级别/置信度 | P2；高 |
+| 文件和位置 | `extensions/providers/book/manifest.ts:12`；`Provider.ts:6`；`providers/core/src/PortFactory.ts:20-33`；`ExtensionRegistry.ts:76-82` |
+| 当前/预期行为 | [FACT][E-AU-028-005/006] manifest同时含Return/Refund，factory仅有refund port并指向`book.return.submit`；Registry允许caller用任一已声明capability配同一port。能力与port应有唯一、可验证语义映射 |
+| 用户/数据/安全影响 | 未来退货/退款caller可能在词汇兼容下调用错误协议；当前固定仓库无caller，尚无已证线上影响 |
+| 根因/建议范围 | capability与port独立字符串校验；后续全provider契约批次建立权威映射，不在Book内临时加旁路 |
+| 验证/回滚 | capability×port全矩阵，错误组合必须失败；回退单一契约提交 |
+| 独立复核 | 否；若升级P1需复核 |
+
+## F-0118｜Book测试不执行任何业务port
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Book tests；测试缺口 |
+| 严重级别/置信度 | P3；高 |
+| 文件和位置 | `extensions/providers/book/tests/Provider.test.ts:1-13` |
+| 当前/预期行为 | 唯一用例只核required ID、definition ID和签名；应至少覆盖factory、capability-port矩阵、Catalog映射、写入幂等标记、tracking链与Webhook协议 |
+| 证据/调用链 | E-AU-028-007、TC-AU-028-001–005；npm test→Vitest（当前缺工具） |
+| 影响 | F-0116/F-0117及operation拼写/响应漂移可在包级测试绿色时存在 |
+| 建议/范围 | 先补履约能力矩阵，再按独立批次加入Wenxuan协议fixture；不混生产修复 |
+| 验证/回滚 | 修改Shipment/Logistics、operation或canonical key时测试失败；回退测试提交 |
+| 独立复核 | 否 |
+
+## 28. AU-028 新增未定级事项
+
+- [UNKNOWN] 线上Book是否enabled、是否已有外部订单或失败tracking job；审计未访问线上，因此F-0116保持P1候选而非P0。
+- [UNKNOWN] Wenxuan真实鉴权、请求/响应和Webhook协议是否由外部canonical gateway转换；固定仓库只有通用HMAC/JSON实现。

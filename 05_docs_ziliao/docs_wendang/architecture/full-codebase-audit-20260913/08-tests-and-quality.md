@@ -232,3 +232,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - Ports测试覆盖KFC单scope Catalog/Price、只读port和一个禁用OrderDraft；Provider测试核required ID、签名与品牌枚举。
 - Starbucks、McDonald's、Luckin、Cotti、Pizza Hut、Molly Tea六分支，多scope health、错误聚合、ID编码和500-key边界未覆盖，见F-0115。
 - test/typecheck因缺vitest/tsc退出127；未build。详见`records/AU-027-meal-provider/`。
+
+## 27. AU-028 Book Provider质量
+
+- 包内唯一13行测试只检查required provider ID、definition ID和manifest签名；不调用factory或任何业务port。
+- 没有capability-port矩阵、Order→tracking、Catalog canonical字段、非幂等写入、Wenxuan认证/响应或Webhook集成测试，见F-0118。
+- test/typecheck因缺vitest/tsc退出127；未build。详见`records/AU-028-book-provider/`。

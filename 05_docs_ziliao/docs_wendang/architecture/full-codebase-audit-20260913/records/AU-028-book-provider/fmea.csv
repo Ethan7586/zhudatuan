@@ -1,0 +1,5 @@
+"id","failure","trigger","effect","rating"
+"FM-AU-028-001","Book tracking能力拒绝","外部Order成功并运行tracking job","Registry在外部查询前拒绝Logistics，履约停留accepted/processing","P1候选/F-0116"
+"FM-AU-028-002","退货能力歧义","caller以Return或Refund请求refund port","两种capability进入同一book.return.submit，契约含义依赖caller","P2/F-0117"
+"FM-AU-028-003","Provider测试假阳性","任一operation/mapper/webhook/履约配对失效","身份签名测试仍通过","P3/F-0118"
+"FM-AU-028-004","共享Vendor异常响应","超大/深层响应或任意HTTPS配置","继承F-0096/F-0097，不重复定级","P1候选/继承"
