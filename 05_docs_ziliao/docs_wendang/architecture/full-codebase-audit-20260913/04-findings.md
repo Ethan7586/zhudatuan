@@ -4955,3 +4955,21 @@
 | 建议方向 | 从当时最新主线建立独立、前向兼容 migration：只在函数存在时补授予并在其后 assert；同时先确认所有已部署数据库的 schema ledger。不要修改历史 migration 文件。 |
 | 验证/回滚 | 干净隔离 PostgreSQL 按正式 MigrationRunner 顺序运行至 20260902012000，确认当前失败；应用前向兼容 batch 后验证全量迁移、provisioning runtime compatibility 及 platform owner create/read mall。回滚为撤回该单独补偿 migration。 |
 | 是否需要独立复核 | 是；复核者需独立确认所有定义位置、执行器 transform 集和 production schema_migrations 状态。 |
+
+## F-0267｜Owner transfer function 权限迁移后没有对应写入口
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Owner identity / Access API runtime boundary |
+| 类型 | 权限与路由/模块注册断链、关键治理能力可用性 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql:19-56`；`01_core_hexin/services/commerce/src/modules/access/03_application_yingyong/AccessOperations.ts:129-179`；`modules/access/05_interface_jieru/IdentityOperatorAccessModule.ts:1-6`；`entry/IdentityRegistrationApiMain.ts:46-76`；`modules/webbusiness/WebBusinessModules.ts:23-45`。 |
+| 当前/预期 | migration 将 create/cancel/commit/expire owner transfer 与 owner-mobile functions 的 caller guard/execute privilege 从 `shopapp` 转为仅 `zhudatuanidentityapi`。但 owner transfer HTTP actions 仍在完整 AccessOperations；Identity API 只加载 `ACCESS_OPERATOR_READ_OPERATION_IDS`，Web Business API 不加载 access module。预期为每个已授权 function 都有同 role 的已注册 operation 路径，或旧路径保持其必要 privilege。 |
+| 直接证据 | [FACT][E-AU-632-002] migration 对五个 function revoke shopapp 并仅 grant identity API；[FACT][E-AU-632-003] AccessPort/AccessOperations 继续直接调用 create/cancel owner transfer function；[FACT][E-AU-632-004] IdentityOperatorAccessModule 只封装 read actions，IdentityRegistrationApi 的 operation/module arrays 仅包含该 read module；[FACT][E-AU-632-005] WebBusiness API selected module list不含 AccessModule。 |
+| 调用链或运行入口 | 已注册 `access.ownership.transfers.{preview,create,accept,cancel}` route → AccessOperations → AccessPort → `access.*_owner_transfer` functions；迁移后 function 要求 Identity API role，但该 Identity API 未注册这些 write operations。 |
+| 用户/数据/安全影响 | Owner transfer 的创建/取消等治理动作可能在调用时被数据库拒绝，或没有可达的专用 API 承接；当前未取得线上失败回执，未证明已有转移流程正在中断，也未发现越权写入。 |
+| 根因 | 数据库 role 收敛与 HTTP/module topology 分两处演进，迁移只验证 DB privilege/definition，未验证 operation registration 与实际服务 role 的闭环。 |
+| 建议方向 | 从当时最新主线建立独立 topology/permission repair 批次：先确认权威 owner-transfer API runtime，再同批移动 selected write module 或恢复最小旧 role execute；为每条 owner transfer route 加真实 role 的成功与 forbidden-role 反事实测试。不要改写历史 migration。 |
+| 验证/回滚 | 隔离环境分别以 shopapp 与 identity API role 调用每个 function，并通过实际 registered route 调用 create/accept/cancel；应仅有权威 route 成功。回滚为撤回独立 module/ACL repair。 |
+| 是否需要独立复核 | 是；复核者需重新核对运行 unit、reverse proxy route、module operation catalog 与生产 DB grants。 |
