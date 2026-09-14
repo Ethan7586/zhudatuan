@@ -5063,3 +5063,21 @@
 | 建议方向 | 从当时最新主线建立独立 DB contract-test 批次：最小 fixture 覆盖 active Store→Tenant、无 Tenant ancestor→Mall、inactive Store/Mall、actor/membership mismatch、错误 scope kind与跨 Tenant Store；同时断言 resolver 只规范化而不绕过授权。不要改写历史 migration。 |
 | 验证/回滚 | 在隔离 PostgreSQL 以实际 runtime role 调用 `resolve_governance` 和后续权限读取，逐例断言 scope 字段及 allow/deny；回滚为撤回独立 SQL contract test。 |
 | 是否需要独立复核 | 否；Store 跨 Mall/Tenant 的期望业务语义需要权限所有者确认。 |
+
+## F-0273｜Identity API 保留没有运行消费者的 Catalog 写权限
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Identity API / Catalog database boundary |
+| 类型 | 最小权限、部署边界与数据库 ACL 漂移 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260907010000_enable_identity_catalog_commands.sql:30-41,46-70`；`01_core_hexin/services/commerce/src/entry/CatalogOperatorApiEntrypoint.test.ts:18-20`；`bootstrap/CatalogOperatorApiRuntime.test.ts:35-38`。 |
+| 当前/预期 | migration 授予 `zhudatuanidentityapi` 对 catalog importjob 的 SELECT/INSERT/UPDATE、import row/error 的 SELECT、listing 的 SELECT/UPDATE，并建立 scope_allowed RLS policies。对当前 Identity module、entrypoint、bootstrap、release mapping的 catalog import/listing SQL、operation、route、adapter检索无命中；Catalog command runtime 由 Catalog Operator API 的独立 role 承载。预期是每个 runtime role 只保留当前已注册运行单元所需的最小 catalog ACL。 |
+| 直接证据 | [FACT][E-AU-658-001] migration 的 grant/policy 精确覆盖四张 catalog relation；[FACT][E-AU-658-002] 全部 Identity runtime source 对该四 relation的 consumer 检索无命中，Catalog Operator API entrypoint test 明确其 catalog-only边界，runtime test 拒绝 `zhudatuanidentityapi` 作为 catalog operator role；[FACT][E-AU-658-003] 后续 migration 集对这四 relation与 `zhudatuanidentityapi` 的 revoke/grant检索只有本 migration。 |
+| 调用链或运行入口 | Identity API DB role → catalog import/listing table ACL/RLS；当前没有对应 Identity API command/module/route，Catalog Operator API 使用独立 runtime role。 |
+| 用户/数据/安全影响 | 未发现外部用户可触发的直接 Catalog 写入，也没有已知数据事故；但 Identity API 一旦被攻破或出现 SQL injection，攻击面额外包括其当前 scope 下的 catalog listing 更新与 import job 写入，扩大进程隔离失效后的影响范围。 |
+| 根因 | 早期 Identity-Catalog command ACL 与后来拆分出的 Catalog Operator runtime 没有同步收敛；migration assertion只验证权限存在，未验证已注册的实际消费入口。 |
+| 建议方向 | 从当时最新主线建立单一 ACL-reconciliation 批次：先确认不存在仓外 Identity catalog consumer及生产角色依赖，再以独立前向 migration revoke Identity API 的多余 table grants并 drop专用 policies；Catalog Operator role维持自己的最小权限。不要改写历史 migration。 |
+| 验证/回滚 | 隔离数据库以 Identity API role 执行 import/listing read/write，收敛后均应拒绝；以 Catalog Operator role 运行真实 import/listing command应仍成功。回滚为恢复独立 ACL migration，前提是确认合法 consumer。 |
+| 是否需要独立复核 | 否；ACL回收前需要 Identity/Catalog owner确认所有仓外 worker、SQL console和生产 grants。 |
