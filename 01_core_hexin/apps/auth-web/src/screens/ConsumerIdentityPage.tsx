@@ -71,8 +71,7 @@ export const ConsumerIdentityPage: React.FC<{
     }
   };
 
-  const submitLogin = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const submitLogin = () => {
     const loginMobile = mobile.trim();
     if (!loginMobile) return setFormError('请输入登录手机号');
     if (!password) return setFormError('请输入密码');
@@ -222,7 +221,7 @@ export const ConsumerIdentityPage: React.FC<{
             </div>
           )}
 
-          {mode !== 'reset' && <form onSubmit={mode === 'login' ? submitLogin : submitRegistration} className="space-y-4">
+          {mode !== 'reset' && <form onSubmit={mode === 'login' ? (event) => event.preventDefault() : submitRegistration} className="space-y-4">
             <label className="block space-y-1.5 text-xs font-semibold text-slate-700">
               {mode === 'register' ? '登录手机号（付款时验证）' : '登录手机号'}
               <input type="tel" inputMode="tel" autoComplete="tel" required value={mobile} onChange={(event) => setMobile(event.target.value)} placeholder="请输入 11 位手机号" className="w-full rounded-xl border border-slate-200 px-3.5 py-3 text-sm outline-none transition focus:border-[var(--sw-brand)] focus:ring-2 focus:ring-blue-100" />
@@ -253,9 +252,10 @@ export const ConsumerIdentityPage: React.FC<{
             )}
 
             <button
-              type="submit"
+              type={mode === 'login' ? 'button' : 'submit'}
               disabled={submitting || (mode === 'register' && (context === null || !acceptedTerms))}
               onPointerDown={() => identityActions.pointerDown(mode === 'login' ? 'consumer-login' : 'consumer-register')}
+              onClick={mode === 'login' ? submitLogin : undefined}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--sw-brand)] px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/15 transition hover:bg-[var(--sw-brand-dark)] disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               {submitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : mode === 'login' ? <LogIn className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
