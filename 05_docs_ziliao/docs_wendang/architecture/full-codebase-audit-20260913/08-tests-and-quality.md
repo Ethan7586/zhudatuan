@@ -118,3 +118,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 缺口包括inactive/expiry边界、permission missing、future/exact step-up、公开Set mutation、异常最大窗口与challenge-before-scope。
 - 源码只读探针确认expiry等于now拒绝、900秒整允许、未来拒绝、explicit deny优先、Set mutation改变结果、Infinity接受旧验证、错误critical Scope先challenge。
 - 正式`npm run test --workspace @smart-wing/authz`和`npm run typecheck --workspace @smart-wing/authz`均因Missing script失败。根`test:unit`会经Storefront的Vitest include间接收录13个用例，但根`typecheck`会因`--if-present`跳过本包独立tsconfig，形成F-0060；没有安装依赖或另造正式入口。
+
+## 11. AU-012 Smart Wing API Contract 测试可信度
+
+- 4个直接测试验证86个permission code与目录一一对应、元数据非空、四个critical样本，以及required/reserved平台集合；全部导入真实实现，不复制生产算法。
+- 根`test:unit`会经Storefront Vitest配置间接收录两个测试文件；本包没有test script。根`typecheck`不执行本包独立tsconfig，继续补强F-0060。
+- 测试没有覆盖taxonomy父链闭包、delivery evidence路径/正式闸门、运行时不可变性和支付状态全矩阵。源码探针分别发现F-0063、F-0064并补强F-0032。
+- 审计worktree未安装依赖，本包直接test/typecheck均Missing script；`check:delivery`因缺`yaml`在加载阶段退出。失败只记录，未安装依赖或修复。

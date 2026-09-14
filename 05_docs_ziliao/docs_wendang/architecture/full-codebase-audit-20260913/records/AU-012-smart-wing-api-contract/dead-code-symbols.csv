@@ -1,0 +1,3 @@
+"候选编号","对象","零/弱入口证据","保留证据","排除项","等级","结论","复核"
+"DC-0014","delivery-matrix.json","无代码引用、未package export、正式check:delivery不读取","保存唯一五项多端状态；项目文档仍称机器权威","仓外发布系统UNKNOWN","G2","高度疑似孤立且已漂移；不得删除，先确认权威与迁移状态","需要产品/发布流程复核；不是G3"
+"DC-0015","platform.ts adapter/types及零源消费者响应类型","固定仓库无包外源码import这些符号","public package export、approved future clients兼容意图、类型契约","仓外消费者UNKNOWN","G1","弱入口但证据不足；保留","若退役包再专项复核"

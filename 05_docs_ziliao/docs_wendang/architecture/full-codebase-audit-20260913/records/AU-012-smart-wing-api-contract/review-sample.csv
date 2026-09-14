@@ -1,0 +1,4 @@
+"抽检编号","对象","比例","复核入口","首轮结论","二遍结果","独立性"
+"RS-AU-012-001","delivery-matrix.json","100%高风险","从正式check:delivery与证据路径反追","矩阵孤立/四路径缺失","一致","同一主审；不算独立"
+"RS-AU-012-002","catalog-taxonomy.json","100%高风险","从DB code与Storefront validator反追","一个dangling L2","一致","同一主审"
+"RS-AU-012-003","permissions/commerce/index/platform","4/4关键TS","从外部import和运行探针反追","目录闭合、可变、状态映射稳定","一致","同一主审"

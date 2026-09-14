@@ -153,3 +153,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - 当前Storefront Worker只加载public router；delivery把`commerce-api/dist/admin-server.cjs`列为forbidden input，deployment checker把Commerce API列为retired。根仍保留`build:compat-admin-reference`手工构建入口。
 - 因此“当前仓库正式图无受保护兼容运行单元”与“源码/测试/数据库契约仍存在”同时成立。删除或恢复前必须核验仓外/历史制品和线上主机，不能仅靠零正式target。
 - 本AU未build、未生成兼容制品、未读取线上服务、未推送、未合并、未部署。
+
+## 15. AU-012 兼容契约与交付事实
+
+- `@smart-wing/api-contract`没有独立镜像、服务、端口或release target；其代码随Storefront与兼容Commerce源码编译。
+- [CONFLICT][E-AU-012-005/006/007] 包内delivery matrix没有构建/发布消费者，四条微信证据路径不存在。根`check:delivery`实际验证`mvp.yml`与阿里云`delivery.yml`，不会检测矩阵漂移，形成F-0063。
+- 因为矩阵保存唯一的五项逐平台状态且仓外流程UNKNOWN，列DC-0014/G2而不是G3；本AU没有修改、移动或删除它。
+- 本AU未build候选、生成制品、读取线上发布、推送、合并或部署。

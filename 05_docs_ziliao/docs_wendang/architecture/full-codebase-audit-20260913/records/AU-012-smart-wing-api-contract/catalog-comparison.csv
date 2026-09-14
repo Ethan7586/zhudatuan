@@ -1,0 +1,5 @@
+"集合","数量","闭合结果","真实消费者","风险","结论"
+"permissions","86 codes/86 definitions","唯一且一一对应","Commerce API/Smart Authz","运行对象可变","G0；F-0032"
+"taxonomy","9 L1/25 L2/31 L3","1个L3无L2父节点","Storefront+DB code","导航/校验分叉","G0；F-0064"
+"delivery","5 capabilities/7 evidence","4条evidence路径缺失","无代码消费者","发布事实失真","G2；F-0063/DC-0014"
+"platform","2 required/3 reserved","集合测试闭合","零仓内生产caller","未来兼容/可变","G1；DC-0015"

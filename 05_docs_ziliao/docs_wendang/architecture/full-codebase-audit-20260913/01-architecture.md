@@ -621,3 +621,24 @@ flowchart LR
 [FACT][E-AU-011-007] 兼容数据库在custom role创建、更新和assign时验证非Owner的effective permission与scope ceiling。这是值得保留的委派边界，也为canonical F-0053提供直接对照；两套Authz的数据表、permission目录与部署状态不同，不能互相替代。
 
 [CONFLICT][E-AU-011-008/009/010] 两个permission目录仅共享8个code，且4个共享code的risk不同；兼容`HIGH_RISK_PERMISSIONS`还是公开可变Set。包的主干默认拒绝成立，但测试入口失联、异常step-up窗口和challenge顺序形成F-0060–F-0062。完整证据见`records/AU-011-smart-wing-authz/`。
+
+## 21. AU-012 增量：`@smart-wing/api-contract` 兼容共享契约
+
+[FACT][E-AU-012-002/003] 该包不是服务或数据所有者，而是兼容链的编译/运行契约汇合点：权限和Membership/Scope类型进入Smart Wing Authz与Commerce API，支付与会员码常量进入兼容路由，分类JSON单独进入Storefront。包共11文件/758行、10个运行值、35个类型和1个JSON subpath。
+
+~~~mermaid
+flowchart LR
+  Permission[86 Permission definitions] --> Authz[Smart Wing Authz]
+  Permission --> CompatAPI[Commerce API compatibility routes]
+  Scope[Membership / Scope / Decision types] --> Authz
+  Scope --> CompatAPI
+  Payment[Payment status mapper] --> PayRoutes[WeChat payment routes]
+  MemberCode[Member-code protocol] --> MemberRoutes[Member-code routes]
+  Taxonomy[Catalog taxonomy JSON] --> Storefront[Storefront taxonomy mapper]
+  Delivery[Delivery matrix] -. no code consumer .-> Orphan[Orphaned status record]
+  Check[check:delivery] --> OtherFacts[mvp.yml + aliyun/delivery.yml]
+~~~
+
+[CONFLICT][E-AU-012-005/006/007] 多端矩阵与正式闸门形成平行事实源：矩阵没有代码消费者，四条微信实现证据不存在，正式checker也不读取它，形成F-0063。分类树则在DB会产生的`digital_mobile_accessory`路径上缺少L2父节点，但Storefront leaves校验仍接受，形成F-0064。
+
+[FACT][E-AU-012-004/009/011] permission目录86/86闭合，支付映射主干集中且无I/O，是值得保留的单点契约；运行目录和平台常量可变，补强F-0032。完整逐文件、导出、状态、FMEA与54.5%高风险逆向抽检见`records/AU-012-smart-wing-api-contract/`。

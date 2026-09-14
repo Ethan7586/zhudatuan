@@ -104,3 +104,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - [P3][E-AU-011-009/010/011] critical目录是公开可变Set；异常最大窗口可放宽recent verification；无效Scope先challenge。这三项中只有F-0061/F-0062为本AU新增，Set mutation补强既有F-0032。
 - [FACT][E-AU-011-008] 两套权限目录仅8个code重合，四个重合code risk不同；任何收敛都需产品与数据迁移定稿，不能按包名认定重复。
 - 本AU未读取凭据、线上Membership/角色或请求日志，没有修改权限或线上状态。
+
+## 13. AU-012 兼容权限契约边界
+
+- [FACT][E-AU-012-004] 86个permission code与86条目录定义一一闭合，25个critical由同一目录提供给Smart Wing Authz；这是值得保留的单目录关系。
+- [P2][E-AU-012-009] `PERMISSIONS`值和`PERMISSION_CATALOG`对象可由同进程消费者改写，补强F-0032；固定仓库未发现生产mutation caller，故不升级P1。
+- Membership/ResourceScope/AuthorizationDecision只是兼容类型，不执行身份验证或数据库授权；真实边界仍在session resolver、server-derived Scope和Authz decide。不得把浏览器类型声明当成权限门禁。
+- 本AU未读取凭据、线上角色、商品或请求日志，没有新增/收窄权限规则。

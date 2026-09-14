@@ -666,3 +666,15 @@ adapter.send
 | Storefront现行 | Storefront Worker → `routePublicRequest` | 公共请求 | public handler | 不加载上述protected router |
 
 同步判定顺序为membership active/expiry → explicit deny → permission allow → binding筛选/跨tenant规则 → critical step-up → binding存在 → allow。critical错误Scope会先challenge再报Scope不匹配，见F-0062。该包没有队列、Worker注册或异步恢复；每个请求重新纯判定，公开Set mutation只能靠进程重启恢复。
+
+## 20. AU-012：兼容 API Contract 到运行消费者
+
+| 契约板块 | 直接消费者 | 运行单元 | 数据所有权 | 失败传播 |
+| --- | --- | --- | --- | --- |
+| permissions + Membership/Scope | Smart Wing Authz、Commerce API | 当前protected兼容runtime正式退出；源码仍编译 | public兼容Access表拥有数据 | import/type/code漂移导致构建或授权错误 |
+| payment status | wechatPaymentRoutes两处 | 兼容Commerce/Storefront路由 | orders/payment/attempt表 | 未知状态稳定降为not_started |
+| member code | memberCodeRoutes | 兼容Commerce API | challenge RPC/DB | protocol不符被route拒绝 |
+| catalog taxonomy JSON | Storefront taxonomy.ts | 正式Storefront Worker | 商品/分类DB；JSON拥有展示契约 | 无runtime schema，构建或映射时暴露 |
+| delivery matrix | 无 | 无 | 无 | 不进入任何正式失败信号 |
+
+[CONFLICT][E-AU-012-005/007] `check:delivery`不经过delivery matrix，所以“正式delivery闸门通过”与矩阵内容正确没有因果关系。矩阵三项release-ready和四条不存在路径不会阻止质量流水线。

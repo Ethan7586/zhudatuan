@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-011 结束时累计：P0 0、P1 候选 8、P2 34、P3 19、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-012 结束时累计：P0 0、P1 候选 8、P2 36、P3 19、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -759,14 +759,14 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块 | 共享配置 / SFL Node Registry、Runtime Catalog、Kernel、canonical Authz目录与兼容Authz |
+| 模块 | 共享配置 / SFL Node Registry、Runtime Catalog、Kernel、canonical Authz目录、兼容Authz与兼容API契约目录 |
 | 类型 | 隐式共享可变状态、配置完整性 |
 | 严重级别 | P2 |
 | 置信度 | 高：隔离Node进程直接观察并改变resolver、共享deadline、Currency和Authz permission scope结果；固定基线未找到现有生产写调用 |
-| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17；`services/commerce/src/app/events.ts`；`RuntimeEventPublisher.ts`；`packages/kernel/src/Currency.ts:1-13`；`packages/authz/src/PermissionCatalog.ts:4-11,198-205`、`ScopeKind.ts:1-2`；`packages/smart-wing-authz/src/index.ts:1-12,19-32` |
-| 当前行为 | [FACT][E-AU-006-006][E-AU-008-011][E-AU-009-018][E-AU-010-009][E-AU-011-009] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功。生成的`EVENT_HANDLERS`同样导出可变Map singleton。Kernel的`CURRENCIES`运行数组和实例code可改写。canonical Authz的184个definition外壳虽冻结，但80条默认scoped permission共享同一未冻结数组；给一条追加owner后另一条的授权接受集同时变化，导出的SCOPE_KINDS也可变。兼容Authz还公开可变`HIGH_RISK_PERMISSIONS` Set；删除`order.refund`后，同一Membership的无step-up结果从challenge变为allow。当前仓库未发现这些mutation的生产调用 |
+| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17；`services/commerce/src/app/events.ts`；`RuntimeEventPublisher.ts`；`packages/kernel/src/Currency.ts:1-13`；`packages/authz/src/PermissionCatalog.ts:4-11,198-205`、`ScopeKind.ts:1-2`；`packages/smart-wing-authz/src/index.ts:1-12,19-32`；`packages/api-contract/src/permissions.ts:3-105`、`platform.ts:1-18` |
+| 当前行为 | [FACT][E-AU-006-006][E-AU-008-011][E-AU-009-018][E-AU-010-009][E-AU-011-009][E-AU-012-009] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功。生成的`EVENT_HANDLERS`同样导出可变Map singleton。Kernel的`CURRENCIES`运行数组和实例code可改写。canonical Authz的184个definition外壳虽冻结，但80条默认scoped permission共享同一未冻结数组；给一条追加owner后另一条的授权接受集同时变化，导出的SCOPE_KINDS也可变。兼容Authz还公开可变`HIGH_RISK_PERMISSIONS` Set。兼容API契约的`PERMISSIONS`、86条`PERMISSION_CATALOG`对象、`CLIENT_PLATFORM`与两个平台数组同样可改写；隔离进程实际把`order.refund`改名、risk降为low并向required platforms追加android。当前仓库未发现这些mutation的生产调用 |
 | 预期行为 | Manifest/Registry/Topology及共享容量/缓存参数作为进程权威，在解析/生成后应不可被消费者改写，或消费者获得隔离副本 |
-| 直接证据 | E-AU-006-006、E-AU-008-011、E-AU-009-018、E-AU-010-009、E-AU-011-009、T-AU-006-004、RS-AU-006-002、INV-AU-006-006、INV-AU-009-010、INV-AU-010-011、INV-AU-011-004、FM-AU-008-005、FM-AU-009-009 |
+| 直接证据 | E-AU-006-006、E-AU-008-011、E-AU-009-018、E-AU-010-009、E-AU-011-009、E-AU-012-009、T-AU-006-004、RS-AU-006-002、INV-AU-006-006、INV-AU-009-010、INV-AU-010-011、INV-AU-011-004、INV-AU-012-004、FM-AU-008-005、FM-AU-009-009 |
 | 调用链或运行入口 | JSON/YAML/TS module import → exported singleton → Identity/Console/generator/check或HTTP/Pool/cache/SDK/Authz consumers；events.ts Map → RuntimeEventPublisher → inbox/job；permissionDefinition.scopes → AccessPipeline checkScope；`HIGH_RISK_PERMISSIONS` → `requiresStepUp` → `decide` |
 | 用户影响 | 若任一同进程消费者意外修改嵌套对象，后续Host/资源ref、timeout/cache/capacity或permission允许的scope kind会随加载顺序漂移 |
 | 数据影响 | 不修改仓库或数据库，但会改变进程内配置事实；重启恢复原JSON |
@@ -1435,26 +1435,26 @@
 - [UNKNOWN] `@shop/authz`完整`decide` façade和类型的仓外消费者；已列DC-0012/G1，不得直接删除。
 - [UNKNOWN][E-AU-010-016] Authz正式test/typecheck结果；两者因依赖缺失在源码加载前退出127，未安装依赖。
 
-## F-0060｜Smart Wing Authz 缺少独立质量入口，测试寄生 Storefront 且独立类型检查被跳过
+## F-0060｜Smart Wing 兼容共享包缺少独立质量入口，测试寄生 Storefront 且独立类型检查被跳过
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块 | `@smart-wing/authz` / 测试拓扑 |
+| 模块 | `@smart-wing/authz`、`@smart-wing/api-contract` / 测试拓扑 |
 | 类型 | 测试入口缺失、质量信号失真 |
 | 严重级别 | P3 |
 | 置信度 | 高 |
-| 文件和精确位置 | `packages/smart-wing-authz/package.json:1-13`；`src/index.test.ts:1-159`；`tsconfig.json:1-12`；`apps/storefront-web/package.json:9-15`；`apps/storefront-web/vitest.config.ts:3-13`；根`package.json:45,50` |
-| 当前行为 | [FACT][E-AU-011-002/013/015] 包保存159行、13个直接行为用例和独立tsconfig，但没有scripts；显式workspace test/typecheck均返回Missing script。根`test:unit`仍会调用Storefront的`vitest run`，其include显式收录本测试文件；根`typecheck`使用workspaces `--if-present`，不会执行本包独立tsconfig，根project references也没有被该命令以`tsc -b`执行 |
+| 文件和精确位置 | `packages/smart-wing-authz/package.json:1-13`、`src/index.test.ts:1-159`、`tsconfig.json:1-12`；`packages/api-contract/package.json:1-11`、`src/permissions.test.ts:1-19`、`src/platform.test.ts:1-12`、`tsconfig.json:1-12`；`apps/storefront-web/package.json:9-15`；`apps/storefront-web/vitest.config.ts:3-13`；根`package.json:45,50` |
+| 当前行为 | [FACT][E-AU-011-002/013/015][E-AU-012-002/010] 两个包共保存190行、17个直接用例和各自独立tsconfig，但都没有scripts；显式workspace test/typecheck均返回Missing script。根`test:unit`仍会调用Storefront的`vitest run`，其include显式收录两个包的测试文件；根`typecheck`使用workspaces `--if-present`，不会执行两个包的独立tsconfig，根project references也没有被该命令以`tsc -b`执行 |
 | 预期行为 | 人工维护的兼容权限内核应有可独立审计的质量入口，或正式声明其间接测试归属；本包独立tsconfig应由正式命令执行，退役时则应明确排除并保留替代验证 |
-| 直接证据 | E-AU-011-002、E-AU-011-012、E-AU-011-013、E-AU-011-015、TC-AU-011-014/015/016 |
-| 调用链或运行入口 | 根`test:unit` → workspace Storefront `test` → Storefront Vitest include → 13个用例；根`typecheck` → workspace `typecheck --if-present` → 本包无script → 独立tsconfig未检查 |
-| 用户影响 | 13个用例当前依赖Storefront测试配置才能被根命令发现；若该配置被移除、拆包或改名，本包没有自有入口暴露丢测。独立tsconfig的类型约束当前不在根typecheck信号中；兼容protected runtime未正式发布，影响受限 |
+| 直接证据 | E-AU-011-002、E-AU-011-012、E-AU-011-013、E-AU-011-015、E-AU-012-002、E-AU-012-010、TC-AU-011-014/015/016、TC-AU-012-005/006/007 |
+| 调用链或运行入口 | 根`test:unit` → workspace Storefront `test` → Storefront Vitest include → 两包17个用例；根`typecheck` → workspace `typecheck --if-present` → 两包无script → 两份独立tsconfig未检查 |
+| 用户影响 | 17个用例当前依赖Storefront测试配置才能被根命令发现；若该配置被移除、拆包或改名，两包没有自有入口暴露丢测。两份独立tsconfig的类型约束当前不在根typecheck信号中；兼容protected runtime未正式发布，但api-contract仍有23个非测试引用文件，影响面更广 |
 | 数据影响 | 不直接写数据；漏测的授权错误若经手工兼容build使用可影响访问决定 |
 | 安全影响 | 权限内核缺少正式回归信号，但本项不证明当前权限绕过 |
 | 根因 | 包保留源码、测试和tsconfig，却把测试执行隐式寄托于另一个应用的Vitest include，同时未把独立类型检查或生命周期状态落实为可执行入口 |
 | 建议方向 | 后续独立质量批次在“建立本包自有入口并保留Storefront聚合”与“明确退役并迁移唯一契约”之间定稿；不在审计分支修改 |
-| 预计修改范围 | package脚本/根测试拓扑，或退役文档与契约承接；二者不可混做 |
-| 验证方式 | 分别证明根测试与包测试报告13用例、独立tsconfig被正式typecheck执行；或正式退役门禁证明不再构建且契约已有承接 |
+| 预计修改范围 | 两个package脚本/根测试拓扑，或分别完成退役文档与契约承接；不可把两个包的生命周期决定混成一次大改 |
+| 验证方式 | 分别证明根测试与两个包测试报告17用例、两份独立tsconfig被正式typecheck执行；或逐包正式退役并证明契约已有承接 |
 | 回滚方式 | 回退单一测试拓扑/退役提交 |
 | 是否需要独立复核 | 否 |
 
@@ -1469,7 +1469,7 @@
 | 文件和精确位置 | `packages/smart-wing-authz/src/index.ts:19-20,29-30,41-48` |
 | 当前行为 | [FACT][E-AU-011-010] `stepUpMaxAgeSeconds`未限制为有限非负值；传`Infinity`时2000年的step-up在2026年仍被接受。当前caller使用默认900秒，未发现生产参数化入口 |
 | 预期行为 | 安全时限若公开可配置，应只接受定义域内的有限值；非法值应稳定拒绝或采用已声明默认值 |
-| 直接证据 | E-AU-011-010、PROBE-AU-011-010、INV-AU-011-007 |
+| 直接证据 | E-AU-011-010、PROBE-AU-011-010、INV-AU-011-004 |
 | 调用链或运行入口 | 兼容caller → `decide(options.stepUpMaxAgeSeconds)` → `hasFreshStepUp` → critical allow/challenge |
 | 用户影响 | 只有新增或仓外caller传异常窗口时才会延长身份复核有效期；当前仓内caller未触发 |
 | 数据影响 | 无直接写入 |
@@ -1492,7 +1492,7 @@
 | 文件和精确位置 | `packages/smart-wing-authz/src/index.ts:24-32` |
 | 当前行为 | [FACT][E-AU-011-011] binding先计算但其不存在的拒绝位于step-up之后；错误mall scope的critical请求无step-up返回`STEP_UP_REQUIRED`，完成step-up后才返回`SCOPE_MISMATCH` |
 | 预期行为 | 已确定不具资源Scope的请求不应先要求用户执行无效的身份复核；错误原因顺序应稳定反映最早不可恢复条件 |
-| 直接证据 | E-AU-011-011、PROBE-AU-011-011、INV-AU-011-009 |
+| 直接证据 | E-AU-011-011、PROBE-AU-011-011、INV-AU-011-006 |
 | 调用链或运行入口 | Commerce compat route → server-derived ResourceScope → `decide` → critical challenge → 重试 → Scope拒绝 |
 | 用户影响 | 用户被要求完成一次无法改变最终结果的额外验证，之后仍失败；当前compat protected runtime未正式发布 |
 | 数据影响 | 无 |
@@ -1504,8 +1504,60 @@
 | 回滚方式 | 回退单一顺序/测试提交 |
 | 是否需要独立复核 | 否 |
 
-## 12. AU-011 新增未定级事项
+## F-0063｜多端交付矩阵与正式闸门脱节，并引用不存在的小程序实现
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@smart-wing/api-contract` / 多端发布证据 |
+| 类型 | 发布事实漂移、证据闸门失效 |
+| 严重级别 | P2 |
+| 置信度 | 高：固定基线文件存在性、全仓消费者和正式脚本控制流均已复核 |
+| 文件和精确位置 | `packages/api-contract/src/delivery-matrix.json:1-67`；根`package.json:108`；`04_tools/scripts/check-platform-delivery.mjs:1-24`；实际`apps/miniapp/miniprogram/` |
+| 当前行为 | [FACT][E-AU-012-005/006/007] 矩阵把public-catalog、server-cart和order-create标为`releaseReady:true`，并把微信小程序列为implemented；四条微信侧证据都指向不存在的`apps/wechat-miniapp/miniprogram/utils/*`。固定仓库唯一小程序目录是`apps/miniapp/miniprogram`，没有这些API模块。全仓没有代码读取该矩阵，正式`check:delivery`只验证`requirements/mvp.yml`与`infrastructure/aliyun/delivery.yml`，不读取矩阵 |
+| 预期行为 | 任何被称为机器可读交付事实的矩阵都应由正式闸门消费，且每条implemented/releaseReady证据必须解析到固定基线中的真实入口；否则应明确降级为历史资料 |
+| 直接证据 | E-AU-012-005、E-AU-012-006、E-AU-012-007、FM-AU-012-001、INV-AU-012-002 |
+| 调用链或运行入口 | 当前实际为两条平行链：`delivery-matrix.json` → 无代码消费者；`npm run check:delivery` → `check-platform-delivery.mjs` → `mvp.yml + aliyun/delivery.yml` |
+| 用户影响 | 读取该矩阵的开发者或评审可能误判三项能力已有Web/微信双端实现并可发布；正式质量命令不会发现这些断链证据 |
+| 数据影响 | 不直接写数据库；可能使发布或验收决策建立在错误完成度上 |
+| 安全影响 | 无直接权限或凭据影响 |
+| 根因 | 旧微信目录/能力说明被保留在数据文件中，正式交付闸门后来转向另一套需求和制品清单，二者没有共同来源或漂移检查 |
+| 建议方向 | 单独的交付事实批次先由产品确认矩阵是否仍为权威；若保留，令闸门逐条解析真实入口和状态；若退役，先迁移唯一的能力状态后再归档。不得把“修路径”与实现缺失能力混为一批 |
+| 预计修改范围 | delivery matrix、正式delivery checker、必要的状态来源/测试；不必然修改小程序业务代码 |
+| 验证方式 | 对每条evidence做路径+符号解析；反事实删除/改名时正式闸门必须失败；releaseReady只能在required platforms均有可达实现后成立 |
+| 回滚方式 | 回退矩阵/闸门单一提交；保留变更前状态快照，不触碰线上制品 |
+| 是否需要独立复核 | 否（P2）；若该矩阵被外部发布系统消费则重新评估影响 |
+
+## F-0064｜商品分类契约包含没有二级父节点的有效叶子
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@smart-wing/api-contract` / 商品分类 |
+| 类型 | 数据契约不闭合、导航与校验漂移 |
+| 严重级别 | P2 |
+| 置信度 | 高：固定JSON集合复算与真实Storefront校验路径一致；具体线上商品数量未核验 |
+| 文件和精确位置 | `packages/api-contract/src/catalog-taxonomy.json:23-31,102-105`；Storefront `domain/catalog/taxonomy.ts:22-34`；migration `20260725012000_recalibrate_abo_taxonomy.sql:3-4`、`20260814194000_fill_mobile_catalog_categories.sql:44` |
+| 当前行为 | [FACT][E-AU-012-004/008] `digital_mobile_accessory`叶子声明`l2=digital_mobile`，数据库迁移也会写入该路径；但JSON的digital children只有computer、audio、office，没有`digital_mobile`。Storefront从leaves直接建立`STRICT_TAXONOMY_PATHS`，因此该三段路径会被判为严格有效，同时它的二级节点不在可浏览category tree中。其余30个叶子的父链闭合 |
+| 预期行为 | 每个可被严格接受的叶子都必须引用同一契约中存在且属于对应L1的L2节点；导航树、数据库分类和校验集合应闭合 |
+| 直接证据 | E-AU-012-004、E-AU-012-008、PROBE-AU-012-001、INV-AU-012-001 |
+| 调用链或运行入口 | 数据库商品taxonomy → Storefront API → `isStrictTaxonomyPath` leaves映射 → 商品接受；category tree → `SMART_WING_TAXONOMY` → 浏览导航 |
+| 用户影响 | 手机配件商品可被当作严格分类商品展示，却没有对应的二级浏览节点；用户可能只能从上层或搜索进入，分类筛选与展示路径不一致 |
+| 数据影响 | 迁移和分类函数已经使用该L2 code；直接删叶子或改code会产生历史数据兼容责任 |
+| 安全影响 | 无 |
+| 根因 | categories树与leaves平铺表手工维护，当前测试没有父链闭包断言；数据库新增`digital_mobile`时JSON树未同步 |
+| 建议方向 | 独立分类契约批次先以数据库现行code和产品导航为准补齐/迁移父节点，并增加父链、唯一性和featured引用闭包测试；不得直接删除已有code |
+| 预计修改范围 | taxonomy JSON、分类契约测试、可能的展示映射；如改code则另需受管数据迁移 |
+| 验证方式 | 全量L1/L2/L3唯一且父链闭合；数据库已用code对账；真实分类页只读视觉核对和Storefront定向测试 |
+| 回滚方式 | 仅补父节点可回退JSON/测试；若涉及数据code，先保存映射并用独立可逆迁移 |
+| 是否需要独立复核 | 否（P2）；涉及线上分类数据变更前需数据专项复核 |
+
+## 11. AU-011 新增未定级事项
 
 - [UNKNOWN] 仓外是否加载该private workspace或手工兼容制品。
 - [UNKNOWN] 是否仍有历史主机运行旧`admin-server.cjs`；本AU只证明当前仓库发布策略禁止它。
 - [UNKNOWN] 86条兼容permission与`public.*`权限模型的正式退役时间及契约承接者。
+
+## 12. AU-012 新增未定级事项
+
+- [UNKNOWN] 仓外消费者是否依赖`platform.ts`的零仓内调用公共类型，以及`delivery-matrix.json`是否被仓外发布流程直接读取。
+- [UNKNOWN] 线上商品中`digital_mobile_accessory`的实际数量和用户导航可见影响；固定仓库只证明数据库会产生该路径且前端契约不闭合。
+- [UNKNOWN] 两个兼容包17个测试在安装锁定依赖后的真实通过/失败结果；本AU遵守边界未安装依赖。

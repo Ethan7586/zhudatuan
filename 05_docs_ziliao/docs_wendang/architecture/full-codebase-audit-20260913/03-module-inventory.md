@@ -272,3 +272,16 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Compatibility role ceiling | 限制非Owner可创建/分配权限和Scope | PostgreSQL函数/trigger | 兼容角色管理 | `public.*`角色/权限/Scope表 | PostgreSQL兼容面 | 本AU只追接缝 | 值得保留；不等价canonical模型 |
 
 [FACT][E-AU-011-002] 本单元深入审阅4文件、267行；83行实现、159行测试、25行清单/配置全部为人工维护，无生成、第三方或构建产物。第一层消费者与迁移只作边界追踪，不改变其原覆盖状态。
+
+## 18. AU-012 Smart Wing API Contract 模块清单
+
+| 子模块 | 职责 | 对外入口 | 上游 | 下游/数据 | 进程/发布 | 测试 | 当前边界问题 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Package shell | 聚合兼容共享契约 | package root+taxonomy subpath | 33个引用文件 | 内部TS/JSON | 随消费者制品 | Storefront聚合 | 无独立test/typecheck，F-0060 |
+| Permission/Authz | 86权限和Membership/Scope/Decision | root export | Smart Authz/Commerce API | public兼容Access数据 | 兼容源码 | 2目录tests | 运行对象可变F-0032 |
+| Commerce/member code | 支付状态和会员码协议 | root export | 兼容routes | order/payment/challenge RPC | 上层Worker | route tests | 未发现独立问题 |
+| Taxonomy | L1/L2/L3与移动浏览 | JSON subpath | Storefront | 商品taxonomy code | Storefront | 无直接测试 | dangling L2，F-0064 |
+| Platform | 五平台与adapter类型 | root export | 当前无包外源caller | 无 | 未来客户端 | 2集合tests | G1 DC-0015；运行常量可变 |
+| Delivery matrix | 五项逐平台状态 | 文件路径 | 无代码消费者 | 无 | 无 | 正式checker不读 | F-0063；G2 DC-0014 |
+
+[FACT][E-AU-012-002] 本单元深入审阅11文件、758行；494行生产TS、31行测试、210行JSON和23行package/tsconfig均为人工维护，无生成、第三方或构建产物。

@@ -86,3 +86,10 @@
 - [FACT][E-AU-011-007] custom role创建/更新/assign会比较actor effective permission并检查可授Scope，避免非Owner向上转授；该机制是历史数据责任，禁止因当前正式runtime退役就删除相关迁移。
 - canonical `@shop/authz`使用`access.*`角色、override、scopegrant与organization closure。两个模型只有8个permission code重合；未核对线上双写、迁移ledger或退役数据，因此不存在“已完成迁移”的事实。
 - 本AU未连接数据库、执行SQL、重放迁移或修改ledger；线上是否仍有兼容role/membership数据保持UNKNOWN。
+
+## 13. AU-012 分类与兼容契约数据接缝
+
+- api-contract本身不连接数据库，但permission code、Membership/Scope类型和taxonomy code分别约束兼容Access RPC、资源Scope与商品分类投影。
+- [CONFLICT][E-AU-012-004/008] 数据库迁移明确创建`digital_mobile`并把手机配件映射为`digital_mobile_accessory`；JSON leaves保留该路径，但categories树漏掉L2父节点。不能通过删除叶子规避，因为它承担现有数据code兼容责任。
+- [FACT][E-AU-012-011] payment status mapper只做响应投影，不写订单或支付状态；事务、退款与对账仍由数据库函数拥有。
+- 本AU未连接数据库、统计线上商品、执行迁移或修改任何code映射。
