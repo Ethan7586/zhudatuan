@@ -4671,3 +4671,21 @@
 | 建议方向 | 作为 F-0249 修复前的范围核对项，在独立小批次纳入 `contract` 条件和 contract=false reject regression；不在审计分支修改。 |
 | 验证/回滚 | 隔离数据库仅破坏 contract checksum，验证 helper 与真实 startup 都在 listen 前失败；回滚为撤回该单一条件/测试变化。 |
 | 是否需要独立复核 | 否（P2）；纳入 F-0249 独立复核时一并重走。 |
+
+## F-0251｜Worker 正常停止被计为 Job 失败并可能耗尽重试次数
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce generic JobRunner / Worker shutdown 与 deadletter |
+| 类型 | 异步正确性、重试与恢复 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/foundation/application/JobRunner.ts:43-103,109-133`；`.../tests/job/Job.test.ts:7-34`；多个 processor 的 `signal.aborted` guard，例如 `modules/benefit/05_interface_jieru/job/BenefitJobs.ts:27`。 |
+| 当前/预期 | global stop signal 传入 Deadline/processor；多个 processor 在 signal aborted 时 throw。JobRunner 捕获任何 throw 后都进入 `fail` transaction，递增 attempts、requeue，达到上限则写 deadletter/failed。预期为已知的 process shutdown/cancellation 与业务处理失败区分，任务由 lease/reclaim 恢复而不消耗失败预算；deadline/business failure 仍保留重试策略。 |
+| 直接证据 | [FACT][E-AU-522-001] `run` 将外部 signal 传入每个 processor 的 Deadline；[FACT][E-AU-522-002] processor 源码广泛 `if (signal.aborted) throw signal.reason`；[FACT][E-AU-522-003] process catch 无 cancellation 分支，直接调用 fail；[FACT][E-AU-522-004] fail 以 claimed attempts 判断 terminal 并更新 deadletter/source job。 |
+| 调用链或运行入口 | Jobs runtime SIGINT/SIGTERM → AbortController → QueueJob → JobRunner → processor abort throw → `fail` → runtime.job retry/failed 与 runtime.deadletter。 |
+| 用户/数据/安全影响 | 重复滚动重启、缩容或 shutdown 恰逢处理时，任务可能错误累积 attempts，最终进入 deadletter，造成导入、通知、订单、支付等异步工作延迟或需要人工恢复。未验证生产重启频率、实际 abort I/O 或已发生死信。 |
+| 根因 | runner 将 lifecycle cancellation、deadline cancellation 与业务异常合并为单一 failure 路径。 |
+| 建议方向 | 从最新主线建立独立小批次，先定义可识别 cancellation reason 与 lease/reclaim 语义；加入真实 runner integration 测试分别覆盖 graceful stop、deadline、业务可重试和 terminal failure，避免仅吞掉 abort。 |
+| 验证/回滚 | 隔离 DB claim job 后在 processor 内触发 stop，断言不耗尽 attempts、不错误 deadletter、lease 后可 reclaim；再覆盖 deadline/业务失败仍退避；回滚为撤回该单一 shutdown handling change。 |
+| 是否需要独立复核 | 否（P2）；若运行日志显示重启期间 deadletter，则升级专项复核。 |
