@@ -80,6 +80,7 @@ jobs:
         continue-on-error: true
         uses: actions/checkout@v6
         with:
+          filter: blob:none
           fetch-depth: 2
           ref: ${{ inputs.head_sha }}
 
@@ -93,9 +94,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git config extensions.partialClone origin
+          git config remote.origin.promisor true
+          git config remote.origin.partialCloneFilter blob:none
+          git config protocol.version 1
           for attempt in 1 2 3; do
             if git -c protocol.version=1 fetch \
-              --no-tags --prune --no-recurse-submodules --depth=2 \
+              --filter=blob:none --no-tags --prune --no-recurse-submodules --depth=2 \
               origin "$RELEASE_SHA"; then
               git checkout --force --detach "$RELEASE_SHA"
               git clean -ffdx
