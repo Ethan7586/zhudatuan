@@ -559,3 +559,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Existing test仅验证`OTP_RESEND_AFTER_SECONDS`为30秒。
 - 没有direct fixture覆盖provider send、delivery record、record failure或provider error映射；见F-0200/P2。审计工作树未运行Vitest。
+
+## 194. AU-194 SMS provider 深审
+
+- Direct tests覆盖debug仅test、Aliyun request/单次3秒timeout及provider rejection净化。
+- 缺失Aliyun sign/template与client transport throw没有fixture，见F-0201/P3。审计工作树未运行Vitest。

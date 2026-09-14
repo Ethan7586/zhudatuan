@@ -2086,3 +2086,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | consumers | registration和security OTP共用该adapter，后者当前仅保留compatibility handler | [FACT][E-AU-193-003] |
 
 [FACT][E-AU-193-004] 2 文件、44 行完成深审；resend常量有direct test，发送/记录行为没有direct fixture，见F-0200/P2。
+
+## 199. AU-194 SMS provider 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| provider selection | debug仅在development/test；生产须显式Aliyun sign/template | [FACT][E-AU-194-001] |
+| Aliyun send | approved template/outId，单次、3秒connect/read timeout，无自动重试 | [FACT][E-AU-194-002] |
+| error surface | provider rejection净化code、transport错误归一为`ALIYUN_SMS_UNAVAILABLE` | [FACT][E-AU-194-003] |
+
+[FACT][E-AU-194-004] 2 文件、171 行完成深审；核心debug/send/rejection已有direct test，config/transport边界见F-0201/P3。

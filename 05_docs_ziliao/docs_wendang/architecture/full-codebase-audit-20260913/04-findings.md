@@ -3836,6 +3836,20 @@
 | 验证/回滚 | fixture覆盖provider success/throw、delivery record success/fail、error code不被覆盖及availability；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0201｜SMS provider 配置与传输异常映射没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / SMS provider；P3；高 |
+| 类型 | 测试覆盖缺口、配置错误/上游异常语义 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/smsProvider.ts:39-63,91-104`；现有`smsProvider.test.ts` |
+| 当前/预期 | provider在无Aliyun配置时以稳定`SMS_PROVIDER_NOT_CONFIGURED`拒绝，client throw时映射为`ALIYUN_SMS_UNAVAILABLE`。现有tests覆盖debug、成功request/timeout与provider rejection。预期缺失sign/template和client transport throw均有direct fixture。 |
+| 直接证据 | `smsProvider.test.ts`没有未配置Aliyun `sendVerificationSms`调用，也没有令`sendSmsWithOptions` throw的fixture。 |
+| 调用链/影响 | registration/security OTP → delivery adapter → SMS provider。异常文本/错误码回归将降低故障诊断与前端重试一致性，但不改变现有核心授权或持久化边界。 |
+| 建议方向 | 从修复时最新`zdt-next`补两条adapter fixture；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言两种缺失配置和transport throw产生稳定错误code/message，不泄露provider detail；回滚为revert测试提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

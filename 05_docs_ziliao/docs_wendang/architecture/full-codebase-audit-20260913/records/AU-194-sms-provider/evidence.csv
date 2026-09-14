@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-194-001,src/api/smsProvider.ts,29-42,provider selection,Debug provider is restricted to development/test and production requires explicit Aliyun configuration.
+E-AU-194-002,src/api/smsProvider.ts,43-54,delivery call,Aliyun request uses approved sign/template/outId and a single attempt with 3-second connection/read timeouts.
+E-AU-194-003,src/api/smsProvider.ts,55-63,error mapping,Provider codes are sanitized and non-provider exceptions become stable unavailable errors.
+E-AU-194-004,src/api/smsProvider.test.ts,1-67,tests,Debug isolation successful Aliyun request and rejection mapping are direct-tested; missing config and transport throw are not.
