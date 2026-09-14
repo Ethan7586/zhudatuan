@@ -46,7 +46,7 @@ export class PgSupportRepository implements SupportPort {
   async sla(scope: string, priority: TicketPriority): Promise<SlaPolicy | null> {
     const result = await this.database.query<{ response_seconds: number; resolution_seconds: number }>(`select sla.response_seconds,
       sla.resolution_seconds from organization.unitclosure closure join support.sla sla on sla.scope_id=closure.ancestor_id
-      and sla.priority=$2 where closure.descendant_id=$1 order by closure.depth asc,sla.version desc limit 1`, [scope, priority]);
+      and sla.priority=$2::text where closure.descendant_id=$1::text order by closure.depth asc,sla.version desc limit 1`, [scope, priority]);
     const policy = result.rows[0];
     return policy ? { response: policy.response_seconds, resolution: policy.resolution_seconds } : null;
   }
