@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 13。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 14。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1117,3 +1117,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 454. AU-454 渠道 scope 映射复核
 
 - 外部对象和源记录以 scope 为事实所有权，未关联历史记录 fail-closed；归 GX-0013。累计 G0 60、G1 83、G2 5、G3 0、GX 13；未删除任何文件。
+
+## GX-0014｜客服 case 到 conversation/ticket 的历史切换
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821046000_support_lifecycle.sql`。 |
+| 直接证据 | 迁移从 `support.case` 建立 conversation 并改名 ticket，回填 message/history/assignment/evidence/escalation 的 scope 与会话关系，随后删除旧 case 外键及 ticket 中已迁出的字段。 |
+| 运行边界 | Support API 通过 conversation/ticket 处理建单、消息、附件、分配和关闭；`supportsla`/`supportscan` Worker 处理升级和附件扫描；消息/历史有 append-only 触发器和 scope RLS。 |
+| 可否删除 | 否；承担客户数据、工单历史、授权范围、SLA、审计和恢复责任。 |
+| 二次复核 | 是；必须独立核验每条旧 case 的 conversation/ticket/message/history/evidence 映射、RLS、附件访问、SLA 重排、备份恢复和部署 ledger。 |
+
+## 455. AU-455 客服生命周期复核
+
+- 客服会话、工单、消息、SLA 与扫描任务构成实际运行链；历史结构切换归 GX-0014。累计 G0 60、G1 83、G2 5、G3 0、GX 14；未删除任何文件。
