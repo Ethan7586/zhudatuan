@@ -4403,3 +4403,24 @@
 | 预计修改范围 | 三个模拟 RPC 与其定向数据库/路由并发测试；不得在审计分支修复。 |
 | 验证/回滚 | 并发提交相同 key 与 hash，断言两个请求返回同一响应且仅一组账本/支付事实；回滚为 revert 独立修复提交。 |
 | 独立复核 | **是（P2）**；需重新检查 PostgreSQL `READ COMMITTED` 锁等待后的可见性和三条 RPC 的最终实现。 |
+
+## F-0237｜成员资料写入未以目标成员范围重新授权
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Compatibility 成员运营 / 授权范围 |
+| 类型 | 权限边界、跨商城数据写入 |
+| 严重级别 | **P2** |
+| 置信度 | 高（静态调用链）；真实跨商城请求未验证 |
+| 文件和精确位置 | `commerce-api/src/api/memberOperationsRoutes.ts:81-105`；`commerce-api/src/api/auth.ts:18-36`；`storefront-compatibility/.../20260813010000_member_operations_center.sql:188-213` |
+| 当前行为 | `handleUpdateMemberProfile` 对 `member.update` 调用不传目标资源范围，因而使用当前操作者的 `contextResourceScope`。随后把 URL 中的 `membershipId` 直接交给 RPC；RPC 对目标仅限定 `tenant_id` 与 `enterprise_id`，没有限定 `target.mall_id = p_mall_id`，也没有核对操作人对目标范围的授权。 |
+| 预期行为 | 资源特定写入应先加载目标 membership 的服务器范围并以其调用授权，数据库写入也应拒绝当前商城/授权范围之外的目标。 |
+| 直接证据 | `auth.ts:18-20` 明确要求资源特定路由先加载目标行并把其 scope 传给 `authorize()`；本路由未执行该步骤。`api_update_member_profile` 的目标查询为同租户同企业 membership，而更新用户资料及审计写入均不比较 target mall。 |
+| 调用链/运行入口 | `adminRouter` 的 `/api/v1/admin/member-operations/members/:id` → `handleUpdateMemberProfile` → service-role `api_update_member_profile` → `users` / `memberships` / audit log。 |
+| 用户影响 | 若商城范围管理员取得同一企业其他商城的 membership ID，可能修改该会员显示名、邮箱或部门；部门变更还会递增该成员所有 membership 的授权版本。目标 ID 的实际跨商城可获得性尚未验证。 |
+| 数据/安全影响 | 用户资料、部门归属和审计记录可能在越权范围内被改写；未见本次静态审计证据表明已造成线上事故。 |
+| 根因 | 当前操作人 scope 被误当作目标资源 scope，且数据库包装 RPC 未作对应的目标商城/授权范围校验。 |
+| 建议方向 | 独立复核确认后，从修复时最新 `zdt-next` 建立单一用途修复分支：先加载 target membership 的受信范围并传入授权决策；在 RPC 内增加与目标商城和操作人 scope 一致的防御性校验，并补充跨商城拒绝测试。不得在审计分支修复。 |
+| 预计修改范围 | `memberOperationsRoutes`、受信 target scope lookup/契约、`api_update_member_profile` 与定向授权测试。 |
+| 验证/回滚 | 构造同租户同企业、不同商城的 mall-scoped 管理员和目标；断言 API/RPC 不改写目标，且同范围更新仍成功。回滚为 revert 独立修复提交。 |
+| 独立复核 | **是（P2）**；复核必须重新检查 API 授权 scope 与数据库目标约束，不能只复述本报告。 |
