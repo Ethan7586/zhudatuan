@@ -76,8 +76,13 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.match(prepareWorkflow, /release -- package/);
   assert.match(prepareWorkflow, /release -- publish/);
   assert.equal((prepareWorkflow.match(/packageCache!=='miss'/g) ?? []).length, 1);
-  assert.match(prepareWorkflow, /state-cold-a|run_cold_prepare cold-a/);
+  assert.match(prepareWorkflow, /run_cold_prepare cold-a/);
   assert.match(prepareWorkflow, /run_cold_prepare cold-b/);
+  assert.match(prepareWorkflow, /if ! left_package=/);
+  assert.match(prepareWorkflow, /if ! right_package=/);
+  assert.match(prepareWorkflow, /stopped during plan/);
+  assert.match(prepareWorkflow, /stopped during build/);
+  assert.match(prepareWorkflow, /stopped during package/);
   assert.match(prepareWorkflow, /verify-reproducibility/);
   assert.match(prepareWorkflow, /SHOP_BUILD_COMMIT="\$RELEASE_SHA"/);
   assert.match(prepareWorkflow, /SHOP_BUILD_BRANCH="zdt-next"/);

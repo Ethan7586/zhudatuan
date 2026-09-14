@@ -125,35 +125,68 @@ jobs:
           fi
           mkdir -p .prepare-release/evidence
           run_cold_prepare() {
-            label="$1"
-            state=".prepare-release/state-${label}"
-            evidence=".prepare-release/evidence/${label}"
+            local label="$1"
+            local state=".prepare-release/state-${label}"
+            local evidence=".prepare-release/evidence/${label}"
+            local plan_path
+            local build_path
+            local status
             if [ -e "$state" ]; then
               echo "Cold Prepare state root already exists: $state" >&2
-              exit 1
+              return 1
             fi
-            mkdir -p "$evidence"
+            mkdir -p "$evidence" || return $?
             npm run --silent release -- plan \
               --state-directory "$state" \
               --from "$base" \
               --to "$RELEASE_SHA" \
               --target "$RELEASE_TARGET" \
               --prepare \
-              --format json > "$evidence/plan-envelope.json"
-            plan_path="$(node -e "const r=require('./$evidence/plan-envelope.json');if(!r.ok||!r.result.deployRequired||r.result.targets.length!==1)throw new Error('Prepare plan is not one target');process.stdout.write(r.result.planPath)")"
+              --format json > "$evidence/plan-envelope.json" || {
+                status=$?
+                echo "Cold Prepare ${label} stopped during plan." >&2
+                return "$status"
+              }
+            plan_path="$(node -e "const r=require('./$evidence/plan-envelope.json');if(!r.ok||!r.result.deployRequired||r.result.targets.length!==1)throw new Error('Prepare plan is not one target');process.stdout.write(r.result.planPath)")" || {
+              status=$?
+              echo "Cold Prepare ${label} stopped while validating the plan envelope." >&2
+              return "$status"
+            }
             npm run --silent release -- build \
               --state-directory "$state" \
               --plan "$plan_path" \
-              --format json > "$evidence/build-envelope.json"
-            build_path="$(node -e "const r=require('./$evidence/build-envelope.json');if(!r.ok)throw new Error('Build failed');process.stdout.write(r.result.buildPath)")"
+              --format json > "$evidence/build-envelope.json" || {
+                status=$?
+                echo "Cold Prepare ${label} stopped during build." >&2
+                return "$status"
+              }
+            build_path="$(node -e "const r=require('./$evidence/build-envelope.json');if(!r.ok)throw new Error('Build failed');process.stdout.write(r.result.buildPath)")" || {
+              status=$?
+              echo "Cold Prepare ${label} stopped while validating the build envelope." >&2
+              return "$status"
+            }
             npm run --silent release -- package \
               --state-directory "$state" \
               --build "$build_path" \
-              --format json > "$evidence/package-envelope.json"
-            node -e "const r=require('./$evidence/package-envelope.json');if(!r.ok||r.result.artifacts.length!==1||r.result.artifacts[0].packageCache!=='miss')throw new Error('Prepare package was not a cold cache miss');process.stdout.write(r.result.packagePath)"
+              --format json > "$evidence/package-envelope.json" || {
+                status=$?
+                echo "Cold Prepare ${label} stopped during package." >&2
+                return "$status"
+              }
+            node -e "const r=require('./$evidence/package-envelope.json');if(!r.ok||r.result.artifacts.length!==1||r.result.artifacts[0].packageCache!=='miss')throw new Error('Prepare package was not a cold cache miss');process.stdout.write(r.result.packagePath)" || {
+              status=$?
+              echo "Cold Prepare ${label} stopped while validating the package envelope." >&2
+              return "$status"
+            }
           }
-          left_package="$(run_cold_prepare cold-a)"
-          right_package="$(run_cold_prepare cold-b)"
+          if ! left_package="$(run_cold_prepare cold-a)"; then
+            echo "Cold Prepare stopped after cold-a failed." >&2
+            exit 1
+          fi
+          if ! right_package="$(run_cold_prepare cold-b)"; then
+            echo "Cold Prepare stopped after cold-b failed." >&2
+            exit 1
+          fi
           npm run --silent release -- verify-reproducibility \
             --left-package "$left_package" \
             --right-package "$right_package" \
