@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-014 结束时累计：P0 0、P1 候选 9、P2 37、P3 22、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-015 结束时累计：P0 0、P1 候选 9、P2 37、P3 26、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -1689,3 +1689,100 @@
 
 - [UNKNOWN] 仓外测试是否消费除DatabaseHarness以外的root/browser公共工具。
 - [UNKNOWN] 七个包内测试在安装锁定依赖后的真实结果；本AU未安装依赖。
+
+## F-0070｜MutationQueue 会把成功写入后的观察回调异常改判为写入失败
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/interaction` / Storefront cart sync |
+| 类型 | 成功/失败边界、客户端状态一致性 |
+| 严重级别 | P3 |
+| 置信度 | 高：真实Queue合成探针复现；当前Storefront callback内部容错 |
+| 文件和精确位置 | `packages/interaction/src/KeyedMutationQueue.ts:95-121`；Storefront `context/cartQuantitySync.ts:28-40`、`MallContext.tsx:171-189` |
+| 当前行为 | [FACT][E-AU-015-004] write成功后先把confirmed更新为新值，再调用onCommitted；callback抛错会进入catch，调用onError、丢弃pending并拒绝flush，rollbackValue却是新confirmed。探针得到`COMMIT_CALLBACK_FAIL`和rollback=2 |
+| 预期行为 | 远端写成功与观察/缓存回调失败应有独立语义；观察失败不得触发“远端写失败”回滚链 |
+| 直接证据 | E-AU-015-004、INV-AU-015-001、FM-AU-015-001 |
+| 调用链或运行入口 | Storefront quantity update → queue write API → confirmed → onCommitted/cache → catch/onError UI rollback |
+| 用户影响 | 极端callback异常下，服务端已成功但UI提示同步失败或丢弃后续操作 |
+| 数据影响 | 可能产生服务端数量与客户端提示/缓存不一致；当前cache writer吞持久化异常，实际概率受限 |
+| 安全影响 | 无 |
+| 根因 | write与observer callback位于同一try/catch，且confirmed在observer前更新 |
+| 建议方向 | 独立interaction批次拆分commit结果和observer失败通道并补callback throw测试；不与购物车业务重构混批 |
+| 预计修改范围 | Queue及定向测试，必要时cart adapter错误契约 |
+| 验证方式 | write/onCommitted/onError成功失败矩阵，断言远端调用、rollback值、pending和flush结果 |
+| 回滚方式 | 回退单一Queue提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0071｜ActionCoordinator 的重复请求可以获得错误的Result静态类型
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/interaction` KeyedActionCoordinator |
+| 类型 | 公共类型契约、去重语义 |
+| 严重级别 | P3 |
+| 置信度 | 高：接口类型允许且运行探针证明值类型错配；Auth现行未发现跨类型key |
+| 文件和精确位置 | `packages/interaction/src/KeyedActionCoordinator.ts:13-17,53-61` |
+| 当前行为 | [FACT][E-AU-015-005] Result是每次`start`独立泛型；相同key已有string action时，duplicate可声明number action并得到`Promise<number>`，实际共享首个Promise并解析string |
+| 预期行为 | 同一key去重必须在类型上绑定一致Result，或重复attempt返回unknown/首请求类型，不能无校验cast |
+| 直接证据 | E-AU-015-005、INV-AU-015-002、FM-AU-015-002 |
+| 调用链或运行入口 | Auth action wrapper/仓外caller → coordinator.start(key) → active.promise cast |
+| 用户影响 | 新消费者可能在类型检查通过后按错误类型处理运行值 |
+| 数据影响 | 当前无直接数据影响证据 |
+| 安全影响 | 无 |
+| 根因 | coordinator只以Key参数化，Result留在方法级，active promise存为unknown后无条件cast |
+| 建议方向 | 独立类型API批次把key与result绑定或收窄duplicate返回；补编译期与运行测试 |
+| 预计修改范围 | Coordinator类型/实现、React hook与消费者typecheck |
+| 验证方式 | 同key异Result必须编译失败或显式unknown；同Result去重/取消行为不回归 |
+| 回滚方式 | 回退类型API单一提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0072｜FeedbackStore 的只读Snapshot可在无通知时被外部改写
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/interaction` FeedbackStore |
+| 类型 | 外部store不变量、可变引用 |
+| 严重级别 | P3 |
+| 置信度 | 高：真实store探针复现；现行Storefront传入fresh literal |
+| 文件和精确位置 | `packages/interaction/src/FeedbackStore.ts:11-16,43-62`；Storefront `context/useToasts.ts:7-18` |
+| 当前行为 | [FACT][E-AU-015-006] publish原样保存message，getSnapshot返回含同一对象的数组。调用者随后改原对象，snapshot identity不变、内容变化且listener不被通知 |
+| 预期行为 | `useSyncExternalStore` snapshot应只在受控publish/remove时改变，并以新identity通知订阅者 |
+| 直接证据 | E-AU-015-006、INV-AU-015-003、FM-AU-015-003 |
+| 调用链或运行入口 | Storefront showToast/仓外caller → publish → snapshot → React subscription |
+| 用户影响 | 外部复用可变对象时UI可能不刷新或读取到无事件的变化 |
+| 数据影响 | 只影响内存反馈状态 |
+| 安全影响 | 无 |
+| 根因 | TypeScript readonly只在编译期生效，store没有复制/冻结message |
+| 建议方向 | 独立store契约批次定义复制/冻结或明确所有权，并补mutation与listener测试 |
+| 预计修改范围 | FeedbackStore及直接测试 |
+| 验证方式 | publish后改原输入不改变snapshot；每个可见变化有新identity和一次通知 |
+| 回滚方式 | 回退单一store提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0073｜ResourceCache dispose 后仍可从Storage重新持有状态
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/interaction` ResourceCache |
+| 类型 | 生命周期、资源释放 |
+| 严重级别 | P3 |
+| 置信度 | 高：真实cache探针复现；当前Auth模块级cache不调用dispose |
+| 文件和精确位置 | `packages/interaction/src/ResourceCache.ts:55-75,117-123` |
+| 当前行为 | [FACT][E-AU-015-007] dispose清空memory和activeLoads并设disposed；read不检查disposed，之后可从storage解码值、重新写入memory并返回。探针dispose后仍返回7 |
+| 预期行为 | 已dispose对象不应重新持有缓存状态；read应有明确拒绝或只读不缓存契约 |
+| 直接证据 | E-AU-015-007、INV-AU-015-004、FM-AU-015-004 |
+| 调用链或运行入口 | Auth/仓外cache owner → dispose → late read(storage) → memory.set |
+| 用户影响 | 生命周期竞争下可能读取陈旧会话/资源缓存或造成释放后内存再增长 |
+| 数据影响 | 仅缓存投影；当前Auth cache未dispose，无现行可达证据 |
+| 安全影响 | 若未来用于身份缓存会有陈旧投影风险；当前未证明 |
+| 根因 | disposed guard只覆盖write/revalidate，不覆盖read/remove |
+| 建议方向 | 独立cache生命周期批次统一dispose后全部方法契约并补late-call矩阵 |
+| 预计修改范围 | ResourceCache及直接测试、消费者typecheck |
+| 验证方式 | dispose后read/write/revalidate/remove一致；active loader忽略abort时不重填 |
+| 回滚方式 | 回退cache单一提交 |
+| 是否需要独立复核 | 否 |
+
+## 15. AU-015 新增未定级事项
+
+- [UNKNOWN] 仓外消费者是否依赖callback异常、可变snapshot或dispose后read行为。
+- [UNKNOWN] 21个包内测试在锁定依赖安装后的真实结果；本AU未安装依赖。

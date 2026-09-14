@@ -140,3 +140,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 双异常探针和异步request mutation分别命中F-0068/F-0069，现有测试只覆盖主干，不覆盖失败组合和captured/responder一致性。
 - 唯一包外源码消费者是条件运行的真实PostgreSQL Repository test；其reset逐项吞掉cleanup错误，降低F-0068当前可达性但不修正公共Harness语义。
 - 正式test/typecheck因缺vitest/tsc退出127；未连接测试数据库、未安装依赖。
+
+## 14. AU-015 Interaction 测试可信度
+
+- 5个测试文件、21个用例全部调用真实实现：Feedback 3、Action 4、Mutation 6、Preload 4、Resource 4。
+- 对快速连击、跨key并发、late response、cancel、失败重试、storage malformed、timer dispose的覆盖质量较高，值得保留。
+- 缺口集中在观察callback抛错、同key不同Result类型、输入message外部mutation、dispose后read和React StrictMode/lazy失败；合成探针形成F-0070–F-0073。
+- 正式test/typecheck因缺vitest/tsc退出127且未加载源码；未安装依赖。

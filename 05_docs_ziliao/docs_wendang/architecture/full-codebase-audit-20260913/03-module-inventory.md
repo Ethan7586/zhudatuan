@@ -309,3 +309,16 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Browser harness | axe/MSW/Query/React/Router/User组合 | browser subpath | 仅包内Browser.test | 2例 | G1 DC-0019 |
 
 [FACT][E-AU-014-002] 本单元深入审阅20文件、403行；全部为人工维护，无生产进程、数据库所有权或发布单元。
+
+## 21. AU-015 Interaction 模块清单
+
+| 子模块 | 职责 | 真实消费者 | 测试 | 当前问题 |
+| --- | --- | --- | --- | --- |
+| FeedbackStore/React hook | channel反馈、timer、订阅 | Storefront toasts | 3例 | 可变snapshot F-0072 |
+| KeyedActionCoordinator | action去重、revision、abort | Auth identity actions | 4例 | Result类型未绑定key F-0071 |
+| KeyedMutationQueue | 按资源串行、跨资源并行、rollback | Storefront cart quantity | 6例+consumer 5例 | observer异常改判F-0070 |
+| PreloadRegistry | import去重、失败重试、schedule | Console modules、Storefront pages | 4例 | 未发现独立问题 |
+| ResourceCache | memory/storage/revalidation | Auth session、Storefront cart helpers | 4例 | dispose后read F-0073 |
+| React adapter | lazyNamed、两个hooks、StrictMode延迟dispose | Auth/Storefront | 无直接测试 | 测试缺口 |
+
+[FACT][E-AU-015-002/003] 14文件、971行全部深入审阅；所有核心运行导出都有固定仓库生产消费者，无删除候选。

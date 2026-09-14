@@ -173,3 +173,9 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - `@shop/testing`是private开发/测试依赖，无生产target、端口、进程或制品；正式测试检查还会拒绝生产源码import该包。
 - Commerce package把它列为依赖，但固定源码只在Repository contract测试中import DatabaseHarness；其余root/browser工具无包外源码caller。
 - 本AU未连接测试数据库、build、生成制品、推送、合并或部署。
+
+## 18. AU-015 Interaction 发布边界
+
+- `@shop/interaction`无独立制品、进程、端口或数据表；随Auth、Console和Storefront前端bundle发布。
+- 所有核心导出均有生产消费者，变更影响至少三个前端，后续修复必须按Queue、Action、Feedback、Cache分成单一小批次。
+- 本AU未build、打开页面、推送、合并或部署。

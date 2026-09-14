@@ -1,0 +1,7 @@
+"编号","消费者","能力","运行单元","状态","风险"
+"CONS-AU-015-001","Auth useIdentityActions","KeyedActionCoordinator hook","Auth Web","活跃","F-0071缓解：key约定稳定"
+"CONS-AU-015-002","Auth canonicalIdentity","ResourceCache","Auth Web","活跃","不调用dispose"
+"CONS-AU-015-003","ConsoleModulePreload","PreloadRegistry","Console","活跃","失败有telemetry"
+"CONS-AU-015-004","Storefront page loaders/frame","preloadOnce/lazyNamed","Storefront","活跃","动态import"
+"CONS-AU-015-005","Storefront cart","MutationQueue/read-write storage","Storefront","活跃","F-0070；callback持久化异常已吞"
+"CONS-AU-015-006","Storefront toasts","FeedbackStore hook","Storefront","活跃","F-0072；当前传fresh literal"
