@@ -2365,3 +2365,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | missing failure coverage | connection/response timeout、upstream abort和redirect error没有direct fixture | [FACT][E-AU-223-003] |
 
 [FACT][E-AU-223-004] 1 文件、32 行完成深审；HttpClient实现在AU-005审过，本批补齐测试可信度，关键失败边界缺口见F-0215/P2。
+
+## 229. AU-224 CSV parser 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| decoding/tokenization | fatal UTF-8 decode、BOM移除、quoted/double quote、comma/CRLF行解析 | [FACT][E-AU-224-001] |
+| schema validation | 限制row count、合法唯一header与每行column count，并trim空行/单元格 | [FACT][E-AU-224-002] |
+| consumers | ImportFile批量导入与Finance ReconcileStatement均复用解析器 | [FACT][E-AU-224-003] |
+
+[FACT][E-AU-224-004] 1 文件、27 行完成深审；高价值输入解析无direct fixture，测试缺口见F-0216/P2。

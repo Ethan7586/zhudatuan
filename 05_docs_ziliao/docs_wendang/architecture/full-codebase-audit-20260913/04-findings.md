@@ -4046,6 +4046,20 @@
 | 验证/回滚 | 断言每种错误码、signal状态和read/write retry次数；回滚为revert测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0216｜共享 CSV parser 没有直接格式与错误边界测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation Csv；P2；高 |
+| 类型 | 测试覆盖缺口、导入与财务文件解析 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/infrastructure/Csv.ts:1-27` |
+| 当前/预期 | 解析器承担fatal UTF-8、BOM、quoted field、CRLF、row limit、header与column-count错误语义。预期正常与每种格式失败有direct fixture。 |
+| 直接证据 | 未找到`parseCsv`、`CSV_ROW_LIMIT_EXCEEDED`、`CSV_QUOTE_UNTERMINATED`、`CSV_HEADER_INVALID`或`CSV_COLUMN_COUNT_INVALID`的测试断言。 |
+| 调用链/影响 | ObjectStore import file → BatchImportProcessor；Finance ReconcileStatement → parseCsv。格式回归可能影响批量导入或对账解析并只在提交文件时暴露；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试批，覆盖UTF-8/BOM/CRLF、quoted/escaped quote、empty rows、row limit、unterminated quote、invalid/duplicate header及column mismatch；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言解析records及每个稳定错误码；回滚为revert测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

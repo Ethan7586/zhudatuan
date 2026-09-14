@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-223 已完成。AU-223 完成 Commerce HttpClient test audit。覆盖总账按当前文件级清单重算：深入审阅1,711文件/121,464行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,143文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-224 已完成。AU-224 完成 Commerce CSV parser audit。覆盖总账按当前文件级清单重算：深入审阅1,712文件/121,491行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,142文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1773,3 +1773,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Commerce HttpClient direct test。
 
 执行结果：fixture覆盖safe read transport retry、unsafe write不重试、business-key write的204 body保持；与Executor重试模式接线一致。HttpClient实际还区分connection/response timeout、外部deadline取消及redirect error，但未被direct fixture覆盖，形成F-0215/P2；无P0/P1新问题。
+
+## 226. AU-224 连续审计点
+
+审阅 Commerce CSV parser。
+
+执行结果：parseCsv使用fatal UTF-8、去BOM、支持quoted/double quote/CRLF、严格header、列数与row limit；ImportFile和财务对账实际消费。没有parseCsv direct fixture验证正常quoted/BOM/CRLF及malformed/limit/header/column错误，形成F-0216/P2；无P0/P1新问题。

@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-224-001,src/foundation/infrastructure/Csv.ts,1-17,parse semantics,Fatal UTF-8 decoding BOM removal quoted/double-quote handling and CRLF normalization form the parser state machine.
+E-AU-224-002,src/foundation/infrastructure/Csv.ts,18-27,validation,Row limit unterminated quote header schema and column count fail with stable error codes.
+E-AU-224-003,src/foundation/infrastructure/ImportFile.ts;src/modules/finance/03_application_yingyong/command/ReconcileStatement.ts,1-20;1-25,production consumers,Import files and finance reconciliation both invoke parseCsv.
+E-AU-224-004,src/foundation/infrastructure/Csv.ts,1-27,test gap,No direct parser fixture or CSV error-code assertion found.

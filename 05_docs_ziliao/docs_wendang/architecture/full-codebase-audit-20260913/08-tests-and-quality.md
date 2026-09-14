@@ -709,3 +709,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct fixture覆盖read transport retry、unsafe write不重试与204 response handling。
 - 不覆盖connection/response timeout、external abort或redirect error，见F-0215/P2。审计工作树未运行Vitest。
+
+## 224. AU-224 CSV parser 深审
+
+- 未找到parseCsv direct fixture；下游导入/财务测试不能替代通用CSV格式与错误码契约。
+- 见F-0216/P2。审计工作树未运行Vitest。
