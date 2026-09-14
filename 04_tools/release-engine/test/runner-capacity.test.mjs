@@ -20,12 +20,14 @@ test('two build slots are isolated and share one bounded host budget', async () 
   assert.match(policy, /CPUQuota=350%/);
   assert.match(policy, /MemoryMax=6800M/);
   assert.match(policy, /\/run\/lock\/zdt-build/);
+  assert.match(policy, /heavy\.lock 0660 root zdt-builders/);
   assert.match(policy, /SupplementaryGroups=zdt-builders/);
   assert.match(policy, /systemctl kill --kill-who=all --signal=SIGTERM/);
   assert.doesNotMatch(policy, /systemctl restart/);
   assert.match(fleet, /aliyun-staging-zdt-build-2/);
   assert.match(smoke, /zdt-aliyun-build-1/);
   assert.match(smoke, /zdt-aliyun-build-2/);
-  assert.equal((smoke.match(/test -w \/run\/lock\/zdt-build/g) ?? []).length, 2);
+  assert.equal((smoke.match(/test -w \/run\/lock\/zdt-build$/gm) ?? []).length, 2);
+  assert.equal((smoke.match(/test -w \/run\/lock\/zdt-build\/heavy\.lock/g) ?? []).length, 2);
   assert.doesNotMatch(smoke, /secrets\./);
 });

@@ -18,6 +18,7 @@ jobs:
           case "$GITHUB_WORKSPACE" in /opt/actions-runner-build/_work/*) ;; *) exit 1 ;; esac
           test ! -r /opt/actions-runner-build-2/.runner
           test -w /run/lock/zdt-build
+          test -w /run/lock/zdt-build/heavy.lock
           test "$(/opt/actions-runner-build/_work/_tool/node/22.22.0/x64/bin/node --version)" = v22.22.0
   build-2:
     runs-on: [self-hosted, Linux, X64, zdt-aliyun-build, zdt-aliyun-build-2]
@@ -30,4 +31,5 @@ jobs:
           case "$GITHUB_WORKSPACE" in /opt/actions-runner-build-2/_work/*) ;; *) exit 1 ;; esac
           test ! -r /opt/actions-runner-build/.runner
           test -w /run/lock/zdt-build
+          test -w /run/lock/zdt-build/heavy.lock
           test "$(/opt/actions-runner-build-2/_work/_tool/node/22.22.0/x64/bin/node --version)" = v22.22.0

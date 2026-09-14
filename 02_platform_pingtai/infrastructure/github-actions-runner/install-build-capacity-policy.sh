@@ -19,7 +19,11 @@ fi
 getent group zdt-builders >/dev/null || groupadd --system zdt-builders
 for user in zdt-build zdt-build-2; do usermod -a -G zdt-builders "$user"; done
 install -d -o root -g zdt-builders -m 0770 /run/lock/zdt-build
-printf '%s\n' 'd /run/lock/zdt-build 0770 root zdt-builders -' > /etc/tmpfiles.d/zdt-build-lock.conf
+install -o root -g zdt-builders -m 0660 /dev/null /run/lock/zdt-build/heavy.lock
+printf '%s\n' \
+  'd /run/lock/zdt-build 0770 root zdt-builders -' \
+  'f /run/lock/zdt-build/heavy.lock 0660 root zdt-builders -' \
+  > /etc/tmpfiles.d/zdt-build-lock.conf
 printf '%s\n' '[Slice]' 'CPUQuota=350%' 'MemoryHigh=6G' 'MemoryMax=6800M' 'TasksMax=3072' \
   > /etc/systemd/system/zdt-build.slice
 
