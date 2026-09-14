@@ -618,3 +618,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 新增DC-0044/G1；该三项转发符号未见仓内生产/测试直接使用，需先核实外部兼容路径。
 - 累计G0 2、G1 37、G2 2、G3 0、GX 5；未删除任何文件。
+
+## DC-0045｜Wenxuan vendor adapter 转发导出零caller
+
+| 分类/对象 | G1；`01_core_hexin/extensions/vendors/wenxuan/Signer.ts`、`RatePolicy.ts`、`CircuitPolicy.ts` |
+| --- | --- |
+| 证据 | 固定仓内检索到该三项零直接 caller；`index.ts` 仅作包级导出。 |
+| 可否删除 | 否；package 公共出口与潜在外部兼容路径未排除，且该三项承接 vendorcore 到运行时导出的一致性。 |
+| 二次复核 | G1不强制；拟删除前需确认包外消费者与兼容声明。 |
+
+## 37. AU-038 Wenxuan vendor候选复核
+
+- 新增DC-0045/G1；该三项转发符号未见仓内生产/测试直接使用，需先核实外部兼容路径。
+- 累计G0 2、G1 38、G2 2、G3 0、GX 5；未删除任何文件。

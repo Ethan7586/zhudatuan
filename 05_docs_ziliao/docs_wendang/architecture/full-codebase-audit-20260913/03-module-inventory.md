@@ -592,3 +592,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | package/配置 | 依赖、tsconfig 与脚本边界 | [FACT][E-AU-001-007] |
 
 [FACT][E-AU-037-001] 9文件45行人工关键文件/全部深度审阅；与 directcharge/movie provider 实例链路已核验映射。
+
+## 44. AU-038 Wenxuan Vendor Adapter 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Auth/Client | HMAC 凭据构造与 `VendorClient` 工厂 | F-0136 |
+| Signer/RatePolicy/CircuitPolicy | 对 `vendorcore` 通用能力的包级转发导出 | DC-0045 |
+| tests | vendor 认证工厂与签名闭合 | F-0136 |
+| package/配置 | 依赖、tsconfig 与脚本边界 | [FACT][E-AU-001-007] |
+
+[FACT][E-AU-038-001] 9文件45行人工关键文件/全部深度审阅；与 `book` provider 实例链路已核验映射。

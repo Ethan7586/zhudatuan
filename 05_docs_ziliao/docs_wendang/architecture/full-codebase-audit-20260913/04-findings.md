@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-037 结束时累计：P0 0、P1 候选 19、P2 60、P3 54、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-038 结束时累计：P0 0、P1 候选 19、P2 60、P3 55、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2975,6 +2975,17 @@
 | 验证/回滚 | 补充字段级断言、工厂闭合测试（catalog/issue/tracking）及 secrets 管道验签分支；回退只减小测试提交。 |
 | 独立复核 | 否 |
 
+## F-0136｜Wenxuan vendor 认证测试覆盖不足
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Wenxuan vendor adapter；P3；高 |
+| 位置 | `01_core_hexin/extensions/vendors/wenxuan/tests/Auth.test.ts:1-11` |
+| 当前/预期 | 测试仍仅覆盖“空输入会抛错”，未覆盖 `keyId` 与 `secret` 的独立错误码路径，也未覆盖 `createWenxuanClient` 与 `book` provider 调用闭合。 |
+| 影响 | provider 认证策略或 vendor 适配器回归可能只在 runtime/线上调用时暴露，延迟发现。 |
+| 验证/回滚 | 扩展测试为字段级错误码、`createWenxuanClient` 工厂输出与至少一条 `book` 操作（如 `catalog/order`/`statement`）的端到端映射验证；回滚减小测试提交。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
@@ -3006,3 +3017,7 @@
 ## 37. AU-037 新增未定级事项
 
 - [UNKNOWN] Wanlian vendor 转发导出是否存在外部兼容消费者；未核验时`DC-0044`仅为 G1 候选不等于立即删。
+
+## 38. AU-038 新增未定级事项
+
+- [UNKNOWN] Wenxuan vendor 是否存在外部兼容消费路径；未核验时`DC-0045`仍是保守 G1 候选，不等于立即删。
