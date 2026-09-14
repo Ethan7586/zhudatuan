@@ -1,0 +1,8 @@
+"编号","位置","证据","结论"
+"E-AU-051-001","bootstrap/{ConsoleSupport,IdentityRegistrationApi,CatalogOperatorApi,PurchaseApi,PaymentWebhookApi}Runtime.ts","均实例化 RecordAudit/PgAuditRepository 并绑定 AUDIT_SINK","审计 sink 有多个真实运行时消费者"
+"E-AU-051-002","modules/audit/03_application_yingyong/command/RecordAudit.ts:10-20;04_adapters.../PgAuditRepository.ts:10-38","scope advisory lock 后读取前一 hash，再写 command/access hash","同 scope 的正常链写入有串行化边界"
+"E-AU-051-003","modules/audit/02_domain_yewu/{model/AuditRecord,policy/RedactionPolicy}.ts","稳定 canonical hash 与敏感字段最小化/深度/长度上限","记录完整性与字段脱敏实现存在"
+"E-AU-051-004","migrations/20260821050000_audit_lifecycle.sql:65-107","不可变 trigger 仅允许受控归档删除；插入 auditarchive bootstrap job","归档初始触发与不可变约束均由迁移建立"
+"E-AU-051-005","modules/audit/05_interface_jieru/job/AuditArchiveJob.ts:21-74;PgAuditRepository.ts:57-104","对象验证后才事务写 archive reference/删源行，重试可恢复确定性对象","归档正常、失败和恢复链已核对"
+"E-AU-051-006","apps/console/src/feature/access/{AccessAuditQuery,RoleEditor}.tsx","权限历史在 access feature 通过 audit.records.read 获取","无独立审计页面，不等于无生产消费者"
+"T-AU-051-001","npm --workspace @shop/commerce run test（已在 AU-049 确认入口）","Vitest command not found；本 AU 未重复运行","未验证；未安装依赖"

@@ -92,6 +92,12 @@ AU-002 已结构性核对全部 manifest、静态/动态可达性以及路由装
 | --- | --- | --- | --- | --- |
 | 通知模板、公告、成员偏好、端点与事件投递 | Console 模板/公告读页；notification HTTP 操作；notification/identitynotification Jobs | 上游为业务 outbox/inbox 事件；下游为 KMS、SMS、邮件、微信和站内渠道 | `notification.template/preference/endpoint/dispatch/attempt/announcement` | Commerce API + notification Worker；由 Job catalog 注册 | 正常队列、偏好与回执链明确；generic dispatch 与 runtime.job 的恢复状态机未闭合（F-0143，P1 候选，AU-050 独立复核） |
 
+### AU-051｜Audit 记录与归档边界（2026-09-14）
+
+| 模块职责 | 对外入口 | 上游/下游 | 数据所有权 | 运行/发布单元 | 当前边界结论 |
+| --- | --- | --- | --- | --- | --- |
+| command/access 审计哈希链、脱敏、读取与冷热归档 | `audit.records.read`；AUDIT_SINK；auditarchive job | 上游为多个 API runtime；下游为 PostgreSQL audit schema、KMS、对象存储 | `audit.record/accessrecord/archiveref/retention` | Commerce API runtimes + maintenance Worker | 链写入、不可变触发器和先存后删归档闭合；归档端到端未在本地运行验证 |
+
 ## 5. Workspace 库存
 
 [FACT][E-AU-001-002][E-AU-001-003] 43 个 workspace 分组如下：
