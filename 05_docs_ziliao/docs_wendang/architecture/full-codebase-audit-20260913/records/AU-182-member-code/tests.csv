@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/memberCodeRoutes.test.ts,opaque QR payload credential hash issue verifier permission hash and revoke input,not run: audit worktree has no Vitest dependencies

@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-182-001,src/api/memberCodeRoutes.ts,28-53,issue,Random 32-byte credential is returned only in payload/QR while server receives its SHA-256 and current membership scope/version.
+E-AU-182-002,src/api/memberCodeRoutes.ts,55-69,revoke,Only valid UUID is accepted and revocation binds current membership and user.
+E-AU-182-003,src/api/memberCodeRoutes.ts,71-88,verify,Dedicated permission precedes payload parse and one-time verifier receives only credential hash plus actor identities.
+E-AU-182-004,src/api/memberCodeRoutes.test.ts,1-108,tests,Direct fixtures prove credential non-persistence hash use verifier permission and invalid revoke rejection.

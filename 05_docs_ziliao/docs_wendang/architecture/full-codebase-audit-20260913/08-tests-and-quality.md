@@ -500,3 +500,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct test只覆盖GET qualified server snapshot与canonical media URL，不测试cart mutation。
 - 应补permission、PUT valid/invalid quantity、membership/user scope RPC、DELETE found/not-found及body-too-large。见F-0193/P2；审计工作树未运行Vitest。
+
+## 182. AU-182 Member code 深审
+
+- Direct tests验证签发RPC只收hash而非credential、payload/QR结构、核验权限/credential hash以及撤销UUID拒绝。
+- 尚未运行suite；one-time/replay的数据库事务语义留待migration/RPC专项交叉审计。

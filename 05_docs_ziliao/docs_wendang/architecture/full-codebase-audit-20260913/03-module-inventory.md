@@ -1964,3 +1964,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | delete | DELETE only、permission、server scope、not-found mapping | [FACT][E-AU-181-003] |
 
 [FACT][E-AU-181-004] 2 文件、131 行完成深审；compat storefront router注册此链，当前Storefront Worker不加载其authenticated router。
+
+## 187. AU-182 Member code 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| issue | random 256-bit credential、QR matrix、hash-only issue RPC及current authz version | [FACT][E-AU-182-001] |
+| revoke | POST JSON UUID、current membership/user binding | [FACT][E-AU-182-002] |
+| verify | dedicated memberCodeVerify authorization、payload parse与hash-only one-time verify RPC | [FACT][E-AU-182-003] |
+| tests | opaque credential/hash/no permission/invalid revoke direct fixtures | [FACT][E-AU-182-004] |
+
+[FACT][E-AU-182-005] 2 文件、226 行完成深审；storefront/admin compatibility routers分别注册issue/revoke和verify。
