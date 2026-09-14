@@ -393,6 +393,20 @@
 | 验证/回滚 | 断言secret读取集合、object probe、compatibility顺序、pool end次数和container token；回滚为revert测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0226｜Identity node runtime loader 的来源与一致性拒绝路径没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / bootstrap IdentityNodeManifestRuntime；P2；高 |
+| 类型 | 测试覆盖缺口、身份节点运行定义/启动一致性 |
+| 位置 | `01_core_hexin/services/commerce/src/bootstrap/IdentityNodeManifestRuntime.ts:45-63,175-187`；`.../IdentityNodeManifestRuntime.test.ts:11-61` |
+| 当前/预期 | loader可读取可选runtime文件或使用生产registry，并要求唯一node与manifest的profile、归属和域名一致。预期固定schema、unknown/duplicate node及每类manifest/registry drift有direct fixture。 |
+| 直接证据 | fixture只导入projection和database assertion；未导入/调用`loadIdentityNodeRuntimeDefinition`，也未构造runtime file或触发`IDENTITY_NODE_RUNTIME_INVALID`、`...NODE_UNKNOWN`、`...MANIFEST_MISMATCH`。 |
+| 调用链/影响 | IdentityRegistrationApiMain → createIdentityRegistrationApiRuntime → loadIdentityNodeRuntimeDefinition → scoped database parity。运行定义变更或部署环境文件drift可能令身份API错误拒绝、错误投影realm/target或在启动期失败；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立loader fixture批，使用临时受控JSON覆盖schema/parse、唯一性、每个profile/ownership/host mismatch及默认生产registry选择；回滚为revert测试提交。 |
+| 验证/回滚 | 断言成功node和稳定错误码，并检查不合法文件无法到达数据库检查；回滚为revert提交。 |
+| 独立复核 | 否；P2。 |
+
 ## F-0014｜Catalog API Ready 未探测已启动的 HTTP 进程
 
 | 字段 | 记录 |

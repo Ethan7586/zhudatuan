@@ -2590,3 +2590,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | process handoff | IdentityRegistrationApiMain选择core/full identity modules、bootstrap API并只监听loopback | [FACT][E-AU-246-005] |
 
 [FACT][E-AU-246-007] 2 文件、348 行完成深审；factory主流程没有direct fixture，见F-0225/P2。
+
+## 252. AU-247 Identity node manifest runtime 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| runtime registry source | 读取受控runtime文件或生产registry，按manifest node选择唯一identity定义 | [FACT][E-AU-247-001] |
+| projection and identity match | 将manifest/node映射为realm/entry/target，并拒绝profile、ownership或host不一致 | [FACT][E-AU-247-002,004] |
+| database parity | 并行读取三张identity表，按全量或realm范围作完整排序投影比较 | [FACT][E-AU-247-003] |
+| API startup consumer | 注册API在启动前加载定义并验证scoped数据库投影 | [FACT][E-AU-247-006] |
+
+[FACT][E-AU-247-007] 2 文件、282 行完成深审；loader关键拒绝路径无direct fixture，见F-0226/P2。

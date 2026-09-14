@@ -824,3 +824,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct fixture覆盖节点manifest的origin/secret binding及registration compatibility主要拒绝状态；entrypoint fixture以手工binding验证模块/路由构成。
 - 没有fixture执行runtime factory的secret读取、probe失败pool关闭、configure binding、close或WeChat enabled/disabled分支；见F-0225/P2。审计工作树未运行Vitest。
+
+## 247. AU-247 Identity node manifest runtime 深审
+
+- Fixture直接覆盖投影database parity、scoped realm查询和L0完整target集合。
+- 可选runtime文件、schema拒绝、node唯一性及manifest/registry不匹配的loader路径没有direct fixture；见F-0226/P2。审计工作树未运行Vitest。

@@ -1,0 +1,7 @@
+id,files,location,kind,observation
+E-AU-247-001,src/bootstrap/IdentityNodeManifestRuntime.ts,45-63,runtime source,Optional runtime file requires identity-node-runtime v1 then parses its registry; absent path uses production registry and requires exactly one matching node.
+E-AU-247-002,src/bootstrap/IdentityNodeManifestRuntime.ts,65-145,projection,Expected realm entry and target database facts derive from manifest/node with ordered frozen output; scoped form retains all L0 projected targets.
+E-AU-247-003,src/bootstrap/IdentityNodeManifestRuntime.ts,147-172,database drift gate,Three parallel scoped/global queries are compared as complete projected arrays and any difference raises a stable drift code.
+E-AU-247-004,src/bootstrap/IdentityNodeManifestRuntime.ts,175-187,identity consistency,Manifest node profile ownership and identity/api/console/storefront hosts must equal the selected registry node.
+E-AU-247-005,src/bootstrap/IdentityNodeManifestRuntime.test.ts,11-61,test evidence,Fixture covers projected database acceptance target drift scoped filtering and L0 target preservation but never invokes runtime loader.
+E-AU-247-006,src/bootstrap/IdentityRegistrationApiRuntime.ts,78;211,production consumer,Identity registration runtime loads this definition and checks scoped database parity before API bootstrap.
