@@ -4526,3 +4526,22 @@
 | 验证方式 | 隔离数据库按执行顺序验证 690→800，分别探测 member/self/organization/child/unrelated、operator/partner 路径，并核对实际 current definition。 |
 | 回滚方式 | 回退单一已验证的 authorization migration 或恢复前一函数定义；须先确认当前 schema head。 |
 | 是否需要独立复核 | 否（P2）；若查到线上窗口存在实际成员操作错误，复核影响范围与严重度。 |
+
+## F-0243｜财务动作凭证签发后未接入命令事务消费
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Identity step-up / AccessPipeline / Finance 与 Invoice 高风险操作 |
+| 类型 | 身份与权限、重放防护、并发正确性 |
+| 严重级别 | **P1 候选**；须完成独立复核后定级。 |
+| 置信度 | 高（固定基线源码和迁移定义直接核验）；正式数据库 ledger、service-role 调用者及线上可达性未验证。 |
+| 文件和精确位置 | `database/supabase/migrations/20260828092000_finance_security_boundaries.sql:218-361,365-375`；`commerce/src/modules/identity/05_interface_jieru/http/MobileWechatOperations.ts:205-235`；`commerce/src/foundation/security/AccessPipeline.ts:90-96`；`commerce/src/foundation/security/ActionProof.ts:21-55`。 |
+| 当前行为 | step-up 会签发绑定到 session、操作、资源、幂等键、版本和 request hash 的 proof；但 AccessPipeline 仅调用 `validate` 做 bearer 字符串格式校验。全仓运行源码与迁移中没有实际调用 `access.consume_action_proof` 或 `finance.assert_expected_version`，只有函数定义、grant 和 helper 单测。 |
+| 预期行为 | 每项受该机制保护的 Finance/Invoice 写入应在同一命令事务内、写入前原子消费 proof 并锁定/比较目标版本；伪造、过期、重放、跨 session/resource/request 的 proof 必须被数据库拒绝。 |
+| 直接证据 | [FACT][E-AU-488-001] `issue_action_proof`/`consume_action_proof` 和 `assert_expected_version` 定义了完整绑定与 single-use 条件；[FACT][E-AU-488-002] Mobile step-up 返回 proof；[FACT][E-AU-488-003] Pipeline 只调用格式校验；[FACT][E-AU-488-004] 固定基线对两函数的运行调用检索结果为零，`ActionProof.ts` 的消费 helper 仅被自身单测调用。 |
+| 调用链或运行入口 | 客户端 step-up → `identity.stepup.complete` → `access.issue_action_proof` → 后续 Finance/Invoice HTTP operation → AccessPipeline → 命令；设计中的 `consume_action_proof`/`assert_expected_version` 未出现在该实际命令链。 |
+| 用户/数据/安全影响 | [INFERENCE] 若相关高风险命令可到达，攻击者或错误客户端可提交任意格式合法但未签发的 bearer，或重放已签发 bearer；该机制设计要保护的一次性授权、请求绑定和版本冲突防护不生效，可能扩大未经预期 step-up/确认的财务或发票状态变更风险。正常权限、scope 和 capability 检查仍在 Pipeline 中，实际线上影响未确认。 |
+| 根因 | proof 被建模为 API 前置 header 校验，数据库消费/版本锁定 helper 没有被编排进命令 transaction；单元测试只验证 helper 自身的 SQL 参数。 |
+| 建议方向 | 在独立修复分支先确定所有受 `requiresFinancialActionProof` 约束的命令，再让每条命令的同一 transaction 在 mutation 前消费 proof 并执行版本断言；不得只加强前端或格式校验。 |
+| 验证/回滚 | 隔离数据库覆盖有效、伪造、过期、重复、跨 session/resource/request、权限撤销和版本冲突；确认失败不写业务状态/事件。回滚为撤回单一修复提交并保留可读审计记录。 |
+| 是否需要独立复核 | 是；P1 候选必须重追 API、handler、transaction、DB grant/RLS、迁移 ledger 与 service-role 调用者。 |

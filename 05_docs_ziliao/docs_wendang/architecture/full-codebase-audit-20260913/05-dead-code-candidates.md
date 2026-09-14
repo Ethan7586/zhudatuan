@@ -1107,6 +1107,10 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - `20260828091000_finance_reconciliation_integrity.sql` 以账单来源触发器、金额/唯一性/状态约束和 fail-closed 存量检查收紧 GX-0012 的对账事实边界；已注册的 reconciliation Worker 仍实际依赖该模型，不能作为删除或单独重放候选。未发现新增 P0–P3；历史数据、真实 ledger 与恢复演练待独立复核。
 
+## 488. AU-488 财务安全边界复核
+
+- `20260828092000_finance_security_boundaries.sql` 继续属于 GX-0012：它绑定高风险动作凭证、账本/事件保留、RLS 与受控写权限，不能删除或单独重放。F-0243 记录了当前 action proof 消费/版本锁定未接入命令链的 P1 候选；此事实不构成删除依据。
+
 ## GX-0013｜渠道外部对象 scope 映射切换
 
 | 字段 | 记录 |
