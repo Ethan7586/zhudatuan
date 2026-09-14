@@ -910,3 +910,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 仅 manifest 静态声明 | F-0159/P1 候选的行为测试缺口 |
 
 [FACT][E-AU-081-005] 10 文件、171 行 Pricing 人工源码和测试完成深审；规则已被 QuoteReader 读取，却只进入 evidence，未被定价计算消费，记录为 F-0159/P1 候选并转 AU-082 独立复核。
+
+## 87. AU-082 Pricing Rule→报价金额独立复核清单
+
+| 复核项 | 独立证据 | 结论 |
+| --- | --- | --- |
+| rule consumer 全集 | Commerce TypeScript 中的 `pricing.rule` 只有 write/publish、QuoteReader read 和声明 | 没有 `kind/condition/effect` 解释器或金额消费者 |
+| quote calculation | QuoteReader subtotal/payable 仅由 `unitMinor` 与 marketing promotion 生成 | published rule 不改变任何 quote amount |
+| contract/test | create request 是开放 object；Pricing 测试只锁 manifest | API 可写入任意规则结构但没有行为 oracle |
+| 产品映射 | 需求将商城加价/价格规则映射到 pricing rule operation | 当前实现不能实现对应已承诺能力 |
+
+[FACT][E-AU-082-004] F-0159 经与 AU-081 分离的消费者全集、报价演算和 contract/test 路径复查，结论一致，确认为 P1。

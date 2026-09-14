@@ -1,0 +1,5 @@
+"编号","独立复核切面","证据","结论"
+"E-AU-082-001","消费者全集","在 Commerce source/contract/sdk 的全量 `pricing.rule` 检索中，运行时读取只在 QuoteReader:223-225；其余命中是写入、发布、注册或声明。","不存在 hidden rule evaluator。"
+"E-AU-082-002","金额演算","QuoteReader:54-81 将 priceRules 只置入 evidence.pricing；line:158-181 从 raw unit price 生成金额；promotion/allocateLineDiscount:61-64,285-308 是唯一折扣路径。","published rule 不改变报价数值。"
+"E-AU-082-003","对外承诺与测试","OpenAPI PricingRulesCreateRequest 是开放 object；CommerceOperations 将 operation 定为 console/critical；Pricing manifest test 仅断言声明；requirements 映射把商城加价/价格规则指向该 operation。","可配置能力对外暴露但行为未闭合。"
+"E-AU-082-004","独立结论","消费者、数值路径、契约和测试四条证据互相一致。","F-0159 确认为 P1；无 P0。"
