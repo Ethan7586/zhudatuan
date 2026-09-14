@@ -1,0 +1,5 @@
+"编号","链路","故障模式","影响","等级","检测","关联"
+"FM-AU-014-001","test failure→reset","cleanup异常覆盖主异常","误诊失败根因","P3","双异常探针","F-0068"
+"FM-AU-014-002","Provider match→Promise caller","matcher同步throw","reject断言不一致","P3","throwing matcher","F-0068"
+"FM-AU-014-003","Http send→async responder","原request被调用者改写","记录与stub行为不一致/假阳性","P3","mutation probe","F-0069"
+"FM-AU-014-004","ID fixture sequence","第18项非法","测试中途异常","P3","跨字母表周期","F-0052"

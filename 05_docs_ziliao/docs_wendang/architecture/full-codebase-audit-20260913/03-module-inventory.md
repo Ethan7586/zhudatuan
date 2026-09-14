@@ -298,3 +298,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Platform adapters | Node/stdout、Beacon、miniapp writer | `nodeTelemetry/browserTelemetry/miniappTelemetry` | 各平台 | writer/sendBeacon | Node活跃，其余仓内零生产caller | 无 | DC-0017 |
 
 [FACT][E-AU-013-002] 本单元深入审阅18文件、473行；全部为人工维护，无生成、第三方或构建产物。
+
+## 20. AU-014 Testing 模块清单
+
+| 子模块 | 职责 | 对外入口 | 当前消费者 | 测试 | 边界问题 |
+| --- | --- | --- | --- | --- | --- |
+| DatabaseHarness | apply/test/reset生命周期 | root export | Commerce Repository.test | 无自测 | 双异常掩盖F-0068 |
+| Event/Provider/Clock/Container/ID | 通用fixture | root export | 固定仓库无包外caller | Container 2例 | F-0052/F-0068；G1 DC-0018 |
+| HttpHarness | SDK Transport捕获与abort | root export | 固定仓库无包外caller | 3例 | snapshot/responder分裂F-0069 |
+| Browser harness | axe/MSW/Query/React/Router/User组合 | browser subpath | 仅包内Browser.test | 2例 | G1 DC-0019 |
+
+[FACT][E-AU-014-002] 本单元深入审阅20文件、403行；全部为人工维护，无生产进程、数据库所有权或发布单元。

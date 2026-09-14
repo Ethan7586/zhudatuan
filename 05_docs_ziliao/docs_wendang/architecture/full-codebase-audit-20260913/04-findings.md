@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-013 结束时累计：P0 0、P1 候选 9、P2 37、P3 20、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-014 结束时累计：P0 0、P1 候选 9、P2 37、P3 22、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -1638,3 +1638,54 @@
 - [UNKNOWN] 线上日志或Operation审计是否已包含F-0065形态的真实敏感值；未连接线上、未读取真实数据。
 - [UNKNOWN] 仓外是否直接消费browser/miniapp/tracer公共面，或继续部署完整ApiMain。
 - [UNKNOWN] telemetry六个直接测试在安装锁定依赖后的真实结果；本AU遵守边界未安装依赖。
+
+## F-0068｜测试Harness会改变或掩盖原始失败语义
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/testing` Database/Provider Harness |
+| 类型 | 测试可信度、失败传播 |
+| 严重级别 | P3 |
+| 置信度 | 高：合成双异常和throwing matcher控制流已验证；当前唯一Database consumer的reset自行吞掉清理错误 |
+| 文件和精确位置 | `packages/testing/src/DatabaseHarness.ts:7-17`、`ProviderHarness.ts:6-13` |
+| 当前行为 | [FACT][E-AU-014-004] 测试体抛`TEST_FAIL`且reset抛`RESET_FAIL`时，调用者最终只收到`RESET_FAIL`；Provider matcher抛错时`execute():Promise`在返回Promise前同步抛出 |
+| 预期行为 | 测试基础设施应保留主失败并附加cleanup失败；Promise形态API的fixture失败应保持一致的rejection语义 |
+| 直接证据 | E-AU-014-004、INV-AU-014-001/002、FM-AU-014-001/002 |
+| 调用链或运行入口 | Repository/仓外test → harness → test/matcher → cleanup/Promise断言 |
+| 用户影响 | 开发者可能追错根因，或测试断言因同步throw与rejection差异产生噪声 |
+| 数据影响 | 当前Repository reset主动容错并尽力清理；仓外fixture未知 |
+| 安全影响 | 无 |
+| 根因 | finally采用单异常传播；Promise返回类型没有包裹可能throw的matcher |
+| 建议方向 | 独立testing批次定义primary+cleanup错误和全异步失败契约，再补双异常/matcher测试；不与业务修复混批 |
+| 预计修改范围 | 两个Harness及直接测试 |
+| 验证方式 | test/reset成功失败四象限；matcher missing/error/response三类均用稳定Promise断言 |
+| 回滚方式 | 回退testing单一提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0069｜HttpHarness记录的请求快照与Responder实际处理对象可能不同
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | `@shop/testing` HTTP Harness |
+| 类型 | 测试假阳性、并发可变输入 |
+| 严重级别 | P3 |
+| 置信度 | 高：实际Harness异步探针复现；固定仓库无包外caller |
+| 文件和精确位置 | `packages/testing/src/HttpHarness.ts:15-28`、`HttpHarness.test.ts:10-24` |
+| 当前行为 | [FACT][E-AU-014-005] send把冻结浅快照放入requests，却把原始request传给异步respond。send后修改URL/header时，captured仍记录旧值，responder读取新值 |
+| 预期行为 | 测试记录与stub应观察同一个不可变请求快照，才能证明断言对应实际处理输入 |
+| 直接证据 | E-AU-014-005、INV-AU-014-003、FM-AU-014-003 |
+| 调用链或运行入口 | SDK/test caller → HttpHarness.send → captured snapshot + async responder original reference |
+| 用户影响 | 测试可能断言发送了A，同时stub按B响应，产生难复现假阳性/假阴性 |
+| 数据影响 | 只影响测试，不进入生产Transport |
+| 安全影响 | 无 |
+| 根因 | 捕获和执行使用两个不同对象；当前测试只断言header freeze，不检查responder一致性 |
+| 建议方向 | 独立testing批次统一使用同一snapshot并增加异步mutation/abort测试；不在审计分支修复 |
+| 预计修改范围 | HttpHarness及直接测试 |
+| 验证方式 | send后变更原对象不影响captured和responder；预取消/执行中取消/resolve/reject保持一致 |
+| 回滚方式 | 回退testing单一提交 |
+| 是否需要独立复核 | 否 |
+
+## 14. AU-014 新增未定级事项
+
+- [UNKNOWN] 仓外测试是否消费除DatabaseHarness以外的root/browser公共工具。
+- [UNKNOWN] 七个包内测试在安装锁定依赖后的真实结果；本AU未安装依赖。

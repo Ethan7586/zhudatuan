@@ -167,3 +167,9 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - 两个client-error Operation虽有runtime契约、SDK和模块实现，但只由被禁止的完整ApiMain装载；专用生产入口没有分配该模块，形成F-0066。
 - browser/miniapp adapters没有固定仓库生产caller，列G1而非删除候选；仓外平台消费者尚未排除。
 - 本AU未build、未读取线上日志/服务、未推送、未合并、未部署。
+
+## 17. AU-014 Testing 发布边界
+
+- `@shop/testing`是private开发/测试依赖，无生产target、端口、进程或制品；正式测试检查还会拒绝生产源码import该包。
+- Commerce package把它列为依赖，但固定源码只在Repository contract测试中import DatabaseHarness；其余root/browser工具无包外源码caller。
+- 本AU未连接测试数据库、build、生成制品、推送、合并或部署。

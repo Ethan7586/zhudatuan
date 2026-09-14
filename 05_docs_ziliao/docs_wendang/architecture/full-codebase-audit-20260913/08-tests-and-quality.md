@@ -132,3 +132,11 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 已覆盖错误聚合/retention/tenant拒绝、交互主干/取消、敏感键/Bearer/手机号/email；未覆盖异常Scope、Cookie/Basic/password label/card/ID、循环对象、async writer拒绝、callback异常和重复span end。
 - 合成反事实命中F-0065、F-0067并补强F-0055，说明现有测试会对主干回归失败，但不会发现这些边界。
 - 正式test/typecheck各执行一次，均因缺vitest/tsc退出127且未加载源码；未安装依赖，不记为通过或实现失败。
+
+## 13. AU-014 Testing 包自身可信度
+
+- 3个测试文件、7个用例：HttpHarness 3、TestContainer 2、Browser组合 2，均调用真实实现。
+- Database/Event/Provider/Clock/TestIdGenerator没有包内直接测试；F-0052的第18个非法ID因此不会由本包正式测试发现。
+- 双异常探针和异步request mutation分别命中F-0068/F-0069，现有测试只覆盖主干，不覆盖失败组合和captured/responder一致性。
+- 唯一包外源码消费者是条件运行的真实PostgreSQL Repository test；其reset逐项吞掉cleanup错误，降低F-0068当前可达性但不修正公共Harness语义。
+- 正式test/typecheck因缺vitest/tsc退出127；未连接测试数据库、未安装依赖。

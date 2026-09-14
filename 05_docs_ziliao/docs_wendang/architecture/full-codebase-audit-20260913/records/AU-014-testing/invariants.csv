@@ -1,0 +1,6 @@
+"编号","不变量","状态","证据","关联"
+"INV-AU-014-001","cleanup不应抹去主测试失败上下文","破坏","TEST_FAIL被RESET_FAIL覆盖","F-0068"
+"INV-AU-014-002","Promise API失败应稳定表现为rejection","部分破坏","Provider matcher同步throw","F-0068"
+"INV-AU-014-003","captured request与responder观察必须代表同一请求","破坏","old snapshot/new responder值","F-0069"
+"INV-AU-014-004","TestIdGenerator所有输出满足Kernel Id","破坏","sequence18含I","F-0052"
+"INV-AU-014-005","测试工具不得进入生产源码","当前保持","checker显式拒绝production import","值得保留"
