@@ -4617,3 +4617,21 @@
 | 建议方向 | 从当时最新主线另建单一修复分支，先以隔离数据库证明 gate 必须 fail-closed，再将 `contract` 纳入条件并把测试改为 reject；不在审计分支修改。 |
 | 验证/回滚 | 隔离 PostgreSQL 保留 target schema head、故意使用错误 contract checksum，断言 runtime 创建失败且无 claim/投递；回滚为撤回该单一 gate/test 提交。 |
 | 是否需要独立复核 | 否（P2）；若该 Worker 已承担生产身份验证码投递，建议在修复前补运行环境复核。 |
+
+## F-0248｜Purchase API 查询运行契约却未以失败结果阻止启动
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Commerce purchase API startup/支付与购买契约边界 |
+| 类型 | 正确性、运行时契约兼容性 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/bootstrap/PurchaseApiRuntime.ts:177-319`；`.../PurchaseApiRuntime.test.ts:43-97`；`.../entry/PurchaseApiMain.ts:11`。 |
+| 当前/预期 | compatibility query 计算全局 contract version/checksum，但最终 fail-closed 条件检查 schema、purchase marker、表/函数/授予权限，遗漏 `state.contract`。测试覆盖若干 role/grant 失败，却没有 contract 失配拒绝。预期为 contract 失配在 API listen 和任何购买/支付写操作前拒绝。 |
+| 直接证据 | [FACT][E-AU-505-001] SQL 以 `CONTRACT_SCHEMA_HEAD`/`RUNTIME_CONTRACT_CHECKSUM` 生成 `contract` 字段；[FACT][E-AU-505-002] 条件串未包含 `!state.contract`；[FACT][E-AU-505-003] 对应测试不存在 contract=false reject case。 |
+| 调用链或运行入口 | `PurchaseApiMain` → `createPurchaseApiRuntime` → node/payment/secret checks → `assertPurchaseRuntimeCompatibility` → purchase API container。 |
+| 用户/数据/安全影响 | 若 migration head 等其它检查仍满足但 runtime contract checksum 不一致，购买 API 仍可能处理 checkout/订单/payment 相关请求，行为可能与数据库契约不一致。未验证生产存在不一致、支付金额错误、实际数据损坏或权限扩大。 |
+| 根因 | 启动门已查询 contract 状态，却没有将其加入健康状态的布尔聚合；negative regression 未覆盖。 |
+| 建议方向 | 从当时最新主线另建单一修复分支，在隔离数据库证明需要 fail-closed 后，将 `contract` 加入条件及测试；与 F-0247 可作为同一模式的范围勘查输入，但不要在审计分支修复。 |
+| 验证/回滚 | 隔离 PostgreSQL 保持 target head、purchase marker/roles 为健康，仅改坏 contract checksum；断言 runtime 创建失败、无 listen/写入；回滚为撤回单一 gate/test 提交。 |
+| 是否需要独立复核 | 否（P2）；若验证发现生产环境有 contract drift，应升级专项复核。 |
