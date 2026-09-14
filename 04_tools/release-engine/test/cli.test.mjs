@@ -111,6 +111,7 @@ test('legacy baseline evidence requires one successful exact workflow receipt', 
   const legacyRunId = '34796885384';
   const legacyRunAttempt = '1';
   const target = 'support-api';
+  const receiptTarget = 'SUPPORT_API';
   const expectedCurrent = `/opt/targets/support-api/releases/${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`;
   const metadata = {
     id: Number(legacyRunId),
@@ -120,7 +121,7 @@ test('legacy baseline evidence requires one successful exact workflow receipt', 
     path: '.github/workflows/legacy-oss-recovery-aliyun.yml',
     run_attempt: 1,
   };
-  const log = `SOURCE_SHA=${sourceSha}\nCURRENT_${target}=${expectedCurrent}\nzdt-next/commerce-api/${sourceSha}/${artifactSha256}.tar.gz\n`;
+  const log = `SOURCE_SHA=${sourceSha}\nCURRENT_${receiptTarget}=${expectedCurrent}\nzdt-next/commerce-api/${sourceSha}/${artifactSha256}.tar.gz\n`;
   const expected = { sourceSha, artifactSha256, legacyRunId, legacyRunAttempt, target, expectedCurrent };
 
   assert.equal(assertLegacyDeploymentEvidence(metadata, log, expected).current, expectedCurrent);
@@ -129,7 +130,7 @@ test('legacy baseline evidence requires one successful exact workflow receipt', 
     (error) => error.code === 'CURRENT_BASELINE_LEGACY_RUN_UNTRUSTED'
   );
   assert.throws(
-    () => assertLegacyDeploymentEvidence(metadata, log.replace(`CURRENT_${target}=`, 'CURRENT_other='), expected),
+    () => assertLegacyDeploymentEvidence(metadata, log.replace(`CURRENT_${receiptTarget}=`, 'CURRENT_OTHER='), expected),
     (error) => error.code === 'CURRENT_BASELINE_LEGACY_TARGET_RECEIPT_MISSING'
   );
   assert.throws(

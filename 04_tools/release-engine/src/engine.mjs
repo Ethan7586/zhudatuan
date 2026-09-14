@@ -238,7 +238,9 @@ export function assertLegacyDeploymentEvidence(metadata, log, expected) {
     'CURRENT_BASELINE_LEGACY_SOURCE_RECEIPT_MISSING',
     'Legacy deployment log does not bind the exact source to its immutable artifact'
   );
-  const legacyReceiptTarget = expected.target === 'database-migration' ? 'DATABASE_MIGRATIONS' : expected.target;
+  const legacyReceiptTarget = expected.target === 'database-migration'
+    ? 'DATABASE_MIGRATIONS'
+    : expected.target.toUpperCase().replaceAll('-', '_');
   invariant(log.includes(`CURRENT_${legacyReceiptTarget}=${expected.expectedCurrent}`), 'CURRENT_BASELINE_LEGACY_TARGET_RECEIPT_MISSING', 'Legacy deployment log does not contain the exact target pointer receipt');
   invariant(log.includes(exactLegacyArtifactObject), 'CURRENT_BASELINE_LEGACY_ARTIFACT_RECEIPT_MISSING', 'Legacy deployment log does not bind the exact source and artifact object');
   return {
