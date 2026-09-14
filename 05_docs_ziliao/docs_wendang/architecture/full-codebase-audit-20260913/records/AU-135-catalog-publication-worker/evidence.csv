@@ -1,0 +1,4 @@
+id,file,location,kind,observation
+E-AU-135-001,05_interface_jieru/job/CatalogPublicationJob.ts,39-250,worker lifecycle,Processes listing targets under individual transactions and persists guarded progress.
+E-AU-135-002,05_interface_jieru/job/CatalogPublicationJob.ts,177-250,concurrency guard,Rejects malformed/nonmonotonic progress and requires expected previous payload counters.
+E-AU-135-003,06_tests_ceshi/CatalogPublicationJob.test.ts,1-111,test behavior,Covers complete outcomes resume checkpoint and durable-progress conflict rollback.

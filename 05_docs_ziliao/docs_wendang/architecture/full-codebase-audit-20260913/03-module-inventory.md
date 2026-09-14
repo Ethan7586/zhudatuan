@@ -1478,3 +1478,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | media worker/source projection tests 只断言 HTTPS 示例与基本失败 | hostile URL/size 反事实缺失 |
 
 [FACT][E-AU-134-001] F-0173 双轮复核结论一致：保持 P1、高置信度；无 P0 事故运行证据。
+
+## 140. AU-135 Catalog publication Worker 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| publication Worker | 一项一事务地检查/发布 listing，并维护 scope-bound durable job payload | [FACT][E-AU-135-001] |
+| checkpoint guard | processed/succeeded/failed/skipped 单调性和 failure count 守卫 | [FACT][E-AU-135-002] |
+| tests | 完成、恢复与 progress conflict rollback | [FACT][E-AU-135-003] |
+
+[FACT][E-AU-135-004] 2 文件、361 行 Catalog publication Worker 和行为测试完成深审；Worker 不将 listing 更新提交在未同步 durable progress 的 transaction 之外。
