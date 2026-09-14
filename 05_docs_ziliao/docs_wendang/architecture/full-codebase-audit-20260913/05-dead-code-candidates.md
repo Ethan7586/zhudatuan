@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 28。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 29。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1342,3 +1342,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是：须在隔离数据库核对迁移执行器、version checksum 与恢复流程。 |
 
 - migration ledger 与 target-head 断言共同构成发布封板；AU-469/470 归 GX-0028。累计 G0 60、G1 83、G2 5、G3 0、GX 28；未删除任何文件。
+
+## GX-0029｜Invitation 生命周期与注册政策历史绑定
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821065000_add_invitation_lifecycle.sql` |
+| 疑似原因 | 该文件看似仅为 invite 补充元数据和登记两项 operation。 |
+| 保留证据 | [FACT][E-AU-472] 它回填并强制 `registration_policy_id`/`terms_hash`，创建外键与约束；当前 create 写入该绑定，revoke/read/scope resolver 继续以 invite 的组织、状态与版本作授权事实。 |
+| 运行结论 | 这是身份邀请、条款同意和 operator 授权的历史数据演进，而非孤立 schema 变更。 |
+| 数据/契约责任 | 保存历史邀请的条款/政策可追溯性，并建立 create/revoke operation、permission 与 capability 共同契约。 |
+| 可否删除 | 禁止 |
+| 二次复核 | 是：应在隔离数据库抽样核对历史政策选取、invite scope 和恢复路径。 |
+
+- invitation 条款/政策绑定与授权生命周期归 GX-0029。累计 G0 60、G1 83、G2 5、G3 0、GX 29；未删除任何文件。
