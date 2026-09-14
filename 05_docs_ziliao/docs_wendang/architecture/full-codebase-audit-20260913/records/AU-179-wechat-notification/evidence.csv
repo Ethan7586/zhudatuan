@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-179-001,src/api/wechatPayNotification.ts,30-83,notification verification,Size bound signature verification precedes encrypted resource decrypt; app/mch/trade success and transaction fields are mandatory before result.
+E-AU-179-002,src/api/wechatPayNotification.ts,85-99,attempt matching,Recorded expected out-trade number total and payer openid must exactly match verified transaction.
+E-AU-179-003,src/api/wechatPaymentNotificationRoute.ts,11-47,public route,Only POST and bounded request body are accepted; verified notification maps to apply RPC with hashed payer and minimal summary then returns WeChat success JSON.
+E-AU-179-004,src/api/wechatPayNotification.test.ts,1-87,direct parser tests,Fixture covers authentic decrypt summary privacy tampering stale signature and expected amount mismatch.

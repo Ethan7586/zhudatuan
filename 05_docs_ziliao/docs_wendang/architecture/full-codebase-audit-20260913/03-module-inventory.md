@@ -1933,3 +1933,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | consumers | provider client及notification parser都在body parse/decrypt前调用verify | [FACT][E-AU-178-003] |
 
 [FACT][E-AU-178-004] 2 文件、138 行完成深审；test support没有生产secret或运行入口。
+
+## 184. AU-179 WeChat notification 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| notification parser | body bound→RSA verify→AES-GCM decrypt→transaction/app/mch/success invariant | [FACT][E-AU-179-001] |
+| expected match | stored attempt out-trade/amount/payer equality assertion | [FACT][E-AU-179-002] |
+| public route | POST/64KB/config/parser→idempotent apply RPC→provider success response | [FACT][E-AU-179-003] |
+| tests | authentic/tamper/stale/mismatched transaction parser fixture | [FACT][E-AU-179-004] |
+
+[FACT][E-AU-179-005] 3 文件、300 行完成深审；public router实际注册payment notification callback，但route adapter没有direct test。

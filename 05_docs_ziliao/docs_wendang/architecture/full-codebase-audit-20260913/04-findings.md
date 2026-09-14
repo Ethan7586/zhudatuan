@@ -3696,6 +3696,20 @@
 | 验证/回滚 | mock provider/RPC验证create/reuse/failure顺序和body，覆盖scope/assurance/idempotency拒绝；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0191｜Public WeChat callback route 没有直接 RPC/response 测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / public payment callback；P2；高 |
+| 类型 | 测试覆盖缺口、支付通知入库与协议响应正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/wechatPaymentNotificationRoute.ts:11-47`；现有`wechatPayNotification.test.ts` |
+| 当前/预期 | parser有验签/decrypt/tamper/stale/mismatch fixture；公开route承担POST/64KB/config/verification→`api_apply_wechat_payment_notification` RPC→provider success response，但无同层fixture。预期验证route不会在验签失败时调用RPC、RPC body只含hash/summary、success返回微信协议响应、配置与上游失败传播。 |
+| 直接证据 | `wechatPayNotification.test.ts`只导入parser/assert helper；没有`handleWechatPaymentNotification`调用或RPC URL/body断言。 |
+| 调用链/影响 | WeChat → publicRouter → `handleWechatPaymentNotification` → verification → idempotent payment notification RPC。route级回归可能令合法通知没有按provider期望确认，或映射错误难以及时发现。 |
+| 建议方向 | 从修复时最新`zdt-next`建立独立callback route test批；回滚为撤回该测试提交。 |
+| 验证/回滚 | 临时RSA通知fixture验证合法/invalid/stale/config/RPC failure和exact success response；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

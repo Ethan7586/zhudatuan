@@ -486,3 +486,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Client及notification fixtures用临时生成的RSA pair和签名headers间接执行signature verifier；通知suite另覆盖fresh/stale/missing签名。
 - Verifier没有独立test file，但两条consumer test路径以真实签名材料覆盖其关键accept/reject边界。审计工作树未运行Vitest。
+
+## 179. AU-179 WeChat notification 深审
+
+- Parser test直接覆盖真实加密通知的验签/decrypt/summary最小化、body tamper、stale notification和attempt amount mismatch。
+- `wechatPaymentNotificationRoute.ts`没有direct handler fixture；应覆盖method/size/config/protocol/RPC success/RPC exception及provider expected `{code:'SUCCESS'}` response。见F-0191/P2；审计工作树未运行Vitest。
