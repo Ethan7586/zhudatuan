@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/application/IdentityCredentialReplay.test.ts,session ticket and invitation one-time replay secret exclusion and single execution,not run: audit worktree has no Vitest dependencies
+src/foundation/application/OwnerActionCredentialPersistence.test.ts,step-up action proof one-time replay retained as sibling coverage,not run: audit worktree has no Vitest dependencies

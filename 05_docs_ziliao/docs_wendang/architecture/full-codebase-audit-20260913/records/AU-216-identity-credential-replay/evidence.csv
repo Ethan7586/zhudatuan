@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-216-001,src/foundation/application/IdentityCredentialReplay.test.ts,9-36,credential replay,Real ModuleOperations calls prove session/ticket first response is replaced by secret-free one-time 409 persisted replay.
+E-AU-216-002,src/foundation/application/IdentityCredentialReplay.test.ts,38-63,invitation replay,Administrator invitation code is absent from persisted replay and action executes once.
+E-AU-216-003,src/foundation/application/IdentityCredentialReplay.test.ts,66-124,harness,Fixture stores actual idempotency JSON and invokes ModuleOperations twice through command workload behavior.
+E-AU-216-004,src/foundation/application/ModuleOperations.ts,247-260,implementation mapping,Credential invitation and action-proof replay projections are the direct production policy under test.

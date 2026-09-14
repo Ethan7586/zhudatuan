@@ -2290,3 +2290,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | consumers | CommandBus、QueryBus与生成的OperationHandler均以它维持统一处理器形状 | [FACT][E-AU-215-002] |
 
 [FACT][E-AU-215-003] 1 文件、3 行完成深审；实际泛型消费者存在，为G0；无独立运行分支。
+
+## 221. AU-216 Identity credential replay test 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| credential replay persistence | 验证sessions.create/tickets.exchange的首次凭据响应不会进入idempotency replay JSON | [FACT][E-AU-216-001] |
+| invitation replay persistence | 验证管理员邀请one-time code同样被固定409替代且action只执行一次 | [FACT][E-AU-216-002] |
+
+[FACT][E-AU-216-003] 1 文件、124 行完成深审；真实ModuleOperations调用链覆盖credential/invitation关键one-time replay，action-proof分支由OwnerActionCredentialPersistence承接。

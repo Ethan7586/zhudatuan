@@ -669,3 +669,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Handler为type-only泛型契约，没有独立可执行分支；其dispatch行为由CommandBus/QueryBus审计单元承接。
 - 无P0–P3新问题。
+
+## 216. AU-216 Identity credential replay 深审
+
+- Direct fixture通过真实ModuleOperations确认敏感session/ticket/cookie和invitation code不会写入可重放response，第二次请求不再执行业务action。
+- `identity.stepup.complete` action-proof分支由独立OwnerActionCredentialPersistence fixture承接；无P0–P3新问题。审计工作树未运行Vitest。
