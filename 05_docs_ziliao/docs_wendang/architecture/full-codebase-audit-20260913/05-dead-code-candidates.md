@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 26。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 27。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1312,3 +1312,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 467. AU-467 Membership 函数重绑复核
 
 - AU-461 的表转移只有在五个权威函数重绑后才完整；归 GX-0026。累计 G0 60、G1 83、G2 5、G3 0、GX 26；未删除任何文件。
+
+## GX-0027｜Membership scopegrant 历史规范化
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821061000_normalize_membership_scopes.sql`。 |
+| 直接证据 | 回填 self/owner/组织 scope 的 canonical id/path，为 active membership 补 self、为 storefront 补 owner allow，随后按 membership/kind/scope/effect 去重并断言 kind 一致。 |
+| 运行边界 | access scope object/resolver、session context 与 RLS 使用 scopegrant；grant 保留 membership access_version。 |
+| 可否删除 | 否；承担授权范围、个人/组织边界、历史数据、会话访问版本与恢复责任。 |
+| 二次复核 | 是；须验证所有 scope kind、active/inactive membership、storefront owner、冲突去重、access version、RLS 和备份恢复。 |
+
+## 468. AU-468 Membership scope 规范化复核
+
+- scopegrant 是当前授权事实，不是可删除的重复配置；归 GX-0027。累计 G0 60、G1 83、G2 5、G3 0、GX 27；未删除任何文件。
