@@ -117,4 +117,4 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 包内159行、13个用例直接覆盖self、deny、store/department、tenant mismatch、enterprise ancestor、platform跨tenant、全局grant选择、非层级path、critical与过期step-up；实现oracle不是mock副本。
 - 缺口包括inactive/expiry边界、permission missing、future/exact step-up、公开Set mutation、异常最大窗口与challenge-before-scope。
 - 源码只读探针确认expiry等于now拒绝、900秒整允许、未来拒绝、explicit deny优先、Set mutation改变结果、Infinity接受旧验证、错误critical Scope先challenge。
-- 正式`npm run test --workspace @smart-wing/authz`和`npm run typecheck --workspace @smart-wing/authz`均因Missing script失败。根命令使用`--if-present`会静默跳过，形成F-0060；没有安装依赖或另造正式入口。
+- 正式`npm run test --workspace @smart-wing/authz`和`npm run typecheck --workspace @smart-wing/authz`均因Missing script失败。根`test:unit`会经Storefront的Vitest include间接收录13个用例，但根`typecheck`会因`--if-present`跳过本包独立tsconfig，形成F-0060；没有安装依赖或另造正式入口。

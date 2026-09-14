@@ -48,7 +48,7 @@ flowchart LR
 
 | 编号 | 等级 | 结论 |
 | --- | --- | --- |
-| F-0060 | P3 | 包有159行/13用例测试和独立tsconfig，但package没有test/typecheck脚本；根 `test:unit`、`typecheck` 使用 `--workspaces --if-present`，会静默跳过本包 |
+| F-0060 | P3 | 包有159行/13用例测试和独立tsconfig，但package没有test/typecheck脚本；根`test:unit`经Storefront Vitest配置间接收录测试，根`typecheck`不会执行本包独立tsconfig |
 | F-0061 | P3 | 公开 `stepUpMaxAgeSeconds` 没有有限值/上限约束；实际源码反事实中 `Infinity` 使26年前的step-up通过。现有两个生产源码caller都未传该选项 |
 | F-0062 | P3 | critical permission在确认binding存在前检查step-up；错误Scope先得到 `STEP_UP_REQUIRED`，完成step-up后才得到 `SCOPE_MISMATCH`，形成误导挑战顺序 |
 
@@ -59,7 +59,7 @@ flowchart LR
 - 13个测试覆盖 self、deny、store/department、tenant mismatch、enterprise ancestor、platform跨租户、全局grant选择、非层级path、critical step-up和过期step-up。
 - 缺口包括 inactive/expiry边界、permission missing、future/exact step-up、mutable critical Set、异常最大窗口和challenge-before-scope。
 - 定向源码探针确认：expiry等于now拒绝；900秒整允许，更旧和未来拒绝；explicit deny优先；删除critical Set成员会关闭step-up；Infinity窗口会接受旧验证；错误Scope的critical请求先返回challenge。
-- 正式 `npm run test --workspace @smart-wing/authz` 与 `npm run typecheck --workspace @smart-wing/authz` 均因缺少脚本失败；没有安装依赖，也没有另造一个正式测试入口。
+- 正式 `npm run test --workspace @smart-wing/authz` 与 `npm run typecheck --workspace @smart-wing/authz` 均因缺少脚本失败；根`test:unit`的Storefront测试配置明确收录本包13个用例，根`typecheck`仍遗漏独立tsconfig。没有安装依赖，也没有另造一个正式测试入口。
 
 ## 7. 删除与 UNKNOWN
 

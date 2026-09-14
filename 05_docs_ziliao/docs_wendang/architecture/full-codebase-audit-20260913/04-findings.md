@@ -759,15 +759,15 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块 | 共享配置 / SFL Node Registry、Runtime Catalog、Kernel 与 Authz目录 |
+| 模块 | 共享配置 / SFL Node Registry、Runtime Catalog、Kernel、canonical Authz目录与兼容Authz |
 | 类型 | 隐式共享可变状态、配置完整性 |
 | 严重级别 | P2 |
 | 置信度 | 高：隔离Node进程直接观察并改变resolver、共享deadline、Currency和Authz permission scope结果；固定基线未找到现有生产写调用 |
-| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17；`services/commerce/src/app/events.ts`；`RuntimeEventPublisher.ts`；`packages/kernel/src/Currency.ts:1-13`；`packages/authz/src/PermissionCatalog.ts:4-11,198-205`、`ScopeKind.ts:1-2` |
-| 当前行为 | [FACT][E-AU-006-006][E-AU-008-011][E-AU-009-018][E-AU-010-009] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功。生成的`EVENT_HANDLERS`同样导出可变Map singleton。Kernel的`CURRENCIES`运行数组和实例code可改写。Authz的184个definition外壳虽冻结，但80条默认scoped permission共享同一未冻结数组；给一条追加owner后另一条的授权接受集同时变化，导出的SCOPE_KINDS也可变。当前仓库未发现这些mutation的生产调用 |
+| 文件和精确位置 | packages/config/src/SflNodeRegistry.ts:60-67,88-120,122-176；SflNodeKernel.ts:817-828,1321-1367；RuntimeCatalog.generated.ts:2-109；build-runtime-config.mjs:13-17；`services/commerce/src/app/events.ts`；`RuntimeEventPublisher.ts`；`packages/kernel/src/Currency.ts:1-13`；`packages/authz/src/PermissionCatalog.ts:4-11,198-205`、`ScopeKind.ts:1-2`；`packages/smart-wing-authz/src/index.ts:1-12,19-32` |
+| 当前行为 | [FACT][E-AU-006-006][E-AU-008-011][E-AU-009-018][E-AU-010-009][E-AU-011-009] Registry与Runtime Catalog只Object.freeze最外层；嵌套对象/数组未冻结。把domain host改为audit.invalid后resolver立即返回新值；把RUNTIME_LIMITS.http.totalDeadlineMilliseconds从15000改为1也成功。生成的`EVENT_HANDLERS`同样导出可变Map singleton。Kernel的`CURRENCIES`运行数组和实例code可改写。canonical Authz的184个definition外壳虽冻结，但80条默认scoped permission共享同一未冻结数组；给一条追加owner后另一条的授权接受集同时变化，导出的SCOPE_KINDS也可变。兼容Authz还公开可变`HIGH_RISK_PERMISSIONS` Set；删除`order.refund`后，同一Membership的无step-up结果从challenge变为allow。当前仓库未发现这些mutation的生产调用 |
 | 预期行为 | Manifest/Registry/Topology及共享容量/缓存参数作为进程权威，在解析/生成后应不可被消费者改写，或消费者获得隔离副本 |
-| 直接证据 | E-AU-006-006、E-AU-008-011、E-AU-009-018、E-AU-010-009、T-AU-006-004、RS-AU-006-002、INV-AU-006-006、INV-AU-009-010、INV-AU-010-011、FM-AU-008-005、FM-AU-009-009 |
-| 调用链或运行入口 | JSON/YAML/TS module import → exported singleton → Identity/Console/generator/check或HTTP/Pool/cache/SDK/Authz consumers；events.ts Map → RuntimeEventPublisher → inbox/job；permissionDefinition.scopes → AccessPipeline checkScope |
+| 直接证据 | E-AU-006-006、E-AU-008-011、E-AU-009-018、E-AU-010-009、E-AU-011-009、T-AU-006-004、RS-AU-006-002、INV-AU-006-006、INV-AU-009-010、INV-AU-010-011、INV-AU-011-004、FM-AU-008-005、FM-AU-009-009 |
+| 调用链或运行入口 | JSON/YAML/TS module import → exported singleton → Identity/Console/generator/check或HTTP/Pool/cache/SDK/Authz consumers；events.ts Map → RuntimeEventPublisher → inbox/job；permissionDefinition.scopes → AccessPipeline checkScope；`HIGH_RISK_PERMISSIONS` → `requiresStepUp` → `decide` |
 | 用户影响 | 若任一同进程消费者意外修改嵌套对象，后续Host/资源ref、timeout/cache/capacity或permission允许的scope kind会随加载顺序漂移 |
 | 数据影响 | 不修改仓库或数据库，但会改变进程内配置事实；重启恢复原JSON |
 | 安全影响 | 可改变节点/域名和permission scope选择边界；当前未发现生产写入点，故不升级P1 |
@@ -1276,13 +1276,13 @@
 | 文件和精确位置 | `packages/authz/src/PermissionCatalog.ts:20-29`；`contract/definitions/operations.yml:418-433`；Console `AccessRoleCatalog.ts:18-26`、`RoleEditor.tsx:61-88,216-243`、`AccessRoleCommand.ts:29-36`；Commerce `AccessOperations.ts:22-64,185-305`；migration `20260829060000_zhudatuan_operator_invitation_registration.sql:85-145`、`20260902140000_align_senior_administrator_business_permissions.sql:109-130` |
 | 当前行为 | [FACT][E-AU-010-004/006] 任何拥有`access.role.manage`与对应Operation capability的Console主体都看到全部184个permission。服务端仅要求`permissions`为字符串数组，随后把所有存在的code写入custom role，不比较actor effective permissions，也不排除内建高级管理员明确列为Owner-only的`access.role.manage`、`access.scope.manage`、`capability.assignment.manage`、`identity.registration.reset`等。角色分配只按固定`role-senior-administrator-v1:` ID要求Owner；相同关键权限装入custom role不会触发该分支，数据库随后把它们投影到目标Membership grants |
 | 预期行为 | 非Owner角色管理者可转授的permission集合必须由产品明确闭合，至少不能超过其有效权限/治理级别，也不能仅通过换一个custom role ID绕过现有Owner-only集合 |
-| 直接证据 | E-AU-010-004、E-AU-010-005、E-AU-010-006、COM-AU-010-010/011/012、INV-AU-010-009、FM-AU-010-001 |
+| 直接证据 | E-AU-010-004、E-AU-010-005、E-AU-010-006、E-AU-011-007、COM-AU-010-010/011/012、INV-AU-010-009、INV-AU-011-008、FM-AU-010-001 |
 | 调用链或运行入口 | Console RoleEditor → AccessRoleCommand → PUT `access.roles.manage` → AccessPipeline(`access.role.manage`) → AccessOperations重建rolepermission → `manageRoleAssignment` → membershiprole/scopegrant/access_version → `access.resolve_session_membership` → 后续Operation授权 |
 | 用户影响 | [INFERENCE] 被委派一个有限“角色管理员”的主体可以创建包含更高治理能力的custom role并转授给自己或同范围成员，从而获得原委派未表达的权限；具体可操作对象仍受scope、target和step-up约束 |
 | 数据影响 | 成功请求持久写`access.role`、`rolepermission`、`membershiprole`、`scopegrant`并递增目标access_version；可改变后续请求的授权结果 |
 | 安全影响 | 存在正常API可达的权限提升链；不依赖异常Scope。是否已有可利用主体取决于线上角色与entitlement，尚未核验 |
-| 根因 | 权限目录只有risk/scope元数据，没有“可由谁授予”的委派关系；Access handler把role ID特例当作治理边界，没有对custom role内容执行actor subset/Owner-only校验 |
-| 建议方向 | 先由RV-0009与Ethan定稿可授予集合/治理层级；后续从当时最新`zdt-next`建立单一修复分支，只收敛角色委派判定及正反测试，不在审计分支新增安全规则 |
+| 根因 | 权限目录只有risk/scope元数据，没有“可由谁授予”的委派关系；Access handler把role ID特例当作治理边界，没有对custom role内容执行actor subset/Owner-only校验。兼容`public.*`角色函数已实现actor permission subset与Scope ceiling，证明仓内存在可执行对照模式，但两套目录和数据库模型不等价，不能直接复制SQL |
+| 建议方向 | 先由RV-0009与Ethan定稿可授予集合/治理层级；把兼容链的subset/ceiling作为设计证据而非直接迁移方案。后续从当时最新`zdt-next`建立单一修复分支，只收敛角色委派判定及正反测试，不在审计分支新增安全规则 |
 | 预计修改范围 | Access角色命令、permission委派元数据或现有治理resolver、Console可选集、数据库角色/版本处理、定向HTTP/DB测试；具体范围待产品定稿 |
 | 验证方式 | Owner、受限role manager、普通管理员三主体 × 自有permission、非自有普通permission、Owner-only permission × create/assign/self/other/跨scope；逐项核对HTTP、role rows、access_version和下一请求实际授权 |
 | 回滚方式 | 修复批次回退单一提交；对已创建的越界custom role另做受管数据清单和可逆迁移，先保存role/assignment/version快照 |
@@ -1435,7 +1435,7 @@
 - [UNKNOWN] `@shop/authz`完整`decide` façade和类型的仓外消费者；已列DC-0012/G1，不得直接删除。
 - [UNKNOWN][E-AU-010-016] Authz正式test/typecheck结果；两者因依赖缺失在源码加载前退出127，未安装依赖。
 
-## F-0060｜Smart Wing Authz 的测试与类型检查被正式入口静默跳过
+## F-0060｜Smart Wing Authz 缺少独立质量入口，测试寄生 Storefront 且独立类型检查被跳过
 
 | 字段 | 记录 |
 | --- | --- |
@@ -1443,18 +1443,18 @@
 | 类型 | 测试入口缺失、质量信号失真 |
 | 严重级别 | P3 |
 | 置信度 | 高 |
-| 文件和精确位置 | `packages/smart-wing-authz/package.json:1-13`；`src/index.test.ts:1-159`；`tsconfig.json:1-12`；根`package.json:45,50` |
-| 当前行为 | [FACT][E-AU-011-002/013] 包保存159行、13个直接行为用例和独立tsconfig，但没有scripts；根`test:unit`与`typecheck`使用workspaces `--if-present`，会跳过本包。显式workspace命令均返回Missing script |
-| 预期行为 | 人工维护的兼容权限内核应由项目正式命令执行其直接测试与类型检查，或由正式退役记录明确排除并保留替代验证 |
-| 直接证据 | E-AU-011-002、E-AU-011-012、E-AU-011-013、TEST-AU-011-014/015 |
-| 调用链或运行入口 | 根test/typecheck → npm workspaces `--if-present` → 本包无script → 0个本包测试/类型检查 |
-| 用户影响 | Authz回归可以在全仓质量命令中无声漏过；当前兼容protected runtime未正式发布，影响受限 |
+| 文件和精确位置 | `packages/smart-wing-authz/package.json:1-13`；`src/index.test.ts:1-159`；`tsconfig.json:1-12`；`apps/storefront-web/package.json:9-15`；`apps/storefront-web/vitest.config.ts:3-13`；根`package.json:45,50` |
+| 当前行为 | [FACT][E-AU-011-002/013/015] 包保存159行、13个直接行为用例和独立tsconfig，但没有scripts；显式workspace test/typecheck均返回Missing script。根`test:unit`仍会调用Storefront的`vitest run`，其include显式收录本测试文件；根`typecheck`使用workspaces `--if-present`，不会执行本包独立tsconfig，根project references也没有被该命令以`tsc -b`执行 |
+| 预期行为 | 人工维护的兼容权限内核应有可独立审计的质量入口，或正式声明其间接测试归属；本包独立tsconfig应由正式命令执行，退役时则应明确排除并保留替代验证 |
+| 直接证据 | E-AU-011-002、E-AU-011-012、E-AU-011-013、E-AU-011-015、TC-AU-011-014/015/016 |
+| 调用链或运行入口 | 根`test:unit` → workspace Storefront `test` → Storefront Vitest include → 13个用例；根`typecheck` → workspace `typecheck --if-present` → 本包无script → 独立tsconfig未检查 |
+| 用户影响 | 13个用例当前依赖Storefront测试配置才能被根命令发现；若该配置被移除、拆包或改名，本包没有自有入口暴露丢测。独立tsconfig的类型约束当前不在根typecheck信号中；兼容protected runtime未正式发布，影响受限 |
 | 数据影响 | 不直接写数据；漏测的授权错误若经手工兼容build使用可影响访问决定 |
 | 安全影响 | 权限内核缺少正式回归信号，但本项不证明当前权限绕过 |
-| 根因 | 包保留源码、测试和tsconfig，却未把生命周期状态落实为可执行脚本或明确归档 |
-| 建议方向 | 后续独立质量批次在“正式接回测试”与“明确退役并迁移唯一契约”之间定稿；不在审计分支修改 |
+| 根因 | 包保留源码、测试和tsconfig，却把测试执行隐式寄托于另一个应用的Vitest include，同时未把独立类型检查或生命周期状态落实为可执行入口 |
+| 建议方向 | 后续独立质量批次在“建立本包自有入口并保留Storefront聚合”与“明确退役并迁移唯一契约”之间定稿；不在审计分支修改 |
 | 预计修改范围 | package脚本/根测试拓扑，或退役文档与契约承接；二者不可混做 |
-| 验证方式 | 正式根命令能够明确执行并报告13用例/tsconfig，或正式退役门禁证明不再构建且契约已有承接 |
+| 验证方式 | 分别证明根测试与包测试报告13用例、独立tsconfig被正式typecheck执行；或正式退役门禁证明不再构建且契约已有承接 |
 | 回滚方式 | 回退单一测试拓扑/退役提交 |
 | 是否需要独立复核 | 否 |
 

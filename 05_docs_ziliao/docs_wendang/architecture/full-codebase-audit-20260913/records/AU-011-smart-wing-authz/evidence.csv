@@ -11,5 +11,6 @@
 "E-AU-011-010","实际源码反事实","固定基线5a1ce71e","stepUpMaxAgeSeconds","Infinity使2000年step-up在2026年通过","F-0061边界成立","当前caller利用","固定now与旧timestamp","无"
 "E-AU-011-011","实际源码反事实","固定基线5a1ce71e","critical错误Scope","无step-up先STEP_UP_REQUIRED；新step-up后SCOPE_MISMATCH","F-0062顺序成立","线上频率","同一Membership两次调用","无"
 "E-AU-011-012","边界矩阵","固定基线5a1ce71e","status/expiry/deny/step-up","仅active有效；expiry等于now拒绝；900秒允许，更旧/未来拒绝；deny优先","纯函数主要边界","DB时钟偏差","固定now探针","无"
-"E-AU-011-013","正式命令","固定基线5a1ce71e","npm workspace test/typecheck","两命令均Missing script；根--if-present会跳过","测试/类型入口缺口","13测试执行结果","不安装依赖各执行一次","无"
+"E-AU-011-013","正式命令","固定基线5a1ce71e","npm workspace test/typecheck","本包两命令均Missing script；根typecheck因--if-present不执行独立tsconfig","独立质量入口与类型检查缺口","根聚合测试结果","不安装依赖各执行一次","无"
 "E-AU-011-014","同一主审复核","固定基线5a1ce71e","index.ts/test从caller和失败分支重追","2/4高风险文件第二遍结论一致","同一主审50%抽检","独立审阅者结论","review-sample","无"
+"E-AU-011-015","检查点独立复核","固定基线5a1ce71e","根package→Storefront package/vitest config→smart-wing-authz test","根test:unit会经Storefront vitest run显式include本包13用例；根typecheck不执行本包独立tsconfig","F-0060准确测试拓扑","依赖未安装时的实际测试结果","检查点复核后静态重追正式入口","无"

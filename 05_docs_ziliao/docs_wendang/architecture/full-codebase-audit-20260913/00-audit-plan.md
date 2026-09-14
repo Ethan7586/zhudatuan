@@ -531,7 +531,7 @@ CP-10提交后结束当前单一目的会话。后续只有在Ethan明确授权�
 - 输入：CP-10 Authz运行图、F-0053–F-0055、DC-0012、两套授权消费者矩阵、覆盖总账和RV-0008/RV-0009队列。
 - 禁止：合并两套权限实现、修复、删除、修改源码/配置/迁移/依赖，安装依赖，改变线上状态，推送或部署。
 
-执行结果：4/4文件、267/267行深入审阅；确认兼容Authz与canonical Authz只共享8个permission code且数据/运行模型不同；新增F-0060–F-0062与DC-0013，并补强F-0032/F-0053。正式test/typecheck因package没有对应script而失败；未安装依赖、未修复、未推送、未合并、未部署。
+执行结果：4/4文件、267/267行深入审阅；确认兼容Authz与canonical Authz只共享8个permission code且数据/运行模型不同；新增F-0060–F-0062与DC-0013，并补强F-0032/F-0053。本包直接test/typecheck命令因没有对应script而失败；根`test:unit`会经Storefront Vitest配置间接收录13个用例，根`typecheck`则不会执行本包独立tsconfig。未安装依赖、未修复、未推送、未合并、未部署。
 
 ## 19. 当前暂停点
 

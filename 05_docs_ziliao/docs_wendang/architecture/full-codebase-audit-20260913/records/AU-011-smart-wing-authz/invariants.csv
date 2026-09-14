@@ -7,5 +7,5 @@
 "INV-AU-011-006","错误Scope不应触发身份挑战","decide失败顺序","index.ts:29-32","破坏","critical+wrong scope","E-AU-011-011","同步纯函数","重排独立修复","F-0062"
 "INV-AU-011-007","session绑定单一Membership且version一致","membershipContext","lines51-64+session RPC","成立","绕过runtimeByIds到生产","router入口反追","每请求解析","重新登录","值得保留"
 "INV-AU-011-008","非Owner不能转授自身没有的permission","兼容custom role SQL","20260813030000:98-150,189-212","成立于固定SQL","旧迁移未应用/旁路RPC","数据库专项AU复核","事务内","事务回滚","F-0053对照设计"
-"INV-AU-011-009","正式测试入口覆盖本包测试","package/root scripts","package无script；root--if-present","破坏","持续静默skip","E-AU-011-013","每次CI","补入口后恢复","F-0060"
+"INV-AU-011-009","正式质量入口覆盖本包测试与独立类型检查","package/root/Storefront scripts","测试由Storefront间接include；独立tsconfig未执行","部分成立","Storefront聚合配置漂移或类型错误","E-AU-011-013/015","每次CI","补自有入口或正式声明归属","F-0060"
 "INV-AU-011-010","两套Authz不可按名称互换","目录/数据模型","E-AU-011-008","成立","未经迁移直接替换","目录与DB表矩阵","跨进程/发布","显式迁移回滚","边界事实"
