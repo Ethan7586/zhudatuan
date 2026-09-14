@@ -61,6 +61,9 @@ env:
   RELEASE_OPERATION: ${{ inputs.operation }}
   CONTROL_SHA: ${{ github.sha }}
   CONTROL_REF: ${{ github.ref }}
+  GIT_CONFIG_COUNT: 1
+  GIT_CONFIG_KEY_0: http.version
+  GIT_CONFIG_VALUE_0: HTTP/1.1
   ZDT_RELEASE_SSH_HOST: root@123.57.232.253
 
 jobs:
@@ -87,6 +90,8 @@ jobs:
           fi
 
       - name: Load exact release control plane only
+        id: checkout_control
+        continue-on-error: true
         uses: actions/checkout@v6
         with:
           ref: ${{ github.sha }}
@@ -98,6 +103,29 @@ jobs:
             02_platform_pingtai/infrastructure/release/zdt-next.release.json
             02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json
             02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts
+
+      - name: Back off after a transient GitHub checkout failure
+        if: steps.checkout_control.outcome == 'failure'
+        shell: bash
+        run: sleep 5
+
+      - name: Retry exact release control plane checkout
+        if: steps.checkout_control.outcome == 'failure'
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            package.json
+            04_tools/release-engine
+            02_platform_pingtai/infrastructure/release/zdt-next.release.json
+            02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json
+            02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts
+
+      - name: Verify exact control-plane checkout
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$CONTROL_SHA"
 
       - name: Verify source belongs to the exact zdt-next history
         env:

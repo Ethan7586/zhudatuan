@@ -47,6 +47,9 @@ env:
   RELEASE_TARGET: ${{ inputs.release_target }}
   CONTROL_SHA: ${{ github.sha }}
   CONTROL_REF: ${{ github.ref }}
+  GIT_CONFIG_COUNT: 1
+  GIT_CONFIG_KEY_0: http.version
+  GIT_CONFIG_VALUE_0: HTTP/1.1
   VITE_API_BASE_URL: https://api.hbbtzn.com
   VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
   VITE_ZHUDIAN_SOLUTION_ORIGIN: https://labs.hbbtzn.com
@@ -70,10 +73,29 @@ jobs:
             exit 64
           fi
 
-      - uses: actions/checkout@v6
+      - name: Checkout exact source
+        id: checkout_source
+        continue-on-error: true
+        uses: actions/checkout@v6
         with:
           fetch-depth: 2
           ref: ${{ inputs.head_sha }}
+
+      - name: Back off after a transient GitHub checkout failure
+        if: steps.checkout_source.outcome == 'failure'
+        shell: bash
+        run: sleep 5
+
+      - name: Retry exact source checkout
+        if: steps.checkout_source.outcome == 'failure'
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+          ref: ${{ inputs.head_sha }}
+
+      - name: Verify exact source checkout
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$RELEASE_SHA"
 
       - name: Verify source belongs to the exact zdt-next history
         env:
