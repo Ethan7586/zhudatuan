@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-189-001,src/api/customRoleRoutes.ts,10-20,read authorization,Role center requires role.read and scopes its RPC by current actor membership and tenant.
+E-AU-189-002,src/api/customRoleRoutes.ts,22-60,creation/update,Role mutations require distinct capability fresh step-up validated fields server actor scope and authorization evidence.
+E-AU-189-003,src/api/customRoleRoutes.ts,62-84,status authorization,Active uses role.update and disabled uses role.delete before the mutation RPC.
+E-AU-189-004,src/api/customRoleRoutes.ts,86-124,input validation,Code permission list and clone-source constraints are locally validated before server persistence.
+E-AU-189-005,src/api/customRoleRoutes.test.ts,1-101,tests,Direct tests cover core authorization input and key create/enable paths; update and disable success RPC bodies are not separately asserted.

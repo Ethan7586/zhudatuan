@@ -2038,3 +2038,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | status mutation | self禁令、suspend/active与offboard的独立permission、actor evidence | [FACT][E-AU-188-003] |
 
 [FACT][E-AU-188-004] 2 文件、262 行完成深审；compat admin router注册access-control和membership access/status路径，当前正式Worker未装载完整authenticated admin router。
+
+## 194. AU-189 Custom roles 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| role center | `role.read`下的角色/权限可见性读取 | [FACT][E-AU-189-001] |
+| create/update | 独立create/update capability、fresh step-up、role字段/permission列表/clone source规则、actor evidence | [FACT][E-AU-189-002] |
+| status | active使用role.update，disabled使用role.delete，且都要求fresh step-up | [FACT][E-AU-189-003] |
+
+[FACT][E-AU-189-004] 2 文件、225 行完成深审；compat admin router注册roles collection/item/status路径，当前正式Worker未装载完整authenticated admin router。

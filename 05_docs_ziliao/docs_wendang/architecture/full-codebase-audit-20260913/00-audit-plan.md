@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-188 已完成。AU-188 完成 Commerce API permission admin 审阅。覆盖总账按当前文件级清单重算：深入审阅1,659文件/117,933行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,195文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-189 已完成。AU-189 完成 Commerce API custom roles 审阅。覆盖总账按当前文件级清单重算：深入审阅1,661文件/118,158行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,193文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1563,3 +1563,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Commerce API 后台 permission command center、membership access/status mutation routes 及direct tests。
 
 执行结果：命令中心必须同时具备member.read与role.read，PII字段独立裁剪；access变更要求role+scope grant、禁止自改、输入去重并把grant ceiling留给database RPC；status变更禁止自改且offboard需要独立permission。tests覆盖核心read、self、step-up、access body/hierarchy及offboard拒绝，但没有active/suspended成功RPC fixture，形成F-0197/P2；无P0/P1新问题。
+
+## 191. AU-189 连续审计点
+
+审阅 Commerce API 后台 custom role center/create/update/status routes 及direct tests。
+
+执行结果：role center以role.read读取；create/update/status分别绑定role.create/role.update/role.delete、fresh step-up、输入去重、server scope与actor evidence。clone source与手选permissions同时出现被拒绝。tests覆盖read/step-up/create payload、clone冲突、enable/disable权限分流和update拒绝；更新成功RPC及禁用成功的body未完整assert，但现有关键授权和创建/启用成功路径已直接验证，记录为测试缺口说明而不单列新问题；无P0–P3新问题。

@@ -535,3 +535,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖读取双权限和PII裁剪、access自改禁令/fresh step-up/去重及商业层级scope、status自改禁令和offboard独立permission。
 - 没有membership status成功RPC fixture或active/suspended路径覆盖；见F-0197/P2。审计工作树未运行Vitest。
+
+## 189. AU-189 Custom roles 深审
+
+- Direct tests覆盖role.read、create fresh step-up、validated create RPC payload、clone/permissions冲突、active/disabled permission分流和update拒绝。
+- Update success RPC和disabled success RPC body并未完整fixture；但核心状态授权与create/enable成功路径已直接验证，作为覆盖缺口保留，不单列新问题。审计工作树未运行Vitest。
