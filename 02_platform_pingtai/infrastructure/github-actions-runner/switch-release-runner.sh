@@ -36,6 +36,10 @@ state() {
 switch_to() {
   source_service="$1"
   target_service="$2"
+  if pgrep -f '/opt/actions-runner-release(-standby)?/bin/Runner.Worker' >/dev/null; then
+    echo 'A release job is active; refusing Runner switch.' >&2
+    exit 75
+  fi
   systemctl stop "$source_service"
   if ! systemctl start "$target_service"; then
     systemctl start "$source_service" >/dev/null 2>&1 || true

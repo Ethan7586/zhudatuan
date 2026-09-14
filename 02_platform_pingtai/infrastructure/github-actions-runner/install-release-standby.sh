@@ -33,50 +33,52 @@ if [ "$instance_id" != "$EXPECTED_INSTANCE_ID" ]; then
   exit 64
 fi
 
-if [ -f "$RUNNER_ROOT/.runner" ]; then
-  "$RUNNER_ROOT/svc.sh" stop >/dev/null 2>&1 || true
-  "$RUNNER_ROOT/svc.sh" status
-  echo 'Standby Runner already exists and remains stopped.'
-  exit 0
+if [ ! -f "$RUNNER_ROOT/.runner" ]; then
+  if [ -z "${RUNNER_REGISTRATION_TOKEN:-}" ]; then
+    echo 'RUNNER_REGISTRATION_TOKEN is required for first installation.' >&2
+    exit 64
+  fi
+
+  install_root="$(mktemp -d /var/tmp/zdt-release-standby.XXXXXX)"
+  cleanup() {
+    rm -rf -- "$install_root"
+  }
+  trap cleanup EXIT
+
+  curl -fL --retry 4 --retry-all-errors --connect-timeout 15 --max-time 180 \
+    "$RUNNER_URL" -o "$install_root/$RUNNER_ARCHIVE"
+  printf '%s  %s\n' "$RUNNER_ARCHIVE_SHA256" "$install_root/$RUNNER_ARCHIVE" | sha256sum -c -
+
+  id "$RUNNER_USER" >/dev/null 2>&1 || useradd --create-home --shell /bin/bash "$RUNNER_USER"
+  install -d -o "$RUNNER_USER" -g "$RUNNER_USER" -m 0755 "$RUNNER_ROOT"
+  tar -xzf "$install_root/$RUNNER_ARCHIVE" -C "$RUNNER_ROOT"
+  chown -R "$RUNNER_USER:$RUNNER_USER" "$RUNNER_ROOT"
+
+  runuser -u "$RUNNER_USER" -- "$RUNNER_ROOT/config.sh" \
+    --unattended \
+    --url "$REPOSITORY_URL" \
+    --token "$RUNNER_REGISTRATION_TOKEN" \
+    --name "$RUNNER_NAME" \
+    --labels 'zdt-aliyun-release,zdt-aliyun-release-standby' \
+    --work '_work' \
+    --replace
+  unset RUNNER_REGISTRATION_TOKEN
 fi
-if [ -z "${RUNNER_REGISTRATION_TOKEN:-}" ]; then
-  echo 'RUNNER_REGISTRATION_TOKEN is required for first installation.' >&2
-  exit 64
-fi
 
-install_root="$(mktemp -d /var/tmp/zdt-release-standby.XXXXXX)"
-cleanup() {
-  rm -rf -- "$install_root"
-}
-trap cleanup EXIT
-
-curl -fL --retry 4 --retry-all-errors --connect-timeout 15 \
-  "$RUNNER_URL" -o "$install_root/$RUNNER_ARCHIVE"
-printf '%s  %s\n' "$RUNNER_ARCHIVE_SHA256" "$install_root/$RUNNER_ARCHIVE" | sha256sum -c -
-
-id "$RUNNER_USER" >/dev/null 2>&1 || useradd --create-home --shell /bin/bash "$RUNNER_USER"
-install -d -o "$RUNNER_USER" -g "$RUNNER_USER" -m 0755 "$RUNNER_ROOT"
-tar -xzf "$install_root/$RUNNER_ARCHIVE" -C "$RUNNER_ROOT"
-chown -R "$RUNNER_USER:$RUNNER_USER" "$RUNNER_ROOT"
-
-runuser -u "$RUNNER_USER" -- "$RUNNER_ROOT/config.sh" \
-  --unattended \
-  --url "$REPOSITORY_URL" \
-  --token "$RUNNER_REGISTRATION_TOKEN" \
-  --name "$RUNNER_NAME" \
-  --labels 'zdt-aliyun-release,zdt-aliyun-release-standby' \
-  --work '_work' \
-  --replace
-unset RUNNER_REGISTRATION_TOKEN
-
-"$RUNNER_ROOT/svc.sh" install "$RUNNER_USER"
-"$RUNNER_ROOT/svc.sh" stop >/dev/null 2>&1 || true
 service_path="$(find /etc/systemd/system -maxdepth 1 -type f -name "actions.runner.*.${RUNNER_NAME}.service" -print -quit)"
+if [ -z "$service_path" ]; then
+  (
+    cd "$RUNNER_ROOT"
+    ./svc.sh install "$RUNNER_USER"
+  )
+  service_path="$(find /etc/systemd/system -maxdepth 1 -type f -name "actions.runner.*.${RUNNER_NAME}.service" -print -quit)"
+fi
 if [ -z "$service_path" ]; then
   echo 'Standby service unit was not installed.' >&2
   exit 1
 fi
 service_name="$(basename "$service_path")"
+systemctl stop "$service_name" >/dev/null 2>&1 || true
 systemctl disable "$service_name" >/dev/null 2>&1 || true
 if systemctl is-active --quiet "$service_name"; then
   echo 'Standby service must remain stopped after installation.' >&2

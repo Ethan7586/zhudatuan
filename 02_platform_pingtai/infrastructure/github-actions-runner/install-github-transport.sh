@@ -6,7 +6,10 @@ set -euo pipefail
 readonly EXPECTED_INSTANCE_ID='i-2zeewhay0farxq8lucrc'
 readonly BUILD_SERVICE='actions.runner.Ethan7586-zhudatuan.aliyun-staging-zdt-build.service'
 readonly RELEASE_SERVICE='actions.runner.Ethan7586-zhudatuan.aliyun-staging-zdt-release.service'
+readonly STANDBY_SERVICE='actions.runner.Ethan7586-zhudatuan.aliyun-staging-zdt-release-standby.service'
 readonly NO_PROXY_VALUE='localhost,127.0.0.1,::1,100.100.100.200,123.57.62.202,123.57.232.253,172.27.70.37,.aliyuncs.com,.hbbtzn.com'
+readonly ACTIVE_SERVICES=("$BUILD_SERVICE" "$RELEASE_SERVICE")
+readonly ALL_SERVICES=("$BUILD_SERVICE" "$RELEASE_SERVICE" "$STANDBY_SERVICE")
 
 if [ "$(id -u)" -ne 0 ]; then
   echo 'Run this installer as root on the staging ECS.' >&2
@@ -28,22 +31,23 @@ if [ "$instance_id" != "$EXPECTED_INSTANCE_ID" ]; then
   exit 64
 fi
 
-for service in "$BUILD_SERVICE" "$RELEASE_SERVICE"; do
+for service in "${ALL_SERVICES[@]}"; do
   systemctl cat "$service" >/dev/null
 done
-if pgrep -f '/opt/actions-runner-(build|release)/bin/Runner.Worker' >/dev/null; then
+if pgrep -f '/opt/actions-runner-(build|release|release-standby)/bin/Runner.Worker' >/dev/null; then
   echo 'A Runner job is active; retry after it finishes.' >&2
   exit 75
 fi
 
-for endpoint in \
-  https://github.com/ \
-  https://api.github.com/rate_limit \
-  https://codeload.github.com/actions/checkout/tar.gz/refs/tags/v6; do
-  curl -fsSIL --max-time 20 --proxy "$ZDT_GITHUB_PROXY_URL" -o /dev/null "$endpoint"
+for endpoint in https://github.com/ https://api.github.com/rate_limit; do
+  curl -fsSL --retry 2 --retry-all-errors --max-time 20 \
+    --proxy "$ZDT_GITHUB_PROXY_URL" -o /dev/null "$endpoint"
 done
+curl -fsSIL --retry 2 --retry-all-errors --max-time 20 \
+  --proxy "$ZDT_GITHUB_PROXY_URL" -o /dev/null \
+  https://github.com/actions/runner/releases/download/v2.337.0/actions-runner-linux-x64-2.337.0.tar.gz
 
-for service in "$BUILD_SERVICE" "$RELEASE_SERVICE"; do
+for service in "${ALL_SERVICES[@]}"; do
   drop_in="/etc/systemd/system/${service}.d"
   install -d -m 0755 "$drop_in"
   umask 022
@@ -59,8 +63,13 @@ for service in "$BUILD_SERVICE" "$RELEASE_SERVICE"; do
 done
 
 systemctl daemon-reload
-systemctl restart "$BUILD_SERVICE" "$RELEASE_SERVICE"
-systemctl is-active --quiet "$BUILD_SERVICE"
-systemctl is-active --quiet "$RELEASE_SERVICE"
+systemctl restart "${ACTIVE_SERVICES[@]}"
+for service in "${ACTIVE_SERVICES[@]}"; do
+  systemctl is-active --quiet "$service"
+done
+if systemctl is-active --quiet "$STANDBY_SERVICE" || systemctl is-enabled --quiet "$STANDBY_SERVICE"; then
+  echo 'Cold standby must remain stopped and disabled.' >&2
+  exit 1
+fi
 
 echo 'Runner GitHub transport installed; Aliyun and production destinations remain direct.'
