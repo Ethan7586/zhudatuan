@@ -1,0 +1,4 @@
+verification,scope,result,reason
+Source-level runtime trace,Partner store relationship port and callers,Completed,Canonical files and Checkout/Order consumer evidence reviewed.
+Existing test review,Partner manifest test,Completed,Static declaration only; F-0182 records missing behavior tests.
+Targeted formal test,Partner suite,Not run,Audit worktree dependency baseline lacks vitest; dependencies unchanged.
