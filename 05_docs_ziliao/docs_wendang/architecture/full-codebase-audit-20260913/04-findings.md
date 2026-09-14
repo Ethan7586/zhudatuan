@@ -2016,3 +2016,192 @@
 
 - [UNKNOWN] 外部完整小程序源码、线上微信版本和这9个文件的真实交付消费者。
 - [UNKNOWN] 无运行caller生成物是待装配候选片段、外部工程同步源还是遗留输出。
+
+## F-0083｜Auth runtime 可把凭据API指向未绑定Manifest的任意HTTPS域
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Auth Web runtime identity node |
+| 类型 | 身份凭据目的地、运行配置供应链 |
+| 严重级别 | P1候选 |
+| 置信度 | 高：parser、安装、测试和请求正文调用链直接可证；live值未核验 |
+| 文件和精确位置 | `auth-web/src/services/identityNodeEnvironment.ts:16-58`；`canonicalIdentity.ts:302-411,464-470`；`canonicalRegistration.ts:247-285`；SDK `IdentityNodeRegistry.ts:151-217`；`identityNodeRuntime.test.ts:8-43` |
+| 当前行为 | [FACT][E-AU-019-005] runtime envelope的digest/source字段仅校验格式；registry只要求当前accounts host匹配并接受任意HTTPS API/回跳origin。测试中的generated节点使用`.invalid` API/console/storefront仍成功安装。后续currentIdentityNode把该API作为含账号、密码、OTP或注册正文的fetch目的地 |
+| 预期行为 | runtime所选敏感目的地必须与同一受信节点Manifest/domain bindings及实际artifact身份绑定，不能由仅shape-valid JSON任意选择 |
+| 直接证据 | E-AU-019-005、INV-AU-019-001、FM-AU-019-001 |
+| 调用链或运行入口 | accounts host `/identity-runtime.json` → install runtimeRegistry → currentIdentityNode → identityRequest → runtime apiOrigin/consumerApiOrigin |
+| 用户影响 | 错配runtime且目标允许CORS时，用户提交的登录/注册凭据会发往错误服务；当前线上是否存在错配UNKNOWN |
+| 数据影响 | 可能暴露账号、密码、OTP、邀请码和注册资料；未证明已发生 |
+| 安全影响 | 高；配置权等价于凭据接收方选择权 |
+| 根因 | runtime envelope完整性字段未被客户端验证，registry通用shape校验未绑定受信Manifest |
+| 建议方向 | 后续独立批次统一runtime producer、签名/digest或Manifest投影绑定；不在审计分支新增门禁 |
+| 预计修改范围 | runtime生成/激活、Auth installer、SDK投影与反事实测试；必须拆批 |
+| 验证方式 | 当前accounts host+外域API反事实必须被拒；合法新增节点通过；真实浏览器CORS/请求目的地和回滚演练 |
+| 回滚方式 | 回退独立runtime绑定提交并恢复上一份已知正确runtime artifact |
+| 是否需要独立复核 | 是，RV-0012 |
+
+## F-0084｜Auth build快渲染与runtime全局替换形成双版本节点状态
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Auth Web bootstrap |
+| 类型 | 状态一致性、身份入口 |
+| 严重级别 | P2 |
+| 置信度 | 高：render guard和运行时读取顺序直接可证 |
+| 文件和精确位置 | `main.tsx:7-25`；`App.tsx:11-46`；`identityNodeEnvironment.ts:16-70`；`canonicalIdentity.ts:302-370,464-470` |
+| 当前行为 | [FACT][E-AU-019-003/006] build registry识别hostname后App立即捕获entry props；runtime到达后只替换模块级registry，`renderedFromBuild`阻止App重绘。提交时canonical服务再次读取新registry |
+| 预期行为 | 页面入口、application/target、显示品牌与请求API/回跳校验应来自同一不可分割registry版本 |
+| 直接证据 | E-AU-019-003/E-AU-019-006、INV-AU-019-002、FM-AU-019-002 |
+| 调用链或运行入口 | build entry→App props；并行runtime install→currentIdentityNode→submit |
+| 用户影响 | runtime与build存在合法差异时，登录/注册可被节点不匹配拒绝或显示与提交目标不一致 |
+| 数据影响 | 未证实写错数据；F-0083另述目的地风险 |
+| 安全影响 | 默认回跳校验会fail closed；仍破坏身份边界可解释性 |
+| 根因 | 快速首屏策略与可变全局runtime策略没有版本切换协议 |
+| 建议方向 | 单独bootstrap一致性批次选择原子等待、显式版本快照或受控重渲染 |
+| 预计修改范围 | main/App/environment及bootstrap测试 |
+| 验证方式 | build/runtime相同、合法漂移、host新增、慢响应四矩阵；页面和请求节点必须一致 |
+| 回滚方式 | 回退单一bootstrap提交 |
+| 是否需要独立复核 | 否；若升级P1则需要 |
+
+## F-0085｜runtime瞬时失败会覆盖已由有效build注册表渲染的登录页
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Auth Web bootstrap |
+| 类型 | 可用性、失败传播 |
+| 严重级别 | P2 |
+| 置信度 | 高：Promise catch无条件root.render |
+| 文件和精确位置 | `main.tsx:7-31`；`identityNodeEnvironment.ts:20-31`；`main.test.ts:4-11` |
+| 当前行为 | [FACT][E-AU-019-003] 已知build节点先显示App；runtime网络、5xx、JSON/envelope/host错误随后进入catch并把root替换为配置不可用。仅404或非JSON 200走fallback |
+| 预期行为 | runtime是否强制应有明确策略；若build是合法fallback，瞬时runtime故障不应无条件摧毁已可用入口 |
+| 直接证据 | E-AU-019-003、INV-AU-019-003、FM-AU-019-003 |
+| 调用链或运行入口 | main renderApp→loadIdentityNodeRuntime rejection→root.render error |
+| 用户影响 | runtime服务或文件短暂异常可使所有登录/注册入口不可用 |
+| 数据影响 | 无直接写入；中断身份流程 |
+| 安全影响 | fail closed但扩大可用性故障域 |
+| 根因 | fallback语义只按HTTP/content-type区分，没有结合是否已有可信build entry |
+| 建议方向 | 先由架构裁定runtime强制性，再独立实现明确状态机和行为测试 |
+| 预计修改范围 | main/environment和测试 |
+| 验证方式 | 404、HTML、500、网络断开、畸形JSON、host mismatch、已有/无build entry全矩阵 |
+| 回滚方式 | 回退bootstrap错误策略提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0086｜身份渠道切换丢弃跨节点 login_intent 与原查询上下文
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Auth Web App |
+| 类型 | 跨节点契约、导航状态 |
+| 严重级别 | P2 |
+| 置信度 | 高：query重建逻辑和intent读取点直接可证 |
+| 文件和精确位置 | `App.tsx:21-31`；`identityNodeEnvironment.ts:79-91`；`canonicalIdentity.ts:302-320`；`canonicalRegistration.ts:195-220` |
+| 当前行为 | [FACT][E-AU-019-007] switchAudience从零构造query，只保留consumer application/target或operator target；原`login_intent`、invite及其他上下文全部消失。后续currentLoginIntent读取新URL得到undefined |
+| 预期行为 | 仍适用于目标渠道的短时跨节点意图必须被显式保留；不兼容字段应按契约决定而非全部静默丢弃 |
+| 直接证据 | E-AU-019-007、INV-AU-019-004、FM-AU-019-004 |
+| 调用链或运行入口 | IdentityAudienceSwitch→replaceState→canonical login/member request |
+| 用户影响 | 跨节点用户切换管理员/会员后无法完成原登录，需返回源节点重发 |
+| 数据影响 | 无直接数据错误 |
+| 安全影响 | 不绕过验证；意图丢失导致fail closed/可用性问题 |
+| 根因 | 页面分流参数和跨节点授权参数没有集中导航投影函数 |
+| 建议方向 | 单独导航契约批次建立允许传播矩阵并补双向测试 |
+| 预计修改范围 | App/entry helper/测试 |
+| 验证方式 | 带单一合法intent双向切换后提交body保持；重复/畸形intent仍拒绝 |
+| 回滚方式 | 回退单一query传播提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0087｜Operator找回密码可显示新手机号却提交旧手机号challenge
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Auth Web Operator |
+| 类型 | 正确性、主体绑定 |
+| 严重级别 | P2 |
+| 置信度 | 高：受控字段和challenge状态转换直接可证；服务端绑定会缓解越权 |
+| 文件和精确位置 | `OperatorIdentityPage.tsx:207-240,275-334`；`canonicalIdentity.ts:218-252` |
+| 当前行为 | [FACT][E-AU-019-009] 验证码发出后同一表单的identifier仍可编辑，TextField onChange只setIdentifier；resetChallenge不清除。提交使用旧challenge/code但界面显示新identifier |
+| 预期行为 | identifier改变必须废弃旧challenge，或验证码阶段锁定并明确显示challenge对应手机号 |
+| 直接证据 | E-AU-019-009、INV-AU-019-005、FM-AU-019-005 |
+| 调用链或运行入口 | sendResetCode(A)→setResetChallenge→edit identifier(B)→resetCanonicalPassword(old challenge) |
+| 用户影响 | 拥有多个账号的用户可能误以为重置B，实际重置A；失败时也难解释 |
+| 数据影响 | 可能修改错误的本人账号密码；服务端challenge防止重置无验证码账号 |
+| 安全影响 | 未见越权路径，但主体展示与授权证据脱节 |
+| 根因 | reset状态没有与identifier建立失效关系 |
+| 建议方向 | 独立Operator reset UI状态批次；不改变服务端权限 |
+| 预计修改范围 | Operator页和一个行为测试 |
+| 验证方式 | A发码后改B必须清challenge/阻止提交；A正常重置仍通过 |
+| 回滚方式 | 回退单一页面状态提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0088｜Auth CSRF重试为同一逻辑操作生成新的幂等键
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Auth canonical clients |
+| 类型 | 重试、幂等 |
+| 严重级别 | P3 |
+| 置信度 | 高：key在request closure内部生成；当前重试只针对handler前CSRF拒绝是缓解项 |
+| 文件和精确位置 | `canonicalIdentity.ts:389-411`；`canonicalRegistration.ts:247-277`；对应retry tests |
+| 当前行为 | [FACT][E-AU-019-010] 每次request调用都新建idempotency-key和x-request-id；CSRF invalid重试因此不再是同一幂等身份。测试只断言次数，不比较键 |
+| 预期行为 | 同一用户动作的传输重试应保持稳定幂等键，并明确request-id是否按attempt变化 |
+| 直接证据 | E-AU-019-010、FM-AU-019-006 |
+| 调用链或运行入口 | identityRequest request()→403 CSRF→request() |
+| 用户影响 | 现有服务在handler前拒绝通常不会重复写；若边界变化或错误响应，重复保护减弱 |
+| 数据影响 | 目前仅最坏情形；未证实重复session/member写入 |
+| 安全影响 | 无直接授权扩大 |
+| 根因 | 逻辑operation metadata与attempt metadata在同一closure内生成 |
+| 建议方向 | 独立客户端幂等批次稳定key并补反事实；先确认服务端CSRF时序 |
+| 预计修改范围 | 两个canonical request helper和测试 |
+| 验证方式 | retry前后幂等键相同、request-id策略明确；后端只执行一次 |
+| 回滚方式 | 回退单一幂等提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0089｜共享Auth制品在L1仍声明L0 canonical与社交预览地址
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Auth Web HTML metadata |
+| 类型 | 多节点品牌/SEO契约 |
+| 严重级别 | P3 |
+| 置信度 | 高：HTML常量与双target发布映射直接可证 |
+| 文件和精确位置 | `index.html:13-18`；release/remote policy的L0/L1 auth-web target |
+| 当前行为 | [FACT][E-AU-019-011] canonical、og:url和og:image固定`accounts.fufu.wang`，同一dist也发布给`accounts.hbbtzn.com` |
+| 预期行为 | 每个身份节点应声明自身可审计的canonical/preview metadata，或明确共享品牌策略 |
+| 直接证据 | E-AU-019-011 |
+| 调用链或运行入口 | Vite build→共享dist→L0/L1 accounts host→crawler/browser head |
+| 用户影响 | L1链接分享与搜索归属指向L0，品牌和入口识别错误 |
+| 数据影响 | 无 |
+| 安全影响 | 不改变登录请求；可能降低用户识别正确域名的能力 |
+| 根因 | 可重定位bundle只处理资源base，未处理host-specific metadata |
+| 建议方向 | 由品牌/节点策略决定运行时或发布时metadata投影，独立验证两host |
+| 预计修改范围 | HTML/build/runtime注入和发布检查 |
+| 验证方式 | 两节点抓取head并核对canonical/OG与资源可达性 |
+| 回滚方式 | 回退metadata投影提交 |
+| 是否需要独立复核 | 否 |
+
+## F-0090｜Auth测试不能证明当前双页面和bootstrap关键失败行为
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Auth Web tests |
+| 类型 | 测试可信度、覆盖缺口 |
+| 严重级别 | P3 |
+| 置信度 | 高：test include、测试对象和mock边界逐文件核对 |
+| 文件和精确位置 | `vitest.config.ts:18-25`；`main.test.ts:4-11`；`OperatorIdentityPage.test.ts:49-74`；`canonicalIdentity.test.ts`；`canonicalRegistration.test.ts`；无Consumer test |
+| 当前行为 | [FACT][E-AU-019-012] main测试只比较源码字符串位置；现行Operator页仅2例，Consumer页0例；canonical tests全量mock fetch且没有畸形2xx，既有F-0007不会使测试失败。大量auth.test验证当前无入口的legacy链 |
+| 预期行为 | 当前App分流、runtime状态机、Consumer/Operator核心提交、畸形成功响应和主体切换应由行为测试证明 |
+| 直接证据 | E-AU-019-012、TC-AU-019-001/002 |
+| 调用链或运行入口 | package test→vitest include src/**/*.test.ts；当前环境因缺vitest未执行 |
+| 用户影响 | 入口或契约回归可能在测试仍绿时进入制品 |
+| 数据影响 | 测试本身不写业务数据 |
+| 安全影响 | F-0083等敏感目的地边界没有客户端拒绝测试 |
+| 根因 | UI迁移后测试重心仍在legacy/canonical helper，bootstrap采用源码文本oracle |
+| 建议方向 | 后续按bootstrap、Consumer、Operator、schema分别补最小行为测试，不与生产修复混批 |
+| 预计修改范围 | 测试文件；必要时极小可测试性接缝 |
+| 验证方式 | 逐个反事实可在破坏实现时稳定失败；浏览器集成验证真实fetch/redirect边界 |
+| 回滚方式 | 回退各单一测试批次 |
+| 是否需要独立复核 | 否 |
+
+## 19. AU-019 新增未定级事项
+
+- [UNKNOWN] live `identity-runtime.json`、当前线上Auth bundle与CORS接收方；本AU未访问线上。
+- [UNKNOWN] Ethan现行批准的是LoginPage还是Consumer/Operator双页，继续保留F-0005分歧。

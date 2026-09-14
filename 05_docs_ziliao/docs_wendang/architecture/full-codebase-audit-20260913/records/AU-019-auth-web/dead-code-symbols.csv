@@ -1,0 +1,4 @@
+"编号","分类","对象","零引用/疑似证据","保留责任","结论"
+"GX-0002","GX","LoginPage.tsx + auth.ts兼容登录族","当前App零import；两文件互引","owner-approved锁定、唯一旧三段式UI/兼容契约","禁止删除或擅自恢复，需产品裁定和独立复核"
+"DC-0024","G1","registrationPresentation/useSmsResendCountdown/consumerFacade/automaticRegistrationPassword/originPolicy公共helper","固定仓库无现行生产caller或只被legacy链调用","测试、公开/历史行为与未来兼容未排除","证据不足，不可删除"
+"DC-0025","G1","brand-lockup-horizontal/brand-mark/wing-code-symbol/wing-pattern","当前入口仅favicon/manifest/PNG；brand-mark只在legacy LoginPage","品牌历史、approved UI和仓外资产消费未排除","证据不足，不可删除"

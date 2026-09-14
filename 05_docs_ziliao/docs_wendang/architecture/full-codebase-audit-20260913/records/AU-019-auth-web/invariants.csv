@@ -1,0 +1,7 @@
+"编号","不变量","当前证据","状态","关联"
+"INV-AU-019-001","凭据目的地必须绑定当前受信节点Manifest而非仅任意HTTPS","runtime只校验shape+accounts host","不成立","F-0083"
+"INV-AU-019-002","同一交互的页面入口和请求节点必须来自同一registry版本","build先render、runtime后替换全局registry","不成立","F-0084"
+"INV-AU-019-003","有效build fallback不应被可选runtime瞬时失败无条件覆盖","runtime rejection直接root.render错误页","不成立/产品意图待确认","F-0085"
+"INV-AU-019-004","跨节点login_intent在用户切换身份渠道后必须保持","replaceState丢弃","不成立","F-0086"
+"INV-AU-019-005","找回密码界面显示的主体必须与challenge绑定主体一致","Operator可改identifier而challenge不清除","不成立","F-0087"
+"INV-AU-019-006","成功响应必须使用Schema解析后的data","九处safeParse结果丢弃","不成立","F-0007"

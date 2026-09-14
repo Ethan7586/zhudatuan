@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 2、G1 16、G2 2、G3 0、GX 1。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 2、G1 21、G2 2、G3 0、GX 2。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -302,3 +302,39 @@ AU-017没有G2/G3新增项；零生产引用只进入G1。没有删除、归档�
 | 二次复核 | 升级G2/G3前必须确认唯一小程序仓库/线上版本，并逐文件复核生成和candidate入口 |
 
 AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp文件。
+## GX-0002｜Auth owner-approved旧登录实现族
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需产品与架构专项 |
+| 对象 | `auth-web/src/screens/LoginPage.tsx`、`src/services/auth.ts`及其只为该链服务的兼容行为 |
+| 疑似原因 | [FACT][E-AU-019-008] 当前App只import ConsumerIdentityPage/OperatorIdentityPage；LoginPage与auth.ts仅互相引用或被测试引用 |
+| 保留证据 | owner-approved-ui仍指定LoginPage；它保存唯一三段式、多身份、top-level credential POST、旧注册与未接通step-up可见契约 |
+| 运行结论 | 当前源码入口不可达与机器批准清单冲突（F-0005）；不能自行判定应恢复哪套或哪套可删 |
+| 数据/契约责任 | 保存历史兼容BFF端点、旧UI交互与业务说明；删除可能消灭唯一规格，恢复则可能替换现行页面 |
+| 可否删除 | 禁止；需Ethan先裁定现行批准UI，再做仓外/线上/契约和第二次独立复核 |
+| 二次复核 | 是；产品裁定后重新检查App、owner-approved、bundle、BFF和视觉 |
+
+## DC-0024｜Auth未接入现行页面的辅助能力
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `registrationPresentation`、`useSmsResendCountdown`/otpPolicy、consumerFacade、`automaticRegistrationPassword`及originPolicy导出 |
+| 疑似原因 | [FACT][E-AU-019-008/012] 固定仓库无现行生产caller，或只被GX-0002旧链/自身测试调用 |
+| 保留证据 | 各对象保存邀请文案、重发时钟、同源accounts挂载、密码生成和origin allowlist等唯一行为；部分仍是测试/潜在兼容API |
+| 未排除项 | owner-approved旧UI去向、仓外消费者、同源/login挂载和未来页面收敛 |
+| 可否删除 | 否；未确认正式下线、等价替代和无可观察行为 |
+| 二次复核 | G1不强制；升级G2/G3前按符号逐一复核 |
+
+## DC-0025｜Auth旧品牌静态资产
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `brand-lockup-horizontal.svg`、`brand-mark.svg`、`wing-code-symbol.svg`、`wing-pattern.svg` |
+| 疑似原因 | [FACT] 当前Consumer/Operator入口不用这些public资产；brand-mark只由GX-0002 LoginPage引用，其余固定源码零引用 |
+| 保留证据 | 品牌历史与owner-approved旧页面尚未裁定；仓外静态URL、缓存和设计交付消费者未排除 |
+| 未排除项 | 线上旧HTML/缓存、外部引用、视觉回滚、品牌迁移 |
+| 可否删除 | 否；必须视觉/网络/发布和第二次复核后才可能升级 |
+| 二次复核 | G1不强制 |

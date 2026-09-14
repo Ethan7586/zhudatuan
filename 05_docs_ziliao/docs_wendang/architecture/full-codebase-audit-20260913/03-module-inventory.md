@@ -364,3 +364,18 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | 发布/质量 | navigation/tests/runtimegraph/candidate | 机器脚本 | F-0006：判据互相冲突 |
 
 [FACT][E-AU-018-001/002] 9/9文件、195/195行已复核；覆盖状态总账不增加，因为app与两个contract生成物已在前序AU审阅，其余生成物已预分类。本批完成的是文件级生成关系和片段内部调用闭合。
+
+## 25. AU-019 Auth Web 模块清单
+
+| 子模块 | 职责 | 真实入口/调用者 | 当前边界 |
+| --- | --- | --- | --- |
+| bootstrap/build env | build/runtime registry与首屏 | HTML/Vite/accounts host | F-0083/F-0084/F-0085 |
+| entry resolver | host/query→audience | App | F-0086 |
+| Consumer page | 登录、注册、找回 | App consumer | 无直接页面测试F-0090 |
+| Operator page | 登录、邀请注册、找回 | App operator | F-0087 |
+| canonical clients | challenge/session/member/ticket | 两现行页面 | F-0007/F-0088 |
+| interaction/telemetry | 同key去重、取消、阶段事件 | 两现行页面 | 测试较完整 |
+| legacy identity | LoginPage/compat auth | 当前App零入口 | F-0005/GX-0002 |
+| styles/assets | shell、PWA/OG | main/HTML/legacy | F-0089/DC-0025 |
+
+[FACT][E-AU-019-001] 58/58文件、6,807/6,807行覆盖；49个人工文本/代码文件深入审阅，9个品牌资源结构性审阅。

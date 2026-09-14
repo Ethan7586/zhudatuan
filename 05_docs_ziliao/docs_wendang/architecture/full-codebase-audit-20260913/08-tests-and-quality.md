@@ -172,3 +172,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - [CONFLICT][E-AU-018-005] 现有生成check只比字节，不比较canonical与生成Experience parser行为，无法发现F-0082。
 - 隔离VM探针执行真实生成JS，确认app正常配置、Experience接纳差异、CachePolicy mutation和Environment null错误；这不等于微信真机测试。
 - 完整10条验证结果见`records/AU-018-miniapp-runtime-fragment/tests.csv`。
+
+## 18. AU-019 Auth Web质量
+
+- package `test`运行Vitest，`lint`实际为`tsc --noEmit`；审计环境缺vitest/tsc，两项均127且源码未加载。build因会写dist且最终全量限制未执行。
+- 15个测试文件覆盖registry、entry、canonical helper、action协调和部分Operator行为；fetch均为mock，不能证明真实CORS、cookie、事务或redirect。
+- `main.test.ts`只比较源码字符串；Consumer页无直接测试，Operator仅2例；runtime状态机、intent保留、reset主体绑定和畸形2xx缺行为测试，见F-0090。
+- 九处`safeParse`结果丢弃继续构成F-0007；现有mock成功payload合法，因此破坏Schema不会让测试失败。

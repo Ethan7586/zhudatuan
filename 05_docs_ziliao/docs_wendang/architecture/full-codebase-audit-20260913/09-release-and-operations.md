@@ -200,3 +200,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - 8个生成物分别由clients/runtime/design生成链维护；只有Environment进入app运行链，另7个仅有生成、检查和candidate职责（DC-0023）。
 - 路径历史显示片段随MVP/支付候选收口进入当前轴，不证明其已部署或已下线。外部完整工程、线上微信版本和交付同步方式均UNKNOWN。
 - 本AU未运行candidate、构建微信包、访问外部工程、推送、合并、部署或改变线上资源。
+
+## 22. AU-019 Auth Web发布边界
+
+- `auth-web`是无进程重启的静态target；同一dist分别seed到L0 `/opt/zhudatuan/.../auth-web`与L1 `/opt/sfl/nodes/hbbtzn-l1/.../auth-web`。
+- L1 gateway先服务`/identity-runtime.json`再fallback静态文件；L0版本库Caddy没有专门runtime route，静态fallback返回HTML，客户端按content-type退回build registry。
+- 共享制品canonical/OG固定L0（F-0089）；runtime同时决定敏感API目的地（F-0083），后续治理须分别验证制品和runtime回滚。
+- 本AU未build、读取live runtime、切换指针、推送、合并、部署或改变线上资源。

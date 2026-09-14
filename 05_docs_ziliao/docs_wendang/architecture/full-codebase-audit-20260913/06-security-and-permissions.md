@@ -125,3 +125,11 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - [FACT][E-AU-017-006] AccessDenied本身不执行授权，只表达服务端结果；其11组视觉类没有CSS实现（F-0077）。这会弱化状态表达，但没有证据表明可绕过服务端权限。
 - [FACT] forbidden分支故意不显示调用者动作；ScopeShell的scope selector仍在外层shell可见。`onSwitchScope`公共action当前未被组件消费，列入公共面复核，不据此改变权限设计。
 - 本AU没有读取凭据、线上会话或权限数据，没有新增、收窄或移除任何权限规则。
+
+## 16. AU-019 Auth Web身份与凭据边界
+
+- [FACT][E-AU-019-004] canonical链生成PKCE材料、提交credential/challenge、交换一次性ticket，并对回跳执行当前节点exact-origin、无userinfo/hash和expiry校验；这些边界值得保留。
+- [P1-CANDIDATE][E-AU-019-005] 同源runtime文件可为当前accounts host声明任意HTTPS API/回跳origin，digest/source只做格式校验；API请求正文包含账号、密码、OTP或注册资料。见F-0083/RV-0012。live值未读取，故不是P0。
+- [P2][E-AU-019-006/007/009] build/runtime双版本、intent丢失和reset显示主体漂移破坏身份一致性；现有回跳校验和服务端challenge是缓解项，不是客户端正确性替代。
+- 旧`auth.ts`含客户端锁定和测试账号投影，但当前只服务GX-0002旧页面；不得把它当现行服务端权限，也不得在审计分支删除或强化。
+- 本AU没有读取、重置或记录真实凭据，没有修改权限、会话、runtime或线上资源。

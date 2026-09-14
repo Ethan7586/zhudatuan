@@ -1,0 +1,7 @@
+"编号","链路","故障模式","影响","等级","关联"
+"FM-AU-019-001","runtime JSON→registry→identity request","API origin可脱离Manifest","凭据提交到错误HTTPS服务","P1候选","F-0083"
+"FM-AU-019-002","build render→runtime install→submit","UI与service使用不同节点版本","入口拒绝或提交目标漂移","P2","F-0084"
+"FM-AU-019-003","runtime fetch→bootstrap catch","有效build页被错误页替换","身份入口不可用","P2","F-0085"
+"FM-AU-019-004","audience switch→replaceState","login_intent丢失","跨节点登录需重新发起","P2","F-0086"
+"FM-AU-019-005","reset challenge→identifier edit→submit","显示主体与实际challenge主体不同","误重置另一本人账号","P2","F-0087"
+"FM-AU-019-006","CSRF retry→request closure","幂等键变化","重试关联和最坏重复保护削弱","P3","F-0088"

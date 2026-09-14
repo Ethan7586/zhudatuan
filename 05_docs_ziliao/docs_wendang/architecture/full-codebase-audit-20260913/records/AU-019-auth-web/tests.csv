@@ -1,0 +1,6 @@
+"编号","入口","结果","证明","不证明"
+"TC-AU-019-001","npm test -- --reporter=dot","退出127：vitest缺失","正式测试入口与环境阻断","测试通过/失败"
+"TC-AU-019-002","npm run lint","退出127：tsc缺失","正式类型检查入口与环境阻断","类型正确性"
+"TC-AU-019-003","全仓静态import/string/发布反查","完成","页面、孤儿helper、资源和release caller关系","动态仓外消费者"
+"TC-AU-019-004","runtime parser与测试反事实复核","任意HTTPS origin被接受","F-0083静态接纳链","live runtime已恶意"
+"TC-AU-019-005","build","未执行：会写dist且最终全量阶段最多一次","遵守验证纪律","生产构建通过"

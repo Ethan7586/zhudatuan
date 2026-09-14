@@ -690,3 +690,11 @@ flowchart LR
 [CONFLICT][E-AU-018-005] generated Experience parser不是canonical parser的行为等价物：页/块上限、required字符串规范化和blocks接纳规则分叉（F-0082）。[CONFLICT][E-AU-018-008] navigation、test topology与candidate继续使用不同“应用存在”判据，补强F-0006。
 
 [UNKNOWN] 外部完整工程和线上微信版本未验证；因此片段不是可部署完整应用，也不能从仓内不完整反推其已下线。
+
+## 17. AU-019 增量：Auth Web 身份入口
+
+[FACT][E-AU-019-002/004] Auth Web是无Router的静态身份客户端：HTML→main→host/query entry→Consumer或Operator→canonical identity/registration→节点API→ticket exchange→exact-origin回跳。它不拥有数据库表或独立后端进程。
+
+[CONFLICT][E-AU-019-003/005/006] build registry负责快渲染，runtime registry可在渲染后替换服务使用的全局节点；runtime目的地又未绑定受信Manifest。由此形成凭据目的地P1候选F-0083和双版本状态F-0084。
+
+[CONFLICT][E-AU-019-008] 当前双页面入口与owner-approved的LoginPage旧链并存。旧链列GX-0002，不得由审计自行删除、修复或恢复。

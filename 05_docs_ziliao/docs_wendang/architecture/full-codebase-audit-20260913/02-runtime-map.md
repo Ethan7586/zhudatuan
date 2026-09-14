@@ -717,3 +717,12 @@ flowchart LR
 ~~~
 
 完整消费者与失败矩阵见 `records/AU-018-miniapp-runtime-fragment/`。
+
+## 24. AU-019｜Auth Web 运行链
+
+- HTML → `main.tsx` → build-known node快渲染 + 异步同源runtime读取。
+- `App` → `resolveIdentityEntry(search, hostname)` → Consumer/Operator/invalid；没有BrowserRouter。
+- Consumer：storefront resolve/login/register/reset → consumer API → session/ticket exchange → exact storefront redirect。
+- Operator：invite/challenge/register/login/reset → node API → membership选择/ticket exchange → exact admin redirect。
+- runtime可替换全局registry而不重绘页面（F-0084），reject可覆盖build页面（F-0085），目的地绑定缺口见F-0083。
+- 同一`auth-web/dist`进入L0/L1 target；L1服务identity-runtime，L0旧Caddy对该路径静态fallback为HTML。
