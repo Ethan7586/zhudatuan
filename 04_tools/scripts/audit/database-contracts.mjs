@@ -28,6 +28,7 @@ const L0_PUBLIC_DOMAIN_POST_HISTORY_STATEMENTS = Object.freeze([
   'reason=append-only post-history migration executed byte-for-byte',
 ]);
 const OWNER_FIXTURE_BOUNDARY = '20260829060000_zhudatuan_operator_invitation_registration.sql';
+const AUTONODE_TASK_OPERATION_PUBLICATION = '20260914090000_publish_autonode_task_operations.sql';
 const INVITATION_SCOPE = '20260821066000_resolve_invitation_scope.sql';
 const REGISTRATION_ASSERTION_OMISSIONS = new Map([
   [INVITATION_SCOPE, /\ndo \$assert\$ begin\n  if access\.resource_scope\('identity\.invitations\.create',[\s\S]*?\nend \$assert\$;\n/],
@@ -331,6 +332,7 @@ try {
       await seedBootstrapPrecondition(database);
     }
     if (name === OWNER_FIXTURE_BOUNDARY) await seedOwnerGuardPrecondition(database);
+    if (name === AUTONODE_TASK_OPERATION_PUBLICATION) await seedAutoNodeTaskOperationPrecondition(database);
     if (mode === '--inventory-cutover-unsafe' && name === INVENTORY_CUTOVER) {
       await seedUnsafeInventoryCutover(database);
       await assertUnsafeInventoryCutoverRejected(database, await readFile(join(MIGRATIONS,name),'utf8'));
@@ -531,6 +533,22 @@ async function seedOwnerGuardPrecondition(database) {
     end if;
   end
   $fixture$;`,'owner guard precondition');
+}
+
+async function seedAutoNodeTaskOperationPrecondition(database) {
+  await execute(database, `
+    insert into organization.organization(id,kind,parent_id,name,timezone,status,version,created_at,updated_at)
+    values(
+      'mall:d1708f04df2dd8a61736852c4900fb43','mall','enterprise-zhudatuan','宏泰甄选',
+      'Asia/Shanghai','active',0,'1970-01-01T00:00:00Z','1970-01-01T00:00:00Z'
+    ) on conflict(id) do nothing;
+    insert into organization.unitclosure(ancestor_id,descendant_id,depth) values
+      ('mall:d1708f04df2dd8a61736852c4900fb43','mall:d1708f04df2dd8a61736852c4900fb43',0),
+      ('enterprise-zhudatuan','mall:d1708f04df2dd8a61736852c4900fb43',1),
+      ('tenant-zhudatuan','mall:d1708f04df2dd8a61736852c4900fb43',2),
+      ('organization-platform-root','mall:d1708f04df2dd8a61736852c4900fb43',3)
+    on conflict(ancestor_id,descendant_id) do nothing;
+  `, 'autonode task operation precondition');
 }
 
 async function stageFreshReplaySecrets(database) {

@@ -10148,6 +10148,14 @@ objects:
     objectType: table
     target: runtime.idempotency
     privilege: update
+  - id: shopconsole:table:runtime.job:insert
+    kind: grant
+    owner: runtime
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
+    role: shopconsole
+    objectType: table
+    target: runtime.job
+    privilege: insert
   - id: shopconsole:table:runtime.operation:select
     kind: grant
     owner: runtime
@@ -10172,6 +10180,38 @@ objects:
     objectType: table
     target: runtime.schemaversion
     privilege: select
+  - id: shopconsole:table:support.agent:select
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
+    role: shopconsole
+    objectType: table
+    target: support.agent
+    privilege: select
+  - id: shopconsole:table:support.assignment:insert
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
+    role: shopconsole
+    objectType: table
+    target: support.assignment
+    privilege: insert
+  - id: shopconsole:table:support.assignmentrule:select
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
+    role: shopconsole
+    objectType: table
+    target: support.assignmentrule
+    privilege: select
+  - id: shopconsole:table:support.conversation:insert
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
+    role: shopconsole
+    objectType: table
+    target: support.conversation
+    privilege: insert
   - id: shopconsole:table:support.conversation:select
     kind: grant
     owner: support
@@ -10204,6 +10244,14 @@ objects:
     objectType: table
     target: support.history
     privilege: insert
+  - id: shopconsole:table:support.history:select
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
+    role: shopconsole
+    objectType: table
+    target: support.history
+    privilege: select
   - id: shopconsole:table:support.message:insert
     kind: grant
     owner: support
@@ -10220,6 +10268,22 @@ objects:
     objectType: table
     target: support.message
     privilege: select
+  - id: shopconsole:table:support.sla:select
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
+    role: shopconsole
+    objectType: table
+    target: support.sla
+    privilege: select
+  - id: shopconsole:table:support.ticket:insert
+    kind: grant
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
+    role: shopconsole
+    objectType: table
+    target: support.ticket
+    privilege: insert
   - id: shopconsole:table:support.ticket:select
     kind: grant
     owner: support
@@ -26580,6 +26644,10 @@ objects:
     kind: policy
     owner: runtime
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: runtime.job.consolesupportjobinsert
+    kind: policy
+    owner: runtime
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
   - id: runtime.job.jobscope
     kind: policy
     owner: runtime
@@ -26744,6 +26812,10 @@ objects:
     kind: policy
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: support.agent.consolesupportagentselect
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
   - id: support.agent.jobscope
     kind: policy
     owner: support
@@ -26752,6 +26824,10 @@ objects:
     kind: policy
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260821046000_support_lifecycle.sql
+  - id: support.assignment.consolesupportassignmentinsert
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
   - id: support.assignment.jobscope
     kind: policy
     owner: support
@@ -26760,6 +26836,10 @@ objects:
     kind: policy
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260821046000_support_lifecycle.sql
+  - id: support.assignmentrule.consolesupportassignmentruleselect
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
   - id: support.assignmentrule.jobscope
     kind: policy
     owner: support
@@ -26768,6 +26848,10 @@ objects:
     kind: policy
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260821046000_support_lifecycle.sql
+  - id: support.conversation.consolesupportconversationinsert
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
   - id: support.conversation.consolesupportconversationselect
     kind: policy
     owner: support
@@ -26808,6 +26892,10 @@ objects:
     kind: policy
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260830101000_console_support_boundary.sql
+  - id: support.history.consolesupporthistoryselect
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
   - id: support.history.jobscope
     kind: policy
     owner: support
@@ -26832,6 +26920,10 @@ objects:
     kind: policy
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: support.sla.consolesupportslaselect
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
   - id: support.sla.jobscope
     kind: policy
     owner: support
@@ -26840,6 +26932,10 @@ objects:
     kind: policy
     owner: support
     source: 02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql
+  - id: support.ticket.consolesupportticketinsert
+    kind: policy
+    owner: support
+    source: 02_platform_pingtai/database/supabase/migrations/20260914150000_enable_console_support_case_creation.sql
   - id: support.ticket.consolesupportticketselect
     kind: policy
     owner: support
