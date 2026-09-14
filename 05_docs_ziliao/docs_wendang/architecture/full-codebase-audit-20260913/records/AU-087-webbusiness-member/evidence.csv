@@ -1,0 +1,4 @@
+"编号","位置","证据","结论"
+"E-AU-087-001","WebMemberOperations.ts:17-30,79-83；migration 20260830104000:25-64","profile/address 使用 membership+session lookup；函数核验 live session/principal/version，拒绝无行结果。","web role 获得的 member 数据受 session 重证约束。"
+"E-AU-087-002","WebMemberOperations.ts:31-75","地址写入先为 recipient/mobile/address 调 KMS encrypt，default/delete 走独立受控分支并使用 expectedVersion。","敏感地址内容不作为明文字段直接交给 AddressPort。"
+"E-AU-087-003","HostedMallOpeningOperation.ts:7-22；SovereignUpgradeOperation.ts:7-35；MemberPort.test.ts:137-192","两个生命周期 command 都提取 active access node context，并将 membership/node/idempotency 传入数据库 port。","Web 入口不自行伪造 mall/node authority。"

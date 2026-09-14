@@ -962,3 +962,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | hit/miss、cursor Date、fallback | [FACT][E-AU-086-003] |
 
 [FACT][E-AU-086-004] 2 文件、215 行 WebBusiness Reporting operation 和行为测试完成深审；读路径不直接访问 projection offset，且 cache key 按 scope/projection version 隔离。
+
+## 92. AU-087 WebBusiness Member 运行模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| profile/address read | session-bound member projection 与 own-address keyset | [FACT][E-AU-087-001] |
+| address manage | KMS envelope、versioned save/default/delete | [FACT][E-AU-087-002] |
+| mall lifecycle | node-context-bound hosted open / sovereign upgrade | [FACT][E-AU-087-003] |
+
+[FACT][E-AU-087-004] 1 文件、83 行 WebBusiness Member selected operation 完成深审；Web role 通过 narrow SECURITY DEFINER session-context function 获得最低 member projection，而非读取 identity/access authority 表。

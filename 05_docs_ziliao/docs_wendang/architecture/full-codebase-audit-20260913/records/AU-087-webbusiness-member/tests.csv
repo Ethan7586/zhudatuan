@@ -1,0 +1,3 @@
+"测试/验证","范围","结论","执行"
+"MemberPort.test.ts 相关段","Hosted open / sovereign upgrade 的 authority SQL 参数","验证 active membership/node 被传入受控数据库函数；Web operation 本身无专用测试。","已结构性审阅相关案例；Vitest 未执行。"
+"WebBusinessScopeResolver.test.ts","profile/address 的 owner scope resolver","mock 验证 session owner scope 查询；不执行真实 session function。","已在 AU-083 深审；Vitest 未执行。"
