@@ -120,6 +120,36 @@ describe('PgSessionResolver realm account projection', () => {
     expect(query.mock.calls[0]?.[1]?.[1]).toBe('api.hbbtzn.com');
   });
 
+  it('shares one concurrent session lookup without retaining an authorization cache', async () => {
+    const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
+    let release: (() => void) | undefined;
+    const blocked = new Promise<void>((resolve) => { release = resolve; });
+    const row = {
+      actor_id: 'principal:shared', account_id: 'account:l1', realm_id: 'realm:l1',
+      session_id: 'session:l1', membership_id: 'membership:l1', credential_version: 7,
+      access_version: 3, target: 'console', membership_client: 'operator',
+      governance_organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43', assurance_level: 1,
+      assurance_verified_at: null, ...l1SessionNode,
+    };
+    const query = vi.fn(async () => {
+      if (query.mock.calls.length === 1) await blocked;
+      return { rows: [row] };
+    });
+    const resolver = new PgSessionResolver({ query } as never);
+    const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'c'.repeat(32)}` }), nodeContext);
+
+    const first = resolver.resolve(headers);
+    const second = resolver.resolve(headers);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(query).toHaveBeenCalledTimes(1);
+    release?.();
+    await expect(Promise.all([first, second])).resolves.toHaveLength(2);
+
+    await resolver.resolve(headers);
+    expect(query).toHaveBeenCalledTimes(2);
+  });
+
   it('rejects a database session from a different realm than the resolved request node', async () => {
     const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
     const query = vi.fn().mockResolvedValue({ rows: [{

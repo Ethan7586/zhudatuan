@@ -1,6 +1,8 @@
 import { createClient, type RedisClientType } from 'redis';
 import type { Cache, CacheState } from './Cache';
 
+const CACHE_COMMAND_TIMEOUT_MILLISECONDS = 100;
+
 export class RedisCache implements Cache {
   private client: RedisClientType | undefined;
   private readonly unavailableListeners = new Set<(state: CacheState) => void>();
@@ -27,7 +29,7 @@ export class RedisCache implements Cache {
   async get<T>(key: string): Promise<T | null> {
     if (!this.ready()) return null;
     try {
-      const value = await this.client!.get(key);
+      const value = await this.commandClient().get(key);
       return value === null ? null : JSON.parse(value) as T;
     } catch (cause) {
       this.degrade(cause);
@@ -44,7 +46,7 @@ export class RedisCache implements Cache {
     if (!Number.isSafeInteger(seconds) || seconds < 1) throw new Error('CACHE_TTL_INVALID');
     if (!this.ready()) return false;
     try {
-      await this.client!.set(key, JSON.stringify(value), { EX: seconds });
+      await this.commandClient().set(key, JSON.stringify(value), { EX: seconds });
       return true;
     } catch (cause) {
       this.degrade(cause);
@@ -56,7 +58,7 @@ export class RedisCache implements Cache {
     if (keys.length === 0) return true;
     if (!this.ready()) return false;
     try {
-      await this.client!.del([...keys]);
+      await this.commandClient().del([...keys]);
       return true;
     } catch (cause) {
       this.degrade(cause);
@@ -75,6 +77,10 @@ export class RedisCache implements Cache {
 
   private ready(): boolean {
     return this.status.available && this.client?.isReady === true;
+  }
+
+  private commandClient(): RedisClientType {
+    return this.client!.withAbortSignal(AbortSignal.timeout(CACHE_COMMAND_TIMEOUT_MILLISECONDS));
   }
 
   private degrade(cause: unknown): void {
