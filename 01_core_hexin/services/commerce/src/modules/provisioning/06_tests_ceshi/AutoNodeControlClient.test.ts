@@ -36,7 +36,7 @@ describe('AutoNodeControlClient', () => {
     expect(request).toHaveBeenCalledOnce();
   });
 
-  it('proxies task reads and retries without changing the task identity', async () => {
+  it('reads and retries tasks without changing the task identity', async () => {
     const calls: string[] = [];
     const request = vi.fn(async (input: URL | RequestInfo) => {
       calls.push(String(input));
@@ -106,6 +106,13 @@ const receipt = {
   activation_status: null,
   waiting_external: [],
   last_error: null,
+  platform: {
+    mall_id: 'mall:child',
+    application_id: 'application:child',
+    name: '华中甄选',
+    public_slug: 'h6',
+  },
+  result: null,
   events: [{ phase: 'QUEUED', message: '平台创建任务已进入执行队列', occurred_at: '2026-09-14T03:00:00.000Z' }],
   created_at: '2026-09-14T03:00:00.000Z',
   updated_at: '2026-09-14T03:00:00.000Z',

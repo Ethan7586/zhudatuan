@@ -26,6 +26,21 @@ const mobileManage = createFetchIdentityMobileManage(appConfig.apiBaseUrl);
 const stepupStart = createFetchIdentityStepupStart(appConfig.apiBaseUrl);
 const stepupComplete = createFetchIdentityStepupComplete(appConfig.apiBaseUrl);
 
+const AutoNodeTaskPlatformSchema = z.object({
+  mall_id: z.string().min(1).nullable(),
+  application_id: z.string().min(1).nullable(),
+  name: z.string().min(1).nullable(),
+  public_slug: z.string().min(1).nullable(),
+});
+
+const AutoNodeTaskResultSchema = z.object({
+  manifest_id: z.string().min(1).nullable(),
+  access_entries: z.array(z.object({
+    surface_ref: z.string().min(1),
+    url: z.string().regex(/^https:\/\//),
+  })),
+});
+
 const AutoNodeTaskReceiptSchema = z.object({
   schema_version: z.literal('sfl.autonode-control-task-receipt.v1'),
   task_id: z.string().min(1),
@@ -38,6 +53,8 @@ const AutoNodeTaskReceiptSchema = z.object({
   activation_status: z.string().nullable(),
   waiting_external: z.array(z.string()),
   last_error: z.object({ message: z.string() }).passthrough().nullable(),
+  platform: AutoNodeTaskPlatformSchema,
+  result: AutoNodeTaskResultSchema.nullable(),
   events: z.array(z.object({ phase: z.string(), message: z.string(), occurred_at: z.string() })),
   created_at: z.string().min(1),
   updated_at: z.string().min(1),
@@ -120,6 +137,34 @@ export function canCreateMall(context: ConsoleContext, platformScope: ConsoleSco
     && context.session.csrf !== undefined
     && context.session.permissions.includes('organization.layer.manage')
     && context.session.capabilities.includes('provisioning.malls.create');
+}
+
+export function canReadMallNodeTask(context: ConsoleContext, platformScope: ConsoleScope | undefined): boolean {
+  return platformScope !== undefined
+    && context.session.permissions.includes('organization.layer.read')
+    && context.session.capabilities.includes('provisioning.nodetasks.read');
+}
+
+export function canRetryMallNodeTask(context: ConsoleContext, platformScope: ConsoleScope | undefined): boolean {
+  return platformScope !== undefined
+    && context.session.csrf !== undefined
+    && context.session.permissions.includes('organization.layer.manage')
+    && context.session.capabilities.includes('provisioning.nodetasks.retry');
+}
+
+export function mallNodeTaskKey(context: ConsoleContext, scope: ConsoleScope | undefined, taskId: string) {
+  return Object.freeze([
+    'distributed-platform',
+    scope?.kind ?? 'none',
+    scope?.id ?? 'none',
+    context.session.accessVersion,
+    'node-task',
+    taskId,
+  ] as const);
+}
+
+export function mallNodeTaskId(mallId: string): string {
+  return `task:${mallId}`;
 }
 
 export function mallCreationRequiresStepup(context: ConsoleContext): boolean {
@@ -236,6 +281,26 @@ export async function readMallNodeTask(
     ...(signal === undefined ? {} : { signal }),
   }));
   return AutoNodeTaskReceiptSchema.parse(value);
+}
+
+export async function readMallNodeTaskOrNull(
+  context: ConsoleContext,
+  scope: ConsoleScope,
+  taskId: string,
+  signal?: AbortSignal,
+): Promise<AutoNodeTaskReceipt | null> {
+  try {
+    return await readMallNodeTask(context, scope, taskId, signal);
+  } catch (cause) {
+    if (isMallNodeTaskMissing(cause)) return null;
+    throw cause;
+  }
+}
+
+export function isMallNodeTaskMissing(error: unknown): boolean {
+  const code = apiErrorCode(error);
+  return code === 'RESOURCE_NOT_FOUND'
+    || (error instanceof Error && error.message.includes('AUTONODE_TASK_NOT_FOUND'));
 }
 
 export async function retryMallNodeTask(

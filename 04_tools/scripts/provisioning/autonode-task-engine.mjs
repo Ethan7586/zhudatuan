@@ -87,6 +87,8 @@ export class AutoNodeTaskEngine {
           activation_status: null,
           waiting_external: [],
           last_error: null,
+          platform: taskPlatform(request),
+          result: null,
           events: [event('QUEUED', '平台创建任务已进入执行队列', now)],
           created_at: now,
           updated_at: now,
@@ -131,6 +133,7 @@ export class AutoNodeTaskEngine {
         progress: Math.min(task.receipt.progress, 25),
         waiting_external: [],
         last_error: null,
+        result: null,
         finished_at: null,
         events: appendEvent(task.receipt.events, event('QUEUED', '任务已重新进入执行队列', now)),
         updated_at: now,
@@ -222,6 +225,7 @@ export class AutoNodeTaskEngine {
           plan_digest: planned.plan_digest,
           activation_status: activated.status,
           waiting_external: [],
+          result: activated.result,
           message: '独立平台已经完成首次激活',
         });
         return;
@@ -234,6 +238,7 @@ export class AutoNodeTaskEngine {
           plan_digest: planned.plan_digest,
           activation_status: activated.status,
           waiting_external: activated.waiting_external,
+          result: null,
           message: '激活已暂停，正在等待外部资源就绪',
         });
         return;
@@ -280,6 +285,7 @@ export class AutoNodeTaskEngine {
         phase: 'FAILED',
         activation_status: 'FAILED_RETRYABLE',
         last_error: { message, recorded_at: now },
+        result: null,
         updated_at: now,
         finished_at: now,
         events: appendEvent(task.receipt.events, event('FAILED', message, now)),
@@ -338,7 +344,11 @@ function normalizeActivationResult(value) {
   if (!Array.isArray(waiting) || waiting.some((item) => typeof item !== 'string')) {
     throw new Error('AUTONODE_TASK_WAITING_EXTERNAL_INVALID');
   }
-  return Object.freeze({ status, waiting_external: Object.freeze([...new Set(waiting)].sort()) });
+  return Object.freeze({
+    status,
+    waiting_external: Object.freeze([...new Set(waiting)].sort()),
+    result: status === 'ACTIVE' ? activationTaskResult(result) : null,
+  });
 }
 
 function updateReceipt(task, change) {
@@ -346,7 +356,111 @@ function updateReceipt(task, change) {
 }
 
 function publicReceipt(task) {
-  return Object.freeze(structuredClone(task.receipt));
+  const receipt = structuredClone(task.receipt);
+  return Object.freeze({
+    ...receipt,
+    platform: normalizeTaskPlatform(receipt.platform, task.request),
+    result: receipt.status === 'SUCCEEDED'
+      ? normalizeTaskResult(receipt.result) ?? successfulTaskResult(task.request)
+      : null,
+  });
+}
+
+function taskPlatform(request) {
+  const business = taskBusiness(request);
+  const fallbackMall = request.task_id.startsWith('task:') ? request.task_id.slice('task:'.length) : null;
+  return Object.freeze({
+    mall_id: optionalText(business?.mall_id) ?? optionalText(business?.scope_id) ?? optionalText(fallbackMall),
+    application_id: optionalText(business?.application_id),
+    name: optionalText(business?.name),
+    public_slug: optionalText(business?.public_slug),
+  });
+}
+
+function normalizeTaskPlatform(value, request) {
+  if (value === undefined || value === null) return taskPlatform(request);
+  const platform = requiredRecord(value, 'task receipt platform');
+  return Object.freeze({
+    mall_id: optionalText(platform.mall_id),
+    application_id: optionalText(platform.application_id),
+    name: optionalText(platform.name),
+    public_slug: optionalText(platform.public_slug),
+  });
+}
+
+function activationTaskResult(value) {
+  const direct = normalizeTaskResult(value.result);
+  if (direct !== null) return direct;
+  const candidate = optionalRecord(value.candidate);
+  const manifest = optionalRecord(candidate?.manifest);
+  if (manifest === null) return null;
+  return Object.freeze({
+    manifest_id: optionalText(manifest?.manifest_id),
+    access_entries: manifestAccessEntries(manifest),
+  });
+}
+
+function successfulTaskResult(request) {
+  const provisioning = taskProvisioningRequest(request);
+  const domains = optionalRecord(provisioning?.domains);
+  const entries = domains === null ? [] : Object.entries(domains).flatMap(([surface, host]) => {
+    const value = optionalText(host);
+    return value === null ? [] : [{ surface_ref: `surface:${surface}`, url: `https://${value}` }];
+  });
+  return Object.freeze({ manifest_id: null, access_entries: Object.freeze(entries) });
+}
+
+function normalizeTaskResult(value) {
+  if (value === undefined || value === null) return null;
+  const result = requiredRecord(value, 'task receipt result');
+  const entries = result.access_entries;
+  if (!Array.isArray(entries)) throw new Error('AUTONODE_TASK_RESULT_ACCESS_ENTRIES_INVALID');
+  return Object.freeze({
+    manifest_id: optionalText(result.manifest_id),
+    access_entries: Object.freeze(entries.map((entry) => {
+      const record = requiredRecord(entry, 'task receipt access entry');
+      return Object.freeze({
+        surface_ref: requiredText(record.surface_ref, 'task receipt access entry surface_ref'),
+        url: requiredHttpsUrl(record.url, 'task receipt access entry url'),
+      });
+    })),
+  });
+}
+
+function manifestAccessEntries(manifest) {
+  if (manifest === null) return Object.freeze([]);
+  const bindings = manifest.domain_bindings;
+  if (!Array.isArray(bindings)) return Object.freeze([]);
+  return Object.freeze(bindings.flatMap((binding) => {
+    const record = optionalRecord(binding);
+    const surface = optionalText(record?.surface_ref);
+    const host = optionalText(record?.host);
+    return surface === null || host === null ? [] : [{ surface_ref: surface, url: `https://${host}` }];
+  }));
+}
+
+function taskBusiness(request) {
+  const provisioning = taskProvisioningRequest(request);
+  return optionalRecord(provisioning?.business);
+}
+
+function taskProvisioningRequest(request) {
+  const activation = optionalRecord(request.activation_request);
+  return optionalRecord(activation?.provisioning_request);
+}
+
+function optionalRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value : null;
+}
+
+function optionalText(value) {
+  return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
+}
+
+function requiredHttpsUrl(value, name) {
+  const url = requiredText(value, name);
+  if (!url.startsWith('https://')) throw new Error(`AUTONODE_TASK_FIELD_INVALID:${name}`);
+  return url;
 }
 
 function event(phase, message, occurredAt) {

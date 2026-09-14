@@ -11,6 +11,7 @@ import { Component } from './DistributedPlatformRoute';
 
 let createdBody: unknown;
 let createdIdempotency: string | null;
+let retriedTaskId: string | undefined;
 
 const server = setupServer(
   http.get('*/api/v1/experiences/applications', () => HttpResponse.json({
@@ -54,8 +55,14 @@ const server = setupServer(
       nodeTask: taskReceipt('QUEUED', 0),
     }, { status: 201 });
   }),
-  http.get('*/api/v1/provisioning/node-tasks/:taskid', () => HttpResponse.json(taskReceipt('SUCCEEDED', 100))),
-  http.post('*/api/v1/provisioning/node-tasks/:taskid/retry', () => HttpResponse.json(taskReceipt('QUEUED', 0), { status: 202 })),
+  http.get('*/api/v1/provisioning/node-tasks/:taskid', ({ params }) => String(params.taskid) === 'task:mall:huazhong'
+    ? HttpResponse.json(taskReceipt('SUCCEEDED', 100))
+    : HttpResponse.json({ code: 'RESOURCE_NOT_FOUND', message: 'RESOURCE_NOT_FOUND', requestId: 'request:task-missing' },
+      { status: 404 })),
+  http.post('*/api/v1/provisioning/node-tasks/:taskid/retry', ({ params }) => {
+    retriedTaskId = String(params.taskid);
+    return HttpResponse.json(taskReceipt('QUEUED', 0), { status: 202 });
+  }),
 );
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -64,6 +71,7 @@ afterEach(() => {
   server.resetHandlers();
   createdBody = undefined;
   createdIdempotency = null;
+  retriedTaskId = undefined;
 });
 afterAll(() => server.close());
 
@@ -85,6 +93,7 @@ describe('Distributed platform workspace', () => {
     expect((await screen.findAllByText('node:local-development:l0')).length).toBeGreaterThan(0);
     expect(screen.getByText('NodeManifest')).toBeTruthy();
     expect(screen.getByText('鸿泰惠民通')).toBeTruthy();
+    expect(await screen.findByText('暂无平台生产任务')).toBeTruthy();
     expect(screen.getByRole('button', { name: '树状视图' }).getAttribute('aria-pressed')).toBe('true');
 
     await user.click(screen.getByRole('button', { name: '链路视图' }));
@@ -122,7 +131,7 @@ describe('Distributed platform workspace', () => {
     await user.click(screen.getByRole('button', { name: '确认创建' }));
 
     expect(await screen.findByText('独立节点已激活')).toBeTruthy();
-    expect(screen.getByText('h6.hbbtzn.com')).toBeTruthy();
+    expect(screen.getByText('https://h6.hbbtzn.com')).toBeTruthy();
     expect(createdBody).toEqual({
       enterpriseId: 'mall:benefits',
       name: '华中甄选平台',
@@ -130,6 +139,103 @@ describe('Distributed platform workspace', () => {
       publicSlug: 'auto-h5',
     });
     expect(createdIdempotency).toBeTruthy();
+  });
+
+  it('renders running progress and persisted successful outputs exactly as returned', async () => {
+    let task = taskReceipt('RUNNING', 35, { mallId: 'mall:benefits', taskId: 'task:mall:benefits' });
+    server.use(http.get('*/api/v1/provisioning/node-tasks/:taskid', () => HttpResponse.json(task)));
+    const running = render(
+      <MemoryRouter initialEntries={['/platforms']}>
+        <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+          <ConsoleContextProvider value={context}><Component /></ConsoleContextProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText('执行中')).toBeTruthy();
+    expect(screen.getByText('35%')).toBeTruthy();
+    running.unmount();
+
+    task = taskReceipt('SUCCEEDED', 100, { mallId: 'mall:benefits', taskId: 'task:mall:benefits' });
+    render(
+      <MemoryRouter initialEntries={['/platforms']}>
+        <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+          <ConsoleContextProvider value={context}><Component /></ConsoleContextProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText('已完成')).toBeTruthy();
+    expect(screen.getByText('manifest:h6:l1')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'H5 · https://h6.hbbtzn.com' }).getAttribute('href'))
+      .toBe('https://h6.hbbtzn.com');
+  });
+
+  it('restores a persisted failed task and retries the same task chain once', async () => {
+    let history = taskReceipt('FAILED_RETRYABLE', 35, {
+      lastError: 'DNS_PROVIDER_TEMPORARY_FAILURE',
+      mallId: 'mall:benefits',
+      taskId: 'task:mall:benefits',
+    });
+    server.use(
+      http.get('*/api/v1/provisioning/node-tasks/:taskid', () => HttpResponse.json(history)),
+      http.post('*/api/v1/provisioning/node-tasks/:taskid/retry', ({ params }) => {
+        retriedTaskId = String(params.taskid);
+        history = taskReceipt('QUEUED', 0, { mallId: 'mall:benefits', taskId: retriedTaskId });
+        return HttpResponse.json(history, { status: 202 });
+      }),
+    );
+    const user = userEvent.setup();
+    const firstClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const first = render(
+      <MemoryRouter initialEntries={['/platforms']}>
+        <QueryClientProvider client={firstClient}>
+          <ConsoleContextProvider value={context}><Component /></ConsoleContextProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText('执行失败')).toBeTruthy();
+    expect(screen.getAllByText('DNS_PROVIDER_TEMPORARY_FAILURE')).toHaveLength(2);
+    await user.click(screen.getByRole('button', { name: '重试一次' }));
+    expect(retriedTaskId).toBe('task:mall:benefits');
+    expect(await screen.findByText('排队中')).toBeTruthy();
+
+    first.unmount();
+    const restoredClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <MemoryRouter initialEntries={['/platforms']}>
+        <QueryClientProvider client={restoredClient}>
+          <ConsoleContextProvider value={context}><Component /></ConsoleContextProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText('排队中')).toBeTruthy();
+    expect(screen.getByText('task:mall:benefits')).toBeTruthy();
+  });
+
+  it('shows task read failures and missing task permission explicitly', async () => {
+    server.use(http.get('*/api/v1/provisioning/node-tasks/:taskid', () => new HttpResponse(null, { status: 503 })));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const failed = render(
+      <MemoryRouter initialEntries={['/platforms']}>
+        <QueryClientProvider client={client}>
+          <ConsoleContextProvider value={context}><Component /></ConsoleContextProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText('任务记录读取失败')).toBeTruthy();
+    failed.unmount();
+
+    const deniedContext: ConsoleContext = { ...context, session: { ...context.session,
+      capabilities: context.session.capabilities.filter((capability) => capability !== 'provisioning.nodetasks.read') } };
+    render(
+      <MemoryRouter initialEntries={['/platforms']}>
+        <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+          <ConsoleContextProvider value={deniedContext}><Component /></ConsoleContextProvider>
+        </QueryClientProvider>
+      </MemoryRouter>,
+    );
+    expect(screen.getByText('当前身份无任务读取权限')).toBeTruthy();
   });
 });
 
@@ -141,8 +247,9 @@ const context: ConsoleContext = {
     scope,
     scopes: [scope],
     accessVersion: 11,
-    permissions: ['experience.application.read', 'organization.layer.manage'],
-    capabilities: ['experience.applications.read', 'provisioning.malls.create'],
+    permissions: ['experience.application.read', 'organization.layer.read', 'organization.layer.manage'],
+    capabilities: ['experience.applications.read', 'provisioning.malls.create', 'provisioning.nodetasks.read',
+      'provisioning.nodetasks.retry'],
     assurance: { level: 3, verified: '2026-09-14T00:00:00.000Z' },
     security: { hasLocalCredential: true, phoneMasked: '138****0000', passwordChangedAt: null },
     csrf: 'csrf-token-for-test',
@@ -154,24 +261,37 @@ const context: ConsoleContext = {
   scopes: [scope],
 };
 
-function taskReceipt(status: 'QUEUED' | 'SUCCEEDED', progress: number) {
+type TaskStatus = 'QUEUED' | 'RUNNING' | 'WAITING_EXTERNAL' | 'FAILED_RETRYABLE' | 'SUCCEEDED';
+
+function taskReceipt(status: TaskStatus, progress: number, options: Readonly<{
+  lastError?: string;
+  mallId?: string;
+  taskId?: string;
+}> = {}) {
+  const succeeded = status === 'SUCCEEDED';
   return {
     schema_version: 'sfl.autonode-control-task-receipt.v1',
-    task_id: 'task:mall:huazhong',
+    task_id: options.taskId ?? 'task:mall:huazhong',
     action: 'ACTIVATE',
     node_id: 'node:h6:l1',
     status,
-    phase: status === 'SUCCEEDED' ? 'ACTIVE' : 'QUEUED',
+    phase: succeeded ? 'ACTIVE' : status === 'FAILED_RETRYABLE' ? 'FAILED' : status,
     progress,
-    plan_digest: status === 'SUCCEEDED' ? 'sha256:plan' : null,
-    activation_status: status === 'SUCCEEDED' ? 'ACTIVE' : null,
+    plan_digest: succeeded ? 'sha256:plan' : null,
+    activation_status: succeeded ? 'ACTIVE' : status === 'FAILED_RETRYABLE' ? 'FAILED_RETRYABLE' : null,
     waiting_external: [],
-    last_error: null,
-    events: [{ phase: status === 'SUCCEEDED' ? 'ACTIVE' : 'QUEUED', message: status === 'SUCCEEDED'
-      ? '独立平台已经完成首次激活' : '平台创建任务已进入执行队列', occurred_at: '2026-09-14T03:00:00.000Z' }],
+    last_error: options.lastError === undefined ? null : { message: options.lastError },
+    platform: { mall_id: options.mallId ?? 'mall:huazhong', application_id: null,
+      name: options.mallId === 'mall:benefits' ? '鸿泰惠民通' : '华中甄选平台', public_slug: 'h6' },
+    result: succeeded ? { manifest_id: 'manifest:h6:l1', access_entries: [
+      { surface_ref: 'surface:storefront', url: 'https://h6.hbbtzn.com' },
+    ] } : null,
+    events: [{ phase: succeeded ? 'ACTIVE' : status === 'FAILED_RETRYABLE' ? 'FAILED' : status,
+      message: options.lastError ?? (succeeded ? '独立平台已经完成首次激活' : '平台创建任务已进入执行队列'),
+      occurred_at: '2026-09-14T03:00:00.000Z' }],
     created_at: '2026-09-14T03:00:00.000Z',
     updated_at: '2026-09-14T03:00:00.000Z',
-    started_at: status === 'SUCCEEDED' ? '2026-09-14T03:00:00.000Z' : null,
-    finished_at: status === 'SUCCEEDED' ? '2026-09-14T03:01:00.000Z' : null,
+    started_at: succeeded || status === 'FAILED_RETRYABLE' ? '2026-09-14T03:00:00.000Z' : null,
+    finished_at: succeeded || status === 'FAILED_RETRYABLE' ? '2026-09-14T03:01:00.000Z' : null,
   };
 }

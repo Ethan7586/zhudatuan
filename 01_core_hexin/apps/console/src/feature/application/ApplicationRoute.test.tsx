@@ -45,6 +45,8 @@ const server = setupServer(
         schema_version: 'sfl.autonode-control-task-receipt.v1', task_id: 'task:mall:new', action: 'ACTIVATE',
         node_id: 'node:h6:l1', status: 'QUEUED', phase: 'QUEUED', progress: 0, plan_digest: null,
         activation_status: null, waiting_external: [], last_error: null,
+        platform: { mall_id: 'mall:zhenxuan', application_id: 'application:zhenxuan', name: body.name, public_slug: 'h6' },
+        result: null,
         events: [{ phase: 'QUEUED', message: '平台创建任务已进入执行队列', occurred_at: '2026-09-14T03:00:00.000Z' }],
         created_at: '2026-09-14T03:00:00.000Z', updated_at: '2026-09-14T03:00:00.000Z',
         started_at: null, finished_at: null,
@@ -115,7 +117,8 @@ describe('Commerce application workspace', () => {
 
     dialog = await screen.findByRole('dialog', { name: '商城创建完成' });
     expect(within(dialog).getByText('mall:zhenxuan')).toBeTruthy();
-    expect(within(dialog).getByText('h6.hbbtzn.com')).toBeTruthy();
+    expect(within(dialog).getByText('控制器尚未返回')).toBeTruthy();
+    expect(within(dialog).getByText('task:mall:new')).toBeTruthy();
     expect(within(dialog).getByText('草稿，等待店铺装修')).toBeTruthy();
     expect(writes).toEqual(['identity.stepup.start', 'identity.stepup.complete', 'provisioning.malls.create']);
     expect(provisioningRequest?.scope).toBe('organization-platform-root');

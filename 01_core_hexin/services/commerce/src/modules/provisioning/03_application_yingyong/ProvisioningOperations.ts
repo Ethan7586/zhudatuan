@@ -54,7 +54,14 @@ export function provisioningOperations(context: ModuleContext): ModuleOperations
     },
     'provisioning.nodetasks.read': async (request) => {
       requireAccess(request);
-      return { status: 200, body: await nodeControl.read(request.input.path.taskid!) };
+      try {
+        return { status: 200, body: await nodeControl.read(request.input.path.taskid!) };
+      } catch (cause) {
+        if (cause instanceof Error && cause.message.includes('AUTONODE_TASK_NOT_FOUND')) {
+          reject(404, 'RESOURCE_NOT_FOUND');
+        }
+        throw cause;
+      }
     },
     'provisioning.nodetasks.retry': async (request) => {
       requireAccess(request);

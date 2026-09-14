@@ -358,6 +358,8 @@ function taskReceipt(mallId: string) {
     activation_status: null,
     waiting_external: [],
     last_error: null,
+    platform: { mall_id: mallId, application_id: null, name: null, public_slug: null },
+    result: null,
     events: [{ phase: 'QUEUED', message: '平台创建任务已进入执行队列', occurred_at: '2026-09-14T03:00:00.000Z' }],
     created_at: '2026-09-14T03:00:00.000Z',
     updated_at: '2026-09-14T03:00:00.000Z',

@@ -6928,10 +6928,16 @@
           "plan_digest": {
             "$ref": "#/components/schemas/JsonValue"
           },
+          "platform": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
           "progress": {
             "$ref": "#/components/schemas/JsonValue"
           },
           "requestId": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "result": {
             "$ref": "#/components/schemas/JsonValue"
           },
           "retryable": {
@@ -7003,10 +7009,16 @@
           "plan_digest": {
             "$ref": "#/components/schemas/JsonValue"
           },
+          "platform": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
           "progress": {
             "$ref": "#/components/schemas/JsonValue"
           },
           "requestId": {
+            "$ref": "#/components/schemas/JsonValue"
+          },
+          "result": {
             "$ref": "#/components/schemas/JsonValue"
           },
           "retryable": {
@@ -46149,7 +46161,7 @@
           "operating_mall",
           "consumer"
         ],
-        "x-operation-hash": "be1ed5a863345b1f23424e8856ed6b03ec742804737972c5a2a3f75c78653022",
+        "x-operation-hash": "9a401954417f2632aace7ed6bd7377d93d79abe6e3596c2f256c0d31d09d1c75",
         "x-permission": "organization.layer.read",
         "x-request-schema": "ProvisioningNodetasksReadRequest",
         "x-requirements": [
@@ -46330,7 +46342,7 @@
           "operating_mall",
           "consumer"
         ],
-        "x-operation-hash": "9c1877b592a4cf1f63f1383ce66b84e10b8f0313f96e0987ab37ed582108cdcc",
+        "x-operation-hash": "96de61bba82d67577e57c925144963f8d38381e9841055054089598d88f09700",
         "x-permission": "organization.layer.manage",
         "x-request-schema": "ProvisioningNodetasksRetryRequest",
         "x-requirements": [

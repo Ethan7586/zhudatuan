@@ -25,6 +25,7 @@ export function PlatformCreateDialog({
   nodeTask,
   nodeTaskError,
   taskRetrying,
+  taskRetryAvailable,
   mobileEnrollment,
   onSubmit,
   onVerify,
@@ -46,6 +47,7 @@ export function PlatformCreateDialog({
   nodeTask: AutoNodeTaskReceipt | undefined;
   nodeTaskError: string | undefined;
   taskRetrying: boolean;
+  taskRetryAvailable: boolean;
   mobileEnrollment: boolean;
   onSubmit: (draft: MallCreateDraft) => void;
   onVerify: (code: string) => void;
@@ -73,7 +75,8 @@ export function PlatformCreateDialog({
       ? <MallMobileEnrollment context={context} onRelogin={onRelogin} />
       : phase === 'success' && result !== undefined
         ? <PlatformCreateSuccess result={result} targetLevel={targetLevel} task={nodeTask ?? result.nodeTask}
-            taskError={nodeTaskError} retrying={taskRetrying} onRetry={onRetryNodeTask} onClose={onClose} />
+            taskError={nodeTaskError} retrying={taskRetrying} retryAvailable={taskRetryAvailable}
+            onRetry={onRetryNodeTask} onClose={onClose} />
         : phase === 'verification' || phase === 'verifying'
           ? <PlatformVerification
               code={verificationCode}
@@ -239,25 +242,31 @@ function PlatformVerification({ code, expiresAt, busy, error, onCode, onVerify, 
   </form>;
 }
 
-function PlatformCreateSuccess({ result, targetLevel, task, taskError, retrying, onRetry, onClose }: Readonly<{
+function PlatformCreateSuccess({ result, targetLevel, task, taskError, retrying, retryAvailable, onRetry, onClose }: Readonly<{
   result: CreatedMall;
   targetLevel: string | undefined;
   task: AutoNodeTaskReceipt;
   taskError: string | undefined;
   retrying: boolean;
+  retryAvailable: boolean;
   onRetry: () => void;
   onClose: () => void;
 }>) {
+  const accessEntry = task.result?.access_entries.find((entry) => entry.surface_ref === 'surface:storefront')
+    ?? task.result?.access_entries[0];
   return <section className="platformcreate platformcreatesuccess">
     <div className="platformcreatesuccessmark" aria-hidden="true">✓</div>
     <header><span>平台核心已建立</span><h3>{result.name}</h3><p>{nodeTaskHeadline(task)}</p></header>
     <dl className="platformcreatefacts">
       <div><dt>目标层级</dt><dd>{targetLevel ?? '—'}</dd></div>
       <div><dt>平台代码</dt><dd>{result.code}</dd></div>
-      <div><dt>H5 地址</dt><dd>{result.publicSlug}.hbbtzn.com</dd></div>
+      <div><dt>节点 ID</dt><dd>{task.node_id}</dd></div>
+      <div><dt>访问入口</dt><dd>{accessEntry === undefined ? '控制器未返回' : <a href={accessEntry.url}
+        target="_blank" rel="noreferrer">{accessEntry.url}</a>}</dd></div>
       <div><dt>商城 ID</dt><dd>{result.mallId}</dd></div>
+      <div><dt>NodeManifest</dt><dd>{task.result?.manifest_id ?? '控制器未返回'}</dd></div>
       <div><dt>商品池</dt><dd>{result.poolId}</dd></div>
-      <div><dt>发布状态</dt><dd>草稿</dd></div>
+      <div><dt>发布状态</dt><dd>{result.publicationState === 'draft' ? '草稿' : result.publicationState}</dd></div>
     </dl>
     <section className="platformcreatetask" aria-live="polite">
       <header><div><small>独立节点生产</small><strong>{nodeTaskStatus(task.status)}</strong></div><b>{task.progress}%</b></header>
@@ -270,7 +279,8 @@ function PlatformCreateSuccess({ result, targetLevel, task, taskError, retrying,
     </section>
     <footer className="platformcreatefooter"><span>{task.node_id}</span><nav>
       {task.status === 'WAITING_EXTERNAL' || task.status === 'FAILED_RETRYABLE'
-        ? <Button onPress={onRetry} isDisabled={retrying}>{retrying ? '重新提交中' : '重试节点生产'}</Button> : null}
+        ? <Button onPress={onRetry} isDisabled={retrying || !retryAvailable}>{!retryAvailable
+          ? '无重试权限' : retrying ? '重新提交中' : '重试节点生产'}</Button> : null}
       <Button tone="primary" onPress={onClose}>完成并查看</Button>
     </nav></footer>
   </section>;

@@ -11,6 +11,8 @@ import { applicationKey, applicationRootKey, readApplications } from '../applica
 import type { Application } from '../application/ApplicationSchema';
 import {
   canCreateMall,
+  canReadMallNodeTask,
+  canRetryMallNodeTask,
   completeMallCreateStepup,
   createMall,
   isMallMobileMissing,
@@ -19,6 +21,7 @@ import {
   mallCreationRequiresStepup,
   mallEnterpriseScopes,
   mallMobileEnrollmentRequired,
+  mallNodeTaskKey,
   mallProvisioningScope,
   newMallCreateAttempt,
   readMallNodeTask,
@@ -36,6 +39,7 @@ import {
   publicationLabel,
 } from '../application/ApplicationPresentation';
 import { PlatformCreateDialog, type PlatformCreatePhase } from './PlatformCreateDialog';
+import { PlatformTaskCenter } from './PlatformTaskCenter';
 import './distributed-platform.css';
 
 type DirectorySelection = Readonly<{ kind: 'node' }> | Readonly<{ kind: 'application'; application: Application }>;
@@ -59,6 +63,8 @@ export function Component() {
   const provisioningScope = mallProvisioningScope(context);
   const enterpriseScopes = mallEnterpriseScopes(context);
   const createAvailable = canCreateMall(context, provisioningScope);
+  const taskReadable = canReadMallNodeTask(context, provisioningScope);
+  const taskRetryAvailable = canRetryMallNodeTask(context, provisioningScope);
   const nextPlatformLevel = nextLevel(manifest.signed_level);
   const createOpen = search.get('create') === 'platform';
   const query = useQuery({
@@ -67,9 +73,9 @@ export function Component() {
     staleTime: 60_000,
   });
   const nodeTaskQuery = useQuery({
-    queryKey: ['distributed-platform', 'node-task', createResult?.nodeTask.task_id],
+    queryKey: mallNodeTaskKey(context, provisioningScope, createResult?.nodeTask.task_id ?? 'none'),
     queryFn: ({ signal }) => readMallNodeTask(context, provisioningScope!, createResult!.nodeTask.task_id, signal),
-    enabled: createResult !== undefined && provisioningScope !== undefined,
+    enabled: createResult !== undefined && taskReadable,
     initialData: createResult?.nodeTask,
     refetchInterval: ({ state }) => state.data !== undefined && terminalNodeTask(state.data) ? false : 1_500,
   });
@@ -216,12 +222,13 @@ export function Component() {
     }
   };
   const retryNodeTask = async () => {
-    if (createResult === undefined || provisioningScope === undefined) return;
+    if (createResult === undefined || provisioningScope === undefined || !taskRetryAvailable) return;
     setTaskRetrying(true);
     setTaskRetryError(undefined);
     try {
       const task = await retryMallNodeTask(context, provisioningScope, createResult.nodeTask.task_id);
-      queryClient.setQueryData(['distributed-platform', 'node-task', task.task_id], task);
+      if (task.task_id !== createResult.nodeTask.task_id) throw new Error('NODE_TASK_RETRY_CHAIN_CHANGED');
+      queryClient.setQueryData(mallNodeTaskKey(context, provisioningScope, task.task_id), task);
     } catch (cause) {
       setTaskRetryError(safeQueryError(cause instanceof Error ? cause : new Error('NODE_TASK_RETRY_FAILED')));
     } finally {
@@ -254,6 +261,10 @@ export function Component() {
         <PlatformMetric label="商城应用" value={String(applications.length)} hint="当前范围真实返回" />
         <PlatformMetric label="已发布" value={String(published)} hint="存在正式发布版本" />
       </section>
+
+      <PlatformTaskCenter applications={applications} applicationsPending={query.isPending}
+        applicationsError={queryError} context={context} scope={provisioningScope}
+        onRetryApplications={() => { void query.refetch(); }} />
 
       <ResourceState
         condition={condition}
@@ -322,7 +333,9 @@ export function Component() {
         error={createError}
         result={createResult}
         nodeTask={nodeTaskQuery.data}
-        nodeTaskError={taskRetryError ?? safeQueryError(nodeTaskQuery.error)}
+        nodeTaskError={taskRetryError ?? (!taskReadable && createResult !== undefined
+          ? '当前身份未开通平台任务读取能力' : safeQueryError(nodeTaskQuery.error))}
+        taskRetryAvailable={taskRetryAvailable}
         taskRetrying={taskRetrying}
         mobileEnrollment={mobileEnrollment}
         onSubmit={(draft) => { void beginPlatformCreate(draft); }}

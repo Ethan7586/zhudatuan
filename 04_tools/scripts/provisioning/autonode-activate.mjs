@@ -59,6 +59,7 @@ process.stdout.write(`${JSON.stringify(summary(command, result), null, 2)}\n`);
 function summary(selected, value) {
   if (selected === 'plan') return value;
   if (value === null) return null;
+  const manifest = value.candidate?.manifest;
   return {
     activation_request_id: value.ledger.activation_request_id,
     node_id: value.ledger.node_id,
@@ -72,5 +73,12 @@ function summary(selected, value) {
     build_id: value.plan.build_id,
     build_count: value.plan.build_count,
     immutable_artifact_digest: value.plan.immutable_artifact_digest,
+    result: value.ledger.status === 'ACTIVE' && manifest ? {
+      manifest_id: manifest.manifest_id ?? null,
+      access_entries: Array.isArray(manifest.domain_bindings) ? manifest.domain_bindings.flatMap((binding) =>
+        typeof binding?.surface_ref === 'string' && typeof binding?.host === 'string'
+          ? [{ surface_ref: binding.surface_ref, url: `https://${binding.host}` }]
+          : []) : [],
+    } : null,
   };
 }

@@ -27,10 +27,27 @@ test('persists a real activation task and replays the same idempotent result onc
     },
     apply: async (request, digest) => {
       calls.push(['apply', request.activation_request_id, digest]);
-      return { status: 'ACTIVE', waiting_external: [] };
+      return {
+        status: 'ACTIVE',
+        waiting_external: [],
+        result: {
+          manifest_id: 'manifest:platform:one',
+          access_entries: [
+            { surface_ref: 'surface:storefront', url: 'https://h6.hbbtzn.com' },
+            { surface_ref: 'surface:api', url: 'https://api.h6.hbbtzn.com' },
+          ],
+        },
+      };
     },
   });
-  const request = taskRequest();
+  const request = taskRequest({ activation_request: {
+    schema_version: 'sfl.autonode-activation-request.v1',
+    activation_request_id: 'activation:platform:one',
+    provisioning_request: {
+      business: { scope_id: 'mall:one', name: '平台一', public_slug: 'h6' },
+      domains: { storefront: 'h6.hbbtzn.com' },
+    },
+  } });
 
   const queued = await engine.submit(request);
   assert.equal(queued.status, 'QUEUED');
@@ -40,6 +57,16 @@ test('persists a real activation task and replays the same idempotent result onc
   assert.equal(completed.phase, 'ACTIVE');
   assert.equal(completed.progress, 100);
   assert.equal(completed.plan_digest, 'sha256:plan-one');
+  assert.deepEqual(completed.platform, {
+    mall_id: 'mall:one', application_id: null, name: '平台一', public_slug: 'h6',
+  });
+  assert.deepEqual(completed.result, {
+    manifest_id: 'manifest:platform:one',
+    access_entries: [
+      { surface_ref: 'surface:storefront', url: 'https://h6.hbbtzn.com' },
+      { surface_ref: 'surface:api', url: 'https://api.h6.hbbtzn.com' },
+    ],
+  });
   assert.deepEqual(calls, [
     ['plan', 'activation:platform:one'],
     ['apply', 'activation:platform:one', 'sha256:plan-one'],
@@ -57,7 +84,17 @@ test('persists a real activation task and replays the same idempotent result onc
   const taskFile = join(root, 'tasks', `${sha256(request.task_id)}.json`);
   const persisted = JSON.parse(await readFile(taskFile, 'utf8'));
   assert.equal(persisted.receipt.status, 'SUCCEEDED');
+  assert.equal(persisted.receipt.result.manifest_id, 'manifest:platform:one');
   assert.equal(persisted.receipt.events.at(-1).phase, 'ACTIVE');
+  delete persisted.receipt.platform;
+  delete persisted.receipt.result;
+  await writeFile(taskFile, `${JSON.stringify(persisted, null, 2)}\n`, 'utf8');
+  const legacy = await engine.read(request.task_id);
+  assert.equal(legacy.platform.mall_id, 'mall:one');
+  assert.deepEqual(legacy.result, {
+    manifest_id: null,
+    access_entries: [{ surface_ref: 'surface:storefront', url: 'https://h6.hbbtzn.com' }],
+  });
 });
 
 test('holds an external-resource task and resumes it without creating a duplicate', async () => {
@@ -77,7 +114,18 @@ test('holds an external-resource task and resumes it without creating a duplicat
       return { status: 'ACTIVE', waiting_external: [] };
     },
   });
-  const request = taskRequest({ task_id: 'task:platform:waiting', idempotency_key: 'idempotency:waiting' });
+  const request = taskRequest({
+    task_id: 'task:platform:waiting',
+    idempotency_key: 'idempotency:waiting',
+    activation_request: {
+      schema_version: 'sfl.autonode-activation-request.v1',
+      activation_request_id: 'activation:platform:waiting',
+      provisioning_request: {
+        business: { scope_id: 'mall:waiting' },
+        domains: { storefront: 'h7.hbbtzn.com' },
+      },
+    },
+  });
 
   await engine.submit(request);
   await engine.waitForIdle();
@@ -90,6 +138,10 @@ test('holds an external-resource task and resumes it without creating a duplicat
   await engine.waitForIdle();
   const completed = await engine.read(request.task_id);
   assert.equal(completed.status, 'SUCCEEDED');
+  assert.deepEqual(completed.result, {
+    manifest_id: null,
+    access_entries: [{ surface_ref: 'surface:storefront', url: 'https://h7.hbbtzn.com' }],
+  });
   assert.equal(plans, 2);
   assert.equal(applies, 1);
 });
