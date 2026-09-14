@@ -407,6 +407,34 @@
 | 验证/回滚 | 断言成功node和稳定错误码，并检查不合法文件无法到达数据库检查；回滚为revert提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0227｜Mall provisioning API 接受runtime contract marker缺失或漂移
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / bootstrap MallProvisioningApiRuntime；P1；高；待独立复核 |
+| 类型 | 正确性、启动兼容性门禁 |
+| 位置 | `01_core_hexin/services/commerce/src/bootstrap/MallProvisioningApiRuntime.ts:121-189`；`.../MallProvisioningApiRuntime.test.ts:10-47` |
+| 当前/预期 | compatibility query计算`contract`（目标runtime schema版本与checksum），但最终拒绝条件未包含`!state.contract`。预期任一contract marker缺失或checksum不匹配时启动失败。 |
+| 直接证据 | 查询结果接口含`readonly contract: boolean`；SQL别名为`contract`（约第128行）；最终条件只检查`schema`后紧接`provisioning`（约第187行）。现有fixture的healthy contract为true，未传入false。 |
+| 调用链/影响 | MallProvisioningApiMain → createMallProvisioningApiRuntime → assertMallProvisioningRuntimeCompatibility → bootstrap API/listen。contract drift后仍可启动并提供开通操作，可能在调用侧/数据库契约不一致时产生业务失败或错误写入；当前线上状态未验证。 |
+| 建议方向 | 在独立修复分支先做第二轮调用链复核；确认后以最小补丁将`!state.contract`纳入predicate，并加入contract false direct fixture，不混入权限或迁移变更。 |
+| 验证/回滚 | fake pool以`contract:false`应抛稳定错误；运行既有开通API定向测试。回滚为revert代码/测试小提交；不触及数据库。 |
+| 独立复核 | 是；P1，AU-249必须重新从query、predicate、生产入口三处核验。 |
+
+## F-0228｜Mall provisioning runtime factory 未经直接执行验证
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / bootstrap MallProvisioningApiRuntime；P2；高 |
+| 类型 | 测试覆盖缺口、独立API启动与资源释放 |
+| 位置 | `01_core_hexin/services/commerce/src/bootstrap/MallProvisioningApiRuntime.ts:62-111`；`.../MallProvisioningApiRuntime.test.ts:10-47` |
+| 当前/预期 | factory读取secret、建立pool、在兼容性失败时关闭pool，并绑定访问/decision/audit依赖。预期成功、失败释放、configure和close有direct fixture。 |
+| 直接证据 | fixture只调用`assertMallProvisioningRuntimeCompatibility`，未导入/调用`createMallProvisioningApiRuntime`。 |
+| 调用链/影响 | MallProvisioningApiMain → factory → bootstrapApi/listen。启动资源或依赖组装回归可能导致开通API不可用或泄漏连接；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立factory fixture批，以可控secret/pool注入覆盖成功、失败释放、token binding和close顺序；回滚为revert测试提交。 |
+| 验证/回滚 | 断言secret读取、pool end、container token及extensions停止顺序；回滚为revert提交。 |
+| 独立复核 | 否；P2。 |
+
 ## F-0014｜Catalog API Ready 未探测已启动的 HTTP 进程
 
 | 字段 | 记录 |

@@ -2601,3 +2601,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | API startup consumer | 注册API在启动前加载定义并验证scoped数据库投影 | [FACT][E-AU-247-006] |
 
 [FACT][E-AU-247-007] 2 文件、282 行完成深审；loader关键拒绝路径无direct fixture，见F-0226/P2。
+
+## 253. AU-248 Mall provisioning API runtime 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| dedicated startup | 读取专用连接并在成功compatibility后组装开通API依赖 | [FACT][E-AU-248-001,002] |
+| least-privilege compatibility | 检查role/session、安全性、schema/marker、relation/function、selected writes和禁止业务域权限 | [FACT][E-AU-248-004] |
+| container boundary | 向开通模块提供node registry、访问authorizer、pool、risk、decision及audit | [FACT][E-AU-248-003] |
+| contract enforcement | 查询runtime contract但最终断言遗漏该字段，见F-0227/P1待独立复核 | [FACT][E-AU-248-005] |
+
+[FACT][E-AU-248-007] 2 文件、269 行完成深审；F-0227/P1待独立复核，factory fixture缺口见F-0228/P2。

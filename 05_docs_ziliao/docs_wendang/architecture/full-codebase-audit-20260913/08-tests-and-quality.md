@@ -829,3 +829,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Fixture直接覆盖投影database parity、scoped realm查询和L0完整target集合。
 - 可选runtime文件、schema拒绝、node唯一性及manifest/registry不匹配的loader路径没有direct fixture；见F-0226/P2。审计工作树未运行Vitest。
+
+## 248. AU-248 Mall provisioning API runtime 深审
+
+- Fixture检查SQL中contract marker文本，但未以`contract:false`执行最终断言；该缺口直接暴露F-0227/P1。
+- Factory成功、compatibility失败pool释放、configure和close行为无direct fixture；见F-0228/P2。审计工作树未运行Vitest。

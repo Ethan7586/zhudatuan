@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-247 已完成。AU-247 完成 Commerce identity node manifest runtime audit。覆盖总账按当前文件级清单重算：深入审阅1,743文件/123,618行、结构性审阅801文件/117,737行、自动生成70文件/172,651行、暂未审阅1,113文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-248 已完成。AU-248 完成 Commerce mall provisioning API runtime audit。覆盖总账按当前文件级清单重算：深入审阅1,745文件/123,887行、结构性审阅800文件/117,521行、自动生成70文件/172,651行、暂未审阅1,112文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；F-0227/P1待独立复核；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1917,3 +1917,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Commerce IdentityNodeManifestRuntime。
 
 执行结果：可选identity runtime文件必须符合固定schema，所选node必须唯一并与节点manifest各身份/域名事实一致；realm/entry/target的全量或scoped数据库投影drift均fail-closed。fixture覆盖投影、scope和L0 target，但不直接覆盖文件加载、未知/重复node或manifest/registry mismatch，形成F-0226/P2；无P0/P1新问题。
+
+## 250. AU-248 连续审计点
+
+审阅 Commerce MallProvisioningApiRuntime。
+
+执行结果：开通API以专用低权限数据库role装配访问、risk、decision和audit，并在启动前检查schema、contract、provisioning marker、关系/函数、selected writes和禁用权限。最终predicate遗漏已查询的`contract`，因此contract marker缺失/drift仍可启动，记录F-0227/P1待独立复核；factory主流程无direct fixture，记录F-0228/P2；无P0问题。
