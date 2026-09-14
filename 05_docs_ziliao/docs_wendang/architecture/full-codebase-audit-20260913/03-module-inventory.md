@@ -777,3 +777,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | create mock 与过程拒绝 | F-0154 |
 
 [FACT][E-AU-067-004] 3 文件、186 行 Finance invoice request 人工源码和测试完成深审。
+
+## 74. AU-068 Finance 政策工作流模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| workflow/read | preview/manage、revision/current read | [FACT][E-AU-068-001~002] |
+| typed policy | field/tax 输入与有效期 | [FACT][E-AU-068-002] |
+| tests | 参数/领域输入 oracle | F-0155 |
+
+[FACT][E-AU-068-004] 5 文件、524 行 Finance policy 人工源码和测试完成深审。

@@ -3202,6 +3202,17 @@
 | 验证/回滚 | 使用隔离 PostgreSQL 构造 profile/settlement/request/document，覆盖上述成功与拒绝路径；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
 | 独立复核 | 否 |
 
+## F-0155｜财务政策工作流缺少数据库行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | finance；P2；高 |
+| 位置 | `modules/finance/03_application_yingyong/{command/FinancePolicyWorkflow,query/GetFinancePolicies}.ts` |
+| 当前/预期 | preview/manage 依赖受管数据库过程的 revision、四眼、hash、scope delegation 和 read 投影；现有测试只验证参数/领域输入。预期以隔离 PostgreSQL 覆盖 draft/submit/approve/reject、stale preview、mall delegation/threshold、revision read 与并发。 |
+| 影响 | 政策审批或可见性回归可能只在运营时暴露。未见已发生线上事故。 |
+| 验证/回滚 | 隔离 PostgreSQL 验证完整工作流；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

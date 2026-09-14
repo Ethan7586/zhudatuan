@@ -1,0 +1,2 @@
+"测试","范围","结论","执行"
+"FinancePolicyWorkflow/ConfigFieldPolicy tests","流程参数、field/tax 输入","mock/领域 oracle；无数据库工作流","未执行：vitest command not found"
