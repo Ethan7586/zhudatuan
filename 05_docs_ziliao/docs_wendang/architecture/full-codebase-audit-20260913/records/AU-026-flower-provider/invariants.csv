@@ -1,0 +1,7 @@
+"id","invariant","status","finding"
+"INV-AU-026-001","manifest与发布ports闭合","成立","三只读port"
+"INV-AU-026-002","非末页必须返回请求页长","不成立","F-0108"
+"INV-AU-026-003","同一同步周期避免重复全量供应商扫描","不成立","F-0109"
+"INV-AU-026-004","compareMinor为null或不低于amountMinor","不成立","F-0110"
+"INV-AU-026-005","分类树、spec字段与库存失败关闭","成立","Mapper严格校验"
+"INV-AU-026-006","测试覆盖Client与Mapper关键分支","不成立","F-0111"

@@ -248,3 +248,9 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - Cake是required provider，随Commerce OCI发布；实际运行取决于enabled installation和health。
 - health验证分类树，但不验证商品分页规模、短页或Price/Stock全扫成本；需业务canary而非仅health。
 - 本AU未build、访问线上、激活provider、推送、合并或部署。
+
+## 29. AU-026 Flower Provider发布与运维边界
+
+- Flower是required provider，随Commerce OCI发布；实际运行取决于enabled installation、签名manifest、connection和health门禁。
+- health只读取分类并验证root树，不能发现商品短页、全扫规模、价格不变量或Mapper字段问题；需要业务canary才能验证F-0108–F-0110。
+- 本AU未build、访问线上、激活provider、推送、合并或部署。

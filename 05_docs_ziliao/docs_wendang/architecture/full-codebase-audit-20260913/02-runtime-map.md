@@ -789,3 +789,12 @@ sequenceDiagram
 - Catalog每次处理一个cursor页；非末页短页仍生成下一页cursor，见F-0105。
 - Price与Stock每批都调用categories并遍历完整商品目录，Channel每500 key分批，见F-0106。
 - OrderRequest仅测试直引；无Order/Webhook生产port。
+
+## 31. AU-026 Flower运行关系
+
+`catalog/price/stock run → FlowerProvider → FlowerReadClient → categories → root叶分类 → products page → FlowerMapper → Catalog/Pricing/Inventory`。
+
+- Catalog以`leafId:page`推进；固定size=200但1–199条非末页不会被拒绝，见F-0108。
+- Price与Stock对每个非空500-key批次重新执行categories和全部商品分页，见F-0109。
+- Catalog记录中的非零market price原样成为compareMinor；低于售价时在CatalogProductImport失败，见F-0110。
+- health只验证分类树，不触发商品映射、分页或价格不变量；线上installation和供应商响应未验证。

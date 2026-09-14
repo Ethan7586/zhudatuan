@@ -174,3 +174,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - manifest只声明`channel.cake.operate`与Catalog/Price/Inventory；Provider无写入或Webhook port。
 - OrderRequest和旧Webhook未导出/注册，避免未完成协议进入权限面；DC-0031禁止直接启用。
 - 本AU未读取secret、权限assignment或线上connection。
+
+## 23. AU-026 Flower权限边界
+
+- manifest只声明`channel.flower.operate`与Catalog/Price/Inventory；Provider无写入或Webhook port。
+- 连接secret、安装scope和manifest验签继承RuntimeExtensionLoader/Provider Core；本包不读取环境变量或持久化凭据。
+- F-0108–F-0111是完整性、通信成本和测试问题，不构成已证实身份绕过或敏感信息泄露。
+- 本AU未读取secret、权限assignment、数据库身份或线上installation。

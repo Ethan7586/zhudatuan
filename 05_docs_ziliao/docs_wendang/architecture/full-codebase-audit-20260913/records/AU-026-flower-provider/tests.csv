@@ -1,0 +1,8 @@
+"test_id","area","method","result"
+"TC-AU-026-001","正式测试","npm test -- --reporter=dot","阻塞/127，vitest缺失"
+"TC-AU-026-002","类型检查","npm run typecheck","阻塞/127，tsc缺失"
+"TC-AU-026-003","短页反事实","固定size与assertPage分支推演","非末页1..199条被接受"
+"TC-AU-026-004","放大矩阵","snapshot×Channel 500-key批次静态推导","每批完整重扫，Price/Stock重复"
+"TC-AU-026-005","划线价反事实","market_price低于price沿Mapper到CatalogProductImport","Mapper接受，下游以CATALOG_COMPARE_PRICE_INVALID拒绝"
+"TC-AU-026-006","能力边界","manifest×factory×index","仅三只读port可发布"
+"TC-AU-026-007","构建","npm run build","未执行；等同typecheck"

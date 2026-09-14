@@ -1,0 +1,5 @@
+"id","failure","trigger","effect","rating"
+"FM-AU-026-001","非末页短页","供应商返回1..199条且total未完成","后续页按200偏移，静默漏商品","P2/F-0108"
+"FM-AU-026-002","重复全量扫描","超过500 keys或Price/Stock连续run","调用量和deadline按批次放大","P2/F-0109"
+"FM-AU-026-003","无效划线价","供应商market_price非零但低于price","下游目录导入拒绝，价格/商品可能停留旧值","P2/F-0110"
+"FM-AU-026-004","测试假阳性","Client/Mapper行为退化","唯一Provider测试仍通过","P3/F-0111"

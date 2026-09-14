@@ -140,3 +140,9 @@
 - Cake只产生Catalog/Price/Stock observation；Catalog/Channel/Inventory拥有落库数据，包无表或迁移。
 - F-0105可漏掉源商品且无error记录；F-0106造成更新停滞/延迟，未证明覆盖或删除既有数据。
 - 本AU未执行SQL、迁移、同步或供应商调用。
+
+## 21. AU-026 Flower数据边界
+
+- Flower包不拥有表或迁移，只产生Catalog/Price/Stock观测；持久数据由Channel、Catalog、Pricing和Inventory模块拥有。
+- F-0108可能漏源商品，F-0109可能延迟价格库存，F-0110会让不满足下游价格约束的目录记录失败；固定基线没有证明已覆盖或删除既有记录。
+- 本AU未执行SQL、迁移、同步或供应商调用。

@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-025 结束时累计：P0 0、P1 候选 15、P2 49、P3 42、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-026 结束时累计：P0 0、P1 候选 15、P2 52、P3 43、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2611,3 +2611,64 @@
 ## 25. AU-025 新增未定级事项
 
 - [UNKNOWN] 线上Cake目录页数、短页行为、Price/Stock运行频率和供应商限流指标；未访问线上。
+
+## F-0108｜Flower分页接受非末页短页并静默漏商品
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Flower Catalog；分页正确性、数据完整性 |
+| 严重级别/置信度 | P2；高 |
+| 文件和位置 | `extensions/providers/flower/FlowerClient.ts:44-53,111-120,166-170` |
+| 当前/预期行为 | [FACT][E-AU-026-003] 请求size=200，但total尚未完成时1–199条短页仍通过并按页号推进；非末页应满页、使用服务端cursor或失败关闭 |
+| 证据/调用链 | TC-AU-026-003；Channel Catalog job→pullCatalog→productPage→assertPage→nextCursor |
+| 用户/数据/安全影响 | 商品或spec可能静默漏导；不直接删除既有数据；无安全影响 |
+| 根因/建议范围 | 只拒绝0条不完整页；后续独立分页批次补完整页不变量和测试 |
+| 验证/回滚 | 1/199/200/末页/total变化矩阵；回退单一分页提交 |
+| 独立复核 | 否 |
+
+## F-0109｜Flower Price/Stock按key批次重复全量扫描供应商目录
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Flower Price/Inventory；通信放大、deadline |
+| 严重级别/置信度 | P2；高 |
+| 文件和位置 | `extensions/providers/flower/FlowerClient.ts:56-92`；`services/commerce/src/modules/channel/05_interface_jieru/job/ChannelSyncJob.ts:89-116` |
+| 当前/预期行为 | [FACT][E-AU-026-004/005] 每次非空Price或Stock调用都拉categories并遍历最多10,000商品页；Channel每500 keys分批且两类run分开。应复用同步周期快照、点查或增量结果 |
+| 调用链 | Channel run→500-key batch→Price/Stock→snapshot→全部叶分类/分页 |
+| 用户/数据/安全影响 | 大目录下易超deadline、限流或断路，价格库存延迟；无已证实数据损坏或安全影响 |
+| 根因/建议范围 | canonical key port与全目录供应商API直接适配；后续单独设计快照所有权和一致性 |
+| 验证/回滚 | 供应商调用数、10k页、并发Price/Stock、过期快照矩阵；回退单一优化提交 |
+| 独立复核 | 否 |
+
+## F-0110｜Flower可发布低于售价的划线价并被下游拒绝
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Flower Catalog；跨模块价格契约 |
+| 严重级别/置信度 | P2；高 |
+| 文件和位置 | `extensions/providers/flower/Mapper.ts:137-173`；`services/commerce/src/modules/catalog/03_application_yingyong/CatalogProductImport.ts:89-92` |
+| 当前/预期行为 | [FACT][E-AU-026-006/007] 任意非零market_price都成为compareMinor；Catalog要求其不低于amountMinor。Cake同协议实现已省略低值，Flower未应用同一规则 |
+| 调用链 | Supplier product→FlowerMapper→Channel catalog record→CatalogProductImport |
+| 用户/数据/安全影响 | 异常供应商价格可让目录导入失败或继续展示旧值；不直接产生越权或资金写入 |
+| 根因/建议范围 | 同源适配器演进分叉；后续单独统一价格不变量并保留供应商反事实fixture |
+| 验证/回滚 | market price为0、低于、等于、高于售价四态；回退单一Mapper提交 |
+| 独立复核 | 否 |
+
+## F-0111｜Flower关键Client与Mapper没有行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/类型 | Flower tests；测试缺口 |
+| 严重级别/置信度 | P3；高 |
+| 文件和位置 | `extensions/providers/flower/tests/Provider.test.ts:1-13`；`FlowerClient.ts`；`Mapper.ts` |
+| 当前/预期行为 | 唯一测试只核required ID和签名；应覆盖分页、分类树、字段、金额、库存、快照规模和下游价格契约 |
+| 证据/调用链 | E-AU-026-008、TC-AU-026-001–005；npm test→Vitest（当前缺工具） |
+| 影响 | F-0108–F-0110可在包级测试绿色时存在；无直接数据/安全写入 |
+| 建议/范围 | 单一测试批次补Client/Mapper反事实，不混实现修改 |
+| 验证/回滚 | 破坏分页、价格或调用预算时测试失败；回退测试提交 |
+| 独立复核 | 否 |
+
+## 26. AU-026 新增未定级事项
+
+- [UNKNOWN] 线上Flower是否enabled、目录页数、实际market_price关系及同步失败记录；审计未访问线上。
+- [UNKNOWN] Flower图片URL是否仍可能使用HTTP；代码未做Cake已有的已知域名HTTPS归一化，但固定基线没有真实Flower响应证明，暂不定级。

@@ -220,3 +220,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 7个read-client用例与2个Order builder用例覆盖正常映射和部分字段反事实；Provider测试只核ID/签名。
 - 无非末页短页、跨页重复、deadline/10k上限、供应商调用数或Channel job集成，见F-0107。
 - test/typecheck因缺vitest/tsc退出127；未build。详见`records/AU-025-cake-provider/`。
+
+## 25. AU-026 Flower Provider质量
+
+- 包内唯一13行测试只检查required provider ID、definition ID和manifest签名；没有实例化FlowerReadClient或FlowerMapper。
+- 非末页短页、全扫调用量、分类/字段反事实、价格不变量、deadline和Channel job集成都无测试，见F-0111。
+- test/typecheck因缺vitest/tsc退出127；未build。详见`records/AU-026-flower-provider/`。

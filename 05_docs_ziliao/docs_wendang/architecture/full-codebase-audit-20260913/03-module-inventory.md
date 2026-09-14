@@ -456,3 +456,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | mock响应与builder | Vitest | F-0107 |
 
 [FACT][E-AU-025-001] 13文件807行深入审阅；随Commerce OCI发布。
+
+## 32. AU-026 Flower Provider 模块清单
+
+| 子模块 | 职责 | 上游/入口 | 当前边界 |
+| --- | --- | --- | --- |
+| FlowerProvider/manifest | 发布Catalog/Price/Inventory | Runtime loader/Registry | 三只读能力闭合 |
+| FlowerReadClient | 分类分页、Price/Stock快照 | Channel jobs | F-0108/F-0109 |
+| FlowerMapper | 分类、商品、spec、价格库存映射 | FlowerReadClient | F-0110 |
+| ErrorMap/Webhook | 兼容公共导出 | 固定仓库零caller | DC-0033/DC-0026 |
+| tests | provider身份和签名 | Vitest | F-0111 |
+
+[FACT][E-AU-026-001] 10文件548行深入审阅；随Commerce OCI发布，无独立表、进程或制品。

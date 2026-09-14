@@ -1,0 +1,6 @@
+"consumer","capability","behavior","boundary"
+"Channel catalog job","Catalog","按cursor一页一叶分类","F-0108；F-0110传播"
+"Channel price job","Price","每最多500 keys调用一次","F-0109全量快照"
+"Channel stock job","Inventory","每最多500 keys调用一次","F-0109全量快照"
+"CatalogProductImport","compareMinor","拒绝低于amountMinor的非空值","F-0110"
+"Package test","manifest/provider identity","只核required ID与签名","F-0111"

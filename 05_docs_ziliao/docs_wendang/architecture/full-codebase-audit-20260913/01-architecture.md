@@ -772,3 +772,11 @@ flowchart LR
 - Catalog逐页获取；Price/Stock没有点查能力，每个500-key批次重新全量扫描所有叶分类，形成F-0106通信放大。
 - 固定请求size=200，但非末页短页不会fail closed，可能静默跳过记录（F-0105）。
 - OrderRequest和旧Webhook不在barrel/Provider中，保持禁用；前者是GX协议资产。
+
+## 32. AU-026 Flower Provider真实边界
+
+`ChannelSyncJob → ExtensionRegistry → FlowerReadClient → CakeuncleClient → categories/products`。manifest与factory只发布Catalog/Price/Inventory，endpoint和唯一root category在构造期闭合。
+
+- Catalog和Price/Stock共享同一全目录读取模型；非末页短页不失败关闭（F-0108），非空按键批次反复重扫全目录（F-0109）。
+- Flower直接把非零market price发布为compareMinor；下游Catalog明确要求compareMinor不得低于售价，模块间价格不变量没有在适配边界闭合（F-0110）。
+- Provider不拥有数据库、独立进程或发布单元；运行状态在Cakeuncle/Vendor连接实例，业务数据由Channel/Catalog/Pricing/Inventory拥有。
