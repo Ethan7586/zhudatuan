@@ -4130,6 +4130,20 @@
 | 验证/回滚 | 断言status/body的code/requestId/details存在性及internal fallback；回滚为revert提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0222｜QueryMetrics 没有直接聚合与快照契约测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation QueryMetrics；P3；高 |
+| 类型 | 测试覆盖缺口、运行可观测性 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/persistence/QueryMetrics.ts:13-32` |
+| 当前/预期 | 实现按workload累计执行/失败/总耗时/最大耗时，并排序、冻结snapshot。预期多次成功/失败、workload排序及snapshot不可变性有direct fixture。 |
+| 直接证据 | 未找到QueryMetrics或`databaseQueries`直接断言。RuntimeOperations fixture只构造空metrics用于其它SQL文本断言，未调用observe/snapshot。 |
+| 调用链/影响 | PoolSet connect/query/client proxy → QueryMetrics → runtime.health.dependency databaseQueries。指标回归可能误导运维诊断、隐藏失败数或产生非确定性快照；不改变业务数据库执行，线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试批，覆盖跨workload累计、failed count、total/max、字母排序、snapshot/entry冻结及后续observe不回写旧snapshot；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言完整QueryMetric数组、Object.isFrozen与旧/新snapshot隔离；回滚为revert提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

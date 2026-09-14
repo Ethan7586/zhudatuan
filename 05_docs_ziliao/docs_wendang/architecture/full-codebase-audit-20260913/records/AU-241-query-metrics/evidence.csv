@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-241-001,src/foundation/persistence/QueryMetrics.ts,13-32,aggregation,Observe aggregates count failure total and maximum per workload; snapshot sorts and freezes result entries.
+E-AU-241-002,src/foundation/persistence/Pool.ts,39-73;83-100,runtime instrumentation,Pool connect query and acquired client query report success or failure timing to shared metrics.
+E-AU-241-003,src/modules/runtime/RuntimeOperations.ts,25-54,runtime consumer,dependency health response exposes metrics.snapshot as databaseQueries.
+E-AU-241-004,src/modules/runtime/RuntimeOperations.test.ts,11-25,test evidence,Fixture binds empty QueryMetrics but does not observe or assert a metrics snapshot.

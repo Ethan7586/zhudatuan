@@ -2527,3 +2527,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | anonymous route mode | anonymous WeChat login不进入authorizer，并以null access进入handler | [FACT][E-AU-240-002] |
 
 [FACT][E-AU-240-003] 1 测试文件、68 行完成深审；两条auth mode都由注册route direct fixture验证，无P0–P3新问题。
+
+## 246. AU-241 QueryMetrics 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| aggregation | 按query/command/worker/migration聚合count、failure、total与maximum耗时 | [FACT][E-AU-241-001] |
+| pool instrumentation | PoolSet connect/query及Proxy client query在成功和异常时写入同一metrics | [FACT][E-AU-241-002] |
+| runtime surface | runtime health dependency把当前snapshot作为databaseQueries返回 | [FACT][E-AU-241-003] |
+
+[FACT][E-AU-241-004] 1 文件、32 行完成深审；没有direct aggregation fixture，见F-0222/P3。

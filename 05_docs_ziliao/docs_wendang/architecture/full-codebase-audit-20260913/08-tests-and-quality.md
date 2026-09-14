@@ -794,3 +794,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - direct fixture覆盖authenticated current-session authorization及anonymous public handler access=null两条路径。
 - 无P0–P3新问题。审计工作树未运行Vitest。
+
+## 241. AU-241 QueryMetrics 深审
+
+- PoolSet及runtime health实际消费metrics；没有direct fixture锁定聚合、排序、失败和frozen snapshot。
+- 见F-0222/P3。审计工作树未运行Vitest。
