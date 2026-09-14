@@ -10,7 +10,7 @@ import {
 } from './WebBusinessApiRuntime';
 
 describe('web business API runtime', () => {
-  it('requires node-owned origins and one declared application', async () => {
+  it('requires node-owned origins and declared storefront applications', async () => {
     const path = new URL('../../../../../02_platform_pingtai/config/node-manifests/hbbtzn-l1.json', import.meta.url);
     const manifest = await parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
     expect(() => assertWebBusinessNodeManifest(manifest, ['https://hbbtzn.com', 'https://www.hbbtzn.com'], 'test')).not.toThrow();

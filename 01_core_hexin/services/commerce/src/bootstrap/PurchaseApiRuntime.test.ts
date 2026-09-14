@@ -18,7 +18,7 @@ describe('purchase API runtime', () => {
     const manifest = await parseNodeManifest(JSON.parse(await readFile(path, 'utf8')));
     const environment = {
       APP_ENV: 'production',
-      API_ALLOWED_ORIGINS: 'https://h5.hbbtzn.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com',
+      API_ALLOWED_ORIGINS: 'https://h5.hbbtzn.com,https://h6.hbbtzn.com,https://hbbtzn.com,https://mall.hbbtzn.com,https://www.hbbtzn.com',
       DATABASE_API_CONNECTION_REF: 'hbbtzn/nodes/l1/database/purchase-api',
       QUOTE_KEY_REF: 'hbbtzn/nodes/l1/purchase/checkout/quote',
       KMS_ENDPOINT: 'https://127.0.0.1:8544',
