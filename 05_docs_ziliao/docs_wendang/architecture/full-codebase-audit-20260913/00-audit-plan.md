@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-200 已完成。AU-200 完成 Commerce API WeChat Pay core test audit。覆盖总账按当前文件级清单重算：深入审阅1,678文件/119,612行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,176文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-201 已完成。AU-201 完成 Commerce bootstrap container test audit。覆盖总账按当前文件级清单重算：深入审阅1,680文件/119,683行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,174文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1635,3 +1635,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Commerce API WeChat Pay core integrated helper test。
 
 执行结果：test使用临时RSA keys验证完整server-only config、APIv3 key/notify URL闭合、merchant canonical signature和miniapp payment signature，并验证description与所有provider trade-state映射。与AU-177/AU-178的实现深审一致；无P0–P3新问题。
+
+## 203. AU-201 连续审计点
+
+审阅 Commerce bootstrap ApiBootstrap NodeContext test 与Container。
+
+执行结果：ApiBootstrap source已在AU-001/003/008按运行入口深审；direct test证明生产registry被绑定进request NodeContext。Container实施bind/get/has/freeze和duplicate/missing防线，供全部API runtime configure使用，但没有direct fixture覆盖其不变量，形成F-0203/P3；无P0–P2新问题。

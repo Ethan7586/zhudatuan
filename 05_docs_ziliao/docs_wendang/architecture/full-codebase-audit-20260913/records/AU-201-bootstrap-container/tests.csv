@@ -1,0 +1,2 @@
+file,coverage,execution
+src/bootstrap/ApiBootstrap.test.ts,NodeContext assembly through real HttpApp request,no direct Container bind get duplicate missing or freeze test; not run: audit worktree has no Vitest dependencies

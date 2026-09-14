@@ -594,3 +594,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖config fail-closed、RSA canonical signing、miniapp payment signature、description与trade-state helper。
 - 不覆盖prepay/callback route到RPC/provider的行为，相关缺口已分别记录F-0190/F-0191。无P0–P3新问题；审计工作树未运行Vitest。
+
+## 201. AU-201 Bootstrap container 深审
+
+- ApiBootstrap direct test验证registered node manifest到实际request NodeContext的装配。
+- Container的bind/get/duplicate/missing/freeze不变量没有独立fixture，见F-0203/P3。审计工作树未运行Vitest。

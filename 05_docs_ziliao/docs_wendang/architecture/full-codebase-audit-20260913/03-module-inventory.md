@@ -2154,3 +2154,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | pure helper test | 商品description边界和全部provider trade-state映射 | [FACT][E-AU-200-003] |
 
 [FACT][E-AU-200-004] 1 文件、119 行完成深审；测试覆盖payment core helper，不代替prepay/callback route RPC测试（F-0190/F-0191）。
+
+## 206. AU-201 Bootstrap container 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| ApiBootstrap test | 以实际HttpApp请求验证shared node manifest registry进入NodeContext | [FACT][E-AU-201-001] |
+| Container | runtime configure阶段的token bind/get/has及freeze、duplicate/missing fail-fast | [FACT][E-AU-201-002] |
+
+[FACT][E-AU-201-003] 2 文件、71 行完成深审；ApiBootstrap生产实现已由AU-001/003/008审阅，Container无direct fixture见F-0203/P3。

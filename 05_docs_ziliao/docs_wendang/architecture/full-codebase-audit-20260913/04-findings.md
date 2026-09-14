@@ -3864,6 +3864,20 @@
 | 验证/回滚 | fixture覆盖环境/target/permission/scope/idempotency/input与四类success RPC body；回滚为revert测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0203｜运行时依赖容器不变量没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / bootstrap Container；P3；高 |
+| 类型 | 测试覆盖缺口、启动期依赖注册正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/bootstrap/Container.ts:1-29` |
+| 当前/预期 | Container在configure期允许一次性token绑定、读取/has，freeze后拒绝新绑定；重复/缺失token立即抛错。现有ApiBootstrap test只验证NodeContext请求，未直接验证Container本身。预期所有不变量各有fixture。 |
+| 直接证据 | 仓内未找到`Container.test.ts`、`new Container()`或`CONTAINER_FROZEN/BINDING_DUPLICATE/BINDING_MISSING`的direct test断言。 |
+| 调用链/影响 | entry runtime configure → Container → module extension/node registry bindings → bootstrapApi。容器不变量回归将使运行进程在启动或首请求时出现难诊断的绑定错误，现有bootstrap test不能精确定位。 |
+| 建议方向 | 从修复时最新`zdt-next`建立Container unit test批；回滚为撤回测试提交。 |
+| 验证/回滚 | 分别断言bind/get/has、duplicate、missing与freeze后bind失败；回滚为revert测试提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
