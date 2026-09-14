@@ -624,3 +624,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 未找到CommandBus direct fixture；注册、重复、冻结、缺handler与dispatch行为仅由下游间接消费。
 - 见F-0207/P3。审计工作树未运行Vitest。
+
+## 207. AU-207 QueryBus 深审
+
+- 未找到QueryBus direct fixture；注册、重复、冻结、缺handler与dispatch行为仅由下游间接消费。
+- 见F-0208/P3。审计工作树未运行Vitest。

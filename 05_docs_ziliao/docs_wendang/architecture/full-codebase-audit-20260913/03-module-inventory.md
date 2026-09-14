@@ -2208,3 +2208,11 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | command dispatch | type→single handler、duplicate/missing fail-fast、freeze后拒绝新增注册 | [FACT][E-AU-206-001] |
 
 [FACT][E-AU-206-002] 1 文件、23 行完成深审；ApiBootstrap/JobsBootstrap创建并freeze，未发现direct fixture，见F-0207/P3。
+
+## 212. AU-207 QueryBus 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| query dispatch | type→single handler、duplicate/missing fail-fast、freeze后拒绝新增注册 | [FACT][E-AU-207-001] |
+
+[FACT][E-AU-207-002] 1 文件、23 行完成深审；ApiBootstrap/JobsBootstrap创建并freeze，未发现direct fixture，见F-0208/P3。
