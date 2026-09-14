@@ -769,3 +769,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 现有fixture覆盖node ingress与trusted peer address；没有端到端体积、取消、错误映射或response header/cookie写回fixture。
 - 见F-0220/P2。审计工作树未运行Vitest。
+
+## 236. AU-236 ErrorMapper contract 深审
+
+- 现有direct fixture只锁定409与unknown 500；DomainError、冒号、non-Error与其他status族未覆盖。
+- 见F-0221/P2。审计工作树未运行Vitest。

@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-236-001,src/foundation/interface/ErrorMapper.ts,5-24,contract mapping,Registered non-500 contract errors map through errorStatus; unknown and 500 map to generic internal response.
+E-AU-236-002,src/foundation/interface/ErrorMapper.ts,6-12,error shape,DomainError supplies details ordinary Error is split at colon and non-Error is treated internal.
+E-AU-236-003,src/foundation/interface/HttpApp.ts,65-73,runtime consumer,HttpApp top-level catch calls ErrorMapper for every route failure.
+E-AU-236-004,src/foundation/interface/ErrorMapper.test.ts,4-25,test evidence,Tests exercise 409 representatives and unregistered 500 only.

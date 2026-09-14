@@ -4116,6 +4116,20 @@
 | 验证/回滚 | 断言status、稳定JSON code、handler是否调用、AbortSignal reason与response headers；回滚为revert提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0221｜ErrorMapper fixture 只固定冲突与未知错误，遗漏公共映射分支
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation ErrorMapper；P2；高 |
+| 类型 | 测试覆盖缺口、HTTP错误契约稳定性 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/interface/ErrorMapper.ts:5-24`；`.../ErrorMapper.test.ts:4-25` |
+| 当前/预期 | Mapper以contract errorStatus决定可暴露错误，普通Error截取冒号前code，DomainError保留details，未注册、500或非Error统一为internal。预期各输入类别和主要status族有direct fixture。 |
+| 直接证据 | 三个fixture只验证IDEMPOTENCY/库存等409和unregistered 500；未构造DomainError、`VALIDATION_FAILED:field`、非Error、contract的400/401/403/404/422/429等code或contract明确为500的code。 |
+| 调用链/影响 | Route/Operation handler throw → HttpApp catch → ErrorMapper → public JSON response。映射漂移可能将可处理错误错误地隐藏为500、丢失合法details或暴露错误code，并跨所有API生效；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立fixture-only批，枚举每个status族代表code、冒号截取、DomainError details、non-Error和registered-500防泄漏；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言status/body的code/requestId/details存在性及internal fallback；回滚为revert提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

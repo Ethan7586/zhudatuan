@@ -2480,3 +2480,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | production/fixture | 八个API入口均loopback监听；fixture覆盖node ingress/health与peer address，但未覆盖其余故障边界 | [FACT][E-AU-235-003] |
 
 [FACT][E-AU-235-004] NodeServer源码已在AU-003深审，本批新增1测试文件、145行深审；缺口见F-0220/P2。
+
+## 241. AU-236 ErrorMapper contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| code-to-status mapping | 以generated contract错误状态表暴露注册业务错误并隐藏unknown/internal | [FACT][E-AU-236-001] |
+| error shape | DomainError可保留details；普通Error只取冒号前code；非Error统一internal | [FACT][E-AU-236-002] |
+| runtime consumer | HttpApp在顶层catch通过mapper产生稳定HTTP JSON body | [FACT][E-AU-236-003] |
+
+[FACT][E-AU-236-004] 2 文件、49 行完成深审；fixture只覆盖409和unknown 500，见F-0221/P2。
