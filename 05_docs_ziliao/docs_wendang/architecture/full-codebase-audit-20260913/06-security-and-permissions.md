@@ -161,3 +161,10 @@ master key备份、secret catalog生成/替换、token轮换、OSS账户策略�
 - Cakeuncle官方式签名只覆盖channel与timestamp，不覆盖payload。专用Webhook因此明确标记`authoritative:false`且未导出/注册；该GX边界必须保留到专项复核。
 - [P1-CANDIDATE][E-AU-023-005/007] Foodvoucher生产使用另一套header-HMAC verifier并暴露写ports，与包内已知协议/禁用决定不一致，见F-0100/RV-0016。
 - 本AU使用现有测试向量与合成JSON，没有读取、打印、修改或轮换真实channelKey/webhook secret。
+
+## 21. AU-024 Foodvoucher权限与Webhook边界
+
+- manifest要求`channel.foodvoucher.operate`和channelNo/channelKey/webhookSecret；安装层只验证secret key存在，真实secret ACL仍由Channel critical connection管理边界决定。
+- Registry把capability存在与port存在分开检查，没有全局capability-port映射。Foodvoucher的Issue/Bind/Verify/Void/Extend等词汇可与任意现有port组合请求，当前caller虽有限，边界本身不自证语义。
+- 可达Webhook使用Provider Core header-HMAC，不是Cakeuncle包已知的body签名/unsigned callback模型；未发现无密钥绕过，但合法回调和权威状态边界未证明（F-0100）。
+- 本AU没有读取真实secret、Webhook载荷、permission assignment或线上installation。

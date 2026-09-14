@@ -127,3 +127,10 @@
 - 非幂等调用发生可重试Transport错误时被转换为`CAKEUNCLE_WRITE_OUTCOME_UNKNOWN`且不重试，这是防止重复远端写入的有效边界。
 - F-0100显示Foodvoucher写ports被发布，但其协议与数据状态契约未闭合；未核实线上installation前，不推断实际发行、退款或核销数据已错误。
 - 本AU未执行SQL、迁移、远端写入、Webhook重放或数据修复。
+
+## 19. AU-024 Foodvoucher数据边界
+
+- Provider包不拥有表/迁移；Catalog源数据进入Channel/Catalog，Statement进入Channel/Finance，Webhook进入Channel inbox/job。卡券发行与核销的本地Voucher数据由Commerce voucher模块拥有，当前未找到其调用provider verification/order port的静态链。
+- F-0103主要造成目录/价格缺失或同步失败，不直接删除既有数据。F-0100的Statement/Webhook可达链可能造成对账或状态停滞，但线上启用与真实数据影响未知。
+- 历史专用Mapper曾校验产品ID唯一、金额精度和字段shape；当前通用Mapper仅要求canonical records字段，这些供应商特定不变量不再存在于运行代码。
+- 本AU未查询、写入或迁移任何数据库，也未调用供应商。

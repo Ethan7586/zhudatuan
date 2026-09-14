@@ -1,0 +1,8 @@
+"invariant_id","invariant","location","status","finding"
+"INV-AU-024-001","required provider有固定生产factory入口","ProviderFactories/requirements","成立","是否enabled未知"
+"INV-AU-024-002","manifest capability与真实port一一闭合","manifest/Provider/Registry","不成立","F-0100"
+"INV-AU-024-003","支持的Catalog/Price映射供应商真实响应","Mapper/PortFactory/Cakeuncle contract","不成立或未验证","F-0103"
+"INV-AU-024-004","health验证业务operation而非仅网络","CakeuncleClient.health/connection","不成立","F-0103"
+"INV-AU-024-005","payload未签/unsigned callback不进入生产权威","Foodvoucher generic Webhook","未证明","F-0100/RV-0016"
+"INV-AU-024-006","测试执行真实operation并拒绝额外能力","Provider.test/provider contract","不成立","F-0104"
+"INV-AU-024-007","公共ErrorMap有真实caller或兼容责任","ErrorMap/index","未知","DC-0030"

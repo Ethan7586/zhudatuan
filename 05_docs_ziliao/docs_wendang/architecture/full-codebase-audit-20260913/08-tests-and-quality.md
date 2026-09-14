@@ -207,3 +207,10 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 正式test/typecheck因缺vitest/tsc在源码加载前127退出；没有安装依赖或执行build。
 - 合成深层JSON探针在30,004字节/5,000层起复现RangeError，证明字节限额不能替代结构预算（F-0099）。
 - 套件不命中Foodvoucher生产factory/ports与公共export，也不覆盖深度、chunked限额、超时/取消矩阵，见F-0102。详见`records/AU-023-cakeuncle-vendor/`。
+
+## 23. AU-024 Foodvoucher Provider质量
+
+- 包内唯一Vitest只检查required ID、签名注入和空签名拒绝，不实例化Provider或调用任何port。
+- 根provider contract在遇到未映射capability时回退手写port清单，只做`has()`；不执行Catalog/Statement/Webhook，不拒绝额外port，也不校验capability-port配对（F-0104）。
+- 正式test/typecheck因缺vitest/tsc在源码加载前127退出；未安装依赖或build。
+- 历史行为测试曾覆盖专用Catalog/Price与畸形供应商字段，但已不在固定基线。详见`records/AU-024-foodvoucher-provider/`。

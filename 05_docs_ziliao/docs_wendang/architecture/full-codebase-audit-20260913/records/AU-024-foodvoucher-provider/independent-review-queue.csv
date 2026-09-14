@@ -1,0 +1,3 @@
+"review_id","target","current_rating","must_retrace","required_evidence","do_not_assume","status"
+"RV-0016","F-0100","P1候选","线上installation→Registry capability/port→Catalog/Statement/Webhook/Fulfillment caller→Cakeuncle协议","第二位评审者核只读enabled状态、任务/错误记录、供应商正式文档与合成端到端调用","不得把Provider.has等同Registry可达；不得把祖先代码直接当恢复方案","待独立评审者复核；主审第二链路已完成"
+"RV-0018","F-0103","P1候选","Catalog/Price requirement→connection endpoint→Cakeuncle response→Mapper→Channel sync→catalog projection","第二位评审者核最新版响应样例、Price需求、health与业务操作差异及线上只读run状态","不得仅凭README或历史mapper定最终协议","待复核"

@@ -431,3 +431,16 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 14个用例覆盖Auth/Client/Signer/Webhook | Vitest | F-0102；当前工具缺失 |
 
 [FACT][E-AU-023-001] 16/16文件、662/662行均已深入审阅；无独立进程、数据库或发布target。
+
+## 30. AU-024 Foodvoucher Provider 模块清单
+
+| 子模块 | 职责 | 真实入口/调用者 | 当前边界 |
+| --- | --- | --- | --- |
+| manifest | required provider能力、权限、secret、limits | Registry/release signer | F-0100/F-0103 |
+| Provider/operations | Cakeuncle Client与通用ports装配 | Commerce ProviderFactories | capability-port不闭合 |
+| Mapper | 通用canonical records验证 | catalog port | F-0103；专用mapping已丢失 |
+| ErrorMap | Provider error前缀 | 仅公共export | DC-0030/G1 |
+| Webhook转发 | 旧Provider Core包装器别名 | 仅公共export | 已纳入DC-0026 |
+| tests | required ID和manifest签名 | Vitest；根contract | F-0104 |
+
+[FACT][E-AU-024-001] 9/9文件、79/79行均已深入审阅；包随Commerce OCI发布，不拥有表、进程或独立target。

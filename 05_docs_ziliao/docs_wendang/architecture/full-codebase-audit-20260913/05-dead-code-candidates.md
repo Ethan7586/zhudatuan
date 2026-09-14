@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 2、G1 24、G2 2、G3 0、GX 3。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 2、G1 25、G2 2、G3 0、GX 3。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -407,3 +407,20 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 新增DC-0028/GX与DC-0029/G1；没有G2或G3新增项。
 - 当前累计G0 2、G1 24、G2 2、G3 0、GX 3。未修改、删除、导出或注册任何候选实现。
+
+## DC-0030｜Foodvoucher ErrorMap公共导出
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `extensions/providers/foodvoucher/ErrorMap.ts`的`mapFoodvoucherError`及index导出 |
+| 疑似原因 | [FACT][E-AU-024-010] 固定仓库除定义和barrel外零caller；Provider调用链也没有使用该映射 |
+| 保留证据 | package公共API仍导出；仓外consumer、历史错误码兼容、未来Foodvoucher专项实现未排除 |
+| 当前问题 | 每provider前缀ErrorMap模式与真实错误传播脱节，但删除会改变公共表面 |
+| 可否删除 | 否；没有满足无公共API、无兼容职责、正式下线和第二次复核条件 |
+| 二次复核 | G1不强制；拟删除时应与全部provider ErrorMap统一专项复核 |
+
+## 24. AU-024 Foodvoucher Provider候选复核
+
+- 新增DC-0030/G1；FoodvoucherWebhook已属于DC-0026，不重复计数。
+- 当前累计G0 2、G1 25、G2 2、G3 0、GX 3；没有G3，未删除或移动文件。

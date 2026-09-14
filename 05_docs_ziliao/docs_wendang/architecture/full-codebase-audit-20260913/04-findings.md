@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-023 结束时累计：P0 0、P1 候选 14、P2 47、P3 40、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-024 结束时累计：P0 0、P1 候选 15、P2 47、P3 41、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2508,3 +2508,60 @@
 
 - [UNKNOWN] Foodvoucher线上enabled installation、真实Cakeuncle协议版本、base URL与callback来源；需RV-0016核对。
 - [UNKNOWN] 被禁用Webhook/H5/Card签名是否仍承担仓外兼容或供应商对接证据；需RV-0017核对。
+
+## F-0100｜AU-024调用链复核补充
+
+[FACT][E-AU-024-003–005] 第二条链路从全部生产`ExtensionRegistry.require` caller反向复核后，收窄AU-023表述：Foodvoucher Provider对象确实包含6个业务port和Webhook，但当前固定caller中只有Catalog、Statement、Webhook在manifest词汇下可达；Fulfillment固定请求`Order/order`，会被只有`Issue`的manifest拒绝，cancel/refund/verification没有找到固定静态caller。风险仍成立于错误能力表面和三个可达链，不把“对象有port”夸大为“所有写入正在运行”。RV-0016仍需第二位独立评审者和线上只读证据。
+
+## F-0103｜Required Foodvoucher丢失已知只读适配，health无法证明业务可用
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Foodvoucher Provider / Cakeuncle Catalog |
+| 类型 | 业务契约、能力回归、健康检查 |
+| 严重级别 | **P1 候选**；未完成RV-0018前不作最终P1 |
+| 置信度 | 中高：当前代码、当前包声明和祖先专用契约闭合；供应商最新协议与线上enabled状态未知 |
+| 文件和精确位置 | `01_core_hexin/extensions/providers/foodvoucher/Provider.ts:6-16`；`Mapper.ts:1`；`manifest.ts:4-19`；`extensions/providers/core/src/PortFactory.ts:56-65`；`Mapper.ts:11-17,31-34`；`extensions/vendors/cakeuncle/README.md:7-27`；`Client.ts:51-63,159-164` |
+| 当前行为 | [CONFLICT][E-AU-024-006–008] 当前Catalog通用port读取`value.records`并要求canonical字段，Price完全不存在；Cakeuncle Client只剥离business error而返回原始envelope。当前README与同仓祖先专用实现记录Foodvoucher产品响应为`code/msg/data`并要求Catalog/Price。Provider health只探connection.healthOperation，不执行catalog/price mapping，因此可健康启动后首个业务调用失败 |
+| 预期行为 | required/available provider至少应让声明启用的Catalog/Price通过真实供应商响应和启动canary；不能用单独health endpoint替代业务契约验证 |
+| 直接证据 | E-AU-024-002/006–009、TC-AU-024-003–006 |
+| 调用链或运行入口 | ChannelSyncJob Catalog/Price→Registry→FoodvoucherProvider→CakeuncleClient→generic Mapper；Loader register→Client.health仅探health operation |
+| 用户影响 | [INFERENCE] 若installation启用，食品提货券目录或价格无法进入商城；Catalog作业失败重试，Price在Registry直接缺能力 |
+| 数据影响 | 主要造成源目录/价格缺失或停滞；没有证据显示既有数据被覆盖或删除 |
+| 安全影响 | 无新增凭据泄露事实；与F-0100 Webhook/写入协议边界相邻 |
+| 根因 | 冲突收口选择了通用Provider模板，删除了vendor-specific mapper/ports/tests，同时未让health覆盖业务operation |
+| 建议方向 | 后续专项先核供应商现行协议与产品决定，再只恢复被确认的最小只读能力；写入/Webhook另批处理 |
+| 预计修改范围 | Foodvoucher Provider/Mapper/manifest/tests与connection health canary；不得混入其他provider |
+| 验证方式 | 供应商沙箱或录制fixture的Catalog/Price全链、畸形字段/重复ID/金额精度、health后首个operation；线上只读核enabled/run状态 |
+| 回滚方式 | 单一只读适配提交可回退；保留现有installation与manifest版本迁移方案 |
+| 是否需要独立复核 | 是，RV-0018 |
+
+为什么不是P0：没有线上enabled、失败作业、用户影响规模或当前供应商响应的直接证据；不能从required清单和历史实现推断正在发生严重事故。
+
+## F-0104｜Provider契约测试会把Foodvoucher能力错配判为可执行
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Foodvoucher tests / Provider contract suite |
+| 类型 | 测试假阳性、契约覆盖 |
+| 严重级别 | P3 |
+| 置信度 | 高：包测和根contract全部逻辑已核对 |
+| 文件和精确位置 | `01_core_hexin/extensions/providers/foodvoucher/tests/Provider.test.ts:6-12`；`03_quality_ceshi/tests/contracts/providers.spec.ts:37-53`；`tests/contracts/providers/ProviderContract.ts:12-32,42-50` |
+| 当前行为 | 包测只断言required ID和manifest签名。根contract遇到Issue等未映射capability时退回手写port列表，只断言`provider.has(port)`；不拒绝额外ports、不执行任何Foodvoucher operation，也不检查capability-port语义配对 |
+| 预期行为 | required provider契约测试应由统一映射推导port，执行最小行为fixture，并拒绝未声明/未实现/多余能力 |
+| 直接证据 | E-AU-024-009、TC-AU-024-006 |
+| 调用链或运行入口 | root provider contract→factory.create→has only；package Vitest→manifest only |
+| 用户影响 | F-0100/F-0103存在时质量门禁仍可保持绿色并宣称“executable contracts” |
+| 数据影响 | 测试本身不写数据；间接遗漏目录、对账和Webhook停滞 |
+| 安全影响 | generic Webhook协议错配没有被测试暴露 |
+| 根因 | fallback用手写期望掩盖未定义capability映射，contract只测结构不测行为 |
+| 建议方向 | 后续测试批次建立唯一capability-port映射与Foodvoucher fixture；不在审计分支修改 |
+| 预计修改范围 | root provider contract和Foodvoucher tests |
+| 验证方式 | 删除mapper、移除Price、增加额外port或改capability词汇时测试稳定失败；执行真实catalog response fixture |
+| 回滚方式 | 回退单一测试提交 |
+| 是否需要独立复核 | 否；相关P1候选需复核 |
+
+## 24. AU-024 新增未定级事项
+
+- [UNKNOWN] Foodvoucher线上是否enabled、最近Channel run/Job结果及当前供应商响应；审计未访问线上。
+- [UNKNOWN] 产品最终选择是恢复只读Catalog/Price还是完整实现Issue/Bind/Verify/Void/Extend；历史文档不能替Ethan定稿。

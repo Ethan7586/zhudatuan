@@ -772,3 +772,12 @@ sequenceDiagram
 - Cake/Flower/Meal仅发布读取ports并分别校验root category或store endpoint；Foodvoucher factory另经Provider Core `createPorts`发布写入及Webhook，和Cakeuncle包声明边界冲突（F-0100）。
 - 专用`CakeuncleWebhookVerifier`、event ID派生与success回执没有生产注册；当前只在包内测试运行。
 - 所有运行状态为connection实例内存中的rate/concurrency/circuit；数据写入由Commerce领域与Channel数据库拥有。
+
+## 29. AU-024 Foodvoucher运行关系
+
+`Channel catalog/statement job或webhook route → ExtensionRegistry.require(foodvoucher,scope,capability,port) → FoodvoucherProvider port → CakeuncleClient → configured endpoint`
+
+- Catalog以`Catalog/catalog`进入，通用Mapper读取`records`；当前没有Foodvoucher专用`code/msg/data`转换。
+- Price路径在manifest和Provider中均不存在；Fulfillment固定请求`Order/order`，无法通过只有`Issue`的manifest。
+- Statement与Webhook在manifest/Provider/caller三侧可达，但供应商operation与header-HMAC协议尚无行为证据。
+- Provider health只调用connection.healthOperation；business endpoint缺失或响应shape错误不会在启动健康门禁中暴露。

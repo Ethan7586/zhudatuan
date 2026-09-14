@@ -235,3 +235,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - Cake/Flower/Meal的发布能力与README只读边界一致；Foodvoucher manifest/factory把禁用写入和Webhook带入同一制品，治理前必须只读盘点enabled installation和真实协议（F-0100）。
 - 专用Webhook未导出，不能因“已有实现”直接注册；其payload未签特征会改变状态权威边界。DC-0028必须独RV-0017后才可讨论去留。
 - 本AU未构建OCI、访问Cakeuncle/secret/线上配置、激活provider、推送、合并或部署。
+
+## 27. AU-024 Foodvoucher Provider发布与运维边界
+
+- Foodvoucher是requirement清单中的priority-1/required/available provider，factory编入Commerce OCI；实际运行仍取决于数据库enabled installation、签名manifest、connection和健康门禁。
+- health只探connection.healthOperation，无法发现Catalog Mapper、Price缺失、Statement或Webhook协议错配；健康通过不能替代业务canary。
+- 当前release contract测试可在业务不可执行时通过，不能作为Foodvoucher上线证据（F-0104）。
+- 本AU未构建制品、读取线上installation/run、激活或停用provider、推送、合并或部署。

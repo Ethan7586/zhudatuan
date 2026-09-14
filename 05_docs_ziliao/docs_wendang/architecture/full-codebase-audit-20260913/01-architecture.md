@@ -755,3 +755,12 @@ flowchart LR
 - Cake、Flower、Meal在provider wrapper中进一步锁定endpoint与catalog scope；Foodvoucher直接复用通用PortFactory，越过本包README声明的只读/禁用边界，形成F-0100。
 - 专用Webhook实现明确知道签名不覆盖payload，输出`authoritative:false`且没有barrel/生产入口；它是GX证据资产，不是可直接启用能力。
 - 响应递归JSON验证无深度预算，2MiB以内仍可触发栈溢出并错误计入Transport/circuit，见F-0099。
+
+## 30. AU-024 Foodvoucher Provider真实边界
+
+`ProviderFactories → RuntimeExtensionLoader → FoodvoucherProvider → CakeuncleClient + Provider Core createPorts → ExtensionRegistry.require(capability,port)`。
+
+- Provider实例拥有catalog/order/cancel/refund/statement/verification/webhook；manifest则使用Catalog/Issue/Bind/Verify/Void/Extend/Refund/Statement/Webhook。Registry没有固定capability-port映射，只分别检查capability存在和port存在，语义配对留给caller。
+- 当前静态caller中Catalog、Statement、Webhook可达；Fulfillment请求`Order/order`而manifest只有Issue，Price既无manifest能力也无port。其余能力没有固定caller证据。
+- 当前通用Catalog要求`records[{externalId,version,payload}]`，已移除同仓历史中Cakeuncle `code/msg/data`专用转换；health只探单独endpoint，不能证明业务operation，形成F-0103。
+- 该required provider无独立数据所有权或进程，错误随Commerce Channel/Fulfillment作业传播。
