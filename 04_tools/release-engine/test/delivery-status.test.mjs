@@ -1,0 +1,55 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import test from 'node:test';
+import { evaluateDeliveryStatus, parseMergeTreeConflictFiles } from '../src/delivery-status.mjs';
+
+const success = Object.freeze({ databaseId: 3, status: 'completed', conclusion: 'success', url: 'https://example.test/3' });
+const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '../../..');
+
+test('reports exact conflict files before a commit reaches the mainline', () => {
+  const result = evaluateDeliveryStatus({ localCommit: true, remoteCommit: true, inMainline: false, channelConfigured: true,
+    conflictFiles: ['ProductCatalogRoute.tsx', 'ProductQuery.ts'], prepareRuns: [], sealRuns: [] });
+  assert.equal(result.code, 'MERGE_CONFLICT');
+  assert.deepEqual(result.states, { committed: true, inMainline: false, sealed: false, deployable: false });
+});
+
+test('reports a local-only conflict instead of hiding it behind remote availability', () => {
+  const result = evaluateDeliveryStatus({ localCommit: true, remoteCommit: false, inMainline: false, channelConfigured: true,
+    conflictFiles: ['ProductSelectionRoute.tsx'], prepareRuns: [], sealRuns: [] });
+  assert.equal(result.code, 'MERGE_CONFLICT');
+  assert.equal(result.remoteCommit, false);
+});
+
+test('distinguishes mainline, preparation and sealing without inventing a gate', () => {
+  assert.equal(evaluateDeliveryStatus({ localCommit: true, remoteCommit: true, inMainline: true, channelConfigured: true }).code, 'IN_MAINLINE');
+  assert.equal(evaluateDeliveryStatus({ localCommit: true, remoteCommit: true, inMainline: true, channelConfigured: true,
+    prepareRuns: [{ status: 'in_progress' }] }).code, 'PREPARING');
+  assert.equal(evaluateDeliveryStatus({ localCommit: true, remoteCommit: true, inMainline: true, channelConfigured: true,
+    prepareRuns: [success] }).code, 'AWAITING_SEAL');
+});
+
+test('only reports deployable when mainline, seal evidence and a physical channel agree', () => {
+  const ready = evaluateDeliveryStatus({ localCommit: true, remoteCommit: true, inMainline: true, channelConfigured: true,
+    prepareRuns: [success], sealRuns: [success] });
+  assert.equal(ready.code, 'DEPLOYABLE');
+  assert.deepEqual(ready.states, { committed: true, inMainline: true, sealed: true, deployable: true });
+
+  const missingChannel = evaluateDeliveryStatus({ localCommit: true, remoteCommit: true, inMainline: true, channelConfigured: false,
+    prepareRuns: [success], sealRuns: [success] });
+  assert.equal(missingChannel.code, 'CHANNEL_MISSING');
+  assert.equal(missingChannel.states.deployable, false);
+});
+
+test('parses only conflicted paths from git merge-tree output', () => {
+  const output = `0123456789012345678901234567890123456789\nProductCatalogRoute.tsx\nProductQuery.ts\n\nAuto-merging ProductCatalogRoute.tsx\nCONFLICT (content): Merge conflict`;
+  assert.deepEqual(parseMergeTreeConflictFiles(output), ['ProductCatalogRoute.tsx', 'ProductQuery.ts']);
+});
+
+test('the system dispatcher exposes read-only status through the latest control plane', async () => {
+  const dispatcher = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/github-actions-runner/zdt-delivery'), 'utf8');
+  assert.match(dispatcher, /status\|prepare\|deploy/);
+  assert.match(dispatcher, /git -C "\$REPOSITORY_ROOT" fetch origin zdt-next --quiet/);
+  assert.match(dispatcher, /status\) bash scripts\/release-status\.sh/);
+});
