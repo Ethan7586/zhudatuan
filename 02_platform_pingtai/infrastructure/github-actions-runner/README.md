@@ -23,6 +23,8 @@
 bash 02_platform_pingtai/infrastructure/github-actions-runner/runner-fleet-status.sh
 ```
 
+Runner 连接 GitHub 的特殊线路必须在 systemd 服务启动时生效，不能等到 workflow checkout 之后再设置。`install-github-transport.sh` 只接受 `127.0.0.1` HTTP 代理，并明确让阿里云域名、元数据地址和 253 生产机直连；检测到任何运行中的 Runner 作业会立即停止安装。
+
 首次安装冷备用需要一次 GitHub 临时注册令牌；安装脚本固定校验 staging 实例 ID、Runner 压缩包摘要，安装完成后立即停止并禁用服务。切换命令只允许 `primary` 或 `standby` 二选一，不触碰 253 生产服务、OSS 制品或生产指针。
 
 ## 默认规则
