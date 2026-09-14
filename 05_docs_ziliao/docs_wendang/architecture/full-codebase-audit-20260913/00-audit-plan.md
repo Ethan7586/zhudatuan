@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-211 已完成。AU-211 完成 Commerce AuditSink contract audit。覆盖总账按当前文件级清单重算：深入审阅1,692文件/120,715行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,162文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-212 已完成。AU-212 完成 Commerce generic BatchImport audit。覆盖总账按当前文件级清单重算：深入审阅1,693文件/120,778行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,161文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1701,3 +1701,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Commerce foundation AuditSink contract。
 
 执行结果：接口只定义与事务数据库共同使用的command audit/access audit输入及容器token；CommerceRuntime把唯一RecordAudit实现绑定给全部module operation消费者，RecordAudit、canonical hash、redaction和PgAuditRepository已由AU-051/AU-108深审。无独立业务分支或P0–P3新问题。
+
+## 214. AU-212 连续审计点
+
+审阅 Commerce foundation generic BatchImport processor。
+
+执行结果：member/inventory/voucher三个Jobs catalog注册的导入任务复用该processor；它按uploaded/validating→ready/running→reporting→completed推进，输入文件hash由ImportFile验证，永久格式/对象错误reject，其他错误fault后交给JobRunner retry。Catalog import另有独立processor，不受此实现覆盖。未找到generic processor的direct成功、早退、permanent/retry/abort测试，形成F-0210/P2；无P0/P1新问题。

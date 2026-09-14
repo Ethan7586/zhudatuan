@@ -3962,6 +3962,20 @@
 | 验证/回滚 | 断言各拒绝码、没有连接/写入副作用及discard接收原始cause；回滚为revert测试提交。 |
 | 独立复核 | 否；P3。 |
 
+## F-0210｜Generic BatchImport 生产状态机没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation BatchImport；P2；高 |
+| 类型 | 测试覆盖缺口、异步批量导入状态与失败恢复 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/application/BatchImport.ts:24-63` |
+| 当前/预期 | 同一processor处理member/inventory/voucher导入的文件校验、stage、process、failure report、complete及permanent/retry失败分类。预期对每个状态分支和ObjectStore/port副作用有direct fixture。 |
+| 直接证据 | 未找到`BatchImportProcessor`、`IMPORT_STATE_INVALID`、`IMPORT_PROCESSING_FAILED`或`JOB_KIND_MISMATCH`的测试断言；`app/jobs.ts:102-105,158-161`实际把三个生产job注册到对应子类，三者均继承该processor。 |
+| 调用链/影响 | import queue → JobRunner → member/inventory/voucher BatchImportProcessor → ImportFile/ObjectStore/Pg*Import。回归可能让有效导入停在中间状态、把永久错误交给无效重试，或遗漏失败报告；线上是否发生未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试批次，以fake ObjectStore/BatchImportPort覆盖uploaded、ready、reporting、terminal early return、permanent reject、transient fault/rethrow、abort和wrong kind；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言state顺序、每个port调用、report object及permanent/transient分类；回滚为revert测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

@@ -2252,3 +2252,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | DI token | `AUDIT_SINK`让module code只依赖应用契约，CommerceRuntime将其绑定为RecordAudit | [FACT][E-AU-211-002] |
 
 [FACT][E-AU-211-003] 1 文件、21 行完成深审；唯一实现、redaction、hash chain和persistence已由AU-051/AU-108审阅，接口本身无独立运行分支。
+
+## 217. AU-212 Generic BatchImport 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| common import state machine | 接收claimed job，按上传、校验、处理、报告及完成状态推进 | [FACT][E-AU-212-001] |
+| file/report boundary | 由ImportFile校验对象与hash并读取rows；完成后将failure report写入ObjectStore | [FACT][E-AU-212-002] |
+| error classification | 格式/对象不可恢复错误reject，其他错误fault并重新抛给JobRunner retry | [FACT][E-AU-212-003] |
+
+[FACT][E-AU-212-004] 1 文件、63 行完成深审；member/inventory/voucher processors和Jobs catalog实际消费，catalog import另有独立实现；缺少公共状态机direct fixture见F-0210/P2。

@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-212-001,src/foundation/application/BatchImport.ts,24-55,state machine,Processor validates claimed job kind resolves import target and advances uploaded/validating ready/running reporting states to completion.
+E-AU-212-002,src/foundation/application/BatchImport.ts,37-50,file and report boundary,readImportFile verifies object reference/hash before staging and saveImportReport persists failures before complete.
+E-AU-212-003,src/foundation/application/BatchImport.ts,51-63,error policy,Known object/CSV validation errors call reject while other failures call fault then rethrow for JobRunner retry.
+E-AU-212-004,src/app/jobs.ts,102-105;158-161,production registration,Member Inventory and Voucher jobs are registered and instantiated as subclasses of BatchImportProcessor; CatalogImportProcessor is separate.
+E-AU-212-005,src/foundation/application/BatchImport.ts,1-63,test gap,No direct fixture or behavior assertion was found for generic processor branches.

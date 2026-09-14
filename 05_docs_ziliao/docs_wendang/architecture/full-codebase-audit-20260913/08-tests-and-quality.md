@@ -649,3 +649,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - AuditSink是应用层接口，运行行为由已审RecordAudit、AuditRecord/AccessRecord与PgAuditRepository实现；接口不单独产生可执行分支。
 - RecordAudit绑定和领域模型fixture由既有AU-051/AU-108承接；无P0–P3新问题。
+
+## 212. AU-212 Generic BatchImport 深审
+
+- 未找到BatchImportProcessor direct fixture；子模块测试只覆盖各自端口/operation/manifest，不能证明公共状态推进、对象失败分类、abort及report完成行为。
+- 三个生产Jobs catalog entry直接运行该路径，见F-0210/P2。审计工作树未运行Vitest。
