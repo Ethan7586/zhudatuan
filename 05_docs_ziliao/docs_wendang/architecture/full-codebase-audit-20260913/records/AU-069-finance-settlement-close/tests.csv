@@ -1,0 +1,2 @@
+"测试","范围","结论","执行"
+"CloseSettlement.test.ts","调整批准、版本化 snapshot、防篡改、late-payment 排除、最终记账与时区 recognition time","PGlite 真实数据库行为测试；覆盖本批关键状态机","未执行：固定审计 worktree 无 vitest 可执行文件"

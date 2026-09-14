@@ -787,3 +787,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | 参数/领域输入 oracle | F-0155 |
 
 [FACT][E-AU-068-004] 5 文件、524 行 Finance policy 人工源码和测试完成深审。
+
+## 75. AU-069 Finance 结算审批、调整与快照模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| close settlement | settlement approve/reject、计提和平台分账结清 | [FACT][E-AU-069-001] |
+| adjustment | adjustment request/approve/reject、facts 和新快照 | [FACT][E-AU-069-002] |
+| authoritative snapshot | 来源/规则/行/分账/调整的版本化派生、冻结与复核 | [FACT][E-AU-069-003~004] |
+| tests | PGlite 篡改拒绝、late exclusion、最终 journal | [FACT][E-AU-069-005] |
+
+[FACT][E-AU-069-006] 3 文件、859 行 Finance settlement close 人工源码和测试完成深审；对账/账期/提现/发票等职责仍保持独立审计单元。
