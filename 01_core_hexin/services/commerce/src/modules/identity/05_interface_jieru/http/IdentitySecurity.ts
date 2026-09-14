@@ -1,22 +1,17 @@
 import type { AuthTarget } from '@shop/config/server';
 import { reject, type OperationDatabase } from '../../../../foundation/application/ModuleOperations';
+import { csrfCookieName, sessionCookieName } from '../../../../foundation/security/AuthSessionCookies';
 
 export const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 
-export function sessionCookies(token: string, csrf: string, maxAge: number): Readonly<Record<string, string>> {
+export function sessionCookies(token: string, csrf: string, maxAge: number, target?: AuthTarget): Readonly<Record<string, string>> {
   const expiry = maxAge === 0 ? '; Expires=Thu, 01 Jan 1970 00:00:00 GMT' : '';
+  const sessionName = target === undefined ? 'shop_session' : sessionCookieName(target);
+  const csrfName = target === undefined ? 'shop_csrf' : csrfCookieName(target);
   return Object.freeze({
-    'set-cookie': `shop_session=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAge}; Secure; HttpOnly; SameSite=Lax${expiry}`,
-    'x-set-cookie': `shop_csrf=${encodeURIComponent(csrf)}; Path=/; Max-Age=${maxAge}; Secure; SameSite=Strict${expiry}`,
+    'set-cookie': `${sessionName}=${encodeURIComponent(token)}; Path=/; Max-Age=${maxAge}; Secure; HttpOnly; SameSite=Lax${expiry}`,
+    'x-set-cookie': `${csrfName}=${encodeURIComponent(csrf)}; Path=/; Max-Age=${maxAge}; Secure; SameSite=Strict${expiry}`,
   });
-}
-
-export function requestCookie(value: string | undefined, name: string): string | undefined {
-  for (const part of value?.split(';') ?? []) {
-    const separator = part.indexOf('=');
-    if (separator > 0 && part.slice(0, separator).trim() === name) return decodeURIComponent(part.slice(separator + 1).trim());
-  }
-  return undefined;
 }
 
 export function authTarget(value: string): AuthTarget {

@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import { resolveNodeContextByHost } from '@shop/config/sfl-node-kernel';
 import { SERVER_NODE_MANIFEST_REGISTRY } from '../../bootstrap/ApiBootstrap';
@@ -8,6 +9,7 @@ import {
   type AccessContext,
 } from './AccessContext';
 import { PgMembershipResolver, PgScopeResolver, PgSessionResolver } from './PgAccessResolvers';
+import { AUTH_TARGET_CONTEXT_HEADER } from './AuthSessionCookies';
 
 const l1SessionNode = {
   entry_realm_id: 'realm:l1', line_id: 'line:zhudatuan:commerce:v1', node_id: 'node:hbbtzn:l1',
@@ -21,6 +23,26 @@ const l0SessionNode = {
 } as const;
 
 describe('PostgreSQL access NodeContext continuity', () => {
+  it('prefers the target-specific console cookie over a storefront and legacy session', async () => {
+    const query = vi.fn().mockResolvedValue({
+      rows: [{
+        actor_id: 'actor:console', account_id: 'account:l1', realm_id: 'realm:l1',
+        session_id: 'session:console', membership_id: 'membership:console', credential_version: 1,
+        access_version: 2, target: 'console', membership_client: 'operator',
+        governance_organization_id: 'mall:d1708f04df2dd8a61736852c4900fb43', assurance_level: 1,
+        assurance_verified_at: null, ...l1SessionNode,
+      }],
+    });
+    const headers = bindRequestNodeContext(Object.freeze({
+      cookie: `shop_storefront_session=${'s'.repeat(32)}; shop_console_session=${'c'.repeat(32)}; shop_session=${'l'.repeat(32)}`,
+      [AUTH_TARGET_CONTEXT_HEADER]: 'console',
+    }), resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com'));
+
+    await expect(new PgSessionResolver({ query } as never).resolve(headers))
+      .resolves.toMatchObject({ session: 'session:console', target: 'console' });
+    expect(query.mock.calls[0]?.[1]?.[0]).toBe(createHash('sha256').update('c'.repeat(32)).digest('hex'));
+  });
+
   it('reuses the request context for session realm, actor, access, and data scope', async () => {
     const nodeContext = resolveNodeContextByHost(SERVER_NODE_MANIFEST_REGISTRY, 'api.hbbtzn.com');
     const headers = bindRequestNodeContext(Object.freeze({ authorization: `Bearer ${'a'.repeat(32)}` }), nodeContext);

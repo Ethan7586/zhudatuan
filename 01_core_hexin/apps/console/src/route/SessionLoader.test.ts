@@ -233,6 +233,12 @@ describe('console scope loader profile isolation', () => {
 
     await expect(loadPlatformScope()).rejects.toMatchObject({ status: 401, code: 'AUTHENTICATION_REQUIRED' });
   });
+
+  it('returns a storefront session to the console login instead of reporting a scope denial', async () => {
+    api.identitySessionRead.mockResolvedValue({ ...session, target: 'storefront' });
+
+    await expect(loadPlatformScope()).rejects.toMatchObject({ status: 302 });
+  });
 });
 
 function loadPlatformScope() {

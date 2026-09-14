@@ -5,6 +5,7 @@ import type { NodeContextResolver, ResolvedNodeContext } from '@shop/config/sfl-
 import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { Deadline } from '../performance/Deadline';
 import { bindRequestNodeContext, requestNodeContext } from '../security/AccessContext';
+import { AUTH_TARGET_CONTEXT_HEADER, authTargetForSurface, requestCsrfCookie, requestSessionCookie } from '../security/AuthSessionCookies';
 import type { GateEngine } from '../security/gate_menjin';
 import type { OperationMetrics } from '../telemetry/OperationMetrics';
 import { ErrorMapper } from './ErrorMapper';
@@ -58,7 +59,12 @@ export class HttpApp {
       const parsed = await parseBody(request, simpleSession);
       const payload = simpleSession ? unpackSimpleIdentitySession(parsed) : parsed;
       deadline.throwIfExpired();
-      const requestHeaders = Object.freeze({ ...Object.fromEntries(request.headers.entries()), ...payload.headers });
+      const callerTarget = resolveCallerAuthTarget(origin, this.nodeContexts);
+      const requestHeaders = Object.freeze({
+        ...Object.fromEntries(request.headers.entries()),
+        ...payload.headers,
+        [AUTH_TARGET_CONTEXT_HEADER]: callerTarget ?? '',
+      });
       observedPhase = 'csrf';
       assertCsrf(request.method, requestHeaders, origin, operation.id, simpleSession);
       const headers = nodeContext === undefined ? requestHeaders : bindRequestNodeContext(requestHeaders, nodeContext);
@@ -210,14 +216,17 @@ function assertCsrf(method: string, headers: Readonly<Record<string, string>>, o
   if (['GET','HEAD','OPTIONS'].includes(method)) return;
   if (operation === 'identity.tickets.exchange') return;
   if (simpleSession) return;
-  const cookie = headers.cookie;
-  if (!cookie?.split(';').some((part) => part.trim().startsWith('shop_session='))) return;
+  if (requestSessionCookie(headers) === undefined) return;
   if (!origin) throw new Error('ORIGIN_REQUIRED');
-  const expected = cookieValue(cookie, 'shop_csrf');
+  const expected = requestCsrfCookie(headers);
   if (!expected || headers['x-csrf-token'] !== expected) throw new Error('CSRF_TOKEN_INVALID');
 }
 
-function cookieValue(cookie: string, name: string): string | null {
-  for (const item of cookie.split(';')) { const [key, ...rest] = item.trim().split('='); if (key === name) return decodeURIComponent(rest.join('=')); }
-  return null;
+function resolveCallerAuthTarget(origin: string | null, resolver: NodeContextResolver | undefined) {
+  if (origin === null || resolver === undefined) return undefined;
+  try {
+    return authTargetForSurface(resolver.resolve(new URL(origin).host).surface);
+  } catch {
+    return undefined;
+  }
 }
