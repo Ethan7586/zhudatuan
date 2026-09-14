@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 40。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 84、G2 5、G3 0、GX 40。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1582,3 +1582,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是：current function、RLS、跨 scope/tenant、金额/时区、fact watermark 与 UI fallback。 |
 
 - reporting Cockpit read model 归 GX-0040。累计 G0 60、G1 83、G2 5、G3 0、GX 40；未删除任何文件。
+
+## DC-0069｜未接线的 Administrator segment TypeScript project
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `01_core_hexin/services/commerce/tsconfig.admin-segment.json` |
+| 疑似原因 | [FACT][E-AU-537-001] 固定基线内未发现 path 文本引用；`@shop/commerce` scripts 只调用全量 `tsc --noEmit`。 |
+| 保留证据 | 清单聚焦 Administrator Context Resolver、admin segment Access operations 及相应测试，保留一个可被 `tsc -p` 显式调用的受限检查单元。 |
+| 未排除项 | 仓外 CI/本地命令、编辑器 TypeScript project、临时发布 gate、历史兼容或动态配置调用。 |
+| 可否删除 | 否；未满足外部调用、构建/运维责任及等价替代条件。 |
+| 二次复核 | G1 不强制；升级 G2/G3 前必须检查外部 CI 与实际 quality gate。 |
+
+- Administrator segment TypeScript project 归 DC-0069。累计 G0 60、G1 84、G2 5、G3 0、GX 40；未删除任何文件。
