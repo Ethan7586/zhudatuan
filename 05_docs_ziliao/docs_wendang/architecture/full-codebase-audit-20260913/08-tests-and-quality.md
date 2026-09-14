@@ -704,3 +704,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 未找到HealthProbe direct fixture；现有HTTP server/route tests不能证明release smoke检查语义。
 - HealthProbe把live/startup/ready任一有效status视为任意probe成功，可能产生错误通过，见F-0214/P2。审计工作树未运行Vitest。
+
+## 223. AU-223 HttpClient direct test 深审
+
+- Direct fixture覆盖read transport retry、unsafe write不重试与204 response handling。
+- 不覆盖connection/response timeout、external abort或redirect error，见F-0215/P2。审计工作树未运行Vitest。

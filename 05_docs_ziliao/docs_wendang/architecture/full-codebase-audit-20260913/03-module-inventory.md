@@ -2355,3 +2355,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | probe acceptance | 拒绝非2xx或不含已知status的JSON，但当前未绑定请求probe到期望status | [FACT][E-AU-222-002] |
 
 [FACT][E-AU-222-003] 1 文件、16 行完成深审；SmokeMain是唯一直接消费者，验证误通过缺陷见F-0214/P2。
+
+## 228. AU-223 HttpClient direct test 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| safe retry | read mode transport failure可重试，none write transport failure不重试 | [FACT][E-AU-223-001] |
+| response replay | 204 write response被保持为可读空body，避免无内容体误处理 | [FACT][E-AU-223-002] |
+| missing failure coverage | connection/response timeout、upstream abort和redirect error没有direct fixture | [FACT][E-AU-223-003] |
+
+[FACT][E-AU-223-004] 1 文件、32 行完成深审；HttpClient实现在AU-005审过，本批补齐测试可信度，关键失败边界缺口见F-0215/P2。

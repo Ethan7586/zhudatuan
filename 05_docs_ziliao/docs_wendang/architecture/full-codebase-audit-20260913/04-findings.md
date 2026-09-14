@@ -4032,6 +4032,20 @@
 | 验证/回滚 | 以fake fetch断言每个请求只接受其预期status；回滚为revert提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0215｜HttpClient 超时、外部取消与重定向失败没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation HttpClient；P2；高 |
+| 类型 | 测试覆盖缺口、外部依赖失败恢复 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/http/HttpClient.ts:18-44`；`.../HttpClient.test.ts:4-32` |
+| 当前/预期 | 实现分离connection/response timer、propagate外部deadline abort、默认redirect error并将三类传输失败交给Executor retry。预期这些可观察错误类型和retry边界有direct fixture。 |
+| 直接证据 | 测试只覆盖throw→read retry、throw→none write single attempt、204 response；未找到`HTTP_CONNECTION_TIMEOUT`、`HTTP_RESPONSE_TIMEOUT`、`DEADLINE_EXCEEDED`或redirect的断言。 |
+| 调用链/影响 | HealthProbe及provider/remote adapter → HttpClient → external HTTP dependency。超时或取消分支回归可能导致错误重试、错误分类或卡住的发布/业务调用；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立fake-fetch/controlled signal测试批，覆盖connection timeout、response body timeout、external abort、redirect default/override和retry次数；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言每种错误码、signal状态和read/write retry次数；回滚为revert测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

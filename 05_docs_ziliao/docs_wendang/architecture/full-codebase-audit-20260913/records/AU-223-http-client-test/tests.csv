@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/http/HttpClient.test.ts,read retry unsafe write no-retry and 204 response handling,not run: audit worktree has no Vitest dependencies
+src/foundation/http/HttpClient.ts,connection/response timeout external abort and redirect direct coverage missing; F-0215,not run: audit worktree has no Vitest dependencies
