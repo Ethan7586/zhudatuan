@@ -1975,3 +1975,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | opaque credential/hash/no permission/invalid revoke direct fixtures | [FACT][E-AU-182-004] |
 
 [FACT][E-AU-182-005] 2 文件、226 行完成深审；storefront/admin compatibility routers分别注册issue/revoke和verify。
+
+## 188. AU-183 Qualification admin 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| center read | admin target/permission/mall scope、server response redaction与capabilities | [FACT][E-AU-183-001] |
+| config write | kind→permission、input/version/reason/idempotency、draft versus published step-up | [FACT][E-AU-183-002] |
+| approval | published change preview决定direct apply或approval request，附server actor/evidence | [FACT][E-AU-183-003] |
+| tests | target/permission/scope/redaction/draft/publish/high-risk approval | [FACT][E-AU-183-004] |
+
+[FACT][E-AU-183-005] 2 文件、400 行完成深审；governance/review/history/rollback routes留在下一独立链路审阅。

@@ -505,3 +505,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests验证签发RPC只收hash而非credential、payload/QR结构、核验权限/credential hash以及撤销UUID拒绝。
 - 尚未运行suite；one-time/replay的数据库事务语义留待migration/RPC专项交叉审计。
+
+## 183. AU-183 Qualification admin 深审
+
+- Direct test覆盖admin target、read/manage permission、mall scope、selector redaction、idempotency、draft save、fresh step-up publish和critical approval queue。
+- RPC/database side的version conflict、审批原子状态和治理子routes留待qualification governance/RPC专项审计；审计工作树未运行Vitest。
