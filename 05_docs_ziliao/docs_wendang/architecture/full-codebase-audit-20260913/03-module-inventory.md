@@ -1260,3 +1260,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | Channel 目录仅有 manifest 静态目录 | [FACT][E-AU-113-004]；F-0167/P2 |
 
 [FACT][E-AU-113-005] 7 文件、254 行 Channel Webhook 完成深审；验签、inbox/job 原子入库和 Worker 处理入口已由真实路由/数据库函数/job registry 交叉验证。F-0094 保持既有 P1 候选，未见新 P0。
+
+## 119. AU-114 Channel operator read 模型清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| main Channel read | connection scope/id keyset、extension summary、sync run scope/time keyset | [FACT][E-AU-114-001] |
+| identity selected read | sovereign identity runtime 的三项 Channel operator read operation | [FACT][E-AU-114-002] |
+| runtime boundary | selected module 只注册白名单 operation，避免与同一 runtime 的完整 ChannelModule 冲突 | [FACT][E-AU-114-003] |
+
+[FACT][E-AU-114-004] 3 文件、94 行 Channel read 链完成深审；两个运行单元的 connection/sync query 目前等价，但实现重复见 F-0168/P3。

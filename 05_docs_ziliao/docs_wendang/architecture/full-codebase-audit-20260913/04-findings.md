@@ -3376,6 +3376,20 @@
 | 验证/回滚 | 从最新主线建立独立测试批次，以最小 PGlite/transaction fixture 覆盖 create→test→enable、disabled/non-enabled 拒绝、cancel race、分页续跑、statement outbox，以及 Webhook 验签/重放、inbox job 原子性和 claim；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2，后续 Channel Worker 专项可复查。 |
 
+## F-0168｜Channel 两个 API runtime 维护重复的 connection/sync read 实现
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | channel / operator read；P3；高 |
+| 类型 | 重复实现、跨运行单元契约漂移风险 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/channel/03_application_yingyong/query/GetConnections.ts:6-20`、`GetSyncRuns.ts:5-14`；`ChannelReadOperations.ts:14-51` |
+| 当前/预期 | 完整 ChannelModule 的两项 read 使用 GetConnections/GetSyncRuns；IdentityRegistrationApi 的 selected Channel module 在 ChannelReadOperations 内重新维护相同的 scope/keyset SQL，connection summary 也只是将 extension repository query 内联。当前投影一致。预期共享同一个 query action/factory，或为两个 runtime 明确建立契约测试，避免一个入口更新后另一个入口陈旧。 |
+| 直接证据 | GetConnections 第9-18行与 ChannelReadOperations 第17-32行的 connection select、scope/id keyset、summary projection 等价；GetSyncRuns 第8-12行与第35-40行的 sync select/keyset 等价。两个文件分别由 ChannelRoutes 与 IdentityOperatorChannelModule 装配。 |
+| 调用链/影响 | Commerce 完整 API → ChannelRoutes → query files；sovereign Identity Registration API → IdentityOperatorChannelModule → ChannelReadOperations。任一未来字段脱敏、cursor 或 extension health 语义改动可能使同 operation id 在不同部署单元返回不同结果。 |
+| 根因 | 为 selected deployment module 复制 read action，而未抽出共享 query factory。 |
+| 验证/回滚 | 从最新主线建立独立小分支，先用同一数据库 fixture 对两运行单元逐字段/分页反事实比较，再抽取最小共享 action 或保留双实现并加入契约同构测试。回滚为撤回该单一治理批次。 |
+| 独立复核 | 否；P3，后续 Channel read/entrypoint 专项可复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

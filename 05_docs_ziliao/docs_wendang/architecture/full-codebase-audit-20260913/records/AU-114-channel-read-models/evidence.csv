@@ -1,0 +1,4 @@
+"证据编号","文件","位置","结论"
+"E-AU-114-001","01_core_hexin/services/commerce/src/modules/channel/03_application_yingyong/query/GetConnections.ts;GetSyncRuns.ts","6-20;5-14","完整 Channel API 的 scope/keyset query 与 connection summary。"
+"E-AU-114-002","01_core_hexin/services/commerce/src/modules/channel/03_application_yingyong/ChannelReadOperations.ts","8-60","Identity selected runtime 的同 operation actions、module assembly。"
+"E-AU-114-003","01_core_hexin/services/commerce/src/modules/channel/05_interface_jieru/{ChannelModule,IdentityOperatorChannelModule}.ts;bootstrap/DefinedModule.ts","1-13;1-6;7-42","完整模块与 selected 模块的实际注册边界。"
