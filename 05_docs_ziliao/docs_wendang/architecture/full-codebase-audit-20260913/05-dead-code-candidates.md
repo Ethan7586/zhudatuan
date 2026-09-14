@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 22。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 23。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1252,3 +1252,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 463. AU-463 成员数据范围授权复核
 
 - 成员本人和组织子树的范围判断由当前 `scope_allowed` 实施；归 GX-0022。累计 G0 60、G1 83、G2 5、G3 0、GX 22；未删除任何文件。
+
+## GX-0023｜支付 Webhook scope resolver 历史演进
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821057000_resolve_payment_webhook_scope.sql`。 |
+| 直接证据 | 迁移按 payment/refund provider reference 解析订单 scope，禁止 public/anon/authenticated/service_role 执行；后续 `20260901220000` 显式 drop 双参数函数并以 application hash 三参数版本替代。 |
+| 运行边界 | 当前 PaymentWebhook 调用三参数 resolver，并核验 attempt 的 scene/application hash；旧文件保留在固定迁移序列中。 |
+| 可否删除 | 否；承担资金回调授权演进、历史 schema 构建、迁移 ledger 与恢复责任。 |
+| 二次复核 | 是；须验证 payment/refund reference、错误 application hash、函数权限、历史升级路径、回调拒绝和恢复。 |
+
+## 464. AU-464 支付 Webhook scope 复核
+
+- 双参数 resolver 已升级而非“无用”；资金回调演进迁移归 GX-0023。累计 G0 60、G1 83、G2 5、G3 0、GX 23；未删除任何文件。
