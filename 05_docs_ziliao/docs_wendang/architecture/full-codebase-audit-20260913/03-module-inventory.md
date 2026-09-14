@@ -1332,3 +1332,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | public index | capability/port/type/manifest 公共导出与 interface export 分层 | [FACT][E-AU-120-004] |
 
 [FACT][E-AU-120-005] 7 文件、37 行 Channel compatibility/module boundary 完成深审；完整 runtime 与 selected runtime 没有在同一 container 重复注册。
+
+## 126. AU-121 Channel 兼容路径覆盖收口
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| legacy application/domain/infrastructure/interface paths | 23 个无逻辑转发，保持旧 import 到中文分层实现的兼容 | [FACT][E-AU-121-001]；G0 |
+| ChannelCapabilities | read/manage 公共 capability 常量与类型 | [FACT][E-AU-121-002] |
+| coverage | Channel 64/64 文件均有明确覆盖状态 | [FACT][E-AU-121-003] |
+
+[FACT][E-AU-121-004] 24 文件、29 行 Channel 兼容层及 capability 完成深审；不以零逻辑转发认定可删除。
