@@ -82,6 +82,8 @@ export function Component() {
       navigate(`${supportPath}/${encodeURIComponent(created.id)}`);
     },
   });
+  const createError = safeQueryError(create.error);
+  const sendError = safeQueryError(send.error);
   const scopeName = context.scope.name?.trim();
   const brandName = scopeName === undefined || scopeName.length === 0 ? '当前商城' : normalizeConsoleCopy(scopeName);
   const roleLabel = supportRoleLabel(context.session.governance?.level);
@@ -125,12 +127,12 @@ export function Component() {
           onNext={(cursor) => setSearch(pageCursor(search, cursor))} />
         <SupportConversation canSend={sendAllowed} backPath={supportPath} {...(caseId === undefined ? {} : { caseId })}
           canCreateCase={createAllowed} condition={messagesCondition}
-          {...(create.isError ? { createCaseError: '新建失败，请保留内容后重试。' } : {})}
+          {...(create.isError ? { createCaseError: `新建失败，请保留内容后重试。 ${createError ?? 'REQUEST_FAILED'}` } : {})}
           createUnavailableReason={createUnavailableReason} creatingCase={creatingCase} creatingCasePending={create.isPending} messages={messages}
           {...(nextMessageCursor === undefined ? {} : { nextCursor: nextMessageCursor })}
           {...(selectedCase === undefined ? {} : { selectedCase })}
           {...(messagesError === undefined ? {} : { error: messagesError })}
-          {...(send.isError ? { sendError: '发送失败，请刷新工单后重试。' } : {})}
+          {...(send.isError ? { sendError: `发送失败，请刷新工单后重试。 ${sendError ?? 'REQUEST_FAILED'}` } : {})}
           sending={send.isPending} sendUnavailableReason={sendUnavailableReason}
           onCancelCreate={() => setCreatingCase(false)} onCreateCase={(draft) => create.mutateAsync(draft).then(() => undefined)}
           onNext={(cursor) => { void loadOlder(cursor); }} onRetry={() => { void messagesQuery.refetch(); }}

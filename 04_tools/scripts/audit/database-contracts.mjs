@@ -227,6 +227,8 @@ const REPAIR_FILES = [
   '20260913021600_align_purchase_operation_completion_outbox.sql',
   '20260913022500_enable_hbbtzn_l2_h5_provisioning.sql',
   '20260913023000_enforce_sfl_vertical_level_adjacency.sql',
+  '20260914090000_publish_autonode_task_operations.sql',
+  '20260914150000_enable_console_support_case_creation.sql',
 ];
 
 const mode = process.argv[2];

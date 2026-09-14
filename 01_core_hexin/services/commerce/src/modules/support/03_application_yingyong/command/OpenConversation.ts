@@ -37,8 +37,11 @@ export function openConversationOperations(kms: KmsClient, ports: SupportPortFac
         reference === null ? null : JSON.stringify(reference)]);
       const result = await database.query(`insert into support.ticket(id,scope_id,priority,state,assigned_agent_id,response_due_at,
         resolution_due_at,created_at,updated_at,version,conversation_id,skill) values($1,$2,$3,$4,$5,
-        clock_timestamp()+make_interval(secs=>$6),clock_timestamp()+make_interval(secs=>$7),clock_timestamp(),clock_timestamp(),0,$8,$9) returning *`,
-      [ticket, access.scope.id, priority, selected ? 'assigned' : 'open', selected?.id ?? null, sla.response, sla.resolution, conversation, skill]);
+        case when $6::integer is null then null else clock_timestamp()+make_interval(secs=>$6) end,
+        case when $7::integer is null then null else clock_timestamp()+make_interval(secs=>$7) end,
+        clock_timestamp(),clock_timestamp(),0,$8,$9) returning *`,
+      [ticket, access.scope.id, priority, selected ? 'assigned' : 'open', selected?.id ?? null,
+        sla?.response ?? null, sla?.resolution ?? null, conversation, skill]);
       if (selected) await database.query(`insert into support.assignment(id,ticket_id,agent_id,reason,assigned_at,scope_id)
         values($1,$2,$3,'policy',clock_timestamp(),$4)`, [`assignment:${randomUUID()}`, ticket, selected.id, access.scope.id]);
       if (selected) await database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,
@@ -47,8 +50,10 @@ export function openConversationOperations(kms: KmsClient, ports: SupportPortFac
       [`event:${randomUUID()}`, ticket, access.scope.id, conversation, selected.id, member, access.trace]);
       const created = result.rows[0] as Readonly<Record<string, unknown>>;
       await Promise.all([
-        repository.enqueue('supportsla', access.scope.id, { ticket, phase: 'response' }, String(created.response_due_at), `job:sla:response:${ticket}`),
-        repository.enqueue('supportsla', access.scope.id, { ticket, phase: 'resolution' }, String(created.resolution_due_at), `job:sla:resolution:${ticket}`),
+        ...(created.response_due_at === null ? [] : [repository.enqueue('supportsla', access.scope.id,
+          { ticket, phase: 'response' }, String(created.response_due_at), `job:sla:response:${ticket}`)]),
+        ...(created.resolution_due_at === null ? [] : [repository.enqueue('supportsla', access.scope.id,
+          { ticket, phase: 'resolution' }, String(created.resolution_due_at), `job:sla:resolution:${ticket}`)]),
       ]);
       await repository.history(ticket, access.scope.id, 'opened', access.actor.id, { assigned: selected?.id ?? null, priority, skill });
       if (message) await repository.message(ticket, conversation, access.scope.id,

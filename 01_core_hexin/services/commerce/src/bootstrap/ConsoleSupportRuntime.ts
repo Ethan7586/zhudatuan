@@ -24,8 +24,8 @@ import { RecordAudit } from '../modules/audit/03_application_yingyong/command/Re
 import { PgAuditRepository } from '../modules/audit/04_adapters_shixian/persistence/PgAuditRepository';
 import { commerceTelemetry, TELEMETRY } from '../foundation/telemetry/Telemetry';
 
-export const CONSOLE_SUPPORT_SCHEMA_VERSION = '20260902133000' as const;
-export const CONSOLE_SUPPORT_SCHEMA_CHECKSUM = '0773015646b923fcf9e66a68c444fc164f6fadfb49d48f19344d59d638d66c4a' as const;
+export const CONSOLE_SUPPORT_SCHEMA_VERSION = '20260914150000' as const;
+export const CONSOLE_SUPPORT_SCHEMA_CHECKSUM = '56fc6fb789e904fe929720c30ba98756abf470c12372dbc5b6a1255e8444710e' as const;
 
 interface ConsoleSupportCompatibilityRow {
   readonly current_user: string;
@@ -100,7 +100,9 @@ export async function consoleSupportRuntimeCompatibility(pool: DatabasePool): Pr
       to_regclass('runtime.schemaversion'),to_regclass('runtime.idempotency'),to_regclass('runtime.outbox'),
       to_regclass('runtime.operation'),to_regclass('access.decisionaudit'),to_regclass('organization.unitclosure'),
       to_regclass('support.ticket'),to_regclass('support.conversation'),to_regclass('support.message'),
-      to_regclass('support.history'),to_regclass('support.evidence'),to_regclass('risk.policy'),
+      to_regclass('support.history'),to_regclass('support.evidence'),to_regclass('support.agent'),
+      to_regclass('support.assignmentrule'),to_regclass('support.sla'),to_regclass('support.assignment'),
+      to_regclass('runtime.job'),to_regclass('risk.policy'),
       to_regclass('risk.policyversion'),to_regclass('risk.signal'),to_regclass('risk.decision'),
       to_regclass('risk.listentry'),to_regclass('risk.case'),to_regclass('audit.record'),
       to_regclass('audit.recorddefault'),to_regclass('audit.accessrecord'),to_regclass('audit.archiveref')
@@ -132,11 +134,16 @@ export async function consoleSupportRuntimeCompatibility(pool: DatabasePool): Pr
       and has_table_privilege(current_user,'runtime.operation','SELECT')
       and has_table_privilege(current_user,'access.decisionaudit','INSERT')
       and has_table_privilege(current_user,'organization.unitclosure','SELECT')
-      and has_table_privilege(current_user,'support.ticket','SELECT,UPDATE')
-      and has_table_privilege(current_user,'support.conversation','SELECT,UPDATE')
+      and has_table_privilege(current_user,'support.ticket','SELECT,INSERT,UPDATE')
+      and has_table_privilege(current_user,'support.conversation','SELECT,INSERT,UPDATE')
       and has_table_privilege(current_user,'support.message','SELECT,INSERT')
-      and has_table_privilege(current_user,'support.history','INSERT')
+      and has_table_privilege(current_user,'support.history','SELECT,INSERT')
       and has_table_privilege(current_user,'support.evidence','SELECT')
+      and has_table_privilege(current_user,'support.agent','SELECT')
+      and has_table_privilege(current_user,'support.assignmentrule','SELECT')
+      and has_table_privilege(current_user,'support.sla','SELECT')
+      and has_table_privilege(current_user,'support.assignment','INSERT')
+      and has_table_privilege(current_user,'runtime.job','INSERT')
       and has_table_privilege(current_user,'risk.policy','SELECT')
       and has_table_privilege(current_user,'risk.policyversion','SELECT')
       and has_table_privilege(current_user,'risk.signal','SELECT')

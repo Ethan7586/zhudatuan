@@ -13,7 +13,7 @@ export interface SupportPort {
   benefit(type: string, id: string, scope: string, member: string): Promise<Readonly<Record<string, unknown>>>;
   agents(scope: string): Promise<readonly Agent[]>;
   rules(scope: string): Promise<readonly AssignmentRule[]>;
-  sla(scope: string, priority: TicketPriority): Promise<SlaPolicy>;
+  sla(scope: string, priority: TicketPriority): Promise<SlaPolicy | null>;
   message(ticket: string, conversation: string, scope: string, author: 'member' | 'agent', actor: string,
     message: EncryptedMessage): Promise<QueryResult<QueryResultRow>>;
   history(ticket: string, scope: string, kind: string, actor: string, evidence: Readonly<Record<string, unknown>>): Promise<void>;

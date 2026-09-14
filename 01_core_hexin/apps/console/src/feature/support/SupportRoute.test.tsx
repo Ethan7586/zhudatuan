@@ -148,7 +148,7 @@ describe('Support Chat VI route', () => {
     await user.type(composer, '保留这条回复');
     await user.click(screen.getByRole('button', { name: '发送回复' }));
 
-    expect(await screen.findByText('发送失败，请刷新工单后重试。')).toBeTruthy();
+    expect(await screen.findByText(/发送失败，请刷新工单后重试/)).toBeTruthy();
     expect((composer as HTMLTextAreaElement).value).toBe('保留这条回复');
     expect(mocks.sendSupportMessage).toHaveBeenCalledTimes(1);
 
@@ -196,6 +196,26 @@ describe('Support Chat VI route', () => {
       subject: '退款进度需要核实', message: '订单退款状态长时间没有更新。',
     }));
     await waitFor(() => expect(mocks.readMessages).toHaveBeenCalledWith(context, 'case:new-service', undefined, expect.any(AbortSignal)));
+  });
+
+  it('keeps a failed case draft and exposes the server request id', async () => {
+    const user = userEvent.setup();
+    mocks.createSupportCase.mockRejectedValue(Object.assign(new Error('internal'), {
+      name: 'ApiError', code: 'INTERNAL_ERROR', requestId: 'request-create-case-1', status: 500,
+    }));
+    renderRoute('/scopes/enterprise/enterprise%3A1/support');
+    await screen.findByRole('heading', { name: '选择一条工单开始处理' });
+
+    await user.click(screen.getByRole('button', { name: '新建工单' }));
+    const subject = screen.getByRole('textbox', { name: '工单标题' });
+    const message = screen.getByRole('textbox', { name: '第一条留言' });
+    await user.type(subject, '退款进度需要核实');
+    await user.type(message, '订单退款状态长时间没有更新。');
+    await user.click(screen.getByRole('button', { name: '创建并进入会话' }));
+
+    expect(await screen.findByText(/INTERNAL_ERROR · 请求 request-create-case-1/)).toBeTruthy();
+    expect((subject as HTMLInputElement).value).toBe('退款进度需要核实');
+    expect((message as HTMLTextAreaElement).value).toBe('订单退款状态长时间没有更新。');
   });
 
   it('places the workspace refresh below the identity status and disables create honestly when unavailable', async () => {
