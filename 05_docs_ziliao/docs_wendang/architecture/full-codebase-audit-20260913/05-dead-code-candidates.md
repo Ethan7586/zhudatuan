@@ -808,9 +808,9 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 | 字段 | 记录 |
 | --- | --- |
-| 分类/对象 | G1；`mall_application_versions`、`mall_application_heads` 与 `api_mall_application_{center,experience,mutate}` 的后续 schema-v2 版本。 |
+| 分类/对象 | G1；`mall_application_versions`、`mall_application_heads`、schema-v2 校验/投影函数与 `api_mall_application_{center,experience,mutate}` 的后续版本。 |
 | 疑似原因 | 固定基线未发现 Commerce API、Console、Miniapp 或 Worker 对这三个 RPC/表的直接调用；商城应用的另一套 Commerce experience 模型仍在运行源码中。 |
-| 保留证据 | 迁移建立不可变版本、发布投影、幂等、乐观并发、审计和 service-role 公共 RPC；schema-v2 契约测试直接覆盖 create/save/publish/restore。仓外 service-role、已发布前端和迁移数据责任均未排除。 |
+| 保留证据 | 迁移建立 v1→v2 确定性投影、严格 JSON 配置验证、不可变版本、发布投影、幂等、乐观并发、审计和 service-role 公共 RPC；schema-v2 契约测试直接覆盖投影、create/save/publish/restore。仓外 service-role、已发布前端和迁移数据责任均未排除。 |
 | 可否删除 | 否；未满足公共 API、数据/迁移责任、外部消费者、正式下线、等价替代、验证和恢复条件。 |
 | 二次复核 | G1不强制；拟整合或下线前须核验 Supabase 运行实例、服务端适配器与已发布客户端。 |
 
@@ -993,3 +993,7 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 417. AU-417 支付死信授权恢复复核
 
 - 重放通过受权、订单锁、幂等与审计控制，但仓内管理消费者未发现，归 DC-0068/G1。累计 G0 60、G1 83、G2 5、G3 0、GX 5；未删除任何文件。
+
+## 418. AU-418 商城应用 schema-v2 复核
+
+- v1 配置确定性投影到 v2，并保留严格验证、版本化发布与恢复；仓内 canonical 构建器消费者仍未发现，归 DC-0056/G1。累计 G0 60、G1 83、G2 5、G3 0、GX 5；未删除任何文件。
