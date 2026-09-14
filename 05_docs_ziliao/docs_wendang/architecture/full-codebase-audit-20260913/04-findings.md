@@ -5295,3 +5295,25 @@
 | 验证方式 | 隔离 PostgreSQL 建立相同 supplier 的 current/previous orders、current/late refunds、partial refund和multiple aftersale fixture；逐一断言两个 API response 的净额/退款/环比符合经确认口径，并验证 cache key/version在退款事件后失效。 |
 | 回滚方式 | 将独立前向 projection/function版本回退到上一已验证 version；保留原始订单和aftersale事实，禁止用报表修复回写交易数据。 |
 | 是否需要独立复核 | 是；复核者须独立确认业务会计口径、实际 refund completion timestamp/source 和 production reporting cache invalidation，再以同一 fixture 重算两个入口。 |
+
+## F-0284｜Supplier four-flow 新 relation 的 Purchase API grant 未闭合至 RLS
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Purchase API / Supplier four-flow ledger / database tenant boundary |
+| 类型 | 数据可见性、最小权限、运行时正确性 |
+| 严重级别 | **P2** |
+| 置信度 | 高（migration DDL/grant/policy全链检索与运行写入直接证据；生产 role attributes未验证） |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql:3-306`；`20260913021500_align_purchase_supplier_flow_access.sql:6-30`；`PlaceOrder.ts:259-334`；`supplier_four_flow_business_contract.sql:215-285`。 |
+| 当前/预期 | 当前 supplier relationship/contract/route/route step、supply offer、line route step、supplier reservation fact与fulfillment responsibility在新 migration中创建；后续对 Purchase API 直接 grant其查询/写入所需权限。全 migration 检索未找到上述 relation的 `ENABLE ROW LEVEL SECURITY` 或 `zhudatuanpurchaseapi` scope policy。当前 application query以 Mall/order参数约束，预期数据库也应按当前 Purchase Mall/member/order context拒绝跨 scope读取和写入，不能只依赖每个调用点不发生 scope propagation 错误。 |
+| 直接证据 | [FACT][E-AU-701-001] four-flow migration创建 relation并只对 shopapp/job作 broad grant；[FACT][E-AU-701-002] later migration lines 24-30向 Purchase API授予 exact relation privileges；[FACT][E-AU-701-003] full migration set对这些 exact relation的 RLS enable/policy检索无命中；[FACT][E-AU-701-004] PlaceOrder把 route/leg/reservation/responsibility写入 Purchase order transaction；[FACT][E-AU-701-005] business contract测试 money conservation/snapshot/refund/rollback，但未 `set role zhudatuanpurchaseapi` 或断言 cross-Mall deny。 |
+| 调用链或运行入口 | Checkout/Purchase API → QuoteReader/PlaceOrder → supply offer/partner route read → order line/suborder/route steps/reservation/responsibility writes；支付/退款→后续四流 facts。 |
+| 用户影响 | 若 Purchase context、route resolver或未来调用者传错 Mall/order，数据库可允许读取供应合同、路线、成本/库存关联或写入其他 Mall 的 supplier facts；当前没有生产请求或泄露证据。 |
+| 数据影响 | 跨 Mall write 可污染订单路径、预留/履约责任和后续财务归集；正常现有路径仍由 application filters/transaction约束，生产受影响范围未知。 |
+| 安全影响 | 合同、供应关系、库存和成本相关事实缺少 RLS defense-in-depth；direct DB runtime role被误用或后续宽松 query可跨租户访问。 |
+| 根因 | four-flow schema与 Purchase runtime grant分两次引入，ACL对齐了直接 query所需 relation但未同时将新表纳入 tenant/RLS policy和真实 role contract。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立独立 supplier-four-flow ACL/RLS batch：确认每张表的 Mall/order-derived scope owner，启用 RLS并为 `zhudatuanpurchaseapi` 仅建立所需 SELECT/INSERT/UPDATE policy（复杂 child tables可通过受控 parent order predicate/function）；缩小不需要的 grants，并补真实 role同 Mall allow/跨 Mall deny/rollback matrix。不要改写历史 migration或重写业务数据。 |
+| 预计修改范围 | 新前向 Supabase migration、isolated PostgreSQL role/RLS contract，必要时 Purchase repository改为受控 function；不改订单、库存、付款或财务历史。 |
+| 验证方式 | 基线 migration runner建立至少两个 Mall、supplier/offer/route/order fixture；以 `zhudatuanpurchaseapi` 执行 QuoteReader/PlaceOrder SQL，验证自己的 Mall/order allow、另一 Mall的 select/insert/update必须无行或拒绝；同时验证 payment/refund/finance job roles未丢失必要路径。 |
+| 回滚方式 | 独立前向 policy/grant migration回退到上一个 verified narrow版本；不删除四流事实，已写错误数据另建逐笔修复计划。 |
+| 是否需要独立复核 | 是；复核者需独立检查 `pg_class.relrowsecurity`、`pg_policies`、Purchase connection role/inheritance及跨 Mall PostgreSQL execution结果。 |
