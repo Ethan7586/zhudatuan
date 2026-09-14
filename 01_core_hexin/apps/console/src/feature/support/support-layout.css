@@ -53,6 +53,13 @@
 .supportworkspacerefresh:focus-visible { outline: 2px solid rgb(15 111 255 / 18%); outline-offset: 1px; }
 .supportworkspacerefresh:disabled { cursor: wait; opacity: .58; }
 
+@media (min-width: 48.01rem) {
+  .consolelayout[data-sidebar='expanded'] .supportpage { grid-template-rows: 52px 52px minmax(0, 1fr); }
+  .consolelayout[data-sidebar='expanded'] .supportworkspaceheader > div:first-child { display: none; }
+  .consolelayout[data-sidebar='expanded'] .supportworkspacestatus { display: flex; width: 100%; align-items: center; justify-content: flex-end; gap: 12px; }
+  .consolelayout[data-sidebar='expanded'] .supportworkspacerefresh { min-height: 32px; border-left: 1px solid var(--support-border); border-radius: 0; padding-left: 12px; }
+}
+
 .supporttasktabs {
   display: flex;
   align-items: stretch;
