@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-220-001,src/foundation/cache/VersionedKey.ts,5-10,key schema,Create compares exact supplied field set with generated CACHE_CATALOG key fields before namespaced key construction.
+E-AU-220-002,src/foundation/cache/VersionedKey.ts,13-17,value encoding,Key values are base64url encoded and empty or over-512 values fail deterministically.
+E-AU-220-003,src/modules/experience/03_application_yingyong/ExperienceOperations.ts;src/modules/reporting/03_application_yingyong/query/GetDashboard.ts;src/modules/reporting/05_interface_jieru/job/ProjectionJob.ts,23-45;28-45;29-42,runtime consumers,Experience and reporting reads/writes/invalidation derive cache isolation keys through VersionedKey.
+E-AU-220-004,src/foundation/cache/Cache.test.ts,4-12,direct test,Fixture validates experience active/version separation and missing field rejection only.

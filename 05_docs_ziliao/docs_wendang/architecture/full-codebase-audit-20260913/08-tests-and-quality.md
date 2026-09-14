@@ -689,3 +689,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Query仅为QueryBus泛型输入提供type discriminant；本身没有可执行分支。
 - QueryBus direct fixture仍缺，已由F-0208记录；无P0–P3新问题。
+
+## 220. AU-220 VersionedKey 深审
+
+- Cache.test直接覆盖experience的active/version键区分和缺字段拒绝；webbusiness test间接使用reporting key。
+- 未直接覆盖reporting field set、extra field、empty及超过512字符值，见F-0213/P3。审计工作树未运行Vitest。

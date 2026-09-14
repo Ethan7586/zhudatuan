@@ -4004,6 +4004,20 @@
 | 验证/回滚 | 断言replay JSON/audit中不含proof，message为`ACTION_PROOF_ONE_TIME_RESPONSE`；回滚为revert测试提交。 |
 | 独立复核 | 否；P3。 |
 
+## F-0213｜VersionedKey 跨缓存目录与值边界没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / foundation cache VersionedKey；P3；高 |
+| 类型 | 测试覆盖缺口、缓存命名空间隔离 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/cache/VersionedKey.ts:5-17`；`.../Cache.test.ts:4-12` |
+| 当前/预期 | 实现从generated CACHE_CATALOG取字段并拒绝集合偏差，所有值base64url编码且拒绝空/超长。预期对experience与reporting catalog、extra/missing field和value边界都有direct fixture。 |
+| 直接证据 | Cache.test只断言experience active/version区分与missing field；未找到`CACHE_KEY_VALUE_INVALID`、reporting `VersionedKey.create`或extra field的direct assertion。 |
+| 调用链/影响 | Experience jobs/read、Reporting projection/read、WebBusiness dashboard → Cache → Redis。键形状回归可能导致缓存miss、意外共享或运行时错误；线上影响未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立仅测试批次，覆盖每个CACHE_CATALOG entry、extra/missing field、empty/512/513 length、字符编码和稳定namespace；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言全catalog键唯一且输入边界稳定抛错；回滚为revert测试提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

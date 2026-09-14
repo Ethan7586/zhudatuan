@@ -2326,3 +2326,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | dispatch consumer | QueryBus直接以该契约约束handler registration和execute输入，API/Jobs bootstrap创建bus | [FACT][E-AU-219-002] |
 
 [FACT][E-AU-219-003] 1 文件、3 行完成深审；真实消费成立，为G0；bus行为测试缺口沿用F-0208。
+
+## 225. AU-220 VersionedKey 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| catalog keyed namespace | 根据generated cache catalog的键字段生成`shop:v1` namespace并拒绝字段集合偏差 | [FACT][E-AU-220-001] |
+| value encoding | 将键值base64url编码，并拒绝空值和超过512字节值 | [FACT][E-AU-220-002] |
+| runtime consumers | experience/read-job、reporting projection/read和webbusiness reporting实际以它隔离缓存键 | [FACT][E-AU-220-003] |
+
+[FACT][E-AU-220-004] 1 文件、17 行完成深审；体验路径direct test存在，跨catalog/输入边界覆盖缺口见F-0213/P3。
