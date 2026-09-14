@@ -27,8 +27,14 @@ interface ProductionSyncSetters {
 }
 
 type CatalogPageLoader = (options?: PublicCatalogOptions) => Promise<{ items: ApiProduct[]; pagination: { nextCursor: string | null } }>;
+type CatalogPagePublisher = (items: ApiProduct[]) => void;
+type CatalogContinuation = () => Promise<void>;
 
-async function loadCompleteCatalog(loadPage: CatalogPageLoader): Promise<ApiProduct[]> {
+export async function loadProgressiveCatalog(
+  loadPage: CatalogPageLoader,
+  publish: CatalogPagePublisher,
+  continueWhenIdle: CatalogContinuation = waitForCatalogIdle,
+): Promise<ApiProduct[]> {
   const items = new Map<string, ApiProduct>();
   let cursor: string | undefined;
 
@@ -38,10 +44,27 @@ async function loadCompleteCatalog(loadPage: CatalogPageLoader): Promise<ApiProd
       limit: 100,
     });
     page.items.forEach((item) => items.set(item.id, item));
+    publish([...items.values()]);
     if (!page.pagination.nextCursor || page.pagination.nextCursor === cursor) break;
     cursor = page.pagination.nextCursor;
+    await continueWhenIdle();
   }
   return [...items.values()];
+}
+
+function waitForCatalogIdle(): Promise<void> {
+  return new Promise((resolve) => {
+    globalThis.setTimeout(() => {
+      const idleWindow = globalThis as typeof globalThis & {
+        requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+      };
+      if (idleWindow.requestIdleCallback) {
+        idleWindow.requestIdleCallback(() => resolve(), { timeout: 800 });
+      } else {
+        resolve();
+      }
+    }, 250);
+  });
 }
 
 export function shouldRetainProductionSnapshot(error: unknown): boolean {
@@ -97,8 +120,9 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     const syncVersion = ++syncVersionRef.current;
     setters.setCatalogSyncStatus('syncing');
     try {
-      const items = await loadCompleteCatalog(listPublicProducts);
-      if (syncVersion === syncVersionRef.current) publishCatalog(items);
+      await loadProgressiveCatalog(listPublicProducts, (items) => {
+        if (syncVersion === syncVersionRef.current) publishCatalog(items);
+      });
     } catch (error) {
       if (syncVersion === syncVersionRef.current) setters.setCatalogSyncStatus('error');
       throw error;
@@ -112,9 +136,9 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
     // upgrades this snapshot with member pricing and purchase qualification.
     setters.setCatalogSyncStatus('syncing');
     const publisher = createCatalogPublisher(() => syncVersion === syncVersionRef.current, publishCatalog);
-    const publicCatalogRequest = loadCompleteCatalog(listPublicProducts);
+    const publicCatalogRequest = loadProgressiveCatalog(listPublicProducts, publisher.commitPublic);
     const productionApiRequest = loadProductionApi();
-    void publicCatalogRequest.then(publisher.commitPublic).catch(() => undefined);
+    void publicCatalogRequest.catch(() => undefined);
     let bootstrap: ApiBootstrap;
     try {
       const productionApi = await productionApiRequest;
@@ -195,8 +219,10 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       }))
     );
     // The qualified catalog is heavier and can finish after the member shell.
-    void productionApiRequest.then((productionApi) => loadCompleteCatalog(productionApi.listQualifiedProducts))
-      .then(publisher.commitQualified)
+    void productionApiRequest.then((productionApi) => loadProgressiveCatalog(
+      productionApi.listQualifiedProducts,
+      publisher.commitQualified,
+    ))
       .catch(async () => {
         try {
           await publicCatalogRequest;

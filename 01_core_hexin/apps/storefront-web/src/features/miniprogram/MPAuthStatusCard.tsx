@@ -8,7 +8,7 @@ interface MPAuthStatusCardProps {
   user: UserProfile;
 }
 
-const cardClassName = 'flex h-[68px] w-full items-center rounded-xl border border-white/20 bg-white px-3.5 text-left shadow-sm';
+const cardClassName = 'flex h-[68px] w-full items-center border border-white/20 bg-white px-3.5 text-left shadow-sm transition-[border-color,box-shadow,background-color]';
 
 export const AUTH_WELCOME_HOLD_MS = 2200;
 export const AUTH_WELCOME_FADE_MS = 720;
@@ -109,21 +109,21 @@ export function MPAuthStatusCard({ authHref, sessionStatus, user }: MPAuthStatus
           aria-busy={isEnteringLogin || undefined}
           data-auth-action="login"
           data-auth-state={isEnteringLogin ? 'entering' : 'idle'}
-          className={`${cardClassName} relative justify-center overflow-hidden transition-transform duration-300 ${
-            isEnteringLogin ? 'pointer-events-none' : 'active:scale-[0.99]'
+          className={`${cardClassName} relative justify-center overflow-hidden ${
+            isEnteringLogin ? 'pointer-events-none border-blue-200 bg-blue-50/40 shadow-md' : 'hover:border-blue-200 hover:shadow-md'
           }`}
         >
           <span
             data-auth-prompt="login"
-            className={`text-sm font-semibold tracking-[0.12em] text-slate-700 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${
-              isEnteringLogin ? '-translate-y-1 opacity-0' : 'translate-y-0 opacity-100'
+            className={`text-sm font-semibold tracking-[0.12em] text-slate-700 transition-opacity duration-200 ease-out motion-reduce:transition-none ${
+              isEnteringLogin ? 'opacity-0' : 'opacity-100'
             }`}
           >
             轻轻一点，恰逢所喜。
           </span>
           <span
-            className={`absolute inset-0 flex items-center justify-center transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
-              isEnteringLogin ? 'scale-100 opacity-100' : 'pointer-events-none scale-90 opacity-0'
+            className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
+              isEnteringLogin ? 'opacity-100' : 'pointer-events-none opacity-0'
             }`}
           >
             <FrostDewVisual />
@@ -133,10 +133,10 @@ export function MPAuthStatusCard({ authHref, sessionStatus, user }: MPAuthStatus
         <div
           role="status"
           aria-live="polite"
-          className={`${cardClassName} justify-center transition-[opacity,transform] duration-[720ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
+          className={`${cardClassName} justify-center transition-opacity duration-[720ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none ${
             isWelcomeFading
-              ? 'pointer-events-none -translate-y-2 scale-[0.985] opacity-0'
-              : 'sw-auth-welcome-card translate-y-0 scale-100 opacity-100'
+              ? 'pointer-events-none opacity-0'
+              : 'sw-auth-welcome-card opacity-100'
           }`}
         >
           <span className="truncate text-sm font-semibold tracking-[0.08em] text-slate-700">欢迎 {user.name} 回来</span>

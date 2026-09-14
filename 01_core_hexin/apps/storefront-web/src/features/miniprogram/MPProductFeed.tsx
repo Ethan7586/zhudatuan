@@ -4,8 +4,9 @@ import { useMall } from '../../context/MallContext';
 import { storefrontImageUrl } from '../../services/storefrontImageUrl';
 
 export const MPProductFeed: React.FC = () => {
-  const { setMpPage, addToCart, presentationProducts: products } = useMall();
+  const { setMpPage, addToCart, catalogSyncStatus, presentationProducts: products } = useMall();
   const feedProducts = products.slice(0, 8);
+  const loading = products.length === 0 && (catalogSyncStatus === 'idle' || catalogSyncStatus === 'syncing');
   return (
     <>
       {/* 瀑布流双列商品 Feed */}
@@ -18,9 +19,9 @@ export const MPProductFeed: React.FC = () => {
           <span className="text-[10px] text-gray-400">实时按企采兑换排序</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid min-h-[240px] grid-cols-2 gap-2.5" aria-busy={loading || undefined}>
           {feedProducts.map((p) => (
-            <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-white rounded-2xl overflow-hidden shadow-xs border border-gray-100 flex flex-col justify-between cursor-pointer active:scale-98 transition-transform">
+            <div key={p.id} onClick={() => setMpPage('detail', p.id)} className="bg-white overflow-hidden shadow-xs border border-gray-100 hover:border-blue-200 hover:shadow-sm flex flex-col justify-between cursor-pointer transition-[border-color,box-shadow]">
               <div className="relative aspect-square bg-gray-50">
                 <img
                   src={storefrontImageUrl(p.imageUrl, 336)}
@@ -33,7 +34,7 @@ export const MPProductFeed: React.FC = () => {
                   decoding="async"
                   className="w-full h-full object-cover"
                 />
-                <span className="absolute top-1.5 left-1.5 bg-[var(--sw-brand-dark)]/90 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+                <span className="absolute top-1.5 left-1.5 bg-[var(--sw-brand-dark)]/90 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5">
                   {p.itemType === 'virtual_coupon' ? '电子券' : p.itemType === 'nearby_store' ? '到店核销' : '企采实物'}
                 </span>
               </div>
@@ -46,7 +47,7 @@ export const MPProductFeed: React.FC = () => {
 
                 <div>
                   <div className="flex items-center gap-1 flex-wrap">
-                    <span className="text-[9px] text-blue-700 bg-blue-50 font-bold px-1 py-0.2 rounded">福利卡全额扣</span>
+                    <span className="text-[9px] text-blue-700 bg-blue-50 font-bold px-1 py-0.2">福利卡全额扣</span>
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
@@ -62,7 +63,7 @@ export const MPProductFeed: React.FC = () => {
                         e.stopPropagation();
                         addToCart(p, 1);
                       }}
-                      className="w-6 h-6 rounded-full bg-[var(--sw-brand)] text-white flex items-center justify-center shadow-xs hover:bg-blue-700 cursor-pointer"
+                      className="w-6 h-6 border border-blue-500 bg-[var(--sw-brand)] text-white flex items-center justify-center shadow-xs hover:border-blue-300 hover:bg-blue-700 hover:shadow-sm transition-[background-color,border-color,box-shadow] cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
@@ -71,6 +72,11 @@ export const MPProductFeed: React.FC = () => {
               </div>
             </div>
           ))}
+          {loading ? [0, 1].map((item) => <div key={item} aria-hidden="true"
+            className="aspect-[0.7] animate-pulse border border-gray-100 bg-white shadow-xs">
+            <div className="aspect-square bg-gray-100" />
+            <div className="space-y-2 p-2.5"><div className="h-3 bg-gray-100" /><div className="h-3 w-2/3 bg-gray-100" /></div>
+          </div>) : null}
         </div>
       </div>
     </>

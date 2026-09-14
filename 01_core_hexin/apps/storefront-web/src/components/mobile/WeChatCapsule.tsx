@@ -27,7 +27,7 @@ export const WeChatCapsule: React.FC<WeChatCapsuleProps> = ({ title, showBack, o
             <div className="relative">
               <button
                 onClick={() => setShowMallDropdown(!showMallDropdown)}
-                className="bg-white/15 hover:bg-white/25 text-white px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1 transition-colors border border-white/20 cursor-pointer"
+                className="bg-white/15 hover:bg-white/25 text-white px-2.5 py-1 text-xs font-semibold flex items-center gap-1 transition-[background-color,border-color,box-shadow] border border-white/20 hover:border-white/40 hover:shadow-sm cursor-pointer"
               >
                 <Building2 className="w-3 h-3 text-yellow-300 flex-shrink-0" />
                 <span className="truncate max-w-[110px]">{currentMall.mallName.replace('智慧翼福利商城 - ', '')}</span>
@@ -36,7 +36,7 @@ export const WeChatCapsule: React.FC<WeChatCapsuleProps> = ({ title, showBack, o
 
               {/* 企业切换 Popover */}
               {showMallDropdown && (
-                <div className="absolute left-0 top-full mt-1.5 w-52 bg-white text-gray-800 rounded-xl shadow-xl border border-gray-100 p-1.5 z-50 text-xs animate-in fade-in duration-150">
+                <div className="absolute left-0 top-full mt-1.5 w-52 bg-white text-gray-800 shadow-xl border border-gray-100 p-1.5 z-50 text-xs animate-in fade-in duration-150">
                   <div className="text-[10px] text-gray-400 font-bold px-2.5 py-1 uppercase tracking-wider">切换所属企采空间</div>
                   {malls.map((m) => (
                     <button
@@ -45,7 +45,7 @@ export const WeChatCapsule: React.FC<WeChatCapsuleProps> = ({ title, showBack, o
                         switchMall(m.id);
                         setShowMallDropdown(false);
                       }}
-                      className={`w-full text-left px-2.5 py-2 rounded-lg transition-colors flex items-center justify-between ${m.id === currentMall.id ? 'bg-blue-50 text-[var(--sw-brand)] font-bold' : 'hover:bg-gray-50 text-gray-700'}`}
+                      className={`w-full text-left px-2.5 py-2 transition-colors flex items-center justify-between ${m.id === currentMall.id ? 'bg-blue-50 text-[var(--sw-brand)] font-bold' : 'hover:bg-gray-50 text-gray-700'}`}
                     >
                       <span className="truncate">{m.mallName}</span>
                       {m.id === currentMall.id && <span className="w-1.5 h-1.5 rounded-full bg-[var(--sw-brand)]" />}
@@ -61,7 +61,7 @@ export const WeChatCapsule: React.FC<WeChatCapsuleProps> = ({ title, showBack, o
         {title && <div className="font-bold text-sm tracking-tight truncate max-w-[120px] text-center">{title}</div>}
 
         {/* 右侧：高保真微信小程序原生胶囊组件 (Capsule) */}
-        <div className="flex items-center bg-black/20 backdrop-blur-sm border border-white/25 rounded-full px-2 py-1 text-white gap-2 flex-shrink-0">
+        <div className="flex items-center bg-black/20 backdrop-blur-sm border border-white/25 px-2 py-1 text-white gap-2 flex-shrink-0 shadow-sm">
           <button
             onClick={() => triggerPendingFeature('微信小程序页面分享与菜单', '小程序胶囊菜单包含：发送给朋友、分享到朋友圈、复制页面路径、重新加载。')}
             className="hover:text-yellow-300 transition-colors cursor-pointer"

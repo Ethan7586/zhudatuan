@@ -1,12 +1,16 @@
 'use client';
 
-import { StorefrontWebFrame } from './components/laptop/LaptopFrame';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { ProductionMobileFrame } from './components/mobile/ProductionMobileFrame';
 import { MallProvider, useMall } from './context/MallContext';
+
+const StorefrontWebFrame = lazy(() => import('./components/laptop/LaptopFrame')
+  .then(({ StorefrontWebFrame: Component }) => ({ default: Component })));
 
 function ProductionStorefrontFrame() {
   const { appMode } = useMall();
   const surface = appMode === 'pc' ? 'desktop-1920' : 'laptop';
+  const desktopMounted = useDesktopMount();
 
   return (
     <>
@@ -14,10 +18,26 @@ function ProductionStorefrontFrame() {
         <ProductionMobileFrame />
       </div>
       <div className="hidden md:block">
-        <StorefrontWebFrame surface={surface} navigationBoundary="production" />
+        {desktopMounted ? (
+          <Suspense fallback={<div className="min-h-screen bg-[#F5F7FA]" aria-label="正在打开商城" />}>
+            <StorefrontWebFrame surface={surface} navigationBoundary="production" />
+          </Suspense>
+        ) : null}
       </div>
     </>
   );
+}
+
+function useDesktopMount(): boolean {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia('(min-width: 768px)');
+    const sync = () => setMounted(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
+  return mounted;
 }
 
 /**
