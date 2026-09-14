@@ -22,6 +22,20 @@ describe('identity operator experience operations', () => {
     expect(String(query.mock.calls[0]?.[0])).not.toMatch(/experience\.(version|release|binding)/);
   });
 
+  it('returns a lightweight application directory without configuration history payloads', async () => {
+    const query = vi.fn().mockResolvedValue(result([]));
+
+    await action('experience.applications.read')(request('experience.applications.read', {}),
+      { query } as unknown as OperationDatabase);
+
+    const sql = String(query.mock.calls[0]?.[0]);
+    expect(query).toHaveBeenCalledTimes(1);
+    expect(sql).not.toContain('head.configuration');
+    expect(sql).not.toContain('published.configuration');
+    expect(sql).not.toContain('jsonb_agg');
+    expect(sql).not.toContain('history');
+  });
+
   it('updates only the name with the current expected version', async () => {
     const updated = application({ name: '新名称', version: 8 });
     const query = vi.fn().mockResolvedValue(result([updated]));

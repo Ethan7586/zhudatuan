@@ -35,8 +35,9 @@ describe('web reporting dashboard read', () => {
     const client = {
       query: async (text: string, values: readonly unknown[] = []) => {
         queries.push({ text, values });
-        if (text.includes('from reporting.fact')) return result([]);
-        if (text.includes('select reporting.cockpit')) return result([{ summary: { sales: { periodSalesCents: 12 } } }]);
+        if (text.includes('from reporting.fact') && text.includes('reporting.cockpit')) {
+          return result([{ metrics: [], summary: { sales: { periodSalesCents: 12 } } }]);
+        }
         return result([]);
       },
       release: () => undefined,
@@ -52,10 +53,10 @@ describe('web reporting dashboard read', () => {
     const response = await webReportingOperations(context(pool), cache).invoke(request());
 
     expect(response).toMatchObject({ status: 200, body: { count: 0, summary: { sales: { periodSalesCents: 12 } } } });
-    const cockpit = queries.find(({ text }) => text.includes('select reporting.cockpit'));
-    const metrics = queries.find(({ text }) => text.includes('from reporting.fact'));
-    expect(cockpit?.values).toEqual(['mall:test', null, '30days']);
-    expect(metrics?.text).toContain('CAST(fact.projection_version AS float8)');
+    const dashboard = queries.filter(({ text }) => text.includes('reporting.cockpit'));
+    expect(dashboard).toHaveLength(1);
+    expect(dashboard[0]?.values).toEqual(['mall:test', null, null, '30days', null, null, 101, null]);
+    expect(dashboard[0]?.text).toContain('CAST(fact.projection_version AS float8)');
     expect(writes).toHaveLength(1);
     expect(writes[0]?.value).toEqual(response);
     expect(writes[0]?.seconds).toBeGreaterThan(0);
@@ -67,8 +68,7 @@ describe('web reporting dashboard read', () => {
     }));
     const client = {
       query: async (text: string) => {
-        if (text.includes('from reporting.fact')) return result(rows);
-        if (text.includes('select reporting.cockpit')) return result([{ summary: {} }]);
+        if (text.includes('from reporting.fact') && text.includes('reporting.cockpit')) return result([{ metrics: rows, summary: {} }]);
         return result([]);
       },
       release: () => undefined,
@@ -87,7 +87,7 @@ describe('web reporting dashboard read', () => {
     let connections = 0;
     const client = {
       query: async (text: string) => {
-        if (text.includes('select reporting.cockpit')) return result([{ summary: { cachedLocally: true } }]);
+        if (text.includes('reporting.cockpit')) return result([{ metrics: [], summary: { cachedLocally: true } }]);
         return result([]);
       },
       release: () => undefined,
@@ -122,7 +122,7 @@ describe('web reporting dashboard read', () => {
       release: () => undefined,
     } as unknown as PoolClient;
     const pool = databasePool({ connect: async () => client, query: async () => result([]) });
-    const operations = webReportingOperations(context(pool, memoryCache(async () => null)));
+    const operations = webReportingOperations(context(pool), memoryCache(async () => null));
 
     const first = operations.invoke(request('mall:burst'));
     const second = operations.invoke(request('mall:burst'));

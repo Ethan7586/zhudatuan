@@ -68,6 +68,9 @@ describe('web order read model', () => {
 
     const read = queries.find(({ text }) => text.includes('select orders.*'));
     expect(read?.text).toContain('where $15::boolean and fulfillment.order_id=orders.id');
+    expect(read?.text).toContain('lines.summary product_summary');
+    expect(read?.text).toContain('inventory.summary inventory_summary');
+    expect(read?.text.match(/filter\(where \$15::boolean\)/g)).toHaveLength(2);
     expect(read?.values.at(-1)).toBe(false);
   });
 });

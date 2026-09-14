@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { canonicalFinancialActionRequest } from '@shop/contract';
 import type { PoolClient, QueryResult } from 'pg';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Container } from '../../../bootstrap/Container';
 import type { ModuleContext } from '../../../bootstrap/ModuleRegistry';
 import { NODE_MANIFEST } from '../../../bootstrap/NodeRuntime';
@@ -16,8 +16,7 @@ import { identityOperations } from '../05_interface_jieru/http/IdentityOperation
 
 describe('identity session projection', () => {
   it('returns the active member name without requiring a separate profile permission', async () => {
-    const client = {
-      query: async (text: string) => {
+    const query = vi.fn(async (text: string) => {
         if (text.includes('from access.membership membership join identity.account account')) {
           return { rows: [{ account_id: 'account:one', realm_id: 'realm:l0', principal_id: 'actor:one', credential_version: 1 }],
             rowCount: 1 } as unknown as QueryResult;
@@ -29,13 +28,19 @@ describe('identity session projection', () => {
           mall_id: 'mall-zhudatuan', host_sovereign_node_id: 'node:zhudatuan:l0', relation_version: 1,
           effective_at: '2026-09-01T00:00:00.000Z', access_version: 1, status: 'active',
         }]);
+        if (text.includes('left join lateral(select profile.display_name from member.profile profile')) {
+          return result([{ display_name: '张三', has_local_credential: true,
+            mobile_masked: '+86****8000', rotated_at: null }]);
+        }
         if (text.includes('select rotated_at from identity.credential')) return result([{ rotated_at: null }]);
         if (text.includes('select display_name,mobile_ciphertext from member.profile')) {
           return result([{ display_name: '张三', mobile_ciphertext: 'ciphertext:mobile' }]);
         }
         if (text.includes('select mobile_masked from identity.account')) return result([{ mobile_masked: '+86****8000' }]);
         return result([]);
-      },
+      });
+    const client = {
+      query,
       release: () => undefined,
     } as unknown as PoolClient;
     const pool: DatabasePool = {
@@ -67,6 +72,12 @@ describe('identity session projection', () => {
         active_context: { current_realm_id: 'realm:l0', active_membership_id: 'membership:one' },
       },
     });
+    const reads = query.mock.calls.map(([text]) => text);
+    expect(reads.filter((text) => text.includes('identity.resolve_active_membership_context'))).toHaveLength(1);
+    expect(reads.filter((text) => text.includes('left join lateral(select profile.display_name'))).toHaveLength(1);
+    expect(reads.some((text) => text.includes('from access.membership membership join identity.account account'))).toBe(false);
+    expect(reads.some((text) => text.includes('select rotated_at from identity.credential'))).toBe(false);
+    expect(reads.some((text) => text.includes('select mobile_masked from identity.account'))).toBe(false);
   });
 
   it('lists and revokes sessions only inside the authenticated realm account', async () => {
@@ -424,6 +435,8 @@ function access(): NonNullable<OperationRequest['access']> {
   return {
     actor: {
       id: 'actor:one',
+      account: 'account:one',
+      realm: 'realm:l0',
       session: 'session:one',
       membership: 'membership:one',
       credentialVersion: 1,

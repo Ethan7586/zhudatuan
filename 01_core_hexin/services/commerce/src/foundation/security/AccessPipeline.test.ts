@@ -8,7 +8,7 @@ import type { RouteRegistry } from '../../bootstrap/RouteRegistry';
 import { OperationHandler } from '../application/OperationHandler';
 import { HttpApp } from '../interface/HttpApp';
 import { OPERATION_AUTHORIZER, OPERATION_HANDLERS, registerOperationRoutes } from '../interface/OperationController';
-import { AccessPipeline } from './AccessPipeline';
+import { AccessPipeline, type MembershipSnapshot } from './AccessPipeline';
 import type { Actor } from './AccessContext';
 import type { OperationAvailabilityResolver } from './OperationAvailability';
 import { PipelineAuthorizer } from './PipelineAuthorizer';
@@ -72,6 +72,19 @@ describe('AccessPipeline audience boundary', () => {
       scope: PLATFORM,
     });
     expect(fixture.decisions).toHaveBeenCalledWith(expect.objectContaining({ outcome: 'allow', reason: 'POLICY_ALLOWED' }));
+  });
+
+  it('reuses one database membership snapshot for access version and capabilities', async () => {
+    const fixture = accessFixture('console', 'access.center.read', 'access.center.read', PLATFORM);
+    fixture.membership.mockResolvedValue({ access: fixture.membershipAccess, evaluatedAt: NOW,
+      capabilities: ['access.center.read'] });
+
+    await expect(fixture.pipeline.authorize({}, 'access.center.read', 'access.center.read')).resolves.toMatchObject({
+      accessVersion: 1,
+      capabilities: ['access.center.read'],
+    });
+    expect(fixture.versions).not.toHaveBeenCalled();
+    expect(fixture.capabilities).not.toHaveBeenCalled();
   });
 
   it('keeps storefront member operations authorized through the normal policy pipeline', async () => {
@@ -220,7 +233,9 @@ function accessFixture(target: Actor['target'], operation: OperationId, permissi
       ? [{ scope, permissions: [permission], effective: '2026-08-26T00:00:00.000Z', expires: null }]
       : [],
   });
-  const membership = vi.fn(async () => membershipAccess);
+  const membership = vi.fn(async (): Promise<MembershipAccess | MembershipSnapshot> => membershipAccess);
+  const versions = vi.fn(async () => actor.accessVersion);
+  const capabilities = vi.fn(async () => dimensions.capabilityAvailable ? [operation] : []);
   const risk = vi.fn(async () => ({ outcome: 'allow', safeReason: 'policy', decision: null }) as const);
   const decisions = vi.fn(async () => undefined);
   const availability = {
@@ -233,13 +248,13 @@ function accessFixture(target: Actor['target'], operation: OperationId, permissi
   const pipeline = new AccessPipeline(
     { resolve: vi.fn(async () => actor) },
     { resolve: membership },
-    { resolve: vi.fn(async () => actor.accessVersion) },
+    { resolve: versions },
     { resolve: vi.fn(async () => dimensions.scopeAllowed ? scope : OTHER_OWNER) },
-    { resolve: vi.fn(async () => dimensions.capabilityAvailable ? [operation] : []) },
+    { resolve: capabilities },
     availability,
     { now: () => NOW },
     { evaluate: risk },
     { append: decisions }
   );
-  return { pipeline, membership, risk, decisions, availability };
+  return { pipeline, membership, membershipAccess, versions, capabilities, risk, decisions, availability };
 }
