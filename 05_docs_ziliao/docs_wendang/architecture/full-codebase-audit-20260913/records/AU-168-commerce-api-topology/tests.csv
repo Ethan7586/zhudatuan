@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source/release topology trace,Commerce API entrypoints and Storefront consumer,Completed,Route composition, direct worker import and delivery policy were checked.
+Formal targeted test,None,Not run,Topology-only audit; dependencies unchanged.

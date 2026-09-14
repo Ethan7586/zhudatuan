@@ -1813,3 +1813,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | test README | 跨模块验收测试不在模块目录的描述与当前 workspace 分层一致 | [FACT][E-AU-167-003] |
 
 [FACT][E-AU-167-004] 4 文档、21 行完成深审；Qualification 17/17 基线文件均取得审阅状态。
+
+## 173. AU-168 Commerce API topology 清单
+
+| 运行单元/分支 | 真实入口与边界 | 当前状态 |
+| --- | --- | --- |
+| Worker full router | public → auth resolve → target-selected admin/storefront → simulation | [FACT][E-AU-168-001]；源码存在，Storefront 不加载完整 router |
+| Storefront deployment | `storefront-web/worker/index.ts` 仅 import `routePublicRequest` | [FACT][E-AU-168-002] |
+| legacy Express | loopback health/AI endpoint，permission middleware；admin-server build 被 delivery forbidden | [FACT][E-AU-168-003] |
+| route directors | target guards、public payment webhook、development/test simulation boundary | [FACT][E-AU-168-004] |
+
+[FACT][E-AU-168-005] 8 文件、535 行完成深审；Compatibility source closure 仍有 public Worker consumer，不能按独立部署缺失删除。

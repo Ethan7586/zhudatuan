@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-168-001,src/api/router.ts;route directors,1-53;1-84,Worker route topology,Router sequences public/auth/target/simulation with target and environment guards.
+E-AU-168-002,apps/storefront-web/worker/index.ts,1-58,live consumer,Production Storefront worker imports routePublicRequest only; full compatibility router is not mounted there.
+E-AU-168-003,src/adminServer.ts;package.json;root package.json;release/delivery.yml,1-262;1-29;42;137,legacy reference,Express binds loopback and permission-gates AI endpoints; reference bundle is manual build but delivery forbids its artifact.
+E-AU-168-004,DEPLOYMENT.md;README.md,29;61,runtime evidence,Repository operational docs agree that full REST router is embedded selectively and admin reference is not complete production API artifact.
