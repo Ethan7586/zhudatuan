@@ -2450,3 +2450,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | consumers | RouteRegistry与OperationController以其处理contract operation输入和授权资源 | [FACT][E-AU-232-003] |
 
 [FACT][E-AU-232-004] 1 文件、11 行完成深审；无独立业务逻辑，为G0 contract。
+
+## 238. AU-233 HttpResponse contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| route output contract | 统一HTTP status、可选header与JSON body输出 | [FACT][E-AU-233-001] |
+| no-content handling | json helper在204时丢弃body，其他status补JSON content-type | [FACT][E-AU-233-002] |
+| producers/egress | OperationController和ErrorMapper生产契约；HttpApp→NodeServer序列化响应 | [FACT][E-AU-233-003] |
+
+[FACT][E-AU-233-004] 1 文件、10 行完成深审；无P0–P3新问题。
