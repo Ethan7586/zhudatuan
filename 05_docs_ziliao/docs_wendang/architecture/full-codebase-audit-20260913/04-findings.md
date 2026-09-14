@@ -477,11 +477,11 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | commerce / PaymentWebhookApiRuntime；P1；高；待独立复核 |
+| 模块/级别 | commerce / PaymentWebhookApiRuntime；P1；高；双轮确认 |
 | 位置/证据 | `PaymentWebhookApiRuntime.ts:133-190`计算`contract`但predicate遗漏；fixture只用true。 |
 | 影响 | webhook API可在contract drift下接收支付回调；线上状态未验证。 |
 | 验证 | 独立复核入口后以false fixture确认；最小修复仅补predicate/fixture。 |
-| 独立复核 | 是；P1。 |
+| 独立复核 | 是；AU-256确认生产入口无替代gate，结论一致。 |
 
 ## F-0014｜Catalog API Ready 未探测已启动的 HTTP 进程
 
