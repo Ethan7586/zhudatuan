@@ -21,9 +21,10 @@ ZDT_PREPARE_RUNNER=aliyun /Users/Ethan/.codex/bin/zdt-delivery prepare <target> 
 
 两个现役 Runner 均以系统服务常驻。Runner 注册令牌只在安装时短暂使用，不写入仓库、工作流、日志或长期配置。访问 GitHub 的特殊线路由 ECS 本机网络层管理；阿里云 OSS、ECS 内网和生产业务流量保持直连。
 
-第三批固定为“2 个现役 + 1 个冷备用”：
+当前固定为“3 个现役 + 1 个冷备用”：
 
 - `aliyun-staging-zdt-build`：常驻构建，目录 `/opt/actions-runner-build`。
+- `aliyun-staging-zdt-build-2`：第二个独立构建槽位，目录 `/opt/actions-runner-build-2`。
 - `aliyun-staging-zdt-release`：常驻发布，目录 `/opt/actions-runner-release`。
 - `aliyun-staging-zdt-release-standby`：只备份发布，目录 `/opt/actions-runner-release-standby`，正常状态必须为 offline。
 
@@ -50,4 +51,4 @@ Git 传输若连续 20 秒低于 1 KiB/s 会快速失败并交给现有重试，
 
 ## 容量边界
 
-当前 ECS 为 4 vCPU、约 8 GiB 内存。推荐同时运行一个构建任务和一个发布任务；多个构建任务继续排队。发布任务始终单并发。只有迁移到更大机器或独立构建节点后，才增加活跃构建 Runner。
+当前 ECS 为 4 vCPU、约 8 GiB 内存。两个 Build 服务共享 `zdt-build.slice`，合计上限为 3.5 CPU、6.8 GiB；重型冷构建还必须持有 `/run/lock/zdt-build` 主机锁。Release 不进入该 slice，始终保持独立单并发，备用 Release 保持停止且禁用。
