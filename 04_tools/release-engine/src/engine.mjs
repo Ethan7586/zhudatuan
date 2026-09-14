@@ -143,16 +143,36 @@ export async function registerCurrentBaselineCommand(adapter, options) {
     { name: 'read-legacy-deployment-run', argv: ['gh', 'api', `repos/${repository}/actions/runs/${legacyRunId}`], timeoutMs: 60_000 },
     basicContext(adapter)
   );
-  const logResult = await runCommand(
-    { name: 'read-legacy-deployment-log', argv: ['gh', 'run', 'view', legacyRunId, '--repo', repository, '--log'], timeoutMs: 60_000 },
+  const jobsResult = await runCommand(
+    {
+      name: 'read-legacy-deployment-jobs',
+      argv: ['gh', 'api', `repos/${repository}/actions/runs/${legacyRunId}/attempts/${legacyRunAttempt}/jobs?per_page=100`],
+      timeoutMs: 60_000,
+    },
     basicContext(adapter)
   );
+  const jobsPayload = JSON.parse(jobsResult.output);
+  const legacyJobs = Array.isArray(jobsPayload?.jobs) ? jobsPayload.jobs : [];
+  invariant(
+    legacyJobs.length > 0 && legacyJobs.length === jobsPayload.total_count,
+    'CURRENT_BASELINE_LEGACY_LOGS_INCOMPLETE',
+    'Legacy deployment job logs cannot be proven complete'
+  );
+  const legacyLogs = [];
+  for (const job of legacyJobs) {
+    invariant(Number.isSafeInteger(job?.id) && job.id > 0, 'CURRENT_BASELINE_LEGACY_JOB_INVALID', 'Legacy deployment contains an invalid job receipt');
+    const jobLog = await runCommand(
+      { name: `read-legacy-deployment-job-${job.id}`, argv: ['gh', 'api', `repos/${repository}/actions/jobs/${job.id}/logs`], timeoutMs: 60_000 },
+      basicContext(adapter)
+    );
+    legacyLogs.push(jobLog.output);
+  }
   const lineageResult = await runCommand(
     { name: 'verify-current-baseline-lineage', argv: ['gh', 'api', `repos/${repository}/compare/${sourceSha}...${controlSha}`, '--jq', '.merge_base_commit.sha'], timeoutMs: 60_000 },
     basicContext(adapter)
   );
   invariant(lineageResult.output.trim() === sourceSha, 'CURRENT_BASELINE_SOURCE_NOT_ON_MAINLINE', 'Legacy production source is not contained in the current zdt-next control-plane history');
-  const legacyEvidence = assertLegacyDeploymentEvidence(JSON.parse(metadataResult.output), logResult.output, {
+  const legacyEvidence = assertLegacyDeploymentEvidence(JSON.parse(metadataResult.output), legacyLogs.join('\n'), {
     sourceSha,
     target: targetId,
     artifactSha256,

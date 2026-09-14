@@ -148,6 +148,9 @@ test('legacy baseline registration is isolated from build, deploy, restart and p
   assert.doesNotMatch(baselineRegistrationWorkflow, /npm ci|release -- (?:build|package|publish|deploy)|deploy-prepared|validate-prepared|ALIYUN_OSS|ssh-keyscan/);
   assert.match(releaseEngine, /register-current-baseline-v3/);
   assert.match(releaseEngine, /CURRENT_BASELINE_SOURCE_NOT_ON_MAINLINE/);
+  assert.match(releaseEngine, /actions\/runs\/\$\{legacyRunId\}\/attempts\/\$\{legacyRunAttempt\}\/jobs\?per_page=100/);
+  assert.match(releaseEngine, /actions\/jobs\/\$\{job\.id\}\/logs/);
+  assert.doesNotMatch(releaseEngine, /'gh', 'run', 'view', legacyRunId/);
 });
 
 test('build and remote adapters agree on every pointer and process', () => {
