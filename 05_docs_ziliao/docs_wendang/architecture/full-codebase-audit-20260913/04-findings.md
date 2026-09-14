@@ -2,7 +2,7 @@
 
 ## 1. 计数口径
 
-本文件只收录已经形成最小证据链的问题。AU-031 结束时累计：P0 0、P1 候选 18、P2 58、P3 49、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
+本文件只收录已经形成最小证据链的问题。AU-037 结束时累计：P0 0、P1 候选 19、P2 60、P3 54、NIT 1。P1 项尚未完成第二轮独立复核，因此不会写成最终定级。
 
 ## F-0001｜fufu Auth、Console 公网入口与发布制品指针分裂
 
@@ -2884,6 +2884,97 @@
 | 验证/回滚 | package级用例应包含factory、capability与port矩阵、至少一条业务port行为；回退单一测试提交 |
 | 独立复核 | 否 |
 
+## F-0127｜Private Provider tracking与Logistics capability不闭合
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Private Provider；P1候选，高 |
+| 位置 | `extensions/providers/private/manifest.ts:12`；`extensions/providers/private/Provider.ts:6`；`services/commerce/src/modules/fulfillment/05_interface_jieru/jobs_renwu/FulfillmentJobs.ts:66-67`；`providers/core/src/ExtensionRegistry.ts:76-82` |
+| 当前/预期 | `manifest`将 `Shipment/Return` 纳入能力，但 `Provider`/`channels` 组合仅有 `tracking`；`FulfillmentJobs`对已启用 private 实例仍使用 `Logistics` capability 发起 `tracking`，`ExtensionRegistry`会在 capability 检查阶段拒绝该链路。应确保 `manifest`与caller口径一致：要么显式支持`Logistics` capability，要么移除不匹配履约入口。 |
+| 影响 | private provider 的履约更新阶段可能在启用后卡在 tracking 查询；履约状态可被长期停滞。 |
+| 根因/方向 | capability 与 port 字符串域未闭合，且未保留版本级禁用/迁移策略。后续统一 provider 契约批次治理，不在本次单 provider 内做临时旁路。 |
+| 验证/回滚 | 构造 private 履约/tracking反事实，确认 `extension.require` 在 capability/port 上的拒绝与成功路径；回退仅改契约提交。 |
+| 独立复核 | 是，RV-0024 |
+
+## F-0128｜Private Provider 声明能力与端口映射失配
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Private Provider；P2；高 |
+| 位置 | `extensions/providers/private/manifest.ts:12`；`services/commerce/src/modules/channel/04_adapters_shixian/adapter/PgPrivateProvider.ts:9-44`；`extensions/providers/private/Provider.ts:8-14` |
+| 当前/预期 | `manifest`声明 `Shipment`、`Return`，`ports`实现侧未暴露对应端口，`Return`也未声明对应操作端口。当前固定caller未验证该能力，但承诺与实现并未形成一一可达语义。 |
+| 影响 | 当前无实证证明退货/出货能力可执行或被合法禁用；若未来补齐 caller 后可触发错误路由。 |
+| 根因/方向 | 能力词汇与真实端口演进漂移，缺统一映射与唯一绑定矩阵。 |
+| 验证/回滚 | 独立补齐固定 provider 能力/端口映射测试；若确认能力停用需正式退役并更新 manifest/发布入口。 |
+| 独立复核 | 否 |
+
+## F-0129｜Private Provider测试覆盖不足
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Private Provider tests；P3；高 |
+| 位置 | `extensions/providers/private/tests/Provider.test.ts:1-13` |
+| 当前/预期 | 测试仅核验 `required id`、`definition` 与签名；未实例化factory，不覆盖 `catalog/stock/order/tracking/cancel/refund/statement` 与错误映射。 |
+| 影响 | `manifest` 口径变更、port 漏映射与重试/错误分类问题可在包级测试中不被发现，运行时才触发。 |
+| 验证/回滚 | 用例应覆盖 `factory + manifest + ExtensionRegistry + 主要端口行为`；回退仅减小 test patch。 |
+| 独立复核 | 否 |
+
+## F-0130｜Tmallmarket Return能力声明未闭合
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Tmallmarket Provider；P2；高 |
+| 位置 | `extensions/providers/tmallmarket/manifest.ts:12`；`extensions/providers/tmallmarket/Provider.ts:6` |
+| 当前/预期 | `manifest`声明 `Return` 能力，但 `operations` 中不含 `return` 映射。该能力当前可对外承诺但未提供稳定执行端口。 |
+| 影响 | 不会直接影响当前固定caller链路，但建立了“有能力名无端口”的长期契约债务，外部/未来 caller 可能误用。 |
+| 根因/方向 | 能力词汇与端口集合不同步，未通过统一 provider 契约回归检查。 |
+| 验证/回滚 | 在契约层补齐 capability×port 穷举用例，确认 `Return` 是否需正式下线或新增 port。 |
+| 独立复核 | 否 |
+
+## F-0131｜Tmallmarket测试覆盖不足
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Tmallmarket tests；P3；高 |
+| 位置 | `extensions/providers/tmallmarket/tests/Provider.test.ts:1-13` |
+| 当前/预期 | 只核验 required ID 与 manifest 签名；未覆盖 `create`、factory、operations 映射、`statement`/`refund`/`tracking` 等业务端口。 |
+| 影响 | 能力/端口漂移、vendor client 适配和错误映射可能在单元层面不被发现。 |
+| 验证/回滚 | 将测试扩展为 `factory + manifest + ports` 最小矩阵；回退单一测试提交。 |
+| 独立复核 | 否 |
+
+## F-0133｜Tmall vendor适配器测试覆盖不足
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Tmall vendor adapter；P3；高 |
+| 位置 | `01_core_hexin/extensions/vendors/tmall/tests/Auth.test.ts:1-10` |
+| 当前/预期 | 测试仅覆盖“任一签名字段缺失会抛错”，未验证 `keyId` 与 `secret` 的单字段差异、`createTmallClient` factory 和关键 business operation 的闭合行为。 |
+| 影响 | 当认证密钥字段或 vendor 适配器行为发生调整时，回归仅依赖签名抛错测试，易出现线上才暴露的适配漂移。 |
+| 验证/回滚 | 补充 `keyId` 与 `secret` 细分断言，并增加 `createTmallClient` + 至少 `tracking/statement/refund` 的契约覆盖。 |
+| 独立复核 | 否 |
+
+## F-0134｜JD vendor 认证测试覆盖不足
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | JD vendor adapter；P3；高 |
+| 位置 | `01_core_hexin/extensions/vendors/jd/tests/Auth.test.ts:1-14` |
+| 当前/预期 | 测试仅覆盖“任一签名字段缺失会抛错”，未验证 `keyId` 与 `privateKey` 的单字段差异、`createJdClient` factory 与关键 business operation 的闭合行为。 |
+| 影响 | 当认证密钥字段或 vendor 适配器行为发生调整时，回归仅依赖签名抛错测试，易出现线上才暴露的适配漂移。 |
+| 验证/回滚 | 补充 `keyId` 与 `privateKey` 细分断言，并增加 `createJdClient` 与至少一条业务 operation 的契约覆盖。 |
+| 独立复核 | 否 |
+
+## F-0135｜Wanlian vendor 认证测试覆盖不足
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | Wanlian vendor adapter；P3；高 |
+| 位置 | `01_core_hexin/extensions/vendors/wanlian/tests/Auth.test.ts:1-11` |
+| 当前/预期 | 测试仍仅验证“空输入会抛错”，未覆盖 `keyId` 与 `privateKey` 的错误码差异，也未覆盖 `createWanlianClient` 及其与 `directcharge/movie` provider 的 operation 闭合行为。 |
+| 影响 | 当认证字段校验或 vendor 适配器行为变化时，包级回归难以提前发现，易延迟暴露到 provider runtime。 |
+| 验证/回滚 | 补充字段级断言、工厂闭合测试（catalog/issue/tracking）及 secrets 管道验签分支；回退只减小测试提交。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
@@ -2891,3 +2982,27 @@
 ## 31. AU-031 新增未定级事项
 
 - [UNKNOWN] Jdproduct线上是否enabled、是否有Return固定caller、以及Return语义是否由外部流程承接；未核验线上installation与实际订单/退单链路。
+
+## 32. AU-032 新增未定级事项
+
+- [UNKNOWN] Movie provider线上是否启用、履约/退货/售后调用是否由外部caller承接；未核验已覆盖的`F-0130`到`F-0132`外部定级影响。
+
+## 33. AU-033 新增未定级事项
+
+- [UNKNOWN] Private provider 线上是否有启用实例、是否有进行时 tracking 查询请求；未核验时上述P1候选的真实事故边界。
+
+## 34. AU-034 新增未定级事项
+
+- [UNKNOWN] Tmallmarket 线上是否有 Return caller 及退货能力正式流程；未核验时`F-0130`为 P2候选不等于P0。
+
+## 35. AU-035 新增未定级事项
+
+- [UNKNOWN] Tmall vendor 适配器是否有仓外消费者、兼容导出或历史接线；未核验时`F-0133`定位为 P3 候选不等于 P0。
+
+## 36. AU-036 新增未定级事项
+
+- [UNKNOWN] JD vendor 适配器是否有仓外消费者、兼容导出或历史接线；未核验时`DC-0043`定位为 G1 候选不等于立即删。 
+
+## 37. AU-037 新增未定级事项
+
+- [UNKNOWN] Wanlian vendor 转发导出是否存在外部兼容消费者；未核验时`DC-0044`仅为 G1 候选不等于立即删。

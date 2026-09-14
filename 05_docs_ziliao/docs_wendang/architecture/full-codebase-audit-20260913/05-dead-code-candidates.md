@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 2、G1 32、G2 2、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 2、G1 33、G2 2、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -553,3 +553,68 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 新增DC-0039/G1；`mapJdproductError`无固定仓内调用，`manifest/Return`与operations口径不一致仍需单独修复候选而非删除。
 - 累计G0 2、G1 32、G2 2、G3 0、GX 5；未删除任何文件。
+
+## DC-0040｜Private 错误映射函数零caller
+
+| 分类/对象 | G1；`01_core_hexin/extensions/providers/private/ErrorMap.ts`的`mapPrivateError` |
+| --- | --- |
+| 证据 | 固定仓内检索零caller，package barrel公开导出，仓外兼容与替代路径未排除。 |
+| 可否删除 | 否；不满足公共API排查、正式退役、行为不变和第二次复核条件。 |
+| 二次复核 | G1不强制；拟删除前需与其它provider error-map专项复核。 |
+
+## 32. AU-033 私有provider候选复核
+
+- 新增DC-0040/G1；`mapPrivateError`无仓内直接caller，因 `Provider` 与 `registry` 尚保有运行契约链路未判删。
+- 累计G0 2、G1 33、G2 2、G3 0、GX 5；未删除任何文件。
+
+## DC-0041｜Tmallmarket 错误映射函数零caller
+
+| 分类/对象 | G1；`01_core_hexin/extensions/providers/tmallmarket/ErrorMap.ts`的`mapTmallmarketError` |
+| --- | --- |
+| 证据 | 固定仓内检索零caller，package barrel公开导出，仓外兼容与替代路径未排除。 |
+| 可否删除 | 否；不满足公共API排查、正式退役、行为不变和第二次复核条件。 |
+| 二次复核 | G1不强制；拟删除前需与provider error-map专项复核。 |
+
+## 33. AU-034 Tmallmarket候选复核
+
+- 新增DC-0041/G1；`mapTmallmarketError`无仓内直接caller，需先确认仓外兼容与错误封装承接后再考虑删除。
+- 累计G0 2、G1 34、G2 2、G3 0、GX 5；未删除任何文件。
+
+## DC-0042｜Tmall vendor adapter 转发导出零caller
+
+| 分类/对象 | G1；`01_core_hexin/extensions/vendors/tmall/Signer.ts`、`RatePolicy.ts`、`CircuitPolicy.ts` |
+| --- | --- |
+| 证据 | 固定仓内检索零caller，`index.ts` 仅作包级导出。 |
+| 可否删除 | 否；package 公共出口与潜在外部兼容路径未排除，尚未形成正式下线边界。 |
+| 二次复核 | G1不强制；拟删除前需确认包外消费者与兼容声明。 |
+
+## 34. AU-035 Tmall vendor候选复核
+
+- 新增DC-0042/G1；该三项转发符号未见仓内生产/测试直接使用，需先核实外部兼容路径。
+- 累计G0 2、G1 35、G2 2、G3 0、GX 5；未删除任何文件。
+
+## DC-0043｜JD vendor adapter 转发导出零caller
+
+| 分类/对象 | G1；`01_core_hexin/extensions/vendors/jd/Signer.ts`、`RatePolicy.ts`、`CircuitPolicy.ts` |
+| --- | --- |
+| 证据 | 固定仓内检索到该三项零直接 caller；`index.ts` 仅作包级导出。 |
+| 可否删除 | 否；package 公共出口与潜在外部兼容路径未排除，且该三项承接 vendorcore 到运行时导出的一致性。 |
+| 二次复核 | G1不强制；拟删除前需确认包外消费者与兼容声明。 |
+
+## 35. AU-036 JD vendor候选复核
+
+- 新增DC-0043/G1；该三项转发符号未见仓内生产/测试直接使用，需先核实外部兼容路径。
+- 累计G0 2、G1 36、G2 2、G3 0、GX 5；未删除任何文件。
+
+## DC-0044｜Wanlian vendor adapter 转发导出零caller
+
+| 分类/对象 | G1；`01_core_hexin/extensions/vendors/wanlian/Signer.ts`、`RatePolicy.ts`、`CircuitPolicy.ts` |
+| --- | --- |
+| 证据 | 固定仓内检索到该三项零直接 caller；`index.ts` 仅作包级导出。 |
+| 可否删除 | 否；package 公共出口与潜在外部兼容路径未排除，且该三项承接 vendorcore 到运行时导出的一致性。 |
+| 二次复核 | G1不强制；拟删除前需确认包外消费者与兼容声明。 |
+
+## 36. AU-037 Wanlian vendor候选复核
+
+- 新增DC-0044/G1；该三项转发符号未见仓内生产/测试直接使用，需先核实外部兼容路径。
+- 累计G0 2、G1 37、G2 2、G3 0、GX 5；未删除任何文件。

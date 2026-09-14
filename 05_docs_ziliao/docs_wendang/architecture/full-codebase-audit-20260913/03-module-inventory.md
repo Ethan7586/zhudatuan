@@ -515,3 +515,80 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | provider身份/签名 | F-0124 |
 
 [FACT][E-AU-030-001] 9文件79行深入审阅；无独立表、进程或制品。
+
+## 37. AU-031 Jdproduct Provider 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Provider/manifest | JD产品Catalog/Inventory/Order/物流/退款/对账 | F-0125/F-0126 |
+| Mapper/Vendor | canonical字段与JD共享传输 | 继承F-0096/F-0097 |
+| ErrorMap/Webhook | 回调与错误封装导出 | DC-0026/DC-0039 |
+| tests | provider身份与签名 | F-0126 |
+
+[FACT][E-AU-031-001] 9文件79行深入审阅；无独立表、进程或制品。
+
+## 38. AU-032 Movie Provider 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Provider/manifest | Movie能力声明与本地化端口 | 待更新 |
+| Mapper/Vendor | catalog/price/stock/订单映射 | 当前待补：需与 F-0130/F-0131一致 |
+| ErrorMap/Webhook | 通用错误封装与公共导出 | DC-0026 |
+| tests | provider身份与签名 | 当前待补 |
+
+[FACT][E-AU-032-001] 9文件79行深入审阅；无独立表、进程或制品。未完成 provider 契约收敛专项。
+
+## 39. AU-033 Private Provider 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Provider/manifest | local install与channels DB ports映射；能力声明 | F-0127/F-0128 |
+| Local adapter | `createPrivateProviderInstallation` 提供 catalog/stock/order/tracking/refund/statement | F-0127/F-0128 |
+| ErrorMap/Webhook | 错误前缀与公共导出 | DC-0026/DC-0040 |
+| tests | provider身份与签名 | F-0129 |
+
+[FACT][E-AU-033-001] 9文件79行深入审阅；随 Commerce OCI 发布，无独立表、进程或制品。
+
+## 40. AU-034 Tmallmarket Provider 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Provider/manifest | remote transport与`operations`映射到vendor端点 | F-0130/F-0131 |
+| Mapper/Webhook | canonical字段映射与webhook入口 | DC-0026/DC-0041 |
+| ErrorMap | 错误前缀与公共导出 | DC-0041 |
+| tests | provider身份与签名 | F-0131 |
+
+[FACT][E-AU-034-001] 9文件79行深入审阅；无独立表、进程或制品。
+
+## 41. AU-035 Tmall Vendor Adapter 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Auth/Client | HMAC 凭据构造与 `VendorClient` 工厂 | F-0133 |
+| Signer/RatePolicy/CircuitPolicy | 对 `vendorcore` 通用能力的包级转发导出 | DC-0042 |
+| tests | vendor 认证工厂与签名收敛 | F-0133 |
+| package/配置 | 包接口与发布边界 | [FACT][E-AU-001-007] |
+
+[FACT][E-AU-035-001] 8文件8条人工关键文件/全部深度审阅；与 provider 实例链路已闭合映射。
+
+## 42. AU-036 JD Vendor Adapter 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Auth/Client | RSA 凭据构造与 `VendorClient` 工厂 | F-0134 |
+| Signer/RatePolicy/CircuitPolicy | 对 `vendorcore` 通用能力的包级转发导出 | DC-0043 |
+| tests | vendor 认证工厂的最小覆盖 | F-0134 |
+| package/配置 | 依赖、tsconfig 与脚本边界 | [FACT][E-AU-001-007] |
+
+[FACT][E-AU-036-001] 8文件33行人工关键文件/全部深度审阅；与 JD providers 的 adapter 链路已核验映射。
+
+## 43. AU-037 Wanlian Vendor Adapter 模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Auth/Client | RSA 凭据构造与 `VendorClient` 工厂 | F-0135 |
+| Signer/RatePolicy/CircuitPolicy | 对 `vendorcore` 通用能力的包级转发导出 | DC-0044 |
+| tests | vendor 认证工厂与签名闭合 | F-0135 |
+| package/配置 | 依赖、tsconfig 与脚本边界 | [FACT][E-AU-001-007] |
+
+[FACT][E-AU-037-001] 9文件45行人工关键文件/全部深度审阅；与 directcharge/movie provider 实例链路已核验映射。
