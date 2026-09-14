@@ -589,3 +589,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Type declarations本身没有独立运行行为；其关键field约束通过auth/router/handler测试与类型检查间接消费。
 - 环境变量的部署注入与线上secret存在性属于runtime/deployment专项，不由TypeScript接口本身证明。无P0–P3新问题。
+
+## 200. AU-200 WeChat Pay core test 深审
+
+- Direct tests覆盖config fail-closed、RSA canonical signing、miniapp payment signature、description与trade-state helper。
+- 不覆盖prepay/callback route到RPC/provider的行为，相关缺口已分别记录F-0190/F-0191。无P0–P3新问题；审计工作树未运行Vitest。

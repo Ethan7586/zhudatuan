@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-200-001,src/api/wechatPayCore.test.ts,12-58,configuration,Tests load full server-only config and reject invalid APIv3 key/private or unapproved notify URL.
+E-AU-200-002,src/api/wechatPayCore.test.ts,60-90,RSA signing,Temporary keys verify exact merchant and miniapp canonical signature messages.
+E-AU-200-003,src/api/wechatPayCore.test.ts,92-119,pure helpers,Tests bounded descriptions and provider trade-state mapping.

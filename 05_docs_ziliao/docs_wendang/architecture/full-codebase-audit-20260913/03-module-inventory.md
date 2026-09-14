@@ -2144,3 +2144,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | RequestContext | 将request ID与可为空的已解析授权上下文一起传递 | [FACT][E-AU-199-003] |
 
 [FACT][E-AU-199-004] 1 文件、90 行完成深审；types被router、所有API handler及fixture直接消费，没有独立运行入口。
+
+## 205. AU-200 WeChat Pay core test 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| config test | 完整server-only config与APIv3/notify URL fail-closed规则 | [FACT][E-AU-200-001] |
+| signature test | merchant canonical request与miniapp payment parameter使用临时RSA key验证 | [FACT][E-AU-200-002] |
+| pure helper test | 商品description边界和全部provider trade-state映射 | [FACT][E-AU-200-003] |
+
+[FACT][E-AU-200-004] 1 文件、119 行完成深审；测试覆盖payment core helper，不代替prepay/callback route RPC测试（F-0190/F-0191）。

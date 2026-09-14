@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/wechatPayCore.test.ts,config RSA signing miniapp parameters description and all provider-state helper behavior,no prepay/callback route RPC behavior; not run: audit worktree has no Vitest dependencies
