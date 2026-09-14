@@ -439,21 +439,21 @@ describe('Product governance workspace', () => {
     expect(screen.queryByRole('button', { name: '新建商品' })).toBeNull();
     expect(importing.disabled).toBe(false);
     await user.click(importing);
-    const dialog = await screen.findByRole('dialog', { name: '批量导入商品' });
-    expect(screen.getByTestId('route-location').textContent).toBe('/products');
-    await user.click(screen.getByRole('button', { name: '取消' }));
-    await waitFor(() => expect(dialog.isConnected).toBe(false));
+    expect(screen.getByTestId('route-location').textContent)
+      .toBe('/scopes/mall/mall%3Ahongtai/products/owned/new');
+    expect(screen.getByTestId('route-search').textContent).toBe('?mode=batch');
     await user.click(screen.getByRole('button', { name: '下架 核心商品' }));
     await waitFor(() => expect(writes).toContain('DELETE'));
   });
 
-  it('opens the catalog import dialog without leaving the active scope', async () => {
+  it('opens an uploaded import inside the exact mall scope', async () => {
     const user = userEvent.setup();
     renderProductRoute(mallContext);
     await screen.findByRole('table', { name: '商品列表' });
     await user.click(screen.getByRole('button', { name: '批量导入' }));
-    expect(await screen.findByRole('dialog', { name: '批量导入商品' })).toBeTruthy();
-    expect(screen.getByTestId('route-location').textContent).toBe('/products');
+    expect(screen.getByTestId('route-location').textContent)
+      .toBe('/scopes/mall/mall%3Ahongtai/products/owned/new');
+    expect(screen.getByTestId('route-search').textContent).toBe('?mode=batch');
   });
 
   it('downloads an empty loaded page with only the fixed header', async () => {
