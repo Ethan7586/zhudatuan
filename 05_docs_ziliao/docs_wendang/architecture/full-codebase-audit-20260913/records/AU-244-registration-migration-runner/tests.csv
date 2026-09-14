@@ -1,0 +1,3 @@
+file,coverage,execution
+src/foundation/infrastructure/RegistrationMigrationRunner.ts,no direct fixture for database boundary ledger recovery secret backfill or target validation,not run: audit worktree has no Vitest dependencies
+src/foundation/infrastructure/RegistrationMigrationPlan.test.ts,plan-only behavior does not execute Runner state machine,not run: audit worktree has no Vitest dependencies

@@ -332,15 +332,15 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块 | 数据与迁移 / 正式 release executor |
+| 模块 | 数据与迁移 / 正式 release executor、RegistrationMigrationRunner |
 | 类型 | 事务边界、失败恢复、迁移可重复性 |
 | 严重级别 | P2 |
 | 置信度 | 高：query 顺序和迁移事务包装直接；窗口发生概率与具体数据影响未知 |
-| 文件和精确位置 | MigrationRunner.ts:51-78；database-migration-executor.mjs:22-46；zdt-next.remote-policy.json:57；remote/agent.mjs:499-529,580-613,840-857 |
-| 当前行为 | [FACT][E-AU-003-012][E-AU-003-013] runner 先 client.query(sql)，完成后再单独 INSERT schema_migrations。300 个 SQL 中 207 个现代文件自含 BEGIN/COMMIT；因此 SQL 内 COMMIT 成功后到 ledger INSERT 成功前存在进程、连接或 ledger 写失败窗口。93 个无显式事务文件均属于冻结历史，不是本结论的主要触发面 |
+| 文件和精确位置 | MigrationRunner.ts:51-78；RegistrationMigrationRunner.ts:89-113；database-migration-executor.mjs:22-46；zdt-next.remote-policy.json:57；remote/agent.mjs:499-529,580-613,840-857 |
+| 当前行为 | [FACT][E-AU-003-012][E-AU-003-013][E-AU-244-002] 两个runner都先执行SQL、后单独INSERT schema_migrations；RegistrationMigrationRunner还为每条新migration写registration-specific ledger metadata。300 个主迁移 SQL 中207个现代文件自含BEGIN/COMMIT；registration plan同样允许original/transformed SQL自提交。因此SQL内COMMIT成功后到ledger INSERT成功前均存在进程、连接或ledger写失败窗口。93个无显式事务主历史文件属于冻结历史，不是本结论的主要触发面。 |
 | 预期行为 | 对每个迁移，数据库可观察效果与“已应用”记录应具有同一恢复语义；任一失败点都不能让自动重试无法判断是否应再次执行 SQL |
 | 直接证据 | E-AU-003-012、E-AU-003-013、E-AU-003-014；RS-AU-003-003 |
-| 调用链或运行入口 | GitHub deploy → database-migration target → remote agent → DatabaseMigrationExecutor → MigrationRunner → SQL 自提交 → ledger INSERT → target schema check |
+| 调用链或运行入口 | GitHub deploy → database-migration target → remote agent → DatabaseMigrationExecutor → MigrationRunner → SQL 自提交 → ledger INSERT → target schema check；registration-only entry → RegistrationMigrationRunner → SQL/transform → registration ledger INSERT → runtime target check |
 | 用户影响 | [INFERENCE] 窗口命中后发布失败；下一次自动执行会把缺 ledger 的同一 SQL 再运行，可能持续阻断发布，需要人工判断已发生的数据库效果 |
 | 数据影响 | [INFERENCE] 取决于具体 SQL 的可重复性，可能只是再次失败，也可能重复 DML；本单元没有故障注入或逐迁移证明，不写成已发生数据损坏 |
 | 安全影响 | 无直接安全影响；迁移 owner 权限使错误影响面较大，但当前角色校验是明确门禁 |
@@ -350,6 +350,20 @@
 | 验证方式 | 临时数据库在 SQL commit 后、ledger insert 前故障注入；验证重启能确定性恢复且历史哈希、target head、forward-only receipt 仍成立 |
 | 回滚方式 | 该类修复必须 forward-safe；代码提交可回退，但已执行数据库效果不可依赖代码回退，需预先定义恢复 migration/备份路径 |
 | 是否需要独立复核 | 否（当前 P2）；任何实际 ledger 分裂、数据修复或迁移协议变更应按 P1/GX 级别双人复核 |
+
+## F-0223｜RegistrationMigrationRunner 没有数据库边界与故障恢复直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / registration migration Runner；P2；高 |
+| 类型 | 测试覆盖缺口、迁移恢复/数据隔离 |
+| 位置 | `01_core_hexin/services/commerce/src/foundation/infrastructure/RegistrationMigrationRunner.ts:70-302` |
+| 当前/预期 | Runner承担独立数据库验证、锁、history/ledger、受控marker recovery、secret backfill和target断言。预期每一类数据库状态与SQL/ledger故障窗口有受控fake client或临时数据库fixture。 |
+| 直接证据 | 仓内仅有RegistrationMigrationPlan.test，未找到Runner direct fixture或`REGISTRATION_MIGRATION_DATABASE_BOUNDARY_INVALID`、`...LEDGER_DRIFT`、`...TARGET_INVALID`、`...AUTONODE_LEDGER_RECOVERY_INVALID`、`...L0_PUBLIC_DOMAIN_LEDGER_RECOVERY_INVALID`的测试断言。 |
+| 调用链/影响 | RegistrationMigrationMain → RegistrationMigrationRunner → registration database。边界/恢复回归会在初始化或受控修复时阻断注册数据库迁移，或在错误状态尝试推进migration；实际线上执行状态未验证。 |
+| 建议方向 | 从修复时最新`zdt-next`建立isolated fake-PoolClient或临时registration DB测试批，覆盖独立边界、空/受管库、ledger drift、两类marker recovery、secret rollback、target验证及SQL成功/ledger失败故障注入；该测试批不改历史migration。 |
+| 验证/回滚 | 断言每个稳定错误码、lock/unlock与release、执行SQL/ledger顺序及失败后重跑语义；回滚为revert测试提交。 |
+| 独立复核 | 否；P2。 |
 
 ## F-0014｜Catalog API Ready 未探测已启动的 HTTP 进程
 

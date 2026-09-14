@@ -2558,3 +2558,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | runner boundary | RegistrationMigrationRunner在独立数据库/advisory lock下应用执行计划并复核ledger/target | [FACT][E-AU-243-004] |
 
 [FACT][E-AU-243-005] 2 文件、340 行完成深审；每个分类和主要拒绝路径都有direct fixture，无P0–P3新问题。
+
+## 249. AU-244 RegistrationMigrationRunner 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| isolated execution | 校验独立database/role/sentinel，advisory lock后只处理合法migration files | [FACT][E-AU-244-001] |
+| ledger/history/target | 将plan执行结果写入ledger，并在既有记录、冻结history和最终runtime target处拒绝drift | [FACT][E-AU-244-002] |
+| managed recovery | 对两类已有runtime marker仅在精确recoverable数据库状态下defer到managed repair | [FACT][E-AU-244-003] |
+| secret backfill | 特定backfill前以8并发KMS加密旧明文并事务写入新stage表 | [FACT][E-AU-244-004] |
+
+[FACT][E-AU-244-005] 1 文件、302 行完成深审；扩展F-0013/P2并新增F-0223/P2 direct-test缺口。

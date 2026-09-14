@@ -809,3 +809,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 168行fixture逐类覆盖omitted、transformed/drift、original、legacy/reconciled ledger及目标marker；Runner消费链明确。
 - 无P0–P3新问题。审计工作树未运行Vitest。
+
+## 244. AU-244 RegistrationMigrationRunner 深审
+
+- 未找到Runner direct fixture；Plan fixture不能证明独立数据库、锁、ledger recovery、secret backfill和target执行语义。
+- SQL/ledger非原子窗口扩展既有F-0013/P2；direct-test缺口见F-0223/P2。审计工作树未运行Vitest。

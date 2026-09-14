@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-244-001,src/foundation/infrastructure/RegistrationMigrationRunner.ts,70-118,isolated execution,Runner checks exact database role/sentinel acquires advisory lock reads ordered files and validates history before application.
+E-AU-244-002,src/foundation/infrastructure/RegistrationMigrationRunner.ts,89-113,ledger ordering,For each unapplied migration Runner executes execution.sql then inserts ledger metadata in a separate query.
+E-AU-244-003,src/foundation/infrastructure/RegistrationMigrationRunner.ts,161-215,managed recovery,Two missing ledger versions may defer only with exact runtime marker and recoverable database shape.
+E-AU-244-004,src/foundation/infrastructure/RegistrationMigrationRunner.ts,238-302,backfill,Legacy secrets are KMS-encrypted under bounded concurrency and staged transactionally.
+E-AU-244-005,src/foundation/infrastructure/RegistrationMigrationPlan.test.ts,1-168,test gap,Plan behavior is tested but no test instantiates RegistrationMigrationRunner or asserts its stable failure codes.
