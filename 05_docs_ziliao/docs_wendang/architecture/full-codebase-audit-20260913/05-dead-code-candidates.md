@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 24。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 25。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1282,3 +1282,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 465. AU-465 成员操作受众复核
 
 - 17 个跨域业务入口的成员受众由当前 capability contract 决定；归 GX-0024。累计 G0 60、G1 83、G2 5、G3 0、GX 24；未删除任何文件。
+
+## GX-0025｜Runtime contract head checksum 对账
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821059000_reconcile_contract_head.sql`。 |
+| 直接证据 | 更新 `runtime.schemaversion` 中契约 head checksum，新增版本 ledger，并 fail-closed 断言固定 checksum。 |
+| 运行边界 | 后续迁移、运行就绪检查和部署边界反复读取/断言 schemaversion contract head。 |
+| 可否删除 | 否；承担 schema 顺序、契约一致性、部署门禁、恢复和历史 ledger 责任。 |
+| 二次复核 | 是；须验证执行顺序、目标 head、readiness consumer、备份恢复和发布控制面 ledger。 |
+
+## 466. AU-466 Runtime contract head 复核
+
+- 契约 checksum 是迁移/就绪门禁的基础历史；归 GX-0025。累计 G0 60、G1 83、G2 5、G3 0、GX 25；未删除任何文件。
