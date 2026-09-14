@@ -71,10 +71,6 @@ export function shouldRetainProductionSnapshot(error: unknown): boolean {
   return error instanceof ProductionApiError && error.status === 0;
 }
 
-export function shouldCloseMemberSession(error: unknown): boolean {
-  return error instanceof ProductionApiError && (error.status === 401 || error.status === 403);
-}
-
 export function authenticatedMall(bootstrap: ApiBootstrap): EnterpriseMall {
   return {
     id: bootstrap.scope.mallId,
@@ -182,10 +178,9 @@ export function useProductionSync(setters: ProductionSyncSetters, enabled = true
       snapshot = await productionApi.getHomeSnapshot(bootstrap);
     } catch (error) {
       if (syncVersion !== syncVersionRef.current) return;
-      if (shouldCloseMemberSession(error)) {
-        closeMemberData();
-        setters.setSessionStatus('guest');
-      }
+      // The identity session and member shell have already been verified above.
+      // A denied or unavailable account, order, or ledger read must not turn a
+      // real member back into a guest.
       try {
         publisher.commitPublic(await publicCatalogRequest);
       } catch {
