@@ -2096,3 +2096,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | error surface | provider rejection净化code、transport错误归一为`ALIYUN_SMS_UNAVAILABLE` | [FACT][E-AU-194-003] |
 
 [FACT][E-AU-194-004] 2 文件、171 行完成深审；核心debug/send/rejection已有direct test，config/transport边界见F-0201/P3。
+
+## 200. AU-195 Shared validation 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| order/after-sale | item、recipient、mobile、SKU去重、售后类型和safe-integer金额输入 | [FACT][E-AU-195-001] |
+| internal/refund | 不允许负、零或非整数的账户扣款/退款金额 | [FACT][E-AU-195-002] |
+| simulation | mock channel、充值/福利上限与voucher对应金额要求 | [FACT][E-AU-195-003] |
+
+[FACT][E-AU-195-004] 2 文件、314 行完成深审；order routes和payment simulation route使用这些helper，所有export均有direct normal/rejection fixtures。

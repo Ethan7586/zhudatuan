@@ -564,3 +564,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖debug仅test、Aliyun request/单次3秒timeout及provider rejection净化。
 - 缺失Aliyun sign/template与client transport throw没有fixture，见F-0201/P3。审计工作树未运行Vitest。
+
+## 195. AU-195 Shared validation 深审
+
+- Direct tests覆盖每个导出parser的正常输入和主要拒绝分支：重复SKU、金额、类型/渠道、手机号与voucher对应关系。
+- Parser只做本地输入边界；数据库资源scope、余额和状态语义由调用route/RPC专项审计承接。无P0–P3新问题；审计工作树未运行Vitest。

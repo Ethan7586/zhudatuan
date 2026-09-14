@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/validation.test.ts,all exported parsers valid input and key invalid cases,not run: audit worktree has no Vitest dependencies
