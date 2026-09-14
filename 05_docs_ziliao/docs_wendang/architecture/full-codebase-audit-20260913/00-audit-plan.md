@@ -717,3 +717,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 对 F-0138 从 HTTP 输入、幂等范围和同类 `PartnerOperations` 的条件版本语义重新追踪。
 
 执行结果：复核一致，将 F-0138 定级为 P1（高置信度）：两个不同幂等键、相同 If-Match 的策略管理请求可无冲突地依次替换 active version。未见 P0 线上事故证据；未运行数据库、修复、推送、合并或部署。
+
+## 49. AU-047 连续审计点
+
+审阅 Console 报表入口、reporting HTTP/read 链、projection/export job、持久化和对象完成条件。
+
+执行结果：新增 F-0141/P2（XLSX 导出累计全部行、无资源上界）；投影事务与对象校验闭环已记录。未发现 P0；正式测试因缺包级 vitest 未执行，未安装依赖或改变运行状态。

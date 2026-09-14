@@ -3030,6 +3030,17 @@
 | 验证/回滚 | 在隔离数据库调用 manage 后读取四张资格表并执行 QuoteReader；修复需独立分支。 |
 | 独立复核 | 否 |
 
+## F-0141｜XLSX 报表导出无内存或行数上界
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | reporting；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/reporting/05_interface_jieru/job/ExportJobRunner.ts:29-48` |
+| 当前/预期 | XLSX 分支将每个分页行持续加入 `workbookRows`，全部读取后才生成工作簿；未限制行数/字节，CSV 分支则每页清空。预期为流式生成或显式资源上限与可读失败码。 |
+| 影响 | 大范围无过滤导出可能超出 120 秒任务时限或进程内存，反复重试并延迟导出服务。 |
+| 验证/回滚 | 用隔离对象存储和超过内存预算的 order/metric fixture 验证任务状态、重试和对象清理；修复必须独立分支。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

@@ -44,7 +44,7 @@
 | access | `settings/members` | feature/access/manifest.ts | 已深入审阅 |
 | profile | `settings/profile` | route/ConsoleRouter.tsx（lazy） | 已深入审阅 |
 | qualification | `settings/qualification` | feature/qualification/manifest.ts | 已深入审阅（AU-045） |
-| reports | `reports` | feature/report/manifest.ts | 仅结构性审阅 |
+| reports | `reports` | feature/report/manifest.ts | 已深入审阅（AU-047） |
 | support | `support/:caseId?` | feature/support/manifest.ts | 仅结构性审阅 |
 
 AU-002 已结构性核对全部 manifest、静态/动态可达性以及路由装配；每个 manifest 对应页面的 operation、权限、空态、错误态和业务正确性仍留给独立模块 AU。Console 的入口骨架与 loader 已深入审阅，不等于 15 个页面模块均已深入审阅。

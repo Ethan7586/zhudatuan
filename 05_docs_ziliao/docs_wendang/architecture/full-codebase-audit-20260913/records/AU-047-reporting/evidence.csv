@@ -1,0 +1,6 @@
+"编号","检查点","位置","直接证据","结论"
+"E-AU-047-001","Console入口","apps/console/src/feature/report/ReportRoute.tsx:29-31;ReportQuery.ts:45-48","视图映射 SDK 操作并将 nextCursor 写入 URL","读页分页闭合"
+"E-AU-047-002","运行任务","services/commerce/src/app/jobs.ts:98-99;modules/reporting/module.manifest.ts:10-61","projection/export 均有 job catalog、runbook 与 manifest 入口","异步任务已注册，非零引用代码"
+"E-AU-047-003","投影事务","modules/reporting/05_interface_jieru/job/ProjectionJob.ts:16-35;PgReportingRepository.ts:152-164","事件完成、projection offset 和业务投影在 transaction 中处理","失败会回滚，成功后再失效缓存"
+"E-AU-047-004","XLSX资源边界","modules/reporting/05_interface_jieru/job/ExportJobRunner.ts:29-48,78-87","XLSX 分支累加 workbookRows，直到全部 page 读取完成才 createXlsxDocument；CSV 每页清空","F-0141：大 XLSX 导出无资源上界"
+"E-AU-047-005","对象完成条件","ExportJobRunner.ts:49-60;PgReportingRepository.ts:223-234","对象 scan/hash/size 校验通过才 completeExport；失败 abort 并按 job attempts 回队或失败","对象发布与数据库状态闭环清晰"
