@@ -1498,3 +1498,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | PGlite persistence | replication evidence、binding lifecycle、recovery、多 target、fixture/migration ledger | [FACT][E-AU-136-003] |
 
 [FACT][E-AU-136-004] 3 文件、668 行媒体测试完成深审；媒体存储/持久化行为测试充足，source URL trust boundary 不在这些 fixture 覆盖内，沿用 F-0173/P1。
+
+## 142. AU-137 Catalog 导入与操作测试清单
+
+| 测试层 | 覆盖行为 | 当前边界 |
+| --- | --- | --- |
+| mall commands | import de-dup/confirm、listing/read/publish、publication progress/retry | [FACT][E-AU-137-001] |
+| package | parse、scope-bound facts、stable validation error | [FACT][E-AU-137-002] |
+| Pg import | stage-before-write、running facts、invalid-row isolation | [FACT][E-AU-137-003] |
+
+[FACT][E-AU-137-004] 3 文件、438 行 Catalog import/operation tests 完成深审；测试直接验证关键 write boundary，而非只检查 manifest string。

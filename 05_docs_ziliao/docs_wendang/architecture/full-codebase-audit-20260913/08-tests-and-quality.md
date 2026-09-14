@@ -283,3 +283,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 三项测试合计覆盖 OSS adapter、replication coordinator 和 PGlite persistence：required/optional replica、hash mismatch、failure recovery、解绑、重试、多 target 与迁移 ledger 均有行为断言。
 - 这些测试把 provider URL 作为已下载 bytes 或 HTTPS 示例，未覆盖 Worker URL allowlist、redirect 或 response-size；F-0173/P1 不因存储层测试充分而降级。
 - 本 AU 未运行 Vitest。
+
+## 137. AU-137 Catalog 导入与操作测试深审
+
+- CatalogOperations、CatalogPackage、PgCatalogImport 三项测试直接覆盖 scope、去重/confirm、发布 progress、package row validation、stage-before-write、running facts 与 invalid row isolation。
+- 这些测试为 Catalog 核心导入/发布状态转换提供了真实行为规格；本 AU 未运行 Vitest。

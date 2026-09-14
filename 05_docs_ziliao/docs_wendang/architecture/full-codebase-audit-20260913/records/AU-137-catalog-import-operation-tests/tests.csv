@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source-level behavior tests,CatalogOperations/CatalogPackage/PgCatalogImport,Completed,All assertions and fixtures were read.
+Targeted Vitest,Catalog import/operation tests,Not run,No execution-specific conclusion was required.
