@@ -1,0 +1,6 @@
+id,files,location,kind,observation
+E-AU-192-001,src/api/securityCenterRoutes.ts,16-51,security/password,Security center checks tracked session; password change verifies current password hashes replacement and retains current session only.
+E-AU-192-002,src/api/securityCenterRoutes.ts,53-112,otp/reset/phone,OTP creation stores hashed code/subject/IP; reset and phone change use purpose hash and phone change encrypts PII before RPC.
+E-AU-192-003,src/api/securityCenterRoutes.ts,114-134,session revoke,Single revoke clears current cookie only and revoke-others requires current session.
+E-AU-192-004,src/api/router.ts,18-20,runtime registration,The sole API entrypoint returns 404 for every /api/v1/auth path before public or authenticated routers; no production import of security handlers was found.
+E-AU-192-005,src/api/securityCenterRoutes.test.ts,1-147,tests,Password change selected OTP rejection and revoke-others are direct-tested; four exported handlers lack direct calls.

@@ -549,3 +549,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 ## 191. AU-191 Storefront home composition 深审
 
 - 未找到`homeRoutes` direct fixture；组合层的success及任一child failure传播不被独立验证，已归入F-0195/P2。审计工作树未运行Vitest。
+
+## 192. AU-192 Security center compatibility 深审
+
+- Direct tests覆盖current-password change、生产SMS未配置闭合、phone-change匿名拒绝和撤销其他session。
+- security center、password reset、phone-change成功/失败和single-session revoke没有direct fixture；这些当前未注册的compatibility handlers一旦重新承诺会有回归盲区，见F-0199/P2。审计工作树未运行Vitest。

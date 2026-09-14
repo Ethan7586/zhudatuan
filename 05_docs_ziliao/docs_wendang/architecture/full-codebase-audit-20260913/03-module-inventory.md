@@ -2066,3 +2066,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | home snapshot | GET下并发组合bootstrap/accounts/orders/ledgers，并将首个子handler失败返回调用方 | [FACT][E-AU-191-001] |
 
 [FACT][E-AU-191-002] 1 文件、26 行完成深审；正式Storefront router注册`/api/v1/home`，直接测试缺口已记录F-0195/P2。
+
+## 197. AU-192 Security center compatibility 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| security center/password | tracked session、current password验证、password hash与当前session保留 | [FACT][E-AU-192-001] |
+| OTP/reset/phone change | OTP purpose/限时subject hash、phone-change登录检查、手机号cipher与challenge消费RPC | [FACT][E-AU-192-002] |
+| session revoke | 单session/其他session撤销与当前cookie清除 | [FACT][E-AU-192-003] |
+
+[FACT][E-AU-192-004] 2 文件、282 行完成深审；当前真实API入口明确拒绝`/api/v1/auth/*`，这些export只保留compatibility/历史契约，见DC-0048/G1。

@@ -1,0 +1,2 @@
+file,coverage,execution
+src/api/securityCenterRoutes.test.ts,password change production OTP closure phone-change anonymous denial and revoke-others,no direct security-center reset-password change-phone or single-session-revoke fixture; not run: audit worktree has no Vitest dependencies

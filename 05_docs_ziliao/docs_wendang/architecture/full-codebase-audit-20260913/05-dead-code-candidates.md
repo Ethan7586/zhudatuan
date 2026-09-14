@@ -691,12 +691,12 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 | 字段 | 记录 |
 | --- | --- |
-| 分类/对象 | G1；`services/commerce-api/src/api/{publicRoutes,registrationRoutes,wechatAuthRoutes,stepUpRoutes}.ts` 内 compatibility auth handler exports及其 credential/demo/limiter closure |
+| 分类/对象 | G1；`services/commerce-api/src/api/{publicRoutes,registrationRoutes,wechatAuthRoutes,stepUpRoutes,securityCenterRoutes}.ts` 内 compatibility auth handler exports及其 credential/demo/limiter/security closure |
 | 疑似原因 | 当前 `routeApi` 明确将 `/api/v1/auth/*` 返回404；Storefront Worker实际只调用 `routePublicRequest`，该router只注册health/catalog/payment。 |
-| 保留证据 | Auth Web兼容 `LoginPage/auth.ts` 仍调用这些路径；handlers具有公开导出、直接测试、workspace/compat build关系，且WeChat/注册/step-up仍有独立RPC契约和仓外历史部署未知项。 |
+| 保留证据 | Auth Web兼容 `LoginPage/auth.ts` 仍调用这些路径；security center路径仍有旧文档、公开导出和direct tests；handlers具有workspace/compat build关系，且WeChat/注册/step-up/安全中心仍有独立RPC契约和仓外历史部署未知项。 |
 | 可否删除 | 否；不是“零入口、零契约、零兼容责任”，不满足G3。 |
 | 二次复核 | G1不强制；拟删除前需核验正式Auth前端是否已完全迁移及仓外兼容部署。 |
 
 ## 171. AU-171 Compatibility public auth 候选复核
 
-- AU-171/AU-175：DC-0048/G1覆盖全部compatibility auth handler；缺当前正式路由注册，但保留客户端、测试、公共API与兼容部署未知项；未作删除动作。累计 G0 60、G1 66、G2 2、G3 0、GX 5；未删除任何文件。
+- AU-171/AU-175/AU-192：DC-0048/G1覆盖全部compatibility auth handler；缺当前正式路由注册，但保留客户端、文档、测试、公共API与兼容部署未知项；未作删除动作。累计 G0 60、G1 66、G2 2、G3 0、GX 5；未删除任何文件。

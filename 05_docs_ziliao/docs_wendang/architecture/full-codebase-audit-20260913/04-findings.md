@@ -3808,6 +3808,20 @@
 | 验证/回滚 | fixture覆盖coarse/resource denial、idempotency/input、active/inactive exact RPC scope/hash/evidence；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0199｜安全中心兼容写入分支缺少完整直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / security center compatibility；P2；高 |
+| 类型 | 测试覆盖缺口、账号凭据/手机号/session生命周期正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/securityCenterRoutes.ts:16-134`；现有`securityCenterRoutes.test.ts` |
+| 当前/预期 | handler覆盖安全资料读取、password reset、phone change、单设备撤销与其他设备撤销；现有tests仅覆盖password change、OTP未配置拒绝、phone-change匿名拒绝和revoke others。预期每个剩余handler的session/OTP/credential/PII/RPC响应边界均有direct fixture。 |
+| 直接证据 | test只导入`handleChangePassword`、`handleSecurityOtp`、`handleRevokeOtherSessions`；未导入`handleSecurityCenter`、`handleResetPassword`、`handleChangePhone`或`handleRevokeSession`。 |
+| 调用链/影响 | 这些是当前未注册的compatibility auth handlers（DC-0048/G1），故未将其未测分支判为当前线上事故；一旦兼容路由恢复，密码找回、换绑与设备撤销回归不能被现有suite直接捕获。 |
+| 建议方向 | 从修复时最新`zdt-next`先决定是否继续承诺这些auth API；若保留，按reset/phone与session-center分成独立test批。 |
+| 验证/回滚 | fixture覆盖session缺失、OTP成功/失败/限流、password/phone hash与cipher、single/current session cookie和RPC状态映射；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
