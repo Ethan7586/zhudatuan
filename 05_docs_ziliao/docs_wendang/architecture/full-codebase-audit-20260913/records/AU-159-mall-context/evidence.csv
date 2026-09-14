@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-159-001,02_domain_yewu/MallContext.ts,13-41,resolver,Mall scope wins; non-mall scope requires exactly one direct mall grant; Scope.path is ignored.
+E-AU-159-002,foundation/security/AccessPipeline.ts,35;68-99,runtime consumer,Pipeline resolves mall context after scope/capability/assurance/risk decisions and returns it only when unambiguous.
+E-AU-159-003,06_tests_ceshi/MallContext.test.ts;06_tests_ceshi/module.manifest.test.ts,1-68;1-15,tests,Tests cover scope precedence, ambiguity/path rejection, explicit restore and module boundary.
+E-AU-159-004,index.ts;module.manifest.ts,1-3;1-18,public surface,Public index exposes resolver/types; manifest declares domain/test-only module with no HTTP or job entry.

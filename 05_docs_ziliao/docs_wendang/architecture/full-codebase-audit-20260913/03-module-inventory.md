@@ -1724,3 +1724,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | capability/manifest/test | public capability、operation/event declaration、proof/segment direct tests | [FACT][E-AU-158-003] |
 
 [FACT][E-AU-158-004] 7 文件、403 行完成深审；Access 18/18 基线文件均取得审阅状态。
+
+## 164. AU-159 Mall context 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| context resolver | scope 或唯一 direct grant 到 immutable mall id/profile reference 的投影 | [FACT][E-AU-159-001] |
+| pipeline consumer | AccessPipeline 在 complete authorization 后写入可选 mallContext/mall_id | [FACT][E-AU-159-002] |
+| public/test | public index、无 HTTP/job 的 manifest 与 resolver direct tests | [FACT][E-AU-159-003] |
+
+[FACT][E-AU-159-004] 5 文件、145 行完成深审；Mall 5/5 基线文件均取得审阅状态。

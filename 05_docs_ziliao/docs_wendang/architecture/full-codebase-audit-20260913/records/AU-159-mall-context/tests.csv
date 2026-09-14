@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source and test trace,Mall context resolver and AccessPipeline consumer,Completed,Runtime order and direct behavior tests reviewed.
+Formal targeted test,Mall tests,Not run,Audit worktree dependency baseline lacks Vitest; dependencies unchanged.

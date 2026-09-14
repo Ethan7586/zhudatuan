@@ -401,3 +401,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Administrator segment tests 直接覆盖 database command shape、storefront identity fail-closed 与 note/list/detail；OwnerActionProof tests 覆盖 exact binding、篡改、缺失、过期和 HMAC domain separation。
 - 未运行正式 suite：审计 worktree 依赖基线没有 Vitest；本批无源代码变更。
+
+## 159. AU-159 Mall context 深审
+
+- Direct unit tests 覆盖 mall-scope precedence、unique direct grant、ambiguous rejection、path non-inference 和 explicit job/event restore。
+- 未运行正式 suite：审计 worktree 依赖基线没有 Vitest；本批无源代码变更。
