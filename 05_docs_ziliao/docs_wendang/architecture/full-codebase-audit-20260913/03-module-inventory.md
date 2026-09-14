@@ -733,3 +733,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | event/reversal/供应商会计 mock oracle | [FACT][E-AU-063-005] |
 
 [FACT][E-AU-063-006] 8 文件、880 行 Finance ledger 人工源码和测试完成深审；结算、对账、提现、发票、读写 API 与 jobs 留 AU-064。
+
+## 70. AU-064 Finance 结算、对账、提现与发票模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| reconciliation | event journal 与 provider statement CSV/hash/匹配/差异 | [FACT][E-AU-064-001] |
+| settlement | reconciliation frozen basis、policy split、settlement line/split | [FACT][E-AU-064-002] |
+| payout | partner/referral withdrawal、provider idempotency、paid journal | [FACT][E-AU-064-003] |
+| invoice/deadletter | 发票签发/存证和金融失败状态收口 | F-0151 |
+| tests | settlement PGlite 与 payout mock；其余 job 缺口 | F-0151 |
+
+[FACT][E-AU-064-006] 11 文件、988 行 Finance operations 人工源码和测试完成深审；Finance command/API/read/配置/迁移仍按独立单元继续。

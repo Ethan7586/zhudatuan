@@ -3154,6 +3154,18 @@
 | 验证/回滚 | 隔离 PostgreSQL 注入 `failed`、`rejected`、未知和 `accepted` receipt：核对 fulfillment state、provider operation、job 重试与 tracking 行为；修复必须从最新主线独立小分支进行，回滚为撤回该修复提交。 |
 | 独立复核 | 否 |
 
+## F-0151｜财务对账、发票和死信恢复没有行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | finance；P2；高 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/finance/03_application_yingyong/command/ReconcileStatement.ts:10-72`；`.../05_interface_jieru/job/{InvoiceJob,FinanceDeadletter}.ts`；现有 `06_tests_ceshi` 只覆盖 `SettlementJob`、referral payout 与 gateway |
+| 当前/预期 | provider statement 的 hash/CSV/匹配/difference、invoice 的 KMS/issuer/object/状态机、deadletter 对 withdrawal/reconciliation/invoice 的状态收口均无模块专用行为测试。预期至少以隔离对象存储、KMS/issuer fixture 和 PostgreSQL 覆盖正常、重复、hash/CSV/外部失败、事务失败和重试/死信后的状态。 |
+| 影响 | 对账差异、发票签发和财务任务失败恢复的回归可能只在运行中发现，可能留下错误差异、issued/issuing 状态或不可恢复的提现状态。未见已发生线上事故。 |
+| 根因 | 结算的 frozen basis 获得 PGlite 测试所有权，但相邻异步 job 只保留实现，测试所有权未扩展。 |
+| 验证/回滚 | 使用隔离对象存储/KMS/issuer 与 PostgreSQL：覆盖 hash 不符、CSV 行错、匹配/差异、invoice upload/DB 失败、重复 issue、withdrawal/reconciliation/invoice deadletter 后 retry；修复必须从最新主线独立小分支进行，回滚为撤回测试或实现小批次。 |
+| 独立复核 | 否 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
