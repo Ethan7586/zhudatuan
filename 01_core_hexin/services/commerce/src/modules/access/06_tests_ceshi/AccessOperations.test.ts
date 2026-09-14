@@ -234,6 +234,36 @@ describe('access scope management boundary', () => {
     expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(true);
   });
 
+  it('rejects administrator offboarding across Realms before any write', async () => {
+    const harness = operationHarness({ targetRealm: 'realm:other' });
+
+    await expect(accessOperations(context(harness.pool)).invoke(offboardAdministratorRequest()))
+      .rejects.toThrow('MANAGEMENT_PERMISSION_REALM_MISMATCH');
+
+    expect(harness.queries.some((query) => query.startsWith('update access.membershiprole set expires_at'))).toBe(false);
+    expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(false);
+  });
+
+  it('rejects administrator offboarding outside the caller governance organization before any write', async () => {
+    const harness = operationHarness({ targetMembershipScope: tenantB });
+
+    await expect(accessOperations(context(harness.pool)).invoke(offboardAdministratorRequest()))
+      .rejects.toThrow('MANAGEMENT_PERMISSION_ORGANIZATION_MISMATCH');
+
+    expect(harness.queries.some((query) => query.startsWith('update access.membershiprole set expires_at'))).toBe(false);
+    expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(false);
+  });
+
+  it('never treats a storefront Membership as an administrator offboarding target', async () => {
+    const harness = operationHarness({ targetClient: 'storefront' });
+
+    await expect(accessOperations(context(harness.pool)).invoke(offboardAdministratorRequest()))
+      .rejects.toThrow('MANAGEMENT_PERMISSION_TARGET_NOT_ACTIVE_OPERATOR');
+
+    expect(harness.queries.some((query) => query.startsWith('update access.membershiprole set expires_at'))).toBe(false);
+    expect(harness.queries.some((query) => query.startsWith('update access.membership\n    set status='))).toBe(false);
+  });
+
   it.each(['owner', 'senior_administrator'] as const)(
     'prevents a senior administrator from offboarding a protected %s identity',
     async (targetGovernance) => {
@@ -528,6 +558,11 @@ function operationHarness(options: Readonly<{ scope?: unknown; targetMembershipS
       if (text.startsWith('select target.id,target.access_version')) return result([{
         id: 'membership:target', access_version: 2, target_is_owner: options.targetIsOwner ?? false,
         governance_level: options.targetGovernance ?? 'administrator',
+        target_membership_id: 'membership:target', target_client: options.targetClient ?? 'operator',
+        target_status: options.targetStatus ?? 'active', target_realm_id: options.targetRealm ?? 'realm:tenant-a',
+        actor_realm_id: options.actorRealm ?? 'realm:tenant-a', target_realm_binding: options.targetRealmBinding ?? true,
+        target_organization_binding: options.targetOrganizationBinding ?? true,
+        target_membership_scope: options.targetMembershipScope ?? tenantA,
       }]);
       if (text.includes('permission.code=any($2::text[])') && text.includes('from access.membershiprole assignment')) {
         return result([{ target_membership_id: 'membership:target', target_client: options.targetClient ?? 'operator',

@@ -346,6 +346,8 @@ function contractOperationInput(operation: OperationId, input: OperationInput): 
 }
 
 function operationResource(operation: string, request: HttpRequest): string | undefined {
+  if (operation === 'access.roles.manage' && request.body !== null && typeof request.body === 'object'
+    && !Array.isArray(request.body) && Reflect.get(request.body, 'action') === 'offboard') return undefined;
   // A new policy id is not resolvable before its first approved revision. The selected Scope is the authorization resource; the path id remains bound by ExpectedVersion and the canonical request hash.
   if (operation === 'finance.policies.manage' || operation === 'finance.policies.preview') return undefined;
   const pathResource = Object.values(request.parameters)[0];
