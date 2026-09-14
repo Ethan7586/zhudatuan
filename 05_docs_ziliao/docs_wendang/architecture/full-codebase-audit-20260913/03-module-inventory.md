@@ -1393,3 +1393,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | job/backlog tests | challenge payload whitelist、backlog 告警/恢复与 manifest inventory | [FACT][E-AU-126-003] |
 
 [FACT][E-AU-126-004] 8 文件、386 行 Notification 入口、identity 专用运行单元和测试完成深审；generic processor/monitor 已由 AU-049/AU-050 深审并作为本链既有证据。
+
+## 132. AU-127 Notification 投递渠道与配置链清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| delivery contract/registry | 以固定 channel id 选择投递 adapter，并拒绝重复或缺失注册 | [FACT][E-AU-127-001] |
+| provider adapters | SMS、email、WeChat 和 in-app 各自处理 provider 请求、超时与回执 | [FACT][E-AU-127-002] |
+| configuration | Commerce 读取全渠道配置；identity runtime 仅接受严格 SMS 配置 | [FACT][E-AU-127-003] |
+| tests | provider idempotency/secret isolation、token cache 和 identity config rejection | [FACT][E-AU-127-004] |
+
+[FACT][E-AU-127-005] 10 文件、359 行 Notification delivery/configuration chain 完成深审；未发现渠道注册与实际 runtime composition 不一致。
