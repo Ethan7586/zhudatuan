@@ -5209,3 +5209,23 @@
 | 验证方式 | 隔离数据库以正式 `zhudatuanpurchaseapi` 和 checkout session context执行 QuoteReader SQL：当前 Mall active agreement 必须可见，异 Mall、expired、terminated agreement 必须不可见；运行 Purchase readiness 与新增契约。 |
 | 回滚方式 | 撤回单独的 forward policy/function migration；不删除或重写 agreement records。 |
 | 是否需要独立复核 | 是；复核者须独立确认数据库连接 role、session context 设置与最终 `pg_policies`。 |
+
+## F-0280｜Realm-bound operator 注册写入边界没有 PostgreSQL 执行型契约
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Identity Registration API / Operator invitation / Realm console boundary |
+| 类型 | 测试可信度、认证与授权数据库写入契约 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260911190000_bind_operator_registration_to_realm_console.sql:20-148,153-221`；`01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/IdentityRegistration.test.ts`；`02_platform_pingtai/database/supabase/migrations/20260912180000_reconcile_identity_runtime_state.sql:78`。 |
+| 当前/预期 | trigger/RLS 同时决定 operator membership、role 与 scopegrant 是否能由已消费 invitation 创建，条件涵盖 `session_user/current role`、transaction timestamp、手机号 hash、Realm console target、Mall/tenant closure 和 exact scope shape。现有仓内检索未找到该 migration/function/error marker的 SQL contract；IdentityRegistration test 使用 application harness/mock database。预期为隔离 PostgreSQL 以真实 role/session context 测试完整 allow/deny 矩阵。 |
+| 直接证据 | [FACT][E-AU-684-001] trigger lines 33-145 对 Identity role、consume invite、realmtarget、membership client和scope role作复合校验；[FACT][E-AU-684-002] insert policies lines 153-221 对三个 access relation 重复要求 console target及最小 role/scope；[FACT][E-AU-684-003] 对 source/tests 的 function name、error marker与 migration version检索仅命中后续 reconciliation marker，未命中执行型 DB test。 |
+| 调用链或运行入口 | Operator invitation consume → Identity Registration API → member/profile/account/membership/role/scopegrant writes → trigger/RLS → Realm console session authorization。 |
+| 用户/数据/安全影响 | 当前没有已知越权注册或合法注册失败的运行证据；未来调整 trigger、RLS、role connection或 Realm target 时，mock test 无法发现 PostgreSQL 专有的 session role、RLS或 transaction-time 回归，可能造成 operator 注册中断或不当 membership/scope grant。 |
+| 根因 | 复杂注册保护以迁移内 assertion和 application test保存意图，但没有把实际 PostgreSQL permission context作为可重复执行的测试 fixture。 |
+| 建议方向 | 从当时最新 `zdt-next` 建立独立数据库契约测试批次：以真实 `zhudatuanidentityapi`、非 Identity role和最小 Realm/Mall/tenant fixture覆盖合法 registration、wrong Realm target、wrong Mall、expired/replayed invite、超范围 role/scope和 ordinary role deny；不改写生产 migration。 |
+| 预计修改范围 | Supabase isolated test fixture/contract SQL，必要时仅测试 runner registration。 |
+| 验证方式 | 按正式 migration runner 建立隔离 DB，断言每个 deny case不留下 membership/role/grant，allow case恰好生成 invitation 声明的关系并仅限 tenant+self scope。 |
+| 回滚方式 | 删除独立测试和 fixture；不修改生产 schema或业务数据。 |
+| 是否需要独立复核 | 否。 |
