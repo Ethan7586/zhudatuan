@@ -640,7 +640,7 @@
         "mall-provisioning-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/mall-provisioning-api","service":"none","restart":"none"},
         "support-api": {"pointerRoot":"/opt/zhudatuan/targets/support-api","service":"zhudatuan-console-support.service","hostedBy":"zhudatuan-l0"},
         "purchase-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/purchase-api","service":"sfl-purchase-api@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
-        "web-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/web-api","service":"sfl-web-api@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
+        "web-api": {"pointerRoot":"/opt/sfl/nodes/hbbtzn-l1/targets/web-api","service":"sfl-web-api@hbbtzn-l1.service"},
         "catalog-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/catalog-api","service":"sfl-catalog-api@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
         "catalog-jobs": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/catalog-jobs","service":"sfl-catalog-jobs@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
         "payment-webhook-api": {"pointerRoot":"/opt/sfl/nodes/zhudatuan-l0/targets/payment-webhook-api","service":"sfl-payment-webhook-api@zhudatuan-l0.service","hostedBy":"zhudatuan-l0"},
