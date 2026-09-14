@@ -1393,15 +1393,15 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 字段 | 记录 |
 | --- | --- |
 | 分类 | GX：高风险，禁止删除，需专项设计 |
-| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821069000_add_store_management.sql` |
+| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821069000_add_store_management.sql`、`20260821080000_restore_member_scope_authorization.sql` |
 | 疑似原因 | 文件同时替换 scope 函数、增加门店 operation 和 checksum，表面上与后续 scope 函数有重叠。 |
-| 保留证据 | [FACT][E-AU-476] 当前 PartnerOperations 以 `access.scope_allowed` 保护门店读写与 mall 选择；DatabaseContext 从服务端 AccessPipeline 写入 `app.scope_id`。后续 800 迁移显式恢复 member-scope 语义，说明这是连续演进。 |
+| 保留证据 | [FACT][E-AU-476/486] 当前 PartnerOperations 与 member/benefit/voucher SQL 都以 `access.scope_allowed` 保护范围；DatabaseContext 从服务端 AccessPipeline 写入 context。800 迁移显式恢复 690 意外移除的 member→organization 语义并断言无关 scope 仍拒绝。 |
 | 运行结论 | 该历史步骤定义 store 管理范围和函数版本链；后续替换不等于可以删除或跳过。 |
 | 数据/契约责任 | 承担 operator store 管理 API、KMS 地址写入范围和 scope SQL 的授权边界。 |
 | 可否删除 | 禁止 |
 | 二次复核 | 是：current function、迁移顺序、成员/店铺越权反事实和恢复演练。 |
 
-- store management scope 演进归 GX-0032。累计 G0 60、G1 83、G2 5、G3 0、GX 32；未删除任何文件。
+- store management/member scope 演进归 GX-0032。累计 G0 60、G1 83、G2 5、G3 0、GX 32；未删除任何文件。
 
 ## GX-0033｜Decision audit actor/scope RLS 修复
 

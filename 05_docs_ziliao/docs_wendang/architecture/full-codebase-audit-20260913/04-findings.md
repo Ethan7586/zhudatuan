@@ -4503,3 +4503,26 @@
 | 建议方向 | 先独立复核实际迁移 ledger、service-role 网络边界与调用者；若链路启用，从当时最新主线建立单一修复分支，为每个动作接入对应 permission/授权证据检查并补充拒绝性集成测试。 |
 | 验证/回滚 | 隔离数据库中为每个角色测试允许动作及相同 scope 但缺少目标 permission 的拒绝路径，验证余额、状态事件、审计和幂等；回滚为撤回独立修复提交。 |
 | 独立复核 | 是；P1 候选必须重新追踪数据库 grant、调用者和所有动作权限。 |
+
+## F-0242｜门店范围函数替换曾移除成员到组织的授权路径，后续迁移恢复
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Access scope / Store management / Member operations |
+| 类型 | 身份授权回归（已由后续迁移修复） |
+| 严重级别 | P2 |
+| 置信度 | 高：前序迁移与修复迁移的 SQL、注释和正反断言直接证明；未证实线上受影响量。 |
+| 文件和精确位置 | `migrations/20260821069000_add_store_management.sql:3-14`、`20260821080000_restore_member_scope_authorization.sql:3-59`；消费者包括 `BenefitOperations.ts:58,93,176,231`、`VoucherQueries.ts:12-75`。 |
+| 当前行为 | 固定基线已包含 800 修复：active membership 可访问自身 member、所属组织及其子树；无关 scope 返回 false。 |
+| 预期行为 | 所有 scope 函数替换必须保留既有 audience 的授权语义，或在同一原子发布单元中显式迁移并验证。 |
+| 直接证据 | [FACT][E-AU-476/486] 690 定义只检查 app.scope/组织/partner；800 明确写明其“accidentally removed the member-to-organization path”，补回 membership 分支，并断言 member/organization allow 与 unrelated deny。 |
+| 调用链或运行入口 | AccessPipeline/DatabaseContext → `app.scope_id`/`app.membership_id` → `access.scope_allowed` → member、benefit、voucher 等 SQL 范围过滤。 |
+| 用户影响 | [INFERENCE] 在 690 已执行且 800 未执行的窗口，成员路径可能被错误拒绝，表现为数据/权益/卡券查询不可用。 |
+| 数据影响 | 证据指向 fail-closed 可用性回归，未证明越权写入或数据损坏。 |
+| 安全影响 | 修复仍断言无关 scope 拒绝；未发现授权扩大证据。 |
+| 根因 | 把 operator/partner scope 的函数替换当作完整实现，遗漏此前 member audience 分支。 |
+| 建议方向 | 后续每次替换 shared authorization function 均以行为矩阵覆盖 operator、member、partner、无关 scope；作为独立修复/验证批次，不在审计分支修改。 |
+| 预计修改范围 | 授权函数/迁移断言和定向 SQL 行为测试；不触及业务功能。 |
+| 验证方式 | 隔离数据库按执行顺序验证 690→800，分别探测 member/self/organization/child/unrelated、operator/partner 路径，并核对实际 current definition。 |
+| 回滚方式 | 回退单一已验证的 authorization migration 或恢复前一函数定义；须先确认当前 schema head。 |
+| 是否需要独立复核 | 否（P2）；若查到线上窗口存在实际成员操作错误，复核影响范围与严重度。 |
