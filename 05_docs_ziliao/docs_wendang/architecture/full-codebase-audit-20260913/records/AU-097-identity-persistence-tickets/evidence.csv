@@ -1,0 +1,6 @@
+"证据编号","文件","位置","结论"
+"E-AU-097-001","01_core_hexin/services/commerce/src/modules/identity/04_adapters_shixian/persistence_cunchu/IdentityPersistence.ts","10-42","WeChat grant 锁定、冲突查询、active membership 条件绑定与消费。"
+"E-AU-097-002","01_core_hexin/services/commerce/src/modules/identity/04_adapters_shixian/persistence_cunchu/IdentityPersistence.ts","44-87","savepoint、outer transaction context/rollback、critical idempotency 与 outbox 写入。"
+"E-AU-097-003","01_core_hexin/services/commerce/src/modules/identity/04_adapters_shixian/persistence_cunchu/PgAuthTicket.ts","10-48","issue 持久 session/realm/account；consume 条件比较所有 auth hashes 并在锁下单次消费。"
+"E-AU-097-004","01_core_hexin/services/commerce/src/modules/identity/04_adapters_shixian/persistence_cunchu/PgIdentityPrincipal.ts","1-7","member import 唯一 public principal 写路径为受控数据库函数。"
+"E-AU-097-005","01_core_hexin/services/commerce/src/modules/identity/06_tests_ceshi/{IdentityPersistence.test.ts,PgAuthTicket.test.ts}","全部","PGlite savepoint 与 ticket session/realm/once-only 行为 oracle。"

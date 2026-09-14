@@ -1069,3 +1069,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | registry host、realm membership、SMS SQL 状态 oracle | [FACT][E-AU-096-004] |
 
 [FACT][E-AU-096-005] 4 文件、512 行 Identity realm/account 与 SMS 登录读取/消费链完成深审；无跨 realm 回退查询或非条件 challenge 消费。
+
+## 102. AU-097 Identity persistence、AuthTicket 与 principal 适配器清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| WeChat binding | grant lock、冲突检测、active membership 条件绑定/消费 | [FACT][E-AU-097-001] |
+| identity mutation | savepoint、outer transaction context、critical-write idempotency/outbox | [FACT][E-AU-097-002] |
+| AuthTicket | state/nonce/PKCE/session/account/realm 绑定及单次交换 | [FACT][E-AU-097-003] |
+| imported principal | shopjob 受控 ensure function | [FACT][E-AU-097-004] |
+| tests | PGlite savepoint 与 ticket binding/consume oracle | [FACT][E-AU-097-005] |
+
+[FACT][E-AU-097-006] 5 文件、277 行 Identity persistence 与票据适配器完成深审；未见外层 transaction 外的业务写入或可重复消费 ticket。
