@@ -808,3 +808,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | repair read/tests | scope receipt 与 wrapper 契约 | [FACT][E-AU-070-003~004] |
 
 [FACT][E-AU-070-006] 5 文件、419 行 Finance reconciliation application 人工源码和测试完成深审；SECURITY DEFINER repair workflow/迁移与 PostgreSQL 集成测试保留 AU-071。
+
+## 77. AU-071 Finance 对账修复数据库权威过程模块清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| repair facts/state | preview/submitted/executed/rejected/reversed、不可变两条 repair line/effect | [FACT][E-AU-071-001] |
+| authoritative plan | payment/refund/provider/statement/ledger 事实重建与 hash | [FACT][E-AU-071-002~003] |
+| execute/reverse | proof、四眼、journal/entry 核验、downstream lock 与精确冲销 | [FACT][E-AU-071-002] |
+| integration test | PGlite 全迁移重放和状态机 oracle | [FACT][E-AU-071-004~005] |
+
+[FACT][E-AU-071-006] 2 文件、1,926 行 Finance reconciliation repair 数据库权威过程和集成测试完成深审。

@@ -1,0 +1,2 @@
+"测试","范围","结论","执行"
+"FinanceReconciliationRepair.test.ts","PGlite migration replay、repair 完整状态机、proof/RLS/事实/下游锁","真实数据库兼容集成 oracle；覆盖本单元关键路径","未执行：固定审计 worktree 无 vitest 可执行文件"
