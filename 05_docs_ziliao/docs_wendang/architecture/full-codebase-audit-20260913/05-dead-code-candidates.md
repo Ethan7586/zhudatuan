@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 30。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 31。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1372,3 +1372,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | 是：以真实数据库 current definition、grant 和跨组织反事实调用复核。 |
 
 - invitation scope resolver 演进归 GX-0030。累计 G0 60、G1 83、G2 5、G3 0、GX 30；未删除任何文件。
+
+## GX-0031｜Identity session 管理与撤销事件
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除，需专项设计 |
+| 对象 | `02_platform_pingtai/database/supabase/migrations/20260821067000_add_session_management.sql` |
+| 疑似原因 | 文件主要插入 operation/event/capability registry，容易被视为可再生成的目录数据。 |
+| 保留证据 | [FACT][E-AU-474] 当前 session list/revoke handler 使用该 operation，撤销成功后发布 `identity.session.revoked`；下游 session validity 继续依据 revoked、expiry、credential/access version 拒绝失效会话。 |
+| 运行结论 | 会话撤销的 API、事件和失效验证构成完整身份安全链，不能按单独登记记录处理。 |
+| 数据/契约责任 | 规定同 account/realm 的会话边界与撤销事件契约。 |
+| 可否删除 | 禁止 |
+| 二次复核 | 是：需验证撤销/outbox 原子性、事件消费者与跨 realm 隔离。 |
+
+- identity session 安全链归 GX-0031。累计 G0 60、G1 83、G2 5、G3 0、GX 31；未删除任何文件。
