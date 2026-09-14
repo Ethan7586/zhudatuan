@@ -1151,6 +1151,10 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - `.prettierrc.json` 被正式 format/check:format 入口自动解析，并与 EditorConfig/Git LF 边界一致；归 G0，无删除候选。
 
+## 499. AU-499 核心代码布局 README 复核
+
+- `01_core_hexin/README.md` 的 apps/services/packages/extensions 一级导航与实际目录一致；归 G0，不作为运行权威或删除依据。
+
 ## GX-0013｜渠道外部对象 scope 映射切换
 
 | 字段 | 记录 |
