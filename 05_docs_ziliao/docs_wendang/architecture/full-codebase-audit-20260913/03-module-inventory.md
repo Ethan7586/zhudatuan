@@ -1705,3 +1705,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | test | ProjectEvent in-memory mapping/closed failure | [FACT][E-AU-156-003]；F-0183/P2 |
 
 [FACT][E-AU-156-004] 5 文件、363 行完成深审；Worker process/retry fixture 缺口已独立记录。
+
+## 162. AU-157 Reporting compatibility 与根入口清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| 运行兼容入口 | root Identity/read、index 和 legacy jobs 路径把既有 caller 转至 canonical implementation | [FACT][E-AU-157-001]；G0 |
+| 其余 historical exports | application/domain/infrastructure/http 一行转发 | [FACT][E-AU-157-002]；G1，尚未排除动态/发布外兼容 consumer |
+
+[FACT][E-AU-157-003] 16 文件、30 行完成深审；Reporting 33/33 基线文件均取得审阅状态。

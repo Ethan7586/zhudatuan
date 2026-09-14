@@ -391,3 +391,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - ProjectEvent test 覆盖 paid-event hierarchy/partner metric 与未知事件 fail-closed；ExportDocument test 仅覆盖 document helper。
 - 两个 JobProcessor 无 direct process/retry/abort/integrity/cache fixture，见 F-0183/P2。
+
+## 157. AU-157 Reporting compatibility 与根入口深审
+
+- 本批为 16 个纯 re-export 或 public index；无独立测试逻辑。
+- root/runtime consumer 与仓内零 caller 的差异已纳入 G0/G1 清单，不以“缺测试”推导缺陷。
