@@ -78,9 +78,9 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.match(preparedKnownHosts, /^123\.57\.232\.253 ssh-ed25519 AAAA[0-9A-Za-z+/]+={0,2}$/m);
   assert.match(prepareWorkflow, /--prepare/);
   assert.match(prepareWorkflow, /npm ci/);
-  assert.match(prepareWorkflow, /release -- build/);
-  assert.match(prepareWorkflow, /release -- package/);
-  assert.match(prepareWorkflow, /release -- publish/);
+  assert.match(prepareWorkflow, /"\$RELEASE_CLI" build/);
+  assert.match(prepareWorkflow, /"\$RELEASE_CLI" package/);
+  assert.match(prepareWorkflow, /"\$RELEASE_CLI" publish/);
   assert.equal((prepareWorkflow.match(/packageCache!=='miss'/g) ?? []).length, 1);
   assert.match(prepareWorkflow, /run_cold_prepare cold-a/);
   assert.match(prepareWorkflow, /run_cold_prepare cold-b/);
@@ -98,10 +98,9 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.ok(prepareWorkflow.indexOf('SHOP_BUILD_AT=') < prepareWorkflow.indexOf('run_cold_prepare cold-a'));
   assert.match(prepareWorkflow, /ubuntu-24\.04/);
   assert.match(prepareWorkflow, /NPM_VERSION: 10\.9\.4/);
-  assert.equal((prepareWorkflow.match(/uses: actions\/checkout@v6/g) ?? []).length, 1);
-  assert.match(prepareWorkflow, /id: checkout_source[\s\S]*?continue-on-error: true/);
-  assert.match(prepareWorkflow, /if: steps\.checkout_source\.outcome == 'failure'/);
-  assert.match(prepareWorkflow, /filter: blob:none[\s\S]*?remote\.origin\.promisor true[\s\S]*?git -c protocol\.version=1 fetch[\s\S]*?--filter=blob:none[\s\S]*?--depth=2[\s\S]*?origin "\$RELEASE_SHA"/);
+  assert.doesNotMatch(prepareWorkflow, /uses: actions\//);
+  assert.match(prepareWorkflow, /checkout_exact "\$control_root" "\$CONTROL_SHA"/);
+  assert.match(prepareWorkflow, /checkout_exact "\$workspace" "\$RELEASE_SHA"/);
   assert.match(prepareWorkflow, /test "\$\(git rev-parse HEAD\)" = "\$RELEASE_SHA"/);
   for (const workflow of [prepareWorkflow, preparedDeployWorkflow]) {
     assert.match(workflow, /GIT_CONFIG_KEY_0: http\.version/);
@@ -111,7 +110,8 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   }
   assert.match(githubTransportInstaller, /Environment=GIT_HTTP_LOW_SPEED_LIMIT=1024/);
   assert.match(githubTransportInstaller, /Environment=GIT_HTTP_LOW_SPEED_TIME=20/);
-  assert.doesNotMatch(prepareWorkflow, /release_node|deploy-prepared|ZDT_RELEASE_SSH_HOST/);
+  assert.match(prepareWorkflow, /release_node:[\s\S]*?required: true/);
+  assert.doesNotMatch(prepareWorkflow, /deploy-prepared|ZDT_RELEASE_SSH_HOST/);
 });
 
 test('legacy direct recovery retains the isolated H6 CDN channel', () => {

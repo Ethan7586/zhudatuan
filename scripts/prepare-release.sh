@@ -76,11 +76,10 @@ echo "Artifact preparation (${BUILD_RUNNER}): ${SHA} -> ${TARGET}"
 gh workflow run "$WORKFLOW_PREPARE" --ref zdt-next \
   -f head_sha="$SHA" \
   -f release_target="$TARGET" \
-  -f build_runner="$BUILD_RUNNER"
+  -f build_runner="$BUILD_RUNNER" \
+  -f release_node="$NODE"
 prepare_title="Prepare 1.3.2 ${SHA} ${TARGET}"
-if [ "$BUILD_RUNNER" = github ]; then
-  prepare_title+=" [github]"
-fi
+if [ "$BUILD_RUNNER" = github ]; then prepare_title+=" [github]"; fi
 prepare_run_id="$(find_dispatched_run "$WORKFLOW_PREPARE" "$prepare_title" "$last_prepare_id")" || {
   echo "Prepare was dispatched but its run id was not found." >&2
   exit 1

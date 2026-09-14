@@ -10,10 +10,12 @@ import {
   buildCommand,
   deployCommand,
   deployPreparedCommand,
+  inspectPreparedCommand,
   installCommand,
   packageCommand,
   planCommand,
   publishCommand,
+  publishEvidenceCommand,
   registerCurrentBaselineCommand,
   rollbackCommand,
   seedCommand,
@@ -31,6 +33,8 @@ const commands = Object.freeze({
   build: buildCommand,
   package: packageCommand,
   publish: publishCommand,
+  'inspect-prepared': inspectPreparedCommand,
+  'publish-evidence': publishEvidenceCommand,
   'verify-reproducibility': verifyReproducibilityCommand,
   'validate-prepared': validatePreparedCommand,
   deploy: deployCommand,
@@ -55,7 +59,11 @@ try {
     const implementation = commands[command];
     if (!implementation) throw new Error(`UNKNOWN_COMMAND:${command}`);
     const loadedAdapter = await loadAdapter(options.adapter ?? process.env.AI_DELIVERY_ADAPTER ?? DEFAULT_ADAPTER, process.cwd());
-    const adapter = options.stateDirectory ? Object.freeze({ ...loadedAdapter, stateDirectory: options.stateDirectory }) : loadedAdapter;
+    const adapter = Object.freeze({
+      ...loadedAdapter,
+      ...(options.projectRoot ? { projectRoot: resolve(options.projectRoot) } : {}),
+      ...(options.stateDirectory ? { stateDirectory: options.stateDirectory } : {}),
+    });
     const result = await implementation(adapter, options);
     printResult(result, options.format ?? 'human');
   }

@@ -214,6 +214,61 @@ export async function resolvePreparedArtifact(adapter, options, dependencies = {
   };
 }
 
+export async function inspectPreparedArtifact(adapter, options, dependencies = {}) {
+  try {
+    const resolved = await resolvePreparedArtifact(adapter, options, dependencies);
+    return {
+      schema: 'ai.delivery.prepared-inspection.v1', project: adapter.project,
+      target: resolved.manifest.target, sourceSha: resolved.manifest.sourceSha,
+      node: options.node, exists: true,
+      artifactIdentity: resolved.manifest.artifact.sha256,
+      releaseManifestObject: resolved.releaseManifestObject,
+      timings: resolved.timings, completedAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    if (error instanceof DeliveryError && error.code === 'OSS_ARTIFACT_NOT_FOUND') {
+      return {
+        schema: 'ai.delivery.prepared-inspection.v1', project: adapter.project,
+        target: exactTarget(adapter, options.target, 'OSS_TARGET'),
+        sourceSha: exactSourceSha(options.sourceSha, 'OSS_SOURCE_SHA_INVALID'),
+        node: required(options.node, 'OSS_NODE_REQUIRED'), exists: false,
+        completedAt: new Date().toISOString(),
+      };
+    }
+    throw error;
+  }
+}
+
+export async function publishWorkflowEvidence(adapter, options, dependencies = {}) {
+  const started = performance.now();
+  const sourceSha = exactSourceSha(options.sourceSha, 'EVIDENCE_SOURCE_SHA_INVALID');
+  const target = exactTarget(adapter, options.target, 'EVIDENCE_TARGET');
+  const kind = required(options.kind, 'EVIDENCE_KIND_REQUIRED');
+  invariant(['prepare', 'deploy'].includes(kind), 'EVIDENCE_KIND_INVALID', 'Workflow evidence kind must be prepare or deploy');
+  const runId = required(options.githubRunId, 'EVIDENCE_RUN_ID_REQUIRED');
+  const runAttempt = required(options.githubRunAttempt, 'EVIDENCE_RUN_ATTEMPT_REQUIRED');
+  invariant(/^\d+$/.test(runId) && /^\d+$/.test(runAttempt), 'EVIDENCE_RUN_ID_INVALID', 'Workflow run identity must be numeric');
+  const body = await readFile(resolve(required(options.file, 'EVIDENCE_FILE_REQUIRED')));
+  invariant(body.byteLength > 0 && body.byteLength <= 10 * 1024 * 1024, 'EVIDENCE_SIZE_INVALID', 'Workflow evidence must be between 1 byte and 10 MiB');
+  const bodySha256 = sha256(body);
+  const object = `${objectRoot(adapter.project, target, sourceSha, options.prefix)}/workflow-evidence/${kind}/${runId}-${runAttempt}-${bodySha256}.json`;
+  const client = dependencies.client ?? ossClientFromEnvironment(options.endpoint, dependencies);
+  const publication = await client.putImmutable(object, body, 'application/json');
+  const receipt = {
+    schema: 'ai.delivery.workflow-evidence-receipt.v1', project: adapter.project,
+    target, sourceSha, kind, github: { runId, runAttempt },
+    evidence: { object, sha256: `sha256:${bodySha256}`, bytes: body.byteLength, status: publication.status },
+    timings: { publication: elapsed(started), total: elapsed(started) },
+    completedAt: new Date().toISOString(),
+  };
+  if (options.output) {
+    const output = resolve(options.output);
+    await mkdir(dirname(output), { recursive: true });
+    await writeFile(output, prettyStableJson(receipt));
+  }
+  return receipt;
+}
+
 export function ossClientFromEnvironment(endpoint, dependencies = {}) {
   const environment = dependencies.environment ?? process.env;
   return createOssClient(

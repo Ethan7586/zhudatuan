@@ -9,7 +9,7 @@ import { DeliveryError, invariant } from './errors.mjs';
 import { assertBuildRefIsCheckedOut, assertWorktreeClean, currentHead } from './git.mjs';
 import { layerCommand } from './layer.mjs';
 import { acquireLocks } from './lock.mjs';
-import { ossClientFromEnvironment, publishPreparedArtifact, resolveDownloadEndpoint, resolvePreparedArtifact } from './oss.mjs';
+import { inspectPreparedArtifact, ossClientFromEnvironment, publishPreparedArtifact, publishWorkflowEvidence, resolveDownloadEndpoint, resolvePreparedArtifact } from './oss.mjs';
 import { createPlan } from './planner.mjs';
 import { runCommand } from './runner.mjs';
 import { createRun, readJson, statePaths, writeJson } from './state.mjs';
@@ -103,6 +103,14 @@ export async function packageCommand(adapter, options) {
 
 export async function publishCommand(adapter, options) {
   return publishPreparedArtifact(adapter, options);
+}
+
+export async function inspectPreparedCommand(adapter, options) {
+  return inspectPreparedArtifact(adapter, options);
+}
+
+export async function publishEvidenceCommand(adapter, options) {
+  return publishWorkflowEvidence(adapter, options);
 }
 
 export async function validatePreparedCommand(adapter, options) {

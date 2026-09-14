@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { createOssClient, publishPreparedArtifact, resolveDownloadEndpoint, resolvePreparedArtifact } from '../src/oss.mjs';
+import { createOssClient, inspectPreparedArtifact, publishPreparedArtifact, publishWorkflowEvidence, resolveDownloadEndpoint, resolvePreparedArtifact } from '../src/oss.mjs';
 import { runCommand } from '../src/runner.mjs';
 import { digest, prettyStableJson, sha256 } from '../src/stable.mjs';
 
@@ -55,6 +55,36 @@ test('first immutable publication does not require HeadObject on absent objects'
 
   assert.equal(receipt.cacheStatus, 'miss');
   assert.equal(remote.puts, 4);
+});
+
+test('prepared inspection deduplicates an exact node-eligible artifact without hiding absence', async () => {
+  const fixture = await prepareFixture();
+  const remote = memoryOss();
+  const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
+  const options = { sourceSha: fixture.sourceSha, target: 'app', node: 'node-a' };
+  assert.equal((await inspectPreparedArtifact(fixture.adapter, options, { client })).exists, false);
+  const published = await publishPreparedArtifact(fixture.adapter, publishOptions(fixture), { client });
+  const inspected = await inspectPreparedArtifact(fixture.adapter, options, { client });
+  assert.equal(inspected.exists, true);
+  assert.equal(inspected.artifactIdentity, published.artifactIdentity);
+});
+
+test('workflow evidence is content-addressed and immutable per run attempt', async () => {
+  const fixture = await prepareFixture();
+  const remote = memoryOss();
+  const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
+  const file = join(fixture.run, 'workflow-evidence.json');
+  await writeFile(file, JSON.stringify({ schema: 'ai.delivery.workflow-evidence.v1', ok: true }));
+  const options = {
+    file, kind: 'prepare', sourceSha: fixture.sourceSha, target: 'app',
+    githubRunId: '123', githubRunAttempt: '1',
+  };
+  const first = await publishWorkflowEvidence(fixture.adapter, options, { client });
+  const second = await publishWorkflowEvidence(fixture.adapter, options, { client });
+  assert.equal(first.evidence.object, second.evidence.object);
+  assert.equal(first.evidence.status, 'uploaded');
+  assert.equal(second.evidence.status, 'hit_remote');
+  assert.match(first.evidence.object, /workflow-evidence\/prepare\/123-1-[a-f0-9]{64}\.json$/);
 });
 
 test('Storefront publication fails closed unless complete Linux x64 runtime evidence is present', async (t) => {

@@ -37,7 +37,6 @@ if (args[0] === 'run' && args[1] === 'list') {
 }
 if (args[0] === 'run' && args[1] === 'watch' && args[2] === '201' && process.env.FAIL_PREPARE === '1') process.exit(23);
 `, { mode: 0o755 });
-  // Replace only the fixed executable search path to keep every external call local.
   const script = source.replace(/^export PATH=.*$/m, '');
   const result = spawnSync('bash', ['-c', script, 'prepare-release.sh', 'console', sha, 'hbbtzn-l1'], {
     cwd: root,
@@ -55,20 +54,20 @@ test('Prepare defaults to GitHub and preserves the explicit Aliyun fallback', ()
   assert.deepEqual(input.options, ['aliyun', 'github']);
   const expression = workflow.jobs.prepare['runs-on'].slice(3, -2);
   const select = new Function('inputs', 'fromJSON', `return (${expression});`);
-  assert.deepEqual(select({ build_runner: 'aliyun' }, JSON.parse), ['self-hosted', 'linux', 'x64', 'zdt-aliyun-build']);
   assert.deepEqual(select({ build_runner: 'github' }, JSON.parse), ['ubuntu-24.04']);
+  assert.deepEqual(select({ build_runner: 'aliyun' }, JSON.parse), ['self-hosted', 'linux', 'x64', 'zdt-aliyun-build']);
   for (const step of workflow.jobs.prepare.steps) {
     assert.doesNotMatch(JSON.stringify(step), /secrets\.ZDT_RELEASE_SSH|operation=deploy|deploy-prepared/);
   }
 });
 
-test('both build routes retain the exact source and seal only on the existing Aliyun channel', async (t) => {
+test('both build routes retain exact source and seal only on the Aliyun release channel', async (t) => {
   for (const runner of [undefined, 'aliyun', 'github']) {
     const { result, calls } = await dispatch(t, runner);
     assert.equal(result.status, 0, result.stderr);
     const runs = calls.filter((args) => args[0] === 'workflow' && args[1] === 'run');
     assert.deepEqual(runs, [
-      ['workflow', 'run', 'prepare-artifact-aliyun.yml', '--ref', 'zdt-next', '-f', `head_sha=${sha}`, '-f', 'release_target=console', '-f', `build_runner=${runner ?? 'github'}`],
+      ['workflow', 'run', 'prepare-artifact-aliyun.yml', '--ref', 'zdt-next', '-f', `head_sha=${sha}`, '-f', 'release_target=console', '-f', `build_runner=${runner ?? 'github'}`, '-f', 'release_node=hbbtzn-l1'],
       ['workflow', 'run', 'deploy-prepared-aliyun.yml', '--ref', 'zdt-next', '-f', `head_sha=${sha}`, '-f', 'release_node=hbbtzn-l1', '-f', 'release_target=console', '-f', 'operation=validate-candidate'],
     ]);
   }

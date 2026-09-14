@@ -1,7 +1,7 @@
 name: Prepare Artifact 1.3.2 - Aliyun / GitHub
 run-name: Prepare 1.3.2 ${{ inputs.head_sha }} ${{ inputs.release_target }}${{ inputs.build_runner == 'github' && ' [github]' || '' }}
 
-# Aliyun is the default; GitHub standard runners are an explicit build fallback. Two
+# GitHub standard runners are the default; Aliyun is an explicit build fallback. Two
 # isolated empty release state roots must independently produce cold cache misses
 # and byte-identical artifacts before OSS publication is allowed.
 on:
@@ -39,6 +39,13 @@ on:
           - payment-webhook-api
           - payment-jobs
           - database-migration
+      release_node:
+        description: Physical node eligible for the prepared artifact
+        required: true
+        type: choice
+        options:
+          - hbbtzn-l1
+          - zhudatuan-l0
 
 permissions:
   contents: read
@@ -53,6 +60,8 @@ env:
   RUNNER_IMAGE: ubuntu-24.04-x64
   RELEASE_SHA: ${{ inputs.head_sha }}
   RELEASE_TARGET: ${{ inputs.release_target }}
+  RELEASE_NODE: ${{ inputs.release_node }}
+  BUILD_RUNNER: ${{ inputs.build_runner }}
   CONTROL_SHA: ${{ github.sha }}
   CONTROL_REF: ${{ github.ref }}
   GIT_CONFIG_COUNT: 1
@@ -83,42 +92,56 @@ jobs:
             exit 64
           fi
 
-      - name: Checkout exact source
-        id: checkout_source
-        continue-on-error: true
-        uses: actions/checkout@v6
-        with:
-          filter: blob:none
-          fetch-depth: 2
-          ref: ${{ inputs.head_sha }}
-
-      - name: Back off after a transient GitHub checkout failure
-        if: steps.checkout_source.outcome == 'failure'
-        shell: bash
-        run: sleep 5
-
-      - name: Retry exact source checkout with compatibility protocol
-        if: steps.checkout_source.outcome == 'failure'
+      - name: Load latest control plane and exact source without remote Actions
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          git config extensions.partialClone origin
-          git config remote.origin.promisor true
-          git config remote.origin.partialCloneFilter blob:none
-          git config protocol.version 1
-          for attempt in 1 2 3; do
-            if git -c protocol.version=1 fetch \
-              --filter=blob:none --no-tags --prune --no-recurse-submodules --depth=2 \
-              origin "$RELEASE_SHA"; then
-              git checkout --force --detach "$RELEASE_SHA"
-              git clean -ffdx
-              exit 0
-            fi
-            if [ "$attempt" -lt 3 ]; then
-              sleep "$((attempt * 10))"
-            fi
-          done
-          exit 1
+          started_at="$(date +%s%3N)"
+          workspace="$(realpath "$GITHUB_WORKSPACE")"
+          case "$workspace" in
+            /opt/actions-runner-build/_work/zhudatuan/zhudatuan|/opt/actions-runner-build-2/_work/zhudatuan/zhudatuan|/home/runner/work/zhudatuan/zhudatuan) ;;
+            *) echo "Unexpected build workspace: $workspace" >&2; exit 64 ;;
+          esac
+          control_root="$RUNNER_TEMP/zdt-control-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          rm -rf -- "$control_root"
+          mkdir -p "$control_root"
+          find "$workspace" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+          auth="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          checkout_exact() {
+            local directory="$1" sha="$2" depth="$3"
+            shift 3
+            local patterns=("$@")
+            git init --quiet "$directory"
+            git -C "$directory" remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+            git -C "$directory" config http.https://github.com/.extraheader "AUTHORIZATION: basic $auth"
+            for attempt in 1 2 3; do
+              if git -C "$directory" -c protocol.version=1 fetch --filter=blob:none --no-tags --no-recurse-submodules --depth="$depth" origin "$sha"; then
+                if [ "${#patterns[@]}" -gt 0 ]; then
+                  git -C "$directory" sparse-checkout init --no-cone
+                  git -C "$directory" sparse-checkout set --no-cone "${patterns[@]}"
+                fi
+                git -C "$directory" checkout --force --detach "$sha"
+                git -C "$directory" config --unset-all http.https://github.com/.extraheader
+                return 0
+              fi
+              [ "$attempt" -lt 3 ] || return 1
+              sleep "$((attempt * 5))"
+            done
+          }
+          trap 'git -C "$workspace" config --unset-all http.https://github.com/.extraheader >/dev/null 2>&1 || true; git -C "$control_root" config --unset-all http.https://github.com/.extraheader >/dev/null 2>&1 || true' EXIT
+          checkout_exact "$control_root" "$CONTROL_SHA" 1 \
+            package.json 04_tools/release-engine \
+            02_platform_pingtai/infrastructure/release/zdt-next.release.json \
+            02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json \
+            02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts
+          checkout_exact "$workspace" "$RELEASE_SHA" 2
+          trap - EXIT
+          printf 'RELEASE_CLI=%s\nRELEASE_ADAPTER=%s\n' \
+            "$control_root/04_tools/release-engine/cli.mjs" \
+            "$control_root/02_platform_pingtai/infrastructure/release/zdt-next.release.json" >> "$GITHUB_ENV"
+          printf 'control_checkout_ms=%s\n' "$(( $(date +%s%3N) - started_at ))" > "$RUNNER_TEMP/zdt-runner-timings"
 
       - name: Verify exact source checkout
         shell: bash
@@ -140,11 +163,23 @@ jobs:
             exit 64
           fi
 
-      - name: Fix Node runtime without GitHub cache uploads
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          package-manager-cache: false
+      - name: Activate preinstalled exact Node toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          node_bin="$RUNNER_TOOL_CACHE/node/${NODE_VERSION}/x64/bin"
+          if [ ! -x "$node_bin/node" ] || [ ! -x "$node_bin/npm" ]; then
+            [ "$BUILD_RUNNER" = github ] || { echo 'Exact Node toolcache is missing on the Aliyun runner.' >&2; exit 1; }
+            archive="$RUNNER_TEMP/node-v${NODE_VERSION}-linux-x64.tar.xz"
+            curl -fL --retry 3 --retry-all-errors --connect-timeout 15 --max-time 180 \
+              "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz" -o "$archive"
+            printf '%s  %s\n' '9aa8e9d2298ab68c600bd6fb86a6c13bce11a4eca1ba9b39d79fa021755d7c37' "$archive" | sha256sum -c -
+            mkdir -p "$node_bin"
+            tar -xJf "$archive" --strip-components=1 -C "${node_bin%/bin}"
+          fi
+          printf '%s\n' "$node_bin" >> "$GITHUB_PATH"
+          test "$($node_bin/node --version)" = "v${NODE_VERSION}"
+          test "$($node_bin/npm --version)" = "$NPM_VERSION"
 
       - name: Fix and verify build environment
         shell: bash
@@ -156,14 +191,47 @@ jobs:
           test "$(node -p 'process.platform')" = linux
           test "$(node -p 'process.arch')" = x64
 
+      - name: Reuse an existing identical immutable artifact
+        id: prepared
+        env:
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .prepare-release/evidence
+          node "$RELEASE_CLI" inspect-prepared \
+            --adapter "$RELEASE_ADAPTER" --project-root "$GITHUB_WORKSPACE" \
+            --source-sha "$RELEASE_SHA" --target "$RELEASE_TARGET" --node "$RELEASE_NODE" \
+            --format json > .prepare-release/evidence/prepared-inspection.json
+          exists="$(node -e "const r=require('./.prepare-release/evidence/prepared-inspection.json');process.stdout.write(String(r.ok&&r.result.exists))")"
+          printf 'exists=%s\n' "$exists" >> "$GITHUB_OUTPUT"
+          if [ "$exists" = true ]; then
+            echo 'Exact immutable artifact already exists; skipped dependency install and both cold builds.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Install build dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        if: steps.prepared.outputs.exists != 'true'
+        run: |
+          started_at="$(date +%s%3N)"
+          npm ci --ignore-scripts --no-audit --no-fund
+          printf 'dependency_install_ms=%s\n' "$(( $(date +%s%3N) - started_at ))" >> "$RUNNER_TEMP/zdt-runner-timings"
 
       - name: Build and package twice from isolated empty state roots
+        if: steps.prepared.outputs.exists != 'true'
         id: package
         shell: bash
         run: |
           set -euo pipefail
+          if [ "$BUILD_RUNNER" = aliyun ]; then
+            lock_started="$(date +%s%3N)"
+            exec 9>/run/lock/zdt-build/heavy.lock
+            flock -w 1200 9
+            printf 'heavy_build_wait_ms=%s\n' "$(( $(date +%s%3N) - lock_started ))" >> "$RUNNER_TEMP/zdt-runner-timings"
+          fi
           base="$(git rev-parse HEAD^)"
           if [ "$RELEASE_TARGET" = "console" ]; then
             export SHOP_BUILD_COMMIT="$RELEASE_SHA"
@@ -185,7 +253,8 @@ jobs:
               return 1
             fi
             mkdir -p "$evidence" || return $?
-            npm run --silent release -- plan \
+            local cold_started="$(date +%s%3N)"
+            node "$RELEASE_CLI" plan --adapter "$RELEASE_ADAPTER" --project-root "$GITHUB_WORKSPACE" \
               --state-directory "$state" \
               --from "$base" \
               --to "$RELEASE_SHA" \
@@ -201,7 +270,7 @@ jobs:
               echo "Cold Prepare ${label} stopped while validating the plan envelope." >&2
               return "$status"
             }
-            npm run --silent release -- build \
+            node "$RELEASE_CLI" build --adapter "$RELEASE_ADAPTER" --project-root "$GITHUB_WORKSPACE" \
               --state-directory "$state" \
               --plan "$plan_path" \
               --format json > "$evidence/build-envelope.json" || {
@@ -214,7 +283,7 @@ jobs:
               echo "Cold Prepare ${label} stopped while validating the build envelope." >&2
               return "$status"
             }
-            npm run --silent release -- package \
+            node "$RELEASE_CLI" package --adapter "$RELEASE_ADAPTER" --project-root "$GITHUB_WORKSPACE" \
               --state-directory "$state" \
               --build "$build_path" \
               --format json > "$evidence/package-envelope.json" || {
@@ -227,6 +296,7 @@ jobs:
               echo "Cold Prepare ${label} stopped while validating the package envelope." >&2
               return "$status"
             }
+            printf 'cold_%s_ms=%s\n' "$label" "$(( $(date +%s%3N) - cold_started ))" >> "$RUNNER_TEMP/zdt-runner-timings"
           }
           if ! left_package="$(run_cold_prepare cold-a)"; then
             echo "Cold Prepare stopped after cold-a failed." >&2
@@ -236,7 +306,7 @@ jobs:
             echo "Cold Prepare stopped after cold-b failed." >&2
             exit 1
           fi
-          npm run --silent release -- verify-reproducibility \
+          node "$RELEASE_CLI" verify-reproducibility --adapter "$RELEASE_ADAPTER" --project-root "$GITHUB_WORKSPACE" \
             --left-package "$left_package" \
             --right-package "$right_package" \
             --output .prepare-release/reproducibility-evidence.json \
@@ -244,7 +314,7 @@ jobs:
           printf 'package_path=%s\n' "$left_package" >> "$GITHUB_OUTPUT"
 
       - name: Run prepared Storefront artifact on Linux x64
-        if: inputs.release_target == 'storefront'
+        if: inputs.release_target == 'storefront' && steps.prepared.outputs.exists != 'true'
         env:
           PACKAGE_PATH: ${{ steps.package.outputs.package_path }}
         run: |
@@ -253,10 +323,11 @@ jobs:
           artifact_path="$(node -e "const p=require(process.env.PACKAGE_PATH);process.stdout.write(p.artifacts[0].archive.path)")"
           tar -xzf "$artifact_path" -C .prepare-release/storefront-runtime
           STOREFRONT_DIST=.prepare-release/storefront-runtime/app/dist \
-            node 04_tools/release-engine/test/storefront-linux-runtime-fixture.mjs \
+            node "$(dirname "$RELEASE_CLI")/test/storefront-linux-runtime-fixture.mjs" \
             > .prepare-release/storefront-runtime-evidence.json
 
       - name: Publish immutable artifact and manifests to OSS
+        if: steps.prepared.outputs.exists != 'true'
         id: publish
         env:
           PACKAGE_PATH: ${{ steps.package.outputs.package_path }}
@@ -272,7 +343,7 @@ jobs:
           if [ "$RELEASE_TARGET" = storefront ]; then
             runtime_args+=(--runtime-evidence .prepare-release/storefront-runtime-evidence.json)
           fi
-          npm run --silent release -- publish \
+          node "$RELEASE_CLI" publish --adapter "$RELEASE_ADAPTER" --project-root "$GITHUB_WORKSPACE" \
             --package "$PACKAGE_PATH" \
             --source-sha "$RELEASE_SHA" \
             --target "$RELEASE_TARGET" \
@@ -285,21 +356,52 @@ jobs:
           node -e "const r=require('./.prepare-release/evidence/publish-envelope.json');const x=r.result;if(!r.ok)process.exit(1);process.stdout.write('Prepared: '+x.sourceSha+' '+x.target+' '+x.artifactIdentity+' '+x.cacheStatus+' '+x.timings.total+'ms\\n')" \
             >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Preserve receipts only
-        uses: actions/upload-artifact@v4
-        with:
-          name: prepare-receipt-${{ inputs.release_target }}-${{ inputs.head_sha }}
-          path: |
-            .prepare-release/evidence/cold-a/plan-envelope.json
-            .prepare-release/evidence/cold-a/build-envelope.json
-            .prepare-release/evidence/cold-a/package-envelope.json
-            .prepare-release/evidence/cold-b/plan-envelope.json
-            .prepare-release/evidence/cold-b/build-envelope.json
-            .prepare-release/evidence/cold-b/package-envelope.json
-            .prepare-release/evidence/reproducibility-envelope.json
-            .prepare-release/evidence/publish-envelope.json
-            .prepare-release/reproducibility-evidence.json
-            .prepare-release/prepare-receipt.json
-            .prepare-release/storefront-runtime-evidence.json
-          if-no-files-found: ignore
-          retention-days: 30
+      - name: Preserve raw preparation evidence in immutable OSS
+        if: always()
+        continue-on-error: true
+        env:
+          ALIYUN_OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_ID }}
+          ALIYUN_OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_OSS_ACCESS_KEY_SECRET }}
+          ALIYUN_OSS_SECURITY_TOKEN: ${{ secrets.ALIYUN_OSS_SECURITY_TOKEN }}
+          ALIYUN_OSS_BUCKET: ${{ secrets.ALIYUN_OSS_BUCKET }}
+          ALIYUN_OSS_ENDPOINT: ${{ secrets.ALIYUN_OSS_ENDPOINT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .prepare-release/evidence
+          STATUS="${{ job.status }}" node --input-type=module <<'NODE'
+          import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+          import { join, relative } from 'node:path';
+          const root = '.prepare-release';
+          const files = {};
+          const visit = directory => {
+            if (!existsSync(directory)) return;
+            for (const name of readdirSync(directory).sort()) {
+              const path = join(directory, name);
+              if (statSync(path).isDirectory()) visit(path);
+              else if (path.endsWith('.json') && !path.endsWith('workflow-evidence.json')) {
+                const raw = readFileSync(path, 'utf8');
+                try { files[relative(root, path)] = JSON.parse(raw); }
+                catch (error) { files[relative(root, path)] = { parseError: error.message, raw }; }
+              }
+            }
+          };
+          visit(root);
+          const timingPath = process.env.RUNNER_TEMP + '/zdt-runner-timings';
+          const evidence = {
+            schema: 'ai.delivery.workflow-evidence.v1', kind: 'prepare', status: process.env.STATUS,
+            sourceSha: process.env.RELEASE_SHA, controlSha: process.env.CONTROL_SHA,
+            target: process.env.RELEASE_TARGET, node: process.env.RELEASE_NODE,
+            github: { runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT },
+            timings: Object.fromEntries((existsSync(timingPath) ? readFileSync(timingPath, 'utf8') : '').trim().split('\n').filter(Boolean).map(line => line.split('='))),
+            files, completedAt: new Date().toISOString(),
+          };
+          writeFileSync(root + '/workflow-evidence.json', JSON.stringify(evidence, null, 2) + '\n');
+          NODE
+          node "$RELEASE_CLI" publish-evidence \
+            --adapter "$RELEASE_ADAPTER" --project-root "$GITHUB_WORKSPACE" \
+            --file .prepare-release/workflow-evidence.json --kind prepare \
+            --source-sha "$RELEASE_SHA" --target "$RELEASE_TARGET" \
+            --github-run-id "$GITHUB_RUN_ID" --github-run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --output .prepare-release/evidence-receipt.json --format json \
+            >> "$GITHUB_STEP_SUMMARY"
