@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-167-001,README.md;index.ts;runtime.ts;operator.ts,1-12;1-8;1-2;1-6,layer boundary,README public/layer statement matches public index plus runtime/operator wrappers.
+E-AU-167-002,02_domain_yewu/README.md;04_adapters_shixian/README.md;03_application_yingyong/*.ts,1-3;1-3;operations,empty layer claim,Domain/adapter directories contain only READMEs; policy/read/write SQL is in application layer.
+E-AU-167-003,06_tests_ceshi/README.md,1-3,test placement,Module test note matches absence of local test source and repository-level cross-module test organization.

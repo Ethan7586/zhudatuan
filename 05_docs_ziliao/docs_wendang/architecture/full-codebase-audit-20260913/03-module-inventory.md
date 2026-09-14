@@ -1803,3 +1803,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | ModuleCatalog test | 全部 operation 模块归属、依赖和 HTTP contract uniqueness | [FACT][E-AU-166-003] |
 
 [FACT][E-AU-166-004] 3 文件、107 行完成深审；Commerce 根 modules 目录已无暂未审阅文件。
+
+## 172. AU-167 Qualification documentation 清单
+
+| 文档面 | 代码交叉证据 | 结论 |
+| --- | --- | --- |
+| 根分层约定 | public/application/interface 和 runtime/operator wrapper 实际存在 | [FACT][E-AU-167-001] |
+| domain/adapter README | 当前无对应业务模型/adapter 文件，真实逻辑在 application SQL operations | [FACT][E-AU-167-002] |
+| test README | 跨模块验收测试不在模块目录的描述与当前 workspace 分层一致 | [FACT][E-AU-167-003] |
+
+[FACT][E-AU-167-004] 4 文档、21 行完成深审；Qualification 17/17 基线文件均取得审阅状态。
