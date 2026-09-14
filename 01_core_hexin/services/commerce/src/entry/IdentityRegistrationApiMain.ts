@@ -4,8 +4,10 @@ import { identityRegistrationApiAllowedOrigins, identityRegistrationApiEnvironme
 import { bootstrapApi } from '../bootstrap/ApiBootstrap';
 import { createIdentityRegistrationApiRuntime } from '../bootstrap/IdentityRegistrationApiRuntime';
 import { listen } from '../foundation/interface/NodeServer';
-import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/03_application_yingyong/AccessReadOperations';
-import { IdentityOperatorAccessModule } from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
+import {
+  ACCESS_IDENTITY_OPERATOR_OPERATION_IDS,
+  IdentityOperatorAccessModule,
+} from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
 import { AuditModule } from '../modules/audit/05_interface_jieru/AuditModule';
 import { auditManifest } from '../modules/audit/module.manifest';
 import { CHANNEL_OPERATOR_READ_OPERATION_IDS } from '../modules/channel/ChannelReadOperations';
@@ -47,7 +49,7 @@ const operationIds = Object.freeze([
   ...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS,
   ...identityOperationIds,
   ...MEMBER_IDENTITY_OPERATOR_OPERATION_IDS,
-  ...ACCESS_OPERATOR_READ_OPERATION_IDS,
+  ...ACCESS_IDENTITY_OPERATOR_OPERATION_IDS,
   ...auditManifest.operations,
   ...FINANCE_OPERATOR_READ_OPERATION_IDS,
   ...REFERRAL_OPERATOR_READ_OPERATION_IDS,

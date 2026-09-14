@@ -13,8 +13,10 @@ import { OPERATION_AUTHORIZER, OPERATION_HANDLERS } from '../foundation/interfac
 import { DATABASE_POOL, type DatabasePool } from '../foundation/persistence/Pool';
 import { RISK_GATE } from '../foundation/security/RiskGate';
 import { commerceTelemetry } from '../foundation/telemetry/Telemetry';
-import { ACCESS_OPERATOR_READ_OPERATION_IDS } from '../modules/access/03_application_yingyong/AccessReadOperations';
-import { IdentityOperatorAccessModule } from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
+import {
+  ACCESS_IDENTITY_OPERATOR_OPERATION_IDS,
+  IdentityOperatorAccessModule,
+} from '../modules/access/05_interface_jieru/IdentityOperatorAccessModule';
 import { AUDIT_PORT } from '../modules/audit/01_public_gongkai/AuditPort';
 import { AuditModule } from '../modules/audit/05_interface_jieru/AuditModule';
 import { auditManifest } from '../modules/audit/module.manifest';
@@ -50,7 +52,7 @@ describe('identity registration API entrypoint', () => {
       ...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS,
       ...IDENTITY_REGISTRATION_OPERATION_IDS,
       ...MEMBER_IDENTITY_OPERATOR_OPERATION_IDS,
-      ...ACCESS_OPERATOR_READ_OPERATION_IDS,
+      ...ACCESS_IDENTITY_OPERATOR_OPERATION_IDS,
       ...auditManifest.operations,
       ...FINANCE_OPERATOR_READ_OPERATION_IDS,
       ...REFERRAL_OPERATOR_READ_OPERATION_IDS,
@@ -95,8 +97,19 @@ describe('identity registration API entrypoint', () => {
       'member.storefront.custom.read',
       'member.storefront.custom.manage',
       'access.center.read',
+      'access.roles.manage',
+      'access.scopes.manage',
       'access.administrators.members.read',
       'access.administrators.member.read',
+      'access.administrators.scopes.manage',
+      'access.administrators.members.note',
+      'access.ownership.read',
+      'access.ownership.transfers.preview',
+      'access.ownership.transfers.create',
+      'access.ownership.transfers.accept.preview',
+      'access.ownership.transfers.accept',
+      'access.ownership.transfers.cancel.preview',
+      'access.ownership.transfers.cancel',
       'audit.records.read',
       'finance.entries.read',
       'finance.statements.read',
@@ -139,7 +152,7 @@ describe('identity registration API entrypoint', () => {
       ...IDENTITY_REGISTRATION_RUNTIME_OPERATION_IDS,
       ...IDENTITY_REGISTRATION_OPERATION_IDS,
       ...MEMBER_OPERATOR_READ_OPERATION_IDS,
-      ...ACCESS_OPERATOR_READ_OPERATION_IDS,
+      ...ACCESS_IDENTITY_OPERATOR_OPERATION_IDS,
       ...auditManifest.operations,
       ...FINANCE_OPERATOR_READ_OPERATION_IDS,
       ...REFERRAL_OPERATOR_READ_OPERATION_IDS,
@@ -220,6 +233,11 @@ describe('identity registration API entrypoint', () => {
       .toBe('member.storefront.orders.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/members/imports/x')?.operation).toBe('member.imports.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/access/center')?.operation).toBe('access.center.read');
+    expect(bootstrapped.routes.match('PUT', '/api/v1/access/roles/role%3Asenior')?.operation)
+      .toBe('access.roles.manage');
+    expect(bootstrapped.routes.match('PUT', '/api/v1/access/memberships/membership%3Aone/scopes')?.operation)
+      .toBe('access.scopes.manage');
+    expect(bootstrapped.routes.match('GET', '/api/v1/access/ownership')?.operation).toBe('access.ownership.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/audits')?.operation).toBe('audit.records.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/finance/entries')?.operation).toBe('finance.entries.read');
     expect(bootstrapped.routes.match('GET', '/api/v1/finance/statements')?.operation).toBe('finance.statements.read');
@@ -268,8 +286,6 @@ describe('identity registration API entrypoint', () => {
     expect(bootstrapped.routes.match('POST', '/api/v1/experiences/versions/version:test/restorations')).toBeNull();
     expect(bootstrapped.routes.match('POST', '/api/v1/experiences/versions/version:test/validation')).toBeNull();
     expect(bootstrapped.routes.match('PUT', '/api/v1/vouchers/programs/program:test')).toBeNull();
-    expect(bootstrapped.routes.match('PUT', '/api/v1/access/roles/role:test')).toBeNull();
-    expect(bootstrapped.routes.match('PUT', '/api/v1/access/memberships/membership:test/scopes')).toBeNull();
   });
 
   it('has no static dependency path to full Commerce, payment, providers, full finance, or cache', () => {
@@ -298,7 +314,6 @@ describe('identity registration API entrypoint', () => {
           '/modules/qualification/05_interface_jieru/QualificationModule.ts',
           '/modules/qualification/03_application_yingyong/QualificationOperations.ts',
           '/modules/access/05_interface_jieru/AccessModule.ts',
-          '/modules/access/03_application_yingyong/AccessOperations.ts',
           '/foundation/cache/',
         ].some((forbidden) => file.includes(forbidden))
       )
