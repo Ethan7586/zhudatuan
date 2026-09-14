@@ -714,3 +714,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 未找到parseCsv direct fixture；下游导入/财务测试不能替代通用CSV格式与错误码契约。
 - 见F-0216/P2。审计工作树未运行Vitest。
+
+## 225. AU-225 Deadline contract 深审
+
+- Deadline为内核转发；HTTP deadline error mapping已有HttpApp direct fixture，其他行为由已审kernel/consumer承接。
+- 无P0–P3新问题。

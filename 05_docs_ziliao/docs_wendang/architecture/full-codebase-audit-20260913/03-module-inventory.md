@@ -2375,3 +2375,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | consumers | ImportFile批量导入与Finance ReconcileStatement均复用解析器 | [FACT][E-AU-224-003] |
 
 [FACT][E-AU-224-004] 1 文件、27 行完成深审；高价值输入解析无direct fixture，测试缺口见F-0216/P2。
+
+## 230. AU-225 Deadline contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| deadline primitive | 以`@shop/kernel`实现的时间点、剩余时间、AbortSignal与expire fail-fast统一超时语义 | [FACT][E-AU-225-001] |
+| runtime consumers | HttpApp、HttpClient、JobRunner和Executor以它传递请求、外部依赖和job deadline | [FACT][E-AU-225-002] |
+
+[FACT][E-AU-225-003] 1 文件、1 行完成深审；真实运行消费者成立，为G0 compatibility adapter。
