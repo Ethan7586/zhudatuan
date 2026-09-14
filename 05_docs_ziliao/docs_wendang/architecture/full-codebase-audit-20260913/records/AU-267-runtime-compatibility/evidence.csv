@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-267-001,src/bootstrap/RuntimeCompatibility.ts,27-66,health semantics,contract is output telemetry while healthy uses writable/schema/scope/cache/extensions.
+E-AU-267-002,src/bootstrap/RuntimeCompatibility.ts,68-80,jobs boundary,Jobs assertion additionally validates live database boundary.
+E-AU-267-003,src/bootstrap/RuntimeCompatibility.test.ts,25-49,test evidence,Direct fixture asserts contract false reports mismatch but leaves healthy true.
