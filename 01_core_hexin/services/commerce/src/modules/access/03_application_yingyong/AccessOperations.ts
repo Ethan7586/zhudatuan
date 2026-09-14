@@ -185,21 +185,31 @@ export function accessOperations(context: ModuleContext): ModuleOperations {
 
 async function offboardAdministrator(request: OperationRequest, database: OperationDatabase,
   access: ReturnType<typeof requireAccess>): Promise<Readonly<{ status: number; body: Readonly<Record<string, unknown>> }>> {
-  if (access.governance?.governanceLevel !== 'owner') throw new Error('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
+  const actorLevel = access.governance?.governanceLevel;
+  if (actorLevel !== 'owner' && actorLevel !== 'senior_administrator') {
+    throw new Error('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
+  }
   const membership = textField(bodyRecord(request), 'membership');
   const expectedVersion = requireExpectedVersion(request);
   const target = (await database.query<{
     id: string;
     access_version: string | number;
     target_is_owner: boolean;
+    governance_level: 'owner' | 'senior_administrator' | 'administrator' | 'member';
   }>(`select target.id,target.access_version,
       exists(select 1 from access.platformowner owner where owner.singleton=true and owner.state='active'
-        and owner.membership_id=target.id) target_is_owner
+        and owner.membership_id=target.id) target_is_owner,target_governance.governance_level
     from access.membership target
+    join member.profile profile on profile.id=target.member_id
+    cross join lateral access.resolve_authoritative_governance(
+      target.id,profile.principal_id,$2,$3) target_governance
     where target.id=$1 and target.client='operator' and target.status='active'
-    for update of target`, [membership])).rows[0];
+    for update of target`, [membership, access.scope.kind, access.scope.id])).rows[0];
   if (target === undefined) throw new Error('ADMINISTRATOR_NOT_ACTIVE');
   if (target.target_is_owner) throw new Error('OWNER_ROLE_LEVEL_IMMUTABLE');
+  if (actorLevel === 'senior_administrator' && target.governance_level !== 'administrator') {
+    throw new Error('OWNER_REQUIRED_FOR_ADMINISTRATOR_OFFBOARDING');
+  }
   const currentVersion = numericVersion(target.access_version);
   if (currentVersion !== expectedVersion) throw new Error('VERSION_CONFLICT');
   const changedAt = new Date();

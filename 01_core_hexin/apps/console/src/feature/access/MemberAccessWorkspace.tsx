@@ -364,8 +364,11 @@ function MemberDetail({
   const seniorAssignment = roles.find((role) => /高级|senior/i.test(`${role.role} ${role.name}`));
   const seniorRole = roleCatalog.find((role) => role.governance_level === 'senior_administrator');
   const seniorScope = seniorRole === undefined ? undefined : seniorAdministratorScope(context, seniorRole);
-  const canManageAdministrator = row !== undefined && context.session.governance?.level === 'owner'
-    && roleCommandAvailable(context) && !isOwner(row) && !isSelf(row, context);
+  const actorGovernanceLevel = context.session.governance?.level;
+  const targetManageable = row !== undefined && roleCommandAvailable(context) && !isOwner(row) && !isSelf(row, context);
+  const canManageAdministratorLevel = targetManageable && actorGovernanceLevel === 'owner';
+  const canOffboardAdministrator = targetManageable && (actorGovernanceLevel === 'owner'
+    || (actorGovernanceLevel === 'senior_administrator' && seniorAssignment === undefined));
   const upgradeMutation = useMutation({
     mutationFn: async () => {
       if (row?.access === undefined || seniorRole === undefined || seniorScope === undefined) {
@@ -479,9 +482,9 @@ function MemberDetail({
               </button>
             </footer>
           ) : null}
-          {canManageAdministrator ? (
+          {canManageAdministratorLevel || canOffboardAdministrator ? (
             <footer className="memberaccessdetailactions" aria-label="管理员级别与状态">
-              {seniorAssignment === undefined && seniorRole !== undefined && seniorScope !== undefined ? (
+              {canManageAdministratorLevel && seniorAssignment === undefined && seniorRole !== undefined && seniorScope !== undefined ? (
                 <button type="button" disabled={actionPending} onClick={() => {
                   setOffboardArmed(false);
                   demoteMutation.reset();
@@ -489,7 +492,7 @@ function MemberDetail({
                   upgradeMutation.mutate();
                 }}>{upgradeMutation.isPending ? '正在升级并核对…' : '升级为高级管理员'}</button>
               ) : null}
-              {seniorAssignment === undefined ? null : (
+              {!canManageAdministratorLevel || seniorAssignment === undefined ? null : (
                 <button type="button" disabled={actionPending} onClick={() => {
                   setOffboardArmed(false);
                   upgradeMutation.reset();
@@ -497,13 +500,15 @@ function MemberDetail({
                   demoteMutation.mutate();
                 }}>{demoteMutation.isPending ? '正在降级并核对…' : '降级为普通管理员'}</button>
               )}
-              <button type="button" data-tone="danger" disabled={actionPending} onClick={() => {
-                upgradeMutation.reset();
-                demoteMutation.reset();
-                offboardMutation.reset();
-                if (offboardArmed) offboardMutation.mutate();
-                else setOffboardArmed(true);
-              }}>{offboardMutation.isPending ? '正在移除并核对…' : offboardArmed ? '确认移除管理员' : '删除管理员'}</button>
+              {canOffboardAdministrator ? (
+                <button type="button" data-tone="danger" disabled={actionPending} onClick={() => {
+                  upgradeMutation.reset();
+                  demoteMutation.reset();
+                  offboardMutation.reset();
+                  if (offboardArmed) offboardMutation.mutate();
+                  else setOffboardArmed(true);
+                }}>{offboardMutation.isPending ? '正在移除并核对…' : offboardArmed ? '确认移除管理员' : '删除管理员'}</button>
+              ) : null}
             </footer>
           ) : null}
           {offboardArmed && !offboardMutation.isPending ? <div className="storefrontmemberemptyline">只移除管理身份；商城 L 等级、订单与会员关系不会改变。再次点击确认。</div> : null}
