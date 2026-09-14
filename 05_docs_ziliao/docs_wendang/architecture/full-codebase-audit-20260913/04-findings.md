@@ -4991,3 +4991,21 @@
 | 建议方向 | 从当时最新主线建立独立 database-contract test 批次：用隔离数据库最小 fixture 分别验证 Owner 与 Senior 的允许路径、ordinary/stale grant/deny override/错 scope 的拒绝路径，以及匿名 registration consume 的不可提升边界；不改写历史 migration。 |
 | 验证/回滚 | 仅运行该 SQL contract 和对应 invitation integration path，断言允许/拒绝集合；回滚为撤回单独的测试 fixture/contract 提交。 |
 | 是否需要独立复核 | 否；测试 fixture 的真实 role/session 建模需权限所有者确认。 |
+
+## F-0269｜成员邀请读取迁移的历史 contract checksum 更新在正式顺序中静默失配
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 数据库 migration ledger / member invitation read |
+| 类型 | 迁移完整性、运行时契约账本可信度 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260902139000_add_member_invitation_records_read.sql:16-19`；`20260830103000_identity_runtime_contract_visibility.sql`（`20260821032000` checksum 更新）；`01_core_hexin/services/commerce/src/foundation/infrastructure/MigrationRunner.ts:56-68`。 |
+| 当前/预期 | AU-636 仅在旧值等于 `a634…` 时将 version `20260821032000` 更新为 `f0c4…`，未检查是否更新到任何行；完整字典序链中 AU-202608301030 已将同 version 设为 `d7e499…`，因此该 update 为零行而 migration 仍继续。预期为前置 checksum 与线性链一致并断言更新一行，或将新 contract 以独立不可变 version 记录。 |
+| 直接证据 | [FACT][E-AU-636-003] 全部修改同 version checksum 的 migration 按文件名排序至 AU-202608301030 时最后值为 `d7e499…`；[FACT][E-AU-636-004] 本 update 的唯一允许旧值 `a634…` 在 migration 集内没有前向 set，且 SQL 没有 `not found`/row-count/assert；[FACT][E-AU-636-005] MigrationRunner 对排序文件逐项执行。 |
+| 调用链或运行入口 | MigrationMain → MigrationRunner sorted loop → runtime.schemaversion historical contract row；member invitation read 的 runtime/capability insert 独立继续执行。 |
+| 用户/数据/安全影响 | 不会阻止该 read operation 插入或直接改变 invitation 数据；但 runtime contract ledger 保留过期 checksum，后续依赖该历史 checkpoint 的人工、部署或数据库校验可能得到错误基线并掩盖 drift。仓内未找到该 checksum 的直接 Node consumer，未证明线上可用性影响。 |
+| 根因 | 多个迁移持续复用同一历史 version 作为可变 contract-head 指针，但没有单一线性 owner 或每步的匹配/affected-row assertion。 |
+| 建议方向 | 从当时最新主线建立独立 migration-ledger 批次：先重建完整 checksum 线性链和现网 row 值，再以不可变新 version 或严格前置+单行断言记录 contract；不得改写历史 migration。 |
+| 验证/回滚 | 在隔离 PostgreSQL 用正式 sorted runner 跑到 AU-636，断言当前 checksum 和 row count；应用新前向 migration 后验证期望 ledger 值与 operation registry。回滚为撤回单独 ledger 迁移。 |
+| 是否需要独立复核 | 否；若发现外部 readiness/release consumer，应升级为专项复核。 |
