@@ -1354,3 +1354,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | policy/manifest only；F-0171/P2 | [FACT][E-AU-122-005] |
 
 [FACT][E-AU-122-006] 8 文件、340 行 Extension lifecycle 完成深审；安装状态和运行 loader 的 commit/finalize 分界清晰。
+
+## 128. AU-123 Extension read 与模块边界清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| installations read | repository list/keyset，RLS scope visibility | [FACT][E-AU-123-001] |
+| HTTP/module | 单一 read operation 的 ModuleOperations/defineModule 装配 | [FACT][E-AU-123-002] |
+| public/manifest/compat | public export、entrypoint/event 清单与旧路径转发 | [FACT][E-AU-123-003] |
+
+[FACT][E-AU-123-004] 9 文件、99 行 Extension read/module boundary 完成深审；未见无 scope 的 installations list 路径。

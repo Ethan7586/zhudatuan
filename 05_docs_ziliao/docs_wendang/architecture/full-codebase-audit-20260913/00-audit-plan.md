@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-122 已完成。AU-122 完成 Extension 安装、配置与启停生命周期审阅。覆盖总账按当前文件级清单重算：深入审阅1,174文件/94,714行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,674文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-123 已完成。AU-123 完成 Extension 安装列表读取、HTTP 装配与公开边界审阅。覆盖总账按当前文件级清单重算：深入审阅1,183文件/94,813行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,665文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1167,3 +1167,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Extension manifest/identity/contract policy、install/reconfigure、test/enable/disable 与 repository transition/history。
 
 执行结果：install 验证已登记 manifest、payload/hash/signature、host contract、secret/config 与 installation history；reconfigure 只在 disabled 状态下版本更新。test 将 disabled/degraded 转 testing 并异步 health；enable 只接受 healthy、相同版本的 testing/degraded candidate，在同一 transaction 原子替换旧 active installation，commit 后才 loader activate；disable commit 后才卸载 loader。新增 F-0171/P2：只有 ContractPolicy 与 manifest 静态测试，缺少 install/reconfigure/test/enable/disable、version stale、transaction rollback 和 loader finalize/discard 行为测试。未发现 P0/P1 新问题；Vitest 未运行。
+
+## 125. AU-123 连续审计点
+
+审阅 Extension installations read query、HTTP/module 装配、public index/manifest 与兼容入口。
+
+执行结果：read 统一通过 repository list，以 access.scope_allowed RLS 限定可见 installation；HTTP ModuleOperations 只拥有该 read operation。manifest、public export 和 test 的 HTTP/job/event inventory 一致；旧 application/interface/module 入口只是兼容转发。未发现 P0–P3 新问题；Vitest 未运行。
