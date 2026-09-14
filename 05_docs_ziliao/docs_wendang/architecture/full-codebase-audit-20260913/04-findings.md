@@ -3334,6 +3334,20 @@
 | 验证/回滚 | 从最新主线独立小分支，以含大写 username 创建后分别用原始/小写登录验证；将写入统一到 canonicalIdentitySubject 并补大小写/空白反事实。回滚为撤回该单一修复批次。 |
 | 独立复核 | 否；P2，待 Identity registration/credential 写入全链复查。 |
 
+## F-0165｜Benefit 核心资金状态机只有 policy/manifest 静态测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | benefit / 发放与资金状态；P2；高 |
+| 类型 | 测试覆盖缺口、异步资金正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/benefit/03_application_yingyong/BenefitOperations.ts:112-255`；`05_interface_jieru/job/BenefitJobs.ts:22-269`；`06_tests_ceshi/` |
+| 当前/预期 | create/approve/reserve/grant/revoke/expiry 触及预算、lot、reservation、finance journal 和 outbox，但模块内仅有 GrantPolicy 与 manifest 测试。预期至少以 transaction/PGlite 或等价集成测试覆盖批准、worker 重试、撤销、到期与 budget reserve/granted 余额守恒。 |
+| 直接证据 | 模块测试目录仅含 `policy/GrantPolicy.test.ts` 和 `module.manifest.test.ts`；前者只断言状态/时区/四眼，后者只断言声明。两者不导入 BenefitOperations、BenefitJobProcessor、BenefitPort 或 BenefitDeadletter。 |
+| 调用链/影响 | Console grant create/decide/control/revoke → runtime job benefitgrant → BenefitJobProcessor → benefit/finance/runtime outbox；checkout → BenefitPort reserve/consume/refund。状态或并发回归不会由当前单测直接捕获。 |
+| 根因 | 业务状态机与 worker 在实现时没有同步行为级测试夹具。 |
+| 验证/回滚 | 从最新主线建立独立测试批次，最小覆盖四眼 approve、同一 batch retry、pending/active revoke、expiry 有/无 reservation、reserve-consume-refund 守恒；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2，后续 Benefit 数据/Worker 专项可复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

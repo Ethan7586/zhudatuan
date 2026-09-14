@@ -1205,3 +1205,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | AuditModule | Commerce module → auditRoutes 唯一 HTTP 装配 | [FACT][E-AU-108-003] |
 
 [FACT][E-AU-108-004] 4 文件、53 行 Audit 未覆盖接口层完成深审；append/archive/脱敏的实现证据已在 AU-051，未重复审阅。
+
+## 114. AU-109 Benefit 发放、使用与异步任务清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| API | account/ledger/plan/budget/grant 的 scope、version、四眼与状态控制 | [FACT][E-AU-109-001] |
+| checkout port | preview/reserve/consume/refund/release 与 finance journal | [FACT][E-AU-109-002] |
+| Worker/deadletter | grant/revoke/expiry、outbox、预算过渡、失败释放/事件 | [FACT][E-AU-109-003] |
+| tests | policy/manifest 静态 oracle；F-0165/P2 | [FACT][E-AU-109-004] |
+
+[FACT][E-AU-109-005] 19 文件、949 行 Benefit 模块完成深审；业务状态机无行为测试见 F-0165/P2。

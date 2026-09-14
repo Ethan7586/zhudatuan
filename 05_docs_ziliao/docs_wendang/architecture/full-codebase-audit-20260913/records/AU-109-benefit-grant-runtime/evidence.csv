@@ -1,0 +1,5 @@
+"证据编号","文件","位置","结论"
+"E-AU-109-001","01_core_hexin/services/commerce/src/modules/benefit/03_application_yingyong/BenefitOperations.ts","1-280","API read/manage/create/decide/control/revoke、scope/version/four-eyes/budget reservation。"
+"E-AU-109-002","01_core_hexin/services/commerce/src/modules/benefit/04_adapters_shixian/BenefitPort.ts","1-114","checkout preview/reserve/consume/refund/release 与 finance journal。"
+"E-AU-109-003","01_core_hexin/services/commerce/src/modules/benefit/05_interface_jieru/job/BenefitJobs.ts;05_interface_jieru/job/BenefitDeadletter.ts","1-269;1-47","grant/revoke/expiry transaction、outbox、deadletter/release。"
+"E-AU-109-004","01_core_hexin/services/commerce/src/modules/benefit/06_tests_ceshi/policy/GrantPolicy.test.ts;06_tests_ceshi/module.manifest.test.ts","1-26;1-53","仅 policy/manifest oracle，未有 operation/job integration test，F-0165。"
