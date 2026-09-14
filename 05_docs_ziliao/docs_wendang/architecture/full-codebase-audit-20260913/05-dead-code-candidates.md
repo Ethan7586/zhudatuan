@@ -1143,6 +1143,10 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 
 - 根 `.ignore` 被 ripgrep 自动消费，预防可选 `06_history_lishi/` 旧主线污染日常检索；目录当前缺席不构成删除证据，归 G0。
 
+## 497. AU-497 Prettier 排除复核
+
+- `.prettierignore` 被正式 format/check:format 入口自动消费，保护迁移、生成 Miniapp/token、锁文件与 byte-preserved 交接物，归 G0。
+
 ## GX-0013｜渠道外部对象 scope 映射切换
 
 | 字段 | 记录 |

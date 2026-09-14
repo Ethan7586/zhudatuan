@@ -8,7 +8,7 @@
 ".github/workflows/quality.yml","GitHub治理与交付","结构化配置/数据","已深入审阅","2026-09-13","AU-001；CP-01 仓库入口与自动发现机制；AU-004/CP-04 发布与节点运行总图","人工 workflow_dispatch / GitHub Actions","P2/F-0019","[FACT] AU-001 已核对入口、注册、构建、发布或运行关系；未深入实现；[AU-004][FACT] 全文件发布/运行职责已审，详见 records/AU-004-release-node-runtime-map","按后续模块定级需要"
 ".gitignore","仓库根治理与配置","无扩展名文件","已深入审阅","2026-09-15","AU-495 本地状态与凭据排除","localinfra、开发/Compose、发布临时制品、Git status","高","G0：本地凭据、支付证书、构建/测试/AI state 排除规则；历史泄露与CI残留未验证","否"
 ".ignore","仓库根治理与配置","无扩展名文件","已深入审阅","2026-09-15","AU-496 历史检索排除","ripgrep ignore、README、Vitest、workspace audit","低","G0：可选历史目录的自动检索排除；目录当前不在固定基线","否"
-".prettierignore","仓库根治理与配置","无扩展名文件","暂未审阅","","CP-00 建档；CP-00A 证据语义","仓库根工具链或人工流程","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
+".prettierignore","仓库根治理与配置","无扩展名文件","已深入审阅","2026-09-15","AU-497 Prettier 排除","npm format/check:format、迁移、生成 Miniapp/token、锁文件/交接文档","中","G0：正式格式化边界；生成来源/所有排除对象当前存在性未完全验证","否"
 ".prettierrc.json","仓库根治理与配置","结构化配置/数据","暂未审阅","","CP-00 建档；CP-00A 证据语义","仓库根工具链或人工流程","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "01_core_hexin/README.md","仓库根治理与配置","文档","暂未审阅","","CP-00 建档；CP-00A 证据语义","仓库根工具链或人工流程","未评级","[UNKNOWN] 已纳入基线，等待对应模块首审","否（尚未首审）"
 "01_core_hexin/apps/auth-web/.env.example","应用/auth-web","example","已深入审阅","2026-09-14","AU-019；CP-19 Auth Web身份入口链","Auth bootstrap/页面/canonical服务/测试链；详见AU-019 files.csv","未发现独立高风险","[FACT][E-AU-019-001/002] 全文件关键逻辑、入口、调用、失败与测试关系已审","否（若后续升级P1/G3/GX再复核）"
