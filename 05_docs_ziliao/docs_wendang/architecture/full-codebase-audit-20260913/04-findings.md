@@ -5381,3 +5381,24 @@
 | 验证方式 | 为同一product写入A/B两批source job，故意令A最后完成；断言product cover、productmedia和current media hash保持B，A可记录为stale但不得改写；重跑同一B验证幂等，注入失败验证不破坏已有ready binding。 |
 | 回滚方式 | 回退独立条件发布版本，保留media/replica事实；对错误回退的当前封面用受控最新source重排队恢复，禁止批量删除对象。 |
 | 是否需要独立复核 | 是；复核者必须独立阅读QueueJob claim/lease并发语义、source更新写入路径、数据库事务边界和对象存储不可逆性，并亲自完成逆序job测试。 |
+## F-0288｜HBBTZN Storefront L6 回填会激活非 active membership，且单一无密码成员可阻断整笔迁移
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | HBBTZN Storefront identity migration / hosted member registration |
+| 类型 | 数据迁移、身份状态、可恢复性 |
+| 严重级别 | **P2** |
+| 置信度 | 高（target query、registration function body及transaction assertion为直接证据；生产数据状态未验证） |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260913020500_backfill_hbbtzn_storefront_member_l6.sql:21-60,65-83`；`20260912020000_create_sfl_member_registration_progression.sql:108-128,165-175,225-279`。 |
+| 当前/预期 | 当前 backfill选择固定 Mall所有无 registration的 `client='storefront'` membership，未检查 membership status；每个目标必须找到 active password credential，否则抛 `HBBTZN_STOREFRONT_MEMBER_L6_IDENTITY_MISSING`。外层 migration transaction因此整体回滚，且注册函数本身未验证目标 membership active。预期是只对明确 active、可登录且符合业务身份条件的成员创建 active L6 identity topology；异常对象须形成可复核清单或按预先批准策略单独处置，而非使全部历史回填不可执行。 |
+| 直接证据 | [FACT][E-AU-707-001] target query 27-38仅以 Mall、`client='storefront'`和没有 registration筛选；[FACT][E-AU-707-002] 40-42对空/非64位 active password credential直接 raise；[FACT][E-AU-707-003] registration function 236-254无 membership status join即创建 active consumer Realm/node，262-273写 registration；[FACT][E-AU-707-004] assert 67-77同样检查全部 Storefront membership而非仅 active集合，故不能把inactive对象安全排除；[FACT][E-AU-707-005] migration有 begin/commit，任一 raise会回滚前序写入。 |
+| 调用链或运行入口 | Supabase migration runner → fixed HBBTZN Mall target enumeration → `organization.register_hosted_member_node` → identity Realm、organization node/relation、member node registration。 |
+| 用户影响 | 含历史禁用成员时可生成不应活动的 consumer topology；含仅 federated/无active password成员时，全部合格成员也无法完成该次回填。当前未证明生产数据满足任一条件。 |
+| 数据影响 | 可能新增 active Realm/node/registration与已停用 membership不一致；失败路径为事务性回滚而非局部半完成，但缺少可操作的遗漏记录。 |
+| 安全影响 | inactive membership自身仍可能被 session/login状态检查阻止使用；但 active node/Realm拓扑会扩大数据和治理面，并提高后续错误接线的风险。 |
+| 根因 | 历史回填把“所有无 registration membership”与“可注册 active consumer身份”视为同一集合，并将 credential缺口作为全局硬失败。 |
+| 建议方向 | 从当时最新 `zdt-next` 新建独立 HBBTZN registration reconciliation batch：先以只读报告确定 active/disabled/federated/password缺失集合与已登记节点；明确定义可回填资格，针对不合格项写不可变 exception receipt或经授权的补齐流程。使用前向可重入 reconciliation，不改写此历史 migration。 |
+| 预计修改范围 | 新前向 migration或受控 reconciliation command、最小 exception ledger/contract及数据所有者审批；不得批量删除现有 Realm/node/registration。 |
+| 验证方式 | 隔离 PostgreSQL构造 active password、inactive password、active federated-only、revoked password与已registered成员；验证仅允许集合创建L6，异常集合明确报告且不会阻断其它允许对象；重复运行幂等、注入失败不留orphan Realm/node。 |
+| 回滚方式 | 对错误创建的单条 Realm/node/registration先审计实际登录/关系/业务引用，再走独立受控反向迁移；不可直接删除历史 identity topology。 |
+| 是否需要独立复核 | 是；复核者需独立查看 HBBTZN生产 membership/credential/registration分布、migration execution receipt、node/realm references和身份状态语义。 |
