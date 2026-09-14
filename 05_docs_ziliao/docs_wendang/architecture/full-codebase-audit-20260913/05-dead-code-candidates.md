@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 25。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 26。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -1297,3 +1297,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 466. AU-466 Runtime contract head 复核
 
 - 契约 checksum 是迁移/就绪门禁的基础历史；归 GX-0025。累计 G0 60、G1 83、G2 5、G3 0、GX 25；未删除任何文件。
+
+## GX-0026｜Membership 权威函数 schema 重绑
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、改写、单独重放或与功能变更混合。 |
+| 对象 | `20260821060000_rebind_membership_functions.sql`。 |
+| 直接证据 | 通过 `pg_get_functiondef` 重写 session/membership/version/resource-scope/capability 五个函数的 `member.membership` 引用；不符合预期源码或出现残留引用即异常。 |
+| 运行边界 | Identity 会话解析、授权 membership 解析/版本、资源 scope 与 capability operation 都调用这些函数。 |
+| 可否删除 | 否；承担动态 SQL 定义、身份授权、迁移升级和恢复责任。 |
+| 二次复核 | 是；须核验所有函数签名/权限、函数定义、会话解析、access version、resource scope、capability 和 rollback 语义。 |
+
+## 467. AU-467 Membership 函数重绑复核
+
+- AU-461 的表转移只有在五个权威函数重绑后才完整；归 GX-0026。累计 G0 60、G1 83、G2 5、G3 0、GX 26；未删除任何文件。
