@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-197-001,src/api/routerTargetRouting.test.ts,22-71,top-level dispatch,Mocked router tests prove storefront/admin selection is exclusive and auth paths stop before authorization resolution.
+E-AU-197-002,src/api/routes/targetGuards.test.ts,11-29,business dispatch,Business routers return null before handler selection for mismatched membership targets including simulation paths.
+E-AU-197-003,src/api/router.ts,13-42,implementation counterpart,The reviewed router selects one target router after public/authenticated handling and invokes simulation afterwards.

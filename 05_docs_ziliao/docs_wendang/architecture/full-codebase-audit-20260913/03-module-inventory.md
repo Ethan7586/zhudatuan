@@ -2116,3 +2116,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | benefits/mixed payment | admin finance reconcile授权或storefront server order resource scope，均含幂等/actor证据 | [FACT][E-AU-196-003] |
 
 [FACT][E-AU-196-004] 1 文件、117 行完成深审；simulation router真实注册所有路径且生产明确404，direct route tests缺失见F-0202/P2。
+
+## 202. AU-197 Router target test 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| top-level target routing test | 检验选择storefront/admin单一目标router，auth path在解析身份前被拒绝 | [FACT][E-AU-197-001] |
+| business target guard test | 检验错误membership target不能到达business或simulation handler | [FACT][E-AU-197-002] |
+
+[FACT][E-AU-197-003] 2 文件、100 行完成深审；这两组是routing selection行为测试，不代替每个下游handler/RPC行为的独立审计。

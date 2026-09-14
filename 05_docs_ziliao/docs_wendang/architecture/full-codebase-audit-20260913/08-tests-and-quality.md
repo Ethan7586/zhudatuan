@@ -574,3 +574,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 未找到payment simulation direct route fixture；local validation tests不能证明环境、target、permission、server order scope或write RPC参数。
 - Production由simulation router和handler双重gate返回404；测试资金完整行为缺口见F-0202/P2。审计工作树未运行Vitest。
+
+## 197. AU-197 Target routing tests 深审
+
+- Direct mocked-router tests覆盖顶层storefront/admin分流、auth固定404及business/simulation错误target不进入handler。
+- 下游真实handler/RPC行为不由这些routing tests替代，已在各模块单元单独评估。无P0–P3新问题；审计工作树未运行Vitest。
