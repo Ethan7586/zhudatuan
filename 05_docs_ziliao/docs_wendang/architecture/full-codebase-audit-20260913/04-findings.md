@@ -4883,3 +4883,21 @@
 | 建议方向 | 从最新主线新建独立 database migration 小批次：仅接受明确 predecessor 值，未知/缺失值拒绝；保留 idempotent replay 路径并增加 known-old、already-target、unknown-old 三类隔离 PostgreSQL 验证。不要改写审计分支历史 migration。 |
 | 验证/回滚 | 在隔离数据库分别植入目标、已知旧和未知 checksum：前两者按设计完成/重放，未知值必须事务失败且无写入；回滚为撤回单独 guard migration。 |
 | 是否需要独立复核 | 否；上线前应由数据库/发布所有者复核历史 database head 与迁移策略。 |
+
+## F-0263｜财务政策工作流迁移缺少可审计的执行边界
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 财务政策 / 数据库迁移完整性 |
+| 类型 | 迁移执行边界、历史状态兼容 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql:1-811`，尤其 `begin` 后的 schema/legacy 数据重塑与 `runtime.schemaversion` 写入（约 1-12、120-165、738-811）。 |
+| 当前/预期 | 本 migration 没有校验 `current_database`/migration role、前序 `runtime.schemaversion` version+checksum 或 future head；它可在满足所需对象的非预期数据库状态中执行并将当前 `finance.policy` 封存为 immutable revision。预期为高影响 finance schema/data migration 先接受明确 predecessor/环境，未知或已越过 head 的状态 fail closed，并保留可重放策略。 |
+| 直接证据 | [FACT][E-AU-608-001] 文件开头直接 `begin` 并执行 drop constraint、create table/function/trigger、legacy policy insert；没有本仓常见的 boundary/predecessor/future-head guard。 [FACT][E-AU-608-002] 文件末仅插入并断言自身 `runtime.schemaversion`，没有验证开始状态。 [FACT][E-AU-608-003] AU-606/AU-607 等相邻 migration 使用 database identity、精确 predecessor checksum 与 future-head fail-closed guard，说明仓内已存在可采用的控制模式。 |
+| 调用链或运行入口 | migration runner → finance policy/index/table/function/RLS 变更 → `FinancePolicyWorkflow` → `OperationController` → 运营端 finance policy preview/manage API；approved `finance.policy` 同时为结算等读取路径提供当前指针。 |
+| 用户/数据/安全影响 | 未证明发生在线上。若在错误环境、未知历史 checksum 或越过预期 head 的数据库运行，可能把不兼容的现有 finance policy 作为首个不可变 revision 封存、改变唯一性约束/ACL，或与后续 schema head 混合；失败虽然会回滚当前事务，但成功的错误套用缺少前置阻止。无直接资金损失或权限绕过证据。 |
+| 根因 | 大型 finance workflow migration 未沿用相邻迁移的执行环境和 schema ledger guard 纪律。 |
+| 建议方向 | 从最新主线创建独立、只新增 migration guard 的小批次：检查目标 database/role、明确 predecessor version+checksum、拒绝 future head/未知 legacy state，并定义 already-applied 的 idempotent 路径；不要重写历史 migration。 |
+| 验证/回滚 | 在隔离 PostgreSQL 使用精确 predecessor、未知 checksum、错误数据库和 future-head 四种 fixture：仅合法 predecessor 可继续，后三者必须在任何 DDL/DML 前失败；对合法路径验证 policy pointer/revision/ACL 不变性。回滚为撤回独立 guard migration。 |
+| 是否需要独立复核 | 否；执行前应由数据库与财务所有者复核实际 schema head 和 legacy policy 数据。 |
