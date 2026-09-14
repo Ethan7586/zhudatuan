@@ -299,3 +299,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - `catalog-cake-media.mock.json` 与 `catalog-package-v1.mock.json` 都清晰标示 `isMock`/`simulated`，并被既审 CatalogProductMediaRegistration、CatalogPackage、PgCatalogImport fixture 直接加载；它们不构成生产货盘或运行配置。
 - 兼容入口不增加可执行分支；其中 legacy `interface/job/CatalogImportJob.ts` 仍受主 jobs catalog 导入，不能因自身仅一行转发而删除。
+
+## 140. AU-140 Purchase composition 与支付边界深审
+
+- `PurchaseOperations.test` 覆盖 internal capture、idempotency replay、AAL/actor/risk/tender 拒绝和 response allowlist；Policy、Benefit、禁用 payment/voucher 与 manifest 都有直接本地测试。
+- Quote create 和 order create composition 没有直接行为 fixture；API entrypoint 仅断言 route→operation 注册，见 F-0174/P2。
+- 因 AU-138 已证明审计 worktree 无 `vitest`，本 AU 未重复执行同一不可运行命令；所有测试执行结论仍为未验证。

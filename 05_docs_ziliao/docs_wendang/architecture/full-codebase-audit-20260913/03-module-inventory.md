@@ -1527,3 +1527,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | root/legacy exports | 保持 public contract、旧路径 import 与 import worker startup path | [FACT][E-AU-139-003][E-AU-139-004]；G0 |
 
 [FACT][E-AU-139-005] 10 文件、220 行完成深审；Catalog 70/70 文件已完成文件级覆盖，不将 compatibility export 的零本地逻辑误判为删除候选。
+
+## 145. AU-140 Purchase composition 与支付边界清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Purchase API composition | storefront-only session 后选择 checkout/order/payment operation | [FACT][E-AU-140-001] |
+| purchase database functions | session-bound checkout/order/payment context 与 payment query enqueue | [FACT][E-AU-140-002] |
+| tender/settlement | benefit session+intent、voucher/provider fail-closed、risk-gated internal capture | [FACT][E-AU-140-003][E-AU-140-004] |
+| local tests | payment/policy/gateway local behavior；quote/order composition gap | [FACT][E-AU-140-005][E-AU-140-006]；F-0174/P2 |
+
+[FACT][E-AU-140-007] 15 文件、645 行完成深审；Purchase 的真实部署入口和数据边界明确，但 quote/order composition 尚缺行为级规格。

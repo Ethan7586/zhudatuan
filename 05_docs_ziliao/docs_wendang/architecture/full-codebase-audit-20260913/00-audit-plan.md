@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-139 已完成。AU-139 完成 Catalog 测试夹具与兼容入口审阅，Catalog 目录文件级覆盖闭合。覆盖总账按当前文件级清单重算：深入审阅1,307文件/100,205行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,546文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-140 已完成。AU-140 完成 Purchase composition 与支付边界审阅。覆盖总账按当前文件级清单重算：深入审阅1,322文件/100,850行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,531文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1269,3 +1269,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Catalog 剩余的两项测试 fixture 与八个 root/legacy compatibility entrypoint，并反查其 import/fixture consumer。
 
 执行结果：两项 JSON 均为明确标注 mock/simulated 的测试 package，只由已审媒体注册、package parser 和 Pg import 测试读取。其余八项全为单向 re-export；legacy `interface/job/CatalogImportJob.ts` 仍被主 jobs catalog 实际导入，其他 public/root export 维持旧 import 与公共 contract 稳定性，归类 G0。Catalog 目录 70/70 基线文件现均有文件级审阅状态；未发现 P0–P3 新问题；无适用新增行为测试。
+
+## 142. AU-140 连续审计点
+
+审阅 Purchase session/composition、quote/order/payment adapter、policy、manifest、public entry 及其 local behavior tests，并从独立 Purchase API runtime 与 access purchase function 反查入口。
+
+执行结果：Purchase API 只接受 storefront session，将 quote/order/payment 注册为三个 selected module；cart/order/payment 上下文与 recovery job 都由 session-bound `access.purchase_*` function 提供。benefit 需 membership/session/intent，voucher 与未配置 external payment 均明确拒绝；internal payment 以 locked payable intent、risk decision 和 tender arithmetic 进入 settlement。新增 F-0174/P2：没有行为 fixture 直接调用 quote create/order create composition，现有 route test 只验证注册；未发现 P0/P1，未重复执行已知缺失 Vitest 的命令。

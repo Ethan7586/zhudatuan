@@ -3460,6 +3460,20 @@
 | 验证/回滚 | 先独立复核 job runtime 的 egress/DNS/redirect policy 与 provider payload trust boundary；从最新主线建立单一修复分支，用 injectable URL policy/streamed fetch 测试覆盖 http、localhost/private IP、redirect、oversize 与允许 CDN。回滚为撤回该单一输入边界批次。 |
 | 独立复核 | 是；AU-134 已从 ChannelSyncJob→CatalogSourceProjection→runtime.job→CatalogJobsRuntime→Worker 和两项局部测试独立重查，仍无 URL/egress/redirect/body-size 边界；P1 保持。 |
 
+## F-0174｜Purchase quote 与 order composition 没有行为级测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | purchase / quote、order composition；P2；高 |
+| 类型 | 测试覆盖缺口、会话与写入组合正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/purchase/PurchaseOperations.ts:52-103`；`PurchaseCheckoutContext.ts`；`PurchaseOrderQuoteStore.ts`；`PurchaseOperations.test.ts` |
+| 当前/预期 | `purchaseCheckoutOperations` 生成并持久化 quote、checkout session、evidence、outbox；`purchaseOrderOperations` 先读 session-bound stored quote 后进入 `PlaceOrder`。现有本模块测试只直接调用 payment action/operation 和 response mapper，入口测试只验证 quote/order route。预期至少以受控数据库 fake/PGlite 覆盖 storefront/session scope、cart expected version、address/invoice invalid、quote expiry、写入原子性、outbox 及 order quote conflict。 |
+| 直接证据 | `rg` 对 `checkout.quote.create`/`order.orders.create` 的测试命中仅为 Purchase API route assertion 与其他模块 manifest string；没有测试直接实例化 `purchaseCheckoutOperations`、`purchaseOrderOperations`、`PurchaseCheckoutContext` 或 `PurchaseOrderQuoteStore`。 |
+| 调用链/影响 | PurchaseApiRuntime → PurchaseSessionResolver → selected checkout/order modules → `access.purchase_checkout_context`/`access.purchase_order_quote` → quote/session/evidence/outbox 或 PlaceOrder。会话 SQL contract、过期与版本条件或写入组合若回归，当前 Purchase local suite 可能不捕获。 |
+| 根因 | 测试集中在更高风险的 payment internal-capture 逻辑和 gateway boundary，未为 quote/order composition 建 fixture。 |
+| 验证/回滚 | 从最新主线建立独立测试批次，以最小 transaction fake 或 PGlite 证明上述成功/拒绝/rollback 边界；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2，后续 Purchase quote/order 专项复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
