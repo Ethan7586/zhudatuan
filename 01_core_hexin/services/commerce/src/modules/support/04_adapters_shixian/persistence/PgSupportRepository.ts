@@ -43,12 +43,12 @@ export class PgSupportRepository implements SupportPort {
     return result.rows.map((row) => new AssignmentRule(row.id, row.scope_id, row.skill, row.priorities, row.weight, true));
   }
 
-  async sla(scope: string, priority: TicketPriority): Promise<SlaPolicy> {
+  async sla(scope: string, priority: TicketPriority): Promise<SlaPolicy | null> {
     const result = await this.database.query<{ response_seconds: number; resolution_seconds: number }>(`select sla.response_seconds,
       sla.resolution_seconds from organization.unitclosure closure join support.sla sla on sla.scope_id=closure.ancestor_id
       and sla.priority=$2 where closure.descendant_id=$1 order by closure.depth asc,sla.version desc limit 1`, [scope, priority]);
-    const policy = result.rows[0]; if (!policy) throw new Error('SUPPORT_SLA_NOT_CONFIGURED');
-    return { response: policy.response_seconds, resolution: policy.resolution_seconds };
+    const policy = result.rows[0];
+    return policy ? { response: policy.response_seconds, resolution: policy.resolution_seconds } : null;
   }
 
   async message(ticket: string, conversation: string, scope: string, author: 'member' | 'agent', actor: string,

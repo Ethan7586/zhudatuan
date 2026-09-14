@@ -24,7 +24,14 @@ describe('console support runtime', () => {
           expect(sql).toContain("has_function_privilege(current_user,'access.resolve_governance(text,text,text,text)','EXECUTE')");
           expect(sql).toContain("to_regprocedure('access.resolve_authoritative_governance(text,text,text,text)')");
           expect(sql).toContain("has_function_privilege(current_user,'access.resolve_authoritative_governance(text,text,text,text)','EXECUTE')");
-          expect(sql).toContain("has_table_privilege(current_user,'support.ticket','SELECT,UPDATE')");
+          expect(sql).toContain("has_table_privilege(current_user,'support.ticket','SELECT,INSERT,UPDATE')");
+          expect(sql).toContain("has_table_privilege(current_user,'support.conversation','SELECT,INSERT,UPDATE')");
+          expect(sql).toContain("has_table_privilege(current_user,'support.history','SELECT,INSERT')");
+          expect(sql).toContain("has_table_privilege(current_user,'support.agent','SELECT')");
+          expect(sql).toContain("has_table_privilege(current_user,'support.assignmentrule','SELECT')");
+          expect(sql).toContain("has_table_privilege(current_user,'support.sla','SELECT')");
+          expect(sql).toContain("has_table_privilege(current_user,'support.assignment','INSERT')");
+          expect(sql).toContain("has_table_privilege(current_user,'runtime.job','INSERT')");
           expect(values).toContain(CONSOLE_SUPPORT_SCHEMA_VERSION);
           expect(values).toContain(CONSOLE_SUPPORT_SCHEMA_CHECKSUM);
           return result([state]);
