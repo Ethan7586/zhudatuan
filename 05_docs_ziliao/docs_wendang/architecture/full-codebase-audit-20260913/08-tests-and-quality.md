@@ -848,3 +848,7 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Fixture断言contract SQL文字但未传入`contract:false`；直接对应F-0229/P1。
 - Factory、pool释放、container bindings、close及metrics生命周期无direct fixture；见F-0230/P2。审计工作树未运行Vitest。
+
+## 252. AU-252 Console support contract 独立复核
+
+- 生产入口没有替代gate，fixture未覆盖contract false；F-0229/P1双轮一致。审计工作树未运行Vitest。

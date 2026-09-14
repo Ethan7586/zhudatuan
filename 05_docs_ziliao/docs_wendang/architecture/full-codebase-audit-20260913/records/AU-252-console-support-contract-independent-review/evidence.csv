@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-252-001,src/entry/ConsoleSupportMain.ts,24-29,production entry,Runtime is created then passed directly to bootstrapApi and listen; startup health request is downstream of this same runtime.
+E-AU-252-002,src/bootstrap/ConsoleSupportRuntime.ts,35-46;110-114,query/result,Compatibility row declares contract and query derives it from exact runtime schema version/checksum.
+E-AU-252-003,src/bootstrap/ConsoleSupportRuntime.ts,153-159,predicate,Failure condition has no state.contract term while checking neighboring fields.
+E-AU-252-004,src/bootstrap/ConsoleSupportRuntime.test.ts,9-38,fixture gap,Test only supplies contract true and does not make a contract-false assertion.

@@ -439,7 +439,7 @@
 
 | 字段 | 记录 |
 | --- | --- |
-| 模块/级别 | commerce / bootstrap ConsoleSupportRuntime；P1；高；待独立复核 |
+| 模块/级别 | commerce / bootstrap ConsoleSupportRuntime；P1；高；双轮确认 |
 | 类型 | 正确性、启动兼容性门禁 |
 | 位置 | `01_core_hexin/services/commerce/src/bootstrap/ConsoleSupportRuntime.ts:110-159`；`.../ConsoleSupportRuntime.test.ts:9-38` |
 | 当前/预期 | SQL计算精确runtime contract marker为`contract`，但最终reject predicate未读取该字段。预期marker缺失或checksum不匹配时Console support API拒绝启动。 |
@@ -447,7 +447,7 @@
 | 调用链/影响 | ConsoleSupportMain → createConsoleSupportRuntime → assertConsoleSupportRuntimeCompatibility → bootstrap/listen。contract drift后support API仍可能提供操作，与共享runtime contract不一致；当前线上状态未验证。 |
 | 建议方向 | 先以独立轮重新核验entry、query/predicate和有无替代gate；确认后在最新`zdt-next`的最小修复分支补`!state.contract`和contract-false fixture，不混批。 |
 | 验证/回滚 | fake pool的contract false须抛稳定错误；运行console support定向测试。回滚为revert小提交，无数据库变更。 |
-| 独立复核 | 是；P1。 |
+| 独立复核 | 是；AU-252已从query、predicate、生产入口三处复核，结论一致。 |
 
 ## F-0230｜Console support runtime factory 与metrics生命周期未经直接执行验证
 
