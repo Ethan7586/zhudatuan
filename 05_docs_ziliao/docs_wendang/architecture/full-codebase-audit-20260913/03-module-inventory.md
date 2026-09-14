@@ -2500,3 +2500,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | catalog closure | fixture以OperationCatalog确认当前唯一gate declaration | [FACT][E-AU-237-003] |
 
 [FACT][E-AU-237-004] 1 测试文件、106 行完成深审；覆盖gate选择、正常、缺失及错误路径，无P0–P3新问题。
+
+## 243. AU-238 Catalog controller scope fixture 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| publication resource exception | 生成控制器将catalogpublication task的授权资源解析为undefined，使用selected scope | [FACT][E-AU-238-001] |
+| normal import resource | catalogimport保持path import ID作为授权资源 | [FACT][E-AU-238-002] |
+
+[FACT][E-AU-238-003] 1 测试文件、50 行完成深审；fixture从注册route到authorizer参数直接固定两类边界，无P0–P3新问题。

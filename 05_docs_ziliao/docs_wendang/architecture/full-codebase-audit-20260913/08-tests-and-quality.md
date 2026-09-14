@@ -779,3 +779,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 覆盖declared gate、无声明旁路、无plugin与plugin failure的观测且不改变handler响应；与catalog当前唯一gate declaration闭合。
 - 无P0–P3新问题。审计工作树未运行Vitest。
+
+## 238. AU-238 Catalog controller scope fixture 深审
+
+- Fixture直接注册catalog route并在authorizer截取参数，覆盖publication task的scope授权和普通import的具体resource授权。
+- 无P0–P3新问题。审计工作树未运行Vitest。
