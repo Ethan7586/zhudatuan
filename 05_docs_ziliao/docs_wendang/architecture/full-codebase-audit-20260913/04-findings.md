@@ -4740,3 +4740,20 @@
 | 建议方向 | 从最新主线建立独立测试维护分支，先确认全局 harness 是否重置 DB；若否，使用唯一 tag 在 finally 删除依赖顺序正确的 session/ticket/membership/credential/account/principal 事实，并验证失败中途同样清理。 |
 | 验证/回滚 | 隔离 test DB 连续跑两次，按 tag 核对运行后 0 条 fixture；模拟 assertion 失败仍执行 cleanup；回滚为撤回纯测试 cleanup 提交。 |
 | 是否需要独立复核 | 否（P3）；需先确认外部 harness reset 责任。 |
+
+## F-0255｜Public Mall checkout 集成测试不清理完整随机业务 fixture
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Purchase/payment/fulfillment PostgreSQL integration test data hygiene |
+| 类型 | 测试可维护性、测试数据库数据生命周期 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `01_core_hexin/services/commerce/tests/repository/PublicMallCheckout.test.ts:73-142,380-589`。 |
+| 当前/预期 | beforeAll 以随机 suffix seed organization、identity/access、catalog/pricing/inventory 及后续 cart/checkout/order/payment/fulfillment/refund 事实；afterAll 仅结束 pools/admin connection。预期为按 fixture dependency 顺序 cleanup，或明确由权威 harness 每次重置所有 test DB。 |
+| 直接证据 | [FACT][E-AU-535-001] fixture 每个 id 都携带 random UUID suffix；[FACT][E-AU-535-002] `seed` 有跨多个业务 schema 的 insert；[FACT][E-AU-535-003] afterAll 仅调用 `end()`，文件没有 cleanup 函数或 delete。 |
+| 用户/数据/安全影响 | 在配置的 shared test databases 运行时，会累积跨商城/购买/支付/履约事实，可能污染统计、触发后续唯一性/性能问题或令 DB reset 成本上升。没有生产连接、生产数据污染或外部支付调用证据。 |
+| 根因 | 高价值 E2E fixture 缺少对称 teardown，依赖未在文件内证明的外部环境重置。 |
+| 建议方向 | 在独立测试维护批次先明确 five DB role 是否同一物理 DB、harness reset 机制与 cleanup 权限；若无全局 reset，在 finally 以唯一 suffix 清理 job/outbox、payment/fulfillment/order/cart、catalog、identity/access、organization 的依赖图。 |
+| 验证/回滚 | 隔离 test DB 连续跑两次并按 suffix 断言 0 残留；模拟中途失败仍 cleanup；回滚为撤回纯测试 teardown 提交。 |
+| 是否需要独立复核 | 否（P3）；需先确认外部 harness reset 责任。 |
