@@ -1636,3 +1636,16 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 | 二次复核 | G1 不强制；拟删除前必须检查实际 Compatibility DB function/privilege、test/load pipeline 和数据清理/隔离反事实。 |
 
 - Compatibility 测试目录导入 RPC 归 DC-0072。累计 G0 60、G1 87、G2 5、G3 0、GX 40；未删除任何文件。
+
+## DC-0073｜Compatibility 供应商履约最小 PII 读取 RPC
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | G1：疑似闲置，证据不足 |
+| 对象 | `02_platform_pingtai/database/storefront-compatibility/supabase/migrations/20260809094000_supplier_fulfillment_pii_boundary.sql` 中的 `api_supplier_fulfillment` |
+| 疑似原因 | 固定基线没有仓内供应商 HTTP route、Worker、脚本或测试调用该 RPC。 |
+| 保留证据 | 它是 Compatibility DB唯一明示按 tenant、supplier、sub-order 限制的履约密文快照读取形状；外部履约方、未来 supplier入口、数据库直连/历史运行契约均未排除。 |
+| 可否删除 | 否；未满足外部调用、PII最小化数据职责、兼容性、可观察行为与独立复核等 G3 条件。 |
+| 二次复核 | G1 不强制；拟删除前必须核验供应商部署、外部适配器、解密/审计边界和真实 DB function/privilege。 |
+
+- Compatibility 供应商履约 PII RPC 归 DC-0073。累计 G0 60、G1 88、G2 5、G3 0、GX 40；未删除任何文件。
