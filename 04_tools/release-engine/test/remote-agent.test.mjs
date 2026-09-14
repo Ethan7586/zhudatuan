@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { chmod, lstat, mkdir, mkdtemp, readFile, readlink, writeFile } from 'node:fs/promises';
+import { chmod, lstat, mkdir, mkdtemp, readFile, readlink, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { promisify } from 'node:util';
@@ -233,6 +233,73 @@ test('1.3.1 deploy rejects a sealed candidate when production changed after vali
   );
   assert.equal(rejected.code, 'CANDIDATE_SEAL_CURRENT_CHANGED');
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), current);
+});
+
+test('registers a proven legacy current baseline without changing release bytes, pointer, or process', async () => {
+  const fixture = await createFixture();
+  const sourceSha = '1'.repeat(40);
+  const artifactSha256 = '2'.repeat(64);
+  const release = join(fixture.pointerRoot, 'releases', `${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`);
+  await mkdir(release, { recursive: true });
+  await writeFile(join(release, 'app.txt'), 'legacy-production');
+  await symlink(release, join(fixture.pointerRoot, 'current'));
+  const artifact = await createArtifact(fixture, 'proof-carrier', sourceSha);
+
+  const registered = await invokeOss(fixture, artifact, {}, true, 'register-current-baseline-v3', {
+    legacyArtifactSha256: artifactSha256,
+    expectedCurrent: release,
+  });
+  assert.equal(registered.result.status, 'registered');
+  assert.equal(registered.result.current.unchanged, true);
+  assert.equal(registered.result.process.unchanged, true);
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), release);
+  await assert.rejects(() => readFile(join(release, 'AI_DELIVERY_ARTIFACT.json')), { code: 'ENOENT' });
+  assert.equal(JSON.parse(await readFile(registered.result.baselinePath, 'utf8')).sourceSha, sourceSha);
+
+  const candidate = await createArtifact(fixture, 'next-release', '3'.repeat(40));
+  const validated = await invokeOss(fixture, candidate, await artifactPayload(candidate), true, 'validate-oss-candidate-v3');
+  assert.equal(validated.result.current.sourceSha, sourceSha);
+  assert.equal(validated.result.current.unchanged, true);
+});
+
+test('registered legacy baseline fails closed when current release bytes change', async () => {
+  const fixture = await createFixture();
+  const sourceSha = '4'.repeat(40);
+  const artifactSha256 = '5'.repeat(64);
+  const release = join(fixture.pointerRoot, 'releases', `${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`);
+  await mkdir(release, { recursive: true });
+  await writeFile(join(release, 'app.txt'), 'legacy-production');
+  await symlink(release, join(fixture.pointerRoot, 'current'));
+  const artifact = await createArtifact(fixture, 'proof-carrier', sourceSha);
+  await invokeOss(fixture, artifact, {}, true, 'register-current-baseline-v3', {
+    legacyArtifactSha256: artifactSha256,
+    expectedCurrent: release,
+  });
+  await writeFile(join(release, 'app.txt'), 'tampered-production');
+
+  const candidate = await createArtifact(fixture, 'next-release', '6'.repeat(40));
+  const payload = await artifactPayload(candidate);
+  const rejected = await captureAgentFailure(() => invokeOss(fixture, candidate, payload, true, 'validate-oss-candidate-v3'));
+  assert.equal(rejected.code, 'CURRENT_BASELINE_TREE_MISMATCH');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), release);
+});
+
+test('legacy baseline registration rejects a source or artifact that does not match the current release id', async () => {
+  const fixture = await createFixture();
+  const sourceSha = '7'.repeat(40);
+  const artifactSha256 = '8'.repeat(64);
+  const release = join(fixture.pointerRoot, 'releases', `wrong-${artifactSha256.slice(0, 16)}`);
+  await mkdir(release, { recursive: true });
+  await writeFile(join(release, 'app.txt'), 'legacy-production');
+  await symlink(release, join(fixture.pointerRoot, 'current'));
+  const artifact = await createArtifact(fixture, 'proof-carrier', sourceSha);
+
+  const rejected = await captureAgentFailure(() => invokeOss(fixture, artifact, {}, true, 'register-current-baseline-v3', {
+    legacyArtifactSha256: artifactSha256,
+    expectedCurrent: release,
+  }));
+  assert.equal(rejected.code, 'CURRENT_BASELINE_RELEASE_ID_MISMATCH');
+  assert.equal(await readlink(join(fixture.pointerRoot, 'current')), release);
 });
 
 test('1.3.1 deploy requires candidate revalidation after Agent policy changes', async () => {
@@ -1236,6 +1303,22 @@ async function invokeOss(fixture, artifact, payload, includeControlPlane = true,
       expectedOverrides.expectedCurrent ?? 'none',
       '--expected-current-source-sha',
       expectedOverrides.expectedCurrentSourceSha ?? 'none'
+    );
+  } else if (action === 'register-current-baseline-v3') {
+    const legacyArtifactSha256 = expectedOverrides.legacyArtifactSha256 ?? '1'.repeat(64);
+    args.push(
+      '--legacy-artifact-sha256',
+      legacyArtifactSha256,
+      '--legacy-run-id',
+      expectedOverrides.legacyRunId ?? '999',
+      '--legacy-run-attempt',
+      expectedOverrides.legacyRunAttempt ?? '1',
+      '--legacy-workflow-path',
+      '.github/workflows/deploy-oss.yml',
+      '--expected-current',
+      expectedOverrides.expectedCurrent ?? 'none',
+      '--approval',
+      expectedOverrides.approval ?? `fixture:register-current-baseline:${artifact.sourceSha}:${legacyArtifactSha256}`
     );
   }
   return new Promise((resolveInvoke, rejectInvoke) => {

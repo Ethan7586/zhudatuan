@@ -113,6 +113,109 @@ export async function deployPreparedCommand(adapter, options) {
   return preparedArtifactCommand(adapter, options, false);
 }
 
+export async function registerCurrentBaselineCommand(adapter, options) {
+  const sourceSha = required(options.sourceSha, 'CURRENT_BASELINE_SOURCE_SHA_REQUIRED');
+  const controlSha = required(options.controlSha, 'CURRENT_BASELINE_CONTROL_SHA_REQUIRED');
+  const nodeKey = required(options.node ?? options.nodes?.[0], 'CURRENT_BASELINE_NODE_REQUIRED');
+  const targetId = required(options.target, 'CURRENT_BASELINE_TARGET_REQUIRED');
+  const artifactSha256 = required(options.legacyArtifactSha256, 'CURRENT_BASELINE_ARTIFACT_SHA256_REQUIRED');
+  const legacyRunId = required(options.legacyRunId, 'CURRENT_BASELINE_LEGACY_RUN_ID_REQUIRED');
+  const legacyRunAttempt = required(options.legacyRunAttempt, 'CURRENT_BASELINE_LEGACY_RUN_ATTEMPT_REQUIRED');
+  const requestedExpectedCurrent = options.expectedCurrent;
+  const repository = required(options.repository ?? process.env.GITHUB_REPOSITORY, 'CURRENT_BASELINE_REPOSITORY_REQUIRED');
+  const githubRunId = required(options.githubRunId, 'CURRENT_BASELINE_CONTROL_RUN_ID_REQUIRED');
+  const githubRunAttempt = required(options.githubRunAttempt, 'CURRENT_BASELINE_CONTROL_RUN_ATTEMPT_REQUIRED');
+  const expectedRemoteAgentSha256 = required(options.expectedRemoteAgentSha256, 'CURRENT_BASELINE_REMOTE_AGENT_SHA256_REQUIRED');
+  const expectedRemotePolicySha256 = required(options.expectedRemotePolicySha256, 'CURRENT_BASELINE_REMOTE_POLICY_SHA256_REQUIRED');
+  invariant(/^[a-f0-9]{40}$/.test(sourceSha) && /^[a-f0-9]{40}$/.test(controlSha), 'CURRENT_BASELINE_SOURCE_INVALID', 'Baseline source and control plane must be full lowercase Git SHAs');
+  invariant(/^[a-f0-9]{64}$/.test(artifactSha256), 'CURRENT_BASELINE_ARTIFACT_SHA256_INVALID', 'Legacy artifact SHA-256 must be 64 lowercase hexadecimal characters');
+  invariant(/^[1-9][0-9]*$/.test(legacyRunId) && /^[1-9][0-9]*$/.test(legacyRunAttempt), 'CURRENT_BASELINE_LEGACY_RUN_INVALID', 'Legacy run id and attempt must be positive integers');
+  invariant(/^[1-9][0-9]*$/.test(githubRunId) && /^[1-9][0-9]*$/.test(githubRunAttempt), 'CURRENT_BASELINE_CONTROL_RUN_INVALID', 'Control-plane run id and attempt must be positive integers');
+  invariant(SHA256_PATTERN.test(expectedRemoteAgentSha256) && SHA256_PATTERN.test(expectedRemotePolicySha256), 'CURRENT_BASELINE_REMOTE_DIGEST_INVALID', 'Expected remote Agent and policy digests are required');
+  const node = adapter.nodes[nodeKey];
+  const deployment = node?.deployments?.[targetId];
+  invariant(Boolean(deployment), 'CURRENT_BASELINE_TARGET_UNKNOWN', `Unknown deployment ${nodeKey}/${targetId}`);
+  const releaseId = `${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`;
+  const expectedCurrent = join(deployment.pointerRoot, 'releases', releaseId);
+  if (requestedExpectedCurrent !== undefined) invariant(requestedExpectedCurrent === expectedCurrent, 'CURRENT_BASELINE_EXPECTED_PATH_MISMATCH', 'Requested current path differs from the deployment adapter');
+
+  const metadataResult = await runCommand(
+    { name: 'read-legacy-deployment-run', argv: ['gh', 'api', `repos/${repository}/actions/runs/${legacyRunId}`], timeoutMs: 60_000 },
+    basicContext(adapter)
+  );
+  const logResult = await runCommand(
+    { name: 'read-legacy-deployment-log', argv: ['gh', 'run', 'view', legacyRunId, '--repo', repository, '--log'], timeoutMs: 60_000 },
+    basicContext(adapter)
+  );
+  const lineageResult = await runCommand(
+    { name: 'verify-current-baseline-lineage', argv: ['gh', 'api', `repos/${repository}/compare/${sourceSha}...${controlSha}`, '--jq', '.merge_base_commit.sha'], timeoutMs: 60_000 },
+    basicContext(adapter)
+  );
+  invariant(lineageResult.output.trim() === sourceSha, 'CURRENT_BASELINE_SOURCE_NOT_ON_MAINLINE', 'Legacy production source is not contained in the current zdt-next control-plane history');
+  const legacyEvidence = assertLegacyDeploymentEvidence(JSON.parse(metadataResult.output), logResult.output, {
+    sourceSha,
+    target: targetId,
+    artifactSha256,
+    expectedCurrent,
+    legacyRunId,
+    legacyRunAttempt,
+  });
+
+  const transport = node.transport ?? adapter.transport;
+  invariant(transport.kind === 'ssh', 'CURRENT_BASELINE_REQUIRES_REMOTE_POLICY', 'Current baseline registration requires the remote policy');
+  const host = process.env[transport.hostEnv ?? 'AI_DELIVERY_SSH_HOST'] ?? transport.host;
+  invariant(Boolean(host), 'DEPLOY_SSH_HOST_MISSING', `SSH host missing for ${nodeKey}`);
+  const remoteAgent = transport.agent ?? '/usr/local/lib/ai-delivery/agent.mjs';
+  const approval = `${adapter.project}:register-current-baseline:${sourceSha}:${artifactSha256}`;
+  const result = await runCommand(
+    {
+      name: `register-current-baseline:${nodeKey}:${targetId}`,
+      argv: [
+        'ssh', host, remoteAgent, 'register-current-baseline-v3',
+        '--project', adapter.project,
+        '--node', nodeKey,
+        '--target', targetId,
+        '--source-sha', sourceSha,
+        '--legacy-artifact-sha256', artifactSha256,
+        '--legacy-run-id', legacyRunId,
+        '--legacy-run-attempt', legacyRunAttempt,
+        '--legacy-workflow-path', legacyEvidence.workflowPath,
+        '--expected-current', expectedCurrent,
+        '--approval', approval,
+        '--control-sha', controlSha,
+        '--github-run-id', githubRunId,
+        '--github-run-attempt', githubRunAttempt,
+        '--expected-remote-agent-sha256', expectedRemoteAgentSha256,
+        '--expected-remote-policy-sha256', expectedRemotePolicySha256,
+      ],
+      timeoutMs: transport.deployTimeoutMs ?? 10 * 60_000,
+    },
+    basicContext(adapter)
+  );
+  const remote = parseCommandJson(result)?.result;
+  invariant(remote?.schema === 'ai.delivery.current-baseline-registration.v1' && remote.current?.unchanged === true && remote.process?.unchanged === true, 'CURRENT_BASELINE_RECEIPT_INVALID', 'Remote baseline registration did not prove pointer and process stability');
+  return { schema: 'ai.delivery.current-baseline.v1', project: adapter.project, node: nodeKey, target: targetId, sourceSha, legacyEvidence, remote, durationMs: result.durationMs };
+}
+
+export function assertLegacyDeploymentEvidence(metadata, log, expected) {
+  invariant(String(metadata?.id) === expected.legacyRunId, 'CURRENT_BASELINE_LEGACY_RUN_MISMATCH', 'Legacy deployment run id differs');
+  invariant(metadata?.head_sha === expected.sourceSha && metadata?.conclusion === 'success' && metadata?.event === 'workflow_dispatch', 'CURRENT_BASELINE_LEGACY_RUN_UNTRUSTED', 'Legacy deployment run is not a successful exact-source manual release');
+  invariant(metadata?.path === '.github/workflows/deploy-oss.yml' && String(metadata?.run_attempt) === expected.legacyRunAttempt, 'CURRENT_BASELINE_LEGACY_WORKFLOW_MISMATCH', 'Legacy deployment workflow or attempt differs');
+  const releaseId = `${expected.sourceSha.slice(0, 12)}-${expected.artifactSha256.slice(0, 16)}`;
+  invariant(expected.expectedCurrent.endsWith(`/releases/${releaseId}`), 'CURRENT_BASELINE_EXPECTED_PATH_INVALID', 'Expected current path does not encode the exact legacy source and artifact');
+  invariant(log.includes(`SOURCE_SHA=${expected.sourceSha}`), 'CURRENT_BASELINE_LEGACY_SOURCE_RECEIPT_MISSING', 'Legacy deployment log does not contain the exact source receipt');
+  invariant(log.includes(`CURRENT_${expected.target}=${expected.expectedCurrent}`), 'CURRENT_BASELINE_LEGACY_TARGET_RECEIPT_MISSING', 'Legacy deployment log does not contain the exact target pointer receipt');
+  invariant(log.includes(`/${expected.artifactSha256}.tar.gz`), 'CURRENT_BASELINE_LEGACY_ARTIFACT_RECEIPT_MISSING', 'Legacy deployment log does not contain the exact artifact object');
+  return {
+    workflowPath: metadata.path,
+    runId: expected.legacyRunId,
+    runAttempt: expected.legacyRunAttempt,
+    sourceSha: expected.sourceSha,
+    artifactSha256: `sha256:${expected.artifactSha256}`,
+    current: expected.expectedCurrent,
+  };
+}
+
 async function preparedArtifactCommand(adapter, options, candidateOnly) {
   const started = performance.now();
   const sourceSha = required(options.sourceSha, 'PREPARED_DEPLOY_SOURCE_SHA_REQUIRED');

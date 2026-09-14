@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { appendFile, chmod, copyFile, cp, link, lstat, mkdir, readFile, readlink, readdir, rename, rm, statfs, symlink, writeFile } from 'node:fs/promises';
+import { appendFile, chmod, copyFile, cp, link, lstat, mkdir, readFile, readlink, readdir, realpath, rename, rm, statfs, symlink, writeFile } from 'node:fs/promises';
 import { hostname } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -45,6 +45,7 @@ try {
     'deploy-oss-direct-v2',
     'validate-oss-candidate-v2',
     'deploy-sealed-candidate-v3',
+    'register-current-baseline-v3',
     'seal-validated-candidate-v3',
     'validate-oss-candidate-v3',
   ]);
@@ -67,6 +68,8 @@ try {
     result = await withLocks(context, false, () => sealValidatedCandidate(context, options), { version: options.sourceSha, operation: 'seal-validated-candidate' });
   else if (action === 'deploy-sealed-candidate-v3')
     result = await withLocks(context, true, () => deploySealedCandidate(context, options), { version: options.sourceSha, operation: 'deploy-sealed-candidate' });
+  else if (action === 'register-current-baseline-v3')
+    result = await withLocks(context, true, () => registerCurrentBaseline(context, options), { version: options.sourceSha, operation: 'register-current-baseline' });
   else if (action === 'deploy-oss-direct' || action === 'deploy-oss-direct-v2') result = await withLocks(context, true, () => deployOssDirect(context, options), { version: options.sourceSha, operation: 'deploy-oss-direct' });
   else if (action === 'preflight') result = await preflight(context);
   else if (action === 'baseline') result = await withLocks(context, true, () => importBaseline(context, options), { version: options.sourceSha, operation: 'import-baseline' });
@@ -367,6 +370,86 @@ async function validateOssCandidate(context, options) {
   return prepareOssCandidate(context, options, false);
 }
 
+async function registerCurrentBaseline(context, options) {
+  const sourceSha = required(options.sourceSha, 'CURRENT_BASELINE_SOURCE_SHA_REQUIRED');
+  const artifactSha256 = required(options.legacyArtifactSha256, 'CURRENT_BASELINE_ARTIFACT_SHA256_REQUIRED');
+  const expectedCurrent = required(options.expectedCurrent, 'CURRENT_BASELINE_EXPECTED_CURRENT_REQUIRED');
+  const legacyRunId = required(options.legacyRunId, 'CURRENT_BASELINE_LEGACY_RUN_ID_REQUIRED');
+  const legacyRunAttempt = required(options.legacyRunAttempt, 'CURRENT_BASELINE_LEGACY_RUN_ATTEMPT_REQUIRED');
+  const legacyWorkflowPath = required(options.legacyWorkflowPath, 'CURRENT_BASELINE_LEGACY_WORKFLOW_REQUIRED');
+  assert(/^[a-f0-9]{40}$/.test(sourceSha), 'CURRENT_BASELINE_SOURCE_SHA_INVALID');
+  assert(/^[a-f0-9]{64}$/.test(artifactSha256), 'CURRENT_BASELINE_ARTIFACT_SHA256_INVALID');
+  assert(/^[1-9][0-9]*$/.test(legacyRunId) && /^[1-9][0-9]*$/.test(legacyRunAttempt), 'CURRENT_BASELINE_LEGACY_RUN_INVALID');
+  assert(legacyWorkflowPath === '.github/workflows/deploy-oss.yml', 'CURRENT_BASELINE_LEGACY_WORKFLOW_INVALID');
+  assert(options.approval === `${context.project}:register-current-baseline:${sourceSha}:${artifactSha256}`, 'CURRENT_BASELINE_APPROVAL_INVALID');
+
+  const root = context.deployment.pointerRoot;
+  assertAllowedRoot(context.policy, root);
+  const currentBefore = await pointer(root, 'current');
+  assert(currentBefore === expectedCurrent, 'CURRENT_BASELINE_POINTER_CHANGED', { expected: expectedCurrent, actual: currentBefore });
+  const release = await safeReleaseDirectory(context, currentBefore);
+  assert(basename(release) === `${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`, 'CURRENT_BASELINE_RELEASE_ID_MISMATCH', {
+    expected: `${sourceSha.slice(0, 12)}-${artifactSha256.slice(0, 16)}`,
+    actual: basename(release),
+  });
+  assert(!(await readJson(join(release, 'AI_DELIVERY_ARTIFACT.json'))), 'CURRENT_BASELINE_RELEASE_ALREADY_MANAGED', { release });
+
+  const targetProcessBefore = await processId(context.deployment.restart);
+  const protectedBefore = await protectedProcessSnapshot(context);
+  const evidenceBefore = await treeEvidence(release);
+  await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: release, currentDir: release, ...contextSummary(context) });
+  const readiness = await waitForReadiness(context, { candidateDir: release, currentDir: release, ...contextSummary(context) });
+  const path = baselineEvidencePath(context, release);
+  const existing = await readJson(path);
+  if (existing) {
+    const verified = await verifyBaselineEvidence(context, release, existing);
+    assert(verified.sourceSha === sourceSha && verified.artifactSha256 === `sha256:${artifactSha256}`, 'CURRENT_BASELINE_ALREADY_REGISTERED', { path });
+  } else {
+    const unsigned = {
+      schema: 'ai.delivery.current-baseline.v1',
+      project: context.project,
+      node: context.node,
+      target: context.target,
+      release,
+      pointerValue: currentBefore,
+      sourceSha,
+      artifactSha256: `sha256:${artifactSha256}`,
+      treeDigest: evidenceBefore.treeDigest,
+      fileCount: evidenceBefore.fileCount,
+      entryCount: evidenceBefore.entryCount,
+      totalBytes: evidenceBefore.totalBytes,
+      legacyDeployment: { workflowPath: legacyWorkflowPath, runId: legacyRunId, runAttempt: legacyRunAttempt },
+      controlPlane: context.controlPlane,
+      registeredAt: new Date().toISOString(),
+    };
+    await writeAtomicJson(path, { ...unsigned, baselineDigest: digest(unsigned) });
+    await chmod(path, 0o444);
+    await verifyBaselineEvidence(context, release, await readJson(path));
+  }
+
+  const currentAfter = await pointer(root, 'current');
+  const evidenceAfter = await treeEvidence(release);
+  const targetProcessAfter = await processId(context.deployment.restart);
+  const protectedAfter = await assertProtectedUnchanged(context, protectedBefore);
+  assert(currentAfter === currentBefore, 'CURRENT_BASELINE_MOVED_POINTER', { before: currentBefore, after: currentAfter });
+  assert(targetProcessAfter === targetProcessBefore, 'CURRENT_BASELINE_CHANGED_PROCESS', { before: targetProcessBefore, after: targetProcessAfter });
+  assert(evidenceAfter.treeDigest === evidenceBefore.treeDigest, 'CURRENT_BASELINE_CHANGED_RELEASE', { before: evidenceBefore.treeDigest, after: evidenceAfter.treeDigest });
+  return {
+    schema: 'ai.delivery.current-baseline-registration.v1',
+    status: existing ? 'already-registered' : 'registered',
+    sourceSha,
+    artifactSha256: `sha256:${artifactSha256}`,
+    release,
+    current: { before: currentBefore, after: currentAfter, unchanged: true },
+    treeDigest: evidenceAfter.treeDigest,
+    baselinePath: path,
+    readiness,
+    process: { before: targetProcessBefore, after: targetProcessAfter, unchanged: true },
+    protectedProcesses: { before: protectedBefore, after: protectedAfter },
+    controlPlane: context.controlPlane,
+  };
+}
+
 async function sealValidatedCandidate(context, options) {
   const identity = artifactIdentity(context, options);
   const found = await lookup(context, options);
@@ -380,7 +463,7 @@ async function sealValidatedCandidate(context, options) {
     expected: expectedCurrent,
     actual: current,
   });
-  const currentSourceSha = await releaseSourceSha(current);
+  const currentSourceSha = await releaseSourceSha(context, current);
   assert(currentSourceSha === expectedCurrentSourceSha, 'CANDIDATE_SEAL_CURRENT_SOURCE_MISMATCH', { expected: expectedCurrentSourceSha, actual: currentSourceSha });
   await runChecks(context.deployment.candidateChecks ?? [], { candidateDir: candidate, currentDir: current ?? '', ...contextSummary(context) });
   const unsigned = {
@@ -486,7 +569,7 @@ async function prepareOssCandidate(context, options, direct) {
   }
   const currentAfter = await pointer(context.deployment.pointerRoot, 'current');
   assert(currentAfter === found.current, 'CANDIDATE_VALIDATION_MOVED_CURRENT', { before: found.current, after: currentAfter });
-  const currentSourceSha = await releaseSourceSha(currentAfter);
+  const currentSourceSha = await releaseSourceSha(context, currentAfter);
   return {
     schema: 'ai.delivery.oss-candidate.v1',
     sourceSha: identity.sourceSha,
@@ -506,11 +589,65 @@ async function prepareOssCandidate(context, options, direct) {
   };
 }
 
-async function releaseSourceSha(release) {
+async function releaseSourceSha(context, release) {
   if (!release) return null;
-  const manifest = await readJson(join(release, 'AI_DELIVERY_ARTIFACT.json'));
-  const sourceSha = manifest?.sourceSha;
-  return /^[a-f0-9]{40}$/.test(sourceSha ?? '') ? sourceSha : null;
+  const directory = await safeReleaseDirectory(context, release);
+  const manifest = await readJson(join(directory, 'AI_DELIVERY_ARTIFACT.json'));
+  if (manifest) {
+    assert(manifest.schema === 'ai.delivery.artifact.v1' && [1, 2].includes(manifest.engineVersion), 'CURRENT_RELEASE_MANIFEST_INVALID', { release: directory });
+    assert(manifest.project === context.project && manifest.target === context.target, 'CURRENT_RELEASE_SCOPE_MISMATCH', { release: directory });
+    assert(/^[a-f0-9]{40}$/.test(manifest.sourceSha ?? ''), 'CURRENT_RELEASE_SOURCE_SHA_INVALID', { release: directory });
+    const claimedDigest = manifest.manifestDigest;
+    const unsigned = { ...manifest };
+    delete unsigned.manifestDigest;
+    assert(claimedDigest === digest(unsigned), 'CURRENT_RELEASE_MANIFEST_DIGEST_MISMATCH', { release: directory });
+    const evidence = await treeEvidence(directory, new Set(['AI_DELIVERY_ARTIFACT.json']));
+    assert(evidence.treeDigest === manifest.treeDigest, 'CURRENT_RELEASE_TREE_MISMATCH', { release: directory });
+    if (manifest.engineVersion === 2) {
+      assertManifestEntries(manifest);
+      assertTreeMatchesManifest(evidence, manifest);
+      await verifyCriticalFiles(directory, manifest.criticalFiles ?? []);
+    }
+    return manifest.sourceSha;
+  }
+  const baseline = await readJson(baselineEvidencePath(context, directory));
+  if (!baseline) return null;
+  return (await verifyBaselineEvidence(context, directory, baseline)).sourceSha;
+}
+
+async function safeReleaseDirectory(context, release) {
+  assert(typeof release === 'string' && release.length > 0, 'CURRENT_RELEASE_PATH_INVALID');
+  const releasesRoot = await realpath(join(context.deployment.pointerRoot, 'releases'));
+  const directory = await realpath(resolve(context.deployment.pointerRoot, release));
+  assert(directory.startsWith(`${releasesRoot}/`), 'CURRENT_RELEASE_PATH_UNSAFE', { release, releasesRoot });
+  assert((await lstat(directory)).isDirectory(), 'CURRENT_RELEASE_DIRECTORY_INVALID', { release: directory });
+  return directory;
+}
+
+function baselineEvidencePath(context, release) {
+  const key = digest({ project: context.project, node: context.node, target: context.target, release }).slice(7);
+  return join(context.deployment.pointerRoot, 'baselines', `${key}.json`);
+}
+
+async function verifyBaselineEvidence(context, release, baseline) {
+  assert(baseline?.schema === 'ai.delivery.current-baseline.v1', 'CURRENT_BASELINE_SCHEMA_INVALID', { release });
+  const claimedDigest = baseline.baselineDigest;
+  const unsigned = { ...baseline };
+  delete unsigned.baselineDigest;
+  assert(claimedDigest === digest(unsigned), 'CURRENT_BASELINE_DIGEST_MISMATCH', { release });
+  assert(baseline.project === context.project && baseline.node === context.node && baseline.target === context.target, 'CURRENT_BASELINE_SCOPE_MISMATCH', { release });
+  assert(baseline.release === release, 'CURRENT_BASELINE_RELEASE_MISMATCH', { expected: release, actual: baseline.release });
+  assert(/^[a-f0-9]{40}$/.test(baseline.sourceSha ?? '') && /^sha256:[a-f0-9]{64}$/.test(baseline.artifactSha256 ?? ''), 'CURRENT_BASELINE_IDENTITY_INVALID', { release });
+  const evidence = await treeEvidence(release);
+  assert(
+    baseline.treeDigest === evidence.treeDigest &&
+      baseline.fileCount === evidence.fileCount &&
+      baseline.entryCount === evidence.entryCount &&
+      baseline.totalBytes === evidence.totalBytes,
+    'CURRENT_BASELINE_TREE_MISMATCH',
+    { release, expected: baseline.treeDigest, actual: evidence.treeDigest }
+  );
+  return baseline;
 }
 
 async function readStdinJson() {
