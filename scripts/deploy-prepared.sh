@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dispatch the official 1.3.1 sealed-candidate deployment channel.
+# Dispatch the official 1.3.2 Aliyun sealed-artifact deployment channel.
 # Usage:
 #   scripts/deploy-prepared.sh <target> <full-commit-sha> <node>
 
@@ -18,7 +18,7 @@ if [[ ! "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
   echo "Deploy stopped: commit must be one full lowercase Git SHA." >&2
   exit 64
 fi
-if ! node -e 'const c=require("./02_platform_pingtai/infrastructure/release/zdt-next.release.json"); const [target,node]=process.argv.slice(1); if (!c.targets[target] || !c.nodes[node]?.deployments?.[target]) process.exit(1)' "$TARGET" "$NODE"; then
+if ! node -e 'const c=require("./02_platform_pingtai/infrastructure/release/zdt-next.release.json");const [target,node]=process.argv.slice(1);const d=c.targets[target]&&c.nodes[node]?.deployments?.[target];if(!d)process.exit(1);if(d.hostedBy&&d.hostedBy!==node){console.error(`Deploy stopped: ${node}/${target} is physically hosted by ${d.hostedBy}; use the physical node.`);process.exit(2)}' "$TARGET" "$NODE"; then
   echo "Deploy stopped: no configured channel for ${NODE}/${TARGET}." >&2
   exit 64
 fi
@@ -36,22 +36,22 @@ if [ "$ZDT_NEXT_MERGE_BASE" != "$SHA" ]; then
   echo "Deploy stopped: exact commit does not belong to zdt-next history." >&2
   exit 64
 fi
-if ! gh workflow view deploy-prepared.yml --ref zdt-next --yaml >/dev/null 2>&1; then
-  echo "Deploy stopped: the zdt-next Deploy channel does not exist." >&2
+if ! gh workflow view deploy-prepared-aliyun.yml --ref zdt-next --yaml >/dev/null 2>&1; then
+  echo "Deploy stopped: the zdt-next 1.3.2 Aliyun channel does not exist." >&2
   exit 1
 fi
 
-echo "Sealed-candidate deploy: ${SHA} -> ${NODE}/${TARGET}"
-gh workflow run deploy-prepared.yml --ref zdt-next \
+echo "Aliyun sealed-artifact deploy: ${SHA} -> ${NODE}/${TARGET}"
+gh workflow run deploy-prepared-aliyun.yml --ref zdt-next \
   -f head_sha="$SHA" \
   -f release_node="$NODE" \
   -f release_target="$TARGET" \
   -f operation=deploy
 
-TITLE="Deploy 1.3.1 ${SHA} ${NODE} ${TARGET}"
+TITLE="Deploy 1.3.2 deploy ${SHA} ${NODE} ${TARGET}"
 RUN_ID=""
 for _ in {1..20}; do
-  RUN_ID="$(gh run list --workflow deploy-prepared.yml --event workflow_dispatch --limit 20 \
+  RUN_ID="$(gh run list --workflow deploy-prepared-aliyun.yml --event workflow_dispatch --limit 20 \
     --json databaseId,displayTitle \
     --jq ".[] | select(.displayTitle == \"$TITLE\") | .databaseId" | head -1)"
   if [ -n "$RUN_ID" ]; then

@@ -380,7 +380,11 @@ async function registerCurrentBaseline(context, options) {
   assert(/^[a-f0-9]{40}$/.test(sourceSha), 'CURRENT_BASELINE_SOURCE_SHA_INVALID');
   assert(/^[a-f0-9]{64}$/.test(artifactSha256), 'CURRENT_BASELINE_ARTIFACT_SHA256_INVALID');
   assert(/^[1-9][0-9]*$/.test(legacyRunId) && /^[1-9][0-9]*$/.test(legacyRunAttempt), 'CURRENT_BASELINE_LEGACY_RUN_INVALID');
-  assert(legacyWorkflowPath === '.github/workflows/deploy-oss.yml', 'CURRENT_BASELINE_LEGACY_WORKFLOW_INVALID');
+  assert(
+    legacyWorkflowPath === '.github/workflows/deploy-oss.yml'
+      || legacyWorkflowPath === '.github/workflows/legacy-oss-recovery-aliyun.yml',
+    'CURRENT_BASELINE_LEGACY_WORKFLOW_INVALID'
+  );
   assert(options.approval === `${context.project}:register-current-baseline:${sourceSha}:${artifactSha256}`, 'CURRENT_BASELINE_APPROVAL_INVALID');
 
   const root = context.deployment.pointerRoot;

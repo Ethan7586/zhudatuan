@@ -185,7 +185,7 @@ test('prepared candidate validation downloads and checks the release without mov
   assert.equal(sealed.result.expectedCurrent, current);
 });
 
-test('1.3.1 deploy consumes only a sealed candidate and never downloads during cutover', async () => {
+test('1.3.2 deploy consumes only a sealed candidate and never downloads during cutover', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', '8'.repeat(40));
   await invokeOss(fixture, baseline, await artifactPayload(baseline));
@@ -213,7 +213,7 @@ test('1.3.1 deploy consumes only a sealed candidate and never downloads during c
   assert.equal(deployed.result.activation.receipt.finalStatus, 'success');
 });
 
-test('1.3.1 deploy rejects a sealed candidate when production changed after validation', async () => {
+test('1.3.2 deploy rejects a sealed candidate when production changed after validation', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', 'a'.repeat(40));
   await invokeOss(fixture, baseline, await artifactPayload(baseline));
@@ -302,7 +302,7 @@ test('legacy baseline registration rejects a source or artifact that does not ma
   assert.equal(await readlink(join(fixture.pointerRoot, 'current')), release);
 });
 
-test('1.3.1 deploy requires candidate revalidation after Agent policy changes', async () => {
+test('1.3.2 deploy requires candidate revalidation after Agent policy changes', async () => {
   const fixture = await createFixture();
   const baseline = await createArtifact(fixture, 'baseline', 'd'.repeat(40));
   await invokeOss(fixture, baseline, await artifactPayload(baseline));
@@ -1314,7 +1314,7 @@ async function invokeOss(fixture, artifact, payload, includeControlPlane = true,
       '--legacy-run-attempt',
       expectedOverrides.legacyRunAttempt ?? '1',
       '--legacy-workflow-path',
-      '.github/workflows/deploy-oss.yml',
+      '.github/workflows/legacy-oss-recovery-aliyun.yml',
       '--expected-current',
       expectedOverrides.expectedCurrent ?? 'none',
       '--approval',

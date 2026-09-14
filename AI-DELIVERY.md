@@ -1,6 +1,8 @@
-# AI 发布通道（1.2 兜底、正式 1.3 与 1.3.1 封板协议）
+# AI 发布通道（正式 1.3.2 阿里云版）
 
-1.3 已完成通道建设并作为正式可用的并行生产通道运行：GitHub `Prepare Artifact` 生成制品，GitHub `Deploy 1.3.1 - Sealed Candidate` 验证或部署已经存在的制品。1.3.1 在 1.3 上增加候选封板：候选验证必须证明当前生产 source SHA 是候选 source SHA 的 Git 祖先，并把精确制品、候选目录、当前生产指针、当前生产 source SHA、Agent 和策略摘要写入封板记录；正式部署只能消费该记录，不能临时下载候选。现有 1.2 `Deploy` 和 `scripts/deploy-now.sh` 继续承接尚未自然迁移的运行目标以及 `h6-cdn` 等 L2/边缘能力；旧武汉 OSS 组合通道明确标记为 `Legacy 1.2`，缺少恢复用途确认时在 checkout 和构建前停止。1.3/1.3.1 两条工作流一次都只接受一个 target；不支持空目标、affected 或多目标扇出；工作流必须从 `zdt-next` 触发，source SHA 必须属于该次精确 `zdt-next` 控制提交的历史。
+1.3.2 是仓库唯一默认发布协议：GitHub 只负责调度，阿里云原生 Runner 执行构建与发布；`Prepare Artifact 1.3.2 - Aliyun` 生成不可变 OSS 制品并封板，`Deploy 1.3.2 - Aliyun Sealed Artifact` 只消费已封板制品。候选验证必须证明当前生产 source SHA 是候选 source SHA 的 Git 祖先，并把精确制品、候选目录、当前生产指针、Agent 和策略摘要写入封板记录；正式部署不能临时下载候选、安装依赖或构建。两条正常入口一次只接受一个物理 target，固定从 `zdt-next` 触发，source SHA 必须属于精确 `zdt-next` 历史。
+
+默认分支只保留文件名带 `-aliyun` 的工作流。新分支从 `zdt-next` 创建后自动继承 1.3.2；历史分支中的旧 YAML 只是历史快照，不是可执行入口。旧 GitHub workflow ID 在 1.3.2 启用后全局禁用。1.2 仅以 `legacy-direct-recovery-aliyun.yml` 和 `legacy-oss-recovery-aliyun.yml` 两个显式恢复入口保留，两者都要求精确恢复确认值，不能由“部署”口令调用。
 
 ## 当前状态与迁移边界
 
@@ -11,13 +13,13 @@
 | `hbbtzn-l1/storefront` | `768ff86f22f0d28da69ef51a572706054fc4163d` | [GitHub run 34774901585](https://github.com/Ethan7586/zhudatuan/actions/runs/34774901585) | 已迁移，旧版本可回滚 |
 | `hbbtzn-l1/console` | `2bd31e9f4b3c3af95b9f7df5a42df0ef31019b34` | [GitHub run 34777531642](https://github.com/Ethan7586/zhudatuan/actions/runs/34777531642) | 已迁移，旧版本可回滚 |
 
-生产覆盖率是后续迁移进度，不是 1.3 通道成立的门禁。不得为了追求覆盖率连续扰动生产；以后哪个目标本来就需要发布，就通过 1.3 完成该部署位的第一次自然迁移。未迁移目标继续使用 1.2，数据库迁移和多服务组合目标最后处理。
+生产覆盖率是后续迁移进度，不是通道成立的门禁。不得为了追求覆盖率连续扰动生产；以后哪个目标本来就需要发布，就先通过 1.3.2 Prepare 完成该部署位的候选封板，再等待独立“部署”口令。数据库迁移最后处理。
 
-全面替代 1.2 需要最终覆盖全部 L0/L1 生产部署位；退役整个 1.2 还需要为 `h6-cdn` 等 L2/边缘能力完成独立安置。两项条件都满足并获得 Ethan 的独立清理授权前，1.2 必须继续保留。保留不等于混用：`Legacy 1.2` 会安装依赖、构建并包含组合目标，不能被称为或用作 1.3.1。
+全面删除 1.2 恢复入口仍需覆盖全部 L0/L1 生产部署位，并为 `h6-cdn` 等 L2/边缘能力完成独立安置。此前，1.2 只作为人工确认的恢复工具保留；它会安装依赖和构建，不能被称为或用作 1.3.2。
 
 ## 用户入口与授权
 
-Ethan 每次在独立任务中输入“部署”才是该次 1.3.1 生产授权。AI 只部署已经验证并封板的精确候选，不得在 Deploy 1.3.1 中修代码、安装依赖、测试、构建、打包、发布制品、下载缺失候选、推送分支、修改 Caddy 或建设通道。目标或完整 40 位 source SHA 不明确时只询问缺失项；封板不存在、生产基线无法识别或封板后 current 变化时立即停止。
+Ethan 每次在独立任务中输入“部署”才是该次 1.3.2 生产授权。AI 只部署已经验证并封板的精确候选，不得在 Deploy 1.3.2 中修代码、安装依赖、测试、构建、打包、发布制品、下载缺失候选、推送分支、修改 Caddy 或建设通道。目标、真实物理节点或完整 40 位 source SHA 不明确时只询问缺失项；封板不存在、生产基线无法识别或封板后 current 变化时立即停止。
 
 通道建设、Prepare 和 Deploy 是三个不同动作。建设完成后必须停止；Prepare 完成后也不得顺带 Deploy。生产切流仍须 Ethan 在独立任务中明确输入“部署”。
 
@@ -29,23 +31,25 @@ Ethan 每次在独立任务中输入“部署”才是该次 1.3.1 生产授权�
 - 部署不等待或调用测试、类型检查、候选、审批、外部基线或浏览器验收。
 - 部署耗时只计算 GitHub Deploy 工作流从触发到成功或失败终态的时间。
 
-  1.2 本地生产触发入口保持不变：
+候选准备与封板入口是：
 
 ```bash
-scripts/deploy-now.sh [target] [full-source-sha] [node]
+scripts/prepare-release.sh <target> <full-source-sha> <physical-node>
 ```
 
-参数留空时使用 GitHub `zdt-next` 的精确 HEAD 和 `hbbtzn-l1`；目标必须已由上下文明确，不能借空参数扩大到全部受影响目标。
+它完成后必须停止，绝不切换生产。
 
-独立授权后的 1.3.1 生产触发入口是：
+独立授权后的唯一正常生产入口是：
 
 ```bash
-scripts/deploy-prepared.sh <target> <full-source-sha> <node>
+scripts/deploy-now.sh <target> <full-source-sha> <physical-node>
 ```
 
-## 现役 Deploy 与 H6 CDN
+三个参数都必须明确，不接受默认值。`scripts/deploy-now.sh` 只转发到 `scripts/deploy-prepared.sh`。
 
-H6 阿里云 CDN 使用同一个 GitHub `Deploy` 工作流，登记目标为 `h6-cdn`。它不重新构建 Storefront 制品，只在确认阿里云 CDN、HTTPS、直连源站和预切流探测均正常后，把 H6 的 Cloudflare DNS 从 Tunnel 回滚点切换到阿里云 CDN CNAME。状态、通道建立意图和回滚统一通过：
+## 旧恢复入口与 H6 CDN
+
+H6 阿里云 CDN 暂时只存在于显式的 1.2 直接恢复入口，登记目标为 `h6-cdn`；它不属于 L1 通用 1.3.2 运行时部署。状态、通道建立意图和回滚统一通过：
 
 ```bash
 npm run release -- channel --target h6-cdn --node hbbtzn-l1 --action status
@@ -57,13 +61,13 @@ npm run release -- channel --target h6-cdn --node hbbtzn-l1 --action rollback
 
 ## Prepare Artifact（构建通道）
 
-`.github/workflows/prepare-artifact.yml` 接受一个完整 source SHA 和一个 target：
+`.github/workflows/prepare-artifact-aliyun.yml` 接受一个完整 source SHA 和一个 target：
 
 ## Prepare 唯一执行链
 
 ```text
 精确 checkout → 固定 ubuntu-24.04 x64 / Node 22.22.0 / npm 10.9.4
-  → dependency cache（只加速 npm ci）
+  → 阿里云 Runner 本地 npm 缓存（不上传 GitHub Actions cache）
   → 隔离空状态根 A：目标测试/类型检查 → 生产构建 → 冷打包 miss
   → 隔离空状态根 B：目标测试/类型检查 → 生产构建 → 冷打包 miss
   → 比较 tree/manifest/archive/大小/完整文件清单
@@ -82,7 +86,7 @@ npm run release -- publish --package <package.json> --source-sha <source-sha> --
   --npm-version <version> --runner-image <image> --output <prepare-receipt.json>
 ```
 
-GitHub dependency cache 只减少重复下载。缓存丢失会触发重新安装和构建，不会改变制品身份，也不能被 Deploy 使用。GitHub Actions receipt artifact 只保存审计回执；唯一可部署来源是 OSS。
+阿里云 Runner 的本地 npm 缓存只减少重复下载。缓存丢失会触发重新安装和构建，不会改变制品身份，也不能被 Deploy 使用。禁止 GitHub Actions cache 上传，避免生产切换后卡在缓存收尾。GitHub Actions receipt artifact 只保存审计回执；唯一可部署来源是 OSS。
 
 Storefront publish 必须读取完整运行证据并 fail closed：`ok=true`、Linux x64、Node 22.22.0、制品内无 `node_modules`，首页/H5/动态路由均返回有效 HTML，且哈希静态资源完成 200、immutable cache 与 304 验证。任一字段缺失或不符时，在任何 OSS 对象上传前停止。
 
@@ -145,9 +149,9 @@ release-manifest-<release-manifest-file-sha256>.json
 
 1.3 不删除任何 OSS 制品。生命周期清理在建立“读取全部节点 current/previous 指针并生成保护集”的独立回收器之前保持关闭；未来至少保留每个节点当前版和回滚版，建议普通制品至少保留 90 天。当前或回滚所需对象不得由日期规则直接删除。
 
-## Deploy 1.3.1（封板候选纯部署通道）
+## Deploy 1.3.2（阿里云封板候选纯部署通道）
 
-`.github/workflows/deploy-prepared.yml` 必须输入一个完整 source SHA、一个 node 和一个 target。默认操作是 `validate-candidate`，只解析、下载、校验并设置候选，不移动 current；随后读取当前运行制品的 source SHA，由 GitHub 比较证明当前生产版本是候选版本的祖先，再由远端 Agent 在目标锁内复核 current 未变化并写入封板记录。`deploy` 只由 Ethan 的“部署”口令触发，不再接收脚本可自动生成的第二授权字符串。工作流只稀疏读取当前发布控制面，不 checkout 业务源版本，不执行 `npm ci`、测试、类型检查、构建、打包或上传，也不会向 ECS 发送制品下载地址。
+`.github/workflows/deploy-prepared-aliyun.yml` 必须输入完整 source SHA、真实物理 node 和单个 target。默认操作是 `validate-candidate`，只解析、下载、校验并设置候选，不移动 current；随后读取当前运行制品的 source SHA，由 GitHub 比较证明当前生产版本是候选版本的祖先，再由远端 Agent 在目标锁内复核 current 未变化并写入封板记录。`deploy` 只由 Ethan 的“部署”口令触发。逻辑节点若声明 `hostedBy` 指向其他节点，工作流必须拒绝并要求填写物理宿主。工作流只稀疏读取当前发布控制面，不 checkout 业务源版本，不执行 `npm ci`、测试、类型检查、构建、打包或上传。
 
 ```text
 候选阶段：OSS 前缀查询 → 唯一 release manifest
@@ -172,25 +176,25 @@ npm run release -- deploy-prepared --source-sha <source-sha> --node <node> --tar
   --expected-remote-agent-sha256 <sha256> --expected-remote-policy-sha256 <sha256>
 ```
 
-Deploy 1.3.1 只接受仓库固定的 ECS Ed25519 主机键（指纹 `SHA256:k5H7lupovyWgtjZJWrB4nmeLc0T1CpBN5FR/Xd3qmW8`），禁止运行时 `ssh-keyscan`。当前控制面从精确 checkout 计算 Agent 与 policy 摘要并调用 v3 远端动作；新 Agent 在候选验证、封板和切换前自校验，旧 Agent 因不认识 v3 动作直接拒绝，动作完成后的回执再逐值复核。只有格式正确但值不同同样停止。OSS 中制品不存在、对象下载失败、摘要/清单不符或 project/target/node/source SHA 不符时，候选不能封板；封板不存在、候选身份不同、Agent/策略变化或 current 不再等于封板基线时，部署不能开始。若 current 不是发布系统可识别的不可变制品，必须在独立迁移任务中先建立基线，不能在部署现场猜测。相同制品也可在清单声明的其他节点分别验证和封板，不重新构建。
+Deploy 1.3.2 只接受仓库固定的 ECS Ed25519 主机键（指纹 `SHA256:k5H7lupovyWgtjZJWrB4nmeLc0T1CpBN5FR/Xd3qmW8`），禁止运行时 `ssh-keyscan`。控制面从精确 checkout 计算 Agent 与 policy 摘要并调用 v3 远端动作；Agent 在候选验证、封板和切换前自校验，动作完成后的回执再逐值复核。OSS 中制品不存在、对象下载失败、摘要/清单不符或 project/target/node/source SHA 不符时，候选不能封板；封板不存在、候选身份不同、Agent/策略变化或 current 不再等于封板基线时，部署不能开始。
 
 ## 后端单目标边界
 
-1.3.1 不接受旧 `commerce-api` 或 `workers` 组合目标。后端只允许 `identity-api`、`mall-provisioning-api`、`support-api`、`purchase-api`、`web-api`、`catalog-api`、`payment-webhook-api`、`identity-notification-jobs`、`catalog-jobs`、`payment-jobs` 和 `database-migration` 等单一运行目标。每个目标拥有自己的指针、运行服务、健康检查和回滚点；共享同一 source SHA 不等于组合切换。网关/Caddy 不属于这些制品，缺路由时停止并转入独立基础设施任务。
+1.3.2 不接受旧 `commerce-api` 或 `workers` 组合目标。后端只允许 `identity-api`、`mall-provisioning-api`、`support-api`、`purchase-api`、`web-api`、`catalog-api`、`payment-webhook-api`、`identity-notification-jobs`、`catalog-jobs`、`payment-jobs` 和 `database-migration` 等单一运行目标。每个目标拥有自己的指针、运行服务、健康检查和回滚点；共享同一 source SHA 不等于组合切换。网关/Caddy 不属于这些制品，缺路由时停止并转入独立基础设施任务。
 
 预签名下载 URL 只经 stdin 交给远端 Agent，不进入命令参数、回执或审计日志。凭据只来自现有 GitHub Secrets；仓库、制品和回执不保存凭据。
 
 ## 计时与回执
 
-Prepare 单独报告两次冷构建摘要、确定性比较和 `plan/tests/typecheck/build/materialize/package/publication/total`；候选验证单独报告下载、校验、血缘和封板；Deploy 1.3.1 单独报告 `artifactLookup/candidate/cutover/restart/health/remoteTotal/total`，其中下载必须为零。生产回执把业务制品 `sourceSha` 与控制面 `controlPlane.sourceSha` 分开，并记录 GitHub run id/attempt、远端 Agent 文件 SHA-256 和远端 policy SHA-256。签名 URL、OSS 凭据和 SSH 密钥不得进入回执。不得把 Prepare 或候选验证时间算进 Deploy，也不得为缩短数字删除摘要校验、封板核对、健康检查或回滚。
+Prepare 单独报告两次冷构建摘要、确定性比较和 `plan/tests/typecheck/build/materialize/package/publication/total`；候选验证单独报告下载、校验、血缘和封板；Deploy 1.3.2 单独报告 `artifactLookup/candidate/cutover/restart/health/remoteTotal/total`，其中下载必须为零。生产回执把业务制品 `sourceSha` 与控制面 `controlPlane.sourceSha` 分开，并记录 GitHub run id/attempt、远端 Agent 文件 SHA-256 和远端 policy SHA-256。签名 URL、OSS 凭据和 SSH 密钥不得进入回执。
 
 ## 兼容与启用顺序
 
 Storefront 的 1.3 路径继续使用既有自包含生产运行包和现有 systemd 单元，不恢复 `node_modules` 依赖层。1.3 复用现有候选目录、current/previous 指针、健康检查、回滚回执和单目标锁；只为远端 Agent 增加 OSS 下载动作。
 
-1.3 首次生产启用序列已经由 Storefront 和 Console 完成。升级到 1.3.1 后的序列是：保留 1.2 → 核对 OSS/凭据/Endpoint → 安装并验证支持 v3 的远端 Agent → Prepare 单一目标 → 运行 `validate-candidate` 并取得血缘证明与封板 → 停止 → Ethan 在独立任务中明确“部署” → 仅消费封板并原子切换生产。后续目标仍按同一顺序自然迁移，任一前置步骤失败都停止该目标的 1.3.1 操作并继续使用明确标记的 1.2 恢复通道。
+1.3 首次生产启用序列已经由 Storefront 和 Console 完成。1.3.2 的固定序列是：核对 OSS/凭据/Endpoint → 安装并验证仓库精确 Agent → Prepare 单一目标 → `validate-candidate` 取得血缘证明与封板 → 停止 → Ethan 在独立任务中明确“部署” → 仅消费封板并原子切换生产。任一前置步骤失败都停止，不在部署现场修复。
 
-任何数量的 1.3 生产部署成功都不自动退役 1.2。只有全部 L0/L1 生产部署位完成迁移、L2/边缘能力完成独立安置，并且后续清理任务获得 Ethan 明确授权后，才允许删除旧工作流或改变 `scripts/deploy-now.sh`。
+任何数量的 1.3.2 生产部署成功都不自动删除 1.2 恢复入口。只有全部 L0/L1 生产部署位完成迁移、L2/边缘能力完成独立安置，并且后续清理任务获得 Ethan 明确授权后，才允许删除两个显式恢复工作流。
 
 ## E06 一次性 staging 验收
 

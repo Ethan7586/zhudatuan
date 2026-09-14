@@ -1,4 +1,4 @@
-name: Register Legacy Production Baseline
+name: Register Legacy Production Baseline - Aliyun Runner
 run-name: Register baseline ${{ inputs.source_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
 
 # One-time 1.3 migration operation. This workflow records verifiable provenance
@@ -98,7 +98,7 @@ jobs:
           fi
 
       - name: Load exact migration control plane only
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.sha }}
           fetch-depth: 1
@@ -110,9 +110,10 @@ jobs:
             02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json
             02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
 
       - name: Configure existing Aliyun transport
         env:

@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -9,20 +8,39 @@ const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '.
 const systemdRoot = join(projectRoot, '02_platform_pingtai/infrastructure/zhudatuan/aliyun/systemd');
 const adapter = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8'));
 const policy = JSON.parse(await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8'));
-const deployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy.yml'), 'utf8');
-const deployOssWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy-oss.yml'), 'utf8');
-const preparedDeployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy-prepared.yml'), 'utf8');
-const baselineRegistrationWorkflow = await readFile(join(projectRoot, '.github/workflows/register-current-baseline.yml'), 'utf8');
-const prepareWorkflow = await readFile(join(projectRoot, '.github/workflows/prepare-artifact.yml'), 'utf8');
+const deployWorkflow = await readFile(join(projectRoot, '.github/workflows/legacy-direct-recovery-aliyun.yml'), 'utf8');
+const deployOssWorkflow = await readFile(join(projectRoot, '.github/workflows/legacy-oss-recovery-aliyun.yml'), 'utf8');
+const preparedDeployWorkflow = await readFile(join(projectRoot, '.github/workflows/deploy-prepared-aliyun.yml'), 'utf8');
+const baselineRegistrationWorkflow = await readFile(join(projectRoot, '.github/workflows/register-current-baseline-aliyun.yml'), 'utf8');
+const prepareWorkflow = await readFile(join(projectRoot, '.github/workflows/prepare-artifact-aliyun.yml'), 'utf8');
 const releaseEngine = await readFile(join(projectRoot, '04_tools/release-engine/src/engine.mjs'), 'utf8');
 const deployNow = await readFile(join(projectRoot, 'scripts/deploy-now.sh'), 'utf8');
 const deployPrepared = await readFile(join(projectRoot, 'scripts/deploy-prepared.sh'), 'utf8');
+const prepareRelease = await readFile(join(projectRoot, 'scripts/prepare-release.sh'), 'utf8');
 const preparedKnownHosts = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts'), 'utf8');
-const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/quality.yml'), 'utf8');
+const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/quality-aliyun.yml'), 'utf8');
 const storefrontUnit = await readFile(join(systemdRoot, 'sfl-storefront@.service'), 'utf8');
 const storefrontPackage = JSON.parse(await readFile(join(projectRoot, '01_core_hexin/apps/storefront-web/package.json'), 'utf8'));
 const storefrontRuntimeBuilder = await readFile(join(projectRoot, '01_core_hexin/apps/storefront-web/scripts/build-production-runtime.mjs'), 'utf8');
 const databaseMigrationExecutor = await readFile(join(projectRoot, '04_tools/release-engine/adapters/zdt-next/database-migration-executor.mjs'), 'utf8');
+
+test('default branch exposes only named Aliyun workflow entrypoints', async () => {
+  const workflowRoot = join(projectRoot, '.github/workflows');
+  const files = (await readdir(workflowRoot)).sort();
+  assert.deepEqual(files, [
+    'deploy-prepared-aliyun.yml',
+    'legacy-direct-recovery-aliyun.yml',
+    'legacy-oss-recovery-aliyun.yml',
+    'prepare-artifact-aliyun.yml',
+    'quality-aliyun.yml',
+    'register-current-baseline-aliyun.yml',
+  ]);
+  for (const file of files) {
+    const workflow = await readFile(join(workflowRoot, file), 'utf8');
+    assert.doesNotMatch(workflow, /ubuntu-latest|actions\/cache@|actions\/(?:checkout|setup-node)@v4/, file);
+    assert.match(workflow, /runs-on: \[self-hosted, linux, x64, zdt-aliyun-(?:build|release)\]/, file);
+  }
+});
 
 test('production acceptance is fixed to the eight retained domains', () => {
   assert.equal(adapter.productionAcceptance.domains.length, 8);
@@ -33,18 +51,22 @@ test('production acceptance is fixed to the eight retained domains', () => {
   assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
 });
 
-test('deployment channel 1.2 remains available while its combined OSS path cannot masquerade as 1.3.1', () => {
-  assert.equal(sha256(deployWorkflow), 'd75d32a4c37d565153965f31ebb8a9083c88206e469af1768cdba6f53f83c186');
-  assert.equal(sha256(deployNow), '643ad67134bc21278e0800e7d7a87d4e92bbb0e1657f5b47a442f12aaa236385');
-  assert.match(deployOssWorkflow, /^name: Legacy 1\.2 - Build and Deploy via Wuhan OSS/m);
-  assert.match(deployOssWorkflow, /legacy_1_2_ack:[\s\S]*?required: true/);
+test('legacy 1.2 recovery remains explicit and cannot masquerade as 1.3.2', () => {
+  for (const workflow of [deployWorkflow, deployOssWorkflow]) {
+    assert.match(workflow, /legacy_1_2_ack:[\s\S]*?required: true/);
+    assert.match(workflow, /Refuse accidental use as a 1\.3\.2 deployment/);
+    assert.match(workflow, /runs-on: \[self-hosted, linux, x64, zdt-aliyun-release\]/);
+    assert.match(workflow, /package-manager-cache: false/);
+    assert.match(workflow, /npm ci/);
+  }
+  assert.match(deployWorkflow, /^name: Legacy 1\.2 Recovery - Direct Aliyun/m);
+  assert.match(deployWorkflow, /legacy-1\.2-direct-recovery/);
+  assert.match(deployOssWorkflow, /^name: Legacy 1\.2 Recovery - Wuhan OSS via Aliyun Runner/m);
   assert.match(deployOssWorkflow, /legacy-1\.2-build-and-deploy/);
-  assert.ok(deployOssWorkflow.indexOf('Refuse accidental use as a 1.3.1 deployment') < deployOssWorkflow.indexOf('actions\/checkout@v4'));
-  assert.match(deployOssWorkflow, /npm ci/);
   assert.match(deployOssWorkflow, /commerce-api\|identity-api\|workers/);
 });
 
-test('Console retains optional public acceptance metadata while Prepare and Deploy 1.3.1 remain exact single-target channels', () => {
+test('Console retains optional public acceptance metadata while Prepare and Deploy 1.3.2 remain exact single-target channels', () => {
   assert.deepEqual(adapter.nodes['zhudatuan-l0'].deployments.console.publicAcceptance, {
     url: 'https://console.fufu.wang/',
     allowedStatuses: [200],
@@ -69,6 +91,9 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.match(preparedDeployWorkflow, /--expected-remote-agent-sha256 "\$expected_agent_sha256"/);
   assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256 "\$expected_policy_sha256"/);
   assert.match(preparedDeployWorkflow, /zdt-next\.remote-policy\.json/);
+  assert.match(preparedDeployWorkflow, /runs-on: \[self-hosted, linux, x64, zdt-aliyun-release\]/);
+  assert.match(preparedDeployWorkflow, /d\.hostedBy&&d\.hostedBy!==process\.env\.RELEASE_NODE/);
+  assert.match(preparedDeployWorkflow, /package-manager-cache: false/);
   assert.match(preparedKnownHosts, /^123\.57\.232\.253 ssh-ed25519 AAAA[0-9A-Za-z+/]+={0,2}$/m);
   assert.match(prepareWorkflow, /--prepare/);
   assert.match(prepareWorkflow, /npm ci/);
@@ -87,12 +112,14 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   assert.ok(prepareWorkflow.indexOf('SHOP_BUILD_AT=') < prepareWorkflow.indexOf('run_cold_prepare cold-a'));
   assert.match(prepareWorkflow, /ubuntu-24\.04/);
   assert.match(prepareWorkflow, /NPM_VERSION: 10\.9\.4/);
+  assert.match(prepareWorkflow, /runs-on: \[self-hosted, linux, x64, zdt-aliyun-build\]/);
+  assert.match(prepareWorkflow, /package-manager-cache: false/);
   assert.doesNotMatch(prepareWorkflow, /release_node|deploy-prepared|ZDT_RELEASE_SSH_HOST/);
   assert.equal((preparedDeployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
   assert.equal((prepareWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
 });
 
-test('active Deploy retains its exact single-target H6 CDN channel', () => {
+test('legacy direct recovery retains the isolated H6 CDN channel', () => {
   assert.match(deployWorkflow, /--direct/);
   assert.match(deployWorkflow, /head_sha:[\s\S]*?required: true/);
   assert.match(deployWorkflow, /release_target:[\s\S]*?required: true[\s\S]*?type: choice/);
@@ -106,17 +133,19 @@ test('active Deploy retains its exact single-target H6 CDN channel', () => {
   assert.equal((deployWorkflow.match(/^  [a-z][a-z0-9_-]*:\s*$/gm) ?? []).filter((line) => line.trim() !== 'workflow_dispatch:').length, 1);
 });
 
-test('direct deployment refuses incomplete inputs and never creates a temporary channel', () => {
-  assert.match(deployNow, /if \[ "\$#" -ne 3 \]/);
-  assert.match(deployNow, /gh workflow view deploy\.yml --ref zdt-next/);
-  assert.match(deployNow, /gh workflow run deploy\.yml --ref zdt-next -f head_sha="\$SHA" -f release_node="\$NODE" -f release_target="\$TARGET"/);
-  assert.match(deployNow, /c\.channels\?\.\[target\]\?\.node===node/);
-  assert.doesNotMatch(deployNow, /git push|DEPLOY_REF|affected/);
-  assert.match(deployPrepared, /gh workflow run deploy-prepared\.yml/);
+test('normal scripts expose only the 1.3.2 prepare-seal and sealed-deploy sequence', () => {
+  assert.match(deployNow, /exec "\$script_dir\/deploy-prepared\.sh" "\$@"/);
+  assert.doesNotMatch(deployNow, /legacy|deploy\.yml|npm ci|build|git push/);
+  assert.match(deployPrepared, /gh workflow run deploy-prepared-aliyun\.yml --ref zdt-next/);
+  assert.match(deployPrepared, /d\.hostedBy&&d\.hostedBy!==node/);
   assert.doesNotMatch(deployPrepared, /production[_-]approval|zdt-next:prepared-deploy:/);
+  assert.match(prepareRelease, /gh workflow run "\$WORKFLOW_PREPARE" --ref zdt-next/);
+  assert.match(prepareRelease, /operation=validate-candidate/);
+  assert.match(prepareRelease, /Candidate sealed\. Production was not switched\./);
+  assert.doesNotMatch(prepareRelease, /operation=deploy|legacy|git push/);
 });
 
-test('1.3.1 accepts only source commits in the exact zdt-next history', () => {
+test('1.3.2 accepts only source commits in the exact zdt-next history', () => {
   for (const workflow of [prepareWorkflow, preparedDeployWorkflow]) {
     assert.match(workflow, /CONTROL_SHA: \$\{\{ github\.sha \}\}/);
     assert.match(workflow, /CONTROL_REF: \$\{\{ github\.ref \}\}/);
@@ -399,7 +428,7 @@ test('first activation is limited to pointer-only content and migration evidence
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
 });
 
-test('1.3.1 binds artifact, source lineage and control-plane provenance before production switch', () => {
+test('1.3.2 binds artifact, source lineage and control-plane provenance before production switch', () => {
   assert.match(preparedDeployWorkflow, /ref: \$\{\{ github\.sha \}\}/);
   assert.match(preparedDeployWorkflow, /--source-sha "\$RELEASE_SHA"/);
   assert.match(preparedDeployWorkflow, /--control-sha "\$CONTROL_SHA"/);
@@ -407,7 +436,7 @@ test('1.3.1 binds artifact, source lineage and control-plane provenance before p
   assert.match(preparedDeployWorkflow, /--github-run-attempt "\$GITHUB_RUN_ATTEMPT"/);
   assert.match(preparedDeployWorkflow, /--expected-remote-agent-sha256/);
   assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256/);
-  assert.match(preparedDeployWorkflow, /^name: Deploy 1\.3\.1 - Sealed Candidate/m);
+  assert.match(preparedDeployWorkflow, /^name: Deploy 1\.3\.2 - Aliyun Sealed Artifact/m);
   assert.match(preparedDeployWorkflow, /GH_TOKEN: \$\{\{ github\.token \}\}/);
   assert.match(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3'/);
   assert.doesNotMatch(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v2' : 'deploy-oss-direct-v2'/);
@@ -420,7 +449,7 @@ test('1.3.1 binds artifact, source lineage and control-plane provenance before p
   assert.doesNotMatch(preparedDeployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent|npm ci|release -- build|release -- package/);
 });
 
-test('production deployment binds an exact GitHub SHA directly to Aliyun', () => {
+test('legacy direct recovery still binds an exact GitHub SHA directly to Aliyun', () => {
   assert.match(deployWorkflow, /ref: \$\{\{ inputs\.head_sha \}\}/);
   assert.match(deployWorkflow, /sha="\$\(git rev-parse HEAD\)"/);
   assert.match(deployWorkflow, /if \[ "\$sha" != "\$RELEASE_SHA" \]/);
@@ -430,7 +459,3 @@ test('production deployment binds an exact GitHub SHA directly to Aliyun', () =>
   assert.doesNotMatch(deployWorkflow, /candidate_run_id|release-candidate-|approve-production|external-baseline|install-production-agent/);
   assert.match(qualityWorkflow, /^on:\n  workflow_dispatch:/m);
 });
-
-function sha256(value) {
-  return createHash('sha256').update(value).digest('hex');
-}

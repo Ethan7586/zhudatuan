@@ -200,7 +200,8 @@ export async function registerCurrentBaselineCommand(adapter, options) {
 export function assertLegacyDeploymentEvidence(metadata, log, expected) {
   invariant(String(metadata?.id) === expected.legacyRunId, 'CURRENT_BASELINE_LEGACY_RUN_MISMATCH', 'Legacy deployment run id differs');
   invariant(metadata?.head_sha === expected.sourceSha && metadata?.conclusion === 'success' && metadata?.event === 'workflow_dispatch', 'CURRENT_BASELINE_LEGACY_RUN_UNTRUSTED', 'Legacy deployment run is not a successful exact-source manual release');
-  invariant(metadata?.path === '.github/workflows/deploy-oss.yml' && String(metadata?.run_attempt) === expected.legacyRunAttempt, 'CURRENT_BASELINE_LEGACY_WORKFLOW_MISMATCH', 'Legacy deployment workflow or attempt differs');
+  const legacyWorkflowPaths = new Set(['.github/workflows/deploy-oss.yml', '.github/workflows/legacy-oss-recovery-aliyun.yml']);
+  invariant(legacyWorkflowPaths.has(metadata?.path) && String(metadata?.run_attempt) === expected.legacyRunAttempt, 'CURRENT_BASELINE_LEGACY_WORKFLOW_MISMATCH', 'Legacy deployment workflow or attempt differs');
   const releaseId = `${expected.sourceSha.slice(0, 12)}-${expected.artifactSha256.slice(0, 16)}`;
   invariant(expected.expectedCurrent.endsWith(`/releases/${releaseId}`), 'CURRENT_BASELINE_EXPECTED_PATH_INVALID', 'Expected current path does not encode the exact legacy source and artifact');
   invariant(log.includes(`SOURCE_SHA=${expected.sourceSha}`), 'CURRENT_BASELINE_LEGACY_SOURCE_RECEIPT_MISSING', 'Legacy deployment log does not contain the exact source receipt');

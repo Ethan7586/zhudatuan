@@ -1,8 +1,8 @@
-name: Legacy 1.2 - Build and Deploy via Wuhan OSS
+name: Legacy 1.2 Recovery - Wuhan OSS via Aliyun Runner
 run-name: LEGACY 1.2 build+deploy ${{ inputs.release_target }} ${{ inputs.head_sha || github.sha }}
 
 # Legacy recovery path only. This workflow builds during deployment and includes
-# aggregate targets, so it is never a 1.3/1.3.1 deployment entrypoint.
+# aggregate targets, so it is never a 1.3.2 deployment entrypoint.
 
 on:
   workflow_dispatch:
@@ -24,7 +24,7 @@ on:
         required: false
         type: string
       legacy_1_2_ack:
-        description: Type legacy-1.2-build-and-deploy; never use this for a 1.3.1 deployment
+        description: Type legacy-1.2-build-and-deploy; never use this for a 1.3.2 deployment
         required: true
         type: string
 
@@ -48,23 +48,23 @@ jobs:
     runs-on: [self-hosted, linux, x64, zdt-aliyun-release]
     timeout-minutes: 12
     steps:
-      - name: Refuse accidental use as a 1.3.1 deployment
+      - name: Refuse accidental use as a 1.3.2 deployment
         shell: bash
         run: |
           if [ "$LEGACY_1_2_ACK" != legacy-1.2-build-and-deploy ]; then
-            echo "This is the legacy 1.2 build-and-deploy recovery path. Use prepare-artifact.yml and deploy-prepared.yml for 1.3.1." >&2
+            echo "This is legacy 1.2 recovery. Use prepare-artifact-aliyun.yml and deploy-prepared-aliyun.yml for 1.3.2." >&2
             exit 64
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
           ref: ${{ inputs.head_sha || 'zdt-next' }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+          package-manager-cache: false
 
       - name: Install build dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund

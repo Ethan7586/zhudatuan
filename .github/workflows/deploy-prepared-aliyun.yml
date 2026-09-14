@@ -1,7 +1,7 @@
-name: Deploy 1.3.1 - Sealed Candidate
-run-name: Deploy 1.3.1 ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
+name: Deploy 1.3.2 - Aliyun Sealed Artifact
+run-name: Deploy 1.3.2 ${{ inputs.operation }} ${{ inputs.head_sha }} ${{ inputs.release_node }} ${{ inputs.release_target }}
 
-# Official 1.3.1 channel. Candidate validation proves source lineage and seals the
+# Official Aliyun-only 1.3.2 channel. Candidate validation proves source lineage and seals the
 # exact production baseline without moving current. Deploy consumes that seal only:
 # it cannot download a missing candidate or silently replace a newer production version.
 on:
@@ -87,7 +87,7 @@ jobs:
           fi
 
       - name: Load exact release control plane only
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.sha }}
           fetch-depth: 1
@@ -106,7 +106,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$CONTROL_REF" != "refs/heads/zdt-next" ]; then
-            echo "Deploy 1.3.1 must run from refs/heads/zdt-next" >&2
+            echo "Deploy 1.3.2 must run from refs/heads/zdt-next" >&2
             exit 64
           fi
           merge_base="$(gh api "repos/${GITHUB_REPOSITORY}/compare/${RELEASE_SHA}...${CONTROL_SHA}" --jq '.merge_base_commit.sha')"
@@ -115,9 +115,15 @@ jobs:
             exit 64
           fi
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
+          package-manager-cache: false
+
+      - name: Refuse logical aliases for a different physical node
+        shell: bash
+        run: |
+          node -e 'const c=require("./02_platform_pingtai/infrastructure/release/zdt-next.release.json");const d=c.nodes[process.env.RELEASE_NODE]?.deployments?.[process.env.RELEASE_TARGET];if(!d)process.exit(64);if(d.hostedBy&&d.hostedBy!==process.env.RELEASE_NODE){console.error(`Requested ${process.env.RELEASE_NODE}/${process.env.RELEASE_TARGET} is physically hosted by ${d.hostedBy}; deploy the physical node explicitly.`);process.exit(64)}'
 
       - name: Verify control-plane checkout
         shell: bash
