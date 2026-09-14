@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-104 已完成。AU-104 完成 Identity operation dispatch 与公开目录审阅。覆盖总账按当前文件级清单重算：深入审阅1,065文件/91,181行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,783文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-105 已完成。AU-105 完成 Identity mobile/WeChat 与 step-up 操作审阅。覆盖总账按当前文件级清单重算：深入审阅1,066文件/91,474行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,782文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1059,3 +1059,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Identity full/registration operation 集合、动作组合、public HTTP catalog 声明和综合行为测试。
 
 执行结果：full runtime 将五组 actions 组合后按 immutable owned operation list 精确投影；registration runtime 只取注册 API 必需的 core 集合，WeChat operation 留由带 WeChat wrapper 的注册模块加入。若声明 operation 没有 action 会在装配期立即失败。目录测试锁定 23 个 core operation 的 HTTP method/path、无重复 partition 与 registration ownership。综合测试对 session realm/account、成员治理、financial action proof、invitation 和 notification queue 提供 query-level oracle。未发现 P0–P3 新问题；Vitest 未运行。
+
+## 107. AU-105 连续审计点
+
+审阅 Identity 手机变更、phone-change challenge、step-up、WeChat bind completion 和金融操作 action proof。
+
+执行结果：mobile change 绑定 current realm account、session、phone proof 与目标 mobile advisory lock；首次绑定要求近十分钟 password evidence，替换要求 level-3 step-up，并在完成后轮换 credential subject、失效旧 phone assurance 与所有关联 session。step-up 只向 profile 已验证手机号发送，challenge 绑定 session；完成后先更新 session assurance，再完成可选 WeChat bind 或按 canonical action request 签发短期金融 proof。已审阅的 AU-103/104 测试覆盖关键成功/失败与回滚路径。未发现 P0–P3 新问题；Vitest 未运行。

@@ -1162,3 +1162,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | integration-style tests | session realm/account、governance、proof、invitation、notification query oracle | [FACT][E-AU-104-004] |
 
 [FACT][E-AU-104-005] 3 文件、682 行 Identity dispatch 与目录/综合测试完成深审；每个 core operation 只能由一个 action group 提供，遗漏 action 在装配时 fail-fast。
+
+## 110. AU-105 Identity 手机、WeChat 与 step-up 操作清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| mobile challenge/change | current realm account、password/step-up proof、challenge/session/realm、credential/assurance/session rotation | [FACT][E-AU-105-001] |
+| step-up challenge | 已验证手机号、session hash、五分钟 secret 与 notification job | [FACT][E-AU-105-002] |
+| step-up completion | phone OTP、session level-3 assurance、可选 WeChat binding | [FACT][E-AU-105-003] |
+| financial action proof | operation allowlist、canonical request hash、expected version 与 issued proof binding | [FACT][E-AU-105-004] |
+
+[FACT][E-AU-105-005] 1 文件、293 行 Identity mobile/WeChat/step-up 操作完成深审；未见 caller-selected step-up destination、跨 realm account 修改或未绑定 canonical request 的金融 proof。
