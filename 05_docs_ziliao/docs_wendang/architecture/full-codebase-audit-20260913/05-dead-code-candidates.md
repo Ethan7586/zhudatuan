@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 78、G2 4、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 79、G2 4、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -901,3 +901,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 404. AU-404 原子 checkout 与库存预留复核
 
 - 原子订单—预留事务自身为完整的 fail-closed 设计；仓内未接线的 public RPC 归 DC-0062/G1。累计 G0 60、G1 78、G2 4、G3 0、GX 5；未删除任何文件。
+
+## DC-0063｜支付域 canonical outbox relay RPC
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类/对象 | G1；`api_claim_payment_outbox`、`api_start_payment_effects`、`api_finish_payment_outbox`。 |
+| 疑似原因 | 固定基线中，这三个精确 RPC 名称仅见迁移与数据库契约测试；Commerce `PaymentJobs` 使用另一套 `payment`/`runtime.outbox` 直接数据库模型。 |
+| 保留证据 | service-role 公共接口；其租约、死信、聚合版本阻塞、payload 事实复核、inbox 去重和效果扇出均有专门数据库契约测试。仓外作业、生产服务角色调用、已部署 Supabase 调度器和历史 outbox 均未核验。 |
+| 可否删除 | 否；未满足公共 API、外部消费者、数据/迁移兼容、正式下线、运行行为、验证恢复及第二次复核条件。 |
+| 二次复核 | G1不强制；治理前应先核验生产 RPC 调用日志、service-role 作业配置、outbox 积压和故障恢复演练。 |
+
+## 408. AU-408 支付域出站中继复核
+
+- 中继的单租约、证据验证、去重、指数重试与死信顺序控制设计完整；但 canonical RPC 的仓内运行消费者尚未发现，归 DC-0063/G1。累计 G0 60、G1 79、G2 4、G3 0、GX 5；未删除任何文件。
