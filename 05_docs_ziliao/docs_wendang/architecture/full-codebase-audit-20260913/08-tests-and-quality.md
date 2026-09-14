@@ -599,3 +599,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - ApiBootstrap direct test验证registered node manifest到实际request NodeContext的装配。
 - Container的bind/get/duplicate/missing/freeze不变量没有独立fixture，见F-0203/P3。审计工作树未运行Vitest。
+
+## 202. AU-202 Manifest signature verifier 深审
+
+- 未找到manifest signature verifier的直接密码学fixture。
+- 有效/篡改/错误key/base64行为未被该安全边界直接验证，见F-0204/P2。审计工作树未运行Vitest。

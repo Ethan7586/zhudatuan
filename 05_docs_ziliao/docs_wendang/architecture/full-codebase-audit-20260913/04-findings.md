@@ -3878,6 +3878,20 @@
 | 验证/回滚 | 分别断言bind/get/has、duplicate、missing与freeze后bind失败；回滚为revert测试提交。 |
 | 独立复核 | 否；P3。 |
 
+## F-0204｜扩展 manifest 签名校验没有直接密码学测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / bootstrap SignatureVerifier；P2；高 |
+| 类型 | 测试覆盖缺口、扩展信任边界 |
+| 位置 | `01_core_hexin/services/commerce/src/bootstrap/SignatureVerifier.ts:1-22` |
+| 当前/预期 | verifier以configured public key验证canonical `manifestPayload` 与base64 signature；CommerceRuntime注入后被extension install与Channel HTTP消费者读取。预期有效签名、payload篡改、signature篡改、错误public key与无效base64都有direct fixture。 |
+| 直接证据 | 仓内未找到`SignatureVerifier.test.ts`或`new SignatureVerifier`的测试调用；`SignatureVerifier`仅在生产CommerceRuntime中构造。 |
+| 调用链/影响 | CommerceRuntime → MANIFEST_VERIFIER token → extension install / channel route。签名参数、payload canonicalization或错误处理回归不能由当前suite在这一安全边界直接捕获。 |
+| 建议方向 | 从修复时最新`zdt-next`建立临时签名密钥的verifier unit-test批；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言valid=true以及四类invalid=false/受控错误，不向日志写入key或signature；回滚为revert测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

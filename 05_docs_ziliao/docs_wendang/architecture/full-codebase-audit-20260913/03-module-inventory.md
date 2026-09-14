@@ -2163,3 +2163,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Container | runtime configure阶段的token bind/get/has及freeze、duplicate/missing fail-fast | [FACT][E-AU-201-002] |
 
 [FACT][E-AU-201-003] 2 文件、71 行完成深审；ApiBootstrap生产实现已由AU-001/003/008审阅，Container无direct fixture见F-0203/P3。
+
+## 207. AU-202 Manifest signature verifier 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| verifier token | Container token将可信manifest verifier交给extension/channel consumers | [FACT][E-AU-202-001] |
+| signature check | public key、canonical manifest payload和base64 signature交由Node crypto verify | [FACT][E-AU-202-002] |
+
+[FACT][E-AU-202-003] 1 文件、22 行完成深审；CommerceRuntime构造、extension install和Channel HTTP为运行消费者，测试空白见F-0204/P2。
