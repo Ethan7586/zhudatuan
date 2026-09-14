@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-127 已完成。AU-127 完成 Notification 投递渠道、配置与注册链审阅。覆盖总账按当前文件级清单重算：深入审阅1,216文件/95,657行、结构性审阅809文件/118,719行、自动生成70文件/172,651行、暂未审阅1,633文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-128 已完成。AU-128 完成 Notification 偏好、模板、公告与读取链审阅。覆盖总账按当前文件级清单重算：深入审阅1,227文件/95,963行、结构性审阅809文件/118,719行、自动生成70文件/172,651行、暂未审阅1,622文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1197,3 +1197,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Notification 投递公共契约、registry、SMS/email/WeChat/in-app adapter、完整/identity 专用配置解析及其局部行为测试。
 
 执行结果：CommerceRuntime 仅在配置存在时注册四渠道；identity runtime 只注册 SMS。registry 拒绝重复 id 和未配置渠道。SMS 使用 short external timeout、单次 SDK attempt 与 Executor 重试；email 写 idempotency header，WeChat 缓存 access token 并以 subscription API 投递，in-app 以 dispatch id 回执。identity 配置严格限定 SMS role 或 access-key 二择一和阿里云 endpoint/region/template 格式；测试覆盖 email 无凭据泄漏、WeChat token 缓存及 identity 配置拒绝路径。未发现 P0–P3 新问题；Vitest 未运行。
+
+## 130. AU-128 连续审计点
+
+审阅 Notification capability/repository 公共契约、偏好/endpoint、模板、公告管理命令及三条读取 query。
+
+执行结果：全部 operation 从 access scope/membership 派生数据所有权；endpoint 写入使用 operation lifecycle，在 execute 阶段重新解析 member，WeChat endpoint 强制 identity subscription authorization；template 写入由 repository 返回 immutable/state transition 结果判定；announcement 使用 expected version；读取全部 keyset，并按 storefront actor 限制通知可见 scope。新增 F-0172/P2：八项 Notification HTTP operation 仅有 manifest/路由声明测试，未覆盖 scope/version、endpoint 加密/撤销、WeChat 授权和写入拒绝行为。未发现 P0/P1 新问题；Vitest 未运行。

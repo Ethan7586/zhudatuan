@@ -3432,6 +3432,20 @@
 | 验证/回滚 | 从最新主线建立独立测试批次，以 fake loader/repository 或 PGlite 覆盖上述状态和 finalize/discard 边界；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2，后续 Extension lifecycle 专项可复查。 |
 
+## F-0172｜Notification 管理与读取 HTTP operation 没有行为级测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | notification / preference、endpoint、template、announcement、read；P2；高 |
+| 类型 | 测试覆盖缺口、权限与并发写入正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/notification/03_application_yingyong/{command/ChangePreference,command/SaveTemplate,command/SaveAnnouncement,query/GetNotifications,query/GetTemplates,query/GetAnnouncements}.ts`；`06_tests_ceshi/` |
+| 当前/预期 | 八项 HTTP operation 已在 module manifest 声明；现有测试只验证 manifest string、identity job/backlog 和 delivery adapters。预期至少有 operation/transaction fixture 验证 access scope、membership owner changed、endpoint KMS envelope/revoke、WeChat subscription authorization、template immutable/version transition、announcement expected version，以及 storefront/operator read visibility/keyset。 |
+| 直接证据 | 全服务 `rg` 八项 operation id 在测试文件中只命中 `module.manifest.test.ts` 的字符串清单，以及 IdentityRegistration entrypoint 的两条 route match；未命中 ChangePreference、SaveTemplate、SaveAnnouncement 或三条 query action 的实例化/行为断言。 |
+| 调用链/影响 | NotificationModule → NotificationRoutes → ModuleOperations → preference/endpoint/template/announcement repositories；IdentityRegistrationApi → selected notification read operations。权限、加密端点、乐观并发或分页变更可能不会被当前模块测试捕获。 |
+| 根因 | 模块测试覆盖 manifest inventory，而没有为 HTTP operation 建立 repository/transaction fixture。 |
+| 验证/回滚 | 从最新主线建立独立测试批次，用最小 fake repository/KMS 或 PGlite 覆盖每项拒绝/成功路径、scope/version 与 keyset反事实；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2，后续 Notification management 专项可复查。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

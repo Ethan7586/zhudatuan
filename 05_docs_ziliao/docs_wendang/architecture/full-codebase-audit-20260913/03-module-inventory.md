@@ -1404,3 +1404,15 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | provider idempotency/secret isolation、token cache 和 identity config rejection | [FACT][E-AU-127-004] |
 
 [FACT][E-AU-127-005] 10 文件、359 行 Notification delivery/configuration chain 完成深审；未发现渠道注册与实际 runtime composition 不一致。
+
+## 133. AU-128 Notification 偏好、模板、公告与读取链清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| capability/repository contract | 定义 read/manage capability 及全部 notification persistence/action contract | [FACT][E-AU-128-001] |
+| preference/endpoint | membership-derived member、WeChat authorization、KMS envelope 与重新验证 owner | [FACT][E-AU-128-002] |
+| template/announcement | domain validation 加 repository version/immutable transition 结果判定 | [FACT][E-AU-128-003] |
+| reads | scope/member keyset read，storefront 与 operator 有不同 notification visibility | [FACT][E-AU-128-004] |
+| tests | 仅 manifest/selected entrypoint 静态声明；F-0172/P2 | [FACT][E-AU-128-005] |
+
+[FACT][E-AU-128-006] 11 文件、306 行 Notification management/read chain 完成深审；未见未绑定 access scope 的该链写入或读取入口。

@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Static test inventory,All commerce TypeScript tests referencing Notification operation ids,Completed,Only manifest strings and two selected-route assertions were found.
+Targeted Vitest,Notification management/read behavior,Not run,No existing behavior test target exists; F-0172 records the missing coverage.
