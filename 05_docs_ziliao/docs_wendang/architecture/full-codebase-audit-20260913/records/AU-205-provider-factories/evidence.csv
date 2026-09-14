@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-205-001,src/bootstrap/ProviderFactories.ts,1-25,factory catalog,Static immutable list imports and exposes eleven external provider factories.
+E-AU-205-002,src/bootstrap/ProviderFactories.ts,27-32,lookup,Unknown provider IDs throw a stable missing-factory error.
+E-AU-205-003,src/bootstrap/ProviderLoader.ts,8-10;55,runtime consumer,ProviderLoader imports providerFactory and is the runtime loading consumer.
+E-AU-205-004,src/bootstrap,tests,No direct provider-factory catalog or unknown-ID test was found.

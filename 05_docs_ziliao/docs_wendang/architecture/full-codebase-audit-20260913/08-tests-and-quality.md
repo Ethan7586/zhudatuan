@@ -614,3 +614,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - Direct tests覆盖L1 manifest/origin/NodeContext与DB role compatibility failure。
 - 不覆盖secret/object readiness、compatibility failure teardown、successful configure或close，见F-0205/P2。审计工作树未运行Vitest。
+
+## 205. AU-205 Provider factories 深审
+
+- 未找到factory catalog或unknown provider ID的direct fixture。
+- Factory mapping错误可能在ProviderLoader启动时才暴露，见F-0206/P3。审计工作树未运行Vitest。

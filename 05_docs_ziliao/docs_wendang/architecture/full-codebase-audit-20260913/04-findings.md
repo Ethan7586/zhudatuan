@@ -3906,6 +3906,20 @@
 | 验证/回滚 | fixture验证required config、secret read、object probe、compatibility failure pool end、configure bindings和close stops/ends；回滚为revert测试提交。 |
 | 独立复核 | 否；P2。 |
 
+## F-0206｜Provider factory 清单和未知 ID 拒绝没有直接测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce / ProviderFactories；P3；高 |
+| 类型 | 测试覆盖缺口、外部provider注册一致性 |
+| 位置 | `01_core_hexin/services/commerce/src/bootstrap/ProviderFactories.ts:1-32` |
+| 当前/预期 | 静态factory表声明11个provider，`providerFactory`按ID返回或抛出`PROVIDER_FACTORY_MISSING`；ProviderLoader以它构造数据库中已启用provider。预期验证ID唯一、既定factory集合和unknown ID拒绝。 |
+| 直接证据 | 未找到`ProviderFactories.test.ts`、`providerFactory(`测试调用或针对`PROVIDER_FACTORY_MISSING`的断言。 |
+| 调用链/影响 | CommerceRuntime → ProviderLoader → providerFactory → channel extension registration。新增/改名provider后，映射错误只能在启动/加载时暴露。 |
+| 建议方向 | 从修复时最新`zdt-next`补factory catalog与unknown-ID两条unit fixture；回滚为撤回测试提交。 |
+| 验证/回滚 | 断言factory IDs唯一、预期ID能解析、unknown ID稳定抛错；回滚为revert测试提交。 |
+| 独立复核 | 否；P3。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

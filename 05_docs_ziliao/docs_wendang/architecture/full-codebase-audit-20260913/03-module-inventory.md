@@ -2191,3 +2191,12 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | compatibility | DB角色、可写、schema/contract、relation/function及catalog write privilege预检 | [FACT][E-AU-204-003] |
 
 [FACT][E-AU-204-004] 2 文件、231 行完成深审；CatalogOperator API和Ready entry直接消费此runtime，完整依赖/teardown测试缺口见F-0205/P2。
+
+## 210. AU-205 Provider factories 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| factory catalog | 不可变11-provider factory集合，供应商包由明确静态import提供 | [FACT][E-AU-205-001] |
+| runtime lookup | ProviderLoader按provider ID取得factory，不存在时fail-fast | [FACT][E-AU-205-002] |
+
+[FACT][E-AU-205-003] 1 文件、32 行完成深审；不直接启用provider，实际configuration/installation由ProviderLoader与database记录决定。
