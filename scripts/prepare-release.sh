@@ -2,6 +2,7 @@
 # Prepare and seal one immutable 1.3.2 Aliyun release candidate.
 # Usage:
 #   scripts/prepare-release.sh <target> <full-commit-sha> <physical-node>
+#   ZDT_PREPARE_RUNNER=github selects the standard GitHub-hosted build fallback.
 
 set -euo pipefail
 export PATH=/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin
@@ -14,8 +15,14 @@ fi
 TARGET="$1"
 SHA="$2"
 NODE="$3"
+BUILD_RUNNER="${ZDT_PREPARE_RUNNER:-aliyun}"
 WORKFLOW_PREPARE="prepare-artifact-aliyun.yml"
 WORKFLOW_DEPLOY="deploy-prepared-aliyun.yml"
+
+case "$BUILD_RUNNER" in
+  aliyun|github) ;;
+  *) echo "Prepare stopped: ZDT_PREPARE_RUNNER must be aliyun or github." >&2; exit 64 ;;
+esac
 
 if [[ ! "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
   echo "Prepare stopped: commit must be one full lowercase Git SHA." >&2
@@ -65,11 +72,15 @@ find_dispatched_run() {
 }
 
 last_prepare_id="$(gh run list --workflow "$WORKFLOW_PREPARE" --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
-echo "Aliyun artifact preparation: ${SHA} -> ${TARGET}"
+echo "Artifact preparation (${BUILD_RUNNER}): ${SHA} -> ${TARGET}"
 gh workflow run "$WORKFLOW_PREPARE" --ref zdt-next \
   -f head_sha="$SHA" \
-  -f release_target="$TARGET"
+  -f release_target="$TARGET" \
+  -f build_runner="$BUILD_RUNNER"
 prepare_title="Prepare 1.3.2 ${SHA} ${TARGET}"
+if [ "$BUILD_RUNNER" = github ]; then
+  prepare_title+=" [github]"
+fi
 prepare_run_id="$(find_dispatched_run "$WORKFLOW_PREPARE" "$prepare_title" "$last_prepare_id")" || {
   echo "Prepare was dispatched but its run id was not found." >&2
   exit 1

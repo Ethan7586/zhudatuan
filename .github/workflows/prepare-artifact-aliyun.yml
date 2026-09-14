@@ -1,12 +1,20 @@
-name: Prepare Artifact 1.3.2 - Aliyun
-run-name: Prepare 1.3.2 ${{ inputs.head_sha }} ${{ inputs.release_target }}
+name: Prepare Artifact 1.3.2 - Aliyun / GitHub
+run-name: Prepare 1.3.2 ${{ inputs.head_sha }} ${{ inputs.release_target }}${{ inputs.build_runner == 'github' && ' [github]' || '' }}
 
-# Official Aliyun-only 1.3.2 Prepare channel. Dependency caches accelerate npm ci only. Two
+# Aliyun is the default; GitHub standard runners are an explicit build fallback. Two
 # isolated empty release state roots must independently produce cold cache misses
 # and byte-identical artifacts before OSS publication is allowed.
 on:
   workflow_dispatch:
     inputs:
+      build_runner:
+        description: Build runner (Aliyun default; GitHub hosted fallback)
+        required: false
+        default: aliyun
+        type: choice
+        options:
+          - aliyun
+          - github
       head_sha:
         description: Exact 40-character zdt-next source commit to build
         required: true
@@ -60,7 +68,7 @@ env:
 jobs:
   prepare:
     name: Two cold builds → immutable OSS artifact
-    runs-on: [self-hosted, linux, x64, zdt-aliyun-build]
+    runs-on: ${{ fromJSON(inputs.build_runner == 'github' && '["ubuntu-24.04"]' || '["self-hosted","linux","x64","zdt-aliyun-build"]') }}
     timeout-minutes: 30
     steps:
       - name: Validate exact single-target request

@@ -1,6 +1,16 @@
 # GitHub Actions Runner（1.3.2 阿里云版）
 
-发布与构建只使用北京 ECS 上的原生 Linux Runner，不再在 Mac 或 Docker 中运行 Runner，也不再申请 GitHub 托管的 `ubuntu-latest`。
+发布与构建默认使用北京 ECS 上的原生 Linux Runner。构建拥堵时，可显式选择 GitHub 标准托管 `ubuntu-24.04` 准备制品；候选封板及生产切换仍由阿里云 Release Runner 执行。
+
+## GitHub 构建备用入口
+
+通过现有系统入口选择本次构建使用的 Runner，不改变后续默认值：
+
+```bash
+ZDT_PREPARE_RUNNER=github /Users/Ethan/.codex/bin/zdt-delivery prepare <target> <full-source-sha> <physical-node>
+```
+
+省略 `ZDT_PREPARE_RUNNER` 时继续使用阿里云。GitHub 页面中的现行 Prepare 工作流也提供 `build_runner` 选项。两种构建使用同一份工作流、Node 22.22.0、npm 10.9.4、双冷构建及运行证据，并写入现有 OSS 制品路径；GitHub 构建不配置生产 SSH。GitHub 构建失败后停止，不自动切换线路或部署。此备用入口可缓解 Build 排队，不消除阿里云 Release 排队；不会重新启用旧工作流。
 
 ## 固定拓扑
 
