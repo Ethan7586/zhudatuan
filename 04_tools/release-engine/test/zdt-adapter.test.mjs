@@ -32,13 +32,18 @@ test('production acceptance is fixed to the eight retained domains', () => {
   assert.deepEqual(policy.lifecycleUnits, ['zhudatuan-release-policy.timer', 'zhudatuan-release-policy.path']);
 });
 
-test('deployment channel 1.2 remains byte-for-byte available alongside official 1.3', () => {
+test('deployment channel 1.2 remains available while its combined OSS path cannot masquerade as 1.3.1', () => {
   assert.equal(sha256(deployWorkflow), 'd75d32a4c37d565153965f31ebb8a9083c88206e469af1768cdba6f53f83c186');
-  assert.equal(sha256(deployOssWorkflow), '39606189d420ff3442b58eda9c89213f0b3b2f8ab1df994d7e457bb6298dadf7');
   assert.equal(sha256(deployNow), '643ad67134bc21278e0800e7d7a87d4e92bbb0e1657f5b47a442f12aaa236385');
+  assert.match(deployOssWorkflow, /^name: Legacy 1\.2 - Build and Deploy via Wuhan OSS/m);
+  assert.match(deployOssWorkflow, /legacy_1_2_ack:[\s\S]*?required: true/);
+  assert.match(deployOssWorkflow, /legacy-1\.2-build-and-deploy/);
+  assert.ok(deployOssWorkflow.indexOf('Refuse accidental use as a 1.3.1 deployment') < deployOssWorkflow.indexOf('actions\/checkout@v4'));
+  assert.match(deployOssWorkflow, /npm ci/);
+  assert.match(deployOssWorkflow, /commerce-api\|identity-api\|workers/);
 });
 
-test('Console retains optional public acceptance metadata while parallel Prepare and Prepared Deploy remain exact single-target channels', () => {
+test('Console retains optional public acceptance metadata while Prepare and Deploy 1.3.1 remain exact single-target channels', () => {
   assert.deepEqual(adapter.nodes['zhudatuan-l0'].deployments.console.publicAcceptance, {
     url: 'https://console.fufu.wang/',
     allowedStatuses: [200],
@@ -110,7 +115,7 @@ test('direct deployment refuses incomplete inputs and never creates a temporary 
   assert.doesNotMatch(deployPrepared, /production[_-]approval|zdt-next:prepared-deploy:/);
 });
 
-test('parallel 1.3 accepts only source commits in the exact zdt-next history', () => {
+test('1.3.1 accepts only source commits in the exact zdt-next history', () => {
   for (const workflow of [prepareWorkflow, preparedDeployWorkflow]) {
     assert.match(workflow, /CONTROL_SHA: \$\{\{ github\.sha \}\}/);
     assert.match(workflow, /CONTROL_REF: \$\{\{ github\.ref \}\}/);
@@ -378,7 +383,7 @@ test('first activation is limited to pointer-only content and migration evidence
   assert.equal(policy.nodes['zhudatuan-l0'].deployments['support-api'].allowBaselineImport, true);
 });
 
-test('prepared deployment binds artifact and control-plane provenance before candidate validation or production switch', () => {
+test('1.3.1 binds artifact, source lineage and control-plane provenance before production switch', () => {
   assert.match(preparedDeployWorkflow, /ref: \$\{\{ github\.sha \}\}/);
   assert.match(preparedDeployWorkflow, /--source-sha "\$RELEASE_SHA"/);
   assert.match(preparedDeployWorkflow, /--control-sha "\$CONTROL_SHA"/);
@@ -386,7 +391,13 @@ test('prepared deployment binds artifact and control-plane provenance before can
   assert.match(preparedDeployWorkflow, /--github-run-attempt "\$GITHUB_RUN_ATTEMPT"/);
   assert.match(preparedDeployWorkflow, /--expected-remote-agent-sha256/);
   assert.match(preparedDeployWorkflow, /--expected-remote-policy-sha256/);
-  assert.match(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v2' : 'deploy-oss-direct-v2'/);
+  assert.match(preparedDeployWorkflow, /^name: Deploy 1\.3\.1 - Sealed Candidate/m);
+  assert.match(preparedDeployWorkflow, /GH_TOKEN: \$\{\{ github\.token \}\}/);
+  assert.match(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v3' : 'deploy-sealed-candidate-v3'/);
+  assert.doesNotMatch(releaseEngine, /candidateOnly \? 'validate-oss-candidate-v2' : 'deploy-oss-direct-v2'/);
+  assert.match(releaseEngine, /seal-validated-candidate-v3/);
+  assert.match(releaseEngine, /PREPARED_SOURCE_DOES_NOT_CONTAIN_CURRENT/);
+  assert.match(releaseEngine, /input: `\$\{JSON\.stringify\([\s\S]*?artifactUrl:[\s\S]*?: \{\}\),/);
   assert.match(preparedDeployWorkflow, /--node "\$RELEASE_NODE"/);
   assert.match(preparedDeployWorkflow, /validate-candidate/);
   assert.match(preparedDeployWorkflow, /jobs:\n  prepared:/);
