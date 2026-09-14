@@ -1311,3 +1311,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | 删除候选 | 仅仓内零 import；存在 module public API 与外部编译契约责任 | G0 |
 
 [FACT][E-AU-118-003] 4 文件、4 行远程订单/退款类型入口完成深审；无运行副作用，不以零引用认定垃圾。
+
+## 124. AU-119 Channel 外部对象映射模型清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| ExternalMapping | provider/object/external/internal/version 非空验证与外部 identity 组合 | [FACT][E-AU-119-001] |
+| sync callers | price/stock 仅用它验证；实际 SKU 持久化映射由 CatalogSourcePort 负责 | [FACT][E-AU-119-002] |
+| 删除候选 | identity getter 未见仓内直接消费者，但 constructor 是生产同步输入验证 | G0 |
+
+[FACT][E-AU-119-003] 2 文件、11 行 ExternalMapping 及兼容入口完成深审；没有独立持久化职责。
