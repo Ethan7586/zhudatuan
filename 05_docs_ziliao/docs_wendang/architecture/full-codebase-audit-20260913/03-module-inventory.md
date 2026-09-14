@@ -1301,3 +1301,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | 删除候选 | 无仓内 import 不等于可删；这些是 Channel public API/潜在 SDK 编译契约 | G0 |
 
 [FACT][E-AU-117-003] 4 文件、4 行 Channel 公共类型契约完成深审；无运行副作用，但保留公共接口责任。
+
+## 123. AU-118 Channel 远程订单/退款类型契约清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| RemoteOrderSubmitter/RemoteRefundProvider | 对 contract port 的 public/application type-only re-export | [FACT][E-AU-118-001] |
+| provider implementation | provider core PortFactory 实现 order/refund，运行时由 extension registry 给 fulfillment/payment | [FACT][E-AU-118-002] |
+| 删除候选 | 仅仓内零 import；存在 module public API 与外部编译契约责任 | G0 |
+
+[FACT][E-AU-118-003] 4 文件、4 行远程订单/退款类型入口完成深审；无运行副作用，不以零引用认定垃圾。
