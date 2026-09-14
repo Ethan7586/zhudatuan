@@ -1,4 +1,5 @@
 "路径","所属模块","文件类型","审阅状态","审阅日期","审计检查点","主要入口或调用者","风险等级","结论","是否需要二次复核"
+"02_platform_pingtai/database/supabase/migrations/20260904010000_allow_platform_owner_l6_registration.sql","数据/supabase","数据库迁移","已深入审阅","2026-09-15","AU-649 Platform Owner L6 registration","MigrationRunner、RegistrationMigrationPlan、access.protect_zhudatuan_owner、RegistrationOperations","中","G0：Platform Owner 的 Mall-bound Storefront 注册保护例外；沿用 F-0270 多 Mall qualification 数据模型风险","是"
 ".dockerignore","仓库根治理与配置","无扩展名文件","已深入审阅","2026-09-15","AU-491 Docker 构建上下文","阿里云 Dockerfile、Docker root context、本地 compose","中","G0：排除本地凭据/构建产物的隐式 Docker 构建契约；正式镜像触发入口未验证","否"
 ".editorconfig","仓库根治理与配置","无扩展名文件","已深入审阅","2026-09-15","AU-492 编辑器格式约定","EditorConfig 兼容 IDE/编辑器、Markdown/YAML 作者","低","G0：仓库级文本格式与文档硬换行约定；无仓内显式 formatter 消费证据","否"
 ".gitattributes","仓库根治理与配置","无扩展名文件","已深入审阅","2026-09-15","AU-493 Git 属性","Git checkout/index、格式化 gate、miniapp packer/SQL fixture","中","G0：LF 与二进制版本控制边界；跨平台实际 checkout 未验证","否"
