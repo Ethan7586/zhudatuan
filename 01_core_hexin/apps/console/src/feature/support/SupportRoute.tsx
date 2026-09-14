@@ -13,7 +13,7 @@ import { SupportConversation } from './SupportConversation';
 import { readCases, readMessages, supportCaseKey, supportMessageKey } from './SupportQuery';
 import { supportRoleLabel } from './SupportPresentation';
 import { SUPPORT_PREFETCH_STALE_TIME_MS } from './SupportPrefetch';
-import type { SupportMessage } from './SupportSchema';
+import type { SupportCaseView, SupportMessage, SupportMessageVisibility } from './SupportSchema';
 import './support-layout.css';
 import './support-conversation.css';
 import './support-context.css';
@@ -25,10 +25,14 @@ export function Component() {
   const { caseId } = useParams();
   const [search, setSearch] = useSearchParams();
   const [creatingCase, setCreatingCase] = useState(false);
+  const supportPath = scopePath(context.scope, 'support');
+  const caseView = supportCaseView(search.get('view'));
   const caseCursor = search.get('cursor') ?? undefined;
+  const queueSearch = search.toString();
+  const supportQueuePath = queueSearch.length === 0 ? supportPath : `${supportPath}?${queueSearch}`;
   const casesQuery = useQuery({
-    queryKey: supportCaseKey(context, caseCursor),
-    queryFn: ({ signal }) => readCases(context, caseCursor, signal),
+    queryKey: supportCaseKey(context, caseView, caseCursor),
+    queryFn: ({ signal }) => readCases(context, caseView, caseCursor, signal),
     staleTime: SUPPORT_PREFETCH_STALE_TIME_MS,
     refetchOnWindowFocus: false,
   });
@@ -66,20 +70,21 @@ export function Component() {
         || !context.session.capabilities.includes('support.messages.send') ? '当前身份无发送权限'
         : '当前工单不可发送回复';
   const send = useMutation({
-    mutationFn: async (message: string) => {
+    mutationFn: async ({ message, visibility }: Readonly<{ message: string; visibility: SupportMessageVisibility }>) => {
       if (selectedCase === undefined) throw new Error('SUPPORT_CASE_NOT_LOADED');
       return sendSupportMessage(context, { caseId: selectedCase.id, caseVersion: selectedCase.version,
-        caseState: selectedCase.state, message });
+        caseState: selectedCase.state, message, visibility });
     },
-    onSuccess: async () => { await messagesQuery.refetch(); },
+    onSuccess: async () => { await Promise.all([messagesQuery.refetch(), casesQuery.refetch()]); },
   });
-  const supportPath = scopePath(context.scope, 'support');
   const create = useMutation({
     mutationFn: (draft: Readonly<{ subject: string; message: string }>) => createSupportCase(context, draft),
     onSuccess: async (created) => {
       await casesQuery.refetch();
       setCreatingCase(false);
-      navigate(`${supportPath}/${encodeURIComponent(created.id)}`);
+      const selectedSearch = new URLSearchParams(search);
+      selectedSearch.delete('cursor');
+      navigate({ pathname: `${supportPath}/${encodeURIComponent(created.id)}`, search: selectedSearch.toString() });
     },
   });
   const createError = safeQueryError(create.error);
@@ -88,6 +93,14 @@ export function Component() {
   const brandName = scopeName === undefined || scopeName.length === 0 ? '当前商城' : normalizeConsoleCopy(scopeName);
   const roleLabel = supportRoleLabel(context.session.governance?.level);
   const nextMessageCursor = historyLoaded ? olderCursor : messagesQuery.data?.nextCursor;
+  const selectCaseView = (view: SupportCaseView) => {
+    const next = new URLSearchParams(search);
+    if (view === 'handling') next.delete('view');
+    else next.set('view', view);
+    next.delete('cursor');
+    setCreatingCase(false);
+    navigate({ pathname: supportPath, search: next.toString() });
+  };
   const loadOlder = async (cursor: string) => {
     if (caseId === undefined) return;
     const page = await readMessages(context, caseId, cursor, new AbortController().signal);
@@ -112,20 +125,23 @@ export function Component() {
         </div>
       </header>
       <nav className="supporttasktabs" aria-label="工单任务入口">
-        <button type="button" aria-current="page">待我处理 <strong>{casesQuery.data?.count ?? 0}</strong></button>
+        <button type="button" aria-current={caseView === 'handling' ? 'page' : undefined}
+          onClick={() => selectCaseView('handling')}>待我处理 <strong>{casesQuery.data?.views.handling ?? 0}</strong></button>
         <button type="button" disabled title="下一批接入">待我审批 <strong>0</strong></button>
-        <button type="button" disabled title="下一批接入">我发起的 <strong>0</strong></button>
-        <button type="button" disabled title="下一批接入">全部工单 <strong>0</strong></button>
+        <button type="button" aria-current={caseView === 'created' ? 'page' : undefined}
+          onClick={() => selectCaseView('created')}>我发起的 <strong>{casesQuery.data?.views.created ?? 0}</strong></button>
+        <button type="button" aria-current={caseView === 'all' ? 'page' : undefined}
+          onClick={() => selectCaseView('all')}>全部工单 <strong>{casesQuery.data?.views.all ?? 0}</strong></button>
       </nav>
       <div className="supportworkspace" data-case-selected={caseId === undefined && !creatingCase ? 'false' : 'true'}>
         <SupportCaseRail canCreate={createAllowed} cases={casesQuery.data?.items ?? []} condition={casesCondition}
           count={casesQuery.data?.count ?? 0} {...(casesError === undefined ? {} : { error: casesError })}
           createUnavailableReason={createUnavailableReason} creating={creatingCase}
           {...(casesQuery.data?.nextCursor === undefined ? {} : { nextCursor: casesQuery.data.nextCursor })}
-          {...(caseId === undefined ? {} : { selectedCaseId: caseId })} supportPath={supportPath}
+          {...(caseId === undefined ? {} : { selectedCaseId: caseId })} queueSearch={queueSearch} supportPath={supportPath}
           onCreate={() => setCreatingCase((current) => !current)} onRetry={() => { void casesQuery.refetch(); }}
           onNext={(cursor) => setSearch(pageCursor(search, cursor))} />
-        <SupportConversation canSend={sendAllowed} backPath={supportPath} {...(caseId === undefined ? {} : { caseId })}
+        <SupportConversation canSend={sendAllowed} backPath={supportQueuePath} {...(caseId === undefined ? {} : { caseId })}
           canCreateCase={createAllowed} condition={messagesCondition}
           {...(create.isError ? { createCaseError: `新建失败，请保留内容后重试。 ${createError ?? 'REQUEST_FAILED'}` } : {})}
           createUnavailableReason={createUnavailableReason} creatingCase={creatingCase} creatingCasePending={create.isPending} messages={messages}
@@ -136,12 +152,16 @@ export function Component() {
           sending={send.isPending} sendUnavailableReason={sendUnavailableReason}
           onCancelCreate={() => setCreatingCase(false)} onCreateCase={(draft) => create.mutateAsync(draft).then(() => undefined)}
           onNext={(cursor) => { void loadOlder(cursor); }} onRetry={() => { void messagesQuery.refetch(); }}
-          onSend={(message) => send.mutateAsync(message).then(() => undefined)} />
+          onSend={(message, visibility) => send.mutateAsync({ message, visibility }).then(() => undefined)} />
         <SupportContextPanel brandName={brandName} {...(selectedCase === undefined ? {} : { selectedCase })}
           {...(caseId === undefined ? {} : { caseId })} />
       </div>
     </section>
   );
+}
+
+function supportCaseView(raw: string | null): SupportCaseView {
+  return raw === 'created' || raw === 'all' ? raw : 'handling';
 }
 
 function RefreshIcon() {

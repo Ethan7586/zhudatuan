@@ -18,16 +18,17 @@ describe('support conversation queries', () => {
         reference_type text,reference_id text,updated_at timestamptz);
       create table support.ticket(id text primary key,conversation_id text,scope_id text,priority text,skill text,state text,
         assigned_agent_id text,response_due_at timestamptz,resolution_due_at timestamptz,created_at timestamptz,updated_at timestamptz,version bigint);
-      create table support.message(id text primary key,conversation_id text,author_type text,author_id text,body_ciphertext text,created_at timestamptz);
+      create table support.agent(id text primary key,membership_id text);
+      create table support.message(id text primary key,conversation_id text,author_type text,author_id text,visibility text default 'public',body_ciphertext text,created_at timestamptz);
       create table support.evidence(id text,conversation_id text,object_ref text,sha256 text,kind text,size_bytes bigint,state text,created_at timestamptz);
       insert into organization.unitclosure values('platform:root','platform:root');
       insert into support.conversation values('conversation:one','member:one',null,'inapp','测试会话',null,null,'2026-08-30T10:00:00Z');
       insert into support.ticket values('case:one','conversation:one','platform:root','normal','general','open',null,null,null,
         '2026-08-30T08:00:00Z','2026-08-30T10:00:00Z',3);
       insert into support.message values
-        ('message:1','conversation:one','member','member:one','ciphertext-message-1','2026-08-30T08:00:00Z'),
-        ('message:2','conversation:one','agent','agent:one','ciphertext-message-2','2026-08-30T09:00:00Z'),
-        ('message:3','conversation:one','member','member:one','ciphertext-message-3','2026-08-30T10:00:00Z');
+        ('message:1','conversation:one','member','member:one','public','ciphertext-message-1','2026-08-30T08:00:00Z'),
+        ('message:2','conversation:one','agent','agent:one','public','ciphertext-message-2','2026-08-30T09:00:00Z'),
+        ('message:3','conversation:one','member','member:one','public','ciphertext-message-3','2026-08-30T10:00:00Z');
     `);
   });
 
@@ -46,7 +47,71 @@ describe('support conversation queries', () => {
     expect((older.body as { items: { id: string }[] }).items.map(({ id }) => id)).toEqual(['message:1']);
     expect(older.body).not.toHaveProperty('nextCursor');
   });
+
+  it('shows internal notes to console staff but never to the requester', async () => {
+    await database.exec(`insert into support.message values
+      ('message:internal','conversation:one','agent','agent:one','internal','ciphertext-internal','2026-08-30T10:30:00Z')`);
+    const lifecycle = messagesLifecycle();
+
+    const consoleResult = await lifecycle.finalize!(request(),
+      await lifecycle.execute(request(), database as unknown as OperationDatabase, undefined), undefined);
+    expect((consoleResult.body as { items: { id: string; visibility: string }[] }).items)
+      .toEqual(expect.arrayContaining([expect.objectContaining({ id: 'message:internal', visibility: 'internal' })]));
+
+    const requester = request(undefined, 'storefront');
+    const requesterResult = await lifecycle.finalize!(requester,
+      await lifecycle.execute(requester, database as unknown as OperationDatabase, undefined), undefined);
+    expect((requesterResult.body as { items: { id: string }[] }).items.map(({ id }) => id)).not.toContain('message:internal');
+  });
+
+  it('does not expose another requester ticket or its attachments through a shared scope', async () => {
+    await database.exec(`
+      insert into support.conversation values('conversation:private','member:other',null,'inapp','其他人的工单',null,null,'2026-08-30T11:00:00Z');
+      insert into support.ticket values('case:private','conversation:private','platform:root','normal','general','open',null,null,null,
+        '2026-08-30T11:00:00Z','2026-08-30T11:00:00Z',1);
+      insert into support.message values('message:private','conversation:private','member','member:other','public','secret','2026-08-30T11:00:00Z');
+      insert into support.evidence values('evidence:private','conversation:private','oss://private','${'c'.repeat(64)}','image/png',100,'clean','2026-08-30T11:00:00Z');
+    `);
+    const lifecycle = messagesLifecycle();
+    const otherTicket = request(undefined, 'storefront', 'case:private');
+
+    const result = await lifecycle.finalize!(otherTicket,
+      await lifecycle.execute(otherTicket, database as unknown as OperationDatabase, undefined), undefined);
+
+    expect(result.body).toMatchObject({ items: [], attachments: [], count: 0 });
+  });
+
+  it('separates handling, created and scope-wide queues with stable counts', async () => {
+    await database.exec(`
+      insert into support.agent values('agent:mine','membership:one'),('agent:other','membership:other');
+      insert into support.conversation values
+        ('conversation:mine','member:two',null,'inapp','分配给我的',null,null,'2026-08-30T11:00:00Z'),
+        ('conversation:other','member:three',null,'inapp','别人的工单',null,null,'2026-08-30T12:00:00Z');
+      insert into support.ticket values
+        ('case:mine','conversation:mine','platform:root','high','general','assigned','agent:mine',null,null,
+          '2026-08-30T11:00:00Z','2026-08-30T11:00:00Z',1),
+        ('case:other','conversation:other','platform:root','normal','general','assigned','agent:other',null,null,
+          '2026-08-30T12:00:00Z','2026-08-30T12:00:00Z',1);
+    `);
+    const action = casesAction();
+
+    const handling = await action(caseRequest('handling'), database as unknown as OperationDatabase);
+    const created = await action(caseRequest('created'), database as unknown as OperationDatabase);
+    const all = await action(caseRequest('all'), database as unknown as OperationDatabase);
+
+    expect((handling.body as { items: { id: string }[] }).items.map(({ id }) => id)).toEqual(['case:mine', 'case:one']);
+    expect((created.body as { items: { id: string }[] }).items.map(({ id }) => id)).toEqual(['case:one']);
+    expect((all.body as { items: { id: string }[] }).items.map(({ id }) => id)).toEqual(['case:other', 'case:mine', 'case:one']);
+    expect((all.body as { views: unknown }).views).toEqual({ handling: 2, created: 1, all: 3 });
+  });
 });
+
+function casesAction() {
+  const action = getConversationsOperations({} as KmsClient,
+    (() => ({ member: async () => 'member:one' })) as unknown as SupportPortFactory)['support.cases.read'];
+  if (typeof action !== 'function') throw new Error('SUPPORT_CASES_ACTION_MISSING');
+  return action;
+}
 
 function messagesLifecycle(): OperationLifecycle {
   const kms = { decrypt: async (_key: string, ciphertext: string) => `plain:${ciphertext}` } as unknown as KmsClient;
@@ -56,8 +121,13 @@ function messagesLifecycle(): OperationLifecycle {
   return action;
 }
 
-function request(cursor?: string): OperationRequest {
+function request(cursor?: string, target: 'console' | 'storefront' = 'console', caseId = 'case:one'): OperationRequest {
   return { type: 'support.messages.read', access: { membership: { id: 'membership:one' }, scope: { id: 'platform:root' },
-    actor: { id: 'agent:one' }, trace: 'trace:support' }, input: { path: { caseid: 'case:one' }, query: { limit: '2',
+    actor: { id: 'agent:one', target }, trace: 'trace:support' }, input: { path: { caseid: caseId }, query: { limit: '2',
       ...(cursor === undefined ? {} : { cursor }) } } } as unknown as OperationRequest;
+}
+
+function caseRequest(view: 'handling' | 'created' | 'all'): OperationRequest {
+  return { type: 'support.cases.read', access: { membership: { id: 'membership:one' }, scope: { id: 'platform:root' },
+    actor: { id: 'agent:one', target: 'console' }, trace: 'trace:support' }, input: { path: {}, query: { limit: '50', view } } } as unknown as OperationRequest;
 }

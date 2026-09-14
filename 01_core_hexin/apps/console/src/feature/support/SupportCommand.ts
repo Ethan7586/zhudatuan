@@ -2,7 +2,7 @@ import { createFetchSupportCasesCreate, createFetchSupportMessagesSend } from '@
 import type { ConsoleContext } from '../../entity/session/ConsoleSession';
 import { consoleCommand } from '../../shared/api/Client';
 import { appConfig } from '../../shared/config/AppConfig';
-import { SupportCaseSchema } from './SupportSchema';
+import { SupportCaseSchema, type SupportMessageVisibility } from './SupportSchema';
 
 const casesCreate = createFetchSupportCasesCreate(appConfig.apiBaseUrl);
 const messagesSend = createFetchSupportMessagesSend(appConfig.apiBaseUrl);
@@ -18,6 +18,7 @@ export interface SendSupportMessageDraft {
   readonly caseVersion: number;
   readonly caseState: string;
   readonly message: string;
+  readonly visibility: SupportMessageVisibility;
 }
 
 export function canCreateSupportCase(context: ConsoleContext): boolean {
@@ -63,7 +64,7 @@ export async function sendSupportMessage(
   if (message.length > MESSAGE_LIMIT) throw new Error('SUPPORT_MESSAGE_TOO_LONG');
 
   return messagesSend(
-    { path: { caseid: draft.caseId }, body: { message } },
+    { path: { caseid: draft.caseId }, body: { message, visibility: draft.visibility } },
     consoleCommand(context.scope, {
       accessVersion: context.session.accessVersion,
       expectedVersion: draft.caseVersion,

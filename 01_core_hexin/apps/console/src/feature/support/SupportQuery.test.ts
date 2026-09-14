@@ -35,7 +35,7 @@ describe('support document prefetch', () => {
       scopeKind: 'mall', scopeId: 'mall:one', accessVersion: 7, value: response,
     }) };
 
-    await expect(readCases(context, undefined, new AbortController().signal)).resolves.toMatchObject({ count: 0 });
+    await expect(readCases(context, 'handling', undefined, new AbortController().signal)).resolves.toMatchObject({ count: 0 });
     expect(api.casesRead).not.toHaveBeenCalled();
   });
 
@@ -45,7 +45,18 @@ describe('support document prefetch', () => {
     }) };
     api.casesRead.mockResolvedValue(response);
 
-    await readCases(context, undefined, new AbortController().signal);
+    await readCases(context, 'handling', undefined, new AbortController().signal);
     expect(api.casesRead).toHaveBeenCalledOnce();
+  });
+
+  it('does not reuse the handling prefetch for another queue', async () => {
+    window.__consoleSupportPrefetch = { settled: true, promise: Promise.resolve({
+      scopeKind: 'mall', scopeId: 'mall:one', accessVersion: 7, value: response,
+    }) };
+    api.casesRead.mockResolvedValue(response);
+
+    await readCases(context, 'created', undefined, new AbortController().signal);
+
+    expect(api.casesRead).toHaveBeenCalledWith(expect.objectContaining({ query: { limit: 50, view: 'created' } }), expect.anything());
   });
 });

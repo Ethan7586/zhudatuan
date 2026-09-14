@@ -43,7 +43,7 @@ describe('Console professional named reads', () => {
       ...(['libraries', 'programs', 'reserves', 'batches'] as const).map((view) => readVouchers(context, view, undefined, signal)),
       ...(['sales', 'products', 'malls', 'categories', 'channels', 'powderclass', 'voucher'] as const)
         .map((view) => readReport(context, view, '30days', undefined, signal)),
-      readCases(context, undefined, signal), readMessages(context, 'case:1', undefined, signal),
+      readCases(context, 'handling', undefined, signal), readMessages(context, 'case:1', undefined, signal),
       readAccess(context, undefined, signal), readMembers(context, undefined, signal), readQualifications(context, undefined, signal),
       readNotificationRecords(context, 'templates', undefined, signal), readNotificationRecords(context, 'announcements', undefined, signal),
       ...(['connections', 'syncs', 'operations'] as const).map((view) => readChannels(context, view, undefined, signal)),

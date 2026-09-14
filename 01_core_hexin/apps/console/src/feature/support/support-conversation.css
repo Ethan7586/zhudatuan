@@ -33,6 +33,9 @@
 .supportmessage header strong { color: #28364e; font-size: 13px; }
 .supportmessage p { margin: 0; border: 1px solid #edf0f4; border-radius: 6px 14px 14px; background: #f5f6f8; color: #202d43; padding: 12px 15px; font-size: 13px; line-height: 1.62; overflow-wrap: anywhere; white-space: pre-wrap; }
 .supportmessage[data-author='agent'] p { border-color: #dceaff; border-radius: 14px 6px 14px 14px; background: #edf5ff; }
+.supportmessage[data-visibility='internal'] .supportmessageavatar { background: #d69226; }
+.supportmessage[data-visibility='internal'] header strong { color: #8a5a11; }
+.supportmessage[data-visibility='internal'] p { border-color: #f0d8ad; background: #fff8e9; color: #63471c; }
 .supportloadmessages { display: block; min-height: 28px; margin: 0 auto 14px; border: 1px solid var(--support-border); border-radius: 999px; background: #fff; color: #66758e; padding: 0 14px; font-size: 11px; }
 .supportconversationempty { display: grid; min-height: 100%; place-content: center; gap: 5px; color: var(--support-muted); text-align: center; }
 .supportconversationempty strong { color: var(--support-ink); font-size: 14px; }
@@ -43,6 +46,11 @@
 .supportcomposermodes button { position: relative; min-height: 34px; border: 0; border-radius: 6px 6px 0 0; background: #f1f3f6; color: #697892; padding: 0 18px; font: inherit; font-size: 13px; }
 .supportcomposermodes button[aria-selected='true'] { background: var(--support-blue); color: #fff; font-weight: 800; }
 .supportcomposermodes button[aria-selected='true']::after { position: absolute; right: 50%; bottom: -7px; border: 7px solid transparent; border-top-color: var(--support-blue); border-bottom: 0; content: ''; transform: translateX(50%); }
+.supportcomposer[data-visibility='internal'] .supportcomposermodes button[aria-selected='true'] { background: #b87817; }
+.supportcomposer[data-visibility='internal'] .supportcomposermodes button[aria-selected='true']::after { border-top-color: #b87817; }
+.supportcomposer[data-visibility='internal'] .supportcomposerbox { border-color: #e7c98d; background: #fffdf7; }
+.supportcomposer[data-visibility='internal'] textarea { background: #fffdf7; }
+.supportcomposer[data-visibility='internal'] .supportcomposeractions > button:not(:disabled) { border-color: #b87817; background: #b87817; }
 .supportcomposermodes button:disabled { cursor: not-allowed; opacity: .66; }
 .supportcomposerbox { display: grid; min-height: 116px; grid-template-rows: minmax(0, 1fr) 40px; margin: 0 10px 10px; border: 1px solid var(--support-border); border-radius: 8px; overflow: hidden; }
 .supportcomposer textarea { width: 100%; min-height: 66px; resize: none; border: 0; outline: 0; background: #fff; color: var(--support-ink); padding: 12px 14px 5px; font: inherit; font-size: 13px; line-height: 1.5; }

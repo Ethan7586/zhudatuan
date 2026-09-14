@@ -24,6 +24,7 @@ interface SupportCaseRailProps {
   readonly onNext: (cursor: string) => void;
   readonly onRetry: () => void;
   readonly selectedCaseId?: string;
+  readonly queueSearch: string;
   readonly supportPath: string;
 }
 
@@ -68,7 +69,7 @@ export function SupportCaseRail(props: SupportCaseRailProps) {
             {visibleCases.length === 0 ? <div className="supportlocalempty"><strong>没有匹配的工单</strong><span>换个关键词或状态试试。</span></div> :
               <nav className="supportcaselist" aria-label="服务工单">
                 {visibleCases.map((item) => <SupportCaseLink key={item.id} item={item} selected={item.id === props.selectedCaseId}
-                  supportPath={props.supportPath} />)}
+                  queueSearch={props.queueSearch} supportPath={props.supportPath} />)}
               </nav>}
           </ResourceState>}
       </div>
@@ -104,13 +105,15 @@ function SupportQueueError({ error, onRetry }: Readonly<{ error?: string; onRetr
   </section>;
 }
 
-function SupportCaseLink({ item, selected, supportPath }: Readonly<{
+function SupportCaseLink({ item, selected, queueSearch, supportPath }: Readonly<{
   item: SupportCase;
   selected: boolean;
+  queueSearch: string;
   supportPath: string;
 }>) {
   return (
-    <Link to={`${supportPath}/${encodeURIComponent(item.id)}`} aria-current={selected ? 'page' : undefined}>
+    <Link to={{ pathname: `${supportPath}/${encodeURIComponent(item.id)}`, search: queueSearch }}
+      aria-current={selected ? 'page' : undefined}>
       <span className="supportcasecopy">
         <span className="supportcaseidentity">发起人</span>
         <span className="supportcasetopline"><strong>{item.subject}</strong></span>

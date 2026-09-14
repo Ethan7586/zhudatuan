@@ -58,7 +58,7 @@ export function openConversationOperations(kms: KmsClient, ports: SupportPortFac
       ]);
       await repository.history(ticket, access.scope.id, 'opened', access.actor.id, { assigned: selected?.id ?? null, priority, skill });
       if (message) await repository.message(ticket, conversation, access.scope.id,
-        access.actor.target === 'storefront' ? 'member' : 'agent', access.actor.id, message);
+        access.actor.target === 'storefront' ? 'member' : 'agent', access.actor.id, 'public', message);
       return { ...rowResult(result, 201), body: { ...created, subject, channel, order_id: order, member_id: member } };
     },
   }) };

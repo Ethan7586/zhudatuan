@@ -4,7 +4,7 @@ import { AssignmentRule } from '../../02_domain_yewu/model/AssignmentRule';
 import type { TicketPriority } from '../../02_domain_yewu/model/Ticket';
 import type { Agent } from '../../02_domain_yewu/policy/AssignmentPolicy';
 import { Message } from '../../02_domain_yewu/model/Message';
-import type { EncryptedMessage, SlaPolicy, SupportPort } from '../../01_public_gongkai/SupportPort';
+import type { EncryptedMessage, MessageVisibility, SlaPolicy, SupportPort } from '../../01_public_gongkai/SupportPort';
 import type { GetOrderSummary } from '../../../order_dingdan';
 
 export class PgSupportRepository implements SupportPort {
@@ -52,19 +52,19 @@ export class PgSupportRepository implements SupportPort {
   }
 
   async message(ticket: string, conversation: string, scope: string, author: 'member' | 'agent', actor: string,
-    message: EncryptedMessage) {
-    const result = await this.database.query<{ id: string; author_type: 'member' | 'agent'; author_id: string; created_at: string }>(`insert into support.message(id,scope_id,conversation_id,author_type,author_id,body_ciphertext,
-      body_hash,body_key_version,created_at) values($1,$2,$3,$4,$5,$6,$7,$8,clock_timestamp()) returning id,author_type,author_id,created_at`,
-    [message.id, scope, conversation, author, actor, message.ciphertext, message.fingerprint, message.keyVersion]);
+    visibility: MessageVisibility, message: EncryptedMessage) {
+    const result = await this.database.query<{ id: string; author_type: 'member' | 'agent'; author_id: string; created_at: string }>(`insert into support.message(id,scope_id,conversation_id,author_type,author_id,visibility,body_ciphertext,
+      body_hash,body_key_version,created_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,clock_timestamp()) returning id,author_type,author_id,created_at`,
+    [message.id, scope, conversation, author, actor, visibility, message.ciphertext, message.fingerprint, message.keyVersion]);
     const appended = result.rows[0];
     if (!appended) throw new Error('SUPPORT_MESSAGE_APPEND_FAILED');
     new Message(appended.id, conversation, appended.author_type, appended.author_id, message.fingerprint, appended.created_at);
-    await this.database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
-      occurred_at,available_at) select $1::text,'support.message.sent',1,'conversation',$2::text,$3::text,
-      jsonb_build_object('ticket',$4::text,'conversation',$2::text,'message',$5::text,'authorType',$6::text,
-      'member',target.member_id),$1::text,clock_timestamp(),clock_timestamp() from support.conversation target
-      where target.id=$2::text and target.member_id is not null`,
-    [`event:${randomUUID()}`, conversation, scope, ticket, message.id, author]);
+    if (visibility === 'public') await this.database.query(`insert into runtime.outbox(id,event_type,event_version,aggregate_type,aggregate_id,scope_id,payload,trace_id,
+        occurred_at,available_at) select $1::text,'support.message.sent',1,'conversation',$2::text,$3::text,
+        jsonb_build_object('ticket',$4::text,'conversation',$2::text,'message',$5::text,'authorType',$6::text,
+        'member',target.member_id),$1::text,clock_timestamp(),clock_timestamp() from support.conversation target
+        where target.id=$2::text and target.member_id is not null`,
+      [`event:${randomUUID()}`, conversation, scope, ticket, message.id, author]);
     return result;
   }
 

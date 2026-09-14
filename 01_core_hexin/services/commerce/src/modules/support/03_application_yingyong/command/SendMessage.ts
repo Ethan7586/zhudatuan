@@ -3,7 +3,7 @@ import type { OperationActions } from '../../../../foundation/application/Module
 import { operationLifecycle, requireAccess, rowResult } from '../../../../foundation/application/ModuleOperations';
 import { bodyRecord, integerField, textField } from '../../../../foundation/interface/Validation';
 import type { KmsClient } from '../../../../foundation/infrastructure/KmsClient';
-import type { EncryptedMessage, SupportPortFactory } from '../../01_public_gongkai/SupportPort';
+import type { EncryptedMessage, MessageVisibility, SupportPortFactory } from '../../01_public_gongkai/SupportPort';
 
 export function sendMessageOperations(kms: KmsClient, ports: SupportPortFactory): OperationActions {
   return {
@@ -11,23 +11,27 @@ export function sendMessageOperations(kms: KmsClient, ports: SupportPortFactory)
       prepare: async (request) => {
         const access = requireAccess(request); const ticket = request.input.path.caseid!; const body = bodyRecord(request);
         if (request.input.expectedVersion === undefined) throw new Error('EXPECTED_VERSION_REQUIRED');
+        const visibility = choice(body.visibility ?? 'public', ['public','internal'], 'SUPPORT_MESSAGE_VISIBILITY_INVALID') as MessageVisibility;
+        if (visibility === 'internal' && access.actor.target === 'storefront') throw new Error('SUPPORT_INTERNAL_NOTE_FORBIDDEN');
         return { access, ticket, expectedVersion: request.input.expectedVersion,
-          message: await encrypt(kms, textField(body, 'message', 4000)) };
+          visibility, message: await encrypt(kms, textField(body, 'message', 4000)) };
       },
-      execute: async (_request, database, { access, ticket, expectedVersion, message }) => {
+      execute: async (_request, database, { access, ticket, expectedVersion, visibility, message }) => {
         const repository = ports(database); const member = await repository.member(access.membership.id);
         const selected = await database.query<{ conversation_id: string; scope_id: string }>(`select ticket.conversation_id,ticket.scope_id
           from support.ticket ticket join support.conversation conversation on conversation.id=ticket.conversation_id where ticket.id=$1
-          and ticket.state<>'closed' and (conversation.member_id=$3 or exists(select 1 from organization.unitclosure
-          where ancestor_id=$2 and descendant_id=ticket.scope_id)) and ticket.version=$4 for update of ticket`,
-        [ticket, access.scope.id, member, expectedVersion]);
+          and ticket.state<>'closed' and (($5::text='storefront' and conversation.member_id=$3) or ($5::text='console' and
+          exists(select 1 from organization.unitclosure where ancestor_id=$2 and descendant_id=ticket.scope_id)))
+          and ticket.version=$4 for update of ticket`, [ticket, access.scope.id, member, expectedVersion, access.actor.target]);
         const target = selected.rows[0]; if (!target) throw new Error('VERSION_CONFLICT');
         const author = access.actor.target === 'storefront' ? 'member' : 'agent';
-        const result = await repository.message(ticket, target.conversation_id, target.scope_id, author, access.actor.id, message);
-        await database.query(`update support.ticket set state=case when $2='member' then 'open' else 'waiting' end,
-          updated_at=clock_timestamp(),version=version+1 where id=$1`, [ticket, author]);
+        const result = await repository.message(ticket, target.conversation_id, target.scope_id, author, access.actor.id, visibility, message);
+        await database.query(`update support.ticket set state=case when $2::text='internal' then state
+          when $3::text='member' then 'open' else 'waiting' end,updated_at=clock_timestamp(),version=version+1 where id=$1`,
+        [ticket, visibility, author]);
         await database.query('update support.conversation set updated_at=clock_timestamp(),version=version+1 where id=$1', [target.conversation_id]);
-        await repository.history(ticket, target.scope_id, 'message', access.actor.id, { message: result.rows[0]!.id });
+        await repository.history(ticket, target.scope_id, visibility === 'internal' ? 'internal.note' : 'message', access.actor.id,
+          { message: result.rows[0]!.id, visibility });
         return rowResult(result, 201);
       },
     }),
@@ -54,6 +58,6 @@ export function sendMessageOperations(kms: KmsClient, ports: SupportPortFactory)
 async function encrypt(kms: KmsClient, body: string): Promise<EncryptedMessage> {
   const id = `message:${randomUUID()}`; return { id, ...await kms.encrypt('support/message', body, { message: id }) };
 }
-function choice(value: unknown, allowed: readonly string[]): string {
-  if (typeof value !== 'string' || !allowed.includes(value)) throw new Error('SUPPORT_ATTACHMENT_TYPE_INVALID'); return value;
+function choice(value: unknown, allowed: readonly string[], error = 'SUPPORT_ATTACHMENT_TYPE_INVALID'): string {
+  if (typeof value !== 'string' || !allowed.includes(value)) throw new Error(error); return value;
 }
