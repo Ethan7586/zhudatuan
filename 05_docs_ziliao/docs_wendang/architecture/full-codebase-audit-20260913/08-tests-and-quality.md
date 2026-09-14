@@ -461,3 +461,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - `http.test.ts` 直接覆盖JSON/错误/405 的 status、Allow、request-id与防护headers。
 - `errorResponse.ts` 及 `routerSupport.ts` 没有同层direct fixture；应补已知/未知error、32KB边界、错误声明长度与实际长度、server-only scope参数。见F-0188/P3；审计工作树未运行Vitest。
+
+## 174. AU-174 RPC/crypto adapter 深审
+
+- Order/registration route tests以真实 `encryptJson` 调用进入上层mock RPC，但不解密或断言cipher envelope；`supabase.ts`与`crypto.ts`没有同层测试。
+- 应直接覆盖AES-GCM round-trip、IV随机性、篡改/错误key拒绝、非法key与RPC 204/non-OK 2KB截断。见F-0189/P2；审计工作树未运行Vitest。

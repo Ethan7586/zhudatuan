@@ -3668,6 +3668,20 @@
 | 验证/回滚 | 断言所有known/unknown error和四种body边界、每个RPC参数及null scope；回滚为revert独立测试提交。 |
 | 独立复核 | 否；P3。 |
 
+## F-0189｜PII crypto adapter 缺少直接 round-trip 与篡改拒绝规格
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | commerce-api / PII crypto；P2；高 |
+| 类型 | 测试覆盖缺口、个人信息加解密正确性 |
+| 位置 | `01_core_hexin/services/commerce-api/src/api/crypto.ts:1-49` |
+| 当前/预期 | adapter实现32-byte key、AES-256-GCM、随机12-byte IV、version/algorithm envelope，订单/注册/地址/安全中心均使用。现有route tests只间接执行部分encrypt，未将cipher解回或验证篡改/错误key失败。预期直接固定round-trip、不同IV、tamper、非法cipher、错误key和base64 key长度。 |
+| 直接证据 | 仓内没有`crypto.test.ts`，没有生产/测试文件直接调用`decryptJson`验证加密输出；`orderRoutes.test.ts`和`registrationRoutes.test.ts`只mock后续RPC成功。 |
+| 调用链/影响 | registration/order/address/security-center → encryptJson；address read → decryptJson。key/cipher envelope或认证标签处理回归会在写入后才暴露为PII读取失败或数据不可用。 |
+| 建议方向 | 从修复时最新`zdt-next`建立独立crypto adapter test批，不改变算法或密钥策略；回滚为撤回该测试提交。 |
+| 验证/回滚 | 定向test：round-trip、same input differing IV、bit-flip/invalid schema/wrong key reject；回滚为revert独立测试提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

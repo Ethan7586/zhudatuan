@@ -1,0 +1,5 @@
+id,files,location,kind,observation
+E-AU-174-001,src/api/supabase.ts,5-55,RPC boundary,Configured service role is sent only in headers to REST RPC endpoint; non-OK response text is bounded to 2000 bytes and 204 has explicit void result.
+E-AU-174-002,src/api/crypto.ts,1-17,hash boundary,SHA-256 produces base64 output for non-PII comparison/reference values used by rate limits and idempotency.
+E-AU-174-003,src/api/crypto.ts,19-49,PII cipher,Base64 key must decode to 32 bytes; AES-256-GCM uses fresh 12-byte IV and versioned envelope validation before decrypt.
+E-AU-174-004,src/api/{orderRoutes,registrationRoutes,addressRoutes,securityCenterRoutes}.ts,repository search,consumer,address/book/order/registration/security phone paths invoke encryption and address read invokes decryption.

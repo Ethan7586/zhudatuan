@@ -1879,3 +1879,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | consumers | 29个compat API callsites共用body parser；full router是known-error mapper唯一捕获者 | [FACT][E-AU-173-004] |
 
 [FACT][E-AU-173-005] 4 文件、202 行完成深审；测试只直接覆盖HTTP响应，error mapper和body/scope helper没有独立行为fixture。
+
+## 179. AU-174 RPC/crypto adapter 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| Supabase RPC | server service-role authenticated POST、204 handling、limited upstream error capture | [FACT][E-AU-174-001] |
+| hash | SHA-256 base64 hash for IP/idempotency/invite/credential references | [FACT][E-AU-174-002] |
+| PII cipher | AES-256-GCM、random IV、versioned serialized envelope | [FACT][E-AU-174-003] |
+| consumers | registration/order/address/security-center write and address read | [FACT][E-AU-174-004] |
+
+[FACT][E-AU-174-005] 2 文件、104 行完成深审；没有同层adapter test，route tests仅间接触发部分encrypt path。
