@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-152 已完成。AU-152 完成 Inventory 兼容导出与文件级覆盖闭合。覆盖总账按当前文件级清单重算：深入审阅1,469文件/106,864行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,385文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-153 已完成。AU-153 完成 Partner、Store 与供应关系运行链审阅。覆盖总账按当前文件级清单重算：深入审阅1,476文件/107,057行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,378文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1347,3 +1347,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Inventory 七个 root/legacy compatibility export，反查 Commerce main/jobs consumers。
 
 执行结果：七项均为单向转发；root module 保持主 app 的 stable import，legacy job paths 被主 jobs catalog 实际使用，public index 保持 InventoryPort/manifest。全部归类 G0。Inventory 20/20 基线文件均取得审阅状态；未发现 P0–P3 新问题。
+
+## 155. AU-153 连续审计点
+
+审阅 Partner/Store HTTP operations、供应关系/合同版本端口、main module/public manifest 及唯一 manifest test，并反查 checkout/order caller。
+
+执行结果：Partner read/manage 以 scope/version 写入；Store write 对地址使用 KMS envelope，mall/scope 受 `access.scope_allowed` 约束。供应关系/合同版本 port 先 supersede 上一版本再插入带 predecessor 的新版本；Checkout/Order 真实读取供应关系。新增 F-0182/P2：没有 PartnerOperations 或 SupplierRelationshipPort 的直接行为/事务测试。无 P0。

@@ -1666,3 +1666,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | live consumers | main app uses root module；jobs catalog uses legacy job exports | [FACT][E-AU-152-002]；G0 |
 
 [FACT][E-AU-152-003] 7 文件、18 行完成深审；Inventory 20/20 文件均取得审阅状态，兼容入口保留不删。
+
+## 158. AU-153 Partner、Store 与供应关系清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| partner/store API | partner list/versioned write；Store location/address/radius management | [FACT][E-AU-153-001]；address KMS envelope，scope predicates |
+| supplier relationship port | supplier relationship/contract version supersession and predecessor linkage | [FACT][E-AU-153-002]；Order/Checkout reads live relationship |
+| tests/public | manifest/public surface only | [FACT][E-AU-153-003]；F-0182/P2 |
+
+[FACT][E-AU-153-004] 7 文件、193 行完成深审；Partner 7/7 基线文件均取得审阅状态。

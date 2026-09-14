@@ -3572,6 +3572,19 @@
 | 建议方向 | 从修复时最新 `zdt-next` 单独建立测试批次，以 fake transaction/PGlite 覆盖上述路径；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2。 |
 
+## F-0182｜Partner 与供应关系写入没有直接行为测试
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | partner / HTTP、关系版本端口；P2；高 |
+| 类型 | 测试覆盖缺口、scope/version/KMS 写入正确性 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/partner/{01_public_gongkai/SupplierRelationshipPort,03_application_yingyong/PartnerOperations}.ts` |
+| 当前/预期 | Partner/Store manage 实现 version/scope/KMS 地址写入；供应关系/合同实现 supersede+insert 版本链。现有测试仅断言 manifest。预期覆盖 scope拒绝、version conflict、KMS prepare failure、store create/update、relationship/contract predecessor 和重复版本。 |
+| 直接证据 | `*.test.ts` 中没有 `partnerOperations` 或 `SupplierRelationshipPort` 的调用/实例；唯一 test 是 manifest inventory。 |
+| 调用链/影响 | Commerce main → PartnerModule → HTTP operations；Checkout/Order → partner.supplierrelationship。写入或版本链回归不会被当前模块测试直接发现。 |
+| 建议方向 | 从修复时最新 `zdt-next` 建立独立测试批次；回滚为撤回该测试批次。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

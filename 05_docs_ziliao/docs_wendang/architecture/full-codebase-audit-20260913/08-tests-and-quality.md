@@ -371,3 +371,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 兼容导出无独立业务分支；legacy job paths 由主 jobs catalog 直接消费。
 - Inventory 20/20 文件均取得审阅状态，不将转发路径误判为删除候选。
+
+## 153. AU-153 Partner、Store 与供应关系深审
+
+- 唯一 Partner test 只断言 manifest operations/public identity。
+- PartnerOperations 和 SupplierRelationshipPort 没有 direct behavior fixture，见 F-0182/P2。
