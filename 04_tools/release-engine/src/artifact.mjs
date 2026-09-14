@@ -1,5 +1,5 @@
 import { createReadStream, createWriteStream } from 'node:fs';
-import { cp, lstat, lutimes, mkdir, readFile, readdir, readlink, rename, rm, utimes, writeFile } from 'node:fs/promises';
+import { chmod, cp, lstat, lutimes, mkdir, readFile, readdir, readlink, rename, rm, utimes, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import { pipeline } from 'node:stream/promises';
@@ -54,6 +54,7 @@ export async function materializeTarget(adapter, targetId, runDirectory, changes
 export async function packageTarget(adapter, plan, buildEvidence, runDirectory, artifactRoot) {
   const targetId = buildEvidence.target;
   const target = adapter.targets[targetId];
+  await normalizeArtifactModes(buildEvidence.directory);
   const content = await treeEvidence(buildEvidence.directory, target.criticalFiles ?? []);
   assertArtifactSize(targetId, content.totalBytes, content.entries);
   const artifactId = `${adapter.project}-${targetId}-${content.treeDigest.slice(7, 19)}`;
@@ -118,6 +119,25 @@ export async function packageTarget(adapter, plan, buildEvidence, runDirectory, 
   const committed = await existingArtifact(manifestPath, archive, { adapter, plan, targetId, content });
   invariant(Boolean(committed), 'ARTIFACT_IMMUTABLE_COMMIT_FAILED', `Artifact was not committed: ${targetId}`);
   return { ...committed, packageCache: 'miss' };
+}
+
+async function normalizeArtifactModes(root) {
+  await chmod(root, 0o755);
+  await normalizeDirectoryModes(root);
+}
+
+async function normalizeDirectoryModes(directory) {
+  for (const name of (await readdir(directory)).sort()) {
+    const absolute = join(directory, name);
+    const stats = await lstat(absolute);
+    if (stats.isSymbolicLink()) continue;
+    if (stats.isDirectory()) {
+      await chmod(absolute, 0o755);
+      await normalizeDirectoryModes(absolute);
+      continue;
+    }
+    if (stats.isFile()) await chmod(absolute, stats.mode & 0o111 ? 0o755 : 0o644);
+  }
 }
 
 export async function resolvePackageArtifactPaths(packagePath, packageSet) {

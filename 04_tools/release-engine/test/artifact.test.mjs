@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, rm, utimes, writeFile } from 'node:fs/promises';
+import { chmod, lstat, mkdir, mkdtemp, readFile, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -64,6 +64,41 @@ test('packages only existing changed files and records deletions', async () => {
   assert.equal(rebuilt.archive.sha256, artifact.archive.sha256);
   assert.equal(rebuilt.archive.bytes, artifact.archive.bytes);
   assert.equal(rebuilt.manifestDigest, artifact.manifestDigest);
+});
+
+test('normalizes packaged runtime modes independently of the runner umask', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'ai-delivery-modes-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(join(root, 'dist', 'assets'), { recursive: true, mode: 0o700 });
+  await writeFile(join(root, 'dist', 'index.html'), '<main>ready</main>', { mode: 0o600 });
+  await writeFile(join(root, 'dist', 'assets', 'runtime.js'), 'export {};', { mode: 0o700 });
+  await chmod(join(root, 'dist'), 0o700);
+  await chmod(join(root, 'dist', 'assets'), 0o700);
+
+  const adapter = {
+    project: 'fixture',
+    projectRoot: root,
+    targets: {
+      console: {
+        kind: 'frontend',
+        artifactInputs: [{ source: 'dist', destination: 'static' }],
+        criticalFiles: ['static/index.html'],
+      },
+    },
+  };
+  const evidence = await materializeTarget(adapter, 'console', join(root, 'run'));
+  const plan = { to: { sha: 'b'.repeat(40) }, planDigest: digest({ test: 'modes' }) };
+  const artifact = await packageTarget(adapter, plan, evidence, join(root, 'run'), join(root, 'artifacts'));
+
+  assert.equal((await lstat(evidence.directory)).mode & 0o777, 0o755);
+  assert.equal((await lstat(join(evidence.directory, 'static'))).mode & 0o777, 0o755);
+  assert.equal((await lstat(join(evidence.directory, 'static', 'assets'))).mode & 0o777, 0o755);
+  assert.equal((await lstat(join(evidence.directory, 'static', 'index.html'))).mode & 0o777, 0o644);
+  assert.equal((await lstat(join(evidence.directory, 'static', 'assets', 'runtime.js'))).mode & 0o777, 0o755);
+  assert.deepEqual(
+    artifact.entries.map((entry) => [entry.path, entry.mode]),
+    [['static/', 0o755], ['static/assets/', 0o755], ['static/assets/runtime.js', 0o755], ['static/index.html', 0o644]]
+  );
 });
 
 test('rejects forbidden directories even when they appear inside an allowed target source', async () => {
