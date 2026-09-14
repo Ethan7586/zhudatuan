@@ -5338,3 +5338,46 @@
 | 验证方式 | 隔离 PostgreSQL按正式 connection role设置 session actor/membership/scope；用授权 source operator得到一次 clone，用不同 actor、不同 membership、跨 Realm source、无 session和无 execute role分别验证拒绝；确认成功路径仍保持0基础设施动作、无业务历史复制、replay和注入rollback。 |
 | 回滚方式 | 回退独立的 function/grant/policy前向版本至上一个已验证的受控边界；不要删除已有 clone或pending binding，异常创建记录另建逐项处置计划。 |
 | 是否需要独立复核 | 是；复核者须独立核对生产 connection-pool role/session setter、function owner/BYPASSRLS、API route/operation registration及真正调用者，并亲自执行 mismatch matrix。 |
+## F-0286｜Catalog 媒体 worker 对供应方 URL 直接发起无限制请求
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Catalog source projection / media replication job / network egress |
+| 类型 | 安全、外部输入验证、Worker 网络边界 |
+| 严重级别 | **P2** |
+| 置信度 | 中高（source parsing、job payload和direct fetch为直接证据；provider payload来源与生产网络egress policy未验证） |
+| 文件和精确位置 | `01_core_hexin/services/commerce/src/modules/catalog/03_application_yingyong/CatalogSourceProjection.ts:23-25,36-50,94-100,128-137`；`05_interface_jieru/job/CatalogMediaReplicationJob.ts:46-65,80-95`；`CatalogMediaReplicationJob.test.ts:8-69`。 |
+| 当前/预期 | 当前 Cake source的 `imagePaths` 仅要求非空字符串，原样写入 job；worker依次执行 `fetch(sourceUrl)`，只检查HTTP ok和非空 bytes。没有 scheme/host allowlist、DNS/IP private-range防护、redirect policy、content-type allowlist或最大响应尺寸。预期是只允许明确可信的 HTTPS media origin，并在每次 redirect后验证解析地址/host，拒绝私网、link-local、loopback与非图片/过大响应。 |
+| 直接证据 | [FACT][E-AU-703-001] `cakeSource` 仅用 `stringArray`解析 `imagePaths`，projection同时把第一项直接放入 product attributes；[FACT][E-AU-703-002] lines 50-64对每项调用 native `fetch`，无 `URL`解析/host policy/size limit，header仅作为最终 content type默认值；[FACT][E-AU-703-003] job unit tests仅覆盖404 fallback、all unavailable、replication incomplete和payload结构，未包含被拒绝的 URL或redirect；[FACT][E-AU-703-004] 定向 Vitest在本基线因 `vitest: command not found`（exit 127）未启动。 |
+| 调用链或运行入口 | Cake catalog payload → `CatalogSourceProjection.project` → `runtime.job(kind=catalogmediareplication)` → Catalog worker `QueueJob` → `CatalogMediaReplicationProcessor.download` → worker network fetch。 |
+| 用户影响 | 恶意或被污染的供应方图片地址可使后台 job请求内部服务、metadata/控制平面或不预期第三方；也可能以超大响应耗尽 worker网络/内存。当前无实际攻击或生产网络可达性证据。 |
+| 数据影响 | 成功响应可被复制为产品媒体并发布 cover URL；失败通常进入job retry。 |
+| 安全影响 | 形成 SSRF/非预期 egress surface，实际严重性取决于 worker网络、DNS和provider payload信任链。 |
+| 根因 | 将外部 catalog图片字段当作可直接下载的可信 URL，下载组件没有独立网络安全契约。 |
+| 建议方向 | 从当时最新 `zdt-next` 新建单一 media-egress hardening batch：在入队或下载前使用统一 URL policy（HTTPS、provider allowlist、redirect revalidate、private/link-local/loopback deny、timeout/size/content-type cap），将拒绝原因可观测地记为不可重试或受控重试，并补 egress tests。不要在本审计分支修改 worker、provider或对象存储配置。 |
+| 预计修改范围 | Catalog media URL validator/downloader、最小 job error classification和定向 unit/integration tests；可能需要受控 provider origin configuration。 |
+| 验证方式 | 隔离 worker以允许来源、HTTP、file/data、localhost、127.0.0.1、IPv6 loopback、private/link-local、DNS rebinding模拟、跨 host redirect、oversize及非image responses运行；仅允许来源可复制，其他均无网络请求或明确拒绝且不发布 product binding。 |
+| 回滚方式 | 回退独立 downloader policy版本或临时只保留已验证 provider allowlist；不删除既有media object/replica/binding，失败重试另行受控。 |
+| 是否需要独立复核 | 是；安全复核者必须独立确认生产 egress、DNS resolver、HTTP redirect行为、provider origin ownership和对象存储凭据隔离。 |
+
+## F-0287｜媒体复制队列乱序完成可用旧供应方图片回退最新封面
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Catalog source projection / media replication queue / product media persistence |
+| 类型 | 正确性、并发、异步幂等与最终一致性 |
+| 严重级别 | **P2** |
+| 置信度 | 高（job identity、worker concurrency、upsert/write SQL和测试覆盖缺口均为直接证据） |
+| 文件和精确位置 | `CatalogSourceProjection.ts:94-100`；`CatalogJobsRuntime.ts:208-216`；`CatalogMediaReplication.ts:49-73`；`PgCatalogMediaPersistence.ts:18-40,50-64`；`CatalogProductMediaRegistration.ts:28-52`；`CatalogMediaReplicationJob.ts:26-44`；`CatalogMediaReplicationJob.test.ts:8-69`。 |
+| 当前/预期 | 当前 job id包含 `product + imagePaths`，故source图片变化生成不同 job；媒体 QueueJob并发为2。旧/新job同时运行时，replication以固定的 `media:hash(product:purpose)` identity写同一 media row，persistence对 media/binding执行无版本的 upsert，processor最终无条件覆盖 `catalog.product.attributes.coverUrl`。预期是只允许与当前 source revision/active job相符的完成结果发布，旧job完成应被丢弃或成为无副作用的历史记录。 |
+| 直接证据 | [FACT][E-AU-703-005] projection 94以source URL集合创建 job id，100仅对相同id `on conflict do nothing`，并未使旧id失效；[FACT][E-AU-703-006] runtime 208-216为该 kind启用 processor且 concurrency=2；[FACT][E-AU-703-007] replication 51固定 media id为 product+purpose，persistence 22-24/36-38和53为无条件 conflict update，processor 39-43无 source revision/product version predicate更新cover URL；[FACT][E-AU-703-008] 现有测试没有 source连续更新、两个job逆序完成或CAS拒绝旧结果情形，且本次定向Vitest未能启动。 |
+| 调用链或运行入口 | Provider source update → CatalogSourceProjection enqueue old/new media jobs → two concurrent `catalogmediareplication` workers → object replication/persistence → productmedia binding + `catalog.product.attributes.coverUrl`。 |
+| 用户影响 | 商品图片更新后，较慢的旧任务可重新显示旧封面/媒体，造成陈列与供应方当前商品不一致；若有内容合规或价格关联图，运营判断会受误导。 |
+| 数据影响 | `mediaobject`、replica状态、`productmedia`和product attributes可被旧结果覆盖；对象存储会留下未再引用的新/旧对象。 |
+| 安全影响 | 非主要安全问题；但过时媒体可能绕过业务侧对最新供应资料的人工复核。 |
+| 根因 | job去重使用内容地址但发布使用 product+purpose共享状态，缺少source revision、supersession/cancellation或compare-and-set边界。 |
+| 建议方向 | 从当时最新 `zdt-next` 新建单一 media-publication-ordering batch：把source revision/expected media job或hash随job保存，发布时对当前声明做条件更新；新的source更新应 supersede/mark stale旧job，media history可保留但不得回写current binding。补受控 retry、并行/逆序完成与rollback contract。 |
+| 预计修改范围 | runtime.job payload/metadata及索引或前向 migration、Catalog projection/processor/persistence条件写、最小 concurrency tests；不改历史商品媒体。 |
+| 验证方式 | 为同一product写入A/B两批source job，故意令A最后完成；断言product cover、productmedia和current media hash保持B，A可记录为stale但不得改写；重跑同一B验证幂等，注入失败验证不破坏已有ready binding。 |
+| 回滚方式 | 回退独立条件发布版本，保留media/replica事实；对错误回退的当前封面用受控最新source重排队恢复，禁止批量删除对象。 |
+| 是否需要独立复核 | 是；复核者必须独立阅读QueueJob claim/lease并发语义、source更新写入路径、数据库事务边界和对象存储不可逆性，并亲自完成逆序job测试。 |
