@@ -351,3 +351,16 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | 当前边界问题 | 80个token缺定义、AccessDenied无样式、401语义折叠、Storybook/品牌/平台规格漂移 |
 
 [FACT][E-AU-017-001/002] 67/67文件、4,653/4,653行已覆盖；65个人工文件深入审阅，2个生成物核对来源和消费者。公共但无生产消费者的符号与平台规则仅列G1，不推断删除。
+
+## 24. AU-018 Miniapp 运行片段清单
+
+| 子模块 | 职责 | 真实入口/调用者 | 当前边界 |
+| --- | --- | --- | --- |
+| `app.js` | 初始化ext config | 微信App入口 → Environment | 唯一人工运行代码；无页面/API |
+| Environment | 校验api/mall/version | app.js | F-0033 parity差异 |
+| Experience/DeepLink | 生成领域parser | 零运行caller | F-0082/F-0043；DC-0023 |
+| Cache/Runtime | 生成缓存和HTTP限制 | 零运行caller | F-0032；DC-0023 |
+| Theme/Assets | WXSS与品牌SVG | 零页面/WXML/app.wxss caller | F-0080/F-0081；DC-0023 |
+| 发布/质量 | navigation/tests/runtimegraph/candidate | 机器脚本 | F-0006：判据互相冲突 |
+
+[FACT][E-AU-018-001/002] 9/9文件、195/195行已复核；覆盖状态总账不增加，因为app与两个contract生成物已在前序AU审阅，其余生成物已预分类。本批完成的是文件级生成关系和片段内部调用闭合。

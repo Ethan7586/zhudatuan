@@ -193,3 +193,10 @@ AutoNode从同一provisioning request生成Manifest和console-runtime.json，pro
 - `build-miniapp-theme.mjs`从canonical token复制部分样式和两个SVG进入miniapp；check通过，但不读取`mobile-platforms.json`，不能证明六档/平板规则已发布（F-0081）。
 - Storybook不是正式发布或质量链单元；其样式入口与生产不同，不能作为发布验收证据（F-0079）。
 - 本AU未构建制品、修改生成物、推送、合并、部署或改变任何线上资源。
+
+## 21. AU-018 Miniapp 片段发布边界
+
+- release candidate映射会把`apps/miniapp/miniprogram`当前9文件整体复制为客户端候选，但仓库内没有可启动manifest/pages/API/actions；复制成功不等于微信应用可发布（F-0006）。
+- 8个生成物分别由clients/runtime/design生成链维护；只有Environment进入app运行链，另7个仅有生成、检查和candidate职责（DC-0023）。
+- 路径历史显示片段随MVP/支付候选收口进入当前轴，不证明其已部署或已下线。外部完整工程、线上微信版本和交付同步方式均UNKNOWN。
+- 本AU未运行candidate、构建微信包、访问外部工程、推送、合并、部署或改变线上资源。

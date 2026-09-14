@@ -163,3 +163,12 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - 当前web-token check只证明生成物等于生成器输出，不检查80个consumer变量是否定义；生成闸门无法发现F-0076。
 - 正式`test`、`test:component`、`typecheck`各执行一次，均因缺`vitest`/`tsc`在源码加载前退出127；未安装依赖，不记为实现失败或通过。
 - JSON/XML结构和miniapp theme drift check通过；未执行Storybook build、浏览器computed-style或页面截图。完整8条验证记录见`records/AU-017-design/tests.csv`。
+
+## 17. AU-018 Miniapp 片段验证可信度
+
+- Miniapp无package.json和直接test/typecheck入口；根workspace测试不会执行这9个文件的行为测试。
+- `check/tests`只要求`app.js`存在并返回通过；`audit/navigation`读取缺失app.json立即ENOENT，直接复现F-0006的假阳性/失败判据冲突。
+- 生成漂移入口覆盖8个输出，但Environment/contract/runtime checks在当前审计worktree分别缺tsx/yaml；theme check通过。没有安装依赖。
+- [CONFLICT][E-AU-018-005] 现有生成check只比字节，不比较canonical与生成Experience parser行为，无法发现F-0082。
+- 隔离VM探针执行真实生成JS，确认app正常配置、Experience接纳差异、CachePolicy mutation和Environment null错误；这不等于微信真机测试。
+- 完整10条验证结果见`records/AU-018-miniapp-runtime-fragment/tests.csv`。

@@ -151,6 +151,8 @@
 | 回滚方式 | 机器清单与构建/发布规则分提交回退；现有 9 文件在事实确认前保留 |
 | 是否需要独立复核 | 否（P2）；若后续拟删除/判 GX/G3，则必须第二轮独立复核 |
 
+[AU-018补强][E-AU-018-003/004/008/009] 逐一核对9个文件后，唯一运行引用仍是`app.js → Environment.js`；其它7个生成输出零片段内caller。`audit/navigation`因app.json直接ENOENT，而`check/tests`只检查app.js并返回通过；candidate仍复制9文件。外部完整工程继续UNKNOWN，F-0006等级不变。
+
 ## F-0007｜Auth 九处成功响应 Schema 校验结果被丢弃
 
 | 字段 | 记录 |
@@ -779,6 +781,8 @@
 | 回滚方式 | 回退不可变实现和对应生成物同一提交；进程重启恢复；不改声明JSON/YAML含义 |
 | 是否需要独立复核 | 否（P2）；若发现第三方插件可写同一单例则重新定级 |
 
+[AU-018补强][E-AU-018-006] Miniapp生成的CachePolicy同样只冻结顶层。隔离VM探针把`catalog.maximumSeconds`从300改为1，且`Object.isFrozen(cache.catalog) === false`；当前片段没有CachePolicy运行caller，因此只扩展受影响对象，不升级等级。
+
 ## F-0033｜Miniapp 源 parser 与生成 parser 的 trim 语义不同
 
 | 字段 | 记录 |
@@ -801,6 +805,8 @@
 | 验证方式 | 三字段分别覆盖空白、空值、尾斜杠、非法协议；TS与生成JS结果逐项一致 |
 | 回滚方式 | 回退生成器与生成物同一提交；不得只手改生成JS |
 | 是否需要独立复核 | 否（P3） |
+
+[AU-018补强][E-AU-018-003/006] `app.js`直接把`wx.getExtConfigSync()`传给生成parser；null输入会在读取`source.apiBaseUrl`时抛原生TypeError而不是Miniapp契约错误码。正常有效输入可完成App注册；trim parity差异仍在，等级不变。
 
 ## F-0034｜Web Business 重复 Origin 拒绝分支不可达
 
@@ -1982,3 +1988,31 @@
 - [UNKNOWN] 固定基线Console真实页面的computed style损失范围；本AU没有打开页面或截图。
 - [UNKNOWN] 仓外消费者是否使用DC-0021中的公共export。
 - [UNKNOWN] `mobile-platforms.json`未接线字段是待实现正式规格、纯设计说明还是已退役约束。
+
+## F-0082｜生成的Miniapp Experience parser与canonical契约不等价
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | Miniapp generated contract / `ExperienceContract` |
+| 类型 | 生成实现漂移、输入边界 |
+| 严重级别 | P3 |
+| 置信度 | 高：源/模板逐分支对照并由生成JS探针复现；当前零运行caller |
+| 文件和精确位置 | `packages/contract/src/ExperienceContract.ts:30-72`；`04_tools/scripts/build-miniapp-contract.mjs:10-31`；`apps/miniapp/miniprogram/domain/experience.js:1-25` |
+| 当前行为 | [FACT][E-AU-018-005] canonical限制最多100页、每页200块，对application/id/path/target执行trim、非空和255长度检查，并允许缺失blocks按空数组处理；生成parser无这些上限/字符串约束，却要求blocks必须数组。探针接受101页、201块、空白application/空ID，并拒绝缺失blocks |
+| 预期行为 | 标记“Generated from ExperienceContract”的运行parser应与canonical parser拥有明确且受测的相同接纳/拒绝语义，或公开记录受控差异 |
+| 直接证据 | E-AU-018-005、INV-AU-018-002、FM-AU-018-002 |
+| 调用链或运行入口 | ExperienceContract常量/手写模板 → experience.js；当前Miniapp片段无运行caller |
+| 用户影响 | 若外部页面接入该parser，同一体验文档可能在服务端/canonical拒绝但小程序接受，或反向拒绝；当前线上可达性未知 |
+| 数据影响 | 只解析内存文档；无仓内写入链 |
+| 安全影响 | 无已证实安全影响；缺上限可扩大客户端处理量，但当前无运行入口 |
+| 根因 | 生成器只复制枚举与简化校验逻辑，没有复用canonical parser或行为parity矩阵 |
+| 建议方向 | 独立生成契约批次先确定canonical语义，再让生成parser逐项等价并建立表驱动反事实；不手改生成JS |
+| 预计修改范围 | ExperienceContract、生成器、生成物和parity测试 |
+| 验证方式 | version/application/pages/page/blocks/block/action/content完整accept/reject矩阵在TS与生成JS一致；生成check与外部Miniapp验证 |
+| 回滚方式 | 回退生成器和生成物同一提交 |
+| 是否需要独立复核 | 否 |
+
+## 18. AU-018 新增未定级事项
+
+- [UNKNOWN] 外部完整小程序源码、线上微信版本和这9个文件的真实交付消费者。
+- [UNKNOWN] 无运行caller生成物是待装配候选片段、外部工程同步源还是遗留输出。

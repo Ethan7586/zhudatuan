@@ -288,3 +288,17 @@ AU-005 首次建立候选总账。零静态引用、零正式target或测试只�
 | 二次复核 | 若未来升级G2/G3，必须由跨端专项同时核对miniapp、平板和视觉基线 |
 
 AU-017没有G2/G3新增项；零生产引用只进入G1。没有删除、归档或移动任何文件。
+
+## DC-0023｜Miniapp 除Environment外的7个无运行调用生成输出
+
+| 字段 | 记录 |
+| --- | --- |
+| 等级 | G1 |
+| 对象 | CachePolicy、RuntimeLimits、experience、deeplink、tokens.wxss、brandmark.svg、wingcode.svg |
+| 疑似原因 | [FACT][E-AU-018-004] 当前9文件片段内无require/import/WXML/WXSS入口；没有app.json/pages/app.wxss/API/actions。唯一生成运行调用是app.js→Environment |
+| 保留证据 | 四条正式生成链、generated check、release candidate复制和机器契约仍引用这些输出；可能是外部完整工程同步源，且保存唯一平台契约/资产 |
+| 当前问题 | F-0006说明片段拓扑冲突；F-0082说明Experience parity漂移；这些问题不能反向证明文件可删除 |
+| 可否独立删除 | 否；外部消费、发布责任、正式下线、可观察行为、恢复方法和二次复核均未满足 |
+| 二次复核 | 升级G2/G3前必须确认唯一小程序仓库/线上版本，并逐文件复核生成和candidate入口 |
+
+AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp文件。

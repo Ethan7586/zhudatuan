@@ -701,3 +701,19 @@ adapter.send
 - 失败传播：缺失CSS变量使浏览器丢弃对应声明但不会中止bundle；401错误被映射为denied后丢失重新登录分支；Storybook没有进入正式story执行链。
 
 详细矩阵见 `records/AU-017-design/consumer-matrix.csv`。
+
+## 23. AU-018｜Miniapp 片段内部运行图
+
+~~~mermaid
+flowchart LR
+  WX[wx.getExtConfigSync] --> Env[generated Environment]
+  Env --> App[App.globalData.environment]
+  Contract[canonical Contract] --> Domain[experience/deeplink generated]
+  Platform[cache/capacity YAML] --> Config[CachePolicy/RuntimeLimits]
+  Design[design tokens/SVG] --> Theme[tokens.wxss/assets]
+  Domain -. no runtime caller .-> Gap[missing pages/API/actions]
+  Config -. no runtime caller .-> Gap
+  Theme -. no page/style caller .-> Gap
+~~~
+
+完整消费者与失败矩阵见 `records/AU-018-miniapp-runtime-fragment/`。

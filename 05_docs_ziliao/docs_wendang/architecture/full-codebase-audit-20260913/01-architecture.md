@@ -682,3 +682,11 @@ flowchart LR
 [CONFLICT][E-AU-017-005] 单源关系只保证生成文件与生成器字节一致，不保证生成变量覆盖消费者：生产样式仍有80个无定义token（F-0076）。[CONFLICT][E-AU-017-006/007] 权限状态跨 Console QueryState 和设计组件传播时，401被折叠为403语义，且AccessDenied视觉类无实现（F-0077/F-0078）。
 
 [FACT][E-AU-017-009/010] canonical包同时承载品牌资产和跨端平台规格；当前品牌身份与token冲突，平台规则大部分没有运行消费者。公共export与唯一规格仍阻止任何激进删除结论。
+
+## 16. AU-018 增量：Miniapp 运行片段
+
+[FACT][E-AU-018-002/003/004] 当前仓库Miniapp只有一个9行人工App入口和8个生成物。唯一运行链是微信ext config → Environment parser → `App.globalData.environment`；其余7个生成输出没有页面、API、导航或样式消费者。
+
+[CONFLICT][E-AU-018-005] generated Experience parser不是canonical parser的行为等价物：页/块上限、required字符串规范化和blocks接纳规则分叉（F-0082）。[CONFLICT][E-AU-018-008] navigation、test topology与candidate继续使用不同“应用存在”判据，补强F-0006。
+
+[UNKNOWN] 外部完整工程和线上微信版本未验证；因此片段不是可部署完整应用，也不能从仓内不完整反推其已下线。

@@ -1,0 +1,7 @@
+"编号","不变量","状态","证据","关联"
+"INV-AU-018-001","required client的机器清单共享同一最小可启动拓扑","破坏","navigation ENOENT而tests通过/candidate复制","F-0006"
+"INV-AU-018-002","canonical与生成Experience parser接纳/拒绝语义一致","破坏","limits/trim/blocks差异","F-0082"
+"INV-AU-018-003","生成配置作为运行权威不可被消费者改写","破坏","CachePolicy嵌套对象可变","F-0032"
+"INV-AU-018-004","生成Environment与TS parser对相同输入语义一致","破坏","既有trim差异；null错误非契约码","F-0033"
+"INV-AU-018-005","生成物有运行、契约或明确归档职责","不完整","7输出零运行caller但仍有生成/发布职责","DC-0023 G1"
+"INV-AU-018-006","G3必须排除外部工程和发布责任并完成二次复核","未满足","外部微信工程/线上版本UNKNOWN","不得删除"
