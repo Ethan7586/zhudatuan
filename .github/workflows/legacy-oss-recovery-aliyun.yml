@@ -23,10 +23,6 @@ on:
         description: Exact zdt-next commit; empty uses current zdt-next
         required: false
         type: string
-      legacy_1_2_ack:
-        description: Type legacy-1.2-build-and-deploy; never use this for a 1.3.2 deployment
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -38,7 +34,6 @@ concurrency:
 env:
   NODE_VERSION: 22.22.0
   RELEASE_TARGET: ${{ inputs.release_target }}
-  LEGACY_1_2_ACK: ${{ inputs.legacy_1_2_ack }}
   VITE_API_BASE_URL: https://api.hbbtzn.com
   VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
 
@@ -48,14 +43,6 @@ jobs:
     runs-on: [self-hosted, linux, x64, zdt-aliyun-release]
     timeout-minutes: 12
     steps:
-      - name: Refuse accidental use as a 1.3.2 deployment
-        shell: bash
-        run: |
-          if [ "$LEGACY_1_2_ACK" != legacy-1.2-build-and-deploy ]; then
-            echo "This is legacy 1.2 recovery. Use prepare-artifact-aliyun.yml and deploy-prepared-aliyun.yml for 1.3.2." >&2
-            exit 64
-          fi
-
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1

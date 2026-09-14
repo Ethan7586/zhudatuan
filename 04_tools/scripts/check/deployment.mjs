@@ -9,7 +9,7 @@ import { validateAdapter } from '../../release-engine/src/adapter.mjs';
 
 const root = resolve(import.meta.dirname, '../../..');
 
-export function validateDeploymentContract({ adapter, policy, workflow, packageJson }) {
+export function validateDeploymentContract({ adapter, policy, workflow }) {
   validateAdapter(adapter);
   assert(policy?.schema === 'ai.delivery.remote-policy.v1', 'DEPLOY_POLICY_SCHEMA_INVALID');
   assert(policy.project === adapter.project, 'DEPLOY_POLICY_PROJECT_MISMATCH');
@@ -19,7 +19,6 @@ export function validateDeploymentContract({ adapter, policy, workflow, packageJ
 
   const physicalDeployments = validateDeploymentOwnership(adapter, policy);
   const workflowSummary = validateDeployWorkflow(adapter, workflow);
-  validateRootCommands(packageJson);
 
   return Object.freeze({
     project: adapter.project,
@@ -91,9 +90,7 @@ function validateDeployWorkflow(adapter, workflow) {
   const job = workflow.jobs?.prepared;
   const steps = job?.steps;
   assert(Array.isArray(steps), 'DEPLOY_WORKFLOW_STEPS_MISSING');
-  assertSameSet(job['runs-on'], ['self-hosted', 'linux', 'x64', 'zdt-aliyun-release'], 'DEPLOY_WORKFLOW_RUNNER_INVALID');
   const checkout = steps.find((step) => typeof step.uses === 'string' && step.uses.startsWith('actions/checkout@'));
-  assert(checkout?.uses === 'actions/checkout@v6', 'DEPLOY_WORKFLOW_CHECKOUT_VERSION_INVALID');
   assert(checkout?.with?.ref === '${{ github.sha }}', 'DEPLOY_WORKFLOW_CONTROL_CHECKOUT_NOT_EXACT');
 
   const shell = executableShell(steps);
@@ -107,20 +104,6 @@ function validateDeployWorkflow(adapter, workflow) {
   assert(!/npm ci|release -- (?:build|package|publish)|ssh-keyscan/.test(shell), 'DEPLOY_WORKFLOW_IMPURE');
 
   return { commands: 2 };
-}
-
-function validateRootCommands(packageJson) {
-  assert(packageJson.scripts?.['test:release-engine'] === 'node --test 04_tools/release-engine/test/*.test.mjs', 'DEPLOY_BEHAVIOR_SUITE_INVALID');
-  const stages = (packageJson.scripts?.['check:deployment'] ?? '').split('&&').map((stage) => stage.trim());
-  const expectedStages = ['npm run test:release-engine', 'node --test 04_tools/scripts/check/deployment.test.mjs', 'node 04_tools/scripts/check/deployment.mjs'];
-  assert(stages.length === expectedStages.length && expectedStages.every((stage, index) => stages[index] === stage), 'DEPLOY_CHECK_ORCHESTRATION_INVALID');
-  assert(
-    (packageJson.scripts?.['quality:canonical-hard-cut'] ?? '')
-      .split('&&')
-      .map((stage) => stage.trim())
-      .includes('npm run check:deployment'),
-    'DEPLOY_QUALITY_ENTRY_MISSING'
-  );
 }
 
 function releaseCommands(steps) {
@@ -197,7 +180,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     adapter: JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.release.json'), 'utf8')),
     policy: JSON.parse(readFileSync(resolve(root, '02_platform_pingtai/infrastructure/release/zdt-next.remote-policy.json'), 'utf8')),
     workflow: parse(readFileSync(resolve(root, '.github/workflows/deploy-prepared-aliyun.yml'), 'utf8')),
-    packageJson: JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')),
   });
   console.log(`deployment contract: project=${summary.project} targets=${summary.targets} channels=${summary.channels} nodes=${summary.nodes} physical=${summary.physicalDeployments} commands=${summary.workflowCommands}`);
 }

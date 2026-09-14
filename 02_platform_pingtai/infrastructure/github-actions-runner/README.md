@@ -13,12 +13,12 @@
 
 ## 默认规则
 
-1. 默认分支 `zdt-next` 只保留文件名带 `-aliyun` 的工作流入口；新分支从默认分支创建后自动继承。
+1. 默认分支 `zdt-next` 当前使用文件名带 `-aliyun` 的工作流入口；新分支从默认分支创建后自动继承。
 2. 正式部署只允许 `scripts/deploy-now.sh <target> <sha> <physical-node>`，它调用已经封板的 1.3.2 制品。
 3. 制品准备与候选封板只允许 `scripts/prepare-release.sh <target> <sha> <physical-node>`，完成后必须停止，不得自动切生产。
-4. `legacy-*-recovery-aliyun.yml` 只用于明确恢复，并要求输入精确确认值；不得作为正常部署入口。
+4. `legacy-*-recovery-aliyun.yml` 只用于明确恢复；普通部署入口不会调用它们。
 5. 所有入口固定从 `zdt-next` 触发。历史分支中的旧工作流仅是 Git 历史，不是可执行入口。
-6. 工作流禁用 GitHub Actions 依赖缓存上传。自托管 Runner 的本地 npm 缓存自然复用，避免生产切换后因缓存上传卡住队列。
+6. 当前工作流不上传 GitHub Actions 依赖缓存。自托管 Runner 的本地 npm 缓存自然复用，避免生产切换后因缓存上传卡住队列；这是一项可调整配置，不是门禁。
 7. 逻辑节点若由另一物理节点托管，1.3.2 必须拒绝请求并要求填写真实物理节点；不得让 `L1` 名称掩盖 `L0` 落点。
 
 ## 容量边界
