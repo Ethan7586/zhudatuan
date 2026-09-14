@@ -4775,3 +4775,21 @@
 | 建议方向 | 从最新主线建立独立测试维护分支，在隔离数据库显式插入/清理两个 scope 的 `risk.policy` 记录，断言本 scope 精确可见、另一 scope 不可见且结果非空；先确认该表的写权限和规范 fixture builder。 |
 | 验证/回滚 | 先在可控 PostgreSQL 中将 RLS 临时放宽或改错，确认新断言失败；恢复 policy 后通过。回滚为撤回单一测试 fixture/assertion 提交。 |
 | 是否需要独立复核 | 否；修复后须用故意失效的 RLS 反事实验证。 |
+
+## F-0257｜Bundle 预算声明两项不会被质量门消费
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 前端构建质量 / bundle budget config |
+| 类型 | 配置可信度、性能回归保护缺口 |
+| 严重级别 | **P3** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/config/bundles.yml:7-8`；`04_tools/scripts/check/bundles.mjs:8-13`。 |
+| 当前/预期 | YAML 声明 `storeInitialGzipKb`、`supplierInitialGzipKb`；checker 只将 console/auth/storefront/commerce 放入 artifacts，miniapp 另测目录大小，固定基线内两 key 除 YAML 外无命中。预期为未受支持的预算字段不被保留，或 checker/正式 artifact manifest 明确消费它们。 |
+| 直接证据 | [FACT][E-AU-545-001] 两个 key 全仓仅在 YAML 各出现一次；[FACT][E-AU-545-002] checker artifact list 未含 store/supplier；[FACT][E-AU-545-003] 当前 `01_core_hexin/apps` 无 store/supplier artifact tree。 |
+| 调用链或运行入口 | `quality:canonical-hard-cut` → `check:bundles` → audit wrapper → bundle checker → YAML budgets。 |
+| 用户/数据/安全影响 | 不直接影响运行、数据或访问控制；若未来恢复 store/supplier 制品，维护者可能误以为 90KB gzip 限制已生效，实际不会阻挡性能回归。当前是否存在仓外这两类制品未验证。 |
+| 根因 | 旧应用预算字段与现行 checker 的 artifact set 未同步，且 YAML schema 未拒绝未消费字段。 |
+| 建议方向 | 从最新主线建立独立质量配置小批次，先用 release/artifact 权威确认 store/supplier 是否仍是产品单元；若否删除废弃 keys，若是将真实产物及反事实超预算 test 加入 gate；不要只改数值。 |
+| 验证/回滚 | 在隔离构建中人为超过对应 app budget，确认 gate 失败；若已下线，确认 config schema/文档不再宣称保护。回滚为撤回单一 quality-policy change。 |
+| 是否需要独立复核 | 否。 |
