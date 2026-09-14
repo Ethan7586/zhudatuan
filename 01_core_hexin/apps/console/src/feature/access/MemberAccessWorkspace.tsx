@@ -3,7 +3,7 @@ import { keepPreviousData, useInfiniteQuery, useMutation, useQuery } from '@tans
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useConsoleContext } from '../../entity/session/ConsoleContext';
-import type { ConsoleContext } from '../../entity/session/ConsoleSession';
+import type { ConsoleContext, ConsoleScope } from '../../entity/session/ConsoleSession';
 import { safeQueryError } from '../../shared/api/QueryState';
 import { formatDate } from '../../shared/ui/Format';
 import { pageCursor } from '../../shared/url/PageCursor';
@@ -70,9 +70,10 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
     retry: false,
     refetchOnWindowFocus: false,
   });
-  const accessItems = accessQuery.data?.items ?? [];
-  const memberItems = memberQuery.data?.items ?? [];
-  const rows = useMemo(() => mergeRows(memberItems, accessItems), [accessItems, memberItems]);
+  const rows = useMemo(
+    () => mergeRows(memberQuery.data?.items ?? [], accessQuery.data?.items ?? []),
+    [accessQuery.data?.items, memberQuery.data?.items],
+  );
   const invitationWritable = memberInvitationAvailable(context);
   const normalizedFilter = filter.trim().toLocaleLowerCase('zh-CN');
   const visibleRows = useMemo(
@@ -229,6 +230,7 @@ export function MemberAccessWorkspace({ primary }: { readonly primary: MemberAcc
 
           <MemberDetail
             row={selected}
+            roleCatalog={accessQuery.data?.roles ?? []}
             open={detailOpen}
             context={context}
             resetAvailable={resetAvailable}
@@ -308,6 +310,7 @@ function MemberDirectory({ rows, selectedId, onSelect }: Readonly<{ rows: readon
 
 function MemberDetail({
   row,
+  roleCatalog,
   open,
   context,
   resetAvailable,
@@ -318,6 +321,7 @@ function MemberDetail({
   onManage,
 }: Readonly<{
   row: MemberAccessRow | undefined;
+  roleCatalog: readonly AccessRole[];
   open: boolean;
   context: ConsoleContext;
   resetAvailable: boolean;
@@ -358,8 +362,23 @@ function MemberDetail({
   const version = row?.access?.access_version ?? row?.member?.access_version;
   const canReset = resetAvailable && row?.member?.reset_allowed === true;
   const seniorAssignment = roles.find((role) => /高级|senior/i.test(`${role.role} ${role.name}`));
+  const seniorRole = roleCatalog.find((role) => role.governance_level === 'senior_administrator');
+  const seniorScope = seniorRole === undefined ? undefined : seniorAdministratorScope(context, seniorRole);
   const canManageAdministrator = row !== undefined && context.session.governance?.level === 'owner'
     && roleCommandAvailable(context) && !isOwner(row) && !isSelf(row, context);
+  const upgradeMutation = useMutation({
+    mutationFn: async () => {
+      if (row?.access === undefined || seniorRole === undefined || seniorScope === undefined) {
+        throw new Error('SENIOR_ADMINISTRATOR_ASSIGNMENT_NOT_AVAILABLE');
+      }
+      const draft = { action: 'assign' as const, role: seniorRole.id, membership: row.access.id,
+        scope: seniorScope, scopeSource: 'direct' as const, accessVersion: row.access.access_version };
+      const receipt = await saveAccessRoleAssignment(context, draft);
+      const reread = await onRefresh();
+      verifyAccessRoleAssignment(draft, receipt, row.access, reread.roles, reread.access);
+      return receipt;
+    },
+  });
   const demoteMutation = useMutation({
     mutationFn: async () => {
       if (row?.access === undefined || seniorAssignment === undefined) throw new Error('SENIOR_ADMINISTRATOR_ASSIGNMENT_NOT_FOUND');
@@ -383,8 +402,8 @@ function MemberDetail({
     },
     onSuccess: onRemoved,
   });
-  const actionPending = demoteMutation.isPending || offboardMutation.isPending;
-  const actionError = safeQueryError(demoteMutation.error ?? offboardMutation.error);
+  const actionPending = upgradeMutation.isPending || demoteMutation.isPending || offboardMutation.isPending;
+  const actionError = safeQueryError(upgradeMutation.error ?? demoteMutation.error ?? offboardMutation.error);
   return (
     <aside ref={detailRef} className="storefrontmemberdetail" aria-hidden={!open} aria-label={administrator ? '管理员详情' : '成员详情'} tabIndex={-1}>
       <header className="storefrontmemberpanelheading">
@@ -462,14 +481,24 @@ function MemberDetail({
           ) : null}
           {canManageAdministrator ? (
             <footer className="memberaccessdetailactions" aria-label="管理员级别与状态">
+              {seniorAssignment === undefined && seniorRole !== undefined && seniorScope !== undefined ? (
+                <button type="button" disabled={actionPending} onClick={() => {
+                  setOffboardArmed(false);
+                  demoteMutation.reset();
+                  offboardMutation.reset();
+                  upgradeMutation.mutate();
+                }}>{upgradeMutation.isPending ? '正在升级并核对…' : '升级为高级管理员'}</button>
+              ) : null}
               {seniorAssignment === undefined ? null : (
                 <button type="button" disabled={actionPending} onClick={() => {
                   setOffboardArmed(false);
+                  upgradeMutation.reset();
                   offboardMutation.reset();
                   demoteMutation.mutate();
                 }}>{demoteMutation.isPending ? '正在降级并核对…' : '降级为普通管理员'}</button>
               )}
               <button type="button" data-tone="danger" disabled={actionPending} onClick={() => {
+                upgradeMutation.reset();
                 demoteMutation.reset();
                 offboardMutation.reset();
                 if (offboardArmed) offboardMutation.mutate();
@@ -743,6 +772,11 @@ function mergeRows(members: readonly Member[], access: readonly AccessMembership
     const managementRoles = membership === undefined ? [] : managementRolesOf(membership);
     return { id, administrator: true, managementRoles, member, ...(membership === undefined ? {} : { access: membership }) };
   });
+}
+function seniorAdministratorScope(context: ConsoleContext, role: AccessRole): ConsoleScope | undefined {
+  const organization = context.session.governance?.organization;
+  return [context.scope, ...context.scopes, ...role.scopes.map(({ scope }) => scope)]
+    .find((scope) => scope.kind === 'tenant' && scope.id === organization);
 }
 function managementRolesOf(membership: AccessMembership): readonly MemberRole[] {
   return membership.roles.filter(isManagementRole);

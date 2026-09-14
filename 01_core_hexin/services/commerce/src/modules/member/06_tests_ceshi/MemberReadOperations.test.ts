@@ -61,20 +61,20 @@ describe('member directory scope boundary', () => {
         create table organization.unitclosure(ancestor_id text not null,descendant_id text not null);
         insert into member.profile values
           ('member:owner','principal:owner','Owner','active'),
-          ('member:shared','principal:shared','同主体管理员','active'),
+          ('member:shared','principal:shared','L6消费者7586','active'),
           ('member:inactive','principal:inactive','已停用管理员','active'),
           ('member:outside','principal:outside','范围外管理员','active');
         insert into identity.principal values
           ('principal:owner',1,'active'),('principal:shared',1,'active'),
           ('principal:inactive',1,'active'),('principal:outside',1,'active');
         insert into access.membership(
-          id,member_id,organization_id,client,employee_no,status,access_version,joined_at,governance_parent_membership_id
+          id,member_id,organization_id,client,employee_no,status,access_version,joined_at,governance_parent_membership_id,operator_display_name
         ) values
-          ('membership:owner','member:owner','organization-platform-root','operator',null,'active',1,'2026-09-01T00:00:00Z',null),
-          ('membership:operator:shared','member:shared','organization-platform-root','operator',null,'active',1,'2026-09-02T00:00:00Z','membership:owner'),
-          ('membership:storefront:shared','member:shared','organization-platform-root','storefront',null,'active',1,'2026-09-03T00:00:00Z','membership:owner'),
-          ('membership:inactive','member:inactive','organization-platform-root','operator',null,'inactive',1,'2026-09-04T00:00:00Z','membership:owner'),
-          ('membership:outside','member:outside','mall:outside','operator',null,'active',1,'2026-09-05T00:00:00Z','membership:owner');
+          ('membership:owner','member:owner','organization-platform-root','operator',null,'active',1,'2026-09-01T00:00:00Z',null,null),
+          ('membership:operator:shared','member:shared','organization-platform-root','operator',null,'active',1,'2026-09-02T00:00:00Z','membership:owner','李厚亿'),
+          ('membership:storefront:shared','member:shared','organization-platform-root','storefront',null,'active',1,'2026-09-03T00:00:00Z','membership:owner',null),
+          ('membership:inactive','member:inactive','organization-platform-root','operator',null,'inactive',1,'2026-09-04T00:00:00Z','membership:owner',null),
+          ('membership:outside','member:outside','mall:outside','operator',null,'active',1,'2026-09-05T00:00:00Z','membership:owner',null);
         update access.membership set realm_id='realm:admin',account_id='account:'||id where client='operator';
         insert into identity.account values
           ('account:membership:owner','realm:admin','13800138000','138****8000'),
@@ -95,7 +95,7 @@ describe('member directory scope boundary', () => {
 
       expect(items.map(({ membership_id }) => membership_id)).toEqual(['membership:operator:shared', 'membership:owner']);
       expect(items.every(({ client }) => client === 'operator')).toBe(true);
-      expect(items.map(({ display_name }) => display_name)).toEqual(['同主体管理员', 'Owner']);
+      expect(items.map(({ display_name }) => display_name)).toEqual(['李厚亿', 'Owner']);
       expect(items.map(({ mobile }) => mobile)).toEqual(['19287247586', '13800138000']);
     } finally {
       await database.close();

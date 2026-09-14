@@ -111,11 +111,11 @@ describe('member directory pagination', () => {
   });
 
   it('shows the authoritative administrator mobile in the directory and detail panel', async () => {
-    const target = { ...member('target', '高级管理员 · 7586'), mobile: '19287247586', mobile_masked: '192****7586' };
+    const target = { ...member('target', '李厚亿'), mobile: '19287247586', mobile_masked: '192****7586' };
     server.use(
       http.get('*/api/v1/members', () => HttpResponse.json({ items: [target], count: 1 })),
       http.get('*/api/v1/access/center', () => HttpResponse.json({
-        items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [],
+        items: [accessMembership('membership:target', '李厚亿', true)], count: 1, roles: [],
       })),
     );
     const user = userEvent.setup();
@@ -123,9 +123,52 @@ describe('member directory pagination', () => {
     renderWorkspace();
 
     expect(await screen.findByText('19287247586')).toBeTruthy();
-    await user.click(screen.getByRole('row', { name: '查看管理员 高级管理员 · 7586' }));
+    await user.click(screen.getByRole('row', { name: '查看管理员 李厚亿' }));
     expect(screen.getByText('管理员手机号')).toBeTruthy();
     expect(screen.getAllByText('19287247586')).toHaveLength(2);
+  });
+
+  it('upgrades an ordinary administrator from the detail panel and verifies the authoritative reread', async () => {
+    let senior = false;
+    let requestBody: unknown;
+    const tenantScope: ConsoleScope = { kind: 'tenant', id: 'tenant-zhudatuan', name: '宏泰甄选' };
+    const target = { ...member('target', '李厚亿'), mobile: '19287247586' };
+    const seniorRole = () => ({ id: 'role-senior-administrator-v1:tenant-zhudatuan', name: '高级管理员', status: 'active' as const,
+      version: 1, permissions: ['member.members.read'], member_count: senior ? 1 : 0, governance: true,
+      governance_level: 'senior_administrator' as const, editable: false,
+      members: senior ? [{ membership: 'membership:target', member_id: 'member:membership:target', display_name: '李厚亿',
+        employee_no: null, access_version: 8, scope: tenantScope, scope_source: 'direct' as const,
+        effective_at: '2026-09-01T00:00:00.000Z', expires: null }] : [],
+      scopes: [{ scope: tenantScope, source: 'direct' as const, member_count: senior ? 1 : 0 }] });
+    server.use(
+      http.get('*/api/v1/members', () => HttpResponse.json({ items: [{ ...target, access_version: senior ? 8 : 7 }], count: 1 })),
+      http.get('*/api/v1/access/center', () => HttpResponse.json({
+        items: [{ ...accessMembership('membership:target', '李厚亿', senior), access_version: senior ? 8 : 7,
+          roles: senior ? accessMembership('membership:target', '李厚亿', true).roles.map((role) => ({ ...role, scope: tenantScope })) : [],
+          scopes: senior ? [{ id: 'scope:target', kind: tenantScope.kind, scope: tenantScope.id, effect: 'allow', expires: null }] : [],
+          effective_permissions: senior ? ['member.members.read'] : [] }],
+        count: 1,
+        roles: [seniorRole()],
+      })),
+      http.put('*/api/v1/access/roles/:roleid', async ({ request }) => {
+        requestBody = await request.json();
+        senior = true;
+        return HttpResponse.json({ action: 'assign', changed: true,
+          role: 'role-senior-administrator-v1:tenant-zhudatuan', membership: 'membership:target', scope: tenantScope,
+          scope_source: 'direct', access_version: 8 });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWorkspace(ownerContext(tenantScope));
+    await user.click(await screen.findByRole('row', { name: '查看管理员 李厚亿' }));
+
+    await user.click(screen.getByRole('button', { name: '升级为高级管理员' }));
+
+    expect((await screen.findAllByText('高级管理员')).length).toBeGreaterThan(0);
+    expect(requestBody).toMatchObject({ action: 'assign', membership: 'membership:target',
+      kind: 'tenant', scope: 'tenant-zhudatuan', scopeSource: 'direct' });
+    expect(screen.queryByRole('button', { name: '升级为高级管理员' })).toBeNull();
+    expect(screen.getByRole('button', { name: '降级为普通管理员' })).toBeTruthy();
   });
 
   it('keeps cached members visible when the background refresh fails', async () => {
@@ -152,7 +195,7 @@ describe('member directory pagination', () => {
       http.get('*/api/v1/access/center', () => HttpResponse.json(offboarded
         ? { items: [], count: 0, roles: [] }
         : { items: [accessMembership('membership:target', '高级管理员 · 7586', true)], count: 1, roles: [] })),
-      http.put('*/api/v1/access/roles/:roleid', async () => {
+      http.put('*/api/v1/access/roles/:roleid', () => {
         offboarded = true;
         return HttpResponse.json({ action: 'offboard', changed: true, membership: 'membership:target',
           status: 'offboarded', access_version: 8 });
@@ -219,15 +262,17 @@ function renderWorkspace(value: ConsoleContext = context, client = new QueryClie
   );
 }
 
-function ownerContext(): ConsoleContext {
+function ownerContext(extraScope?: ConsoleScope): ConsoleContext {
   return {
     ...context,
+    scopes: extraScope === undefined ? context.scopes : [...context.scopes, extraScope],
     session: {
       ...context.session,
-      permissions: ['access.role.manage'],
+      permissions: ['access.role.manage', 'access.scope.manage'],
       capabilities: ['member.members.read', 'access.center.read', 'access.roles.manage'],
       csrf: 'csrf:owner',
       governance: { level: 'owner', organization: 'tenant-zhudatuan', exactOwner: true },
+      scopes: extraScope === undefined ? context.session.scopes : [...context.session.scopes, extraScope],
     },
   };
 }
