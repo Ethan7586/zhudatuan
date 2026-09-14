@@ -23,7 +23,7 @@ test('two preparations of one source produce one immutable identity and resolve 
   assert.equal(remote.puts, 4);
   assert.equal(remote.objects.size, 4);
   const root = `fixture/app/${fixture.sourceSha}/`;
-  assert.equal(first.releaseIndex.object, `${root}release-index.json`);
+  assert.equal(first.releaseIndex.object, `${root}release-index-r3-normalized-runtime-modes.json`);
   for (const object of remote.objects.keys()) {
     assert.match(object, new RegExp(`^${root}`));
     if (object !== first.releaseIndex.object) assert.match(object, new RegExp(`^${root}[a-f0-9]{64}/`));
@@ -44,6 +44,38 @@ test('two preparations of one source produce one immutable identity and resolve 
   assert.equal(resolved.manifest.dependencyCache.deployableArtifact, false);
   assert.equal(resolved.manifest.retention.minimumRollbackReleasesPerNode, 2);
   assert.equal(JSON.parse(await readFile(options.output, 'utf8')).cacheStatus, 'hit_remote');
+});
+
+test('inspection ignores a legacy index while safe legacy resolution remains backward compatible', async () => {
+  const fixture = await prepareFixture();
+  const remote = memoryOss();
+  const client = createOssClient(credentials(), { fetchImpl: remote.fetch });
+  const published = await publishPreparedArtifact(fixture.adapter, publishOptions(fixture), { client });
+  const currentIndex = remote.objects.get(published.releaseIndex.object);
+  const legacyIndex = published.releaseIndex.object.replace(/release-index-r3-normalized-runtime-modes\.json$/, 'release-index.json');
+  remote.objects.set(legacyIndex, currentIndex);
+  remote.objects.delete(published.releaseIndex.object);
+
+  const options = { sourceSha: fixture.sourceSha, target: 'app', node: 'node-a' };
+  assert.equal((await inspectPreparedArtifact(fixture.adapter, options, { client })).exists, false);
+  assert.equal((await resolvePreparedArtifact(fixture.adapter, options, { client })).releaseIndexObject, legacyIndex);
+});
+
+test('current artifact recipe rejects unreadable runtime modes before publication', async () => {
+  const fixture = await prepareFixture();
+  const manifest = JSON.parse(await readFile(join(fixture.root, 'artifact', 'app.artifact.json'), 'utf8'));
+  manifest.entries = [{ path: 'private.txt', type: 'file', mode: 0o600, bytes: 1, sha256: sha256('x') }];
+  delete manifest.manifestDigest;
+  manifest.manifestDigest = digest(manifest);
+  await writeFile(join(fixture.root, 'artifact', 'app.artifact.json'), prettyStableJson(manifest));
+  const packageSet = JSON.parse(await readFile(fixture.packagePath, 'utf8'));
+  packageSet.artifacts[0].manifestDigest = manifest.manifestDigest;
+  await writeFile(fixture.packagePath, JSON.stringify(packageSet));
+
+  await assert.rejects(
+    () => publishPreparedArtifact(fixture.adapter, publishOptions(fixture), { client: createOssClient(credentials(), { fetchImpl: memoryOss().fetch }) }),
+    (error) => error.code === 'OSS_RUNTIME_MODE_INVALID'
+  );
 });
 
 test('first immutable publication does not require HeadObject on absent objects', async () => {

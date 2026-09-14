@@ -1,0 +1,67 @@
+name: Automatic Artifact Closure
+run-name: Seal affected artifacts for ${{ github.sha }}
+
+# This post-merge workflow never deploys. It prepares affected immutable artifacts and seals
+# candidates after zdt-next has already accepted the source commit.
+on:
+  push:
+    branches:
+      - zdt-next
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: Identify affected runtime targets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      has_targets: ${{ steps.matrix.outputs.has_targets }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22.22.0
+          cache: npm
+      - name: Load planner dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build automatic preparation matrix
+        id: matrix
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          SOURCE_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from 'node:fs';
+          import { loadAdapter } from './04_tools/release-engine/src/adapter.mjs';
+          import { automaticPreparationMatrix } from './04_tools/release-engine/src/automatic-preparation.mjs';
+          import { createPlan } from './04_tools/release-engine/src/planner.mjs';
+
+          const adapter = await loadAdapter('02_platform_pingtai/infrastructure/release/zdt-next.release.json');
+          const before = /^[0]+$/.test(process.env.BEFORE_SHA ?? '') ? `${process.env.SOURCE_SHA}^` : process.env.BEFORE_SHA;
+          const plan = await createPlan(adapter, { from: before, to: process.env.SOURCE_SHA });
+          const entries = automaticPreparationMatrix(adapter, plan.deploymentOrder);
+          appendFileSync(process.env.GITHUB_OUTPUT, `matrix=${JSON.stringify({ include: entries })}\n`);
+          appendFileSync(process.env.GITHUB_OUTPUT, `has_targets=${entries.length > 0}\n`);
+          console.log(entries.length === 0 ? 'No runtime artifact was affected.' : `Affected targets: ${entries.map(({ target }) => target).join(', ')}`);
+          NODE
+
+  close:
+    name: Prepare and seal ${{ matrix.target }}
+    needs: plan
+    if: needs.plan.outputs.has_targets == 'true'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    uses: ./.github/workflows/auto-prepare-one-target.yml
+    with:
+      head_sha: ${{ github.sha }}
+      release_target: ${{ matrix.target }}
+      prepare_node: ${{ matrix.prepare_node }}
+      seal_nodes_json: ${{ matrix.seal_nodes_json }}
+    secrets: inherit
