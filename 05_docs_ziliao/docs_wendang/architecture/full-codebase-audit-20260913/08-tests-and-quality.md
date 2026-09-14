@@ -421,3 +421,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - PGlite test 验证 message pagination、排序和 KMS finalize，但只使用授权 member fixture。
 - 未覆盖未授权 case 的 attachment metadata；该查询缺少同等 authorization predicate，见 F-0186/P1，待独立复核。
+
+## 164. AU-164 Support assignment/state 深审
+
+- 本批没有 assignment、SLA 或 ticket close/reopen direct tests。
+- transition 的 stale-version history 顺序缺陷见 F-0187/P2；需用失败和成功 fixture 固化契约。

@@ -3640,6 +3640,20 @@
 | 验证/回滚 | 定向 PGlite/integration fixture：未授权 case 必须同时返回零 message 和零 attachment；授权 member/ancestor 保持原结果。回滚为 revert 独立修复提交。 |
 | 独立复核 | 是，AU-163 已完成且结论一致；`records/AU-163-support-attachment-independent-review/summary.md`。 |
 
+## F-0187｜Support close/reopen 版本冲突仍写入成功 history
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | support / ticket transition；P2；高 |
+| 类型 | 正确性、审计 history 与持久状态不一致 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/support/03_application_yingyong/command/CloseTicket.ts:32-37` |
+| 当前/预期 | `transition` 以 `where version=$4` 更新 ticket，却未检查 `result.rows[0]`；随即调用 `ports(...).history`，最后 `rowResult` 才因没有 row 抛 `RESOURCE_NOT_FOUND`。预期必须确认 ticket transition 成功后才写 history，并把 version conflict 作为 conflict。 |
+| 直接证据 | 同文件 `update` 路径在 line 22-25 明确检查无 row 后抛 `VERSION_CONFLICT`；`transition` 路径没有该检查且 history 位于 `rowResult` 之前。 |
+| 调用链/影响 | SupportRoutes → `support.cases.close` / `support.cases.reopen` → ticket update/history。并发旧版本请求可令客户端得到失败，同时 history 记录 closed/open，误导审计、运营和后续事件处理。 |
+| 建议方向 | 从修复时最新 `zdt-next` 独立建立最小修复批：先检查 update row，再写 history，并添加 version conflict negative test；回滚为撤回该批。 |
+| 验证/回滚 | 定向 fixture：stale version 不新增 history；success transition 恰增一条 history。回滚为 revert 独立修复提交。 |
+| 独立复核 | 否；P2。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。

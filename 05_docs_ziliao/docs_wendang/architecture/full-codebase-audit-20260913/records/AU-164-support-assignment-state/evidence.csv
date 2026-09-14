@@ -1,0 +1,4 @@
+id,files,location,kind,observation
+E-AU-164-001,03_application_yingyong/command/AssignTicket.ts,11-102,assignment/SLA,Ticket/agent scope lock, outbox/history, bounded reassignment, rule/account/SLA version writes are implemented here.
+E-AU-164-002,02_domain_yewu/model/{AssignmentRule,Sla}.ts;policy/AssignmentPolicy.ts,1-13;1-9;1-16,domain policy,Rules/SLA validate inputs; policy requires matching active rule then selects lowest load/id eligible agent.
+E-AU-164-003,03_application_yingyong/command/CloseTicket.ts,18-37,transition defect,Update branch checks version; transition branch writes history before rowResult detects empty update.

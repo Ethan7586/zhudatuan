@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-163 已完成。AU-163 完成 F-0186 Support attachment 权限边界独立复核。覆盖总账不变：深入审阅1,553文件/109,098行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,301文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-164 已完成。AU-164 完成 Support assignment/SLA/ticket transition 审阅。覆盖总账按当前文件级清单重算：深入审阅1,558文件/109,289行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,296文件。F-0158/P1、F-0159/P1、F-0173/P1、F-0186/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1413,3 +1413,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 独立重走 F-0186 的 HTTP contract、Console feature caller、entry operation allowlist、SupportRoutes 和 response body。
 
 执行结果：`support.messages.read` 是 operator audience 的公开 GET `/api/v1/support/cases/{caseid}/messages`，Console feature 真实调用；response 无条件包含 attachments。重新检查证实 attachment query 仍没有 caller member/scope predicate，故两轮结论一致，F-0186/P1 确认。未发现 P0。
+
+## 166. AU-164 连续审计点
+
+审阅 Support assignment/rule/SLA、ticket update/close/reopen 的 domain 和 application 链。
+
+执行结果：assignment 使用 ticket lock 与 organization closure，规则按 scope/skill/priority、可用 agent load/id 确定；agent unavailable 重分派上限为 100。ticket update 验证状态机与 version 后再写 history。新增 F-0187/P2：close/reopen transition 的 update 无返回行时仍先写 history，随后 rowResult 才抛错，可能留下未发生状态转移的 history。无 P0。

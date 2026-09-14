@@ -1773,3 +1773,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | HTTP 契约与 SDK | operator audience GET 绑定，Console Support feature 真实调用 | [FACT][E-AU-163-001] |
 | 入口/route/response | ConsoleSupportMain allowlist → SupportRoutes → message read response unconditional `attachments` | [FACT][E-AU-163-002] |
 | 权限结论 | attachment SQL 无 member/scope predicate；两轮一致，F-0186/P1 确认 | [FACT][E-AU-163-003] |
+
+## 169. AU-164 Support assignment/state 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| assignment/SLA | scoped ticket/agent lock、assignment history/outbox、agent unavailable bounded reassign、SLA monotonic version | [FACT][E-AU-164-001] |
+| policy/domain | assignment rule validity、least-load deterministic agent、SLA/ticket state validity | [FACT][E-AU-164-002] |
+| ticket transition | closure-scoped lock、state transition/version update、history | [FACT][E-AU-164-003]；F-0187/P2 |
+
+[FACT][E-AU-164-004] 5 文件、191 行完成深审；状态转移失败路径的 history 顺序已独立记录。
