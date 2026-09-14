@@ -749,3 +749,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 现有fixture覆盖canonical round-trip、malformed与unsupported version；不覆盖标题所称non-canonical值或position边界。
 - 见F-0218/P3。审计工作树未运行Vitest。
+
+## 232. AU-232 HttpRequest contract 深审
+
+- HttpRequest为类型契约；运行行为由已审HttpApp、RouteRegistry与OperationController承接。
+- 无P0–P3新问题。

@@ -2440,3 +2440,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | production consumers | risk、reporting、support、audit查询均生成该nextCursor契约 | [FACT][E-AU-231-003] |
 
 [FACT][E-AU-231-004] 2 文件、51 行完成深审；direct test遗漏其标题声明的non-canonical case及position边界，见F-0218/P3。
+
+## 237. AU-232 HttpRequest contract 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| route input contract | 统一路由处理器的method/path、headers、path/query、body与deadline/cancel输入 | [FACT][E-AU-232-001] |
+| ingress construction | HttpApp在route match、auth与gate之后一次性构造该输入并调用RouteHandler | [FACT][E-AU-232-002] |
+| consumers | RouteRegistry与OperationController以其处理contract operation输入和授权资源 | [FACT][E-AU-232-003] |
+
+[FACT][E-AU-232-004] 1 文件、11 行完成深审；无独立业务逻辑，为G0 contract。
