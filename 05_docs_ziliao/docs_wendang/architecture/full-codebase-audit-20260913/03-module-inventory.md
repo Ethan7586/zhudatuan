@@ -1458,3 +1458,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | Cake source projection | provider source 至 catalog/pricing/inventory/media-job 的受限投影 | [FACT][E-AU-132-004] |
 
 [FACT][E-AU-132-005] 5 文件、823 行 Catalog import/source projection chain 完成深审；对象扫描和 SHA 验证位于进入数据库分片前。
+
+## 138. AU-133 Catalog 媒体复制、OSS 与 Worker 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| replication/registration/persistence | 多 target 上传/head 验证后才 bind；否则解绑并持久化 replica 证据 | [FACT][E-AU-133-001] |
+| target/OSS adapter | environment target→缓存 OSS client，上传 SHA metadata 并以 head 验证 | [FACT][E-AU-133-002] |
+| media Worker | source URL 下载、registration、primary verified replica→coverUrl | [FACT][E-AU-133-003]；F-0173/P1 |
+
+[FACT][E-AU-133-004] 9 文件、539 行 Catalog media replication chain 完成深审；媒体 target 可选/required 语义明确，但 source download 输入边界待独立复核。

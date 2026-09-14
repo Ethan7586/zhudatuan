@@ -1,0 +1,5 @@
+id,file,location,kind,observation
+E-AU-133-001,03_application_yingyong/{CatalogMediaReplication;CatalogProductMediaRegistration}.ts;04_adapters_shixian/persistence/PgCatalogMediaPersistence.ts,1-135;1-53;1-66,replication lifecycle,Required target upload/head verification determines product media binding or unbinding and persists replica evidence.
+E-AU-133-002,04_adapters_shixian/{config/CatalogMediaTargets;object_storage/CatalogMediaStorageResolver;object_storage/AliyunOssCatalogMediaStorage}.ts,1-60,storage boundary,Environment targets resolve to cached OSS clients; adapter writes/reads SHA metadata.
+E-AU-133-003,05_interface_jieru/job/CatalogMediaReplicationJob.ts,18-96,worker boundary,Source URLs only require nonempty strings then go to raw fetch and unbounded arrayBuffer.
+E-AU-133-004,03_application_yingyong/CatalogSourceProjection.ts;bootstrap/CatalogJobsRuntime.ts,97-101;134-136,call chain,Provider image paths enqueue media job and dedicated catalog runtime constructs processor with default fetch.

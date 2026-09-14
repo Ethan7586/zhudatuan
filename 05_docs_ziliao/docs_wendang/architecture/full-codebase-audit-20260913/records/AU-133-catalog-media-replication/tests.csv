@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source-level tests,CatalogMediaReplicationJob.test.ts and related media tests,Observed,Tests cover basic success/fallback/incomplete/payload cases but not network URL or response-size policy.
+Targeted Vitest,Media replication,Not run,No execution was needed to establish the static trust-boundary finding.

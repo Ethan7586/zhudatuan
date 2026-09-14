@@ -266,3 +266,9 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 - Notification 测试目录的 manifest、identity job/backlog、delivery adapter 测试均不实例化八项 preference、endpoint、template、announcement 或 read HTTP action。
 - 全服务 operation-id 检索只发现 manifest strings 和 IdentityRegistration entrypoint 的两条静态 route match；无法证明 scope、version、KMS endpoint、WeChat authorization 或 keyset 行为，见 F-0172/P2。
 - 本 AU 未运行 Vitest；没有为弥补测试空缺发明测试命令。
+
+## 133. AU-133 Catalog 媒体复制质量
+
+- media replication、product registration、OSS adapter 和 Worker 均有局部测试文件；本 AU 已确认 Worker 测试覆盖 fallback、incomplete registration 与 payload 基础合法性。
+- 未见 http/private address、redirect、oversize response 或流式读取边界反事实；结合 source URL 直接 raw fetch 形成 F-0173/P1，待独立复核。
+- 本 AU 未运行 Vitest。

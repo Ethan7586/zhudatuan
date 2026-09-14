@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-132 已完成。AU-132 完成 Catalog 导入包、分片持久化和 Cake 来源投影链审阅。覆盖总账按当前文件级清单重算：深入审阅1,272文件/97,545行、结构性审阅809文件/118,719行、自动生成70文件/172,651行、暂未审阅1,577文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-133 已完成。AU-133 完成 Catalog 媒体复制、OSS adapter 与媒体 Worker 链审阅。覆盖总账按当前文件级清单重算：深入审阅1,281文件/98,084行、结构性审阅805文件/118,449行、自动生成70文件/172,651行、暂未审阅1,572文件。F-0158/P1、F-0159/P1 均已双轮确认；新增 F-0173/P1 待独立复核；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1227,3 +1227,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Catalog 上传/确认操作、package object/JSON 行规范化、逐行 product import、Cake provider source projection 与 PostgreSQL import state persistence。
 
 执行结果：上传以 scope+SHA advisory lock 去重，object metadata/hash/scan 三者一致才复用；confirm 对 import row 行锁并只从 ready 转 running。package 限制 32MiB/100k 行、UTF-8 JSON/schema/source/validation；stage 每 500 行落库并校验，process 在 worker transaction 中逐行 savepoint，错误写 importerror、续页投递新 job、reporting 后才完成报告。Cake projection 将 product/SKU/listing/price/stock/source mapping/media replication job 同链写入；未发现 P0–P3 新问题；Vitest 未运行。
+
+## 135. AU-133 连续审计点
+
+审阅 Catalog 媒体 replication、product media binding、媒体 target/resolver/OSS adapter、媒体持久化和 catalogmediareplication Worker。
+
+执行结果：replication 向所有 enabled target 上传后以 size/SHA head 验证，任一 required replica 不完整即解绑 product media；OSS adapter 将 SHA 写 object metadata，持久化写 mediaobject/replica/binding。Worker 从 sourceUrls 逐个 raw fetch、将完整 response 读入内存后才注册并更新 coverUrl。新增 F-0173/P1：sourceUrls 只检查非空字符串，未限制 URL scheme/host/private address/redirect/response size，Cake provider source 可使 worker 访问任意网络地址或消耗未界定内存；已进入独立复核队列。未发现 P0；Vitest 未运行。

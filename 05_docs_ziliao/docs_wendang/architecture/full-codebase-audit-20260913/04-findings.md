@@ -3446,6 +3446,20 @@
 | 验证/回滚 | 从最新主线建立独立测试批次，用最小 fake repository/KMS 或 PGlite 覆盖每项拒绝/成功路径、scope/version 与 keyset反事实；回滚为撤回该测试批次。 |
 | 独立复核 | 否；P2，后续 Notification management 专项可复查。 |
 
+## F-0173｜Catalog 媒体 Worker 对 provider source URL 无网络与容量边界
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块/级别 | catalog / media replication Worker；P1；高；待独立复核 |
+| 类型 | SSRF、资源耗尽、外部输入边界 |
+| 位置 | `01_core_hexin/services/commerce/src/modules/catalog/03_application_yingyong/CatalogSourceProjection.ts:97-101,149-184`；`05_interface_jieru/job/CatalogMediaReplicationJob.ts:46-65,81-93` |
+| 当前/预期 | Cake source projection 将 provider `imagePaths` 原样写入 `catalogmediareplication` job；Worker 只检查每个 source URL 为非空字符串，以原生 `fetch(sourceUrl)` 顺序访问，随后无字节上限地 `arrayBuffer()`。预期只允许明确的 HTTPS/host allowlist 与安全解析后的公网地址，限制/流式读取 response，拒绝重定向到非允许地址。 |
+| 直接证据 | `cakeSource` 的 `stringArray(imagePaths)` 只检验非空 string；job `mediaPayload` 同样只检验非空 string；`download` 将该值直接传给 fetch 且没有 URL 解析、scheme/host/private address、redirect 或 content-length/body limit 检查。现有 job 测试只用两个 HTTPS provider URL、source unavailable/incomplete/payload 空值反事实。 |
+| 调用链/影响 | provider Cake catalog source → CatalogSourceProjection → runtime.job `catalogmediareplication` → CatalogMediaReplicationProcessor.download → process network fetch → OSS replication/coverUrl。若上游 provider 或其返回字段遭篡改，Worker 可对其可达网络发起请求，或为大响应分配内存；实际网络可达性和线上 source 数据尚未验证。 |
+| 根因 | Provider media URL 被当作已可信的资源标识，进入通用 worker 前没有网络 egress 与体积边界。 |
+| 验证/回滚 | 先独立复核 job runtime 的 egress/DNS/redirect policy 与 provider payload trust boundary；从最新主线建立单一修复分支，用 injectable URL policy/streamed fetch 测试覆盖 http、localhost/private IP、redirect、oversize 与允许 CDN。回滚为撤回该单一输入边界批次。 |
+| 独立复核 | 是；AU-134 必须从 provider source 到 dedicated CatalogJobsRuntime 重新检查，结论不一致时保留较保守级别。 |
+
 ## 30. AU-030 新增未定级事项
 
 - [UNKNOWN] 线上Jdfresh installation、库存任务和tracking失败状态未核验；F-0122保持P1候选而非P0。
