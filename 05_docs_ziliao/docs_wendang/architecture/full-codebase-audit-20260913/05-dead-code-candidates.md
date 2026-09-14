@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 73、G2 2、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 74、G2 2、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -803,3 +803,17 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 388. AU-388 可选登录成员身份复核
 
 - 可选身份列表归 DC-0055/G1；多入口登录的当前拒绝行为是明确的 fail-closed 运行契约。累计 G0 60、G1 73、G2 2、G3 0、GX 5；未删除任何文件。
+
+## DC-0056｜商城应用构建器 service-role 接口链
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类/对象 | G1；`mall_application_versions`、`mall_application_heads` 与 `api_mall_application_{center,experience,mutate}` 的后续 schema-v2 版本。 |
+| 疑似原因 | 固定基线未发现 Commerce API、Console、Miniapp 或 Worker 对这三个 RPC/表的直接调用；商城应用的另一套 Commerce experience 模型仍在运行源码中。 |
+| 保留证据 | 迁移建立不可变版本、发布投影、幂等、乐观并发、审计和 service-role 公共 RPC；schema-v2 契约测试直接覆盖 create/save/publish/restore。仓外 service-role、已发布前端和迁移数据责任均未排除。 |
+| 可否删除 | 否；未满足公共 API、数据/迁移责任、外部消费者、正式下线、等价替代、验证和恢复条件。 |
+| 二次复核 | G1不强制；拟整合或下线前须核验 Supabase 运行实例、服务端适配器与已发布客户端。 |
+
+## 389. AU-389 商城应用构建器复核
+
+- 初版 v1 已由 schema-v2、规范化权限和授权证据接口演进覆盖；不可变版本、发布投影、事务锁与审计职责仍为真实数据库契约。未接线的 service-role 构建器链归 DC-0056/G1。累计 G0 60、G1 74、G2 2、G3 0、GX 5；未删除任何文件。
