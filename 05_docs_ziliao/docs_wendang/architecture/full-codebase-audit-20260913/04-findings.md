@@ -4937,3 +4937,21 @@
 | 建议方向 | 从当时最新主线建立独立 seed compatibility 批次：以 order 的 mall/member/scope 填充 fulfillmentorder，并向 fulfillment child、inventory movement/reservation 写入 mall；不要改写历史 migration。为最新 schema 的全量 dataset/import 建立一条最小成功契约。 |
 | 验证/回滚 | 隔离 PostgreSQL 应用当前 migrations 后分别运行 normal dataset 与 import dataset，断言 fulfillment 与 inventory 行数、mall/member/provider scope 与父 order/stock 一致；回滚为撤回独立 seed 提交。 |
 | 是否需要独立复核 | 是；复核者需在最新 schema 实跑两条正式 seed 入口，并核对是否另有后置 schema adapter。 |
+
+## F-0266｜Mall provisioning access migration 授权了尚未定义的函数
+
+| 字段 | 记录 |
+| --- | --- |
+| 模块 | 数据库迁移 / Mall provisioning runtime |
+| 类型 | 迁移顺序、空库可重建性 |
+| 严重级别 | **P2** |
+| 置信度 | 高 |
+| 文件和精确位置 | `02_platform_pingtai/database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql:38-40`；`20260903103000_provision_l1_mall_owner.sql:26,65,108-111`；`01_core_hexin/services/commerce/src/foundation/infrastructure/MigrationRunner.ts:56-68`。 |
+| 当前/预期 | AU-628 对 `access.provision_mall_owner` 与 `access.read_provisioned_mall` 直接 `grant execute`，但两个 function 在字典序后 20260903103000 才首次 create；正式 runner 对 migration filename `.sort()` 后以原样 SQL 执行。预期为被 grant 的 function 在 migration 之前存在，或 grant 与 function creation 同一/后续 migration 完成。 |
+| 直接证据 | [FACT][E-AU-628-003] 全 migration 集内这两个 function 的首次定义仅在 20260903103000；[FACT][E-AU-628-004] `genericMigrationSql` 仅转换另一份 20260829211000 migration，本文件原样返回；[FACT][E-AU-628-005] MigrationRunner 依次执行排序文件，单个 SQL 失败前不会写入 schema_migrations ledger。 |
+| 调用链或运行入口 | `MigrationMain` → `MigrationRunner.run()` → sorted migration loop → `20260902012000` → PostgreSQL `grant execute on function` resolution。 |
+| 用户/数据/安全影响 | 新建或从该历史点重建数据库会在 provisioning access migration 停止，阻断后续 schema、Mall provisioning API 与依赖其后的服务启动；未证明现有线上数据库正在受影响或有数据损失。 |
+| 根因 | 专用 provisioning role/ACL migration 先于 owner-provisioning function 的首次定义提交，且没有延迟 grant 或存在性 guard。 |
+| 建议方向 | 从当时最新主线建立独立、前向兼容 migration：只在函数存在时补授予并在其后 assert；同时先确认所有已部署数据库的 schema ledger。不要修改历史 migration 文件。 |
+| 验证/回滚 | 干净隔离 PostgreSQL 按正式 MigrationRunner 顺序运行至 20260902012000，确认当前失败；应用前向兼容 batch 后验证全量迁移、provisioning runtime compatibility 及 platform owner create/read mall。回滚为撤回该单独补偿 migration。 |
+| 是否需要独立复核 | 是；复核者需独立确认所有定义位置、执行器 transform 集和 production schema_migrations 状态。 |
