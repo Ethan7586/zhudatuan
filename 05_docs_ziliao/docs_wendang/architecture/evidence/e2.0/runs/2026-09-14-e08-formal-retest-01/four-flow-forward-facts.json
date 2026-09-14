@@ -1,0 +1,320 @@
+{
+  "schema_version": "e08-four-flow-forward-facts-v1",
+  "captured_at": "2026-09-13T18:47:38.566Z",
+  "inventory_reservation_facts": [
+    {
+      "id": "supplier-reservation:line:test:a",
+      "reservation_id": "reservation:test:a",
+      "order_id": "order:test:four-flow",
+      "order_line_id": "line:test:a",
+      "supplier_leg_id": "leg:test:a",
+      "stockitem_id": "stock:zdt:supplier:trial:001",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:a",
+      "quantity": "1",
+      "state": "committed"
+    },
+    {
+      "id": "supplier-reservation:line:test:b:dropship",
+      "reservation_id": "reservation:test:b2",
+      "order_id": "order:test:four-flow",
+      "order_line_id": "line:test:b:dropship",
+      "supplier_leg_id": "leg:test:b:dropship",
+      "stockitem_id": "stock:zdt:supplier:trial:003",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:dropship",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "quantity": "1",
+      "state": "committed"
+    },
+    {
+      "id": "supplier-reservation:line:test:b:warehouse",
+      "reservation_id": "reservation:test:b1",
+      "order_id": "order:test:four-flow",
+      "order_line_id": "line:test:b:warehouse",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "stockitem_id": "stock:zdt:supplier:trial:002",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "quantity": "2",
+      "state": "committed"
+    }
+  ],
+  "fulfillment_responsibilities": [
+    {
+      "id": "supplier-responsibility:leg:test:a",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:a",
+      "fulfillment_party_id": "partner:test:supplier:a",
+      "settlement_party_id": "partner:test:supplier:a",
+      "invoice_party_id": "partner:test:supplier:a",
+      "state": "pending"
+    },
+    {
+      "id": "supplier-responsibility:leg:test:b:dropship",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:b:dropship",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:dropship",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "fulfillment_party_id": "party:test:fulfillment:b2",
+      "settlement_party_id": "partner:test:supplier:b",
+      "invoice_party_id": "party:test:invoice:b2",
+      "state": "pending"
+    },
+    {
+      "id": "supplier-responsibility:leg:test:b:warehouse",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "fulfillment_party_id": "partner:test:supplier:b",
+      "settlement_party_id": "partner:test:supplier:b",
+      "invoice_party_id": "partner:test:supplier:b",
+      "state": "pending"
+    }
+  ],
+  "payment_intents": [
+    {
+      "id": "intent:test:four-flow",
+      "order_id": "order:test:four-flow",
+      "currency": "CNY",
+      "amount_minor": "2800",
+      "state": "captured",
+      "idempotency_key": "idempotency:test:four-flow",
+      "provider_reference": "provider:test:four-flow"
+    }
+  ],
+  "payments": [
+    {
+      "id": "payment:test:four-flow",
+      "intent_id": "intent:test:four-flow",
+      "amount_minor": "2800",
+      "currency": "CNY",
+      "captured_minor": "2800",
+      "refunded_minor": "0",
+      "state": "captured"
+    }
+  ],
+  "captures": [
+    {
+      "id": "capture:test:four-flow",
+      "order_id": "order:test:four-flow",
+      "currency": "CNY",
+      "amount_minor": "2800",
+      "state": "succeeded",
+      "idempotency_key": "capture:test:four-flow"
+    }
+  ],
+  "payment_allocations": [
+    {
+      "payment_id": "payment:test:four-flow",
+      "target_type": "supplier_economic_leg",
+      "target_id": "leg:test:a",
+      "amount_minor": "900",
+      "currency": "CNY"
+    },
+    {
+      "payment_id": "payment:test:four-flow",
+      "target_type": "supplier_economic_leg",
+      "target_id": "leg:test:b:dropship",
+      "amount_minor": "800",
+      "currency": "CNY"
+    },
+    {
+      "payment_id": "payment:test:four-flow",
+      "target_type": "supplier_economic_leg",
+      "target_id": "leg:test:b:warehouse",
+      "amount_minor": "1100",
+      "currency": "CNY"
+    }
+  ],
+  "merchant_receipts": [
+    {
+      "id": "merchant-receipt:test",
+      "payment_id": "payment:test:four-flow",
+      "order_id": "order:test:four-flow",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "amount_minor": "2800",
+      "currency": "CNY",
+      "provider_source": "fixture"
+    }
+  ],
+  "finance_facts": [
+    {
+      "id": "leg:test:a:cost",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:a",
+      "fact_kind": "cost",
+      "amount_minor": "600",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:a:income",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:a",
+      "fact_kind": "income",
+      "amount_minor": "900",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:a:payable",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:a",
+      "fact_kind": "payable",
+      "amount_minor": "600",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:a:receivable",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:a",
+      "fact_kind": "receivable",
+      "amount_minor": "900",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:b:dropship:cost",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:b:dropship",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:dropship",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "fact_kind": "cost",
+      "amount_minor": "500",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:b:dropship:income",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:b:dropship",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:dropship",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "fact_kind": "income",
+      "amount_minor": "800",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:b:dropship:payable",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:b:dropship",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:dropship",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "fact_kind": "payable",
+      "amount_minor": "500",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:b:dropship:receivable",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:b:dropship",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:dropship",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "fact_kind": "receivable",
+      "amount_minor": "800",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:b:warehouse:cost",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "fact_kind": "cost",
+      "amount_minor": "700",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:b:warehouse:income",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "fact_kind": "income",
+      "amount_minor": "1100",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:b:warehouse:payable",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "fact_kind": "payable",
+      "amount_minor": "700",
+      "currency": "CNY"
+    },
+    {
+      "id": "leg:test:b:warehouse:receivable",
+      "order_id": "order:test:four-flow",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "fact_kind": "receivable",
+      "amount_minor": "1100",
+      "currency": "CNY"
+    }
+  ]
+}

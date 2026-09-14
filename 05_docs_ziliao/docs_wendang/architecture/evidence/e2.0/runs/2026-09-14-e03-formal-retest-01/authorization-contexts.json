@@ -1,0 +1,103 @@
+{
+  "schema_version": "e03-authorization-contexts-v1",
+  "captured_at": "2026-09-13T22:41:49.322Z",
+  "engine": "AccessPipeline + NodeOperationAvailabilityResolver + PgDecisionSink",
+  "shared_principal_id": "principal:e03:shared:1daaf663",
+  "samples": [
+    {
+      "sample_id": "hosted-operating-mall",
+      "sovereignty_tier": "hosted",
+      "node_profile": "operating_mall",
+      "signed_level": "L6",
+      "membership_client": "storefront",
+      "principal_id": "principal:e03:shared:1daaf663",
+      "account_id": "account:e03:1daaf663:1",
+      "realm_id": "realm:e03:1daaf663:1",
+      "membership_id": "membership:e03:1daaf663:1",
+      "node_id": "node:e03:hosted-operating-mall:1daaf663",
+      "line_id": "line:e03:hosted-operating-mall:1daaf663",
+      "host_sovereign_node_id": "node:e03:host:1daaf663",
+      "scope": {
+        "kind": "owner",
+        "id": "member:e03:1daaf663:1",
+        "path": []
+      },
+      "denied_scope": {
+        "kind": "owner",
+        "id": "member:e03:denied:1daaf663:1",
+        "path": []
+      },
+      "asset_id": "order:e03:1daaf663:read:hosted-operating-mall"
+    },
+    {
+      "sample_id": "sovereign-operating-mall",
+      "sovereignty_tier": "sovereign",
+      "node_profile": "operating_mall",
+      "signed_level": "L6",
+      "membership_client": "storefront",
+      "principal_id": "principal:e03:shared:1daaf663",
+      "account_id": "account:e03:1daaf663:2",
+      "realm_id": "realm:e03:1daaf663:2",
+      "membership_id": "membership:e03:1daaf663:2",
+      "node_id": "node:e03:sovereign-operating-mall:1daaf663",
+      "line_id": "line:e03:sovereign-operating-mall:1daaf663",
+      "host_sovereign_node_id": "node:e03:sovereign-operating-mall:1daaf663",
+      "scope": {
+        "kind": "owner",
+        "id": "member:e03:1daaf663:2",
+        "path": []
+      },
+      "denied_scope": {
+        "kind": "owner",
+        "id": "member:e03:denied:1daaf663:2",
+        "path": []
+      },
+      "asset_id": "order:e03:1daaf663:read:sovereign-operating-mall"
+    },
+    {
+      "sample_id": "hosted-consumer",
+      "sovereignty_tier": "hosted",
+      "node_profile": "consumer",
+      "signed_level": "L7",
+      "membership_client": "storefront",
+      "principal_id": "principal:e03:shared:1daaf663",
+      "account_id": "account:e03:1daaf663:3",
+      "realm_id": "realm:e03:1daaf663:3",
+      "membership_id": "membership:e03:1daaf663:3",
+      "node_id": "node:e03:hosted-consumer:1daaf663",
+      "line_id": "line:e03:hosted-consumer:1daaf663",
+      "host_sovereign_node_id": "node:e03:host:1daaf663",
+      "scope": {
+        "kind": "owner",
+        "id": "member:e03:1daaf663:3",
+        "path": []
+      },
+      "denied_scope": {
+        "kind": "owner",
+        "id": "member:e03:denied:1daaf663:3",
+        "path": []
+      },
+      "asset_id": "order:e03:1daaf663:read:hosted-consumer"
+    }
+  ],
+  "operations": [
+    {
+      "kind": "read",
+      "operation": "member.profile.read",
+      "permission": "member.profile.read",
+      "side_effect_contract": "side-effect-free read"
+    },
+    {
+      "kind": "write",
+      "operation": "member.addresses.manage",
+      "permission": "member.address.manage",
+      "side_effect_contract": "rollback-safe synthetic business write"
+    }
+  ],
+  "surfaces": [
+    "page",
+    "api",
+    "task",
+    "service"
+  ]
+}

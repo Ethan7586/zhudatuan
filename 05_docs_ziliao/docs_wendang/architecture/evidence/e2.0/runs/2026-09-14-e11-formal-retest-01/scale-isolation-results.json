@@ -1,0 +1,354 @@
+{
+  "schema_version": "e11-scale-isolation-results-v1",
+  "captured_at": "2026-09-13T19:26:01.763Z",
+  "scenarios": [
+    {
+      "scenario_id": "scale-0001-peer-horizontal",
+      "scale": 1,
+      "topology_id": "peer-horizontal",
+      "database_counts": {
+        "hosted_nodes": 1,
+        "provisioning_rows": 1,
+        "realm_rows": 1,
+        "current_relation_rows": 1,
+        "capability_rows": 1,
+        "closure_rows": 3
+      },
+      "distinct_line_count": 1,
+      "maximum_signed_level": 2,
+      "profile_counts": [
+        {
+          "node_profile": "operating_mall",
+          "row_count": 1
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-0001-multi-line-horizontal",
+      "scale": 1,
+      "topology_id": "multi-line-horizontal",
+      "database_counts": {
+        "hosted_nodes": 1,
+        "provisioning_rows": 1,
+        "realm_rows": 1,
+        "current_relation_rows": 1,
+        "capability_rows": 1,
+        "closure_rows": 3
+      },
+      "distinct_line_count": 1,
+      "maximum_signed_level": 2,
+      "profile_counts": [
+        {
+          "node_profile": "operating_mall",
+          "row_count": 1
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-0001-l0-l11-vertical-mixed",
+      "scale": 1,
+      "topology_id": "l0-l11-vertical-mixed",
+      "database_counts": {
+        "hosted_nodes": 1,
+        "provisioning_rows": 1,
+        "realm_rows": 1,
+        "current_relation_rows": 1,
+        "capability_rows": 1,
+        "closure_rows": 3
+      },
+      "distinct_line_count": 1,
+      "maximum_signed_level": 2,
+      "profile_counts": [
+        {
+          "node_profile": "operating_mall",
+          "row_count": 1
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-0010-peer-horizontal",
+      "scale": 10,
+      "topology_id": "peer-horizontal",
+      "database_counts": {
+        "hosted_nodes": 10,
+        "provisioning_rows": 10,
+        "realm_rows": 10,
+        "current_relation_rows": 10,
+        "capability_rows": 10,
+        "closure_rows": 30
+      },
+      "distinct_line_count": 1,
+      "maximum_signed_level": 2,
+      "profile_counts": [
+        {
+          "node_profile": "consumer",
+          "row_count": 5
+        },
+        {
+          "node_profile": "operating_mall",
+          "row_count": 5
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-0010-multi-line-horizontal",
+      "scale": 10,
+      "topology_id": "multi-line-horizontal",
+      "database_counts": {
+        "hosted_nodes": 10,
+        "provisioning_rows": 10,
+        "realm_rows": 10,
+        "current_relation_rows": 10,
+        "capability_rows": 10,
+        "closure_rows": 30
+      },
+      "distinct_line_count": 3,
+      "maximum_signed_level": 2,
+      "profile_counts": [
+        {
+          "node_profile": "consumer",
+          "row_count": 5
+        },
+        {
+          "node_profile": "operating_mall",
+          "row_count": 5
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-0010-l0-l11-vertical-mixed",
+      "scale": 10,
+      "topology_id": "l0-l11-vertical-mixed",
+      "database_counts": {
+        "hosted_nodes": 10,
+        "provisioning_rows": 10,
+        "realm_rows": 10,
+        "current_relation_rows": 10,
+        "capability_rows": 10,
+        "closure_rows": 75
+      },
+      "distinct_line_count": 1,
+      "maximum_signed_level": 11,
+      "profile_counts": [
+        {
+          "node_profile": "consumer",
+          "row_count": 5
+        },
+        {
+          "node_profile": "operating_mall",
+          "row_count": 5
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-0100-peer-horizontal",
+      "scale": 100,
+      "topology_id": "peer-horizontal",
+      "database_counts": {
+        "hosted_nodes": 100,
+        "provisioning_rows": 100,
+        "realm_rows": 100,
+        "current_relation_rows": 100,
+        "capability_rows": 100,
+        "closure_rows": 300
+      },
+      "distinct_line_count": 1,
+      "maximum_signed_level": 2,
+      "profile_counts": [
+        {
+          "node_profile": "consumer",
+          "row_count": 50
+        },
+        {
+          "node_profile": "operating_mall",
+          "row_count": 50
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-0100-multi-line-horizontal",
+      "scale": 100,
+      "topology_id": "multi-line-horizontal",
+      "database_counts": {
+        "hosted_nodes": 100,
+        "provisioning_rows": 100,
+        "realm_rows": 100,
+        "current_relation_rows": 100,
+        "capability_rows": 100,
+        "closure_rows": 300
+      },
+      "distinct_line_count": 3,
+      "maximum_signed_level": 2,
+      "profile_counts": [
+        {
+          "node_profile": "consumer",
+          "row_count": 50
+        },
+        {
+          "node_profile": "operating_mall",
+          "row_count": 50
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-0100-l0-l11-vertical-mixed",
+      "scale": 100,
+      "topology_id": "l0-l11-vertical-mixed",
+      "database_counts": {
+        "hosted_nodes": 100,
+        "provisioning_rows": 100,
+        "realm_rows": 100,
+        "current_relation_rows": 100,
+        "capability_rows": 100,
+        "closure_rows": 750
+      },
+      "distinct_line_count": 1,
+      "maximum_signed_level": 11,
+      "profile_counts": [
+        {
+          "node_profile": "consumer",
+          "row_count": 50
+        },
+        {
+          "node_profile": "operating_mall",
+          "row_count": 50
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-1000-peer-horizontal",
+      "scale": 1000,
+      "topology_id": "peer-horizontal",
+      "database_counts": {
+        "hosted_nodes": 1000,
+        "provisioning_rows": 1000,
+        "realm_rows": 1000,
+        "current_relation_rows": 1000,
+        "capability_rows": 1000,
+        "closure_rows": 3000
+      },
+      "distinct_line_count": 1,
+      "maximum_signed_level": 2,
+      "profile_counts": [
+        {
+          "node_profile": "consumer",
+          "row_count": 500
+        },
+        {
+          "node_profile": "operating_mall",
+          "row_count": 500
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-1000-multi-line-horizontal",
+      "scale": 1000,
+      "topology_id": "multi-line-horizontal",
+      "database_counts": {
+        "hosted_nodes": 1000,
+        "provisioning_rows": 1000,
+        "realm_rows": 1000,
+        "current_relation_rows": 1000,
+        "capability_rows": 1000,
+        "closure_rows": 3000
+      },
+      "distinct_line_count": 3,
+      "maximum_signed_level": 2,
+      "profile_counts": [
+        {
+          "node_profile": "consumer",
+          "row_count": 500
+        },
+        {
+          "node_profile": "operating_mall",
+          "row_count": 500
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    },
+    {
+      "scenario_id": "scale-1000-l0-l11-vertical-mixed",
+      "scale": 1000,
+      "topology_id": "l0-l11-vertical-mixed",
+      "database_counts": {
+        "hosted_nodes": 1000,
+        "provisioning_rows": 1000,
+        "realm_rows": 1000,
+        "current_relation_rows": 1000,
+        "capability_rows": 1000,
+        "closure_rows": 7500
+      },
+      "distinct_line_count": 1,
+      "maximum_signed_level": 11,
+      "profile_counts": [
+        {
+          "node_profile": "consumer",
+          "row_count": 500
+        },
+        {
+          "node_profile": "operating_mall",
+          "row_count": 500
+        }
+      ],
+      "sovereign_control_count": 3,
+      "duplicate_node_ids": [],
+      "cross_line_closure_rows": [],
+      "cross_line_scope_rows": [],
+      "rollback_remaining_token_row_count": 0
+    }
+  ]
+}

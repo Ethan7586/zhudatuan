@@ -1,0 +1,48 @@
+{
+  "schema_version": "e02-vertical-negative-probes-v1",
+  "captured_at": "2026-09-13T23:16:21.091Z",
+  "probes": [
+    {
+      "probe_id": "skip-level",
+      "accepted": false,
+      "error": {
+        "message": "SFL_NODE_RELATION_LEVEL_ADJACENCY_INVALID",
+        "code": "P0001"
+      }
+    },
+    {
+      "probe_id": "second-current-parent",
+      "accepted": false,
+      "error": {
+        "message": "SFL_NODE_RELATION_VERSION_INVALID",
+        "code": "P0001"
+      }
+    },
+    {
+      "probe_id": "cross-line",
+      "accepted": false,
+      "error": {
+        "message": "SFL_NODE_RELATION_CROSS_LINE_INVALID",
+        "code": "P0001"
+      }
+    },
+    {
+      "probe_id": "l12-boundary",
+      "accepted": false,
+      "error": {
+        "message": "new row for relation \"noderelation\" violates check constraint \"noderelation_signed_level_check\"",
+        "code": "23514"
+      }
+    }
+  ],
+  "accepted_probe_count": 0,
+  "residual_fact_count": 0,
+  "l12_fact_count": 0,
+  "rollback": {
+    "realms": 0,
+    "nodes": 0,
+    "relations": 0,
+    "closure_rows": 0,
+    "total": 0
+  }
+}

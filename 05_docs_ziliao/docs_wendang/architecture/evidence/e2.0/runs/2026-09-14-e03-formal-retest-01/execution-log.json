@@ -1,0 +1,22 @@
+{
+  "schema_version": "e03-execution-log-v1",
+  "started_at": "2026-09-13T22:40:04.709Z",
+  "completed_at": "2026-09-13T22:41:49.740Z",
+  "source_sha": "7f09a12644bdfd0868aec7d4bc63f37277f3f2c4",
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e03 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01",
+    "node_modules/.bin/tsx 04_tools/scripts/audit/database-contracts.mjs --identity-realm-isolation <ephemeral-postgres-url> local-disposable-fixture",
+    "node 04_tools/scripts/audit/e03-authorization.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E03-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/authorization-independent-recount.json"
+  ],
+  "observed_execution": {
+    "truth_table_row_count": 32,
+    "surface_observation_count": 128,
+    "raw_case_decision_count": 768,
+    "decision_audit_count": 768,
+    "provider_call_count": 6,
+    "run_token": "1daaf663"
+  },
+  "cleanup": "docker rm -f zhudatuan-e03-1daaf663f3c047bc",
+  "exit_code": 0
+}

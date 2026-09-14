@@ -1,0 +1,150 @@
+{
+  "schema_version": "e10-release-feature-independent-recount-v1",
+  "oracle_id": "E2-ORACLE-E10-PROVENANCE-FEATURE-DIFF",
+  "executed_at": "2026-09-13T19:56:41.810Z",
+  "reads_test_program_pass": false,
+  "input_artifacts": [
+    "shared-change.patch-id.txt",
+    "single-build-provenance.json",
+    "immutable-artifact-manifest.json",
+    "node-pointer-timeline.json",
+    "identity-feature-matrix.expected.json",
+    "identity-feature-matrix.observed.json",
+    "single-node-rollback-and-isolation.json",
+    "environment.json"
+  ],
+  "claim_outcome": "MET",
+  "environment_assurance": "DEV VERIFIED",
+  "review_assurance": "NOT REVIEWED",
+  "missing_items": [],
+  "thresholds": [
+    {
+      "threshold_id": "required_missing_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "patch_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "candidate_build_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "candidate_artifact_identity_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "node_specific_source_and_build_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "hosted_host_switch_count",
+      "expected": 1,
+      "actual": 1,
+      "met": true
+    },
+    {
+      "threshold_id": "hosted_per_node_action_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "pointer_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "feature_cell_completeness_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "expected_declaration_difference_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "observed_capability_symmetric_difference_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "denial_reason_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "rollback_non_target_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_oracle_probe_miss_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    }
+  ],
+  "metrics": {
+    "candidate_build_count": 1,
+    "candidate_artifact_identity_count": 1,
+    "node_specific_source_and_build_count": 0,
+    "hosted_host_switch_count": 1,
+    "hosted_per_node_action_count": 0,
+    "pointer_mismatch_count": 0,
+    "feature_cell_completeness_mismatch_count": 0,
+    "expected_declaration_difference_count": 0,
+    "observed_capability_symmetric_difference_count": 0,
+    "denial_reason_mismatch_count": 0,
+    "rollback_non_target_change_count": 0,
+    "negative_probe_miss_count": 0
+  },
+  "violations": [],
+  "negative_probes": [
+    {
+      "probe_id": "duplicate-or-nonequivalent-candidate-artifact",
+      "mutation": "Add a second build invocation and candidate artifact identity.",
+      "detected": true,
+      "detected_codes": [
+        "CANDIDATE_BUILD_COUNT_MISMATCH",
+        "CANDIDATE_ARTIFACT_IDENTITY_COUNT_MISMATCH"
+      ]
+    },
+    {
+      "probe_id": "denied-feature-exposed-on-one-surface",
+      "mutation": "Move one independently denied operation into one observed allowed set.",
+      "detected": true,
+      "detected_codes": [
+        "OBSERVED_CAPABILITY_DIFFERS_FROM_RECOUNT"
+      ]
+    },
+    {
+      "probe_id": "rollback-nontarget-spillover",
+      "mutation": "Move non-target H-A from B to A in the post-rollback pointer snapshot.",
+      "detected": true,
+      "detected_codes": [
+        "POINTER_NODE_STATE_MISMATCH",
+        "ROLLBACK_NON_TARGET_CHANGE",
+        "ROLLBACK_DECLARED_RECOUNT_MISMATCH"
+      ]
+    }
+  ]
+}

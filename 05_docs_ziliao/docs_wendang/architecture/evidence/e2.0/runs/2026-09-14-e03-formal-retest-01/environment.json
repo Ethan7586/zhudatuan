@@ -1,0 +1,36 @@
+{
+  "schema_version": "e03-environment-v1",
+  "captured_at": "2026-09-13T22:41:49.423Z",
+  "kind": "DEV",
+  "formal_execution": true,
+  "environment_id": "local-disposable-postgresql17-e03-1daaf663f3c047bc",
+  "description": "A newly created PostgreSQL 17 Alpine container replayed the complete production migration chain and executed the locked 32-row E03 matrix through four loopback HTTP authorization surfaces.",
+  "owner": "Ethan-controlled local Codex workspace",
+  "isolation": "Disposable Docker container zhudatuan-e03-1daaf663f3c047bc; synthetic E03 Principal, Membership, NodeContext, order, Outbox and task rows only; the container was removed after execution.",
+  "real_customer_data": false,
+  "production_impact": "None. No production service, database, domain, deployment channel, customer record or external Provider was contacted.",
+  "differences_from_production": [
+    "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+    "Synthetic resolver-backed Principal, Membership and NodeContext fixtures rather than public Session and Membership ingress.",
+    "Page, API, task and service were isolated loopback HTTP probe routes around the production AccessPipeline, not deployed customer-facing adapters or real traffic.",
+    "The service Provider was deterministic and in-process; no real external Provider was contacted.",
+    "No stable separately managed staging execution and no production observation."
+  ],
+  "runtime": {
+    "node": "v22.22.3",
+    "os": "darwin 25.5.0",
+    "docker_server": "29.7.2",
+    "postgres": "PostgreSQL 17.11 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "docker_image": "postgres:17-alpine",
+    "docker_image_id": "sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+    "migration_count": 301,
+    "endpoint": "127.0.0.1:59959/zhudatuan_registration"
+  },
+  "source_control": {
+    "sha": "7f09a12644bdfd0868aec7d4bc63f37277f3f2c4",
+    "branch": "codex/e2-acceptance-repair",
+    "tree_state": "CLEAN",
+    "status": ""
+  },
+  "configuration_digest": "sha256:58915aafd5107d469bae6d6ecacd729b358c6098c23fa352194855e6446141ca"
+}

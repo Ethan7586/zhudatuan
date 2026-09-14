@@ -1,0 +1,264 @@
+{
+  "schema_version": "e2.0-execution-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E10-FORMAL-RETEST-20260914",
+  "profile_version": "2.0.0",
+  "claim_id": "E2-REL-003",
+  "legacy_trace_id": "E10",
+  "purpose": "Execute the already-defined E10 shared-build and staggered-release claim and preserve independently recountable patch, build, artifact, pointer, authorization-surface and rollback evidence. This record mirrors the active E2.0 trace matrix and does not create or expand a product contract.",
+  "locked_at": "2026-09-13T19:43:49Z",
+  "non_gating": true,
+  "authoritative_basis": [
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-REL-003",
+      "git_commit": "3b2e7f750240867e06a7eced48db62d41f2be832",
+      "sha256": "sha256:17b763fd0565b45760d29e01b0356a6ebcc03202ac6e89269c816f63ba0a0624"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E10",
+      "git_commit": "3b2e7f750240867e06a7eced48db62d41f2be832",
+      "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69"
+    }
+  ],
+  "implementation_basis": [
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/AccessPipeline.ts",
+      "sha256": "sha256:e1898df98d61016261285b9bd3893f081e9ace69f26adfae699c46b588343b51",
+      "role": "production authorization intersection pipeline exercised by every surface probe"
+    },
+    {
+      "path": "01_core_hexin/services/commerce/src/foundation/security/OperationAvailability.ts",
+      "sha256": "sha256:330bee6c4b7c847d5688b602512735dd6fc2f62473fca76a7b7c86142cdf4c1a",
+      "role": "production manifest-feature and resource-readiness projection"
+    },
+    {
+      "path": "04_tools/scripts/release/build-runtime-bundle.mjs",
+      "sha256": "sha256:30bd3def63d82e8c259e3d7ddb6a05c4229e5230b49f07cd760abdc3c4e67697",
+      "role": "existing shared runtime build channel invoked inside the single E10 build"
+    },
+    {
+      "path": "04_tools/release-engine/adapters/zdt-next/workspace-resolver.mjs",
+      "sha256": "sha256:3a7a6ce6ae5913d91750be8200be87d5dffd77ee68aabb7880e25c1b95efd4c1",
+      "role": "workspace resolver used to bundle the real authorization kernel"
+    }
+  ],
+  "shared_change": {
+    "path": "04_tools/scripts/audit/e10-shared-marker.txt",
+    "marker_a": "e10-shared-marker-v1-A",
+    "marker_b": "e10-shared-marker-v1-B",
+    "baseline_fixture_built_at": "2026-09-13T18:00:00.000Z",
+    "side_effect_class": "read-only build and health metadata",
+    "required_changed_path_count": 1
+  },
+  "release_topology": {
+    "logical_nodes": ["H-A", "H-B", "H-C", "S-A", "S-B", "S-C"],
+    "physical_deployments": [
+      { "deployment": "hosted", "kind": "hosted-host", "logical_nodes": ["H-A", "H-B", "H-C"] },
+      { "deployment": "s-a", "kind": "sovereign-node", "logical_nodes": ["S-A"] },
+      { "deployment": "s-b", "kind": "sovereign-node", "logical_nodes": ["S-B"] },
+      { "deployment": "s-c", "kind": "sovereign-node", "logical_nodes": ["S-C"] }
+    ],
+    "required_pointer_phases": [
+      { "phase": "baseline_all_a", "releases": { "H-A": "A", "H-B": "A", "H-C": "A", "S-A": "A", "S-B": "A", "S-C": "A" } },
+      { "phase": "hosted_after_single_host_switch", "releases": { "H-A": "B", "H-B": "B", "H-C": "B", "S-A": "A", "S-B": "A", "S-C": "A" } },
+      { "phase": "sovereign_a_after_first_activation", "releases": { "H-A": "B", "H-B": "B", "H-C": "B", "S-A": "B", "S-B": "A", "S-C": "A" } },
+      { "phase": "sovereign_b_after_later_activation", "releases": { "H-A": "B", "H-B": "B", "H-C": "B", "S-A": "B", "S-B": "B", "S-C": "A" } },
+      { "phase": "after_s_b_single_node_rollback", "releases": { "H-A": "B", "H-B": "B", "H-C": "B", "S-A": "B", "S-B": "A", "S-C": "A" } }
+    ],
+    "required_actions": [
+      { "sequence": 1, "deployment": "hosted", "action_kind": "host-switch", "release_before": "A", "release_after": "B", "action_scope": "hosted-host" },
+      { "sequence": 2, "deployment": "s-a", "action_kind": "activation", "release_before": "A", "release_after": "B", "action_scope": "sovereign-node" },
+      { "sequence": 3, "deployment": "s-b", "action_kind": "activation", "release_before": "A", "release_after": "B", "action_scope": "sovereign-node" },
+      { "sequence": 4, "deployment": "s-b", "action_kind": "rollback", "release_before": "B", "release_after": "A", "action_scope": "sovereign-node" }
+    ]
+  },
+  "probe_model": {
+    "surfaces": ["page", "api", "task", "service"],
+    "phases": ["after_staggered_activation", "after_s_b_rollback"],
+    "operations": [
+      {
+        "id": "member.profile.read",
+        "module": "member",
+        "audience": "member",
+        "permission": "member.profile.read",
+        "scope_kinds": ["owner"],
+        "target": "storefront",
+        "required_features": ["identity"]
+      },
+      {
+        "id": "catalog.listings.read",
+        "module": "catalog",
+        "audience": "member",
+        "permission": "catalog.listing.read",
+        "scope_kinds": ["platform", "distributor", "tenant", "enterprise", "mall", "department", "supplier", "brand", "store", "owner", "self"],
+        "target": "storefront",
+        "required_features": ["catalog"]
+      },
+      {
+        "id": "order.orders.read",
+        "module": "order",
+        "audience": "member",
+        "permission": "order.read",
+        "scope_kinds": ["platform", "distributor", "tenant", "enterprise", "mall", "department", "supplier", "brand", "store", "owner", "self"],
+        "target": "storefront",
+        "required_features": ["orders"]
+      },
+      {
+        "id": "access.center.read",
+        "module": "access",
+        "audience": "operator",
+        "permission": "access.center.read",
+        "scope_kinds": ["platform", "distributor", "tenant", "enterprise", "mall", "department", "store", "supplier", "brand"],
+        "target": "console",
+        "required_features": ["console"]
+      },
+      {
+        "id": "catalog.pools.read",
+        "module": "catalog",
+        "audience": "operator",
+        "permission": "catalog.pool.read",
+        "scope_kinds": ["platform", "distributor", "tenant", "enterprise", "mall", "department"],
+        "target": "console",
+        "required_features": ["catalog", "console"]
+      },
+      {
+        "id": "runtime.health.dependency",
+        "module": "runtime",
+        "audience": "operator",
+        "permission": "runtime.health.read",
+        "scope_kinds": ["platform", "distributor", "tenant", "enterprise", "mall", "department", "store", "supplier", "brand"],
+        "target": "console",
+        "required_features": []
+      }
+    ],
+    "identities": [
+      {
+        "identity_id": "storefront-member",
+        "target": "storefront",
+        "membership_client": "storefront",
+        "permissions": ["member.profile.read", "catalog.listing.read", "order.read"],
+        "operation_ids": ["member.profile.read", "catalog.listings.read", "order.orders.read"],
+        "grant_scope": { "kind": "owner", "id": "member:e10", "path": [] },
+        "resolved_scope": { "kind": "owner", "id": "member:e10", "path": [] }
+      },
+      {
+        "identity_id": "operator",
+        "target": "console",
+        "membership_client": "operator",
+        "permissions": ["access.center.read", "catalog.pool.read", "runtime.health.read"],
+        "operation_ids": ["access.center.read", "catalog.pools.read", "runtime.health.dependency"],
+        "grant_scope": { "kind": "platform", "id": "platform:e10", "path": [] },
+        "resolved_scope": { "kind": "platform", "id": "platform:e10", "path": [] }
+      },
+      {
+        "identity_id": "bounded-administrator",
+        "target": "console",
+        "membership_client": "operator",
+        "permissions": ["access.center.read", "catalog.pool.read", "runtime.health.read"],
+        "operation_ids": ["access.center.read", "catalog.pools.read", "runtime.health.dependency"],
+        "grant_scope": { "kind": "store", "id": "store:e10", "tenant": "tenant:e10", "path": [{ "kind": "mall", "id": "mall:e10" }] },
+        "resolved_scope": { "kind": "store", "id": "store:e10", "tenant": "tenant:e10", "path": [{ "kind": "mall", "id": "mall:e10" }] }
+      }
+    ],
+    "nodes": [
+      {
+        "node_id": "H-A",
+        "enabled_features": ["identity", "catalog", "checkout", "orders", "console"],
+        "capabilities": ["member.profile.read", "catalog.listings.read", "order.orders.read", "access.center.read", "catalog.pools.read", "runtime.health.dependency"],
+        "resource_not_ready_operations": []
+      },
+      {
+        "node_id": "H-B",
+        "enabled_features": ["identity", "catalog", "checkout", "console"],
+        "capabilities": ["member.profile.read", "catalog.listings.read", "order.orders.read", "access.center.read", "catalog.pools.read", "runtime.health.dependency"],
+        "resource_not_ready_operations": []
+      },
+      {
+        "node_id": "H-C",
+        "enabled_features": ["identity", "catalog", "checkout", "orders", "console"],
+        "capabilities": ["member.profile.read", "catalog.listings.read", "order.orders.read", "access.center.read", "catalog.pools.read", "runtime.health.dependency"],
+        "resource_not_ready_operations": ["catalog.listings.read"]
+      },
+      {
+        "node_id": "S-A",
+        "enabled_features": ["identity", "catalog", "checkout", "orders", "console"],
+        "capabilities": ["member.profile.read", "catalog.listings.read", "order.orders.read", "catalog.pools.read", "runtime.health.dependency"],
+        "resource_not_ready_operations": []
+      },
+      {
+        "node_id": "S-B",
+        "enabled_features": ["identity", "catalog", "checkout", "orders", "console"],
+        "capabilities": ["member.profile.read", "catalog.listings.read", "order.orders.read", "access.center.read", "catalog.pools.read", "runtime.health.dependency"],
+        "resource_not_ready_operations": []
+      },
+      {
+        "node_id": "S-C",
+        "enabled_features": ["identity", "catalog", "checkout", "orders", "console"],
+        "capabilities": ["member.profile.read", "catalog.listings.read", "order.orders.read", "access.center.read", "catalog.pools.read", "runtime.health.dependency"],
+        "resource_not_ready_operations": []
+      }
+    ]
+  },
+  "execution_environment": {
+    "docker_image": "node:22.22.0-bookworm-slim",
+    "network": "none",
+    "environment_classification": "A successful disposable local Docker execution can establish DEV VERIFIED only. It cannot establish STAGING or PRODUCTION assurance."
+  },
+  "required_input_artifacts": [
+    "shared-change.patch-id.txt",
+    "single-build-provenance.json",
+    "immutable-artifact-manifest.json",
+    "node-pointer-timeline.json",
+    "identity-feature-matrix.expected.json",
+    "identity-feature-matrix.observed.json",
+    "single-node-rollback-and-isolation.json",
+    "environment.json"
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E10-PROVENANCE-FEATURE-DIFF",
+    "reads_test_program_pass": false,
+    "procedure": "Independently verify the exact one-file Git patch and marker pair, recount build and immutable artifact identities, reconstruct all Hosted and Sovereign pointer phases and actions, recompute every identity/node/surface capability intersection from locked raw policy inputs, set-diff it against both declared expected and HTTP-observed outputs, and independently diff rollback controls. Mutate copies to prove detection of a repeated/non-equivalent build, a denied feature exposed by one surface and non-target rollback spillover."
+  },
+  "prelocked_thresholds": [
+    "required raw evidence missing count = 0",
+    "shared changed path count = 1 and exact path is the marker",
+    "candidate build count = 1",
+    "candidate artifact identity count = 1",
+    "node-specific source and build count = 0",
+    "Hosted host switch count = 1",
+    "Hosted per-node action count = 0",
+    "required pointer phase/action mismatch count = 0",
+    "expected and observed feature cell completeness mismatch count = 0",
+    "expected declaration/recomputed symmetric difference = 0",
+    "observed/recomputed capability symmetric difference = 0",
+    "denial reason mismatch count = 0",
+    "S-B rollback non-target change count = 0",
+    "negative oracle probe miss count = 0"
+  ],
+  "positive_cases": [
+    "One shared marker change produces one traceable candidate artifact through one top-level build invocation.",
+    "One Hosted host pointer switch changes H-A, H-B and H-C without Hosted per-node actions.",
+    "S-A and S-B activate at separate ordered times while S-C remains on A.",
+    "Three identity classes across page, API, task and service expose exactly the authorization intersection."
+  ],
+  "negative_cases": [
+    "Detect a repeated build or second candidate artifact identity.",
+    "Detect an operation exposed despite an unmet feature, scope, capability or resource condition.",
+    "Detect any non-target pointer or feature change during S-B rollback."
+  ],
+  "unknown_rule": "Missing any source pair, patch identity, build invocation, artifact file identity, pointer phase/action, node, identity, surface, expected result, observed result, denial reason, rollback snapshot or environment fact yields UNKNOWN.",
+  "outcome_table": [
+    {
+      "condition": "All required records exist; every locked build, artifact, pointer, feature-set and rollback threshold is met; and all three negative mutations are detected.",
+      "claim_outcome": "MET"
+    },
+    {
+      "condition": "Any complete raw observation contradicts a prelocked patch, build, artifact, pointer, feature-intersection or rollback threshold.",
+      "claim_outcome": "NOT MET"
+    },
+    {
+      "condition": "Any required raw artifact, field, node, identity, surface, pointer, provenance or environment fact is missing or unreadable.",
+      "claim_outcome": "UNKNOWN"
+    }
+  ],
+  "review_classification": "The criteria designer, executor and oracle operator are the same Codex task; the result remains NOT REVIEWED until an independent reviewer recomputes and signs it."
+}

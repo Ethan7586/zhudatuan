@@ -1,0 +1,30 @@
+{
+  "schema_version": "e05-execution-log-v1",
+  "started_at": "2026-09-13T21:38:04.356Z",
+  "completed_at": "2026-09-13T21:38:45.336Z",
+  "source_sha": "78890d2686bd3e37405357b2e527a0b9f340705b",
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e05 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01",
+    "gh run view 34731958020 --repo Ethan7586/zhudatuan --json <locked-read-only-fields>",
+    "node 04_tools/scripts/audit/database-contracts.mjs --postgres-fresh <ephemeral-postgres-url>",
+    "node 04_tools/scripts/audit/e05-zero-fanout.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E05-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/zero-fanout-independent-recount.json"
+  ],
+  "observed_execution": {
+    "sample_count": 3,
+    "operation_receipt_count": 7,
+    "operation_category_count": 5,
+    "audit_count": 7,
+    "outbox_count": 7,
+    "source_file_count": 2052,
+    "source_inventory_digest": "sha256:bc5e5edc303405eda0e81b8ae0dff2f6325459319190968c178cdf6e7267588d",
+    "node_ids": [
+      "node:e05-9ef293e7-h1:l2",
+      "node:e05-9ef293e7-h2:l3",
+      "node:e05-9ef293e7-h3:l4"
+    ],
+    "run_token": "9ef293e7"
+  },
+  "cleanup": "docker rm -f zhudatuan-e05-9ef293e7ad864256",
+  "exit_code": 0
+}

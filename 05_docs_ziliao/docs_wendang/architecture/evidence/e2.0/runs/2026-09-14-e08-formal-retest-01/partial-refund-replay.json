@@ -1,0 +1,536 @@
+{
+  "schema_version": "e08-partial-refund-replay-v1",
+  "captured_at": "2026-09-13T18:47:38.566Z",
+  "replay_attempts": 5,
+  "aftersales": [
+    {
+      "id": "aftersale:test:a",
+      "order_id": "order:test:four-flow",
+      "line_id": "line:test:a",
+      "kind": "return",
+      "state": "processing",
+      "quantity": "1",
+      "amount_minor": "900",
+      "requested_membership_id": "membership:test:realm-a",
+      "supplier_leg_id": "leg:test:a",
+      "replay_state": "processing"
+    },
+    {
+      "id": "aftersale:test:b:partial",
+      "order_id": "order:test:four-flow",
+      "line_id": "line:test:b:warehouse",
+      "kind": "return",
+      "state": "processing",
+      "quantity": "1",
+      "amount_minor": "550",
+      "requested_membership_id": "membership:test:realm-a",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "replay_state": "processing"
+    },
+    {
+      "id": "aftersale:test:concurrent",
+      "order_id": "order:test:concurrent",
+      "line_id": "line:test:concurrent",
+      "kind": "return",
+      "state": "processing",
+      "quantity": "1",
+      "amount_minor": "1",
+      "requested_membership_id": "membership:test:realm-a",
+      "supplier_leg_id": "leg:test:concurrent",
+      "replay_state": "processing"
+    }
+  ],
+  "refunds": [
+    {
+      "id": "refund:test:a",
+      "payment_id": "payment:test:four-flow",
+      "idempotency_key": "refund:test:a",
+      "amount_minor": "900",
+      "currency": "CNY",
+      "state": "succeeded",
+      "aftersale_id": "aftersale:test:a"
+    },
+    {
+      "id": "refund:test:b:partial",
+      "payment_id": "payment:test:four-flow",
+      "idempotency_key": "refund:test:b",
+      "amount_minor": "550",
+      "currency": "CNY",
+      "state": "succeeded",
+      "aftersale_id": "aftersale:test:b:partial"
+    },
+    {
+      "id": "refund:test:concurrent",
+      "payment_id": "payment:test:four-flow",
+      "idempotency_key": "refund:test:concurrent",
+      "amount_minor": "1",
+      "currency": "CNY",
+      "state": "succeeded",
+      "aftersale_id": "aftersale:test:concurrent"
+    }
+  ],
+  "refund_allocations": [
+    {
+      "id": "supplier-refund-allocation:test:a",
+      "refund_id": "refund:test:a",
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:a",
+      "amount_minor": "900",
+      "currency": "CNY",
+      "state": "succeeded"
+    },
+    {
+      "id": "supplier-refund-allocation:test:b",
+      "refund_id": "refund:test:b:partial",
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:b",
+      "amount_minor": "550",
+      "currency": "CNY",
+      "state": "succeeded"
+    },
+    {
+      "id": "supplier-refund-allocation:test:concurrent",
+      "refund_id": "refund:test:concurrent",
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "supplier_leg_id": "leg:test:concurrent",
+      "transaction_id": "transaction:test:concurrent",
+      "correlation_id": "correlation:test:concurrent",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "supplier_id": "partner:test:supplier:a",
+      "amount_minor": "1",
+      "currency": "CNY",
+      "state": "succeeded"
+    }
+  ],
+  "reverse_route_steps": [
+    {
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "reverse_sequence_no": 1,
+      "original_sequence_no": 6,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "party:test:l7",
+      "party_kind": "participant",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "reverse_sequence_no": 2,
+      "original_sequence_no": 5,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "party:test:l6",
+      "party_kind": "participant",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "reverse_sequence_no": 3,
+      "original_sequence_no": 4,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "party:test:l2",
+      "party_kind": "participant",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "reverse_sequence_no": 4,
+      "original_sequence_no": 3,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "partner:test:supplier:a",
+      "party_kind": "supplier",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "reverse_sequence_no": 5,
+      "original_sequence_no": 2,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "party:test:l1",
+      "party_kind": "operating_owner",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "reverse_sequence_no": 6,
+      "original_sequence_no": 1,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "party:test:l0",
+      "party_kind": "operating_owner",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "reverse_sequence_no": 1,
+      "original_sequence_no": 6,
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "party_id": "party:test:l7",
+      "party_kind": "participant",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "reverse_sequence_no": 2,
+      "original_sequence_no": 5,
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "party_id": "party:test:l6",
+      "party_kind": "participant",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "reverse_sequence_no": 3,
+      "original_sequence_no": 4,
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "party_id": "party:test:l2",
+      "party_kind": "participant",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "reverse_sequence_no": 4,
+      "original_sequence_no": 3,
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "party_id": "partner:test:supplier:b",
+      "party_kind": "supplier",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "reverse_sequence_no": 5,
+      "original_sequence_no": 2,
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "party_id": "party:test:l1",
+      "party_kind": "operating_owner",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "reverse_sequence_no": 6,
+      "original_sequence_no": 1,
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "party_id": "party:test:l0",
+      "party_kind": "operating_owner",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "reverse_sequence_no": 1,
+      "original_sequence_no": 6,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "party:test:l7",
+      "party_kind": "participant",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "reverse_sequence_no": 2,
+      "original_sequence_no": 5,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "party:test:l6",
+      "party_kind": "participant",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "reverse_sequence_no": 3,
+      "original_sequence_no": 4,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "party:test:l2",
+      "party_kind": "participant",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "reverse_sequence_no": 4,
+      "original_sequence_no": 3,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "partner:test:supplier:a",
+      "party_kind": "supplier",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "reverse_sequence_no": 5,
+      "original_sequence_no": 2,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "party:test:l1",
+      "party_kind": "operating_owner",
+      "responsibility": "return_refund_restock_reversal"
+    },
+    {
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "reverse_sequence_no": 6,
+      "original_sequence_no": 1,
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "party_id": "party:test:l0",
+      "party_kind": "operating_owner",
+      "responsibility": "return_refund_restock_reversal"
+    }
+  ],
+  "return_facts": [
+    {
+      "id": "supplier-return:test:a",
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "fulfillment_party_id": "partner:test:supplier:a",
+      "quantity": "1",
+      "state": "accepted"
+    },
+    {
+      "id": "supplier-return:test:b",
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "fulfillment_party_id": "partner:test:supplier:b",
+      "quantity": "1",
+      "state": "accepted"
+    }
+  ],
+  "restock_facts": [
+    {
+      "id": "supplier-restock:test:a",
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "supplier_leg_id": "leg:test:a",
+      "stockitem_id": "stock:zdt:supplier:trial:001",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "quantity": "1"
+    },
+    {
+      "id": "supplier-restock:test:b",
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "stockitem_id": "stock:zdt:supplier:trial:002",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "route_id": "route:test:b:warehouse",
+      "route_version": "1",
+      "quantity": "1"
+    },
+    {
+      "id": "supplier-restock:test:concurrent",
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "supplier_leg_id": "leg:test:concurrent",
+      "stockitem_id": "stock:zdt:supplier:trial:001",
+      "transaction_id": "transaction:test:concurrent",
+      "correlation_id": "correlation:test:concurrent",
+      "route_id": "route:test:a",
+      "route_version": "1",
+      "quantity": "1"
+    }
+  ],
+  "finance_reversals": [
+    {
+      "id": "aftersale:test:a:cost",
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "fact_kind": "cost",
+      "amount_minor": "600",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:a:income",
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "fact_kind": "income",
+      "amount_minor": "900",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:a:payable",
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "fact_kind": "payable",
+      "amount_minor": "600",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:a:receivable",
+      "aftersale_id": "aftersale:test:a",
+      "order_line_id": "line:test:a",
+      "supplier_leg_id": "leg:test:a",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "fact_kind": "receivable",
+      "amount_minor": "900",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:b:partial:cost",
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "fact_kind": "cost",
+      "amount_minor": "350",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:b:partial:income",
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "fact_kind": "income",
+      "amount_minor": "550",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:b:partial:payable",
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "fact_kind": "payable",
+      "amount_minor": "350",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:b:partial:receivable",
+      "aftersale_id": "aftersale:test:b:partial",
+      "order_line_id": "line:test:b:warehouse",
+      "supplier_leg_id": "leg:test:b:warehouse",
+      "transaction_id": "transaction:test:four-flow",
+      "correlation_id": "correlation:test:four-flow",
+      "fact_kind": "receivable",
+      "amount_minor": "550",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:concurrent:cost",
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "supplier_leg_id": "leg:test:concurrent",
+      "transaction_id": "transaction:test:concurrent",
+      "correlation_id": "correlation:test:concurrent",
+      "fact_kind": "cost",
+      "amount_minor": "1",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:concurrent:income",
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "supplier_leg_id": "leg:test:concurrent",
+      "transaction_id": "transaction:test:concurrent",
+      "correlation_id": "correlation:test:concurrent",
+      "fact_kind": "income",
+      "amount_minor": "1",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:concurrent:payable",
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "supplier_leg_id": "leg:test:concurrent",
+      "transaction_id": "transaction:test:concurrent",
+      "correlation_id": "correlation:test:concurrent",
+      "fact_kind": "payable",
+      "amount_minor": "1",
+      "currency": "CNY"
+    },
+    {
+      "id": "aftersale:test:concurrent:receivable",
+      "aftersale_id": "aftersale:test:concurrent",
+      "order_line_id": "line:test:concurrent",
+      "supplier_leg_id": "leg:test:concurrent",
+      "transaction_id": "transaction:test:concurrent",
+      "correlation_id": "correlation:test:concurrent",
+      "fact_kind": "receivable",
+      "amount_minor": "1",
+      "currency": "CNY"
+    }
+  ],
+  "concurrent_counts": {
+    "order_records": 1,
+    "order_lines": 1,
+    "supplier_legs": 1,
+    "aftersales": 1,
+    "line_route_steps": 6,
+    "reverse_route_steps": 6,
+    "refunds": 1,
+    "refund_allocations": 1,
+    "restock_facts": 1,
+    "finance_reversals": 4
+  },
+  "atomic_failure_probe_counts": {
+    "order_half_writes": 0,
+    "inventory_half_writes": 0,
+    "refund_half_writes": 0
+  }
+}

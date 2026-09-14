@@ -1,0 +1,557 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E07-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-CONT-001"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E07-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E07-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:8c390fc2f2b7b73d52025b84e7aa41929029b2f4d54bc4a9594ea131f7ab17cd",
+    "locked_at": "2026-09-13T20:51:59Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e07-acceptance-repair-20260914",
+      "role": "E07 continuity fixture and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E07 disposable fixture and evidence exporter, invoked the production opening/upgrade/rollback transactions and operated the separate raw-evidence oracle; not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-CONT-001",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E07",
+    "02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql",
+    "02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql",
+    "01_core_hexin/services/commerce/src/modules/member/01_public_gongkai/MemberPort.ts",
+    "02_platform_pingtai/database/supabase/tests/sfl_hosted_mall_opening_contract.sql",
+    "02_platform_pingtai/database/supabase/tests/sfl_sovereign_upgrade_contract.sql"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T21:15:13.954Z",
+    "completed_at": "2026-09-13T21:15:54.978Z",
+    "executor": {
+      "actor_id": "codex-task-e07-acceptance-repair-20260914",
+      "role": "E07 continuity fixture and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E07 disposable fixture and evidence exporter, invoked the production opening/upgrade/rollback transactions and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e07 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "The generated disposable PostgreSQL password and connection URL were used only in process memory and were not persisted in evidence."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-postgresql17-e07-3aefaf8237ef42f4",
+    "description": "A newly created PostgreSQL 17 Alpine container replayed the complete migration chain, opened four Hosted malls through the production transaction, upgraded two original nodes to Sovereign and rolled both upgrades back.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Disposable Docker container zhudatuan-e07-3aefaf8237ef42f4; synthetic E07 identity, lineage and non-production resource references only; the container was removed after execution.",
+    "real_customer_data": false,
+    "production_impact": "None. No production service, database, DNS, TLS, tunnel, runtime, secret, payment provider, supplier or customer record was contacted.",
+    "differences_from_production": [
+      "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+      "Synthetic Hosted identities and database-only Sovereign resource references rather than customer nodes and provisioned cloud resources.",
+      "No deployment or release pointer was created; manifest release_pointer_ref remained null by contract.",
+      "No stable separately managed staging execution and no production observation."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "8c87b8762770287d318bc08f347cb2cdfee7aa75",
+    "test_item_shas": [
+      "8c87b8762770287d318bc08f347cb2cdfee7aa75"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "postgres:17-alpine sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73; 301 migrations; four Hosted openings; two Sovereign upgrades; two rollbacks; 2013 production source files inventoried without a per-node build.",
+    "digest": "sha256:f2f96d776d3794291ba20b25f285f0cf50d4f7317e47de478d091bd54f13f45f",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E07-REQUIRED-RAW-EVIDENCE-MISSING-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-FOUR-LEVEL-SAMPLE-AND-TRANSITION-COMPLETENESS-MISMATCH-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-IDENTITY-REALM-LINE-PARENT-LEVEL-MEMBERSHIP-ACCOUNT-PRINCIPAL-CHANGE-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-LINEAGE-OR-IMMUTABLE-HISTORY-DIGEST-CHANGE-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-HOSTED-OPENING-AUTHORITY-OR-ALLOWED-ADDITION-MISMATCH-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-HOSTED-INFRASTRUCTURE-CALL-DELTA",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-SELECTED-SOVEREIGN-TARGET-IDENTITY-REPLACEMENT-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-SOVEREIGN-FOUR-STEP-TIMELINE-MISMATCH-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-SOVEREIGN-RESOURCE-READINESS-OR-UNIQUENESS-MISMATCH-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-MANIFEST-DIGEST-NODE-BINDING-OR-RELEASE-POINTER-MISMATCH-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-NON-TARGET-TRANSITION-CHANGE-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-UNEXPECTED-RELATION-CAPABILITY-OR-HISTORY-CHANGE-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-BUSINESS-SOURCE-COUNT-OR-DIGEST-CHANGE-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-NODE-SPECIFIC-SOURCE-COPY-OR-BUILD-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-ROLLBACK-RESTORATION-MISMATCH-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E07-NEGATIVE-ORACLE-PROBE-MISS-COUNT",
+      "source": "continuity-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T21:15:54.754Z",
+      "notes": "Recomputed from the ten locked raw artifacts; no runner PASS/status field was read."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/mall-opening-lineage-before-after.json",
+      "media_type": "application/json",
+      "sha256": "sha256:4071845952be2938c000c1fcee3d37197969ab23b64b9eb483d2e5237e63d92c",
+      "size_bytes": 66134,
+      "role": "Before/after identity, lineage, Membership and append-only opening snapshots for four Hosted nodes"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/mall-opening-infra-counts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:ccf5bd2275045d718063f09196a6d25bd9f5ee4ba4cab13e45f82355dbbd8626",
+      "size_bytes": 18099,
+      "role": "Hosted provisioning counters, zero-infrastructure observation and production implementation scan"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/sovereign-upgrade-state-timeline.json",
+      "media_type": "application/json",
+      "sha256": "sha256:7fdd061e39f4dd2845ef762a10add357d4bfbb6c6b4fdf84375bf6f66f9d1c17",
+      "size_bytes": 17741,
+      "role": "Two production Sovereign upgrade responses, authority rows and four-step timelines"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/sovereign-upgrade-manifest-pointers.json",
+      "media_type": "application/json",
+      "sha256": "sha256:a32e95705a4cbaa6525d972f404bd95eab08563909756ccc6957e4e2a522409c",
+      "size_bytes": 13486,
+      "role": "Domain, resource and manifest rows with null release pointers for both upgrade targets"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/history-digests.json",
+      "media_type": "application/json",
+      "sha256": "sha256:949bf997fde814194bdfe74694971f6d24a208307f2c3f71675017126e42610a",
+      "size_bytes": 58280,
+      "role": "Canonical immutable identity, lineage and pre-transition history digests across all four stages"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/nontarget-transition-diff.json",
+      "media_type": "application/json",
+      "sha256": "sha256:1fdff0fe301e520062b9fb4d7877c4274611c98e9c20d86bf0e8654d3f03b4d2",
+      "size_bytes": 85269,
+      "role": "Complete target/non-target snapshots and canonical hashes across the upgrade transition"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/source-build-counts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:1bc556a17fb7613592c5e089864f1bbd4033f1153c7fd48aba8f4449373da4cd",
+      "size_bytes": 1086331,
+      "role": "Before/after business source inventory plus zero per-node build observations"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/rollback-receipts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:4775c9c3b1528e3fa1e7b9d19914d1a2b7949952778b3401b8b93c35fcba5c4c",
+      "size_bytes": 76196,
+      "role": "Two rollback receipts, restored Hosted snapshots and final resource/history rows"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/continuity-database-raw-rows.json",
+      "media_type": "application/json",
+      "sha256": "sha256:21c73dfee38ec83f49389bb51ed7ec5a85cf90164c50f20090be97e8423e689c",
+      "size_bytes": 66191,
+      "role": "Raw identity, lineage, opening, upgrade, resource, manifest and Outbox database rows"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:96c8eb205e78fdbc4d951f248369ed3d0346fdb71d0370ae82ab47529d4f56ae",
+      "size_bytes": 2030,
+      "role": "Disposable execution environment identity and production differences"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/continuity-independent-recount.json",
+      "media_type": "application/json",
+      "sha256": "sha256:eaf6caf3af05bf7d450c709a30049afbb6a0bae6e7e30b02d80288f5663aaccb",
+      "size_bytes": 6408,
+      "role": "Independent continuity, resource, isolation and rollback recount with negative probes"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/migration-replay.txt",
+      "media_type": "text/plain",
+      "sha256": "sha256:e9ab691c84de1fae8d2038ac6ee3e04c70cf23a16a0c6e57ecd79ce60b5d0472",
+      "size_bytes": 69,
+      "role": "Complete migration replay completion output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:cf09d9fc70f897834f5f2885eba28ef4757727d6997a749d923f43cbb19d7987",
+      "size_bytes": 1297,
+      "role": "Exact commands, source SHA, execution totals and cleanup record"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E07-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:8c390fc2f2b7b73d52025b84e7aa41929029b2f4d54bc4a9594ea131f7ab17cd",
+      "size_bytes": 9160,
+      "role": "Pre-execution locked E07 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E07-LINEAGE",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Independently join and compare every sample's node, Realm, Membership, account, principal, current relation and closure rows before opening, after opening, after selected upgrade and after rollback; recount only the prelocked allowed additions; recompute manifest digests, resource/timeline cardinalities, Hosted infrastructure deltas, non-target digests, history digests and source/build counts. Mutate copies to prove detection of unrelated lineage, Membership/level reset, node-specific source/build growth and another-node switch; do not consume runner PASS fields.",
+    "exact_invocation": "node 04_tools/scripts/audit/e07-continuity.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E07-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/continuity-independent-recount.json",
+    "evaluator": {
+      "actor_id": "codex-task-e07-acceptance-repair-20260914",
+      "role": "E07 continuity fixture and independent recount operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the E07 disposable fixture and evidence exporter, invoked the production opening/upgrade/rollback transactions and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E07-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/mall-opening-lineage-before-after.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/mall-opening-infra-counts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/sovereign-upgrade-state-timeline.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/sovereign-upgrade-manifest-pointers.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/history-digests.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/nontarget-transition-diff.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/source-build-counts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/rollback-receipts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/continuity-database-raw-rows.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "required_raw_evidence_missing_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "four_level_sample_and_transition_completeness_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "identity_realm_line_parent_level_membership_account_principal_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "lineage_or_immutable_history_digest_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "hosted_opening_authority_or_allowed_addition_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "hosted_infrastructure_call_delta",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "selected_sovereign_target_identity_replacement_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "sovereign_four_step_timeline_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "sovereign_resource_readiness_or_uniqueness_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "manifest_digest_node_binding_or_release_pointer_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "non_target_transition_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "unexpected_relation_capability_or_history_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "business_source_count_or_digest_change_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "node_specific_source_copy_or_build_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "rollback_restoration_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_oracle_probe_miss_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "clean checkout of the recorded source SHA"
+    ],
+    "steps": [
+      "Check out 8c87b8762770287d318bc08f347cb2cdfee7aa75.",
+      "Run npm run evidence:e07 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01.",
+      "Read continuity-independent-recount.json and independently verify the listed artifact hashes and raw rows."
+    ],
+    "expected_raw_observations": [
+      "required raw evidence missing count = 0",
+      "four-level sample and transition completeness mismatch count = 0",
+      "identity/realm/line/parent/original-parent/level/membership/account/principal change count = 0",
+      "current lineage or immutable pre-transition history digest change count = 0",
+      "Hosted opening authority and allowed-addition mismatch count = 0",
+      "Hosted infrastructure call delta = 0",
+      "selected Sovereign target identity replacement count = 0",
+      "Sovereign four-step timeline mismatch count = 0",
+      "Sovereign resource readiness or uniqueness mismatch count = 0",
+      "manifest digest, node binding or release-pointer mismatch count = 0",
+      "non-target transition change count = 0",
+      "unexpected relation/capability/history change count = 0",
+      "business source count or digest change = 0",
+      "node-specific source copy or build count = 0",
+      "rollback restoration mismatch count = 0",
+      "negative oracle probe miss count = 0"
+    ],
+    "cleanup": "The runner removes the disposable PostgreSQL container in a finally block; no external provider or production resource is created."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
+    "rationale": "All 4 original Hosted nodes opened in place, both selected nodes upgraded to Sovereign and rolled back without identity or historical-lineage replacement, both non-target nodes remained unchanged, Hosted infrastructure and per-node build counts stayed zero, and all four negative oracle mutations were detected.",
+    "gaps": [
+      "No stable separately managed staging replay has been performed.",
+      "Sovereign resource values were synthetic database references; no authorized real DNS, TLS, tunnel, runtime, secret or payment-provider readiness observation was performed.",
+      "No deployment or release pointer was created, so this run does not establish deployment readiness or production serving behavior.",
+      "No reviewer independent of the E07 fixture, transition implementation and oracle has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}

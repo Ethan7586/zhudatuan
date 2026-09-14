@@ -1,0 +1,15 @@
+{
+  "schema_version": "e12-execution-log-v1",
+  "started_at": "2026-09-13T18:22:37.944Z",
+  "completed_at": "2026-09-13T18:24:17.815Z",
+  "source_sha": "766eda4984ce85d6d9c509d9ef0c770cb2be04fb",
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e12 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01",
+    "node_modules/.bin/tsx 04_tools/scripts/audit/identity-realm-isolation.http-evidence.ts --output <run-directory>/http-raw-observations.json",
+    "node_modules/.bin/tsx 04_tools/scripts/audit/database-contracts.mjs --identity-realm-isolation <ephemeral-postgres-url> local-disposable-fixture",
+    "node 04_tools/scripts/audit/identity-realm-isolation.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E12-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/independent-oracle.json"
+  ],
+  "cleanup": "docker rm -f zhudatuan-identity-realm-937857f3440447b2",
+  "exit_code": 0
+}

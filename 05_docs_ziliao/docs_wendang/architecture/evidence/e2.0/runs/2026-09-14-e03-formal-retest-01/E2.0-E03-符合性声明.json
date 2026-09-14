@@ -1,0 +1,42 @@
+{
+  "$schema": "../../E2.0-符合性声明.schema.json",
+  "schema_version": "e2.0-conformity-statement-v2",
+  "statement_id": "E2-STATEMENT-E03-DEV-20260913",
+  "template": false,
+  "profile_id": "E2.0",
+  "profile_version": "2.0.0",
+  "issued_at": "2026-09-13T22:41:49.740Z",
+  "scope": "E2-AUTH-001 / legacy E03 at source SHA 7f09a12644bdfd0868aec7d4bc63f37277f3f2c4, disposable local PostgreSQL 17 five-factor 32-row and four-surface authorization execution.",
+  "claim_ids": [
+    "E2-AUTH-001"
+  ],
+  "rating": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM"
+  },
+  "evidence_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/E2.0-E03-证据.json"
+  ],
+  "review_evidence_refs": [],
+  "tailoring_refs": [],
+  "gaps": [
+    "No stable separately managed staging replay has been performed.",
+    "No authorized production observation has been performed.",
+    "Principal, Membership and NodeContext inputs were synthetic resolver-backed fixtures; public Session and Membership ingress was not exercised.",
+    "Page, API, task and service were isolated loopback HTTP probe routes around the production AccessPipeline rather than deployed customer-facing adapters with real traffic.",
+    "The trusted Provider was deterministic and in-process; no real external Provider was contacted.",
+    "No reviewer independent of the E03 authorization implementation, fixture and oracle has recomputed and signed the evidence."
+  ],
+  "issuer": {
+    "name_or_id": "codex-task-e03-acceptance-repair-20260914",
+    "organization": "zhudatuan internal",
+    "role": "E03 authorization truth-table and four-surface test operator",
+    "relationship_to_test_item": "Implemented and executed the E03 disposable evidence exporter and operated the separate raw-evidence oracle; not an independent reviewer.",
+    "signed_at": "2026-09-13T22:41:49.740Z"
+  },
+  "reviewer": null,
+  "mandatory_disclaimer": "This is an E2.0 standards-aligned tailored conformity statement, not an ISO, IEEE, NIST, OWASP, PCI SSC, or third-party certification.",
+  "non_gating": true
+}

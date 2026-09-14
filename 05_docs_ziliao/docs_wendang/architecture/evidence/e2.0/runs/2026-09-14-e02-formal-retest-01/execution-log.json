@@ -1,0 +1,26 @@
+{
+  "schema_version": "e02-execution-log-v1",
+  "started_at": "2026-09-13T23:15:41.485Z",
+  "completed_at": "2026-09-13T23:16:21.340Z",
+  "source_sha": "deb3c5d716b6437c11952c9157a2210746703329",
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e02 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01",
+    "node 04_tools/scripts/audit/database-contracts.mjs --postgres-fresh <ephemeral-postgres-url>",
+    "node 04_tools/scripts/audit/e02-vertical-topology.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E02-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/vertical-independent-recount.json"
+  ],
+  "observed_execution": {
+    "node_count": 12,
+    "initial_relation_row_count": 12,
+    "final_relation_row_count": 13,
+    "initial_closure_row_count": 78,
+    "current_closure_row_count": 78,
+    "historical_closure_row_count": 57,
+    "context_observation_count": 12,
+    "resolver_level_count": 12,
+    "negative_probe_count": 4,
+    "rollback_remaining_fact_count": 0
+  },
+  "cleanup": "docker rm -f zhudatuan-e02-ac6cba98ecce4c87",
+  "exit_code": 0
+}

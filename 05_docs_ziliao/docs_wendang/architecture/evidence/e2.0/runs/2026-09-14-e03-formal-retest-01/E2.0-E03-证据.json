@@ -1,0 +1,730 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E03-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-AUTH-001"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E03-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E03-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:2e75494081580243db6aa6e704b28f76c2b987bedd7f91d5868fbfbe7fef5445",
+    "locked_at": "2026-09-13T22:22:20Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e03-acceptance-repair-20260914",
+      "role": "E03 authorization truth-table and four-surface test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and executed the E03 disposable evidence exporter and operated the separate raw-evidence oracle; not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-AUTH-001",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E03",
+    "01_core_hexin/services/commerce/src/foundation/security/AccessPipeline.ts",
+    "01_core_hexin/services/commerce/src/foundation/security/OperationAvailability.ts",
+    "01_core_hexin/packages/authz/src/Policy.ts",
+    "01_core_hexin/services/commerce/src/foundation/interface/OperationController.ts",
+    "01_core_hexin/services/commerce/src/foundation/security/AccessPipeline.test.ts",
+    "01_core_hexin/services/commerce/src/foundation/security/OperationAvailability.test.ts",
+    "04_tools/scripts/audit/e10-feature-probe-runtime.ts"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T22:40:04.709Z",
+    "completed_at": "2026-09-13T22:41:49.740Z",
+    "executor": {
+      "actor_id": "codex-task-e03-acceptance-repair-20260914",
+      "role": "E03 authorization truth-table and four-surface test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and executed the E03 disposable evidence exporter and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e03 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "The generated disposable PostgreSQL password and connection URL were used only in process memory and were not persisted. Every Principal, Membership, node, order, task and Provider identifier is synthetic and scoped to the disposable run."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-postgresql17-e03-1daaf663f3c047bc",
+    "description": "A newly created PostgreSQL 17 Alpine container replayed the complete production migration chain and executed the locked 32-row E03 matrix through four loopback HTTP authorization surfaces.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Disposable Docker container zhudatuan-e03-1daaf663f3c047bc; synthetic E03 Principal, Membership, NodeContext, order, Outbox and task rows only; the container was removed after execution.",
+    "real_customer_data": false,
+    "production_impact": "None. No production service, database, domain, deployment channel, customer record or external Provider was contacted.",
+    "differences_from_production": [
+      "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+      "Synthetic resolver-backed Principal, Membership and NodeContext fixtures rather than public Session and Membership ingress.",
+      "Page, API, task and service were isolated loopback HTTP probe routes around the production AccessPipeline, not deployed customer-facing adapters or real traffic.",
+      "The service Provider was deterministic and in-process; no real external Provider was contacted.",
+      "No stable separately managed staging execution and no production observation."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "7f09a12644bdfd0868aec7d4bc63f37277f3f2c4",
+    "test_item_shas": [
+      "7f09a12644bdfd0868aec7d4bc63f37277f3f2c4"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "postgres:17-alpine sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73; 301 migrations; 32 truth rows; four surfaces; three node/Membership samples; two Operations; 768 raw case decisions.",
+    "digest": "sha256:58915aafd5107d469bae6d6ecacd729b358c6098c23fa352194855e6446141ca",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E03-REQUIRED-RAW-EVIDENCE-MISSING-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-EXPECTED-TRUTH-TABLE-ROW-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 32,
+        "actual": 32,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-EXPECTED-ARTIFACT-MISMATCH-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-OBSERVED-TRUTH-TABLE-ROW-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 32,
+        "actual": 32,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-SURFACE-ROW-COUNT-MISMATCH-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-NODE-MEMBERSHIP-CONTEXT-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-OPERATION-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 2,
+        "actual": 2,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-CONTEXT-MISMATCH-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-RAW-CASE-DECISION-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 768,
+        "actual": 768,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-OBSERVED-ALLOW-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 24,
+        "actual": 24,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-OBSERVED-DENY-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 744,
+        "actual": 744,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-EXPECTED-OBSERVED-MISMATCH-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-CROSS-SURFACE-INCONSISTENCY-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-DENIAL-REASON-MISMATCH-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-MISSING-OR-DUPLICATE-CORRELATION-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-DECISION-AUDIT-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 768,
+        "actual": 768,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-DECISION-AUDIT-ALLOWED-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 24,
+        "actual": 24,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-DECISION-AUDIT-DENIED-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 744,
+        "actual": 744,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-DECISION-AUDIT-MISMATCH-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-DENIED-BUSINESS-WRITE-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-DENIED-OUTBOX-APPEND-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-DENIED-TASK-ENQUEUE-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-DENIED-PROVIDER-CALL-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-POSITIVE-SURFACE-BEHAVIOR-MISMATCH-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-GLOBAL-DATABASE-SNAPSHOT-MISMATCH-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-ENVIRONMENT-MISMATCH-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E03-NEGATIVE-ORACLE-PROBE-MISS-COUNT",
+      "source": "authorization-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T22:41:49.508Z",
+      "notes": "Recomputed from the seven required raw artifacts; no runner PASS/status field was read."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/authorization-contexts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:f5ba1c68dfed7ec80a199869c1ac321a451f2646a9ece9d33c44d984363751be",
+      "size_bytes": 3349,
+      "role": "Shared synthetic Principal, three independent Membership/NodeContext samples, two Operations and four surfaces"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/truth-table-expected.json",
+      "media_type": "application/json",
+      "sha256": "sha256:1ab4677ca8182139b9c4c45969c7eb2efbd0b4f09fb11e5026deb162774ba6ab",
+      "size_bytes": 11447,
+      "role": "Raw expected 32-row conjunction and first-unmet-dimension table"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/truth-table-observed.json",
+      "media_type": "application/json",
+      "sha256": "sha256:cb9ea9008be74eac414427576921dcf9e23b3b8fadecc187fc40aa1bd2ce783b",
+      "size_bytes": 885184,
+      "role": "Raw loopback HTTP responses for every row, surface, node/Membership sample and Operation"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/authorization-decisions.jsonl",
+      "media_type": "application/x-ndjson",
+      "sha256": "sha256:202507c42197515f8df4bc686947a4dae43c031a9f79daa8c3e1cd7ccdbb4c04",
+      "size_bytes": 258408,
+      "role": "Production PgDecisionSink facts keyed by raw-case correlation ID"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/side-effect-diffs.json",
+      "media_type": "application/json",
+      "sha256": "sha256:594c74e0b4631fc2791b12c42149326bd39dfe56a7bf7168ffe6b2afbf386724",
+      "size_bytes": 1059712,
+      "role": "Direct per-correlation and whole-run ordering.orderrecord, runtime.outbox, runtime.job, DecisionSink and Provider before/after facts"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/provider-call-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:a310d253eaf5a532aff8d1a1735151073c8b0d78f5d02997e5237954823f8f9e",
+      "size_bytes": 2661,
+      "role": "Independent deterministic trusted Provider selection and call records"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:f81e42c0138dbe49b5901ba55592e9ecbb19add81462fcf51dc5435fe3110f13",
+      "size_bytes": 2179,
+      "role": "Disposable execution environment identity and production differences"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/authorization-independent-recount.json",
+      "media_type": "application/json",
+      "sha256": "sha256:1129ad13ef28064dbcbb0f898377fd3ebcebf33bebe2c0402eb7fca73608f813",
+      "size_bytes": 6641,
+      "role": "Independent truth-table, cross-surface, DecisionSink and side-effect recomputation with mutation probes"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/migration-replay.txt",
+      "media_type": "text/plain",
+      "sha256": "sha256:e8bfa35dee2a9f123e4613589091920bbe931eb21a6b1fa2dfbef55c3e68566a",
+      "size_bytes": 296,
+      "role": "Complete production migration replay completion output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:59d8c8d5058e8345af1ab5dc649632fd51d743f60e903e5a9520a53054422ca4",
+      "size_bytes": 1284,
+      "role": "Exact command, source SHA, execution totals and cleanup record"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E03-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:2e75494081580243db6aa6e704b28f76c2b987bedd7f91d5868fbfbe7fef5445",
+      "size_bytes": 12116,
+      "role": "Pre-execution locked E03 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E03-TRUTH-TABLE",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Generate all 32 expected rows directly from the five raw booleans, expand each into the exact 3 node/Membership x 2 Operation x 4 surface cases, independently join observations, DecisionSink rows, direct database diffs and Provider calls by correlation_id, recompute conjunction, first-unmet reason, cross-surface equality and denied effects, and mutate copies to prove detection of one false allow, one wrong denial reason and one denied Provider effect. Do not consume runner PASS/status fields.",
+    "exact_invocation": "node 04_tools/scripts/audit/e03-authorization.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E03-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/authorization-independent-recount.json",
+    "evaluator": {
+      "actor_id": "codex-task-e03-acceptance-repair-20260914",
+      "role": "E03 authorization truth-table and four-surface test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented and executed the E03 disposable evidence exporter and operated the separate raw-evidence oracle; not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E03-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/authorization-contexts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/truth-table-expected.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/truth-table-observed.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/authorization-decisions.jsonl",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/side-effect-diffs.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/provider-call-log.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "required_raw_evidence_missing_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "expected_truth_table_row_count",
+        "expected": 32,
+        "actual": 32,
+        "met": true
+      },
+      {
+        "threshold_id": "expected_artifact_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "observed_truth_table_row_count",
+        "expected": 32,
+        "actual": 32,
+        "met": true
+      },
+      {
+        "threshold_id": "surface_row_count_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "node_membership_context_count",
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      {
+        "threshold_id": "operation_count",
+        "expected": 2,
+        "actual": 2,
+        "met": true
+      },
+      {
+        "threshold_id": "context_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "raw_case_decision_count",
+        "expected": 768,
+        "actual": 768,
+        "met": true
+      },
+      {
+        "threshold_id": "observed_allow_count",
+        "expected": 24,
+        "actual": 24,
+        "met": true
+      },
+      {
+        "threshold_id": "observed_deny_count",
+        "expected": 744,
+        "actual": 744,
+        "met": true
+      },
+      {
+        "threshold_id": "expected_observed_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "cross_surface_inconsistency_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "denial_reason_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "missing_or_duplicate_correlation_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "decision_audit_count",
+        "expected": 768,
+        "actual": 768,
+        "met": true
+      },
+      {
+        "threshold_id": "decision_audit_allowed_count",
+        "expected": 24,
+        "actual": 24,
+        "met": true
+      },
+      {
+        "threshold_id": "decision_audit_denied_count",
+        "expected": 744,
+        "actual": 744,
+        "met": true
+      },
+      {
+        "threshold_id": "decision_audit_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "denied_business_write_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "denied_outbox_append_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "denied_task_enqueue_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "denied_provider_call_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "positive_surface_behavior_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "global_database_snapshot_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "environment_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_oracle_probe_miss_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "clean checkout of the recorded source SHA"
+    ],
+    "steps": [
+      "Check out 7f09a12644bdfd0868aec7d4bc63f37277f3f2c4.",
+      "Run npm run evidence:e03 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01.",
+      "Read authorization-independent-recount.json and independently verify its input hashes and raw records."
+    ],
+    "expected_raw_observations": [
+      "required raw evidence missing count = 0",
+      "expected truth-table row count = 32 and observed row count per surface = 32",
+      "3 node/Membership samples x 2 Operations x 32 rows x 4 surfaces = 768 raw case decisions",
+      "all 24 all-true raw cases are available and all 744 other raw cases fail closed",
+      "expected versus observed mismatch count = 0",
+      "cross-surface inconsistency count = 0",
+      "first-unmet-dimension denial reason mismatch count = 0",
+      "missing or duplicate correlation/DecisionSink fact count = 0",
+      "denied-row business write, Outbox append, task enqueue and Provider call count = 0",
+      "negative oracle probe miss count = 0"
+    ],
+    "cleanup": "The runner removes the disposable PostgreSQL container in a finally block; no production data or Provider is contacted."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
+    "rationale": "All 32 truth rows were observed on four surfaces for three independent node/Membership samples and two Operations: all 24 all-true cases allowed, all 744 other cases denied for the first unmet factor, surfaces were equal, and denied business, Outbox, task and Provider effects were zero. All three oracle mutations were detected.",
+    "gaps": [
+      "No stable separately managed staging replay has been performed.",
+      "No authorized production observation has been performed.",
+      "Principal, Membership and NodeContext inputs were synthetic resolver-backed fixtures; public Session and Membership ingress was not exercised.",
+      "Page, API, task and service were isolated loopback HTTP probe routes around the production AccessPipeline rather than deployed customer-facing adapters with real traffic.",
+      "The trusted Provider was deterministic and in-process; no real external Provider was contacted.",
+      "No reviewer independent of the E03 authorization implementation, fixture and oracle has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}

@@ -1,0 +1,441 @@
+{
+  "schema_version": "e02-vertical-context-matrix-v1",
+  "captured_at": "2026-09-13T23:16:21.091Z",
+  "shared_resolver": "organization.resolve_node_context(text)",
+  "before_version_change": [
+    {
+      "fixture_id": "V-L0",
+      "level": 0,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l0",
+        "parent_node_id": null,
+        "signed_level": "L0",
+        "sovereignty_tier": "sovereign",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l0",
+        "mall_id": "mall:e02-ac6cba98:l0",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l0",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L1",
+      "level": 1,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l1",
+        "parent_node_id": "node:e02-ac6cba98:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "sovereign",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l1",
+        "mall_id": "mall:e02-ac6cba98:l1",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L2",
+      "level": 2,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l2",
+        "parent_node_id": "node:e02-ac6cba98:l1",
+        "signed_level": "L2",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l2",
+        "mall_id": "mall:e02-ac6cba98:l2",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L3",
+      "level": 3,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l3",
+        "parent_node_id": "node:e02-ac6cba98:l2",
+        "signed_level": "L3",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l3",
+        "mall_id": "mall:e02-ac6cba98:l3",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L4",
+      "level": 4,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l4",
+        "parent_node_id": "node:e02-ac6cba98:l3",
+        "signed_level": "L4",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l4",
+        "mall_id": "mall:e02-ac6cba98:l4",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L5",
+      "level": 5,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l5",
+        "parent_node_id": "node:e02-ac6cba98:l4",
+        "signed_level": "L5",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l5",
+        "mall_id": "mall:e02-ac6cba98:l5",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L6",
+      "level": 6,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l6",
+        "parent_node_id": "node:e02-ac6cba98:l5",
+        "signed_level": "L6",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l6",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L7",
+      "level": 7,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l7",
+        "parent_node_id": "node:e02-ac6cba98:l6",
+        "signed_level": "L7",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l7",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L8",
+      "level": 8,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l8",
+        "parent_node_id": "node:e02-ac6cba98:l7",
+        "signed_level": "L8",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l8",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L9",
+      "level": 9,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l9",
+        "parent_node_id": "node:e02-ac6cba98:l8",
+        "signed_level": "L9",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l9",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L10",
+      "level": 10,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l10",
+        "parent_node_id": "node:e02-ac6cba98:l9",
+        "signed_level": "L10",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l10",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L11",
+      "level": 11,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l11",
+        "parent_node_id": "node:e02-ac6cba98:l10",
+        "signed_level": "L11",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l11",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    }
+  ],
+  "after_version_change": [
+    {
+      "fixture_id": "V-L0",
+      "level": 0,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l0",
+        "parent_node_id": null,
+        "signed_level": "L0",
+        "sovereignty_tier": "sovereign",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l0",
+        "mall_id": "mall:e02-ac6cba98:l0",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l0",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L1",
+      "level": 1,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l1",
+        "parent_node_id": "node:e02-ac6cba98:l0",
+        "signed_level": "L1",
+        "sovereignty_tier": "sovereign",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l1",
+        "mall_id": "mall:e02-ac6cba98:l1",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L2",
+      "level": 2,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l2",
+        "parent_node_id": "node:e02-ac6cba98:l1",
+        "signed_level": "L2",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l2",
+        "mall_id": "mall:e02-ac6cba98:l2",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L3",
+      "level": 3,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l3",
+        "parent_node_id": "node:e02-ac6cba98:l2",
+        "signed_level": "L3",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l3",
+        "mall_id": "mall:e02-ac6cba98:l3",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L4",
+      "level": 4,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l4",
+        "parent_node_id": "node:e02-ac6cba98:l3",
+        "signed_level": "L4",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l4",
+        "mall_id": "mall:e02-ac6cba98:l4",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L5",
+      "level": 5,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l5",
+        "parent_node_id": "node:e02-ac6cba98:l4",
+        "signed_level": "L5",
+        "sovereignty_tier": "hosted",
+        "node_profile": "operating_mall",
+        "realm_id": "realm:e02-ac6cba98-l5",
+        "mall_id": "mall:e02-ac6cba98:l5",
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L6",
+      "level": 6,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l6",
+        "parent_node_id": "node:e02-ac6cba98:l5",
+        "signed_level": "L6",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l6",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 2,
+        "effective_at": "2026-09-14T01:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L7",
+      "level": 7,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l7",
+        "parent_node_id": "node:e02-ac6cba98:l6",
+        "signed_level": "L7",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l7",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L8",
+      "level": 8,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l8",
+        "parent_node_id": "node:e02-ac6cba98:l7",
+        "signed_level": "L8",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l8",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L9",
+      "level": 9,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l9",
+        "parent_node_id": "node:e02-ac6cba98:l8",
+        "signed_level": "L9",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l9",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L10",
+      "level": 10,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l10",
+        "parent_node_id": "node:e02-ac6cba98:l9",
+        "signed_level": "L10",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l10",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    },
+    {
+      "fixture_id": "V-L11",
+      "level": 11,
+      "context": {
+        "line_id": "line:e02-ac6cba98:vertical",
+        "node_id": "node:e02-ac6cba98:l11",
+        "parent_node_id": "node:e02-ac6cba98:l10",
+        "signed_level": "L11",
+        "sovereignty_tier": "hosted",
+        "node_profile": "consumer",
+        "realm_id": "realm:e02-ac6cba98-l11",
+        "mall_id": null,
+        "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+        "relation_version": 1,
+        "effective_at": "2026-09-14T00:00:00.000Z",
+        "status": "active"
+      }
+    }
+  ]
+}

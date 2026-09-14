@@ -5,12 +5,12 @@ declare
   suffix text:=substr(replace(gen_random_uuid()::text,'-',''),1,8);
   root_id text:='node:zhudatuan:l0';
   existing_l1_id text:='node:hbbtzn:l1';
-  levels integer[]:=array[1,5,6,7,8,9,10,11];
-  profiles text[]:=array['operating_mall','consumer','operating_mall','consumer','consumer','consumer','consumer','consumer'];
+  levels integer[]:=array[2,3,4,5,6,7,8,9,10,11];
+  profiles text[]:=array['operating_mall','consumer','consumer','consumer','operating_mall','consumer','consumer','consumer','consumer','consumer'];
   level integer;
   profile text;
   target_id text;
-  parent_id text:=root_id;
+  parent_id text:=existing_l1_id;
   realm_id text;
   mall_id text;
   request_key text;
@@ -33,7 +33,7 @@ begin
       id,node_id,status,node_profile,mall_id,host_node_id,host_node_profile,created_at,updated_at
     ) values(
       realm_id,target_id,'active',profile,mall_id,
-      case when profile='consumer' then root_id else null end,
+      case when profile='consumer' then existing_l1_id else null end,
       case when profile='consumer' then 'operating_mall' else null end,
       '2026-09-11T00:00:00Z','2026-09-11T00:00:00Z'
     );
@@ -52,7 +52,7 @@ begin
       'trace_id','trace:contract:hosted-'||suffix
     )) created;
     if result->>'node_id'<>target_id or result->>'line_id'<>'line:zhudatuan:commerce:v1'
-      or result->>'parent_node_id'<>parent_id or result->>'host_sovereign_node_id'<>root_id
+      or result->>'parent_node_id'<>parent_id or result->>'host_sovereign_node_id'<>existing_l1_id
       or result->>'relation_version'<>'1' or result->>'effective_at'<>'2026-09-11T00:00:00.000Z'
       or result->>'sovereignty_tier'<>'hosted' or result->>'node_profile'<>profile
       or result->>'replayed'<>'false' then
@@ -61,10 +61,10 @@ begin
     parent_id:=target_id;
   end loop;
 
-  if (select count(*) from organization.node where id like 'node:contract-hosted-'||suffix||':l%')<>8
-    or (select count(*) from organization.noderelation where node_id like 'node:contract-hosted-'||suffix||':l%')<>8
-    or (select count(*) from organization.hostednodeprovisioning where node_id like 'node:contract-hosted-'||suffix||':l%')<>8
-    or not exists(select 1 from organization.node where id='node:contract-hosted-'||suffix||':l1'
+  if (select count(*) from organization.node where id like 'node:contract-hosted-'||suffix||':l%')<>10
+    or (select count(*) from organization.noderelation where node_id like 'node:contract-hosted-'||suffix||':l%')<>10
+    or (select count(*) from organization.hostednodeprovisioning where node_id like 'node:contract-hosted-'||suffix||':l%')<>10
+    or not exists(select 1 from organization.node where id='node:contract-hosted-'||suffix||':l2'
       and sovereignty_tier='hosted' and node_profile='operating_mall')
     or not exists(select 1 from organization.node where id='node:contract-hosted-'||suffix||':l5'
       and sovereignty_tier='hosted' and node_profile='consumer')

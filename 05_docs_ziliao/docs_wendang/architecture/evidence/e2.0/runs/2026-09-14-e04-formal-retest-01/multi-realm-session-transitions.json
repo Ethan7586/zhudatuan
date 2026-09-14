@@ -1,0 +1,1172 @@
+{
+  "schema_version": "e04-multi-realm-session-transitions-v1",
+  "captured_at": "2026-09-13T22:13:30.313Z",
+  "directed_pairs": [
+    {
+      "pair_id": "A->B",
+      "source_realm_label": "A",
+      "target_realm_label": "B",
+      "source_identifiers": {
+        "realm_id": "realm:e04a-fdec2a77",
+        "account_id": "account:e04a:fdec2a77",
+        "principal_id": "principal:e04a:fdec2a77",
+        "membership_id": "membership:e04a:fdec2a77",
+        "base_session_id": "session:e04a:fdec2a77:base",
+        "node_id": "node:e04a-fdec2a77:l6",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L6",
+        "scope_id": "mall-zhudatuan",
+        "asset_id": "order:e04a:fdec2a77",
+        "accounts_host": "accounts.e04a-fdec2a77.test"
+      },
+      "target_expected_identifiers": {
+        "realm_id": "realm:e04b-fdec2a77",
+        "account_id": "account:e04b:fdec2a77",
+        "principal_id": "principal:e04b:fdec2a77",
+        "membership_id": "membership:e04b:fdec2a77",
+        "base_session_id": "session:e04b:fdec2a77:base",
+        "node_id": "node:e04b-fdec2a77:l8",
+        "line_id": "line:e04b-fdec2a77:v1",
+        "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+        "signed_level": "L8",
+        "scope_id": "mall:e04b-fdec2a77",
+        "asset_id": "order:e04b:fdec2a77",
+        "accounts_host": "accounts.e04b-fdec2a77.test"
+      },
+      "issue_request": {
+        "boundary": "identity.issue_login_intent",
+        "intent_id": "loginintent:d17b357c-70fc-4a5b-91ed-ee94b6de55fe",
+        "source_session_id": "session:e04a:fdec2a77:base",
+        "source_account_id": "account:e04a:fdec2a77",
+        "source_realm_id": "realm:e04a-fdec2a77",
+        "target_node_id": "node:e04b-fdec2a77:l8",
+        "target_surface": "consumer",
+        "target_application": "e04-b-fdec2a77"
+      },
+      "issue_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "target_realm_id": "realm:e04b-fdec2a77",
+            "target_accounts_host": "accounts.e04b-fdec2a77.test",
+            "target_target": "e04-b-fdec2a77",
+            "target_application": "e04-b-fdec2a77",
+            "target_return_origin": "https://e04b-fdec2a77.test"
+          }
+        ]
+      },
+      "fresh_target_session": {
+        "id": "session:e04:fdec2a77:switch:a:b",
+        "token_hash": "2290b5ff3aa8b97e49a6e9c44b54439e5c2dfa168182a1ced95eef567da41c47"
+      },
+      "consume_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "login_intent_id": "loginintent:d17b357c-70fc-4a5b-91ed-ee94b6de55fe",
+            "source_realm_id": "realm:e04a-fdec2a77",
+            "source_node_id": "node:e04a-fdec2a77:l6",
+            "source_account_id": "account:e04a:fdec2a77",
+            "source_session_id": "session:e04a:fdec2a77:base",
+            "target_node_id": "node:e04b-fdec2a77:l8"
+          }
+        ]
+      },
+      "login_intent_row": {
+        "id": "loginintent:d17b357c-70fc-4a5b-91ed-ee94b6de55fe",
+        "source_realm_id": "realm:e04a-fdec2a77",
+        "source_node_id": "node:e04a-fdec2a77:l6",
+        "source_account_id": "account:e04a:fdec2a77",
+        "source_session_id": "session:e04a:fdec2a77:base",
+        "target_realm_id": "realm:e04b-fdec2a77",
+        "target_node_id": "node:e04b-fdec2a77:l8",
+        "target_surface": "consumer",
+        "target_target": "e04-b-fdec2a77",
+        "target_application": "e04-b-fdec2a77",
+        "target_accounts_host": "accounts.e04b-fdec2a77.test",
+        "target_account_id": "account:e04b:fdec2a77",
+        "target_session_id": "session:e04:fdec2a77:switch:a:b",
+        "consumed_at": "2026-09-13T22:13:29.671Z",
+        "expires_at": "2026-09-13T22:18:29.669Z",
+        "created_at": "2026-09-13T22:13:29.669Z"
+      },
+      "source_session_at_source": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04a:fdec2a77",
+            "account_id": "account:e04a:fdec2a77",
+            "realm_id": "realm:e04a-fdec2a77",
+            "session_id": "session:e04a:fdec2a77:base",
+            "membership_id": "membership:e04a:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "storefront",
+            "membership_client": "storefront",
+            "governance_organization_id": "mall-zhudatuan",
+            "entry_realm_id": "realm:e04a-fdec2a77",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e04a-fdec2a77:l6",
+            "parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "source_session_at_target": {
+        "row_count": 0,
+        "rows": []
+      },
+      "target_session_at_target": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04b:fdec2a77",
+            "account_id": "account:e04b:fdec2a77",
+            "realm_id": "realm:e04b-fdec2a77",
+            "session_id": "session:e04:fdec2a77:switch:a:b",
+            "membership_id": "membership:e04b:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "storefront",
+            "membership_client": "storefront",
+            "governance_organization_id": "mall:e04b-fdec2a77",
+            "entry_realm_id": "realm:e04b-fdec2a77",
+            "line_id": "line:e04b-fdec2a77:v1",
+            "node_id": "node:e04b-fdec2a77:l8",
+            "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+            "signed_level": "L8",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "target_membership_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "id": "membership:e04b:fdec2a77",
+            "active": true,
+            "access_version": "1",
+            "denies": [],
+            "grants": [
+              {
+                "scope": {
+                  "id": "mall:e04b-fdec2a77",
+                  "kind": "mall",
+                  "name": "E04 Realm B Mall",
+                  "path": []
+                },
+                "expires": null,
+                "effective": "2026-09-13T22:13:29.450634+00:00",
+                "permissions": [
+                  "access.scope.manage"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "target_scope_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "scope": {
+              "id": "mall:e04b-fdec2a77",
+              "kind": "mall",
+              "name": "E04 Realm B Mall",
+              "path": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "pair_id": "A->C",
+      "source_realm_label": "A",
+      "target_realm_label": "C",
+      "source_identifiers": {
+        "realm_id": "realm:e04a-fdec2a77",
+        "account_id": "account:e04a:fdec2a77",
+        "principal_id": "principal:e04a:fdec2a77",
+        "membership_id": "membership:e04a:fdec2a77",
+        "base_session_id": "session:e04a:fdec2a77:base",
+        "node_id": "node:e04a-fdec2a77:l6",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L6",
+        "scope_id": "mall-zhudatuan",
+        "asset_id": "order:e04a:fdec2a77",
+        "accounts_host": "accounts.e04a-fdec2a77.test"
+      },
+      "target_expected_identifiers": {
+        "realm_id": "realm:e04c-fdec2a77",
+        "account_id": "account:e04c:fdec2a77",
+        "principal_id": "principal:e04c:fdec2a77",
+        "membership_id": "membership:e04c:fdec2a77",
+        "base_session_id": "session:e04c:fdec2a77:base",
+        "node_id": "node:e04c-fdec2a77:l0",
+        "line_id": "line:e04c-fdec2a77:v1",
+        "parent_node_id": null,
+        "signed_level": "L0",
+        "scope_id": "mall:e04c-fdec2a77",
+        "asset_id": "order:e04c:fdec2a77",
+        "accounts_host": "accounts.e04c-fdec2a77.test"
+      },
+      "issue_request": {
+        "boundary": "identity.issue_login_intent",
+        "intent_id": "loginintent:d1fb520a-846a-4979-8ac1-f90703b24021",
+        "source_session_id": "session:e04a:fdec2a77:base",
+        "source_account_id": "account:e04a:fdec2a77",
+        "source_realm_id": "realm:e04a-fdec2a77",
+        "target_node_id": "node:e04c-fdec2a77:l0",
+        "target_surface": "admin",
+        "target_application": null
+      },
+      "issue_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "target_realm_id": "realm:e04c-fdec2a77",
+            "target_accounts_host": "accounts.e04c-fdec2a77.test",
+            "target_target": "e04-c-fdec2a77",
+            "target_application": null,
+            "target_return_origin": "https://e04c-fdec2a77.test"
+          }
+        ]
+      },
+      "fresh_target_session": {
+        "id": "session:e04:fdec2a77:switch:a:c",
+        "token_hash": "6d893a131458a6b827318a7d4b4a648a04afa8a0ea9eccf21c47c8e79e5fd7de"
+      },
+      "consume_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "login_intent_id": "loginintent:d1fb520a-846a-4979-8ac1-f90703b24021",
+            "source_realm_id": "realm:e04a-fdec2a77",
+            "source_node_id": "node:e04a-fdec2a77:l6",
+            "source_account_id": "account:e04a:fdec2a77",
+            "source_session_id": "session:e04a:fdec2a77:base",
+            "target_node_id": "node:e04c-fdec2a77:l0"
+          }
+        ]
+      },
+      "login_intent_row": {
+        "id": "loginintent:d1fb520a-846a-4979-8ac1-f90703b24021",
+        "source_realm_id": "realm:e04a-fdec2a77",
+        "source_node_id": "node:e04a-fdec2a77:l6",
+        "source_account_id": "account:e04a:fdec2a77",
+        "source_session_id": "session:e04a:fdec2a77:base",
+        "target_realm_id": "realm:e04c-fdec2a77",
+        "target_node_id": "node:e04c-fdec2a77:l0",
+        "target_surface": "admin",
+        "target_target": "e04-c-fdec2a77",
+        "target_application": null,
+        "target_accounts_host": "accounts.e04c-fdec2a77.test",
+        "target_account_id": "account:e04c:fdec2a77",
+        "target_session_id": "session:e04:fdec2a77:switch:a:c",
+        "consumed_at": "2026-09-13T22:13:29.694Z",
+        "expires_at": "2026-09-13T22:18:29.692Z",
+        "created_at": "2026-09-13T22:13:29.692Z"
+      },
+      "source_session_at_source": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04a:fdec2a77",
+            "account_id": "account:e04a:fdec2a77",
+            "realm_id": "realm:e04a-fdec2a77",
+            "session_id": "session:e04a:fdec2a77:base",
+            "membership_id": "membership:e04a:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "storefront",
+            "membership_client": "storefront",
+            "governance_organization_id": "mall-zhudatuan",
+            "entry_realm_id": "realm:e04a-fdec2a77",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e04a-fdec2a77:l6",
+            "parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "source_session_at_target": {
+        "row_count": 0,
+        "rows": []
+      },
+      "target_session_at_target": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04c:fdec2a77",
+            "account_id": "account:e04c:fdec2a77",
+            "realm_id": "realm:e04c-fdec2a77",
+            "session_id": "session:e04:fdec2a77:switch:a:c",
+            "membership_id": "membership:e04c:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "console",
+            "membership_client": "operator",
+            "governance_organization_id": "mall:e04c-fdec2a77",
+            "entry_realm_id": "realm:e04c-fdec2a77",
+            "line_id": "line:e04c-fdec2a77:v1",
+            "node_id": "node:e04c-fdec2a77:l0",
+            "parent_node_id": null,
+            "signed_level": "L0",
+            "node_profile": "operating_mall",
+            "mall_id": "mall:e04c-fdec2a77",
+            "host_sovereign_node_id": "node:e04c-fdec2a77:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "target_membership_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "id": "membership:e04c:fdec2a77",
+            "active": true,
+            "access_version": "1",
+            "denies": [],
+            "grants": [
+              {
+                "scope": {
+                  "id": "mall:e04c-fdec2a77",
+                  "kind": "mall",
+                  "name": "E04 Realm C Mall",
+                  "path": []
+                },
+                "expires": null,
+                "effective": "2026-09-13T22:13:29.457061+00:00",
+                "permissions": [
+                  "access.scope.manage"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "target_scope_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "scope": {
+              "id": "mall:e04c-fdec2a77",
+              "kind": "mall",
+              "name": "E04 Realm C Mall",
+              "path": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "pair_id": "B->A",
+      "source_realm_label": "B",
+      "target_realm_label": "A",
+      "source_identifiers": {
+        "realm_id": "realm:e04b-fdec2a77",
+        "account_id": "account:e04b:fdec2a77",
+        "principal_id": "principal:e04b:fdec2a77",
+        "membership_id": "membership:e04b:fdec2a77",
+        "base_session_id": "session:e04b:fdec2a77:base",
+        "node_id": "node:e04b-fdec2a77:l8",
+        "line_id": "line:e04b-fdec2a77:v1",
+        "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+        "signed_level": "L8",
+        "scope_id": "mall:e04b-fdec2a77",
+        "asset_id": "order:e04b:fdec2a77",
+        "accounts_host": "accounts.e04b-fdec2a77.test"
+      },
+      "target_expected_identifiers": {
+        "realm_id": "realm:e04a-fdec2a77",
+        "account_id": "account:e04a:fdec2a77",
+        "principal_id": "principal:e04a:fdec2a77",
+        "membership_id": "membership:e04a:fdec2a77",
+        "base_session_id": "session:e04a:fdec2a77:base",
+        "node_id": "node:e04a-fdec2a77:l6",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L6",
+        "scope_id": "mall-zhudatuan",
+        "asset_id": "order:e04a:fdec2a77",
+        "accounts_host": "accounts.e04a-fdec2a77.test"
+      },
+      "issue_request": {
+        "boundary": "identity.issue_login_intent",
+        "intent_id": "loginintent:e5f5ed02-5cc9-4f52-b5ed-7cceadabd41c",
+        "source_session_id": "session:e04b:fdec2a77:base",
+        "source_account_id": "account:e04b:fdec2a77",
+        "source_realm_id": "realm:e04b-fdec2a77",
+        "target_node_id": "node:e04a-fdec2a77:l6",
+        "target_surface": "consumer",
+        "target_application": "e04-a-fdec2a77"
+      },
+      "issue_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "target_realm_id": "realm:e04a-fdec2a77",
+            "target_accounts_host": "accounts.e04a-fdec2a77.test",
+            "target_target": "e04-a-fdec2a77",
+            "target_application": "e04-a-fdec2a77",
+            "target_return_origin": "https://e04a-fdec2a77.test"
+          }
+        ]
+      },
+      "fresh_target_session": {
+        "id": "session:e04:fdec2a77:switch:b:a",
+        "token_hash": "963af804a40f94afd390e450924a85efa9ffa639cd83bb6ebb2113969c8d5a5c"
+      },
+      "consume_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "login_intent_id": "loginintent:e5f5ed02-5cc9-4f52-b5ed-7cceadabd41c",
+            "source_realm_id": "realm:e04b-fdec2a77",
+            "source_node_id": "node:e04b-fdec2a77:l8",
+            "source_account_id": "account:e04b:fdec2a77",
+            "source_session_id": "session:e04b:fdec2a77:base",
+            "target_node_id": "node:e04a-fdec2a77:l6"
+          }
+        ]
+      },
+      "login_intent_row": {
+        "id": "loginintent:e5f5ed02-5cc9-4f52-b5ed-7cceadabd41c",
+        "source_realm_id": "realm:e04b-fdec2a77",
+        "source_node_id": "node:e04b-fdec2a77:l8",
+        "source_account_id": "account:e04b:fdec2a77",
+        "source_session_id": "session:e04b:fdec2a77:base",
+        "target_realm_id": "realm:e04a-fdec2a77",
+        "target_node_id": "node:e04a-fdec2a77:l6",
+        "target_surface": "consumer",
+        "target_target": "e04-a-fdec2a77",
+        "target_application": "e04-a-fdec2a77",
+        "target_accounts_host": "accounts.e04a-fdec2a77.test",
+        "target_account_id": "account:e04a:fdec2a77",
+        "target_session_id": "session:e04:fdec2a77:switch:b:a",
+        "consumed_at": "2026-09-13T22:13:29.715Z",
+        "expires_at": "2026-09-13T22:18:29.714Z",
+        "created_at": "2026-09-13T22:13:29.714Z"
+      },
+      "source_session_at_source": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04b:fdec2a77",
+            "account_id": "account:e04b:fdec2a77",
+            "realm_id": "realm:e04b-fdec2a77",
+            "session_id": "session:e04b:fdec2a77:base",
+            "membership_id": "membership:e04b:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "storefront",
+            "membership_client": "storefront",
+            "governance_organization_id": "mall:e04b-fdec2a77",
+            "entry_realm_id": "realm:e04b-fdec2a77",
+            "line_id": "line:e04b-fdec2a77:v1",
+            "node_id": "node:e04b-fdec2a77:l8",
+            "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+            "signed_level": "L8",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "source_session_at_target": {
+        "row_count": 0,
+        "rows": []
+      },
+      "target_session_at_target": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04a:fdec2a77",
+            "account_id": "account:e04a:fdec2a77",
+            "realm_id": "realm:e04a-fdec2a77",
+            "session_id": "session:e04:fdec2a77:switch:b:a",
+            "membership_id": "membership:e04a:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "storefront",
+            "membership_client": "storefront",
+            "governance_organization_id": "mall-zhudatuan",
+            "entry_realm_id": "realm:e04a-fdec2a77",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e04a-fdec2a77:l6",
+            "parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "target_membership_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "id": "membership:e04a:fdec2a77",
+            "active": true,
+            "access_version": "1",
+            "denies": [],
+            "grants": [
+              {
+                "scope": {
+                  "id": "mall-zhudatuan",
+                  "kind": "mall",
+                  "name": "主打团福利商城",
+                  "path": [
+                    {
+                      "id": "organization-platform-root",
+                      "kind": "platform"
+                    },
+                    {
+                      "id": "tenant-zhudatuan",
+                      "kind": "tenant"
+                    },
+                    {
+                      "id": "enterprise-zhudatuan",
+                      "kind": "enterprise"
+                    }
+                  ],
+                  "tenant": "tenant-zhudatuan"
+                },
+                "expires": null,
+                "effective": "2026-09-13T22:13:29.441666+00:00",
+                "permissions": [
+                  "access.scope.manage"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "target_scope_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "scope": {
+              "id": "mall-zhudatuan",
+              "kind": "mall",
+              "name": "主打团福利商城",
+              "path": [
+                {
+                  "id": "organization-platform-root",
+                  "kind": "platform"
+                },
+                {
+                  "id": "tenant-zhudatuan",
+                  "kind": "tenant"
+                },
+                {
+                  "id": "enterprise-zhudatuan",
+                  "kind": "enterprise"
+                }
+              ],
+              "tenant": "tenant-zhudatuan"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "pair_id": "B->C",
+      "source_realm_label": "B",
+      "target_realm_label": "C",
+      "source_identifiers": {
+        "realm_id": "realm:e04b-fdec2a77",
+        "account_id": "account:e04b:fdec2a77",
+        "principal_id": "principal:e04b:fdec2a77",
+        "membership_id": "membership:e04b:fdec2a77",
+        "base_session_id": "session:e04b:fdec2a77:base",
+        "node_id": "node:e04b-fdec2a77:l8",
+        "line_id": "line:e04b-fdec2a77:v1",
+        "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+        "signed_level": "L8",
+        "scope_id": "mall:e04b-fdec2a77",
+        "asset_id": "order:e04b:fdec2a77",
+        "accounts_host": "accounts.e04b-fdec2a77.test"
+      },
+      "target_expected_identifiers": {
+        "realm_id": "realm:e04c-fdec2a77",
+        "account_id": "account:e04c:fdec2a77",
+        "principal_id": "principal:e04c:fdec2a77",
+        "membership_id": "membership:e04c:fdec2a77",
+        "base_session_id": "session:e04c:fdec2a77:base",
+        "node_id": "node:e04c-fdec2a77:l0",
+        "line_id": "line:e04c-fdec2a77:v1",
+        "parent_node_id": null,
+        "signed_level": "L0",
+        "scope_id": "mall:e04c-fdec2a77",
+        "asset_id": "order:e04c:fdec2a77",
+        "accounts_host": "accounts.e04c-fdec2a77.test"
+      },
+      "issue_request": {
+        "boundary": "identity.issue_login_intent",
+        "intent_id": "loginintent:95050e68-f5eb-426a-aea5-7d76cba917eb",
+        "source_session_id": "session:e04b:fdec2a77:base",
+        "source_account_id": "account:e04b:fdec2a77",
+        "source_realm_id": "realm:e04b-fdec2a77",
+        "target_node_id": "node:e04c-fdec2a77:l0",
+        "target_surface": "admin",
+        "target_application": null
+      },
+      "issue_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "target_realm_id": "realm:e04c-fdec2a77",
+            "target_accounts_host": "accounts.e04c-fdec2a77.test",
+            "target_target": "e04-c-fdec2a77",
+            "target_application": null,
+            "target_return_origin": "https://e04c-fdec2a77.test"
+          }
+        ]
+      },
+      "fresh_target_session": {
+        "id": "session:e04:fdec2a77:switch:b:c",
+        "token_hash": "c98a75d2f3bb0687b0ff96b980a7f9681ebaa7f49c1bcb19c92acc4ebefc13b6"
+      },
+      "consume_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "login_intent_id": "loginintent:95050e68-f5eb-426a-aea5-7d76cba917eb",
+            "source_realm_id": "realm:e04b-fdec2a77",
+            "source_node_id": "node:e04b-fdec2a77:l8",
+            "source_account_id": "account:e04b:fdec2a77",
+            "source_session_id": "session:e04b:fdec2a77:base",
+            "target_node_id": "node:e04c-fdec2a77:l0"
+          }
+        ]
+      },
+      "login_intent_row": {
+        "id": "loginintent:95050e68-f5eb-426a-aea5-7d76cba917eb",
+        "source_realm_id": "realm:e04b-fdec2a77",
+        "source_node_id": "node:e04b-fdec2a77:l8",
+        "source_account_id": "account:e04b:fdec2a77",
+        "source_session_id": "session:e04b:fdec2a77:base",
+        "target_realm_id": "realm:e04c-fdec2a77",
+        "target_node_id": "node:e04c-fdec2a77:l0",
+        "target_surface": "admin",
+        "target_target": "e04-c-fdec2a77",
+        "target_application": null,
+        "target_accounts_host": "accounts.e04c-fdec2a77.test",
+        "target_account_id": "account:e04c:fdec2a77",
+        "target_session_id": "session:e04:fdec2a77:switch:b:c",
+        "consumed_at": "2026-09-13T22:13:29.737Z",
+        "expires_at": "2026-09-13T22:18:29.734Z",
+        "created_at": "2026-09-13T22:13:29.734Z"
+      },
+      "source_session_at_source": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04b:fdec2a77",
+            "account_id": "account:e04b:fdec2a77",
+            "realm_id": "realm:e04b-fdec2a77",
+            "session_id": "session:e04b:fdec2a77:base",
+            "membership_id": "membership:e04b:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "storefront",
+            "membership_client": "storefront",
+            "governance_organization_id": "mall:e04b-fdec2a77",
+            "entry_realm_id": "realm:e04b-fdec2a77",
+            "line_id": "line:e04b-fdec2a77:v1",
+            "node_id": "node:e04b-fdec2a77:l8",
+            "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+            "signed_level": "L8",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "source_session_at_target": {
+        "row_count": 0,
+        "rows": []
+      },
+      "target_session_at_target": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04c:fdec2a77",
+            "account_id": "account:e04c:fdec2a77",
+            "realm_id": "realm:e04c-fdec2a77",
+            "session_id": "session:e04:fdec2a77:switch:b:c",
+            "membership_id": "membership:e04c:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "console",
+            "membership_client": "operator",
+            "governance_organization_id": "mall:e04c-fdec2a77",
+            "entry_realm_id": "realm:e04c-fdec2a77",
+            "line_id": "line:e04c-fdec2a77:v1",
+            "node_id": "node:e04c-fdec2a77:l0",
+            "parent_node_id": null,
+            "signed_level": "L0",
+            "node_profile": "operating_mall",
+            "mall_id": "mall:e04c-fdec2a77",
+            "host_sovereign_node_id": "node:e04c-fdec2a77:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "target_membership_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "id": "membership:e04c:fdec2a77",
+            "active": true,
+            "access_version": "1",
+            "denies": [],
+            "grants": [
+              {
+                "scope": {
+                  "id": "mall:e04c-fdec2a77",
+                  "kind": "mall",
+                  "name": "E04 Realm C Mall",
+                  "path": []
+                },
+                "expires": null,
+                "effective": "2026-09-13T22:13:29.457061+00:00",
+                "permissions": [
+                  "access.scope.manage"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "target_scope_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "scope": {
+              "id": "mall:e04c-fdec2a77",
+              "kind": "mall",
+              "name": "E04 Realm C Mall",
+              "path": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "pair_id": "C->A",
+      "source_realm_label": "C",
+      "target_realm_label": "A",
+      "source_identifiers": {
+        "realm_id": "realm:e04c-fdec2a77",
+        "account_id": "account:e04c:fdec2a77",
+        "principal_id": "principal:e04c:fdec2a77",
+        "membership_id": "membership:e04c:fdec2a77",
+        "base_session_id": "session:e04c:fdec2a77:base",
+        "node_id": "node:e04c-fdec2a77:l0",
+        "line_id": "line:e04c-fdec2a77:v1",
+        "parent_node_id": null,
+        "signed_level": "L0",
+        "scope_id": "mall:e04c-fdec2a77",
+        "asset_id": "order:e04c:fdec2a77",
+        "accounts_host": "accounts.e04c-fdec2a77.test"
+      },
+      "target_expected_identifiers": {
+        "realm_id": "realm:e04a-fdec2a77",
+        "account_id": "account:e04a:fdec2a77",
+        "principal_id": "principal:e04a:fdec2a77",
+        "membership_id": "membership:e04a:fdec2a77",
+        "base_session_id": "session:e04a:fdec2a77:base",
+        "node_id": "node:e04a-fdec2a77:l6",
+        "line_id": "line:zhudatuan:commerce:v1",
+        "parent_node_id": "node:zhudatuan:l0",
+        "signed_level": "L6",
+        "scope_id": "mall-zhudatuan",
+        "asset_id": "order:e04a:fdec2a77",
+        "accounts_host": "accounts.e04a-fdec2a77.test"
+      },
+      "issue_request": {
+        "boundary": "identity.issue_login_intent",
+        "intent_id": "loginintent:c4474e09-b9af-433e-9f61-85d96a89c2b1",
+        "source_session_id": "session:e04c:fdec2a77:base",
+        "source_account_id": "account:e04c:fdec2a77",
+        "source_realm_id": "realm:e04c-fdec2a77",
+        "target_node_id": "node:e04a-fdec2a77:l6",
+        "target_surface": "consumer",
+        "target_application": "e04-a-fdec2a77"
+      },
+      "issue_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "target_realm_id": "realm:e04a-fdec2a77",
+            "target_accounts_host": "accounts.e04a-fdec2a77.test",
+            "target_target": "e04-a-fdec2a77",
+            "target_application": "e04-a-fdec2a77",
+            "target_return_origin": "https://e04a-fdec2a77.test"
+          }
+        ]
+      },
+      "fresh_target_session": {
+        "id": "session:e04:fdec2a77:switch:c:a",
+        "token_hash": "904b7c1f1b5c19bcbdb6af60ee5e841125dcdc82cd541898fd7593b766e8a793"
+      },
+      "consume_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "login_intent_id": "loginintent:c4474e09-b9af-433e-9f61-85d96a89c2b1",
+            "source_realm_id": "realm:e04c-fdec2a77",
+            "source_node_id": "node:e04c-fdec2a77:l0",
+            "source_account_id": "account:e04c:fdec2a77",
+            "source_session_id": "session:e04c:fdec2a77:base",
+            "target_node_id": "node:e04a-fdec2a77:l6"
+          }
+        ]
+      },
+      "login_intent_row": {
+        "id": "loginintent:c4474e09-b9af-433e-9f61-85d96a89c2b1",
+        "source_realm_id": "realm:e04c-fdec2a77",
+        "source_node_id": "node:e04c-fdec2a77:l0",
+        "source_account_id": "account:e04c:fdec2a77",
+        "source_session_id": "session:e04c:fdec2a77:base",
+        "target_realm_id": "realm:e04a-fdec2a77",
+        "target_node_id": "node:e04a-fdec2a77:l6",
+        "target_surface": "consumer",
+        "target_target": "e04-a-fdec2a77",
+        "target_application": "e04-a-fdec2a77",
+        "target_accounts_host": "accounts.e04a-fdec2a77.test",
+        "target_account_id": "account:e04a:fdec2a77",
+        "target_session_id": "session:e04:fdec2a77:switch:c:a",
+        "consumed_at": "2026-09-13T22:13:29.766Z",
+        "expires_at": "2026-09-13T22:18:29.764Z",
+        "created_at": "2026-09-13T22:13:29.764Z"
+      },
+      "source_session_at_source": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04c:fdec2a77",
+            "account_id": "account:e04c:fdec2a77",
+            "realm_id": "realm:e04c-fdec2a77",
+            "session_id": "session:e04c:fdec2a77:base",
+            "membership_id": "membership:e04c:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "console",
+            "membership_client": "operator",
+            "governance_organization_id": "mall:e04c-fdec2a77",
+            "entry_realm_id": "realm:e04c-fdec2a77",
+            "line_id": "line:e04c-fdec2a77:v1",
+            "node_id": "node:e04c-fdec2a77:l0",
+            "parent_node_id": null,
+            "signed_level": "L0",
+            "node_profile": "operating_mall",
+            "mall_id": "mall:e04c-fdec2a77",
+            "host_sovereign_node_id": "node:e04c-fdec2a77:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "source_session_at_target": {
+        "row_count": 0,
+        "rows": []
+      },
+      "target_session_at_target": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04a:fdec2a77",
+            "account_id": "account:e04a:fdec2a77",
+            "realm_id": "realm:e04a-fdec2a77",
+            "session_id": "session:e04:fdec2a77:switch:c:a",
+            "membership_id": "membership:e04a:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "storefront",
+            "membership_client": "storefront",
+            "governance_organization_id": "mall-zhudatuan",
+            "entry_realm_id": "realm:e04a-fdec2a77",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e04a-fdec2a77:l6",
+            "parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "target_membership_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "id": "membership:e04a:fdec2a77",
+            "active": true,
+            "access_version": "1",
+            "denies": [],
+            "grants": [
+              {
+                "scope": {
+                  "id": "mall-zhudatuan",
+                  "kind": "mall",
+                  "name": "主打团福利商城",
+                  "path": [
+                    {
+                      "id": "organization-platform-root",
+                      "kind": "platform"
+                    },
+                    {
+                      "id": "tenant-zhudatuan",
+                      "kind": "tenant"
+                    },
+                    {
+                      "id": "enterprise-zhudatuan",
+                      "kind": "enterprise"
+                    }
+                  ],
+                  "tenant": "tenant-zhudatuan"
+                },
+                "expires": null,
+                "effective": "2026-09-13T22:13:29.441666+00:00",
+                "permissions": [
+                  "access.scope.manage"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "target_scope_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "scope": {
+              "id": "mall-zhudatuan",
+              "kind": "mall",
+              "name": "主打团福利商城",
+              "path": [
+                {
+                  "id": "organization-platform-root",
+                  "kind": "platform"
+                },
+                {
+                  "id": "tenant-zhudatuan",
+                  "kind": "tenant"
+                },
+                {
+                  "id": "enterprise-zhudatuan",
+                  "kind": "enterprise"
+                }
+              ],
+              "tenant": "tenant-zhudatuan"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "pair_id": "C->B",
+      "source_realm_label": "C",
+      "target_realm_label": "B",
+      "source_identifiers": {
+        "realm_id": "realm:e04c-fdec2a77",
+        "account_id": "account:e04c:fdec2a77",
+        "principal_id": "principal:e04c:fdec2a77",
+        "membership_id": "membership:e04c:fdec2a77",
+        "base_session_id": "session:e04c:fdec2a77:base",
+        "node_id": "node:e04c-fdec2a77:l0",
+        "line_id": "line:e04c-fdec2a77:v1",
+        "parent_node_id": null,
+        "signed_level": "L0",
+        "scope_id": "mall:e04c-fdec2a77",
+        "asset_id": "order:e04c:fdec2a77",
+        "accounts_host": "accounts.e04c-fdec2a77.test"
+      },
+      "target_expected_identifiers": {
+        "realm_id": "realm:e04b-fdec2a77",
+        "account_id": "account:e04b:fdec2a77",
+        "principal_id": "principal:e04b:fdec2a77",
+        "membership_id": "membership:e04b:fdec2a77",
+        "base_session_id": "session:e04b:fdec2a77:base",
+        "node_id": "node:e04b-fdec2a77:l8",
+        "line_id": "line:e04b-fdec2a77:v1",
+        "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+        "signed_level": "L8",
+        "scope_id": "mall:e04b-fdec2a77",
+        "asset_id": "order:e04b:fdec2a77",
+        "accounts_host": "accounts.e04b-fdec2a77.test"
+      },
+      "issue_request": {
+        "boundary": "identity.issue_login_intent",
+        "intent_id": "loginintent:d39a37be-6e24-4273-8434-0d024d20f634",
+        "source_session_id": "session:e04c:fdec2a77:base",
+        "source_account_id": "account:e04c:fdec2a77",
+        "source_realm_id": "realm:e04c-fdec2a77",
+        "target_node_id": "node:e04b-fdec2a77:l8",
+        "target_surface": "consumer",
+        "target_application": "e04-b-fdec2a77"
+      },
+      "issue_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "target_realm_id": "realm:e04b-fdec2a77",
+            "target_accounts_host": "accounts.e04b-fdec2a77.test",
+            "target_target": "e04-b-fdec2a77",
+            "target_application": "e04-b-fdec2a77",
+            "target_return_origin": "https://e04b-fdec2a77.test"
+          }
+        ]
+      },
+      "fresh_target_session": {
+        "id": "session:e04:fdec2a77:switch:c:b",
+        "token_hash": "04f9f40f5f8e986d68763151c39d5d3e1dccced2245c54b31cdf28eb5ca253cf"
+      },
+      "consume_response": {
+        "row_count": 1,
+        "rows": [
+          {
+            "login_intent_id": "loginintent:d39a37be-6e24-4273-8434-0d024d20f634",
+            "source_realm_id": "realm:e04c-fdec2a77",
+            "source_node_id": "node:e04c-fdec2a77:l0",
+            "source_account_id": "account:e04c:fdec2a77",
+            "source_session_id": "session:e04c:fdec2a77:base",
+            "target_node_id": "node:e04b-fdec2a77:l8"
+          }
+        ]
+      },
+      "login_intent_row": {
+        "id": "loginintent:d39a37be-6e24-4273-8434-0d024d20f634",
+        "source_realm_id": "realm:e04c-fdec2a77",
+        "source_node_id": "node:e04c-fdec2a77:l0",
+        "source_account_id": "account:e04c:fdec2a77",
+        "source_session_id": "session:e04c:fdec2a77:base",
+        "target_realm_id": "realm:e04b-fdec2a77",
+        "target_node_id": "node:e04b-fdec2a77:l8",
+        "target_surface": "consumer",
+        "target_target": "e04-b-fdec2a77",
+        "target_application": "e04-b-fdec2a77",
+        "target_accounts_host": "accounts.e04b-fdec2a77.test",
+        "target_account_id": "account:e04b:fdec2a77",
+        "target_session_id": "session:e04:fdec2a77:switch:c:b",
+        "consumed_at": "2026-09-13T22:13:29.790Z",
+        "expires_at": "2026-09-13T22:18:29.788Z",
+        "created_at": "2026-09-13T22:13:29.788Z"
+      },
+      "source_session_at_source": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04c:fdec2a77",
+            "account_id": "account:e04c:fdec2a77",
+            "realm_id": "realm:e04c-fdec2a77",
+            "session_id": "session:e04c:fdec2a77:base",
+            "membership_id": "membership:e04c:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "console",
+            "membership_client": "operator",
+            "governance_organization_id": "mall:e04c-fdec2a77",
+            "entry_realm_id": "realm:e04c-fdec2a77",
+            "line_id": "line:e04c-fdec2a77:v1",
+            "node_id": "node:e04c-fdec2a77:l0",
+            "parent_node_id": null,
+            "signed_level": "L0",
+            "node_profile": "operating_mall",
+            "mall_id": "mall:e04c-fdec2a77",
+            "host_sovereign_node_id": "node:e04c-fdec2a77:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "source_session_at_target": {
+        "row_count": 0,
+        "rows": []
+      },
+      "target_session_at_target": {
+        "row_count": 1,
+        "rows": [
+          {
+            "actor_id": "principal:e04b:fdec2a77",
+            "account_id": "account:e04b:fdec2a77",
+            "realm_id": "realm:e04b-fdec2a77",
+            "session_id": "session:e04:fdec2a77:switch:c:b",
+            "membership_id": "membership:e04b:fdec2a77",
+            "credential_version": "1",
+            "access_version": "1",
+            "target": "storefront",
+            "membership_client": "storefront",
+            "governance_organization_id": "mall:e04b-fdec2a77",
+            "entry_realm_id": "realm:e04b-fdec2a77",
+            "line_id": "line:e04b-fdec2a77:v1",
+            "node_id": "node:e04b-fdec2a77:l8",
+            "parent_node_id": "node:e04b-parent-fdec2a77:l7",
+            "signed_level": "L8",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "host_sovereign_node_id": "node:e04b-root-fdec2a77:l0",
+            "relation_version": 1
+          }
+        ]
+      },
+      "target_membership_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "id": "membership:e04b:fdec2a77",
+            "active": true,
+            "access_version": "1",
+            "denies": [],
+            "grants": [
+              {
+                "scope": {
+                  "id": "mall:e04b-fdec2a77",
+                  "kind": "mall",
+                  "name": "E04 Realm B Mall",
+                  "path": []
+                },
+                "expires": null,
+                "effective": "2026-09-13T22:13:29.450634+00:00",
+                "permissions": [
+                  "access.scope.manage"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "target_scope_resolution": {
+        "row_count": 1,
+        "rows": [
+          {
+            "scope": {
+              "id": "mall:e04b-fdec2a77",
+              "kind": "mall",
+              "name": "E04 Realm B Mall",
+              "path": []
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

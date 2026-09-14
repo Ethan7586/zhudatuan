@@ -1,0 +1,2006 @@
+{
+  "schema_version": "e07-nontarget-transition-diff-v1",
+  "captured_at": "2026-09-13T21:15:54.507Z",
+  "target_node_ids": [
+    "node:e07-3aefaf82-l6:l6",
+    "node:e07-3aefaf82-l8:l8"
+  ],
+  "non_target_node_ids": [
+    "node:e07-3aefaf82-l3:l3",
+    "node:e07-3aefaf82-l11:l11"
+  ],
+  "comparisons": [
+    {
+      "node_id": "node:e07-3aefaf82-l3:l3",
+      "role": "non_target",
+      "before_upgrade": {
+        "context": {
+          "node_id": "node:e07-3aefaf82-l3:l3",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "realm_id": "realm:e07-3aefaf82-l3",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+          "status": "active",
+          "parent_node_id": "node:zhudatuan:l0",
+          "original_parent_node_id": "node:zhudatuan:l0",
+          "signed_level": "L3",
+          "host_sovereign_node_id": "node:zhudatuan:l0",
+          "relation_version": "1",
+          "realm_node_profile": "operating_mall",
+          "realm_mall_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+          "realm_host_node_id": "node:zhudatuan:l0",
+          "realm_host_node_profile": "operating_mall",
+          "realm_version": "1",
+          "membership_id": "membership:e07-3aefaf82-l3",
+          "account_id": "account:e07-3aefaf82-l3",
+          "membership_node_profile": "operating_mall",
+          "principal_id": "principal:e07-3aefaf82-l3",
+          "account_status": "active",
+          "principal_status": "active"
+        },
+        "current_lineage": [
+          "node:zhudatuan:l0",
+          "node:e07-3aefaf82-l3:l3"
+        ],
+        "relation_history": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e07-3aefaf82-l3:l3",
+            "parent_node_id": "node:zhudatuan:l0",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L3",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "current_closure": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:zhudatuan:l0",
+            "descendant_node_id": "node:e07-3aefaf82-l3:l3",
+            "depth": 1,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-l3:l3",
+            "descendant_node_id": "node:e07-3aefaf82-l3:l3",
+            "depth": 0,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "capability_history": [
+          {
+            "node_id": "node:e07-3aefaf82-l3:l3",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "1",
+            "capabilities": [
+              "consumer"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "consumer",
+            "relation_version": "1",
+            "source_operation_id": "sfl.node-capability.baseline",
+            "opening_id": null,
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "created_at": "2026-09-13T21:15:54.152Z"
+          },
+          {
+            "node_id": "node:e07-3aefaf82-l3:l3",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "2",
+            "capabilities": [
+              "consumer",
+              "operating_mall"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "operating_mall",
+            "relation_version": "1",
+            "source_operation_id": "member.malls.open",
+            "opening_id": "opening:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "effective_at": "2026-09-13T21:15:54.237Z",
+            "created_at": "2026-09-13T21:15:54.237Z"
+          }
+        ],
+        "provisioning_history": [
+          {
+            "idempotency_key": "seed:3aefaf82-l3",
+            "request_hash": "f437c362415c65d178b60e21ee66b040a1cdd0d3a4ca8feb016269e6853d4895",
+            "node_id": "node:e07-3aefaf82-l3:l3",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l3",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L3",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "requested_by": "e07-formal-fixture",
+            "trace_id": "e07:seed:3aefaf82-l3",
+            "created_at": "2026-09-13T21:15:54.153Z"
+          }
+        ],
+        "opening_history": [
+          {
+            "idempotency_key": "opening:e07:3aefaf82-l3",
+            "request_hash": "5c95db4e5c9d0ae5ca9ac003b7c2a1a7124da80ec3add45d6a153144b980d1bc",
+            "opening_id": "opening:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "business_number": "SFLMALL-555D19E80F1BBE4BDA51",
+            "node_id": "node:e07-3aefaf82-l3:l3",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l3",
+            "membership_id": "membership:e07-3aefaf82-l3",
+            "principal_id": "principal:e07-3aefaf82-l3",
+            "mall_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "operating_entity_id": "enterprise:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "parent_node_id": "node:zhudatuan:l0",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L3",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "sovereignty_tier": "hosted",
+            "node_profile": "operating_mall",
+            "capability_version": "2",
+            "relation_version": "1",
+            "mall_version": "1",
+            "entity_binding_version": "1",
+            "configuration_version": "1",
+            "payment_configuration_version": "1",
+            "status": "active",
+            "mall_name": "E07 L3 Mall",
+            "operating_entity_name": "E07 L3 Operating Entity",
+            "opened_at": "2026-09-13T21:15:54.237Z",
+            "trace_id": "e07:opening:node:e07-3aefaf82-l3:l3"
+          }
+        ],
+        "upgrade_history": [],
+        "change_history": [
+          {
+            "id": "change:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "organization_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "kind": "sfl.hosted_mall.opened",
+            "before_value": {
+              "mall_id": null,
+              "node_profile": "consumer",
+              "capability_version": 1
+            },
+            "after_value": {
+              "mall_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+              "node_profile": "operating_mall",
+              "capability_version": 2,
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "actor_id": "principal:e07-3aefaf82-l3",
+            "occurred_at": "2026-09-13T21:15:54.237Z"
+          }
+        ],
+        "outbox_history": [
+          {
+            "id": "outbox:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "event_type": "sfl.hosted_mall.opened",
+            "event_version": 1,
+            "aggregate_type": "node",
+            "aggregate_id": "node:e07-3aefaf82-l3:l3",
+            "scope_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "payload": {
+              "line_id": "line:zhudatuan:commerce:v1",
+              "mall_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+              "node_id": "node:e07-3aefaf82-l3:l3",
+              "realm_id": "realm:e07-3aefaf82-l3",
+              "opening_id": "opening:555d19e80f1bbe4bda51b9ec5256b2e2",
+              "node_profile": "operating_mall",
+              "signed_level": "L3",
+              "membership_id": "membership:e07-3aefaf82-l3",
+              "business_number": "SFLMALL-555D19E80F1BBE4BDA51",
+              "sovereignty_tier": "hosted",
+              "capability_version": 2,
+              "operating_entity_id": "enterprise:555d19e80f1bbe4bda51b9ec5256b2e2",
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "trace_id": "e07:opening:node:e07-3aefaf82-l3:l3",
+            "occurred_at": "2026-09-13T21:15:54.237Z",
+            "available_at": "2026-09-13T21:15:54.237Z",
+            "claimed_by": null,
+            "claim_until": null,
+            "attempts": 0,
+            "published_at": null,
+            "failed_at": null,
+            "error_code": null
+          }
+        ]
+      },
+      "after_upgrade": {
+        "context": {
+          "node_id": "node:e07-3aefaf82-l3:l3",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "realm_id": "realm:e07-3aefaf82-l3",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+          "status": "active",
+          "parent_node_id": "node:zhudatuan:l0",
+          "original_parent_node_id": "node:zhudatuan:l0",
+          "signed_level": "L3",
+          "host_sovereign_node_id": "node:zhudatuan:l0",
+          "relation_version": "1",
+          "realm_node_profile": "operating_mall",
+          "realm_mall_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+          "realm_host_node_id": "node:zhudatuan:l0",
+          "realm_host_node_profile": "operating_mall",
+          "realm_version": "1",
+          "membership_id": "membership:e07-3aefaf82-l3",
+          "account_id": "account:e07-3aefaf82-l3",
+          "membership_node_profile": "operating_mall",
+          "principal_id": "principal:e07-3aefaf82-l3",
+          "account_status": "active",
+          "principal_status": "active"
+        },
+        "current_lineage": [
+          "node:zhudatuan:l0",
+          "node:e07-3aefaf82-l3:l3"
+        ],
+        "relation_history": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e07-3aefaf82-l3:l3",
+            "parent_node_id": "node:zhudatuan:l0",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L3",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "current_closure": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:zhudatuan:l0",
+            "descendant_node_id": "node:e07-3aefaf82-l3:l3",
+            "depth": 1,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-l3:l3",
+            "descendant_node_id": "node:e07-3aefaf82-l3:l3",
+            "depth": 0,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "capability_history": [
+          {
+            "node_id": "node:e07-3aefaf82-l3:l3",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "1",
+            "capabilities": [
+              "consumer"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "consumer",
+            "relation_version": "1",
+            "source_operation_id": "sfl.node-capability.baseline",
+            "opening_id": null,
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "created_at": "2026-09-13T21:15:54.152Z"
+          },
+          {
+            "node_id": "node:e07-3aefaf82-l3:l3",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "2",
+            "capabilities": [
+              "consumer",
+              "operating_mall"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "operating_mall",
+            "relation_version": "1",
+            "source_operation_id": "member.malls.open",
+            "opening_id": "opening:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "effective_at": "2026-09-13T21:15:54.237Z",
+            "created_at": "2026-09-13T21:15:54.237Z"
+          }
+        ],
+        "provisioning_history": [
+          {
+            "idempotency_key": "seed:3aefaf82-l3",
+            "request_hash": "f437c362415c65d178b60e21ee66b040a1cdd0d3a4ca8feb016269e6853d4895",
+            "node_id": "node:e07-3aefaf82-l3:l3",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l3",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L3",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "requested_by": "e07-formal-fixture",
+            "trace_id": "e07:seed:3aefaf82-l3",
+            "created_at": "2026-09-13T21:15:54.153Z"
+          }
+        ],
+        "opening_history": [
+          {
+            "idempotency_key": "opening:e07:3aefaf82-l3",
+            "request_hash": "5c95db4e5c9d0ae5ca9ac003b7c2a1a7124da80ec3add45d6a153144b980d1bc",
+            "opening_id": "opening:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "business_number": "SFLMALL-555D19E80F1BBE4BDA51",
+            "node_id": "node:e07-3aefaf82-l3:l3",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l3",
+            "membership_id": "membership:e07-3aefaf82-l3",
+            "principal_id": "principal:e07-3aefaf82-l3",
+            "mall_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "operating_entity_id": "enterprise:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "parent_node_id": "node:zhudatuan:l0",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L3",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "sovereignty_tier": "hosted",
+            "node_profile": "operating_mall",
+            "capability_version": "2",
+            "relation_version": "1",
+            "mall_version": "1",
+            "entity_binding_version": "1",
+            "configuration_version": "1",
+            "payment_configuration_version": "1",
+            "status": "active",
+            "mall_name": "E07 L3 Mall",
+            "operating_entity_name": "E07 L3 Operating Entity",
+            "opened_at": "2026-09-13T21:15:54.237Z",
+            "trace_id": "e07:opening:node:e07-3aefaf82-l3:l3"
+          }
+        ],
+        "upgrade_history": [],
+        "change_history": [
+          {
+            "id": "change:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "organization_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "kind": "sfl.hosted_mall.opened",
+            "before_value": {
+              "mall_id": null,
+              "node_profile": "consumer",
+              "capability_version": 1
+            },
+            "after_value": {
+              "mall_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+              "node_profile": "operating_mall",
+              "capability_version": 2,
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "actor_id": "principal:e07-3aefaf82-l3",
+            "occurred_at": "2026-09-13T21:15:54.237Z"
+          }
+        ],
+        "outbox_history": [
+          {
+            "id": "outbox:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "event_type": "sfl.hosted_mall.opened",
+            "event_version": 1,
+            "aggregate_type": "node",
+            "aggregate_id": "node:e07-3aefaf82-l3:l3",
+            "scope_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+            "payload": {
+              "line_id": "line:zhudatuan:commerce:v1",
+              "mall_id": "mall:555d19e80f1bbe4bda51b9ec5256b2e2",
+              "node_id": "node:e07-3aefaf82-l3:l3",
+              "realm_id": "realm:e07-3aefaf82-l3",
+              "opening_id": "opening:555d19e80f1bbe4bda51b9ec5256b2e2",
+              "node_profile": "operating_mall",
+              "signed_level": "L3",
+              "membership_id": "membership:e07-3aefaf82-l3",
+              "business_number": "SFLMALL-555D19E80F1BBE4BDA51",
+              "sovereignty_tier": "hosted",
+              "capability_version": 2,
+              "operating_entity_id": "enterprise:555d19e80f1bbe4bda51b9ec5256b2e2",
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "trace_id": "e07:opening:node:e07-3aefaf82-l3:l3",
+            "occurred_at": "2026-09-13T21:15:54.237Z",
+            "available_at": "2026-09-13T21:15:54.237Z",
+            "claimed_by": null,
+            "claim_until": null,
+            "attempts": 0,
+            "published_at": null,
+            "failed_at": null,
+            "error_code": null
+          }
+        ]
+      },
+      "before_upgrade_sha256": "sha256:c3ed20270dedf5e1590ad20eeca99adc1160a677c9415fa7ee22b78bd0b5391f",
+      "after_upgrade_sha256": "sha256:c3ed20270dedf5e1590ad20eeca99adc1160a677c9415fa7ee22b78bd0b5391f"
+    },
+    {
+      "node_id": "node:e07-3aefaf82-l6:l6",
+      "role": "target",
+      "before_upgrade": {
+        "context": {
+          "node_id": "node:e07-3aefaf82-l6:l6",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "realm_id": "realm:e07-3aefaf82-l6",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+          "status": "active",
+          "parent_node_id": "node:zhudatuan:l0",
+          "original_parent_node_id": "node:zhudatuan:l0",
+          "signed_level": "L6",
+          "host_sovereign_node_id": "node:zhudatuan:l0",
+          "relation_version": "1",
+          "realm_node_profile": "operating_mall",
+          "realm_mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+          "realm_host_node_id": "node:zhudatuan:l0",
+          "realm_host_node_profile": "operating_mall",
+          "realm_version": "1",
+          "membership_id": "membership:e07-3aefaf82-l6",
+          "account_id": "account:e07-3aefaf82-l6",
+          "membership_node_profile": "operating_mall",
+          "principal_id": "principal:e07-3aefaf82-l6",
+          "account_status": "active",
+          "principal_status": "active"
+        },
+        "current_lineage": [
+          "node:zhudatuan:l0",
+          "node:e07-3aefaf82-l6:l6"
+        ],
+        "relation_history": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "parent_node_id": "node:zhudatuan:l0",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "current_closure": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:zhudatuan:l0",
+            "descendant_node_id": "node:e07-3aefaf82-l6:l6",
+            "depth": 1,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-l6:l6",
+            "descendant_node_id": "node:e07-3aefaf82-l6:l6",
+            "depth": 0,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "capability_history": [
+          {
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "1",
+            "capabilities": [
+              "consumer"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "consumer",
+            "relation_version": "1",
+            "source_operation_id": "sfl.node-capability.baseline",
+            "opening_id": null,
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "created_at": "2026-09-13T21:15:54.170Z"
+          },
+          {
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "2",
+            "capabilities": [
+              "consumer",
+              "operating_mall"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "operating_mall",
+            "relation_version": "1",
+            "source_operation_id": "member.malls.open",
+            "opening_id": "opening:43cb62c13e7f56f7636a6a0ab3eace33",
+            "effective_at": "2026-09-13T21:15:54.248Z",
+            "created_at": "2026-09-13T21:15:54.248Z"
+          }
+        ],
+        "provisioning_history": [
+          {
+            "idempotency_key": "seed:3aefaf82-l6",
+            "request_hash": "0528d305fa5bb0db279d0638291d9a49653a05522c2f841bd25dd6d9eabd229b",
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l6",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "requested_by": "e07-formal-fixture",
+            "trace_id": "e07:seed:3aefaf82-l6",
+            "created_at": "2026-09-13T21:15:54.170Z"
+          }
+        ],
+        "opening_history": [
+          {
+            "idempotency_key": "opening:e07:3aefaf82-l6",
+            "request_hash": "c41572f4e949cb0ea82c25c476e4e73982b74d5ea56d5354bf3cf0b5d48cfd86",
+            "opening_id": "opening:43cb62c13e7f56f7636a6a0ab3eace33",
+            "business_number": "SFLMALL-43CB62C13E7F56F7636A",
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l6",
+            "membership_id": "membership:e07-3aefaf82-l6",
+            "principal_id": "principal:e07-3aefaf82-l6",
+            "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+            "operating_entity_id": "enterprise:43cb62c13e7f56f7636a6a0ab3eace33",
+            "parent_node_id": "node:zhudatuan:l0",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "sovereignty_tier": "hosted",
+            "node_profile": "operating_mall",
+            "capability_version": "2",
+            "relation_version": "1",
+            "mall_version": "1",
+            "entity_binding_version": "1",
+            "configuration_version": "1",
+            "payment_configuration_version": "1",
+            "status": "active",
+            "mall_name": "E07 L6 Mall",
+            "operating_entity_name": "E07 L6 Operating Entity",
+            "opened_at": "2026-09-13T21:15:54.248Z",
+            "trace_id": "e07:opening:node:e07-3aefaf82-l6:l6"
+          }
+        ],
+        "upgrade_history": [],
+        "change_history": [
+          {
+            "id": "change:43cb62c13e7f56f7636a6a0ab3eace33",
+            "organization_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+            "kind": "sfl.hosted_mall.opened",
+            "before_value": {
+              "mall_id": null,
+              "node_profile": "consumer",
+              "capability_version": 1
+            },
+            "after_value": {
+              "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+              "node_profile": "operating_mall",
+              "capability_version": 2,
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "actor_id": "principal:e07-3aefaf82-l6",
+            "occurred_at": "2026-09-13T21:15:54.248Z"
+          }
+        ],
+        "outbox_history": [
+          {
+            "id": "outbox:43cb62c13e7f56f7636a6a0ab3eace33",
+            "event_type": "sfl.hosted_mall.opened",
+            "event_version": 1,
+            "aggregate_type": "node",
+            "aggregate_id": "node:e07-3aefaf82-l6:l6",
+            "scope_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+            "payload": {
+              "line_id": "line:zhudatuan:commerce:v1",
+              "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+              "node_id": "node:e07-3aefaf82-l6:l6",
+              "realm_id": "realm:e07-3aefaf82-l6",
+              "opening_id": "opening:43cb62c13e7f56f7636a6a0ab3eace33",
+              "node_profile": "operating_mall",
+              "signed_level": "L6",
+              "membership_id": "membership:e07-3aefaf82-l6",
+              "business_number": "SFLMALL-43CB62C13E7F56F7636A",
+              "sovereignty_tier": "hosted",
+              "capability_version": 2,
+              "operating_entity_id": "enterprise:43cb62c13e7f56f7636a6a0ab3eace33",
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "trace_id": "e07:opening:node:e07-3aefaf82-l6:l6",
+            "occurred_at": "2026-09-13T21:15:54.248Z",
+            "available_at": "2026-09-13T21:15:54.248Z",
+            "claimed_by": null,
+            "claim_until": null,
+            "attempts": 0,
+            "published_at": null,
+            "failed_at": null,
+            "error_code": null
+          }
+        ]
+      },
+      "after_upgrade": {
+        "context": {
+          "node_id": "node:e07-3aefaf82-l6:l6",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "realm_id": "realm:e07-3aefaf82-l6",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+          "status": "active",
+          "parent_node_id": "node:zhudatuan:l0",
+          "original_parent_node_id": "node:zhudatuan:l0",
+          "signed_level": "L6",
+          "host_sovereign_node_id": "node:e07-3aefaf82-l6:l6",
+          "relation_version": "2",
+          "realm_node_profile": "operating_mall",
+          "realm_mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+          "realm_host_node_id": null,
+          "realm_host_node_profile": null,
+          "realm_version": "2",
+          "membership_id": "membership:e07-3aefaf82-l6",
+          "account_id": "account:e07-3aefaf82-l6",
+          "membership_node_profile": "operating_mall",
+          "principal_id": "principal:e07-3aefaf82-l6",
+          "account_status": "active",
+          "principal_status": "active"
+        },
+        "current_lineage": [
+          "node:zhudatuan:l0",
+          "node:e07-3aefaf82-l6:l6"
+        ],
+        "relation_history": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "parent_node_id": "node:zhudatuan:l0",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": "2026-09-13T21:15:54.290Z"
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "parent_node_id": "node:zhudatuan:l0",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "host_sovereign_node_id": "node:e07-3aefaf82-l6:l6",
+            "relation_version": "2",
+            "effective_at": "2026-09-13T21:15:54.290Z",
+            "superseded_at": null
+          }
+        ],
+        "current_closure": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:zhudatuan:l0",
+            "descendant_node_id": "node:e07-3aefaf82-l6:l6",
+            "depth": 1,
+            "descendant_relation_version": "2",
+            "effective_at": "2026-09-13T21:15:54.290Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-l6:l6",
+            "descendant_node_id": "node:e07-3aefaf82-l6:l6",
+            "depth": 0,
+            "descendant_relation_version": "2",
+            "effective_at": "2026-09-13T21:15:54.290Z",
+            "superseded_at": null
+          }
+        ],
+        "capability_history": [
+          {
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "1",
+            "capabilities": [
+              "consumer"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "consumer",
+            "relation_version": "1",
+            "source_operation_id": "sfl.node-capability.baseline",
+            "opening_id": null,
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "created_at": "2026-09-13T21:15:54.170Z"
+          },
+          {
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "2",
+            "capabilities": [
+              "consumer",
+              "operating_mall"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "operating_mall",
+            "relation_version": "1",
+            "source_operation_id": "member.malls.open",
+            "opening_id": "opening:43cb62c13e7f56f7636a6a0ab3eace33",
+            "effective_at": "2026-09-13T21:15:54.248Z",
+            "created_at": "2026-09-13T21:15:54.248Z"
+          }
+        ],
+        "provisioning_history": [
+          {
+            "idempotency_key": "seed:3aefaf82-l6",
+            "request_hash": "0528d305fa5bb0db279d0638291d9a49653a05522c2f841bd25dd6d9eabd229b",
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l6",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "requested_by": "e07-formal-fixture",
+            "trace_id": "e07:seed:3aefaf82-l6",
+            "created_at": "2026-09-13T21:15:54.170Z"
+          }
+        ],
+        "opening_history": [
+          {
+            "idempotency_key": "opening:e07:3aefaf82-l6",
+            "request_hash": "c41572f4e949cb0ea82c25c476e4e73982b74d5ea56d5354bf3cf0b5d48cfd86",
+            "opening_id": "opening:43cb62c13e7f56f7636a6a0ab3eace33",
+            "business_number": "SFLMALL-43CB62C13E7F56F7636A",
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l6",
+            "membership_id": "membership:e07-3aefaf82-l6",
+            "principal_id": "principal:e07-3aefaf82-l6",
+            "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+            "operating_entity_id": "enterprise:43cb62c13e7f56f7636a6a0ab3eace33",
+            "parent_node_id": "node:zhudatuan:l0",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "sovereignty_tier": "hosted",
+            "node_profile": "operating_mall",
+            "capability_version": "2",
+            "relation_version": "1",
+            "mall_version": "1",
+            "entity_binding_version": "1",
+            "configuration_version": "1",
+            "payment_configuration_version": "1",
+            "status": "active",
+            "mall_name": "E07 L6 Mall",
+            "operating_entity_name": "E07 L6 Operating Entity",
+            "opened_at": "2026-09-13T21:15:54.248Z",
+            "trace_id": "e07:opening:node:e07-3aefaf82-l6:l6"
+          }
+        ],
+        "upgrade_history": [
+          {
+            "idempotency_key": "sovereign-upgrade:e07:3aefaf82-l6",
+            "request_hash": "d33d68820b5793ea5b8f9abda960f279f12a6c99cd996171234f5662ee47d075",
+            "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+            "business_number": "SFLSOV-0BC090AB6BA1630C3DC6",
+            "node_id": "node:e07-3aefaf82-l6:l6",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l6",
+            "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+            "operating_entity_id": "enterprise:43cb62c13e7f56f7636a6a0ab3eace33",
+            "membership_id": "membership:e07-3aefaf82-l6",
+            "principal_id": "principal:e07-3aefaf82-l6",
+            "parent_node_id": "node:zhudatuan:l0",
+            "original_parent_node_id": "node:zhudatuan:l0",
+            "signed_level": "L6",
+            "previous_host_sovereign_node_id": "node:zhudatuan:l0",
+            "previous_relation_version": "1",
+            "active_relation_version": "2",
+            "source_tier": "hosted",
+            "target_tier": "sovereign",
+            "node_profile": "operating_mall",
+            "status": "upgraded",
+            "sovereignty_version": "1",
+            "domain_binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+            "domain_binding_set_version": "1",
+            "resource_binding_set_id": "resource-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+            "resource_binding_version": "1",
+            "manifest_id": "node-manifest:0bc090ab6ba1630c3dc687f40de47054",
+            "manifest_version": "1",
+            "manifest_digest": "sha256:09921636e929584a7b7caedd7cf8701b39eec8fbb29a764a598023b5a21e281f",
+            "manifest_summary": {
+              "surface_count": 5,
+              "schema_version": "sfl.node-manifest.sovereign.v2",
+              "release_pointer_ref": null,
+              "domain_binding_set_id": "domain-binding-set:0bc090ab6ba1630c3dc687f40de47054",
+              "resource_binding_set_id": "resource-binding-set:0bc090ab6ba1630c3dc687f40de47054"
+            },
+            "recoverable": true,
+            "upgraded_at": "2026-09-13T21:15:54.290Z",
+            "rolled_back_at": null,
+            "rollback_reason": null,
+            "trace_id": "e07:upgrade:node:e07-3aefaf82-l6:l6"
+          }
+        ],
+        "change_history": [
+          {
+            "id": "change:43cb62c13e7f56f7636a6a0ab3eace33",
+            "organization_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+            "kind": "sfl.hosted_mall.opened",
+            "before_value": {
+              "mall_id": null,
+              "node_profile": "consumer",
+              "capability_version": 1
+            },
+            "after_value": {
+              "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+              "node_profile": "operating_mall",
+              "capability_version": 2,
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "actor_id": "principal:e07-3aefaf82-l6",
+            "occurred_at": "2026-09-13T21:15:54.248Z"
+          },
+          {
+            "id": "change:0bc090ab6ba1630c3dc687f40de47054",
+            "organization_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+            "kind": "sfl.node.sovereignty_upgraded",
+            "before_value": {
+              "relation_version": 1,
+              "sovereignty_tier": "hosted",
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "after_value": {
+              "manifest_digest": "sha256:09921636e929584a7b7caedd7cf8701b39eec8fbb29a764a598023b5a21e281f",
+              "relation_version": 2,
+              "sovereignty_tier": "sovereign",
+              "host_sovereign_node_id": "node:e07-3aefaf82-l6:l6"
+            },
+            "actor_id": "principal:e07-3aefaf82-l6",
+            "occurred_at": "2026-09-13T21:15:54.290Z"
+          }
+        ],
+        "outbox_history": [
+          {
+            "id": "outbox:43cb62c13e7f56f7636a6a0ab3eace33",
+            "event_type": "sfl.hosted_mall.opened",
+            "event_version": 1,
+            "aggregate_type": "node",
+            "aggregate_id": "node:e07-3aefaf82-l6:l6",
+            "scope_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+            "payload": {
+              "line_id": "line:zhudatuan:commerce:v1",
+              "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+              "node_id": "node:e07-3aefaf82-l6:l6",
+              "realm_id": "realm:e07-3aefaf82-l6",
+              "opening_id": "opening:43cb62c13e7f56f7636a6a0ab3eace33",
+              "node_profile": "operating_mall",
+              "signed_level": "L6",
+              "membership_id": "membership:e07-3aefaf82-l6",
+              "business_number": "SFLMALL-43CB62C13E7F56F7636A",
+              "sovereignty_tier": "hosted",
+              "capability_version": 2,
+              "operating_entity_id": "enterprise:43cb62c13e7f56f7636a6a0ab3eace33",
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "trace_id": "e07:opening:node:e07-3aefaf82-l6:l6",
+            "occurred_at": "2026-09-13T21:15:54.248Z",
+            "available_at": "2026-09-13T21:15:54.248Z",
+            "claimed_by": null,
+            "claim_until": null,
+            "attempts": 0,
+            "published_at": null,
+            "failed_at": null,
+            "error_code": null
+          },
+          {
+            "id": "outbox:0bc090ab6ba1630c3dc687f40de47054",
+            "event_type": "sfl.node.sovereignty_upgraded",
+            "event_version": 1,
+            "aggregate_type": "node",
+            "aggregate_id": "node:e07-3aefaf82-l6:l6",
+            "scope_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+            "payload": {
+              "mall_id": "mall:43cb62c13e7f56f7636a6a0ab3eace33",
+              "node_id": "node:e07-3aefaf82-l6:l6",
+              "realm_id": "realm:e07-3aefaf82-l6",
+              "upgrade_id": "sovereign-upgrade:0bc090ab6ba1630c3dc687f40de47054",
+              "manifest_id": "node-manifest:0bc090ab6ba1630c3dc687f40de47054",
+              "source_tier": "hosted",
+              "target_tier": "sovereign",
+              "business_number": "SFLSOV-0BC090AB6BA1630C3DC6",
+              "manifest_digest": "sha256:09921636e929584a7b7caedd7cf8701b39eec8fbb29a764a598023b5a21e281f",
+              "resource_binding_set_id": "resource-binding-set:0bc090ab6ba1630c3dc687f40de47054"
+            },
+            "trace_id": "e07:upgrade:node:e07-3aefaf82-l6:l6",
+            "occurred_at": "2026-09-13T21:15:54.290Z",
+            "available_at": "2026-09-13T21:15:54.290Z",
+            "claimed_by": null,
+            "claim_until": null,
+            "attempts": 0,
+            "published_at": null,
+            "failed_at": null,
+            "error_code": null
+          }
+        ]
+      },
+      "before_upgrade_sha256": "sha256:42cfcad7167c57b2ff6ad91149d4d715590075918922ec280cd9c899d5516a15",
+      "after_upgrade_sha256": "sha256:6cbc62b0eff136fb236b3036270c6bf3d4ab14d9b80d88c598f60909f27c349b"
+    },
+    {
+      "node_id": "node:e07-3aefaf82-l8:l8",
+      "role": "target",
+      "before_upgrade": {
+        "context": {
+          "node_id": "node:e07-3aefaf82-l8:l8",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "realm_id": "realm:e07-3aefaf82-l8",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+          "status": "active",
+          "parent_node_id": "node:e07-3aefaf82-parent:l7",
+          "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+          "signed_level": "L8",
+          "host_sovereign_node_id": "node:zhudatuan:l0",
+          "relation_version": "1",
+          "realm_node_profile": "operating_mall",
+          "realm_mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+          "realm_host_node_id": "node:zhudatuan:l0",
+          "realm_host_node_profile": "operating_mall",
+          "realm_version": "1",
+          "membership_id": "membership:e07-3aefaf82-l8",
+          "account_id": "account:e07-3aefaf82-l8",
+          "membership_node_profile": "operating_mall",
+          "principal_id": "principal:e07-3aefaf82-l8",
+          "account_status": "active",
+          "principal_status": "active"
+        },
+        "current_lineage": [
+          "node:zhudatuan:l0",
+          "node:e07-3aefaf82-parent:l6",
+          "node:e07-3aefaf82-parent:l7",
+          "node:e07-3aefaf82-l8:l8"
+        ],
+        "relation_history": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "signed_level": "L8",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "current_closure": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:zhudatuan:l0",
+            "descendant_node_id": "node:e07-3aefaf82-l8:l8",
+            "depth": 3,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l6",
+            "descendant_node_id": "node:e07-3aefaf82-l8:l8",
+            "depth": 2,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l7",
+            "descendant_node_id": "node:e07-3aefaf82-l8:l8",
+            "depth": 1,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-l8:l8",
+            "descendant_node_id": "node:e07-3aefaf82-l8:l8",
+            "depth": 0,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "capability_history": [
+          {
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "1",
+            "capabilities": [
+              "consumer"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "consumer",
+            "relation_version": "1",
+            "source_operation_id": "sfl.node-capability.baseline",
+            "opening_id": null,
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "created_at": "2026-09-13T21:15:54.177Z"
+          },
+          {
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "2",
+            "capabilities": [
+              "consumer",
+              "operating_mall"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "operating_mall",
+            "relation_version": "1",
+            "source_operation_id": "member.malls.open",
+            "opening_id": "opening:8222d6a18ddb9056a06abf95a3a2e321",
+            "effective_at": "2026-09-13T21:15:54.255Z",
+            "created_at": "2026-09-13T21:15:54.255Z"
+          }
+        ],
+        "provisioning_history": [
+          {
+            "idempotency_key": "seed:3aefaf82-l8",
+            "request_hash": "d64bf790d67ec3e3ea94d3ddc853599569f34cd0de801cd8e722eb9fd58f5364",
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l8",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "signed_level": "L8",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "requested_by": "e07-formal-fixture",
+            "trace_id": "e07:seed:3aefaf82-l8",
+            "created_at": "2026-09-13T21:15:54.178Z"
+          }
+        ],
+        "opening_history": [
+          {
+            "idempotency_key": "opening:e07:3aefaf82-l8",
+            "request_hash": "e713de7aa144ce2e0fcae33ad681562918f860de2215f466b04bb5d16f255cde",
+            "opening_id": "opening:8222d6a18ddb9056a06abf95a3a2e321",
+            "business_number": "SFLMALL-8222D6A18DDB9056A06A",
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l8",
+            "membership_id": "membership:e07-3aefaf82-l8",
+            "principal_id": "principal:e07-3aefaf82-l8",
+            "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+            "operating_entity_id": "enterprise:8222d6a18ddb9056a06abf95a3a2e321",
+            "parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "signed_level": "L8",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "sovereignty_tier": "hosted",
+            "node_profile": "operating_mall",
+            "capability_version": "2",
+            "relation_version": "1",
+            "mall_version": "1",
+            "entity_binding_version": "1",
+            "configuration_version": "1",
+            "payment_configuration_version": "1",
+            "status": "active",
+            "mall_name": "E07 L8 Mall",
+            "operating_entity_name": "E07 L8 Operating Entity",
+            "opened_at": "2026-09-13T21:15:54.255Z",
+            "trace_id": "e07:opening:node:e07-3aefaf82-l8:l8"
+          }
+        ],
+        "upgrade_history": [],
+        "change_history": [
+          {
+            "id": "change:8222d6a18ddb9056a06abf95a3a2e321",
+            "organization_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+            "kind": "sfl.hosted_mall.opened",
+            "before_value": {
+              "mall_id": null,
+              "node_profile": "consumer",
+              "capability_version": 1
+            },
+            "after_value": {
+              "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+              "node_profile": "operating_mall",
+              "capability_version": 2,
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "actor_id": "principal:e07-3aefaf82-l8",
+            "occurred_at": "2026-09-13T21:15:54.255Z"
+          }
+        ],
+        "outbox_history": [
+          {
+            "id": "outbox:8222d6a18ddb9056a06abf95a3a2e321",
+            "event_type": "sfl.hosted_mall.opened",
+            "event_version": 1,
+            "aggregate_type": "node",
+            "aggregate_id": "node:e07-3aefaf82-l8:l8",
+            "scope_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+            "payload": {
+              "line_id": "line:zhudatuan:commerce:v1",
+              "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+              "node_id": "node:e07-3aefaf82-l8:l8",
+              "realm_id": "realm:e07-3aefaf82-l8",
+              "opening_id": "opening:8222d6a18ddb9056a06abf95a3a2e321",
+              "node_profile": "operating_mall",
+              "signed_level": "L8",
+              "membership_id": "membership:e07-3aefaf82-l8",
+              "business_number": "SFLMALL-8222D6A18DDB9056A06A",
+              "sovereignty_tier": "hosted",
+              "capability_version": 2,
+              "operating_entity_id": "enterprise:8222d6a18ddb9056a06abf95a3a2e321",
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "trace_id": "e07:opening:node:e07-3aefaf82-l8:l8",
+            "occurred_at": "2026-09-13T21:15:54.255Z",
+            "available_at": "2026-09-13T21:15:54.255Z",
+            "claimed_by": null,
+            "claim_until": null,
+            "attempts": 0,
+            "published_at": null,
+            "failed_at": null,
+            "error_code": null
+          }
+        ]
+      },
+      "after_upgrade": {
+        "context": {
+          "node_id": "node:e07-3aefaf82-l8:l8",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "realm_id": "realm:e07-3aefaf82-l8",
+          "sovereignty_tier": "sovereign",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+          "status": "active",
+          "parent_node_id": "node:e07-3aefaf82-parent:l7",
+          "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+          "signed_level": "L8",
+          "host_sovereign_node_id": "node:e07-3aefaf82-l8:l8",
+          "relation_version": "2",
+          "realm_node_profile": "operating_mall",
+          "realm_mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+          "realm_host_node_id": null,
+          "realm_host_node_profile": null,
+          "realm_version": "2",
+          "membership_id": "membership:e07-3aefaf82-l8",
+          "account_id": "account:e07-3aefaf82-l8",
+          "membership_node_profile": "operating_mall",
+          "principal_id": "principal:e07-3aefaf82-l8",
+          "account_status": "active",
+          "principal_status": "active"
+        },
+        "current_lineage": [
+          "node:zhudatuan:l0",
+          "node:e07-3aefaf82-parent:l6",
+          "node:e07-3aefaf82-parent:l7",
+          "node:e07-3aefaf82-l8:l8"
+        ],
+        "relation_history": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "signed_level": "L8",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": "2026-09-13T21:15:54.302Z"
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "signed_level": "L8",
+            "host_sovereign_node_id": "node:e07-3aefaf82-l8:l8",
+            "relation_version": "2",
+            "effective_at": "2026-09-13T21:15:54.302Z",
+            "superseded_at": null
+          }
+        ],
+        "current_closure": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:zhudatuan:l0",
+            "descendant_node_id": "node:e07-3aefaf82-l8:l8",
+            "depth": 3,
+            "descendant_relation_version": "2",
+            "effective_at": "2026-09-13T21:15:54.302Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l6",
+            "descendant_node_id": "node:e07-3aefaf82-l8:l8",
+            "depth": 2,
+            "descendant_relation_version": "2",
+            "effective_at": "2026-09-13T21:15:54.302Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l7",
+            "descendant_node_id": "node:e07-3aefaf82-l8:l8",
+            "depth": 1,
+            "descendant_relation_version": "2",
+            "effective_at": "2026-09-13T21:15:54.302Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-l8:l8",
+            "descendant_node_id": "node:e07-3aefaf82-l8:l8",
+            "depth": 0,
+            "descendant_relation_version": "2",
+            "effective_at": "2026-09-13T21:15:54.302Z",
+            "superseded_at": null
+          }
+        ],
+        "capability_history": [
+          {
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "1",
+            "capabilities": [
+              "consumer"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "consumer",
+            "relation_version": "1",
+            "source_operation_id": "sfl.node-capability.baseline",
+            "opening_id": null,
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "created_at": "2026-09-13T21:15:54.177Z"
+          },
+          {
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "2",
+            "capabilities": [
+              "consumer",
+              "operating_mall"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "operating_mall",
+            "relation_version": "1",
+            "source_operation_id": "member.malls.open",
+            "opening_id": "opening:8222d6a18ddb9056a06abf95a3a2e321",
+            "effective_at": "2026-09-13T21:15:54.255Z",
+            "created_at": "2026-09-13T21:15:54.255Z"
+          }
+        ],
+        "provisioning_history": [
+          {
+            "idempotency_key": "seed:3aefaf82-l8",
+            "request_hash": "d64bf790d67ec3e3ea94d3ddc853599569f34cd0de801cd8e722eb9fd58f5364",
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l8",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "signed_level": "L8",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "requested_by": "e07-formal-fixture",
+            "trace_id": "e07:seed:3aefaf82-l8",
+            "created_at": "2026-09-13T21:15:54.178Z"
+          }
+        ],
+        "opening_history": [
+          {
+            "idempotency_key": "opening:e07:3aefaf82-l8",
+            "request_hash": "e713de7aa144ce2e0fcae33ad681562918f860de2215f466b04bb5d16f255cde",
+            "opening_id": "opening:8222d6a18ddb9056a06abf95a3a2e321",
+            "business_number": "SFLMALL-8222D6A18DDB9056A06A",
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l8",
+            "membership_id": "membership:e07-3aefaf82-l8",
+            "principal_id": "principal:e07-3aefaf82-l8",
+            "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+            "operating_entity_id": "enterprise:8222d6a18ddb9056a06abf95a3a2e321",
+            "parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "signed_level": "L8",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "sovereignty_tier": "hosted",
+            "node_profile": "operating_mall",
+            "capability_version": "2",
+            "relation_version": "1",
+            "mall_version": "1",
+            "entity_binding_version": "1",
+            "configuration_version": "1",
+            "payment_configuration_version": "1",
+            "status": "active",
+            "mall_name": "E07 L8 Mall",
+            "operating_entity_name": "E07 L8 Operating Entity",
+            "opened_at": "2026-09-13T21:15:54.255Z",
+            "trace_id": "e07:opening:node:e07-3aefaf82-l8:l8"
+          }
+        ],
+        "upgrade_history": [
+          {
+            "idempotency_key": "sovereign-upgrade:e07:3aefaf82-l8",
+            "request_hash": "890ce1c320db0b6897f469129b744c4c49792f0b15d318234d299cc2685e4187",
+            "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+            "business_number": "SFLSOV-99C29C8135210C7BA720",
+            "node_id": "node:e07-3aefaf82-l8:l8",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l8",
+            "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+            "operating_entity_id": "enterprise:8222d6a18ddb9056a06abf95a3a2e321",
+            "membership_id": "membership:e07-3aefaf82-l8",
+            "principal_id": "principal:e07-3aefaf82-l8",
+            "parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l7",
+            "signed_level": "L8",
+            "previous_host_sovereign_node_id": "node:zhudatuan:l0",
+            "previous_relation_version": "1",
+            "active_relation_version": "2",
+            "source_tier": "hosted",
+            "target_tier": "sovereign",
+            "node_profile": "operating_mall",
+            "status": "upgraded",
+            "sovereignty_version": "1",
+            "domain_binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+            "domain_binding_set_version": "1",
+            "resource_binding_set_id": "resource-binding-set:99c29c8135210c7ba72063eebf24200b",
+            "resource_binding_version": "1",
+            "manifest_id": "node-manifest:99c29c8135210c7ba72063eebf24200b",
+            "manifest_version": "1",
+            "manifest_digest": "sha256:8b4c7901de34ccf5db40d2d999b6b25db017782fae1b8d8e1ecf347b522c15e1",
+            "manifest_summary": {
+              "surface_count": 5,
+              "schema_version": "sfl.node-manifest.sovereign.v2",
+              "release_pointer_ref": null,
+              "domain_binding_set_id": "domain-binding-set:99c29c8135210c7ba72063eebf24200b",
+              "resource_binding_set_id": "resource-binding-set:99c29c8135210c7ba72063eebf24200b"
+            },
+            "recoverable": true,
+            "upgraded_at": "2026-09-13T21:15:54.302Z",
+            "rolled_back_at": null,
+            "rollback_reason": null,
+            "trace_id": "e07:upgrade:node:e07-3aefaf82-l8:l8"
+          }
+        ],
+        "change_history": [
+          {
+            "id": "change:8222d6a18ddb9056a06abf95a3a2e321",
+            "organization_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+            "kind": "sfl.hosted_mall.opened",
+            "before_value": {
+              "mall_id": null,
+              "node_profile": "consumer",
+              "capability_version": 1
+            },
+            "after_value": {
+              "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+              "node_profile": "operating_mall",
+              "capability_version": 2,
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "actor_id": "principal:e07-3aefaf82-l8",
+            "occurred_at": "2026-09-13T21:15:54.255Z"
+          },
+          {
+            "id": "change:99c29c8135210c7ba72063eebf24200b",
+            "organization_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+            "kind": "sfl.node.sovereignty_upgraded",
+            "before_value": {
+              "relation_version": 1,
+              "sovereignty_tier": "hosted",
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "after_value": {
+              "manifest_digest": "sha256:8b4c7901de34ccf5db40d2d999b6b25db017782fae1b8d8e1ecf347b522c15e1",
+              "relation_version": 2,
+              "sovereignty_tier": "sovereign",
+              "host_sovereign_node_id": "node:e07-3aefaf82-l8:l8"
+            },
+            "actor_id": "principal:e07-3aefaf82-l8",
+            "occurred_at": "2026-09-13T21:15:54.302Z"
+          }
+        ],
+        "outbox_history": [
+          {
+            "id": "outbox:8222d6a18ddb9056a06abf95a3a2e321",
+            "event_type": "sfl.hosted_mall.opened",
+            "event_version": 1,
+            "aggregate_type": "node",
+            "aggregate_id": "node:e07-3aefaf82-l8:l8",
+            "scope_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+            "payload": {
+              "line_id": "line:zhudatuan:commerce:v1",
+              "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+              "node_id": "node:e07-3aefaf82-l8:l8",
+              "realm_id": "realm:e07-3aefaf82-l8",
+              "opening_id": "opening:8222d6a18ddb9056a06abf95a3a2e321",
+              "node_profile": "operating_mall",
+              "signed_level": "L8",
+              "membership_id": "membership:e07-3aefaf82-l8",
+              "business_number": "SFLMALL-8222D6A18DDB9056A06A",
+              "sovereignty_tier": "hosted",
+              "capability_version": 2,
+              "operating_entity_id": "enterprise:8222d6a18ddb9056a06abf95a3a2e321",
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "trace_id": "e07:opening:node:e07-3aefaf82-l8:l8",
+            "occurred_at": "2026-09-13T21:15:54.255Z",
+            "available_at": "2026-09-13T21:15:54.255Z",
+            "claimed_by": null,
+            "claim_until": null,
+            "attempts": 0,
+            "published_at": null,
+            "failed_at": null,
+            "error_code": null
+          },
+          {
+            "id": "outbox:99c29c8135210c7ba72063eebf24200b",
+            "event_type": "sfl.node.sovereignty_upgraded",
+            "event_version": 1,
+            "aggregate_type": "node",
+            "aggregate_id": "node:e07-3aefaf82-l8:l8",
+            "scope_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+            "payload": {
+              "mall_id": "mall:8222d6a18ddb9056a06abf95a3a2e321",
+              "node_id": "node:e07-3aefaf82-l8:l8",
+              "realm_id": "realm:e07-3aefaf82-l8",
+              "upgrade_id": "sovereign-upgrade:99c29c8135210c7ba72063eebf24200b",
+              "manifest_id": "node-manifest:99c29c8135210c7ba72063eebf24200b",
+              "source_tier": "hosted",
+              "target_tier": "sovereign",
+              "business_number": "SFLSOV-99C29C8135210C7BA720",
+              "manifest_digest": "sha256:8b4c7901de34ccf5db40d2d999b6b25db017782fae1b8d8e1ecf347b522c15e1",
+              "resource_binding_set_id": "resource-binding-set:99c29c8135210c7ba72063eebf24200b"
+            },
+            "trace_id": "e07:upgrade:node:e07-3aefaf82-l8:l8",
+            "occurred_at": "2026-09-13T21:15:54.302Z",
+            "available_at": "2026-09-13T21:15:54.302Z",
+            "claimed_by": null,
+            "claim_until": null,
+            "attempts": 0,
+            "published_at": null,
+            "failed_at": null,
+            "error_code": null
+          }
+        ]
+      },
+      "before_upgrade_sha256": "sha256:6cc3d4ec2cec8239becdbf833574f331ee8d710b7475c1518f36f4441aa7e16b",
+      "after_upgrade_sha256": "sha256:f1def7e0f0d139182c84d59d47709052a3a1eeb000d06c5ea4409919a2187a3c"
+    },
+    {
+      "node_id": "node:e07-3aefaf82-l11:l11",
+      "role": "non_target",
+      "before_upgrade": {
+        "context": {
+          "node_id": "node:e07-3aefaf82-l11:l11",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "realm_id": "realm:e07-3aefaf82-l11",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:8bbc8ec074782c288a24e425720e354e",
+          "status": "active",
+          "parent_node_id": "node:e07-3aefaf82-parent:l10",
+          "original_parent_node_id": "node:e07-3aefaf82-parent:l10",
+          "signed_level": "L11",
+          "host_sovereign_node_id": "node:zhudatuan:l0",
+          "relation_version": "1",
+          "realm_node_profile": "operating_mall",
+          "realm_mall_id": "mall:8bbc8ec074782c288a24e425720e354e",
+          "realm_host_node_id": "node:zhudatuan:l0",
+          "realm_host_node_profile": "operating_mall",
+          "realm_version": "1",
+          "membership_id": "membership:e07-3aefaf82-l11",
+          "account_id": "account:e07-3aefaf82-l11",
+          "membership_node_profile": "operating_mall",
+          "principal_id": "principal:e07-3aefaf82-l11",
+          "account_status": "active",
+          "principal_status": "active"
+        },
+        "current_lineage": [
+          "node:zhudatuan:l0",
+          "node:e07-3aefaf82-parent:l6",
+          "node:e07-3aefaf82-parent:l7",
+          "node:e07-3aefaf82-parent:l8",
+          "node:e07-3aefaf82-parent:l9",
+          "node:e07-3aefaf82-parent:l10",
+          "node:e07-3aefaf82-l11:l11"
+        ],
+        "relation_history": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e07-3aefaf82-l11:l11",
+            "parent_node_id": "node:e07-3aefaf82-parent:l10",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l10",
+            "signed_level": "L11",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "current_closure": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:zhudatuan:l0",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 6,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l6",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 5,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l7",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 4,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l8",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 3,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l9",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 2,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l10",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 1,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-l11:l11",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 0,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "capability_history": [
+          {
+            "node_id": "node:e07-3aefaf82-l11:l11",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "1",
+            "capabilities": [
+              "consumer"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "consumer",
+            "relation_version": "1",
+            "source_operation_id": "sfl.node-capability.baseline",
+            "opening_id": null,
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "created_at": "2026-09-13T21:15:54.184Z"
+          },
+          {
+            "node_id": "node:e07-3aefaf82-l11:l11",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "2",
+            "capabilities": [
+              "consumer",
+              "operating_mall"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "operating_mall",
+            "relation_version": "1",
+            "source_operation_id": "member.malls.open",
+            "opening_id": "opening:8bbc8ec074782c288a24e425720e354e",
+            "effective_at": "2026-09-13T21:15:54.262Z",
+            "created_at": "2026-09-13T21:15:54.262Z"
+          }
+        ],
+        "provisioning_history": [
+          {
+            "idempotency_key": "seed:3aefaf82-l11",
+            "request_hash": "83caa98dcd4c70cc4d8b453888587d5efde2a77a18980d2f4dbe90624cb229f8",
+            "node_id": "node:e07-3aefaf82-l11:l11",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l11",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "parent_node_id": "node:e07-3aefaf82-parent:l10",
+            "signed_level": "L11",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "requested_by": "e07-formal-fixture",
+            "trace_id": "e07:seed:3aefaf82-l11",
+            "created_at": "2026-09-13T21:15:54.184Z"
+          }
+        ],
+        "opening_history": [
+          {
+            "idempotency_key": "opening:e07:3aefaf82-l11",
+            "request_hash": "f865e7ae9f24357ed45f8b8b5c36d9017e9e8de9f8e067d6c0321eaed493eaba",
+            "opening_id": "opening:8bbc8ec074782c288a24e425720e354e",
+            "business_number": "SFLMALL-8BBC8EC074782C288A24",
+            "node_id": "node:e07-3aefaf82-l11:l11",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l11",
+            "membership_id": "membership:e07-3aefaf82-l11",
+            "principal_id": "principal:e07-3aefaf82-l11",
+            "mall_id": "mall:8bbc8ec074782c288a24e425720e354e",
+            "operating_entity_id": "enterprise:8bbc8ec074782c288a24e425720e354e",
+            "parent_node_id": "node:e07-3aefaf82-parent:l10",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l10",
+            "signed_level": "L11",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "sovereignty_tier": "hosted",
+            "node_profile": "operating_mall",
+            "capability_version": "2",
+            "relation_version": "1",
+            "mall_version": "1",
+            "entity_binding_version": "1",
+            "configuration_version": "1",
+            "payment_configuration_version": "1",
+            "status": "active",
+            "mall_name": "E07 L11 Mall",
+            "operating_entity_name": "E07 L11 Operating Entity",
+            "opened_at": "2026-09-13T21:15:54.262Z",
+            "trace_id": "e07:opening:node:e07-3aefaf82-l11:l11"
+          }
+        ],
+        "upgrade_history": [],
+        "change_history": [
+          {
+            "id": "change:8bbc8ec074782c288a24e425720e354e",
+            "organization_id": "mall:8bbc8ec074782c288a24e425720e354e",
+            "kind": "sfl.hosted_mall.opened",
+            "before_value": {
+              "mall_id": null,
+              "node_profile": "consumer",
+              "capability_version": 1
+            },
+            "after_value": {
+              "mall_id": "mall:8bbc8ec074782c288a24e425720e354e",
+              "node_profile": "operating_mall",
+              "capability_version": 2,
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "actor_id": "principal:e07-3aefaf82-l11",
+            "occurred_at": "2026-09-13T21:15:54.262Z"
+          }
+        ],
+        "outbox_history": [
+          {
+            "id": "outbox:8bbc8ec074782c288a24e425720e354e",
+            "event_type": "sfl.hosted_mall.opened",
+            "event_version": 1,
+            "aggregate_type": "node",
+            "aggregate_id": "node:e07-3aefaf82-l11:l11",
+            "scope_id": "mall:8bbc8ec074782c288a24e425720e354e",
+            "payload": {
+              "line_id": "line:zhudatuan:commerce:v1",
+              "mall_id": "mall:8bbc8ec074782c288a24e425720e354e",
+              "node_id": "node:e07-3aefaf82-l11:l11",
+              "realm_id": "realm:e07-3aefaf82-l11",
+              "opening_id": "opening:8bbc8ec074782c288a24e425720e354e",
+              "node_profile": "operating_mall",
+              "signed_level": "L11",
+              "membership_id": "membership:e07-3aefaf82-l11",
+              "business_number": "SFLMALL-8BBC8EC074782C288A24",
+              "sovereignty_tier": "hosted",
+              "capability_version": 2,
+              "operating_entity_id": "enterprise:8bbc8ec074782c288a24e425720e354e",
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "trace_id": "e07:opening:node:e07-3aefaf82-l11:l11",
+            "occurred_at": "2026-09-13T21:15:54.262Z",
+            "available_at": "2026-09-13T21:15:54.262Z",
+            "claimed_by": null,
+            "claim_until": null,
+            "attempts": 0,
+            "published_at": null,
+            "failed_at": null,
+            "error_code": null
+          }
+        ]
+      },
+      "after_upgrade": {
+        "context": {
+          "node_id": "node:e07-3aefaf82-l11:l11",
+          "line_id": "line:zhudatuan:commerce:v1",
+          "realm_id": "realm:e07-3aefaf82-l11",
+          "sovereignty_tier": "hosted",
+          "node_profile": "operating_mall",
+          "mall_id": "mall:8bbc8ec074782c288a24e425720e354e",
+          "status": "active",
+          "parent_node_id": "node:e07-3aefaf82-parent:l10",
+          "original_parent_node_id": "node:e07-3aefaf82-parent:l10",
+          "signed_level": "L11",
+          "host_sovereign_node_id": "node:zhudatuan:l0",
+          "relation_version": "1",
+          "realm_node_profile": "operating_mall",
+          "realm_mall_id": "mall:8bbc8ec074782c288a24e425720e354e",
+          "realm_host_node_id": "node:zhudatuan:l0",
+          "realm_host_node_profile": "operating_mall",
+          "realm_version": "1",
+          "membership_id": "membership:e07-3aefaf82-l11",
+          "account_id": "account:e07-3aefaf82-l11",
+          "membership_node_profile": "operating_mall",
+          "principal_id": "principal:e07-3aefaf82-l11",
+          "account_status": "active",
+          "principal_status": "active"
+        },
+        "current_lineage": [
+          "node:zhudatuan:l0",
+          "node:e07-3aefaf82-parent:l6",
+          "node:e07-3aefaf82-parent:l7",
+          "node:e07-3aefaf82-parent:l8",
+          "node:e07-3aefaf82-parent:l9",
+          "node:e07-3aefaf82-parent:l10",
+          "node:e07-3aefaf82-l11:l11"
+        ],
+        "relation_history": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "node_id": "node:e07-3aefaf82-l11:l11",
+            "parent_node_id": "node:e07-3aefaf82-parent:l10",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l10",
+            "signed_level": "L11",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "current_closure": [
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:zhudatuan:l0",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 6,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l6",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 5,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l7",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 4,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l8",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 3,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l9",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 2,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-parent:l10",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 1,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          },
+          {
+            "line_id": "line:zhudatuan:commerce:v1",
+            "ancestor_node_id": "node:e07-3aefaf82-l11:l11",
+            "descendant_node_id": "node:e07-3aefaf82-l11:l11",
+            "depth": 0,
+            "descendant_relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "superseded_at": null
+          }
+        ],
+        "capability_history": [
+          {
+            "node_id": "node:e07-3aefaf82-l11:l11",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "1",
+            "capabilities": [
+              "consumer"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "consumer",
+            "relation_version": "1",
+            "source_operation_id": "sfl.node-capability.baseline",
+            "opening_id": null,
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "created_at": "2026-09-13T21:15:54.184Z"
+          },
+          {
+            "node_id": "node:e07-3aefaf82-l11:l11",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "capability_version": "2",
+            "capabilities": [
+              "consumer",
+              "operating_mall"
+            ],
+            "prior_node_profile": "consumer",
+            "node_profile": "operating_mall",
+            "relation_version": "1",
+            "source_operation_id": "member.malls.open",
+            "opening_id": "opening:8bbc8ec074782c288a24e425720e354e",
+            "effective_at": "2026-09-13T21:15:54.262Z",
+            "created_at": "2026-09-13T21:15:54.262Z"
+          }
+        ],
+        "provisioning_history": [
+          {
+            "idempotency_key": "seed:3aefaf82-l11",
+            "request_hash": "83caa98dcd4c70cc4d8b453888587d5efde2a77a18980d2f4dbe90624cb229f8",
+            "node_id": "node:e07-3aefaf82-l11:l11",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l11",
+            "node_profile": "consumer",
+            "mall_id": null,
+            "parent_node_id": "node:e07-3aefaf82-parent:l10",
+            "signed_level": "L11",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "relation_version": "1",
+            "effective_at": "2026-09-13T21:15:54.122Z",
+            "requested_by": "e07-formal-fixture",
+            "trace_id": "e07:seed:3aefaf82-l11",
+            "created_at": "2026-09-13T21:15:54.184Z"
+          }
+        ],
+        "opening_history": [
+          {
+            "idempotency_key": "opening:e07:3aefaf82-l11",
+            "request_hash": "f865e7ae9f24357ed45f8b8b5c36d9017e9e8de9f8e067d6c0321eaed493eaba",
+            "opening_id": "opening:8bbc8ec074782c288a24e425720e354e",
+            "business_number": "SFLMALL-8BBC8EC074782C288A24",
+            "node_id": "node:e07-3aefaf82-l11:l11",
+            "line_id": "line:zhudatuan:commerce:v1",
+            "realm_id": "realm:e07-3aefaf82-l11",
+            "membership_id": "membership:e07-3aefaf82-l11",
+            "principal_id": "principal:e07-3aefaf82-l11",
+            "mall_id": "mall:8bbc8ec074782c288a24e425720e354e",
+            "operating_entity_id": "enterprise:8bbc8ec074782c288a24e425720e354e",
+            "parent_node_id": "node:e07-3aefaf82-parent:l10",
+            "original_parent_node_id": "node:e07-3aefaf82-parent:l10",
+            "signed_level": "L11",
+            "host_sovereign_node_id": "node:zhudatuan:l0",
+            "sovereignty_tier": "hosted",
+            "node_profile": "operating_mall",
+            "capability_version": "2",
+            "relation_version": "1",
+            "mall_version": "1",
+            "entity_binding_version": "1",
+            "configuration_version": "1",
+            "payment_configuration_version": "1",
+            "status": "active",
+            "mall_name": "E07 L11 Mall",
+            "operating_entity_name": "E07 L11 Operating Entity",
+            "opened_at": "2026-09-13T21:15:54.262Z",
+            "trace_id": "e07:opening:node:e07-3aefaf82-l11:l11"
+          }
+        ],
+        "upgrade_history": [],
+        "change_history": [
+          {
+            "id": "change:8bbc8ec074782c288a24e425720e354e",
+            "organization_id": "mall:8bbc8ec074782c288a24e425720e354e",
+            "kind": "sfl.hosted_mall.opened",
+            "before_value": {
+              "mall_id": null,
+              "node_profile": "consumer",
+              "capability_version": 1
+            },
+            "after_value": {
+              "mall_id": "mall:8bbc8ec074782c288a24e425720e354e",
+              "node_profile": "operating_mall",
+              "capability_version": 2,
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "actor_id": "principal:e07-3aefaf82-l11",
+            "occurred_at": "2026-09-13T21:15:54.262Z"
+          }
+        ],
+        "outbox_history": [
+          {
+            "id": "outbox:8bbc8ec074782c288a24e425720e354e",
+            "event_type": "sfl.hosted_mall.opened",
+            "event_version": 1,
+            "aggregate_type": "node",
+            "aggregate_id": "node:e07-3aefaf82-l11:l11",
+            "scope_id": "mall:8bbc8ec074782c288a24e425720e354e",
+            "payload": {
+              "line_id": "line:zhudatuan:commerce:v1",
+              "mall_id": "mall:8bbc8ec074782c288a24e425720e354e",
+              "node_id": "node:e07-3aefaf82-l11:l11",
+              "realm_id": "realm:e07-3aefaf82-l11",
+              "opening_id": "opening:8bbc8ec074782c288a24e425720e354e",
+              "node_profile": "operating_mall",
+              "signed_level": "L11",
+              "membership_id": "membership:e07-3aefaf82-l11",
+              "business_number": "SFLMALL-8BBC8EC074782C288A24",
+              "sovereignty_tier": "hosted",
+              "capability_version": 2,
+              "operating_entity_id": "enterprise:8bbc8ec074782c288a24e425720e354e",
+              "host_sovereign_node_id": "node:zhudatuan:l0"
+            },
+            "trace_id": "e07:opening:node:e07-3aefaf82-l11:l11",
+            "occurred_at": "2026-09-13T21:15:54.262Z",
+            "available_at": "2026-09-13T21:15:54.262Z",
+            "claimed_by": null,
+            "claim_until": null,
+            "attempts": 0,
+            "published_at": null,
+            "failed_at": null,
+            "error_code": null
+          }
+        ]
+      },
+      "before_upgrade_sha256": "sha256:c687f93d8e364058e1ff3920b3266491cfcd8725361fb5194f895c599398fec5",
+      "after_upgrade_sha256": "sha256:c687f93d8e364058e1ff3920b3266491cfcd8725361fb5194f895c599398fec5"
+    }
+  ]
+}

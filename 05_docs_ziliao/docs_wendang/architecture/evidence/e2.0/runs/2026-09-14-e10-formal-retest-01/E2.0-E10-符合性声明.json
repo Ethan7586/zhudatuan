@@ -1,0 +1,40 @@
+{
+  "$schema": "../../E2.0-符合性声明.schema.json",
+  "schema_version": "e2.0-conformity-statement-v2",
+  "statement_id": "E2-STATEMENT-E10-DEV-20260913",
+  "template": false,
+  "profile_id": "E2.0",
+  "profile_version": "2.0.0",
+  "issued_at": "2026-09-13T19:56:41.468Z",
+  "scope": "E2-REL-003 / legacy E10 at marker transition dfb32c2c1fefc537b74205e54bfac757a5773612→b17ebd598dbc899005100d3f289e1bc15fd5db45, disposable local Docker release simulation and read-only authorization probes only.",
+  "claim_ids": [
+    "E2-REL-003"
+  ],
+  "rating": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM"
+  },
+  "evidence_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/E2.0-E10-证据.json"
+  ],
+  "review_evidence_refs": [],
+  "tailoring_refs": [],
+  "gaps": [
+    "No stable separately managed staging release replay has been performed.",
+    "No authorized production deployment or production cloud audit-log observation has been performed.",
+    "The page, API, task and service observations are isolated read-only probe transports around the production authorization kernel, not full production adapters with real traffic.",
+    "No reviewer independent of the E10 build, release fixture and oracle has recomputed and signed the evidence."
+  ],
+  "issuer": {
+    "name_or_id": "codex-task-e10-acceptance-repair-20260914",
+    "organization": "zhudatuan internal",
+    "role": "E10 release probe and independent recount operator",
+    "relationship_to_test_item": "Implemented and operated the disposable E10 build/release fixture and the separate raw-evidence oracle; not an independent reviewer.",
+    "signed_at": "2026-09-13T19:56:41.468Z"
+  },
+  "reviewer": null,
+  "mandatory_disclaimer": "This is an E2.0 standards-aligned tailored conformity statement, not an ISO, IEEE, NIST, OWASP, PCI SSC, or third-party certification.",
+  "non_gating": true
+}

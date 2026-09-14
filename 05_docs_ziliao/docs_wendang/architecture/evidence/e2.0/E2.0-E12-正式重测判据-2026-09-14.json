@@ -1,0 +1,84 @@
+{
+  "schema_version": "e2.0-execution-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E12-FORMAL-RETEST-20260914",
+  "profile_version": "2.0.0",
+  "claim_id": "E2-ISO-001",
+  "legacy_trace_id": "E12",
+  "purpose": "Execute the already-defined E12 authority-isolation claim and preserve independently recomputable raw evidence. This run record mirrors the active E2.0 trace matrix and does not create or expand a product contract.",
+  "locked_at": "2026-09-13T17:57:05Z",
+  "non_gating": true,
+  "authoritative_basis": [
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-ISO-001",
+      "git_commit": "6eb2e0486ab5b0c4bd0d1c5176a4b6c0dc46d3ba",
+      "sha256": "sha256:0d88554e3689e2a4b9055defb473c6c292a47fe9210aad260c19e34d22a0e8b6"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E12",
+      "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69"
+    }
+  ],
+  "baselines": {
+    "node_a": "node:hbbtzn:l1 / realm:l1 / mall:d1708f04df2dd8a61736852c4900fb43",
+    "node_b": "node:zhudatuan:l0 / realm:l0 / tenant-zhudatuan"
+  },
+  "required_input_artifacts": [
+    "host-resolution-negative-matrix.json",
+    "realm-scope-node-negative-matrix.json",
+    "authority-forgery-database-diff.json",
+    "authorization-denial-audit.jsonl",
+    "compatibility-path-trace.json",
+    "environment.json"
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E12-AUTHORITY-DIFF",
+    "reads_test_program_pass": false,
+    "procedure": "Read exact HTTP/SQL requests and responses, recompute both positive contexts, all seven invalid outcomes, all six forged-field ownership destinations, full persistent-table before/after digests, Outbox deltas, denial audits and fallback-path facts. Do not consume any runner PASS flag."
+  },
+  "prelocked_thresholds": [
+    "valid A/A and B/B expected result mismatch = 0",
+    "invalid request acceptance count = 0",
+    "business write count for invalid cases = 0",
+    "Outbox count for invalid cases = 0",
+    "forged ownership changes = 0",
+    "default-node fallback count = 0"
+  ],
+  "positive_cases": [
+    "E12-POS-A-A: Node A Host and Node A session resolve to Node A Realm, Membership, Scope and node context.",
+    "E12-POS-B-B: Node B Host and Node B session resolve to Node B Realm, Membership, Scope and node context."
+  ],
+  "invalid_cases": [
+    "E12-NEG-01-UNKNOWN-HOST",
+    "E12-NEG-02-AMBIGUOUS-HOST",
+    "E12-NEG-03-CROSS-REALM-HOST",
+    "E12-NEG-04-CROSS-SCOPE",
+    "E12-NEG-05-WRONG-NODE-IDENTITY",
+    "E12-NEG-06-STALE-ACCESS-VERSION",
+    "E12-NEG-07-SUSPENDED-NODE-OR-MEMBERSHIP"
+  ],
+  "forged_authority_fields": [
+    "realm",
+    "membership",
+    "scope",
+    "node_id",
+    "mall_id",
+    "role"
+  ],
+  "unknown_rule": "Missing any invalid case, forged field, exact request/response, resolved context or error, denial audit, compatibility-path trace, or direct authoritative-table and Outbox before/after diff yields UNKNOWN.",
+  "outcome_table": [
+    {
+      "condition": "All required artifacts exist, both positive baselines match, every invalid request is denied, no invalid write or Outbox event occurs, no forged field changes canonical ownership, and no default or legacy fallback is used.",
+      "claim_outcome": "MET"
+    },
+    {
+      "condition": "Any complete raw observation contradicts a threshold.",
+      "claim_outcome": "NOT MET"
+    },
+    {
+      "condition": "Any required case, artifact, raw field, direct database diff, hash or environment fact is missing or unreadable.",
+      "claim_outcome": "UNKNOWN"
+    }
+  ],
+  "environment_classification": "A successful disposable local PostgreSQL 17 and local HTTP execution can establish DEV VERIFIED only.",
+  "review_classification": "The criteria designer and execution operator are the same Codex task; the result remains NOT REVIEWED until a separate eligible reviewer recomputes and signs it."
+}

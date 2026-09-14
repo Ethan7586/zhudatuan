@@ -1,0 +1,171 @@
+{
+  "schema_version": "e2.0-formal-retest-criteria-v1",
+  "criteria_id": "E2-CRITERIA-E05-FORMAL-RETEST-20260914",
+  "profile_version": "2.0.0",
+  "claim_id": "E2-REL-001",
+  "legacy_trace_id": "E05",
+  "locked_at": "2026-09-13T21:23:28Z",
+  "purpose": "Execute the already-defined E05 Hosted lifecycle zero-infrastructure-fan-out claim and preserve independently recountable database, audit, Outbox, access-negative, infrastructure inventory and shared-host release evidence. This record mirrors the active E2.0 trace matrix and does not create or expand a product contract.",
+  "authoritative_basis": [
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-REL-001",
+      "git_commit": "7cda9742644dc978d826a9a65308267c87387c1c",
+      "sha256": "sha256:3918a8d507db6a0c01a148522fb522c38eac7db6dacd0ce034c3a05a4242e23b"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E05",
+      "git_commit": "7cda9742644dc978d826a9a65308267c87387c1c",
+      "sha256": "sha256:d5c4d0937182814b54e17d25e3a6a8b65431f52e8ad6515c5ff9cf6b59815f69"
+    }
+  ],
+  "implementation_basis": [
+    {
+      "path": "02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql",
+      "git_commit": "7cda9742644dc978d826a9a65308267c87387c1c",
+      "sha256": "sha256:32d4d11f8a54d19ede60b979d22e4519dc9a7179e6dc6f867ff24a7ceddb8ae4",
+      "role": "Production Hosted node creation transaction and append-only node/relation/capability facts"
+    },
+    {
+      "path": ".github/workflows/deploy.yml",
+      "git_commit": "a5191d950fab053d8100d3d19678acccd8a931ca",
+      "sha256": "sha256:96050855744233651313d43fa9ca250abc7aff31ea745bf025a9f140b625c2ef",
+      "role": "Historical shared-host release workflow used by the frozen production receipt"
+    }
+  ],
+  "regression_basis": [
+    {
+      "path": "02_platform_pingtai/database/supabase/tests/sfl_hosted_zero_fanout_contract.sql",
+      "git_commit": "7cda9742644dc978d826a9a65308267c87387c1c",
+      "sha256": "sha256:8dde8025faf3c611f0c8292fc6d43510cf662171a61dab41c46865f8b0369d6f",
+      "role": "Existing three-node five-operation database-only regression"
+    },
+    {
+      "path": "04_tools/scripts/check/sfl-hosted-zero-fanout.pg17-fixture.mjs",
+      "git_commit": "7cda9742644dc978d826a9a65308267c87387c1c",
+      "sha256": "sha256:1b6707a52ebb6770c059c4dc4f70b5bd6818c7c4b18c07d6ca30f4a3981cd2bb",
+      "role": "Existing PostgreSQL 17 E05 replay"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e05-hosted-zero-fanout/hosted-infrastructure-call-counts.json",
+      "git_commit": "7cda9742644dc978d826a9a65308267c87387c1c",
+      "sha256": "sha256:a5c9d36562fe8e4fbe3e73da3bc39058690e4fecba8d4f115d367a7c75860291",
+      "role": "Frozen E v1 zero-fan-out infrastructure count record"
+    },
+    {
+      "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e05-hosted-zero-fanout/hosted-shared-release-receipt.json",
+      "git_commit": "7cda9742644dc978d826a9a65308267c87387c1c",
+      "sha256": "sha256:f1d6fad1cac645d509a075a27a3474711eac5f2a9f4092d032638ed267f2dc7f",
+      "role": "Frozen production shared-host build/deploy/restart receipt"
+    }
+  ],
+  "environment_classification": "A successful clean-source disposable PostgreSQL 17 lifecycle execution plus a live read-only GitHub reconciliation of the frozen historical shared-host production release can establish DEV VERIFIED only. The historical production receipt is supporting evidence and does not elevate the full lifecycle claim to PRODUCTION VERIFIED.",
+  "sample_matrix": [
+    { "sample_id": "H-NEW-1", "signed_level": "L2", "lifecycle_operations": ["create"] },
+    { "sample_id": "H-NEW-2", "signed_level": "L3", "lifecycle_operations": ["create", "suspend", "reactivate"] },
+    { "sample_id": "H-NEW-3", "signed_level": "L4", "lifecycle_operations": ["create", "grant", "revoke"] }
+  ],
+  "operation_sequence": ["create", "suspend", "reactivate", "grant", "revoke"],
+  "operation_authority": {
+    "create": "organization.provision_hosted_node(jsonb) production function",
+    "suspend_reactivate_grant_revoke": "Existing E05 matrix-scoped direct database lifecycle transitions; no new public operation or API contract is introduced by this retest.",
+    "access_observation": "A raw database authorization projection requires active node, active Membership, unexpired allow scope and enabled entitlement; each stage is captured instead of trusting a fixture PASS boolean."
+  },
+  "expected_database_facts": {
+    "hosted_node_count": 3,
+    "current_relation_count": 3,
+    "active_final_node_count": 3,
+    "active_membership_count": 3,
+    "active_base_scope_count": 3,
+    "enabled_base_entitlement_count": 3,
+    "revoked_extra_scope_row_count": 1,
+    "revoked_extra_scope_active_count": 0,
+    "revoked_extra_entitlement_state": "disabled",
+    "decision_audit_count": 7,
+    "outbox_count": 7,
+    "hosted_manifest_count": 0,
+    "hosted_resource_binding_count": 0
+  },
+  "expected_access_timeline": {
+    "after_create_base_allowed": true,
+    "after_suspend_base_allowed": false,
+    "after_reactivate_base_allowed": true,
+    "after_grant_extra_allowed": true,
+    "after_revoke_extra_allowed": false
+  },
+  "hosted_lifecycle_zero_categories": [
+    "dns", "tunnel", "systemd", "caddy", "build", "deploy", "restart", "manifest", "pointer", "process", "port"
+  ],
+  "shared_host_release_threshold": {
+    "workflow_run_id": 34731958020,
+    "workflow_conclusion": "success",
+    "source_sha": "a5191d950fab053d8100d3d19678acccd8a931ca",
+    "release_node": "zhudatuan-l0",
+    "release_target": "identity-api",
+    "build_count": 1,
+    "artifact_identity_count": 1,
+    "deploy_count": 1,
+    "restart_count": 1,
+    "hosted_per_node_action_count": 0
+  },
+  "required_input_artifacts": [
+    "hosted-before-after-database.json",
+    "hosted-lifecycle-timeline.json",
+    "hosted-audit-outbox.json",
+    "hosted-infrastructure-call-counts.json",
+    "hosted-shared-release-receipt.json",
+    "hosted-runtime-inventory.json",
+    "hosted-source-inventory.json",
+    "github-workflow-observation.json",
+    "environment.json"
+  ],
+  "prelocked_thresholds": [
+    "required raw evidence missing count = 0",
+    "three-node and five-operation completeness mismatch count = 0",
+    "expected database fact mismatch count = 0",
+    "unexpected database, audit or Outbox fact count = 0",
+    "suspended or revoked residual-access count = 0",
+    "reactivated or granted expected-access denial count = 0",
+    "Hosted-specific infrastructure object count = 0",
+    "Hosted per-node infrastructure action count = 0",
+    "Hosted lifecycle DNS/Tunnel/systemd/Caddy/build/deploy/restart/manifest/pointer/process/port count = 0",
+    "shared-host build/artifact/deploy/restart count mismatch = 0",
+    "historical GitHub workflow receipt mismatch count = 0",
+    "business source count or digest change = 0",
+    "Hosted-node-specific source or build count = 0",
+    "negative oracle probe miss count = 0"
+  ],
+  "positive_cases": [
+    "All three original synthetic Hosted nodes gain only the expected lifecycle data facts, audit rows and Outbox rows.",
+    "The suspended sample loses base access and regains it only after reactivation.",
+    "The granted sample gains extra access and loses it after revocation.",
+    "One historical shared-host release has one build, one artifact identity, one deploy and one restart for all Hosted samples."
+  ],
+  "negative_cases": [
+    "Detect any Hosted-specific manifest, pointer, process, port or infrastructure action.",
+    "Detect residual access after suspension or revocation.",
+    "Detect a repeated per-Hosted-node build, deploy or restart.",
+    "Detect an unexpected database, audit or Outbox fact."
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E05-FANOUT",
+    "reads_test_program_pass": false,
+    "procedure": "Independently reconstruct the three-node five-operation sequence from raw node, relation, Membership, scope, entitlement, audit and Outbox rows; recompute every stage access decision; enumerate Hosted manifest/resource/process/port/source/build facts; reconcile the frozen shared-host receipt with a fresh read-only GitHub workflow observation and its historical workflow source; then mutate copies to prove detection of residual access, Hosted infrastructure objects, per-node releases and unexpected facts. Do not consume runner PASS fields."
+  },
+  "unknown_rule": "Missing any required artifact, node/operation stage, before/after row, audit or Outbox record, access decision input, infrastructure counter, process/port/manifest/pointer inventory, shared-release field, GitHub workflow identity, source inventory, build observation or environment fact yields UNKNOWN.",
+  "outcome_table": [
+    {
+      "condition": "All required raw evidence exists; all three nodes and five operations are complete; only expected data/audit/Outbox facts exist; access denial/restoration is exact; every Hosted infrastructure count is zero; the shared release is exactly one build/artifact/deploy/restart with zero per-node actions; source inventory is stable; every negative mutation is detected.",
+      "claim_outcome": "MET"
+    },
+    {
+      "condition": "Any complete raw observation contradicts a prelocked data, access, infrastructure, shared-release, source/build or isolation threshold.",
+      "claim_outcome": "NOT MET"
+    },
+    {
+      "condition": "Any required artifact or raw field is missing, unreadable or cannot be independently reconciled.",
+      "claim_outcome": "UNKNOWN"
+    }
+  ],
+  "review_classification": "The criteria designer, executor and oracle operator are the same Codex task; the result remains NOT REVIEWED until a reviewer independent of the E05 lifecycle fixture, release receipt and counting code recomputes and signs it.",
+  "non_gating": true
+}

@@ -1,0 +1,182 @@
+{
+  "schema_version": "e09-independent-recovery-recount-v1",
+  "oracle_id": "E2-ORACLE-E09-AUTHORITY-COUNT",
+  "executed_at": "2026-09-13T20:43:08.218Z",
+  "reads_test_program_pass": false,
+  "input_artifacts": [
+    {
+      "path": "E2.0-E09-正式重测判据-2026-09-14.json",
+      "sha256": "sha256:38b6193e797229b55885b79ddc9f704255fa25ae8175b538d125216f0c34db0d",
+      "size_bytes": 7725
+    },
+    {
+      "path": "idempotency-five-way-results.json",
+      "sha256": "sha256:b278e036587d6942de5a29154793c3e615199bd8bdd3d047a6eee8b467b45aa1",
+      "size_bytes": 45739
+    },
+    {
+      "path": "idempotency-conflict-results.json",
+      "sha256": "sha256:0dedf4f5a35739df1a2c8bb5bd9880003f47503ae85d27cb01d87eb48711a914",
+      "size_bytes": 11399
+    },
+    {
+      "path": "interruption-state-diffs.json",
+      "sha256": "sha256:9d1dbf5f43cb040735f6ee966a14b5f3bb43ca8c4db403d25e97b57ae8a3f117",
+      "size_bytes": 236167
+    },
+    {
+      "path": "recovery-receipts.json",
+      "sha256": "sha256:b3be8e6c09e3871c15e381bb6c1a6a6285a5ce2c4a3e7df70fb6cdbc96900d59",
+      "size_bytes": 57833
+    },
+    {
+      "path": "nontarget-isolation-diff.json",
+      "sha256": "sha256:67881cfdb5a444308ffe972c0bcebede6174d1e069599ecaec6e7671a30877d8",
+      "size_bytes": 1297495
+    },
+    {
+      "path": "database-raw-rows.json",
+      "sha256": "sha256:843fd2979976fff102eef1cac1ec0b11c481d878bea1f5a7ca2705d5b7b204f8",
+      "size_bytes": 253241
+    },
+    {
+      "path": "provider-receipts.json",
+      "sha256": "sha256:8e823b343660da1e4f4c54f276c4268fd8ef06a7519cd7bea33d5c9ed1fec4e2",
+      "size_bytes": 164645
+    },
+    {
+      "path": "audit-and-outbox-rows.json",
+      "sha256": "sha256:5970c82d0c78a7eeb002a491d79d98e16a932a03266c717a907bcd7896b6e0dd",
+      "size_bytes": 244276
+    },
+    {
+      "path": "environment.json",
+      "sha256": "sha256:466a971508ac21f46d4376aecc0f48198f3c5e725fe0737923d8b00afbf0d615",
+      "size_bytes": 2041
+    }
+  ],
+  "missing_items": [],
+  "violations": [],
+  "negative_probes": [
+    {
+      "probe_id": "duplicate-business-side-effect",
+      "mutation": "Append a second business fact for one scenario.",
+      "detected": true
+    },
+    {
+      "probe_id": "conflict-overwrite",
+      "mutation": "Change the accepted-state digest after a conflicting request.",
+      "detected": true
+    },
+    {
+      "probe_id": "unclassified-partial-state",
+      "mutation": "Relabel one interruption as an unclassified partial state.",
+      "detected": true
+    },
+    {
+      "probe_id": "non-target-state-change",
+      "mutation": "Change one non-target node snapshot digest.",
+      "detected": true
+    }
+  ],
+  "recomputed_observations": {
+    "five_way_scenario_count": 15,
+    "concurrent_delivery_count": 75,
+    "conflict_scenario_count": 15,
+    "interruption_scenario_count": 60,
+    "recovery_receipt_count": 60,
+    "terminal_business_fact_count": 80,
+    "provider_receipt_count": 80,
+    "audit_record_count": 80,
+    "runtime_outbox_count": 160,
+    "target_recovery_count": 5
+  },
+  "thresholds": [
+    {
+      "threshold_id": "required_raw_evidence_missing_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "operation_node_scenario_completeness_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "authoritative_result_count_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "identical_response_business_id_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "request_hash_or_idempotency_key_missing_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "conflict_rejection_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "conflict_state_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "duplicate_business_provider_audit_or_outbox_side_effect_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "interruption_recovery_scenario_completeness_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "unclassified_partial_state_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "retry_terminal_state_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "provider_receipt_missing_or_duplicate_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "non_target_node_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_oracle_probe_miss_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    }
+  ],
+  "claim_outcome": "MET",
+  "environment_assurance": "DEV VERIFIED"
+}

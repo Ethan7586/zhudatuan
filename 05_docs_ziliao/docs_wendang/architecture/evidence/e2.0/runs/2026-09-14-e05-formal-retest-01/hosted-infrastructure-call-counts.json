@@ -1,0 +1,76 @@
+{
+  "schema_version": "e05-hosted-infrastructure-call-counts-v2",
+  "captured_at": "2026-09-13T21:38:44.913Z",
+  "observation_boundary": "The current lifecycle run invoked PostgreSQL data operations only. Docker startup and migration replay are shared disposable test-environment actions, while the read-only GitHub lookup observes a frozen historical release.",
+  "hosted_lifecycle": {
+    "dns": 0,
+    "tunnel": 0,
+    "systemd": 0,
+    "caddy": 0,
+    "build": 0,
+    "deploy": 0,
+    "restart": 0,
+    "manifest": 0,
+    "pointer": 0,
+    "process": 0,
+    "port": 0
+  },
+  "lifecycle_operation_receipts": [
+    {
+      "receipt_id": "receipt:e05:9ef293e7:create:h1",
+      "operation": "create",
+      "node_id": "node:e05-9ef293e7-h1:l2",
+      "database_mutation_count": 8,
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:create:h2",
+      "operation": "create",
+      "node_id": "node:e05-9ef293e7-h2:l3",
+      "database_mutation_count": 8,
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:create:h3",
+      "operation": "create",
+      "node_id": "node:e05-9ef293e7-h3:l4",
+      "database_mutation_count": 8,
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:suspend:h2",
+      "operation": "suspend",
+      "node_id": "node:e05-9ef293e7-h2:l3",
+      "database_mutation_count": 3,
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:reactivate:h2",
+      "operation": "reactivate",
+      "node_id": "node:e05-9ef293e7-h2:l3",
+      "database_mutation_count": 3,
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:grant:h3",
+      "operation": "grant",
+      "node_id": "node:e05-9ef293e7-h3:l4",
+      "database_mutation_count": 5,
+      "infrastructure_actions": []
+    },
+    {
+      "receipt_id": "receipt:e05:9ef293e7:revoke:h3",
+      "operation": "revoke",
+      "node_id": "node:e05-9ef293e7-h3:l4",
+      "database_mutation_count": 5,
+      "infrastructure_actions": []
+    }
+  ],
+  "shared_host_change": {
+    "build_count": 1,
+    "artifact_identity_count": 1,
+    "deploy_count": 1,
+    "restart_count": 1,
+    "hosted_per_node_action_count": 0
+  }
+}

@@ -1,0 +1,451 @@
+{
+  "schema_version": "e03-truth-table-expected-v1",
+  "captured_at": "2026-09-13T22:41:49.322Z",
+  "dimensions": [
+    "feature_declared",
+    "permission_allowed",
+    "scope_allowed",
+    "capability_available",
+    "resource_ready"
+  ],
+  "dimension_order": [
+    {
+      "dimension": "feature_declared",
+      "denial_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "dimension": "permission_allowed",
+      "denial_reason": "PERMISSION_DENIED"
+    },
+    {
+      "dimension": "scope_allowed",
+      "denial_reason": "SCOPE_DENIED"
+    },
+    {
+      "dimension": "capability_available",
+      "denial_reason": "CAPABILITY_DENIED"
+    },
+    {
+      "dimension": "resource_ready",
+      "denial_reason": "RESOURCE_NOT_READY"
+    }
+  ],
+  "rows": [
+    {
+      "row_id": "TT-00",
+      "mask": 0,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": false,
+        "scope_allowed": false,
+        "capability_available": false,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-01",
+      "mask": 1,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": false,
+        "scope_allowed": false,
+        "capability_available": false,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "PERMISSION_DENIED"
+    },
+    {
+      "row_id": "TT-02",
+      "mask": 2,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": true,
+        "scope_allowed": false,
+        "capability_available": false,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-03",
+      "mask": 3,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": true,
+        "scope_allowed": false,
+        "capability_available": false,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "SCOPE_DENIED"
+    },
+    {
+      "row_id": "TT-04",
+      "mask": 4,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": false,
+        "scope_allowed": true,
+        "capability_available": false,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-05",
+      "mask": 5,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": false,
+        "scope_allowed": true,
+        "capability_available": false,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "PERMISSION_DENIED"
+    },
+    {
+      "row_id": "TT-06",
+      "mask": 6,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": true,
+        "scope_allowed": true,
+        "capability_available": false,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-07",
+      "mask": 7,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": true,
+        "scope_allowed": true,
+        "capability_available": false,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "CAPABILITY_DENIED"
+    },
+    {
+      "row_id": "TT-08",
+      "mask": 8,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": false,
+        "scope_allowed": false,
+        "capability_available": true,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-09",
+      "mask": 9,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": false,
+        "scope_allowed": false,
+        "capability_available": true,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "PERMISSION_DENIED"
+    },
+    {
+      "row_id": "TT-10",
+      "mask": 10,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": true,
+        "scope_allowed": false,
+        "capability_available": true,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-11",
+      "mask": 11,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": true,
+        "scope_allowed": false,
+        "capability_available": true,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "SCOPE_DENIED"
+    },
+    {
+      "row_id": "TT-12",
+      "mask": 12,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": false,
+        "scope_allowed": true,
+        "capability_available": true,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-13",
+      "mask": 13,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": false,
+        "scope_allowed": true,
+        "capability_available": true,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "PERMISSION_DENIED"
+    },
+    {
+      "row_id": "TT-14",
+      "mask": 14,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": true,
+        "scope_allowed": true,
+        "capability_available": true,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-15",
+      "mask": 15,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": true,
+        "scope_allowed": true,
+        "capability_available": true,
+        "resource_ready": false
+      },
+      "expected_allowed": false,
+      "expected_reason": "RESOURCE_NOT_READY"
+    },
+    {
+      "row_id": "TT-16",
+      "mask": 16,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": false,
+        "scope_allowed": false,
+        "capability_available": false,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-17",
+      "mask": 17,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": false,
+        "scope_allowed": false,
+        "capability_available": false,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "PERMISSION_DENIED"
+    },
+    {
+      "row_id": "TT-18",
+      "mask": 18,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": true,
+        "scope_allowed": false,
+        "capability_available": false,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-19",
+      "mask": 19,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": true,
+        "scope_allowed": false,
+        "capability_available": false,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "SCOPE_DENIED"
+    },
+    {
+      "row_id": "TT-20",
+      "mask": 20,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": false,
+        "scope_allowed": true,
+        "capability_available": false,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-21",
+      "mask": 21,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": false,
+        "scope_allowed": true,
+        "capability_available": false,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "PERMISSION_DENIED"
+    },
+    {
+      "row_id": "TT-22",
+      "mask": 22,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": true,
+        "scope_allowed": true,
+        "capability_available": false,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-23",
+      "mask": 23,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": true,
+        "scope_allowed": true,
+        "capability_available": false,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "CAPABILITY_DENIED"
+    },
+    {
+      "row_id": "TT-24",
+      "mask": 24,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": false,
+        "scope_allowed": false,
+        "capability_available": true,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-25",
+      "mask": 25,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": false,
+        "scope_allowed": false,
+        "capability_available": true,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "PERMISSION_DENIED"
+    },
+    {
+      "row_id": "TT-26",
+      "mask": 26,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": true,
+        "scope_allowed": false,
+        "capability_available": true,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-27",
+      "mask": 27,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": true,
+        "scope_allowed": false,
+        "capability_available": true,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "SCOPE_DENIED"
+    },
+    {
+      "row_id": "TT-28",
+      "mask": 28,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": false,
+        "scope_allowed": true,
+        "capability_available": true,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-29",
+      "mask": 29,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": false,
+        "scope_allowed": true,
+        "capability_available": true,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "PERMISSION_DENIED"
+    },
+    {
+      "row_id": "TT-30",
+      "mask": 30,
+      "inputs": {
+        "feature_declared": false,
+        "permission_allowed": true,
+        "scope_allowed": true,
+        "capability_available": true,
+        "resource_ready": true
+      },
+      "expected_allowed": false,
+      "expected_reason": "FEATURE_NOT_DECLARED"
+    },
+    {
+      "row_id": "TT-31",
+      "mask": 31,
+      "inputs": {
+        "feature_declared": true,
+        "permission_allowed": true,
+        "scope_allowed": true,
+        "capability_available": true,
+        "resource_ready": true
+      },
+      "expected_allowed": true,
+      "expected_reason": "POLICY_ALLOWED"
+    }
+  ]
+}

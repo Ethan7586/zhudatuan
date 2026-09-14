@@ -1,0 +1,254 @@
+{
+  "schema_version": "e05-independent-zero-fanout-recount-v1",
+  "oracle_id": "E2-ORACLE-E05-FANOUT",
+  "executed_at": "2026-09-13T21:38:45.151Z",
+  "reads_test_program_pass": false,
+  "input_artifacts": [
+    {
+      "path": "E2.0-E05-正式重测判据-2026-09-14.json",
+      "sha256": "sha256:680b7cf46d44f9d86e2468a7ef38a514bc1f5ed90c58178a51d5041567950cb6",
+      "size_bytes": 9984
+    },
+    {
+      "path": "hosted-before-after-database.json",
+      "sha256": "sha256:a57a3b5cbb594384b56794952c007f1e33301bdbc888c81d6b015f55e2d2dd53",
+      "size_bytes": 24120
+    },
+    {
+      "path": "hosted-lifecycle-timeline.json",
+      "sha256": "sha256:0e014876ada3e58098cf3e85b62dcaeb33cd9a5cfaa397a74262e6d85b73f6fc",
+      "size_bytes": 18145
+    },
+    {
+      "path": "hosted-audit-outbox.json",
+      "sha256": "sha256:30e3047cfad4fb751982dab0c07334112c9d39179156dab9e9f3dd5465a8dcf4",
+      "size_bytes": 8076
+    },
+    {
+      "path": "hosted-infrastructure-call-counts.json",
+      "sha256": "sha256:99ded7386336489d814ba02b451d0bf3abdf3e0a297159b1b8d3236035c632ab",
+      "size_bytes": 2275
+    },
+    {
+      "path": "hosted-shared-release-receipt.json",
+      "sha256": "sha256:5850435d6940f889ed7fee723f3edd58e0d5af26fa6d9fc36a64863de240a459",
+      "size_bytes": 1937
+    },
+    {
+      "path": "hosted-runtime-inventory.json",
+      "sha256": "sha256:09c8100836432b20208c064fa93655de65453428d114f5e106ee6ac50f970d06",
+      "size_bytes": 1324
+    },
+    {
+      "path": "hosted-source-inventory.json",
+      "sha256": "sha256:d1f4adf082d9b22682421c1d4421ed8c694dae0eb1dfec39d0ba8dd37e8ee96e",
+      "size_bytes": 1133958
+    },
+    {
+      "path": "github-workflow-observation.json",
+      "sha256": "sha256:fad96be8038ffd214c36ba20a35daff21f8d10f943b03537492a439e4dcb1915",
+      "size_bytes": 590
+    },
+    {
+      "path": "environment.json",
+      "sha256": "sha256:fccd0749946a37831e3723d4cc1d5a741b88e203d3f2b8e0087bc9b034ba4be6",
+      "size_bytes": 2212
+    }
+  ],
+  "missing_items": [],
+  "violations": [],
+  "negative_probes": [
+    {
+      "probe_id": "hosted-infrastructure-object",
+      "expected_violation": "HOSTED_INFRASTRUCTURE_OBJECT",
+      "detected": true,
+      "detected_codes": [
+        "HOSTED_INFRASTRUCTURE_OBJECT",
+        "RAW_DATABASE_CARDINALITY_MISMATCH"
+      ]
+    },
+    {
+      "probe_id": "suspended-residual-access",
+      "expected_violation": "RESIDUAL_ACCESS",
+      "detected": true,
+      "detected_codes": [
+        "EXPORTED_ACCESS_DECISION_MISMATCH",
+        "RESIDUAL_ACCESS"
+      ]
+    },
+    {
+      "probe_id": "per-node-release-fanout",
+      "expected_violation": "HOSTED_PER_NODE_ACTION",
+      "detected": true,
+      "detected_codes": [
+        "HOSTED_PER_NODE_ACTION",
+        "SHARED_RELEASE_FIELD_MISMATCH"
+      ]
+    },
+    {
+      "probe_id": "unexpected-audit-fact",
+      "expected_violation": "AUDIT_OPERATION_MULTISET_MISMATCH",
+      "detected": true,
+      "detected_codes": [
+        "AUDIT_COUNT_MISMATCH",
+        "AUDIT_OPERATION_MULTISET_MISMATCH",
+        "AUDIT_ROW_MISMATCH"
+      ]
+    }
+  ],
+  "recomputed_observations": {
+    "sample_ids": [
+      "H-NEW-1",
+      "H-NEW-2",
+      "H-NEW-3"
+    ],
+    "node_ids": [
+      "node:e05-9ef293e7-h1:l2",
+      "node:e05-9ef293e7-h2:l3",
+      "node:e05-9ef293e7-h3:l4"
+    ],
+    "operation_counts": {
+      "create": 3,
+      "suspend": 1,
+      "reactivate": 1,
+      "grant": 1,
+      "revoke": 1
+    },
+    "access_decisions": {
+      "after_create:node:e05-9ef293e7-h1:l2:base": true,
+      "after_create:node:e05-9ef293e7-h2:l3:base": true,
+      "after_create:node:e05-9ef293e7-h3:l4:base": true,
+      "after_suspend:node:e05-9ef293e7-h2:l3:base": false,
+      "after_reactivate:node:e05-9ef293e7-h2:l3:base": true,
+      "after_grant:node:e05-9ef293e7-h3:l4:extra": true,
+      "after_revoke:node:e05-9ef293e7-h3:l4:extra": false
+    },
+    "final_database_counts": {
+      "hosted_nodes": 3,
+      "current_relations": 3,
+      "active_nodes": 3,
+      "memberships": 3,
+      "active_memberships": 3,
+      "active_base_scopes": 3,
+      "enabled_base_entitlements": 3,
+      "extra_scope_rows": 1,
+      "active_extra_scopes": 0,
+      "audit_rows": 7,
+      "outbox_rows": 7,
+      "manifest_rows": 0,
+      "resource_binding_rows": 0
+    },
+    "audit_count": 7,
+    "outbox_count": 7,
+    "hosted_lifecycle_counts": {
+      "dns": 0,
+      "tunnel": 0,
+      "systemd": 0,
+      "caddy": 0,
+      "build": 0,
+      "deploy": 0,
+      "restart": 0,
+      "manifest": 0,
+      "pointer": 0,
+      "process": 0,
+      "port": 0
+    },
+    "shared_release_counts": {
+      "build_count": 1,
+      "artifact_identity_count": 1,
+      "deploy_count": 1,
+      "restart_count": 1,
+      "hosted_per_node_action_count": 0
+    },
+    "github_run_id": 34731958020,
+    "source_file_count": 2052
+  },
+  "thresholds": [
+    {
+      "threshold_id": "required_raw_evidence_missing_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "three_node_and_five_operation_completeness_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "expected_database_fact_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "unexpected_database_audit_or_outbox_fact_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "suspended_or_revoked_residual_access_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "reactivated_or_granted_expected_access_denial_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "hosted_specific_infrastructure_object_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "hosted_per_node_infrastructure_action_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "hosted_lifecycle_infrastructure_category_event_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "shared_host_build_artifact_deploy_restart_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "historical_github_workflow_receipt_mismatch_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "business_source_count_or_digest_change_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "hosted_node_specific_source_or_build_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    },
+    {
+      "threshold_id": "negative_oracle_probe_miss_count",
+      "expected": 0,
+      "actual": 0,
+      "met": true
+    }
+  ],
+  "claim_outcome": "MET",
+  "environment_assurance": "DEV VERIFIED"
+}

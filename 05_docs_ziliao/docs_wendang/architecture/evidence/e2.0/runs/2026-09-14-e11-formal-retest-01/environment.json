@@ -1,0 +1,34 @@
+{
+  "schema_version": "e11-environment-v1",
+  "captured_at": "2026-09-13T19:26:01.763Z",
+  "kind": "DEV",
+  "environment_id": "local-disposable-postgresql17-e11-59a3f187ae344aba",
+  "description": "A newly created PostgreSQL 17 Alpine container replayed the complete migration chain and executed twelve locked E11 scale/topology scenarios; one local shared identity-api runtime artifact was built for all scenarios.",
+  "owner": "Ethan-controlled local Codex workspace",
+  "isolation": "Disposable Docker container zhudatuan-e11-59a3f187ae344aba; synthetic E11 nodes only; each scenario rolled back and the container was removed after execution.",
+  "real_customer_data": false,
+  "production_impact": "None. No production service, database, DNS provider, payment provider, supplier or customer record was contacted.",
+  "differences_from_production": [
+    "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+    "Synthetic Hosted and sovereign-control nodes rather than customer traffic.",
+    "Local build provenance and operation observation rather than production deployment or cloud audit logs.",
+    "No stable staging environment identity and no production observation."
+  ],
+  "runtime": {
+    "node": "v22.22.3",
+    "os": "darwin 25.5.0",
+    "docker_server": "29.7.2",
+    "postgres": "PostgreSQL 17.11 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+    "docker_image": "postgres:17-alpine",
+    "docker_image_id": "sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73",
+    "migration_count": 301,
+    "endpoint": "127.0.0.1:51816/zhudatuan_e11"
+  },
+  "source_control": {
+    "sha": "8630eabaae848ed3757bc7f252fb1fb2947af75f",
+    "branch": "codex/e2-acceptance-repair",
+    "tree_state": "CLEAN",
+    "status": ""
+  },
+  "configuration_digest": "sha256:c5bf0376791b6aeb8cc69f6174fc8f6a8e323212c98009cd19f73f69bef8112d"
+}

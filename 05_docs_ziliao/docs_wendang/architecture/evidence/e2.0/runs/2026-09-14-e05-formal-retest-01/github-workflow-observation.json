@@ -1,0 +1,17 @@
+{
+  "schema_version": "e05-github-workflow-observation-v1",
+  "captured_at": "2026-09-13T21:38:44.913Z",
+  "observation_mode": "read-only gh run view",
+  "repository": "Ethan7586/zhudatuan",
+  "requested_run_id": 34731958020,
+  "workflow": {
+    "conclusion": "success",
+    "databaseId": 34731958020,
+    "event": "workflow_dispatch",
+    "headSha": "a5191d950fab053d8100d3d19678acccd8a931ca",
+    "startedAt": "2026-09-13T02:00:45Z",
+    "updatedAt": "2026-09-13T02:02:12Z",
+    "url": "https://github.com/Ethan7586/zhudatuan/actions/runs/34731958020",
+    "workflowName": "Deploy"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "../../E2.0-符合性声明.schema.json",
+  "schema_version": "e2.0-conformity-statement-v2",
+  "statement_id": "E2-STATEMENT-E11-DEV-20260913",
+  "template": false,
+  "profile_id": "E2.0",
+  "profile_version": "2.0.0",
+  "issued_at": "2026-09-13T19:26:09.113Z",
+  "scope": "E2-SCALE-001 / legacy E11 at source SHA 8630eabaae848ed3757bc7f252fb1fb2947af75f, disposable local PostgreSQL 17 and local shared runtime build only.",
+  "claim_ids": [
+    "E2-SCALE-001"
+  ],
+  "rating": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM"
+  },
+  "evidence_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/E2.0-E11-证据.json"
+  ],
+  "review_evidence_refs": [],
+  "tailoring_refs": [],
+  "gaps": [
+    "No stable separately managed staging replay has been performed.",
+    "No authorized production infrastructure audit-log observation has been performed.",
+    "No reviewer independent of the E11 generator, counting code and execution has recomputed and signed the evidence."
+  ],
+  "issuer": {
+    "name_or_id": "codex-task-e11-acceptance-repair-20260914",
+    "organization": "zhudatuan internal",
+    "role": "E11 scale test and independent recount operator",
+    "relationship_to_test_item": "Implemented the E11 fixture orchestration and evidence exporter, executed the disposable database and shared build, and operated the separate raw-evidence oracle; not an independent reviewer.",
+    "signed_at": "2026-09-13T19:26:09.113Z"
+  },
+  "reviewer": null,
+  "mandatory_disclaimer": "This is an E2.0 standards-aligned tailored conformity statement, not an ISO, IEEE, NIST, OWASP, PCI SSC, or third-party certification.",
+  "non_gating": true
+}

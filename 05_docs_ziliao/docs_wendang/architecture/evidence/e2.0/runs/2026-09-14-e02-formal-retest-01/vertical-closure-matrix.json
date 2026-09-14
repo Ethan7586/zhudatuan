@@ -1,0 +1,5197 @@
+{
+  "schema_version": "e02-vertical-closure-matrix-v1",
+  "captured_at": "2026-09-13T23:16:21.091Z",
+  "initial_current_rows": [
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l0",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l1",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l1",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l10",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l9",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 9,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 10,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l11",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l10",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l9",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 9,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 10,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 11,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l2",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l2",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l2",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l3",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l3",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l3",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l3",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l4",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l4",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l4",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l4",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l4",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l9",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 9,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    }
+  ],
+  "after_version_current_rows": [
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l0",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l1",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l1",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l10",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l9",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 9,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 10,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l11",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l10",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l9",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 9,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 10,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 11,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l2",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l2",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l2",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l3",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l3",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l3",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l3",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l4",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l4",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l4",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l4",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l4",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l5",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 0,
+      "descendant_relation_version": 2,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 1,
+      "descendant_relation_version": 2,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 2,
+      "descendant_relation_version": 2,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 3,
+      "descendant_relation_version": 2,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 4,
+      "descendant_relation_version": 2,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 5,
+      "descendant_relation_version": 2,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 6,
+      "descendant_relation_version": 2,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l9",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 9,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T01:00:00.000Z"
+    }
+  ],
+  "after_version_historical_rows": [
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l10",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l9",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 9,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l10",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 10,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l11",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l10",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l9",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 9,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 10,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l11",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 11,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l6",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l7",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l8",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l9",
+      "depth": 0,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l8",
+      "depth": 1,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l7",
+      "depth": 2,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l6",
+      "depth": 3,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l5",
+      "depth": 4,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l4",
+      "depth": 5,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l3",
+      "depth": 6,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l2",
+      "depth": 7,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l1",
+      "depth": 8,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "descendant_node_id": "node:e02-ac6cba98:l9",
+      "ancestor_node_id": "node:e02-ac6cba98:l0",
+      "depth": 9,
+      "descendant_relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    }
+  ],
+  "resolver_functions": {
+    "self": "organization.resolve_node_scope_self(text,text)",
+    "ancestors": "organization.resolve_node_scope_ancestors(text,text)",
+    "descendants": "organization.resolve_node_scope_descendants(text,text)",
+    "subtree": "organization.resolve_node_scope_subtree(text,text)"
+  },
+  "before_version_resolver_results": [
+    {
+      "fixture_id": "V-L0",
+      "level": 0,
+      "node_id": "node:e02-ac6cba98:l0",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 11,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 11,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L1",
+      "level": 1,
+      "node_id": "node:e02-ac6cba98:l1",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L2",
+      "level": 2,
+      "node_id": "node:e02-ac6cba98:l2",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L3",
+      "level": 3,
+      "node_id": "node:e02-ac6cba98:l3",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L4",
+      "level": 4,
+      "node_id": "node:e02-ac6cba98:l4",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L5",
+      "level": 5,
+      "node_id": "node:e02-ac6cba98:l5",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L6",
+      "level": 6,
+      "node_id": "node:e02-ac6cba98:l6",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L7",
+      "level": 7,
+      "node_id": "node:e02-ac6cba98:l7",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L8",
+      "level": 8,
+      "node_id": "node:e02-ac6cba98:l8",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L9",
+      "level": 9,
+      "node_id": "node:e02-ac6cba98:l9",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L10",
+      "level": 10,
+      "node_id": "node:e02-ac6cba98:l10",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L11",
+      "level": 11,
+      "node_id": "node:e02-ac6cba98:l11",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 11,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    }
+  ],
+  "after_version_resolver_results": [
+    {
+      "fixture_id": "V-L0",
+      "level": 0,
+      "node_id": "node:e02-ac6cba98:l0",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 6,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 11,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 6,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 11,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L1",
+      "level": 1,
+      "node_id": "node:e02-ac6cba98:l1",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 5,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 5,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L2",
+      "level": 2,
+      "node_id": "node:e02-ac6cba98:l2",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 4,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 4,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L3",
+      "level": 3,
+      "node_id": "node:e02-ac6cba98:l3",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 3,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 3,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L4",
+      "level": 4,
+      "node_id": "node:e02-ac6cba98:l4",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 2,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 2,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L5",
+      "level": 5,
+      "node_id": "node:e02-ac6cba98:l5",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 1,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 1,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L6",
+      "level": 6,
+      "node_id": "node:e02-ac6cba98:l6",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 0,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 0,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L7",
+      "level": 7,
+      "node_id": "node:e02-ac6cba98:l7",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 1,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L8",
+      "level": 8,
+      "node_id": "node:e02-ac6cba98:l8",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 2,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L9",
+      "level": 9,
+      "node_id": "node:e02-ac6cba98:l9",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 3,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L10",
+      "level": 10,
+      "node_id": "node:e02-ac6cba98:l10",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 4,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 5,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "fixture_id": "V-L11",
+      "level": 11,
+      "node_id": "node:e02-ac6cba98:l11",
+      "self": [
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "ancestors": [
+        {
+          "node_id": "node:e02-ac6cba98:l10",
+          "distance": 1,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l9",
+          "distance": 2,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l8",
+          "distance": 3,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l7",
+          "distance": 4,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l6",
+          "distance": 5,
+          "relation_version": 2,
+          "effective_at": "2026-09-14T01:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l5",
+          "distance": 6,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l4",
+          "distance": 7,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l3",
+          "distance": 8,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l2",
+          "distance": 9,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l1",
+          "distance": 10,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        },
+        {
+          "node_id": "node:e02-ac6cba98:l0",
+          "distance": 11,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ],
+      "descendants": [],
+      "subtree": [
+        {
+          "node_id": "node:e02-ac6cba98:l11",
+          "distance": 0,
+          "relation_version": 1,
+          "effective_at": "2026-09-14T00:00:00.000Z",
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

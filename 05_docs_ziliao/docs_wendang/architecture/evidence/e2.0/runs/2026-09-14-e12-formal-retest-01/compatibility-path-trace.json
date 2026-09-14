@@ -1,0 +1,26 @@
+{
+  "schema_version": "e12-compatibility-path-trace-v1",
+  "captured_at": "2026-09-13T18:24:17.579Z",
+  "http": {
+    "resolver": "resolveNodeContextByHost -> NodeServer bindRequestNodeContext",
+    "unknown_host_handler_invocations": 0,
+    "ambiguous_host_handler_invocations": 0,
+    "default_node_fallback_observed": false
+  },
+  "database": {
+    "request_path": [
+      "server-authoritative Host resolver",
+      "identity.resolve_session(text,text)",
+      "identity.resolve_active_membership_context(text,text,text)",
+      "access.resolve_session_membership(text,text,text,text)",
+      "access.resolve_session_scope(text,text,text,text,text,text,text)"
+    ],
+    "resolver_availability": {
+      "legacy_session_resolver": null,
+      "authoritative_session_resolver": "identity.resolve_session(text,text)",
+      "active_membership_resolver": "identity.resolve_active_membership_context(text,text,text)",
+      "scoped_membership_resolver": "access.resolve_session_membership(text,text,text,text)",
+      "scoped_scope_resolver": "access.resolve_session_scope(text,text,text,text,text,text,text)"
+    }
+  }
+}

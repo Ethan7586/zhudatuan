@@ -1,0 +1,3454 @@
+{
+  "schema_version": "e09-provider-receipts-v1",
+  "captured_at": "2026-09-13T20:43:08.059Z",
+  "provider_boundary": "Local deterministic provider in a separately committed PostgreSQL transaction; no production or external provider was contacted.",
+  "idempotency_semantics": "provider_key is unique; recovery reuses the existing resource and receipt before acknowledging the local command.",
+  "commands": [
+    {
+      "scenario_id": "e09:five_way:hosted-a:identity-members-create",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-8725FC0B5B225F49",
+      "provider_key": "provider:ee063b21cfd938f00745631eff93e064",
+      "request_hash": "689c09f6936057c4f53f4fb8e2f343da4e5292420d1815b5911c315c090a89ae",
+      "state": "completed",
+      "receipt_id": "provider-receipt:ff6b246fff37d65a6eee272d",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.285Z",
+      "completed_at": "2026-09-13T20:43:06.325Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-8FE9200D8A87403D",
+      "provider_key": "provider:9fa533e258ebc7a4601e287ae6ae84ae",
+      "request_hash": "4ab9fd3642a9de069765bb28e351450d4e79e67930ad369a21c99fe1750e08a3",
+      "state": "completed",
+      "receipt_id": "provider-receipt:9188aaaad23baaa8bf41fc37",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.827Z",
+      "completed_at": "2026-09-13T20:43:06.833Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-E7EECEC392AFE055",
+      "provider_key": "provider:a290d548e640c605baaef280961c613e",
+      "request_hash": "12cfd33097ea936cb3aebd2d5773dbafdf713a221273265651b19235d627d613",
+      "state": "completed",
+      "receipt_id": "provider-receipt:9748143111222140bc6fcd62",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.810Z",
+      "completed_at": "2026-09-13T20:43:06.817Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-7C67273E5B7CAC9E",
+      "provider_key": "provider:e21970ec1f2229088c0bf67e6dec43f3",
+      "request_hash": "a4a99a915212c9d536aa0b5f4f00ba62ad00d99f6addc5e05ecd2b38fa68239d",
+      "state": "completed",
+      "receipt_id": "provider-receipt:6e5f6d1a4ab864bfc844e85f",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.845Z",
+      "completed_at": "2026-09-13T20:43:06.851Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-175F31228421F775",
+      "provider_key": "provider:8e621c76e3e84cd7c171a267647591a4",
+      "request_hash": "ffc3cf65cc1f863bb2f43b0f8736247dbb1931d2318248758f6137e0f1c29b1d",
+      "state": "completed",
+      "receipt_id": "provider-receipt:e0f48949e69bfbf157f8c139",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.857Z",
+      "completed_at": "2026-09-13T20:43:06.869Z"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-a:member-sovereignty-upgrade",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-FC18F9CE020AD959",
+      "provider_key": "provider:a5a17828fa44d85086ee5c7c66b4621d",
+      "request_hash": "14da7e2b9846c4a94b5ded20cc38c3df6b324e1373828ad00d88e48dd9b846c8",
+      "state": "completed",
+      "receipt_id": "provider-receipt:c3b311815a266012804de7f0",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.398Z",
+      "completed_at": "2026-09-13T20:43:06.420Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-EA226196398C2B03",
+      "provider_key": "provider:b1f0a61375067424c05809e6f11363f9",
+      "request_hash": "bd99fa46ebde42c14dd50f2f786e8cf280c9351dc1ccc1403f48d1021f507ef9",
+      "state": "completed",
+      "receipt_id": "provider-receipt:08260d1ec961a30d47cd3a34",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.961Z",
+      "completed_at": "2026-09-13T20:43:06.968Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-B53E6610220833C6",
+      "provider_key": "provider:6fb0d8f16c64c5dbfacbaa394f11365d",
+      "request_hash": "e04aac7b69328d3581a89d5183b3b30779c2ab0c8c03f8d1fa65e18236437f62",
+      "state": "completed",
+      "receipt_id": "provider-receipt:f8486fcbb8874ef83c51cf8e",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.945Z",
+      "completed_at": "2026-09-13T20:43:06.951Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-F2B5A197E405007D",
+      "provider_key": "provider:cd33736a82c5433317b86bf5d5b84fba",
+      "request_hash": "f20f15e7d698ce454bbfa16598d7ec7200c9084a9de25c348d10c1546a7292bb",
+      "state": "completed",
+      "receipt_id": "provider-receipt:47a3d9b586aeec801a1a34ea",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.979Z",
+      "completed_at": "2026-09-13T20:43:06.984Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-C7549A323828044A",
+      "provider_key": "provider:7ba82eb700d2498315eee590370da9ef",
+      "request_hash": "c9d07a93e08c7e14cda648414d8c6648f2b14269bffd6a62b7557ad63a8a7d42",
+      "state": "completed",
+      "receipt_id": "provider-receipt:ed21da762f58e3d8c1e1feff",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.997Z",
+      "completed_at": "2026-09-13T20:43:07.011Z"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-a:order-orders-create",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-52F477B1BBB8C37A",
+      "provider_key": "provider:f051b48d8b3ebe599d8886b3ff623c08",
+      "request_hash": "6b77a9b301c1682f9c31fbffe669ba5dd653d9f0eff3c493b550aba175eb11da",
+      "state": "completed",
+      "receipt_id": "provider-receipt:da0afaccbdec24e2b411cffc",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.432Z",
+      "completed_at": "2026-09-13T20:43:06.450Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-A1221808E9CA7F6A",
+      "provider_key": "provider:b166d36f7fab24dcdf4ebb0d035daa2b",
+      "request_hash": "e2f4bc306ae433a224e6107090f373adec5920e365a0532615f2b51f9359e62f",
+      "state": "completed",
+      "receipt_id": "provider-receipt:73144be67b33cd8ae2d7aac6",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.036Z",
+      "completed_at": "2026-09-13T20:43:07.043Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-7F464E5380B84A63",
+      "provider_key": "provider:54bbfba08ed985e1c24dd873a30a5b1e",
+      "request_hash": "f759c816c290de3000f407c42b3613c78eae9c7e0a7a95eab9254bbdf3f97e0f",
+      "state": "completed",
+      "receipt_id": "provider-receipt:e7747c1cf9dc8b4687462e1b",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.020Z",
+      "completed_at": "2026-09-13T20:43:07.027Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-98370D8FC56158EF",
+      "provider_key": "provider:09e16efd86fab819b1ad71ab303b0669",
+      "request_hash": "e8ca085bfb46b7ddaf3b50d63c9f60de8a997b8e1868c01de8e17c7ebae930f3",
+      "state": "completed",
+      "receipt_id": "provider-receipt:2563c88daf7524f3b960ce95",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.053Z",
+      "completed_at": "2026-09-13T20:43:07.060Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-9949B37A0F4D507E",
+      "provider_key": "provider:33b6f5b700896723829e53e64ea66b97",
+      "request_hash": "41c46d9196cf37dc2f040592acf1f0ac260a43876689ed5e33c8163028a21cd8",
+      "state": "completed",
+      "receipt_id": "provider-receipt:1f284f2dd57f2db8e1c2a100",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.065Z",
+      "completed_at": "2026-09-13T20:43:07.077Z"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-a:payment-refunds-request",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-6B27A951ED1E2541",
+      "provider_key": "provider:ec265849128e9bad1ed74d7a04b6cd03",
+      "request_hash": "bc0322910d592b9e7077244c287d9d03a745cc00144d342fef04d5a5c68c5fbf",
+      "state": "completed",
+      "receipt_id": "provider-receipt:760dec3801b63d5f85ac421b",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.461Z",
+      "completed_at": "2026-09-13T20:43:06.481Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-9A82B650B204553E",
+      "provider_key": "provider:45e9f3b803fc48f28c0be1a344c95c75",
+      "request_hash": "ef1399ca332f35a93481017509f0e2fb0035b6655da83d7e354d3308ccc15985",
+      "state": "completed",
+      "receipt_id": "provider-receipt:b21028165ca6b72db375ef19",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.102Z",
+      "completed_at": "2026-09-13T20:43:07.109Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-CBD74569095BA5F3",
+      "provider_key": "provider:b7237f3f5ef116aab4a663305183fd6a",
+      "request_hash": "74ee90935f4bb677e8d4c799c2f56ba6092f8a340289a9719a5a3900224bf879",
+      "state": "completed",
+      "receipt_id": "provider-receipt:e130df2a2aa888077f9871b5",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.086Z",
+      "completed_at": "2026-09-13T20:43:07.092Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-9CB09473F287164E",
+      "provider_key": "provider:d69a6a5b978fecf5cf1412181320d3f3",
+      "request_hash": "345454cd109b149fa8f8c650f5ee9bd51df64df93defaaad44d471f246d72650",
+      "state": "completed",
+      "receipt_id": "provider-receipt:cdba6054f95ca9cb5fc1fa9c",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.119Z",
+      "completed_at": "2026-09-13T20:43:07.127Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-234837C5B45808C7",
+      "provider_key": "provider:6dbba16184b1df9b6f800769c5e4cf3d",
+      "request_hash": "7da7c9b36710a6348c08fd690f43dba16c9cb54d03fff4ff39cfc39eb4992fb9",
+      "state": "completed",
+      "receipt_id": "provider-receipt:1bb2520bdf1eab1ef0a49074",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.131Z",
+      "completed_at": "2026-09-13T20:43:07.143Z"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-a:provisioning-malls-create",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-100A44F8DE177068",
+      "provider_key": "provider:9bac59856aab0a7e7b5c7a471c92c7c1",
+      "request_hash": "39fa425b45a32ec73f55cc835bb1503933b4a0cd9838110b65f3b32aeeecaf4b",
+      "state": "completed",
+      "receipt_id": "provider-receipt:48a458fde1fa4917373caec2",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.360Z",
+      "completed_at": "2026-09-13T20:43:06.384Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-EAA239F6F9131F0D",
+      "provider_key": "provider:2d0224b14c0e3370033cbcb6e4613f56",
+      "request_hash": "a66b4b2a1c7fe83e72d1eb795c3f56ebab3fca4888911f4ccf9e866266c4a5d5",
+      "state": "completed",
+      "receipt_id": "provider-receipt:794258cc8e70e60c1632a3c6",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.897Z",
+      "completed_at": "2026-09-13T20:43:06.902Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-480D38305DD1CFAD",
+      "provider_key": "provider:494139b10a3fcb69db735ea713c7d15a",
+      "request_hash": "2bef88c6cbf5c067ac3b1cc7cf600c0f63c52ce1352a75e8d928cd78d2027662",
+      "state": "completed",
+      "receipt_id": "provider-receipt:d6499fcd2a6c32af1ad05a6f",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.880Z",
+      "completed_at": "2026-09-13T20:43:06.886Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-30C66CA509AF210A",
+      "provider_key": "provider:aa2f1894e8f8b8910d955e3e68cb42c9",
+      "request_hash": "facf5bfbf4e31b73e48d0f48307e4e3700ca094fa46974ce7a0799f1759be140",
+      "state": "completed",
+      "receipt_id": "provider-receipt:411502a30cca733547eea458",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.913Z",
+      "completed_at": "2026-09-13T20:43:06.918Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-119324465B4ACD4F",
+      "provider_key": "provider:0928ad7edafe4a7594c8742592edc20d",
+      "request_hash": "feefcf9042e15272d07cdae5abcfe40850f4023c8493dda27ce1f824ff0a0bc2",
+      "state": "completed",
+      "receipt_id": "provider-receipt:ae1e9c94549e9f590261f458",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.924Z",
+      "completed_at": "2026-09-13T20:43:06.936Z"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-b:identity-members-create",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-7DD59EE97600F046",
+      "provider_key": "provider:8cf93659842f08ac942d20ff7f686e23",
+      "request_hash": "15ed7a31d1de26a0df8090929fd5cb6edce67612849b112223d63665191f7449",
+      "state": "completed",
+      "receipt_id": "provider-receipt:32ae64f7be1d6767eb7406db",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.493Z",
+      "completed_at": "2026-09-13T20:43:06.515Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-984EF6F5889A1A0D",
+      "provider_key": "provider:3ab0301623a584da5979c7bbe117b72f",
+      "request_hash": "894d0165608d6af151bf85d907c198ea78a1f0a9c78300557b653d574396db89",
+      "state": "completed",
+      "receipt_id": "provider-receipt:c4163cc8c111bd72c4c19384",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.168Z",
+      "completed_at": "2026-09-13T20:43:07.174Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-6C5E08AB981B081B",
+      "provider_key": "provider:8fe0f210d296dba2dd192fb0c651f737",
+      "request_hash": "9a6b39483af00113f9c75e4111a9caf089946f09f142e66adde232b3ebf9f312",
+      "state": "completed",
+      "receipt_id": "provider-receipt:5d6b4f0e78a039ffa66a6a90",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.152Z",
+      "completed_at": "2026-09-13T20:43:07.159Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-FB44E1DBBDB13E6E",
+      "provider_key": "provider:8e63e824e5fa8d57ee118cdf453debb7",
+      "request_hash": "fefcd3a3cca7ced4ecec24ed957830ce605570d1b35e5b7b3357c7fc05421977",
+      "state": "completed",
+      "receipt_id": "provider-receipt:5c643b8e4148814cada7c718",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.184Z",
+      "completed_at": "2026-09-13T20:43:07.190Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-BE5AC9BA850B814E",
+      "provider_key": "provider:6559a1fe4fc67e80adf9998b2cbe29b1",
+      "request_hash": "0f2b18b38499e54723c3967f14c34c3deb1b0c2d62efd50e8c1b4a6646761b47",
+      "state": "completed",
+      "receipt_id": "provider-receipt:af99aff061ce9581435a3398",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.195Z",
+      "completed_at": "2026-09-13T20:43:07.207Z"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-b:member-sovereignty-upgrade",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-A0871A9FB669249F",
+      "provider_key": "provider:6253739063d205485c91b95f40307960",
+      "request_hash": "f82fb5b9bb32896b8032948135250c7a9367b188e7b0b2c7bcae4c8d1529e48f",
+      "state": "completed",
+      "receipt_id": "provider-receipt:05ef26aaa572cdb363d137ee",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.559Z",
+      "completed_at": "2026-09-13T20:43:06.580Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-73959965751CFBFB",
+      "provider_key": "provider:b6d81a6b043043f4ed99af22b3e3becd",
+      "request_hash": "1d60cebfbb0d041d3cc5e24b499e8f899caf8e04e50cc07ccbc4be875dffde42",
+      "state": "completed",
+      "receipt_id": "provider-receipt:1ef85aaa594ab24770d3ab3e",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.301Z",
+      "completed_at": "2026-09-13T20:43:07.308Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-0B6E3B3C1012937E",
+      "provider_key": "provider:858fa552151afafc3f7ff56a497cbde5",
+      "request_hash": "e83769700f8bad86b224ce1a4110d47fd17d26efe8a06910525176b741704725",
+      "state": "completed",
+      "receipt_id": "provider-receipt:e47ae70e1392264e5122231e",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.287Z",
+      "completed_at": "2026-09-13T20:43:07.293Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-91838CB14A20D375",
+      "provider_key": "provider:527fbd90eb5f386122c776d273e8c1b6",
+      "request_hash": "34c02548a0f451bc274f6543e2ed1b60c35122aacf99bb790ef54308339b7a87",
+      "state": "completed",
+      "receipt_id": "provider-receipt:cb23c21296bdc3aa99d92b4c",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.317Z",
+      "completed_at": "2026-09-13T20:43:07.323Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-DAFDB462FF493A1A",
+      "provider_key": "provider:bc95e676a98764dc88a8c37d88e29eaa",
+      "request_hash": "3cc80baaec201b117745800d733ebc14f5ae3bc61bfe3958ccd36033c0da6751",
+      "state": "completed",
+      "receipt_id": "provider-receipt:87ce1b04d0e45d6b4abb2376",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.331Z",
+      "completed_at": "2026-09-13T20:43:07.345Z"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-b:order-orders-create",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-29BCAB479BA5C1C4",
+      "provider_key": "provider:035736479584cad5bb3be7c66bf18d07",
+      "request_hash": "c51b183aa633b0394b4075d92078691116c868f95db70fbd9f2ef888e49943c3",
+      "state": "completed",
+      "receipt_id": "provider-receipt:5ce62e64bd431646eaa4ed7b",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.588Z",
+      "completed_at": "2026-09-13T20:43:06.607Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-0179B235F70929D3",
+      "provider_key": "provider:3012433b88d0b4fd042f52fdc03be7a0",
+      "request_hash": "92a5736790a87b3924bdb8a8fd6bf36196b193089c4b238e80abe99843d7d4fd",
+      "state": "completed",
+      "receipt_id": "provider-receipt:5718a8e9ca8c1db244731738",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.374Z",
+      "completed_at": "2026-09-13T20:43:07.379Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-E4A82A4B6CFFDAC2",
+      "provider_key": "provider:21e422eda4b95e9de0132ee75c9f44c4",
+      "request_hash": "c150232e6b4faa7d3b33a0203f91888e5507ac34cd19a60a1a2e7c590e16e5f2",
+      "state": "completed",
+      "receipt_id": "provider-receipt:d5c5998cc625485b1ab1bb0b",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.357Z",
+      "completed_at": "2026-09-13T20:43:07.363Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-0751E26FFD2DB7DA",
+      "provider_key": "provider:d58edbd4e3c1076bf46bf962b71c48b8",
+      "request_hash": "3a26292992a6169c4983550b46de8dbd7de009c43ed795a71f64041c2b6d7fa8",
+      "state": "completed",
+      "receipt_id": "provider-receipt:866d5b3e104fbbc390413491",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.390Z",
+      "completed_at": "2026-09-13T20:43:07.396Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-FAA70981BB4FE3E9",
+      "provider_key": "provider:b72c61f4eb070ce4fc30334357233e39",
+      "request_hash": "69d5521706c9248dfd067d59ce7d9343e1d0c7068666a97f993f00bfff1220bf",
+      "state": "completed",
+      "receipt_id": "provider-receipt:44684e187c39f4b57cec0c7a",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.400Z",
+      "completed_at": "2026-09-13T20:43:07.412Z"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-b:payment-refunds-request",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-09D70455AF495BC0",
+      "provider_key": "provider:8d7b20926c71e165ea7d394a3ea322d2",
+      "request_hash": "b050c10cd0bc02a0ae254ca94fd0362281b5849a4e0bfd3cd524a5134876800f",
+      "state": "completed",
+      "receipt_id": "provider-receipt:2f9c91c346509f478b8a9553",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.618Z",
+      "completed_at": "2026-09-13T20:43:06.654Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-5EF1C7D30DCCC87F",
+      "provider_key": "provider:25dbf3f56ae520481237c7ddda31ca79",
+      "request_hash": "4a4ee9c163f4b57addcdaddaa4472406058d498ce74eb917a6e11233b5d289de",
+      "state": "completed",
+      "receipt_id": "provider-receipt:36ea9106d46d8de8e786f57a",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.435Z",
+      "completed_at": "2026-09-13T20:43:07.441Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-8389F16343B84198",
+      "provider_key": "provider:de26f39a38c4be8457dafe383c3bf6c7",
+      "request_hash": "62025084dd9c9ff57e15e666c75af592fe6c04c454fd583c320bdac60c78f58c",
+      "state": "completed",
+      "receipt_id": "provider-receipt:2649ad40ba908fbbbc8a9ce5",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.421Z",
+      "completed_at": "2026-09-13T20:43:07.426Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-D20D3BFB0A935282",
+      "provider_key": "provider:1084af8ba723a41c3f826a331c1fbeae",
+      "request_hash": "d124dbee76c2778a3adb204f4e63df100e13512cbe53ce2674e8a95496578677",
+      "state": "completed",
+      "receipt_id": "provider-receipt:41da77083b6cf80b5da426f4",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.450Z",
+      "completed_at": "2026-09-13T20:43:07.456Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-2706A739E8F7B59F",
+      "provider_key": "provider:bd730560e712583c4a95557e76634b1a",
+      "request_hash": "5366325ea526bf939e5afbc72fef6d843756e8c4a1b7e91a0b0a8cfc66e6642b",
+      "state": "completed",
+      "receipt_id": "provider-receipt:a4384cf750b111a1002cfddc",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.461Z",
+      "completed_at": "2026-09-13T20:43:07.472Z"
+    },
+    {
+      "scenario_id": "e09:five_way:hosted-b:provisioning-malls-create",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-1BAEC75283B908CC",
+      "provider_key": "provider:31a9857808ac52215881d9872aa4fed3",
+      "request_hash": "bd77077f7887f1ae181f73ba75612d0aeca0fac2cd411a2cfea4c9b05015f5cd",
+      "state": "completed",
+      "receipt_id": "provider-receipt:9a8a8750034b199da11bb104",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.527Z",
+      "completed_at": "2026-09-13T20:43:06.547Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-576C9BF36E7F74B6",
+      "provider_key": "provider:4f575bd969f5326001a24a6f9d7519d8",
+      "request_hash": "b2a9afa4c4dba17dcc2dcdf43044d517206d84622f569b2d22815e1f32a0b786",
+      "state": "completed",
+      "receipt_id": "provider-receipt:55fde4b229a4eea09b254490",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.238Z",
+      "completed_at": "2026-09-13T20:43:07.244Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-5D6090BDFD39F69D",
+      "provider_key": "provider:dcaabbe4310c4391caba3a10c1ff9cef",
+      "request_hash": "0d00e99c58969f0f24e6f14532afee31048f737260cf46e4aef546271279d50a",
+      "state": "completed",
+      "receipt_id": "provider-receipt:7e8741257f230a15117bfa79",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.220Z",
+      "completed_at": "2026-09-13T20:43:07.228Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-38828A3CC82E961E",
+      "provider_key": "provider:0a6f632ecc64c75ba23afce959fc90e9",
+      "request_hash": "ebeb6b0532752d905df5784245dde65105a8b5fb18ae69ae48988f0345c59514",
+      "state": "completed",
+      "receipt_id": "provider-receipt:fb07290191825c69b03cd0b9",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.254Z",
+      "completed_at": "2026-09-13T20:43:07.262Z"
+    },
+    {
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-F0B78BFBCC784A83",
+      "provider_key": "provider:6fafb74d048e987be4258deaa49877e1",
+      "request_hash": "a58cdbb0aab8df7d013b1172baea8af32255ae112a4c29469bad261489f85fd6",
+      "state": "completed",
+      "receipt_id": "provider-receipt:2416ec34a081ed7572d98ba2",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.266Z",
+      "completed_at": "2026-09-13T20:43:07.278Z"
+    },
+    {
+      "scenario_id": "e09:five_way:sovereign-c:identity-members-create",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-8AB9C38ED44F4C60",
+      "provider_key": "provider:a236bcb59026be2cf60af12f9e81bc23",
+      "request_hash": "9234b14cac4d736ca6e1e787b258131dba3be48d4acee42c3ea432e73a1e6db3",
+      "state": "completed",
+      "receipt_id": "provider-receipt:b1b76ec505c0b00ce5952b8e",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.664Z",
+      "completed_at": "2026-09-13T20:43:06.682Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-4F88B82D0F3073F8",
+      "provider_key": "provider:5fe025e954cdfd9b7aea821dfaf99d37",
+      "request_hash": "80bab062b258bbe878f12c6c093b3a45ecfe8e0f8831a14b7d4247aaa49e0ce4",
+      "state": "completed",
+      "receipt_id": "provider-receipt:7a109062fbd91e19884f25a4",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.495Z",
+      "completed_at": "2026-09-13T20:43:07.500Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-78D7BBBFD96DF734",
+      "provider_key": "provider:5a894002d14c95ccc3e2fc71c7228846",
+      "request_hash": "8741f31e447882dbcb4d28e74c44980eefc6def2c8fdcb67a288274dc1067e32",
+      "state": "completed",
+      "receipt_id": "provider-receipt:7221e09bee89e5950dfaf2b7",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.481Z",
+      "completed_at": "2026-09-13T20:43:07.486Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-E97F8A92D2F60671",
+      "provider_key": "provider:6efee02cef676588a3f46cd1d07f2a64",
+      "request_hash": "2c740c20ecd770801ccef8702f6ac0a0ee8c20fb3940d6777a37815da61e30be",
+      "state": "completed",
+      "receipt_id": "provider-receipt:8e71b0e0383d77a45603925c",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.512Z",
+      "completed_at": "2026-09-13T20:43:07.519Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-2136DA04AE4AAE16",
+      "provider_key": "provider:7894d9aa24205f4ee03cf95c938f82f1",
+      "request_hash": "e2025867e009c077dbfc7cf8ee468689a3ccc0c060df35a1cef7bf26d9327d1b",
+      "state": "completed",
+      "receipt_id": "provider-receipt:a8f866e9eeaaebe7c168c8a6",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.528Z",
+      "completed_at": "2026-09-13T20:43:07.546Z"
+    },
+    {
+      "scenario_id": "e09:isolation:sovereign-c:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-FB404520339BDEA8",
+      "provider_key": "provider:92611a2d61ae446b0180039605effa42",
+      "request_hash": "6dd862e9d918f0e49ebd4e4315ff0d2adabfd5b3f1edaa204f3563c01e28f91d",
+      "state": "completed",
+      "receipt_id": "provider-receipt:2963cc28e8393a762eb41e25",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.863Z",
+      "completed_at": "2026-09-13T20:43:07.887Z"
+    },
+    {
+      "scenario_id": "e09:five_way:sovereign-c:member-sovereignty-upgrade",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-5F81601F0EDC40D3",
+      "provider_key": "provider:dc3c49932a6bf3f8919766e7a8eaf06a",
+      "request_hash": "23ee2797d5648279628a166700cede3e78d61fcfb44aebe7986a897874427332",
+      "state": "completed",
+      "receipt_id": "provider-receipt:a04c32747d6704f3320d05be",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.720Z",
+      "completed_at": "2026-09-13T20:43:06.743Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-992EA3316D1CF9AB",
+      "provider_key": "provider:2eb24cd0775238c88a43e836b900f0cf",
+      "request_hash": "4cf80df4a367b24ae5ff6684fa9dbbda5ad197cc477c905c6fd8921babbf3da3",
+      "state": "completed",
+      "receipt_id": "provider-receipt:263e138f0a27e2fa44f1a3a8",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.635Z",
+      "completed_at": "2026-09-13T20:43:07.641Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-D2D24CF2C64C5449",
+      "provider_key": "provider:eeeb932d41e864fd09ac2da049aa6b80",
+      "request_hash": "0ebc4fefcc3894c50a4f81a9a0d623811baf66672213c0769d1e224d53922155",
+      "state": "completed",
+      "receipt_id": "provider-receipt:8814d64307dbc644d071650c",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.619Z",
+      "completed_at": "2026-09-13T20:43:07.626Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-CEDC37BB62716508",
+      "provider_key": "provider:d4fdd6493b5d5d19d51f6a550725213c",
+      "request_hash": "b567fe38f0328ade29f3efe8afd212e5ba3947fd2de5335868f988a213cc47f7",
+      "state": "completed",
+      "receipt_id": "provider-receipt:d75bd53db9a42b5abd26ec2f",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.650Z",
+      "completed_at": "2026-09-13T20:43:07.656Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-BE5048CDAD047A54",
+      "provider_key": "provider:f2dcec1556501590cdaaf658b623e9a0",
+      "request_hash": "0a0756c3df90b63666b8ff0a57b024aa95f4e660c891b1e367ae57f236c8ab75",
+      "state": "completed",
+      "receipt_id": "provider-receipt:ad398e6e699512734033aa7f",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.661Z",
+      "completed_at": "2026-09-13T20:43:07.675Z"
+    },
+    {
+      "scenario_id": "e09:isolation:sovereign-c:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-E0A81DD30E71C1AB",
+      "provider_key": "provider:f15b486910912e3b1325d6bce97ee83a",
+      "request_hash": "3b88609812acf745394a4518c9699af39ba4c090aa4a1aa2df5a394302d92351",
+      "state": "completed",
+      "receipt_id": "provider-receipt:5902b7d19b66c08fb72e36b0",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.925Z",
+      "completed_at": "2026-09-13T20:43:07.944Z"
+    },
+    {
+      "scenario_id": "e09:five_way:sovereign-c:order-orders-create",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-9A40B20352FCCD06",
+      "provider_key": "provider:a0b552b602f94c14be17fd6323e9ffb8",
+      "request_hash": "e0d1423702234b43f9c79623ee0851118ed29266ac671d9de5b636614c3c680a",
+      "state": "completed",
+      "receipt_id": "provider-receipt:82d49469c5766c7f70c43bec",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.751Z",
+      "completed_at": "2026-09-13T20:43:06.768Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-F429C9593153A1A8",
+      "provider_key": "provider:1f48daf454568ef851ba298d016101be",
+      "request_hash": "c972c7bc7baa264d5187cbb91f1c78e06ff54e6df4a69a324d84b7b70327240b",
+      "state": "completed",
+      "receipt_id": "provider-receipt:ee1c78c005344f811c69d82a",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.698Z",
+      "completed_at": "2026-09-13T20:43:07.704Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-AC55041CA196BD04",
+      "provider_key": "provider:4505b175bc440e5a3121448e62dd46b7",
+      "request_hash": "5c3dfe5e4b78d4bca84a6a0b73ac1c312cadc9555634eaabaffbe07559fe5480",
+      "state": "completed",
+      "receipt_id": "provider-receipt:2e53dff406222ca2182c2c24",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.683Z",
+      "completed_at": "2026-09-13T20:43:07.689Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-B48EA6AAD0A96E60",
+      "provider_key": "provider:2f21d7b00d374b5238c71a348b29a110",
+      "request_hash": "5a432d10f64e5781b5027a54b58d9d090698e1ac043fe601c44aa96d9a3e037e",
+      "state": "completed",
+      "receipt_id": "provider-receipt:a29656f6c9c46bd0783e1735",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.716Z",
+      "completed_at": "2026-09-13T20:43:07.724Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-DEB7E607FEFF5041",
+      "provider_key": "provider:38d392bca608c8e723e9c5ecf2635adf",
+      "request_hash": "a977140fce49165a429098dcca1d92f6d341e863317a7b13d755d25253abb536",
+      "state": "completed",
+      "receipt_id": "provider-receipt:6cb51a30ffce6ec12317fad5",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.730Z",
+      "completed_at": "2026-09-13T20:43:07.746Z"
+    },
+    {
+      "scenario_id": "e09:isolation:sovereign-c:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-83183E93109BC09F",
+      "provider_key": "provider:328686c96abdf2ebfb71ccf91495cd1d",
+      "request_hash": "07565f777064527fb5c8fa27a50e22094c0cc933c9678e70d6ca6d8b94f03305",
+      "state": "completed",
+      "receipt_id": "provider-receipt:8d13a133fcccf6301e6153e9",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.952Z",
+      "completed_at": "2026-09-13T20:43:07.973Z"
+    },
+    {
+      "scenario_id": "e09:five_way:sovereign-c:payment-refunds-request",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-5078FCF029411403",
+      "provider_key": "provider:95bc8f44b5d65f8c3d69f20f7fe636f9",
+      "request_hash": "c13e1ed3db7cda2eedcc466606b4ef994f1573ea2600f3e36f7147217a3dbbf9",
+      "state": "completed",
+      "receipt_id": "provider-receipt:da30f6523e892e82891f4723",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.779Z",
+      "completed_at": "2026-09-13T20:43:06.796Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-79D477D80024D1FB",
+      "provider_key": "provider:bb10ae9b341eefbf0403a705712f3c8c",
+      "request_hash": "e0214276a2ada30e23915614d83956670af8b296f6e6b29204b94165ad485eae",
+      "state": "completed",
+      "receipt_id": "provider-receipt:4a241cd39de5a0b7076b2c5d",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.773Z",
+      "completed_at": "2026-09-13T20:43:07.780Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-E0FC33A88616E599",
+      "provider_key": "provider:5a2bf6b2d4c6d36010249b2cffcdbe54",
+      "request_hash": "4e374e1be798a87cef19cd3841b1295eb906af511d2ce0a1e52600e139ac2e91",
+      "state": "completed",
+      "receipt_id": "provider-receipt:cc6711991c15837b9dcb6331",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.757Z",
+      "completed_at": "2026-09-13T20:43:07.762Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-93E133ED5163A813",
+      "provider_key": "provider:321fb03a5843988673843e45ea532af5",
+      "request_hash": "4e9006a18d4937b5780d3652a0648e7acca570f03aceae3cb3209c0e9d25657c",
+      "state": "completed",
+      "receipt_id": "provider-receipt:64b69e6269c9201899a1361c",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.794Z",
+      "completed_at": "2026-09-13T20:43:07.800Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-54A8BB65A8CADA1B",
+      "provider_key": "provider:362c42077afa198dedebc443b28c5ee9",
+      "request_hash": "54a917e3ca8139331c02ff7de50f904a389a4963a9f4cbb46898b94ffe120f92",
+      "state": "completed",
+      "receipt_id": "provider-receipt:12dd8c0cdbf172a8393b9850",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.808Z",
+      "completed_at": "2026-09-13T20:43:07.821Z"
+    },
+    {
+      "scenario_id": "e09:isolation:sovereign-c:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-2875427D61FED436",
+      "provider_key": "provider:e669aced0f3af0c4a54d83192b969c64",
+      "request_hash": "ebf6ad461c17e90370555d37c4e97c1268776c1ebf28531ce62f2ee3322a8fc5",
+      "state": "completed",
+      "receipt_id": "provider-receipt:182cb095392bf225fb6e106a",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.982Z",
+      "completed_at": "2026-09-13T20:43:07.999Z"
+    },
+    {
+      "scenario_id": "e09:five_way:sovereign-c:provisioning-malls-create",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-5B18D07874EA499C",
+      "provider_key": "provider:8bec94035b51d67b997808f8eba68682",
+      "request_hash": "21fef741eae32bebd6d4bb6b1195f448773ae86ccdeb93e25e9904966aa2580d",
+      "state": "completed",
+      "receipt_id": "provider-receipt:f92e64d9bbc70de76dcbc5e5",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:06.691Z",
+      "completed_at": "2026-09-13T20:43:06.711Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-3C72FD25C73D9EF4",
+      "provider_key": "provider:2f26b0e15c86991fef8ffff2bd51c188",
+      "request_hash": "63dcf8da28b8b498d11efaa87b9fc7086cf0996a23195b59dd368f6c02defd0e",
+      "state": "completed",
+      "receipt_id": "provider-receipt:39a45d298083598aa791f405",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.573Z",
+      "completed_at": "2026-09-13T20:43:07.579Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-DFEE62D7E28DE455",
+      "provider_key": "provider:0a0ce010851bd29ed1e6a2c2293e9080",
+      "request_hash": "c2f62a289d2cf1ecb42b54853b29326f1190940943fa431437cddeeaa4bf3565",
+      "state": "completed",
+      "receipt_id": "provider-receipt:1cb642d1a9f58c304f3db0e9",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.554Z",
+      "completed_at": "2026-09-13T20:43:07.561Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-83DCF2C9F93764BB",
+      "provider_key": "provider:e84fd1cfcc2608036e28a2a7df39bac0",
+      "request_hash": "e04c1e73ed0ce966e61a4e1b70b9da556a6ff886e0c1cc11d55117639187b2c0",
+      "state": "completed",
+      "receipt_id": "provider-receipt:c4de2c4fb10984e1fc1f9ca5",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.589Z",
+      "completed_at": "2026-09-13T20:43:07.595Z"
+    },
+    {
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-96BB0F6ED2B8A8C9",
+      "provider_key": "provider:19a91dbf3a73bd88f8420bc66cc3b514",
+      "request_hash": "dab3e43ad235bec3e16d2a2af039df6e8507df74fca8a8adeb2bf36bfdef9e0b",
+      "state": "completed",
+      "receipt_id": "provider-receipt:d008362a462146b9715e31c8",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.599Z",
+      "completed_at": "2026-09-13T20:43:07.611Z"
+    },
+    {
+      "scenario_id": "e09:isolation:sovereign-c:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-F2DE11577BC3FB75",
+      "provider_key": "provider:d8db418ff61d3d94919a7c0aedb20709",
+      "request_hash": "16ffcc6a78f18d6c6e69661961307db19d93c0754b24cd16fa3e98f3081c3bfd",
+      "state": "completed",
+      "receipt_id": "provider-receipt:a44b7403a2e64d2519c465c8",
+      "attempts": 1,
+      "created_at": "2026-09-13T20:43:07.895Z",
+      "completed_at": "2026-09-13T20:43:07.915Z"
+    }
+  ],
+  "resources": [
+    {
+      "provider_key": "provider:ee063b21cfd938f00745631eff93e064",
+      "scenario_id": "e09:five_way:hosted-a:identity-members-create",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:ff6b246fff37d65a6eee272d",
+      "request_hash": "689c09f6936057c4f53f4fb8e2f343da4e5292420d1815b5911c315c090a89ae",
+      "applied_at": "2026-09-13T20:43:06.322Z"
+    },
+    {
+      "provider_key": "provider:9fa533e258ebc7a4601e287ae6ae84ae",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:9188aaaad23baaa8bf41fc37",
+      "request_hash": "4ab9fd3642a9de069765bb28e351450d4e79e67930ad369a21c99fe1750e08a3",
+      "applied_at": "2026-09-13T20:43:06.831Z"
+    },
+    {
+      "provider_key": "provider:a290d548e640c605baaef280961c613e",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:9748143111222140bc6fcd62",
+      "request_hash": "12cfd33097ea936cb3aebd2d5773dbafdf713a221273265651b19235d627d613",
+      "applied_at": "2026-09-13T20:43:06.815Z"
+    },
+    {
+      "provider_key": "provider:e21970ec1f2229088c0bf67e6dec43f3",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:6e5f6d1a4ab864bfc844e85f",
+      "request_hash": "a4a99a915212c9d536aa0b5f4f00ba62ad00d99f6addc5e05ecd2b38fa68239d",
+      "applied_at": "2026-09-13T20:43:06.850Z"
+    },
+    {
+      "provider_key": "provider:8e621c76e3e84cd7c171a267647591a4",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:e0f48949e69bfbf157f8c139",
+      "request_hash": "ffc3cf65cc1f863bb2f43b0f8736247dbb1931d2318248758f6137e0f1c29b1d",
+      "applied_at": "2026-09-13T20:43:06.862Z"
+    },
+    {
+      "provider_key": "provider:a5a17828fa44d85086ee5c7c66b4621d",
+      "scenario_id": "e09:five_way:hosted-a:member-sovereignty-upgrade",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:c3b311815a266012804de7f0",
+      "request_hash": "14da7e2b9846c4a94b5ded20cc38c3df6b324e1373828ad00d88e48dd9b846c8",
+      "applied_at": "2026-09-13T20:43:06.417Z"
+    },
+    {
+      "provider_key": "provider:b1f0a61375067424c05809e6f11363f9",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:08260d1ec961a30d47cd3a34",
+      "request_hash": "bd99fa46ebde42c14dd50f2f786e8cf280c9351dc1ccc1403f48d1021f507ef9",
+      "applied_at": "2026-09-13T20:43:06.966Z"
+    },
+    {
+      "provider_key": "provider:6fb0d8f16c64c5dbfacbaa394f11365d",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:f8486fcbb8874ef83c51cf8e",
+      "request_hash": "e04aac7b69328d3581a89d5183b3b30779c2ab0c8c03f8d1fa65e18236437f62",
+      "applied_at": "2026-09-13T20:43:06.949Z"
+    },
+    {
+      "provider_key": "provider:cd33736a82c5433317b86bf5d5b84fba",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:47a3d9b586aeec801a1a34ea",
+      "request_hash": "f20f15e7d698ce454bbfa16598d7ec7200c9084a9de25c348d10c1546a7292bb",
+      "applied_at": "2026-09-13T20:43:06.983Z"
+    },
+    {
+      "provider_key": "provider:7ba82eb700d2498315eee590370da9ef",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:ed21da762f58e3d8c1e1feff",
+      "request_hash": "c9d07a93e08c7e14cda648414d8c6648f2b14269bffd6a62b7557ad63a8a7d42",
+      "applied_at": "2026-09-13T20:43:07.002Z"
+    },
+    {
+      "provider_key": "provider:f051b48d8b3ebe599d8886b3ff623c08",
+      "scenario_id": "e09:five_way:hosted-a:order-orders-create",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:da0afaccbdec24e2b411cffc",
+      "request_hash": "6b77a9b301c1682f9c31fbffe669ba5dd653d9f0eff3c493b550aba175eb11da",
+      "applied_at": "2026-09-13T20:43:06.448Z"
+    },
+    {
+      "provider_key": "provider:b166d36f7fab24dcdf4ebb0d035daa2b",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:73144be67b33cd8ae2d7aac6",
+      "request_hash": "e2f4bc306ae433a224e6107090f373adec5920e365a0532615f2b51f9359e62f",
+      "applied_at": "2026-09-13T20:43:07.041Z"
+    },
+    {
+      "provider_key": "provider:54bbfba08ed985e1c24dd873a30a5b1e",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:e7747c1cf9dc8b4687462e1b",
+      "request_hash": "f759c816c290de3000f407c42b3613c78eae9c7e0a7a95eab9254bbdf3f97e0f",
+      "applied_at": "2026-09-13T20:43:07.025Z"
+    },
+    {
+      "provider_key": "provider:09e16efd86fab819b1ad71ab303b0669",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:2563c88daf7524f3b960ce95",
+      "request_hash": "e8ca085bfb46b7ddaf3b50d63c9f60de8a997b8e1868c01de8e17c7ebae930f3",
+      "applied_at": "2026-09-13T20:43:07.058Z"
+    },
+    {
+      "provider_key": "provider:33b6f5b700896723829e53e64ea66b97",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:1f284f2dd57f2db8e1c2a100",
+      "request_hash": "41c46d9196cf37dc2f040592acf1f0ac260a43876689ed5e33c8163028a21cd8",
+      "applied_at": "2026-09-13T20:43:07.069Z"
+    },
+    {
+      "provider_key": "provider:ec265849128e9bad1ed74d7a04b6cd03",
+      "scenario_id": "e09:five_way:hosted-a:payment-refunds-request",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:760dec3801b63d5f85ac421b",
+      "request_hash": "bc0322910d592b9e7077244c287d9d03a745cc00144d342fef04d5a5c68c5fbf",
+      "applied_at": "2026-09-13T20:43:06.479Z"
+    },
+    {
+      "provider_key": "provider:45e9f3b803fc48f28c0be1a344c95c75",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:b21028165ca6b72db375ef19",
+      "request_hash": "ef1399ca332f35a93481017509f0e2fb0035b6655da83d7e354d3308ccc15985",
+      "applied_at": "2026-09-13T20:43:07.108Z"
+    },
+    {
+      "provider_key": "provider:b7237f3f5ef116aab4a663305183fd6a",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:e130df2a2aa888077f9871b5",
+      "request_hash": "74ee90935f4bb677e8d4c799c2f56ba6092f8a340289a9719a5a3900224bf879",
+      "applied_at": "2026-09-13T20:43:07.090Z"
+    },
+    {
+      "provider_key": "provider:d69a6a5b978fecf5cf1412181320d3f3",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:cdba6054f95ca9cb5fc1fa9c",
+      "request_hash": "345454cd109b149fa8f8c650f5ee9bd51df64df93defaaad44d471f246d72650",
+      "applied_at": "2026-09-13T20:43:07.125Z"
+    },
+    {
+      "provider_key": "provider:6dbba16184b1df9b6f800769c5e4cf3d",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:1bb2520bdf1eab1ef0a49074",
+      "request_hash": "7da7c9b36710a6348c08fd690f43dba16c9cb54d03fff4ff39cfc39eb4992fb9",
+      "applied_at": "2026-09-13T20:43:07.135Z"
+    },
+    {
+      "provider_key": "provider:9bac59856aab0a7e7b5c7a471c92c7c1",
+      "scenario_id": "e09:five_way:hosted-a:provisioning-malls-create",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:48a458fde1fa4917373caec2",
+      "request_hash": "39fa425b45a32ec73f55cc835bb1503933b4a0cd9838110b65f3b32aeeecaf4b",
+      "applied_at": "2026-09-13T20:43:06.381Z"
+    },
+    {
+      "provider_key": "provider:2d0224b14c0e3370033cbcb6e4613f56",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:794258cc8e70e60c1632a3c6",
+      "request_hash": "a66b4b2a1c7fe83e72d1eb795c3f56ebab3fca4888911f4ccf9e866266c4a5d5",
+      "applied_at": "2026-09-13T20:43:06.901Z"
+    },
+    {
+      "provider_key": "provider:494139b10a3fcb69db735ea713c7d15a",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:d6499fcd2a6c32af1ad05a6f",
+      "request_hash": "2bef88c6cbf5c067ac3b1cc7cf600c0f63c52ce1352a75e8d928cd78d2027662",
+      "applied_at": "2026-09-13T20:43:06.884Z"
+    },
+    {
+      "provider_key": "provider:aa2f1894e8f8b8910d955e3e68cb42c9",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:411502a30cca733547eea458",
+      "request_hash": "facf5bfbf4e31b73e48d0f48307e4e3700ca094fa46974ce7a0799f1759be140",
+      "applied_at": "2026-09-13T20:43:06.917Z"
+    },
+    {
+      "provider_key": "provider:0928ad7edafe4a7594c8742592edc20d",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:ae1e9c94549e9f590261f458",
+      "request_hash": "feefcf9042e15272d07cdae5abcfe40850f4023c8493dda27ce1f824ff0a0bc2",
+      "applied_at": "2026-09-13T20:43:06.928Z"
+    },
+    {
+      "provider_key": "provider:8cf93659842f08ac942d20ff7f686e23",
+      "scenario_id": "e09:five_way:hosted-b:identity-members-create",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:32ae64f7be1d6767eb7406db",
+      "request_hash": "15ed7a31d1de26a0df8090929fd5cb6edce67612849b112223d63665191f7449",
+      "applied_at": "2026-09-13T20:43:06.513Z"
+    },
+    {
+      "provider_key": "provider:3ab0301623a584da5979c7bbe117b72f",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:c4163cc8c111bd72c4c19384",
+      "request_hash": "894d0165608d6af151bf85d907c198ea78a1f0a9c78300557b653d574396db89",
+      "applied_at": "2026-09-13T20:43:07.172Z"
+    },
+    {
+      "provider_key": "provider:8fe0f210d296dba2dd192fb0c651f737",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:5d6b4f0e78a039ffa66a6a90",
+      "request_hash": "9a6b39483af00113f9c75e4111a9caf089946f09f142e66adde232b3ebf9f312",
+      "applied_at": "2026-09-13T20:43:07.158Z"
+    },
+    {
+      "provider_key": "provider:8e63e824e5fa8d57ee118cdf453debb7",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:5c643b8e4148814cada7c718",
+      "request_hash": "fefcd3a3cca7ced4ecec24ed957830ce605570d1b35e5b7b3357c7fc05421977",
+      "applied_at": "2026-09-13T20:43:07.188Z"
+    },
+    {
+      "provider_key": "provider:6559a1fe4fc67e80adf9998b2cbe29b1",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:af99aff061ce9581435a3398",
+      "request_hash": "0f2b18b38499e54723c3967f14c34c3deb1b0c2d62efd50e8c1b4a6646761b47",
+      "applied_at": "2026-09-13T20:43:07.199Z"
+    },
+    {
+      "provider_key": "provider:6253739063d205485c91b95f40307960",
+      "scenario_id": "e09:five_way:hosted-b:member-sovereignty-upgrade",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:05ef26aaa572cdb363d137ee",
+      "request_hash": "f82fb5b9bb32896b8032948135250c7a9367b188e7b0b2c7bcae4c8d1529e48f",
+      "applied_at": "2026-09-13T20:43:06.578Z"
+    },
+    {
+      "provider_key": "provider:b6d81a6b043043f4ed99af22b3e3becd",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:1ef85aaa594ab24770d3ab3e",
+      "request_hash": "1d60cebfbb0d041d3cc5e24b499e8f899caf8e04e50cc07ccbc4be875dffde42",
+      "applied_at": "2026-09-13T20:43:07.305Z"
+    },
+    {
+      "provider_key": "provider:858fa552151afafc3f7ff56a497cbde5",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:e47ae70e1392264e5122231e",
+      "request_hash": "e83769700f8bad86b224ce1a4110d47fd17d26efe8a06910525176b741704725",
+      "applied_at": "2026-09-13T20:43:07.291Z"
+    },
+    {
+      "provider_key": "provider:527fbd90eb5f386122c776d273e8c1b6",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:cb23c21296bdc3aa99d92b4c",
+      "request_hash": "34c02548a0f451bc274f6543e2ed1b60c35122aacf99bb790ef54308339b7a87",
+      "applied_at": "2026-09-13T20:43:07.322Z"
+    },
+    {
+      "provider_key": "provider:bc95e676a98764dc88a8c37d88e29eaa",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:87ce1b04d0e45d6b4abb2376",
+      "request_hash": "3cc80baaec201b117745800d733ebc14f5ae3bc61bfe3958ccd36033c0da6751",
+      "applied_at": "2026-09-13T20:43:07.335Z"
+    },
+    {
+      "provider_key": "provider:035736479584cad5bb3be7c66bf18d07",
+      "scenario_id": "e09:five_way:hosted-b:order-orders-create",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:5ce62e64bd431646eaa4ed7b",
+      "request_hash": "c51b183aa633b0394b4075d92078691116c868f95db70fbd9f2ef888e49943c3",
+      "applied_at": "2026-09-13T20:43:06.605Z"
+    },
+    {
+      "provider_key": "provider:3012433b88d0b4fd042f52fdc03be7a0",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:5718a8e9ca8c1db244731738",
+      "request_hash": "92a5736790a87b3924bdb8a8fd6bf36196b193089c4b238e80abe99843d7d4fd",
+      "applied_at": "2026-09-13T20:43:07.378Z"
+    },
+    {
+      "provider_key": "provider:21e422eda4b95e9de0132ee75c9f44c4",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:d5c5998cc625485b1ab1bb0b",
+      "request_hash": "c150232e6b4faa7d3b33a0203f91888e5507ac34cd19a60a1a2e7c590e16e5f2",
+      "applied_at": "2026-09-13T20:43:07.361Z"
+    },
+    {
+      "provider_key": "provider:d58edbd4e3c1076bf46bf962b71c48b8",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:866d5b3e104fbbc390413491",
+      "request_hash": "3a26292992a6169c4983550b46de8dbd7de009c43ed795a71f64041c2b6d7fa8",
+      "applied_at": "2026-09-13T20:43:07.394Z"
+    },
+    {
+      "provider_key": "provider:b72c61f4eb070ce4fc30334357233e39",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:44684e187c39f4b57cec0c7a",
+      "request_hash": "69d5521706c9248dfd067d59ce7d9343e1d0c7068666a97f993f00bfff1220bf",
+      "applied_at": "2026-09-13T20:43:07.404Z"
+    },
+    {
+      "provider_key": "provider:8d7b20926c71e165ea7d394a3ea322d2",
+      "scenario_id": "e09:five_way:hosted-b:payment-refunds-request",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:2f9c91c346509f478b8a9553",
+      "request_hash": "b050c10cd0bc02a0ae254ca94fd0362281b5849a4e0bfd3cd524a5134876800f",
+      "applied_at": "2026-09-13T20:43:06.652Z"
+    },
+    {
+      "provider_key": "provider:25dbf3f56ae520481237c7ddda31ca79",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:36ea9106d46d8de8e786f57a",
+      "request_hash": "4a4ee9c163f4b57addcdaddaa4472406058d498ce74eb917a6e11233b5d289de",
+      "applied_at": "2026-09-13T20:43:07.439Z"
+    },
+    {
+      "provider_key": "provider:de26f39a38c4be8457dafe383c3bf6c7",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:2649ad40ba908fbbbc8a9ce5",
+      "request_hash": "62025084dd9c9ff57e15e666c75af592fe6c04c454fd583c320bdac60c78f58c",
+      "applied_at": "2026-09-13T20:43:07.425Z"
+    },
+    {
+      "provider_key": "provider:1084af8ba723a41c3f826a331c1fbeae",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:41da77083b6cf80b5da426f4",
+      "request_hash": "d124dbee76c2778a3adb204f4e63df100e13512cbe53ce2674e8a95496578677",
+      "applied_at": "2026-09-13T20:43:07.454Z"
+    },
+    {
+      "provider_key": "provider:bd730560e712583c4a95557e76634b1a",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:a4384cf750b111a1002cfddc",
+      "request_hash": "5366325ea526bf939e5afbc72fef6d843756e8c4a1b7e91a0b0a8cfc66e6642b",
+      "applied_at": "2026-09-13T20:43:07.464Z"
+    },
+    {
+      "provider_key": "provider:31a9857808ac52215881d9872aa4fed3",
+      "scenario_id": "e09:five_way:hosted-b:provisioning-malls-create",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:9a8a8750034b199da11bb104",
+      "request_hash": "bd77077f7887f1ae181f73ba75612d0aeca0fac2cd411a2cfea4c9b05015f5cd",
+      "applied_at": "2026-09-13T20:43:06.545Z"
+    },
+    {
+      "provider_key": "provider:4f575bd969f5326001a24a6f9d7519d8",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:55fde4b229a4eea09b254490",
+      "request_hash": "b2a9afa4c4dba17dcc2dcdf43044d517206d84622f569b2d22815e1f32a0b786",
+      "applied_at": "2026-09-13T20:43:07.243Z"
+    },
+    {
+      "provider_key": "provider:dcaabbe4310c4391caba3a10c1ff9cef",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:7e8741257f230a15117bfa79",
+      "request_hash": "0d00e99c58969f0f24e6f14532afee31048f737260cf46e4aef546271279d50a",
+      "applied_at": "2026-09-13T20:43:07.225Z"
+    },
+    {
+      "provider_key": "provider:0a6f632ecc64c75ba23afce959fc90e9",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:fb07290191825c69b03cd0b9",
+      "request_hash": "ebeb6b0532752d905df5784245dde65105a8b5fb18ae69ae48988f0345c59514",
+      "applied_at": "2026-09-13T20:43:07.260Z"
+    },
+    {
+      "provider_key": "provider:6fafb74d048e987be4258deaa49877e1",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:2416ec34a081ed7572d98ba2",
+      "request_hash": "a58cdbb0aab8df7d013b1172baea8af32255ae112a4c29469bad261489f85fd6",
+      "applied_at": "2026-09-13T20:43:07.270Z"
+    },
+    {
+      "provider_key": "provider:a236bcb59026be2cf60af12f9e81bc23",
+      "scenario_id": "e09:five_way:sovereign-c:identity-members-create",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:b1b76ec505c0b00ce5952b8e",
+      "request_hash": "9234b14cac4d736ca6e1e787b258131dba3be48d4acee42c3ea432e73a1e6db3",
+      "applied_at": "2026-09-13T20:43:06.681Z"
+    },
+    {
+      "provider_key": "provider:5fe025e954cdfd9b7aea821dfaf99d37",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:7a109062fbd91e19884f25a4",
+      "request_hash": "80bab062b258bbe878f12c6c093b3a45ecfe8e0f8831a14b7d4247aaa49e0ce4",
+      "applied_at": "2026-09-13T20:43:07.499Z"
+    },
+    {
+      "provider_key": "provider:5a894002d14c95ccc3e2fc71c7228846",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:7221e09bee89e5950dfaf2b7",
+      "request_hash": "8741f31e447882dbcb4d28e74c44980eefc6def2c8fdcb67a288274dc1067e32",
+      "applied_at": "2026-09-13T20:43:07.484Z"
+    },
+    {
+      "provider_key": "provider:6efee02cef676588a3f46cd1d07f2a64",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:8e71b0e0383d77a45603925c",
+      "request_hash": "2c740c20ecd770801ccef8702f6ac0a0ee8c20fb3940d6777a37815da61e30be",
+      "applied_at": "2026-09-13T20:43:07.517Z"
+    },
+    {
+      "provider_key": "provider:7894d9aa24205f4ee03cf95c938f82f1",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:a8f866e9eeaaebe7c168c8a6",
+      "request_hash": "e2025867e009c077dbfc7cf8ee468689a3ccc0c060df35a1cef7bf26d9327d1b",
+      "applied_at": "2026-09-13T20:43:07.534Z"
+    },
+    {
+      "provider_key": "provider:92611a2d61ae446b0180039605effa42",
+      "scenario_id": "e09:isolation:sovereign-c:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "resource_id": "provider-resource:2963cc28e8393a762eb41e25",
+      "request_hash": "6dd862e9d918f0e49ebd4e4315ff0d2adabfd5b3f1edaa204f3563c01e28f91d",
+      "applied_at": "2026-09-13T20:43:07.871Z"
+    },
+    {
+      "provider_key": "provider:dc3c49932a6bf3f8919766e7a8eaf06a",
+      "scenario_id": "e09:five_way:sovereign-c:member-sovereignty-upgrade",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:a04c32747d6704f3320d05be",
+      "request_hash": "23ee2797d5648279628a166700cede3e78d61fcfb44aebe7986a897874427332",
+      "applied_at": "2026-09-13T20:43:06.741Z"
+    },
+    {
+      "provider_key": "provider:2eb24cd0775238c88a43e836b900f0cf",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:263e138f0a27e2fa44f1a3a8",
+      "request_hash": "4cf80df4a367b24ae5ff6684fa9dbbda5ad197cc477c905c6fd8921babbf3da3",
+      "applied_at": "2026-09-13T20:43:07.639Z"
+    },
+    {
+      "provider_key": "provider:eeeb932d41e864fd09ac2da049aa6b80",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:8814d64307dbc644d071650c",
+      "request_hash": "0ebc4fefcc3894c50a4f81a9a0d623811baf66672213c0769d1e224d53922155",
+      "applied_at": "2026-09-13T20:43:07.624Z"
+    },
+    {
+      "provider_key": "provider:d4fdd6493b5d5d19d51f6a550725213c",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:d75bd53db9a42b5abd26ec2f",
+      "request_hash": "b567fe38f0328ade29f3efe8afd212e5ba3947fd2de5335868f988a213cc47f7",
+      "applied_at": "2026-09-13T20:43:07.654Z"
+    },
+    {
+      "provider_key": "provider:f2dcec1556501590cdaaf658b623e9a0",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:ad398e6e699512734033aa7f",
+      "request_hash": "0a0756c3df90b63666b8ff0a57b024aa95f4e660c891b1e367ae57f236c8ab75",
+      "applied_at": "2026-09-13T20:43:07.665Z"
+    },
+    {
+      "provider_key": "provider:f15b486910912e3b1325d6bce97ee83a",
+      "scenario_id": "e09:isolation:sovereign-c:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "resource_id": "provider-resource:5902b7d19b66c08fb72e36b0",
+      "request_hash": "3b88609812acf745394a4518c9699af39ba4c090aa4a1aa2df5a394302d92351",
+      "applied_at": "2026-09-13T20:43:07.932Z"
+    },
+    {
+      "provider_key": "provider:a0b552b602f94c14be17fd6323e9ffb8",
+      "scenario_id": "e09:five_way:sovereign-c:order-orders-create",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:82d49469c5766c7f70c43bec",
+      "request_hash": "e0d1423702234b43f9c79623ee0851118ed29266ac671d9de5b636614c3c680a",
+      "applied_at": "2026-09-13T20:43:06.767Z"
+    },
+    {
+      "provider_key": "provider:1f48daf454568ef851ba298d016101be",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:ee1c78c005344f811c69d82a",
+      "request_hash": "c972c7bc7baa264d5187cbb91f1c78e06ff54e6df4a69a324d84b7b70327240b",
+      "applied_at": "2026-09-13T20:43:07.702Z"
+    },
+    {
+      "provider_key": "provider:4505b175bc440e5a3121448e62dd46b7",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:2e53dff406222ca2182c2c24",
+      "request_hash": "5c3dfe5e4b78d4bca84a6a0b73ac1c312cadc9555634eaabaffbe07559fe5480",
+      "applied_at": "2026-09-13T20:43:07.688Z"
+    },
+    {
+      "provider_key": "provider:2f21d7b00d374b5238c71a348b29a110",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:a29656f6c9c46bd0783e1735",
+      "request_hash": "5a432d10f64e5781b5027a54b58d9d090698e1ac043fe601c44aa96d9a3e037e",
+      "applied_at": "2026-09-13T20:43:07.721Z"
+    },
+    {
+      "provider_key": "provider:38d392bca608c8e723e9c5ecf2635adf",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:6cb51a30ffce6ec12317fad5",
+      "request_hash": "a977140fce49165a429098dcca1d92f6d341e863317a7b13d755d25253abb536",
+      "applied_at": "2026-09-13T20:43:07.735Z"
+    },
+    {
+      "provider_key": "provider:328686c96abdf2ebfb71ccf91495cd1d",
+      "scenario_id": "e09:isolation:sovereign-c:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "resource_id": "provider-resource:8d13a133fcccf6301e6153e9",
+      "request_hash": "07565f777064527fb5c8fa27a50e22094c0cc933c9678e70d6ca6d8b94f03305",
+      "applied_at": "2026-09-13T20:43:07.961Z"
+    },
+    {
+      "provider_key": "provider:95bc8f44b5d65f8c3d69f20f7fe636f9",
+      "scenario_id": "e09:five_way:sovereign-c:payment-refunds-request",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:da30f6523e892e82891f4723",
+      "request_hash": "c13e1ed3db7cda2eedcc466606b4ef994f1573ea2600f3e36f7147217a3dbbf9",
+      "applied_at": "2026-09-13T20:43:06.794Z"
+    },
+    {
+      "provider_key": "provider:bb10ae9b341eefbf0403a705712f3c8c",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:4a241cd39de5a0b7076b2c5d",
+      "request_hash": "e0214276a2ada30e23915614d83956670af8b296f6e6b29204b94165ad485eae",
+      "applied_at": "2026-09-13T20:43:07.778Z"
+    },
+    {
+      "provider_key": "provider:5a2bf6b2d4c6d36010249b2cffcdbe54",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:cc6711991c15837b9dcb6331",
+      "request_hash": "4e374e1be798a87cef19cd3841b1295eb906af511d2ce0a1e52600e139ac2e91",
+      "applied_at": "2026-09-13T20:43:07.761Z"
+    },
+    {
+      "provider_key": "provider:321fb03a5843988673843e45ea532af5",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:64b69e6269c9201899a1361c",
+      "request_hash": "4e9006a18d4937b5780d3652a0648e7acca570f03aceae3cb3209c0e9d25657c",
+      "applied_at": "2026-09-13T20:43:07.799Z"
+    },
+    {
+      "provider_key": "provider:362c42077afa198dedebc443b28c5ee9",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:12dd8c0cdbf172a8393b9850",
+      "request_hash": "54a917e3ca8139331c02ff7de50f904a389a4963a9f4cbb46898b94ffe120f92",
+      "applied_at": "2026-09-13T20:43:07.812Z"
+    },
+    {
+      "provider_key": "provider:e669aced0f3af0c4a54d83192b969c64",
+      "scenario_id": "e09:isolation:sovereign-c:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "resource_id": "provider-resource:182cb095392bf225fb6e106a",
+      "request_hash": "ebf6ad461c17e90370555d37c4e97c1268776c1ebf28531ce62f2ee3322a8fc5",
+      "applied_at": "2026-09-13T20:43:07.989Z"
+    },
+    {
+      "provider_key": "provider:8bec94035b51d67b997808f8eba68682",
+      "scenario_id": "e09:five_way:sovereign-c:provisioning-malls-create",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:f92e64d9bbc70de76dcbc5e5",
+      "request_hash": "21fef741eae32bebd6d4bb6b1195f448773ae86ccdeb93e25e9904966aa2580d",
+      "applied_at": "2026-09-13T20:43:06.709Z"
+    },
+    {
+      "provider_key": "provider:2f26b0e15c86991fef8ffff2bd51c188",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:39a45d298083598aa791f405",
+      "request_hash": "63dcf8da28b8b498d11efaa87b9fc7086cf0996a23195b59dd368f6c02defd0e",
+      "applied_at": "2026-09-13T20:43:07.577Z"
+    },
+    {
+      "provider_key": "provider:0a0ce010851bd29ed1e6a2c2293e9080",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:1cb642d1a9f58c304f3db0e9",
+      "request_hash": "c2f62a289d2cf1ecb42b54853b29326f1190940943fa431437cddeeaa4bf3565",
+      "applied_at": "2026-09-13T20:43:07.559Z"
+    },
+    {
+      "provider_key": "provider:e84fd1cfcc2608036e28a2a7df39bac0",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:c4de2c4fb10984e1fc1f9ca5",
+      "request_hash": "e04c1e73ed0ce966e61a4e1b70b9da556a6ff886e0c1cc11d55117639187b2c0",
+      "applied_at": "2026-09-13T20:43:07.593Z"
+    },
+    {
+      "provider_key": "provider:19a91dbf3a73bd88f8420bc66cc3b514",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:d008362a462146b9715e31c8",
+      "request_hash": "dab3e43ad235bec3e16d2a2af039df6e8507df74fca8a8adeb2bf36bfdef9e0b",
+      "applied_at": "2026-09-13T20:43:07.603Z"
+    },
+    {
+      "provider_key": "provider:d8db418ff61d3d94919a7c0aedb20709",
+      "scenario_id": "e09:isolation:sovereign-c:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "resource_id": "provider-resource:a44b7403a2e64d2519c465c8",
+      "request_hash": "16ffcc6a78f18d6c6e69661961307db19d93c0754b24cd16fa3e98f3081c3bfd",
+      "applied_at": "2026-09-13T20:43:07.903Z"
+    }
+  ],
+  "receipts": [
+    {
+      "receipt_id": "provider-receipt:ff6b246fff37d65a6eee272d",
+      "provider_key": "provider:ee063b21cfd938f00745631eff93e064",
+      "scenario_id": "e09:five_way:hosted-a:identity-members-create",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-8725FC0B5B225F49",
+      "resource_id": "provider-resource:ff6b246fff37d65a6eee272d",
+      "request_hash": "689c09f6936057c4f53f4fb8e2f343da4e5292420d1815b5911c315c090a89ae",
+      "applied_at": "2026-09-13T20:43:06.323Z"
+    },
+    {
+      "receipt_id": "provider-receipt:9188aaaad23baaa8bf41fc37",
+      "provider_key": "provider:9fa533e258ebc7a4601e287ae6ae84ae",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-8FE9200D8A87403D",
+      "resource_id": "provider-resource:9188aaaad23baaa8bf41fc37",
+      "request_hash": "4ab9fd3642a9de069765bb28e351450d4e79e67930ad369a21c99fe1750e08a3",
+      "applied_at": "2026-09-13T20:43:06.831Z"
+    },
+    {
+      "receipt_id": "provider-receipt:9748143111222140bc6fcd62",
+      "provider_key": "provider:a290d548e640c605baaef280961c613e",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-E7EECEC392AFE055",
+      "resource_id": "provider-resource:9748143111222140bc6fcd62",
+      "request_hash": "12cfd33097ea936cb3aebd2d5773dbafdf713a221273265651b19235d627d613",
+      "applied_at": "2026-09-13T20:43:06.815Z"
+    },
+    {
+      "receipt_id": "provider-receipt:6e5f6d1a4ab864bfc844e85f",
+      "provider_key": "provider:e21970ec1f2229088c0bf67e6dec43f3",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-7C67273E5B7CAC9E",
+      "resource_id": "provider-resource:6e5f6d1a4ab864bfc844e85f",
+      "request_hash": "a4a99a915212c9d536aa0b5f4f00ba62ad00d99f6addc5e05ecd2b38fa68239d",
+      "applied_at": "2026-09-13T20:43:06.850Z"
+    },
+    {
+      "receipt_id": "provider-receipt:e0f48949e69bfbf157f8c139",
+      "provider_key": "provider:8e621c76e3e84cd7c171a267647591a4",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-175F31228421F775",
+      "resource_id": "provider-resource:e0f48949e69bfbf157f8c139",
+      "request_hash": "ffc3cf65cc1f863bb2f43b0f8736247dbb1931d2318248758f6137e0f1c29b1d",
+      "applied_at": "2026-09-13T20:43:06.862Z"
+    },
+    {
+      "receipt_id": "provider-receipt:c3b311815a266012804de7f0",
+      "provider_key": "provider:a5a17828fa44d85086ee5c7c66b4621d",
+      "scenario_id": "e09:five_way:hosted-a:member-sovereignty-upgrade",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-FC18F9CE020AD959",
+      "resource_id": "provider-resource:c3b311815a266012804de7f0",
+      "request_hash": "14da7e2b9846c4a94b5ded20cc38c3df6b324e1373828ad00d88e48dd9b846c8",
+      "applied_at": "2026-09-13T20:43:06.418Z"
+    },
+    {
+      "receipt_id": "provider-receipt:08260d1ec961a30d47cd3a34",
+      "provider_key": "provider:b1f0a61375067424c05809e6f11363f9",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-EA226196398C2B03",
+      "resource_id": "provider-resource:08260d1ec961a30d47cd3a34",
+      "request_hash": "bd99fa46ebde42c14dd50f2f786e8cf280c9351dc1ccc1403f48d1021f507ef9",
+      "applied_at": "2026-09-13T20:43:06.966Z"
+    },
+    {
+      "receipt_id": "provider-receipt:f8486fcbb8874ef83c51cf8e",
+      "provider_key": "provider:6fb0d8f16c64c5dbfacbaa394f11365d",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-B53E6610220833C6",
+      "resource_id": "provider-resource:f8486fcbb8874ef83c51cf8e",
+      "request_hash": "e04aac7b69328d3581a89d5183b3b30779c2ab0c8c03f8d1fa65e18236437f62",
+      "applied_at": "2026-09-13T20:43:06.950Z"
+    },
+    {
+      "receipt_id": "provider-receipt:47a3d9b586aeec801a1a34ea",
+      "provider_key": "provider:cd33736a82c5433317b86bf5d5b84fba",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-F2B5A197E405007D",
+      "resource_id": "provider-resource:47a3d9b586aeec801a1a34ea",
+      "request_hash": "f20f15e7d698ce454bbfa16598d7ec7200c9084a9de25c348d10c1546a7292bb",
+      "applied_at": "2026-09-13T20:43:06.983Z"
+    },
+    {
+      "receipt_id": "provider-receipt:ed21da762f58e3d8c1e1feff",
+      "provider_key": "provider:7ba82eb700d2498315eee590370da9ef",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-C7549A323828044A",
+      "resource_id": "provider-resource:ed21da762f58e3d8c1e1feff",
+      "request_hash": "c9d07a93e08c7e14cda648414d8c6648f2b14269bffd6a62b7557ad63a8a7d42",
+      "applied_at": "2026-09-13T20:43:07.003Z"
+    },
+    {
+      "receipt_id": "provider-receipt:da0afaccbdec24e2b411cffc",
+      "provider_key": "provider:f051b48d8b3ebe599d8886b3ff623c08",
+      "scenario_id": "e09:five_way:hosted-a:order-orders-create",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-52F477B1BBB8C37A",
+      "resource_id": "provider-resource:da0afaccbdec24e2b411cffc",
+      "request_hash": "6b77a9b301c1682f9c31fbffe669ba5dd653d9f0eff3c493b550aba175eb11da",
+      "applied_at": "2026-09-13T20:43:06.449Z"
+    },
+    {
+      "receipt_id": "provider-receipt:73144be67b33cd8ae2d7aac6",
+      "provider_key": "provider:b166d36f7fab24dcdf4ebb0d035daa2b",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-A1221808E9CA7F6A",
+      "resource_id": "provider-resource:73144be67b33cd8ae2d7aac6",
+      "request_hash": "e2f4bc306ae433a224e6107090f373adec5920e365a0532615f2b51f9359e62f",
+      "applied_at": "2026-09-13T20:43:07.041Z"
+    },
+    {
+      "receipt_id": "provider-receipt:e7747c1cf9dc8b4687462e1b",
+      "provider_key": "provider:54bbfba08ed985e1c24dd873a30a5b1e",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-7F464E5380B84A63",
+      "resource_id": "provider-resource:e7747c1cf9dc8b4687462e1b",
+      "request_hash": "f759c816c290de3000f407c42b3613c78eae9c7e0a7a95eab9254bbdf3f97e0f",
+      "applied_at": "2026-09-13T20:43:07.026Z"
+    },
+    {
+      "receipt_id": "provider-receipt:2563c88daf7524f3b960ce95",
+      "provider_key": "provider:09e16efd86fab819b1ad71ab303b0669",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-98370D8FC56158EF",
+      "resource_id": "provider-resource:2563c88daf7524f3b960ce95",
+      "request_hash": "e8ca085bfb46b7ddaf3b50d63c9f60de8a997b8e1868c01de8e17c7ebae930f3",
+      "applied_at": "2026-09-13T20:43:07.059Z"
+    },
+    {
+      "receipt_id": "provider-receipt:1f284f2dd57f2db8e1c2a100",
+      "provider_key": "provider:33b6f5b700896723829e53e64ea66b97",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-9949B37A0F4D507E",
+      "resource_id": "provider-resource:1f284f2dd57f2db8e1c2a100",
+      "request_hash": "41c46d9196cf37dc2f040592acf1f0ac260a43876689ed5e33c8163028a21cd8",
+      "applied_at": "2026-09-13T20:43:07.069Z"
+    },
+    {
+      "receipt_id": "provider-receipt:760dec3801b63d5f85ac421b",
+      "provider_key": "provider:ec265849128e9bad1ed74d7a04b6cd03",
+      "scenario_id": "e09:five_way:hosted-a:payment-refunds-request",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-6B27A951ED1E2541",
+      "resource_id": "provider-resource:760dec3801b63d5f85ac421b",
+      "request_hash": "bc0322910d592b9e7077244c287d9d03a745cc00144d342fef04d5a5c68c5fbf",
+      "applied_at": "2026-09-13T20:43:06.480Z"
+    },
+    {
+      "receipt_id": "provider-receipt:b21028165ca6b72db375ef19",
+      "provider_key": "provider:45e9f3b803fc48f28c0be1a344c95c75",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-9A82B650B204553E",
+      "resource_id": "provider-resource:b21028165ca6b72db375ef19",
+      "request_hash": "ef1399ca332f35a93481017509f0e2fb0035b6655da83d7e354d3308ccc15985",
+      "applied_at": "2026-09-13T20:43:07.108Z"
+    },
+    {
+      "receipt_id": "provider-receipt:e130df2a2aa888077f9871b5",
+      "provider_key": "provider:b7237f3f5ef116aab4a663305183fd6a",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-CBD74569095BA5F3",
+      "resource_id": "provider-resource:e130df2a2aa888077f9871b5",
+      "request_hash": "74ee90935f4bb677e8d4c799c2f56ba6092f8a340289a9719a5a3900224bf879",
+      "applied_at": "2026-09-13T20:43:07.091Z"
+    },
+    {
+      "receipt_id": "provider-receipt:cdba6054f95ca9cb5fc1fa9c",
+      "provider_key": "provider:d69a6a5b978fecf5cf1412181320d3f3",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-9CB09473F287164E",
+      "resource_id": "provider-resource:cdba6054f95ca9cb5fc1fa9c",
+      "request_hash": "345454cd109b149fa8f8c650f5ee9bd51df64df93defaaad44d471f246d72650",
+      "applied_at": "2026-09-13T20:43:07.125Z"
+    },
+    {
+      "receipt_id": "provider-receipt:1bb2520bdf1eab1ef0a49074",
+      "provider_key": "provider:6dbba16184b1df9b6f800769c5e4cf3d",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-234837C5B45808C7",
+      "resource_id": "provider-resource:1bb2520bdf1eab1ef0a49074",
+      "request_hash": "7da7c9b36710a6348c08fd690f43dba16c9cb54d03fff4ff39cfc39eb4992fb9",
+      "applied_at": "2026-09-13T20:43:07.136Z"
+    },
+    {
+      "receipt_id": "provider-receipt:48a458fde1fa4917373caec2",
+      "provider_key": "provider:9bac59856aab0a7e7b5c7a471c92c7c1",
+      "scenario_id": "e09:five_way:hosted-a:provisioning-malls-create",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-100A44F8DE177068",
+      "resource_id": "provider-resource:48a458fde1fa4917373caec2",
+      "request_hash": "39fa425b45a32ec73f55cc835bb1503933b4a0cd9838110b65f3b32aeeecaf4b",
+      "applied_at": "2026-09-13T20:43:06.382Z"
+    },
+    {
+      "receipt_id": "provider-receipt:794258cc8e70e60c1632a3c6",
+      "provider_key": "provider:2d0224b14c0e3370033cbcb6e4613f56",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_configuration",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-EAA239F6F9131F0D",
+      "resource_id": "provider-resource:794258cc8e70e60c1632a3c6",
+      "request_hash": "a66b4b2a1c7fe83e72d1eb795c3f56ebab3fca4888911f4ccf9e866266c4a5d5",
+      "applied_at": "2026-09-13T20:43:06.901Z"
+    },
+    {
+      "receipt_id": "provider-receipt:d6499fcd2a6c32af1ad05a6f",
+      "provider_key": "provider:494139b10a3fcb69db735ea713c7d15a",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_identity",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-480D38305DD1CFAD",
+      "resource_id": "provider-resource:d6499fcd2a6c32af1ad05a6f",
+      "request_hash": "2bef88c6cbf5c067ac3b1cc7cf600c0f63c52ce1352a75e8d928cd78d2027662",
+      "applied_at": "2026-09-13T20:43:06.884Z"
+    },
+    {
+      "receipt_id": "provider-receipt:411502a30cca733547eea458",
+      "provider_key": "provider:aa2f1894e8f8b8910d955e3e68cb42c9",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_outbox",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-30C66CA509AF210A",
+      "resource_id": "provider-resource:411502a30cca733547eea458",
+      "request_hash": "facf5bfbf4e31b73e48d0f48307e4e3700ca094fa46974ce7a0799f1759be140",
+      "applied_at": "2026-09-13T20:43:06.917Z"
+    },
+    {
+      "receipt_id": "provider-receipt:ae1e9c94549e9f590261f458",
+      "provider_key": "provider:0928ad7edafe4a7594c8742592edc20d",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:hosted-a",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-119324465B4ACD4F",
+      "resource_id": "provider-resource:ae1e9c94549e9f590261f458",
+      "request_hash": "feefcf9042e15272d07cdae5abcfe40850f4023c8493dda27ce1f824ff0a0bc2",
+      "applied_at": "2026-09-13T20:43:06.929Z"
+    },
+    {
+      "receipt_id": "provider-receipt:32ae64f7be1d6767eb7406db",
+      "provider_key": "provider:8cf93659842f08ac942d20ff7f686e23",
+      "scenario_id": "e09:five_way:hosted-b:identity-members-create",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-7DD59EE97600F046",
+      "resource_id": "provider-resource:32ae64f7be1d6767eb7406db",
+      "request_hash": "15ed7a31d1de26a0df8090929fd5cb6edce67612849b112223d63665191f7449",
+      "applied_at": "2026-09-13T20:43:06.514Z"
+    },
+    {
+      "receipt_id": "provider-receipt:c4163cc8c111bd72c4c19384",
+      "provider_key": "provider:3ab0301623a584da5979c7bbe117b72f",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-984EF6F5889A1A0D",
+      "resource_id": "provider-resource:c4163cc8c111bd72c4c19384",
+      "request_hash": "894d0165608d6af151bf85d907c198ea78a1f0a9c78300557b653d574396db89",
+      "applied_at": "2026-09-13T20:43:07.173Z"
+    },
+    {
+      "receipt_id": "provider-receipt:5d6b4f0e78a039ffa66a6a90",
+      "provider_key": "provider:8fe0f210d296dba2dd192fb0c651f737",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-6C5E08AB981B081B",
+      "resource_id": "provider-resource:5d6b4f0e78a039ffa66a6a90",
+      "request_hash": "9a6b39483af00113f9c75e4111a9caf089946f09f142e66adde232b3ebf9f312",
+      "applied_at": "2026-09-13T20:43:07.158Z"
+    },
+    {
+      "receipt_id": "provider-receipt:5c643b8e4148814cada7c718",
+      "provider_key": "provider:8e63e824e5fa8d57ee118cdf453debb7",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-FB44E1DBBDB13E6E",
+      "resource_id": "provider-resource:5c643b8e4148814cada7c718",
+      "request_hash": "fefcd3a3cca7ced4ecec24ed957830ce605570d1b35e5b7b3357c7fc05421977",
+      "applied_at": "2026-09-13T20:43:07.188Z"
+    },
+    {
+      "receipt_id": "provider-receipt:af99aff061ce9581435a3398",
+      "provider_key": "provider:6559a1fe4fc67e80adf9998b2cbe29b1",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-BE5AC9BA850B814E",
+      "resource_id": "provider-resource:af99aff061ce9581435a3398",
+      "request_hash": "0f2b18b38499e54723c3967f14c34c3deb1b0c2d62efd50e8c1b4a6646761b47",
+      "applied_at": "2026-09-13T20:43:07.199Z"
+    },
+    {
+      "receipt_id": "provider-receipt:05ef26aaa572cdb363d137ee",
+      "provider_key": "provider:6253739063d205485c91b95f40307960",
+      "scenario_id": "e09:five_way:hosted-b:member-sovereignty-upgrade",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-A0871A9FB669249F",
+      "resource_id": "provider-resource:05ef26aaa572cdb363d137ee",
+      "request_hash": "f82fb5b9bb32896b8032948135250c7a9367b188e7b0b2c7bcae4c8d1529e48f",
+      "applied_at": "2026-09-13T20:43:06.578Z"
+    },
+    {
+      "receipt_id": "provider-receipt:1ef85aaa594ab24770d3ab3e",
+      "provider_key": "provider:b6d81a6b043043f4ed99af22b3e3becd",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-73959965751CFBFB",
+      "resource_id": "provider-resource:1ef85aaa594ab24770d3ab3e",
+      "request_hash": "1d60cebfbb0d041d3cc5e24b499e8f899caf8e04e50cc07ccbc4be875dffde42",
+      "applied_at": "2026-09-13T20:43:07.306Z"
+    },
+    {
+      "receipt_id": "provider-receipt:e47ae70e1392264e5122231e",
+      "provider_key": "provider:858fa552151afafc3f7ff56a497cbde5",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-0B6E3B3C1012937E",
+      "resource_id": "provider-resource:e47ae70e1392264e5122231e",
+      "request_hash": "e83769700f8bad86b224ce1a4110d47fd17d26efe8a06910525176b741704725",
+      "applied_at": "2026-09-13T20:43:07.292Z"
+    },
+    {
+      "receipt_id": "provider-receipt:cb23c21296bdc3aa99d92b4c",
+      "provider_key": "provider:527fbd90eb5f386122c776d273e8c1b6",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-91838CB14A20D375",
+      "resource_id": "provider-resource:cb23c21296bdc3aa99d92b4c",
+      "request_hash": "34c02548a0f451bc274f6543e2ed1b60c35122aacf99bb790ef54308339b7a87",
+      "applied_at": "2026-09-13T20:43:07.322Z"
+    },
+    {
+      "receipt_id": "provider-receipt:87ce1b04d0e45d6b4abb2376",
+      "provider_key": "provider:bc95e676a98764dc88a8c37d88e29eaa",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-DAFDB462FF493A1A",
+      "resource_id": "provider-resource:87ce1b04d0e45d6b4abb2376",
+      "request_hash": "3cc80baaec201b117745800d733ebc14f5ae3bc61bfe3958ccd36033c0da6751",
+      "applied_at": "2026-09-13T20:43:07.335Z"
+    },
+    {
+      "receipt_id": "provider-receipt:5ce62e64bd431646eaa4ed7b",
+      "provider_key": "provider:035736479584cad5bb3be7c66bf18d07",
+      "scenario_id": "e09:five_way:hosted-b:order-orders-create",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-29BCAB479BA5C1C4",
+      "resource_id": "provider-resource:5ce62e64bd431646eaa4ed7b",
+      "request_hash": "c51b183aa633b0394b4075d92078691116c868f95db70fbd9f2ef888e49943c3",
+      "applied_at": "2026-09-13T20:43:06.605Z"
+    },
+    {
+      "receipt_id": "provider-receipt:5718a8e9ca8c1db244731738",
+      "provider_key": "provider:3012433b88d0b4fd042f52fdc03be7a0",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-0179B235F70929D3",
+      "resource_id": "provider-resource:5718a8e9ca8c1db244731738",
+      "request_hash": "92a5736790a87b3924bdb8a8fd6bf36196b193089c4b238e80abe99843d7d4fd",
+      "applied_at": "2026-09-13T20:43:07.378Z"
+    },
+    {
+      "receipt_id": "provider-receipt:d5c5998cc625485b1ab1bb0b",
+      "provider_key": "provider:21e422eda4b95e9de0132ee75c9f44c4",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-E4A82A4B6CFFDAC2",
+      "resource_id": "provider-resource:d5c5998cc625485b1ab1bb0b",
+      "request_hash": "c150232e6b4faa7d3b33a0203f91888e5507ac34cd19a60a1a2e7c590e16e5f2",
+      "applied_at": "2026-09-13T20:43:07.361Z"
+    },
+    {
+      "receipt_id": "provider-receipt:866d5b3e104fbbc390413491",
+      "provider_key": "provider:d58edbd4e3c1076bf46bf962b71c48b8",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-0751E26FFD2DB7DA",
+      "resource_id": "provider-resource:866d5b3e104fbbc390413491",
+      "request_hash": "3a26292992a6169c4983550b46de8dbd7de009c43ed795a71f64041c2b6d7fa8",
+      "applied_at": "2026-09-13T20:43:07.395Z"
+    },
+    {
+      "receipt_id": "provider-receipt:44684e187c39f4b57cec0c7a",
+      "provider_key": "provider:b72c61f4eb070ce4fc30334357233e39",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-FAA70981BB4FE3E9",
+      "resource_id": "provider-resource:44684e187c39f4b57cec0c7a",
+      "request_hash": "69d5521706c9248dfd067d59ce7d9343e1d0c7068666a97f993f00bfff1220bf",
+      "applied_at": "2026-09-13T20:43:07.405Z"
+    },
+    {
+      "receipt_id": "provider-receipt:2f9c91c346509f478b8a9553",
+      "provider_key": "provider:8d7b20926c71e165ea7d394a3ea322d2",
+      "scenario_id": "e09:five_way:hosted-b:payment-refunds-request",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-09D70455AF495BC0",
+      "resource_id": "provider-resource:2f9c91c346509f478b8a9553",
+      "request_hash": "b050c10cd0bc02a0ae254ca94fd0362281b5849a4e0bfd3cd524a5134876800f",
+      "applied_at": "2026-09-13T20:43:06.653Z"
+    },
+    {
+      "receipt_id": "provider-receipt:36ea9106d46d8de8e786f57a",
+      "provider_key": "provider:25dbf3f56ae520481237c7ddda31ca79",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-5EF1C7D30DCCC87F",
+      "resource_id": "provider-resource:36ea9106d46d8de8e786f57a",
+      "request_hash": "4a4ee9c163f4b57addcdaddaa4472406058d498ce74eb917a6e11233b5d289de",
+      "applied_at": "2026-09-13T20:43:07.440Z"
+    },
+    {
+      "receipt_id": "provider-receipt:2649ad40ba908fbbbc8a9ce5",
+      "provider_key": "provider:de26f39a38c4be8457dafe383c3bf6c7",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-8389F16343B84198",
+      "resource_id": "provider-resource:2649ad40ba908fbbbc8a9ce5",
+      "request_hash": "62025084dd9c9ff57e15e666c75af592fe6c04c454fd583c320bdac60c78f58c",
+      "applied_at": "2026-09-13T20:43:07.425Z"
+    },
+    {
+      "receipt_id": "provider-receipt:41da77083b6cf80b5da426f4",
+      "provider_key": "provider:1084af8ba723a41c3f826a331c1fbeae",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-D20D3BFB0A935282",
+      "resource_id": "provider-resource:41da77083b6cf80b5da426f4",
+      "request_hash": "d124dbee76c2778a3adb204f4e63df100e13512cbe53ce2674e8a95496578677",
+      "applied_at": "2026-09-13T20:43:07.454Z"
+    },
+    {
+      "receipt_id": "provider-receipt:a4384cf750b111a1002cfddc",
+      "provider_key": "provider:bd730560e712583c4a95557e76634b1a",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-2706A739E8F7B59F",
+      "resource_id": "provider-resource:a4384cf750b111a1002cfddc",
+      "request_hash": "5366325ea526bf939e5afbc72fef6d843756e8c4a1b7e91a0b0a8cfc66e6642b",
+      "applied_at": "2026-09-13T20:43:07.465Z"
+    },
+    {
+      "receipt_id": "provider-receipt:9a8a8750034b199da11bb104",
+      "provider_key": "provider:31a9857808ac52215881d9872aa4fed3",
+      "scenario_id": "e09:five_way:hosted-b:provisioning-malls-create",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-1BAEC75283B908CC",
+      "resource_id": "provider-resource:9a8a8750034b199da11bb104",
+      "request_hash": "bd77077f7887f1ae181f73ba75612d0aeca0fac2cd411a2cfea4c9b05015f5cd",
+      "applied_at": "2026-09-13T20:43:06.546Z"
+    },
+    {
+      "receipt_id": "provider-receipt:55fde4b229a4eea09b254490",
+      "provider_key": "provider:4f575bd969f5326001a24a6f9d7519d8",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_configuration",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-576C9BF36E7F74B6",
+      "resource_id": "provider-resource:55fde4b229a4eea09b254490",
+      "request_hash": "b2a9afa4c4dba17dcc2dcdf43044d517206d84622f569b2d22815e1f32a0b786",
+      "applied_at": "2026-09-13T20:43:07.243Z"
+    },
+    {
+      "receipt_id": "provider-receipt:7e8741257f230a15117bfa79",
+      "provider_key": "provider:dcaabbe4310c4391caba3a10c1ff9cef",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_identity",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-5D6090BDFD39F69D",
+      "resource_id": "provider-resource:7e8741257f230a15117bfa79",
+      "request_hash": "0d00e99c58969f0f24e6f14532afee31048f737260cf46e4aef546271279d50a",
+      "applied_at": "2026-09-13T20:43:07.226Z"
+    },
+    {
+      "receipt_id": "provider-receipt:fb07290191825c69b03cd0b9",
+      "provider_key": "provider:0a6f632ecc64c75ba23afce959fc90e9",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_outbox",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-38828A3CC82E961E",
+      "resource_id": "provider-resource:fb07290191825c69b03cd0b9",
+      "request_hash": "ebeb6b0532752d905df5784245dde65105a8b5fb18ae69ae48988f0345c59514",
+      "applied_at": "2026-09-13T20:43:07.260Z"
+    },
+    {
+      "receipt_id": "provider-receipt:2416ec34a081ed7572d98ba2",
+      "provider_key": "provider:6fafb74d048e987be4258deaa49877e1",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:hosted-b",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-F0B78BFBCC784A83",
+      "resource_id": "provider-resource:2416ec34a081ed7572d98ba2",
+      "request_hash": "a58cdbb0aab8df7d013b1172baea8af32255ae112a4c29469bad261489f85fd6",
+      "applied_at": "2026-09-13T20:43:07.271Z"
+    },
+    {
+      "receipt_id": "provider-receipt:b1b76ec505c0b00ce5952b8e",
+      "provider_key": "provider:a236bcb59026be2cf60af12f9e81bc23",
+      "scenario_id": "e09:five_way:sovereign-c:identity-members-create",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-8AB9C38ED44F4C60",
+      "resource_id": "provider-resource:b1b76ec505c0b00ce5952b8e",
+      "request_hash": "9234b14cac4d736ca6e1e787b258131dba3be48d4acee42c3ea432e73a1e6db3",
+      "applied_at": "2026-09-13T20:43:06.681Z"
+    },
+    {
+      "receipt_id": "provider-receipt:7a109062fbd91e19884f25a4",
+      "provider_key": "provider:5fe025e954cdfd9b7aea821dfaf99d37",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-4F88B82D0F3073F8",
+      "resource_id": "provider-resource:7a109062fbd91e19884f25a4",
+      "request_hash": "80bab062b258bbe878f12c6c093b3a45ecfe8e0f8831a14b7d4247aaa49e0ce4",
+      "applied_at": "2026-09-13T20:43:07.499Z"
+    },
+    {
+      "receipt_id": "provider-receipt:7221e09bee89e5950dfaf2b7",
+      "provider_key": "provider:5a894002d14c95ccc3e2fc71c7228846",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-78D7BBBFD96DF734",
+      "resource_id": "provider-resource:7221e09bee89e5950dfaf2b7",
+      "request_hash": "8741f31e447882dbcb4d28e74c44980eefc6def2c8fdcb67a288274dc1067e32",
+      "applied_at": "2026-09-13T20:43:07.485Z"
+    },
+    {
+      "receipt_id": "provider-receipt:8e71b0e0383d77a45603925c",
+      "provider_key": "provider:6efee02cef676588a3f46cd1d07f2a64",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-E97F8A92D2F60671",
+      "resource_id": "provider-resource:8e71b0e0383d77a45603925c",
+      "request_hash": "2c740c20ecd770801ccef8702f6ac0a0ee8c20fb3940d6777a37815da61e30be",
+      "applied_at": "2026-09-13T20:43:07.517Z"
+    },
+    {
+      "receipt_id": "provider-receipt:a8f866e9eeaaebe7c168c8a6",
+      "provider_key": "provider:7894d9aa24205f4ee03cf95c938f82f1",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-2136DA04AE4AAE16",
+      "resource_id": "provider-resource:a8f866e9eeaaebe7c168c8a6",
+      "request_hash": "e2025867e009c077dbfc7cf8ee468689a3ccc0c060df35a1cef7bf26d9327d1b",
+      "applied_at": "2026-09-13T20:43:07.534Z"
+    },
+    {
+      "receipt_id": "provider-receipt:2963cc28e8393a762eb41e25",
+      "provider_key": "provider:92611a2d61ae446b0180039605effa42",
+      "scenario_id": "e09:isolation:sovereign-c:identity-members-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "identity.members.create",
+      "business_number": "SFL-IDENTITY-FB404520339BDEA8",
+      "resource_id": "provider-resource:2963cc28e8393a762eb41e25",
+      "request_hash": "6dd862e9d918f0e49ebd4e4315ff0d2adabfd5b3f1edaa204f3563c01e28f91d",
+      "applied_at": "2026-09-13T20:43:07.872Z"
+    },
+    {
+      "receipt_id": "provider-receipt:a04c32747d6704f3320d05be",
+      "provider_key": "provider:dc3c49932a6bf3f8919766e7a8eaf06a",
+      "scenario_id": "e09:five_way:sovereign-c:member-sovereignty-upgrade",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-5F81601F0EDC40D3",
+      "resource_id": "provider-resource:a04c32747d6704f3320d05be",
+      "request_hash": "23ee2797d5648279628a166700cede3e78d61fcfb44aebe7986a897874427332",
+      "applied_at": "2026-09-13T20:43:06.741Z"
+    },
+    {
+      "receipt_id": "provider-receipt:263e138f0a27e2fa44f1a3a8",
+      "provider_key": "provider:2eb24cd0775238c88a43e836b900f0cf",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-992EA3316D1CF9AB",
+      "resource_id": "provider-resource:263e138f0a27e2fa44f1a3a8",
+      "request_hash": "4cf80df4a367b24ae5ff6684fa9dbbda5ad197cc477c905c6fd8921babbf3da3",
+      "applied_at": "2026-09-13T20:43:07.640Z"
+    },
+    {
+      "receipt_id": "provider-receipt:8814d64307dbc644d071650c",
+      "provider_key": "provider:eeeb932d41e864fd09ac2da049aa6b80",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-D2D24CF2C64C5449",
+      "resource_id": "provider-resource:8814d64307dbc644d071650c",
+      "request_hash": "0ebc4fefcc3894c50a4f81a9a0d623811baf66672213c0769d1e224d53922155",
+      "applied_at": "2026-09-13T20:43:07.624Z"
+    },
+    {
+      "receipt_id": "provider-receipt:d75bd53db9a42b5abd26ec2f",
+      "provider_key": "provider:d4fdd6493b5d5d19d51f6a550725213c",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-CEDC37BB62716508",
+      "resource_id": "provider-resource:d75bd53db9a42b5abd26ec2f",
+      "request_hash": "b567fe38f0328ade29f3efe8afd212e5ba3947fd2de5335868f988a213cc47f7",
+      "applied_at": "2026-09-13T20:43:07.654Z"
+    },
+    {
+      "receipt_id": "provider-receipt:ad398e6e699512734033aa7f",
+      "provider_key": "provider:f2dcec1556501590cdaaf658b623e9a0",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-BE5048CDAD047A54",
+      "resource_id": "provider-resource:ad398e6e699512734033aa7f",
+      "request_hash": "0a0756c3df90b63666b8ff0a57b024aa95f4e660c891b1e367ae57f236c8ab75",
+      "applied_at": "2026-09-13T20:43:07.665Z"
+    },
+    {
+      "receipt_id": "provider-receipt:5902b7d19b66c08fb72e36b0",
+      "provider_key": "provider:f15b486910912e3b1325d6bce97ee83a",
+      "scenario_id": "e09:isolation:sovereign-c:member-sovereignty-upgrade:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "member.sovereignty.upgrade",
+      "business_number": "SFL-MEMBER-E0A81DD30E71C1AB",
+      "resource_id": "provider-resource:5902b7d19b66c08fb72e36b0",
+      "request_hash": "3b88609812acf745394a4518c9699af39ba4c090aa4a1aa2df5a394302d92351",
+      "applied_at": "2026-09-13T20:43:07.933Z"
+    },
+    {
+      "receipt_id": "provider-receipt:82d49469c5766c7f70c43bec",
+      "provider_key": "provider:a0b552b602f94c14be17fd6323e9ffb8",
+      "scenario_id": "e09:five_way:sovereign-c:order-orders-create",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-9A40B20352FCCD06",
+      "resource_id": "provider-resource:82d49469c5766c7f70c43bec",
+      "request_hash": "e0d1423702234b43f9c79623ee0851118ed29266ac671d9de5b636614c3c680a",
+      "applied_at": "2026-09-13T20:43:06.767Z"
+    },
+    {
+      "receipt_id": "provider-receipt:ee1c78c005344f811c69d82a",
+      "provider_key": "provider:1f48daf454568ef851ba298d016101be",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-F429C9593153A1A8",
+      "resource_id": "provider-resource:ee1c78c005344f811c69d82a",
+      "request_hash": "c972c7bc7baa264d5187cbb91f1c78e06ff54e6df4a69a324d84b7b70327240b",
+      "applied_at": "2026-09-13T20:43:07.702Z"
+    },
+    {
+      "receipt_id": "provider-receipt:2e53dff406222ca2182c2c24",
+      "provider_key": "provider:4505b175bc440e5a3121448e62dd46b7",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-AC55041CA196BD04",
+      "resource_id": "provider-resource:2e53dff406222ca2182c2c24",
+      "request_hash": "5c3dfe5e4b78d4bca84a6a0b73ac1c312cadc9555634eaabaffbe07559fe5480",
+      "applied_at": "2026-09-13T20:43:07.688Z"
+    },
+    {
+      "receipt_id": "provider-receipt:a29656f6c9c46bd0783e1735",
+      "provider_key": "provider:2f21d7b00d374b5238c71a348b29a110",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-B48EA6AAD0A96E60",
+      "resource_id": "provider-resource:a29656f6c9c46bd0783e1735",
+      "request_hash": "5a432d10f64e5781b5027a54b58d9d090698e1ac043fe601c44aa96d9a3e037e",
+      "applied_at": "2026-09-13T20:43:07.721Z"
+    },
+    {
+      "receipt_id": "provider-receipt:6cb51a30ffce6ec12317fad5",
+      "provider_key": "provider:38d392bca608c8e723e9c5ecf2635adf",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-DEB7E607FEFF5041",
+      "resource_id": "provider-resource:6cb51a30ffce6ec12317fad5",
+      "request_hash": "a977140fce49165a429098dcca1d92f6d341e863317a7b13d755d25253abb536",
+      "applied_at": "2026-09-13T20:43:07.736Z"
+    },
+    {
+      "receipt_id": "provider-receipt:8d13a133fcccf6301e6153e9",
+      "provider_key": "provider:328686c96abdf2ebfb71ccf91495cd1d",
+      "scenario_id": "e09:isolation:sovereign-c:order-orders-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "order.orders.create",
+      "business_number": "SFL-ORDER-83183E93109BC09F",
+      "resource_id": "provider-resource:8d13a133fcccf6301e6153e9",
+      "request_hash": "07565f777064527fb5c8fa27a50e22094c0cc933c9678e70d6ca6d8b94f03305",
+      "applied_at": "2026-09-13T20:43:07.961Z"
+    },
+    {
+      "receipt_id": "provider-receipt:da30f6523e892e82891f4723",
+      "provider_key": "provider:95bc8f44b5d65f8c3d69f20f7fe636f9",
+      "scenario_id": "e09:five_way:sovereign-c:payment-refunds-request",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-5078FCF029411403",
+      "resource_id": "provider-resource:da30f6523e892e82891f4723",
+      "request_hash": "c13e1ed3db7cda2eedcc466606b4ef994f1573ea2600f3e36f7147217a3dbbf9",
+      "applied_at": "2026-09-13T20:43:06.794Z"
+    },
+    {
+      "receipt_id": "provider-receipt:4a241cd39de5a0b7076b2c5d",
+      "provider_key": "provider:bb10ae9b341eefbf0403a705712f3c8c",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-79D477D80024D1FB",
+      "resource_id": "provider-resource:4a241cd39de5a0b7076b2c5d",
+      "request_hash": "e0214276a2ada30e23915614d83956670af8b296f6e6b29204b94165ad485eae",
+      "applied_at": "2026-09-13T20:43:07.778Z"
+    },
+    {
+      "receipt_id": "provider-receipt:cc6711991c15837b9dcb6331",
+      "provider_key": "provider:5a2bf6b2d4c6d36010249b2cffcdbe54",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-E0FC33A88616E599",
+      "resource_id": "provider-resource:cc6711991c15837b9dcb6331",
+      "request_hash": "4e374e1be798a87cef19cd3841b1295eb906af511d2ce0a1e52600e139ac2e91",
+      "applied_at": "2026-09-13T20:43:07.761Z"
+    },
+    {
+      "receipt_id": "provider-receipt:64b69e6269c9201899a1361c",
+      "provider_key": "provider:321fb03a5843988673843e45ea532af5",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-93E133ED5163A813",
+      "resource_id": "provider-resource:64b69e6269c9201899a1361c",
+      "request_hash": "4e9006a18d4937b5780d3652a0648e7acca570f03aceae3cb3209c0e9d25657c",
+      "applied_at": "2026-09-13T20:43:07.799Z"
+    },
+    {
+      "receipt_id": "provider-receipt:12dd8c0cdbf172a8393b9850",
+      "provider_key": "provider:362c42077afa198dedebc443b28c5ee9",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-54A8BB65A8CADA1B",
+      "resource_id": "provider-resource:12dd8c0cdbf172a8393b9850",
+      "request_hash": "54a917e3ca8139331c02ff7de50f904a389a4963a9f4cbb46898b94ffe120f92",
+      "applied_at": "2026-09-13T20:43:07.813Z"
+    },
+    {
+      "receipt_id": "provider-receipt:182cb095392bf225fb6e106a",
+      "provider_key": "provider:e669aced0f3af0c4a54d83192b969c64",
+      "scenario_id": "e09:isolation:sovereign-c:payment-refunds-request:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "payment.refunds.request",
+      "business_number": "SFL-PAYMENT-2875427D61FED436",
+      "resource_id": "provider-resource:182cb095392bf225fb6e106a",
+      "request_hash": "ebf6ad461c17e90370555d37c4e97c1268776c1ebf28531ce62f2ee3322a8fc5",
+      "applied_at": "2026-09-13T20:43:07.990Z"
+    },
+    {
+      "receipt_id": "provider-receipt:f92e64d9bbc70de76dcbc5e5",
+      "provider_key": "provider:8bec94035b51d67b997808f8eba68682",
+      "scenario_id": "e09:five_way:sovereign-c:provisioning-malls-create",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-5B18D07874EA499C",
+      "resource_id": "provider-resource:f92e64d9bbc70de76dcbc5e5",
+      "request_hash": "21fef741eae32bebd6d4bb6b1195f448773ae86ccdeb93e25e9904966aa2580d",
+      "applied_at": "2026-09-13T20:43:06.709Z"
+    },
+    {
+      "receipt_id": "provider-receipt:39a45d298083598aa791f405",
+      "provider_key": "provider:2f26b0e15c86991fef8ffff2bd51c188",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_configuration",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-3C72FD25C73D9EF4",
+      "resource_id": "provider-resource:39a45d298083598aa791f405",
+      "request_hash": "63dcf8da28b8b498d11efaa87b9fc7086cf0996a23195b59dd368f6c02defd0e",
+      "applied_at": "2026-09-13T20:43:07.577Z"
+    },
+    {
+      "receipt_id": "provider-receipt:1cb642d1a9f58c304f3db0e9",
+      "provider_key": "provider:0a0ce010851bd29ed1e6a2c2293e9080",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_identity",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-DFEE62D7E28DE455",
+      "resource_id": "provider-resource:1cb642d1a9f58c304f3db0e9",
+      "request_hash": "c2f62a289d2cf1ecb42b54853b29326f1190940943fa431437cddeeaa4bf3565",
+      "applied_at": "2026-09-13T20:43:07.560Z"
+    },
+    {
+      "receipt_id": "provider-receipt:c4de2c4fb10984e1fc1f9ca5",
+      "provider_key": "provider:e84fd1cfcc2608036e28a2a7df39bac0",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_outbox",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-83DCF2C9F93764BB",
+      "resource_id": "provider-resource:c4de2c4fb10984e1fc1f9ca5",
+      "request_hash": "e04c1e73ed0ce966e61a4e1b70b9da556a6ff886e0c1cc11d55117639187b2c0",
+      "applied_at": "2026-09-13T20:43:07.593Z"
+    },
+    {
+      "receipt_id": "provider-receipt:d008362a462146b9715e31c8",
+      "provider_key": "provider:19a91dbf3a73bd88f8420bc66cc3b514",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-96BB0F6ED2B8A8C9",
+      "resource_id": "provider-resource:d008362a462146b9715e31c8",
+      "request_hash": "dab3e43ad235bec3e16d2a2af039df6e8507df74fca8a8adeb2bf36bfdef9e0b",
+      "applied_at": "2026-09-13T20:43:07.603Z"
+    },
+    {
+      "receipt_id": "provider-receipt:a44b7403a2e64d2519c465c8",
+      "provider_key": "provider:d8db418ff61d3d94919a7c0aedb20709",
+      "scenario_id": "e09:isolation:sovereign-c:provisioning-malls-create:during_provider_apply",
+      "node_id": "node:e09:sovereign-c",
+      "operation_id": "provisioning.malls.create",
+      "business_number": "SFL-PROVISIONING-F2DE11577BC3FB75",
+      "resource_id": "provider-resource:a44b7403a2e64d2519c465c8",
+      "request_hash": "16ffcc6a78f18d6c6e69661961307db19d93c0754b24cd16fa3e98f3081c3bfd",
+      "applied_at": "2026-09-13T20:43:07.904Z"
+    }
+  ],
+  "attempts": [
+    {
+      "attempt_id": "1",
+      "scenario_id": "e09:five_way:hosted-a:identity-members-create",
+      "provider_key": "provider:ee063b21cfd938f00745631eff93e064",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.324Z"
+    },
+    {
+      "attempt_id": "2",
+      "scenario_id": "e09:five_way:hosted-a:provisioning-malls-create",
+      "provider_key": "provider:9bac59856aab0a7e7b5c7a471c92c7c1",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.383Z"
+    },
+    {
+      "attempt_id": "3",
+      "scenario_id": "e09:five_way:hosted-a:member-sovereignty-upgrade",
+      "provider_key": "provider:a5a17828fa44d85086ee5c7c66b4621d",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.419Z"
+    },
+    {
+      "attempt_id": "4",
+      "scenario_id": "e09:five_way:hosted-a:order-orders-create",
+      "provider_key": "provider:f051b48d8b3ebe599d8886b3ff623c08",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.449Z"
+    },
+    {
+      "attempt_id": "5",
+      "scenario_id": "e09:five_way:hosted-a:payment-refunds-request",
+      "provider_key": "provider:ec265849128e9bad1ed74d7a04b6cd03",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.480Z"
+    },
+    {
+      "attempt_id": "6",
+      "scenario_id": "e09:five_way:hosted-b:identity-members-create",
+      "provider_key": "provider:8cf93659842f08ac942d20ff7f686e23",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.514Z"
+    },
+    {
+      "attempt_id": "7",
+      "scenario_id": "e09:five_way:hosted-b:provisioning-malls-create",
+      "provider_key": "provider:31a9857808ac52215881d9872aa4fed3",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.547Z"
+    },
+    {
+      "attempt_id": "8",
+      "scenario_id": "e09:five_way:hosted-b:member-sovereignty-upgrade",
+      "provider_key": "provider:6253739063d205485c91b95f40307960",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.579Z"
+    },
+    {
+      "attempt_id": "9",
+      "scenario_id": "e09:five_way:hosted-b:order-orders-create",
+      "provider_key": "provider:035736479584cad5bb3be7c66bf18d07",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.606Z"
+    },
+    {
+      "attempt_id": "10",
+      "scenario_id": "e09:five_way:hosted-b:payment-refunds-request",
+      "provider_key": "provider:8d7b20926c71e165ea7d394a3ea322d2",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.653Z"
+    },
+    {
+      "attempt_id": "11",
+      "scenario_id": "e09:five_way:sovereign-c:identity-members-create",
+      "provider_key": "provider:a236bcb59026be2cf60af12f9e81bc23",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.681Z"
+    },
+    {
+      "attempt_id": "12",
+      "scenario_id": "e09:five_way:sovereign-c:provisioning-malls-create",
+      "provider_key": "provider:8bec94035b51d67b997808f8eba68682",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.710Z"
+    },
+    {
+      "attempt_id": "13",
+      "scenario_id": "e09:five_way:sovereign-c:member-sovereignty-upgrade",
+      "provider_key": "provider:dc3c49932a6bf3f8919766e7a8eaf06a",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.742Z"
+    },
+    {
+      "attempt_id": "14",
+      "scenario_id": "e09:five_way:sovereign-c:order-orders-create",
+      "provider_key": "provider:a0b552b602f94c14be17fd6323e9ffb8",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.768Z"
+    },
+    {
+      "attempt_id": "15",
+      "scenario_id": "e09:five_way:sovereign-c:payment-refunds-request",
+      "provider_key": "provider:95bc8f44b5d65f8c3d69f20f7fe636f9",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.795Z"
+    },
+    {
+      "attempt_id": "16",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_identity",
+      "provider_key": "provider:a290d548e640c605baaef280961c613e",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.816Z"
+    },
+    {
+      "attempt_id": "17",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_configuration",
+      "provider_key": "provider:9fa533e258ebc7a4601e287ae6ae84ae",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.832Z"
+    },
+    {
+      "attempt_id": "18",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:after_outbox",
+      "provider_key": "provider:e21970ec1f2229088c0bf67e6dec43f3",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.851Z"
+    },
+    {
+      "attempt_id": "19",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:during_provider_apply",
+      "provider_key": "provider:8e621c76e3e84cd7c171a267647591a4",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:06.862Z"
+    },
+    {
+      "attempt_id": "20",
+      "scenario_id": "e09:interruption:hosted-a:identity-members-create:during_provider_apply",
+      "provider_key": "provider:8e621c76e3e84cd7c171a267647591a4",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.868Z"
+    },
+    {
+      "attempt_id": "21",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_identity",
+      "provider_key": "provider:494139b10a3fcb69db735ea713c7d15a",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.885Z"
+    },
+    {
+      "attempt_id": "22",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_configuration",
+      "provider_key": "provider:2d0224b14c0e3370033cbcb6e4613f56",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.902Z"
+    },
+    {
+      "attempt_id": "23",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:after_outbox",
+      "provider_key": "provider:aa2f1894e8f8b8910d955e3e68cb42c9",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.918Z"
+    },
+    {
+      "attempt_id": "24",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:during_provider_apply",
+      "provider_key": "provider:0928ad7edafe4a7594c8742592edc20d",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:06.929Z"
+    },
+    {
+      "attempt_id": "25",
+      "scenario_id": "e09:interruption:hosted-a:provisioning-malls-create:during_provider_apply",
+      "provider_key": "provider:0928ad7edafe4a7594c8742592edc20d",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.935Z"
+    },
+    {
+      "attempt_id": "26",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_identity",
+      "provider_key": "provider:6fb0d8f16c64c5dbfacbaa394f11365d",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.950Z"
+    },
+    {
+      "attempt_id": "27",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_configuration",
+      "provider_key": "provider:b1f0a61375067424c05809e6f11363f9",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.967Z"
+    },
+    {
+      "attempt_id": "28",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:after_outbox",
+      "provider_key": "provider:cd33736a82c5433317b86bf5d5b84fba",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:06.983Z"
+    },
+    {
+      "attempt_id": "29",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:during_provider_apply",
+      "provider_key": "provider:7ba82eb700d2498315eee590370da9ef",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.003Z"
+    },
+    {
+      "attempt_id": "30",
+      "scenario_id": "e09:interruption:hosted-a:member-sovereignty-upgrade:during_provider_apply",
+      "provider_key": "provider:7ba82eb700d2498315eee590370da9ef",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.010Z"
+    },
+    {
+      "attempt_id": "31",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_identity",
+      "provider_key": "provider:54bbfba08ed985e1c24dd873a30a5b1e",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.026Z"
+    },
+    {
+      "attempt_id": "32",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_configuration",
+      "provider_key": "provider:b166d36f7fab24dcdf4ebb0d035daa2b",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.042Z"
+    },
+    {
+      "attempt_id": "33",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:after_outbox",
+      "provider_key": "provider:09e16efd86fab819b1ad71ab303b0669",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.059Z"
+    },
+    {
+      "attempt_id": "34",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:during_provider_apply",
+      "provider_key": "provider:33b6f5b700896723829e53e64ea66b97",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.070Z"
+    },
+    {
+      "attempt_id": "35",
+      "scenario_id": "e09:interruption:hosted-a:order-orders-create:during_provider_apply",
+      "provider_key": "provider:33b6f5b700896723829e53e64ea66b97",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.076Z"
+    },
+    {
+      "attempt_id": "36",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_identity",
+      "provider_key": "provider:b7237f3f5ef116aab4a663305183fd6a",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.091Z"
+    },
+    {
+      "attempt_id": "37",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_configuration",
+      "provider_key": "provider:45e9f3b803fc48f28c0be1a344c95c75",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.109Z"
+    },
+    {
+      "attempt_id": "38",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:after_outbox",
+      "provider_key": "provider:d69a6a5b978fecf5cf1412181320d3f3",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.126Z"
+    },
+    {
+      "attempt_id": "39",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:during_provider_apply",
+      "provider_key": "provider:6dbba16184b1df9b6f800769c5e4cf3d",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.136Z"
+    },
+    {
+      "attempt_id": "40",
+      "scenario_id": "e09:interruption:hosted-a:payment-refunds-request:during_provider_apply",
+      "provider_key": "provider:6dbba16184b1df9b6f800769c5e4cf3d",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.143Z"
+    },
+    {
+      "attempt_id": "41",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_identity",
+      "provider_key": "provider:8fe0f210d296dba2dd192fb0c651f737",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.158Z"
+    },
+    {
+      "attempt_id": "42",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_configuration",
+      "provider_key": "provider:3ab0301623a584da5979c7bbe117b72f",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.173Z"
+    },
+    {
+      "attempt_id": "43",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:after_outbox",
+      "provider_key": "provider:8e63e824e5fa8d57ee118cdf453debb7",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.189Z"
+    },
+    {
+      "attempt_id": "44",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:during_provider_apply",
+      "provider_key": "provider:6559a1fe4fc67e80adf9998b2cbe29b1",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.200Z"
+    },
+    {
+      "attempt_id": "45",
+      "scenario_id": "e09:interruption:hosted-b:identity-members-create:during_provider_apply",
+      "provider_key": "provider:6559a1fe4fc67e80adf9998b2cbe29b1",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.206Z"
+    },
+    {
+      "attempt_id": "46",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_identity",
+      "provider_key": "provider:dcaabbe4310c4391caba3a10c1ff9cef",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.227Z"
+    },
+    {
+      "attempt_id": "47",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_configuration",
+      "provider_key": "provider:4f575bd969f5326001a24a6f9d7519d8",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.244Z"
+    },
+    {
+      "attempt_id": "48",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:after_outbox",
+      "provider_key": "provider:0a6f632ecc64c75ba23afce959fc90e9",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.261Z"
+    },
+    {
+      "attempt_id": "49",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:during_provider_apply",
+      "provider_key": "provider:6fafb74d048e987be4258deaa49877e1",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.271Z"
+    },
+    {
+      "attempt_id": "50",
+      "scenario_id": "e09:interruption:hosted-b:provisioning-malls-create:during_provider_apply",
+      "provider_key": "provider:6fafb74d048e987be4258deaa49877e1",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.278Z"
+    },
+    {
+      "attempt_id": "51",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_identity",
+      "provider_key": "provider:858fa552151afafc3f7ff56a497cbde5",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.292Z"
+    },
+    {
+      "attempt_id": "52",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_configuration",
+      "provider_key": "provider:b6d81a6b043043f4ed99af22b3e3becd",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.307Z"
+    },
+    {
+      "attempt_id": "53",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:after_outbox",
+      "provider_key": "provider:527fbd90eb5f386122c776d273e8c1b6",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.323Z"
+    },
+    {
+      "attempt_id": "54",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:during_provider_apply",
+      "provider_key": "provider:bc95e676a98764dc88a8c37d88e29eaa",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.336Z"
+    },
+    {
+      "attempt_id": "55",
+      "scenario_id": "e09:interruption:hosted-b:member-sovereignty-upgrade:during_provider_apply",
+      "provider_key": "provider:bc95e676a98764dc88a8c37d88e29eaa",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.344Z"
+    },
+    {
+      "attempt_id": "56",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_identity",
+      "provider_key": "provider:21e422eda4b95e9de0132ee75c9f44c4",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.362Z"
+    },
+    {
+      "attempt_id": "57",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_configuration",
+      "provider_key": "provider:3012433b88d0b4fd042f52fdc03be7a0",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.379Z"
+    },
+    {
+      "attempt_id": "58",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:after_outbox",
+      "provider_key": "provider:d58edbd4e3c1076bf46bf962b71c48b8",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.395Z"
+    },
+    {
+      "attempt_id": "59",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:during_provider_apply",
+      "provider_key": "provider:b72c61f4eb070ce4fc30334357233e39",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.406Z"
+    },
+    {
+      "attempt_id": "60",
+      "scenario_id": "e09:interruption:hosted-b:order-orders-create:during_provider_apply",
+      "provider_key": "provider:b72c61f4eb070ce4fc30334357233e39",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.412Z"
+    },
+    {
+      "attempt_id": "61",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_identity",
+      "provider_key": "provider:de26f39a38c4be8457dafe383c3bf6c7",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.426Z"
+    },
+    {
+      "attempt_id": "62",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_configuration",
+      "provider_key": "provider:25dbf3f56ae520481237c7ddda31ca79",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.440Z"
+    },
+    {
+      "attempt_id": "63",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:after_outbox",
+      "provider_key": "provider:1084af8ba723a41c3f826a331c1fbeae",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.455Z"
+    },
+    {
+      "attempt_id": "64",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:during_provider_apply",
+      "provider_key": "provider:bd730560e712583c4a95557e76634b1a",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.465Z"
+    },
+    {
+      "attempt_id": "65",
+      "scenario_id": "e09:interruption:hosted-b:payment-refunds-request:during_provider_apply",
+      "provider_key": "provider:bd730560e712583c4a95557e76634b1a",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.471Z"
+    },
+    {
+      "attempt_id": "66",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_identity",
+      "provider_key": "provider:5a894002d14c95ccc3e2fc71c7228846",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.485Z"
+    },
+    {
+      "attempt_id": "67",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_configuration",
+      "provider_key": "provider:5fe025e954cdfd9b7aea821dfaf99d37",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.500Z"
+    },
+    {
+      "attempt_id": "68",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:after_outbox",
+      "provider_key": "provider:6efee02cef676588a3f46cd1d07f2a64",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.518Z"
+    },
+    {
+      "attempt_id": "69",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:during_provider_apply",
+      "provider_key": "provider:7894d9aa24205f4ee03cf95c938f82f1",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.535Z"
+    },
+    {
+      "attempt_id": "70",
+      "scenario_id": "e09:interruption:sovereign-c:identity-members-create:during_provider_apply",
+      "provider_key": "provider:7894d9aa24205f4ee03cf95c938f82f1",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.545Z"
+    },
+    {
+      "attempt_id": "71",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_identity",
+      "provider_key": "provider:0a0ce010851bd29ed1e6a2c2293e9080",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.560Z"
+    },
+    {
+      "attempt_id": "72",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_configuration",
+      "provider_key": "provider:2f26b0e15c86991fef8ffff2bd51c188",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.578Z"
+    },
+    {
+      "attempt_id": "73",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:after_outbox",
+      "provider_key": "provider:e84fd1cfcc2608036e28a2a7df39bac0",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.594Z"
+    },
+    {
+      "attempt_id": "74",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:during_provider_apply",
+      "provider_key": "provider:19a91dbf3a73bd88f8420bc66cc3b514",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.604Z"
+    },
+    {
+      "attempt_id": "75",
+      "scenario_id": "e09:interruption:sovereign-c:provisioning-malls-create:during_provider_apply",
+      "provider_key": "provider:19a91dbf3a73bd88f8420bc66cc3b514",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.610Z"
+    },
+    {
+      "attempt_id": "76",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_identity",
+      "provider_key": "provider:eeeb932d41e864fd09ac2da049aa6b80",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.625Z"
+    },
+    {
+      "attempt_id": "77",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_configuration",
+      "provider_key": "provider:2eb24cd0775238c88a43e836b900f0cf",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.640Z"
+    },
+    {
+      "attempt_id": "78",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:after_outbox",
+      "provider_key": "provider:d4fdd6493b5d5d19d51f6a550725213c",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.655Z"
+    },
+    {
+      "attempt_id": "79",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:during_provider_apply",
+      "provider_key": "provider:f2dcec1556501590cdaaf658b623e9a0",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.665Z"
+    },
+    {
+      "attempt_id": "80",
+      "scenario_id": "e09:interruption:sovereign-c:member-sovereignty-upgrade:during_provider_apply",
+      "provider_key": "provider:f2dcec1556501590cdaaf658b623e9a0",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.674Z"
+    },
+    {
+      "attempt_id": "81",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_identity",
+      "provider_key": "provider:4505b175bc440e5a3121448e62dd46b7",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.688Z"
+    },
+    {
+      "attempt_id": "82",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_configuration",
+      "provider_key": "provider:1f48daf454568ef851ba298d016101be",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.703Z"
+    },
+    {
+      "attempt_id": "83",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:after_outbox",
+      "provider_key": "provider:2f21d7b00d374b5238c71a348b29a110",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.722Z"
+    },
+    {
+      "attempt_id": "84",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:during_provider_apply",
+      "provider_key": "provider:38d392bca608c8e723e9c5ecf2635adf",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.736Z"
+    },
+    {
+      "attempt_id": "85",
+      "scenario_id": "e09:interruption:sovereign-c:order-orders-create:during_provider_apply",
+      "provider_key": "provider:38d392bca608c8e723e9c5ecf2635adf",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.745Z"
+    },
+    {
+      "attempt_id": "86",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_identity",
+      "provider_key": "provider:5a2bf6b2d4c6d36010249b2cffcdbe54",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.762Z"
+    },
+    {
+      "attempt_id": "87",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_configuration",
+      "provider_key": "provider:bb10ae9b341eefbf0403a705712f3c8c",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.779Z"
+    },
+    {
+      "attempt_id": "88",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:after_outbox",
+      "provider_key": "provider:321fb03a5843988673843e45ea532af5",
+      "outcome": "created",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.800Z"
+    },
+    {
+      "attempt_id": "89",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:during_provider_apply",
+      "provider_key": "provider:362c42077afa198dedebc443b28c5ee9",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.813Z"
+    },
+    {
+      "attempt_id": "90",
+      "scenario_id": "e09:interruption:sovereign-c:payment-refunds-request:during_provider_apply",
+      "provider_key": "provider:362c42077afa198dedebc443b28c5ee9",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.820Z"
+    },
+    {
+      "attempt_id": "91",
+      "scenario_id": "e09:isolation:sovereign-c:identity-members-create:during_provider_apply",
+      "provider_key": "provider:92611a2d61ae446b0180039605effa42",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.873Z"
+    },
+    {
+      "attempt_id": "92",
+      "scenario_id": "e09:isolation:sovereign-c:identity-members-create:during_provider_apply",
+      "provider_key": "provider:92611a2d61ae446b0180039605effa42",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.885Z"
+    },
+    {
+      "attempt_id": "93",
+      "scenario_id": "e09:isolation:sovereign-c:provisioning-malls-create:during_provider_apply",
+      "provider_key": "provider:d8db418ff61d3d94919a7c0aedb20709",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.905Z"
+    },
+    {
+      "attempt_id": "94",
+      "scenario_id": "e09:isolation:sovereign-c:provisioning-malls-create:during_provider_apply",
+      "provider_key": "provider:d8db418ff61d3d94919a7c0aedb20709",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.914Z"
+    },
+    {
+      "attempt_id": "95",
+      "scenario_id": "e09:isolation:sovereign-c:member-sovereignty-upgrade:during_provider_apply",
+      "provider_key": "provider:f15b486910912e3b1325d6bce97ee83a",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.934Z"
+    },
+    {
+      "attempt_id": "96",
+      "scenario_id": "e09:isolation:sovereign-c:member-sovereignty-upgrade:during_provider_apply",
+      "provider_key": "provider:f15b486910912e3b1325d6bce97ee83a",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.943Z"
+    },
+    {
+      "attempt_id": "97",
+      "scenario_id": "e09:isolation:sovereign-c:order-orders-create:during_provider_apply",
+      "provider_key": "provider:328686c96abdf2ebfb71ccf91495cd1d",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.963Z"
+    },
+    {
+      "attempt_id": "98",
+      "scenario_id": "e09:isolation:sovereign-c:order-orders-create:during_provider_apply",
+      "provider_key": "provider:328686c96abdf2ebfb71ccf91495cd1d",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.971Z"
+    },
+    {
+      "attempt_id": "99",
+      "scenario_id": "e09:isolation:sovereign-c:payment-refunds-request:during_provider_apply",
+      "provider_key": "provider:e669aced0f3af0c4a54d83192b969c64",
+      "outcome": "created",
+      "interrupted_after_apply": true,
+      "attempted_at": "2026-09-13T20:43:07.991Z"
+    },
+    {
+      "attempt_id": "100",
+      "scenario_id": "e09:isolation:sovereign-c:payment-refunds-request:during_provider_apply",
+      "provider_key": "provider:e669aced0f3af0c4a54d83192b969c64",
+      "outcome": "reused",
+      "interrupted_after_apply": false,
+      "attempted_at": "2026-09-13T20:43:07.999Z"
+    }
+  ]
+}

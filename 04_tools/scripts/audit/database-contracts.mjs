@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { PGlite } from '@electric-sql/pglite';
 import { pgcrypto } from '@electric-sql/pglite/contrib/pgcrypto';
@@ -226,14 +226,18 @@ const REPAIR_FILES = [
   '20260913021500_align_purchase_supplier_flow_access.sql',
   '20260913021600_align_purchase_operation_completion_outbox.sql',
   '20260913022500_enable_hbbtzn_l2_h5_provisioning.sql',
+  '20260913023000_enforce_sfl_vertical_level_adjacency.sql',
 ];
 
 const mode = process.argv[2];
 if (!['--check-inventory','--schema-fresh','--environment-bootstrap','--inventory-cutover-unsafe','--postgres-fresh','--mvp-kernel','--identity-realm-isolation'].includes(mode)) {
-  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel|--identity-realm-isolation [URL]');
+  throw new Error('usage: database-contracts.mjs --check-inventory|--schema-fresh|--environment-bootstrap|--inventory-cutover-unsafe|--postgres-fresh|--mvp-kernel|--identity-realm-isolation [URL] [local-disposable-fixture]');
 }
 const replayRole = mode === '--postgres-fresh' ? process.argv[4] : undefined;
 if (replayRole !== undefined && !/^[a-z][a-z0-9_]{2,62}$/.test(replayRole)) throw new Error('POSTGRES_FRESH_ROLE_INVALID');
+if (mode === '--identity-realm-isolation' && process.argv[4] !== 'local-disposable-fixture') {
+  throw new Error('IDENTITY_REALM_POSTGRES_FIXTURE_CONFIRMATION_REQUIRED');
+}
 if (mode === '--registration-boundary-postgres' && process.argv[4] !== 'local-disposable-fixture') {
   throw new Error('REGISTRATION_BOUNDARY_POSTGRES_FIXTURE_CONFIRMATION_REQUIRED');
 }
@@ -258,7 +262,26 @@ if (mode === '--registration-boundary-postgres') {
 
 const database = await openDatabase();
 try {
-  await execute(database, `
+  await execute(database, mode === '--identity-realm-isolation' ? `
+    create role anon nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role authenticated nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role service_role nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopapp login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopconsole nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopjob login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopmigration login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role shopread login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanbootstrap login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanconsoleapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanidentityapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanidentityjob login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanpaymentwebhookapi nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanprovisioningapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanpurchaseapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanroot login inherit superuser createdb createrole replication bypassrls;
+    create role zhudatuansandboxbootstrap login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+    create role zhudatuanwebapi login noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
+  ` : `
     create role anon nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     create role authenticated nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     create role service_role nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
@@ -266,7 +289,23 @@ try {
     create role zhudatuanbootstrap nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
     create role zhudatuanroot nologin noinherit nosuperuser nocreatedb nocreaterole noreplication nobypassrls;
   `, 'database role bootstrap');
-  if (replayRole !== undefined) await execute(database, `set role "${replayRole}"`, 'database migration role');
+  if (mode === '--identity-realm-isolation') {
+    await execute(database, `
+      do $fixture$
+      begin
+        if current_database()<>'zhudatuan_registration' then
+          raise exception 'IDENTITY_REALM_POSTGRES_DATABASE_INVALID';
+        end if;
+      end
+      $fixture$;
+      grant shopconsole to zhudatuanconsoleapi;
+      grant shopapp,shopjob to shopmigration with inherit false,set true;
+      alter database zhudatuan_registration owner to shopmigration;
+      set role shopmigration;
+    `, 'identity realm database owner bootstrap');
+  } else if (replayRole !== undefined) {
+    await execute(database, `set role "${replayRole}"`, 'database migration role');
+  }
   await execute(database, `
     create schema supabase_migrations;
     create table supabase_migrations.schema_migrations(version text primary key,statements text[],name text);
@@ -280,6 +319,10 @@ try {
       ]);
       applied += 1;
       continue;
+    }
+    if (mode === '--identity-realm-isolation'
+      && name === '20260912181000_restore_identity_reconciliation_function_ownership.sql') {
+      await execute(database, 'reset role; set role zhudatuanroot;', 'identity realm authority handoff');
     }
     if (name === BOOTSTRAP) {
       await seedDeploymentBoundary(database);
@@ -324,7 +367,12 @@ try {
     }
     if (mode === '--identity-realm-isolation') {
       const { verifyIdentityRealmIsolation } = await import('./identity-realm-isolation.mjs');
-      await verifyIdentityRealmIsolation(database);
+      const evidencePath = process.env.E12_DATABASE_EVIDENCE_PATH;
+      const evidence = await verifyIdentityRealmIsolation(database, { collectEvidence: evidencePath !== undefined });
+      if (evidencePath !== undefined) {
+        if (evidence === null) throw new Error('IDENTITY_REALM_EVIDENCE_NOT_COLLECTED');
+        await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, { flag: 'wx' });
+      }
       console.log('identity realm isolation passed: nodes=L0-L11 profiles=operating_mall:6,consumer:6 accounts=12 l0-l1-surfaces=4 cross-host=0 login-intent=issue/wrong-target/consume/replay password-scope=pass logout-scope=pass node-lifecycle=2');
     }
     console.log(`target schema replay passed: migrations=${applied} historical=94 repair=${REPAIR_FILES.length}`);
@@ -341,9 +389,14 @@ async function openDatabase() {
     await cluster.close();
     return new PGlite({ database: 'zhudatuan_registration', loadDataDir: data, extensions: { pgcrypto } });
   }
-  if (mode !== '--postgres-fresh' && mode !== '--registration-boundary-postgres') return new PGlite({ extensions: { pgcrypto } });
+  if (mode !== '--postgres-fresh' && mode !== '--registration-boundary-postgres' && mode !== '--identity-realm-isolation') {
+    return new PGlite({ extensions: { pgcrypto } });
+  }
   const connectionString = process.argv[3];
   if (connectionString !== undefined && !/^postgres(?:ql)?:\/\//.test(connectionString)) throw new Error('POSTGRES_FRESH_URL_INVALID');
+  if (mode === '--identity-realm-isolation' && connectionString === undefined) {
+    throw new Error('IDENTITY_REALM_POSTGRES_URL_REQUIRED');
+  }
   if (mode === '--registration-boundary-postgres' && connectionString === undefined) {
     throw new Error('REGISTRATION_BOUNDARY_POSTGRES_URL_REQUIRED');
   }

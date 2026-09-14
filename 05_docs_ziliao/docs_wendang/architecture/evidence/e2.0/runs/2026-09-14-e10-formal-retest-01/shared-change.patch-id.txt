@@ -1,0 +1,11 @@
+schema_version=e10-shared-change-patch-identity-v1
+experiment=E10
+from_sha=dfb32c2c1fefc537b74205e54bfac757a5773612
+to_sha=b17ebd598dbc899005100d3f289e1bc15fd5db45
+merge_base=dfb32c2c1fefc537b74205e54bfac757a5773612
+changed_path_count=1
+changed_path=04_tools/scripts/audit/e10-shared-marker.txt
+marker_a=e10-shared-marker-v1-A
+marker_b=e10-shared-marker-v1-B
+patch_id_stable=ba41cb2d9513e348f4866920d54630bd9b62d5b8
+diff_sha256=sha256:a1826e061a939ff8a0cb848b1d527480de17b0120c0236f297c14116c88819f2

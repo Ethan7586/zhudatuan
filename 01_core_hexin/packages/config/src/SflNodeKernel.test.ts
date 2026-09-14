@@ -44,6 +44,10 @@ const topologyFixture = {
   schema_version: 'sfl.node-topology.v1',
   nodes: [
     node('l0', 'sovereign', 'operating_mall', 'mall:fixture:l0'),
+    node('l1', 'hosted', 'operating_mall', 'mall:fixture:l1'),
+    node('l2', 'hosted', 'consumer', null),
+    node('l3', 'hosted', 'consumer', null),
+    node('l4', 'hosted', 'consumer', null),
     node('l5', 'hosted', 'operating_mall', 'mall:fixture:l5'),
     node('l6', 'hosted', 'operating_mall', 'mall:fixture:l6'),
     node('l7', 'hosted', 'consumer', null),
@@ -54,9 +58,13 @@ const topologyFixture = {
   ],
   relations: [
     relation('l0', null, 'L0'),
-    relation('l5', 'l0', 'L5'),
+    relation('l1', 'l0', 'L1'),
+    relation('l2', 'l1', 'L2'),
+    relation('l3', 'l2', 'L3'),
+    relation('l4', 'l3', 'L4'),
+    relation('l5', 'l4', 'L5'),
     { ...relation('l6', 'l5', 'L6'), superseded_at: relationChangedAt },
-    { ...relation('l6', 'l0', 'L6'), original_parent_node_id: nodeId('l5'), relation_version: 2, effective_at: relationChangedAt },
+    { ...relation('l6', 'l5', 'L6'), relation_version: 2, effective_at: relationChangedAt },
     relation('l7', 'l6', 'L7'),
     relation('l8', 'l7', 'L8'),
     relation('l9', 'l8', 'L9'),
@@ -583,7 +591,7 @@ describe('SFL node kernel', () => {
     const after = resolveNodeRecord(topology, nodeId('l6'), relationChangedAt);
 
     expect(before).toMatchObject({ parent_node_id: nodeId('l5'), original_parent_node_id: nodeId('l5'), relation_version: 1 });
-    expect(after).toMatchObject({ parent_node_id: nodeId('l0'), original_parent_node_id: nodeId('l5'), relation_version: 2 });
+    expect(after).toMatchObject({ parent_node_id: nodeId('l5'), original_parent_node_id: nodeId('l5'), relation_version: 2 });
     const overlap = {
       ...topologyFixture,
       relations: topologyFixture.relations.map((entry) => entry.node_id === nodeId('l6') && entry.relation_version === 1
@@ -591,6 +599,16 @@ describe('SFL node kernel', () => {
         : entry),
     };
     expect(() => parseSflNodeTopology(overlap)).toThrow('SFL_NODE_RELATION_PERIOD_OVERLAP');
+  });
+
+  it('rejects a relation that skips its immediately preceding level', () => {
+    const invalid = {
+      ...topologyFixture,
+      relations: topologyFixture.relations.map((entry) => entry.node_id === nodeId('l8')
+        ? { ...entry, parent_node_id: nodeId('l6'), original_parent_node_id: nodeId('l6') }
+        : entry),
+    };
+    expect(() => parseSflNodeTopology(invalid)).toThrow('SFL_NODE_RELATION_LEVEL_INVALID');
   });
 
   it('caps the member line at L11 without creating an L12 model', () => {

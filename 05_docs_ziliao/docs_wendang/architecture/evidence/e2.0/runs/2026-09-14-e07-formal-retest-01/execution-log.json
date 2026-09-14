@@ -1,0 +1,23 @@
+{
+  "schema_version": "e07-execution-log-v1",
+  "started_at": "2026-09-13T21:15:13.954Z",
+  "completed_at": "2026-09-13T21:15:54.978Z",
+  "source_sha": "8c87b8762770287d318bc08f347cb2cdfee7aa75",
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e07 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01",
+    "node 04_tools/scripts/audit/database-contracts.mjs --postgres-fresh <ephemeral-postgres-url>",
+    "node 04_tools/scripts/audit/e07-continuity.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E07-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/continuity-independent-recount.json"
+  ],
+  "observed_execution": {
+    "sample_count": 4,
+    "opening_count": 4,
+    "sovereign_upgrade_count": 2,
+    "rollback_count": 2,
+    "non_target_count": 2,
+    "source_file_count": 2013,
+    "source_inventory_digest": "sha256:f262eade1d8d4d81a92f008d7350aca5e54d3dce46417628590c1445fbcb5ada"
+  },
+  "cleanup": "docker rm -f zhudatuan-e07-3aefaf8237ef42f4",
+  "exit_code": 0
+}

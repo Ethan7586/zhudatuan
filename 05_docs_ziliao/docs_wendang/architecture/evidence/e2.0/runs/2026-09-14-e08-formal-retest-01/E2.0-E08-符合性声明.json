@@ -1,0 +1,39 @@
+{
+  "$schema": "../../E2.0-符合性声明.schema.json",
+  "schema_version": "e2.0-conformity-statement-v2",
+  "statement_id": "E2-STATEMENT-E08-DEV-20260913",
+  "template": false,
+  "profile_id": "E2.0",
+  "profile_version": "2.0.0",
+  "issued_at": "2026-09-13T18:47:38.913Z",
+  "scope": "E2-TXN-001 / legacy E08 at source SHA 7f69099221fb7468a6cb0668511086bcec6ecd95, disposable local PostgreSQL 17 only.",
+  "claim_ids": [
+    "E2-TXN-001"
+  ],
+  "rating": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM"
+  },
+  "evidence_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/E2.0-E08-证据.json"
+  ],
+  "review_evidence_refs": [],
+  "tailoring_refs": [],
+  "gaps": [
+    "No stable separately managed staging replay has been performed.",
+    "No authorized production observation has been performed.",
+    "No finance/domain reviewer independent of the E08 test implementation and execution has recomputed and signed the evidence."
+  ],
+  "issuer": {
+    "name_or_id": "codex-task-e08-acceptance-repair-20260914",
+    "organization": "zhudatuan internal",
+    "role": "E08 transaction test and oracle operator",
+    "relationship_to_test_item": "Implemented the formal fixture orchestration and evidence exporter, executed the SQL contracts and operated the separate raw-ledger oracle; not an independent reviewer.",
+    "signed_at": "2026-09-13T18:47:38.913Z"
+  },
+  "reviewer": null,
+  "mandatory_disclaimer": "This is an E2.0 standards-aligned tailored conformity statement, not an ISO, IEEE, NIST, OWASP, PCI SSC, or third-party certification.",
+  "non_gating": true
+}

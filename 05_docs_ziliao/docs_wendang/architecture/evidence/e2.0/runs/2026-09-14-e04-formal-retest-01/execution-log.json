@@ -1,0 +1,23 @@
+{
+  "schema_version": "e04-execution-log-v1",
+  "started_at": "2026-09-13T22:11:50.907Z",
+  "completed_at": "2026-09-13T22:13:30.690Z",
+  "source_sha": "397eb23b54cda5f31164c4203e3bf4abae5e121d",
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e04 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01",
+    "node_modules/.bin/tsx 04_tools/scripts/audit/database-contracts.mjs --identity-realm-isolation <ephemeral-postgres-url> local-disposable-fixture",
+    "node 04_tools/scripts/audit/e04-multi-realm.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E04-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/multi-realm-independent-recount.json"
+  ],
+  "observed_execution": {
+    "realm_count": 3,
+    "discovery_positive_count": 3,
+    "discovery_cross_count": 6,
+    "positive_case_count": 3,
+    "transition_count": 6,
+    "negative_observation_count": 48,
+    "run_token": "fdec2a77"
+  },
+  "cleanup": "docker rm -f zhudatuan-e04-fdec2a7792ec43c5",
+  "exit_code": 0
+}

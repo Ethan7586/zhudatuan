@@ -1,0 +1,30 @@
+{
+  "schema_version": "e05-hosted-runtime-inventory-v1",
+  "captured_at": "2026-09-13T21:38:45.082Z",
+  "observation_scope": "Disposable shared PostgreSQL container zhudatuan-e05-9ef293e7ad864256; raw process and port output is retained for independent token scanning.",
+  "shared_test_environment": {
+    "container": "zhudatuan-e05-9ef293e7ad864256",
+    "process_lines": [
+      "PID                 COMMAND             COMMAND",
+      "1222                postgres            postgres",
+      "1332                postgres            postgres: checkpointer",
+      "1333                postgres            postgres: background writer",
+      "1335                postgres            postgres: walwriter",
+      "1336                postgres            postgres: autovacuum launcher",
+      "1337                postgres            postgres: logical replication launcher",
+      "1360                postgres            postgres: postgres zhudatuan_e05 172.17.0.1(65482) idle"
+    ],
+    "port_mappings": [
+      "5432/tcp -> 127.0.0.1:57616"
+    ]
+  },
+  "hosted_identity_tokens": [
+    "9ef293e7",
+    "node:e05-9ef293e7-h1:l2",
+    "node:e05-9ef293e7-h2:l3",
+    "node:e05-9ef293e7-h3:l4"
+  ],
+  "hosted_specific_process_matches": [],
+  "hosted_specific_port_matches": [],
+  "hosted_specific_pointer_references": []
+}

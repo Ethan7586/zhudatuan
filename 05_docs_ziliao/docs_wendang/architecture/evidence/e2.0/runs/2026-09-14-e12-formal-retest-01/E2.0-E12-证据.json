@@ -1,0 +1,354 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E12-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-ISO-001"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E12-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E12-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:13d91adb878a465ec180b883c6e3b2e85f68e2a182ed088f5ce659989d304936",
+    "locked_at": "2026-09-13T17:57:05Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e12-acceptance-repair-20260914",
+      "role": "E12 authorization isolation test and oracle operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the evidence exporter, executed the test and operated the separate raw-field oracle; not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-ISO-001",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E12"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T18:22:37.944Z",
+    "completed_at": "2026-09-13T18:24:17.815Z",
+    "executor": {
+      "actor_id": "codex-task-e12-acceptance-repair-20260914",
+      "role": "E12 authorization isolation test and oracle operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the evidence exporter, executed the test and operated the separate raw-field oracle; not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e12 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "The generated disposable PostgreSQL password and connection URL were used only in process memory and were not persisted in evidence."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-postgresql17-e12-937857f3440447b2",
+    "description": "A newly created PostgreSQL 17 Alpine container replayed the production migration chain with production-equivalent migration roles; local HTTP probes used the same source SHA.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Disposable Docker container zhudatuan-identity-realm-937857f3440447b2; synthetic E12 identities only; container removed after execution.",
+    "real_customer_data": false,
+    "production_impact": "None. No production service, database, domain, payment provider or customer record was contacted.",
+    "differences_from_production": [
+      "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+      "Loopback HTTP listener rather than Caddy and public network ingress.",
+      "Synthetic identities and reversible transaction-scoped writes rather than customer traffic.",
+      "No production observation or stable staging environment identity."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "766eda4984ce85d6d9c509d9ef0c770cb2be04fb",
+    "test_item_shas": [
+      "766eda4984ce85d6d9c509d9ef0c770cb2be04fb"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "postgres:17-alpine sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73; migration authority shopmigration with the recorded zhudatuanroot ownership handoff; canonical node registry; synthetic L0-L11 identities.",
+    "digest": "sha256:52ff367c02dba322391eb49d229d62de3b483b259633d2f5e0ce16a5372e7a6f",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E12-VALID-BASELINE-MISMATCH-COUNT",
+      "source": "independent-oracle.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:24:17.619Z",
+      "notes": "Recomputed from raw requests, responses and database rows; no runner PASS flag was read."
+    },
+    {
+      "observation_id": "OBS-E12-INVALID-REQUEST-ACCEPTANCE-COUNT",
+      "source": "independent-oracle.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:24:17.619Z",
+      "notes": "Recomputed from raw requests, responses and database rows; no runner PASS flag was read."
+    },
+    {
+      "observation_id": "OBS-E12-INVALID-BUSINESS-WRITE-COUNT",
+      "source": "independent-oracle.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:24:17.619Z",
+      "notes": "Recomputed from raw requests, responses and database rows; no runner PASS flag was read."
+    },
+    {
+      "observation_id": "OBS-E12-INVALID-OUTBOX-COUNT",
+      "source": "independent-oracle.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:24:17.619Z",
+      "notes": "Recomputed from raw requests, responses and database rows; no runner PASS flag was read."
+    },
+    {
+      "observation_id": "OBS-E12-FORGED-OWNERSHIP-CHANGES",
+      "source": "independent-oracle.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:24:17.619Z",
+      "notes": "Recomputed from raw requests, responses and database rows; no runner PASS flag was read."
+    },
+    {
+      "observation_id": "OBS-E12-DEFAULT-NODE-FALLBACK-COUNT",
+      "source": "independent-oracle.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:24:17.619Z",
+      "notes": "Recomputed from raw requests, responses and database rows; no runner PASS flag was read."
+    },
+    {
+      "observation_id": "OBS-E12-DENIAL-AUDIT-MISMATCH-COUNT",
+      "source": "independent-oracle.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T18:24:17.619Z",
+      "notes": "Recomputed from raw requests, responses and database rows; no runner PASS flag was read."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/host-resolution-negative-matrix.json",
+      "media_type": "application/json",
+      "sha256": "sha256:1a28a3d3d56ad7e5e7942c05e1433adf18b09ee931b7233396abc1fcf9f9dfc7",
+      "size_bytes": 5687,
+      "role": "Host positive and negative request/response matrix"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/realm-scope-node-negative-matrix.json",
+      "media_type": "application/json",
+      "sha256": "sha256:4802e8b129d79a542530217311d408ba4404704d29cc732ee797bc1fb54bb63e",
+      "size_bytes": 97236,
+      "role": "Realm, Scope, node, version and lifecycle matrix with full database digests"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/authority-forgery-database-diff.json",
+      "media_type": "application/json",
+      "sha256": "sha256:5f3e43c95478533d90fa35ad98f87c6e990962180a91cd00b9c8f7efea259641",
+      "size_bytes": 114076,
+      "role": "Six forged-field HTTP and reversible production-write observations"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/authorization-denial-audit.jsonl",
+      "media_type": "application/x-ndjson",
+      "sha256": "sha256:8c1e36cc0081a8f7885ef77b18855230f6410c503f78c2f7d9c9ed1e3e0130fb",
+      "size_bytes": 5579,
+      "role": "Seven-case denial audit"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/compatibility-path-trace.json",
+      "media_type": "application/json",
+      "sha256": "sha256:5dece1b96cdf0fe3b70663e86095853335c2c2b41c0ba18b1850e35cb411ef31",
+      "size_bytes": 1122,
+      "role": "Authoritative resolver and fallback trace"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:caf367f3c124942d4ad2151f61bfe7c1fcb61ec1007ea3fe0f374053e2830435",
+      "size_bytes": 1798,
+      "role": "Disposable execution environment identity"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/http-raw-observations.json",
+      "media_type": "application/json",
+      "sha256": "sha256:0c557e0ad0e7a45769661ca447b28303ca5dfdc41a6c51601e7df62a6ecaeede",
+      "size_bytes": 16017,
+      "role": "Unmodified HTTP probe output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/database-raw-observations.json",
+      "media_type": "application/json",
+      "sha256": "sha256:6ec71b981307a62fb6363f7daff44114fcf5c7a0c11367d66e6fb1464f47c6b8",
+      "size_bytes": 115680,
+      "role": "Unmodified PostgreSQL probe output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/independent-oracle.json",
+      "media_type": "application/json",
+      "sha256": "sha256:08c24cfa0d0e84d8270495f21b004703f1af0de11c7c3f4f255c76434f06ad5a",
+      "size_bytes": 4764,
+      "role": "Independent raw-field recomputation"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:ecacbd94205162ec849de3d08a88ad0bddb3102abe4cb62624237ed88c4157aa",
+      "size_bytes": 1204,
+      "role": "Exact command and cleanup log"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E12-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:13d91adb878a465ec180b883c6e3b2e85f68e2a182ed088f5ce659989d304936",
+      "size_bytes": 3998,
+      "role": "Pre-execution locked E12 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E12-AUTHORITY-DIFF",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Read exact HTTP/SQL requests and responses, recompute both positive contexts, all seven invalid outcomes, all six forged-field ownership destinations, full persistent-table before/after digests, Outbox deltas, denial audits and fallback-path facts. Do not consume any runner PASS flag.",
+    "exact_invocation": "node 04_tools/scripts/audit/identity-realm-isolation.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E12-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/independent-oracle.json",
+    "evaluator": {
+      "actor_id": "codex-task-e12-acceptance-repair-20260914",
+      "role": "E12 authorization isolation test and oracle operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the evidence exporter, executed the test and operated the separate raw-field oracle; not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E12-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/host-resolution-negative-matrix.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/realm-scope-node-negative-matrix.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/authority-forgery-database-diff.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/authorization-denial-audit.jsonl",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/compatibility-path-trace.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "valid_baseline_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "invalid_request_acceptance_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "invalid_business_write_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "invalid_outbox_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "forged_ownership_changes",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "default_node_fallback_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "denial_audit_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "clean checkout of the recorded source SHA"
+    ],
+    "steps": [
+      "Check out 766eda4984ce85d6d9c509d9ef0c770cb2be04fb.",
+      "Run npm run evidence:e12 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01.",
+      "Read independent-oracle.json and verify all listed artifact hashes."
+    ],
+    "expected_raw_observations": [
+      "valid A/A and B/B expected result mismatch = 0",
+      "invalid request acceptance count = 0",
+      "business write count for invalid cases = 0",
+      "Outbox count for invalid cases = 0",
+      "forged ownership changes = 0",
+      "default-node fallback count = 0"
+    ],
+    "cleanup": "The runner removes the disposable PostgreSQL container in a finally block; all fixture database writes are transaction-scoped or savepoint-rolled back."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "EXACT_OPEN_REQUIREMENT_MAPPING",
+    "applicability_ref": null,
+    "rationale": "Both distinct baselines matched; all seven invalid cases denied; invalid writes, Outbox events, forged ownership changes and fallback counts independently recomputed to zero in the disposable DEV environment.",
+    "gaps": [
+      "No stable separately managed staging replay has been performed.",
+      "No authorized production observation has been performed.",
+      "No reviewer independent of the E12 test implementation and execution has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}

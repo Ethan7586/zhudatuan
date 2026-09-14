@@ -221,14 +221,18 @@
       "executor_role": "Horizontal node-model test operator",
       "reviewer_role": "Reviewer independent of the node-model implementation and E01 test code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E01 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay at 7bd7f513d048663e75b660a4156d985760493ab4 independently reconciled H-A, H-B and H-C under one line, parent and signed L1 level through one Node/Relation/Closure model, one production context parser path and one source/build/artifact identity. All context and authority maps matched; nine positive outcomes followed per-node data, all thirty Realm/Membership/Scope/Node/resource cross-node requests were denied without business-row or Outbox leakage, all three writes remained target-local, rollback left no E01 facts, and all three oracle mutations were detected.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/E2.0-E01-证据.json",
         "review_evidence_ref": null,
         "gaps": [
-          "E2.0 evidence record and independent oracle recomputation"
+          "No stable separately managed staging replay has been performed.",
+          "No authorized production observation has been performed.",
+          "All H-A, H-B and H-C nodes, identities, scopes, capabilities and resources were synthetic and transaction-rolled-back.",
+          "The one shared commerce-api artifact was built and inventoried locally but was not activated on Hosted or Sovereign infrastructure.",
+          "No reviewer independent of the E01 fixture, exporter and oracle has recomputed and signed the evidence."
         ]
       }
     },
@@ -317,14 +321,18 @@
       "executor_role": "Vertical topology and relation-version test operator",
       "reviewer_role": "Reviewer independent of the hierarchy implementation and E02 test code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E02 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay at deb3c5d716b6437c11952c9157a2210746703329 independently reconciled one complete 12-node L0-L11 chain, all 11 adjacent same-line parent edges, the expected 78-row closure and every per-level self/ancestor/descendant/subtree result. The V-L6 relation gained an append-only second version while preserving version 1 and both effective-time paths; skip-level, second-parent, cross-line and L12 writes were rejected without residue; signed-level-only permission, sovereignty and sovereign-resource changes were zero; all three oracle mutations were detected.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e02-formal-retest-01/E2.0-E02-证据.json",
         "review_evidence_ref": null,
         "gaps": [
-          "E2.0 evidence record and independent chain/closure recomputation"
+          "No stable separately managed staging replay has been performed.",
+          "No authorized production observation has been performed.",
+          "All V-L0 through V-L11 nodes, realms and negative probes were synthetic and transaction-rolled-back.",
+          "The relation-version transition retained the same immediately preceding parent; it proves append-only interval history but not a production reparenting event.",
+          "No reviewer independent of the E02 topology implementation, fixture and oracle has recomputed and signed the evidence."
         ]
       }
     },
@@ -417,14 +425,18 @@
       "executor_role": "Cross-surface authorization truth-table operator",
       "reviewer_role": "Security reviewer independent of authorization implementation and E03 test code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E03 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay at 7f09a12644bdfd0868aec7d4bc63f37277f3f2c4 independently reconciled all 32 five-factor rows across page, API, task and service for three node/Membership samples and two Operations: all 24 all-true cases allowed, all 744 other cases denied for the first unmet factor, cross-surface inconsistency and denied business/Outbox/task/Provider effects were zero, and all three oracle mutations were detected.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e03-formal-retest-01/E2.0-E03-证据.json",
         "review_evidence_ref": null,
         "gaps": [
-          "E2.0 32-row four-surface evidence record and independent side-effect recomputation"
+          "No stable separately managed staging replay has been performed.",
+          "No authorized production observation has been performed.",
+          "Principal, Membership and NodeContext inputs were synthetic resolver-backed fixtures; public Session and Membership ingress was not exercised.",
+          "Page, API, task and service were isolated loopback HTTP probes and the trusted Provider was deterministic and in-process.",
+          "No reviewer independent of the E03 authorization implementation, fixture and oracle has recomputed and signed the evidence."
         ]
       }
     },
@@ -520,14 +532,17 @@
       "executor_role": "Multi-Realm identity and session-isolation test operator",
       "reviewer_role": "Security reviewer independent of identity/session implementation and E04 test code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E04 is now in E2.0 scope, but its E v1 material has not yet been recalibrated against this locked criterion set.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay resolved one shared synthetic credential independently into three distinct Realm identities, preserved separate Account, principal, Membership, base Session, lineage, Scope-grant and order-asset identifiers, passed all three own-Realm asset cases, and bound all six directed Realm switches to fresh target Sessions with zero source residue. All 48 source Session/Membership/Scope/node read-write misuse observations denied with zero disclosure, authoritative write or Outbox delta, and the independent oracle detected all three injected faults.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e04-formal-retest-01/E2.0-E04-证据.json",
         "review_evidence_ref": null,
         "gaps": [
-          "E2.0 three-Realm evidence record and independent identity/session recomputation"
+          "Stable separately managed staging replay",
+          "Public HTTP ingress observation for target Session issuance and final asset operation",
+          "Authorized production observation",
+          "Independent reviewer recomputation and signature"
         ]
       }
     },
@@ -581,13 +596,13 @@
       "executor_role": "Environment operator with access to lifecycle and release observations",
       "reviewer_role": "Reviewer independent of E05 test implementation",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay completed the three-node five-operation Hosted lifecycle with exact database, audit and Outbox facts; independently recomputed access was denied after suspend/revoke and restored after reactivate/grant; every Hosted infrastructure, runtime object and per-node action count stayed zero. The frozen shared-host production receipt was reconciled read-only against GitHub and showed one build, artifact, deploy and restart.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e05-formal-retest-01/E2.0-E05-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["E2.0 evidence record and independent oracle recomputation not yet completed"]
+        "gaps": ["Stable separately managed staging lifecycle replay", "Live HTTP handler and real Session denial observation for suspend/reactivate/grant/revoke", "Current production Hosted lifecycle observation", "New production shared-host release observation rather than historical read-only reconciliation", "Independent reviewer recomputation and signature"]
       }
     },
     {
@@ -705,13 +720,13 @@
       "executor_role": "Isolated transition environment operator",
       "reviewer_role": "Reviewer independent of transition implementation",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "A clean-source disposable PostgreSQL 17 replay opened the original L3/L6/L8/L11 Hosted nodes, upgraded and rolled back only L6/L8, preserved every locked identity, lineage and immutable-history digest, produced the exact versioned resource/manifest facts, changed neither non-target node, and recorded zero Hosted infrastructure or node-specific build actions. The independent raw-evidence oracle detected all four negative mutations.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e07-formal-retest-01/E2.0-E07-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["E2.0 criteria lock, evidence record and independent oracle recomputation"]
+        "gaps": ["Stable separately managed staging replay", "Authorized real DNS/TLS/tunnel/runtime/secret/payment-provider readiness observation", "Deployment and production serving observation", "Independent reviewer recomputation and signature"]
       }
     },
     {
@@ -762,13 +777,17 @@
       "executor_role": "Transaction test operator",
       "reviewer_role": "Finance/domain reviewer independent of test implementation",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "Formal E08 execution at source SHA 7f69099221fb7468a6cb0668511086bcec6ecd95 replayed all 301 migrations in disposable PostgreSQL 17. Three supplier legs, four forward flows, two selected refunds, five simultaneous replay attempts, atomic failure probes and frozen route versions independently reconciled with zero differences; all three negative oracle mutations were detected.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/E2.0-E08-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["E2.0 evidence record and independent ledger recomputation"]
+        "gaps": [
+          "No stable separately managed staging replay has been performed.",
+          "No authorized production observation has been performed.",
+          "No finance/domain reviewer independent of the E08 test implementation and execution has recomputed and signed the evidence."
+        ]
       }
     },
     {
@@ -819,13 +838,18 @@
       "executor_role": "Failure-injection test operator",
       "reviewer_role": "Reviewer independent of operation and recovery implementation",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "Formal E09 execution at clean source SHA 54934c682005c6c1bc1d56cf6b61d9fe7d03f2f0 replayed all 301 migrations in disposable PostgreSQL 17 and exercised the production ExecutionKernel, PgUnitOfWork and audit projection across 15 operation/node pairs. Seventy-five simultaneous deliveries converged to one authority per pair, 15 conflicting hashes changed no accepted state, all 60 fixed interruption cases recovered to one terminal business result and unique local provider receipt, and five Sovereign-C recoveries changed neither Hosted node. The independent recount found zero missing evidence or threshold violations and detected all four negative mutations.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e09-formal-retest-01/E2.0-E09-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["E2.0 criteria lock, raw provider/DB evidence and independent recovery reconstruction"]
+        "gaps": [
+          "No stable separately managed staging replay has been performed.",
+          "The DEV provider is deterministic and local; no authorized real payment, DNS or cloud-provider recovery observation has been performed.",
+          "Synthetic business actions were used behind the five registered operation IDs; this run does not establish each live module handler business contract.",
+          "No reviewer independent of the E09 workload, recovery implementation and oracle has recomputed and signed the evidence."
+        ]
       }
     },
     {
@@ -876,13 +900,18 @@
       "executor_role": "Staging release and probe operator",
       "reviewer_role": "Reviewer independent of build/release and capability-matrix implementation",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "Formal E10 execution used the clean marker-only transition dfb32c2c1fefc537b74205e54bfac757a5773612→b17ebd598dbc899005100d3f289e1bc15fd5db45 and one candidate build. One Hosted host pointer switch changed H-A/H-B/H-C with zero Hosted per-node actions; S-A and S-B activated in separate ordered actions while S-C remained on A; S-B then rolled back alone. The independent oracle found zero differences across all 144 expected/observed node, identity, surface and phase cells, zero non-target rollback changes, and detected all three negative mutations.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/E2.0-E10-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["Complete same-SHA staging release and cross-surface raw evidence"]
+        "gaps": [
+          "No stable separately managed staging release replay has been performed.",
+          "No authorized production deployment or production cloud audit-log observation has been performed.",
+          "The page, API, task and service observations are isolated read-only probe transports around the production authorization kernel, not full production adapters with real traffic.",
+          "No reviewer independent of the E10 build, release fixture and oracle has recomputed and signed the evidence."
+        ]
       }
     },
     {
@@ -933,13 +962,17 @@
       "executor_role": "Scale test operator",
       "reviewer_role": "Reviewer independent of generator and counting code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "Formal E11 execution at clean source SHA 8630eabaae848ed3757bc7f252fb1fb2947af75f replayed all 301 migrations in disposable PostgreSQL 17 and ran twelve locked scale/topology scenarios covering 3,333 generated-node and 36 sovereign-control observations. The independent recount found the same 2,010 business-source files and digest at all four scales, one shared build and artifact identity, zero node-specific source/build or Hosted per-node infrastructure events, and zero resolution/isolation differences; all three negative oracle mutations were detected.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/E2.0-E11-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["Independent source/build/event recount under E2.0"]
+        "gaps": [
+          "No stable separately managed staging replay has been performed.",
+          "No authorized production infrastructure audit-log observation has been performed.",
+          "No reviewer independent of the E11 generator, counting code and execution has recomputed and signed the evidence."
+        ]
       }
     },
     {
@@ -978,7 +1011,10 @@
         "tailoring_ref": null,
         "review_trigger": "Reassess when Host resolution, session, membership, scope, capability or write authority changes."
       },
-      "test_basis_refs": ["05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E12"],
+      "test_basis_refs": [
+        "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E12",
+        "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E12-正式重测判据-2026-09-14.json"
+      ],
       "independent_oracle": {
         "oracle_id": "E2-ORACLE-E12-AUTHORITY-DIFF",
         "procedure": "Independently compare expected versus actual status/error/context and before/after authoritative tables for every positive, invalid and forged-field case; do not use the test program's pass flags.",
@@ -997,13 +1033,13 @@
       "executor_role": "Authorization isolation test operator",
       "reviewer_role": "Security reviewer independent of authorization implementation and E12 test code",
       "current_rating": {
-        "claim_outcome": "UNKNOWN",
-        "environment_assurance": "NOT ESTABLISHED",
+        "claim_outcome": "MET",
+        "environment_assurance": "DEV VERIFIED",
         "review_assurance": "NOT REVIEWED",
-        "rationale": "E v1 evidence is preserved but was not recalibrated against E2.0 in this batch.",
-        "evidence_ref": null,
+        "rationale": "The prelocked E12 matrix was executed at clean source SHA 766eda4984ce85d6d9c509d9ef0c770cb2be04fb in disposable PostgreSQL 17 and loopback HTTP. The independent raw-field oracle found zero positive mismatch, invalid acceptance, invalid business write, invalid Outbox event, forged ownership change, default-node fallback or denial-audit mismatch. This establishes DEV only and has no independent reviewer.",
+        "evidence_ref": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e12-formal-retest-01/E2.0-E12-证据.json",
         "review_evidence_ref": null,
-        "gaps": ["Complete E2.0 negative matrix, direct database oracle and independent review"]
+        "gaps": ["Stable separately managed staging replay", "Authorized production observation", "Independent security reviewer recomputation and signature"]
       }
     }
   ]

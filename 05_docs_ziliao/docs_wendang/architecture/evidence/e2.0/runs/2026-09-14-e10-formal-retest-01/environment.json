@@ -1,0 +1,48 @@
+{
+  "schema_version": "e10-environment-v1",
+  "captured_at": "2026-09-13T19:56:41.468Z",
+  "kind": "DEV",
+  "environment_id": "local-disposable-docker-e10-e77ec8c39233",
+  "description": "Four disposable network-isolated Node.js containers represented one shared Hosted host and three independently switched Sovereign runtimes.",
+  "owner": "Ethan-controlled local Codex workspace",
+  "isolation": "Docker --network none; read-only bind mount; synthetic node policies; containers zhudatuan-e10-e77ec8c39233-hosted, zhudatuan-e10-e77ec8c39233-s-a, zhudatuan-e10-e77ec8c39233-s-b, zhudatuan-e10-e77ec8c39233-s-c removed after observation.",
+  "real_customer_data": false,
+  "production_impact": "None. No production host, staging host, DNS provider, database, payment provider, supplier or customer record was contacted.",
+  "differences_from_production": [
+    "Disposable local Docker processes rather than a stable separately managed staging environment.",
+    "Synthetic logical nodes and identities rather than real staging tenants or customer traffic.",
+    "Four read-only HTTP probe adapters exercise the real authorization kernel but are not the production UI, queue worker or service transport adapters.",
+    "No production deployment or cloud-provider audit log was observed."
+  ],
+  "runtime": {
+    "node": "v22.22.3",
+    "os": "darwin 25.5.0",
+    "docker_server": "29.7.2",
+    "docker_image": "node:22.22.0-bookworm-slim",
+    "docker_image_id": "sha256:dd9d21971ec4395903fa6143c2b9267d048ae01ca6d3ea96f16cb30df6187d94",
+    "docker_image_repo_digests": [
+      "node@sha256:dd9d21971ec4395903fa6143c2b9267d048ae01ca6d3ea96f16cb30df6187d94"
+    ],
+    "network": "none",
+    "physical_process_count": 4,
+    "logical_node_count": 6
+  },
+  "source_control": {
+    "sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+    "tree_state": "CLEAN",
+    "porcelain": []
+  },
+  "source_pair": {
+    "from_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+    "to_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+    "merge_base": "dfb32c2c1fefc537b74205e54bfac757a5773612"
+  },
+  "external_contacts": {
+    "production_hosts": 0,
+    "staging_hosts": 0,
+    "dns_providers": 0,
+    "databases": 0,
+    "payment_providers": 0
+  },
+  "configuration_digest": "sha256:5bfecb92f473c2e2585ad9cb99296db72eb7c2b42581652ec9e94db3d34d9cea"
+}

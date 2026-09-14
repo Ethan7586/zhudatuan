@@ -1,0 +1,1975 @@
+{
+  "schema_version": "e01-horizontal-artifact-identity-v1",
+  "captured_at": "2026-09-13T23:54:30.302Z",
+  "source_sha": "7bd7f513d048663e75b660a4156d985760493ab4",
+  "source_inventory_digest": "sha256:ea229a74809a24448fd97005fabcec008a95d099438e4534784fe5444f218c06",
+  "model_source_inventory_digest": "sha256:ea229a74809a24448fd97005fabcec008a95d099438e4534784fe5444f218c06",
+  "source_inventory": {
+    "schema_version": "e01-horizontal-source-inventory-v1",
+    "captured_at": "2026-09-13T23:52:49.283Z",
+    "scope": {
+      "roots": [
+        "01_core_hexin/packages/config/src",
+        "01_core_hexin/services/commerce/src/foundation/security",
+        "02_platform_pingtai/database/supabase/migrations"
+      ],
+      "extensions": [
+        ".ts",
+        ".tsx",
+        ".js",
+        ".jsx",
+        ".mjs",
+        ".cjs",
+        ".sql"
+      ],
+      "excluded_directory_names": [
+        ".next",
+        "coverage",
+        "dist",
+        "node_modules",
+        "playwright-report",
+        "test-results"
+      ],
+      "excluded_path_segments": [
+        "06_tests_ceshi",
+        "__tests__",
+        "tests"
+      ],
+      "excluded_filename_patterns": [
+        ".test.",
+        ".spec."
+      ],
+      "node_specific_definition": "A scoped production-source path or source line containing the generated E01 run token, a generated peer node/Realm/Scope/resource identifier, or a conditional branch comparing a node identifier to H-A, H-B or H-C."
+    },
+    "file_count": 348,
+    "inventory_digest": "sha256:ea229a74809a24448fd97005fabcec008a95d099438e4534784fe5444f218c06",
+    "entries": [
+      {
+        "path": "01_core_hexin/packages/config/src/AdminSegmentScope.ts",
+        "size_bytes": 3649,
+        "sha256": "sha256:9779ff20aa3ee1b28b388d06f164e66088aa2eaf3b0f07fd723312fbf20cc679"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/ApiEnvironment.ts",
+        "size_bytes": 3809,
+        "sha256": "sha256:c087257f338958c2811ca66599139e93657733c69503083df6c2790129774649"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/CatalogOperatorApiEnvironment.ts",
+        "size_bytes": 4783,
+        "sha256": "sha256:27d1a65684fd1273cc371010eb25f10d056259f3735a0bc01c5e9a698f1b1f21"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/ClientEnvironment.ts",
+        "size_bytes": 1770,
+        "sha256": "sha256:43512338e05cc428711aa6ffbf841876c51838e01ebcabf0b0de6873b6144699"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/Environment.ts",
+        "size_bytes": 2601,
+        "sha256": "sha256:534b4d5b0e5635e29200e151f413ac4d3da73ae3d4417e87b9c4c886cf1014a1"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/IdentityNodeManifest.ts",
+        "size_bytes": 5372,
+        "sha256": "sha256:3180ab6d91139f2aa38da7882b71df0a03fbb621784b4f7754b01a1f21e130cb"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/IdentityRealmCatalog.ts",
+        "size_bytes": 877,
+        "sha256": "sha256:2818045eee7f22ed9163f67dd3ae9fe8cf794e030631b2f7737af8fc090e3bb4"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/IdentityRegistrationApiEnvironment.ts",
+        "size_bytes": 5891,
+        "sha256": "sha256:0565d5a9f3baa5d2fb10b3f20eaf35c5c59d1d874a0b38b6ebc9302dd9545977"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/JobsEnvironment.ts",
+        "size_bytes": 8447,
+        "sha256": "sha256:7a417335337df4d0d13bc62fa5727eb0b95d347f46f94c049328c4d7bfd5ad6b"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/LocalEnvironment.ts",
+        "size_bytes": 12465,
+        "sha256": "sha256:8b3302bd781ff16ce1b559440857fe6ecb580c31d949f48ee35dc655188df8f6"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/MallProvisioningApiEnvironment.ts",
+        "size_bytes": 4169,
+        "sha256": "sha256:022fdb368e17966bd22b150cbb0b54e52c277bf5f14684966d559dc6da65918c"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/MigrationEnvironment.ts",
+        "size_bytes": 2176,
+        "sha256": "sha256:2d94ee97e78396f05af1dabf5001aa71f6f0ec9a6b3697ffa7fd6af25b86b817"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/MiniappEnvironment.ts",
+        "size_bytes": 1101,
+        "sha256": "sha256:717d5415a22a6ff0e24cae8db2620146592a79d2641ae4026035ba0293b3fa64"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/Network.ts",
+        "size_bytes": 453,
+        "sha256": "sha256:4a6974447887f7e23cadccefa1ebe62756cb46064058a85c61f8a8da7496123d"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/NodeManifest.ts",
+        "size_bytes": 2812,
+        "sha256": "sha256:0d9b04ae494abccd82c7e831bb43eba4331883b3f37e57f248130b8adc07c136"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/PaymentWebhookApiEnvironment.ts",
+        "size_bytes": 4246,
+        "sha256": "sha256:bb9afcfcff1ebf80573a7ba445870763d9779d4667ddc5d2f33b9534eaad5702"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/ProviderEnvironment.ts",
+        "size_bytes": 483,
+        "sha256": "sha256:43bbf582b60633f84febbde301c7e0f4247fb65c45611757a8720c50148c4f34"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/PurchaseApiEnvironment.ts",
+        "size_bytes": 5393,
+        "sha256": "sha256:a41962f6799cc1a98589f70fb98714b4a6073dd7ff68938b04b93a45febcb795"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/RegistrationMigrationEnvironment.ts",
+        "size_bytes": 5449,
+        "sha256": "sha256:48d631e3ab2b22bc803930c44a273a3cd21691cffa916a9ed68c3658881ae16c"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/Release.ts",
+        "size_bytes": 465,
+        "sha256": "sha256:6c6eb57043779180cfebbcf4b50dfe8ca3cfba8fdd43f4000f9758a23591b13a"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/RuntimeCatalog.generated.ts",
+        "size_bytes": 3007,
+        "sha256": "sha256:c4c4c4e783a42621b559ed90ffa9f961f3a0ae4897f16ad9af618dca13bc2457"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/ServerEnvironment.ts",
+        "size_bytes": 809,
+        "sha256": "sha256:236eb5d28264a5ea6ed434df654d9c2ba4baea61761ad53f80a5a4e3ff77d430"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/SflNodeKernel.ts",
+        "size_bytes": 80278,
+        "sha256": "sha256:dbc0183ddda71bfba4440db7162b0b7e2580ecd6da4bae36209925a8f812bc74"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/SflNodeKernelConsole.ts",
+        "size_bytes": 18571,
+        "sha256": "sha256:0594752669596bb2bcf5ed505152a301899e3d5a46967b2f56c531278ac7b878"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/SflNodeRegistry.ts",
+        "size_bytes": 8856,
+        "sha256": "sha256:11058be6a8f19bb5d17e9be758a837292fd0fe7c74abdbf0f86f388186f237dc"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/SmokeEnvironment.ts",
+        "size_bytes": 863,
+        "sha256": "sha256:6cc75d5b958797de1bed778cce2f2f05af539c863532fcf0b5d1c7a2f5f528e3"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/WebBusinessApiEnvironment.ts",
+        "size_bytes": 6233,
+        "sha256": "sha256:8fbc93228c75f2ddff8b9305fbcef394d96b2982c30ae0449ef9c0ba9f3297ef"
+      },
+      {
+        "path": "01_core_hexin/packages/config/src/WechatApplication.ts",
+        "size_bytes": 2589,
+        "sha256": "sha256:0b79950bacba56d03fe63b1b43f9d17ef7c2f4239fba2859b1ec893c0f9f783f"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/AccessContext.ts",
+        "size_bytes": 4822,
+        "sha256": "sha256:556aba2018ecbd021074f315dcd58d0ad0b24beafad98d57061f2299dbfd6fca"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/AccessPipeline.ts",
+        "size_bytes": 8084,
+        "sha256": "sha256:e1898df98d61016261285b9bd3893f081e9ace69f26adfae699c46b588343b51"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/ActionProof.ts",
+        "size_bytes": 1822,
+        "sha256": "sha256:974d20735ae4dc47c131d7aa34fd03375494ffdc67b1e258f1a47210cb7c65b3"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/AdministratorContextResolver.ts",
+        "size_bytes": 3560,
+        "sha256": "sha256:227641da3d574dcac17978e6c82f27de0222ec05b490adfce0f2d77fccbfd202"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/AuthoritativeNodeContextResolver.ts",
+        "size_bytes": 2121,
+        "sha256": "sha256:1821b7c0558f7314cfc0f460de6d142bd1ccafa715b57a6cd6cd5f416499edc7"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/DecisionSink.ts",
+        "size_bytes": 557,
+        "sha256": "sha256:6d6a1572c57543927336643f5911a67e51d456759fac828031ed2d855fb8480b"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/gate_menjin/GateEngine.ts",
+        "size_bytes": 1778,
+        "sha256": "sha256:e8e2b754dc2a96533ecc947a92b42c91471ebf4b3d811487ab36ad88d3305be1"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/gate_menjin/GateRegistry.ts",
+        "size_bytes": 654,
+        "sha256": "sha256:18709aea886bc9a44e530461b11e08d6a8a89e51298752aab8e7ba09603f7990"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/gate_menjin/index.ts",
+        "size_bytes": 90,
+        "sha256": "sha256:246f7251adcced3b2257cb69760e2f2e9c58e2450238ac92da1e7f9bdece3549"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/GovernanceResolver.ts",
+        "size_bytes": 2455,
+        "sha256": "sha256:b3e08d95e4e0a7ad1656f96d4a0a739e68824d0576014b17f42ce4cd70ab1bec"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/NodeBoundScopeResolver.ts",
+        "size_bytes": 1118,
+        "sha256": "sha256:b1f1ea101aab302a5c5a8d2e5bbc1efb04bc28c443d667aadeabf8809a3b2269"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/OperationAvailability.ts",
+        "size_bytes": 2878,
+        "sha256": "sha256:330bee6c4b7c847d5688b602512735dd6fc2f62473fca76a7b7c86142cdf4c1a"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts",
+        "size_bytes": 8080,
+        "sha256": "sha256:c51fdbc91b24a4afdd1d8b3437c68b9dd04e5d926eeb6dbc5f04292b4e0c7524"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/PipelineAuthorizer.ts",
+        "size_bytes": 537,
+        "sha256": "sha256:ee288e3346142d5a7d862569f48734b7de7a58c59a18c41a8c4fcff63b648468"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/RiskGate.ts",
+        "size_bytes": 955,
+        "sha256": "sha256:adf3f3a995f3eb27687207b59eaacf9678297dba1df36044039aaa8abfb5eb90"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/ScopeResolver.ts",
+        "size_bytes": 223,
+        "sha256": "sha256:e5ce9a39b3eb445495130afea84be7af1029627a09ada99ac415b618553d4c07"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/SessionResolver.ts",
+        "size_bytes": 609,
+        "sha256": "sha256:b379363725971a43f313e5fcb855b6fb1da27314bddd5773f96f388b711f24c3"
+      },
+      {
+        "path": "01_core_hexin/services/commerce/src/foundation/security/StepupPolicy.ts",
+        "size_bytes": 437,
+        "sha256": "sha256:b20bd8bd7b1c22119f9b9c9423019656e69b92854e6bbec02b2c9cda8b3644f1"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260724070000_production_mvp.sql",
+        "size_bytes": 35441,
+        "sha256": "sha256:519b994f29e17b1fdb65c3e21dbf7fde08f016517384c681d86475eeb35c83f9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260724072000_integrity_corrections.sql",
+        "size_bytes": 5613,
+        "sha256": "sha256:d0db92a1aca3bec8755d143f6c715df69e821dd8b989b64656cb0365e56110db"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260724090000_expand_mvp_catalog.sql",
+        "size_bytes": 5064,
+        "sha256": "sha256:2c8a86a98f246b0888511b80223166f0522cc1e25844daa3b0fdc2457db9f6ba"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260724101500_order_read_model.sql",
+        "size_bytes": 2114,
+        "sha256": "sha256:1fc894b95feca2eecc15b4400b4d6d0ec0ec858bcfd162acef5bb677f953b3ff"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260724113000_after_sales_and_ledgers.sql",
+        "size_bytes": 8650,
+        "sha256": "sha256:fa604c66b24d61faef84c7d3f07e107d0cf766978dfa9644f9f9e53b00f9c920"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260724121500_fix_login_reset_return.sql",
+        "size_bytes": 488,
+        "sha256": "sha256:0dd15966ed2bab07005a1e02242c76ad42ce57885a9a5693b1cd7fb8ddedd912"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260724234000_test_catalog_flag.sql",
+        "size_bytes": 3631,
+        "sha256": "sha256:e36227acc9ffe1a15959603fa1e1b9b7a4b6954dbad8c520f2da1dc76cb82374"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725003000_test_catalog_import_rpc.sql",
+        "size_bytes": 2906,
+        "sha256": "sha256:7344dfb406efd139620e3b89fe1cacfd9a5fc82e31f22d0c3914767d52458428"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725005000_fix_test_catalog_import_rpc.sql",
+        "size_bytes": 2735,
+        "sha256": "sha256:9af9e89b1e03dc49bf3693ede59bb74a8b7ac88c62fb3898da3b82ca4d4f6c3c"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725006000_test_catalog_stats_rpc.sql",
+        "size_bytes": 1008,
+        "sha256": "sha256:189644bf96b977c34c243a7f30f847c2edefb54968a3e1aadae44d6c6ce37c75"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725007000_classify_test_catalog.sql",
+        "size_bytes": 2012,
+        "sha256": "sha256:b382975187eee8b91565c1134ac2902fa695c2ac05fad59cad7792221e8a6e17"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725008000_test_catalog_category_stats.sql",
+        "size_bytes": 1146,
+        "sha256": "sha256:e482375ae2e070e4081150a3cbe44bbd82b5eca2c99b424e30cc75386d2e3839"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725009000_bilingual_catalog_taxonomy.sql",
+        "size_bytes": 4413,
+        "sha256": "sha256:88a8a2759e41d279ee8a481ba121481ba3a64218353a8e6b39ce1cc82b4afdee"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725010000_bilingual_catalog_api.sql",
+        "size_bytes": 1776,
+        "sha256": "sha256:f297b756253d44583c6384a66f7d5fd6155dcd6c210045c446ac9d6a2d6450d7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725011000_catalog_governance.sql",
+        "size_bytes": 13582,
+        "sha256": "sha256:ce9b5aa3f25c1e58c09e001da92b768307960047b5dd0141c71bf934ad6124c4"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725012000_recalibrate_abo_taxonomy.sql",
+        "size_bytes": 5630,
+        "sha256": "sha256:f6b6065768b3806354d210e5fdcc2c96f2bbd229515ecc09f623bcec636a091f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725013000_enforce_strict_catalog_taxonomy.sql",
+        "size_bytes": 4055,
+        "sha256": "sha256:9433d6fbdf72a0e7a0523e7b17c31abeb70b585ab1ed57a039e4bd1147a62dfa"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725014000_payment_refund_reconciliation.sql",
+        "size_bytes": 14789,
+        "sha256": "sha256:5a0913329a2aebadadc0ee604256f96443862313186efb65462123f6dcb35c6f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725090000_server_cart.sql",
+        "size_bytes": 4441,
+        "sha256": "sha256:e0700db93933d183d2d451bfe9c71a85836894fc763f62ba12b22607bcccac36"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260725100000_encrypted_address_book.sql",
+        "size_bytes": 3904,
+        "sha256": "sha256:8cea274e6d867587f6468f9436912559e8d32e8f37ec318f04a471e5e244ac37"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260726110000_delete_delivery_address.sql",
+        "size_bytes": 1295,
+        "sha256": "sha256:ed52a88f7b91fdc5a660f6850e21c720f1327b30fb72f20f83fa9a3b2d865993"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260809093000_membership_authorization_foundation.sql",
+        "size_bytes": 12140,
+        "sha256": "sha256:09a2c244bd41306e8e3013fb6ea66cc73bb9fedd2ee8ae2ac222103c325e1678"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260809094000_supplier_fulfillment_pii_boundary.sql",
+        "size_bytes": 2195,
+        "sha256": "sha256:53c89e5e8ea53c618f84d103c0ac02a451b2e32a985c9abf00ff080ec296160c"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260810090000_retire_legacy_colon_permissions.sql",
+        "size_bytes": 1028,
+        "sha256": "sha256:6a87e04bbfe7bad56587b5fa79de3d71d1f8da11bdc747a64694145e45156dd7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260810110000_membership_runtime_cutover.sql",
+        "size_bytes": 10396,
+        "sha256": "sha256:a0aa8c5bbe5cd00126d58af73e17c505031bfff15c9eb5e8ca376316db42aadb"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260810113000_harden_catalog_governance_rls.sql",
+        "size_bytes": 829,
+        "sha256": "sha256:bb5677ae7d3af1f2299e5af880b760fc6455b6e67a9e548b64c6a69efbeba276"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260810130000_admin_operations_real_write_path.sql",
+        "size_bytes": 10373,
+        "sha256": "sha256:d7aeb0af03c4d744363bd5476cd7791ce745490edbba95db5218e79c7d6a6b3e"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260810150000_order_audit_authorization_evidence.sql",
+        "size_bytes": 3741,
+        "sha256": "sha256:6e055b5853a29cd354df4a0a9f33eb76526737960ad687ac25536d5bde9024df"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260810160000_test_payment_simulation.sql",
+        "size_bytes": 29705,
+        "sha256": "sha256:17808ce6c38beb274f2a70999e04c637785b5a70925b057a303302df84ae7bf9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260810161000_fix_simulation_bank_channel.sql",
+        "size_bytes": 411,
+        "sha256": "sha256:e42b060053300cbb0dac2d55cac22dcafa03ad8df565103577d93284b98ae0ad"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260810162000_immutable_payment_simulation_events.sql",
+        "size_bytes": 737,
+        "sha256": "sha256:288b2357e3e249756df6d2916b3d4a7ba6ce86ba1729c983dce1387d8b67bab1"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260812130000_role_test_account_roster.sql",
+        "size_bytes": 8837,
+        "sha256": "sha256:963ebda89b67206f57b4751b192d010dc9356a167c25cbe12703aebe800558e5"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260812160000_membership_permission_command_center.sql",
+        "size_bytes": 37874,
+        "sha256": "sha256:e8996126bc5e0f512d51ced553a5ca6c33963685ffca314fcf398096b60ebd98"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260812170000_organization_hierarchy_and_authz_invalidation.sql",
+        "size_bytes": 17258,
+        "sha256": "sha256:fb4221cb961787a70c9ab0dccafd7c8667bacadb27631cf7c293a6be975efdd0"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260812200000_commercial_resources_and_employee_qualification.sql",
+        "size_bytes": 73227,
+        "sha256": "sha256:75cc88308d2de3b0d2afd828ffa989525fbe5d4b7b9f7a97c3d007754c095d32"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260812210000_qualification_admin_configuration.sql",
+        "size_bytes": 38661,
+        "sha256": "sha256:802054307c1ac746a1491def68e50b0dce9b870d568c47872cc9bde97597199a"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260812220000_qualification_governance.sql",
+        "size_bytes": 33120,
+        "sha256": "sha256:33ba282655da9427e16e79ebf416d0730b17706b0c37645a1d08a6ae8c8a0ab2"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260812230000_registered_member_identity.sql",
+        "size_bytes": 11126,
+        "sha256": "sha256:6b96773baa713add1b2487ddf0b2a3fcb90f6c98fd7f77589a2425bed96f6797"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260812240000_account_security_center.sql",
+        "size_bytes": 18369,
+        "sha256": "sha256:a5eee4de2e8dccdfc9a454e9851843f864ee8cc8f7707867af7f3bb15cccad4f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260812250000_username_password_registration.sql",
+        "size_bytes": 8605,
+        "sha256": "sha256:fe79eb453f1b65ba7f75d87d82fe0bc76dfda948b1ec116ecbc4a4f569ad6312"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260812260000_member_identity_assurance.sql",
+        "size_bytes": 13255,
+        "sha256": "sha256:013a9345cfb6a6ef5cbde8543ccecc5f63e13704579957da072e633243015276"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260813010000_member_operations_center.sql",
+        "size_bytes": 24162,
+        "sha256": "sha256:4256a8a542b0add394e3fd4e6a246cebaaf4b4e0b380a109c07390347ce83988"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260813020000_fix_initial_password_change_ambiguity.sql",
+        "size_bytes": 2224,
+        "sha256": "sha256:1d438ac4b184279055c282f297f2bba991e2d972b01b8e7a87b6380072336575"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260813030000_custom_role_center_and_full_scopes.sql",
+        "size_bytes": 32950,
+        "sha256": "sha256:02966424bbd9808be9af0be507067017e235e0ea143ff31810928fed02b4b2d6"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260813033000_payment_acceptance_test_account.sql",
+        "size_bytes": 1801,
+        "sha256": "sha256:abc89a94159f2e0831b872583d1cf9aa837d085ff7a5b294bc0d0368154723aa"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260813040000_platform_owner_scope.sql",
+        "size_bytes": 3698,
+        "sha256": "sha256:8212d5ddc951b50d3fb8a0063ee30fdcba39cace087ea92b55e46c3f5524f07f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260813090000_storefront_member_profile.sql",
+        "size_bytes": 1454,
+        "sha256": "sha256:ee1a0340561b694e0b8d52bcf14a4e0c6278e843966c02e419bb504ea0ad48a0"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260814130000_wechat_order_payment_compliance.sql",
+        "size_bytes": 42446,
+        "sha256": "sha256:d928cbe8912ccdc507f1dec6e23182dfa617df1f10a01efe28980b08a174ba7e"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260814194000_fill_mobile_catalog_categories.sql",
+        "size_bytes": 12972,
+        "sha256": "sha256:1212d810b2feb5d83d8c68ce43f1516406aaf774d7ef705dc4d81c5bf4b5aca2"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260815010000_cart_checkout_closure.sql",
+        "size_bytes": 5610,
+        "sha256": "sha256:d9671a7d698bb97f67490d343b8566b57acceb05e0be959c458232ce15d7dd7c"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260815030000_catalog_media_cover_writeback.sql",
+        "size_bytes": 2203,
+        "sha256": "sha256:89a117a1003152fdf79751f2719ce1242048618c876a1a79642e5ac642c64da7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260815123000_wechat_registration_aliyun_sms.sql",
+        "size_bytes": 5838,
+        "sha256": "sha256:715f1a39f2175edc41f070d547e83dc919b3d67b02e628b3fb17d0fed44963f1"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260815160000_dynamic_member_code.sql",
+        "size_bytes": 9586,
+        "sha256": "sha256:ca2c33e1b39a4b8d3d9ae047dcb258d9b0b91a52f66fb8c244cf058ac8a60a27"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260815170000_cart_taxonomy_projection.sql",
+        "size_bytes": 2598,
+        "sha256": "sha256:9658ac9f44e2beb2652b2869a6f700f40a804a550fea943bdf41a472b25622ce"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260815180000_wechat_silent_enrollment.sql",
+        "size_bytes": 8050,
+        "sha256": "sha256:3cdd46dfb237db12c0a34d44d0703535373d4a055552b39128dfa9aed5d9b1c7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260817110000_universal_storefront_access.sql",
+        "size_bytes": 8879,
+        "sha256": "sha256:e722ca444cee62cf28cd779587d67822d126fd5f73be5cedfc6a67fe37f591e3"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260817113000_admin_mfa_step_up.sql",
+        "size_bytes": 12399,
+        "sha256": "sha256:65bb422c5ba99982b5c80eb5077e07aa8480b0b7100711c5602feba6071b1f1f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260817120000_login_runtime_fast_path.sql",
+        "size_bytes": 2370,
+        "sha256": "sha256:e6cfad98ad51f9a23c00e70fffa4005e669963c7bab54cc9024d31bb63d14902"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260817190000_login_attempt_limit_ten.sql",
+        "size_bytes": 1672,
+        "sha256": "sha256:76b254917262a597c1cacbfa54fa2ff8870bc20d525e2a50dfd69140e5ed02b3"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260817191000_bootstrap_ethan_platform_owner.sql",
+        "size_bytes": 5766,
+        "sha256": "sha256:a069e73089fdfa5b2e512885c95242f9b6c3303ab156e39db44b9c31650aeb45"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260817194000_list_selectable_login_memberships.sql",
+        "size_bytes": 4443,
+        "sha256": "sha256:b6dbf0b609f7db1942b4d5ce26f614a49d50f7b050c822caa4d744bcbdb1afba"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260818120000_mall_application_builder.sql",
+        "size_bytes": 17372,
+        "sha256": "sha256:81cb62043b0ccc0aa29097d7eaa3fb834f81e87fb58415ff108555fce8779db5"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260818210000_admin_order_management_pages.sql",
+        "size_bytes": 6461,
+        "sha256": "sha256:b452089e38001d14f7d46cad545ecc87a84172c0254f4cb0c960ce6d752ad91c"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260818211000_admin_order_management_exports.sql",
+        "size_bytes": 6105,
+        "sha256": "sha256:ec8bef5742cadd0899c1335d097db9891c2a5c2cae14f1b2cb46d0a8d5f44b49"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260819100000_admin_sales_overview.sql",
+        "size_bytes": 6442,
+        "sha256": "sha256:ac10ef7f99b7d7fef78931b570cc4040bf744d19a4f9abc06054ce9380d00979"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260819110000_supplier_catalog_write_path.sql",
+        "size_bytes": 8395,
+        "sha256": "sha256:a62b66d1c251414fb6f12ba3a5f58ca2e780bdb72ed27b19ebbf366e5917294d"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260819120000_client_error_reports.sql",
+        "size_bytes": 9849,
+        "sha256": "sha256:07e222c7a4206de56bdc975d9e345df94116b0fe1ae467d36a098b6f56eb4b8b"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260819123000_admin_order_line_count.sql",
+        "size_bytes": 6520,
+        "sha256": "sha256:92e726815f27d7b060b7e2cf9bcf28a13316b0adf5e69fcfacb3834866e0ae12"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260819160000_distributor_channel_foundation.sql",
+        "size_bytes": 22663,
+        "sha256": "sha256:4d79d7a81d3ffc82add588a4f013fb09816025d8f9fb38f00627aeab0b2648fc"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820110000_voucher_operations_foundation.sql",
+        "size_bytes": 73581,
+        "sha256": "sha256:a2ed51c18537f5959f910090a8cb2bb9674eb0b7973b8027604a7d0aa0a31393"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820120000_after_sale_refund_approval.sql",
+        "size_bytes": 26029,
+        "sha256": "sha256:910102eee351c53a9a42eea0c7dc85d394875e8c859758374dd6a5e6da235024"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820121000_canonical_distributor_scope_bindings.sql",
+        "size_bytes": 53335,
+        "sha256": "sha256:0e64a288a978d8bdd67d0f167325977e3b7ca1e37e852d7a3574ac329b811b04"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820121500_distributor_anchor_authorization_closure.sql",
+        "size_bytes": 54049,
+        "sha256": "sha256:5e46ce5d2bca9e311319b4408d48e49b2cdf246db04d5bbcaf74a246ff67ebd4"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820122000_admin_order_query_export_authorization.sql",
+        "size_bytes": 9414,
+        "sha256": "sha256:d286a6a7adb8b697916c13951b7612d3b78184591dbf6c66bf4af14989d8e2f3"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820123000_inventory_reservation_lifecycle.sql",
+        "size_bytes": 41309,
+        "sha256": "sha256:dcb292196cc4597eb69453dcfb3c4ebc9b22011e5f3ec33d4a1458cba179ebfe"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820124000_payment_outbox_consumer.sql",
+        "size_bytes": 12389,
+        "sha256": "sha256:40dea03facec2e4a4ca100623359a03369b45224c2f1199e4e3db6bf6af16830"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820125000_atomic_checkout_inventory.sql",
+        "size_bytes": 13931,
+        "sha256": "sha256:4dd744789b68f9f27cdc44202d6b699bdcdc8603393b71f8a506b0f09640d406"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820126000_inventory_payment_expiry.sql",
+        "size_bytes": 13390,
+        "sha256": "sha256:5688c2ebb852fa74267ac9c142562979495bccfeeb12ce393f742b119a83f374"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820127000_payment_effect_processors.sql",
+        "size_bytes": 7503,
+        "sha256": "sha256:2dea0a4dddaaf97d8deff00353103d8f03e72a2268d468111a61d79ef15f4a01"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820127100_payment_domain_outbox.sql",
+        "size_bytes": 11993,
+        "sha256": "sha256:ae9e2271b39ec068fdb6042c3512a252b0fbc58ca3eb2d56b2bccc4e552b20ca"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820127200_payment_domain_relay.sql",
+        "size_bytes": 15018,
+        "sha256": "sha256:b84e512067858568d1074d660cfcca57bec17c645ae07b261793df5a51a9a605"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820127300_payment_domain_effects.sql",
+        "size_bytes": 24880,
+        "sha256": "sha256:b398e9920f152c712c01d750d14f0a01c33a54d6a706d976192d109e634d1403"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820127500_payment_outbox_cutover.sql",
+        "size_bytes": 12005,
+        "sha256": "sha256:74751174f2760d96ee6397ddb5391623086c44d530a20a604415483c82a01f53"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820127600_wechat_payment_query_queue.sql",
+        "size_bytes": 9396,
+        "sha256": "sha256:be590bf1ee0904059478fa928d242fe87109716d5291558f89b6a69d41f2da25"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820127700_payment_observation_lock_order.sql",
+        "size_bytes": 14689,
+        "sha256": "sha256:75316c9700d498761fb554317d39679a680bd3019e496c9f4c586b2144b379b7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820127800_wechat_payment_query_result.sql",
+        "size_bytes": 6435,
+        "sha256": "sha256:ad8d182bfbab2d76a4c04b162c93d2c597a1fb0e44480fde9bfac402b7eb6dd5"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820127900_payment_expiry_guard.sql",
+        "size_bytes": 4120,
+        "sha256": "sha256:0a3bf79792b39b3214972925efec979e695b28ac2ac6e69953d843b8db603aab"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820128000_wechat_refund_closure.sql",
+        "size_bytes": 84689,
+        "sha256": "sha256:729923540c11a6f0fdd6653508f2204996dbd8dcaac8fa36c9589efd038a1d45"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820129000_payment_deadletter_alerts.sql",
+        "size_bytes": 6024,
+        "sha256": "sha256:47ce7660d528ef807f680aaadbf8e1335d3b7c454d590b8684e248c553b93fd8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820129100_payment_deadletter_recovery.sql",
+        "size_bytes": 7573,
+        "sha256": "sha256:46a4517b7b78cee4f2f16fa728272ef2d2568717db6af91586462cc3e31450b9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820130000_mall_application_schema_v2.sql",
+        "size_bytes": 38780,
+        "sha256": "sha256:399c51a970d038a1a7614c33ac1616a81ea2d03ddea86e12cbba23794d671516"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820131000_registration_terms_policy.sql",
+        "size_bytes": 17666,
+        "sha256": "sha256:db417e7952b702117134c0858f4370e0022256296dc723f12a4f92334201bed0"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820132000_platform_owner_reconciliation.sql",
+        "size_bytes": 4309,
+        "sha256": "sha256:18c3988079c7ac3044c9919f37c0007832c55369a95716ddaf6164f4e6c10335"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260820133000_inventory_single_source_cutover.sql",
+        "size_bytes": 48173,
+        "sha256": "sha256:2389aadba4f46edeeb1cee8ba9f84f57ed76fcbcf898c6516db35867c788d98b"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821010000_assert_source_head.sql",
+        "size_bytes": 5989,
+        "sha256": "sha256:b027b38e69ca75d7f53fb02212342eb27e405b3312fd0a409bddf6b0ed596890"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821011000_create_domain_schemas.sql",
+        "size_bytes": 1736,
+        "sha256": "sha256:83353ab1c170eba7e0554785ced4bc265335a1e9c269be15c35d892f41aa2d7f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821012000_create_runtime_control.sql",
+        "size_bytes": 6872,
+        "sha256": "sha256:b7ae0ad46f683b170b1267df6c5c7e6990a3972f7c461789e86153d82702d4c8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821013000_create_identity_access.sql",
+        "size_bytes": 7239,
+        "sha256": "sha256:17923b4823d08a8c42f57b917384dc4ccbf6d6a2d3542ed010380b3ae09633b6"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821014000_create_organization_partner.sql",
+        "size_bytes": 5031,
+        "sha256": "sha256:13771017670a808e9b9cf89edb948c2cc224c797abe507063de2dcd25c9dae26"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821015000_create_capability_member.sql",
+        "size_bytes": 3942,
+        "sha256": "sha256:e62fc87188fb7fc7d1ee16327e594014406b97de683b84efcf44f13c9adb7841"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821016000_create_qualification.sql",
+        "size_bytes": 3805,
+        "sha256": "sha256:50a1c7e4ee399acbc4cc4b5e5afdf8cb4db0d36971251a403809dad19cd1c625"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821017000_create_catalog_pricing.sql",
+        "size_bytes": 7998,
+        "sha256": "sha256:1dc87b33cd46d6f7b1c4bbceb83d1661e5775836ac2c2688b2544916a335d8d3"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821018000_create_inventory_experience.sql",
+        "size_bytes": 7269,
+        "sha256": "sha256:421962d835cc632993a2feed814d041c760970e35b22d9da259cc6f16d0ad684"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821019000_create_cart_checkout_order.sql",
+        "size_bytes": 5164,
+        "sha256": "sha256:569d70cf4a1fe252b1636f2873b86eb8223ab3138b568a32669042f81cf65565"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821020000_create_fulfillment_verification.sql",
+        "size_bytes": 3221,
+        "sha256": "sha256:34c6c981499db8433dbff115b41a65a31f174eaf8016f5d4214478717e9cecae"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821021000_create_payment_voucher_benefit.sql",
+        "size_bytes": 14740,
+        "sha256": "sha256:490ef6a1a272cab8ff08c841bf6c0f1520e1c56c615f5e644598c98967e4bbdf"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821022000_create_finance_channel.sql",
+        "size_bytes": 10409,
+        "sha256": "sha256:94a425943609befc92b35b5d310a3568268344be43265fec431e9cf0605d6617"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821023000_create_support_notification.sql",
+        "size_bytes": 5472,
+        "sha256": "sha256:27c0255e678f807a42a1d642e4b0076ef457d630da2f58eb25a296ab2d93b7db"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821024000_create_reporting_risk_audit.sql",
+        "size_bytes": 7217,
+        "sha256": "sha256:00183e44ff0a117d39517c817e9e1026d7082ea6299045d03dd8e0ca30e8c319"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821025000_create_extension.sql",
+        "size_bytes": 2378,
+        "sha256": "sha256:4694c9efa32d50d8c25d9f284039111ff09d61ff932254b69389e50c69dbc6ce"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821026000_backfill_domain_data.sql",
+        "size_bytes": 74298,
+        "sha256": "sha256:126540b5c19f30a0f01588c72238b27d51ef0adf85fcde3e5cfea8d1b24feff5"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821027000_reconcile_domain_data.sql",
+        "size_bytes": 32320,
+        "sha256": "sha256:7eadf003860dbe5e3b6c9e8da65478bbec6398009b77287ad3aa96943eff5f72"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821028000_build_domain_indexes.sql",
+        "size_bytes": 2795,
+        "sha256": "sha256:51775c6c3d5f775e6bc8b1462c7c644cca6cfbf620ccd5f16b49fb0843f9537b"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821029000_publish_domain_contract.sql",
+        "size_bytes": 77475,
+        "sha256": "sha256:43838fa722632b93f412614a4267ec948354ddec909cb5874b896bd87a7a5365"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821030000_revoke_public_access.sql",
+        "size_bytes": 6745,
+        "sha256": "sha256:e32f5e82f706c51d10941610a09c1de070b5344004196f1f533478e2fcf41607"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821031000_drop_legacy_objects.sql",
+        "size_bytes": 1827,
+        "sha256": "sha256:d0f2326e85a997cac208473959976a9831e7c0a2178f49b87c2e6c0a6fe98527"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821032000_assert_target_head.sql",
+        "size_bytes": 4211,
+        "sha256": "sha256:93edc9c011bd3103bdc6e8388cf36ef89d9a1694ad87ac49bf6e9be7f9ff77a6"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821033000_complete_experience_publication.sql",
+        "size_bytes": 3310,
+        "sha256": "sha256:99335bd5d089d8a46208028bee89b8520667d17ed5acf45f8c9d1bf53f1dc276"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821034000_add_storefront_offer_read.sql",
+        "size_bytes": 2293,
+        "sha256": "sha256:cc844dc59b25618a8e393fd5b86f0a7fe1aa2ebaf892b59e8e258c68edc4d217"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821035000_add_auth_ticket_exchange.sql",
+        "size_bytes": 2747,
+        "sha256": "sha256:ff1607e4b357320c733f544a0c7ecda9c64df73c3f4bd467109ae98aa97c8455"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821036000_add_invitation_terms_read.sql",
+        "size_bytes": 1448,
+        "sha256": "sha256:4b18dc5e813b974f5202ec170344f150231103855fb65916580dbb6533d3578b"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821037000_add_member_journey.sql",
+        "size_bytes": 2372,
+        "sha256": "sha256:78ed185333ea1b1856c16d051dff1a2d8012c377bbb97e50d5d96fd0ee9b7126"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821038000_add_keyset_indexes.sql",
+        "size_bytes": 3921,
+        "sha256": "sha256:0c78c515a88f6272184b3a94e57fa2c15f0d272066b8256a8f70af0e79bfb359"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821039000_checkout_atomic_order.sql",
+        "size_bytes": 14154,
+        "sha256": "sha256:6704a9435258c8b08e8b30cf45ec9912ec5f0e29dfee2795e6f7ec8b1853e467"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821040000_payment_recovery.sql",
+        "size_bytes": 10348,
+        "sha256": "sha256:d93d91d32c0ef84be9250440cf064a7e5f72776462450618b1ae71ebd668cc6d"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821041000_voucher_lifecycle.sql",
+        "size_bytes": 14075,
+        "sha256": "sha256:714ed5bfc039ff5c6cd1b2aef01c7c584d6aabe7b22b0c478f760e19372315f8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821042000_benefit_lifecycle.sql",
+        "size_bytes": 23239,
+        "sha256": "sha256:5573913c36c50baf5fe50e8f0e7422e6241ba3529048d3f26c15f4fb4f3ce816"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821043000_finance_lifecycle.sql",
+        "size_bytes": 27167,
+        "sha256": "sha256:7e895f5a32a76a99b0531df53153f4d89d38b62b65958b3a458ced072f59a377"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821044000_channel_lifecycle.sql",
+        "size_bytes": 6087,
+        "sha256": "sha256:5dbdb0d7274f4aad382cecd0df1ebd941e91d269931ddcf017af40dc77eb14a5"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821045000_channel_scope_mapping.sql",
+        "size_bytes": 2035,
+        "sha256": "sha256:3937e5712a3e109f5f31f065296d7fa075b2f1a853a5f9b34fd9f13c4030a9d5"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821046000_support_lifecycle.sql",
+        "size_bytes": 12563,
+        "sha256": "sha256:49c946eea684d633268df9ec71e26a58a9f68dce4479165e9c393eb2ef6907fd"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821047000_notification_lifecycle.sql",
+        "size_bytes": 14883,
+        "sha256": "sha256:2a30bcbf35f91f5277603a4ba64f91f84e09a4b303b2cfc0557e3ad047f12f18"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821048000_reporting_lifecycle.sql",
+        "size_bytes": 7016,
+        "sha256": "sha256:66ad407bef7b4ea3fcea355b8ae84f68d3526efc1763b29bf34f023db83b9515"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821049000_risk_lifecycle.sql",
+        "size_bytes": 12227,
+        "sha256": "sha256:4bbd766c0297c8c01329d4d0d41c738d3180ebb2c0df7756aaf55536dffa0bc3"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821050000_audit_lifecycle.sql",
+        "size_bytes": 7787,
+        "sha256": "sha256:60d0ad70fea7e0e3447221e2db2e56590d956be8cd586604cbd3e38c2900d995"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821051000_extension_lifecycle.sql",
+        "size_bytes": 8403,
+        "sha256": "sha256:519e836ae5d89acbaf375333d9a448be59a08cf72b411eccc5c7e2022f5f0905"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821052000_import_lifecycle.sql",
+        "size_bytes": 7855,
+        "sha256": "sha256:a70ec4dcffde4bd7f087d8d64d384c6c3d7b8204cc0163cd7f842327297cdd2c"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821053000_complete_batch_imports.sql",
+        "size_bytes": 6685,
+        "sha256": "sha256:b66b0c302255dfecf87532e3b79442ac6a19221ac49c1e5fd7e1e55088e09a73"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821054000_move_membership_owner.sql",
+        "size_bytes": 729,
+        "sha256": "sha256:00cc0692f63dd6c08d3f1c5bb0586db0930d59e552a8128a0675f57b6eaa5a0f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821055000_isolate_wechat_payment_applications.sql",
+        "size_bytes": 838,
+        "sha256": "sha256:9e9d610b0f5b5e945d5b3c04412175f6afda40d5c9fb251642104746b6349101"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821056000_authorize_member_data_scope.sql",
+        "size_bytes": 1644,
+        "sha256": "sha256:3681d8c6f724e9c1dc1b63af2383069e19051b7d31bddd09c1febc8541e6dec6"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821057000_resolve_payment_webhook_scope.sql",
+        "size_bytes": 1690,
+        "sha256": "sha256:3929bf7a790be9ac854e41b9b0fe16995a0cfbf770f4fe4ea3d04054ec456633"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821058000_align_member_operations.sql",
+        "size_bytes": 1642,
+        "sha256": "sha256:116ddfb0412b330001986af2fe8ba12e644dc7bcffbe8d55324fcf0591e69ec8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821059000_reconcile_contract_head.sql",
+        "size_bytes": 574,
+        "sha256": "sha256:8185d6f017a043e549824af2fed3e279ab9c2a1ba7787e38a733d8d69dd957eb"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821060000_rebind_membership_functions.sql",
+        "size_bytes": 1475,
+        "sha256": "sha256:8349c6352d63271980996a44ce6984e25dcd6c4e27ef4e45eee9c321233bd289"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821061000_normalize_membership_scopes.sql",
+        "size_bytes": 3794,
+        "sha256": "sha256:7fa17a112c65b418a4d0c1fbe2786dfbdfc17ec517f04eaa977a061a6a4d5fdc"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821062000_publish_error_contract.sql",
+        "size_bytes": 580,
+        "sha256": "sha256:d53727c4927e71d21ad9c57d5d82819e73b06c95d02b894b69fb874dc09a627e"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821063000_finalize_error_contract.sql",
+        "size_bytes": 580,
+        "sha256": "sha256:47be2d567f3de6ad045afec963d79d4693a0750a720aa3948110a9f116bdf581"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821064000_add_client_error_telemetry.sql",
+        "size_bytes": 3000,
+        "sha256": "sha256:17ed6189d58982bb98ed424c9a6212781ad64f6d9f2fdc4866e6ca7d3308f14f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821065000_add_invitation_lifecycle.sql",
+        "size_bytes": 4211,
+        "sha256": "sha256:835703dc436396f0a46944d124b91c6bdada86202ddbe34a87c88b1f298be64d"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821066000_resolve_invitation_scope.sql",
+        "size_bytes": 8029,
+        "sha256": "sha256:8e27b18c651517975ad1620c4edc35771b895eeb2c2dbb23a4322e2e88aa6ed8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821067000_add_session_management.sql",
+        "size_bytes": 2266,
+        "sha256": "sha256:d371a6f1b4ad9833ea987c0c10d8cd16b5ad2de2d35e7ac360324e803e803bcd"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821068000_add_member_benefit_ledger.sql",
+        "size_bytes": 1578,
+        "sha256": "sha256:5b4e001dcddd2f4400d3e52e85f6b48ae02c25f709cc6c4c94ef9195e52b7353"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821069000_add_store_management.sql",
+        "size_bytes": 11033,
+        "sha256": "sha256:d1f63e15a95ca62453e5acb280b18933e32982e4cdc15491e12c79c29d814ea8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821070000_repair_decision_audit_scope.sql",
+        "size_bytes": 753,
+        "sha256": "sha256:09daced33031fe5235c98080cb7f1905a53c63776c0f501c1eb19bb20168b427"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821071000_grant_store_administration.sql",
+        "size_bytes": 757,
+        "sha256": "sha256:6f4dc5b7b7c25a1fb82789882c69102868bc2a0a31c4e39e99023dc3596f81b9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821072000_add_console_member_commands.sql",
+        "size_bytes": 2303,
+        "sha256": "sha256:4e59ee3ff47b04afa470c1eb85b2e2cb34445b9aa06a28510cc0d62a8ebdb771"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821073000_publish_console_contract.sql",
+        "size_bytes": 576,
+        "sha256": "sha256:4f83abdb3e89d63c7e1995c4512f54fecfcac855aca3b7eee24b86e2823dac46"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821074000_grant_platform_owner_operations.sql",
+        "size_bytes": 3565,
+        "sha256": "sha256:bebc75c01fa11ea98ce6e99344981cd2bcdd13c2228f0270463eed7d0cec4414"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821075000_grant_platform_cardlibrary_read.sql",
+        "size_bytes": 963,
+        "sha256": "sha256:18e1dc1816ff407ee40736fd28b61d5c20afa149e0c718581cdcfb5ceb913834"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821076000_grant_platform_cockpit_reads.sql",
+        "size_bytes": 1659,
+        "sha256": "sha256:bd47ffe5a031681a938fb02874cdbd1d7e005892c53dd5b5159301c54c87885f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821077000_add_reporting_cockpit.sql",
+        "size_bytes": 5270,
+        "sha256": "sha256:5dc8d5e6fe193daea2e43b09d40915975bfa44b591be522a552f3db34e8eed4a"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821078000_complete_experience_application.sql",
+        "size_bytes": 6242,
+        "sha256": "sha256:defa914b7058b5e62503904eb3cef5ec93b669cce63077db892ee816b2e11bf8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821079000_resolve_experience_version_scope.sql",
+        "size_bytes": 9198,
+        "sha256": "sha256:d0fd73f0a5ff77897723dd32de71a100a9cda6c5bf69fb8fc726188ef27c4b53"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260821080000_restore_member_scope_authorization.sql",
+        "size_bytes": 2648,
+        "sha256": "sha256:8c5e8fd39acb950cf45d9017c1798d8e5e720f097919cf1aa20eaa13eb190750"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260828091000_finance_reconciliation_integrity.sql",
+        "size_bytes": 5197,
+        "sha256": "sha256:e9d7ec879301d0496f261ea9fe201b836f21a29c55d90aa083d357c37dbf8104"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260828092000_finance_security_boundaries.sql",
+        "size_bytes": 35651,
+        "sha256": "sha256:820ce46d76d19e6060fb2217c255231e512b97b8ba65d059ad56d2bc2c5e8fb6"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260828093000_finance_accounting_integrity.sql",
+        "size_bytes": 103877,
+        "sha256": "sha256:4965112d6fb4b0ca674d338759b9d728944dda4da3af1dfdd8385c8015156cf5"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260828094000_finance_invoice_issue_integrity.sql",
+        "size_bytes": 50466,
+        "sha256": "sha256:4d741b32fce010c7b9470ae209c573a9c8a35b61aa70a39232a2148fb0a0d514"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260828095000_payment_provider_time_evidence.sql",
+        "size_bytes": 7966,
+        "sha256": "sha256:eff2c5f757eefb14bf105b8b8f00c3ed178f5aed6441c8aad880ca42b2565a95"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260828100000_finance_reconciliation_repair_workflow.sql",
+        "size_bytes": 83781,
+        "sha256": "sha256:ead1f7a116a14454071e3270c10e334c5ceba841c94948ef94ee9c5ed97da833"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260828170000_zhudatuan_registration_baseline.sql",
+        "size_bytes": 48777,
+        "sha256": "sha256:d6c6fea6af00656473af11a104aae77b5057b1eb6ef61ec78eaacceaf978f0fd"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260828173000_zhudatuan_web_business_access.sql",
+        "size_bytes": 37368,
+        "sha256": "sha256:bf790e5e9a94f89abbee39d90338fef6504c2a33809995271aeaa947d07ca981"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260828180000_zhudatuan_purchase_access.sql",
+        "size_bytes": 78041,
+        "sha256": "sha256:38cd43115db61a1cb0c97320264ba86de30148c0a0ecc96f9d2557211aa878cf"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260828183000_zhudatuan_runtime_readiness_repair.sql",
+        "size_bytes": 5115,
+        "sha256": "sha256:6cbc0848ff1cd1729810ada50a80cfced994d3055a1b89ea5b2094eba4aeac86"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829040000_zhudatuan_registration_bootstrap_runtime_repair.sql",
+        "size_bytes": 5124,
+        "sha256": "sha256:c7f179ebc16bf21e84b20a304f0c110824fc9bb3a4fad7e91368caf2519bf01a"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829054500_zhudatuan_identity_login_acl_repair.sql",
+        "size_bytes": 4127,
+        "sha256": "sha256:a909cc9c878e2e15892985b1a480701e437be4d233fd848387595366e937d9e2"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829060000_zhudatuan_operator_invitation_registration.sql",
+        "size_bytes": 52969,
+        "sha256": "sha256:a9cd91e453b4d9a31594979abb1c6f08947749cfc28600b9db8383a5b731cfcf"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829105000_create_referral_foundation.sql",
+        "size_bytes": 48096,
+        "sha256": "sha256:c6b63cc175b428ec3d82e2a1944fa38f0294abaefa40d34218fbc5f92d564b91"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829190000_reconcile_runtime_contract_head.sql",
+        "size_bytes": 11239,
+        "sha256": "sha256:9a9d776d2c1214100aaec5c2202a795912661532659c2d03f245088cd4a10b6d"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829200000_owner_identity_reset_foundation.sql",
+        "size_bytes": 10596,
+        "sha256": "sha256:48625fc4ec49d84873249c213e4095efb7aead7b96e73a39b922699fe4b6cb6e"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829201000_reconcile_current_contract_checksum.sql",
+        "size_bytes": 1911,
+        "sha256": "sha256:5173e1c337fb0ab5fc4631a30aa2d2b201f351305af99fc6a095a9450d5ab7ed"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829210000_owner_operator_coverage.sql",
+        "size_bytes": 12461,
+        "sha256": "sha256:e457e0c2f3f60af2435aac3543ccccc50ca44e4f495d93724ad1f807b4c6ecb8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829211000_platform_owner_transfer.sql",
+        "size_bytes": 128139,
+        "sha256": "sha256:7519efac38d69efcb5fb2c37d891254c023466cb39f905bcf2185ef58ff56ff4"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829212000_owner_runtime_boundary_hardening.sql",
+        "size_bytes": 25995,
+        "sha256": "sha256:0dab5f9715f7009f44b64c13917250d48cf5d217f970ee9db1577e902f210e08"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829213000_reconcile_contract_identity_checksum.sql",
+        "size_bytes": 2436,
+        "sha256": "sha256:2026f1fd4800012ce8f4955be4a375a7e8769d806795afd1272792ffd7415a36"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829214000_owner_personal_scope_and_invoice_scope.sql",
+        "size_bytes": 8260,
+        "sha256": "sha256:6793cb515713e11069dec5e6043facc8f1cbd98b661004ef3ce8654cbeb1a3d4"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829215000_restore_invoice_request_operator_boundary.sql",
+        "size_bytes": 4163,
+        "sha256": "sha256:992d59b414393085861667f6830f62d9e847a3bb72ba8d1aee089ea66a9a6a2a"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829216000_owner_capability_exactness.sql",
+        "size_bytes": 8559,
+        "sha256": "sha256:b4f0b82847926489d53cf81f2efbcb5a642a35bea3b4dff7a7fd61f283ad05d6"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260829217000_scope_hint_resource_precedence.sql",
+        "size_bytes": 6583,
+        "sha256": "sha256:f4431c73cc38948568f0adfc76f476691180ae24c6fa65edc3acd3c77280d14e"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260830100000_finance_configurable_policy_workflow.sql",
+        "size_bytes": 49460,
+        "sha256": "sha256:e7ca38c1c17a6fa866d846d8ea993a7a802315799c4278210338e36894e59383"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260830101000_console_support_boundary.sql",
+        "size_bytes": 9034,
+        "sha256": "sha256:de1a140ecc2e4782938a02928b22bb78cb58532b099e92c8a2c6c01430a1223f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260830102000_grant_runtime_digest.sql",
+        "size_bytes": 959,
+        "sha256": "sha256:caa58fd07a7042a8335d6aad151864ea0e2624e524cb7b2e65e7b51b80ddc906"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260830103000_identity_runtime_contract_visibility.sql",
+        "size_bytes": 2450,
+        "sha256": "sha256:c2673c4358b84af47535bbe6305fe82cde5e9401324b8c7262a20f4c58af9aca"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260830104000_business_runtime_role_matrix.sql",
+        "size_bytes": 8457,
+        "sha256": "sha256:67afa09af8cfa9337b65cd4656af21c73b4e12ea322e0288604b35e0900df428"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260830105000_business_runtime_schema_visibility.sql",
+        "size_bytes": 1665,
+        "sha256": "sha256:07a3b2e813ce643ccccafa4c7fe45d1b5e4c784bbf9da86c4c5b4ea279945a2c"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260831100000_identity_finance_read_boundary.sql",
+        "size_bytes": 5145,
+        "sha256": "sha256:ce9347267b0b11bdceb455912e23c5f37e2614c16a9459f733c90dd569f62a42"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260831110000_identity_distribution_channel_voucher_read_boundary.sql",
+        "size_bytes": 5640,
+        "sha256": "sha256:c2608796993f63e8a5e19e83b1e41723aa18bf54aabbdb3a75a656791718c574"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260831120000_identity_reporting_read_boundary.sql",
+        "size_bytes": 3093,
+        "sha256": "sha256:5a16f8a666747f91b3f50cc52b3776898574e1a182c9d4ace6c7d83e9ae1edb9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260831130000_identity_console_tail_read_boundary.sql",
+        "size_bytes": 5437,
+        "sha256": "sha256:aacad727473f1bff5f134ade06a320035658afc5b822baa1131bc857dda938fe"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260831140000_identity_registration_profile_acl_repair.sql",
+        "size_bytes": 2716,
+        "sha256": "sha256:b19daa765bdb6970786bcd3f7ab07e096b2f4b91c2a5bc88a54cafbb865af79c"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260831150000_identity_experience_application_commands.sql",
+        "size_bytes": 7031,
+        "sha256": "sha256:4810ba8bc5cb49b67a648e788f70f5c0cc2b10910fb3d168a797a37806b0e3c7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260901060000_zhudatuan_brand_display_names.sql",
+        "size_bytes": 3299,
+        "sha256": "sha256:4de5f12a26e87b53230baa18eb91c5582d734a33e8e3cbf5056ff4186cc0d698"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260901070000_identity_notification_challenge_jobs.sql",
+        "size_bytes": 1821,
+        "sha256": "sha256:bbeabafea631f69cae718504b6b56525ddaf2fa0593efab061ca4328917a2d20"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260901100000_access_identity_scope_assignments.sql",
+        "size_bytes": 10247,
+        "sha256": "sha256:a62cff6437571b6d32b5f0fd1b491855cf1496de599cbe0d0c076161c8763a00"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260901210000_restore_platform_owner_personal_scope_projection.sql",
+        "size_bytes": 5555,
+        "sha256": "sha256:a495fc44da027afcecb41909a7de00fe60089afec62ca44ddf701478ee6484f6"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260901220000_add_payment_mall_identity.sql",
+        "size_bytes": 17258,
+        "sha256": "sha256:1e7a0b0841a37bd3723ddc3bac4230c2e3882366f34f71d1fe144b4aa8067ee9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260901221000_add_fulfillment_mall_identity.sql",
+        "size_bytes": 17681,
+        "sha256": "sha256:41c73d6cb3b2fc92f9bcb2251be31fbbca0658a233b9d24c13db95fc79b80ef2"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260901222000_add_inventory_mall_identity.sql",
+        "size_bytes": 5461,
+        "sha256": "sha256:de979916659055a7880c8c5abb361ba196a7a113446ea2d464d9bb43e001d563"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260901223000_publish_mall_provisioning.sql",
+        "size_bytes": 2276,
+        "sha256": "sha256:0fc9672ada080c8936a0122d2fa1a9ed1d1b5bcd7a241955da38e6cb1795434c"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902010000_restore_public_mall_role_contracts.sql",
+        "size_bytes": 12973,
+        "sha256": "sha256:b940b13ee960dd4468436f14a0a04a896e0df18b18bf066ef74cf784e5e3c276"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902011000_enable_public_mall_external_payment.sql",
+        "size_bytes": 12124,
+        "sha256": "sha256:61da1ac452fdc8af8531e761914125c5a8c263f2e8053ef29fef8f954f11fa73"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902012000_zhudatuan_mall_provisioning_access.sql",
+        "size_bytes": 11044,
+        "sha256": "sha256:67bf3e35e9337acb7e3c27e31b732e44eb51542e8c0460a146ef2000e6a9162b"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902132000_canonical_governance_context.sql",
+        "size_bytes": 12296,
+        "sha256": "sha256:4786b6b3e1d372bcacfaeb2491ce330fd274091e3413d3fad49cb825d9998a96"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902133000_repair_console_support_scope_contract.sql",
+        "size_bytes": 1513,
+        "sha256": "sha256:db27b79790515bac451c03f12a69a5c9d87fc017eb7f70ceb207e68c6e6e8c1f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902134000_senior_administrator_role.sql",
+        "size_bytes": 7079,
+        "sha256": "sha256:a798f979eb39f42b96984e3bc180f206b0197a65d9cc97a5e11e95f1e38ed569"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902135000_owner_identity_runtime_boundary.sql",
+        "size_bytes": 4691,
+        "sha256": "sha256:01a77b9dcdd889ae6a78f60eeff981385ef56c550751e77bbe437e2686d020d8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902136000_administrator_invitation_runtime_alignment.sql",
+        "size_bytes": 23606,
+        "sha256": "sha256:694f4dde2df7cbfb16c533e9b1bc78c98cd53bfabddd31996318f56a151f2350"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902137000_separate_login_account_from_mobile.sql",
+        "size_bytes": 4589,
+        "sha256": "sha256:3428e52dab41811f341227cbdd50cbc972bbfa15fd76f55739a0bb8f4e34ef6a"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902138000_fix_administrator_registration_role_boundary.sql",
+        "size_bytes": 5669,
+        "sha256": "sha256:af12e3d63755eaefeaa5a194b26df481d4977db06eae882f2e79749a2d1affcb"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902139000_add_member_invitation_records_read.sql",
+        "size_bytes": 1133,
+        "sha256": "sha256:08b5e17c3080c86c6ad48869918031888df9e7279a5b201b331eac735cb941f0"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260902140000_align_senior_administrator_business_permissions.sql",
+        "size_bytes": 8405,
+        "sha256": "sha256:2b18d68fd89b5ef29c4478c70de0402914f4b99456950c19721c0bf411025299"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903100000_separate_operator_business_scope.sql",
+        "size_bytes": 9862,
+        "sha256": "sha256:3cada7fdcb03b8141cc80f084418a1d260e7daebd45c591ba24e6f900bf0aeb6"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903101000_allow_platform_owner_invitation_history.sql",
+        "size_bytes": 2806,
+        "sha256": "sha256:7373c29a8e373463c426fd50bbec0c748ca0ce9915a8068eac6d4953bcbde7df"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903102000_invitation_record_target_and_creator_scope.sql",
+        "size_bytes": 3118,
+        "sha256": "sha256:4cbfd3b79678c8506c1ad388f0a639a3ea74e53ef38d5932a6bd65f6ad1511c6"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903103000_provision_l1_mall_owner.sql",
+        "size_bytes": 8478,
+        "sha256": "sha256:97f2d51a7b86e7a2928614ebbe895faa3d0fc56a894150d72204a5a111faaa97"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903104000_enable_provisioned_mall_registration.sql",
+        "size_bytes": 18008,
+        "sha256": "sha256:c8d575389dca37d494b9e3fece0bc3126a2d38de699f938024b200f57957cc4c"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903105000_initialize_storefront_qualification.sql",
+        "size_bytes": 2841,
+        "sha256": "sha256:3f5ebc995a923c86f9bbf30911406a16574434a2b2174567a93c4917ebb52044"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903106000_governance_invitation_tree_visibility.sql",
+        "size_bytes": 3103,
+        "sha256": "sha256:c57bae05cfdc27a54390cae9b63d60aa5e39e6ce0f0d49d1636f466c0a627263"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903107000_merge_storefront_and_governance_invitation_visibility.sql",
+        "size_bytes": 2701,
+        "sha256": "sha256:b7b3d3177453fc4f506ddac62505169c6a34d44f70ffd98954ff21e7fac62d85"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903108000_allow_existing_consumer_identity_registration.sql",
+        "size_bytes": 2511,
+        "sha256": "sha256:4226d01235c6c18770e942241ae3f8b386d5fab748e7e70d00d5fc7539c20d92"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903110000_zhudatuan_payment_webhook_access.sql",
+        "size_bytes": 7933,
+        "sha256": "sha256:5c77fdc79d1f97d79069f08fe086bd0e632a9fd9a4be30b48c258e020b4f15f8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903111000_publish_canonical_guest_catalog.sql",
+        "size_bytes": 5343,
+        "sha256": "sha256:f14973dd364a73d4fcd3c33b62cf4c987bb27d49f8960f9136e4279c91d8c0ee"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260903112000_enable_l6_storefront_self_registration.sql",
+        "size_bytes": 9017,
+        "sha256": "sha256:529ac8c07bb5af0e8c25fe24acca0737c1090906fa7073471fbf51878da607e4"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260904010000_allow_platform_owner_l6_registration.sql",
+        "size_bytes": 12153,
+        "sha256": "sha256:11593a17fd8c9d7d9e17b7669a04efab96572ee8d2491000618dd3ccbe864686"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260905010000_publish_runtime_catalog_alignment.sql",
+        "size_bytes": 3632,
+        "sha256": "sha256:8a463fab4e676ada72750ff449e66971e9ef095db64a1f7e23ba2d27002f739d"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260905011000_expand_governance_store_scope.sql",
+        "size_bytes": 4141,
+        "sha256": "sha256:ce286f1fbc37b2804cae61418ff9fb7854fc0b0688c847429cc62f840d179e0b"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260905012000_honor_invitation_scope_hint.sql",
+        "size_bytes": 2806,
+        "sha256": "sha256:0dc53b18e12bd5a1478d339c21314a7d6a6db2c64e2a68172f47f716e5880860"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260905013000_registration_invite_role_projection.sql",
+        "size_bytes": 2686,
+        "sha256": "sha256:ab03873df52391ea3abb2b2376705166b9742471d3087a09bd144a6d2ec852d7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260905014000_bind_storefront_browse_scope.sql",
+        "size_bytes": 4890,
+        "sha256": "sha256:591b42a51455418e8c9224972453fc05e523fde7132e565aedfca4fe03a0dacf"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260905203000_provision_zhudatuan_storefront_application.sql",
+        "size_bytes": 1860,
+        "sha256": "sha256:eccaa52b4f52f7f66d6c5f64a7e8ad9541bd1781dcae55f176e2214e19af3da6"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260906010000_add_l1_owner_role_and_named_scope.sql",
+        "size_bytes": 6715,
+        "sha256": "sha256:cb71500edf5f4b7123dcf350205381f434f91f124067b51d2dd46645f5e292bd"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260906011000_complete_l1_owner_runtime_head.sql",
+        "size_bytes": 3427,
+        "sha256": "sha256:7c91142830b954e578afc4e34d0c59c56b249ec7b2c3cc6b57a229fcb7ccc200"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260907010000_enable_identity_catalog_commands.sql",
+        "size_bytes": 4048,
+        "sha256": "sha256:f9aa72ad7d48dfe90cb78b5e26e09a07582a31c08b88d41f1bc90910fdbe6dcc"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260907110000_publish_storefront_member_directory.sql",
+        "size_bytes": 2971,
+        "sha256": "sha256:4344398900c29e735e40904d73f57bbe358b5bccddd778ccd17d1532bc801db5"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260907113000_separate_l0_l1_auth_return_targets.sql",
+        "size_bytes": 1953,
+        "sha256": "sha256:8bf9c492bade150418d021d1cbe50ef5570e66fda4114807ed854df7b2ebdab7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260907120000_create_identity_realm_accounts.sql",
+        "size_bytes": 19054,
+        "sha256": "sha256:77d34d623f46244ee693f55d3d66814564e07516f003924cbc75dd268c13d167"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260907121000_scope_identity_lifecycle_by_realm.sql",
+        "size_bytes": 20206,
+        "sha256": "sha256:f107a86c2ebedc96d0805a70acf6f203de8d4b4243d5bd71ad39baab8c01ccb9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260907122000_bind_sessions_tickets_to_realm_accounts.sql",
+        "size_bytes": 8856,
+        "sha256": "sha256:e5a62e7cf37741d5326a53ed373f0db63dd6510f23a17d3b3b0587e4787da86f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260907123000_enforce_identity_node_profiles.sql",
+        "size_bytes": 4361,
+        "sha256": "sha256:8f2b07e106af7d4b92f1625866a457d830dc9b1b897f124105993d324695a4eb"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260908010000_canonicalize_sfl_identity_node_ids.sql",
+        "size_bytes": 2760,
+        "sha256": "sha256:f6b9bb14b0b25ac2068dcdad9296bf9f2960cda3f465561def2a36f08f584edc"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260908011000_canonicalize_sfl_identity_targets.sql",
+        "size_bytes": 3855,
+        "sha256": "sha256:f5adea809da8dc60e9dd3101b81095f7f0efc73ed3f3fcbd64413721272d40d1"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260908012000_create_sfl_login_intents.sql",
+        "size_bytes": 8556,
+        "sha256": "sha256:99cc8a08ac4cb32e4ab0dc5ae22c91f5c0fdcda1d7749691d56d44c48ce32840"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260908013000_generalize_storefront_roles.sql",
+        "size_bytes": 2377,
+        "sha256": "sha256:6487afd56ccce2586dbb47dbad6da9e2b1ce052f258da69902e5756248844827"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260909010000_bind_published_listings_to_storefront_pool.sql",
+        "size_bytes": 3065,
+        "sha256": "sha256:e879110631a0dd4323218743c392240a398bb4f235d5972313d8d00eabf5b08b"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260909061000_add_checkout_address_default.sql",
+        "size_bytes": 2080,
+        "sha256": "sha256:5caaab79f8e3159cfe410bde4a1dc86b9d355380ee5afb7fe64971ec4ea28f75"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260909062000_provision_autonode_identity_realm.sql",
+        "size_bytes": 9484,
+        "sha256": "sha256:64537e9bbe5e9fc9022fe76f9a34e03b273ab12be07ba7e94128adb72a8d452c"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260909062500_reconcile_autonode_identity_migration_ledger.sql",
+        "size_bytes": 3986,
+        "sha256": "sha256:5a75994a10c3c84504f9dce854006f42b2e63e59fe8c22acea6179540bd730f1"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260909063000_reprovision_disabled_autonode_identity_realm.sql",
+        "size_bytes": 9560,
+        "sha256": "sha256:9121876f87c6ae577d0f5a6702e103c4bee474c2000567a7da1fb363bea3623a"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260909160000_route_identity_notifications_by_node.sql",
+        "size_bytes": 3405,
+        "sha256": "sha256:be1c53c705632f02e3fe305780c5ba4543a54b8b09abef2e2637208d86201d3e"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260909203000_switch_l0_public_domain_to_fufu.sql",
+        "size_bytes": 6016,
+        "sha256": "sha256:a28e4337628095bfeb98f3acf4f33fa89d485c4f2913f56e1e70589a112179b1"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260909204000_reconcile_l0_public_domain_migration_ledger.sql",
+        "size_bytes": 2796,
+        "sha256": "sha256:fd2beafd7fc991997df912548a100bc7c474c5ad09bc4323d13efbc5803f0565"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260911010000_add_storefront_member_custom_profile.sql",
+        "size_bytes": 7007,
+        "sha256": "sha256:7cf4e0da8488dbf6a6b6e762076c073c32a21442a57ac9f2dedc03dfb3dd0b71"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260911113000_order_participant_product_route_snapshot.sql",
+        "size_bytes": 2319,
+        "sha256": "sha256:3e4bbf558d1c0deb03694c5d9d8b46910207338dad5d23dcfb9c9763fbf17af7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260911153500_allow_web_order_four_flow_read.sql",
+        "size_bytes": 150,
+        "sha256": "sha256:e5f1a9461323b6d5b1eba5a742f184669e2bdb76cffe7996610988033fdf41c9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260911155000_allow_web_order_route_facts_read.sql",
+        "size_bytes": 182,
+        "sha256": "sha256:603971dfb0a02fc433751699920aaf25d9135112ce91b3531aede1eb924510c8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260911163000_allow_purchase_partner_agreement_read.sql",
+        "size_bytes": 137,
+        "sha256": "sha256:1f53d2f77738e75b7bed6a71f64a8c790426ed99f2db76e27bf05fc85b3508d9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260911170000_project_authoritative_owner_to_node_console.sql",
+        "size_bytes": 6983,
+        "sha256": "sha256:601ede38daf28edf9c1bb5fe8670927982dd2e2dbdfe9b1554631dec82496557"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260911180000_allow_node_mall_operator_invitations.sql",
+        "size_bytes": 8308,
+        "sha256": "sha256:7a4d8bd18406b731cbcc43a8fd425a0fe4c3c336ebc64fbfd25951bfd5f7e32a"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260911190000_bind_operator_registration_to_realm_console.sql",
+        "size_bytes": 13237,
+        "sha256": "sha256:3a81b39d5538755f602b9d8022191bec764c74e47c74e6e95eba346af3708fd4"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql",
+        "size_bytes": 6379,
+        "sha256": "sha256:5b3ba3d37009210f3bd5f508cd7d9feebda22a55f85b846a39acbe8cb290e304"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260911210000_create_sfl_hosted_node_provisioning.sql",
+        "size_bytes": 11106,
+        "sha256": "sha256:32d4d11f8a54d19ede60b979d22e4519dc9a7179e6dc6f867ff24a7ceddb8ae4"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql",
+        "size_bytes": 11409,
+        "sha256": "sha256:43efeb5af683761df52af5f5ef8893db38c7cfadaf70b98fa84aa57a89f776d7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912020000_create_sfl_member_registration_progression.sql",
+        "size_bytes": 16870,
+        "sha256": "sha256:10de05b35b2e89c04a160bdb9d73baf55d8d4a7c0b0f75b7d5c024f766e36bc9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912030000_create_sfl_multi_realm_membership.sql",
+        "size_bytes": 10097,
+        "sha256": "sha256:031939070132c1af56a8bd4c55797d49079399b61fdba86d0ff2a741a8b47366"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912040000_create_sfl_hosted_mall_opening.sql",
+        "size_bytes": 24050,
+        "sha256": "sha256:b121389740dc3631ee621b02e644327f74d06cdd143cfb8bf95d57f7b765eabe"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912050000_create_sfl_sovereign_upgrade.sql",
+        "size_bytes": 29472,
+        "sha256": "sha256:3d43285765285e0b62b8cf95427b2a7b73c5b22a5ad1714e7aacee4a82712151"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912120000_create_zhudatuan_supplier_network.sql",
+        "size_bytes": 17604,
+        "sha256": "sha256:4a82066ec8547e40c39a8031e2089bd012fc2cd59403f3e5feb3c95437b2826f"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912130000_create_supplier_analytics_perspective.sql",
+        "size_bytes": 17602,
+        "sha256": "sha256:24055370e183528d1db542154a2258b7a6a7e258f9bb625209a0ba623bdf21e0"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912140000_index_catalog_reverse_lookups.sql",
+        "size_bytes": 422,
+        "sha256": "sha256:15f60edba4ff299f3273a9f46749ee8e2539d053196a81c5100340914fcf0dff"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912150000_create_sfl_administrator_segment_scope.sql",
+        "size_bytes": 30178,
+        "sha256": "sha256:5b2f49d4347853b284ea8eb44739701a09919ab13738da72346bfd6c421696c2"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912170000_create_sfl_execution_contract_kernel.sql",
+        "size_bytes": 2082,
+        "sha256": "sha256:1417b82cbb9ab9ccaa56cfe6c612f232344a9de0ff37cb31cc3fc92210bc7aa7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912180000_reconcile_identity_runtime_state.sql",
+        "size_bytes": 8209,
+        "sha256": "sha256:ac06697d2fce34d92820af87b5051fd24b92b7fdf868ec165eb6a1aad9a4bc10"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912181000_restore_identity_reconciliation_function_ownership.sql",
+        "size_bytes": 518,
+        "sha256": "sha256:4894dfb10e7983c8b364f4364b72ec07ff1916cc9782d40aa6eefe67307ac731"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912182000_create_storefront_member_node_projection.sql",
+        "size_bytes": 3551,
+        "sha256": "sha256:428c379ced8eb5396e28812be98acab2818433ce718bd29a99cbf8050b7892ea"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912183000_fix_storefront_member_node_projection.sql",
+        "size_bytes": 3705,
+        "sha256": "sha256:f1504e5317bf77c4dcc47980533743469d7176a1a034a66e01e2e68322909206"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912190000_create_supplier_four_flow_ledger.sql",
+        "size_bytes": 13356,
+        "sha256": "sha256:49cfc6946388aaa4fc031bd49262994bc7a3e95e9c45a6126a514bc10eee852b"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912200000_create_sfl_company_template_clone.sql",
+        "size_bytes": 24889,
+        "sha256": "sha256:f05118527300639352d29304e73052be0a1b0eea8311381471399612cdf90357"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912210000_catalog_media_replication_persistence.sql",
+        "size_bytes": 2156,
+        "sha256": "sha256:e3fb9f8f175447ee9a8507dc73185ddcee4974baf2cd61d0b5618c26a47c5fa2"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912220000_publish_storefront_member_context_projection.sql",
+        "size_bytes": 5385,
+        "sha256": "sha256:41754afbafc831b3617afc3810f32bc563873bec7607af8cc93954aeb4fe47e9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912230000_separate_permission_write_targets.sql",
+        "size_bytes": 12468,
+        "sha256": "sha256:b89eb33cdb2d1d3714072a3fb78040dddf5bd849c0e1061aa1e9a5abd2646461"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql",
+        "size_bytes": 10158,
+        "sha256": "sha256:5267d9bb3edb759a5b1f6b1380c18fb3370e3a8efe2b59893cb99ad0986b94a9"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260912250000_grant_catalog_media_replication_job.sql",
+        "size_bytes": 1631,
+        "sha256": "sha256:c62d3a8c581def1c34fb5a2bb06f478a405e94b9d0a23f17bab335a3a9de07c1"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260913012500_restore_identity_context_resolver_execute.sql",
+        "size_bytes": 1440,
+        "sha256": "sha256:55a958e62c9bd2f6d79850c80ff65413fbddf8ea0af3e03d36a14050f3a1e4d8"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260913013500_restore_identity_session_owner_execute.sql",
+        "size_bytes": 1407,
+        "sha256": "sha256:495ff0d83ca68d22be39c6aa812147effca45e0cee0825438954882ab3b5b3ef"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260913014500_restore_storefront_member_context_owner.sql",
+        "size_bytes": 2321,
+        "sha256": "sha256:5a069a441c1d807365b6241eb324da683ac82412b8428f71c746cf79da5e9ca3"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260913015500_complete_senior_administrator_invitation_projection.sql",
+        "size_bytes": 6197,
+        "sha256": "sha256:859378230599691da65ce7250195cbf7982d8584e23e19158c3dba77365a8947"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260913020500_backfill_hbbtzn_storefront_member_l6.sql",
+        "size_bytes": 3951,
+        "sha256": "sha256:0ae0452a003b6a0217bba2449bc3abcb38f0d08586f27466b80525df072bb1f7"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260913021500_align_purchase_supplier_flow_access.sql",
+        "size_bytes": 1726,
+        "sha256": "sha256:943fbe54f4867bfcd45397aeb8b70e05ec3bc3746355ea933c5943a6ab4a9668"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260913021600_align_purchase_operation_completion_outbox.sql",
+        "size_bytes": 2103,
+        "sha256": "sha256:672697c7e94a445fd933d904946fe91ec0cf3b1827e9a32c3c83ccbcb55a5a30"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260913022500_enable_hbbtzn_l2_h5_provisioning.sql",
+        "size_bytes": 850,
+        "sha256": "sha256:dd43b3433f0cccc0bae94e6d3dadca2930d775f7dcd5fa0877404b7604c2e719"
+      },
+      {
+        "path": "02_platform_pingtai/database/supabase/migrations/20260913023000_enforce_sfl_vertical_level_adjacency.sql",
+        "size_bytes": 4757,
+        "sha256": "sha256:28c9d6778eba5358a3090820a70c30a4644e57bee9aac03b30b7a423668842f3"
+      }
+    ],
+    "symbols": {
+      "parse_authoritative_node_context": [
+        {
+          "path": "01_core_hexin/packages/config/src/SflNodeKernel.ts",
+          "line": 762
+        }
+      ],
+      "pg_authoritative_node_context_resolver": [
+        {
+          "path": "01_core_hexin/services/commerce/src/foundation/security/AuthoritativeNodeContextResolver.ts",
+          "line": 7
+        }
+      ]
+    },
+    "node_specific_source_files": [],
+    "node_name_business_branches": [],
+    "source_copy_ledger": []
+  },
+  "build_invocations": [
+    {
+      "invocation_id": "e01-shared-horizontal-build-1",
+      "build_id": "e01-commerce-api-7bd7f513d048663e75b660a4156d985760493ab4",
+      "scope": "shared-runtime",
+      "assigned_node_id": null,
+      "command": "node 04_tools/scripts/release/build-runtime-bundle.mjs commerce-api <temporary-output-directory> 7bd7f513d048663e75b660a4156d985760493ab4",
+      "source_sha": "7bd7f513d048663e75b660a4156d985760493ab4",
+      "started_at": "2026-09-13T23:52:49.415Z",
+      "completed_at": "2026-09-13T23:52:50.236Z",
+      "exit_code": 0,
+      "stdout": "service build: target=mall-provisioning-api entries=MallProvisioningApiMain,MallProvisioningApiReadyMain\nservice build: target=support-api entries=ConsoleSupportMain\nservice build: target=purchase-api entries=PurchaseApiMain,PurchaseApiReadyMain\nservice build: target=web-api entries=WebBusinessApiMain,WebBusinessApiReadyMain\nservice build: target=catalog-api entries=CatalogOperatorApiMain,CatalogOperatorApiReadyMain\nservice build: target=payment-webhook-api entries=PaymentWebhookApiMain,PaymentWebhookApiReadyMain\nruntime bundle built: commerce-api 7bd7f513d048663e75b660a4156d985760493ab4"
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_identity": "sha256:9c2dec3a31bf6dcf4fd6cd45464b5abbe8165013f7f12507f67375ca9e606715",
+      "build_id": "e01-commerce-api-7bd7f513d048663e75b660a4156d985760493ab4",
+      "target": "commerce-api",
+      "source_sha": "7bd7f513d048663e75b660a4156d985760493ab4",
+      "marker": "e01-shared-horizontal-version-marker-v1",
+      "files": [
+        {
+          "path": "e01-shared-version-marker.txt",
+          "size_bytes": 40,
+          "sha256": "sha256:bd176471458de11e832da09d34044f2ef568cbe48aa7c1bf563a9d013b002255"
+        },
+        {
+          "path": "release-version.json",
+          "size_bytes": 118,
+          "sha256": "sha256:d60d5b66082cdd1c7b43951149c2b3b42a79cd0c2873645eefb8e5dca4718db8"
+        },
+        {
+          "path": "targets/catalog-api/service/CatalogOperatorApiMain.js",
+          "size_bytes": 1167279,
+          "sha256": "sha256:08b6f2602b000d369d7d07a7e7e1efc133e9cd9b6004d7d5780c5b71dd36bb79"
+        },
+        {
+          "path": "targets/catalog-api/service/CatalogOperatorApiMain.js.map",
+          "size_bytes": 2048702,
+          "sha256": "sha256:0e393fa2ce0a003fb8f6b584cb85a5f8b81a8fb0e4c244c3edda57b946135741"
+        },
+        {
+          "path": "targets/catalog-api/service/CatalogOperatorApiReadyMain.js",
+          "size_bytes": 1016935,
+          "sha256": "sha256:40ad25967b76ad8ec197cc0c65ed548092372d8a0f6a5e4f5ef593f7de347e28"
+        },
+        {
+          "path": "targets/catalog-api/service/CatalogOperatorApiReadyMain.js.map",
+          "size_bytes": 1789279,
+          "sha256": "sha256:ae9471df6b7fc15676db2f7068fac2c077d320617bf47ed0882d40a1bb510eba"
+        },
+        {
+          "path": "targets/mall-provisioning-api/service/MallProvisioningApiMain.js",
+          "size_bytes": 1182067,
+          "sha256": "sha256:61f0f55b836913372b9a7028afb17b50e83dbcf28327181ace8eccc2fe1c097e"
+        },
+        {
+          "path": "targets/mall-provisioning-api/service/MallProvisioningApiMain.js.map",
+          "size_bytes": 2252650,
+          "sha256": "sha256:74a368ca089f5a36c9a2817731366a65cc8feb2d162be1b3127652a1fe0d26aa"
+        },
+        {
+          "path": "targets/mall-provisioning-api/service/MallProvisioningApiReadyMain.js",
+          "size_bytes": 23638,
+          "sha256": "sha256:db1f7aa073c5fc23c27fed41b1078ba29f21fd10ae4dc4d3181b2f11e3327346"
+        },
+        {
+          "path": "targets/mall-provisioning-api/service/MallProvisioningApiReadyMain.js.map",
+          "size_bytes": 48554,
+          "sha256": "sha256:bc9d7a7a61a3c00efcd3cc3a2d790f2f8e44fe7690b34684c85d7223b1720cab"
+        },
+        {
+          "path": "targets/payment-webhook-api/service/PaymentWebhookApiMain.js",
+          "size_bytes": 1121573,
+          "sha256": "sha256:ec1e72e553fc032520f5eefe5ce138af4f45e3fa0f19707c2385f99960cfab86"
+        },
+        {
+          "path": "targets/payment-webhook-api/service/PaymentWebhookApiMain.js.map",
+          "size_bytes": 1980493,
+          "sha256": "sha256:8424c63f7922f2cac2fe7178db9ab64722187628f5a2daf76476f21cd900286f"
+        },
+        {
+          "path": "targets/payment-webhook-api/service/PaymentWebhookApiReadyMain.js",
+          "size_bytes": 23946,
+          "sha256": "sha256:ba33975dd1ad6c376dffe6e32b198a556aebbbff4aebfad9d26e09fda36f120f"
+        },
+        {
+          "path": "targets/payment-webhook-api/service/PaymentWebhookApiReadyMain.js.map",
+          "size_bytes": 109725,
+          "sha256": "sha256:08e3d5e440cd7dc7108a176577bf68144303902c191b428a07bc0b273c6afc7b"
+        },
+        {
+          "path": "targets/purchase-api/service/PurchaseApiMain.js",
+          "size_bytes": 1347246,
+          "sha256": "sha256:c66dd2e84ef3f6040935838ba14bf7cf881a3319b05c6f879d1198771bcadaac"
+        },
+        {
+          "path": "targets/purchase-api/service/PurchaseApiMain.js.map",
+          "size_bytes": 2373861,
+          "sha256": "sha256:dab7720139c771f8e7b8faec8cdf3f2e4caed9a5efbf73213deb385e94095441"
+        },
+        {
+          "path": "targets/purchase-api/service/PurchaseApiReadyMain.js",
+          "size_bytes": 7269,
+          "sha256": "sha256:878bd0c03a20346ebbf2343efdedc15f71f931e26cd5359e5ec0157d173b5c40"
+        },
+        {
+          "path": "targets/purchase-api/service/PurchaseApiReadyMain.js.map",
+          "size_bytes": 17455,
+          "sha256": "sha256:afd215056465537f714073357138cf73bc53e2d91b9f506f957cd0345fc3d21a"
+        },
+        {
+          "path": "targets/support-api/service/ConsoleSupportMain.js",
+          "size_bytes": 1207655,
+          "sha256": "sha256:268d53100eb72f0908f44127d0e4fabadbd75d56e3fffb708807f639181538df"
+        },
+        {
+          "path": "targets/support-api/service/ConsoleSupportMain.js.map",
+          "size_bytes": 2119878,
+          "sha256": "sha256:038403f7dbb579ccbf9b6c580155296cd61261b09a54775a02afe3e13776ea7f"
+        },
+        {
+          "path": "targets/web-api/service/WebBusinessApiMain.js",
+          "size_bytes": 1263248,
+          "sha256": "sha256:bb22618662e40f2b4ae10faf498d34c7d30992e23b5a6756a10dd8dbb50ad103"
+        },
+        {
+          "path": "targets/web-api/service/WebBusinessApiMain.js.map",
+          "size_bytes": 2182718,
+          "sha256": "sha256:5f86aba56183541345664374a3919bad7f8c1856dcc5d30ed591806aa7084e47"
+        },
+        {
+          "path": "targets/web-api/service/WebBusinessApiReadyMain.js",
+          "size_bytes": 8503,
+          "sha256": "sha256:e96660901e27be9ed178f8319c8b8f391a4ff53afbef7b37d42a7b1054e2f5bb"
+        },
+        {
+          "path": "targets/web-api/service/WebBusinessApiReadyMain.js.map",
+          "size_bytes": 19729,
+          "sha256": "sha256:c2e315e2902252e09b2344719db8a0251274611f879666e502ecb3cb574e573b"
+        }
+      ]
+    }
+  ],
+  "peer_artifact_assignments": [
+    {
+      "peer_label": "H-A",
+      "node_id": "node:e01-ha-9231bee8:l1",
+      "source_sha": "7bd7f513d048663e75b660a4156d985760493ab4",
+      "build_id": "e01-commerce-api-7bd7f513d048663e75b660a4156d985760493ab4",
+      "artifact_identity": "sha256:9c2dec3a31bf6dcf4fd6cd45464b5abbe8165013f7f12507f67375ca9e606715"
+    },
+    {
+      "peer_label": "H-B",
+      "node_id": "node:e01-hb-9231bee8:l1",
+      "source_sha": "7bd7f513d048663e75b660a4156d985760493ab4",
+      "build_id": "e01-commerce-api-7bd7f513d048663e75b660a4156d985760493ab4",
+      "artifact_identity": "sha256:9c2dec3a31bf6dcf4fd6cd45464b5abbe8165013f7f12507f67375ca9e606715"
+    },
+    {
+      "peer_label": "H-C",
+      "node_id": "node:e01-hc-9231bee8:l1",
+      "source_sha": "7bd7f513d048663e75b660a4156d985760493ab4",
+      "build_id": "e01-commerce-api-7bd7f513d048663e75b660a4156d985760493ab4",
+      "artifact_identity": "sha256:9c2dec3a31bf6dcf4fd6cd45464b5abbe8165013f7f12507f67375ca9e606715"
+    }
+  ],
+  "node_specific_builds": []
+}

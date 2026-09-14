@@ -20,7 +20,6 @@ declare
 begin
   previous_id:=root_id;
   for level in 1..11 loop
-    if level not in(1,5,6,7,8,9,10,11) then continue; end if;
     current_id:='node:scope-'||suffix||':l'||level;
     profile:=case when level in(1,5) then 'operating_mall' else 'consumer' end;
     mall_id:=case when profile='operating_mall' then 'mall:scope:'||suffix||':l'||level else null end;
@@ -82,9 +81,9 @@ begin
   end if;
 
   if (select count(*) from organization.resolve_node_scope_self(target_line_id,previous_id))<>1
-    or (select count(*) from organization.resolve_node_scope_ancestors(target_line_id,previous_id))<>8
+    or (select count(*) from organization.resolve_node_scope_ancestors(target_line_id,previous_id))<>11
     or (select count(*) from organization.resolve_node_scope_descendants(target_line_id,root_id)
-      where node_id like 'node:scope-'||suffix||':l%')<>8
+      where node_id like 'node:scope-'||suffix||':l%')<>11
     or (select count(*) from organization.resolve_node_scope_subtree(target_line_id,hosted_l5))<>7
     or not exists(select 1 from organization.resolve_node_scope_ancestors(target_line_id,previous_id)
       where node_id=hosted_l5 and distance=6) then
@@ -117,7 +116,7 @@ begin
   ));
   if (select count(*) from organization.nodeclosure where descendant_node_id=previous_id and superseded_at is null)
       <>before_existing_closure
-    or (select count(*) from organization.nodeclosure where superseded_at is null)-before_total_closure<>4 then
+    or (select count(*) from organization.nodeclosure where superseded_at is null)-before_total_closure<>7 then
     raise exception 'SFL_HOSTED_CLOSURE_WRITE_AMPLIFICATION_INVALID';
   end if;
 
@@ -125,13 +124,13 @@ begin
   where line_id=target_line_id and node_id=hosted_l6 and relation_version=1;
   insert into organization.noderelation(
     line_id,node_id,parent_node_id,original_parent_node_id,signed_level,host_sovereign_node_id,relation_version,effective_at
-  ) values(target_line_id,hosted_l6,root_id,hosted_l5,'L6',root_id,2,changed_at);
+  ) values(target_line_id,hosted_l6,hosted_l5,hosted_l5,'L6',root_id,2,changed_at);
   select to_jsonb(resolved) into context from organization.resolve_node_context(hosted_l6) resolved;
-  if context->>'parent_node_id'<>root_id or context->>'relation_version'<>'2'
+  if context->>'parent_node_id'<>hosted_l5 or context->>'relation_version'<>'2'
     or context->>'effective_at'<>'2026-09-12T01:00:00.000Z'
     or not exists(select 1 from organization.noderelation where node_id=hosted_l6 and relation_version=1
       and parent_node_id=hosted_l5 and superseded_at=changed_at)
-    or exists(select 1 from organization.resolve_node_scope_ancestors(target_line_id,previous_id) where node_id=hosted_l5)
+    or not exists(select 1 from organization.resolve_node_scope_ancestors(target_line_id,previous_id) where node_id=hosted_l5)
     or not exists(select 1 from organization.nodeclosure where descendant_node_id=previous_id
       and ancestor_node_id=hosted_l5 and superseded_at=changed_at) then
     raise exception 'SFL_CURRENT_RELATION_VERSION_SCOPE_INVALID';

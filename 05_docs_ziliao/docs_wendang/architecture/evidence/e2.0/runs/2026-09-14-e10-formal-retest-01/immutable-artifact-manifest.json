@@ -1,0 +1,146 @@
+{
+  "schema_version": "e10-immutable-artifact-manifest-v1",
+  "experiment": "E10",
+  "source_pair": {
+    "from_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+    "to_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+    "merge_base": "dfb32c2c1fefc537b74205e54bfac757a5773612"
+  },
+  "candidate_build_contract": {
+    "build_count": 1,
+    "candidate_artifact_identity_count": 1,
+    "node_specific_source_count": 0,
+    "node_specific_build_count": 0,
+    "eligible_nodes": [
+      "H-A",
+      "H-B",
+      "H-C",
+      "S-A",
+      "S-B",
+      "S-C"
+    ]
+  },
+  "artifacts": {
+    "A": {
+      "release": "A",
+      "provenance": "preexisting-baseline-fixture",
+      "artifact_identity": "sha256:7211035fd7ecd4b898dc5799e5c47cc23ecb3b32a352bf2002382b0fb86a431d",
+      "file_count": 9,
+      "size_bytes": 5091383,
+      "files": [
+        {
+          "path": "probe/server.mjs",
+          "size_bytes": 691162,
+          "sha256": "sha256:3838947da8f977429824c761ef1c2006e34df339e4a1c547a0c888950675b933"
+        },
+        {
+          "path": "release-version.json",
+          "size_bytes": 231,
+          "sha256": "sha256:0a8d63ae8a1d9bf21fae5130da74b33dfc1db1a1f57770a6f22aa10491c1df73"
+        },
+        {
+          "path": "runtime/release-version.json",
+          "size_bytes": 118,
+          "sha256": "sha256:9a990ae2ba0fa025bb42382d2116f35f4f7ec19b5e3f50842e066bd2bc8d38ec"
+        },
+        {
+          "path": "runtime/targets/identity-api/node-manifest.json",
+          "size_bytes": 4974,
+          "sha256": "sha256:1eeaa1bd5e11447f7e66da34de5ca71303f713a028ca45f713b90898aa739d57"
+        },
+        {
+          "path": "runtime/targets/identity-api/service/IdentityRegistrationApiMain.js",
+          "size_bytes": 1544440,
+          "sha256": "sha256:07b099b90f9e408fa617928a4bac3742df56925d8a8366fb681f0a79f7682e84"
+        },
+        {
+          "path": "runtime/targets/identity-api/service/IdentityRegistrationApiMain.js.map",
+          "size_bytes": 2824445,
+          "sha256": "sha256:fe42fb4ab0b20b42179ce0c478c41e441d71eb4b508f2b411777680f0c57296c"
+        },
+        {
+          "path": "runtime/targets/identity-api/service/IdentityRegistrationApiReadyMain.js",
+          "size_bytes": 7825,
+          "sha256": "sha256:2731f355fdf230d79d5d1746dc5e2f7dd266bdb737649668f2833472473afde0"
+        },
+        {
+          "path": "runtime/targets/identity-api/service/IdentityRegistrationApiReadyMain.js.map",
+          "size_bytes": 18165,
+          "sha256": "sha256:05f8d21c38daf721ba52db214dcee671c2c171e8105ad8508c33ec651ff9270c"
+        },
+        {
+          "path": "shared-marker.txt",
+          "size_bytes": 23,
+          "sha256": "sha256:c632eec0d9ae6ea2c09620b08c12d608daf9eaf0c2514050631879e0982a61a0"
+        }
+      ]
+    },
+    "B": {
+      "release": "B",
+      "provenance": "candidate-single-build",
+      "artifact_identity": "sha256:27aa05b2a2f829c32530e10b4b652df819cd83aeda1ae32585a30c879080930e",
+      "file_count": 9,
+      "size_bytes": 5091387,
+      "files": [
+        {
+          "path": "probe/server.mjs",
+          "size_bytes": 691162,
+          "sha256": "sha256:3838947da8f977429824c761ef1c2006e34df339e4a1c547a0c888950675b933"
+        },
+        {
+          "path": "release-version.json",
+          "size_bytes": 235,
+          "sha256": "sha256:c03e030df42d52e003adaead9dabca708aa199f959748551d2809b9ba559df0f"
+        },
+        {
+          "path": "runtime/release-version.json",
+          "size_bytes": 118,
+          "sha256": "sha256:084a32e82e74e799255cbbf9162e209cfa8f8887bbe20130c62a59d834f9c766"
+        },
+        {
+          "path": "runtime/targets/identity-api/node-manifest.json",
+          "size_bytes": 4974,
+          "sha256": "sha256:1eeaa1bd5e11447f7e66da34de5ca71303f713a028ca45f713b90898aa739d57"
+        },
+        {
+          "path": "runtime/targets/identity-api/service/IdentityRegistrationApiMain.js",
+          "size_bytes": 1544440,
+          "sha256": "sha256:07b099b90f9e408fa617928a4bac3742df56925d8a8366fb681f0a79f7682e84"
+        },
+        {
+          "path": "runtime/targets/identity-api/service/IdentityRegistrationApiMain.js.map",
+          "size_bytes": 2824445,
+          "sha256": "sha256:fe42fb4ab0b20b42179ce0c478c41e441d71eb4b508f2b411777680f0c57296c"
+        },
+        {
+          "path": "runtime/targets/identity-api/service/IdentityRegistrationApiReadyMain.js",
+          "size_bytes": 7825,
+          "sha256": "sha256:2731f355fdf230d79d5d1746dc5e2f7dd266bdb737649668f2833472473afde0"
+        },
+        {
+          "path": "runtime/targets/identity-api/service/IdentityRegistrationApiReadyMain.js.map",
+          "size_bytes": 18165,
+          "sha256": "sha256:05f8d21c38daf721ba52db214dcee671c2c171e8105ad8508c33ec651ff9270c"
+        },
+        {
+          "path": "shared-marker.txt",
+          "size_bytes": 23,
+          "sha256": "sha256:71f11f2f3a55617269fd43fad834ccbc2ce3cbd1f50192e0c1805fc9ab27f094"
+        }
+      ]
+    }
+  },
+  "runtime_equivalence": {
+    "path": "probe/server.mjs",
+    "baseline_sha256": "sha256:3838947da8f977429824c761ef1c2006e34df339e4a1c547a0c888950675b933",
+    "candidate_sha256": "sha256:3838947da8f977429824c761ef1c2006e34df339e4a1c547a0c888950675b933",
+    "byte_equal": true,
+    "expected_artifact_metadata_differences": [
+      "release-version.json",
+      "runtime/release-version.json",
+      "shared-marker.txt"
+    ],
+    "source_diff_constraint": "Only 04_tools/scripts/audit/e10-shared-marker.txt changes from source A to source B."
+  },
+  "immutable_after_inventory": true
+}

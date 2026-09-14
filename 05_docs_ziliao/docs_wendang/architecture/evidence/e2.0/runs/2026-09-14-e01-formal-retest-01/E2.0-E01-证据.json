@@ -1,0 +1,1008 @@
+{
+  "$schema": "../../E2.0-证据.schema.json",
+  "schema_version": "e2.0-evidence-v2",
+  "evidence_id": "E2-EVID-E01-DEV-20260913",
+  "profile_version": "2.0.0",
+  "non_gating": true,
+  "claim_ids": [
+    "E2-TOPO-001"
+  ],
+  "criteria": {
+    "criteria_id": "E2-CRITERIA-E01-FORMAL-RETEST-20260914",
+    "path": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E01-正式重测判据-2026-09-14.json",
+    "sha256": "sha256:a110c40bb8f26d4b245712054f78390d70e15621511ce716b9feffab2baf4d84",
+    "locked_at": "2026-09-13T23:25:56Z",
+    "locked_before_execution": true,
+    "test_designer": {
+      "actor_id": "codex-task-e01-acceptance-repair-20260914",
+      "role": "E01 horizontal shared-node-model test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the missing E01 formal exporter and operated the separate raw-evidence oracle; did not change the production node model and is not an independent reviewer."
+    }
+  },
+  "test_basis_refs": [
+    "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-追踪矩阵.json#E2-TOPO-001",
+    "05_docs_ziliao/docs_wendang/architecture/evidence/SFL-统一节点模型实验矩阵-2026-09-12.json#E01",
+    "02_platform_pingtai/database/supabase/migrations/20260911200000_create_sfl_node_sovereignty.sql",
+    "02_platform_pingtai/database/supabase/migrations/20260912010000_create_sfl_node_context_scope.sql",
+    "02_platform_pingtai/database/supabase/migrations/20260912240000_bind_permission_reads_to_session_membership.sql",
+    "01_core_hexin/packages/config/src/SflNodeKernel.ts",
+    "01_core_hexin/services/commerce/src/foundation/security/AuthoritativeNodeContextResolver.ts",
+    "01_core_hexin/services/commerce/src/foundation/security/PgAccessResolvers.ts",
+    "01_core_hexin/services/commerce/src/foundation/security/NodeBoundScopeResolver.ts",
+    "02_platform_pingtai/database/supabase/tests/sfl_node_context_scope_contract.sql"
+  ],
+  "execution": {
+    "started_at": "2026-09-13T23:52:49.106Z",
+    "completed_at": "2026-09-13T23:54:30.761Z",
+    "executor": {
+      "actor_id": "codex-task-e01-acceptance-repair-20260914",
+      "role": "E01 horizontal shared-node-model test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the missing E01 formal exporter and operated the separate raw-evidence oracle; did not change the production node model and is not an independent reviewer."
+    },
+    "invocations": [
+      {
+        "kind": "COMMAND",
+        "exact": "npm run evidence:e01 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01",
+        "working_directory": "repository root",
+        "exit_code": 0,
+        "stdout_artifact": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/execution-log.json",
+        "stderr_artifact": null,
+        "sensitive_value_handling": "The disposable PostgreSQL password, connection URL and synthetic session hashes were used only in process memory and were not persisted. Evidence contains only synthetic identifiers and non-secret references."
+      }
+    ]
+  },
+  "environment": {
+    "kind": "DEV",
+    "environment_id": "local-disposable-postgresql17-e01-9231bee81cf14bd8",
+    "description": "A newly created PostgreSQL 17 Alpine container replayed the complete production migration chain and executed the locked E01 three-peer horizontal context, operation and isolation matrix plus one shared commerce-api runtime build.",
+    "owner": "Ethan-controlled local Codex workspace",
+    "isolation": "Disposable Docker container zhudatuan-e01-9231bee81cf14bd8; synthetic E01 nodes, identities, scopes, capabilities and resources only; the database transaction was rolled back and the container was removed after execution.",
+    "real_customer_data": false,
+    "production_impact": "None. No production service, database, DNS provider, payment provider, supplier or customer record was contacted.",
+    "differences_from_production": [
+      "Local disposable Docker PostgreSQL rather than managed Alibaba Cloud PostgreSQL.",
+      "Synthetic H-A, H-B and H-C identities and rollback-safe resources rather than customer traffic.",
+      "The shared runtime artifact was built locally and not activated on a Hosted or Sovereign runtime.",
+      "No stable staging environment identity and no production observation."
+    ]
+  },
+  "source_control": {
+    "repository": "zdt-next",
+    "evidence_commit_sha": "7bd7f513d048663e75b660a4156d985760493ab4",
+    "test_item_shas": [
+      "7bd7f513d048663e75b660a4156d985760493ab4"
+    ],
+    "execution_tree_state": "CLEAN",
+    "diff_sha256": null
+  },
+  "configuration": {
+    "summary": "postgres:17-alpine sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73; 302 migrations; three horizontal L1 peers; 9 positive and 30 cross-node observations; one shared commerce-api build.",
+    "digest": "sha256:220fbbef156807b3c5b767a404f758ce6c6f4cf450074df09973a63dc17d5d9e",
+    "unknown_fields": []
+  },
+  "raw_observations": [
+    {
+      "observation_id": "OBS-E01-HORIZONTAL-TOPOLOGY-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-PEER-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-LINE-UNIQUE-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-PARENT-UNIQUE-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-SIGNED-LEVEL-UNIQUE-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-CONTEXT-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-PEER-CONTEXT-PATH-IDENTITY-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-AUTHORITY-MAPPING-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-AUTHORITY-DIMENSION-DISTINCT-COUNT-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-POSITIVE-OBSERVATION-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 9,
+        "actual": 9,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-POSITIVE-OPERATION-DECISION-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-SUCCESSFUL-BUSINESS-WRITE-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-POSITIVE-NON-TARGET-BUSINESS-WRITE-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-CROSS-NODE-OBSERVATION-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 30,
+        "actual": 30,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-CROSS-NODE-REQUEST-OR-DECISION-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-CROSS-NODE-ALLOWED-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-CROSS-NODE-BUSINESS-ROW-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-CROSS-NODE-OUTBOX-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-DECISION-AUDIT-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 39,
+        "actual": 39,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-OUTBOX-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-BUSINESS-RESOURCE-VERSION-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-UNEXPECTED-AUTHORITATIVE-DIFF-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-TRANSACTION-ROLLBACK-RESIDUAL-FACT-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-SHARED-MODEL-TABLE-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-SQL-CONTEXT-RESOLVER-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-TYPESCRIPT-CONTEXT-PARSER-DEFINITION-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-TYPESCRIPT-CONTEXT-ADAPTER-DEFINITION-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-PEER-MODEL-IDENTITY-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-SOURCE-COPY-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-NODE-NAME-BUSINESS-BRANCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-NODE-SPECIFIC-SOURCE-FILE-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-SOURCE-INVENTORY-RECOUNT-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-SOURCE-SHA-UNIQUE-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-BUILD-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-BUILD-ID-UNIQUE-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-ARTIFACT-IDENTITY-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-ARTIFACT-ASSIGNMENT-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-ARTIFACT-ASSIGNMENT-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-ARTIFACT-PROVENANCE-OR-DIGEST-MISMATCH-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-NODE-SPECIFIC-BUILD-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-DEV-ENVIRONMENT-READY",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": true,
+        "actual": true,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    },
+    {
+      "observation_id": "OBS-E01-NEGATIVE-ORACLE-MUTATION-DETECTION-MISS-COUNT",
+      "source": "horizontal-independent-recount.json",
+      "value": {
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      "unit": "count",
+      "captured_at": "2026-09-13T23:54:30.539Z",
+      "notes": "Recomputed from the eight required raw artifacts; no runner PASS/status field was read."
+    }
+  ],
+  "artifacts": [
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-input-manifest.json",
+      "media_type": "application/json",
+      "sha256": "sha256:70a173ac7b4421709d0d30be81ff20be424816a09c067cea467723ac24fa97a2",
+      "size_bytes": 3635,
+      "role": "Synthetic H-A, H-B and H-C topology, authority and operation inputs"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-topology.json",
+      "media_type": "application/json",
+      "sha256": "sha256:70c82a95625ed14c048920d7bca3ab2a025c1bd6981450070f4d02d6722239dd",
+      "size_bytes": 4575,
+      "role": "Raw shared Node, NodeRelation and NodeClosure rows"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-node-contexts.json",
+      "media_type": "application/json",
+      "sha256": "sha256:f0cac9e5f20fd8b4975ec75332ea7f0a7c5b69c3d625f5e81f1239ad611b2f18",
+      "size_bytes": 12410,
+      "role": "Three parsed NodeContexts and complete authority maps"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-operation-results.json",
+      "media_type": "application/json",
+      "sha256": "sha256:73ba2780c1200314dbeaf17501114c95e45912501b8517db5f598459d80e9a71",
+      "size_bytes": 143747,
+      "role": "Nine positive and thirty cross-node raw request/decision observations"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-database-diff.json",
+      "media_type": "application/json",
+      "sha256": "sha256:d74942be8560f80037ef1afdf0729f969f6b97f7c6013ea817abef68481a9bf2",
+      "size_bytes": 147828,
+      "role": "Authoritative resource, audit and Outbox before/after/rollback rows and diffs"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-model-inventory.json",
+      "media_type": "application/json",
+      "sha256": "sha256:07f12fb29bf19863fbad589188cdf8a63c1fe648127b0e31de2836162375cc50",
+      "size_bytes": 90546,
+      "role": "Database model, resolver, parser, source-copy and node-name-branch inventories"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-artifact-identity.json",
+      "media_type": "application/json",
+      "sha256": "sha256:7ceeee8eacab9e4a2c747e1bcf6806537dd70828bb098af6bea02370d8b9174f",
+      "size_bytes": 97198,
+      "role": "Scoped source inventory, one build, one artifact and three peer assignments"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/environment.json",
+      "media_type": "application/json",
+      "sha256": "sha256:a36dfa243e79b0408c4c2bed99c57bda6f7a36d81d05ef3992fbbe62feda32e7",
+      "size_bytes": 2221,
+      "role": "Disposable PostgreSQL 17, full migration replay, source and artifact environment identity"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-independent-recount.json",
+      "media_type": "application/json",
+      "sha256": "sha256:4a2af25512ffb9fde1758b95707be3264f16f751e3344a6de0dbcdf9158267ef",
+      "size_bytes": 7569,
+      "role": "Independent topology, context, operation, database and artifact recomputation"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/migration-replay.txt",
+      "media_type": "text/plain",
+      "sha256": "sha256:2e4c9a5724967cd8151414f1a7ad26b7deeda7a3e900f4b7b335435174c7bbdb",
+      "size_bytes": 296,
+      "role": "Complete production migration replay completion output"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/execution-log.json",
+      "media_type": "application/json",
+      "sha256": "sha256:e5c08bb0e05c05cad4a041c8ce8e649573f864260dbcfa143694855f7bf4d63b",
+      "size_bytes": 1455,
+      "role": "Exact command, source SHA, execution totals and cleanup record"
+    },
+    {
+      "path_or_uri": "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E01-正式重测判据-2026-09-14.json",
+      "media_type": "application/json",
+      "sha256": "sha256:a110c40bb8f26d4b245712054f78390d70e15621511ce716b9feffab2baf4d84",
+      "size_bytes": 12914,
+      "role": "Pre-execution locked E01 criteria snapshot"
+    }
+  ],
+  "independent_oracle": {
+    "oracle_id": "E2-ORACLE-E01-HORIZONTAL",
+    "independent_from_test_program": true,
+    "reads_test_program_pass": false,
+    "procedure": "Read the locked criteria and eight required raw artifacts only; independently reconstruct the expected three-peer topology and authority map; compare every context and all 39 operation observations; derive allowed capability decisions from raw entitlement state; count exact resource/audit/Outbox diffs and rollback residuals; recount model/parser symbols, scoped production-source identifiers, build provenance, artifact file hashes and three peer assignments; mutate copies of context, cross-node operation and artifact inputs to prove detection. Do not consume a runner PASS/status field.",
+    "exact_invocation": "node 04_tools/scripts/audit/e01-horizontal-nodes.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E01-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-independent-recount.json",
+    "evaluator": {
+      "actor_id": "codex-task-e01-acceptance-repair-20260914",
+      "role": "E01 horizontal shared-node-model test operator",
+      "organization": "zhudatuan internal",
+      "relationship_to_test_item": "Implemented the missing E01 formal exporter and operated the separate raw-evidence oracle; did not change the production node model and is not an independent reviewer."
+    },
+    "input_artifacts": [
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E01-正式重测判据-2026-09-14.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-input-manifest.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-topology.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-node-contexts.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-operation-results.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-database-diff.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-model-inventory.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/horizontal-artifact-identity.json",
+      "05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01/environment.json"
+    ],
+    "computed_observations": [
+      {
+        "threshold_id": "horizontal_topology_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "peer_count",
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      {
+        "threshold_id": "line_unique_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "parent_unique_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "signed_level_unique_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "context_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "peer_context_path_identity_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "authority_mapping_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "authority_dimension_distinct_count_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "positive_observation_count",
+        "expected": 9,
+        "actual": 9,
+        "met": true
+      },
+      {
+        "threshold_id": "positive_operation_decision_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "successful_business_write_count",
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      {
+        "threshold_id": "positive_non_target_business_write_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "cross_node_observation_count",
+        "expected": 30,
+        "actual": 30,
+        "met": true
+      },
+      {
+        "threshold_id": "cross_node_request_or_decision_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "cross_node_allowed_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "cross_node_business_row_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "cross_node_outbox_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "decision_audit_count",
+        "expected": 39,
+        "actual": 39,
+        "met": true
+      },
+      {
+        "threshold_id": "outbox_count",
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      {
+        "threshold_id": "business_resource_version_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "unexpected_authoritative_diff_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "transaction_rollback_residual_fact_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "shared_model_table_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "sql_context_resolver_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "typescript_context_parser_definition_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "typescript_context_adapter_definition_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "peer_model_identity_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "source_copy_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "node_name_business_branch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "node_specific_source_file_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "source_inventory_recount_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "source_sha_unique_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "build_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "build_id_unique_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "artifact_identity_count",
+        "expected": 1,
+        "actual": 1,
+        "met": true
+      },
+      {
+        "threshold_id": "artifact_assignment_count",
+        "expected": 3,
+        "actual": 3,
+        "met": true
+      },
+      {
+        "threshold_id": "artifact_assignment_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "artifact_provenance_or_digest_mismatch_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "node_specific_build_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      },
+      {
+        "threshold_id": "dev_environment_ready",
+        "expected": true,
+        "actual": true,
+        "met": true
+      },
+      {
+        "threshold_id": "negative_oracle_mutation_detection_miss_count",
+        "expected": 0,
+        "actual": 0,
+        "met": true
+      }
+    ]
+  },
+  "anomalies": [],
+  "reproduction": {
+    "prerequisites": [
+      "Docker Engine",
+      "Node.js and repository dependencies",
+      "clean checkout of the recorded source SHA"
+    ],
+    "steps": [
+      "Check out 7bd7f513d048663e75b660a4156d985760493ab4.",
+      "Run npm run evidence:e01 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e01-formal-retest-01.",
+      "Read horizontal-independent-recount.json and independently verify its input hashes, raw rows and build inventory."
+    ],
+    "expected_raw_observations": [
+      "required raw evidence missing count = 0",
+      "exactly H-A, H-B and H-C share one line, one L0 parent and signed level L1; H-A/H-B are Hosted and H-C is Sovereign",
+      "all three contexts match their authoritative Node, Relation, Realm and Scope rows and use one model and parser-path identity",
+      "node_id, Realm, Account, Membership, Scope and resource distinct counts each = 3",
+      "nine positive operation decisions match the prelocked expectations, including the data-driven H-A/H-C allow and H-B deny capability probe",
+      "all 30 Realm/Membership/Scope/Node/resource cross-node read/write requests are denied with zero business rows and zero Outbox rows",
+      "exactly three positive writes update only their own authoritative resource rows, append 39 expected decision-audit rows and three expected Outbox rows",
+      "unexpected authoritative-table, audit or Outbox diff count = 0 and transaction rollback residual fact count = 0",
+      "one source SHA, one build invocation, one build ID and one immutable artifact identity serve all three peers",
+      "source_copy_count, node_specific_source_file_count, node_name_business_branch_count and node_specific_build_count each = 0",
+      "negative oracle mutation detection miss count = 0"
+    ],
+    "cleanup": "The runner rolls back the complete E01 database transaction, removes the disposable PostgreSQL container and deletes the temporary shared runtime artifact in finally blocks."
+  },
+  "assessment": {
+    "claim_outcome": "MET",
+    "environment_assurance": "DEV VERIFIED",
+    "review_assurance": "NOT REVIEWED",
+    "alignment_depth": "PROJECT_CUSTOM",
+    "applicability_ref": null,
+    "rationale": "H-A, H-B and H-C shared one Node/Relation/Closure model, one production context parser path and one source/build/artifact identity; all context and authority maps matched; nine positive outcomes followed data, all thirty cross-node requests were denied without business or Outbox leakage, all three writes remained target-local, and rollback left no E01 facts.",
+    "gaps": [
+      "No stable separately managed staging replay has been performed.",
+      "No authorized production observation has been performed.",
+      "All H-A, H-B and H-C nodes, identities, scopes, capabilities and resources were synthetic and transaction-rolled-back.",
+      "The one shared commerce-api artifact was built and inventoried locally but was not activated on Hosted or Sovereign infrastructure.",
+      "No reviewer independent of the E01 fixture, exporter and oracle has recomputed and signed the evidence."
+    ]
+  },
+  "review": {
+    "reviewer": null,
+    "reviewed_at": null,
+    "independence_statement": null,
+    "review_completed": false,
+    "same_as_executor": null,
+    "same_as_test_designer": null,
+    "external_to_delivery_team": null,
+    "conflicts_disclosed": null,
+    "recomputation_artifacts": []
+  }
+}

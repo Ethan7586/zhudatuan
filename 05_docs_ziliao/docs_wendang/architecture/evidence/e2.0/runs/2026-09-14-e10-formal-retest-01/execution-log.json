@@ -1,0 +1,34 @@
+{
+  "schema_version": "e10-execution-log-v1",
+  "started_at": "2026-09-13T19:56:03.827Z",
+  "completed_at": "2026-09-13T19:56:41.468Z",
+  "source_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+  "source_pair": {
+    "from_sha": "dfb32c2c1fefc537b74205e54bfac757a5773612",
+    "to_sha": "b17ebd598dbc899005100d3f289e1bc15fd5db45",
+    "merge_base": "dfb32c2c1fefc537b74205e54bfac757a5773612"
+  },
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e10 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01",
+    "node 04_tools/scripts/audit/e10-shared-build.mjs <temporary-artifact-B-directory> b17ebd598dbc899005100d3f289e1bc15fd5db45",
+    "Run one Hosted host process for H-A/H-B/H-C and one process for each of S-A/S-B/S-C in network-isolated Docker containers.",
+    "Atomically switch Hosted A→B once, S-A A→B, S-B A→B, leave S-C on A, probe three identities over page/API/task/service, then roll back S-B B→A and reprobe all controls.",
+    "node 04_tools/scripts/audit/e10-release.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E10-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e10-formal-retest-01/release-feature-independent-recount.json"
+  ],
+  "observed_execution": {
+    "build_count": 1,
+    "candidate_artifact_identity_count": 1,
+    "hosted_host_switch_count": 1,
+    "hosted_per_node_action_count": 0,
+    "pointer_snapshot_count": 5,
+    "expected_feature_cell_count": 144,
+    "observed_feature_cell_count": 144,
+    "rollback_non_target_change_count": 0
+  },
+  "cleanup": {
+    "containers_removed": true,
+    "temporary_working_directory_removed_after_finalization": true
+  },
+  "exit_code": 0
+}

@@ -1,0 +1,283 @@
+{
+  "schema_version": "e02-vertical-node-relations-v1",
+  "captured_at": "2026-09-13T23:16:21.091Z",
+  "initial": [
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l0",
+      "parent_node_id": null,
+      "original_parent_node_id": null,
+      "signed_level": "L0",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l0",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l1",
+      "parent_node_id": "node:e02-ac6cba98:l0",
+      "original_parent_node_id": "node:e02-ac6cba98:l0",
+      "signed_level": "L1",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l10",
+      "parent_node_id": "node:e02-ac6cba98:l9",
+      "original_parent_node_id": "node:e02-ac6cba98:l9",
+      "signed_level": "L10",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l11",
+      "parent_node_id": "node:e02-ac6cba98:l10",
+      "original_parent_node_id": "node:e02-ac6cba98:l10",
+      "signed_level": "L11",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l2",
+      "parent_node_id": "node:e02-ac6cba98:l1",
+      "original_parent_node_id": "node:e02-ac6cba98:l1",
+      "signed_level": "L2",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l3",
+      "parent_node_id": "node:e02-ac6cba98:l2",
+      "original_parent_node_id": "node:e02-ac6cba98:l2",
+      "signed_level": "L3",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l4",
+      "parent_node_id": "node:e02-ac6cba98:l3",
+      "original_parent_node_id": "node:e02-ac6cba98:l3",
+      "signed_level": "L4",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l5",
+      "parent_node_id": "node:e02-ac6cba98:l4",
+      "original_parent_node_id": "node:e02-ac6cba98:l4",
+      "signed_level": "L5",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l6",
+      "parent_node_id": "node:e02-ac6cba98:l5",
+      "original_parent_node_id": "node:e02-ac6cba98:l5",
+      "signed_level": "L6",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l7",
+      "parent_node_id": "node:e02-ac6cba98:l6",
+      "original_parent_node_id": "node:e02-ac6cba98:l6",
+      "signed_level": "L7",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l8",
+      "parent_node_id": "node:e02-ac6cba98:l7",
+      "original_parent_node_id": "node:e02-ac6cba98:l7",
+      "signed_level": "L8",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l9",
+      "parent_node_id": "node:e02-ac6cba98:l8",
+      "original_parent_node_id": "node:e02-ac6cba98:l8",
+      "signed_level": "L9",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    }
+  ],
+  "after_version_change": [
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l0",
+      "parent_node_id": null,
+      "original_parent_node_id": null,
+      "signed_level": "L0",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l0",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l1",
+      "parent_node_id": "node:e02-ac6cba98:l0",
+      "original_parent_node_id": "node:e02-ac6cba98:l0",
+      "signed_level": "L1",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l10",
+      "parent_node_id": "node:e02-ac6cba98:l9",
+      "original_parent_node_id": "node:e02-ac6cba98:l9",
+      "signed_level": "L10",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l11",
+      "parent_node_id": "node:e02-ac6cba98:l10",
+      "original_parent_node_id": "node:e02-ac6cba98:l10",
+      "signed_level": "L11",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l2",
+      "parent_node_id": "node:e02-ac6cba98:l1",
+      "original_parent_node_id": "node:e02-ac6cba98:l1",
+      "signed_level": "L2",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l3",
+      "parent_node_id": "node:e02-ac6cba98:l2",
+      "original_parent_node_id": "node:e02-ac6cba98:l2",
+      "signed_level": "L3",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l4",
+      "parent_node_id": "node:e02-ac6cba98:l3",
+      "original_parent_node_id": "node:e02-ac6cba98:l3",
+      "signed_level": "L4",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l5",
+      "parent_node_id": "node:e02-ac6cba98:l4",
+      "original_parent_node_id": "node:e02-ac6cba98:l4",
+      "signed_level": "L5",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l6",
+      "parent_node_id": "node:e02-ac6cba98:l5",
+      "original_parent_node_id": "node:e02-ac6cba98:l5",
+      "signed_level": "L6",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": "2026-09-14T01:00:00.000Z"
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l6",
+      "parent_node_id": "node:e02-ac6cba98:l5",
+      "original_parent_node_id": "node:e02-ac6cba98:l5",
+      "signed_level": "L6",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 2,
+      "effective_at": "2026-09-14T01:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l7",
+      "parent_node_id": "node:e02-ac6cba98:l6",
+      "original_parent_node_id": "node:e02-ac6cba98:l6",
+      "signed_level": "L7",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l8",
+      "parent_node_id": "node:e02-ac6cba98:l7",
+      "original_parent_node_id": "node:e02-ac6cba98:l7",
+      "signed_level": "L8",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    },
+    {
+      "line_id": "line:e02-ac6cba98:vertical",
+      "node_id": "node:e02-ac6cba98:l9",
+      "parent_node_id": "node:e02-ac6cba98:l8",
+      "original_parent_node_id": "node:e02-ac6cba98:l8",
+      "signed_level": "L9",
+      "host_sovereign_node_id": "node:e02-ac6cba98:l1",
+      "relation_version": 1,
+      "effective_at": "2026-09-14T00:00:00.000Z",
+      "superseded_at": null
+    }
+  ]
+}

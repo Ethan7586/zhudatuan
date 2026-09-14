@@ -1,0 +1,23 @@
+{
+  "schema_version": "e11-execution-log-v1",
+  "started_at": "2026-09-13T19:25:00.213Z",
+  "completed_at": "2026-09-13T19:26:09.113Z",
+  "source_sha": "8630eabaae848ed3757bc7f252fb1fb2947af75f",
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e11 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01",
+    "node 04_tools/scripts/audit/database-contracts.mjs --postgres-fresh <ephemeral-postgres-url>",
+    "node 04_tools/scripts/release/build-runtime-bundle.mjs identity-api <temporary-output-directory> 8630eabaae848ed3757bc7f252fb1fb2947af75f",
+    "Execute each of twelve scale/topology fixtures in a separate PostgreSQL transaction, collect raw per-node outputs, roll back, and recount residue.",
+    "node 04_tools/scripts/audit/e11-scale.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E11-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e11-formal-retest-01/scale-independent-recount.json"
+  ],
+  "observed_execution": {
+    "scenario_count": 12,
+    "generated_node_observation_count": 3333,
+    "sovereign_control_observation_count": 36,
+    "build_count": 1,
+    "artifact_identity_count": 1
+  },
+  "cleanup": "docker rm -f zhudatuan-e11-59a3f187ae344aba; remove temporary shared build directory",
+  "exit_code": 0
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "e08-execution-log-v1",
+  "started_at": "2026-09-13T18:46:58.613Z",
+  "completed_at": "2026-09-13T18:47:38.913Z",
+  "source_sha": "7f69099221fb7468a6cb0668511086bcec6ecd95",
+  "tree_state_before_execution": "CLEAN",
+  "commands": [
+    "npm run evidence:e08 -- --evidence-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01",
+    "node 04_tools/scripts/audit/database-contracts.mjs --postgres-fresh <ephemeral-postgres-url>",
+    "Execute supplier_four_flow_business_contract.sql with only terminal cleanup ROLLBACK materialized as COMMIT inside the disposable database.",
+    "Execute supplier_four_flow_concurrent_replay.sql in 5 simultaneous PostgreSQL sessions.",
+    "node 04_tools/scripts/audit/supplier-four-flow.oracle.mjs --run-directory 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01 --criteria 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/E2.0-E08-正式重测判据-2026-09-14.json --output 05_docs_ziliao/docs_wendang/architecture/evidence/e2.0/runs/2026-09-14-e08-formal-retest-01/inventory-and-finance-reconciliation.json"
+  ],
+  "cleanup": "docker rm -f zhudatuan-e08-3a452a36df0f4165",
+  "exit_code": 0
+}
