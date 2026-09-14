@@ -4,7 +4,7 @@
 
 AU-005 首次建立候选总账。零静态引用、零正式target或测试只调用某实现都不能单独证明可删除；数据、迁移、兼容、运维、唯一契约和恢复责任必须同时排除。本文件只记录已经进入G0–GX判定的对象，不等于删除计划。
 
-当前累计：G0 60、G1 83、G2 5、G3 0、GX 5。没有任何已满足13项删除条件并完成第二次独立复核的G3。
+当前累计：G0 60、G1 83、G2 5、G3 0、GX 6。没有任何已满足13项删除条件并完成第二次独立复核的G3。
 
 ## DC-0001｜授权版 Secret/KMS Handler 与 WorkloadAccessPolicy
 
@@ -997,3 +997,18 @@ AU-018没有G2/G3项，也没有删除、归档、移动或重生任何Miniapp�
 ## 418. AU-418 商城应用 schema-v2 复核
 
 - v1 配置确定性投影到 v2，并保留严格验证、版本化发布与恢复；仓内 canonical 构建器消费者仍未发现，归 DC-0056/G1。累计 G0 60、G1 83、G2 5、G3 0、GX 5；未删除任何文件。
+
+## GX-0006｜环境特定平台 Owner 调和迁移
+
+| 字段 | 记录 |
+| --- | --- |
+| 分类 | GX：高风险，禁止删除、修改或单独重放，需专项运行与身份治理设计。 |
+| 对象 | `20260820132000_platform_owner_reconciliation.sql`。 |
+| 直接证据 | 迁移选择本地用户名 `ethan` 作为 canonical Owner、写入平台/租户 scope、暂时关闭 Owner 保护 trigger，并批量暂停 `*-test-*` membership/member/user；无法找到 Owner 或唯一 Owner 均会中止。 |
+| 运行边界 | `RegistrationMigrationPlan` 将其明示标记为“environment-specific Ethan platform owner reconciliation”并作为 omitted migration 记账；运行数据库边界与阿里云校验仍要求活动平台 Owner 数为 1。其他 Supabase/发布通道是否执行该原文件不由仓内静态证据证明。 |
+| 可否删除 | 否；它承担历史身份调和与迁移 ledger 责任，且删除、重放或改写均可能改变平台最高权限与测试隔离。 |
+| 二次复核 | 是；必须独立核验所有迁移执行器、生产 ledger、Owner 身份/组织 scope、测试账号保留策略和恢复方案。 |
+
+## 420. AU-420 平台 Owner 调和复核
+
+- 环境特定迁移已由注册执行器显式省略，但其原文件仍高风险并可能被其他通道处理，归 GX-0006。累计 G0 60、G1 83、G2 5、G3 0、GX 6；未删除任何文件。
