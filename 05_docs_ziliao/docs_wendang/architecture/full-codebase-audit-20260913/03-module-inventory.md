@@ -1058,3 +1058,14 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | tests | PKCE/auth ticket 和手机号 canonicalization 静态 oracle | [FACT][E-AU-095-004] |
 
 [FACT][E-AU-095-005] 5 文件、151 行 Identity 领域状态与密码策略完成深审；认证交易的 PKCE challenge 在 ticket consume 时与 state/nonce/session 一并比较。
+
+## 101. AU-096 Identity realm/account 与 SMS 登录边界清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| realm registry/account | entry host、target、application、membership/account realm 解析 | [FACT][E-AU-096-001] |
+| password/mobile account lookup | containment + active client/organization membership + 歧义拒绝 | [FACT][E-AU-096-002] |
+| SMS login challenge | purpose/destination/realm/expiry/lock 验证和条件消费 | [FACT][E-AU-096-003] |
+| tests | registry host、realm membership、SMS SQL 状态 oracle | [FACT][E-AU-096-004] |
+
+[FACT][E-AU-096-005] 4 文件、512 行 Identity realm/account 与 SMS 登录读取/消费链完成深审；无跨 realm 回退查询或非条件 challenge 消费。

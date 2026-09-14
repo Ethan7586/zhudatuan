@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-095 已完成。AU-095 完成 Identity 授权交易、身份主体归一化与密码策略审阅。覆盖总账按当前文件级清单重算：深入审阅1,034文件/85,532行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,814文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-096 已完成。AU-096 完成 Identity realm/account 与 SMS 登录数据库边界审阅。覆盖总账按当前文件级清单重算：深入审阅1,038文件/86,044行、结构性审阅810文件/118,855行、自动生成70文件/172,651行、暂未审阅1,810文件。F-0158/P1、F-0159/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1005,3 +1005,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Identity 授权 state/nonce/PKCE 交易、手机号/身份主体归一化、scrypt 密码策略与关联单元测试。
 
 执行结果：AuthTransaction 对 state/nonce/ticket/PKCE token 作格式和长度约束，持久层后续以所有 hash/challenge 一并消费 ticket。手机号归一为 E.164，中国本地号与 +86 形式合并，保留非手机号 username 的小写规范形式。密码使用固定参数 scrypt、随机 salt 和恒定工作量的空用户验证；policy 复用共享契约。未发现 P0–P3 新问题；Vitest 未运行。
+
+## 98. AU-096 连续审计点
+
+审阅 Identity realm/node/target/account 解析及 SMS、password 登录的账号定位、challenge 验证与消费边界。
+
+执行结果：realm 由 active entry host/target registry 解析，host 与 application 必须精确匹配；active membership 先使用数据库 resolver，保留受检测控制的旧投影兼容路径。手机号/password 查询均以 realm containment、active account 和目标 client/organization membership 收敛，并对多 principal 歧义拒绝。SMS challenge 以 purpose、destination、realm、expiry、未消费状态及行锁验证，再条件消费。未发现 P0–P3 新问题；Vitest 未运行。
