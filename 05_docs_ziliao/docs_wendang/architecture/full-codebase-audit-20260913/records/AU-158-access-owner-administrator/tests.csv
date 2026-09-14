@@ -1,0 +1,3 @@
+verification,scope,result,reason
+Source and test trace,Owner proof and administrator segment,Completed,Runtime and direct test paths read.
+Formal targeted test,Access tests,Not run,Audit worktree dependency baseline lacks Vitest; dependencies unchanged.

@@ -396,3 +396,8 @@ AU-005识别并人工深审了共享状态设施的定向测试。正式workspac
 
 - 本批为 16 个纯 re-export 或 public index；无独立测试逻辑。
 - root/runtime consumer 与仓内零 caller 的差异已纳入 G0/G1 清单，不以“缺测试”推导缺陷。
+
+## 158. AU-158 Access owner/admin 深审
+
+- Administrator segment tests 直接覆盖 database command shape、storefront identity fail-closed 与 note/list/detail；OwnerActionProof tests 覆盖 exact binding、篡改、缺失、过期和 HMAC domain separation。
+- 未运行正式 suite：审计 worktree 依赖基线没有 Vitest；本批无源代码变更。

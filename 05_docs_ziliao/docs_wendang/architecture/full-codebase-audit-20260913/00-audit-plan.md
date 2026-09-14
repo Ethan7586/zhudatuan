@@ -25,7 +25,7 @@ origin/zdt-next 后续提交只记录为“基线后变化”，不进入本次�
 
 本计划依据 Ethan 于 2026-09-13 提供的《全代码库微观深审补充协议》建立；收到的 1,059 行原文 SHA-256 为 1db9a93f3f4ab45c5b1abc770e44d1dfa5beb788ef961a09ad6b1cda141b07ac。该哈希只用于证明计划所依据的输入版本，不把附件路径当作长期仓库依赖。
 
-当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-157 已完成。AU-157 完成 Reporting legacy compatibility 与根入口审阅。覆盖总账按当前文件级清单重算：深入审阅1,524文件/107,985行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,330文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
+当前进度：CP-00、CP-00A、AU-001/CP-01 至 AU-158 已完成。AU-158 完成 Access owner proof 与 administrator segment 审阅。覆盖总账按当前文件级清单重算：深入审阅1,531文件/108,388行、结构性审阅804文件/118,306行、自动生成70文件/172,651行、暂未审阅1,323文件。F-0158/P1、F-0159/P1、F-0173/P1 均已双轮确认；按Ethan最新指令仅确认P0时中断，否则连续进入下一审计单元。
 
 “检查点后停止”仅指结束当前单一目的审计会话，避免在一个会话中混入下一模块；不表示开始修复，也不表示审计被永久中止。所有问题仍只记录，任何未来修复都不在本审计分支实施。
 
@@ -1377,3 +1377,9 @@ AU-044 后选择 `qualification` 的完整业务链：Console 只读策略页 �
 审阅 Reporting 全部 legacy application/domain/infrastructure/interface 转发、根入口与公开 index。
 
 执行结果：root Identity/read 兼容入口由 IdentityRegistrationApiMain 直接载入；root index 被 finance/order 的 reporting export 调用；legacy job 路径由 jobs catalog 直接注册，均为 G0。其余十个一行历史路径没有本仓静态 consumer，但动态、发布外消费者和兼容承诺尚未排除，归为同一 G1 候选而非删除结论。无 P0。
+
+## 160. AU-158 连续审计点
+
+审阅 Access 的 owner action proof、administrator segment read/write、capability/root/manifest 与对应 tests。
+
+执行结果：owner proof HMAC 绑定 session、完整 ownership/version snapshot 和 5 分钟 expiry；签发 payload 先登记数据库，create/accept/cancel 均以 nonce 调用受管 Port。administrator operations 每次从数据库解析 authoritative administrator context，scope manage 强制 expected version 和 typed schema，note 强制 idempotency。现有测试验证跨 storefront 拒绝、typed command 以及 proof 篡改/过期。无 P0–P3 新问题。

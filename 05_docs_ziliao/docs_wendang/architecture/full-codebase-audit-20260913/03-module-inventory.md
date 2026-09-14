@@ -1714,3 +1714,13 @@ miniapp 目录没有 package.json，不进入 npm workspace 的构建、测试�
 | 其余 historical exports | application/domain/infrastructure/http 一行转发 | [FACT][E-AU-157-002]；G1，尚未排除动态/发布外兼容 consumer |
 
 [FACT][E-AU-157-003] 16 文件、30 行完成深审；Reporting 33/33 基线文件均取得审阅状态。
+
+## 163. AU-158 Access owner proof 与 administrator segment 清单
+
+| 子模块 | 职责 | 当前边界 |
+| --- | --- | --- |
+| owner proof | HMAC domain separation、session/snapshot bind、expiry、nonce persistence 和 ownership Port transaction | [FACT][E-AU-158-001] |
+| administrator segment | authoritative context resolve、versioned scoped role change、idempotent member note | [FACT][E-AU-158-002] |
+| capability/manifest/test | public capability、operation/event declaration、proof/segment direct tests | [FACT][E-AU-158-003] |
+
+[FACT][E-AU-158-004] 7 文件、403 行完成深审；Access 18/18 基线文件均取得审阅状态。
