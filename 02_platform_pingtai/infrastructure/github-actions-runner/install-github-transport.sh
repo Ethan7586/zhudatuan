@@ -59,6 +59,8 @@ for service in "${ALL_SERVICES[@]}"; do
     "Environment=https_proxy=${ZDT_GITHUB_PROXY_URL}" \
     "Environment=NO_PROXY=${NO_PROXY_VALUE}" \
     "Environment=no_proxy=${NO_PROXY_VALUE}" \
+    'Environment=GIT_HTTP_LOW_SPEED_LIMIT=1024' \
+    'Environment=GIT_HTTP_LOW_SPEED_TIME=20' \
     > "$drop_in/20-github-transport.conf"
 done
 

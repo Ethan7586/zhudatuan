@@ -19,6 +19,7 @@ const deployPrepared = await readFile(join(projectRoot, 'scripts/deploy-prepared
 const prepareRelease = await readFile(join(projectRoot, 'scripts/prepare-release.sh'), 'utf8');
 const preparedKnownHosts = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/release/zdt-next.ssh-known-hosts'), 'utf8');
 const qualityWorkflow = await readFile(join(projectRoot, '.github/workflows/quality-aliyun.yml'), 'utf8');
+const githubTransportInstaller = await readFile(join(projectRoot, '02_platform_pingtai/infrastructure/github-actions-runner/install-github-transport.sh'), 'utf8');
 const storefrontUnit = await readFile(join(systemdRoot, 'sfl-storefront@.service'), 'utf8');
 const storefrontPackage = JSON.parse(await readFile(join(projectRoot, '01_core_hexin/apps/storefront-web/package.json'), 'utf8'));
 const storefrontRuntimeBuilder = await readFile(join(projectRoot, '01_core_hexin/apps/storefront-web/scripts/build-production-runtime.mjs'), 'utf8');
@@ -103,7 +104,11 @@ test('Console retains optional public acceptance metadata while Prepare and Depl
   for (const workflow of [prepareWorkflow, preparedDeployWorkflow]) {
     assert.match(workflow, /GIT_CONFIG_KEY_0: http\.version/);
     assert.match(workflow, /GIT_CONFIG_VALUE_0: HTTP\/1\.1/);
+    assert.match(workflow, /GIT_HTTP_LOW_SPEED_LIMIT: 1024/);
+    assert.match(workflow, /GIT_HTTP_LOW_SPEED_TIME: 20/);
   }
+  assert.match(githubTransportInstaller, /Environment=GIT_HTTP_LOW_SPEED_LIMIT=1024/);
+  assert.match(githubTransportInstaller, /Environment=GIT_HTTP_LOW_SPEED_TIME=20/);
   assert.doesNotMatch(prepareWorkflow, /release_node|deploy-prepared|ZDT_RELEASE_SSH_HOST/);
 });
 

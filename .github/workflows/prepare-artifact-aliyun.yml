@@ -50,6 +50,8 @@ env:
   GIT_CONFIG_COUNT: 1
   GIT_CONFIG_KEY_0: http.version
   GIT_CONFIG_VALUE_0: HTTP/1.1
+  GIT_HTTP_LOW_SPEED_LIMIT: 1024
+  GIT_HTTP_LOW_SPEED_TIME: 20
   VITE_API_BASE_URL: https://api.hbbtzn.com
   VITE_AUTH_BASE_URL: https://accounts.hbbtzn.com
   VITE_ZHUDIAN_SOLUTION_ORIGIN: https://labs.hbbtzn.com
